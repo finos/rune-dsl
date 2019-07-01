@@ -1,0 +1,56 @@
+module com.regnosys.rosetta.GenerateRosetta
+
+import org.eclipse.xtext.xtext.generator.*
+import org.eclipse.xtext.xtext.generator.model.project.*
+
+var rootPath = ".."
+
+Workflow {
+	
+	component = XtextGenerator {
+		configuration = {
+			project = StandardProjectConfig {
+				baseName = "com.regnosys.rosetta"
+				rootPath = rootPath
+				runtimeTest = {
+					enabled = true
+				}
+				eclipsePlugin = {
+					enabled = true
+				}
+				eclipsePluginTest = {
+					enabled = true
+				}
+				web = {
+					enabled = false
+				}
+				genericIde = {
+					enabled = true
+				}
+				createEclipseMetaData = true
+			}
+			code = {
+				encoding = "UTF-8"
+				fileHeader = "/*\n * Copyright (c) REGnosys 2018 (www.regnosys.com) \n */"
+			}
+		}
+		language = StandardLanguage {
+			referencedResource = "platform:/resource/com.regnosys.rosetta/model/Rosetta.xcore"
+			name = "com.regnosys.rosetta.Rosetta"
+			fileExtensions = "rosetta"
+			parserGenerator = parser.antlr.XtextAntlrGeneratorFragment2 {
+				// set to true to get a debug Grammar
+				debugGrammar = false
+			}
+			serializer = {
+				generateStub = false
+			}
+			validator = {
+			 composedCheck = "com.regnosys.rosetta.validation.RosettaValidator"
+			}
+			formatter = {
+				generateStub = true
+			}
+		}
+	}
+}
