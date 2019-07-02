@@ -6,31 +6,41 @@
 
 The Rosetta DSL
 =====================
-To tie the design choices made by the Working Group to how they manifest practically, we make reference to the Rosetta DSL which we will refer to simply as Rosetta.
-It is useful to think of Rosetta as a set of tools to use when creating domain models. Much like how software engineers use programming languages and tools to create software.
+*Rosetta* is a Domain-Specific Language (DSL) designed for the financial industry, which purpose is to consolidate market standards and operational practices into a cohesive *domain model* (or simply *model*). In software engineering, a [domain model](https://en.wikipedia.org/wiki/Domain_model) is a conceptual model of the domain that incorporates both *data* and *behaviour* (i.e. rules and processes).
 
-Rosetta is a digital repository whose purpose is to consolidate market standards and practices into a cohesive model, from which executable code is automatically generated.
+This open-source DSL repository comprises 2 components:
+- **Syntax**
+- **Code Generators** (by default: [Java](https://www.oracle.com/java/))
 
-The key idea behind Rosetta is that financial markets presently have two unappealing characteristics as it relates to their supporting electronic data representation:
+The model for the financial industry domain is written using the syntax provided by the Rosetta DSL, but exists separately from this repository. The *ISDA Common Domain Model*, or simply *CDM*, is the first live application of the Rosetta DSL to create such model, applied to the financial markets for Derivatives (see below).
 
-*  **Variety of data representations**. The plurality of data standards (the main ones being FIX, FpML, ISO 20022 and EFET) is compounded by the many variations in the implementation of those, to which we need to add a wide range of proprietary data representations.
-*  **Limited availability of native digital tools** that would allow those data representations to be directly translated into executable code. Even the protocols that have a native digital representation (e.g. FpML and FIXML,
-  which are available in the form of XML schemas) have associated specifications artefacts which require further manual specification and/or coding in order to result in a complete executable solution.
-  In FpML, this is the case of the associated validation rules. In FIX, an example of such are the Recommended Practices/Guidelines, which are only available in the form of PDF documents.
+The key idea behind Rosetta is that financial markets presently have two unappealing characteristics in support of electronic data representation:
 
-Rosetta is looking to address those shortcomings by **consolidating various data and workflow representations into a cohesive model** (hence the naming reference to the Rosetta Stone), which can be **automatically translated into executable code**.
+- **Variety of data representations**. The plurality of data standards (the main ones being FIX, FpML, ISO 20022 and EFET) is compounded by the many variations in the implementation of those, to which we need to add a wide range of proprietary data representations.
+- **Limited availability of native digital tools** that would allow those data representations to be directly translated into executable code. Even the protocols that have a native digital representation (e.g. FpML and FIXML, which are available in the form of XML schemas) have associated specifications artefacts which require further manual specification and/or coding in order to result in a complete executable solution. In FpML, this is the case of the associated validation rules. In FIX, an example of such are the Recommended Practices/Guidelines, which are only available in the form of PDF documents.
+
+**Rosetta addresses those shortcomings by enabling the consolidation of various data and workflow representations** into a cohesive model (hence the naming reference to the Rosetta Stone). Thanks to the code generators, the model can be automatically translated into executable code and directly used as part of an implementation stack.
+
+Code generators are therefore key to remove the need for technologists to translate the model specifications into actual code. To make the model technology platform-agnostic (while ensuring inter-operability of different implementations), the provision of code generators is also open-source. Only default code generators will be provided as part of this Rosetta DSL repository, but a dedicated [repository](https://github.com/REGnosys/rosetta-code-generators) has been created to enable the community to create and make available other code generators in potentially any software language.
+
+
+The Rosetta SDK
+===============
+In order to use the Rosetta DSL that is open-source, a complete *Software Development Kit (SDK)* also named [*Rosetta*](https://ui.rosetta-technology.io/) will be provided to the community (ETA 2019 Q3). Much like how software engineers use programming languages and tools to create software, it is useful to think of Rosetta as a set of tools to use when creating and editing the domain model.
+
+Rosetta provides a complete adoption tool-kit for the DSL and the ISDA CDM, allowing firms to convert data files into CDM, edit and test the model to develop their own implementations, and contribute back to the CDM project.
+
 
 The ISDA Common Domain Model
 ============================
 The ISDA Common Domain Model is an initiative that ISDA has spearheaded to produce a common, robust, digital blueprint for how derivatives are traded and managed across their lifecycle.
-It is based on the design principles specified as part of ISDA’s October 2017 [CDM concept paper](https://www.isda.org/a/gVKDE/CDM-FINAL.pdf) for a product scope limited to simple interest and credit derivative products and an agreed sample of business events.
 
 ISDA anticipates that establishing such digital data and processing standards will lead to the following benefits:
 
-* Reduce the current need for continual reconciliations to address mismatches caused by variations in how each firm records trade lifecycle events;
-* Enable consistency in regulatory compliance and reporting;
-* Accelerate greater automation and efficiency in the derivatives market;
-* Provide a common foundation for new technologies like distributed ledger, cloud and smart contracts to facilitate data consistency;
-* Facilitate interoperability across firms and platforms.
+- Reduce the current need for continual reconciliations to address mismatches caused by variations in how each firm records trade lifecycle events;
+- Enable consistency in regulatory compliance and reporting;
+- Accelerate greater automation and efficiency in the derivatives market;
+- Provide a common foundation for new technologies like distributed ledger, cloud and smart contracts to facilitate data consistency;
+- Facilitate interoperability across firms and platforms.
 
-A high-level presentation of the ISDA CDM and additional information is available on the ISDA website ([www.isda.org](http://www.isda.org/)) and particularly with the referred [Short Video](https://www.isda.org/2017/11/30/what-is-the-isda-cdm/).
+A high-level presentation of the ISDA CDM and additional information is available on the [ISDA website](https://www.isda.org/a/z8AEE/ISDA-CDM-Factsheet.pdf) and particularly in the referred [Short Video](https://www.isda.org/2017/11/30/what-is-the-isda-cdm/). It is based on the design principles specified as part of ISDA’s October 2017 [CDM concept paper](https://www.isda.org/a/gVKDE/CDM-FINAL.pdf), which the *ISDA CDM Design Working Group* is tasked with implementing. The practical manifestation of those design choices is the ISDA CDM, as a model written in the Rosetta DSL and openly accessible to all industry participants.
