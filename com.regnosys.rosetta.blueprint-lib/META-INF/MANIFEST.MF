@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: com.regnosys.rosetta.blueprints
+Bundle-SymbolicName: com.regnosys.rosetta.blueprints
+Bundle-Version: 0.0.0.master
+Bundle-Vendor: REGnosys
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: com.regnosys.rosetta.blueprints,
+ com.regnosys.rosetta.blueprints.runner,
+ com.regnosys.rosetta.blueprints.runner.actions,
+ com.regnosys.rosetta.blueprints.runner.actions.rosetta,
+ com.regnosys.rosetta.blueprints.runner.data,
+ com.regnosys.rosetta.blueprints.runner.nodes
+Import-Package: com.google.common.collect,
+ com.rosetta.model.lib,
+ org.apache.log4j;version="1.2.15"
+Automatic-Module-Name: com.regnosys.rosetta.blueprints
+Require-Bundle: com.regnosys.rosetta.lib,
+ com.google.guava
+
+

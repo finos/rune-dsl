@@ -1,0 +1,824 @@
+grammar com.regnosys.rosetta.Rosetta with org.eclipse.xtext.common.Terminals
+import "http://www.rosetta-model.com/Rosetta"
+
+RosettaModel:
+	header=RosettaHeader
+	(configurations += RosettaQualifiableConfiguration)* // TODO think about having only RootElements or only configurations
+	(elements += RosettaRootElement)*
+;
+
+RosettaHeader:
+	'namespace' namespace=STRING
+	'version' version=STRING
+;
+
+RosettaRootElement:
+	RosettaClass | RosettaEnumeration |
+	RosettaDataRule | RosettaWorkflowRule | RosettaChoiceRule | 
+	RosettaAlias | RosettaProduct |
+	RosettaOrganisation | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | RosettaStereotypeValue |
+	RosettaEvent | RosettaEnumStyle |
+	RosettaCalculation | RosettaFunction |
+	RosettaBasicType | RosettaRecordType | RosettaExternalFunction | RosettaSynonymSource |
+	RosettaBlueprint | RosettaQualifiedType | RosettaCalculationType  | RosettaMetaType | RosettaExternalSynonymSource |
+	RosettaBlueprintReport
+;
+
+RosettaFunction:
+	'spec' RosettaNamed RosettaDefinable ':'
+		('inputs:' (inputs += RosettaFunctionInput)+)*
+		'output:' output = RosettaFunctionInput
+		preConditions += RosettaFunctionPreCondition*
+		postConditions += RosettaFunctionPostCondition*
+;
+
+RosettaFunctionPreCondition returns RosettaFuncitonCondition: 
+	'pre-condition' RosettaFuncitonCondition
+;
+
+RosettaFunctionPostCondition returns RosettaFuncitonCondition: 
+	'post-condition' RosettaFuncitonCondition
+;
+
+RosettaFunctionInput:
+	RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable
+;
+
+RosettaFuncitonCondition: 
+	RosettaDefinable ':'
+		(expressions+=RosettaCalcExpression ';')+
+;
+
+
+/**********************************************************************
+ * Common rules 
+ */
+fragment RosettaDefinable:
+	('<' definition=STRING '>')?
+;
+
+fragment RosettaNamed:
+	name=ValidID
+;
+
+fragment RosettaTyped:
+	type=[RosettaType|ValidID]
+;
+
+
+ValidID:
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'calculation' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version')
+;
+
+ValidHint: 
+       ValidID'*'?
+;
+
+terminal ID_STRING: '^'?'`'('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*'`';
+
+/**********************************************************************
+ * Built-in
+ */ 
+
+RosettaBasicType:
+	'basicType' RosettaNamed
+;
+
+RosettaSynonymSource:
+	'synonym' 'source' RosettaNamed 
+;
+
+RosettaRecordType:
+	'recordType' RosettaNamed '{'
+		features+=RosettaRecordFeature*
+	'}'
+;
+
+RosettaRecordFeature returns RosettaFeature: 
+	RosettaNamed type=[RosettaBuiltinType|ValidID]
+;
+
+RosettaParameter:
+	RosettaNamed RosettaTyped isArray?='[]'?
+;
+
+RosettaExternalFunction:
+	library?='library'? 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable (('{'
+		features+=RosettaFunctionFeature*
+	'}') | RosettaTyped)
+;
+
+RosettaFunctionFeature returns RosettaFeature:
+	RosettaNamed RosettaTyped ';'
+;
+
+RosettaQualifiedType:
+	'qualifiedType' RosettaNamed '{'
+		features+=RosettaQualifiedTypeFeature*
+	'}'
+;
+
+RosettaQualifiedTypeFeature returns RosettaFeature: 
+	RosettaNamed type=[RosettaBuiltinType|ValidID]
+;
+
+RosettaCalculationType:
+	'calculationType' RosettaNamed '{'
+		features+=RosettaCalculationTypeFeature*
+	'}'
+;
+
+RosettaCalculationTypeFeature returns RosettaFeature: 
+	RosettaNamed type=[RosettaBuiltinType|ValidID]
+;
+
+/**********************************************************************
+ * Data model 
+ */ 
+
+RosettaClass:
+	(abstract?='abstract' | root?='root')? 'class' RosettaNamed ('extends' superType=[RosettaClass|ValidID])?
+	('calculation' calculations = RosettaCalculationHook)?
+	('stereotype' stereotype = RosettaStereotype)? 
+	(globalKey ?= 'key')?
+	(rosettaKeyValue ?= 'rosettaKeyValue')?
+	(oneOf ?= 'one' 'of')?
+	RosettaDefinable
+		(synonyms += RosettaClassSynonym)*
+		(references += RosettaRegulatoryReference)*
+		(marketPractice += RosettaMarketPractice)*
+	'{'
+		(features += RosettaRegularAttribute)* 
+	'}'
+;
+
+RosettaMetaType:
+	'metaType' RosettaNamed RosettaTyped
+;
+
+RosettaCalculationHook:
+	(values += [RosettaCalculation|ValidID] ',')* values += [RosettaCalculation|ValidID]
+;
+
+RosettaStereotype:
+	(values += [RosettaStereotypeValue|ValidID] ',')* values += [RosettaStereotypeValue|ValidID]
+;
+
+RosettaStereotypeValue:
+	'stereotype' RosettaNamed
+;
+
+RosettaRegularAttribute:
+	RosettaNamed RosettaTyped card=RosettaCardinality (metaTypes += [RosettaMetaType])? (',' metaTypes += [RosettaMetaType])* RosettaDefinable ';'?
+		(synonyms += RosettaSynonym)*
+		(references += RosettaRegulatoryReference)*
+		(marketPractice += RosettaMarketPractice)*
+;
+
+RosettaEnumeration:
+	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|ValidID])? RosettaDefinable 
+		(synonyms += RosettaSynonym)*
+		(references += RosettaRegulatoryReference)*
+	'{' (enumValues += RosettaEnumValue',')* enumValues += RosettaEnumValue '}'
+;
+
+RosettaEnumValue:
+	RosettaNamed ('displayName' display=STRING)? (style=RosettaEnumStyle)? RosettaDefinable
+		(enumSynonyms += RosettaEnumSynonym)*
+		(references += RosettaRegulatoryReference)*
+;
+
+RosettaCardinality:
+	'(' (inf=INT'..' sup=INT | inf=INT'..' unbounded?='*') ')'
+;
+
+RosettaEnumStyle:
+	'style' RosettaNamed
+;
+
+
+
+/**********************************************************************
+ * Synonyms 
+ */ 
+
+RosettaClassSynonym:
+	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*
+	 ('value' value=RosettaClassSynonymValue)?
+	 ('meta' metaValue = RosettaMetaSynonymValue)?
+	 ']'
+;
+
+RosettaClassSynonymValue:
+	RosettaNamed (refType=RosettaSynonymRef value=INT)? 
+	('path' path = STRING)? 
+;
+
+RosettaSynonym:
+	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*
+	body=RosettaSynonymBody
+	('meta' (metaValues += ValidID ',')* metaValues += ValidID)?
+	('mapper' mapper=ValidID)?
+	']'
+;
+
+RosettaSynonymBody:
+	'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? 
+	| 'hint' (hints+=ValidHint ',')* hints+=ValidHint
+	| mappingLogic=RosettaMappingSetTo
+	
+;
+
+RosettaSynonymValue:
+	RosettaNamed (valueExtension=RosettaSynonymEnumeration)? (refType=RosettaSynonymRef value=INT)? 
+	('path'  path = STRING)? 
+	('maps' maps=INT)?
+;
+
+RosettaMetaSynonymValue:
+	RosettaNamed (refType=RosettaSynonymRef value=INT)? 
+	('path' path = STRING)? 
+	('maps' maps=INT)?
+;
+
+RosettaSynonymEnumeration:
+	value = '.' enumValue=STRING
+;
+
+RosettaEnumSynonym:
+	/*
+	 * The rationale for having a synonym which syntax is distinct for the enumeration
+	 * is because it needs to accommodate integer values for FIX while there is no Tag nor ComponentID
+	 * an optional definition field has also been added, while the synonymValue is of type STRING to accommodate peculiar values
+	 */
+	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*  'value' synonymValue=STRING ('definition' definition=STRING)? ']'
+;
+
+enum RosettaSynonymRef:
+	tag | componentID
+;
+
+/**********************************************************************
+ * Mapping Logic - Attribute Synonym
+ */
+
+RosettaMapping:
+	instances += RosettaMappingInstance (',' instances += RosettaMappingInstance)*
+;
+
+RosettaMappingInstance:
+	('set' 'when') when = RosettaMappingPathTests
+	| (default?='default' 'to') set = RosettaMapPrimaryExpression
+;
+
+RosettaMappingSetTo returns RosettaMapping:
+	instances += RosettaMappingSetToInstance (',' instances += RosettaMappingSetToInstance)*
+;
+
+RosettaMappingSetToInstance returns RosettaMappingInstance:
+	('set' 'to') set = RosettaMapPrimaryExpression ('when' when = RosettaMappingPathTests)?
+;
+
+RosettaMappingPathTests:
+	tests += RosettaMapTest ('and' tests += RosettaMapTest)*
+;
+
+RosettaMapTest returns RosettaExpression:
+	RosettaMapPath
+	| RosettaMapRosettaPath
+	| RosettaMapTestExpression
+;
+
+RosettaMapPath:
+	'path' '=' path=RosettaMapPathValue
+;
+
+RosettaMapRosettaPath:
+	'rosettaPath' '=' path=RosettaFeatureCall
+;
+
+RosettaMapTestExpression returns RosettaExpression:
+	RosettaMapPathValue (
+		{RosettaExistsExpression.argument=current} 'exists' 
+		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
+		| {RosettaBinaryOperation.left=current} operator=('='|'<>') right=RosettaMapPrimaryExpression
+	)
+;
+
+RosettaMapPrimaryExpression returns RosettaExpression:
+	RosettaEnumValueReference
+	| RosettaStringLiteral
+	| RosettaBooleanLiteral
+	| RosettaIntLiteral
+;
+
+RosettaMapPathValue returns RosettaExpression:
+	{RosettaMapPathValue} (path = STRING)
+;
+
+
+/**********************************************************************
+ * Things
+ */ 
+ 
+RosettaRegulatoryReference:
+	'[' ('regulatoryReference') regRegime=[RosettaRegulatoryRegime|ValidID] mandates+=([RosettaMandate|ValidID])+ (segments+=RosettaSegmentRef)+ 'provision' provision=STRING (reportedField?='reportedField')?  ']'
+;
+
+RosettaSegmentRef:
+	segment=[RosettaSegment|ValidID] segmentRef=STRING
+;
+
+// TODO - refactor these to have the correct names.
+RosettaRegulatoryRegime:
+	('body'|'regulatoryRegime') (bodyType=ID)? RosettaNamed RosettaDefinable
+;
+
+RosettaMandate:
+	('corpus'|'mandate') (corpusType=ID)? (STRING)? RosettaNamed RosettaDefinable
+;
+
+RosettaSegment:
+	'segment' RosettaNamed
+;
+
+RosettaMarketPractice:
+	'[' 'marketPractice' organisation=[RosettaOrganisation|ValidID] 'write-up' document=STRING 'recommendation' recommendation=STRING ']'
+;
+
+RosettaOrganisation:
+	'organisation' RosettaNamed
+;
+
+/**********************************************************************
+ * Expressions 
+ */ 
+
+RosettaExpression:
+	RosettaBooleanOperation
+;
+
+RosettaBooleanOperation returns RosettaExpression:
+	RosettaTestExpression ({RosettaBinaryOperation.left=current} operator=('or' | 'and') right=RosettaTestExpression)*
+;
+
+RosettaTestExpression returns RosettaExpression:
+	RosettaAdditiveExpression
+	(
+		{RosettaBinaryOperation.left=current} operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaAdditiveExpression
+		| {RosettaExistsExpression.argument=current} (only?='only')? (single?='single' | multiple?='multiple')? ('exists')
+		| {RosettaAbsentExpression.argument=current} ('is' 'absent')
+		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaFeatureCall
+		| {RosettaCountOperation.left=current} 'count' operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaFeatureCall
+		| {RosettaWhenPresentExpression.left=current} ('when' 'present') operator=('=') right=RosettaPrimaryExpression 
+	)?
+;
+
+RosettaAdditiveExpression returns RosettaExpression:
+	RosettaGroupByFeatureCall ({RosettaBinaryOperation.left=current} operator=('+' | '-') right=RosettaGroupByFeatureCall)*
+;
+
+RosettaGroupByFeatureCall returns RosettaExpression:
+	RosettaFeatureCall {RosettaGroupByFeatureCall.call=current} ('group' 'by' groupBy=RosettaGroupByExpression)?
+;
+
+RosettaGroupByExpression:
+	attribute = [RosettaRegularAttribute] ('->' right = RosettaGroupByExpression)?
+;
+
+RosettaFeatureCall returns RosettaExpression:
+	RosettaPrimaryExpression ({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID])*
+;
+
+RosettaPrimaryExpression returns RosettaExpression:
+	RosettaCallableCall
+	| RosettaEnumValueReference
+	| RosettaLiteral
+	| '(' RosettaExpression ')'
+;
+
+RosettaCallableCall: 
+	callable=[RosettaCallable|ValidID]
+;
+
+RosettaConditionalExpression returns RosettaExpression:
+	RosettaExpression 
+	| {RosettaConditionalExpression} 'if' if=RosettaExpression 'then' ifthen=RosettaConditionalExpression 'else' elsethen=RosettaConditionalExpression
+;
+
+RosettaEnumValueReference:
+	enumeration=[RosettaEnumeration|ValidID] '.' value=[RosettaEnumValue|ValidID]
+;
+
+RosettaLiteral:
+	RosettaBooleanLiteral
+	| RosettaStringLiteral
+	| RosettaBigDecimalLiteral
+	| RosettaIntLiteral
+;
+
+RosettaBooleanLiteral:
+	value?='True' | {RosettaBooleanLiteral} 'False'
+;
+
+RosettaStringLiteral:
+	value = STRING
+;
+
+RosettaBigDecimalLiteral:
+	value = BigDecimal
+;
+
+RosettaIntLiteral:
+	value = Integer
+;
+
+BigDecimal:
+	'-'? ('.' INT | INT '.' | INT '.' INT) (('e'|'E') ('+'|'-')? INT)?
+;
+
+Integer:
+	'-'? INT
+;
+
+/**********************************************************************
+ * Data Rule
+ */
+ 
+RosettaDataRule:
+	'data' 'rule' RosettaNamed RosettaDefinable
+	(references += RosettaRegulatoryReference)*
+	(marketPractice += RosettaMarketPractice)*
+	'when' when=RosettaExpression
+	('then' then=RosettaConditionalExpression)?
+;
+
+
+
+/**********************************************************************
+ * Workflow Rule
+ */
+ 
+RosettaWorkflowRule:
+	'workflow' 'rule' RosettaNamed RosettaDefinable
+	(marketPractice += RosettaMarketPractice)*
+	('when' when = RosettaExpression)?
+	root = RosettaTreeNode
+	('and' data = RosettaExpression)?
+	('commonId' ( commonIdentifier = [RosettaRegularAttribute|ValidID] | 'path' commonIdPath = RosettaClassAttributeCall ) )?
+;
+
+RosettaTreeNode:
+	parent = [RosettaClass|ValidID]
+	( 
+		(not?='not' 'precedes' | 'precedes')
+		(children+=RosettaTreeNode | '(' children+=RosettaTreeNode ( ('and' | 'or') children+=RosettaTreeNode)* ')' )
+	)?
+;
+
+RosettaClassAttributeCall returns RosettaExpression:
+	RosettaClassReference ({RosettaFeatureCall.receiver=current} '->' feature=[RosettaRegularAttribute|ValidID])*
+;
+
+RosettaClassReference returns RosettaExpression:
+	{RosettaCallableCall}
+	callable=[RosettaClass|ValidID]
+;
+
+
+
+
+
+/**********************************************************************
+ *  Choice rule
+ */
+ 
+RosettaChoiceRule:
+	'choice' 'rule' RosettaNamed RosettaDefinable
+ 	(references += RosettaRegulatoryReference)*
+ 	(marketPractice += RosettaMarketPractice)*
+ 	'for' scope=[RosettaClass|ValidID]
+ 	qualifier=('optional' | 'required') 'choice' 'between' thisOne=[RosettaRegularAttribute|ValidID]
+ 	('and' thatOnes += [RosettaRegularAttribute|ValidID])* 
+;
+
+
+
+/**********************************************************************
+ * Alias
+ */
+ 
+RosettaAlias:
+	'alias' RosettaNamed RosettaDefinable
+ 	expression = RosettaAliasExpression
+;
+
+RosettaAliasExpression returns RosettaExpression:
+	RosettaFeatureCall
+	(
+		({RosettaBinaryOperation.left=current} operator='and' right=RosettaAliasExpression)
+		| ({RosettaBinaryOperation.left=current} operator='or' right=RosettaAliasExpression)
+	)?
+;
+
+
+
+/**********************************************************************
+ * Product
+ */
+ 
+RosettaProduct:
+	'isProduct' RosettaNamed RosettaDefinable
+ 	(synonyms += RosettaSynonym)*
+	expression = RosettaExpression
+	(('and' andDataRules+=[RosettaDataRule] (',' andDataRules += [RosettaDataRule])*) 
+ 		(('or' orDataRules += [RosettaDataRule]) (',' orDataRules += [RosettaDataRule])*)? 'apply')?
+;
+
+
+
+/**********************************************************************
+ * Event
+ */
+ 
+RosettaEvent:
+	'isEvent' RosettaNamed RosettaDefinable
+ 	(synonyms += RosettaSynonym)*
+ 	expression = RosettaExpression
+ 	(('and' andDataRules+=[RosettaDataRule] (',' andDataRules += [RosettaDataRule])*) 
+ 		(('or' orDataRules += [RosettaDataRule]) (',' orDataRules += [RosettaDataRule])*)? 'apply')?
+;
+
+
+/**********************************************************************
+ * QualifiableConfiguration
+ */
+RosettaQualifiableConfiguration:
+	qType = RosettaQualifiableType 'root' rosettaClass = [RosettaClass|ValidID]';'
+;
+
+enum RosettaQualifiableType :
+	Event = "isEvent"| Product = "isProduct"
+;
+
+
+
+/**********************************************************************
+ * Calculations
+ */
+
+RosettaCalculationArguments:
+	{RosettaCalculationArguments}
+	aliases+=RosettaArgumentAlias*
+	features+=RosettaArgumentFeature*
+;
+
+QualifiedName:
+	ValidID ('.' ValidID)?
+;
+
+RosettaArgumentAlias returns RosettaAlias:
+	'alias' RosettaNamed expression=RosettaCalcExpression
+;
+
+RosettaArgumentFeature:
+	RosettaNamed RosettaTyped? RosettaDefinable ':' 'is'? expression=RosettaCalcExpression
+;
+
+RosettaCalculation:
+	'calculation' name=QualifiedName RosettaDefinable '{'
+		features+=RosettaCalculationFeature*
+		(
+			'where'
+			arguments=RosettaCalculationArguments
+		)?
+	'}'
+;
+
+RosettaCalculationFeature returns RosettaFeature:
+	{RosettaCalculationFeature}
+	 (RosettaNamed | (RosettaTyped RosettaNamed))? (('defined' 'by' ':') | ':' ) expression=RosettaCalcExpression 
+;
+
+RosettaCalcExpression returns RosettaExpression:
+	RosettaCalcConditionalExpression
+;
+
+RosettaCalcConditionalExpression returns RosettaExpression:
+	RosettaCalcOr 
+	| {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression 'else' elsethen=RosettaCalcExpression
+;
+
+RosettaCalcOr returns RosettaExpression:
+	RosettaCalcAnd ({RosettaBinaryOperation.left=current} operator=('or') right=RosettaCalcAnd)*
+;
+
+RosettaCalcAnd returns RosettaExpression:
+	RosettaCalcExists ({RosettaBinaryOperation.left=current} operator=('and') right=RosettaCalcExists)*
+;
+
+RosettaCalcExists returns RosettaExpression:
+	RosettaCalcEquality (
+		{RosettaExistsExpression.argument=current} only?='only'? (single?='single' | multiple?='multiple')? 'exists'
+		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
+		| {RosettaCountOperation.left=current} 'count' operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaFeatureCall
+		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaFeatureCall
+	)?
+;
+
+RosettaCalcEquality returns RosettaExpression:
+	RosettaCalcComparison ({RosettaBinaryOperation.left=current} operator=('='|'<>') right=RosettaCalcComparison)*
+;
+	
+RosettaCalcComparison returns RosettaExpression:
+	RosettaCalcAdditive ({RosettaBinaryOperation.left=current} operator=(">="|"<="|">"|"<") right=RosettaCalcAdditive)*
+;
+
+RosettaCalcAdditive returns RosettaExpression:
+	RosettaCalcMultiplicative ({RosettaBinaryOperation.left=current} operator=('+'|'-') right=RosettaCalcMultiplicative)*
+;
+
+RosettaCalcMultiplicative returns RosettaExpression:
+	RosettaCalcAttributeCall ({RosettaBinaryOperation.left=current} operator=('*'|'/') right=RosettaCalcAttributeCall)*
+;
+
+RosettaCalcAttributeCall returns RosettaExpression:
+	RosettaCalcPrimary
+	({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID])*
+;
+
+RosettaCalcPrimary returns RosettaExpression:
+	{RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|ValidID] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')'	
+	| RosettaCallableCall
+	| RosettaEnumValueReference
+	| RosettaLiteral
+	| RosettaParenthesisCalcExpression
+;
+RosettaParenthesisCalcExpression:
+	'(' expression = RosettaCalcExpression ')'
+;
+
+/*****************************************
+ * Translate external synonym support
+ *****************************************/
+
+RosettaExternalSynonymSource:
+	'synonym' 'source' RosettaNamed ('extends' superSynonym=[RosettaSynonymSource]) '{'
+	    (externalClasses += RosettaExternalClass)*
+	    ('enums' (externalEnums += RosettaExternalEnum)*)?
+	'}'
+;
+
+RosettaExternalClass:
+	classRef=[RosettaClass] ':'
+		(regularAttributes += RosettaExternalRegularAttribute)*
+;
+
+RosettaExternalEnum:
+	enumRef = [RosettaEnumeration] ':'
+		(regularValues += RosettaExternalEnumValue)*
+;
+
+RosettaExternalRegularAttribute:
+	('+'|'-') attributeRef=[RosettaRegularAttribute]
+		externalSynonyms += RosettaExternalSynonym*
+;
+
+RosettaExternalEnumValue: 
+	('+'|'-') enumRef=[RosettaEnumValue]
+		externalEnumSynonyms += RosettaEnumSynonym*
+;
+
+RosettaExternalSynonym:
+	'['
+	body=RosettaSynonymBody
+	']'
+;
+
+/*****************************************
+ * Reporting support
+ *****************************************/
+
+RosettaRegulatoryMandate:
+	regRegime=[RosettaRegulatoryRegime|ValidID] mandates+=([RosettaMandate|ValidID])+
+;   
+
+
+/*****************************************
+ * Blueprints.
+ * */
+RosettaBlueprintReport:
+	'report' regulatoryMandate=RosettaRegulatoryMandate
+	'in' ('real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5')
+	'when'
+	eligibilityRules+=[RosettaBlueprint] ( 'and' eligibilityRules+=[RosettaBlueprint])*
+	('using' 'standard' reportingStandard=[RosettaMandate])?
+	'with' 'fields'
+	reportingRules += [RosettaBlueprint]*
+;
+
+
+RosettaBlueprint:
+ 	('reporting'|'eligibility') 'rule' RosettaNamed RosettaDefinable
+	(references += RosettaRegulatoryReference)*
+	(marketPractice += RosettaMarketPractice)*
+	(nodes = BlueprintNodeExp)?
+	('output' output=[RosettaClass])?
+;
+
+BlueprintNodeExp:
+	node=BlueprintNode (reference = RosettaRegulatoryReference)? ('then' next=BlueprintNodeExp)? 
+;
+
+BlueprintNode:
+	(
+		BlueprintRef |
+		BlueprintFilter |
+		BlueprintValidate |
+		BlueprintAnd |
+		BlueprintMerge |
+		BlueprintExpander |
+		BlueprintExtract |
+		BlueprintReturn | 
+		BlueprintGroup |
+		BlueprintDataJoin |
+		BlueprintCustomNode |
+		BlueprintLookup |
+		BlueprintReduce |
+		BlueprintOneOf
+	)
+;
+
+
+BlueprintExpander returns UnimplementedNode:
+	'expand' name=ID
+;
+
+BlueprintValidate :
+	'validate' 'as' input=[RosettaType]
+;
+
+BlueprintFilter :
+	'filter' 'when' (filter = RosettaBooleanOperation | 'rule' filterBP = BlueprintRef)
+;
+
+// RENAME THIS TO BlueprintOr
+BlueprintAnd:
+	'(' bps+=BlueprintNodeExp ( ',' bps+=BlueprintNodeExp)* ')'
+;
+
+BlueprintMerge :
+	'merge' 'output' output=[RosettaClass]
+;
+
+BlueprintRef:
+	blueprint=[RosettaBlueprint]
+;
+
+BlueprintExtract:
+	'extract' (multiple?='multiple')? call=RosettaConditionalExpression ('as' identifier=STRING)?
+;
+
+BlueprintReturn:
+	'return' expression = RosettaExpression ('as' identifier=STRING)?
+;
+
+BlueprintGroup:
+	'groupby' key=RosettaFeatureCall 
+;
+
+BlueprintDataJoin:
+	'join' 'key' key=RosettaFeatureCall 'foreignKey' foreign=RosettaFeatureCall
+;
+
+BlueprintLookup:
+	'lookup' name=ID output=[RosettaType] ('as' identifier=STRING)?
+;
+
+// Stuff we dont need (yet)
+BlueprintCustomNode:
+	name=ID '<' input=[RosettaType] ',' output=[RosettaType] ',' inputKey=[RosettaType] ',' outputKey = [RosettaType] '>'
+;
+
+BlueprintReduce :
+	(
+		action=('first'| 'last')
+		|
+		action=('maxBy'| 'minBy') expression=RosettaConditionalExpression
+	)
+;
+
+BlueprintOneOf :
+	'if' '('
+		bps+=BlueprintIfThen 
+		(',' bps+=BlueprintIfThen)? ','?
+		('=>' elseNode = BlueprintNodeExp)?
+	')'
+;
+
+BlueprintIfThen :
+	ifNode=BlueprintNodeExp '=>' thenNode=BlueprintNodeExp
+	
+;
+
+

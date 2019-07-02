@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+	<extension point="org.eclipse.emf.ecore.generated_package">
+		<package 
+			uri = "http://www.rosetta-model.com/Rosetta"
+			class = "com.regnosys.rosetta.rosetta.RosettaPackage"
+			genModel = "model/Rosetta.xcore" />
+	</extension>
+</plugin>

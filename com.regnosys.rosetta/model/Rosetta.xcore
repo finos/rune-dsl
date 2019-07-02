@@ -1,0 +1,753 @@
+@Ecore(nsURI="http://www.rosetta-model.com/Rosetta")
+@GenModel(fileExtensions="rosetta", modelDirectory="/com.regnosys.rosetta/emf-gen", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0")
+package com.regnosys.rosetta.rosetta
+
+import java.util.stream.Collectors
+
+class RosettaModel {
+	contains RosettaHeader header
+	contains RosettaQualifiableConfiguration[] configurations 
+	contains RosettaRootElement[] elements 
+}
+
+class RosettaHeader {
+	String namespace
+	String version
+}
+
+
+/**********************************************************************
+ * Common types
+ */
+
+abstract class RosettaDefinable {
+	String definition
+}
+
+abstract class RosettaNamed {
+	String name
+}
+
+abstract class RosettaTyped {
+	refers RosettaType ^type
+}
+
+class RosettaFeature extends RosettaNamed, RosettaTyped {
+	/**
+	 * @return The name or 'value' if it's <code>null</code>
+	 */
+	derived String getNameOrDefault get {
+		return name ?: 'value'
+	}
+	
+	derived boolean isTypeInferred get {
+		return ^type === null
+	}
+}
+
+abstract class RosettaCallable extends RosettaNamed {}
+
+interface RosettaCallableWithArgs extends RosettaNamed{
+}
+
+interface RosettaRootElement {}
+
+abstract class RosettaFeatureOwner extends RosettaDefinable {
+	contains RosettaFeature[] features
+}
+
+abstract class RosettaType extends RosettaNamed {
+}
+
+
+
+/**********************************************************************
+ * Built-in
+ */
+
+abstract class RosettaBuiltinType extends RosettaType {
+}
+
+class RosettaBasicType extends RosettaRootElement , RosettaBuiltinType {
+}
+
+class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
+}
+
+class RosettaRecordType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType, RosettaCallableWithArgs {
+}
+
+class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaFeatureOwner, RosettaCallableWithArgs, RosettaBuiltinType {
+	contains RosettaParameter[] parameters
+	boolean library
+}
+
+class RosettaParameter extends RosettaFeature {
+	boolean isArray
+}
+
+
+class RosettaQualifiedType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType, RosettaCallableWithArgs {
+}
+
+class RosettaCalculationType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType, RosettaCallableWithArgs {
+}
+
+
+/**********************************************************************
+ * Data model
+ */
+
+class RosettaClass extends RosettaRootElement, RosettaFeatureOwner, RosettaType, RosettaCallable {
+	boolean ^abstract
+	boolean root
+	boolean oneOf
+	boolean globalKey
+	boolean rosettaKeyValue
+	
+	refers RosettaClass superType
+	contains RosettaCalculationHook calculations
+	contains RosettaStereotype stereotype
+	contains RosettaClassSynonym[] synonyms
+	contains RosettaRegulatoryReference[] references
+	contains RosettaMarketPractice[] marketPractice
+	
+	op RosettaRegularAttribute[] getRegularAttributes() {		
+		features.filter(RosettaRegularAttribute).toEList
+	}	
+}
+
+class RosettaMetaType extends RosettaRootElement, RosettaFeature  {
+	
+}
+
+abstract class RosettaAttributeBase extends RosettaFeature, RosettaDefinable  {
+	contains RosettaRegulatoryReference[] references
+	contains RosettaCardinality card
+	contains RosettaMarketPractice[] marketPractice
+}
+
+class RosettaRegularAttribute extends RosettaAttributeBase {
+	contains RosettaSynonym[] synonyms
+	refers RosettaMetaType[] metaTypes
+}
+
+class RosettaCalculationHook {
+	refers RosettaCalculation[] values
+}
+
+class RosettaStereotype {
+	refers RosettaStereotypeValue[] values
+}
+
+class RosettaStereotypeValue extends RosettaRootElement, RosettaNamed {
+}
+
+class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable {
+	refers RosettaEnumeration superType
+	contains RosettaSynonym[] synonyms
+	contains RosettaRegulatoryReference[] references
+	contains RosettaEnumValue[] enumValues
+}
+
+class RosettaEnumValue extends RosettaNamed, RosettaDefinable {
+	String display
+	contains RosettaEnumStyle style
+	contains RosettaEnumSynonym[] enumSynonyms
+	contains RosettaRegulatoryReference[] references
+}
+
+class RosettaCardinality {
+	int inf
+	int sup
+	boolean unbounded
+	
+	derived boolean isMany get {
+		unbounded || sup > 1
+	}
+}
+
+class RosettaEnumStyle extends RosettaRootElement, RosettaNamed {
+}
+
+
+
+/**********************************************************************
+ * Synonyms
+ */
+
+abstract class RosettaSynonymBase {
+
+	refers RosettaSynonymSource[] sources
+}
+
+class RosettaSynonymValueBase extends RosettaNamed {
+	RosettaSynonymRef refType
+	int value
+	String path
+	int maps
+	
+}
+
+class RosettaClassSynonym extends RosettaSynonymBase {
+	contains RosettaClassSynonymValue value
+	contains RosettaMetaSynonymValue metaValue
+}
+
+class RosettaSynonym extends RosettaSynonymBase {
+	contains RosettaSynonymBody body
+	String[] metaValues
+	String mapper
+}
+
+class RosettaSynonymBody extends RosettaSynonymBase {
+	contains RosettaSynonymValue[] values
+	contains RosettaMapping mappingLogic
+	String[] hints
+}
+
+class RosettaClassSynonymValue extends RosettaSynonymValueBase {
+}
+
+class RosettaSynonymValue extends RosettaSynonymValueBase {
+	contains RosettaSynonymEnumeration valueExtension
+}
+
+class RosettaMetaSynonymValue extends RosettaSynonymValueBase {
+}
+
+class RosettaSynonymEnumeration {
+	String value
+	String enumValue
+}
+
+class RosettaEnumSynonym extends RosettaSynonymBase, RosettaDefinable {
+	String synonymValue
+}
+
+enum RosettaSynonymRef {
+	tag
+	componentID = 1
+}
+
+
+
+/**********************************************************************
+ * Things
+ */
+
+class RosettaRegulatoryReference extends RosettaRegulatoryMandate {
+	String provision
+	contains RosettaSegmentRef[] segments
+	boolean reportedField
+}
+
+class RosettaSegmentRef {
+	refers RosettaSegment segment
+	String segmentRef
+}
+
+class RosettaRegulatoryMandate {
+	refers RosettaRegulatoryRegime regRegime
+	refers RosettaMandate[] mandates
+}
+
+class RosettaRegulatoryRegime extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+	String bodyType
+}
+
+class RosettaMandate extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+	String corpusType
+}
+
+class RosettaSegment extends RosettaRootElement, RosettaNamed {
+}
+
+class RosettaMarketPractice {
+	refers RosettaOrganisation organisation
+	String document
+	String recommendation
+}
+
+class RosettaOrganisation extends RosettaRootElement, RosettaNamed {
+}
+
+/**********************************************************************
+ * Expressions
+ */
+
+abstract class RosettaExpression {
+}
+
+class RosettaCallableCall extends RosettaExpression {
+	refers RosettaCallable callable
+}
+
+class RosettaEnumValueReference extends RosettaExpression {
+	refers RosettaEnumeration enumeration
+	refers RosettaEnumValue value
+}
+
+abstract class RosettaLiteral extends RosettaExpression, RosettaTyped {
+	op String stringValue()
+}
+
+class RosettaBooleanLiteral extends RosettaLiteral {
+	boolean value
+	
+	op String stringValue() {
+		return Boolean.toString(value)
+	}
+}
+
+class RosettaStringLiteral extends RosettaLiteral {
+	String value
+	op String stringValue() {
+		return '"' + value + '"'
+	}
+}
+
+class RosettaBigDecimalLiteral extends RosettaLiteral {
+	String value
+	op String stringValue() {
+		return value
+	}
+}
+
+class RosettaIntLiteral extends RosettaLiteral {
+	String value
+	op String stringValue() {
+		return value
+	}
+}
+
+class RosettaParenthesisCalcExpression extends RosettaExpression{
+	contains RosettaExpression expression
+}
+
+
+/**********************************************************************
+ * Data rule
+ */
+
+class RosettaDataRule extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+	contains RosettaRegulatoryReference[] references
+	contains RosettaMarketPractice[] marketPractice
+	contains RosettaExpression when
+	contains RosettaExpression then
+}
+
+
+
+/**********************************************************************
+ * Workflow rule
+ */
+
+class RosettaWorkflowRule extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+	contains RosettaMarketPractice[] marketPractice
+	contains RosettaExpression when
+	contains RosettaTreeNode root
+	contains RosettaExpression data
+	refers RosettaRegularAttribute commonIdentifier
+	contains RosettaExpression commonIdPath
+}
+
+class RosettaTreeNode {
+	refers RosettaClass parent
+	boolean not
+	contains RosettaTreeNode[] children
+}
+
+
+
+/**********************************************************************
+ * Mappings
+ */
+
+class RosettaMapping {
+	contains RosettaMappingInstance[] instances
+}
+
+class RosettaMappingInstance {
+	contains RosettaExpression ^set
+	contains RosettaMappingPathTests when
+	boolean ^default
+}
+
+class RosettaMappingPathTests {
+	contains RosettaExpression[] tests
+}
+
+class RosettaMapPath extends RosettaExpression {
+	contains RosettaExpression path
+}
+
+class RosettaMapRosettaPath extends RosettaExpression {
+	contains RosettaExpression path
+}
+
+class RosettaMapPathValue extends RosettaExpression {
+	String path
+}
+
+/**********************************************************************
+ * Choice rule
+ */
+
+class RosettaChoiceRule extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+	contains RosettaRegulatoryReference[] references
+	contains RosettaMarketPractice[] marketPractice
+	refers RosettaClass scope
+	String qualifier
+	refers RosettaRegularAttribute thisOne
+	refers RosettaRegularAttribute[] thatOnes
+}
+
+/**********************************************************************
+ * Alias
+ */
+
+class RosettaAlias extends RosettaRootElement, RosettaDefinable, RosettaCallable {
+	contains RosettaExpression expression
+}
+
+/**********************************************************************
+ * Qualifiable used for RosettaProduct and RosettaEvent. Check enum RosettaQualifiableType when adding new classes
+ */
+ 
+class RosettaQualifiable extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+	contains RosettaExpression expression
+	refers RosettaDataRule[] andDataRules	
+	refers RosettaDataRule[] orDataRules
+}
+
+class RosettaQualifiableConfiguration {
+	RosettaQualifiableType qType
+	
+	refers RosettaClass rosettaClass
+}
+
+enum RosettaQualifiableType {
+	None, Event, Product
+}
+
+/**********************************************************************
+ * Products
+ */
+
+class RosettaProduct extends RosettaQualifiable {
+	contains RosettaSynonym[] synonyms
+}
+
+/**********************************************************************
+ * Events
+ */
+
+class RosettaEvent extends RosettaQualifiable {
+	contains RosettaSynonym[] synonyms
+}
+
+/**********************************************************************
+ * Calculations
+ */
+ 
+ /*
+  * class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaFeatureOwner, RosettaCallableWithArgs, RosettaBuiltinType{
+	contains RosettaParameter[] parameters
+	boolean library
+}
+  */
+ 
+class RosettaFunction extends RosettaRootElement, RosettaNamed, RosettaDefinable, RosettaCallableWithArgs, RosettaBuiltinType {
+	contains RosettaFunctionInput[] inputs
+	contains RosettaFunctionInput output
+	contains RosettaFuncitonCondition[] preConditions
+	contains RosettaFuncitonCondition[] postConditions
+	
+	op RosettaFunctionConditions getConditions() {
+		preConditions + postConditions
+	}
+}
+
+type RosettaFunctionConditions wraps Iterable<RosettaFuncitonCondition>
+
+class RosettaFunctionInput extends RosettaAttributeBase, RosettaCallable {
+}
+
+class RosettaFuncitonCondition extends RosettaDefinable {
+	contains RosettaExpression[] expressions
+}
+
+class RosettaArguments extends RosettaFeatureOwner {
+	op RosettaCalculation getCalculation()
+	contains RosettaAlias[] aliases
+}
+
+class RosettaCalculationArguments extends RosettaArguments {
+	container RosettaCalculation calculation opposite arguments
+}
+
+class RosettaArgumentFeature extends RosettaFeature, RosettaDefinable, RosettaCallable {
+	contains RosettaExpression expression
+}
+
+class RosettaWhenClause {
+	contains RosettaExpression when
+	contains RosettaExpression call
+}
+
+class RosettaBinaryOperation extends RosettaExpression {
+	contains RosettaExpression left
+	String operator
+	contains RosettaExpression right
+}
+
+class RosettaExistsExpression extends RosettaExpression {
+	contains RosettaExpression argument
+	boolean only
+	boolean single
+	boolean multiple
+}
+
+class RosettaAbsentExpression extends RosettaExpression {
+	contains RosettaExpression argument
+}
+
+class RosettaContainsExpression extends RosettaExpression {
+	contains RosettaExpression ^container
+	contains RosettaExpression contained
+}
+
+class RosettaWhenPresentExpression extends RosettaExpression {
+	contains RosettaExpression left
+	String operator
+	contains RosettaExpression right
+}
+
+class RosettaGroupByFeatureCall extends RosettaExpression {
+	contains RosettaExpression call
+	contains RosettaGroupByExpression groupBy
+}
+
+class RosettaGroupByExpression {
+	refers RosettaRegularAttribute attribute
+	contains RosettaGroupByExpression right
+}
+
+class RosettaFeatureCall extends RosettaExpression {
+	contains RosettaExpression receiver
+	refers RosettaFeature feature
+}
+
+class RosettaCountOperation extends RosettaExpression {
+	contains RosettaExpression left
+	String operator
+	contains RosettaExpression right
+}
+
+class RosettaConditionalExpression extends RosettaExpression {
+	contains RosettaExpression ^if
+	contains RosettaExpression ifthen
+	contains RosettaExpression elsethen
+}
+
+class RosettaWhenCascadeExpression extends RosettaExpression {
+	contains RosettaWhenExpression[] whens
+}
+
+class RosettaWhenExpression extends RosettaExpression {
+	contains RosettaExpression condition
+	contains RosettaExpression then
+}
+
+class RosettaCalculation extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType {
+	contains RosettaCalculationArguments arguments opposite calculation
+}
+
+class RosettaCalculationFeature extends RosettaFeature {
+	contains RosettaExpression expression
+}
+
+class RosettaCallableWithArgsCall extends RosettaExpression {
+	refers RosettaCallableWithArgs callable
+	contains RosettaExpression[] args
+}
+
+
+/*****************************************
+ * Translate external synonym support
+ *****************************************/
+
+class RosettaExternalSynonymSource extends RosettaSynonymSource {
+	contains RosettaExternalClass[] externalClasses
+	contains RosettaExternalEnum[] externalEnums
+	refers RosettaSynonymSource superSynonym
+}
+
+class RosettaExternalClass {
+	refers RosettaClass classRef
+	contains RosettaExternalRegularAttribute[] regularAttributes
+}
+
+class RosettaExternalEnum {
+	refers RosettaEnumeration enumRef
+	contains RosettaExternalEnumValue[] regularValues
+}
+
+class RosettaExternalRegularAttribute {
+	refers RosettaRegularAttribute attributeRef
+	contains RosettaExternalSynonym[] externalSynonyms
+}
+
+class RosettaExternalEnumValue {
+	refers RosettaEnumValue enumRef
+	contains RosettaEnumSynonym[] externalEnumSynonyms
+}
+
+class RosettaExternalSynonym {
+	contains RosettaSynonymBody body
+}
+
+/********************
+ * Blueprint - Should be a seperate grammar
+ *  */
+ 
+class RosettaBlueprintReport extends RosettaRootElement {
+	contains RosettaRegulatoryMandate regulatoryMandate
+	refers RosettaBlueprint[] reportingRules
+	refers RosettaBlueprint[] eligibilityRules
+	refers RosettaMandate reportingStandard
+	
+	op String name() {
+		(regulatoryMandate.regRegime.name.toFirstUpper 
+				+ regulatoryMandate.mandates.stream.map[it.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
+	}
+	
+	op BlueprintNodeExp nodes() {
+		var BlueprintNodeExp currentNodeExpr = null
+		var BlueprintNodeExp firstNodeExpr = null
+		
+		for (eligibilityRule : eligibilityRules) {
+			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
+			ref.blueprint = eligibilityRule
+			ref.name = eligibilityRule.name
+			
+			var newNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
+			newNodeExpr.node = ref
+			newNodeExpr.node.name = ref.name
+						
+			if (null === currentNodeExpr) firstNodeExpr = newNodeExpr
+			else currentNodeExpr.next = newNodeExpr
+				
+			currentNodeExpr = newNodeExpr
+		}
+		
+		val andNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
+		currentNodeExpr.next = andNodeExpr
+		
+		val node = RosettaFactory.eINSTANCE.createBlueprintAnd
+		andNodeExpr.node = node
+
+		node.name = name()
+		reportingRules.forEach[
+			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
+			ref.blueprint = it
+			ref.name = it.name
+			val rule = RosettaFactory.eINSTANCE.createBlueprintNodeExp
+			rule.node = ref
+			rule.node.name = ref.name
+			node.bps.add(rule)
+		]
+				
+		return firstNodeExpr
+	}
+}
+ 
+class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+	contains RosettaRegulatoryReference[] references
+	contains RosettaMarketPractice[] marketPractice
+	contains BlueprintNodeExp nodes
+	refers RosettaClass output
+}
+
+class BlueprintNodeExp {
+	contains BlueprintNode node
+	contains RosettaRegulatoryReference reference
+	contains BlueprintNodeExp next 
+}
+
+abstract class BlueprintNode {
+	String name
+	refers RosettaType input
+	refers RosettaType output
+	refers RosettaType inputKey
+	refers RosettaType outputKey
+}
+
+class BlueprintSource extends BlueprintNode{}
+
+class BlueprintValidate extends BlueprintNode{}
+
+class BlueprintAnd extends BlueprintNode{
+	contains BlueprintNodeExp[] bps
+}
+
+class BlueprintMerge extends BlueprintNode {
+}
+
+class BlueprintCustomNode extends BlueprintNode {
+}
+
+class BlueprintReduce extends BlueprintNode {
+	String action
+	contains RosettaExpression expression
+}
+
+class BlueprintOneOf extends BlueprintNode {
+	contains BlueprintIfThen[] bps
+	contains BlueprintNodeExp elseNode
+}
+
+class BlueprintIfThen {
+	contains BlueprintNodeExp ifNode
+	contains BlueprintNodeExp thenNode
+}
+
+class UnimplementedNode extends BlueprintNode {
+}
+
+class BlueprintRef extends BlueprintNode {
+	refers RosettaBlueprint blueprint
+}
+
+class BlueprintFilter extends BlueprintNode {
+	contains RosettaExpression filter
+	contains BlueprintRef filterBP
+}
+
+class BlueprintExtract extends BlueprintNode {
+	contains RosettaExpression call
+	String identifier
+	boolean multiple
+}
+
+class BlueprintReturn extends BlueprintNode {
+	contains RosettaExpression expression
+	String identifier
+}
+
+class BlueprintGroup extends BlueprintNode {
+	contains RosettaExpression key
+}
+
+class BlueprintDataJoin extends BlueprintNode {
+	contains RosettaExpression key
+	contains RosettaExpression foreign
+}
+
+class BlueprintLookup extends BlueprintNode {
+	String identifier	
+}
+

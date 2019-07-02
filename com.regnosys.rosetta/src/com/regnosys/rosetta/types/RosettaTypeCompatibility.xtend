@@ -1,0 +1,38 @@
+package com.regnosys.rosetta.types
+
+import com.google.inject.Inject
+import com.regnosys.rosetta.RosettaExtensions
+
+class RosettaTypeCompatibility {
+
+	@Inject extension RosettaExtensions
+
+	def dispatch boolean isUseableAs(RClassType t0, RClassType t1) {
+		t0.clazz.allSuperTypes.contains(t1.clazz)
+	}
+
+	def dispatch boolean isUseableAs(RNumberType t0, RNumberType t1) {
+		t0.rank <= t1.rank
+	}
+
+	def dispatch boolean isUseableAs(RType t0, RType t1) {
+		t0.class === t1.class
+	}
+	
+	def dispatch boolean isUseableAs(RUnionType t0, RType t1) {
+		t0.from.isUseableAs(t1) || t0.to.isUseableAs(t1)
+	}
+	
+	def dispatch boolean isUseableAs(RType t0, RUnionType t1) {
+		t1.from.isUseableAs(t0) || t1.to.isUseableAs(t0)
+	}
+
+	def dispatch boolean isUseableAs(RErrorType t0, RErrorType t1) {
+		false
+	}
+
+	def dispatch boolean isUseableAs(REnumType t0, REnumType t1) {
+		t0.enumeration === t1.enumeration
+	}
+
+}
