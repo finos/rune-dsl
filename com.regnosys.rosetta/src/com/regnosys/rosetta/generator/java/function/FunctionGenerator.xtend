@@ -186,7 +186,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	def StringConcatenationClient contributeFields(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
 		'''
 		
-		private final «ClassToInstanceMap»<«com.rosetta.model.lib.functions.RosettaFunction»> classRegistry;
+		protected final «ClassToInstanceMap»<«com.rosetta.model.lib.functions.RosettaFunction»> classRegistry;
 		'''	
 	}
 	
