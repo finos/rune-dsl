@@ -49,7 +49,7 @@ class FunctionGeneratorTest {
 		val result = function.contributeEnrichMethod(javaNames)
 		concatenator.append(result)
 		
-		assertEquals('abstract Bar doEvaluate();', concatenator.toString.trim)
+		assertEquals('protected abstract Bar doEvaluate();', concatenator.toString.trim)
 		assertThat(concatenator.imports, hasItems(endsWith('.Bar')))
 	}
 	
@@ -68,7 +68,7 @@ class FunctionGeneratorTest {
 		val result = function.contributeEnrichMethod(javaNames)
 		concatenator.append(result)
 		
-		assertEquals('abstract BigDecimal doEvaluate();', concatenator.toString.trim)
+		assertEquals('protected abstract BigDecimal doEvaluate();', concatenator.toString.trim)
 		assertThat(concatenator.imports, hasItems(endsWith('.BigDecimal')))
 	}
 	
@@ -87,7 +87,7 @@ class FunctionGeneratorTest {
 		val result = function.contributeEnrichMethod(javaNames)
 		concatenator.append(result)
 		
-		assertEquals('abstract List<Bar> doEvaluate();', concatenator.toString.trim )
+		assertEquals('protected abstract List<Bar> doEvaluate();', concatenator.toString.trim )
 		assertThat(concatenator.imports, hasItems(endsWith('.Bar'), endsWith('.List')))
 	}
 	
@@ -111,7 +111,7 @@ class FunctionGeneratorTest {
 		val result = function.contributeEnrichMethod(javaNames)
 		concatenator.append(result)
 		
-		assertEquals('abstract Bar doEvaluate(Foo input1, String input2);', concatenator.toString.trim)
+		assertEquals('protected abstract Bar doEvaluate(Foo input1, String input2);', concatenator.toString.trim)
 		assertThat(concatenator.imports, hasItems(endsWith('.Foo'), endsWith('.Bar')))
 	}
 	
@@ -135,7 +135,7 @@ class FunctionGeneratorTest {
 		val result = function.contributeEnrichMethod(javaNames)
 		concatenator.append(result)
 		
-		assertThat(concatenator.toString.trim, is('abstract Bar doEvaluate(Foo input1, List<String> input2);'))
+		assertThat(concatenator.toString.trim, is('protected abstract Bar doEvaluate(Foo input1, List<String> input2);'))
 		assertThat(concatenator.imports, hasItems(endsWith('.Foo'), endsWith('.Bar')))
 	}
 	
@@ -417,7 +417,7 @@ class FunctionGeneratorTest {
 		concatenator.append(result)
 		
 		val expected = '''
-			FooFunc(ClassToInstanceMap<RosettaFunction> classRegistry) {
+			protected FooFunc(ClassToInstanceMap<RosettaFunction> classRegistry) {
 				
 				// On concrete instantiation, register implementation with function to implementation container
 				//
@@ -452,7 +452,7 @@ class FunctionGeneratorTest {
 		
 		val expected = '''
 		
-		FooFunc(ClassToInstanceMap<RosettaFunction> classRegistry) {
+		protected FooFunc(ClassToInstanceMap<RosettaFunction> classRegistry) {
 			
 			// On concrete instantiation, register implementation with function to implementation container
 			//

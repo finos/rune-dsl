@@ -62,7 +62,7 @@ class RosettaGenerator extends AbstractGenerator {
 	val lock = new DemandableLock;
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-		println("Starting the main generate method for "+resource.URI.toString)
+		// println("Starting the main generate method for "+resource.URI.toString)  
 		try {
 			lock.getWriteLock(true);
 		if (!ignoredFiles.contains(resource.URI.segments.last)) {	
