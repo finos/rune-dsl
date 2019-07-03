@@ -495,7 +495,7 @@ class FunctionGeneratorTest {
 		val result = function.contributeFields(javaNames)
 		concatenator.append(result)
 		
-		val expected = '''private final ClassToInstanceMap<RosettaFunction> classRegistry;'''
+		val expected = '''protected final ClassToInstanceMap<RosettaFunction> classRegistry;'''
 		
 		assertEquals(expected.trim, concatenator.toString.trim)
 		assertThat(concatenator.imports, hasItems(endsWith('.ClassToInstanceMap'), endsWith('.RosettaFunction')))
