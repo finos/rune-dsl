@@ -33,14 +33,5 @@ Rosetta provides a complete adoption tool-kit for the DSL and the ISDA CDM, allo
 
 The ISDA Common Domain Model
 ============================
-The ISDA Common Domain Model is an initiative that ISDA has spearheaded to produce a common, robust, digital blueprint for how derivatives are traded and managed across their lifecycle.
 
-ISDA anticipates that establishing such digital data and processing standards will lead to the following benefits:
-
-- Reduce the current need for continual reconciliations to address mismatches caused by variations in how each firm records trade lifecycle events;
-- Enable consistency in regulatory compliance and reporting;
-- Accelerate greater automation and efficiency in the derivatives market;
-- Provide a common foundation for new technologies like distributed ledger, cloud and smart contracts to facilitate data consistency;
-- Facilitate interoperability across firms and platforms.
-
-A high-level presentation of the ISDA CDM and additional information is available on the [ISDA website](https://www.isda.org/a/z8AEE/ISDA-CDM-Factsheet.pdf) and particularly in the referred [Short Video](https://www.isda.org/2017/11/30/what-is-the-isda-cdm/). It is based on the design principles specified as part of ISDA’s October 2017 [CDM concept paper](https://www.isda.org/a/gVKDE/CDM-FINAL.pdf), which the *ISDA CDM Design Working Group* is tasked with implementing. The practical manifestation of those design choices is the ISDA CDM, as a model written in the Rosetta DSL and openly accessible to all industry participants.
+Please refer to the [documentation](https://portal.cdm.rosetta-technology.io/modeldoc/documentation.html#the-isda-common-domain-model) on the portal
