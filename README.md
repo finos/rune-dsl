@@ -12,7 +12,7 @@ This open-source DSL repository comprises 2 components:
 - **Syntax**
 - **Code Generators** (by default: [Java](https://www.oracle.com/java/))
 
-The model for the financial industry domain is written using the syntax provided by the Rosetta DSL, but exists separately from this repository. The *ISDA Common Domain Model*, or simply *CDM*, is the first live application of the Rosetta DSL to create such model, applied to the financial markets for Derivatives (see below).
+The model for the financial industry domain is written using the syntax provided by the Rosetta DSL, but exists separately from this repository. The *ISDA Common Domain Model*, or simply *CDM* (see [documentation](https://portal.cdm.rosetta-technology.io/modeldoc/documentation.html#the-isda-common-domain-model)), is the first live application of the Rosetta DSL to create such model, applied to the financial markets for Derivatives (see below).
 
 The key idea behind Rosetta is that financial markets presently have two unappealing characteristics in support of electronic data representation:
 
@@ -29,9 +29,3 @@ The Rosetta SDK
 In order to use the Rosetta DSL that is open-source, a complete *Software Development Kit (SDK)* also named [*Rosetta*](https://ui.rosetta-technology.io/) will be provided to the community (ETA 2019 Q3). Much like how software engineers use programming languages and tools to create software, it is useful to think of Rosetta as a set of tools to use when creating and editing the domain model.
 
 Rosetta provides a complete adoption tool-kit for the DSL and the ISDA CDM, allowing firms to convert data files into CDM, edit and test the model to develop their own implementations, and contribute back to the CDM project.
-
-
-The ISDA Common Domain Model
-============================
-
-Please refer to the [documentation](https://portal.cdm.rosetta-technology.io/modeldoc/documentation.html#the-isda-common-domain-model) on the portal
