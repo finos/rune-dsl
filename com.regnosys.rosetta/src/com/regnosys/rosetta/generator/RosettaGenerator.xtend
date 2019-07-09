@@ -62,7 +62,7 @@ class RosettaGenerator extends AbstractGenerator {
 	val lock = new DemandableLock;
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-		// println("Starting the main generate method for "+resource.URI.toString)  
+		LOGGER.debug("Starting the main generate method for "+resource.URI.toString)  
 		try {
 			lock.getWriteLock(true);
 		if (!ignoredFiles.contains(resource.URI.segments.last)) {	
@@ -104,7 +104,7 @@ class RosettaGenerator extends AbstractGenerator {
 			LOGGER.info("Unexpected calling standard generate for rosetta", e);
 		}
 		finally {
-			println("ending the main generate method")
+			LOGGER.debug("ending the main generate method")
 			lock.releaseWriteLock
 		}
 	}
