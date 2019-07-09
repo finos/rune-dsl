@@ -1,5 +1,5 @@
-Modelling in Rosetta
-====================
+Rosetta Modelling Artefacts
+===========================
 
 **The Rosetta syntax can express five types of modelling artefacts**, which are all used as part of the CDM:
 
@@ -34,7 +34,7 @@ Classes are objects that contain the granular data representation elements, in t
 Syntax
 """"""
 
-The class content is delineated by brackets ``{`` ``}``.
+The class content is delineated by curly brackets ``{`` ``}``.
 
 Rosetta supports the concept of **abstract classes**, which cannot be instantiated as part of the generated executable code and are meant to be extended by other classes.  An example of such is the ``IdentifiedProduct`` class, which acts as the baseline for the products which terms are abstracted through reference data and can be extended by the respective variations of such products, as illustrated by the ``Loan`` class.
 
@@ -49,14 +49,27 @@ Rosetta supports the concept of **abstract classes**, which cannot be instantiat
 
  class Loan extends IdentifiedProduct
  {
-  borrower LegalEntity (0..*) ;
-  lien string (0..1) scheme ;
-  facilityType string (0..1) scheme ;
-  creditAgreementDate date (0..1) ;
-  tranche string (0..1) scheme ;
+  borrower LegalEntity (0..*);
+  lien string (0..1) scheme;
+  facilityType string (0..1) scheme;
+  creditAgreementDate date (0..1);
+  tranche string (0..1) scheme;
  }
 
 The Rosetta convention is that class names start with a capital letter. Class names need to be unique across the model, including with respect to rule names. Both those are controlled by the Rosetta grammar.
+
+A plain-text definition of each modelling artefact can be added in Rosetta as a string using ``"`` ``"`` in between angle brackets: ``<`` ``>``.
+
+.. code-block:: Java
+
+ class ContractualProduct <"A class to specify the contractual products' economic terms, alongside their product identification and product taxonomy. The contractual product class is meant to be used across the pre-execution, execution and (as part of the Contract) post-execution lifecycle contexts.">
+ {
+  productIdentification ProductIdentification (0..1) <"The product identification value(s) that might be associated with a contractual product. The CDM provides the ability to associate several product identification methods with a product.">;
+  productTaxonomy ProductTaxonomy (0..*) <"The product taxonomy value(s) associated with a contractual product.">;
+  economicTerms EconomicTerms (1..1) <"The economic terms associated with a contractual product, i.e. the set of features that are price-forming.">;
+ }
+
+Such definitions, although not producing any executable code artefact, are an integral part of the model as meta-data components. As modelling best practice, a definitions ought to exist for every artefact and be clear and comprehensive.
 
 Attributes
 ^^^^^^^^^^
@@ -71,88 +84,75 @@ Syntax
 
 A Rosetta attribute can be specified either as a basic type, a class or an enumeration.
 
-The set of **types** available in Rosetta are:
+The set of **basic types** available in Rosetta are:
 
-Text - ``string``
+* Text - ``string``
+* Number - ``int`` - ``number``
+* Logic - ``boolean``
+* Date and Time - ``date`` - ``time`` - ``zonedDateTime``
+* Calculation - ``calculation``
+* Product and event qualification - ``productType`` - ``eventType``
 
-Number - ``int`` - ``number``
+Time
+""""
 
-Logic - ``boolean``
-
-Date and Time - ``date`` - ``time`` - ``zonedDateTime``
-
-As it relates to time zone adjustments, the CDM requires to specify time alongside with a time zone qualifier in one of two ways:
+As it relates to time zone adjustments, a time zone qualifier can be specified alongside a time in one of two ways:
 
 * Through the ``zonedDateTime`` type, which needs to be expressed either as UTC or as an offset to UTC, as specified by the ISO 8601 standard.
 * Through the ``BusinessCenterTime`` class, where time is specified alongside a business center.  This is used to specify a time dimension in relation to a future event, e.g. the earliest or latest exercise time of an option.
 
-While there has been discussion as to whether the CDM should support dates which are specified as an offset to UTC with the ``Z`` suffix, no positive conclusion has been reached so far. The main reason is that all dates which need a business date context are already being provided with the ability to specify an associated business center.
+While there has been discussion as to whether Rosetta should support dates which are specified as an offset to UTC with the ``Z`` suffix, no positive conclusion has been reached so far. The main reason is that all dates which need a business date context are already being provided with the ability to specify an associated business center.
 
+Calculation
+"""""""""""
 
-Calculation - ``calculation`` (The ``calculation`` qualifier represents the outcome of the CDM interest accrual calculation. It is currently associated with two attributes: ``cashflowCalculation`` in the ``Cashflow`` class, and ``callFunction`` in the ``computedAmount`` class.)
+The ``calculation`` qualifier represents the outcome of calculation in the model. It is currently associated with two attributes: ``cashflowCalculation`` in the ``Cashflow`` class, and ``callFunction`` in the ``computedAmount`` class.)
 
-Product and event qualification - ``productType`` - ``eventType``
+Meta-Types
+""""""""""
 
-Rosetta syntax convention is for attribute names to be expressed in lower case, and a warning will be generated by the grammar if this is not the case. Attribute names need to be unique within the context of a class (and within the context of the base class, if a class extends another class), but can be duplicated across classes. The semi-column ``;`` acts as the terminal character for the attribute specification, with associated synonyms being positioned underneath that specification line.
+Rosetta allows to associate a set of qualifiers to an attribute: the ``scheme`` and ``reference`` meta-types.
 
-The CDM provides the ability to associate a set of qualifiers to the attributes: the ``id``, ``reference`` and ``scheme`` metaTypes, and the ``rosettaKey`` and ``rosettaKeyValues``.
+* The ``scheme`` meta-type specifies a scheme reference to constrain the set of values that the attribute can take. The relevant scheme value is then specified as meta-information in the attribute synonyms. A scheme can exist for attribute that are of an enumeration type but can also serve to constrain the basic ``string`` type.
 
-* The ``id`` and ``reference`` metaTypes replicate the cross-referencing mechanism widely used in the XML space (and particularly as part of the FpML standard) as a way to provide data integrity within the context of an instance document.
-* The ``scheme`` metaType specifies scheme references. The relevant scheme value is then specified alongside the synonym information.
+* The ``reference`` meta-type replicates the cross-referencing mechanism widely used in XML to provide data integrity within the context of an instance document - in particular the ``href`` mechanism, for *hyper-text reference*, as used in the FpML standard. The cross-reference value can be specified as meta-information in the attribute synonyms.
 
-  The below ``Party`` and r``ContractIdentifier`` classes provide a good illustration as to how **metaTypes** are implemented, with the ``id`` attribute being associated to the ``Party`` class, while the ``reference`` is associated to the ``partyReference`` attribute of the ``ContractIdentifier`` class.  The ``partyId`` has an associated ``scheme``, which ``partyIdScheme`` value is associated with the relevant synonym sources.
+To make objects internally referenceabale (beyond cross-references that are externally provided by an instance document), Rosetta also allows to associate a unique identifier to instances of a class, by  adding a ``key`` qualifier to the class name. The ``key`` corresponds to a hash code generated by the model implementation. The implementation provided as part of the Rosetta DSL is the default Java hash function.
 
-.. code-block:: Java
-
- class Party
- {
-  id (0..1) ;
-  partyId string (1..*) scheme ;
-  naturalPerson NaturalPerson (0..*) ;
- }
-
- class ContractIdentifier extends Identifier
- {
-  partyReference string (0..1) reference;
-  accountReference string (0..1) reference;
- }
-
-* The ``rosettaKey`` corresponds to a hash code generated by the CDM as part of the ``EventEffect`` features, which are further detailed below as part of the CDM Model section. In essence, the ``rosettaKey`` hash value associated with the relevant class (``Payment`` in the below snippet) is also associated with the corresponding attribute in the ``EventEffect`` class (in this case, the ``payment`` attribute).
+The below ``Party`` and ``Identifier`` classes provide a good illustration as to how **meta-types** are implemented. The ``key`` qualifier is associated to the ``Party`` class, while the ``reference`` qualifier is associated to the ``issuerReference`` attribute of the ``Identifier`` class, which is of type ``Party``. The ``issuerReference`` can be provided as an external cross-reference, for which the value ``issuer`` is specified in the synonym source using ``href`` as the ``meta`` qualifier. The ``issuer`` attribute has an associated ``scheme``, which ``issuerIdScheme`` value is specified in the synonym source using the ``meta`` qualifier.
 
 .. code-block:: Java
 
- class EventEffect
+ class Party key
  {
-  effectedContract Contract (0..*) rosettaKey ;
-  contract Contract (0..*) rosettaKey ;
-  productIdentifier ProductIdentifier (0..*) rosettaKey ;
-  transfer Transfer (0..*) rosettaKey ;
+  partyId string (1..*) scheme;
+   [synonym FpML_5_10 value partyId meta partyIdScheme]
+  naturalPerson NaturalPerson (0..*);
  }
 
- class Transfer rosettaKey
+ class Identifier key
  {
-  identifier string (0..1) scheme ;
-  settlementType TransferSettlementEnum (0..1) ;
-  settlementDate AdjustableOrAdjustedOrRelativeDate (1..1) ;
-  cashTransfer CashTransferComponent (0..*) ;
-  securityTransfer SecurityTransferComponent (0..*) ;
-  commodityTransfer CommodityTransferComponent (0..*) ;
-  status TransferStatusEnum (0..1) ;
-  settlementReference string (0..1) ;
- }
+  issuerReference Party (0..1) reference;
+   [synonym FpML_5_10 value issuer meta href]
+  issuer string (0..1) scheme;
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0 value issuer meta issuerIdScheme]
+  assignedIdentifier AssignedIdentifier (1..*);
+}
 
-* The ``rosettaKeyValue`` is a variation of the ``RosettaKey``, which associated hash function doesn't include any of those qualifiers that are associated with the attributes. The reasoning is that some of those qualifiers are automatically generated by algorithm (typically, the anchors and references associated with XML documents) and would then result in differences between two instance documents, even if those documents would have the same actual values. The ``RosettaKeyValue`` is meant to be used for supporting the reconciliation of economic terms, and is hence associated with the ``EconomicTerms`` class.
+The ``rosettaKeyValue`` is a variation of ``key``, which associated hash function doesn't include any of those qualifiers that are associated with the attributes. Some of those qualifiers are automatically generated by algorithm (typically, the anchors and references associated with XML documents) and would result in differences between two instance documents, even if those documents would have the same actual values.
+
+The ``RosettaKeyValue`` is meant to be used for supporting the reconciliation of economic terms, and is hence associated with the ``EconomicTerms`` class. Further evaluation of this ``rosettaKeyValue``, and whether this is an appropriate implementation of a matching algorithm for economic terms, is necessary.
 
 .. code-block:: Java
 
  class EconomicTerms rosettaKeyValue
  {
-  payout Payout (1..1) ;
-  earlyTerminationProvision EarlyTerminationProvision (0..1) ;
-  cancelableProvision CancelableProvision (0..1) ;
-  extendibleProvision ExtendibleProvision (0..1) ;
+  payout Payout (1..1);
+  earlyTerminationProvision EarlyTerminationProvision (0..1);
+  cancelableProvision CancelableProvision (0..1);
+  extendibleProvision ExtendibleProvision (0..1);
  }
-
+ 
 Enumerations
 ^^^^^^^^^^^^
 
@@ -161,7 +161,7 @@ Purpose
 
 Enumerations are the mechanism through which controlled values are specified at the attribute level. They are the container for the corresponding set of enumeration values.
 
-As mentioned in the preceding section, with respect to the FpML standard, the schemes which values are specified as part of the standard are represented through enumerations in the CDM, while schemes with no defined values are represented in the CDM as a type ``string``.  In both cases, the scheme reference associated with the originating element is also associated to the relevant synonym sources, one of the CDM principles being that no originating information should be disregarded.
+As mentioned in the *Attributes* section, the schemes which values are specified as part of an existing standard like FpML are represented through enumerations in the model, while schemes with no defined values are represented as a type ``string``.  In both cases, the scheme reference associated with the originating element can be added to the relevant synonym source as meta-information, so that no originating information is disregarded.
 
 Syntax
 """"""
@@ -172,15 +172,11 @@ Similar to the class, the enumeration is delineated by brackets ``{`` ``}``.
 
 .. code-block:: Java
 
- enum MarketDisruptionEnum <"The enumerated values to specify the handling of an averaging date market disruption for an equity derivative transaction.">
-  [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value marketDisruptionScheme_1_0]
+ enum MarketDisruptionEnum
  {
-  ModifiedPostponement <"As defined in section 6.7 paragraph (c) sub-paragraph (iii) of the ISDA 2002 Equity Derivative definitions.">
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value "ModifiedPostponement"],
-  Omission	<"As defined in section 6.7 paragraph (c) sub-paragraph (i) of the ISDA 2002 Equity Derivative definitions.">
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value "Omission"],
-  Postponement	<"As defined in section 6.7 paragraph (c) sub-paragraph (ii) of the ISDA 2002 Equity Derivative definitions.">
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value "Postponement"]
+  ModifiedPostponement,
+  Omission,
+  Postponement
  }
 
 Enumeration Values
@@ -189,14 +185,14 @@ Enumeration Values
 Purpose
 """""""
 
-As indicated in the above section, enumeration values are the set of controlled values that are specified as part of an enumeration container.
+As indicated in the *Enumerations* section, enumeration values are the set of controlled values that are specified as part of an enumeration container.
 
 Syntax
 """"""
 
-Enumeration values have a restricted syntax for the purpose of facilitating their integration with executable code: they cannot start with a numerical digit, and the only special character that can be associated with them is the underscore ``_``.
+Enumeration values have a restricted syntax to facilitate their integration with executable code: they cannot start with a numerical digit, and the only special character that can be associated with them is the underscore ``_``.
 
-In order to handle the integration of FpML scheme values such as the *dayCountFractionScheme* which has values such as ``ACT/365.FIXED`` or ``30/360``, the Rosetta syntax provides the ability to associate a **displayName synonym**. Those values with special characters have those special characters replaced with ``_`` and have an associated ``displayName`` entry which corresponds to the actual value. Examples of such are ``ACT_365_FIXED`` and ``_30_360``, with the associated display names of ``ACT/365.FIXED`` and ``30/360``, respectively.
+In order to handle the integration of FpML scheme values such as the *dayCountFractionScheme* which has values such as ``ACT/365.FIXED`` or ``30/360``, the Rosetta syntax allows to associate a **displayName synonym**. Those values with special characters have those special characters replaced with ``_`` and have an associated ``displayName`` entry which corresponds to the actual value. Examples of such are ``ACT_365_FIXED`` and ``_30_360``, with the associated display names of ``ACT/365.FIXED`` and ``30/360``, respectively.
 
 .. code-block:: Java
 
@@ -216,29 +212,6 @@ In order to handle the integration of FpML scheme values such as the *dayCountFr
   _30_360 displayName "30/360"
  }
 
-The **synonym syntax** associated with enumeration values differs in two respects from the synonyms associated with other CDM artefacts:
-
-* The synonym value is of type ``string``, for the above reason related to the need to facilitate integration with executable code.  (The alternative approach consisting in specifying the value as a compatible identifier alongside with a display name has been disregarded because it has been deemed not appropriate to create a 'code-friendly' value for the respective synonyms.  A ``string`` type removes such need.)
-* The ability to associate a definition to a synonym value has been enabled, the objective being to effectively support the FIX use cases where the synonym value is a letter or numerical code, which is then positioned as the prefix of the associated definition. The below entries to the ``InformationProviderEnum`` illustrates this approach:
-
-.. code-block:: Java
-
- enum InformationProviderEnum <"The enumerated values to specify the list of information providers.">
-  [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value informationProviderScheme_2_1]
- {
-  (...)
-  Bloomberg <"Bloomberg LP.">
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value "Bloomberg"]
-   [synonym FIX_5_0_SP2 value "0" definition "0 = Bloomberg"],
-  (...)
-  Other
-   [synonym FIX_5_0_SP2 value "99" definition "99 = Other"],
-  (...)
-  Telerate <"Telerate, Inc.">
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value "Telerate"]
-   [synonym FIX_5_0_SP2 value "2" definition "2 = Telerate"]
- }
-
 Choice Rules
 ^^^^^^^^^^^^
 
@@ -250,46 +223,39 @@ Choice rules apply within the context of a class. They define a choice constrain
 Syntax
 """"""
 
-Choice rules only apply within the context of a class, and the naming convention is ``<className>_choice``, e.g. ``TradeIdentifier_choice``. If multiple choice rules exist in relation to a class, the naming convention is to suffix the 'choice' term with a number, e.g. ``TradeIdentifier_choice1`` and ``TradeIdentifier_choice2``.
+Choice rules only apply within the context of a class, and the naming convention is ``<className>_choice``, e.g. ``NaturalPerson_choice``. If multiple choice rules exist in relation to a class, the naming convention is to suffix the 'choice' term with a number, e.g. ``NaturalPerson_choice1`` and ``NaturalPerson_choice2``.
 
 .. code-block:: Java
 
- class Identifier
+ class ExerciseOutcome
  {
-  id (0..1) ;
-  issuer string (1..1) scheme, reference ;
-  assignedIdentifier AssignedIdentifier (1..*) ;
+  contract Contract (1..1);
+  physicalExercise PhysicalExercise (0..1);
+  cashExercise Cashflow (0..1);
  }
 
- class ContractIdentifier extends Identifier
- {
-  partyReference string (0..1) reference ;
-  accountReference string (0..1) reference ;
- }
-
- choice rule ContractIdentifier_choice
-  for ContractIdentifier required choice between
-  issuer and partyReference
+ choice rule ExerciseOutcome_choice <"A option exercise results in either a physical or a cash exercise.">
+  for ExerciseOutcome required choice between
+  physicalExercise and cashExercise
 
 The choice constraint can either be **required** (implying that exactly one of the attributes needs to be present) or **optional** (implying that at most one of the attributes needs to be present).
 
-While most of the choice rules have two attributes, there is no limit to the number of attributes associated with it… within the limit of the number of attributes associated with the class at stake. ``OptionCashSettlement_choice`` is a good illustration of this.
+While most of the choice rules have two attributes, there is no limit to the number of attributes associated with it, within the limit of the number of attributes associated with the class at stake. ``OptionCashSettlement_choice`` is a good illustration of this.
 
 .. code-block:: Java
 
  class OptionCashSettlement
  {
-  id (0..1);
-	cashSettlementValuationTime BusinessCenterTime (0..1) ;
-	cashSettlementValuationDate RelativeDateOffset (0..1) ;
-	cashSettlementPaymentDate CashSettlementPaymentDate (0..1) ;
-	cashPriceMethod CashPriceMethod (0..1) ;
-	cashPriceAlternateMethod CashPriceMethod (0..1) ;
-	parYieldCurveAdjustedMethod YieldCurveMethod (0..1) ;
-	zeroCouponYieldAdjustedMethod YieldCurveMethod (0..1) ;
-	parYieldCurveUnadjustedMethod YieldCurveMethod (0..1) ;
-	crossCurrencyMethod CrossCurrencyMethod (0..1) ;
-	collateralizedCashPriceMethod YieldCurveMethod (0..1) ;
+  cashSettlementValuationTime BusinessCenterTime (0..1);
+  cashSettlementValuationDate RelativeDateOffset (0..1);
+  cashSettlementPaymentDate CashSettlementPaymentDate (0..1);
+  cashPriceMethod CashPriceMethod (0..1);
+  cashPriceAlternateMethod CashPriceMethod (0..1);
+  parYieldCurveAdjustedMethod YieldCurveMethod (0..1);
+  zeroCouponYieldAdjustedMethod YieldCurveMethod (0..1);
+  parYieldCurveUnadjustedMethod YieldCurveMethod (0..1);
+  crossCurrencyMethod CrossCurrencyMethod (0..1);
+  collateralizedCashPriceMethod YieldCurveMethod (0..1);
  }
 
  choice rule OptionCashSettlement_choice
@@ -300,9 +266,9 @@ While most of the choice rules have two attributes, there is no limit to the num
 Members of a choice rule need to have their lower cardinality set to 0, something which is enforced by a validation rule.
 
 One of syntax as a complement to the choice rule
-""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-In the case where all the attributes of a given class are subject to a choice logic, Rosetta provides the ability to qualify the class information with the ``one of`` qualifier.  This feature is illustrated by the ``BondOptionStrike`` class.
+In the case where all the attributes of a given class are subject to a required choice logic that results in one and only one of them being present in any insatnce of that class, Rosetta allows to qualify the class with the ``one of`` qualifier. This by-passes the need to implement the choice rule. This feature is illustrated in the ``BondOptionStrike`` class.
 
 .. code-block:: Java
 
@@ -318,18 +284,17 @@ Aliases
 Purpose
 """""""
 
-Two related considerations stand behind the introduction of aliases as part of the Rosetta syntax:
+Aliases have been introduced as part of the Rosetta syntax because:
 
-* The recognition that model tree expressions can be cumbersome at time and hence may contradict the primary goals of clarity and legibility.
-* Aliases can be reused across the various modelling artefacts that make use of those, i.e. currently data rule, event and product qualification, calculation and projection rules (note that this latter artefact is not currently used as part of the CDM).
-
+* Model tree expressions can be cumbersome at time and hence may contradict the primary goals of clarity and legibility.
+* Aliases can be reused across various modelling artefacts that make use of the same model tree expressions, such as data rule, event and product qualification or calculation.
 
 Syntax
 """"""
 
 The alias syntax is straightforward: ``alias <name> <Rosetta expression>``.
 
-The alias name needs to be unique across the product and event qualifications, the classes and the aliases, and validation logic is in place to enforce this.  The naming convention is to have one CamelCased word, instead of a composite name as for the Rosetta rules, with implied meaning.
+The alias name needs to be unique across the product and event qualifications, the classes and the aliases, and validation logic is in place to enforce this.  The naming convention is to have one camelCased word, instead of a composite name as for the Rosetta rules, with implied meaning.
 
 The below snippet presents an example of such alias and its use as part of an event qualification.
 
@@ -359,7 +324,7 @@ Synonyms
 Purpose
 """""""
 
-Synonym is the baseline building block in the relationship between the CDM and alternative data representations, whether those are open standards or proprietary data representations. It can be complemented by relevant mapping logic when the relationship is not a one-to-one or is conditional.
+Synonym is the baseline building block in the relationship between the model in Rosetta and alternative data representations, whether those are open standards or proprietary. Synonyms can be complemented by relevant mapping logic when the relationship is not a one-to-one or is conditional.
 
 Synonyms can be associated to all four sets of Rosetta data modelling artefacts:
 
@@ -370,23 +335,14 @@ Synonyms can be associated to all four sets of Rosetta data modelling artefacts:
 
 There is no limit to the number of synonyms that can be associated with each of those artefacts, and there can even be several synonyms for a given data source (e.g. in the case of a conditional mapping).
 
-The following set of synonym sources are currently in place as part of the CDM:
-
-* **FpML standard**: synonymity to the version 5.10 of the standard through the ``FpML_5_10`` synonym source
-* **FIX standard**: synonymity to the version 5.0 SP2 of the standard through the ``FIX_5_0_SP2`` synonym source
-* **ISO 20022 standard**: synonymity to the standard throught the ``ISO_20022`` synonym source, with no version reference at present
-* **Rosetta workbench**: synonymity to the *event.xsd* schema used for the purpose of ingesting sample lifecycle events through the ``Rosetta_Workbench`` synonym source
-* **DTCC**: synonymity to the *OTC_Matching_11-0.xsd* schema (including the imported FpML schema version 4.9) that is used for trade matching confirmations through the ``DTCC_11_0`` synonym source, and synonymity to the *OTC_Matching_9-0.xsd* schema (also including the imported FpML schema version 4.9) that is used for payment notifications through the ``DTCC_9_0`` synonym source
-* **CME**: synonymity to the *cme-conf-ext-1-17.xsd* schema (including the imported FpML schema version 5.0) that is used fo the clearing confirmation purposes through the ``CME_ClearedConfirm_1_17`` synonym source, and synonymity to the *bloombergTradeFixml* schema (including the imported FpML schema version 4.6) that is used for clearing submissions through the ``CME_SubmissionIRS_1_0`` synonym source
-* **AcadiaSoft**: synonymity to the version 1 of the Agreement Manager through the ``AcadiaSoft_AM_1_0`` synonym source
 
 Syntax
 """"""
 
 The baseline synonym syntax has two components:
 
-* The **source**, whose possible values are controlled by the grammar and which current values are listed above;
-* The **value**, which is of type ``identifier``.
+* **source**, which possible values are controlled by the grammar
+* **value**, which is of type ``identifier``
 
 Example:
 
@@ -394,49 +350,56 @@ Example:
 
 A further set of attributes can be associated with a synonym, to address specific use cases:
 
-* A **path** which purpose is allows mapping in cases where the data is nested in different ways between the respective models.  The ``Payout`` class is a good illustration of such cases:
+* **path**, to allow mapping when data is nested in different ways between the respective models. The ``Payout`` class is a good illustration of such cases:
 
 .. code-block:: Java
 
  class Payout
  {
-  interestRatePayout InterestRatePayout (0..*) ;
-  creditDefaultPayout CreditDefaultPayout (0..1) ;
-  cashflow Cashflow (0..*) ;
-  optionPayout OptionPayout (0..*);
+  interestRatePayout InterestRatePayout (0..*);
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream path "trade.swap" ]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream path "swap"]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value generalTerms path "trade.creditDefaultSwap", feeLeg path "trade.creditDefaultSwap" set when "trade.creditDefaultSwap.feeLeg.periodicPayment" exists]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value generalTerms path "creditDefaultSwap", feeLeg path "creditDefaultSwap" set when "creditDefaultSwap.feeLeg.periodicPayment" exists]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value feeLeg, generalTerms]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value capFloorStream path "trade.capFloor"]
+   [synonym FpML_5_10, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value fra path "trade" mapper FRAIRPSplitter]
+   [synonym CME_SubmissionIRS_1_0 value fra mapper FRAIRPSplitter]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value interestLeg path "trade.returnSwap", interestLeg path "trade.equitySwapTransactionSupplement"]
+  (...)
  }
 
-* A **tag** or a **componentID** can be associated to a synonym value. In both cases, the purpose is to properly reflect the FIX standard, which makes use of those two artefacts. There are only two examples of such at present in the model, as a result of the scope focus on post-execution use cases and, hence, the limited reference to the FIX standard.
+* **tag** or a **componentID** to properly reflect the FIX standard, which uses those two artefacts. There are only limited examples of such at present, as a result of the scope focus on post-execution use cases hence the limited reference to the FIX standard.
 
 .. code-block:: Java
 
  class Strike
  {
-  id (0..1);
-  strikeRate number (1..1) ;
-  buyer PayerReceiverEnum (0..1) ;
-  seller PayerReceiverEnum (0..1) ;
+  strikeRate number (1..1);
+   [synonym FIX_5_0_SP2 value StrikePrice tag 202]
+  buyer PayerReceiverEnum (0..1);
+  seller PayerReceiverEnum (0..1);
  }
 
-* A **definition** can be associated with the enumeration value synonyms, the purpose being to provide a more explicit reference to the FIX enumeration values, which are specified through a single digit or letter, which value is then positioned as a prefix to the associated definition.  The only examples of such currently available in the model are associated with the enumeration ``InformationProviderEnum``:
+* **definition**, to provide a more explicit reference to the FIX enumeration values which are specified through a single digit or letter positioned as a prefix to the associated definition.
 
 .. code-block:: Java
 
- enum InformationProviderEnum <"The enumerated values to specify the list of information providers.">
-  [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value informationProviderScheme_2_1]
+ enum InformationProviderEnum
  {
   (...)
-  Bloomberg <"Bloomberg LP.">
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value "Bloomberg"]
-   [synonym FIX value "0" definition "0 = Bloomberg"],
+  Bloomberg
+   [synonym FIX_5_0_SP2 value "0" definition "0 = Bloomberg"],
   (...)
   Other
-   [synonym FIX value "99" definition "99 = Other"],
+   [synonym FIX_5_0_SP2 value "99" definition "99 = Other"],
   (...)
-  Telerate <"Telerate, Inc.">
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value "Telerate"]
-   [synonym FIX value "2" definition "2 = Telerate"]
+  Telerate
+   [synonym FIX_5_0_SP2 value "2" definition "2 = Telerate"]
  }
+
+In contrast to other model artefacts, the synonym value associated with enumeration values is of type ``string``, to facilitate integration with executable code. The alternative approach consisting in specifying the value as a compatible identifier alongside with a display name has been disregarded because it has been deemed not appropriate to create a 'code-friendly' value for the respective synonyms.  A ``string`` type removes such need.
 
 Mapping Logic
 ^^^^^^^^^^^^^
