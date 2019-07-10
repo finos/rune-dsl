@@ -28,7 +28,7 @@ Class and Attributes
 Purpose
 """""""
 
-A *class* describes an *entity* (or *object*) in the model as a set of attributes and an associated definition. *Attributes* specify the granular elements composing the entity in terms of type, cardinality (i.e. how many) and each with an associated definition.
+A *class* describes an *entity* (or *object*) in the model as a set of attributes and an associated definition. *Attributes* specify the granular elements composing the entity in terms of their type, cardinality (i.e. how many) and each with an associated definition.
 
 Syntax
 """"""
@@ -44,7 +44,7 @@ A Rosetta attribute can be specified either as a basic type, a class or an enume
 * Calculation - ``calculation``
 * Product and event qualification - ``productType`` ``eventType``
 
-The Rosetta convention is that class names use the PascalCase (starting with a capital letter, sometimes referred to as the upper CamelCase), while attribute names use the camelCase (starting with a lower case letter). Class names need to be unique across the model, including with respect to rule names. All those requirements are controlled by the Rosetta grammar.
+The Rosetta convention is that class names use the PascalCase (starting with a capital letter, also referred to as the upper `CamelCase <https://en.wikipedia.org/wiki/Camel_case>`_), while attribute names use the camelCase (starting with a lower case letter, also referred to as the lower camelCase). Class names need to be unique across the model, including with respect to rule names. All those requirements are controlled by the Rosetta grammar.
 
 A plain-text definition of each modelling artefact is added in Rosetta as a string using ``"`` ``"`` in between angle brackets: ``<`` ``>``.
 
@@ -57,22 +57,35 @@ A plain-text definition of each modelling artefact is added in Rosetta as a stri
   economicTerms EconomicTerms (1..1) <"The economic terms associated with a contractual product, i.e. the set of features that are price-forming.">;
  }
 
-Definitions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definitions ought to exist for every artefact and be clear and comprehensive.
+Definitions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
 
 Time
 """"
 
 For time zone adjustments, a time zone qualifier can be specified alongside a time in one of two ways:
 
-* Through the ``zonedDateTime`` type, which needs to be expressed either as UTC or as an offset to UTC, as specified by the ISO 8601 standard.
+* Through the ``zonedDateTime`` type, which needs to be expressed either as `UTC <https://en.wikipedia.org/wiki/Coordinated_Universal_Time>`_ or as an offset to UTC, as specified by the ISO 8601 standard.
 * Through the ``BusinessCenterTime`` class, where time is specified alongside a business center.  This is used to specify a time dimension in relation to a future event, e.g. the earliest or latest exercise time of an option.
 
-While there has been discussion as to whether Rosetta should support dates which are specified as an offset to UTC with the ``Z`` suffix, no positive conclusion has been reached so far. The main reason is that all dates which need a business date context are already being provided with the ability to specify an associated business center.
+While there has been discussion as to whether Rosetta should support dates which are specified as an offset to UTC with the ``Z`` suffix, no positive conclusion has been reached. The main reason is that all dates which need a business date context can already specify an associated business center.
 
 Calculation
 """""""""""
 
-The ``calculation`` qualifier represents the outcome of calculation in the model. It is currently associated with two attributes: ``cashflowCalculation`` in the ``Cashflow`` class, and ``callFunction`` in the ``computedAmount`` class.
+The ``calculation`` qualifier represents the outcome of a calculation in the model and is specified instead of the type for the attribute. An attribute with the ``calculation`` qualifier is meant to be associated to an actual ``calculation`` that is part of the model functional artefacts (see *Calculation* section). The type is implied by the calculation output.
+
+An example usage is the conversion from clean price to dirty price for a bond, as part of the ``CleanPrice`` class:
+
+.. code-block:: Java
+
+ class CleanPrice
+ {
+  cleanPrice number (1..1);
+  accruals number (0..1);
+  dirtyPrice calculation (0..1);
+ }
+
+Further review is required to assess the use cases and appropriateness of such qualifier.
 
 Abstract Class
 """"""""""""""
@@ -97,18 +110,20 @@ Rosetta supports the concept of **abstract class**, which cannot be instantiated
   tranche string (0..1) scheme;
  }
 
-Meta-Types
-""""""""""
+Meta-Type and Reference
+"""""""""""""""""""""""
 
 Rosetta allows to associate a set of qualifiers to an attribute:
 
-* The ``scheme`` meta-type specifies a scheme reference that controls the set of values that an attribute can take. The relevant scheme value can be specified as meta-information in the attribute synonyms, so that no originating information is disregarded.
+* The ``scheme`` meta-type specifies a mechanism to control the set of values that an attribute can take. The relevant scheme reference can be specified as meta-information in the attribute synonyms, so that no originating information is disregarded.
 
 * The ``reference`` meta-type replicates the cross-referencing mechanism widely used in XML to provide data integrity within the context of an instance document - in particular the ``href`` mechanism, for *hyper-text reference*, as used in the FpML standard. The cross-reference value can be specified as meta-information in the attribute synonyms.
 
-To make objects internally referenceabale (beyond external cross-references provided by an instance document), Rosetta also allows to associate a unique identifier to instances of a class, by  adding a ``key`` qualifier to the class name. The ``key`` corresponds to a hash code to be generated by the model implementation. The implementation provided as part of the Rosetta DSL is the default Java hash function.
+**Note**: Synonyms are a mechanism in Rosetta to map the model components to physical data representations and is detailed in the *Synonym* section of this documentation.
 
-The below ``Party`` and ``Identifier`` classes provide a good illustration as to how **meta-types** are implemented.
+To make objects internally referenceabale (beyond external cross-references provided by an instance document), Rosetta also allows to associate a unique identifier to instances of a class, by  adding a ``key`` qualifier to the class name. The ``key`` corresponds to a hash code to be generated by the model implementation. The implementation provided as part of the Rosetta DSL is the de-facto Java hash function. It is a *deep hash* that uses the complete set of attribute values that compose the class and its children, recursively.
+
+The below ``Party`` and ``Identifier`` classes provide a good illustration as to how **meta-types** and **references** are implemented.
 
 .. code-block:: Java
 
@@ -130,9 +145,9 @@ The below ``Party`` and ``Identifier`` classes provide a good illustration as to
 
 The ``key`` qualifier is associated to the ``Party`` class, while the ``reference`` qualifier is associated to the ``issuerReference`` attribute, of type ``Party``, in the ``Identifier`` class. The ``issuerReference`` can be provided as an external cross-reference, for which the value ``issuer`` is specified in the synonym source using ``href`` as the ``meta`` qualifier. The ``issuer`` attribute has an associated ``scheme``, which ``issuerIdScheme`` value is specified in the synonym source using the ``meta`` qualifier.
 
-The ``rosettaKeyValue`` is a variation of ``key``, which associated hash function doesn't include any of those qualifiers that are associated with the attributes. Some of those qualifiers are automatically generated by algorithm (typically, the anchors and references associated with XML documents) and would result in differences between two instance documents, even if those documents would have the same actual values.
+``rosettaKeyValue`` is a variation of ``key``, which associated hash function doesn't include any of the meta-type qualifiers associated with the attributes. Some of those qualifiers are automatically generated by algorithm (typically, the anchors and references associated with XML documents) and would result in differences between two instance documents, even if those documents would have the same actual values.
 
-The ``RosettaKeyValue`` is meant to be used for supporting the reconciliation of economic terms, and is hence associated with the ``EconomicTerms`` class. Further evaluation of the ``rosettaKeyValue``, and whether it is an appropriate implementation of such reconciliation use case, is required.
+The ``rosettaKeyValue`` feature is meant to support the reconciliation of economic terms, hence associated with the ``EconomicTerms`` class. Further evaluation of ``rosettaKeyValue`` is required to assess whether it is an appropriate implementation of such reconciliation use case.
 
 .. code-block:: Java
 
@@ -170,7 +185,7 @@ Enumerations are very simple modelling containers. They can have associated syno
 
 Enumeration values have a restricted syntax to facilitate their integration with executable code: they cannot start with a numerical digit, and the only special character that can be associated with them is the underscore ``_``.
 
-In order to handle the integration of FpML scheme values such as the *dayCountFractionScheme* which has values like ``ACT/365.FIXED`` or ``30/360``, the Rosetta syntax allows to associate a **displayName** synonym. Those values with special characters replace them with ``_`` and have an associated ``displayName`` entry which corresponds to the actual value. Examples of such are ``ACT_365_FIXED`` and ``_30_360``, with the associated display names of ``ACT/365.FIXED`` and ``30/360``, respectively.
+In order to handle the integration of FpML scheme values such as the *dayCountFractionScheme* which has values with special characters like ``ACT/365.FIXED`` or ``30/360``, the Rosetta syntax allows to associate a **displayName** synonym. For those enumeration values, special characters are replaced with ``_`` and the ``displayName`` entry corresponds to the actual value. Examples of such are ``ACT_365_FIXED`` and ``_30_360``, with the associated display names of ``ACT/365.FIXED`` and ``30/360``, respectively.
 
 .. code-block:: Java
 
@@ -238,12 +253,7 @@ Purpose
 
 *Synonym* is the baseline building block to map the model in Rosetta to alternative data representations, whether those are open standards or proprietary. Synonyms can be complemented by relevant mapping logic when the relationship is not a one-to-one or is conditional.
 
-Synonyms can be associated to all four sets of Rosetta data modelling artefacts:
-
-*  Classes
-*  Attributes
-*  Enumerations
-*  Enumeration values
+Synonyms are associated at the attribute level for a class, or at the enumeration value level for an enumeration. Mappings are typically implemented by traversing the model tree down, so knowledge of the context of an attribute (i.e. the class in which it is used) determines what it should map to. Knowledge about the upper-level class would be lost if synonyms were implemented at the class level.
 
 There is no limit to the number of synonyms that can be associated with each of those artefacts, and there can even be several synonyms for a given data source (e.g. in the case of a conditional mapping).
 
@@ -257,7 +267,9 @@ The baseline synonym syntax has two components:
 
 Example:
 
-  ``[synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value averagingInOut]``
+.. code-block:: Java
+
+ [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value averagingInOut]
 
 A further set of attributes can be associated with a synonym, to address specific use cases:
 
@@ -366,7 +378,7 @@ Data rules are the primary channel to enforce data validation in Rosetta.
 
 While such validation rules are generally specified for existing data standards like FpML alongside the standard documentation, the logic needs to be evaluated and transcribed into code by the relevant teams. More often than not, it results in such logic not being consistently enforced.
 
-As an example, the ``FpML_ird_57`` data rule implements the **FpML ird validation rule #57**, which states that if the notional step schedule is absent, then the initial value of the notional schedule must not be null. With Rosetta, this legible view is provided alongside a programmatic implementation thanks to automatic code generation.
+As an example, the ``FpML_ird_57`` data rule implements the **FpML ird validation rule #57**, which states that if the calculation period frequency is expressed in units of month or year, then the roll convention cannot be a week day. With Rosetta, this legible view is provided alongside a programmatic implementation thanks to automatic code generation.
 
 .. code-block:: Java
 
@@ -404,9 +416,10 @@ Variations from this naming convention are needed, as in the case of the data ru
 
 The main data rule syntax is in the form of ``when <Rosetta expression> then <Rosetta expression>``.
 
-Here are a set of relevant examples of this data rule syntax:
+Grammar rules for Boolean logic such as ``exists``, ``is absent``, ``contains``, ``count`` as well as ``and``, ``or``, ``when``, ``else`` and ``then`` statements are all usable as part of such data rules, as illustrated in the below relevant examples.
+:
 
-* ``CalculationPeriodDates_firstCompoundingPeriodEndDate`` combines three Boolean assertions.
+* ``CalculationPeriodDates_firstCompoundingPeriodEndDate`` combines three Boolean assertions:
 
 .. code-block:: Java
 
@@ -415,7 +428,7 @@ Here are a set of relevant examples of this data rule syntax:
    or InterestRatePayout -> compoundingMethod = CompoundingMethodEnum.None
    then InterestRatePayout -> calculationPeriodDates -> firstCompoundingPeriodEndDate is absent
 
-* ``CalculationPeriod_calculationPeriodNumberOfDays`` involves an operator.
+* ``CalculationPeriod_calculationPeriodNumberOfDays`` involves an operator:
 
 .. code-block:: Java
 
@@ -423,7 +436,7 @@ Here are a set of relevant examples of this data rule syntax:
   when PaymentCalculationPeriod -> calculationPeriod -> calculationPeriodNumberOfDays exists
   then PaymentCalculationPeriod -> calculationPeriod -> calculationPeriodNumberOfDays >= 0
 
-* ``Obligations_physicalSettlementMatrix`` uses parentheses for the purpose of supporting nested assertions.
+* ``Obligations_physicalSettlementMatrix`` uses parentheses for the purpose of supporting nested assertions:
 
 .. code-block:: Java
 
@@ -442,6 +455,8 @@ Here are a set of relevant examples of this data rule syntax:
    or Contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> obligations -> revenueObligationLiability
   ) exists
 
+**Note**: Usage of ``when`` instead of ``if`` statement in ``data rule`` artefacts is not consistent with other logical modelling artefacts in Rosetta, but will be normalised as part of future work on the DSL.
+
 Choice Rule
 ^^^^^^^^^^^
 
@@ -453,7 +468,7 @@ Choice rules define a choice constraint between the set of attributes of a class
 Syntax
 """"""
 
-Choice rules only apply within the context of a class, and the naming convention is ``<className>_choice``, e.g. ``NaturalPerson_choice``. If multiple choice rules exist in relation to a class, the naming convention is to suffix the 'choice' term with a number, e.g. ``NaturalPerson_choice1`` and ``NaturalPerson_choice2``.
+Choice rules only apply within the context of a class, and the naming convention is ``<className>_choice``, e.g. ``ExerciseOutcome_choice``. If multiple choice rules exist in relation to a class, the naming convention is to suffix the 'choice' term with a number, e.g. ``ExerciseOutcome_choice1`` and ``ExerciseOutcome_choice2``.
 
 .. code-block:: Java
 
@@ -498,13 +513,15 @@ Members of a choice rule need to have their lower cardinality set to 0, somethin
 One of syntax as a complement to choice rule
 """"""""""""""""""""""""""""""""""""""""""""
 
-In the case where all the attributes of a given class are subject to a required choice logic that results in one and only one of them being present in any insatnce of that class, Rosetta allows to qualify the class with the ``one of`` qualifier. This by-passes the need to implement the choice rule. This feature is illustrated in the ``BondOptionStrike`` class.
+In the case where all the attributes of a given class are subject to a required choice logic that results in one and only one of them being present in any instance of that class, Rosetta allows to associate a ``one of`` qualifier to the class. This by-passes the need to implement the corresponding choice rule.
+
+This feature is illustrated in the ``BondOptionStrike`` class.
 
 .. code-block:: Java
 
  class BondOptionStrike one of
  {
-  referenceSwapCurve ReferenceSwapCurve (0..1) ;
+  referenceSwapCurve ReferenceSwapCurve (0..1);
   price OptionStrike (0..1);
  }
 
@@ -519,7 +536,7 @@ Product Qualification
 Purpose
 """""""
 
-A product is qualified based on the modelling components of its economic terms, which are being tested through a set of assertions. The qualification leverages the **alias** syntax presented earlier in this documentation.
+A product is qualified based on the modelling components of its economic terms, which are being tested through a set of assertions. The qualification leverages the ``alias`` syntax presented earlier in this documentation.
 
 Syntax
 """"""
@@ -551,7 +568,7 @@ Similar to the product qualification syntax, an event is qualified based on its 
 Syntax
 """"""
 
-The event qualification syntax is similar to the product and the alias, the difference being that it is possible to associate a set of data rules to it.
+The event qualification syntax is similar to the product and the alias but it is also possible to associate a set of data rules to it.
 
 The event name needs to be unique across the product and event qualifications, the classes and the aliases, and validation logic is in place to enforce this.  The naming convention is to have one upper CamelCased word.
 
@@ -599,7 +616,7 @@ Function Artefacts
 **Rosetta supports three types of functional artefacts** that have been developed to standardise process implementations by industry participants:
 
 * Calculation
-* Function (to be deprecated and replaced by function specification)
+* Function (to be deprecated and replaced by *Function Specification*)
 * Function Specification
 
 Calculation
@@ -608,24 +625,23 @@ Calculation
 Purpose
 """""""
 
-One of the objectives of the CDM is to express some of the ISDA Definitions as machine executable formulas, to confirm that the CDM can be applied to standardise the industry processes that use those definitions. The ISDA 2006 definitions of the **Fixed Amount** and **Floating Amount** have been used as an initial scope.
-
-To this effect, the Rosetta grammar has been developed to support such expressions.
+One of the objectives of the CDM is to express some of the ISDA Definitions as machine executable formulas, to confirm that the CDM can be applied to standardise the industry calculation processes that use those definitions. The ISDA 2006 definitions of the **Fixed Amount** and **Floating Amount** have been used as an initial scope and the Rosetta grammar has been developed to support such expressions.
 
 Syntax
 """"""
 
-The calculation syntax has three components:
+The calculation syntax has four components:
 
+* **name** prefixed with the ``calculation`` qualifier and followed by an associated definition, ideally referencing the ISDA Definition that the calculation is meant to implement
 * **calculation** provided as a formula following an initial ``:``
 * **arguments** provided as inputs to that calculation after a syntactic ``where``, each specified using a ``:`` and sourced from model components
-* **function** (possibly) required to further transform those model components to form the arguments 
+* **function** (possibly) required to further transform those model components and build the arguments 
 
-The application of this syntax to the ``FloatingAmount`` as per the ISDA Definitions provides a good illustration:
+The application of this syntax to ``FloatingAmount`` as per the ISDA Definitions provides a good illustration:
 
 .. code-block:: Java
 
- calculation FloatingAmount
+ calculation FloatingAmount <"2006 ISDA Definition Article 6 Section 6.1. Calculation of a Floating Amount: Subject to the provisions of Section 6.4 (Negative Interest Rates), the Floating Amount payable by a party on a Payment Date will be: (a) if Compounding is not specified for the Swap Transaction or that party, an amount calculated on a formula basis for that Payment Date or for the related Calculation Period as follows: Floating Amount = Calculation Amount × Floating Rate + Spread × Floating Rate Day Count Fraction (b) if “Compounding” is specified to be applicable to the Swap Transaction or that party and 'Flat Compounding' is not specified, an amount equal to the sum of the Compounding Period Amounts for each of the Compounding Periods in the related Calculation Period; or (c) if 'Flat Compounding' is specified to be applicable to the Swap Transaction or that party, an amount equal to the sum of the Basic Compounding Period Amounts for each of the Compounding Periods in the related Calculation Period plus the sum of the Additional Compounding Period Amounts for each such Compounding Period.">
  {
   floatingAmount : calculationAmount * ( floatingRate + spread ) * dayCountFraction
   
@@ -636,7 +652,7 @@ The application of this syntax to the ``FloatingAmount`` as per the ISDA Definit
    dayCountFraction : InterestRatePayout -> dayCountFraction
  }
 
-The last ``dayCountFraction`` argument, which is sourced from the ``InterestRatePayout``, is an enumeration where each enumeration value is itself a calculation - Here illustrated for the ``30/360`` ISDA day count fraction definition:
+The last ``dayCountFraction`` argument, which is sourced from the ``InterestRatePayout``, is an enumeration where each enumeration value is itself a calculation - here illustrated for the ``30/360`` ISDA day count fraction definition:
 
 .. code-block:: Java
 
@@ -664,12 +680,14 @@ Function
 Purpose
 """""""
 
-In the case when arguments need to be formed through further transformation based on model attributes, a ``function`` can be specified to provide that transformation. This is the case of the ``CalculationPeriod`` and ``ResolveRateIndex`` used to form some of the arguments in the above example.
+When calculation arguments need some further transformation of model components, a ``function`` can be specified to provide that transformation. This is the case of the ``CalculationPeriod`` and ``ResolveRateIndex`` functions used to build some of the arguments in the above example.
 
 The model only specifies that such function is required but Rosetta does not provide an implementation of those functions. It is the responsibility of model applications to provide an actual implementation where those functions are used.
 
 Syntax
 """"""
+
+The ``function`` syntax specifies the inputs and outputs of the function and their respective types. Both inputs and outputs can be multiple. Components of the function output are accessed using the ``->`` indirection in the same way as the model tree.
 
 .. code-block:: Java
 
@@ -688,9 +706,80 @@ Syntax
   rate number;
  }
 
-This ``function`` syntax will be deprecated and replaced by the new function specification module.
+**Note**: This ``function`` syntax will be deprecated and replaced by the new *Function Specification* feature.
 
 Function Specification
 ^^^^^^^^^^^^^^^^^^^^^^
 
-To be further documented.
+Purpose
+"""""""
+
+Industry processes require the transformation of data from inputs into outputs, which can each be represented as a *function*. These functions are often combined into a sequence of steps to constitute a *workflow*, which is the basis of process automation. So functions are an essential building block in the effort to standardise industry processes.
+
+While the originally implemented ``function`` feature in Rosetta partly filled that role, it was not rich enough to handle more complex transformations such as the processing of transaction lifecycle events, which is a key component of the processes used across financial markets.
+
+A function specification, or ``spec`` for short-hand, is an explicit set of requirements to be satisfied for each function, which are expressed as:
+
+* function inputs and pre-conditions on input data
+* function output and post-condition on both input *and* output data
+
+The model in Rosetta only specifies those requirements and does not provide an implementation of the function. The actual provision of the function is the responsibility of implementation applications of the model. In essence, a function specification standardises the `API <https://en.wiktionary.org/wiki/application_programming_interface>`_ that industry implementations should conform to when building process automation, which guarantees inter-operability of those automated processes.
+
+``spec`` can be used to specify any function in the model, including functions that create new events, compute a state transition or are used as part of calculations.
+
+Syntax
+""""""
+
+A function specification has five components to model the function requirements:
+
+* **name** prefixed with the ``spec`` qualifier and followed by a definition of the function being specified. The Rosetta convention for the name is to use one upper CamelCase word.
+* ``inputs`` and ``output``, each specified with type and cardinality in the same way as attributes for a class and each with an associated definition
+* ``pre-condition`` and ``post-condition``, each specified as Rosetta expressions meant to return a ``boolean`` type based on the ``inputs`` and ``output`` model components and each with an associated definition. The ``output`` model components can only be used as part of the ``post-condition``.
+
+The ``pre-condition`` and ``post-condition`` perform a validation step in the same way as ``data rule`` for a class, extending this key Rosetta modelling component to processes and not just data. As such, the grammatical rules for Boolean logic and statements used for ``data rule`` are transposed here.
+
+**Note**: a ``spec`` only specifies the *minimum* requirements that a function should satisfy. In particular, the actual function implementation could have more inputs or outputs than modelled in the ``spec``.
+
+An example of specification is the ``QuantityChange`` function, which represents the state transition logic to update the quantity on a transaction. The return type is a ``QuantityChangePrimitive``, which represents the ``before`` and ``after`` states of that *primitive* (i.e. atomic) state transition.
+
+.. code-block:: Java
+
+ spec QuantityChange <"A specification of the inputs, outputs and constraints when calculating the after state of a Quantity Change Primitive Event">:
+  inputs:
+   trade Trade (1..1)
+   quantityChange ContractualQuantity (1..1)
+  output:
+   quantityChangePrimitive QuantityChangePrimitive (1..1)
+  
+  pre-condition <"Non-zero quantity change">:
+   GreaterThan(quantityChange, 0.0);
+  
+  post-condition <"Correctly populate the before attributes on the Primitive Event">:
+   quantityChangePrimitive -> before = trade;
+  post-condition <"The resulting quantity must equal the original quantity plus the quantity change.">:
+   ExtractQuantity( quantityChangePrimitive -> after ) = Plus( ExtractQuantity( trade ), quantityChange );
+  post-condition <"The input and output types need to be consistent, if we started with an Execution, we should end with an Execution">:
+   if quantityChangePrimitive -> after -> execution exists then quantityChangePrimitive -> before exists else False;
+  post-condition:
+   if quantityChangePrimitive -> after -> contract exists then quantityChangePrimitive -> after -> contract exists else False;  
+
+This example demonstrates, in the context of lifecycle events, why a data representation of those events, although necessary, is not sufficient to direct the implementation of the associated processes - hence the need for function specification. The role of a function must be clear for implementors of the model to build applications that provide such function, so **precise descriptions** in either the function definition, input, output, pre- or post-conditions are crucial.
+
+Other functions such as ``ExtractQuantity`` are being used as part of the above ``QuantityChange`` specification example, which shows that function specifications can be nested.
+
+.. code-block:: Java
+
+ spec ExtractQuantity <"A function that abstracts away the details of how to retrieve quantity from a given product">:
+  inputs:
+   trade Trade (1..1)
+  output:
+   quantity ContractualQuantity (1..1)
+
+The above syntax for ``ExtractQuantity`` is richer than the previous ``function`` syntax for simple functions, so the latter will be scheduled for deprecation and existing ``function`` model artefacts will be migrated to ``spec``.
+
+A ``calculation`` can aslo be thought of as a ``spec`` except with a body (i.e. an actual implementation), when the function only involves simple numerical operations. Further consideration will be given to possibly fold the ``calculation`` syntax into the ``spec`` one.
+
+Code Generation
+"""""""""""""""
+
+Regarding code generation (in Java): for each ``spec`` a corresponding abstract class is generated which defines the inputs, outputs, pre- and post-conditions of the function. It also asks implementors to provide a concrete implementation of an *enrichment* function to construct the model objects that are not captured by the `spec` itself. By design the ``pre-condition`` and ``post-condition`` checks are executed respectively before and after the enrichment function.
