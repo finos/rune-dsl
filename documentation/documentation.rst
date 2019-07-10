@@ -777,7 +777,7 @@ Other functions such as ``ExtractQuantity`` are being used as part of the above 
 
 The above syntax for ``ExtractQuantity`` is richer than the previous ``function`` syntax for simple functions, so the latter will be scheduled for deprecation and existing ``function`` model artefacts will be migrated to ``spec``.
 
-A ``calculation`` can aslo be thought of as a ``spec`` except with a body (i.e. an actual implementation), when the function only involves simple numerical operations. Further consideration will be given to possibly fold the ``calculation`` syntax into the ``spec`` one.
+A ``calculation`` can also be thought of as a ``spec`` except with a body (i.e. an actual implementation), when the function only involves simple numerical operations. Further consideration will be given to possibly fold the ``calculation`` syntax into the ``spec`` one.
 
 Code Generation
 """""""""""""""
