@@ -22,13 +22,13 @@ Data Representation Artefacts
 * Enumeration Value
 * Alias
 
-Class and Attributes
-^^^^^^^^^^^^^^^^^^^^
+Class and Attribute
+^^^^^^^^^^^^^^^^^^^
 
 Purpose
 """""""
 
-A *class* describes an *entity* (or *object*) in the model as a set of attributes and an associated definition. *Attributes* specify the granular elements composing the entity in terms of their type, cardinality (i.e. how many) and each with an associated definition.
+A *class* describes an *entity* (or *object*) in the model as a set of attributes and an associated definition. *Attributes* specify the granular elements composing the entity in terms of their type, cardinality and each with an associated definition.
 
 Syntax
 """"""
@@ -41,8 +41,13 @@ A Rosetta attribute can be specified either as a basic type, a class or an enume
 * Number - ``int`` ``number``
 * Logic - ``boolean``
 * Date and Time - ``date`` ``time`` ``zonedDateTime``
+
+In addition, Rosetta provides for some special types called 'qualified types', which are specific to its application in the financial domain:
+
 * Calculation - ``calculation``
 * Product and event qualification - ``productType`` ``eventType``
+
+Those special types are designed to flag attributes which result from the execution of some logic, such that model implementations can identify where to stamp the execution output in the model.
 
 The Rosetta convention is that class names use the PascalCase (starting with a capital letter, also referred to as the upper `CamelCase <https://en.wikipedia.org/wiki/Camel_case>`_), while attribute names use the camelCase (starting with a lower case letter, also referred to as the lower camelCase). Class names need to be unique across the model, including with respect to rule names. All those requirements are controlled by the Rosetta grammar.
 
@@ -59,6 +64,13 @@ A plain-text definition of each modelling artefact is added in Rosetta as a stri
 
 Definitions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
 
+Cardinality
+"""""""""""
+
+Cardinality is a model integrity mechanism to control how many of each attribute can a class contain. The Rosetta syntax borrows from XML and specifies cardinality as a lower and upper bound in between ``(`` ``..`` ``)`` braces, as shown in the ``ContractualProduct`` example above.
+
+The lower and upper bounds can both be any number. A 0 lower bound means attribute is optional. A ``*`` upper bound means an unbounded attribute. ``(1..1)`` represents that there must be one and only one attribute of this type in that class.
+
 Time
 """"
 
@@ -68,24 +80,6 @@ For time zone adjustments, a time zone qualifier can be specified alongside a ti
 * Through the ``BusinessCenterTime`` class, where time is specified alongside a business center.  This is used to specify a time dimension in relation to a future event, e.g. the earliest or latest exercise time of an option.
 
 While there has been discussion as to whether Rosetta should support dates which are specified as an offset to UTC with the ``Z`` suffix, no positive conclusion has been reached. The main reason is that all dates which need a business date context can already specify an associated business center.
-
-Calculation
-"""""""""""
-
-The ``calculation`` qualifier represents the outcome of a calculation in the model and is specified instead of the type for the attribute. An attribute with the ``calculation`` qualifier is meant to be associated to an actual ``calculation`` that is part of the model functional artefacts (see *Calculation* section). The type is implied by the calculation output.
-
-An example usage is the conversion from clean price to dirty price for a bond, as part of the ``CleanPrice`` class:
-
-.. code-block:: Java
-
- class CleanPrice
- {
-  cleanPrice number (1..1);
-  accruals number (0..1);
-  dirtyPrice calculation (0..1);
- }
-
-Further review is required to assess the use cases and appropriateness of such qualifier.
 
 Abstract Class
 """"""""""""""
@@ -158,7 +152,27 @@ The ``rosettaKeyValue`` feature is meant to support the reconciliation of econom
   cancelableProvision CancelableProvision (0..1);
   extendibleProvision ExtendibleProvision (0..1);
  }
- 
+
+Qualified Types
+"""""""""""""""
+
+The ``calculation`` qualified type represents the outcome of a calculation in the model and is specified instead of the type for the attribute. An attribute with the ``calculation`` type is meant to be associated to a ``calculation`` model artefact as described in the *Calculation* section. The type is implied by the calculation output.
+
+An example usage is the conversion from clean price to dirty price for a bond, as part of the ``CleanPrice`` class:
+
+.. code-block:: Java
+
+ class CleanPrice
+ {
+  cleanPrice number (1..1);
+  accruals number (0..1);
+  dirtyPrice calculation (0..1);
+ }
+
+Similarly, ``productType`` and ``eventType`` represent the outcome of a model logic to infer the type of financial product or event for an instance of the model. Attributes of these types are associated respectively to the ``isProduct`` and ``isEvent`` qualification logic described in the *Object Qualification* section of the documentation.
+
+Further review is required to assess the use cases and appropriateness of the implementation of these qualified types in the Rosetta DSL.
+
 Enumeration and Enumeration Value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -262,7 +276,7 @@ Syntax
 
 The baseline synonym syntax has two components:
 
-* **source**, which possible values are controlled by the grammar
+* **source**, which possible values are controlled by a special ``synonym source`` type of enumeration
 * **value**, which is of type ``identifier``
 
 Example:
@@ -510,7 +524,7 @@ While most of the choice rules have two attributes, there is no limit to the num
 
 Members of a choice rule need to have their lower cardinality set to 0, something which is enforced by a validation rule.
 
-One of syntax as a complement to choice rule
+One of Syntax as Complement to Choice Rule
 """"""""""""""""""""""""""""""""""""""""""""
 
 In the case where all the attributes of a given class are subject to a required choice logic that results in one and only one of them being present in any instance of that class, Rosetta allows to associate a ``one of`` qualifier to the class. This by-passes the need to implement the corresponding choice rule.
@@ -528,7 +542,7 @@ This feature is illustrated in the ``BondOptionStrike`` class.
 Object Qualification Artefacts
 ------------------------------
 
-The CDM modelling approach consists in providing a composable representation of products and lifecycle events, and inferring the product and event qualification from their relevant modelling components rather than qualifying those upfront. The Rosetta syntax has been developed to meet this requirement, with slight variations in the implementation across those two use cases.
+The Rosetta syntax has been developed to meet the requirement of a composable model for financial products and lifecycle events, while qualifying those products and events from their relevant modelling components. There are slight variations in the implementation across those two use cases.
 
 Product Qualification
 ^^^^^^^^^^^^^^^^^^^^^
@@ -613,7 +627,7 @@ The ``Increase`` illustrates how the syntax qualifies this event by requiring th
 Function Artefacts
 ------------------
 
-**Rosetta supports three types of functional artefacts** that have been developed to standardise process implementations by industry participants:
+**Rosetta provides three types of functional artefacts** that have been developed to support the modelling of processes:
 
 * Calculation
 * Function (to be deprecated and replaced by *Function Specification*)
@@ -625,7 +639,7 @@ Calculation
 Purpose
 """""""
 
-One of the objectives of the CDM is to express some of the ISDA Definitions as machine executable formulas, to confirm that the CDM can be applied to standardise the industry calculation processes that use those definitions. The ISDA 2006 definitions of the **Fixed Amount** and **Floating Amount** have been used as an initial scope and the Rosetta grammar has been developed to support such expressions.
+The Rosetta grammar has been developed to support the expression of financial contract specifications (such as the ISDA Definitions) as machine executable formulas.
 
 Syntax
 """"""
@@ -714,7 +728,7 @@ Function Specification
 Purpose
 """""""
 
-Industry processes require the transformation of data from inputs into outputs, which can each be represented as a *function*. These functions are often combined into a sequence of steps to constitute a *workflow*, which is the basis of process automation. So functions are an essential building block in the effort to standardise industry processes.
+To allow the domain model to represent processes and not just data, Rosetta must be able to support the building of *functions*. Functions represent the transformation of data from inputs into outputs and are combined as building blocks into processes.
 
 While the originally implemented ``function`` feature in Rosetta partly filled that role, it was not rich enough to handle more complex transformations such as the processing of transaction lifecycle events, which is a key component of the processes used across financial markets.
 
@@ -723,16 +737,14 @@ A function specification, or ``spec`` for short-hand, is an explicit set of requ
 * function inputs and pre-conditions on input data
 * function output and post-condition on both input *and* output data
 
-The model in Rosetta only specifies those requirements and does not provide an implementation of the function. The actual provision of the function is the responsibility of implementation applications of the model. In essence, a function specification standardises the `API <https://en.wiktionary.org/wiki/application_programming_interface>`_ that industry implementations should conform to when building process automation, which guarantees inter-operability of those automated processes.
-
-``spec`` can be used to specify any function in the model, including functions that create new events, compute a state transition or are used as part of calculations.
+``spec`` can be used to specify any type of function in Rosetta. The model only specifies those requirements and does not provide an implementation of the function. The actual provision of the function is the responsibility of implementation applications of the model.
 
 Syntax
 """"""
 
 A function specification has five components to model the function requirements:
 
-* **name** prefixed with the ``spec`` qualifier and followed by a definition of the function being specified. The Rosetta convention for the name is to use one upper CamelCase word.
+* a name prefixed with the ``spec`` qualifier and followed by a definition of the function being specified. The Rosetta convention for the name is to use one upper CamelCase word.
 * ``inputs`` and ``output``, each specified with type and cardinality in the same way as attributes for a class and each with an associated definition
 * ``pre-condition`` and ``post-condition``, each specified as Rosetta expressions meant to return a ``boolean`` type based on the ``inputs`` and ``output`` model components and each with an associated definition. The ``output`` model components can only be used as part of the ``post-condition``.
 
@@ -765,7 +777,7 @@ An example of specification is the ``QuantityChange`` function, which represents
 
 This example demonstrates, in the context of lifecycle events, why a data representation of those events, although necessary, is not sufficient to direct the implementation of the associated processes - hence the need for function specification. The role of a function must be clear for implementors of the model to build applications that provide such function, so **precise descriptions** in either the function definition, input, output, pre- or post-conditions are crucial.
 
-Other functions such as ``ExtractQuantity`` are being used as part of the above ``QuantityChange`` specification example, which shows that function specifications can be nested.
+Function specifications can be nested, as shown in the ``QuantityChange`` specification example that uses the ``ExtractQuantity`` function.
 
 .. code-block:: Java
 
@@ -775,7 +787,7 @@ Other functions such as ``ExtractQuantity`` are being used as part of the above 
   output:
    quantity ContractualQuantity (1..1)
 
-The above syntax for ``ExtractQuantity`` is richer than the previous ``function`` syntax for simple functions, so the latter will be scheduled for deprecation and existing ``function`` model artefacts will be migrated to ``spec``.
+As shown in the ``ExtractQuantity`` example, ``spec`` is richer than the previous ``function`` syntax for simple functions, so the latter will be scheduled for deprecation and existing ``function`` model artefacts will be migrated to ``spec``.
 
 A ``calculation`` can also be thought of as a ``spec`` except with a body (i.e. an actual implementation), when the function only involves simple numerical operations. Further consideration will be given to possibly fold the ``calculation`` syntax into the ``spec`` one.
 
