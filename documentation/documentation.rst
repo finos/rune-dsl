@@ -269,7 +269,7 @@ Syntax
 
 The baseline synonym syntax has two components:
 
-* **source**, which possible values are controlled by the grammar
+* **source**, which possible values are controlled by a special ``synonym source`` type of enumeration
 * **value**, which is of type ``identifier``
 
 Example:
@@ -737,7 +737,7 @@ Syntax
 
 A function specification has five components to model the function requirements:
 
-* **name** prefixed with the ``spec`` qualifier and followed by a definition of the function being specified. The Rosetta convention for the name is to use one upper CamelCase word.
+* a name prefixed with the ``spec`` qualifier and followed by a definition of the function being specified. The Rosetta convention for the name is to use one upper CamelCase word.
 * ``inputs`` and ``output``, each specified with type and cardinality in the same way as attributes for a class and each with an associated definition
 * ``pre-condition`` and ``post-condition``, each specified as Rosetta expressions meant to return a ``boolean`` type based on the ``inputs`` and ``output`` model components and each with an associated definition. The ``output`` model components can only be used as part of the ``post-condition``.
 
