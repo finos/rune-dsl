@@ -41,8 +41,13 @@ A Rosetta attribute can be specified either as a basic type, a class or an enume
 * Number - ``int`` ``number``
 * Logic - ``boolean``
 * Date and Time - ``date`` ``time`` ``zonedDateTime``
+
+In addition, Rosetta provides for some special types called 'qualified types', which are specific to its application in the financial domain:
+
 * Calculation - ``calculation``
 * Product and event qualification - ``productType`` ``eventType``
+
+Those special types are designed to flag attributes which result from the execution of some logic, such that model implementations can identify where to stamp the execution output in the model.
 
 The Rosetta convention is that class names use the PascalCase (starting with a capital letter, also referred to as the upper `CamelCase <https://en.wikipedia.org/wiki/Camel_case>`_), while attribute names use the camelCase (starting with a lower case letter, also referred to as the lower camelCase). Class names need to be unique across the model, including with respect to rule names. All those requirements are controlled by the Rosetta grammar.
 
@@ -75,24 +80,6 @@ For time zone adjustments, a time zone qualifier can be specified alongside a ti
 * Through the ``BusinessCenterTime`` class, where time is specified alongside a business center.  This is used to specify a time dimension in relation to a future event, e.g. the earliest or latest exercise time of an option.
 
 While there has been discussion as to whether Rosetta should support dates which are specified as an offset to UTC with the ``Z`` suffix, no positive conclusion has been reached. The main reason is that all dates which need a business date context can already specify an associated business center.
-
-Calculation
-"""""""""""
-
-The ``calculation`` qualifier represents the outcome of a calculation in the model and is specified instead of the type for the attribute. An attribute with the ``calculation`` qualifier is meant to be associated to an actual ``calculation`` that is part of the model functional artefacts (see *Calculation* section). The type is implied by the calculation output.
-
-An example usage is the conversion from clean price to dirty price for a bond, as part of the ``CleanPrice`` class:
-
-.. code-block:: Java
-
- class CleanPrice
- {
-  cleanPrice number (1..1);
-  accruals number (0..1);
-  dirtyPrice calculation (0..1);
- }
-
-Further review is required to assess the use cases and appropriateness of such qualifier.
 
 Abstract Class
 """"""""""""""
@@ -165,7 +152,27 @@ The ``rosettaKeyValue`` feature is meant to support the reconciliation of econom
   cancelableProvision CancelableProvision (0..1);
   extendibleProvision ExtendibleProvision (0..1);
  }
- 
+
+Qualified Types
+"""""""""""""""
+
+The ``calculation`` qualified type represents the outcome of a calculation in the model and is specified instead of the type for the attribute. An attribute with the ``calculation`` type is meant to be associated to a ``calculation`` model artefact as described in the *Calculation* section. The type is implied by the calculation output.
+
+An example usage is the conversion from clean price to dirty price for a bond, as part of the ``CleanPrice`` class:
+
+.. code-block:: Java
+
+ class CleanPrice
+ {
+  cleanPrice number (1..1);
+  accruals number (0..1);
+  dirtyPrice calculation (0..1);
+ }
+
+Similarly, ``productType`` and ``eventType`` represent the outcome of a model logic to infer the type of financial product or event for an instance of the model. Attributes of these types are associated respectively to the ``isProduct`` and ``isEvent`` qualification logic described in the *Object Qualification* section of the documentation.
+
+Further review is required to assess the use cases and appropriateness of the implementation of these qualified types in the Rosetta DSL.
+
 Enumeration and Enumeration Value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
