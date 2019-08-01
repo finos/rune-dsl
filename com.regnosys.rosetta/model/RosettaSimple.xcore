@@ -1,0 +1,36 @@
+@Ecore(nsURI="http://www.rosetta-model.com/RosettaSimple")
+@GenModel(fileExtensions="rosetta", modelDirectory="/com.regnosys.rosetta/emf-gen", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0")
+
+package com.regnosys.rosetta.rosetta.simple
+
+import com.regnosys.rosetta.rosetta.RosettaCardinality
+import com.regnosys.rosetta.rosetta.RosettaDefinable
+import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaTyped
+
+
+class RootElement extends RosettaRootElement, RosettaNamed, Definable {
+	contains Annotation[] annotations
+	contains Body body
+}
+
+class Body {
+	contains Attribute[] attributes
+}
+
+class Annotation extends RosettaNamed {}
+
+class Attribute extends RosettaNamed , RosettaTyped, RosettaDefinable {
+	contains RosettaCardinality card
+}
+
+class Definable extends RosettaDefinable {
+	
+}
+
+class Function extends RootElement, RosettaNamed {
+	
+}

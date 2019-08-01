@@ -16,7 +16,9 @@ class RosettaHeader {
 	String namespace
 	String version
 }
-
+/**
+ * New model
+ */
 
 /**********************************************************************
  * Common types
@@ -622,7 +624,7 @@ class RosettaBlueprintReport extends RosettaRootElement {
 	
 	op String name() {
 		(regulatoryMandate.regRegime.name.toFirstUpper 
-				+ regulatoryMandate.mandates.stream.map[it.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
+				+ regulatoryMandate.mandates.stream.map[RosettaMandate man | man.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
 	}
 	
 	op BlueprintNodeExp nodes() {

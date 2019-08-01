@@ -1,10 +1,12 @@
 grammar com.regnosys.rosetta.Rosetta with org.eclipse.xtext.common.Terminals
 import "http://www.rosetta-model.com/Rosetta"
+import "http://www.rosetta-model.com/RosettaSimple"
 
 RosettaModel:
 	header=RosettaHeader
 	(configurations += RosettaQualifiableConfiguration)* // TODO think about having only RootElements or only configurations
 	(elements += RosettaRootElement)*
+	(elements += RootElement)*
 ;
 
 RosettaHeader:
@@ -12,6 +14,37 @@ RosettaHeader:
 	'version' version=STRING
 ;
 
+RootElement:
+	Function;
+
+fragment Attributes returns Body:
+	attributes+=Attribute (',' attributes+=Attribute)*;
+
+fragment Definable:
+	definition=STRING;
+
+fragment Annotations returns RootElement:
+	'[' annotations+=Annotation ']';
+
+Annotation:
+	name = ValidID
+;
+
+Function:
+	'fun' RosettaNamed ':' Definable
+	Annotations?
+	body=FunctionBody;
+
+FunctionBody returns Body:
+	'{'
+	Attributes+
+	'}';
+	
+
+Attribute:
+	RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable;
+
+// old stuff
 RosettaRootElement:
 	RosettaClass | RosettaEnumeration |
 	RosettaDataRule | RosettaWorkflowRule | RosettaChoiceRule | 
