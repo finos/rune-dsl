@@ -24,7 +24,7 @@ This open-source DSL repository comprises 2 components:
 
 - **Code Generators** (by default: `Java <https://www.oracle.com/java/>`_)
 
-The model for the financial industry domain, written using the syntax provided by the Rosetta DSL, is referred to as a *Common Domain Model*, or simply *CDM*. The CDM is designed to be shared openly across all industry participants, hence the name *Common*. The *ISDA Common Domain Model* (see `documentation <https://portal.cdm.rosetta-technology.io/modeldoc/documentation.html#the-isda-common-domain-model>`_ ) is the first live usage of the Rosetta DSL applied to the Derivatives markets. The CDM is hosted separately from the Rosetta DSL in its own `repository <https://github.com/REGnosys/rosetta-cdm>`_.
+The model for the financial industry domain, written using the syntax provided by the Rosetta DSL, is referred to as a *Common Domain Model*, or simply *CDM*. The CDM is designed to be shared openly across all industry participants, hence the name *Common*. The *ISDA Common Domain Model* (see `documentation <https://portal.cdm.rosetta-technology.io/modeldoc/documentation.html#the-isda-common-domain-model>`_ ) is the first live usage of the Rosetta DSL applied to the Derivatives markets. The CDM is hosted separately from the Rosetta DSL in its own `repository <https://github.com/REGnosys/rosetta-cdm>`__.
 
 The key idea behind Rosetta is that financial markets presently have two unappealing characteristics in support of electronic data representation:
 
@@ -33,7 +33,7 @@ The key idea behind Rosetta is that financial markets presently have two unappea
 
 **Rosetta addresses those shortcomings by enabling the consolidation of various data and workflow representations** into a cohesive model (hence the naming reference to the Rosetta Stone). Thanks to the code generators, the model can be automatically translated into executable code and directly used as part of an implementation stack.
 
-Code generators are therefore key to remove the need for technologists to translate the model specifications into actual code. To make the model technology platform-agnostic while ensuring inter-operability of different implementations, these code generators are also open source. Only default code generators are provided as part of this Rosetta DSL repository, but a dedicated `repository <https://github.com/REGnosys/rosetta-code-generators>`_ has been created to enable the community to create and make available other code generators in potentially any software language.
+Code generators are therefore key to remove the need for technologists to translate the model specifications into actual code. To make the model technology platform-agnostic while ensuring inter-operability of different implementations, these code generators are also open source. Only default code generators are provided as part of this Rosetta DSL repository, but a dedicated `repository <https://github.com/REGnosys/rosetta-code-generators>`__ has been created to enable the community to create and make available other code generators in potentially any software language.
 
 
 The Rosetta SDK
