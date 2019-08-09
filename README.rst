@@ -24,10 +24,22 @@ Rosetta DSL Components
 
 This open-source Rosetta DSL repository comprises 2 components:
 
-- **Syntax** (also known as a *grammar*)
-- **Code Generators** (by default: `Java <https://www.oracle.com/java/>`_)
+- **Syntax**, also known as a *grammar*
+- **Code Generators**, provided by default as `Java <https://www.oracle.com/java/>`_
 
-The model for the financial industry domain, written using the syntax provided by the Rosetta DSL, is referred to as a *Common Domain Model*, or simply *CDM*. The CDM is designed to be shared openly across all industry participants, hence the name *Common*. The CDM is hosted separately from the Rosetta DSL in its own `repository <https://github.com/REGnosys/rosetta-cdm>`_.
+Syntax
+^^^^^^
+
+All the modelling artefacts available in the Rosetta syntax are documented in the `Rosetta Modelling Artefacts <https://docs.rosetta-technology.io/dsl/documentation.html>`_ section. The syntax is used to express the model for the financial industry domain, which is referred to as a *Common Domain Model* (or CDM). The CDM is designed to be shared openly across all industry participants, hence the name *Common*.
+
+The CDM is hosted separately from the Rosetta DSL in its own `repository <https://github.com/REGnosys/rosetta-cdm>`_.
+
+Code Generators
+^^^^^^^^^^^^^^^
+
+Code generators are key to remove the need for technologists to translate the model specifications into actual code. To make the model technology platform-agnostic while ensuring inter-operability of different implementations, these code generators are also open source.
+
+Only default code generators are provided as part of the Rosetta DSL repository. A separate `Code Generators repository <https://github.com/REGnosys/rosetta-code-generators>`__ allows the community to create and make available code generators in potentially any software language. The `Code Generator documentation <https://docs.rosetta-technology.io/dsl/codegen-readme.html>`_ details the code generation mechanism and how to write and test one.
 
 The ISDA CDM
 ^^^^^^^^^^^^
@@ -35,14 +47,6 @@ The ISDA CDM
 The `ISDA Common Domain Model <https://docs.rosetta-technology.io/cdm/index.html>`_ is the first live application of the Rosetta DSL to the Derivatives markets. It is openly accessible through the `CDM Portal <https://portal.cdm.rosetta-technology.io>`_, subject to the ISDA CDM licence.
 
 For more details, please consult the `ISDA CDM documentation <https://docs.rosetta-technology.io/cdm/index.html>`_ or contact ISDA directly at marketinfrastructureandtechnology@isda.org
-
-Automatic Code Generation
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Code generators are key to remove the need for technologists to translate the model specifications into actual code. To make the model technology platform-agnostic while ensuring inter-operability of different implementations, these code generators are also open source.
-
-Only default code generators are provided as part of the Rosetta DSL repository, but a dedicated `repository <https://github.com/REGnosys/rosetta-code-generators>`__ allows the community to create and make available code generators in potentially any software language.
-
 
 The Rosetta SDK
 ---------------
