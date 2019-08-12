@@ -42,11 +42,13 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import org.eclipse.xtext.conversion.impl.IDValueConverter
 
 class RosettaTypeProvider {
 
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaOperators
+	@Inject IDValueConverter idConverter
 
 	def RType getRType(EObject expression) {
 		switch expression {
@@ -206,7 +208,7 @@ class RosettaTypeProvider {
 								NodeModelUtils.findActualNodeFor(expression)?.text + "'")
 				}
 			RosettaBasicType:
-				switch expression.name {
+				switch idConverter.toValue(expression.name, null) {
 					case 'boolean':
 						RBuiltinType.BOOLEAN
 					case 'string':
@@ -223,6 +225,8 @@ class RosettaTypeProvider {
 						RBuiltinType.DATE_TIME
 					case 'zonedDateTime':
 						RBuiltinType.ZONED_DATE_TIME
+					case 'function':
+						RBuiltinType.FUNCTION
 					default:
 						new RErrorType(
 							'No such built-in type: ' + expression.name + " '" +

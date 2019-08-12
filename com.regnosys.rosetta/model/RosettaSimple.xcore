@@ -18,10 +18,12 @@ class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated
 	
 }
 
-class Annotation extends RosettaNamed {}
+class Annotation extends RootElement, RosettaCallable {
+	contains Attribute[] attributes
+}
 
 interface Annotated {
-	contains Annotation[] annotations
+	refers Annotation[] annotations
 }
 
 class Attribute extends RosettaNamed , RosettaTyped, Definable, Annotated, RosettaCallable {
@@ -32,14 +34,10 @@ class Definable extends RosettaDefinable {
 }
 
 class Function extends RootElement, RosettaNamed {
-	contains FunctionBody body
-}
-
-class FunctionBody {
 	contains Attribute[] inputs
 	contains Attribute output
 	contains Condition[] conditions
-	contains Operation[] operations
+	contains Operation[] operations opposite function
 	contains Condition[] postConditions
 }
 
@@ -47,5 +45,6 @@ class Condition extends Definable, Annotated, RosettaNamed {
 	contains RosettaExpression[] expressions
 }
 class Operation extends Definable {
+	container Function function opposite operations
 	contains RosettaExpression[] expressions
 }

@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RFeatureCallType
 import com.regnosys.rosetta.types.RRecordType
@@ -36,9 +37,6 @@ import org.eclipse.xtext.scoping.impl.MapBasedScope
 import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.FunctionBody
 
 /**
  * This class contains custom scoping description.
@@ -118,10 +116,10 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 						return scope
 					}
 				} else if (context instanceof Operation) {
-					val functionBody = (context.eContainer as FunctionBody)
+					val function = context.function
 					val inputsAndOutputs = newArrayList
-					inputsAndOutputs.addAll(functionBody.inputs)
-					inputsAndOutputs.add(functionBody.output)
+					inputsAndOutputs.addAll(function.inputs)
+					inputsAndOutputs.add(function.output)
 					
 					return Scopes.scopeFor(inputsAndOutputs)
 				}

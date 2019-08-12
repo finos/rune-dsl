@@ -15,33 +15,28 @@ RosettaHeader:
 ;
 
 RootElement:
-	Function;
-
-	
+	Function | Annotation;
 
 fragment Definable:
 	definition=STRING;
 
 fragment Annotations returns Annotated:
-	'[' annotations+=Annotation (',' annotations+=Annotation)* ']';
+	'[' annotations+=[Annotation|ValidID] (',' annotations+=[Annotation|ValidID])* ']';
 
 Annotation:
-	name = ValidID
+	'anno' name = ValidID (':' Definable)?
+	attributes += Attribute*
 ;
 
 Function:
 	'func' RosettaNamed (':' Definable)?
 	Annotations?
-	body=FunctionBody;
-
-FunctionBody:
-	'{'
-	('inputs:' inputs+=Attribute (',' inputs+=Attribute)*)?
+	('inputs:' (inputs += Attribute)+)?
 	'output:' output = Attribute
 	conditions+=Condition*
 	operations+=Operation*
 	postConditions+=PostCondition*
-	'}';
+;
 
 Attribute:
 	RosettaNamed RosettaTyped card=RosettaCardinality Definable? Annotations?;
