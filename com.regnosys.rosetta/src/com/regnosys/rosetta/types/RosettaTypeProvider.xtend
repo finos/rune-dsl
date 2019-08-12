@@ -207,8 +207,9 @@ class RosettaTypeProvider {
 							'No such qualified type: ' + expression.name + " '" +
 								NodeModelUtils.findActualNodeFor(expression)?.text + "'")
 				}
-			RosettaBasicType:
-				switch idConverter.toValue(expression.name, null) {
+			RosettaBasicType:{
+				val typeName = idConverter.toValue(expression.name, null)
+				switch typeName {
 					case 'boolean':
 						RBuiltinType.BOOLEAN
 					case 'string':
@@ -232,6 +233,7 @@ class RosettaTypeProvider {
 							'No such built-in type: ' + expression.name + " '" +
 								NodeModelUtils.findActualNodeFor(expression)?.text + "'")
 				}
+			}
 			RosettaParenthesisCalcExpression:
 				expression.expression.RType
 			RosettaConditionalExpression:

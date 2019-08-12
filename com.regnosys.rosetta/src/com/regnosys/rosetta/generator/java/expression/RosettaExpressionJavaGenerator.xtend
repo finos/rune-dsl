@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.generator.java.expression
 
+import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
@@ -19,8 +20,11 @@ import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
+import com.regnosys.rosetta.rosetta.RosettaLiteral
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
+import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import java.util.HashMap
@@ -29,13 +33,10 @@ import org.eclipse.xtend.lib.annotations.Data
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.RosettaLiteral
-import com.regnosys.rosetta.rosetta.RosettaMetaType
 
 class RosettaExpressionJavaGenerator {
-		
-	RosettaTypeProvider typeProvider = new RosettaTypeProvider
+	@Inject
+	RosettaTypeProvider typeProvider
 
 	def CharSequence javaCode(RosettaExpression expr, ParamMap params) {
 		expr.javaCode(params, true);

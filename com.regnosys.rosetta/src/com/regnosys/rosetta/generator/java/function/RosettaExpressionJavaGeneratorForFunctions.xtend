@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
+import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
@@ -8,6 +9,7 @@ import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
@@ -16,32 +18,30 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaFunction
+import com.regnosys.rosetta.rosetta.RosettaFunctionInput
 import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
+import com.regnosys.rosetta.rosetta.RosettaLiteral
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
+import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import java.math.BigDecimal
 import java.util.HashMap
 import org.eclipse.xtend.lib.annotations.Data
+import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.RosettaLiteral
-import com.regnosys.rosetta.rosetta.RosettaMetaType
-import com.regnosys.rosetta.rosetta.RosettaFunctionInput
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaFunction
-import com.regnosys.rosetta.generator.java.function.CardinalityProvider
-import org.eclipse.xtend2.lib.StringConcatenationClient
-import java.math.BigDecimal
 
 class RosettaExpressionJavaGeneratorForFunctions {
-		
-	RosettaTypeProvider typeProvider = new RosettaTypeProvider
+	@Inject
+	RosettaTypeProvider typeProvider
 	val cardinalityProvider = new CardinalityProvider
 
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
