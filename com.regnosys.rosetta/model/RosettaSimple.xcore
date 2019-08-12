@@ -11,6 +11,7 @@ import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaCallable
 
 
 class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {
@@ -23,7 +24,7 @@ interface Annotated {
 	contains Annotation[] annotations
 }
 
-class Attribute extends RosettaNamed , RosettaTyped, Definable, Annotated {
+class Attribute extends RosettaNamed , RosettaTyped, Definable, Annotated, RosettaCallable {
 	contains RosettaCardinality card
 }
 

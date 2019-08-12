@@ -41,6 +41,7 @@ import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFunction
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class RosettaTypeProvider {
 
@@ -237,6 +238,8 @@ class RosettaTypeProvider {
 				expression.path.RType
 			RosettaMapRosettaPath:
 				expression.path.RType
+			Attribute:
+				expression.type.RType
 			default:
 				RBuiltinType.MISSING
 		}

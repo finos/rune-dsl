@@ -36,6 +36,9 @@ import org.eclipse.xtext.scoping.impl.MapBasedScope
 import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.FunctionBody
 
 /**
  * This class contains custom scoping description.
@@ -114,7 +117,15 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 						val scope = Scopes.scopeFor(allClasses)
 						return scope
 					}
-				} /*else if (context instanceof RosettaFuncitonCondition) {
+				} else if (context instanceof Operation) {
+					val functionBody = (context.eContainer as FunctionBody)
+					val inputsAndOutputs = newArrayList
+					inputsAndOutputs.addAll(functionBody.inputs)
+					inputsAndOutputs.add(functionBody.output)
+					
+					return Scopes.scopeFor(inputsAndOutputs)
+				}
+				 /*else if (context instanceof RosettaFuncitonCondition) {
 					val function = (context.eContainer as RosettaFunction)
 					
 					if (context.type == RosettaFunctionConditionType.PRE) {
