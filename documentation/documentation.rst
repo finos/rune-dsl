@@ -135,7 +135,7 @@ The below ``Party`` and ``Identifier`` classes provide a good illustration as to
   issuer string (0..1) scheme;
    [synonym FpML_5_10, CME_SubmissionIRS_1_0 value issuer meta issuerIdScheme]
   assignedIdentifier AssignedIdentifier (1..*);
-}
+ }
 
 The ``key`` qualifier is associated to the ``Party`` class, while the ``reference`` qualifier is associated to the ``issuerReference`` attribute, of type ``Party``, in the ``Identifier`` class. The ``issuerReference`` can be provided as an external cross-reference, for which the value ``issuer`` is specified in the synonym source using ``href`` as the ``meta`` qualifier. The ``issuer`` attribute has an associated ``scheme``, which ``issuerIdScheme`` value is specified in the synonym source using the ``meta`` qualifier.
 
