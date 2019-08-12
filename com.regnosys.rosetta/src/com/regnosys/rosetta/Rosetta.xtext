@@ -17,32 +17,50 @@ RosettaHeader:
 RootElement:
 	Function;
 
-fragment Attributes returns Body:
-	attributes+=Attribute (',' attributes+=Attribute)*;
+	
 
 fragment Definable:
 	definition=STRING;
 
-fragment Annotations returns RootElement:
-	'[' annotations+=Annotation ']';
+fragment Annotations returns Annotated:
+	'[' annotations+=Annotation (',' annotations+=Annotation)* ']';
 
 Annotation:
 	name = ValidID
 ;
 
 Function:
-	'fun' RosettaNamed ':' Definable
+	'func' RosettaNamed (':' Definable)?
 	Annotations?
 	body=FunctionBody;
 
-FunctionBody returns Body:
+FunctionBody:
 	'{'
-	Attributes+
+	('inputs:' inputs+=Attribute (',' inputs+=Attribute)*)?
+	'output:' output = Attribute
+	conditions+=Condition*
+	operations+=Operation*
+	postConditions+=PostCondition*
 	'}';
-	
 
 Attribute:
-	RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable;
+	RosettaNamed RosettaTyped card=RosettaCardinality Definable? Annotations?;
+
+Condition:
+	'condition' name = ValidID (':' Definable)?
+		Annotations
+		(expressions+=RosettaCalcExpression ';')+
+;
+
+Operation: // TODO no name? annotations?
+	'operation' (':' Definable)?
+	(expressions+=RosettaCalcExpression ';')+
+;
+
+PostCondition returns Condition: // TODO no name? annotations?
+	'post-condition' (':' Definable)?
+	(expressions+=RosettaCalcExpression ';')+
+;
 
 // old stuff
 RosettaRootElement:

@@ -10,27 +10,41 @@ import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.RosettaExpression
 
 
-class RootElement extends RosettaRootElement, RosettaNamed, Definable {
-	contains Annotation[] annotations
-	contains Body body
-}
-
-class Body {
-	contains Attribute[] attributes
+class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {
+	
 }
 
 class Annotation extends RosettaNamed {}
 
-class Attribute extends RosettaNamed , RosettaTyped, RosettaDefinable {
+interface Annotated {
+	contains Annotation[] annotations
+}
+
+class Attribute extends RosettaNamed , RosettaTyped, Definable, Annotated {
 	contains RosettaCardinality card
 }
 
 class Definable extends RosettaDefinable {
-	
 }
 
 class Function extends RootElement, RosettaNamed {
-	
+	contains FunctionBody body
+}
+
+class FunctionBody {
+	contains Attribute[] inputs
+	contains Attribute output
+	contains Condition[] conditions
+	contains Operation[] operations
+	contains Condition[] postConditions
+}
+
+class Condition extends Definable, Annotated, RosettaNamed {
+	contains RosettaExpression[] expressions
+}
+class Operation extends Definable {
+	contains RosettaExpression[] expressions
 }
