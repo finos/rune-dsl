@@ -29,7 +29,11 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.rosetta.model.lib.functions.MapperMaths
+import com.rosetta.model.lib.functions.MapperS
+import com.rosetta.model.lib.functions.MapperTree
 import java.math.BigDecimal
 import java.util.HashMap
 import org.eclipse.xtend.lib.annotations.Data
@@ -38,7 +42,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	@Inject
@@ -84,26 +87,26 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				val callable = expr.callable
 				if (callable instanceof RosettaFunction) {
 					if(!callable.output.card.isIsMany) {
-						'''MapperS.of(«callable.name.toFirstLower».evaluate(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»))'''	
+						'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»))'''	
 					} else {
 						throw new IllegalArgumentException('Calling Functions with multiple cardinality return types not yet supported')	
 					}
 				}
 			}
 			RosettaBigDecimalLiteral : {
-				'''MapperS.of(BigDecimal.valueOf(«expr.value»))'''
+				'''«MapperS».of(«BigDecimal».valueOf(«expr.value»))'''
 			}
 			RosettaBooleanLiteral : {
-				'''MapperS.of(Boolean.valueOf(«expr.value»))'''
+				'''«MapperS».of(Boolean.valueOf(«expr.value»))'''
 			}
 			RosettaIntLiteral : {
-				'''MapperS.of(Integer.valueOf(«expr.value»))'''
+				'''«MapperS».of(Integer.valueOf(«expr.value»))'''
 			}
 			RosettaStringLiteral : {
-				'''MapperS.of("«expr.value»")'''
+				'''«MapperS».of("«expr.value»")'''
 			}
 			RosettaEnumValueReference : {
-				'''MapperS.of(«expr.enumeration.name».«expr.value.convertValues»)'''
+				'''«MapperS».of(«expr.enumeration.name».«expr.value.convertValues»)'''
 			}
 			RosettaConditionalExpression : {
 				'''doIf(«expr.^if.javaCode(params)»,«expr.ifthen.javaCode(params)»,«expr.elsethen.javaCode(params)»)'''
@@ -159,7 +162,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		val call = expr.callable
 		switch (call)  {
 			RosettaClass : {
-				'''MapperS.of(«params.getClass(call)»)'''
+				'''«MapperS».of(«params.getClass(call)»)'''
 			}
 			RosettaArgumentFeature : {
 				'''args.get("«call.name»")'''
@@ -168,10 +171,10 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				call.expression.javaCode(params)
 			}
 			RosettaFunctionInput : {
-				'''MapperS.of(«call.name»)'''
+				'''«MapperS».of(«call.name»)'''
 			}
 			Attribute : {
-				'''MapperS.of(«call.name»)'''
+				'''«MapperS».of(«call.name»)'''
 			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable type of "+call.class.simpleName)
@@ -188,7 +191,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	}
 	
 	def StringConcatenationClient countExpr(RosettaCountOperation expr, RosettaExpression test, ParamMap params) {
-		toComparisonOp('''MapperS.of(«expr.left.javaCode(params)».resultCount())''', expr.operator, expr.right.javaCode(params))
+		toComparisonOp('''«MapperS».of(«expr.left.javaCode(params)».resultCount())''', expr.operator, expr.right.javaCode(params))
 	}
 	
 	def StringConcatenationClient whenPresentExpr(RosettaWhenPresentExpression expr, RosettaExpression left, ParamMap params) {
@@ -204,9 +207,9 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				if (containsFeatureCallOrCallableCall(left)) {
 					// Mappers
 					if(isComparableTypes(expr))
-						'''MapperTree.and(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
+						'''«MapperTree».and(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
 					else
-						'''MapperTree.andDifferent(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
+						'''.andDifferent(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
 				}
 				else {
 					// ComparisonResults
@@ -217,9 +220,9 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				if (containsFeatureCallOrCallableCall(left)) {
 					// Mappers
 					if(isComparableTypes(expr))
-						'''MapperTree.or(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
+						'''«MapperTree».or(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
 					else
-						'''MapperTree.orDifferent(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
+						'''«MapperTree».orDifferent(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
 				}
 				else {
 					// ComparisonResult
@@ -229,12 +232,12 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			case ("+"): {
 				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
 				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
-				'''MapperMaths.<«BigDecimal», «leftType», «rightType»>add(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«BigDecimal», «leftType», «rightType»>add(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			case ("-"): {
 				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
 				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
-				'''MapperMaths.<BigDecimal, «leftType», «rightType»>subtract(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«BigDecimal», «leftType», «rightType»>subtract(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}			
 			default: {
 				toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''')
@@ -378,7 +381,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			expr = expr.right;
 			exprs.add(expr)
 		}
-		'''.<«expr.attribute.type.name.toJavaType»>groupBy(g->new MapperS<>(g)«FOR ex:exprs»«buildMapFunc(ex.attribute, isLast, true)»«ENDFOR»)'''
+		'''.<«expr.attribute.type.name.toJavaType»>groupBy(g->new «MapperS»<>(g)«FOR ex:exprs»«buildMapFunc(ex.attribute, isLast, true)»«ENDFOR»)'''
 	}
 	
 	private def static String buildMapFuncAttribute(RosettaRegularAttribute attribute)
@@ -480,7 +483,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	}
 	
 	protected def StringConcatenationClient toMapperTree(StringConcatenationClient code) {
-		return '''MapperTree.of(«code»)'''
+		return '''«MapperTree».of(«code»)'''
 	}
 	
 	private def isMapperTree(StringConcatenationClient code) {
