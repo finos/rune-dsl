@@ -92,7 +92,7 @@ class RosettaGenerator extends AbstractGenerator {
 						map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]],resource, lock)
 				]
 			]
-				
+			// TODO same as in afterGenerate()?
 			val model = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel)
 			val version = model.findFirst[header!==null].header.version
 			val elements = model.flatMap[elements]

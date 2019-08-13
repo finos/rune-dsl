@@ -12,28 +12,31 @@ import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaCallable
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 
 
-class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {
-	
-}
+class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {}
 
 class Annotation extends RootElement, RosettaCallable {
 	contains Attribute[] attributes
 }
 
 interface Annotated {
-	refers Annotation[] annotations
+	contains AnnotationRef[] annotations
+}
+
+class AnnotationRef {
+	refers Annotation ^annotation
+	refers Attribute attribute
 }
 
 class Attribute extends RosettaNamed , RosettaTyped, Definable, Annotated, RosettaCallable {
 	contains RosettaCardinality card
 }
 
-class Definable extends RosettaDefinable {
-}
+class Definable extends RosettaDefinable {}
 
-class Function extends RootElement, RosettaNamed {
+class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
 	contains Attribute[] inputs
 	contains Attribute output
 	contains Condition[] conditions

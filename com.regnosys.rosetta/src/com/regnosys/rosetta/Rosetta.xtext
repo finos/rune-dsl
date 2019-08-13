@@ -21,7 +21,13 @@ fragment Definable:
 	definition=STRING;
 
 fragment Annotations returns Annotated:
-	'[' annotations+=[Annotation|ValidID] (',' annotations+=[Annotation|ValidID])* ']';
+	'[' annotations+=AnnotationRef (',' annotations+=AnnotationRef)* ']';
+
+AnnotationRef:
+	annotation = [Annotation|ValidID]
+	(attribute = [Attribute|ValidID])?
+;
+
 
 Annotation:
 	'anno' name = ValidID (':' Definable)?
@@ -43,7 +49,7 @@ Attribute:
 
 Condition:
 	'condition' name = ValidID (':' Definable)?
-		Annotations
+		Annotations?
 		(expressions+=RosettaCalcExpression ';')+
 ;
 

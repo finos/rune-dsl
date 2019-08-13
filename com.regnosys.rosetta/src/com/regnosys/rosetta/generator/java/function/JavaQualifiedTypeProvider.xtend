@@ -24,6 +24,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
 import com.regnosys.rosetta.generator.java.calculation.JavaType
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class JavaQualifiedTypeProvider {
 
@@ -74,6 +75,10 @@ class JavaQualifiedTypeProvider {
 	}
 	
 	def StringConcatenationClient toJavaQualifiedType(RosettaFunctionInput attribute, boolean asBuilder) {
+		if (attribute.card.isIsMany) '''«List»<«attribute.type.toJavaQualifiedType(asBuilder)»>''' else '''«attribute.type.toJavaQualifiedType(asBuilder)»'''
+	}
+	
+	def StringConcatenationClient toJavaQualifiedType(Attribute attribute, boolean asBuilder) {
 		if (attribute.card.isIsMany) '''«List»<«attribute.type.toJavaQualifiedType(asBuilder)»>''' else '''«attribute.type.toJavaQualifiedType(asBuilder)»'''
 	}
 

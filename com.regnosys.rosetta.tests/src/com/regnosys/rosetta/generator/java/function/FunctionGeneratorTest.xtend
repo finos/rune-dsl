@@ -468,31 +468,7 @@ class FunctionGeneratorTest {
 	def void shouldGenerateFields() {
 		val javaNames = factory.create(javaPackages)
 		
-		val function = '''
-			spec FooFunc <"an example function level comment">:
-				inputs:
-					input1 number (1..1) <"is the one and only input">
-					
-				output:
-					result number (1..1) <"is the number that is returned">
-					
-				post-condition <"post condition 1 should pass">:
-					input1 > 42;
-					input1 < BuzzFunc();
-					
-				post-condition <"post condition 2 should pass">:
-					input1 < BarFunc();
-			
-			spec BarFunc:
-				output:
-					result number (1..1)
-			
-			spec BuzzFunc:
-				output:
-					result number (1..1)
-		'''.parseRosettaWithNoErrors.elements.filter(RosettaFunction).head
-		
-		val result = function.contributeFields(javaNames)
+		val result = contributeFields(javaNames)
 		concatenator.append(result)
 		
 		val expected = '''protected final ClassToInstanceMap<RosettaFunction> classRegistry;'''

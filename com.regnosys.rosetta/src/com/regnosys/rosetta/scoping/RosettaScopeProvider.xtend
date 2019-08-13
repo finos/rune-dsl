@@ -37,6 +37,8 @@ import org.eclipse.xtext.scoping.impl.MapBasedScope
 import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 
 /**
  * This class contains custom scoping description.
@@ -120,7 +122,6 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 					val inputsAndOutputs = newArrayList
 					inputsAndOutputs.addAll(function.inputs)
 					inputsAndOutputs.add(function.output)
-					
 					return Scopes.scopeFor(inputsAndOutputs)
 				}
 				 /*else if (context instanceof RosettaFuncitonCondition) {
@@ -186,7 +187,15 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 			case ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF: {
 				if (context instanceof RosettaExternalRegularAttribute) {
 					val classRef = (context.eContainer as RosettaExternalClass).classRef
-					return Scopes.scopeFor(classRef.allAttributes)
+					if(classRef !==null)
+						return Scopes.scopeFor(classRef.allAttributes)
+				}
+				return IScope.NULLSCOPE
+			}
+			case ANNOTATION_REF__ATTRIBUTE: {
+				if (context instanceof AnnotationRef) {
+					val annoRef = context.annotation
+					return Scopes.scopeFor(annoRef.attributes)
 				}
 				return IScope.NULLSCOPE
 			}

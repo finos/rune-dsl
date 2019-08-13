@@ -38,6 +38,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	@Inject
@@ -167,6 +168,9 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				call.expression.javaCode(params)
 			}
 			RosettaFunctionInput : {
+				'''MapperS.of(«call.name»)'''
+			}
+			Attribute : {
 				'''MapperS.of(«call.name»)'''
 			}
 			default: 

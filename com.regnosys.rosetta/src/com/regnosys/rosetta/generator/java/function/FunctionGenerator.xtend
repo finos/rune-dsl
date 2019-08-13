@@ -6,9 +6,13 @@ import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.calculation.ImportingStringConcatination
 import com.regnosys.rosetta.generator.java.calculation.RosettaFunctionDependencyProvider
+import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaFuncitonCondition
 import com.regnosys.rosetta.rosetta.RosettaFunction
+import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.rosetta.simple.Function
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -33,9 +37,21 @@ class FunctionGenerator implements RosettaInternalGenerator {
 			}
 			
 		]
+		elements.filter(Function).forEach [
+			val name = javaNames.packages.functions.directoryName + '/' + name + '.java'
+			
+			try {
+				val content = generate(it, javaNames)
+				fsa.generateFile(name, content)	
+			} catch (Exception e) {
+				throw new UnsupportedOperationException('Unable to generate code for: ' + name)
+			}
+			
+		]
 	}
 
-	private def String generate(RosettaFunction function, JavaQualifiedTypeProvider javaNames) {
+	private dispatch def String generate(Function function, JavaQualifiedTypeProvider javaNames) {
+		
 		val concatenator = new ImportingStringConcatination()
 		concatenator.append(functionClass(function, javaNames))
 		
@@ -65,7 +81,55 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		'''
 	}
 	
-	private def StringConcatenationClient functionClass(RosettaFunction function, JavaQualifiedTypeProvider javaNames) {
+	private def dispatch String generate(RosettaFunction function, JavaQualifiedTypeProvider javaNames) {
+		val concatenator = new ImportingStringConcatination()
+		concatenator.append(functionClass(function, javaNames))
+		
+		return '''
+			package «javaNames.packages.functions.packageName»;
+			
+«««			(DONE) Make RosettaExpression support StringConcatClient to add these imports
+«««			Now have RosettaExpressionToJava support actually use types (not just strings)
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.MapperTree;
+			import com.rosetta.model.lib.meta.FieldWithMeta;
+			import java.time.LocalDate;
+			import java.math.BigDecimal;
+			
+			import org.isda.cdm.*;
+						
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			
+			«FOR _import : concatenator.imports»
+				import «_import»;
+			«ENDFOR»
+			«FOR staticImport : concatenator.staticImports»
+				import static «staticImport»;
+			«ENDFOR»
+			
+			«concatenator.toString»
+		'''
+	}
+	
+	private def dispatch StringConcatenationClient functionClass(Function function, JavaQualifiedTypeProvider javaNames) {
+		val dependencies = (function.conditions + function.postConditions)
+			.flatMap[expressions]
+			.flatMap[functionDependencyProvider.functionDependencies(it)]
+			.sortBy[name]
+			.toSet
+		
+		'''
+			«function.contributeJavaDoc»
+			public abstract class «function.name» implements «com.rosetta.model.lib.functions.RosettaFunction» {
+				«contributeFields(javaNames)»
+				«contributeConstructor(function, javaNames)»
+				«contributeEvaluateMethod(function, javaNames, dependencies)»
+				«contributeEnrichMethod(function, javaNames)»
+			}
+		'''
+	}
+	
+	private def dispatch StringConcatenationClient functionClass(RosettaFunction function, JavaQualifiedTypeProvider javaNames) {
 		val dependencies = (function.preConditions + function.postConditions)
 			.flatMap[expressions]
 			.flatMap[functionDependencyProvider.functionDependencies(it)]
@@ -75,7 +139,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		'''
 			«function.contributeJavaDoc»
 			public abstract class «function.name» implements «com.rosetta.model.lib.functions.RosettaFunction» {
-				«contributeFields(function, javaNames)»
+				«contributeFields(javaNames)»
 				«contributeConstructor(function, javaNames)»
 				«contributeEvaluateMethod(function, javaNames, dependencies)»
 				«contributeEnrichMethod(function, javaNames)»
@@ -84,7 +148,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	}
 	
 	
-	def StringConcatenationClient contributeJavaDoc(extension RosettaFunction function) {
+	package def StringConcatenationClient contributeJavaDoc(extension RosettaDefinable function) {
 		if (definition !== null) {
 			'''
 				/**
@@ -97,12 +161,17 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	}
 	
 	
-	def StringConcatenationClient contributeEnrichMethod(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) '''
+	package def dispatch StringConcatenationClient contributeEnrichMethod(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) '''
 			
 		protected abstract «output.toJavaQualifiedType(false)» doEvaluate(«function.inputsAsParameters(names)»);
 	'''
 	
-	def StringConcatenationClient contributeEvaluateMethod(extension RosettaFunction function, extension JavaQualifiedTypeProvider names, Iterable<RosettaFunction> dependencies) '''
+	package def dispatch StringConcatenationClient contributeEnrichMethod(extension Function function, extension JavaQualifiedTypeProvider names) '''
+			
+		protected abstract «output.toJavaQualifiedType(false)» doEvaluate(«function.inputsAsParameters(names)»);
+	'''
+	
+	package dispatch def StringConcatenationClient contributeEvaluateMethod(extension RosettaFunction function, extension JavaQualifiedTypeProvider names, Iterable<RosettaFunction> dependencies) '''
 			
 		/**
 		 «FOR input : inputs»
@@ -111,7 +180,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		 * @return «output.name» «output.definition»
 		 */
 		public «output.toJavaQualifiedType(false)» evaluate(«function.inputsAsParameters(names)») {
-			«function.contributeDependencies(names, dependencies)»
+			«contributeDependencies(names, dependencies)»
 			«function.contributePreConditions(names)»
 			
 			// Delegate to implementation
@@ -123,7 +192,38 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		}
 	'''
 	
-	def StringConcatenationClient contributeDependencies(extension RosettaFunction function, extension JavaQualifiedTypeProvider provider, Iterable<RosettaFunction> dependencies) {
+	package dispatch def StringConcatenationClient contributeEvaluateMethod(extension Function function, extension JavaQualifiedTypeProvider names, Iterable<RosettaFunction> dependencies) '''
+			
+		/**
+		 «FOR input : inputs»
+		 * @param «input.name» «input.definition»
+		 «ENDFOR»
+		 * @return «output.name» «output.definition»
+		 */
+		public «output.toJavaQualifiedType(false)» evaluate(«function.inputsAsParameters(names)») {
+			«contributeDependencies(names, dependencies)»
+			
+			// pre-conditions
+			//
+			«FOR cond:conditions»
+			«cond.contributeCondition»
+			«ENDFOR»
+			
+			// Delegate to implementation
+			//
+			«output.toJavaQualifiedType(false)» «output.name» = doEvaluate(«function.inputsAsArguments(names)»);
+			
+			// post-conditions
+			//
+			«FOR cond:postConditions»
+			«cond.contributeCondition»
+			«ENDFOR»
+			
+			return «output.name»;
+		}
+	'''
+	
+	private def StringConcatenationClient contributeDependencies(extension JavaQualifiedTypeProvider provider, Iterable<RosettaFunction> dependencies) {
 		if (!dependencies.empty) {
 			'''
 			
@@ -136,41 +236,56 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		}
 	}
 	
-	def StringConcatenationClient contributePostConditions(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
+	package def StringConcatenationClient contributePostConditions(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
 		if (!postConditions.empty) {
 			'''
 				
 			// post-conditions
 			//
-			«postConditions.contributeConditionBlock»
+			«FOR cond:postConditions»
+			«cond.contributeCondition»
+			«ENDFOR»
 			'''
 		}
 	}
 	
-	def StringConcatenationClient contributePreConditions(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
+	package def StringConcatenationClient contributePreConditions(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
 		if (!preConditions.empty) {
 			'''
 				
 			// pre-conditions
 			//
-			«preConditions.contributeConditionBlock»
+			«FOR cond:preConditions»
+			«cond.contributeCondition»
+			«ENDFOR»
 			'''
 		}
 	}
 	
-	def CharSequence contributeConditionBlock(Iterable<RosettaFuncitonCondition> conditions)
-		'''«FOR condition : conditions»
+	private dispatch def CharSequence contributeCondition(Condition condition) {
+		'''
 		assert
 «««			«rosettaExpressionGenerator.javaCode(condition.expressions.head, null)»
 			«FOR expr : condition.expressions SEPARATOR ' &&'» 
 				«rosettaExpressionGenerator.javaCode(expr, null)».get()
 			«ENDFOR»
 				: "«condition.definition»";
-		«ENDFOR»
+		'''
+	}
+	
+	
+	private dispatch def CharSequence contributeCondition(RosettaFuncitonCondition condition)
+		'''
+		assert
+«««			«rosettaExpressionGenerator.javaCode(condition.expressions.head, null)»
+			«FOR expr : condition.expressions SEPARATOR ' &&'» 
+				«rosettaExpressionGenerator.javaCode(expr, null)».get()
+			«ENDFOR»
+				: "«condition.definition»";
 		'''
 	
 	
-	def StringConcatenationClient contributeConstructor(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
+	package def StringConcatenationClient contributeConstructor(extension RosettaNamed function, extension JavaQualifiedTypeProvider names) {
 		'''
 		
 		protected «name.toFirstUpper»(«ClassToInstanceMap»<«com.rosetta.model.lib.functions.RosettaFunction»> classRegistry) {
@@ -183,7 +298,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		'''
 	}
 	
-	def StringConcatenationClient contributeFields(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
+	package def StringConcatenationClient contributeFields(extension JavaQualifiedTypeProvider names) {
 		'''
 		
 		protected final «ClassToInstanceMap»<«com.rosetta.model.lib.functions.RosettaFunction»> classRegistry;
@@ -194,8 +309,14 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	private def StringConcatenationClient inputsAsParameters(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
 		'''«FOR input : inputs SEPARATOR ', '»«input.toJavaQualifiedType(false)» «input.name»«ENDFOR»'''
 	}
+	private def StringConcatenationClient inputsAsParameters(extension Function function, extension JavaQualifiedTypeProvider names) {
+		'''«FOR input : inputs SEPARATOR ', '»«input.toJavaQualifiedType(false)» «input.name»«ENDFOR»'''
+	}
 	
-	private def StringConcatenationClient inputsAsArguments(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
+	private dispatch def StringConcatenationClient inputsAsArguments(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
+		'''«FOR input : inputs SEPARATOR ', '»«input.name»«ENDFOR»'''
+	}
+	private dispatch def StringConcatenationClient inputsAsArguments(extension Function function, extension JavaQualifiedTypeProvider names) {
 		'''«FOR input : inputs SEPARATOR ', '»«input.name»«ENDFOR»'''
 	}
 
