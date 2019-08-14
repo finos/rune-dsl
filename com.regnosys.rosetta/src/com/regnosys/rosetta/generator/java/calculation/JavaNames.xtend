@@ -20,6 +20,7 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class JavaNames {
 
@@ -46,6 +47,7 @@ class JavaNames {
 			RosettaBasicType:
 				toJavaQualifiedType(type.name)
 			RosettaClass,
+			Data,
 			RosettaEnumeration: '''«JavaType.create(packages.model.packageName+'.'+ type.name)»'''
 			RosettaCalculation: '''«JavaType.create(packages.calculation.packageName+'.'+ type.name)»'''
 			RosettaRecordType: '''«JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)»'''

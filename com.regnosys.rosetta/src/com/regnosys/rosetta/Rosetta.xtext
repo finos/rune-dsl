@@ -15,7 +15,7 @@ RosettaHeader:
 ;
 
 RootElement:
-	Function | Annotation;
+	 Annotation | Data | Function;
 
 fragment Definable:
 	definition=STRING;
@@ -30,8 +30,15 @@ AnnotationRef:
 
 
 Annotation:
-	'anno' name = ValidID ':' Definable?
+	'anno' RosettaNamed ':' Definable?
 	attributes += Attribute*
+;
+
+Data:
+	'data' RosettaNamed ':' Definable?
+	Annotations?
+	attributes += Attribute+
+	conditions += Condition*
 ;
 
 Function:
@@ -53,7 +60,7 @@ Attribute:
 	RosettaNamed RosettaTyped card=RosettaCardinality Definable? Annotations?;
 
 Condition:
-	'condition' name = ValidID ':' (Definable)?
+	'condition' RosettaNamed ':' Definable?
 		Annotations?
 		(expressions+=RosettaCalcExpression ';')+
 ;

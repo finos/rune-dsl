@@ -9,6 +9,9 @@ import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
@@ -20,6 +23,7 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
+import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RFeatureCallType
 import com.regnosys.rosetta.types.RRecordType
@@ -27,17 +31,15 @@ import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.rosetta.model.lib.functions.ExpressionOperators
+import com.rosetta.model.lib.math.BigDecimalExtensions
+import java.lang.reflect.Modifier
 import java.math.BigDecimal
-import org.eclipse.xtend2.lib.StringConcatenationClient
+import java.time.LocalDateTime
 import java.util.Objects
-import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaExistsExpression
-import java.lang.reflect.Modifier
-import com.rosetta.model.lib.functions.ExpressionOperators
-import java.time.LocalDateTime
 
 class RosettaToJavaExtensions {
 	@Inject RosettaTypeProvider typeProvider
@@ -124,12 +126,12 @@ class RosettaToJavaExtensions {
 		val rightStr = if(rightIsBD) toJava(ele.right) else toBigDecimal(toJava(ele.right))
 	
 		if (ele.operator == '/') {
-			'''«com.rosetta.model.lib.math.BigDecimalExtensions».divide(«leftStr», «rightStr»)'''
+			'''«BigDecimalExtensions».divide(«leftStr», «rightStr»)'''
 		} else if (leftIsBD || rightIsBD) {
 			switch (ele.operator) {
-				case "*": '''«com.rosetta.model.lib.math.BigDecimalExtensions».multiply(«leftStr», «rightStr»)'''
-				case "+": '''«com.rosetta.model.lib.math.BigDecimalExtensions».add(«leftStr», «rightStr»)'''
-				case "-": '''«com.rosetta.model.lib.math.BigDecimalExtensions».subtract(«leftStr», «rightStr»)'''
+				case "*": '''«BigDecimalExtensions».multiply(«leftStr», «rightStr»)'''
+				case "+": '''«BigDecimalExtensions».add(«leftStr», «rightStr»)'''
+				case "-": '''«BigDecimalExtensions».subtract(«leftStr», «rightStr»)'''
 				case ">": '''«leftStr».compareTo(«rightStr») > 0'''
 				case ">=": '''«leftStr».compareTo(«rightStr») >= 0'''
 				case "<": '''«leftStr».compareTo(«rightStr») < 0'''
@@ -181,6 +183,8 @@ class RosettaToJavaExtensions {
 				rType.enumeration.toJavaQualifiedType
 			RClassType:
 				rType.clazz.toJavaQualifiedType
+			RDataType:
+				rType.data.toJavaQualifiedType
 			RUnionType:
 				toJava(rType.to)
 			RFeatureCallType:

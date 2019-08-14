@@ -13,10 +13,11 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaType
 
 
-class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {}
+abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
 
 class Annotation extends RootElement, RosettaCallable {
 	contains Attribute[] attributes
@@ -31,15 +32,16 @@ class AnnotationRef {
 	refers Attribute attribute
 }
 
-class Attribute extends RosettaNamed , RosettaTyped, Definable, Annotated, RosettaCallable {
+class Attribute extends RosettaFeature, Definable, Annotated, RosettaCallable {
 	contains RosettaCardinality card
 }
 
 abstract class Definable extends RosettaDefinable {}
 
-class FunctionDispatch extends Function {
-	refers Attribute attribute
-	contains RosettaEnumValueReference value
+
+class Data extends RosettaType, RootElement, RosettaCallable{
+	contains Attribute[] attributes
+	contains Condition[] conditions
 }
 
 class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
@@ -49,6 +51,12 @@ class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
 	contains Operation[] operations opposite function
 	contains Condition[] postConditions
 }
+
+class FunctionDispatch extends Function {
+	refers Attribute attribute
+	contains RosettaEnumValueReference value
+}
+
 
 class Condition extends Definable, Annotated, RosettaNamed {
 	contains RosettaExpression[] expressions

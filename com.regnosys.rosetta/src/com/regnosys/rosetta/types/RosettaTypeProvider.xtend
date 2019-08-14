@@ -21,8 +21,10 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaMapPath
@@ -33,18 +35,16 @@ import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
+import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaFunction
-import com.regnosys.rosetta.rosetta.simple.Attribute
-import org.eclipse.xtext.conversion.impl.IDValueConverter
-import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 
 class RosettaTypeProvider {
 
@@ -75,6 +75,8 @@ class RosettaTypeProvider {
 			}
 			RosettaClass:
 				new RClassType(expression)
+			Data:
+				new RDataType(expression)
 			ShortcutDeclaration,
 			RosettaAlias: {
 				val exp = if(expression instanceof RosettaAlias) expression.expression else (expression as ShortcutDeclaration).expression
@@ -248,8 +250,6 @@ class RosettaTypeProvider {
 				expression.path.RType
 			RosettaMapRosettaPath:
 				expression.path.RType
-			Attribute:
-				expression.type.RType
 			Function:
 				expression.output.RType
 			default:

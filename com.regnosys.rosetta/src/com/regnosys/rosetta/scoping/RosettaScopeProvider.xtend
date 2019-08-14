@@ -16,8 +16,10 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.types.RClassType
+import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RFeatureCallType
 import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
@@ -38,7 +40,6 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 
 /**
  * This class contains custom scoping description.
@@ -207,6 +208,8 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 		switch receiverType {
 			RClassType:
 				Scopes.scopeFor(receiverType.clazz.allAttributes)
+			RDataType:
+				Scopes.scopeFor(receiverType.data.attributes)
 			RRecordType:
 				Scopes.scopeFor(receiverType.record.features)
 			RFeatureCallType:
