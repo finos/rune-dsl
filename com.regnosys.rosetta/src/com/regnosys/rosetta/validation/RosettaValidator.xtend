@@ -54,10 +54,12 @@ import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.Check
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.EcoreUtil2.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 
 /**
  * This class contains custom validation rules. 
@@ -315,7 +317,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Check(FAST) // switch to NORMAL if it becomes slow
 	def checkTypeNamesAreUnique(RosettaModel model) {
 		val name2attr = HashMultimap.create
-		model.elements.filter(RosettaNamed).forEach [
+		model.elements.filter(RosettaNamed).filter[!(it instanceof FunctionDispatch)].forEach [ //TODO better FunctionDispatch handling
 			name2attr.put(name, it)
 		]
 		val resources = getResourceDescriptions(model.eResource)
@@ -329,7 +331,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			} else if (valuesByName.size == 1 && model.eResource.URI.isPlatformResource) {
 				val EObject toCheck = valuesByName.get(0)
 				val sameNamed = resources.getExportedObjects(toCheck.eClass(), toCheck.fullyQualifiedName, false).filter [
-					isProjectLocal(model.eResource.URI, it.EObjectURI)
+					isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
 				].map[EObjectURI]
 				if (sameNamed.size > 1) {
 					error('''Duplicate element named '«name»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',

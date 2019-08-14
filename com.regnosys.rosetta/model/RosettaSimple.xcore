@@ -9,11 +9,11 @@ import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.RosettaDefinable
+import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaTyped
-import com.regnosys.rosetta.rosetta.RosettaAlias
 
 
 class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {}
@@ -35,7 +35,12 @@ class Attribute extends RosettaNamed , RosettaTyped, Definable, Annotated, Roset
 	contains RosettaCardinality card
 }
 
-class Definable extends RosettaDefinable {}
+abstract class Definable extends RosettaDefinable {}
+
+class FunctionDispatch extends Function {
+	refers Attribute attribute
+	contains RosettaEnumValueReference value
+}
 
 class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
 	contains Attribute[] inputs
@@ -48,8 +53,12 @@ class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
 class Condition extends Definable, Annotated, RosettaNamed {
 	contains RosettaExpression[] expressions
 }
+
 class Operation extends Definable {
 	container Function function opposite operations
-	contains RosettaAlias[] variables
+	contains ShortcutDeclaration[] shortcuts
 	contains RosettaExpression[] expressions
+}
+class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable {
+	contains RosettaExpression expression
 }

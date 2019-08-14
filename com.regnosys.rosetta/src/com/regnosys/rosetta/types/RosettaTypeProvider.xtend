@@ -44,6 +44,7 @@ import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import org.eclipse.xtext.conversion.impl.IDValueConverter
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 
 class RosettaTypeProvider {
 
@@ -74,9 +75,11 @@ class RosettaTypeProvider {
 			}
 			RosettaClass:
 				new RClassType(expression)
+			ShortcutDeclaration,
 			RosettaAlias: {
-				if (expression.expression.eAllContents.filter(RosettaCallableCall).findFirst[expression == it.callable] === null) {
-					val expressionType = expression.expression.RType
+				val exp = if(expression instanceof RosettaAlias) expression.expression else (expression as ShortcutDeclaration).expression
+				if (exp.eAllContents.filter(RosettaCallableCall).findFirst[expression == it.callable] === null) {
+					val expressionType = exp.RType
 					if (expressionType instanceof RFeatureCallType)
 						return expressionType
 					else

@@ -35,7 +35,12 @@ Annotation:
 ;
 
 Function:
-	'func' RosettaNamed ':' Definable?
+	'func' 
+	(
+		RosettaNamed
+		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
+	)
+	 ':' Definable?
 	Annotations?
 	(('inputs:')?inputs += Attribute+)?
 	('output:' output = Attribute)?
@@ -55,14 +60,23 @@ Condition:
 
 Operation: // TODO no name? annotations?
 	'operation' ':' Definable?
-	(variables   += RosettaArgumentAlias ';')*
+	(shortcuts   += ShortcutDeclaration ';')*
 	(expressions += RosettaCalcExpression ';')+
+;
+
+ShortcutDeclaration:
+	'let' (':'Definable)? RosettaNamed '=' expression=RosettaCalcAttributeCall
 ;
 
 PostCondition returns Condition: // TODO no name? annotations?
 	'post-condition' ':' Definable?
 	(expressions+=RosettaCalcExpression ';')+
 ;
+
+EnumValueReference returns RosettaEnumValueReference:
+	enumeration=[RosettaEnumeration|ValidID] '->' value=[RosettaEnumValue|ValidID]
+;
+
 
 // old stuff
 RosettaRootElement:
