@@ -217,15 +217,15 @@ RosettaClassSynonymValue:
 RosettaSynonym:
 	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*
 	body=RosettaSynonymBody
-	('meta' (metaValues += ValidID ',')* metaValues += ValidID)?
-	('mapper' mapper=ValidID)?
 	']'
 ;
 
 RosettaSynonymBody:
-	'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? 
-	| 'hint' (hints+=ValidHint ',')* hints+=ValidHint
-	| mappingLogic=RosettaMappingSetTo
+	( 'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? 
+		| 'hint' (hints+=ValidHint ',')* hints+=ValidHint
+		| mappingLogic=RosettaMappingSetTo )
+	('meta' (metaValues += ValidID ',')* metaValues += ValidID)?
+	('mapper' mapper=ValidID)?
 	
 ;
 
