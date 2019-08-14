@@ -60,11 +60,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 			
 «««			(DONE) Make RosettaExpression support StringConcatClient to add these imports
 «««			Now have RosettaExpressionToJava support actually use types (not just strings)
-			import com.rosetta.model.lib.functions.MapperS;
-			import com.rosetta.model.lib.functions.MapperTree;
 			import com.rosetta.model.lib.meta.FieldWithMeta;
-			import java.time.LocalDate;
-			import java.math.BigDecimal;
 			
 			import org.isda.cdm.*;
 						
@@ -97,7 +93,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 			import java.math.BigDecimal;
 			
 			import org.isda.cdm.*;
-						
+			
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			«FOR _import : concatenator.imports»
@@ -168,7 +164,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	
 	def dispatch StringConcatenationClient contributeEnrichMethod(extension Function function, extension JavaQualifiedTypeProvider names) '''
 			
-		protected abstract «output.toJavaQualifiedType(false)» doEvaluate(«function.inputsAsParameters(names)»);
+		protected abstract «function.outputTypeOrVoid(names)» doEvaluate(«function.inputsAsParameters(names)»);
 	'''
 	
 	dispatch def StringConcatenationClient contributeEvaluateMethod(extension RosettaFunction function, extension JavaQualifiedTypeProvider names, Iterable<RosettaFunction> dependencies) '''
@@ -198,30 +194,43 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		 «FOR input : inputs»
 		 * @param «input.name» «input.definition»
 		 «ENDFOR»
+		 «IF output !== null»
 		 * @return «output.name» «output.definition»
+		 «ENDIF»
 		 */
-		public «output.toJavaQualifiedType(false)» evaluate(«function.inputsAsParameters(names)») {
+		public «function.outputTypeOrVoid(names)» evaluate(«function.inputsAsParameters(names)») {
 			«contributeDependencies(names, dependencies)»
 			
+			«IF !conditions.empty»
 			// pre-conditions
 			//
 			«FOR cond:conditions»
 			«cond.contributeCondition»
 			«ENDFOR»
-			
+			«ENDIF»
 			// Delegate to implementation
 			//
-			«output.toJavaQualifiedType(false)» «output.name» = doEvaluate(«function.inputsAsArguments(names)»);
-			
+			 «IF output !== null»«output.toJavaQualifiedType(false)» «output.name» = «ENDIF»doEvaluate(«function.inputsAsArguments(names)»);
+			«IF !postConditions.empty»
 			// post-conditions
 			//
 			«FOR cond:postConditions»
 			«cond.contributeCondition»
 			«ENDFOR»
-			
+			«ENDIF»
+			«IF output !== null»
 			return «output.name»;
+			«ENDIF»
 		}
 	'''
+	
+	def outputTypeOrVoid(Function function,  extension JavaQualifiedTypeProvider names){
+		if(function.output === null) {
+			'void'
+		} else {
+			function.output.toJavaQualifiedType(false)
+		}
+	}
 	
 	private def StringConcatenationClient contributeDependencies(extension JavaQualifiedTypeProvider provider, Iterable<RosettaFunction> dependencies) {
 		if (!dependencies.empty) {

@@ -35,16 +35,13 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator.ParamMap
-import com.rosetta.model.lib.validation.ValidatorHelper
 import java.lang.reflect.Modifier
 import com.rosetta.model.lib.functions.ExpressionOperators
+import java.time.LocalDateTime
 
 class RosettaToJavaExtensions {
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaTypeCompatibility
-	@Inject RosettaExpressionJavaGenerator expressionJavaGenerator
 
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, Object ele) {
@@ -141,7 +138,7 @@ class RosettaToJavaExtensions {
 				default: '''«toJava(ele.left)» «ele.operator» «toJava(ele.right)»'''
 			}
 		} else if (ele.operator == '+' && leftType==RBuiltinType.DATE && rightType==RBuiltinType.TIME){
-			'''java.time.LocalDateTime.of(«toJava(ele.left)», «toJava(ele.right)»)'''
+			'''«LocalDateTime».of(«toJava(ele.left)», «toJava(ele.right)»)'''
 		} else {
 			switch (ele.operator) {
 				case "=": '''«Objects».equals(«toJava(ele.left)», «toJava(ele.right)»)'''

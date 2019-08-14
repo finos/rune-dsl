@@ -37,8 +37,8 @@ Annotation:
 Function:
 	'func' RosettaNamed (':' Definable)?
 	Annotations?
-	('inputs:' (inputs += Attribute)+)?
-	'output:' output = Attribute
+	(('inputs:')?inputs += Attribute+)?
+	('output:' output = Attribute)?
 	conditions+=Condition*
 	operations+=Operation*
 	postConditions+=PostCondition*
@@ -119,7 +119,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'calculation' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version')
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'calculation' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition')
 ;
 
 ValidHint: 
