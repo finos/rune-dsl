@@ -43,6 +43,7 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import org.eclipse.xtext.conversion.impl.IDValueConverter
+import com.regnosys.rosetta.rosetta.simple.Function
 
 class RosettaTypeProvider {
 
@@ -246,6 +247,8 @@ class RosettaTypeProvider {
 				expression.path.RType
 			Attribute:
 				expression.type.RType
+			Function:
+				expression.output.RType
 			default:
 				RBuiltinType.MISSING
 		}
