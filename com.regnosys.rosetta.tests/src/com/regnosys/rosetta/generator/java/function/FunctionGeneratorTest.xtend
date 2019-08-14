@@ -587,7 +587,7 @@ class FunctionGeneratorTest {
 		assertEquals(expected.trim, concatenator.toString.trim)
 	}
 	
-	@Disabled @Test //TODO
+	@Disabled @Test // TODO Why are you expecting LocalDate being imported into FooFunc?
 	def void shouldImportLocalDateWhenUsedInExpression() {
 		val javaNames = factory.create(javaPackages)
 		
@@ -672,5 +672,55 @@ class FunctionGeneratorTest {
 	}
 	
 	
-
+	@Test
+	def void testFunctionGeneration() {
+		assertEquals(
+			'''
+			package com.rosetta.test.model.functions;
+			
+			import com.rosetta.model.lib.meta.FieldWithMeta;
+			
+			import org.isda.cdm.*;
+						
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			
+			import com.google.common.collect.ClassToInstanceMap;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			import java.lang.String;
+			
+			public abstract class FuncFoo implements RosettaFunction {
+				
+				protected final ClassToInstanceMap<RosettaFunction> classRegistry;
+				
+				protected FuncFoo(ClassToInstanceMap<RosettaFunction> classRegistry) {
+					
+					// On concrete instantiation, register implementation with function to implementation container
+					//
+					classRegistry.putInstance(FuncFoo.class, this);
+					this.classRegistry = classRegistry;	
+				}
+					
+				/**
+				 * @param result 
+				 * @param result2 
+				 */
+				public void evaluate(String result, String result2) {
+					
+					// Delegate to implementation
+					//
+					 doEvaluate(result, result2);
+				}
+					
+				protected abstract void doEvaluate(String result, String result2);
+			}
+			'''.toString,
+			'''
+				func FuncFoo:
+					inputs:
+						result string (1..1)
+						result2 string (1..1)
+				
+			'''.generateCode(generator).get('com.rosetta.test.model.functions.FuncFoo')
+		)
+	}
 }

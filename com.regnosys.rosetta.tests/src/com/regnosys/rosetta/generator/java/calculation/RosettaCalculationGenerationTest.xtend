@@ -471,8 +471,8 @@ class RosettaCalculationGenerationTest {
 			public CalculationResult calculate(FuncIn paramFuncIn) {
 				CalculationInput input = new CalculationInput().create(paramFuncIn);
 				CalculationResult result = new CalculationResult(input);
-				result.res = java.time.LocalDateTime.of(input.arg1, input.arg2);
-				result.res2 = java.time.LocalDateTime.of(input.arg1, input.arg2).toString();
+				result.res = LocalDateTime.of(input.arg1, input.arg2);
+				result.res2 = LocalDateTime.of(input.arg1, input.arg2).toString();
 				return result;
 			}
 			
@@ -621,6 +621,7 @@ class RosettaCalculationGenerationTest {
 		import com.rosetta.test.model.FuncIn;
 		import java.lang.String;
 		import java.time.LocalDate;
+		import java.time.LocalDateTime;
 		import java.time.LocalTime;
 		import java.util.Arrays;
 		import java.util.List;
@@ -631,7 +632,7 @@ class RosettaCalculationGenerationTest {
 				CalculationInput input = new CalculationInput().create(paramFuncIn);
 				CalculationResult result = new CalculationResult(input);
 				result.transactionReferenceNumber = ("SPH" + input.linkId);
-				result.tradingDateTime = java.time.LocalDateTime.of(input.tradeDate, input.tradeTime).toString();
+				result.tradingDateTime = LocalDateTime.of(input.tradeDate, input.tradeTime).toString();
 				return result;
 			}
 			

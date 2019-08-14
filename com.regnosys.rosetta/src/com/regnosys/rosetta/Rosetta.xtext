@@ -30,12 +30,12 @@ AnnotationRef:
 
 
 Annotation:
-	'anno' name = ValidID (':' Definable)?
+	'anno' name = ValidID ':' Definable?
 	attributes += Attribute*
 ;
 
 Function:
-	'func' RosettaNamed (':' Definable)?
+	'func' RosettaNamed ':' Definable?
 	Annotations?
 	(('inputs:')?inputs += Attribute+)?
 	('output:' output = Attribute)?
@@ -48,18 +48,19 @@ Attribute:
 	RosettaNamed RosettaTyped card=RosettaCardinality Definable? Annotations?;
 
 Condition:
-	'condition' name = ValidID (':' Definable)?
+	'condition' name = ValidID ':' (Definable)?
 		Annotations?
 		(expressions+=RosettaCalcExpression ';')+
 ;
 
 Operation: // TODO no name? annotations?
-	'operation' (':' Definable)?
-	(expressions+=RosettaCalcExpression ';')+
+	'operation' ':' Definable?
+	(variables   += RosettaArgumentAlias ';')*
+	(expressions += RosettaCalcExpression ';')+
 ;
 
 PostCondition returns Condition: // TODO no name? annotations?
-	'post-condition' (':' Definable)?
+	'post-condition' ':' Definable?
 	(expressions+=RosettaCalcExpression ';')+
 ;
 
