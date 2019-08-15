@@ -24,7 +24,7 @@ class ModelObjectBoilerPlate {
 		«c.wrap.boilerPlate»
 	'''
 
-	def calculationResultBoilerPlate(String ownerName, List<RosettaFeature> features) {
+	def calculationResultBoilerPlate(String ownerName, List<? extends RosettaFeature> features) {
 		features.wrapCalculationResult(ownerName).boilerPlate
 	}
 
@@ -154,7 +154,7 @@ class ModelObjectBoilerPlate {
 		);
 	}
 
-	private def TypeData wrapCalculationResult(List<RosettaFeature> features, String typeName) {
+	private def TypeData wrapCalculationResult(List<? extends RosettaFeature> features, String typeName) {
 		return new TypeData(typeName, features.map [
 			new ExpandedAttribute(null, getNameOrDefault, type, typeName, 0, 1, list, Collections.emptyList, null,
 				false, it == RosettaEnumeration, false, Collections.emptyList)

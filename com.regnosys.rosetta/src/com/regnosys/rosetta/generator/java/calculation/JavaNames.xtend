@@ -79,7 +79,7 @@ class JavaNames {
 		return QualifiedName.create(ele.name.split('\\.'))
 	}
 
-	def QualifiedName toTargetClassName(RosettaExternalFunction ele) {
+	def QualifiedName toTargetClassName(RosettaCallableWithArgs ele) {
 		return QualifiedName.create(ele.name)
 	}
 

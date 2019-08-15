@@ -5,15 +5,18 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.object.ModelObjectBoilerPlate
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaCalculation
 import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -35,13 +38,13 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 
 class CalculationGenerator {
 
 	@Inject JavaNames.Factory factory
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaExtensions
+	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaToJavaExtensions
 	@Inject ModelObjectBoilerPlate boilerPlates
 	@Inject extension RosettaExternalFunctionDependencyProvider
@@ -134,64 +137,125 @@ class CalculationGenerator {
 						«val enumValClass = toTargetClassName(enumVal.calculation).lastSegment»
 						«enumVal.createCalculationClass(javaNames, enumValClass, true)»
 					«ENDFOR»
-					«javaNames.createResultClass(args.head.calculation, true)»
+					«javaNames.createResultClass(args.head.calculation.features, true, true)»
 				}'''
 			}
 		return body
 	}
 
 	def generateFunctions(IFileSystemAccess2 fsa, List<RosettaRootElement> elements, extension JavaNames it, String version) {
+		
 		elements.filter(RosettaExternalFunction).filter[!isLibrary].forEach [ function |
-			val funcionName = toTargetClassName(function)
-
-			val StringConcatenationClient body = '''
-				«emptyJavadocWithVersion(version)»
-				public interface «funcionName» {
+			generateExternalFunction(fsa, function, it, version)
+		]
+		elements.filter(Function).filter[handleAsExternalFunction].forEach [ function |
+			generateExternalFunction(fsa, function, it, version)
+		]
+	}
+	
+	private dispatch def void generateExternalFunction(IFileSystemAccess2 fsa, Function function, extension JavaNames it, String version) {
+		
+		val funcionName = toTargetClassName(function)
+		
+		val StringConcatenationClient body = '''
+			«emptyJavadocWithVersion(version)»
+			public interface «funcionName» {
+				
+				CalculationResult execute(«FOR param : function.inputs SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR»);
+				
+				«createResultClass(newArrayList(function.output), false, false)»
+			}
+		'''
+		
+		val concat = new ImportingStringConcatination()
+		concat.append(body)
+		
+		fsa.generateFile('''«packages.functions.directoryName»/«funcionName».java''', '''
+			package «packages.functions.packageName»;
+			
+			«FOR imp : concat.imports»
+				import «imp»;
+			«ENDFOR»
+			
+			«concat.toString»
+		''')
+		
+		val implPath = '''«packages.functions.directoryName»/«funcionName»Impl.java'''
+		if (!fsa.isFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT)) {
+		
+			val StringConcatenationClient implClazz = '''
+				public class «funcionName»Impl {
 					
-					CalculationResult execute(«FOR param : function.parameters SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR»);
-					
-					«createResultClass(function, false)»
+					public «JavaType.create('''«packages.functions.packageName».«funcionName».CalculationResult''')» execute(«FOR param : function.inputs SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR») {
+						throw new UnsupportedOperationException("TODO: auto-generated method stub");
+					}
 				}
 			'''
-
-			val concat = new ImportingStringConcatination()
-			concat.append(body)
-
-			fsa.generateFile('''«packages.functions.directoryName»/«funcionName».java''', '''
+			val concatImpl = new ImportingStringConcatination()
+			concatImpl.append(implClazz)
+		
+			fsa.generateFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT, '''
 				package «packages.functions.packageName»;
 				
-				«FOR imp : concat.imports»
+				«FOR imp : concatImpl.imports»
 					import «imp»;
 				«ENDFOR»
 				
-				«concat.toString»
+				«concatImpl.toString»
 			''')
-
-			val implPath = '''«packages.functions.directoryName»/«funcionName»Impl.java'''
-			if (!fsa.isFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT)) {
-
-				val StringConcatenationClient implClazz = '''
-					public class «funcionName»Impl {
-						
-						public «JavaType.create('''«packages.functions.packageName».«funcionName».CalculationResult''')» execute(«FOR param : function.parameters SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR») {
-							throw new UnsupportedOperationException("TODO: auto-generated method stub");
-						}
-					}
-				'''
-				val concatImpl = new ImportingStringConcatination()
-				concatImpl.append(implClazz)
-
-				fsa.generateFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT, '''
-					package «packages.functions.packageName»;
-					
-					«FOR imp : concatImpl.imports»
-						import «imp»;
-					«ENDFOR»
-					
-					«concatImpl.toString»
-				''')
+		}
+	
+	}
+	private dispatch def void generateExternalFunction(IFileSystemAccess2 fsa, RosettaExternalFunction function, extension JavaNames it, String version) {
+		val funcionName = toTargetClassName(function)
+		
+		val StringConcatenationClient body = '''
+			«emptyJavadocWithVersion(version)»
+			public interface «funcionName» {
+				
+				CalculationResult execute(«FOR param : function.parameters SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR»);
+				
+				«createResultClass(function.features,false, false)»
 			}
-		]
+		'''
+		
+		val concat = new ImportingStringConcatination()
+		concat.append(body)
+		
+		fsa.generateFile('''«packages.functions.directoryName»/«funcionName».java''', '''
+			package «packages.functions.packageName»;
+			
+			«FOR imp : concat.imports»
+				import «imp»;
+			«ENDFOR»
+			
+			«concat.toString»
+		''')
+		
+		val implPath = '''«packages.functions.directoryName»/«funcionName»Impl.java'''
+		if (!fsa.isFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT)) {
+		
+			val StringConcatenationClient implClazz = '''
+				public class «funcionName»Impl {
+					
+					public «JavaType.create('''«packages.functions.packageName».«funcionName».CalculationResult''')» execute(«FOR param : function.parameters SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR») {
+						throw new UnsupportedOperationException("TODO: auto-generated method stub");
+					}
+				}
+			'''
+			val concatImpl = new ImportingStringConcatination()
+			concatImpl.append(implClazz)
+		
+			fsa.generateFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT, '''
+				package «packages.functions.packageName»;
+				
+				«FOR imp : concatImpl.imports»
+					import «imp»;
+				«ENDFOR»
+				
+				«concatImpl.toString»
+			''')
+		}
 	}
 
 	def private StringConcatenationClient createCalculationClass(RosettaArguments arguments, extension JavaNames it, String className, boolean enumGeneration) {
@@ -217,7 +281,7 @@ class CalculationGenerator {
 				«createInputClass(className, arguments)»
 				«IF !enumGeneration»
 					
-					«createResultClass(arguments.calculation, false)»
+					«createResultClass(arguments.calculation.features, true, false)»
 				«ENDIF»
 			}
 		'''
@@ -352,13 +416,12 @@ class CalculationGenerator {
 	}
 		
 	
-	def private StringConcatenationClient createResultClass(extension JavaNames it, RosettaFeatureOwner featureOwner, boolean enumGeneration) {
-		val features = featureOwner.features
+	def private StringConcatenationClient createResultClass(extension JavaNames it, List<? extends RosettaFeature> features, boolean isCalculation, boolean enumGeneration) {
 
 		'''
-			«IF featureOwner.isCalculation»public static «ENDIF»class CalculationResult implements «featureOwner.resultsClass» {
+			«IF isCalculation»public static «ENDIF»class CalculationResult implements «IF isCalculation»«ICalculationResult»«ELSE»«IFunctionResult»«ENDIF» {
 			
-				«IF featureOwner.isCalculation»
+				«IF isCalculation»
 					private «calulationInputClass(enumGeneration)» calculationInput;
 				«ENDIF»
 			
@@ -367,8 +430,8 @@ class CalculationGenerator {
 					private «feature.toJavaQualifiedType» «nameOrDefault»;
 			«ENDFOR»
 				
-				public CalculationResult(«IF featureOwner.isCalculation»«calulationInputClass(enumGeneration)» calculationInput«ENDIF») {
-					«IF featureOwner.isCalculation»this.calculationInput = calculationInput;«ENDIF»
+				public CalculationResult(«IF isCalculation»«calulationInputClass(enumGeneration)» calculationInput«ENDIF») {
+					«IF isCalculation»this.calculationInput = calculationInput;«ENDIF»
 				}
 				«FOR feature : features»
 					«val nameOrDefault = feature.getNameOrDefault»
@@ -382,7 +445,7 @@ class CalculationGenerator {
 					}
 					
 				«ENDFOR»
-				«IF featureOwner.isCalculation»
+				«IF isCalculation»
 					@Override
 					public «calulationInputClass(enumGeneration)» getCalculationInput() {
 						return calculationInput;
@@ -400,7 +463,7 @@ class CalculationGenerator {
 					return ATTRIBUTES;
 				}
 				
-				«boilerPlates.calculationResultBoilerPlate("CalculationResult", featureOwner.features)»
+				«boilerPlates.calculationResultBoilerPlate("CalculationResult", features)»
 			}
 		'''
 	}
@@ -425,11 +488,7 @@ class CalculationGenerator {
 	protected def StringConcatenationClient calulationInputClass(boolean enumGeneration)
 		'''«IF enumGeneration»«ICalculationInput»«ELSE»CalculationInput«ENDIF»'''
 	
-	protected def StringConcatenationClient resultsClass(RosettaFeatureOwner featureOwner)
-		'''«IF featureOwner.isCalculation»«ICalculationResult»«ELSE»«IFunctionResult»«ENDIF»'''
-	
-	
-	protected def boolean isCalculation(RosettaFeatureOwner featureOwner) {
+	private def boolean isCalculation(RosettaFeatureOwner featureOwner) {
 		!(featureOwner instanceof RosettaExternalFunction)
 	}
 

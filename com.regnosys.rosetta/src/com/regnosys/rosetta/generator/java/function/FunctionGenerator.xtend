@@ -6,6 +6,7 @@ import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.calculation.ImportingStringConcatination
 import com.regnosys.rosetta.generator.java.calculation.RosettaFunctionDependencyProvider
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaFuncitonCondition
 import com.regnosys.rosetta.rosetta.RosettaFunction
@@ -22,6 +23,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	@Inject JavaQualifiedTypeProvider.Factory factory
 	@Inject RosettaExpressionJavaGeneratorForFunctions rosettaExpressionGenerator
 	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
+	@Inject extension RosettaFunctionExtensions
 
 	override generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		val javaNames = factory.create(packages)
@@ -37,7 +39,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 			}
 			
 		]
-		elements.filter(Function).forEach [
+		elements.filter(Function).filter[it.handleAsSpecFunction()].forEach [
 			val name = javaNames.packages.functions.directoryName + '/' + name + '.java'
 			
 			try {
@@ -49,6 +51,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 			
 		]
 	}
+	
 
 	private dispatch def String generate(Function function, JavaQualifiedTypeProvider javaNames) {
 		
