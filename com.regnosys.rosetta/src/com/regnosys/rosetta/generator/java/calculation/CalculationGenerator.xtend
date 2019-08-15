@@ -163,7 +163,7 @@ class CalculationGenerator {
 				
 				CalculationResult execute(«FOR param : function.inputs SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR»);
 				
-				«createResultClass(newArrayList(function.output), false, false)»
+				«createResultClass(if(function.output!==null)newArrayList(function.output) else emptyList, false, false)»
 			}
 		'''
 		

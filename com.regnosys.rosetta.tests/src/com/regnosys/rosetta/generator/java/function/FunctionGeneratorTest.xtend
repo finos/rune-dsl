@@ -672,7 +672,7 @@ class FunctionGeneratorTest {
 	}
 	
 	
-	@Test @Disabled // FIXME
+	@Test
 	def void testFunctionGeneration() {
 		assertEquals(
 			'''
@@ -685,7 +685,9 @@ class FunctionGeneratorTest {
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			import com.google.common.collect.ClassToInstanceMap;
+			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
+			import java.lang.Integer;
 			import java.lang.String;
 			
 			public abstract class FuncFoo implements RosettaFunction {
@@ -703,24 +705,33 @@ class FunctionGeneratorTest {
 				/**
 				 * @param result 
 				 * @param result2 
+				 * @return out 
 				 */
-				public void evaluate(String result, String result2) {
+				public Integer evaluate(Integer result, String result2) {
 					
 					// Delegate to implementation
 					//
-					 doEvaluate(result, result2);
+					 Integer out = doEvaluate(result, result2);
+					// post-conditions
+					//
+					assert
+						greaterThan(MapperS.of(result), MapperS.of(Integer.valueOf(42))).get()
+							: "";
+					return out;
 				}
 					
-				protected abstract void doEvaluate(String result, String result2);
+				protected abstract Integer doEvaluate(Integer result, String result2);
 			}
 			'''.toString,
 			'''
 				func FuncFoo:
 					inputs:
-						result string (1..1)
+						result int (1..1)
 						result2 string (1..1)
 					
-				
+					output:
+						out int(1..1)
+					post-condition: result > 42;
 			'''.generateCode(generator).get('com.rosetta.test.model.functions.FuncFoo')
 		)
 	}
