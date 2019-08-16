@@ -5,7 +5,6 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.object.ModelObjectBoilerPlate
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaCalculation
@@ -44,7 +43,6 @@ class CalculationGenerator {
 	@Inject JavaNames.Factory factory
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaExtensions
-	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaToJavaExtensions
 	@Inject ModelObjectBoilerPlate boilerPlates
 	@Inject extension RosettaExternalFunctionDependencyProvider
@@ -184,7 +182,7 @@ class CalculationGenerator {
 		if (!fsa.isFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT)) {
 		
 			val StringConcatenationClient implClazz = '''
-				public class «funcionName»Impl {
+				public class «funcionName»Impl implements «funcionName» {
 					
 					public «JavaType.create('''«packages.functions.packageName».«funcionName».CalculationResult''')» execute(«FOR param : function.inputs SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR») {
 						throw new UnsupportedOperationException("TODO: auto-generated method stub");
@@ -236,7 +234,7 @@ class CalculationGenerator {
 		if (!fsa.isFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT)) {
 		
 			val StringConcatenationClient implClazz = '''
-				public class «funcionName»Impl {
+				public class «funcionName»Impl implements «funcionName» {
 					
 					public «JavaType.create('''«packages.functions.packageName».«funcionName».CalculationResult''')» execute(«FOR param : function.parameters SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR») {
 						throw new UnsupportedOperationException("TODO: auto-generated method stub");
@@ -308,11 +306,11 @@ class CalculationGenerator {
 		createConstructor(className, newArrayList(arguments))
 	}
 
-	def private asParameters(Iterable<RosettaExternalFunction> functions) {
+	def private asParameters(Iterable<? extends RosettaCallableWithArgs> functions) {
 		functions.map[new Parameter(name, name.toFirstLower)]
 	}
 	
-	def private asArguments(Iterable<RosettaExternalFunction> functions) {
+	def private asArguments(Iterable<? extends RosettaCallableWithArgs> functions) {
 		functions.map[name.toFirstLower]
 	}
 

@@ -102,16 +102,19 @@ class RosettaGenerator extends AbstractGenerator {
 				qualifyEventsGenerator.generate(packages, fsa, elements, packages.qualifyEvent, RosettaEvent, version)
 				qualifyProductsGenerator.generate(packages, fsa, elements, packages.qualifyProduct, RosettaProduct, version)
 				
-				val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
-				val allElements = models.flatMap[elements].toList
-				metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), elements.filter(RosettaClass), models.map[header].filter(a|a!==null).map[namespace])
-	
 				// Invoke externally defined code generators
 				externalGenerators.forEach[generator |
 					generator.generate(packages, elements, version,[map|
 						map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]],resource, lock)
 				]
 			]
+			
+			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
+			val allElements = models.flatMap[elements].toList
+			val classes = resource.contents.filter(RosettaModel).head.elements.filter(RosettaClass)
+			metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), classes.filter(RosettaClass), models.map[header].filter(a|a!==null).map[namespace])
+	
+			
 			// TODO same as in afterGenerate()?
 			val model = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel)
 			val version = model.findFirst[header!==null].header.version

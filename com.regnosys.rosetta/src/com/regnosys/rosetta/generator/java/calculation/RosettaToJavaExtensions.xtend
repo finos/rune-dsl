@@ -21,6 +21,7 @@ import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
@@ -52,6 +53,10 @@ class RosettaToJavaExtensions {
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaNamed ele) {
 		'''not implemented named «ele.class»'''
+	}
+	
+	def dispatch StringConcatenationClient toJava(extension JavaNames it, Function ele) {
+		'''«ele.name.toFirstLower»'''	
 	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaGroupByFeatureCall ele) {
@@ -88,6 +93,12 @@ class RosettaToJavaExtensions {
 	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaCallableWithArgsCall ele) {
+		if (ele.callable instanceof Function) {
+			val returnVal = (ele.callable as Function).output
+			if(returnVal !== null)
+				return '''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
+		}
+		 
 		'''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»)'''
 	}
 	

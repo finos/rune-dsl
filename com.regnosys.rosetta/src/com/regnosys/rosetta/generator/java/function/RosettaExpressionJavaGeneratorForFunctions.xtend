@@ -42,6 +42,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.regnosys.rosetta.rosetta.simple.Function
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	@Inject
@@ -85,13 +86,21 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			}
 			RosettaCallableWithArgsCall: {
 				val callable = expr.callable
-				if (callable instanceof RosettaFunction) {
-					if(!callable.output.card.isIsMany) {
-						'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»))'''	
-					} else {
-						throw new IllegalArgumentException('Calling Functions with multiple cardinality return types not yet supported')	
-					}
+				val many = switch (callable) {
+					Function:
+						callable.output.card.isMany
+					RosettaFunction:
+						callable.output.card.isMany
+					default:
+						null
 				}
+				if (many !== null)
+					if (!many) {
+						'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»))'''
+					} else {
+						throw new IllegalArgumentException(
+							'Calling Functions with multiple cardinality return types not yet supported')
+					}
 			}
 			RosettaBigDecimalLiteral : {
 				'''«MapperS».of(«BigDecimal».valueOf(«expr.value»))'''

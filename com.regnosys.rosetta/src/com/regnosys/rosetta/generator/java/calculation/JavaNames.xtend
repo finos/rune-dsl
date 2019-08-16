@@ -21,6 +21,8 @@ import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.simple.Function
 
 class JavaNames {
 
@@ -28,12 +30,15 @@ class JavaNames {
 	RosettaJavaPackages packages
 
 	@Inject RosettaTypeProvider typeProvider
+	@Inject extension RosettaFunctionExtensions
 
 	def StringConcatenationClient toJavaQualifiedType(RosettaCallableWithArgs ele) {
-		if (ele instanceof RosettaType) {
-			toJavaQualifiedType(ele as RosettaType)
-		} else {
-			'''«ele.name»'''
+		switch (ele) {
+			RosettaType:
+				toJavaQualifiedType(ele as RosettaType)
+			Function case ele.
+				handleAsExternalFunction: '''«JavaType.create(packages.functions.packageName + "." + ele.name.toFirstUpper)»'''
+			default: '''«ele.name»'''
 		}
 	}
 
