@@ -2,6 +2,8 @@ package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.calculation.JavaNames
+import com.regnosys.rosetta.generator.java.calculation.JavaType
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
@@ -25,11 +27,13 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.functions.MapperMaths
 import com.rosetta.model.lib.functions.MapperS
@@ -38,16 +42,18 @@ import java.math.BigDecimal
 import java.util.HashMap
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.RosettaBasicType
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	@Inject
 	RosettaTypeProvider typeProvider
 	val cardinalityProvider = new CardinalityProvider
+	@Inject JavaNames.Factory factory 
 
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		expr.javaCode(params, true);
@@ -195,7 +201,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	 */
 	def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params, boolean isLast, boolean autoValue) {
 		val feature = call.feature
-		val right = if (feature instanceof RosettaRegularAttribute) '''«feature.buildMapFunc(isLast, autoValue)»''' else throw new UnsupportedOperationException("Unsupported expression type of "+feature.class.simpleName)
+		val StringConcatenationClient right = if (feature instanceof RosettaRegularAttribute) feature.buildMapFunc(isLast, autoValue) else throw new UnsupportedOperationException("Unsupported expression type of "+feature.class.simpleName)
 		'''«javaCode(call.receiver, params, false)»«right»'''
 	}
 	
@@ -358,14 +364,22 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		}
 		else
 		{
-			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty)
+			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty){
+				if(attribute.type instanceof RosettaClass) 
+				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
+				else
 				'''.<«attribute.type.name.toJavaType»>map(«mapFunc»)'''
+			}
 			else if (!autoValue) {
 				'''.<«attribute.metaClass»>map(«mapFunc»)'''
 			}
 			else
 				'''.map(«mapFunc»).<«attribute.type.name.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
 		}
+	}
+	
+	def JavaType toJavaType(RosettaType rosType) {
+		 factory.create(EcoreUtil2.getContainerOfType(rosType, RosettaModel)).toJavaType(rosType)
 	}
 	
 	def static metaClass(RosettaRegularAttribute attribute) {

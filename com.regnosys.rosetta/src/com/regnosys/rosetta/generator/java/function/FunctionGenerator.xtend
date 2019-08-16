@@ -58,12 +58,14 @@ class FunctionGenerator implements RosettaInternalGenerator {
 				«FOR staticImport : concatenator.staticImports»
 					import static «staticImport»;
 				«ENDFOR»
-				
+				«IF !(func.conditions.nullOrEmpty || func.postConditions.nullOrEmpty) /*FIXME add static imports */»
+				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+				«ENDIF»
 				«concatenator.toString»
 				'''
 				fsa.generateFile(name, content)	
 			} catch (Exception e) {
-				throw new UnsupportedOperationException('Unable to generate code for: ' + name)
+				throw new UnsupportedOperationException('Unable to generate code for: ' + name, e)
 			}
 	}
 	

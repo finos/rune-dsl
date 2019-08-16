@@ -116,6 +116,8 @@ class JavaQualifiedTypeProvider {
 		}
 		
 		def create(RosettaJavaPackages packages) {
+			if(packages === null) 
+				throw new IllegalArgumentException('''RosettaJavaPackages may not be null''')
 			val result = new JavaQualifiedTypeProvider
 			injector.injectMembers(result)
 			result.packages = packages

@@ -61,7 +61,26 @@ class JavaNames {
 				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
 		}
 	}
-
+	
+	def JavaType toJavaType(RosettaType type) {
+		switch (type) {
+			RosettaBasicType:
+				toJavaType(type.name)
+			RosettaClass,
+			Data,
+			RosettaEnumeration: JavaType.create(packages.model.packageName+'.'+ type.name)
+			RosettaCalculation: JavaType.create(packages.calculation.packageName+'.'+ type.name)
+			RosettaRecordType: JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)
+			RosettaExternalFunction: JavaType.create(if(type.isLibrary) packages.libFunctions.packageName + "." + type.name.toFirstUpper else packages.functions.packageName + "." + type.name.toFirstUpper)
+			default:
+				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
+		}
+	}
+	
+	def JavaType toJavaType(String typeName) {
+		return  JavaType.create(JavaClassTranslator.toJavaFullType(typeName)?:"missing builtin type " + typeName)
+	}
+	
 	def StringConcatenationClient toJavaQualifiedType(RosettaFeature feature) {
 		if (feature.isTypeInferred) {
 			switch (feature) {
