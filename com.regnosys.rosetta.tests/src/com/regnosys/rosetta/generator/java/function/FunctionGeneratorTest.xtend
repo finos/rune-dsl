@@ -678,18 +678,11 @@ class FunctionGeneratorTest {
 			'''
 			package com.rosetta.test.model.functions;
 			
-			import com.rosetta.model.lib.meta.FieldWithMeta;
-			
-			import org.isda.cdm.*;
-						
-			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
-			
 			import com.google.common.collect.ClassToInstanceMap;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.Integer;
 			import java.lang.String;
-			
 			public abstract class FuncFoo implements RosettaFunction {
 				
 				protected final ClassToInstanceMap<RosettaFunction> classRegistry;
@@ -711,7 +704,7 @@ class FunctionGeneratorTest {
 					
 					// Delegate to implementation
 					//
-					 Integer out = doEvaluate(result, result2);
+					Integer out = doEvaluate(result, result2);
 					// post-conditions
 					//
 					assert
