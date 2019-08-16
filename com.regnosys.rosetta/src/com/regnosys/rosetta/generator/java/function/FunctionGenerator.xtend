@@ -6,7 +6,6 @@ import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.calculation.ImportingStringConcatination
 import com.regnosys.rosetta.generator.java.calculation.RosettaFunctionDependencyProvider
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaFuncitonCondition
 import com.regnosys.rosetta.rosetta.RosettaFunction
@@ -23,8 +22,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	@Inject JavaQualifiedTypeProvider.Factory factory
 	@Inject RosettaExpressionJavaGeneratorForFunctions rosettaExpressionGenerator
 	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
-	@Inject extension RosettaFunctionExtensions
-
+	
 	override generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		val javaNames = factory.create(packages)
 		
@@ -39,48 +37,42 @@ class FunctionGenerator implements RosettaInternalGenerator {
 			}
 			
 		]
-		elements.filter(Function).filter[it.handleAsSpecFunction()].forEach [
-			val name = javaNames.packages.functions.directoryName + '/' + name + '.java'
+	}
+	
+
+	def void generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, Function func, String version) {
+		val javaNames = factory.create(packages)
+		val name = javaNames.packages.functions.directoryName + '/' + func.name + '.java'
 			
 			try {
-				val content = generate(it, javaNames)
+				val concatenator = new ImportingStringConcatination()
+				concatenator.append(functionClass(func, javaNames))
+				val content = 
+				'''
+				package «javaNames.packages.functions.packageName»;
+
+				import com.rosetta.model.lib.meta.FieldWithMeta;
+				
+				import org.isda.cdm.*;
+							
+				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+				
+				«FOR _import : concatenator.imports»
+					import «_import»;
+				«ENDFOR»
+				«FOR staticImport : concatenator.staticImports»
+					import static «staticImport»;
+				«ENDFOR»
+				
+				«concatenator.toString»
+				'''
 				fsa.generateFile(name, content)	
 			} catch (Exception e) {
 				throw new UnsupportedOperationException('Unable to generate code for: ' + name)
 			}
-			
-		]
 	}
 	
-
-	private dispatch def String generate(Function function, JavaQualifiedTypeProvider javaNames) {
-		
-		val concatenator = new ImportingStringConcatination()
-		concatenator.append(functionClass(function, javaNames))
-		
-		return '''
-			package «javaNames.packages.functions.packageName»;
-			
-«««			(DONE) Make RosettaExpression support StringConcatClient to add these imports
-«««			Now have RosettaExpressionToJava support actually use types (not just strings)
-			import com.rosetta.model.lib.meta.FieldWithMeta;
-			
-			import org.isda.cdm.*;
-						
-			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
-			
-			«FOR _import : concatenator.imports»
-				import «_import»;
-			«ENDFOR»
-			«FOR staticImport : concatenator.staticImports»
-				import static «staticImport»;
-			«ENDFOR»
-			
-			«concatenator.toString»
-		'''
-	}
-	
-	private def dispatch String generate(RosettaFunction function, JavaQualifiedTypeProvider javaNames) {
+	private def String generate(RosettaFunction function, JavaQualifiedTypeProvider javaNames) {
 		val concatenator = new ImportingStringConcatination()
 		concatenator.append(functionClass(function, javaNames))
 		

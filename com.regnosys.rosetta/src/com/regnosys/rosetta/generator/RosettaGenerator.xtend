@@ -7,30 +7,35 @@ package com.regnosys.rosetta.generator
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.daml.enums.DamlEnumGenerator
 import com.regnosys.rosetta.generator.daml.object.DamlModelObjectGenerator
+import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.calculation.CalculationGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
+import com.regnosys.rosetta.generator.java.function.FunctionGenerator
+import com.regnosys.rosetta.generator.java.object.DataGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
 import com.regnosys.rosetta.generator.java.qualify.QualifyFunctionGenerator
 import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaProduct
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.rosetta.util.DemandableLock
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.regnosys.rosetta.generator.external.ExternalGenerators
-import org.apache.log4j.Logger
-import com.regnosys.rosetta.generator.java.function.FunctionGenerator
-import com.rosetta.util.DemandableLock
 
 /**
  * Generates code from your model files on save.
@@ -38,7 +43,7 @@ import com.rosetta.util.DemandableLock
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
 class RosettaGenerator extends AbstractGenerator {
-	static Logger LOGGER = Logger.getLogger(RosettaGenerator)
+	static Logger LOGGER = Logger.getLogger(RosettaGenerator) =>[level = Level.DEBUG]
 
 	@Inject ModelObjectGenerator modelObjectGenerator
 	@Inject EnumGenerator enumGenerator
@@ -56,6 +61,10 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject DamlEnumGenerator damlEnumGenerator
 	@Inject ExternalGenerators externalGenerators
 	
+	@Inject DataGenerator dataGenerator
+	@Inject extension RosettaFunctionExtensions
+
+	
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta'}
 	
@@ -70,7 +79,18 @@ class RosettaGenerator extends AbstractGenerator {
 			resource.contents.filter(RosettaModel).forEach [
 				val packages = new RosettaJavaPackages(header.namespace)
 				val version = header.version
-				
+				elements.forEach [
+					switch(it) {
+						Data: {
+							dataGenerator.generate(packages, fsa, it, version)
+							metaGenerator.generate(packages, fsa, it, version)
+						}
+						Function case handleAsSpecFunction:
+							functionGenerator.generate(packages, fsa, it, version)
+						Function case handleAsExternalFunction:
+							calculationGenerator.generateFunction(packages, fsa, it, version)
+					}
+				]
 				modelObjectGenerator.generate(packages, fsa, elements, version)
 				enumGenerator.generate(packages, fsa, elements, version)
 				choiceRuleGenerator.generate(packages, fsa, elements, version)

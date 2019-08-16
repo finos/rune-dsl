@@ -732,7 +732,7 @@ class FunctionGeneratorTest {
 					output:
 						out int(1..1)
 					post-condition: result > 42;
-			'''.generateCode(generator).get('com.rosetta.test.model.functions.FuncFoo')
+			'''.generateCode().get('com.rosetta.test.model.functions.FuncFoo')
 		)
 	}
 }

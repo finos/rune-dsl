@@ -144,13 +144,13 @@ class CalculationGenerator {
 	}
 
 	def generateFunctions(IFileSystemAccess2 fsa, List<RosettaRootElement> elements, extension JavaNames it, String version) {
-		
 		elements.filter(RosettaExternalFunction).filter[!isLibrary].forEach [ function |
 			generateExternalFunction(fsa, function, it, version)
 		]
-		elements.filter(Function).filter[handleAsExternalFunction].forEach [ function |
-			generateExternalFunction(fsa, function, it, version)
-		]
+	}
+	def generateFunction(RosettaJavaPackages _packages,IFileSystemAccess2 fsa, Function function, String version) {
+		val javaNames = factory.create(_packages)
+		generateExternalFunction(fsa, function, javaNames, version)
 	}
 	
 	private dispatch def void generateExternalFunction(IFileSystemAccess2 fsa, Function function, extension JavaNames it, String version) {

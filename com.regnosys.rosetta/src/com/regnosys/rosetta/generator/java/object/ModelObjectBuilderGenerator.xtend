@@ -3,17 +3,21 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaClass
+import com.regnosys.rosetta.rosetta.RosettaQualifiedType
+import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.rosetta.model.lib.RosettaModelObjectBuilder
+import com.rosetta.util.BreadthFirstSearch
+import java.util.Collection
+import java.util.List
 import java.util.Optional
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
-import com.rosetta.util.BreadthFirstSearch
-import java.util.List
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
-import java.util.Collection
-import com.regnosys.rosetta.rosetta.RosettaQualifiedType
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.rosetta.model.lib.meta.RosettaMetaData
 
 class ModelObjectBuilderGenerator {
 	
@@ -31,7 +35,51 @@ class ModelObjectBuilderGenerator {
 		Optional.ofNullable(clazz.superType).map[builderName].orElse('RosettaModelObjectBuilder')
 	}
 	
-	def builderClass(RosettaClass c) '''
+	dispatch def StringConcatenationClient builderClass(Data c) '''
+		public static class «builderName(c)» extends «RosettaModelObjectBuilder»{
+		
+			«FOR attribute : c.expandedAttributes»
+				protected «attribute.toBuilderType» «attribute.name»;
+			«ENDFOR»
+		
+			public «builderName(c)»() {
+			}
+					
+			@Override
+			public «RosettaMetaData»<? extends «c.name»> metaData() {
+				return metaData;
+			} 
+		
+			«c.expandedAttributes.builderGetters»
+		
+			«c.setters»
+		
+			public «c.name» build() {
+				return new «c.name»(this);
+			}
+		
+			@Override
+			public «builderName(c)» prune() {
+«««				«IF c.superType!==null»super.prune();«ENDIF»
+				«FOR attribute : c.expandedAttributes»
+					«IF !attribute.isMultiple && (attribute.type instanceof RosettaClass || attribute.hasMetas)»
+						if («attribute.name»!=null && !«attribute.name».prune().hasData()) «attribute.name» = null;
+					«ELSEIF attribute.isMultiple && attribute.type instanceof RosettaClass || attribute.hasMetas»
+						if («attribute.name»!=null) «attribute.name» = «attribute.name».stream().filter(b->b!=null).map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
+					«ENDIF»
+				«ENDFOR»
+				return this;
+			}
+			
+			«c.expandedAttributes.hasData(false)»
+			
+			«c.expandedAttributes.process(false)»
+		
+			«c.builderBoilerPlate»
+		}
+	'''
+	
+	dispatch def builderClass(RosettaClass c) '''
 		public static «c.abstractModifier» class «builderName(c)» extends «c.builderSuperClass» «builderImplements(c)»{
 		
 			«FOR attribute : c.expandedAttributes»
@@ -46,7 +94,7 @@ class ModelObjectBuilderGenerator {
 				return metaData;
 			} 
 		
-			«c.builderGetters»
+			«c.expandedAttributes.builderGetters»
 		
 			«c.setters»
 			««««ContractualProduct and event are the only objects that get qualified
@@ -77,9 +125,9 @@ class ModelObjectBuilderGenerator {
 				return this;
 			}
 			
-			«c.hasData»
+			«c.expandedAttributes.hasData(c.superType!==null)»
 			
-			«c.process»
+			«c.expandedAttributes.process(c.superType!==null)»
 		
 			«c.builderBoilerPlate»
 		}
@@ -127,18 +175,18 @@ class ModelObjectBuilderGenerator {
 		result.toString()
 	}
 
-	private def process(RosettaClass c) '''
+	private def process(List<ExpandedAttribute> attributes, boolean hasSuperType) '''
 		@Override
 		public void process(RosettaPath path, BuilderProcessor processor) {
-			«IF c.superType !== null»
+			«IF hasSuperType»
 				super.process(path, processor);
 			«ENDIF»
 
-			«FOR a : c.expandedAttributes.filter[!(isRosettaClass || hasMetas)]»
+			«FOR a : attributes.filter[!(isRosettaClass || hasMetas)]»
 				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle».class, «a.name», this);
 			«ENDFOR»
 			
-			«FOR a : c.expandedAttributes.filter[isRosettaClass || hasMetas]»
+			«FOR a : attributes.filter[isRosettaClass || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle».class, «a.name»);
 			«ENDFOR»
 		}
@@ -153,8 +201,8 @@ class ModelObjectBuilderGenerator {
 		}
 	}
 	
-	private def builderGetters(RosettaClass clazz) '''
-		«FOR attribute : clazz.expandedAttributes»
+	private def builderGetters(List<ExpandedAttribute> attributes) '''
+		«FOR attribute : attributes»
 			
 			public «attribute.toBuilderType» get«attribute.name.toFirstUpper»() {
 				return «attribute.name»;
@@ -193,6 +241,54 @@ class ModelObjectBuilderGenerator {
 		}
 		return result.toString
 	}
+		
+	
+	private def setters(Data thisClass) '''
+		«FOR attribute : thisClass.expandedAttributes»
+			«IF attribute.cardinalityIsListValue»
+				public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle» «attribute.name») {
+					if(this.«attribute.name» == null){
+						this.«attribute.name» = new ArrayList<>();
+						this.«attribute.name».add(«attribute.toBuilder»);
+					} else {
+						this.«attribute.name».add(«attribute.toBuilder»);
+					}
+					return this;
+				}
+
+				«IF attribute.type instanceof RosettaClass»
+					public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle» «attribute.name») {
+						if(this.«attribute.name» == null){
+							this.«attribute.name» = new ArrayList<>();
+							this.«attribute.name».add(«attribute.name»);
+						} else {
+							this.«attribute.name».add(«attribute.name»);
+						}
+						return this;
+					}
+					
+				«ENDIF»
+				
+				public «thisClass.builderName» clear«attribute.name.toFirstUpper»() {
+					this.«attribute.name» = null;
+					return this;
+				}
+			«ELSE»
+				public «thisClass.builderName» set«attribute.name.toFirstUpper»(«attribute.toType» «attribute.name») {
+					this.«attribute.name» = «attribute.toBuilder»;
+					return this;
+				}
+
+				«IF attribute.type instanceof RosettaClass»
+					public «thisClass.builderName» set«attribute.name.toFirstUpper»Builder(«attribute.toBuilderType» «attribute.name») {
+						this.«attribute.name» = «attribute.name»;
+						return this;
+					}
+					
+				«ENDIF»
+			«ENDIF»
+		«ENDFOR»
+	'''
 	
 	private def setters(RosettaClass thisClass, RosettaClass clazz, boolean isSuper) '''
 		«FOR attribute : clazz.expandedAttributes»
@@ -242,11 +338,11 @@ class ModelObjectBuilderGenerator {
 	'''
 	
 	
-	private def hasData(RosettaClass class1) '''
+	private def hasData(List<ExpandedAttribute> attributes, boolean hasSuperType) '''
 		@Override
 		public boolean hasData() {
-			«IF class1.superType!==null»if (super.hasData()) return true;«ENDIF»
-			«FOR attribute:class1.expandedAttributes»    
+			«IF hasSuperType»if (super.hasData()) return true;«ENDIF»
+			«FOR attribute:attributes»    
 				«IF attribute.cardinalityIsListValue»
 					«IF attribute.type instanceof RosettaClass»
 						if (get«attribute.name.toFirstUpper»()!=null && get«attribute.name.toFirstUpper»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
