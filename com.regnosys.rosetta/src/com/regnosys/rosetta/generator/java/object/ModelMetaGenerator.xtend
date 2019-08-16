@@ -73,7 +73,7 @@ class ModelMetaGenerator {
 	private def StringConcatenationClient metaClassBody(Data c, RosettaJavaPackages packages, String className, String version) {
 		val javaNames = factory.create(packages)
 		
-		//val elements = (c.eContainer as RosettaModel).elements
+//		val elements = c.model.elements
 		val dataClass = javaNames.toJavaQualifiedType(c)
 		'''
 			«emptyJavadocWithVersion(version)»

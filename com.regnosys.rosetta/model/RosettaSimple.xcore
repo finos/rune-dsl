@@ -11,9 +11,9 @@ import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaType
 
 
@@ -39,7 +39,7 @@ class Attribute extends RosettaFeature, Definable, Annotated, RosettaCallable {
 abstract class Definable extends RosettaDefinable {}
 
 
-class Data extends RosettaType, RootElement, RosettaCallable{
+class Data extends RosettaType, RootElement, RosettaCallable {
 	contains Attribute[] attributes
 	contains Condition[] conditions
 }

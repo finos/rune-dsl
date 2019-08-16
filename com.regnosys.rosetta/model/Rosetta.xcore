@@ -9,7 +9,7 @@ import java.util.stream.Collectors
 class RosettaModel {
 	contains RosettaHeader header
 	contains RosettaQualifiableConfiguration[] configurations 
-	contains RosettaRootElement[] elements 
+	contains RosettaRootElement[] elements opposite model
 }
 
 class RosettaHeader {
@@ -54,7 +54,9 @@ abstract class RosettaCallable extends RosettaNamed {}
 interface RosettaCallableWithArgs extends RosettaNamed{
 }
 
-interface RosettaRootElement {}
+interface RosettaRootElement {
+	container RosettaModel model opposite elements
+}
 
 abstract class RosettaFeatureOwner extends RosettaDefinable {
 	contains RosettaFeature[] features
