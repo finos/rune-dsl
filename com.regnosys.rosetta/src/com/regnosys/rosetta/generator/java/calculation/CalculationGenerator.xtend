@@ -155,7 +155,7 @@ class CalculationGenerator {
 	}
 	def generateFunction(RosettaJavaPackages _packages,IFileSystemAccess2 fsa, Function function, String version) {
 		val javaNames = factory.create(_packages)
-		if(function.handleAsSpecFunction)
+		if(function.handleAsExternalFunction)
 			generateExternalFunction(fsa, function, javaNames, version)
 		else
 			generateCalculationFunction(fsa, function, javaNames, version)
