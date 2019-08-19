@@ -41,6 +41,7 @@ import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 
 class RosettaToJavaExtensions {
 	@Inject RosettaTypeProvider typeProvider
@@ -209,7 +210,7 @@ class RosettaToJavaExtensions {
 	def dispatch StringConcatenationClient toJava(extension JavaNames names, RosettaCallableCall ele) {
 		val callable = ele.callable
 		switch (callable) {
-			RosettaArgumentFeature: '''input.«callable.name»'''
+			RosettaArgumentFeature, ShortcutDeclaration: '''input.«callable.name»'''
 			RosettaAlias: '''«callable.name»Alias'''
 			RosettaClass: '''inputParam'''
 			default: '''«callable.name»'''

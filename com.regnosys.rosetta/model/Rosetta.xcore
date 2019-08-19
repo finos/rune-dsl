@@ -628,7 +628,10 @@ class RosettaBlueprintReport extends RosettaRootElement {
 		(regulatoryMandate.regRegime.name.toFirstUpper 
 				+ regulatoryMandate.mandates.stream.map[RosettaMandate man | man.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
 	}
-	
+	/**
+	* FIXME: Never create Grammar model Instances programmatically.
+	* Only needed in Generator, create wrapper objects for that in the BlueprintGenerator!
+	*/
 	op BlueprintNodeExp nodes() {
 		var BlueprintNodeExp currentNodeExpr = null
 		var BlueprintNodeExp firstNodeExpr = null

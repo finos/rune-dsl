@@ -7,7 +7,7 @@ import org.eclipse.xtext.EcoreUtil2
 class RosettaFunctionExtensions {
 
 	def Boolean handleAsSpecFunction(Function function) {
-		function.operations.nullOrEmpty  &&
+		function.operation === null &&
 			!(function instanceof FunctionDispatch)
 	}
 

@@ -49,31 +49,31 @@ Function:
 	)
 	 ':' Definable?
 	Annotations?
-	(('inputs:')?inputs += Attribute+)?
+	('inputs:' inputs += Attribute+)?
 	('output:' output = Attribute)?
 	
 	(shortcuts    += ShortcutDeclaration ';'?)*
 	conditions    += Condition*
-	operations    += Operation*
+	operation     = Operation?
 	postConditions+= PostCondition*
+;
+
+ShortcutDeclaration:
+	'alias' RosettaNamed ':' (Definable)?  expression=RosettaCalcExpression
 ;
 
 Attribute:
 	RosettaNamed RosettaTyped card=RosettaCardinality Definable? Annotations?;
 
 Condition:
-	'condition' RosettaNamed ':' Definable?
+	'condition' RosettaNamed? ':' Definable?
 		Annotations?
 		(expressions+=RosettaCalcExpression ';')+
 ;
 
 Operation: // TODO no name? annotations?
-	'assign-output' ':' Definable?
-	(expressions += RosettaCalcExpression ';')+
-;
-
-ShortcutDeclaration:
-	'alias' (':'Definable)? RosettaNamed '=' expression=RosettaCalcAttributeCall
+	'assign-output' attribute = [Attribute|ValidID] ':' Definable?
+	expression = RosettaCalcExpression ';'?
 ;
 
 PostCondition returns Condition: // TODO no name? annotations?
@@ -142,7 +142,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'calculation' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition')
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'calculation' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'value')
 ;
 
 ValidHint: 

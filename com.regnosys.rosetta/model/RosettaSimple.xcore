@@ -49,7 +49,7 @@ class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
 	contains Attribute output
 	contains ShortcutDeclaration[] shortcuts
 	contains Condition[] conditions
-	contains Operation[] operations opposite function
+	contains Operation operation opposite function
 	contains Condition[] postConditions
 }
 
@@ -64,8 +64,9 @@ class Condition extends Definable, Annotated, RosettaCallable, RosettaNamed {
 }
 
 class Operation extends Definable {
-	container Function function opposite operations
-	contains RosettaExpression[] expressions
+	container Function function opposite operation
+	refers Attribute attribute
+	contains RosettaExpression expression
 }
 class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable {
 	contains RosettaExpression expression

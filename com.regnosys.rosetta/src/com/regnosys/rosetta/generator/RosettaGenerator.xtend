@@ -85,9 +85,7 @@ class RosettaGenerator extends AbstractGenerator {
 							dataGenerator.generate(packages, fsa, it, version)
 							metaGenerator.generate(packages, fsa, it, version)
 						}
-						Function case handleAsSpecFunction:
-							functionGenerator.generate(packages, fsa, it, version)
-						Function case handleAsExternalFunction:
+						Function:
 							calculationGenerator.generateFunction(packages, fsa, it, version)
 					}
 				]

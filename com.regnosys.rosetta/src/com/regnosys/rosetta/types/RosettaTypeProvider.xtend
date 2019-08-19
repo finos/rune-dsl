@@ -78,10 +78,9 @@ class RosettaTypeProvider {
 				new RClassType(expression)
 			Data:
 				new RDataType(expression)
-			ShortcutDeclaration,
 			RosettaAlias: {
 				val exp = if(expression instanceof RosettaAlias) expression.expression else (expression as ShortcutDeclaration).expression
-				if (exp.eAllContents.filter(RosettaCallableCall).findFirst[expression == it.callable] === null) {
+				if (exp !== null && exp.eAllContents.filter(RosettaCallableCall).findFirst[expression == it.callable] === null) {
 					val expressionType = exp.RType
 					if (expressionType instanceof RFeatureCallType)
 						return expressionType
@@ -92,6 +91,7 @@ class RosettaTypeProvider {
 					new RErrorType('Can not compute type for ' + expression.name + " because of recursive call.")
 				}
 			}
+			ShortcutDeclaration: expression.expression.RType
 			RosettaGroupByFeatureCall: {
 				expression.call.RType.wrapInFeatureCallType(expression)
 			}

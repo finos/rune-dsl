@@ -25,6 +25,7 @@ import static com.regnosys.rosetta.generator.util.Util.*
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -87,7 +88,7 @@ class RosettaExternalFunctionDependencyProvider {
 				if (qualifiedName !== null && qualifiedName.segmentCount == 2) {
 					val index = object.eResource.resourceDescriptions
 					val matchingArgumentFeatures = index.getExportedObjectsByType(ROSETTA_ARGUMENT_FEATURE)
-						.filter [name.firstSegment == qualifiedName.firstSegment]				
+						.filter [name.firstSegment == qualifiedName.firstSegment]
 					val arguments = matchingArgumentFeatures
 						.map[IEObjectDescription e | EcoreUtil.resolve(e.EObjectOrProxy, object.eResource)]
 						.map[eContainer].filter(RosettaArguments)
@@ -101,7 +102,11 @@ class RosettaExternalFunctionDependencyProvider {
 				if(!object.isLibrary) newArrayList(object) else newArrayList
 			}
 			Function: {
-				if(object.handleAsExternalFunction) newArrayList(object) else newArrayList
+				val me = if(object.handleAsExternalFunction) newArrayList(object) else newArrayList
+				Iterables.concat(functionDependencies(object.shortcuts), me)
+			}
+			ShortcutDeclaration: {
+				functionDependencies(object.expression)
 			}
 			default:
 				newArrayList
