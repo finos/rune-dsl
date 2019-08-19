@@ -47,6 +47,7 @@ class Data extends RosettaType, RootElement, RosettaCallable {
 class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
 	contains Attribute[] inputs
 	contains Attribute output
+	contains ShortcutDeclaration[] shortcuts
 	contains Condition[] conditions
 	contains Operation[] operations opposite function
 	contains Condition[] postConditions
@@ -58,13 +59,12 @@ class FunctionDispatch extends Function {
 }
 
 
-class Condition extends Definable, Annotated, RosettaNamed {
+class Condition extends Definable, Annotated, RosettaCallable, RosettaNamed {
 	contains RosettaExpression[] expressions
 }
 
 class Operation extends Definable {
 	container Function function opposite operations
-	contains ShortcutDeclaration[] shortcuts
 	contains RosettaExpression[] expressions
 }
 class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable {

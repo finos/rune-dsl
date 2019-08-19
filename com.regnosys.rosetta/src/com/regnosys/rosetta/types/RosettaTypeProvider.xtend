@@ -45,6 +45,7 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.Condition
 
 class RosettaTypeProvider {
 
@@ -252,6 +253,8 @@ class RosettaTypeProvider {
 				expression.path.RType
 			Function:
 				expression.output.RType
+			Condition:
+				expression.expressions.last.RType
 			default:
 				RBuiltinType.MISSING
 		}

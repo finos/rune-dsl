@@ -51,9 +51,11 @@ Function:
 	Annotations?
 	(('inputs:')?inputs += Attribute+)?
 	('output:' output = Attribute)?
-	conditions+=Condition*
-	operations+=Operation*
-	postConditions+=PostCondition*
+	
+	(shortcuts    += ShortcutDeclaration ';'?)*
+	conditions    += Condition*
+	operations    += Operation*
+	postConditions+= PostCondition*
 ;
 
 Attribute:
@@ -66,13 +68,12 @@ Condition:
 ;
 
 Operation: // TODO no name? annotations?
-	'operation' ':' Definable?
-	(shortcuts   += ShortcutDeclaration ';')*
+	'assign-output' ':' Definable?
 	(expressions += RosettaCalcExpression ';')+
 ;
 
 ShortcutDeclaration:
-	'let' (':'Definable)? RosettaNamed '=' expression=RosettaCalcAttributeCall
+	'alias' (':'Definable)? RosettaNamed '=' expression=RosettaCalcAttributeCall
 ;
 
 PostCondition returns Condition: // TODO no name? annotations?
