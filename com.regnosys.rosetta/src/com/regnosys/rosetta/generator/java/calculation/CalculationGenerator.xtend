@@ -42,7 +42,6 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.rosetta.RosettaNamed
 
 class CalculationGenerator {
 
@@ -183,15 +182,13 @@ class CalculationGenerator {
 	
 	def private StringConcatenationClient calculationFunctionBody(Function function, String className, extension JavaNames it, String version) {
 		val enumGeneration = false // TODO handle this?
-		val inputType = function.inputs.last // FIXME handle multiple inputs
-		val inputArguments = if(inputType !== null) newArrayList('param' + inputType.name.toFirstUpper) else newArrayList
-		inputArguments += functionDependencies(function).asArguments
+		val inputArguments = function.inputs.map[name.toFirstLower].toList + functionDependencies(function).asArguments
 
 		'''
 			public «IF enumGeneration»static «ENDIF»class «className» {
 				«createMembers(function)»
 				«createConstructor(className, function)»
-				public CalculationResult calculate(«IF inputType !== null»«inputType.toJavaQualifiedType» param«inputType.name.toFirstUpper»«ENDIF») {
+				public CalculationResult calculate(«FOR input:function.inputs SEPARATOR ', '»«input.toJavaQualifiedType» «input.name.toFirstLower»«ENDFOR») {
 					CalculationInput input = new CalculationInput().create(«inputArguments.join(', ')»);
 «««					// TODO: code generate local variables for fields inside CalculationInput s.t. assignments below can access them as local variables
 					CalculationResult result = new CalculationResult(input);
@@ -419,9 +416,7 @@ class CalculationGenerator {
 	}
 	
 	dispatch def private StringConcatenationClient createInputClass(extension JavaNames it, String calculationName, Function function) {
-		val inputType = function.inputs.head // FIXME support multi input
-		val inputName= function.inputs.head.name // FIXME support multi input
-		val functionParameters = functionDependencies(function).asParameters
+		val functionParameters = function.inputs.map[new Parameter(it.type.toJavaType.simpleName, name.toFirstLower)] + functionDependencies(function).asParameters
 
 		'''
 			public static class CalculationInput implements «ICalculationInput» {
@@ -431,11 +426,17 @@ class CalculationGenerator {
 				«IF ! function.shortcuts.map[typeProvider.getRType(expression)].filter(RUnionType).empty»
 					private final «List»<«ICalculationResult»> calculationResults = new «ArrayList»<>();
 				«ENDIF»
+				«FOR feature : function.inputs»
+					private «feature.type.toJavaType» «feature.getName»;
+				«ENDFOR»
 				«FOR feature : function.shortcuts»
 					private «toJava(typeProvider.getRType(feature.expression))» «feature.getName»;
 				«ENDFOR»
 				
-				public CalculationInput create(«IF inputType !== null»«inputType.toJavaQualifiedType» «inputName»«IF functionParameters.size > 0», «ENDIF»«ENDIF»«functionParameters.join(', ')») {
+				public CalculationInput create(«FOR parameter:functionParameters SEPARATOR ', '»«parameter»«ENDFOR») {
+					«FOR feature : function.inputs»
+						this.«feature.getName» = «feature.getName»;
+					«ENDFOR»
 					«FOR feature :  function.shortcuts»
 						«val exprType = typeProvider.getRType(feature.expression)»
 						«IF (exprType instanceof RUnionType) »
@@ -455,13 +456,12 @@ class CalculationGenerator {
 						new «Formula»("«calculationName.escape»", "«feature.extractNodeText(OPERATION__EXPRESSION).escape»", this)«ENDFOR»);
 				}
 				
-				«IF ! function.inputs.filter(RosettaArgumentFeature).map[typeProvider.getRType(expression)].filter(RUnionType).empty»
-					@Override
-					public «List»<«ICalculationResult»> getCalculationResults() {
-						return calculationResults;
+				«FOR feature :  function.inputs»
+					public «feature.type.toJavaType» get«feature.name.toFirstUpper»() {
+						return «feature.name»;
 					}
-					
-				«ENDIF»
+
+				«ENDFOR»
 				«FOR feature :  function.shortcuts»
 					public «toJava(typeProvider.getRType(feature.expression))» get«feature.name.toFirstUpper»() {
 						return «feature.name»;
