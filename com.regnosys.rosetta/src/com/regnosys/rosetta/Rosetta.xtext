@@ -18,7 +18,7 @@ RootElement:
 	 Annotation | Data | Function;
 
 fragment Definable:
-	definition=STRING;
+	'<'definition=STRING'>';
 
 fragment Annotations returns Annotated:
 	'[' annotations+=AnnotationRef (',' annotations+=AnnotationRef)* ']';
@@ -59,7 +59,7 @@ Function:
 ;
 
 ShortcutDeclaration:
-	'alias' RosettaNamed ':' (Definable)?  expression=RosettaCalcExpression
+	'alias' RosettaNamed ':' Definable?  expression=RosettaCalcExpression
 ;
 
 Attribute:
