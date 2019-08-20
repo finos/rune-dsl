@@ -5,8 +5,7 @@ import "http://www.rosetta-model.com/RosettaSimple"
 RosettaModel:
 	header=RosettaHeader
 	(configurations += RosettaQualifiableConfiguration)* // TODO think about having only RootElements or only configurations
-	(elements += RosettaRootElement)*
-	(elements += RootElement)*
+	(elements += (RosettaRootElement | RootElement))*
 ;
 
 RosettaHeader:
