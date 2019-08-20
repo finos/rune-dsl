@@ -683,6 +683,13 @@ class FunctionGeneratorTest {
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.Integer;
 			import java.lang.String;
+			
+			import java.time.LocalDate;
+			import java.math.BigDecimal;
+			import org.isda.cdm.*;
+			import com.rosetta.model.lib.meta.*;
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			
 			public abstract class FuncFoo implements RosettaFunction {
 				
 				protected final ClassToInstanceMap<RosettaFunction> classRegistry;

@@ -59,11 +59,13 @@ class FunctionGenerator implements RosettaInternalGenerator {
 					import static «staticImport»;
 				«ENDFOR»
 				«IF (!func.conditions.nullOrEmpty || !func.postConditions.nullOrEmpty) /*FIXME add static imports */»
+				
 				import java.time.LocalDate;
 				import java.math.BigDecimal;
 				import org.isda.cdm.*;
 				import com.rosetta.model.lib.meta.*;
 				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+				
 				«ENDIF»
 				«concatenator.toString»
 				'''
