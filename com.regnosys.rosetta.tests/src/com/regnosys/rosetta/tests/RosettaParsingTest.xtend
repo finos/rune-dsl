@@ -659,4 +659,44 @@ class RosettaParsingTest {
 			}
 		'''.parseRosettaWithNoErrors
 	}
+	
+	@Test
+	def void externalSynonymWithMapperShouldParseWithNoErrors() {
+	'''
+			class Foo
+			{
+				foo string (0..1);
+			}
+			
+			synonym source TEST_Base
+			
+			synonym source TEST extends TEST_Base {
+				
+				Foo:
+					+ foo
+						[value bar path "baz" mapper BarToFooMapper]
+			}
+		'''.parseRosettaWithNoErrors
+	}
+	
+	@Test
+	def void externalSynonymWithMetaShouldParseWithNoErrors() {
+	'''
+			metaType scheme string
+			
+			class Foo
+			{
+				foo string (0..1) scheme;
+			}
+			
+			synonym source TEST_Base
+			
+			synonym source TEST extends TEST_Base {
+				
+				Foo:
+					+ foo
+						[value bar path "baz" meta barScheme]
+			}
+		'''.parseRosettaWithNoErrors
+	}
 }

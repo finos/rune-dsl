@@ -202,14 +202,14 @@ class RosettaClassSynonym extends RosettaSynonymBase {
 
 class RosettaSynonym extends RosettaSynonymBase {
 	contains RosettaSynonymBody body
-	String[] metaValues
-	String mapper
 }
 
 class RosettaSynonymBody extends RosettaSynonymBase {
 	contains RosettaSynonymValue[] values
 	contains RosettaMapping mappingLogic
 	String[] hints
+	String[] metaValues
+	String mapper
 }
 
 class RosettaClassSynonymValue extends RosettaSynonymValueBase {
