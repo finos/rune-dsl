@@ -20,6 +20,9 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.simple.Function
 
 class JavaNames {
 
@@ -27,12 +30,15 @@ class JavaNames {
 	RosettaJavaPackages packages
 
 	@Inject RosettaTypeProvider typeProvider
+	@Inject extension RosettaFunctionExtensions
 
 	def StringConcatenationClient toJavaQualifiedType(RosettaCallableWithArgs ele) {
-		if (ele instanceof RosettaType) {
-			toJavaQualifiedType(ele as RosettaType)
-		} else {
-			'''«ele.name»'''
+		switch (ele) {
+			RosettaType:
+				toJavaQualifiedType(ele as RosettaType)
+			Function case ele.
+				handleAsExternalFunction: '''«JavaType.create(packages.functions.packageName + "." + ele.name.toFirstUpper)»'''
+			default: '''«ele.name»'''
 		}
 	}
 
@@ -46,6 +52,7 @@ class JavaNames {
 			RosettaBasicType:
 				toJavaQualifiedType(type.name)
 			RosettaClass,
+			Data,
 			RosettaEnumeration: '''«JavaType.create(packages.model.packageName+'.'+ type.name)»'''
 			RosettaCalculation: '''«JavaType.create(packages.calculation.packageName+'.'+ type.name)»'''
 			RosettaRecordType: '''«JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)»'''
@@ -54,7 +61,26 @@ class JavaNames {
 				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
 		}
 	}
-
+	
+	def JavaType toJavaType(RosettaType type) {
+		switch (type) {
+			RosettaBasicType:
+				toJavaType(type.name)
+			RosettaClass,
+			Data,
+			RosettaEnumeration: JavaType.create(packages.model.packageName+'.'+ type.name)
+			RosettaCalculation: JavaType.create(packages.calculation.packageName+'.'+ type.name)
+			RosettaRecordType: JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)
+			RosettaExternalFunction: JavaType.create(if(type.isLibrary) packages.libFunctions.packageName + "." + type.name.toFirstUpper else packages.functions.packageName + "." + type.name.toFirstUpper)
+			default:
+				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
+		}
+	}
+	
+	def JavaType toJavaType(String typeName) {
+		return  JavaType.create(JavaClassTranslator.toJavaFullType(typeName)?:"missing builtin type " + typeName)
+	}
+	
 	def StringConcatenationClient toJavaQualifiedType(RosettaFeature feature) {
 		if (feature.isTypeInferred) {
 			switch (feature) {
@@ -77,7 +103,7 @@ class JavaNames {
 		return QualifiedName.create(ele.name.split('\\.'))
 	}
 
-	def QualifiedName toTargetClassName(RosettaExternalFunction ele) {
+	def QualifiedName toTargetClassName(RosettaCallableWithArgs ele) {
 		return QualifiedName.create(ele.name)
 	}
 

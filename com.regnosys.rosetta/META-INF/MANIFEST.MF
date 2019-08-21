@@ -1,14 +1,17 @@
 Manifest-Version: 1.0
 Automatic-Module-Name: com.regnosys.rosetta
 Bundle-ManifestVersion: 2
-Bundle-Name: com.regnosys.rosetta
+Bundle-Name: %pluginName
 Bundle-SymbolicName: com.regnosys.rosetta;singleton:=true
 Bundle-Version: 0.0.0.master
-Bundle-Vendor: REGnosys
+Bundle-ClassPath: .
+Bundle-Vendor: %providerName
+Bundle-Localization: plugin
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
  org.eclipse.equinox.common,
- org.eclipse.emf.ecore,
+ org.eclipse.core.runtime,
+ org.eclipse.emf.ecore;visibility:=reexport,
  org.eclipse.xtext.xbase.lib;bundle-version="2.15.0",
  org.antlr.runtime;bundle-version="3.2.0",
  org.eclipse.xtext.util,
@@ -46,5 +49,8 @@ Export-Package: com.regnosys.rosetta,
  com.regnosys.rosetta.services,
  com.regnosys.rosetta.types,
  com.regnosys.rosetta.utils,
- com.regnosys.rosetta.validation
+ com.regnosys.rosetta.validation,
+ com.regnosys.rosetta.rosetta.simple,
+ com.regnosys.rosetta.rosetta.simple.impl,
+ com.regnosys.rosetta.rosetta.simple.util
 

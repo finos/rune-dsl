@@ -5,6 +5,7 @@ package com.regnosys.rosetta
 
 import com.google.inject.Injector
 import com.regnosys.rosetta.rosetta.RosettaPackage
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import org.eclipse.emf.ecore.EPackage
 
 /**
@@ -23,6 +24,7 @@ class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 
 		if (!EPackage.Registry.INSTANCE.containsKey(RosettaPackage.eNS_URI)) {
 			EPackage.Registry.INSTANCE.put(RosettaPackage.eNS_URI, RosettaPackage.eINSTANCE);
+			EPackage.Registry.INSTANCE.put(SimplePackage.eNS_URI, SimplePackage.eINSTANCE);
 		}
 		super.register(injector)
 	}

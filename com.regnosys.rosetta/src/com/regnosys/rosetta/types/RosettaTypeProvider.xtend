@@ -21,8 +21,10 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaMapPath
@@ -33,19 +35,23 @@ import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
+import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaFunction
+import com.regnosys.rosetta.rosetta.simple.Condition
 
 class RosettaTypeProvider {
 
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaOperators
+	@Inject IDValueConverter idConverter
 
 	def RType getRType(EObject expression) {
 		switch expression {
@@ -70,9 +76,12 @@ class RosettaTypeProvider {
 			}
 			RosettaClass:
 				new RClassType(expression)
+			Data:
+				new RDataType(expression)
 			RosettaAlias: {
-				if (expression.expression.eAllContents.filter(RosettaCallableCall).findFirst[expression == it.callable] === null) {
-					val expressionType = expression.expression.RType
+				val exp = if(expression instanceof RosettaAlias) expression.expression else (expression as ShortcutDeclaration).expression
+				if (exp !== null && exp.eAllContents.filter(RosettaCallableCall).findFirst[expression == it.callable] === null) {
+					val expressionType = exp.RType
 					if (expressionType instanceof RFeatureCallType)
 						return expressionType
 					else
@@ -82,6 +91,7 @@ class RosettaTypeProvider {
 					new RErrorType('Can not compute type for ' + expression.name + " because of recursive call.")
 				}
 			}
+			ShortcutDeclaration: expression.expression.RType
 			RosettaGroupByFeatureCall: {
 				expression.call.RType.wrapInFeatureCallType(expression)
 			}
@@ -204,8 +214,9 @@ class RosettaTypeProvider {
 							'No such qualified type: ' + expression.name + " '" +
 								NodeModelUtils.findActualNodeFor(expression)?.text + "'")
 				}
-			RosettaBasicType:
-				switch expression.name {
+			RosettaBasicType:{
+				val typeName = idConverter.toValue(expression.name, null)
+				switch typeName {
 					case 'boolean':
 						RBuiltinType.BOOLEAN
 					case 'string':
@@ -222,11 +233,14 @@ class RosettaTypeProvider {
 						RBuiltinType.DATE_TIME
 					case 'zonedDateTime':
 						RBuiltinType.ZONED_DATE_TIME
+					case 'function':
+						RBuiltinType.FUNCTION
 					default:
 						new RErrorType(
 							'No such built-in type: ' + expression.name + " '" +
 								NodeModelUtils.findActualNodeFor(expression)?.text + "'")
 				}
+			}
 			RosettaParenthesisCalcExpression:
 				expression.expression.RType
 			RosettaConditionalExpression:
@@ -237,6 +251,10 @@ class RosettaTypeProvider {
 				expression.path.RType
 			RosettaMapRosettaPath:
 				expression.path.RType
+			Function:
+				expression.output.RType
+			Condition:
+				expression.expressions.last.RType
 			default:
 				RBuiltinType.MISSING
 		}

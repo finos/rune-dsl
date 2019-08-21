@@ -9,6 +9,9 @@ import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
@@ -18,8 +21,10 @@ import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
+import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RFeatureCallType
 import com.regnosys.rosetta.types.RRecordType
@@ -27,24 +32,20 @@ import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.rosetta.model.lib.functions.ExpressionOperators
+import com.rosetta.model.lib.math.BigDecimalExtensions
+import java.lang.reflect.Modifier
 import java.math.BigDecimal
-import org.eclipse.xtend2.lib.StringConcatenationClient
+import java.time.LocalDateTime
 import java.util.Objects
-import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaExistsExpression
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator.ParamMap
-import com.rosetta.model.lib.validation.ValidatorHelper
-import java.lang.reflect.Modifier
-import com.rosetta.model.lib.functions.ExpressionOperators
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 
 class RosettaToJavaExtensions {
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaTypeCompatibility
-	@Inject RosettaExpressionJavaGenerator expressionJavaGenerator
 
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, Object ele) {
@@ -53,6 +54,10 @@ class RosettaToJavaExtensions {
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaNamed ele) {
 		'''not implemented named «ele.class»'''
+	}
+	
+	def dispatch StringConcatenationClient toJava(extension JavaNames it, Function ele) {
+		'''«ele.name.toFirstLower»'''	
 	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaGroupByFeatureCall ele) {
@@ -89,6 +94,12 @@ class RosettaToJavaExtensions {
 	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaCallableWithArgsCall ele) {
+		if (ele.callable instanceof Function) {
+			val returnVal = (ele.callable as Function).output
+			if(returnVal !== null)
+				return '''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
+		}
+		 
 		'''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»)'''
 	}
 	
@@ -127,12 +138,12 @@ class RosettaToJavaExtensions {
 		val rightStr = if(rightIsBD) toJava(ele.right) else toBigDecimal(toJava(ele.right))
 	
 		if (ele.operator == '/') {
-			'''«com.rosetta.model.lib.math.BigDecimalExtensions».divide(«leftStr», «rightStr»)'''
+			'''«BigDecimalExtensions».divide(«leftStr», «rightStr»)'''
 		} else if (leftIsBD || rightIsBD) {
 			switch (ele.operator) {
-				case "*": '''«com.rosetta.model.lib.math.BigDecimalExtensions».multiply(«leftStr», «rightStr»)'''
-				case "+": '''«com.rosetta.model.lib.math.BigDecimalExtensions».add(«leftStr», «rightStr»)'''
-				case "-": '''«com.rosetta.model.lib.math.BigDecimalExtensions».subtract(«leftStr», «rightStr»)'''
+				case "*": '''«BigDecimalExtensions».multiply(«leftStr», «rightStr»)'''
+				case "+": '''«BigDecimalExtensions».add(«leftStr», «rightStr»)'''
+				case "-": '''«BigDecimalExtensions».subtract(«leftStr», «rightStr»)'''
 				case ">": '''«leftStr».compareTo(«rightStr») > 0'''
 				case ">=": '''«leftStr».compareTo(«rightStr») >= 0'''
 				case "<": '''«leftStr».compareTo(«rightStr») < 0'''
@@ -141,7 +152,7 @@ class RosettaToJavaExtensions {
 				default: '''«toJava(ele.left)» «ele.operator» «toJava(ele.right)»'''
 			}
 		} else if (ele.operator == '+' && leftType==RBuiltinType.DATE && rightType==RBuiltinType.TIME){
-			'''java.time.LocalDateTime.of(«toJava(ele.left)», «toJava(ele.right)»)'''
+			'''«LocalDateTime».of(«toJava(ele.left)», «toJava(ele.right)»)'''
 		} else {
 			switch (ele.operator) {
 				case "=": '''«Objects».equals(«toJava(ele.left)», «toJava(ele.right)»)'''
@@ -184,6 +195,8 @@ class RosettaToJavaExtensions {
 				rType.enumeration.toJavaQualifiedType
 			RClassType:
 				rType.clazz.toJavaQualifiedType
+			RDataType:
+				rType.data.toJavaQualifiedType
 			RUnionType:
 				toJava(rType.to)
 			RFeatureCallType:
@@ -197,7 +210,7 @@ class RosettaToJavaExtensions {
 	def dispatch StringConcatenationClient toJava(extension JavaNames names, RosettaCallableCall ele) {
 		val callable = ele.callable
 		switch (callable) {
-			RosettaArgumentFeature: '''input.«callable.name»'''
+			RosettaArgumentFeature, ShortcutDeclaration: '''input.«callable.name»'''
 			RosettaAlias: '''«callable.name»Alias'''
 			RosettaClass: '''inputParam'''
 			default: '''«callable.name»'''

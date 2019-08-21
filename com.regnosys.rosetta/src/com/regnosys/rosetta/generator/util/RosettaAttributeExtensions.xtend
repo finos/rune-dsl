@@ -27,6 +27,8 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Set
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class RosettaAttributeExtensions {
 	static def boolean cardinalityIsSingleValue(RosettaAttributeBase attribute) {
@@ -44,12 +46,15 @@ class RosettaAttributeExtensions {
 	static def boolean cardinalityIsListValue(ExpandedAttribute attribute) {
 		attribute.cardinalityIsSingleValue != true
 	}
-	
+	/* TODO check Performance. Called very often*/
 	static def List<ExpandedAttribute> getExpandedAttributes(RosettaClass rosettaClass) {
 		Iterables.concat(
 			rosettaClass.regularAttributes.expandedAttributes,
 			rosettaClass.materialiseAttributes.expandedAttributes
 		).toList.sortBy[ExpandedAttribute a|a.name]
+	}
+	static def List<ExpandedAttribute> getExpandedAttributes(Data data) {
+		data.attributes.map[toExpandedAttribute()].toList.sortBy[ExpandedAttribute a|a.name]
 	}
 	
 	static def List<ExpandedAttribute> getExpandedAttributes(Set<RosettaClass> classes) {
@@ -169,6 +174,23 @@ class RosettaAttributeExtensions {
 			metas
 		)
 	}
+	static def toExpandedAttribute(Attribute attr) {
+		new ExpandedAttribute(
+			(attr.eContainer as RosettaType),
+			attr.name,
+			attr.type,
+			attr.type.name,
+			attr.card.inf,
+			attr.card.sup,
+			attr.card.unbounded,
+			emptyList,
+			attr.definition,
+			attr.calculation,
+			attr.isEnumeration,
+			attr.qualified,
+			emptyList
+		)
+	}
 	
 	static def toRosettaExpandedSynonyms(List<RosettaSynonym> synonyms, int meta) {
 		if (meta<0) {
@@ -221,15 +243,15 @@ class RosettaAttributeExtensions {
 		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null)
 	}
 
-	private def static boolean isCalculation(RosettaRegularAttribute a) {
+	private def static boolean isCalculation(RosettaFeature a) {
 		return a.type instanceof RosettaCalculationType
 	}
 
-	private def static boolean isEnumeration(RosettaRegularAttribute a) {
+	private def static boolean isEnumeration(RosettaFeature a) {
 		return a.type instanceof RosettaEnumeration
 	}
 
-	private def static boolean isQualified(RosettaRegularAttribute a) {
+	private def static boolean isQualified(RosettaFeature a) {
 		return a.type instanceof RosettaQualifiedType
 	}
 	

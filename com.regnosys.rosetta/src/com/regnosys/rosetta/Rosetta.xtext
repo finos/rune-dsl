@@ -1,10 +1,11 @@
 grammar com.regnosys.rosetta.Rosetta with org.eclipse.xtext.common.Terminals
 import "http://www.rosetta-model.com/Rosetta"
+import "http://www.rosetta-model.com/RosettaSimple"
 
 RosettaModel:
 	header=RosettaHeader
 	(configurations += RosettaQualifiableConfiguration)* // TODO think about having only RootElements or only configurations
-	(elements += RosettaRootElement)*
+	(elements += (RosettaRootElement | RootElement))*
 ;
 
 RosettaHeader:
@@ -12,6 +13,79 @@ RosettaHeader:
 	'version' version=STRING
 ;
 
+RootElement:
+	 Annotation | Data | Function;
+
+fragment Definable:
+	'<'definition=STRING'>';
+
+fragment Annotations returns Annotated:
+	'[' annotations+=AnnotationRef (',' annotations+=AnnotationRef)* ']';
+
+AnnotationRef:
+	annotation = [Annotation|ValidID]
+	(attribute = [Attribute|ValidID])?
+;
+
+
+Annotation:
+	'anno' RosettaNamed ':' Definable?
+	attributes += Attribute*
+;
+
+Data:
+	'data' RosettaNamed ':' Definable?
+	Annotations?
+	attributes += Attribute+
+	conditions += Condition*
+;
+
+Function:
+	'func' 
+	(
+		RosettaNamed
+		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
+	)
+	 ':' Definable?
+	Annotations?
+	('inputs:' inputs += Attribute+)?
+	('output:' output = Attribute)?
+	
+	(shortcuts    += ShortcutDeclaration ';'?)*
+	conditions    += Condition*
+	operation     = Operation?
+	postConditions+= PostCondition*
+;
+
+ShortcutDeclaration:
+	'alias' RosettaNamed ':' Definable?  expression=RosettaCalcExpression
+;
+
+Attribute:
+	RosettaNamed RosettaTyped card=RosettaCardinality Definable? Annotations?;
+
+Condition:
+	'condition' RosettaNamed? ':' Definable?
+		Annotations?
+		(expressions+=RosettaCalcExpression ';')+
+;
+
+Operation: // TODO no name? annotations?
+	'assign-output' attribute = [Attribute|ValidID] ':' Definable?
+	expression = RosettaCalcExpression ';'?
+;
+
+PostCondition returns Condition: // TODO no name? annotations?
+	'post-condition' ':' Definable?
+	(expressions+=RosettaCalcExpression ';')+
+;
+
+EnumValueReference returns RosettaEnumValueReference:
+	enumeration=[RosettaEnumeration|ValidID] '->' value=[RosettaEnumValue|ValidID]
+;
+
+
+// old stuff
 RosettaRootElement:
 	RosettaClass | RosettaEnumeration |
 	RosettaDataRule | RosettaWorkflowRule | RosettaChoiceRule | 
@@ -67,7 +141,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'calculation' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version')
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'calculation' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'value')
 ;
 
 ValidHint: 

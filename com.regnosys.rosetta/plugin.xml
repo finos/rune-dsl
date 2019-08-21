@@ -7,4 +7,12 @@
 			class = "com.regnosys.rosetta.rosetta.RosettaPackage"
 			genModel = "model/Rosetta.xcore" />
 	</extension>
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated RosettaSimple -->
+      <package
+            uri="http://www.rosetta-model.com/RosettaSimple"
+            class="com.regnosys.rosetta.rosetta.simple.SimplePackage"
+            genModel="model/RosettaSimple.xcore"/>
+   </extension>
+
 </plugin>

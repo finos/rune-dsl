@@ -36,6 +36,7 @@ Workflow {
 		}
 		language = StandardLanguage {
 			referencedResource = "platform:/resource/com.regnosys.rosetta/model/Rosetta.xcore"
+			referencedResource = "platform:/resource/com.regnosys.rosetta/model/RosettaSimple.xcore"
 			name = "com.regnosys.rosetta.Rosetta"
 			fileExtensions = "rosetta"
 			parserGenerator = parser.antlr.XtextAntlrGeneratorFragment2 {

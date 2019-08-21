@@ -28,6 +28,14 @@ class RClassType implements RType {
 		clazz.name
 	}
 }
+@Data
+class RDataType implements RType {
+	com.regnosys.rosetta.rosetta.simple.Data data
+
+	override getName() {
+		data.name
+	}
+}
 
 @Data
 class REnumType implements RType {
@@ -60,6 +68,8 @@ class RBuiltinType implements RType {
 	public static val DATE_TIME = new RBuiltinType('dateTime')
 	public static val ZONED_DATE_TIME = new RBuiltinType('zonedDateTime')
 	public static val TIME = new RBuiltinType('time')
+
+	public static val FUNCTION = new RBuiltinType('function')
 
 	public static val MISSING = new RBuiltinType('missing')
 	public static val VOID = new RBuiltinType('void')

@@ -1,6 +1,8 @@
 package com.regnosys.rosetta.generator.java.qualify
 
 import com.google.common.base.CaseFormat
+import com.google.inject.Inject
+import com.google.inject.Provider
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator
@@ -21,13 +23,13 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 class QualifyFunctionGenerator<T extends RosettaQualifiable> {
-
+	@Inject Provider<RosettaExpressionJavaGenerator> expressionHandlerProvider
+	
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, RosettaJavaPackages.Package javaPackage, Class<T> qualifiableClassType, String version) {
 		// create is function classes (e.g. isFooEvent or isBarProduct)
-		val expressionHandler = new RosettaExpressionJavaGenerator()		
 		elements.filter(qualifiableClassType).forEach[ 
 			val isFunctionClassName = getIsFunctionClassName(it.name)
-			fsa.generateFile('''«javaPackage.directoryName»/«isFunctionClassName».java''', toIsFunctionJava(packages, javaPackage, isFunctionClassName, it, expressionHandler, version))	
+			fsa.generateFile('''«javaPackage.directoryName»/«isFunctionClassName».java''', toIsFunctionJava(packages, javaPackage, isFunctionClassName, it, expressionHandlerProvider.get(), version))	
 		]
 	}
 

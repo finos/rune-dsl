@@ -9,14 +9,16 @@ import java.util.stream.Collectors
 class RosettaModel {
 	contains RosettaHeader header
 	contains RosettaQualifiableConfiguration[] configurations 
-	contains RosettaRootElement[] elements 
+	contains RosettaRootElement[] elements opposite model
 }
 
 class RosettaHeader {
 	String namespace
 	String version
 }
-
+/**
+ * New model
+ */
 
 /**********************************************************************
  * Common types
@@ -52,7 +54,9 @@ abstract class RosettaCallable extends RosettaNamed {}
 interface RosettaCallableWithArgs extends RosettaNamed{
 }
 
-interface RosettaRootElement {}
+interface RosettaRootElement {
+	container RosettaModel model opposite elements
+}
 
 abstract class RosettaFeatureOwner extends RosettaDefinable {
 	contains RosettaFeature[] features
@@ -622,9 +626,12 @@ class RosettaBlueprintReport extends RosettaRootElement {
 	
 	op String name() {
 		(regulatoryMandate.regRegime.name.toFirstUpper 
-				+ regulatoryMandate.mandates.stream.map[it.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
+				+ regulatoryMandate.mandates.stream.map[RosettaMandate man | man.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
 	}
-	
+	/**
+	* FIXME: Never create Grammar model Instances programmatically.
+	* Only needed in Generator, create wrapper objects for that in the BlueprintGenerator!
+	*/
 	op BlueprintNodeExp nodes() {
 		var BlueprintNodeExp currentNodeExpr = null
 		var BlueprintNodeExp firstNodeExpr = null

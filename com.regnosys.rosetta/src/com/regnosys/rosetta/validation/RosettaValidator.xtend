@@ -19,9 +19,11 @@ import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
+import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -33,6 +35,7 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RRecordType
@@ -41,6 +44,7 @@ import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.RosettaQualifiableExtension
+import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -50,13 +54,12 @@ import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.Check
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.EcoreUtil2.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaFunction
+import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 
 /**
  * This class contains custom validation rules. 
@@ -314,7 +317,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Check(FAST) // switch to NORMAL if it becomes slow
 	def checkTypeNamesAreUnique(RosettaModel model) {
 		val name2attr = HashMultimap.create
-		model.elements.filter(RosettaNamed).forEach [
+		model.elements.filter(RosettaNamed).filter[!(it instanceof FunctionDispatch)].forEach [ //TODO better FunctionDispatch handling
 			name2attr.put(name, it)
 		]
 		val resources = getResourceDescriptions(model.eResource)
@@ -328,7 +331,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			} else if (valuesByName.size == 1 && model.eResource.URI.isPlatformResource) {
 				val EObject toCheck = valuesByName.get(0)
 				val sameNamed = resources.getExportedObjects(toCheck.eClass(), toCheck.fullyQualifiedName, false).filter [
-					isProjectLocal(model.eResource.URI, it.EObjectURI)
+					isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
 				].map[EObjectURI]
 				if (sameNamed.size > 1) {
 					error('''Duplicate element named '«name»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
@@ -465,6 +468,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		val callableSize = switch callable {
 			RosettaExternalFunction: callable.parameters.size
 			RosettaFunction: callable.inputs.size
+			Function: callable.inputs.size
 			default: 0
 		}
 		

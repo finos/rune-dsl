@@ -1,0 +1,73 @@
+@Ecore(nsURI="http://www.rosetta-model.com/RosettaSimple")
+@GenModel(fileExtensions="rosetta", modelDirectory="/com.regnosys.rosetta/emf-gen", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0")
+
+package com.regnosys.rosetta.rosetta.simple
+
+import com.regnosys.rosetta.rosetta.RosettaCallable
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaCardinality
+import com.regnosys.rosetta.rosetta.RosettaDefinable
+import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaType
+
+
+abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
+
+class Annotation extends RootElement, RosettaCallable {
+	contains Attribute[] attributes
+}
+
+interface Annotated {
+	contains AnnotationRef[] annotations
+}
+
+class AnnotationRef {
+	refers Annotation ^annotation
+	refers Attribute attribute
+}
+
+class Attribute extends RosettaFeature, Definable, Annotated, RosettaCallable {
+	contains RosettaCardinality card
+}
+
+abstract class Definable extends RosettaDefinable {}
+
+
+class Data extends RosettaType, RootElement, RosettaCallable {
+	contains Attribute[] attributes
+	contains Condition[] conditions
+}
+
+class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
+	contains Attribute[] inputs
+	contains Attribute output
+	contains ShortcutDeclaration[] shortcuts
+	contains Condition[] conditions
+	contains Operation operation opposite function
+	contains Condition[] postConditions
+}
+
+class FunctionDispatch extends Function {
+	refers Attribute attribute
+	contains RosettaEnumValueReference value
+}
+
+
+class Condition extends Definable, Annotated, RosettaCallable, RosettaNamed {
+	contains RosettaExpression[] expressions
+}
+
+class Operation extends Definable {
+	container Function function opposite operation
+	refers Attribute attribute
+	contains RosettaExpression expression
+}
+class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable {
+	contains RosettaExpression expression
+}

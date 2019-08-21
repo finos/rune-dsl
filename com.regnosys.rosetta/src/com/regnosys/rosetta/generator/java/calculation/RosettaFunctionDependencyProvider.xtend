@@ -15,6 +15,8 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import org.eclipse.emf.ecore.EObject
 
 import static com.regnosys.rosetta.generator.util.Util.*
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -23,7 +25,7 @@ class RosettaFunctionDependencyProvider {
 
 	@Inject extension RosettaTypeProvider
 
-	def Iterable<RosettaFunction> functionDependencies(EObject object) {
+	def Iterable<RosettaCallableWithArgs> functionDependencies(EObject object) {
 		switch object {
 			RosettaBinaryOperation: {
 				functionDependencies(object.left) + functionDependencies(object.right)
@@ -66,11 +68,14 @@ class RosettaFunctionDependencyProvider {
 			RosettaFunction: {
 				newArrayList(object)
 			}
+			Function: {
+				newArrayList(object)
+			}
 			default: newArrayList
 		}
 	}
 	
-	def Iterable<RosettaFunction> functionDependencies(Iterable<? extends EObject> objects) {
+	def Iterable<RosettaCallableWithArgs> functionDependencies(Iterable<? extends EObject> objects) {
 		distinctBy(objects.map[object | functionDependencies(object)].flatten, [f|f.name]);
 	}
 }

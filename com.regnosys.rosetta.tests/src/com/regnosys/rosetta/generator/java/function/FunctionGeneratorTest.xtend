@@ -468,31 +468,7 @@ class FunctionGeneratorTest {
 	def void shouldGenerateFields() {
 		val javaNames = factory.create(javaPackages)
 		
-		val function = '''
-			spec FooFunc <"an example function level comment">:
-				inputs:
-					input1 number (1..1) <"is the one and only input">
-					
-				output:
-					result number (1..1) <"is the number that is returned">
-					
-				post-condition <"post condition 1 should pass">:
-					input1 > 42;
-					input1 < BuzzFunc();
-					
-				post-condition <"post condition 2 should pass">:
-					input1 < BarFunc();
-			
-			spec BarFunc:
-				output:
-					result number (1..1)
-			
-			spec BuzzFunc:
-				output:
-					result number (1..1)
-		'''.parseRosettaWithNoErrors.elements.filter(RosettaFunction).head
-		
-		val result = function.contributeFields(javaNames)
+		val result = contributeFields(javaNames)
 		concatenator.append(result)
 		
 		val expected = '''protected final ClassToInstanceMap<RosettaFunction> classRegistry;'''
@@ -611,7 +587,7 @@ class FunctionGeneratorTest {
 		assertEquals(expected.trim, concatenator.toString.trim)
 	}
 	
-	@Disabled @Test //TODO
+	@Disabled @Test // TODO Why are you expecting LocalDate being imported into FooFunc?
 	def void shouldImportLocalDateWhenUsedInExpression() {
 		val javaNames = factory.create(javaPackages)
 		
@@ -696,5 +672,67 @@ class FunctionGeneratorTest {
 	}
 	
 	
-
+	@Test
+	def void testFunctionGeneration() {
+		assertEquals(
+			'''
+			package com.rosetta.test.model.functions;
+			
+			import com.google.common.collect.ClassToInstanceMap;
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			import java.lang.Integer;
+			import java.lang.String;
+			
+			import java.time.LocalDate;
+			import java.math.BigDecimal;
+			import org.isda.cdm.*;
+			import com.rosetta.model.lib.meta.*;
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			
+			public abstract class FuncFoo implements RosettaFunction {
+				
+				protected final ClassToInstanceMap<RosettaFunction> classRegistry;
+				
+				protected FuncFoo(ClassToInstanceMap<RosettaFunction> classRegistry) {
+					
+					// On concrete instantiation, register implementation with function to implementation container
+					//
+					classRegistry.putInstance(FuncFoo.class, this);
+					this.classRegistry = classRegistry;	
+				}
+					
+				/**
+				 * @param result 
+				 * @param result2 
+				 * @return out 
+				 */
+				public Integer evaluate(Integer result, String result2) {
+					
+					// Delegate to implementation
+					//
+					Integer out = doEvaluate(result, result2);
+					// post-conditions
+					//
+					assert
+						greaterThan(MapperS.of(result), MapperS.of(Integer.valueOf(42))).get()
+							: "";
+					return out;
+				}
+					
+				protected abstract Integer doEvaluate(Integer result, String result2);
+			}
+			'''.toString,
+			'''
+				func FuncFoo:
+					inputs:
+						result int (1..1)
+						result2 string (1..1)
+					
+					output:
+						out int(1..1)
+					post-condition: result > 42;
+			'''.generateCode().get('com.rosetta.test.model.functions.FuncFoo')
+		)
+	}
 }
