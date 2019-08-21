@@ -42,6 +42,9 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.types.RRecordType
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.rosetta.RosettaAlias
 
 class CalculationGenerator {
 
@@ -430,7 +433,7 @@ class CalculationGenerator {
 					private «feature.type.toJavaType» «feature.getName»;
 				«ENDFOR»
 				«FOR feature : function.shortcuts»
-					private «toJava(typeProvider.getRType(feature.expression))» «feature.getName»;
+					private «shortcutJavaType(feature)» «feature.getName»;
 				«ENDFOR»
 				
 				public CalculationInput create(«FOR parameter:functionParameters SEPARATOR ', '»«parameter»«ENDFOR») {
@@ -463,14 +466,14 @@ class CalculationGenerator {
 
 				«ENDFOR»
 				«FOR feature :  function.shortcuts»
-					public «toJava(typeProvider.getRType(feature.expression))» get«feature.name.toFirstUpper»() {
+					public «shortcutJavaType(feature)» get«feature.name.toFirstUpper»() {
 						return «feature.name»;
 					}
 
 				«ENDFOR»
 				private static final «List»<«IResult.Attribute»<?>> ATTRIBUTES =  «Arrays».asList(
 					«FOR feature : function.shortcuts SEPARATOR ','»
-						new «Attribute»<>("«feature.name»", «toJava(typeProvider.getRType(feature.expression))».class, («IResult» res) -> ((CalculationInput) res).get«feature.name.toFirstUpper»())
+						new «Attribute»<>("«feature.name»", «shortcutJavaType(feature)».class, («IResult» res) -> ((CalculationInput) res).get«feature.name.toFirstUpper»())
 					«ENDFOR»
 				);
 			
@@ -481,6 +484,17 @@ class CalculationGenerator {
 				
 			}
 		'''
+	}
+	
+	///FIXME remove it after complete migration to func
+	def private StringConcatenationClient shortcutJavaType(JavaNames names, ShortcutDeclaration feature) {
+		val rType = typeProvider.getRType(feature.expression)
+		'''«names.toJava(rType)»«IF rType instanceof RRecordType && (rType as RRecordType).record instanceof RosettaExternalFunction».CalculationResult«ENDIF»'''
+	}
+	///FIXME remove it after complete migration to func
+	def private StringConcatenationClient aliasJavaType(JavaNames names, RosettaAlias feature) {
+		val rType = typeProvider.getRType(feature.expression)
+		'''«names.toJava(rType)»«IF rType instanceof RRecordType && (rType as RRecordType).record instanceof RosettaExternalFunction».CalculationResult«ENDIF»'''
 	}
 	
 	dispatch def private StringConcatenationClient createInputClass(extension JavaNames it, String calculationName, RosettaArguments arguments) {
@@ -501,7 +515,7 @@ class CalculationGenerator {
 				
 				public CalculationInput create(«IF inputType !== null»«inputType.toJavaQualifiedType» inputParam«IF functionParameters.size > 0», «ENDIF»«ENDIF»«functionParameters.join(', ')») {
 					«FOR alias : arguments.aliases»
-						«toJava(typeProvider.getRType(alias))» «alias.name»Alias = «toJava(alias.expression)»;
+						«aliasJavaType(alias)» «alias.name»Alias = «toJava(alias.expression)»;
 					«ENDFOR»
 					«FOR feature : arguments.features.filter(RosettaArgumentFeature)»
 						«val exprType = typeProvider.getRType(feature.expression)»

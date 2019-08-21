@@ -202,7 +202,7 @@ class RosettaToJavaExtensions {
 			RFeatureCallType:
 				toJava(rType.featureType)
 			RRecordType:
-				'''«(rType.record as RosettaType).toJavaQualifiedType».CalculationResult'''
+				(rType.record as RosettaType).toJavaQualifiedType
 			default: '''«rType.name»'''
 		}
 	}
