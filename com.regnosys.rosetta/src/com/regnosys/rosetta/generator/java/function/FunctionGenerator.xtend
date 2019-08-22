@@ -104,6 +104,13 @@ class FunctionGenerator implements RosettaInternalGenerator {
 			«concatenator.toString»
 		'''
 	}
+	val migrated = #[
+		"GetBusinessDateSpec",
+		"NewContractEvent",
+		"EmptyLegalAgreement",
+		"ExtractSingleExecutionState",
+		"NewContractFormationFromExecution",
+		"NewExecutionFromProduct"] //FIXME remove after full migration
 	
 	private def dispatch StringConcatenationClient functionClass(Function function, JavaQualifiedTypeProvider javaNames) {
 		val dependencies = (function.conditions + function.postConditions)
@@ -114,7 +121,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		
 		'''
 			«function.contributeJavaDoc»
-			«IF function.name == "GetBusinessDateSpec"»
+			«IF migrated.contains(function.name)»
 			@«ImplementedBy»(«function.name»Impl.class)
 			«ENDIF»
 			public abstract class «function.name» implements «com.rosetta.model.lib.functions.RosettaFunction» {
