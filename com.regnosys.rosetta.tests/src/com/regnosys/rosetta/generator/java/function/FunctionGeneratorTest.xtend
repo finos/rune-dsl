@@ -678,7 +678,6 @@ class FunctionGeneratorTest {
 			'''
 			package com.rosetta.test.model.functions;
 			
-			import com.google.common.collect.ClassToInstanceMap;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.Integer;
@@ -691,16 +690,6 @@ class FunctionGeneratorTest {
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			public abstract class FuncFoo implements RosettaFunction {
-				
-				protected final ClassToInstanceMap<RosettaFunction> classRegistry;
-				
-				protected FuncFoo(ClassToInstanceMap<RosettaFunction> classRegistry) {
-					
-					// On concrete instantiation, register implementation with function to implementation container
-					//
-					classRegistry.putInstance(FuncFoo.class, this);
-					this.classRegistry = classRegistry;	
-				}
 					
 				/**
 				 * @param result 
@@ -708,7 +697,6 @@ class FunctionGeneratorTest {
 				 * @return out 
 				 */
 				public Integer evaluate(Integer result, String result2) {
-					
 					// Delegate to implementation
 					//
 					Integer out = doEvaluate(result, result2);
