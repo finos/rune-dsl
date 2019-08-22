@@ -45,6 +45,7 @@ import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.rosetta.RosettaAlias
+import com.google.inject.ImplementedBy
 
 class CalculationGenerator {
 
@@ -266,6 +267,7 @@ class CalculationGenerator {
 		
 		val StringConcatenationClient body = '''
 			«emptyJavadocWithVersion(version)»
+			@«ImplementedBy»(«funcionName»Impl.class)
 			public interface «funcionName» {
 				
 				CalculationResult execute(«FOR param : function.parameters SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR»);
