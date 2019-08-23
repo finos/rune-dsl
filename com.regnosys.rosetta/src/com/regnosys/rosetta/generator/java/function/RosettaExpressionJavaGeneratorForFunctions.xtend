@@ -379,7 +379,11 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	}
 	
 	def JavaType toJavaType(RosettaType rosType) {
-		 factory.create(EcoreUtil2.getContainerOfType(rosType, RosettaModel)).toJavaType(rosType)
+		val model = EcoreUtil2.getContainerOfType(rosType, RosettaModel)
+		if (model !== null)
+			factory.create(model).toJavaType(rosType)
+		else
+			JavaType.create(rosType.name.toJavaType)
 	}
 	
 	def static metaClass(RosettaRegularAttribute attribute) {

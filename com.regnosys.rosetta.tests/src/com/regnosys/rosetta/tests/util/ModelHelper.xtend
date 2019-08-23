@@ -12,6 +12,7 @@ class ModelHelper {
 	@Inject extension ValidationTestHelper 
 
 	public static val commonEnums = '''
+		«getVersionInfo»
 		basicType string
 		basicType int
 		basicType number
@@ -75,7 +76,7 @@ class ModelHelper {
 		synonym source Venue_B
 	'''
 
-	private def getVersionInfo() {
+	private def static getVersionInfo() {
 		'''
 			namespace "com.rosetta.test.model"
 			version "test"

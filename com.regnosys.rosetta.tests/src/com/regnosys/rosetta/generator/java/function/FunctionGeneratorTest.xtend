@@ -6,6 +6,7 @@ import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
+import com.rosetta.model.lib.records.Date
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.BeforeEach
@@ -619,7 +620,7 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
-	def void shouldUseLocalDate() {
+	def void shouldUseDate() {
 		val javaNames = factory.create(javaPackages)
 		
 		val functions = '''
@@ -638,7 +639,7 @@ class FunctionGeneratorTest {
 //		println(concatenator.imports)
 //		println(concatenator.toString)
 		
-		assertThat(concatenator.imports, hasItems(endsWith('java.time.LocalDate')))
+		assertThat(concatenator.imports, hasItems(endsWith(Date.name)))
 	}
 	
 	@Test
@@ -678,17 +679,18 @@ class FunctionGeneratorTest {
 			'''
 			package com.rosetta.test.model.functions;
 			
+			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.Integer;
 			import java.lang.String;
 			
-			import java.time.LocalDate;
 			import java.math.BigDecimal;
 			import org.isda.cdm.*;
 			import com.rosetta.model.lib.meta.*;
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
+			@ImplementedBy(FuncFooImpl.class)
 			public abstract class FuncFoo implements RosettaFunction {
 					
 				/**
