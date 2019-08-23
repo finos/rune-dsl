@@ -46,6 +46,8 @@ import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.google.inject.ImplementedBy
+import com.rosetta.model.lib.records.DateImpl
+import com.regnosys.rosetta.rosetta.RosettaRecordType
 
 class CalculationGenerator {
 

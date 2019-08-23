@@ -61,11 +61,7 @@ class JavaQualifiedTypeProvider {
 			RosettaEnumeration: '''«JavaType.create(packages.model.packageName+'.'+ type.name)»'''
 			RosettaCalculation: '''«JavaType.create(packages.calculation.packageName+'.'+ type.name)»'''
 			RosettaRecordType: {
-				if (type.name == 'date') {
-					type.name.toJavaQualifiedType
-				} else {
-					'''«JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)»'''	
-				}
+				'''«JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)»'''	
 			}
 			RosettaExternalFunction: '''«JavaType.create(if(type.isLibrary) packages.libFunctions.packageName + "." + type.name.toFirstUpper else packages.functions.packageName + "." + type.name.toFirstUpper)»'''
 			RosettaFunction: '''«JavaType.create(packages.functions.packageName + '.' + type.name)»'''

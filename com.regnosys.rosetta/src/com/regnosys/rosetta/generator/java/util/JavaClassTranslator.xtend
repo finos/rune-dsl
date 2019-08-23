@@ -21,7 +21,7 @@ class JavaClassTranslator {
 			case 'time':
 				'java.time.LocalTime'
 			case 'date':
-				'java.time.LocalDate'
+				'com.rosetta.model.lib.records.Date'
 			case 'dateTime':
 				'java.time.LocalDateTime'
 			case 'zonedDateTime':

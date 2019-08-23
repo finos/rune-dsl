@@ -587,7 +587,7 @@ class FunctionGeneratorTest {
 		assertEquals(expected.trim, concatenator.toString.trim)
 	}
 	
-	@Disabled @Test // TODO Why are you expecting LocalDate being imported into FooFunc?
+	@Disabled @Test
 	def void shouldImportLocalDateWhenUsedInExpression() {
 		val javaNames = factory.create(javaPackages)
 		

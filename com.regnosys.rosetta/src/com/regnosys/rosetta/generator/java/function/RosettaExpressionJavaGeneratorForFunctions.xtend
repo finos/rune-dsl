@@ -359,7 +359,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				'''.<«attribute.metaClass»>mapC(«mapFunc»)'''
 			}
 			else {
-				'''.mapC(«mapFunc»).<«attribute.type.name.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
+				'''.mapC(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
 			}
 		}
 		else
@@ -368,13 +368,13 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				if(attribute.type instanceof RosettaClass) 
 				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
 				else
-				'''.<«attribute.type.name.toJavaType»>map(«mapFunc»)'''
+				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
 			}
 			else if (!autoValue) {
 				'''.<«attribute.metaClass»>map(«mapFunc»)'''
 			}
 			else
-				'''.map(«mapFunc»).<«attribute.type.name.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
+				'''.map(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
 		}
 	}
 	

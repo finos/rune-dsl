@@ -215,7 +215,7 @@ class MetaFieldGenerator {
 		import «packages.lib.packageName».RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-		import java.time.LocalDate;
+		import com.rosetta.model.lib.records.Date;
 		import java.math.BigDecimal;
 		
 		public class FieldWithMeta«type.name.toFirstUpper» extends RosettaModelObject implements FieldWithMeta<«type.name.toJavaType»>{
@@ -591,7 +591,7 @@ class MetaFieldGenerator {
 	import com.rosetta.model.lib.RosettaModelObjectBuilder;
 	import com.rosetta.model.lib.meta.RosettaMetaData;
 	import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-	import java.time.LocalDate;
+	import com.rosetta.model.lib.records.Date;
 	import java.math.BigDecimal;
 	
 	public class BasicReferenceWithMeta«type.name.toFirstUpper» extends RosettaModelObject implements ReferenceWithMeta<«type.name.toJavaType»>{

@@ -1,11 +1,14 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.google.common.collect.ClassToInstanceMap
+import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.RosettaInternalGenerator
+import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.calculation.ImportingStringConcatination
 import com.regnosys.rosetta.generator.java.calculation.RosettaFunctionDependencyProvider
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaFuncitonCondition
 import com.regnosys.rosetta.rosetta.RosettaFunction
@@ -16,8 +19,6 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.google.inject.ImplementedBy
 
 class FunctionGenerator implements RosettaInternalGenerator {
 
@@ -43,15 +44,18 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	
 
 	def void generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, Function func, String version) {
-		val javaNames = factory.create(packages)
-		val name = javaNames.packages.functions.directoryName + '/' + func.name + '.java'
+		val names = factory.create(packages)
+		val fileName = names.packages.functions.directoryName + '/' + func.name + '.java'
 			
-			try {
-				val concatenator = new ImportingStringConcatination()
-				concatenator.append(functionClass(func, javaNames))
-				val content = 
-				'''
-				package «javaNames.packages.functions.packageName»;
+		try {
+			val concatenator = new ImportingStringConcatination()
+			val dependencies = (func.conditions + func.postConditions).flatMap[expressions].flatMap [
+				functionDependencyProvider.functionDependencies(it)
+			].toSet.sortBy[it.name]
+
+			concatenator.append(functionClass(func, dependencies, names))
+			val content = '''
+				package «names.packages.functions.packageName»;
 				
 				«FOR _import : concatenator.imports»
 					import «_import»;
@@ -60,20 +64,45 @@ class FunctionGenerator implements RosettaInternalGenerator {
 					import static «staticImport»;
 				«ENDFOR»
 				«IF (!func.conditions.nullOrEmpty || !func.postConditions.nullOrEmpty) /*FIXME add static imports */»
-				
-				import java.time.LocalDate;
-				import java.math.BigDecimal;
-				import org.isda.cdm.*;
-				import com.rosetta.model.lib.meta.*;
-				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
-				
+					
+					import java.math.BigDecimal;
+					import org.isda.cdm.*;
+					import com.rosetta.model.lib.meta.*;
+					import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+					
 				«ENDIF»
 				«concatenator.toString»
+			'''
+			fsa.generateFile(fileName, content)
+			val funcionName = func.name
+			val implPath = '''«packages.functions.directoryName»/«funcionName»Impl.java'''
+			if (!fsa.isFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT)) {
+
+				val StringConcatenationClient implClazz = '''
+					public class «funcionName»Impl extends «funcionName» {
+						
+						@Override
+						protected «func.outputTypeOrVoid(names)» doEvaluate(«func.inputsAsParameters(names)») {
+							throw new UnsupportedOperationException("TODO: auto-generated method stub");
+						}
+					}
 				'''
-				fsa.generateFile(name, content)	
-			} catch (Exception e) {
-				throw new UnsupportedOperationException('Unable to generate code for: ' + name, e)
+				val concatImpl = new ImportingStringConcatination()
+				concatImpl.append(implClazz)
+
+				fsa.generateFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT, '''
+					package «packages.functions.packageName»;
+					
+					«FOR imp : concatImpl.imports»
+						import «imp»;
+					«ENDFOR»
+					
+					«concatImpl.toString»
+				''')
 			}
+		} catch (Exception e) {
+			throw new UnsupportedOperationException('Unable to generate code for: ' + fileName, e)
+		}
 	}
 	
 	private def String generate(RosettaFunction function, JavaQualifiedTypeProvider javaNames) {
@@ -104,26 +133,11 @@ class FunctionGenerator implements RosettaInternalGenerator {
 			«concatenator.toString»
 		'''
 	}
-	val migrated = #[
-		"GetBusinessDateSpec",
-		"NewContractEvent",
-		"EmptyLegalAgreement",
-		"ExtractSingleExecutionState",
-		"NewContractFormationFromExecution",
-		"NewExecutionFromProduct"] //FIXME remove after full migration
 	
-	private def dispatch StringConcatenationClient functionClass(Function function, JavaQualifiedTypeProvider javaNames) {
-		val dependencies = (function.conditions + function.postConditions)
-			.flatMap[expressions]
-			.flatMap[functionDependencyProvider.functionDependencies(it)]
-			.sortBy[name]
-			.toSet
-		
+	private def StringConcatenationClient functionClass(Function function,  Iterable<? extends RosettaCallableWithArgs> dependencies, JavaQualifiedTypeProvider javaNames) {
 		'''
 			«function.contributeJavaDoc»
-			«IF migrated.contains(function.name)»
 			@«ImplementedBy»(«function.name»Impl.class)
-			«ENDIF»
 			public abstract class «function.name» implements «com.rosetta.model.lib.functions.RosettaFunction» {
 				«contributeFieldDependencies(javaNames, dependencies)»
 				«contributeEvaluateMethod(function, javaNames)»
@@ -132,7 +146,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		'''
 	}
 	
-	private def dispatch StringConcatenationClient functionClass(RosettaFunction function, JavaQualifiedTypeProvider javaNames) {
+	private def StringConcatenationClient functionClass(RosettaFunction function, JavaQualifiedTypeProvider javaNames) {
 		val dependencies = (function.preConditions + function.postConditions)
 			.flatMap[expressions]
 			.flatMap[functionDependencyProvider.functionDependencies(it)]
