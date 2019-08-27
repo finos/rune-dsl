@@ -5,8 +5,6 @@
 package com.regnosys.rosetta.generator
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.daml.enums.DamlEnumGenerator
-import com.regnosys.rosetta.generator.daml.object.DamlModelObjectGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.calculation.CalculationGenerator
@@ -18,7 +16,6 @@ import com.regnosys.rosetta.generator.java.qualify.QualifyFunctionGenerator
 import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -52,8 +49,6 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject QualifyFunctionGenerator<RosettaProduct> qualifyProductsGenerator
 	//@Inject ClassListGenerator classListGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
-	@Inject DamlModelObjectGenerator damlModelObjectGenerator
-	@Inject DamlEnumGenerator damlEnumGenerator
 	@Inject ExternalGenerators externalGenerators
 	
 	// For files that are
@@ -92,12 +87,6 @@ class RosettaGenerator extends AbstractGenerator {
 						map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]],resource, lock)
 				]
 			]
-				
-			val model = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel)
-			val version = model.findFirst[header!==null].header.version
-			val elements = model.flatMap[elements]
-			damlModelObjectGenerator.generate(fsa, elements.filter(RosettaClass), elements.filter(RosettaMetaType), version)
-			damlEnumGenerator.generate(fsa, elements.filter(RosettaEnumeration), version)
 		}}
 		catch (Exception e) {
 			LOGGER.warn("Unexpected calling standard generate for rosetta -"+e.message+" - see debug logging for more")
@@ -107,22 +96,6 @@ class RosettaGenerator extends AbstractGenerator {
 			LOGGER.debug("ending the main generate method")
 			lock.releaseWriteLock
 		}
-	}
-
-	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-		try {
-			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
-			val elements = models.flatMap[elements].toList
-			
-			val version = models.findFirst[header!==null].header.version
-			damlModelObjectGenerator.generate(fsa, elements.filter(RosettaClass), elements.filter(RosettaMetaType), version)
-			damlEnumGenerator.generate(fsa, elements.filter(RosettaEnumeration), version)
-		
-		} catch (Exception e) {
-			LOGGER.warn("Unexpected calling after generate for rosetta -"+e.message+" - see debug logging for more")
-			LOGGER.debug("Unexpected calling after generate for rosetta", e);
-		}
-
 	}
 
 }
