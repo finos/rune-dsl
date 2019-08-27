@@ -23,12 +23,23 @@ class ModelObjectBoilerPlate {
 		«c.wrap.processMethod»
 		«c.wrap.boilerPlate»
 	'''
+	
+	def boilerPlate(com.regnosys.rosetta.rosetta.simple.Data d) '''
+		«d.wrap.processMethod»
+		«d.wrap.boilerPlate»
+	'''
 
-	def calculationResultBoilerPlate(String ownerName, List<RosettaFeature> features) {
+	def calculationResultBoilerPlate(String ownerName, List<? extends RosettaFeature> features) {
 		features.wrapCalculationResult(ownerName).boilerPlate
 	}
 
 	def builderBoilerPlate(RosettaClass c) '''
+		«c.wrap.contributeEquals(toBuilder)»
+		«c.wrap.contributeHashCode»
+		«c.wrap.contributeToString(toBuilder)»
+	'''
+	
+	def builderBoilerPlate(com.regnosys.rosetta.rosetta.simple.Data c) '''
 		«c.wrap.contributeEquals(toBuilder)»
 		«c.wrap.contributeHashCode»
 		«c.wrap.contributeToString(toBuilder)»
@@ -149,16 +160,23 @@ class ModelObjectBoilerPlate {
 			rosettaClass.name,
 			rosettaClass.expandedAttributes,
 			rosettaClass.superType !== null,
-			rosettaClass,
+			true
+		);
+	}
+	private def TypeData wrap(com.regnosys.rosetta.rosetta.simple.Data data) {
+		return new TypeData(
+			data.name,
+			data.expandedAttributes,
+			false,
 			true
 		);
 	}
 
-	private def TypeData wrapCalculationResult(List<RosettaFeature> features, String typeName) {
+	private def TypeData wrapCalculationResult(List<? extends RosettaFeature> features, String typeName) {
 		return new TypeData(typeName, features.map [
 			new ExpandedAttribute(null, getNameOrDefault, type, typeName, 0, 1, list, Collections.emptyList, null,
 				false, it == RosettaEnumeration, false, Collections.emptyList)
-		], false, null, false);
+		], false, false);
 	}
 
 	// the eventEffect attribute should not contribute to the rosettaKeyValueHashCode. 
@@ -172,7 +190,6 @@ class ModelObjectBoilerPlate {
 		val String name
 		val List<ExpandedAttribute> attributes
 		val boolean hasSuperType
-		val RosettaClass rosettaClass
 		val boolean generateRosettaKeyValueHashCode
 	}
 }

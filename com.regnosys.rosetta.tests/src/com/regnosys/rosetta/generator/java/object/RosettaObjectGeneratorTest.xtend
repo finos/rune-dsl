@@ -5,13 +5,14 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
+import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.RosettaKeyValue
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaQualified
 import com.rosetta.model.lib.annotations.RosettaSynonym
+import com.rosetta.model.lib.records.Date
 import java.lang.reflect.Modifier
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
@@ -26,10 +27,9 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.CoreMatchers.*
+import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
-import static org.hamcrest.MatcherAssert.*
-import com.rosetta.model.lib.GlobalKey
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -129,7 +129,7 @@ class RosettaObjectGeneratorTest {
 				list date (0..*);
 			}
 		'''.compileJava8
-		assertEquals(LocalDate, classes.get(javaPackages.model.packageName + ".Tester").getMethod('getOne').returnType)
+		assertEquals(Date, classes.get(javaPackages.model.packageName + ".Tester").getMethod('getOne').returnType)
 	}
 
 	@Test

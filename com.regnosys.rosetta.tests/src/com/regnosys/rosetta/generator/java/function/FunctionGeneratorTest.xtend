@@ -6,6 +6,7 @@ import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
+import com.rosetta.model.lib.records.Date
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.BeforeEach
@@ -468,31 +469,7 @@ class FunctionGeneratorTest {
 	def void shouldGenerateFields() {
 		val javaNames = factory.create(javaPackages)
 		
-		val function = '''
-			spec FooFunc <"an example function level comment">:
-				inputs:
-					input1 number (1..1) <"is the one and only input">
-					
-				output:
-					result number (1..1) <"is the number that is returned">
-					
-				post-condition <"post condition 1 should pass">:
-					input1 > 42;
-					input1 < BuzzFunc();
-					
-				post-condition <"post condition 2 should pass">:
-					input1 < BarFunc();
-			
-			spec BarFunc:
-				output:
-					result number (1..1)
-			
-			spec BuzzFunc:
-				output:
-					result number (1..1)
-		'''.parseRosettaWithNoErrors.elements.filter(RosettaFunction).head
-		
-		val result = function.contributeFields(javaNames)
+		val result = contributeFields(javaNames)
 		concatenator.append(result)
 		
 		val expected = '''protected final ClassToInstanceMap<RosettaFunction> classRegistry;'''
@@ -611,7 +588,7 @@ class FunctionGeneratorTest {
 		assertEquals(expected.trim, concatenator.toString.trim)
 	}
 	
-	@Disabled @Test //TODO
+	@Disabled @Test
 	def void shouldImportLocalDateWhenUsedInExpression() {
 		val javaNames = factory.create(javaPackages)
 		
@@ -643,7 +620,7 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
-	def void shouldUseLocalDate() {
+	def void shouldUseDate() {
 		val javaNames = factory.create(javaPackages)
 		
 		val functions = '''
@@ -662,7 +639,7 @@ class FunctionGeneratorTest {
 //		println(concatenator.imports)
 //		println(concatenator.toString)
 		
-		assertThat(concatenator.imports, hasItems(endsWith('java.time.LocalDate')))
+		assertThat(concatenator.imports, hasItems(endsWith(Date.name)))
 	}
 	
 	@Test
@@ -696,5 +673,56 @@ class FunctionGeneratorTest {
 	}
 	
 	
-
+	@Test
+	def void testFunctionGeneration() {
+		assertEquals(
+			'''
+			package com.rosetta.test.model.functions;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			import java.lang.Integer;
+			import java.lang.String;
+			
+			import java.math.BigDecimal;
+			import org.isda.cdm.*;
+			import com.rosetta.model.lib.meta.*;
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			
+			@ImplementedBy(FuncFooImpl.class)
+			public abstract class FuncFoo implements RosettaFunction {
+					
+				/**
+				 * @param result 
+				 * @param result2 
+				 * @return out 
+				 */
+				public Integer evaluate(Integer result, String result2) {
+					// Delegate to implementation
+					//
+					Integer out = doEvaluate(result, result2);
+					// post-conditions
+					//
+					assert
+						greaterThan(MapperS.of(result), MapperS.of(Integer.valueOf(42))).get()
+							: "";
+					return out;
+				}
+					
+				protected abstract Integer doEvaluate(Integer result, String result2);
+			}
+			'''.toString,
+			'''
+				func FuncFoo:
+					inputs:
+						result int (1..1)
+						result2 string (1..1)
+					
+					output:
+						out int(1..1)
+					post-condition: result > 42;
+			'''.generateCode().get('com.rosetta.test.model.functions.FuncFoo')
+		)
+	}
 }

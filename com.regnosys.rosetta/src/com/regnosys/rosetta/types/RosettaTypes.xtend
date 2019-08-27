@@ -28,6 +28,14 @@ class RClassType implements RType {
 		clazz.name
 	}
 }
+@Data
+class RDataType implements RType {
+	com.regnosys.rosetta.rosetta.simple.Data data
+
+	override getName() {
+		data.name
+	}
+}
 
 @Data
 class REnumType implements RType {

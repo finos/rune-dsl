@@ -12,6 +12,7 @@ import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import org.eclipse.emf.ecore.EObject
@@ -22,6 +23,9 @@ import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.generator.util.Util.*
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -31,8 +35,9 @@ class RosettaExternalFunctionDependencyProvider {
 	@Inject extension RosettaTypeProvider
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension IQualifiedNameConverter
+	@Inject extension RosettaFunctionExtensions
 
-	def Iterable<RosettaExternalFunction> functionDependencies(EObject object) {
+	def Iterable<RosettaCallableWithArgs> functionDependencies(EObject object) {
 		switch object {
 			RosettaArguments: {
 				Iterables.concat(
@@ -83,7 +88,7 @@ class RosettaExternalFunctionDependencyProvider {
 				if (qualifiedName !== null && qualifiedName.segmentCount == 2) {
 					val index = object.eResource.resourceDescriptions
 					val matchingArgumentFeatures = index.getExportedObjectsByType(ROSETTA_ARGUMENT_FEATURE)
-						.filter [name.firstSegment == qualifiedName.firstSegment]				
+						.filter [name.firstSegment == qualifiedName.firstSegment]
 					val arguments = matchingArgumentFeatures
 						.map[IEObjectDescription e | EcoreUtil.resolve(e.EObjectOrProxy, object.eResource)]
 						.map[eContainer].filter(RosettaArguments)
@@ -96,12 +101,19 @@ class RosettaExternalFunctionDependencyProvider {
 			RosettaExternalFunction: {
 				if(!object.isLibrary) newArrayList(object) else newArrayList
 			}
+			Function: {
+				val me = if(object.handleAsExternalFunction) newArrayList(object) else newArrayList
+				Iterables.concat(functionDependencies(object.shortcuts), me)
+			}
+			ShortcutDeclaration: {
+				functionDependencies(object.expression)
+			}
 			default:
 				newArrayList
 		}
 	}
 	
-	def Iterable<RosettaExternalFunction> functionDependencies(Iterable<? extends EObject> objects) {
+	def Iterable<RosettaCallableWithArgs> functionDependencies(Iterable<? extends EObject> objects) {
 		distinctBy(objects.map[object | functionDependencies(object)].flatten, [f|f.name]);
 	}
 }

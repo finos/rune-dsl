@@ -24,6 +24,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
 import com.regnosys.rosetta.generator.java.calculation.JavaType
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class JavaQualifiedTypeProvider {
 
@@ -60,11 +61,7 @@ class JavaQualifiedTypeProvider {
 			RosettaEnumeration: '''«JavaType.create(packages.model.packageName+'.'+ type.name)»'''
 			RosettaCalculation: '''«JavaType.create(packages.calculation.packageName+'.'+ type.name)»'''
 			RosettaRecordType: {
-				if (type.name == 'date') {
-					type.name.toJavaQualifiedType
-				} else {
-					'''«JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)»'''	
-				}
+				'''«JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)»'''	
 			}
 			RosettaExternalFunction: '''«JavaType.create(if(type.isLibrary) packages.libFunctions.packageName + "." + type.name.toFirstUpper else packages.functions.packageName + "." + type.name.toFirstUpper)»'''
 			RosettaFunction: '''«JavaType.create(packages.functions.packageName + '.' + type.name)»'''
@@ -74,6 +71,10 @@ class JavaQualifiedTypeProvider {
 	}
 	
 	def StringConcatenationClient toJavaQualifiedType(RosettaFunctionInput attribute, boolean asBuilder) {
+		if (attribute.card.isIsMany) '''«List»<«attribute.type.toJavaQualifiedType(asBuilder)»>''' else '''«attribute.type.toJavaQualifiedType(asBuilder)»'''
+	}
+	
+	def StringConcatenationClient toJavaQualifiedType(Attribute attribute, boolean asBuilder) {
 		if (attribute.card.isIsMany) '''«List»<«attribute.type.toJavaQualifiedType(asBuilder)»>''' else '''«attribute.type.toJavaQualifiedType(asBuilder)»'''
 	}
 
@@ -111,6 +112,8 @@ class JavaQualifiedTypeProvider {
 		}
 		
 		def create(RosettaJavaPackages packages) {
+			if(packages === null) 
+				throw new IllegalArgumentException('''RosettaJavaPackages may not be null''')
 			val result = new JavaQualifiedTypeProvider
 			injector.injectMembers(result)
 			result.packages = packages

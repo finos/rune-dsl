@@ -24,6 +24,7 @@ class RosettaFunctionGenerationTest {
 			'''
 			package com.rosetta.test.model.functions;
 			
+			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.IFunctionResult;
 			import com.rosetta.model.lib.functions.IResult;
 			import java.lang.String;
@@ -33,6 +34,7 @@ class RosettaFunctionGenerationTest {
 			/**
 			 * @version test
 			 */
+			@ImplementedBy(FuncFooImpl.class)
 			public interface FuncFoo {
 				
 				CalculationResult execute(String name, String name2);
