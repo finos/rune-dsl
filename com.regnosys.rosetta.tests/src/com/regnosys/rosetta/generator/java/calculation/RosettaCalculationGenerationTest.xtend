@@ -433,7 +433,7 @@ class RosettaCalculationGenerationTest {
 
 	@Test
 	def void testDateTimeAdd() {
-		val calculation = '''			
+		val calculation = '''
 			calculation Calc {
 				res defined by: arg1 + arg2 
 				string res2 defined by: arg1 + arg2
@@ -458,9 +458,9 @@ class RosettaCalculationGenerationTest {
 		import com.rosetta.model.lib.functions.ICalculationInput;
 		import com.rosetta.model.lib.functions.ICalculationResult;
 		import com.rosetta.model.lib.functions.IResult;
+		import com.rosetta.model.lib.records.Date;
 		import com.rosetta.test.model.FuncIn;
 		import java.lang.String;
-		import java.time.LocalDate;
 		import java.time.LocalDateTime;
 		import java.time.LocalTime;
 		import java.util.Arrays;
@@ -471,14 +471,14 @@ class RosettaCalculationGenerationTest {
 			public CalculationResult calculate(FuncIn paramFuncIn) {
 				CalculationInput input = new CalculationInput().create(paramFuncIn);
 				CalculationResult result = new CalculationResult(input);
-				result.res = LocalDateTime.of(input.arg1, input.arg2);
-				result.res2 = LocalDateTime.of(input.arg1, input.arg2).toString();
+				result.res = Date.of(input.arg1, input.arg2);
+				result.res2 = Date.of(input.arg1, input.arg2).toString();
 				return result;
 			}
 			
 			public static class CalculationInput implements ICalculationInput {
 				private CalculationInput input = this;  // For when arguments need to reference other arguments
-				private LocalDate arg1;
+				private Date arg1;
 				private LocalTime arg2;
 				
 				public CalculationInput create(FuncIn inputParam) {
@@ -494,7 +494,7 @@ class RosettaCalculationGenerationTest {
 					new Formula("Calc", "string res2 defined by: arg1 + arg2", this));
 				}
 				
-				public LocalDate getArg1() {
+				public Date getArg1() {
 					return arg1;
 				}
 			
@@ -503,7 +503,7 @@ class RosettaCalculationGenerationTest {
 				}
 			
 				private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-					new Attribute<>("arg1", LocalDate.class, (IResult res) -> ((CalculationInput) res).getArg1()),
+					new Attribute<>("arg1", Date.class, (IResult res) -> ((CalculationInput) res).getArg1()),
 					new Attribute<>("arg2", LocalTime.class, (IResult res) -> ((CalculationInput) res).getArg2())
 				);
 			
@@ -618,10 +618,9 @@ class RosettaCalculationGenerationTest {
 		import com.rosetta.model.lib.functions.ICalculationInput;
 		import com.rosetta.model.lib.functions.ICalculationResult;
 		import com.rosetta.model.lib.functions.IResult;
+		import com.rosetta.model.lib.records.Date;
 		import com.rosetta.test.model.FuncIn;
 		import java.lang.String;
-		import java.time.LocalDate;
-		import java.time.LocalDateTime;
 		import java.time.LocalTime;
 		import java.util.Arrays;
 		import java.util.List;
@@ -632,14 +631,14 @@ class RosettaCalculationGenerationTest {
 				CalculationInput input = new CalculationInput().create(paramFuncIn);
 				CalculationResult result = new CalculationResult(input);
 				result.transactionReferenceNumber = ("SPH" + input.linkId);
-				result.tradingDateTime = LocalDateTime.of(input.tradeDate, input.tradeTime).toString();
+				result.tradingDateTime = Date.of(input.tradeDate, input.tradeTime).toString();
 				return result;
 			}
 			
 			public static class CalculationInput implements ICalculationInput {
 				private CalculationInput input = this;  // For when arguments need to reference other arguments
 				private String linkId;
-				private LocalDate tradeDate;
+				private Date tradeDate;
 				private LocalTime tradeTime;
 				
 				public CalculationInput create(FuncIn inputParam) {
@@ -660,7 +659,7 @@ class RosettaCalculationGenerationTest {
 					return linkId;
 				}
 			
-				public LocalDate getTradeDate() {
+				public Date getTradeDate() {
 					return tradeDate;
 				}
 			
@@ -670,7 +669,7 @@ class RosettaCalculationGenerationTest {
 			
 				private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
 					new Attribute<>("linkId", String.class, (IResult res) -> ((CalculationInput) res).getLinkId()),
-					new Attribute<>("tradeDate", LocalDate.class, (IResult res) -> ((CalculationInput) res).getTradeDate()),
+					new Attribute<>("tradeDate", Date.class, (IResult res) -> ((CalculationInput) res).getTradeDate()),
 					new Attribute<>("tradeTime", LocalTime.class, (IResult res) -> ((CalculationInput) res).getTradeTime())
 				);
 			

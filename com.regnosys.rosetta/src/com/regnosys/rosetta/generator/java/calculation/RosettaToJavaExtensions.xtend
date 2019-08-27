@@ -36,16 +36,18 @@ import com.rosetta.model.lib.functions.ExpressionOperators
 import com.rosetta.model.lib.math.BigDecimalExtensions
 import java.lang.reflect.Modifier
 import java.math.BigDecimal
-import java.time.LocalDateTime
 import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.rosetta.model.lib.records.Date
 
 class RosettaToJavaExtensions {
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaTypeCompatibility
+	@Inject extension RosettaFunctionExtensions
 
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, Object ele) {
@@ -94,13 +96,20 @@ class RosettaToJavaExtensions {
 	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaCallableWithArgsCall ele) {
-		if (ele.callable instanceof Function) {
-			val returnVal = (ele.callable as Function).output
-			if(returnVal !== null)
-				return '''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
+		val callable = ele.callable
+		switch (callable) {
+			Function: {
+				val returnVal = callable.output
+				if (returnVal !== null) {
+					if(callable.handleAsSpecFunction) {
+						return '''«toJava(ele.callable)».evaluate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»)'''
+					} else {
+						return '''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
+					}
+				}
+			}
+			default: '''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»)'''
 		}
-		 
-		'''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»)'''
 	}
 	
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaExternalFunction ele) {
@@ -152,7 +161,7 @@ class RosettaToJavaExtensions {
 				default: '''«toJava(ele.left)» «ele.operator» «toJava(ele.right)»'''
 			}
 		} else if (ele.operator == '+' && leftType==RBuiltinType.DATE && rightType==RBuiltinType.TIME){
-			'''«LocalDateTime».of(«toJava(ele.left)», «toJava(ele.right)»)'''
+			'''«Date».of(«toJava(ele.left)», «toJava(ele.right)»)'''
 		} else {
 			switch (ele.operator) {
 				case "=": '''«Objects».equals(«toJava(ele.left)», «toJava(ele.right)»)'''
@@ -202,7 +211,7 @@ class RosettaToJavaExtensions {
 			RFeatureCallType:
 				toJava(rType.featureType)
 			RRecordType:
-				'''«(rType.record as RosettaType).toJavaQualifiedType».CalculationResult'''
+				(rType.record as RosettaType).toJavaQualifiedType
 			default: '''«rType.name»'''
 		}
 	}

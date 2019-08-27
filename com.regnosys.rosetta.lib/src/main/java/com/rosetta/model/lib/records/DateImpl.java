@@ -67,4 +67,16 @@ public class DateImpl implements Date {
 		return "DateImpl [day=" + day + ", month=" + month + ", year=" + year + "]";
 	}
 
+	@Override
+	public LocalDate toLocalDate() {
+		return LocalDate.of(year, month, day);
+	}
+
+	@Override
+	public int compareTo(Date o) {
+		return toLocalDate().compareTo(o.toLocalDate());
+	}
+	static final public Date of(int year, int month, int dayOfMonth) {
+		return new DateImpl(dayOfMonth,  month,  year);
+	}
 }

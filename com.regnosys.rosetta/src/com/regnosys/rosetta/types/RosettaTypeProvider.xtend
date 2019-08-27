@@ -233,8 +233,6 @@ class RosettaTypeProvider {
 						RBuiltinType.DATE_TIME
 					case 'zonedDateTime':
 						RBuiltinType.ZONED_DATE_TIME
-					case 'function':
-						RBuiltinType.FUNCTION
 					default:
 						new RErrorType(
 							'No such built-in type: ' + expression.name + " '" +

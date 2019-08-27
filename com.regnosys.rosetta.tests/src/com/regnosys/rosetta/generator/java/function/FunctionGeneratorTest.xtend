@@ -6,6 +6,7 @@ import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
+import com.rosetta.model.lib.records.Date
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.BeforeEach
@@ -587,7 +588,7 @@ class FunctionGeneratorTest {
 		assertEquals(expected.trim, concatenator.toString.trim)
 	}
 	
-	@Disabled @Test // TODO Why are you expecting LocalDate being imported into FooFunc?
+	@Disabled @Test
 	def void shouldImportLocalDateWhenUsedInExpression() {
 		val javaNames = factory.create(javaPackages)
 		
@@ -619,7 +620,7 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
-	def void shouldUseLocalDate() {
+	def void shouldUseDate() {
 		val javaNames = factory.create(javaPackages)
 		
 		val functions = '''
@@ -638,7 +639,7 @@ class FunctionGeneratorTest {
 //		println(concatenator.imports)
 //		println(concatenator.toString)
 		
-		assertThat(concatenator.imports, hasItems(endsWith('java.time.LocalDate')))
+		assertThat(concatenator.imports, hasItems(endsWith(Date.name)))
 	}
 	
 	@Test
@@ -678,29 +679,19 @@ class FunctionGeneratorTest {
 			'''
 			package com.rosetta.test.model.functions;
 			
-			import com.google.common.collect.ClassToInstanceMap;
+			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.Integer;
 			import java.lang.String;
 			
-			import java.time.LocalDate;
 			import java.math.BigDecimal;
 			import org.isda.cdm.*;
 			import com.rosetta.model.lib.meta.*;
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
+			@ImplementedBy(FuncFooImpl.class)
 			public abstract class FuncFoo implements RosettaFunction {
-				
-				protected final ClassToInstanceMap<RosettaFunction> classRegistry;
-				
-				protected FuncFoo(ClassToInstanceMap<RosettaFunction> classRegistry) {
-					
-					// On concrete instantiation, register implementation with function to implementation container
-					//
-					classRegistry.putInstance(FuncFoo.class, this);
-					this.classRegistry = classRegistry;	
-				}
 					
 				/**
 				 * @param result 
@@ -708,7 +699,6 @@ class FunctionGeneratorTest {
 				 * @return out 
 				 */
 				public Integer evaluate(Integer result, String result2) {
-					
 					// Delegate to implementation
 					//
 					Integer out = doEvaluate(result, result2);
