@@ -48,6 +48,9 @@ import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.google.inject.ImplementedBy
 import com.rosetta.model.lib.records.DateImpl
 import com.regnosys.rosetta.rosetta.RosettaRecordType
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import org.eclipse.xtext.EcoreUtil2
 
 class CalculationGenerator {
 
@@ -160,7 +163,7 @@ class CalculationGenerator {
 	}
 	def generateFunction(RosettaJavaPackages _packages,IFileSystemAccess2 fsa, Function function, String version) {
 		val javaNames = factory.create(_packages)
-		if(function.handleAsExternalFunction)
+		if(function.handleAsSpecFunction)
 			generateExternalFunction(fsa, function, javaNames, version)
 		else
 			generateCalculationFunction(fsa, function, javaNames, version)
@@ -169,7 +172,11 @@ class CalculationGenerator {
 	def generateCalculationFunction(IFileSystemAccess2 fsa, Function function, JavaNames names, String version) {
 		val className = names.toTargetClassName(function).firstSegment
 		val concat = new ImportingStringConcatination()
-		concat.append(function.calculationFunctionBody(className, names, version))
+		if(function.handleAsEnumFunction) {
+			concat.append(function.enumCalculationFunctionBody(className, names, version))
+		} else {
+			concat.append(function.calculationFunctionBody(className, names, version))
+		}
 		
 		val javaFileContents = '''
 			package «names.packages.calculation.packageName»;
@@ -186,42 +193,74 @@ class CalculationGenerator {
 		fsa.generateFile('''«names.packages.calculation.directoryName»/«className».java''', javaFileContents)
 	}
 	
+	
 	def private StringConcatenationClient calculationFunctionBody(Function function, String className, extension JavaNames it, String version) {
-		val enumGeneration = false // TODO handle this?
-		val inputArguments = function.inputs.map[name.toFirstLower].toList + functionDependencies(function).asArguments
+		val enumGeneration = function.isDispatchingFunction
+		val inputs = getInputs(function)
+		if(inputs.nullOrEmpty)
+			return null
+		val inputArguments = inputs.map[name.toFirstLower].toList + functionDependencies(function).asArguments
 
 		'''
 			public «IF enumGeneration»static «ENDIF»class «className» {
 				«createMembers(function)»
 				«createConstructor(className, function)»
-				public CalculationResult calculate(«FOR input:function.inputs SEPARATOR ', '»«input.toJavaQualifiedType» «input.name.toFirstLower»«ENDFOR») {
+				public CalculationResult calculate(«FOR input:inputs SEPARATOR ', '»«input.toJavaQualifiedType» «input.name.toFirstLower»«ENDFOR») {
 					CalculationInput input = new CalculationInput().create(«inputArguments.join(', ')»);
 «««					// TODO: code generate local variables for fields inside CalculationInput s.t. assignments below can access them as local variables
 					CalculationResult result = new CalculationResult(input);
-					result.«function.output.getNameOrDefault» = «asignment(function.operation)»;
+					result.«getOutput(function).getNameOrDefault» = «if(function.operation !== null)asignment(function.operation) else null»;
 					return result;
 				}
 				
 				«createInputClass(className, function)»
 				«IF !enumGeneration»
 					
-					«createResultClass(#[function.output], true, false)»
+					«createResultClass(#[getOutput(function)], true, false)»
 				«ENDIF»
 			}
 		'''
 	}
 	
+	def private StringConcatenationClient enumCalculationFunctionBody(Function function, String className, extension JavaNames it, String version) {
+		val dispatchingFuncs = function.dispatchingFunctions.sortBy[name].toList
+		val enumParam = function.inputs.filter[type instanceof RosettaEnumeration].head.name
+		'''
+		«emptyJavadocWithVersion(version)»
+		public class «className» {
+			«createMembers(function)»
+			«createConstructor(className, function)»
+			public CalculationResult calculate(«FOR input:function.inputs SEPARATOR ', '»«input.toJavaQualifiedType» «input.name.toFirstLower»«ENDFOR») {
+				switch («enumParam») {
+					«FOR enumVal : dispatchingFuncs»
+						«val enumValClass = toTargetClassName(enumVal).lastSegment»
+						case «enumValClass»:
+							return new «enumValClass»(«functionDependencies(enumVal).asArguments.join(', ')»).calculate(«FOR input:function.inputs SEPARATOR ', '»«input.name.toFirstLower»«ENDFOR»);
+					«ENDFOR»
+					default:
+						throw new IllegalArgumentException("Enum value not implemented: " + «enumParam»);
+				}
+			}
+			
+			«FOR enumVal : dispatchingFuncs»
+				«val enumValClass = toTargetClassName(enumVal).lastSegment»
+				«enumVal.calculationFunctionBody(enumValClass, it,  version)»
+			«ENDFOR»
+			«createResultClass(#[getOutput(function)], true, true)»
+		}'''
+	}
+	
 	private dispatch def void generateExternalFunction(IFileSystemAccess2 fsa, Function function, extension JavaNames it, String version) {
 		
 		val funcionName = toTargetClassName(function)
-		
+		val inputs = getInputs(function)
 		val StringConcatenationClient body = '''
 			«emptyJavadocWithVersion(version)»
 			public interface «funcionName» {
 				
-				CalculationResult execute(«FOR param : function.inputs SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR»);
+				CalculationResult execute(«FOR param : inputs SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR»);
 				
-				«createResultClass(if(function.output!==null)newArrayList(function.output) else emptyList, false, false)»
+				«createResultClass(if(getOutput(function) !== null)newArrayList(getOutput(function)) else emptyList, false, false)»
 			}
 		'''
 		
@@ -244,7 +283,7 @@ class CalculationGenerator {
 			val StringConcatenationClient implClazz = '''
 				public class «funcionName»Impl implements «funcionName» {
 					
-					public «JavaType.create('''«packages.functions.packageName».«funcionName».CalculationResult''')» execute(«FOR param : function.inputs SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR») {
+					public «JavaType.create('''«packages.functions.packageName».«funcionName».CalculationResult''')» execute(«FOR param : inputs SEPARATOR ', '»«param.type.toJavaQualifiedType» «param.name»«ENDFOR») {
 						throw new UnsupportedOperationException("TODO: auto-generated method stub");
 					}
 				}
@@ -423,7 +462,8 @@ class CalculationGenerator {
 	}
 	
 	dispatch def private StringConcatenationClient createInputClass(extension JavaNames it, String calculationName, Function function) {
-		val functionParameters = function.inputs.map[new Parameter(it.type.toJavaType.simpleName, name.toFirstLower)] + functionDependencies(function).asParameters
+		val inputs = getInputs(function)
+		val functionParameters = inputs.map[new Parameter(it.type.toJavaType.simpleName, name.toFirstLower)] + functionDependencies(function).asParameters
 
 		'''
 			public static class CalculationInput implements «ICalculationInput» {
@@ -433,7 +473,7 @@ class CalculationGenerator {
 				«IF ! function.shortcuts.map[typeProvider.getRType(expression)].filter(RUnionType).empty»
 					private final «List»<«ICalculationResult»> calculationResults = new «ArrayList»<>();
 				«ENDIF»
-				«FOR feature : function.inputs»
+				«FOR feature : inputs»
 					private «feature.type.toJavaType» «feature.getName»;
 				«ENDFOR»
 				«FOR feature : function.shortcuts»
@@ -441,18 +481,15 @@ class CalculationGenerator {
 				«ENDFOR»
 				
 				public CalculationInput create(«FOR parameter:functionParameters SEPARATOR ', '»«parameter»«ENDFOR») {
-					«FOR feature : function.inputs»
+					«FOR feature : inputs»
 						this.«feature.getName» = «feature.getName»;
 					«ENDFOR»
 					«FOR feature :  function.shortcuts»
-						«val exprType = typeProvider.getRType(feature.expression)»
-						«IF (exprType instanceof RUnionType) »
-							«exprType.converter.toTargetClassName.firstSegment».CalculationResult «toCalculationResultVar(exprType)» = new «exprType.converter.toTargetClassName.firstSegment»(«functionDependencies(feature).asArguments.join(', ')»).calculate(inputParam, «toJava(feature.expression)»);
-							this.calculationResults.add(«toCalculationResultVar(exprType)»);
-							this.«feature.getName» = «toCalculationResultVar(exprType)».getValue();
-						«ELSE»
+						«FOR enumFuncCall : EcoreUtil2.getAllContents(#[feature.expression]).filter(RosettaCallableWithArgsCall).filter[it.callable instanceof Function && (it.callable as Function).handleAsEnumFunction].toList»
+							«val enumFunc = enumFuncCall.callable as Function»
+							«enumFunc.toTargetClassName.firstSegment» «enumFunc.name.toFirstLower» = new «enumFunc.toTargetClassName.firstSegment»(«functionDependencies(enumFuncCall).asArguments.join(', ')»);
+						«ENDFOR»
 						this.«feature.getName» = «toJava(feature.expression)»;
-						«ENDIF»
 					«ENDFOR»
 					return this;
 				}
@@ -463,7 +500,7 @@ class CalculationGenerator {
 						new «Formula»("«calculationName.escape»", "«feature.extractNodeText(OPERATION__EXPRESSION).escape»", this)«ENDFOR»);
 				}
 				
-				«FOR feature :  function.inputs»
+				«FOR feature :  inputs»
 					public «feature.type.toJavaType» get«feature.name.toFirstUpper»() {
 						return «feature.name»;
 					}

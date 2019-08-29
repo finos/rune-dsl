@@ -99,10 +99,12 @@ class RosettaToJavaExtensions {
 		val callable = ele.callable
 		switch (callable) {
 			Function: {
-				val returnVal = callable.output
+				val returnVal = getOutput(callable)
 				if (returnVal !== null) {
 					if(callable.handleAsSpecFunction) {
 						return '''«toJava(ele.callable)».evaluate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»)'''
+					} else if(callable.handleAsEnumFunction) {
+						return '''«toJava(ele.callable)».calculate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
 					} else {
 						return '''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
 					}
