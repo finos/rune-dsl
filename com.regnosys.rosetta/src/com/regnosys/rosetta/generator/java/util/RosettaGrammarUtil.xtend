@@ -10,7 +10,7 @@ import com.regnosys.rosetta.rosetta.RosettaProduct
 
 class RosettaGrammarUtil {
 	
-		def static String quote(String text) {
+	def static String quote(String text) {
 		return '"' + text.trim
 				.replace('"', '\\\"')
 				.replace('\r\n', '\n')

@@ -2,8 +2,9 @@ package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.calculation.JavaNames
-import com.regnosys.rosetta.generator.java.calculation.JavaType
+import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.java.util.JavaType
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
@@ -47,7 +48,6 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	@Inject

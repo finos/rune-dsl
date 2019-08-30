@@ -1,6 +1,5 @@
-package com.regnosys.rosetta.generator.util
+package com.regnosys.rosetta.generator.java.util
 
-import com.regnosys.rosetta.generator.java.calculation.ImportingStringConcatination
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 class ImportManagerExtension {

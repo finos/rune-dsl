@@ -1,23 +1,32 @@
 package com.regnosys.rosetta.generator.java.calculation
 
+import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.object.ModelObjectBoilerPlate
+import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
+import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaCalculation
 import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
-import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
+import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.functions.Formula
@@ -29,8 +38,11 @@ import com.rosetta.model.lib.functions.IResult.Attribute
 import java.util.ArrayList
 import java.util.Arrays
 import java.util.List
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EStructuralFeature
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.nodemodel.ICompositeNode
 import org.eclipse.xtext.nodemodel.ILeafNode
@@ -38,19 +50,7 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.EStructuralFeature
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.types.RRecordType
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.google.inject.ImplementedBy
-import com.rosetta.model.lib.records.DateImpl
-import com.regnosys.rosetta.rosetta.RosettaRecordType
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import org.eclipse.xtext.EcoreUtil2
 
 class CalculationGenerator {
 
@@ -691,10 +691,6 @@ class CalculationGenerator {
 	protected def StringConcatenationClient calulationInputClass(boolean enumGeneration)
 		'''«IF enumGeneration»«ICalculationInput»«ELSE»CalculationInput«ENDIF»'''
 	
-	private def boolean isCalculation(RosettaFeatureOwner featureOwner) {
-		!(featureOwner instanceof RosettaExternalFunction)
-	}
-
 	dispatch def private StringConcatenationClient asignment(extension JavaNames it, Operation op) {
 		'''«toJava(op.expression)»'''
 	}

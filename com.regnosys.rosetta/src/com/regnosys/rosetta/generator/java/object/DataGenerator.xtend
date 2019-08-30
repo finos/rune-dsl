@@ -4,14 +4,14 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.common.base.Objects
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.calculation.JavaNames
-import com.regnosys.rosetta.generator.java.calculation.JavaType
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
-import com.regnosys.rosetta.generator.util.ImportManagerExtension
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.annotations.RosettaClass
 import com.rosetta.model.lib.annotations.RosettaSynonym
 import com.rosetta.model.lib.meta.RosettaMetaData
 import java.util.List
@@ -33,6 +33,9 @@ class DataGenerator {
 	@Inject JavaNames.Factory factory
 
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, Data data, String version) {
+		fsa.generateFile(packages.model.directoryName + '/' + data.name + '.java',
+			generateRosettaClass(packages, data, version))
+			
 		fsa.generateFile(packages.model.directoryName + '/' + data.name + '.java',
 			generateRosettaClass(packages, data, version))
 	}
@@ -64,7 +67,7 @@ class DataGenerator {
 
 	def private StringConcatenationClient classBody( Data d, JavaNames names, String version) '''
 		«javadocWithVersion(d.definition, version)»
-		@«com.rosetta.model.lib.annotations.RosettaClass»
+		@«RosettaClass»
 		public class «d.name» extends «RosettaModelObject» {
 			«d.rosettaClass(names)»
 

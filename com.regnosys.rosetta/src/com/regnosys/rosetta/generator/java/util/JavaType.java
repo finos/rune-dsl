@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.calculation;
+package com.regnosys.rosetta.generator.java.util;
 
 public class JavaType {
 

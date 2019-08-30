@@ -4,6 +4,7 @@ import com.google.inject.Inject
 import com.google.inject.Injector
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.util.JavaClassTranslator
+import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaCalculation
 import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
@@ -17,15 +18,14 @@ import com.regnosys.rosetta.rosetta.RosettaFunctionInput
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.generator.java.calculation.JavaType
-import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.Data
 
 class JavaQualifiedTypeProvider {
 

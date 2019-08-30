@@ -36,6 +36,7 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import com.regnosys.rosetta.generator.java.object.DataValidatorsGenerator
 
 /**
  * Generates code from your model files on save.
@@ -62,6 +63,7 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject ExternalGenerators externalGenerators
 	
 	@Inject DataGenerator dataGenerator
+	@Inject DataValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
 
 	
@@ -84,6 +86,7 @@ class RosettaGenerator extends AbstractGenerator {
 						Data: {
 							dataGenerator.generate(packages, fsa, it, version)
 							metaGenerator.generate(packages, fsa, it, version)
+							validatorsGenerator.generate(packages, fsa, it, version)
 						}
 						Function:{
 							if(handleAsSpecFunction) {

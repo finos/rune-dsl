@@ -42,3 +42,9 @@ qualifiedType productType {}
 qualifiedType eventType {}
 
 calculationType calculation {}
+
+anno keyed
+
+anno scheme
+
+anno reference

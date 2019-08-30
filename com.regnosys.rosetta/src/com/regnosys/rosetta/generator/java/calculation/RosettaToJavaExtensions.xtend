@@ -1,6 +1,8 @@
 package com.regnosys.rosetta.generator.java.calculation
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
@@ -22,6 +24,7 @@ import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
@@ -34,15 +37,13 @@ import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.functions.ExpressionOperators
 import com.rosetta.model.lib.math.BigDecimalExtensions
+import com.rosetta.model.lib.records.Date
 import java.lang.reflect.Modifier
 import java.math.BigDecimal
 import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.rosetta.model.lib.records.Date
 
 class RosettaToJavaExtensions {
 	@Inject RosettaTypeProvider typeProvider

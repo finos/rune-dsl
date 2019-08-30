@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.generator.java.calculation
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.tests.util.ModelHelper
 import java.util.function.Consumer

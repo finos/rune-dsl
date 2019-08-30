@@ -79,4 +79,8 @@ public class DateImpl implements Date {
 	static final public Date of(int year, int month, int dayOfMonth) {
 		return new DateImpl(dayOfMonth,  month,  year);
 	}
+	
+	static final public Date of(LocalDate localDate) {
+		return new DateImpl(localDate.getDayOfMonth(), localDate.getMonthValue(), localDate.getYear());
+	}
 }
