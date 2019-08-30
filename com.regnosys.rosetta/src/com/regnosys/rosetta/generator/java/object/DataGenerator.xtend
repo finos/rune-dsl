@@ -41,7 +41,7 @@ class DataGenerator {
 	}
 
 	
-	private def static hasSynonymPath(ExpandedSynonym synonym) {
+	private def hasSynonymPath(ExpandedSynonym synonym) {
 		synonym !== null && synonym.values.exists[path!==null]
 	}
 

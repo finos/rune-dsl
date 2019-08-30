@@ -35,6 +35,7 @@ import static extension com.regnosys.rosetta.generator.java.util.JavaClassTransl
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 
 class RosettaExpressionJavaGenerator {
 	@Inject
@@ -102,6 +103,9 @@ class RosettaExpressionJavaGenerator {
 			}
 			RosettaContainsExpression : {
 				'''contains(«expr.container.javaCode(params)», «expr.contained.javaCode(params)»)'''
+			}
+			RosettaParenthesisCalcExpression : {
+				expr.expression.javaCode(params, isLast)
 			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr.class.simpleName)

@@ -51,10 +51,10 @@ Function:
 	('inputs:' inputs += Attribute+)?
 	('output:' output = Attribute)?
 	
-	(shortcuts    += ShortcutDeclaration ';'?)*
-	conditions    += Condition*
-	operation     = Operation?
-	postConditions+= PostCondition*
+	(shortcuts     += ShortcutDeclaration ';'?)*
+	conditions     += Condition*
+	operation       = Operation?
+	postConditions += PostCondition*
 ;
 
 ShortcutDeclaration:
@@ -70,14 +70,14 @@ Condition:
 		(expressions+=RosettaCalcExpression ';')+
 ;
 
-Operation: // TODO no name? annotations?
-	'assign-output' attribute = [Attribute|ValidID] ':' Definable?
-	expression = RosettaCalcExpression ';'?
-;
-
 PostCondition returns Condition: // TODO no name? annotations?
 	'post-condition' ':' Definable?
 	(expressions+=RosettaCalcExpression ';')+
+;
+
+Operation: // TODO no name? annotations?
+	'assign-output' attribute = [Attribute|ValidID] ':' Definable?
+	expression = RosettaCalcExpression ';'?
 ;
 
 EnumValueReference returns RosettaEnumValueReference:
