@@ -25,6 +25,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
 import com.regnosys.rosetta.generator.java.calculation.JavaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class JavaQualifiedTypeProvider {
 
@@ -54,7 +55,7 @@ class JavaQualifiedTypeProvider {
 		switch (type) {
 			RosettaBasicType:
 				toJavaQualifiedType(type.name)
-			RosettaClass: {
+			RosettaClass, Data: {
 				val builderSuffix = if (asBuilder) '''.«type.name»Builder''' else ''
 				'''«JavaType.create(packages.model.packageName+'.'+ type.name + builderSuffix)»'''
 			}

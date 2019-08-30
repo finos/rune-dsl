@@ -22,6 +22,7 @@ import java.util.LinkedHashSet
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class RosettaExtensions {
 	
@@ -103,7 +104,7 @@ class RosettaExtensions {
 			if(callable instanceof RosettaAlias) {
 				callable.expression.collectRootCalls(visitor)
 			} 
-			else if(callable instanceof RosettaClass) {
+			else if(callable instanceof RosettaClass || callable instanceof Data) {
 				visitor.apply(callable)
 			}
 			else {

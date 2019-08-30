@@ -69,7 +69,7 @@ class ModelObjectBoilerPlate {
 	def toTypeSingle(ExpandedAttribute attribute) {
 		if (!attribute.hasMetas) attribute.typeName.toJavaType
 		else if (attribute.refIndex >= 0) {
-			if (attribute.type instanceof RosettaClass)
+			if (attribute.isRosettaClassOrData)
 				'''ReferenceWithMeta«attribute.typeName.toFirstUpper»'''
 			else
 				'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''

@@ -33,6 +33,8 @@ import org.eclipse.xtend.lib.annotations.Data
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.RosettaNamed
 
 class RosettaExpressionJavaGenerator {
 	@Inject
@@ -206,6 +208,9 @@ class RosettaExpressionJavaGenerator {
 		var CharSequence right
 		switch (feature) {
 			RosettaRegularAttribute: {
+				right = feature.buildMapFunc(isLast, autoValue)
+			}
+			Attribute: {
 				right = feature.buildMapFunc(isLast, autoValue)
 			}
 			default: 
@@ -384,6 +389,29 @@ class RosettaExpressionJavaGenerator {
 				'''.map(«mapFunc»).<«attribute.type.name.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
 		}
 	}
+	def static buildMapFunc(Attribute attribute, boolean isLast, boolean autoValue) {
+		var mapFunc = attribute.buildMapFuncAttribute
+		if (attribute.card.isIsMany) {
+//			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty)
+//				'''.<«attribute.type.name.toJavaType»>mapC(«mapFunc»)'''
+//			else if (!autoValue) {
+//				'''.<«attribute.metaClass»>mapC(«mapFunc»)'''
+//			}
+//			else {
+				'''.mapC(«mapFunc»).<«attribute.type.name.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
+//			}
+		}
+		else
+		{
+//			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty)
+//				'''.<«attribute.type.name.toJavaType»>map(«mapFunc»)'''
+//			else if (!autoValue) {
+//				'''.<«attribute.metaClass»>map(«mapFunc»)'''
+//			}
+//			else
+				'''.map(«mapFunc»).<«attribute.type.name.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
+		}
+	}
 	
 	def static metaClass(RosettaRegularAttribute attribute) {
 		if (attribute.metaTypes.exists[m|m.name=="reference"]) "ReferenceWithMeta"+attribute.type.name.toJavaType.toFirstUpper
@@ -410,9 +438,9 @@ class RosettaExpressionJavaGenerator {
 		'''.<«expr.attribute.type.name.toJavaType»>groupBy(g->new MapperS<>(g)«FOR ex:exprs»«buildMapFunc(ex.attribute, isLast, true)»«ENDFOR»)'''
 	}
 	
-	private def static String buildMapFuncAttribute(RosettaRegularAttribute attribute)
-		'''"get«attribute.name.toFirstUpper»", «(attribute.eContainer as RosettaClass).name»::get«attribute.name.toFirstUpper»'''
-
+	private def static String buildMapFuncAttribute(RosettaNamed attribute)
+		'''"get«attribute.name.toFirstUpper»", «(attribute.eContainer as RosettaNamed).name»::get«attribute.name.toFirstUpper»'''
+	
 	/**
 	 * The id for a parameter - either a Class name or a positional index
 	 */

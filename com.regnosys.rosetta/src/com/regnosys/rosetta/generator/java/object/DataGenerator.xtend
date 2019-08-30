@@ -4,16 +4,18 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.common.base.Objects
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.calculation.ImportingStringConcatination
 import com.regnosys.rosetta.generator.java.calculation.JavaNames
+import com.regnosys.rosetta.generator.java.calculation.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
+import com.regnosys.rosetta.generator.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaSynonym
 import com.rosetta.model.lib.meta.RosettaMetaData
 import java.util.List
+import java.util.Optional
 import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -21,12 +23,13 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.generator.java.calculation.JavaType
 
 class DataGenerator {
 	
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension ModelObjectBuilderGenerator
+	@Inject extension ImportManagerExtension
+	
 	@Inject JavaNames.Factory factory
 
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, Data data, String version) {
@@ -40,26 +43,23 @@ class DataGenerator {
 	}
 
 	private def generateRosettaClass(RosettaJavaPackages packages, Data d, String version) {
-		val concat = new ImportingStringConcatination()
-		concat.append(d.classBody(factory.create(packages), version))
-		
-		val javaFileContents = '''
+		val classBody = tracImports(d.classBody(factory.create(packages), version))
+		'''
 			package «packages.model.packageName»;
 			
-			«FOR imp : concat.imports»
+			«FOR imp : classBody.imports»
 				import «imp»;
 			«ENDFOR»
 «««			TODO fix imports below. See com.regnosys.rosetta.generator.java.object.ModelObjectBuilderGenerator.process(List<ExpandedAttribute>, boolean)
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.process.BuilderProcessor;
 			import com.rosetta.model.lib.process.Processor;
-			«FOR imp : concat.staticImports»
+			«FOR imp : classBody.staticImports»
 				import static «imp»;
 			«ENDFOR»
 			
-			«concat.toString»
+			«classBody.toString»
 		'''
-		javaFileContents
 	}
 
 	def private StringConcatenationClient classBody( Data d, JavaNames names, String version) '''
@@ -76,20 +76,22 @@ class DataGenerator {
 		}
 	'''
 	
-	private def StringConcatenationClient rosettaClass(Data c, JavaNames names) '''
-		«FOR attribute : c.expandedAttributes»
+	private def StringConcatenationClient rosettaClass(Data c, JavaNames names) {
+	val expandedAttributes = c.expandedAttributes
+	 '''
+		«FOR attribute : expandedAttributes»
 			private final «attribute.toType» «attribute.name»;
 		«ENDFOR»
 		«val metaType = JavaType.create(names.packages.meta.packageName +'.' +c.name+'Meta')»
 		private static «metaType» metaData = new «metaType»();
 
 		«c.name»(«c.builderName» builder) {
-			«FOR attribute : c.expandedAttributes»
+			«FOR attribute : expandedAttributes»
 				this.«attribute.name» = «attribute.attributeFromBuilder»;
 			«ENDFOR»
 		}
 
-		«FOR attribute : c.expandedAttributes»
+		«FOR attribute : expandedAttributes»
 			«javadoc(attribute.definition)»
 			«contributeSynonyms(attribute.synonyms)»
 			public final «attribute.toType» get«attribute.name.toFirstUpper»() {
@@ -106,19 +108,21 @@ class DataGenerator {
 «««		«IF !c.isAbstract»
 		public «c.builderName» toBuilder() {
 			«c.name»Builder builder = new «c.name»Builder();
-«««			«FOR attribute : c.getAllSuperTypes.map[expandedAttributes].flatten»
-«««				«IF attribute.cardinalityIsListValue»
-«««					ofNullable(get«attribute.name.toFirstUpper»()).ifPresent(«attribute.name» -> «attribute.name».forEach(builder::add«attribute.name.toFirstUpper»));
-«««				«ELSE»
-«««					ofNullable(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
-«««				«ENDIF»
-«««			«ENDFOR»
+«««			TODO handle supertypes?
+			«FOR attribute : expandedAttributes»
+				«IF attribute.cardinalityIsListValue»
+					«Optional.importMethod("ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(«attribute.name» -> «attribute.name».forEach(builder::add«attribute.name.toFirstUpper»));
+				«ELSE»
+					«Optional.importMethod("ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
+				«ENDIF»
+			«ENDFOR»
 			return builder;
 		}
 «««		«ELSE»
 «««			public abstract «c.builderName» toBuilder();
 «««		«ENDIF»
 	'''
+	}
 	
 
 	private def StringConcatenationClient contributeSynonyms(List<ExpandedSynonym> synonyms) '''		
@@ -144,7 +148,7 @@ class DataGenerator {
 	'''
 
 	private def StringConcatenationClient attributeFromBuilder(ExpandedAttribute attribute) {
-		if(attribute.type instanceof RosettaClass || attribute.hasMetas) {
+		if(attribute.isRosettaClassOrData || attribute.hasMetas) {
 			'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
 		} else {
 			'''builder.get«attribute.name.toFirstUpper»()'''
