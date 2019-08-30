@@ -150,7 +150,7 @@ class RosettaExpressionJavaGenerator {
 	protected def CharSequence callableCall(RosettaCallableCall expr, ParamMap params) {
 		val call = expr.callable
 		switch (call)  {
-			RosettaClass : {
+			RosettaClass, com.regnosys.rosetta.rosetta.simple.Data : {
 				'''MapperS.of(«params.getClass(call)»)'''
 			}
 			RosettaArgumentFeature : {
@@ -366,7 +366,7 @@ class RosettaExpressionJavaGenerator {
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	def static buildMapFunc(RosettaRegularAttribute attribute, boolean isLast, boolean autoValue) {
+	def buildMapFunc(RosettaRegularAttribute attribute, boolean isLast, boolean autoValue) {
 		var mapFunc = attribute.buildMapFuncAttribute
 		if (attribute.cardinalityIsListValue) {
 			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty)
@@ -389,31 +389,41 @@ class RosettaExpressionJavaGenerator {
 				'''.map(«mapFunc»).<«attribute.type.name.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
 		}
 	}
-	def static buildMapFunc(Attribute attribute, boolean isLast, boolean autoValue) {
+	
+	def buildMapFunc(Attribute attribute, boolean isLast, boolean autoValue) {
 		var mapFunc = attribute.buildMapFuncAttribute
 		if (attribute.card.isIsMany) {
-//			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty)
-//				'''.<«attribute.type.name.toJavaType»>mapC(«mapFunc»)'''
-//			else if (!autoValue) {
-//				'''.<«attribute.metaClass»>mapC(«mapFunc»)'''
-//			}
-//			else {
+			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty)
+				'''.<«attribute.type.name.toJavaType»>mapC(«mapFunc»)'''
+			else if (!autoValue) {
+				'''.<«attribute.metaClass»>mapC(«mapFunc»)'''
+			}
+			else {
 				'''.mapC(«mapFunc»).<«attribute.type.name.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
-//			}
+			}
 		}
 		else
 		{
-//			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty)
-//				'''.<«attribute.type.name.toJavaType»>map(«mapFunc»)'''
-//			else if (!autoValue) {
-//				'''.<«attribute.metaClass»>map(«mapFunc»)'''
-//			}
-//			else
+			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty)
+				'''.<«attribute.type.name.toJavaType»>map(«mapFunc»)'''
+			else if (!autoValue) {
+				'''.<«attribute.metaClass»>map(«mapFunc»)'''
+			}
+			else
 				'''.map(«mapFunc»).<«attribute.type.name.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
 		}
 	}
 	
-	def static metaClass(RosettaRegularAttribute attribute) {
+	def metaTypes(Attribute attr) {
+		<RosettaNamed>emptyList
+	}
+
+	def metaClass(Attribute attr) {
+		if (attr.metaTypes.exists[m|m.name=="reference"]) "ReferenceWithMeta"+attr.type.name.toJavaType.toFirstUpper
+		else "FieldWithMeta"+attr.type.name.toJavaType.toFirstUpper
+	}
+	
+	def metaClass(RosettaRegularAttribute attribute) {
 		if (attribute.metaTypes.exists[m|m.name=="reference"]) "ReferenceWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 		else "FieldWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 	}
@@ -464,7 +474,10 @@ class RosettaExpressionJavaGenerator {
 		new(){
 		}
 		
-		def getClass(RosettaClass c) {
+		dispatch def getClass(RosettaClass c) {
+			return get(new ParamID(c, -1, null));
+		}
+		dispatch def getClass(com.regnosys.rosetta.rosetta.simple.Data c) {
 			return get(new ParamID(c, -1, null));
 		}
 	}
