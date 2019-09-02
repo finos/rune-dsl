@@ -8,6 +8,7 @@ package com.regnosys.rosetta.rosetta.simple
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaCardinality
+import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExpression
@@ -15,6 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.RosettaSynonym
 
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
@@ -33,6 +35,7 @@ class AnnotationRef {
 }
 
 class Attribute extends RosettaFeature, Definable, Annotated, RosettaCallable {
+	contains RosettaSynonym[] synonyms
 	contains RosettaCardinality card
 }
 
@@ -40,6 +43,7 @@ abstract class Definable extends RosettaDefinable {}
 
 
 class Data extends RosettaType, RootElement, RosettaCallable {
+	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
 	contains Condition[] conditions
 }

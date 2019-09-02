@@ -9,6 +9,7 @@ import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
+import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaClass
@@ -23,6 +24,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 
 class DataGenerator {
 	
@@ -44,7 +46,11 @@ class DataGenerator {
 	private def hasSynonymPath(ExpandedSynonym synonym) {
 		synonym !== null && synonym.values.exists[path!==null]
 	}
-
+	
+	private def hasSynonymPath(RosettaSynonymBase p) {
+		return hasSynonymPath(p.toRosettaExpandedSynonym)
+	}
+	
 	private def generateRosettaClass(RosettaJavaPackages packages, Data d, String version) {
 		val classBody = tracImports(d.classBody(factory.create(packages), version))
 		'''
@@ -65,9 +71,10 @@ class DataGenerator {
 		'''
 	}
 
-	def private StringConcatenationClient classBody( Data d, JavaNames names, String version) '''
+	def private StringConcatenationClient classBody(Data d, JavaNames names, String version) '''
 		«javadocWithVersion(d.definition, version)»
 		@«RosettaClass»
+		«contributeClassSynonyms(d.synonyms)»
 		public class «d.name» extends «RosettaModelObject» {
 			«d.rosettaClass(names)»
 
@@ -127,7 +134,17 @@ class DataGenerator {
 	'''
 	}
 	
-
+	private def contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''		
+		«FOR synonym : synonyms.filter[value!==null] »
+			«val path = if (hasSynonymPath(synonym)) ''', path="«synonym.value.path»" ''' else ''»
+			«val maps = if (synonym.value.maps > 0) ''', maps=«synonym.value.maps»''' else ''»
+			
+			«FOR source : synonym.sources»
+				@RosettaSynonym(value="«synonym.value.name»", source="«source.getName»"«path»«maps»)
+			«ENDFOR»
+		«ENDFOR»
+	'''
+	
 	private def StringConcatenationClient contributeSynonyms(List<ExpandedSynonym> synonyms) '''		
 		«FOR synonym : synonyms »
 			«val maps = if (synonym.values.exists[v|v.maps>1]) ''', maps=«synonym.values.map[maps].join(",")»''' else ''»

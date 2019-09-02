@@ -183,7 +183,7 @@ class RosettaAttributeExtensions {
 			attr.card.inf,
 			attr.card.sup,
 			attr.card.unbounded,
-			emptyList,
+			attr.synonyms.toRosettaExpandedSynonyms(-1),
 			attr.definition,
 			attr.calculation,
 			attr.isEnumeration,

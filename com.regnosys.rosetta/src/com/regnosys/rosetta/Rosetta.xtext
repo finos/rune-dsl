@@ -35,7 +35,7 @@ Annotation:
 
 Data:
 	'data' RosettaNamed ':' Definable?
-	Annotations?
+	Annotations? synonyms += RosettaClassSynonym*
 	attributes += Attribute+
 	conditions += Condition*
 ;
@@ -62,7 +62,7 @@ ShortcutDeclaration:
 ;
 
 Attribute:
-	RosettaNamed RosettaTyped card=RosettaCardinality Definable? Annotations?;
+	RosettaNamed RosettaTyped card=RosettaCardinality Definable? Annotations? synonyms += RosettaSynonym*;
 
 Condition:
 	'condition' RosettaNamed? ':' Definable?
@@ -680,7 +680,7 @@ RosettaCalcExpression returns RosettaExpression:
 
 RosettaCalcConditionalExpression returns RosettaExpression:
 	RosettaCalcOr 
-	| {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression 'else' elsethen=RosettaCalcExpression
+	| {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?
 ;
 
 RosettaCalcOr returns RosettaExpression:
