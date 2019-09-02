@@ -21,6 +21,7 @@ import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.annotations.RosettaMeta
 import com.rosetta.model.lib.meta.RosettaMetaData
@@ -83,9 +84,9 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules() {
 					return «Arrays».asList(
-«««						«FOR r : dataRules(elements, c) SEPARATOR ','»
-«««							new «packages.dataRule.packageName».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
-«««						«ENDFOR»
+						«FOR r : dataRules(c.conditions) SEPARATOR ','»
+							new «packages.dataRule.packageName».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
+						«ENDFOR»
 					);
 				}
 			
@@ -252,6 +253,10 @@ class ModelMetaGenerator {
 			dataRuleMappingSet.addAll(classRules.toSet)
 		]
 		return dataRuleMappingSet.filter[it.className === thisClass.name].toList
+	}
+	
+	private def List<ClassRule> dataRules(List<Condition> elements) {
+		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.name)]
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data

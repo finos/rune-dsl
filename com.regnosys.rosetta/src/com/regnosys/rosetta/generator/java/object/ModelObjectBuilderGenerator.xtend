@@ -18,6 +18,8 @@ import static extension com.regnosys.rosetta.generator.java.util.JavaClassTransl
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.meta.RosettaMetaData
+import java.util.ArrayList
+import com.regnosys.rosetta.generator.java.util.JavaType
 
 class ModelObjectBuilderGenerator {
 	
@@ -201,7 +203,7 @@ class ModelObjectBuilderGenerator {
 		}
 	}
 	
-	private def builderGetters(List<ExpandedAttribute> attributes) '''
+	private def StringConcatenationClient builderGetters(List<ExpandedAttribute> attributes) '''
 		«FOR attribute : attributes»
 			
 			public «attribute.toBuilderType» get«attribute.name.toFirstUpper»() {
@@ -220,7 +222,7 @@ class ModelObjectBuilderGenerator {
 				«ELSE»
 					public «attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»(int index) {
 						if («attribute.name»==null) {
-							this.«attribute.name» = new ArrayList<>();
+							this.«attribute.name» = new «JavaType.create(ArrayList.name)»<>();
 						}
 						return getIndex(«attribute.name», index, ()->new «attribute.toBuilderTypeSingle»());
 					}

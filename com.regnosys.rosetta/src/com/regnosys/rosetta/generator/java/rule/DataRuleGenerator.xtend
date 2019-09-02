@@ -55,6 +55,7 @@ class DataRuleGenerator {
 			«ENDFOR»
 «««			TODO fix it in com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator.javaCode(RosettaExpression, ParamMap)
 			import org.isda.cdm.*;
+			import java.math.*;
 			import com.rosetta.model.lib.functions.*;
 			import com.rosetta.model.lib.records.Date;
 			//import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;

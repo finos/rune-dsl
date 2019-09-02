@@ -1,7 +1,6 @@
 
 package com.regnosys.rosetta.generator.java.object
 
-import com.google.common.base.Objects
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -25,6 +24,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
+import java.util.Objects
 
 class DataGenerator {
 	
@@ -90,7 +90,7 @@ class DataGenerator {
 	val expandedAttributes = c.expandedAttributes
 	 '''
 		«FOR attribute : expandedAttributes»
-			private final «attribute.toType» «attribute.name»;
+			private final «attribute.toJavaType(names)» «attribute.name»;
 		«ENDFOR»
 		«val metaType = JavaType.create(names.packages.meta.packageName +'.' +c.name+'Meta')»
 		private static «metaType» metaData = new «metaType»();
@@ -104,7 +104,7 @@ class DataGenerator {
 		«FOR attribute : expandedAttributes»
 			«javadoc(attribute.definition)»
 			«contributeSynonyms(attribute.synonyms)»
-			public final «attribute.toType» get«attribute.name.toFirstUpper»() {
+			public final «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
 				return «attribute.name»;
 			}
 			
@@ -117,7 +117,7 @@ class DataGenerator {
 
 «««		«IF !c.isAbstract»
 		public «c.builderName» toBuilder() {
-			«c.name»Builder builder = new «c.name»Builder();
+			«c.builderName» builder = new «c.builderName»();
 «««			TODO handle supertypes?
 			«FOR attribute : expandedAttributes»
 				«IF attribute.cardinalityIsListValue»
@@ -134,13 +134,29 @@ class DataGenerator {
 	'''
 	}
 	
-	private def contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''		
+	private def StringConcatenationClient toJavaType(ExpandedAttribute attribute, JavaNames names) {
+		if (attribute.isMultiple) '''«List»<«attribute.toJavaTypeSingle(names)»>''' 
+		else attribute.toJavaTypeSingle(names);
+	}
+
+	private def StringConcatenationClient toJavaTypeSingle(ExpandedAttribute attribute, JavaNames names) {
+		if (!attribute.hasMetas) names.toJavaQualifiedType(attribute.type)
+		else if (attribute.refIndex >= 0) {
+			if (attribute.isRosettaClassOrData)
+				'''ReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+			else
+				'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+		} else
+			'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
+	}
+	
+	private def StringConcatenationClient contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''		
 		«FOR synonym : synonyms.filter[value!==null] »
 			«val path = if (hasSynonymPath(synonym)) ''', path="«synonym.value.path»" ''' else ''»
 			«val maps = if (synonym.value.maps > 0) ''', maps=«synonym.value.maps»''' else ''»
 			
 			«FOR source : synonym.sources»
-				@RosettaSynonym(value="«synonym.value.name»", source="«source.getName»"«path»«maps»)
+				@«RosettaSynonym»(value="«synonym.value.name»", source="«source.getName»"«path»«maps»)
 			«ENDFOR»
 		«ENDFOR»
 	'''
@@ -175,9 +191,9 @@ class DataGenerator {
 		} 
 	}
 	
-	private def StringConcatenationClient buildRosettaObject(ExpandedAttribute attribute) {		
+	private def StringConcatenationClient buildRosettaObject(ExpandedAttribute attribute) {
 		if(attribute.cardinalityIsListValue) {
-			'''list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(«Objects»::nonNull).collect(«Collectors».toList())'''
+			'''list -> list.stream().filter(«Objects»::nonNull).map(f->f.build()).filter(«Objects»::nonNull).collect(«Collectors».toList())'''
 		} else {
 			'''f->f.build()'''
 		}

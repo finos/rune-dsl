@@ -11,6 +11,9 @@ import org.eclipse.xtend.lib.annotations.Data
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.rosetta.util.ListEquals
+import com.regnosys.rosetta.generator.java.util.JavaType
 
 class ModelObjectBoilerPlate {
 
@@ -24,7 +27,7 @@ class ModelObjectBoilerPlate {
 		«c.wrap.boilerPlate»
 	'''
 	
-	def boilerPlate(com.regnosys.rosetta.rosetta.simple.Data d) '''
+	def StringConcatenationClient boilerPlate(com.regnosys.rosetta.rosetta.simple.Data d) '''
 		«d.wrap.processMethod»
 		«d.wrap.boilerPlate»
 	'''
@@ -39,7 +42,7 @@ class ModelObjectBoilerPlate {
 		«c.wrap.contributeToString(toBuilder)»
 	'''
 	
-	def builderBoilerPlate(com.regnosys.rosetta.rosetta.simple.Data c) '''
+	def StringConcatenationClient builderBoilerPlate(com.regnosys.rosetta.rosetta.simple.Data c) '''
 		«c.wrap.contributeEquals(toBuilder)»
 		«c.wrap.contributeHashCode»
 		«c.wrap.contributeToString(toBuilder)»
@@ -77,7 +80,7 @@ class ModelObjectBoilerPlate {
 			'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
 	}
 
-	private def boilerPlate(TypeData c) '''
+	private def StringConcatenationClient boilerPlate(TypeData c) '''
 		«c.contributeEquals(identity)»
 		«c.contributeHashCode»
 		«c.contributeToString(identity)»
@@ -124,7 +127,7 @@ class ModelObjectBoilerPlate {
 
 	// the eventEffect attribute should not contribute to the hashcode. The EventEffect must first take the hash from Event, 
 	// but once stamped onto EventEffect, this will change the hash for Event. TODO: Have generic way of excluding attributes from the hash
-	private def contributeEquals(TypeData c, (String)=>String classNameFunc) '''
+	private def StringConcatenationClient contributeEquals(TypeData c, (String)=>String classNameFunc) '''
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
@@ -143,9 +146,9 @@ class ModelObjectBoilerPlate {
 		
 	'''
 
-	private def contributeToEquals(ExpandedAttribute a) '''
+	private def StringConcatenationClient contributeToEquals(ExpandedAttribute a) '''
 	«IF a.cardinalityIsListValue»
-		if (!ListEquals.listEquals(«a.name», _that.«a.name»)) return false;
+		if (!«JavaType.create(ListEquals.name)».listEquals(«a.name», _that.«a.name»)) return false;
 	«ELSE»
 		if («a.name» != null ? !«a.name».equals(_that.«a.name») : _that.«a.name» != null) return false;
 	«ENDIF»
