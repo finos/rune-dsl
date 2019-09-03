@@ -4,21 +4,20 @@ import com.google.common.collect.Multimaps
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaMetaType
-import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
+import java.util.ArrayList
 import java.util.Collection
+import java.util.Collections
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaFullType
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
-import java.util.ArrayList
-import java.util.Collections
 
 class MetaFieldGenerator {
-	def generate(IFileSystemAccess2 fsa, Iterable<RosettaMetaType> metaTypes, Iterable<RosettaClass> allClasses, Iterable<String> namespaces) {
+	def generate(IFileSystemAccess2 fsa, Iterable<RosettaMetaType> metaTypes, Iterable<RosettaRootElement> allClasses, Iterable<String> namespaces) {
 		
 		val namespaceToMetas = Multimaps.index(metaTypes, [namespace]).asMap
 		for (namespace:namespaces) {
@@ -769,7 +768,7 @@ class MetaFieldGenerator {
 		}
 	}'''
 	
-	def namespace(RosettaNamed rc) {
-		return (rc.eContainer as RosettaModel).header.namespace
+	def namespace(RosettaRootElement rc) {
+		return rc.model.header.namespace
 	}
 }

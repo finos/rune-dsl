@@ -54,7 +54,7 @@ class DamlModelObjectGenerator {
 		«FOR c : rosettaClasses»
 			«classComment(c.definition)»
 			data «c.name» = «c.name» with 
-			  «FOR attribute : c.allSuperTypes.expandedAttributes»
+			  «FOR attribute : c.allSuperTypes.expandedAttributesForSet»
 			      «attribute.toAttributeName» : «attribute.toType»
 			        «methodComment(attribute.definition)»
 			  «ENDFOR»

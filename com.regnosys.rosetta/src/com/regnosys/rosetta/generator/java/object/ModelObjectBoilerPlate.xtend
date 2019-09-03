@@ -14,6 +14,7 @@ import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.util.ListEquals
 import com.regnosys.rosetta.generator.java.util.JavaType
+import com.regnosys.rosetta.generator.java.util.JavaNames
 
 class ModelObjectBoilerPlate {
 
@@ -63,12 +64,19 @@ class ModelObjectBoilerPlate {
 		
 		if (interfaces.empty) '''''' else '''implements «interfaces.join(', ')» '''
 	}
-
+	
+	@Deprecated
 	def toType(ExpandedAttribute attribute) {
 		if (attribute.isMultiple) '''List<«attribute.toTypeSingle»>''' 
 		else attribute.toTypeSingle;
 	}
-
+	
+	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names) {
+		if (attribute.isMultiple) '''List<«attribute.toTypeSingle(names)»>''' 
+		else attribute.toTypeSingle(names);
+	}
+	
+	@Deprecated
 	def toTypeSingle(ExpandedAttribute attribute) {
 		if (!attribute.hasMetas) attribute.typeName.toJavaType
 		else if (attribute.refIndex >= 0) {
@@ -78,6 +86,19 @@ class ModelObjectBoilerPlate {
 				'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''
 		} else
 			'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
+	}
+	
+	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names) {
+		if (!attribute.hasMetas) return '''«attribute.typeName.toJavaType»'''
+		val metaType = if (attribute.refIndex >= 0) {
+			if (attribute.isRosettaClassOrData)
+				'''ReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+			else
+				'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+		} else
+			'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
+			
+		return '''«names.packages.metaField.javaType(metaType)»'''
 	}
 
 	private def StringConcatenationClient boilerPlate(TypeData c) '''

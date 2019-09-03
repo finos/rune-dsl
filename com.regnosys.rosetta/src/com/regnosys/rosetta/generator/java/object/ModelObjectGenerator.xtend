@@ -142,11 +142,11 @@ class ModelObjectGenerator {
 	}
 	
 	def private getQualifiedAttribute(RosettaClass c) {
-		c.allSuperTypes.expandedAttributes.findFirst[qualified]?.name
+		c.allSuperTypes.expandedAttributesForSet.findFirst[qualified]?.name
 	}
 	
 	def private getQualifiedClass(RosettaClass c) {
-		val allExpandedAttributes = c.allSuperTypes.expandedAttributes
+		val allExpandedAttributes = c.allSuperTypes.expandedAttributesForSet
 		if(!allExpandedAttributes.stream.anyMatch[qualified])
 			return null
 		

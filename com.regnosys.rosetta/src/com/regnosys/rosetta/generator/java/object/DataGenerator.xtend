@@ -6,7 +6,6 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
@@ -61,10 +60,11 @@ class DataGenerator {
 				import «imp»;
 			«ENDFOR»
 «««			TODO fix imports below. See com.regnosys.rosetta.generator.java.object.ModelObjectBuilderGenerator.process(List<ExpandedAttribute>, boolean)
+
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.process.BuilderProcessor;
 			import com.rosetta.model.lib.process.Processor;
-			import org.isda.cdm.metafields.*;
+
 			«FOR imp : classBody.staticImports»
 				import static «imp»;
 			«ENDFOR»
@@ -82,7 +82,7 @@ class DataGenerator {
 
 			«d.staticBuilderMethod»
 
-			«d.builderClass»
+			«d.builderClass(names)»
 
 			«d.boilerPlate»
 		}
@@ -94,7 +94,7 @@ class DataGenerator {
 		«FOR attribute : expandedAttributes»
 			private final «attribute.toJavaType(names)» «attribute.name»;
 		«ENDFOR»
-		«val metaType = JavaType.create(names.packages.meta.packageName +'.' +c.name+'Meta')»
+		«val metaType = names.packages.meta.javaType(c.name+'Meta')»
 		private static «metaType» metaData = new «metaType»();
 
 		«c.name»(«c.builderName» builder) {
@@ -144,14 +144,15 @@ class DataGenerator {
 	}
 
 	private def StringConcatenationClient toJavaTypeSingle(ExpandedAttribute attribute, JavaNames names) {
-		if (!attribute.hasMetas) names.toJavaQualifiedType(attribute.type)
+		if (!attribute.hasMetas)
+			names.toJavaQualifiedType(attribute.type)
 		else if (attribute.refIndex >= 0) {
 			if (attribute.isRosettaClassOrData)
-				'''ReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+				'''«names.packages.metaField.javaType('ReferenceWithMeta'+attribute.typeName.toFirstUpper)»'''
 			else
-				'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+				'''«names.packages.metaField.javaType('BasicReferenceWithMeta'+attribute.typeName.toFirstUpper)»'''
 		} else
-			'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
+			'''«names.packages.metaField.javaType('FieldWithMeta'+attribute.typeName.toFirstUpper)»'''
 	}
 	
 	private def StringConcatenationClient contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''		

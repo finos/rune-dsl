@@ -47,17 +47,17 @@ class RosettaAttributeExtensions {
 		attribute.cardinalityIsSingleValue != true
 	}
 	/* TODO check Performance. Called very often*/
-	static def List<ExpandedAttribute> getExpandedAttributes(RosettaClass rosettaClass) {
+	dispatch static def List<ExpandedAttribute> getExpandedAttributes(RosettaClass rosettaClass) {
 		Iterables.concat(
-			rosettaClass.regularAttributes.expandedAttributes,
-			rosettaClass.materialiseAttributes.expandedAttributes
+			rosettaClass.regularAttributes.expandedAttributesForList,
+			rosettaClass.materialiseAttributes.expandedAttributesForList
 		).toList.sortBy[ExpandedAttribute a|a.name]
 	}
-	static def List<ExpandedAttribute> getExpandedAttributes(Data data) {
+	dispatch static def List<ExpandedAttribute> getExpandedAttributes(Data data) {
 		data.attributes.map[toExpandedAttribute()].toList.sortBy[ExpandedAttribute a|a.name]
 	}
 	
-	static def List<ExpandedAttribute> getExpandedAttributes(Set<RosettaClass> classes) {
+	 static def List<ExpandedAttribute> getExpandedAttributesForSet(Set<RosettaClass> classes) {
 		classes.flatMap[expandedAttributes].toList.sortBy[name]
 	}
 	
@@ -107,7 +107,7 @@ class RosettaAttributeExtensions {
 		return materialisedAttributes
 	}
 	
-	static def List<ExpandedAttribute> getExpandedAttributes(RosettaEnumeration rosettaEnum) {
+	dispatch static def List<ExpandedAttribute> getExpandedAttributes(RosettaEnumeration rosettaEnum) {
 		rosettaEnum.enumValues.map[expandedEnumAttribute]
 	}
 	
@@ -132,7 +132,7 @@ class RosettaAttributeExtensions {
 			return false
 	}	
 	
-	private static def List<ExpandedAttribute> getExpandedAttributes(List<RosettaRegularAttribute> attributes) {
+	 private static def List<ExpandedAttribute> getExpandedAttributesForList(List<RosettaRegularAttribute> attributes) {
 		val List<ExpandedAttribute> attribs = newArrayList
 		for (attr : attributes) {
 			val List<ExpandedAttribute> metas = newArrayList

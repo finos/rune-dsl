@@ -20,10 +20,13 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.meta.RosettaMetaData
 import java.util.ArrayList
 import com.regnosys.rosetta.generator.java.util.JavaType
+import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.util.JavaNames
 
 class ModelObjectBuilderGenerator {
 	
 	@Inject extension ModelObjectBoilerPlate
+	@Inject extension RosettaExtensions
 	
 	def builderName(RosettaType c) {
 		return c.name + 'Builder';
@@ -37,7 +40,7 @@ class ModelObjectBuilderGenerator {
 		Optional.ofNullable(clazz.superType).map[builderName].orElse('RosettaModelObjectBuilder')
 	}
 	
-	dispatch def StringConcatenationClient builderClass(Data c) '''
+	dispatch def StringConcatenationClient builderClass(Data c, JavaNames names) '''
 		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderName»«ELSE»«RosettaModelObjectBuilder»«ENDIF»{
 		
 			«FOR attribute : c.expandedAttributes»
@@ -54,7 +57,7 @@ class ModelObjectBuilderGenerator {
 		
 			«c.expandedAttributes.builderGetters»
 		
-			«c.setters»
+			«c.setters(names)»
 		
 			public «c.name» build() {
 				return new «c.name»(this);
@@ -81,7 +84,7 @@ class ModelObjectBuilderGenerator {
 		}
 	'''
 	
-	dispatch def StringConcatenationClient builderClass(RosettaClass c) '''
+	def StringConcatenationClient builderClass(RosettaClass c) '''
 		public static «c.abstractModifier» class «builderName(c)» extends «c.builderSuperClass» «builderImplements(c)»{
 		
 			«FOR attribute : c.expandedAttributes»
@@ -244,22 +247,19 @@ class ModelObjectBuilderGenerator {
 		return result.toString
 	}
 		
-	private def setters(Data c) {
-		var result = new StringBuilder(c.setters(c, false))
-		var current = c.superType
-		
-		while (current !== null) {
-			result.append(c.setters(current, true))
-			current = current.superType
-		}
-		return result.toString
+	private def StringConcatenationClient setters(Data c, JavaNames names) {
+		'''
+		«FOR current : c.allSuperTypes»
+		«c.setters(current, current != c, names)»
+		«ENDFOR»
+		'''
 	}
 		
 	
-	private def setters(Data thisClass, Data clazz, boolean isSuper) '''
+	private def StringConcatenationClient setters(Data thisClass, Data clazz, boolean isSuper, JavaNames names) '''
 		«FOR attribute : clazz.expandedAttributes»
 			«IF attribute.cardinalityIsListValue»
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle» «attribute.name») {
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name») {
 					if(this.«attribute.name» == null){
 						this.«attribute.name» = new ArrayList<>();
 						this.«attribute.name».add(«attribute.toBuilder»);
@@ -270,7 +270,7 @@ class ModelObjectBuilderGenerator {
 				}
 
 				«IF attribute.isRosettaClassOrData»
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle(names)» «attribute.name») {
 						if(this.«attribute.name» == null){
 							this.«attribute.name» = new ArrayList<>();
 							this.«attribute.name».add(«attribute.name»);
@@ -287,7 +287,7 @@ class ModelObjectBuilderGenerator {
 					return this;
 				}
 			«ELSE»
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»(«attribute.toType» «attribute.name») {
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name») {
 					this.«attribute.name» = «attribute.toBuilder»;
 					return this;
 				}
@@ -383,7 +383,8 @@ class ModelObjectBuilderGenerator {
 		else attribute.toBuilderTypeSingle;
 	}
 	
-	private def toBuilderTypeSingle(ExpandedAttribute attribute) {
+	@Deprecated
+	private def StringConcatenationClient toBuilderTypeSingle(ExpandedAttribute attribute) {
 		if (attribute.hasMetas) {
 			if (attribute.refIndex>=0) {
 				if (attribute.isRosettaClassOrData)
@@ -396,7 +397,23 @@ class ModelObjectBuilderGenerator {
 			}
 		}
 		else  {
-			attribute.toBuilderTypeUnderlying
+			'''«attribute.toBuilderTypeUnderlying»'''
+		}
+	}
+	
+	private def StringConcatenationClient toBuilderTypeSingle(ExpandedAttribute attribute, JavaNames names) {
+		if (attribute.hasMetas) {
+			val buildername = if (attribute.refIndex >= 0) {
+					if (attribute.isRosettaClassOrData)
+						'''ReferenceWithMeta«attribute.typeName.toFirstUpper».ReferenceWithMeta«attribute.typeName.toFirstUpper»Builder'''
+					else
+						'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper».BasicReferenceWithMeta«attribute.typeName.toFirstUpper»Builder'''
+				} else {
+					'''FieldWithMeta«attribute.typeName.toFirstUpper».FieldWithMeta«attribute.typeName.toFirstUpper»Builder'''
+				}
+			'''«names.packages.model.javaType(buildername)»'''
+		} else {
+			'''«attribute.toBuilderTypeUnderlying»'''
 		}
 	}
 	

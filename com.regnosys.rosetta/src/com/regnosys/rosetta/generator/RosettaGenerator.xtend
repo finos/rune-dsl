@@ -120,8 +120,8 @@ class RosettaGenerator extends AbstractGenerator {
 			
 			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 			val allElements = models.flatMap[elements].toList
-			val classes = resource.contents.filter(RosettaModel).head.elements.filter(RosettaClass)
-			metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), classes.filter(RosettaClass), models.map[header].filter(a|a!==null).map[namespace])
+			val classes = resource.contents.filter(RosettaModel).head.elements.filter[it instanceof RosettaClass || it instanceof Data]
+			metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), classes, models.map[header].filter(a|a!==null).map[namespace])
 	
 			
 			// TODO same as in afterGenerate()?
