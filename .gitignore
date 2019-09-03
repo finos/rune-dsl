@@ -10,6 +10,7 @@ build.acceleo
 *.class
 .DS_Store
 
+**/.settings
 **/src-gen/
 **/xtend-gen/
 **/emf-gen/
