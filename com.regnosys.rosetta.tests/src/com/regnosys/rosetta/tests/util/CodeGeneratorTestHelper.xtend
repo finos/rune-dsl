@@ -149,32 +149,4 @@ class CodeGeneratorTestHelper {
 			''', e)
 		}
 	}
-	
-	def generateDaml(CharSequence model) {
-		val fsa = new RegisteringFileSystemAccess()
-		val eResource = model.parseRosettaWithNoErrors.eResource;
-		eResource.beforeGenerate(fsa, null)
-		eResource.doGenerate(fsa, null)
-		eResource.afterGenerate(fsa, null)
-
-		val generatedDaml = newHashMap
-		fsa.generatedFiles.forEach [
-			val damlClassName = it.damlClassName
-			if (damlClassName !== null) {
-				generatedDaml.put(damlClassName, it.getContents().toString());
-			}
-		]
-
-		return generatedDaml
-	}
-	
-	def getDamlClassName(RegisteringFileSystemAccess.GeneratedFile generatedFile) {
-		val path = generatedFile.path
-		if (path.endsWith('.daml')) {
-			path.substring(path.lastIndexOf('/')+1, path.lastIndexOf('.daml'))
-		}
-		else {
-			null
-		}
-	}
 }
