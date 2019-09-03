@@ -64,6 +64,7 @@ class DataGenerator {
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.process.BuilderProcessor;
 			import com.rosetta.model.lib.process.Processor;
+			import org.isda.cdm.metafields.*;
 			«FOR imp : classBody.staticImports»
 				import static «imp»;
 			«ENDFOR»
@@ -122,8 +123,7 @@ class DataGenerator {
 «««		«IF !c.isAbstract»
 		public «c.builderName» toBuilder() {
 			«c.builderName» builder = new «c.builderName»();
-«««			TODO handle supertypes?
-			«FOR attribute : c.getAllSuperTypes.map[expandedAttributes].flatten»
+			«FOR attribute : c.getAllSuperTypes.map[it.expandedAttributes].flatten»
 				«IF attribute.cardinalityIsListValue»
 					«Optional.importMethod("ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(«attribute.name» -> «attribute.name».forEach(builder::add«attribute.name.toFirstUpper»));
 				«ELSE»

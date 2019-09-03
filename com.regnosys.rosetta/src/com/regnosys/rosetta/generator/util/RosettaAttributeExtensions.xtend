@@ -156,6 +156,16 @@ class RosettaAttributeExtensions {
 		.filter[!values.isEmpty]
 		.toList
 	}
+	
+	private static def toRosettaExpandedSynonym(Attribute attr, int index) {
+		attr.synonyms.filter[body.metaValues.size > index].map[
+			s|new ExpandedSynonym(s.sources, s.body.values?.map[metaSynValue(s.body.metaValues.get(index))
+				//new ExpandedSynonymValue(s.metaValues.get(index), path+"."+value, maps, true)
+			].toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, s.body.mapper)
+		]
+		.filter[!values.isEmpty]
+		.toList
+	}
 
 	static def toExpandedAttribute(RosettaRegularAttribute attr, List<ExpandedAttribute> metas) {
 		new ExpandedAttribute(
@@ -175,6 +185,27 @@ class RosettaAttributeExtensions {
 		)
 	}
 	static def toExpandedAttribute(Attribute attr) {
+		val metas = <ExpandedAttribute>newArrayList
+		attr.annotations.forEach [ annoRef, i |
+			val annoAttr = annoRef?.attribute
+			if(annoAttr!==null) {
+				metas.add(new ExpandedAttribute(
+					(attr.eContainer as RosettaType),
+					annoAttr.name,
+					annoAttr.type,
+					annoAttr.type.name,
+					0,
+					1,
+					false,
+					attr.toRosettaExpandedSynonym(i),
+					attr.definition,
+					false,
+					false,
+					false,
+					Collections.emptyList
+				))
+			}
+		]
 		new ExpandedAttribute(
 			(attr.eContainer as RosettaType),
 			attr.name,
@@ -188,7 +219,7 @@ class RosettaAttributeExtensions {
 			attr.calculation,
 			attr.isEnumeration,
 			attr.qualified,
-			emptyList
+			metas
 		)
 	}
 	
