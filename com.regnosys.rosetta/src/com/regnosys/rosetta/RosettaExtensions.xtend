@@ -29,8 +29,17 @@ class RosettaExtensions {
 	def Set<RosettaClass> getAllSuperTypes(RosettaClass clazz) {
 		doGetSuperTypes(clazz, newLinkedHashSet)
 	}
+	def Set<Data> getAllSuperTypes(Data clazz) {
+		doGetSuperTypes(clazz, newLinkedHashSet)
+	}
 	
 	private def Set<RosettaClass> doGetSuperTypes(RosettaClass clazz, Set<RosettaClass> seenClasses) {
+		if(clazz !== null && seenClasses.add(clazz)) 
+			doGetSuperTypes(clazz.superType, seenClasses)
+		return seenClasses
+	}
+	
+	private def Set<Data> doGetSuperTypes(Data clazz, Set<Data> seenClasses) {
 		if(clazz !== null && seenClasses.add(clazz)) 
 			doGetSuperTypes(clazz.superType, seenClasses)
 		return seenClasses

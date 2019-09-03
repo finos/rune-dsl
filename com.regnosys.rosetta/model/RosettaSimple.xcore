@@ -43,9 +43,14 @@ abstract class Definable extends RosettaDefinable {}
 
 
 class Data extends RosettaType, RootElement, RosettaCallable {
+	refers Data superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
 	contains Condition[] conditions
+	
+	op boolean hasSuperType() {
+		return superType !== null
+	}
 }
 
 class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {

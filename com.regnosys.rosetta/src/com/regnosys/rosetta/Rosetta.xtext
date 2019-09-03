@@ -19,26 +19,34 @@ RootElement:
 fragment Definable:
 	'<'definition=STRING'>';
 
-fragment Annotations returns Annotated:
-	'[' annotations+=AnnotationRef (',' annotations+=AnnotationRef)* ']';
-
-AnnotationRef:
-	annotation = [Annotation|ValidID]
-	(attribute = [Attribute|ValidID])?
-;
-
-
 Annotation:
 	'anno' RosettaNamed ':' Definable?
 	attributes += Attribute*
 ;
 
+fragment Annotations returns Annotated:
+	annotations+=AnnotationRef;
+
+fragment Synonyms*:
+	synonyms+=RosettaSynonym;
+
+fragment ClassSynonyms*:
+	synonyms+=RosettaClassSynonym;
+	
+AnnotationRef:
+	'[' annotation = [Annotation|ValidID]
+	(attribute = [Attribute|ValidID])?']'
+;
+
 Data:
-	'data' RosettaNamed ':' Definable?
-	Annotations? synonyms += RosettaClassSynonym*
+	'data' RosettaNamed ('extends' superType = [Data|ValidID])? ':' Definable?
+	(Annotations| ClassSynonyms)*
 	attributes += Attribute+
 	conditions += Condition*
 ;
+
+Attribute:
+	RosettaNamed RosettaTyped card=RosettaCardinality Definable? (Annotations|Synonyms)*;
 
 Function:
 	'func' 
@@ -61,8 +69,6 @@ ShortcutDeclaration:
 	'alias' RosettaNamed ':' Definable?  expression=RosettaCalcExpression
 ;
 
-Attribute:
-	RosettaNamed RosettaTyped card=RosettaCardinality Definable? Annotations? synonyms += RosettaSynonym*;
 
 Condition:
 	'condition' RosettaNamed? ':' Definable?

@@ -170,7 +170,7 @@ class ModelObjectBoilerPlate {
 		return new TypeData(
 			data.name,
 			data.expandedAttributes,
-			false,
+			data.hasSuperType,
 			true
 		);
 	}

@@ -38,7 +38,7 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	dispatch def StringConcatenationClient builderClass(Data c) '''
-		public static class «builderName(c)» extends «RosettaModelObjectBuilder»{
+		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderName»«ELSE»«RosettaModelObjectBuilder»«ENDIF»{
 		
 			«FOR attribute : c.expandedAttributes»
 				protected «attribute.toBuilderType» «attribute.name»;
@@ -62,7 +62,7 @@ class ModelObjectBuilderGenerator {
 		
 			@Override
 			public «builderName(c)» prune() {
-«««				«IF c.superType!==null»super.prune();«ENDIF»
+				«IF c.hasSuperType»super.prune();«ENDIF»
 				«FOR attribute : c.expandedAttributes»
 					«IF !attribute.isMultiple && (attribute.isRosettaClassOrData || attribute.hasMetas)»
 						if («attribute.name»!=null && !«attribute.name».prune().hasData()) «attribute.name» = null;
@@ -73,9 +73,9 @@ class ModelObjectBuilderGenerator {
 				return this;
 			}
 			
-			«c.expandedAttributes.hasData(false)»
+			«c.expandedAttributes.hasData(c.hasSuperType)»
 			
-			«c.expandedAttributes.process(false)»
+			«c.expandedAttributes.process(c.hasSuperType)»
 		
 			«c.builderBoilerPlate»
 		}
@@ -244,11 +244,22 @@ class ModelObjectBuilderGenerator {
 		return result.toString
 	}
 		
+	private def setters(Data c) {
+		var result = new StringBuilder(c.setters(c, false))
+		var current = c.superType
+		
+		while (current !== null) {
+			result.append(c.setters(current, true))
+			current = current.superType
+		}
+		return result.toString
+	}
+		
 	
-	private def setters(Data thisClass) '''
-		«FOR attribute : thisClass.expandedAttributes»
+	private def setters(Data thisClass, Data clazz, boolean isSuper) '''
+		«FOR attribute : clazz.expandedAttributes»
 			«IF attribute.cardinalityIsListValue»
-				public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle» «attribute.name») {
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle» «attribute.name») {
 					if(this.«attribute.name» == null){
 						this.«attribute.name» = new ArrayList<>();
 						this.«attribute.name».add(«attribute.toBuilder»);
@@ -259,7 +270,7 @@ class ModelObjectBuilderGenerator {
 				}
 
 				«IF attribute.isRosettaClassOrData»
-					public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle» «attribute.name») {
 						if(this.«attribute.name» == null){
 							this.«attribute.name» = new ArrayList<>();
 							this.«attribute.name».add(«attribute.name»);
@@ -271,18 +282,18 @@ class ModelObjectBuilderGenerator {
 					
 				«ENDIF»
 				
-				public «thisClass.builderName» clear«attribute.name.toFirstUpper»() {
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» clear«attribute.name.toFirstUpper»() {
 					this.«attribute.name» = null;
 					return this;
 				}
 			«ELSE»
-				public «thisClass.builderName» set«attribute.name.toFirstUpper»(«attribute.toType» «attribute.name») {
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»(«attribute.toType» «attribute.name») {
 					this.«attribute.name» = «attribute.toBuilder»;
 					return this;
 				}
 
 				«IF attribute.isRosettaClassOrData»
-					public «thisClass.builderName» set«attribute.name.toFirstUpper»Builder(«attribute.toBuilderType» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Builder(«attribute.toBuilderType» «attribute.name») {
 						this.«attribute.name» = «attribute.name»;
 						return this;
 					}

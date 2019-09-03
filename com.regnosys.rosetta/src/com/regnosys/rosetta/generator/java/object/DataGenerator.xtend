@@ -2,6 +2,7 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
@@ -9,12 +10,14 @@ import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
+import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaClass
 import com.rosetta.model.lib.annotations.RosettaSynonym
 import com.rosetta.model.lib.meta.RosettaMetaData
 import java.util.List
+import java.util.Objects
 import java.util.Optional
 import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -23,11 +26,9 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.rosetta.RosettaSynonymBase
-import java.util.Objects
 
 class DataGenerator {
-	
+	@Inject extension RosettaExtensions
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
@@ -75,7 +76,7 @@ class DataGenerator {
 		«javadocWithVersion(d.definition, version)»
 		@«RosettaClass»
 		«contributeClassSynonyms(d.synonyms)»
-		public class «d.name» extends «RosettaModelObject» {
+		public class «d.name» extends «IF d.hasSuperType»«d.superType?.name»«ELSE»«RosettaModelObject»«ENDIF» {
 			«d.rosettaClass(names)»
 
 			«d.staticBuilderMethod»
@@ -96,6 +97,9 @@ class DataGenerator {
 		private static «metaType» metaData = new «metaType»();
 
 		«c.name»(«c.builderName» builder) {
+			«IF c.hasSuperType»
+				super(builder);
+			«ENDIF»
 			«FOR attribute : expandedAttributes»
 				this.«attribute.name» = «attribute.attributeFromBuilder»;
 			«ENDFOR»
@@ -119,7 +123,7 @@ class DataGenerator {
 		public «c.builderName» toBuilder() {
 			«c.builderName» builder = new «c.builderName»();
 «««			TODO handle supertypes?
-			«FOR attribute : expandedAttributes»
+			«FOR attribute : c.getAllSuperTypes.map[expandedAttributes].flatten»
 				«IF attribute.cardinalityIsListValue»
 					«Optional.importMethod("ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(«attribute.name» -> «attribute.name».forEach(builder::add«attribute.name.toFirstUpper»));
 				«ELSE»
