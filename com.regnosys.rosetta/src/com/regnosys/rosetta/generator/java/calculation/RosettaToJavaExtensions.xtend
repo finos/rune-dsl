@@ -103,7 +103,7 @@ class RosettaToJavaExtensions {
 				if (returnVal !== null) {
 					if(callable.handleAsSpecFunction) {
 						return '''«toJava(ele.callable)».evaluate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»)'''
-					} else if(callable.handleAsEnumFunction) {
+					} else if(callable.operation !== null || callable.handleAsEnumFunction) {
 						return '''«toJava(ele.callable)».calculate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
 					} else {
 						return '''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''

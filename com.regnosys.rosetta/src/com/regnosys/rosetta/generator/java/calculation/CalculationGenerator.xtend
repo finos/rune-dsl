@@ -1,23 +1,29 @@
 package com.regnosys.rosetta.generator.java.calculation
 
+import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.object.ModelObjectBoilerPlate
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaCalculation
 import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
-import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
+import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.functions.Formula
@@ -29,8 +35,11 @@ import com.rosetta.model.lib.functions.IResult.Attribute
 import java.util.ArrayList
 import java.util.Arrays
 import java.util.List
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EStructuralFeature
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.nodemodel.ICompositeNode
 import org.eclipse.xtext.nodemodel.ILeafNode
@@ -38,19 +47,8 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.EStructuralFeature
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.types.RRecordType
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.google.inject.ImplementedBy
-import com.rosetta.model.lib.records.DateImpl
-import com.regnosys.rosetta.rosetta.RosettaRecordType
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.generator.util.Util
 
 class CalculationGenerator {
 
@@ -199,12 +197,14 @@ class CalculationGenerator {
 		val inputs = getInputs(function)
 		if(inputs.nullOrEmpty)
 			return null
-		val inputArguments = inputs.map[name.toFirstLower].toList + functionDependencies(function).asArguments
+			
+		val funcDeps = Util.distinctBy(function.shortcuts.map[functionDependencies()].flatten,[name])
+		val inputArguments = inputs.map[name.toFirstLower].toList + funcDeps.asArguments
 
 		'''
 			public «IF enumGeneration»static «ENDIF»class «className» {
-				«createMembers(function)»
-				«createConstructor(className, function)»
+				«createFunctionMembers(funcDeps)»
+				«createFunctionConstructor(className, funcDeps)»
 				public CalculationResult calculate(«FOR input:inputs SEPARATOR ', '»«input.toJavaQualifiedType» «input.name.toFirstLower»«ENDFOR») {
 					CalculationInput input = new CalculationInput().create(«inputArguments.join(', ')»);
 «««					// TODO: code generate local variables for fields inside CalculationInput s.t. assignments below can access them as local variables
@@ -213,7 +213,7 @@ class CalculationGenerator {
 					return result;
 				}
 				
-				«createInputClass(className, function)»
+				«createInputClass(className, function, funcDeps)»
 				«IF !enumGeneration»
 					
 					«createResultClass(#[getOutput(function)], true, false)»
@@ -225,11 +225,12 @@ class CalculationGenerator {
 	def private StringConcatenationClient enumCalculationFunctionBody(Function function, String className, extension JavaNames it, String version) {
 		val dispatchingFuncs = function.dispatchingFunctions.sortBy[name].toList
 		val enumParam = function.inputs.filter[type instanceof RosettaEnumeration].head.name
+		val funcDeps = Util.distinctBy(functionDependencies(function),[name])
 		'''
 		«emptyJavadocWithVersion(version)»
 		public class «className» {
-			«createMembers(function)»
-			«createConstructor(className, function)»
+			«createFunctionMembers(funcDeps)»
+			«createFunctionConstructor(className, funcDeps)»
 			public CalculationResult calculate(«FOR input:function.inputs SEPARATOR ', '»«input.toJavaQualifiedType» «input.name.toFirstLower»«ENDFOR») {
 				switch («enumParam») {
 					«FOR enumVal : dispatchingFuncs»
@@ -385,7 +386,7 @@ class CalculationGenerator {
 		'''
 	}
 
-	dispatch def private StringConcatenationClient createConstructor(extension JavaNames it, String className,
+	def private StringConcatenationClient createConstructor(extension JavaNames it, String className,
 		Iterable<RosettaArguments> arguments) {
 		val rosettaFunctions = functionDependencies(arguments)
 
@@ -401,9 +402,8 @@ class CalculationGenerator {
 		}
 
 	}
-	dispatch def private StringConcatenationClient createConstructor(extension JavaNames it, String className, Function function) {
-		val rosettaFunctions = functionDependencies(function)
-
+	
+	 def private StringConcatenationClient createFunctionConstructor(extension JavaNames it, String className, Iterable<RosettaCallableWithArgs> rosettaFunctions ) {
 		if (!rosettaFunctions.empty) {
 			'''
 				public «className»(«rosettaFunctions.asParameters.join(', ')») {
@@ -417,7 +417,7 @@ class CalculationGenerator {
 
 	}
 
-	dispatch def private StringConcatenationClient createConstructor(extension JavaNames it, String className, RosettaArguments arguments) {
+	def private StringConcatenationClient createConstructor(extension JavaNames it, String className, RosettaArguments arguments) {
 		createConstructor(className, newArrayList(arguments))
 	}
 
@@ -452,18 +452,18 @@ class CalculationGenerator {
 		'''
 	}
 	
-	dispatch def private StringConcatenationClient createMembers(extension JavaNames it, Function function) {
+	def private StringConcatenationClient createFunctionMembers(extension JavaNames it, Iterable<RosettaCallableWithArgs> funcDeps) {
 		'''
-			«FOR func : functionDependencies(function) BEFORE '\n'»
+			«FOR func : funcDeps BEFORE '\n'»
 				private final «toJavaQualifiedType(func)» «func.name.toFirstLower»;
 			«ENDFOR»
 			
 		'''
 	}
 	
-	dispatch def private StringConcatenationClient createInputClass(extension JavaNames it, String calculationName, Function function) {
+	def private StringConcatenationClient createInputClass(extension JavaNames it, String calculationName, Function function, Iterable<RosettaCallableWithArgs> funcDeps) {
 		val inputs = getInputs(function)
-		val functionParameters = inputs.map[new Parameter(it.type.toJavaType.simpleName, name.toFirstLower)] + functionDependencies(function).asParameters
+		val functionParameters = inputs.map[new Parameter(it.type.toJavaType.simpleName, name.toFirstLower)] + funcDeps.asParameters
 
 		'''
 			public static class CalculationInput implements «ICalculationInput» {
@@ -538,7 +538,7 @@ class CalculationGenerator {
 		'''«names.toJava(rType)»«IF rType instanceof RRecordType && (rType as RRecordType).record instanceof RosettaExternalFunction».CalculationResult«ENDIF»'''
 	}
 	
-	dispatch def private StringConcatenationClient createInputClass(extension JavaNames it, String calculationName, RosettaArguments arguments) {
+	def private StringConcatenationClient createInputClass(extension JavaNames it, String calculationName, RosettaArguments arguments) {
 		val inputType = arguments.commonInputClass
 		val functionParameters = functionDependencies(arguments).asParameters
 
@@ -691,9 +691,6 @@ class CalculationGenerator {
 	protected def StringConcatenationClient calulationInputClass(boolean enumGeneration)
 		'''«IF enumGeneration»«ICalculationInput»«ELSE»CalculationInput«ENDIF»'''
 	
-	private def boolean isCalculation(RosettaFeatureOwner featureOwner) {
-		!(featureOwner instanceof RosettaExternalFunction)
-	}
 
 	dispatch def private StringConcatenationClient asignment(extension JavaNames it, Operation op) {
 		'''«toJava(op.expression)»'''
