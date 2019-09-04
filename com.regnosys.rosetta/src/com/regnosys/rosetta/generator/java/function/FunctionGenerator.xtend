@@ -4,10 +4,10 @@ import com.google.common.collect.ClassToInstanceMap
 import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.RosettaInternalGenerator
-import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.calculation.ImportingStringConcatination
 import com.regnosys.rosetta.generator.java.calculation.RosettaFunctionDependencyProvider
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaFuncitonCondition
@@ -25,6 +25,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	@Inject JavaQualifiedTypeProvider.Factory factory
 	@Inject RosettaExpressionJavaGeneratorForFunctions rosettaExpressionGenerator
 	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
+	@Inject extension RosettaFunctionExtensions
 	
 	override generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		val javaNames = factory.create(packages)
@@ -74,32 +75,6 @@ class FunctionGenerator implements RosettaInternalGenerator {
 				«concatenator.toString»
 			'''
 			fsa.generateFile(fileName, content)
-			val funcionName = func.name
-			val implPath = '''«packages.functions.directoryName»/«funcionName»Impl.java'''
-			if (!fsa.isFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT)) {
-
-				val StringConcatenationClient implClazz = '''
-					public class «funcionName»Impl extends «funcionName» {
-						
-						@Override
-						protected «func.outputTypeOrVoid(names)» doEvaluate(«func.inputsAsParameters(names)») {
-							throw new UnsupportedOperationException("TODO: auto-generated method stub");
-						}
-					}
-				'''
-				val concatImpl = new ImportingStringConcatination()
-				concatImpl.append(implClazz)
-
-				fsa.generateFile(implPath, RosettaOutputConfigurationProvider.SRC_MAIN_JAVA_OUTPUT, '''
-					package «packages.functions.packageName»;
-					
-					«FOR imp : concatImpl.imports»
-						import «imp»;
-					«ENDFOR»
-					
-					«concatImpl.toString»
-				''')
-			}
 		} catch (Exception e) {
 			throw new UnsupportedOperationException('Unable to generate code for: ' + fileName, e)
 		}
@@ -210,45 +185,46 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		}
 	'''
 	
-	def StringConcatenationClient contributeEvaluateMethod(extension Function function, extension JavaQualifiedTypeProvider names) '''
+	def StringConcatenationClient contributeEvaluateMethod(Function function, extension JavaQualifiedTypeProvider names) '''
 			
 		/**
-		 «FOR input : inputs»
+		 «FOR input : getInputs(function)»
 		 * @param «input.name» «input.definition»
 		 «ENDFOR»
-		 «IF output !== null»
-		 * @return «output.name» «output.definition»
+		 «IF getOutput(function) !== null»
+		 * @return «getOutput(function).name» «getOutput(function).definition»
 		 «ENDIF»
 		 */
 		public «function.outputTypeOrVoid(names)» evaluate(«function.inputsAsParameters(names)») {
-			«IF !conditions.empty»
+			«IF !function.conditions.empty»
 			// pre-conditions
 			//
-			«FOR cond:conditions»
+			«FOR cond:function.conditions»
 			«cond.contributeCondition»
 			«ENDFOR»
 			«ENDIF»
 			// Delegate to implementation
 			//
-			«IF output !== null»«output.toJavaQualifiedType(false)» «output.name» = «ENDIF»doEvaluate(«function.inputsAsArguments(names)»);
-			«IF !postConditions.empty»
+			«IF getOutput(function) !== null»«getOutput(function).toJavaQualifiedType(false)» «getOutput(function).name» = «ENDIF»doEvaluate(«function.inputsAsArguments(names)»);
+			«IF !function.postConditions.empty»
 			// post-conditions
 			//
-			«FOR cond:postConditions»
+			«FOR cond:function.postConditions»
 			«cond.contributeCondition»
 			«ENDFOR»
 			«ENDIF»
-			«IF output !== null»
-			return «output.name»;
+			«IF getOutput(function) !== null»
+			return «getOutput(function).name»;
 			«ENDIF»
 		}
 	'''
 	
-	def outputTypeOrVoid(Function function,  extension JavaQualifiedTypeProvider names){
-		if(function.output === null) {
+	def outputTypeOrVoid(Function function,  extension JavaQualifiedTypeProvider names) {
+		val out = getOutput(function)
+		if (out === null) {
 			'void'
 		} else {
-			function.output.toJavaQualifiedType(false)
+			out.toJavaQualifiedType(false)
 		}
 	}
 	
@@ -351,14 +327,14 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		'''«FOR input : inputs SEPARATOR ', '»«input.toJavaQualifiedType(false)» «input.name»«ENDFOR»'''
 	}
 	private def StringConcatenationClient inputsAsParameters(extension Function function, extension JavaQualifiedTypeProvider names) {
-		'''«FOR input : inputs SEPARATOR ', '»«input.toJavaQualifiedType(false)» «input.name»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.toJavaQualifiedType(false)» «input.name»«ENDFOR»'''
 	}
 	
 	private dispatch def StringConcatenationClient inputsAsArguments(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
 		'''«FOR input : inputs SEPARATOR ', '»«input.name»«ENDFOR»'''
 	}
 	private dispatch def StringConcatenationClient inputsAsArguments(extension Function function, extension JavaQualifiedTypeProvider names) {
-		'''«FOR input : inputs SEPARATOR ', '»«input.name»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.name»«ENDFOR»'''
 	}
 
 }

@@ -46,11 +46,14 @@ import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 
 class RosettaTypeProvider {
 
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaOperators
+	@Inject extension RosettaFunctionExtensions
+	
 	@Inject IDValueConverter idConverter
 
 	def RType getRType(EObject expression) {
@@ -250,7 +253,7 @@ class RosettaTypeProvider {
 			RosettaMapRosettaPath:
 				expression.path.RType
 			Function:
-				expression.output.RType
+				getOutput(expression).RType
 			Condition:
 				expression.expressions.last.RType
 			default:

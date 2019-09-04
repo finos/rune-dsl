@@ -102,8 +102,14 @@ class RosettaExternalFunctionDependencyProvider {
 				if(!object.isLibrary) newArrayList(object) else newArrayList
 			}
 			Function: {
-				val me = if(object.handleAsExternalFunction) newArrayList(object) else newArrayList
-				Iterables.concat(functionDependencies(object.shortcuts), me)
+				// TODO change linking to link against main dispatch func only
+				val me = if(!object.handleAsEnumFunction && !object.dispatchingFunction) newArrayList(object) else newArrayList
+				if (object.handleAsEnumFunction) {
+					distinctBy((functionDependencies(object.shortcuts) +
+						object.dispatchingFunctions.map[functionDependencies].flatten), [name])
+				} else {
+					Iterables.concat(functionDependencies(object.shortcuts), me)
+				}
 			}
 			ShortcutDeclaration: {
 				functionDependencies(object.expression)

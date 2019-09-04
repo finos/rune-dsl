@@ -23,6 +23,7 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 
 class JavaNames {
 
@@ -37,7 +38,7 @@ class JavaNames {
 			RosettaType:
 				toJavaQualifiedType(ele as RosettaType)
 			Function case ele.
-				handleAsExternalFunction: '''«JavaType.create(packages.functions.packageName + "." + ele.name.toFirstUpper)»'''
+				handleAsSpecFunction: '''«JavaType.create(packages.functions.packageName + "." + ele.name.toFirstUpper)»'''
 			default: '''«ele.name»'''
 		}
 	}
@@ -105,6 +106,10 @@ class JavaNames {
 
 	def QualifiedName toTargetClassName(RosettaCallableWithArgs ele) {
 		return QualifiedName.create(ele.name)
+	}
+	
+	def QualifiedName toTargetClassName(FunctionDispatch ele) {
+		return QualifiedName.create(ele.name).append(ele.value.value.name)
 	}
 
 	static class Factory {

@@ -84,7 +84,7 @@ class RosettaGenerator extends AbstractGenerator {
 						Function:{
 							if(handleAsSpecFunction) {
 								functionGenerator.generate(packages, fsa, it, version)
-							} else {
+							} else if(!isDispatchingFunction){
 								calculationGenerator.generateFunction(packages, fsa, it, version)
 							}
 						}
