@@ -108,7 +108,7 @@ class RosettaExpressionJavaGenerator {
 				expr.expression.javaCode(params, isLast)
 			}
 			default: 
-				throw new UnsupportedOperationException("Unsupported expression type of " + expr.class.simpleName)
+				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
 		}
 	}
 	

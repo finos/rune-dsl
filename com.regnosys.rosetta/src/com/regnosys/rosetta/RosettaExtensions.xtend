@@ -23,6 +23,8 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.rosetta.simple.Annotated
 
 class RosettaExtensions {
 	
@@ -154,6 +156,9 @@ class RosettaExtensions {
 			else if(callable instanceof RosettaClass) {
 				visitor.apply(callable)
 			}
+			else if(callable instanceof Data) {
+				visitor.apply(callable)
+			}
 			else {
 				throw new IllegalArgumentException("Failed to collect leaf type: " + callable)
 			}
@@ -220,5 +225,21 @@ class RosettaExtensions {
 			return projectName == candidateUri.segment(1)
 		}
 		return false
+	}
+	
+	def boolean isChoiceRuleCondition(Condition cond) {
+		return !cond.validationAnnotations.empty
+	}
+	
+	def metaAnnotations(Annotated it) {
+		allAnnotations.filter[annotation?.name == "metadata"]
+	}
+	
+	def validationAnnotations(Annotated it) {
+		allAnnotations.filter[annotation?.name == "validation"]
+	}
+	
+	def private allAnnotations(Annotated withAnnotations) {
+		withAnnotations?.annotations?.filter[annotation !== null && !annotation.eIsProxy]
 	}
 }

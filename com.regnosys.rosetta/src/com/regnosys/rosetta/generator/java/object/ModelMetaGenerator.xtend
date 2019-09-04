@@ -42,7 +42,6 @@ class ModelMetaGenerator {
 
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaExtensions
-	@Inject JavaNames.Factory factory
 	
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaClass).forEach [ RosettaClass rosettaClass |
@@ -52,12 +51,12 @@ class ModelMetaGenerator {
 		]
 	}
 	
-	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, Data data, String version) {
+	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version) {
 		val className = '''«data.name»Meta'''
 		
-		val classBody = tracImports(data.metaClassBody(packages, className, version))
+		val classBody = tracImports(data.metaClassBody(names, className, version))
 		val javaFileContents = '''
-			package «packages.meta.packageName»;
+			package «names.packages.meta.packageName»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -68,13 +67,10 @@ class ModelMetaGenerator {
 			
 			«classBody.toString»
 		'''
-		fsa.generateFile('''«packages.meta.directoryName»/«className».java''', javaFileContents)
+		fsa.generateFile('''«names.packages.meta.directoryName»/«className».java''', javaFileContents)
 	}
 	
-	private def StringConcatenationClient metaClassBody(Data c, RosettaJavaPackages packages, String className, String version) {
-		val javaNames = factory.create(packages)
-		
-//		val elements = c.model.elements
+	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version) {
 		val dataClass = javaNames.toJavaQualifiedType(c)
 		'''
 			«emptyJavadocWithVersion(version)»
@@ -84,8 +80,8 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules() {
 					return «Arrays».asList(
-						«FOR r : dataRules(c.conditions) SEPARATOR ','»
-							new «packages.dataRule.packageName».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
+						«FOR r : conditionRules(c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
+							new «javaNames.packages.dataRule.packageName».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
 						«ENDFOR»
 					);
 				}
@@ -93,12 +89,9 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> choiceRuleValidators() {
 					return Arrays.asList(
-«««						«IF c.oneOf»
-«««							new «packages.choiceRule.packageName».«ChoiceRuleGenerator.oneOfRuleClassName(dataClass)»()
-«««						«ENDIF»
-«««						«FOR r : choiceRules(elements, c) SEPARATOR ','»
-«««							new «packages.choiceRule.packageName».«ChoiceRuleGenerator.choiceRuleClassName(r.ruleName)»()
-«««						«ENDFOR»
+						«FOR r : conditionRules(c.conditions)[isChoiceRuleCondition] SEPARATOR ','»
+							new «javaNames.packages.choiceRule.packageName».«ChoiceRuleGenerator.choiceRuleClassName(r.ruleName)»()
+						«ENDFOR»
 					);
 				}
 
@@ -113,12 +106,12 @@ class ModelMetaGenerator {
 				
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
-					return new «packages.classValidation.packageName».«dataClass»Validator();
+					return new «javaNames.packages.classValidation.packageName».«dataClass»Validator();
 				}
 				
 				@Override
 				public «ValidatorWithArg»<? super «dataClass», String> onlyExistsValidator() {
-					return new «packages.existsValidation.packageName».«ModelObjectGenerator.onlyExistsValidatorName(c)»();
+					return new «javaNames.packages.existsValidation.packageName».«ModelObjectGenerator.onlyExistsValidatorName(c)»();
 				}
 			}
 		'''
@@ -255,8 +248,8 @@ class ModelMetaGenerator {
 		return dataRuleMappingSet.filter[it.className === thisClass.name].toList
 	}
 	
-	private def List<ClassRule> dataRules(List<Condition> elements) {
-		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.name)]
+	private def List<ClassRule> conditionRules(List<Condition> elements, (Condition)=>boolean filter) {
+		return elements.filter(filter).map[new ClassRule((it.eContainer as RosettaNamed).getName, it.name)].toList
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data
