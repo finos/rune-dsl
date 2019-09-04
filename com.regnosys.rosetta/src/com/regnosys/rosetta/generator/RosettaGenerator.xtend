@@ -20,7 +20,6 @@ import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -122,4 +121,22 @@ class RosettaGenerator extends AbstractGenerator {
 			lock.releaseWriteLock
 		}
 	}
+
+	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
+		try {
+			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
+			
+			
+			externalGenerators.forEach[generator |
+					generator.afterGenerate(models,[map|
+						map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]],resource, lock)
+				]
+		
+		} catch (Exception e) {
+			LOGGER.warn("Unexpected calling after generate for rosetta -"+e.message+" - see debug logging for more")
+			LOGGER.debug("Unexpected calling after generate for rosetta", e);
+		}
+
+	}
+
 }
