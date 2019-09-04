@@ -47,14 +47,15 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.rosetta.RosettaBasicType
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	@Inject
 	RosettaTypeProvider typeProvider
 	val cardinalityProvider = new CardinalityProvider
 	@Inject JavaNames.Factory factory 
-
+	@Inject RosettaFunctionExtensions func
+	
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		expr.javaCode(params, true);
 	}
@@ -94,7 +95,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				val callable = expr.callable
 				val many = switch (callable) {
 					Function:
-						callable.output.card.isMany
+						func.getOutput(callable).card.isMany
 					RosettaFunction:
 						callable.output.card.isMany
 					default:
