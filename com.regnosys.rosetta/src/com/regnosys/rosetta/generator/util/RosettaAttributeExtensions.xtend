@@ -57,7 +57,7 @@ class RosettaAttributeExtensions {
 		data.attributes.map[toExpandedAttribute()].toList.sortBy[ExpandedAttribute a|a.name]
 	}
 	
-	 static def List<ExpandedAttribute> getExpandedAttributesForSet(Set<RosettaClass> classes) {
+	dispatch  static def List<ExpandedAttribute> getExpandedAttributes(Set<RosettaClass> classes) {
 		classes.flatMap[expandedAttributes].toList.sortBy[name]
 	}
 	
