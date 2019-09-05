@@ -34,7 +34,6 @@ Import-Package: org.junit.jupiter.api;bundle-version="5.1.0",
  model
 Bundle-ActivationPolicy: lazy
 Export-Package: com.regnosys.rosetta.formatting2,
- com.regnosys.rosetta.generator.daml.object,
  com.regnosys.rosetta.generator.java.blueprints,
  com.regnosys.rosetta.generator.java.calculation,
  com.regnosys.rosetta.generator.java.expression,
