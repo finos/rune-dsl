@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.generator.external;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -7,6 +8,7 @@ import java.util.function.Consumer;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
+import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.rosetta.util.DemandableLock;
 
@@ -35,6 +37,13 @@ public abstract class AbstractExternalGenerator implements ExternalGenerator {
 
 	
 	@Override
+	public void afterGenerate(List<RosettaModel> models, Consumer<Map<String, ? extends CharSequence>> processResults,
+			Resource resource, DemandableLock generateLock) {
+		Map<String, ? extends CharSequence> generate = afterGenerate(models);
+		processResults.accept(generate);
+	}
+
+	@Override
 	public ExternalOutputConfiguration getOutputConfiguration() {
 		return new ExternalOutputConfiguration(name, "Code generation configuration");
 	}
@@ -49,4 +58,8 @@ public abstract class AbstractExternalGenerator implements ExternalGenerator {
 	 */
 	public abstract Map<String, ? extends CharSequence> generate(RosettaJavaPackages packages, List<RosettaRootElement> elements, String version);
 
+	public Map<String, ? extends CharSequence> afterGenerate(List<RosettaModel> models) {
+		//By default don't do anything in the after generate step
+		return Collections.emptyMap();
+	}
 }
