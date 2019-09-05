@@ -105,11 +105,16 @@ class RosettaExpressionJavaGeneratorForFunctions {
 						null
 				}
 				if (many !== null)
-					if (!many) {
-						'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»))'''
+					if (callable instanceof Function) {
+						val callParams = callable.inputs.indexed.map[if(it.key < expr.args.size) expr.args.get(it.key) else null]
+						'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : callParams SEPARATOR ', '»«arg?.javaCode(params)?:'null'»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSEIF arg !== null».get()«ENDIF»«ENDFOR»))'''
 					} else {
-						throw new IllegalArgumentException(
-							'Calling Functions with multiple cardinality return types not yet supported')
+						if (!many) {
+							'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»))'''
+						} else {
+							throw new IllegalArgumentException(
+								'Calling Functions with multiple cardinality return types not yet supported')
+						}
 					}
 			}
 			RosettaBigDecimalLiteral : {

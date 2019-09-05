@@ -126,7 +126,7 @@ class RosettaGenerator extends AbstractGenerator {
 			val allElements = models.flatMap[elements].toList
 
 			val classes = resource.contents.filter(RosettaModel).head.elements.filter[it instanceof RosettaClass || it instanceof Data]
-			metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), classes, models.map[header].filter(a|a!==null).map[namespace])
+			metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), classes, models.map[header].filter(a|a!==null).map[namespace].toSet)
 		}}
 		catch (Exception e) {
 			LOGGER.warn("Unexpected calling standard generate for rosetta -"+e.message+" - see debug logging for more")

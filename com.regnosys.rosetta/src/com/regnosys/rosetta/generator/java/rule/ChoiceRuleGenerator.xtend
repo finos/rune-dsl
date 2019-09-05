@@ -34,6 +34,8 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleValidationMethod.REQUIRED
 import java.util.Collections
 import java.util.stream.Collectors
+import com.google.common.collect.Streams
+import java.util.Objects
 
 class ChoiceRuleGenerator {
 	
@@ -90,30 +92,40 @@ class ChoiceRuleGenerator {
 			
 			@Override
 			public «ValidationResult»<«clazz»> validate(«RosettaPath» path, «clazz» object) {
+				«List»<String> choiceFieldNames = «Arrays».asList(«usedAttributes.join(', ')['"'+name+'"']»);
 				«FOR attr: usedAttributes»
 				«IF attr.card.isMany»«List»<«names.toJavaType(attr.type)»>«ELSE»«names.toJavaType(attr.type)»«ENDIF» «attr.name» = object.get«attr.name.toFirstUpper»();
 				«ENDFOR»
-				Boolean evalResult = «exprGen.javaCode(rule.expressions.last, paramMap, true)».get();
-				if (evalResult) {
+				
+				List<Boolean> evalResult = «exprGen.javaCode(rule.expressions.last, paramMap, true)».get();
+				List<String> populatedFieldNames = «Streams».mapWithIndex(evalResult.stream(), (yes, idx) -> yes?choiceFieldNames.get((int)idx):null).filter(«Objects»::nonNull).collect(«Collectors».toList());
+				
+				«ChoiceRuleValidationMethod» validationMethod = ChoiceRuleValidationMethod.«validationType»;
+				
+				if (validationMethod.check(populatedFieldNames.size())) {
 					return «importMethod(ValidationResult,"success")»(NAME, «ValidationType».CHOICE_RULE, "«clazz»", path, "");
 				}
-				«ChoiceRuleValidationMethod» validationMethod = ChoiceRuleValidationMethod.«validationType»;
-				return new «ValidationResult».«ChoiceRuleFailure»<«clazz»>(NAME, "«clazz»",  «Arrays».asList(«usedAttributes.join(', ')['"'+name+'"']»), path, «Collections».emptyList(), validationMethod);
+				return new «ValidationResult».«ChoiceRuleFailure»<«clazz»>(NAME, "«clazz»", choiceFieldNames, path, populatedFieldNames, validationMethod);
 			}
 		
 			@Override
 			public ValidationResult<«clazz»> validate(RosettaPath path, «RosettaModelObjectBuilder» builder) {
 				
 				«clazz».«clazz»Builder object = («clazz».«clazz»Builder) builder;
+				«List»<String> choiceFieldNames = «Arrays».asList(«usedAttributes.join(', ')['"'+name+'"']»);
 				«FOR attr: usedAttributes»
 				«IF attr.card.isMany»«List»<«names.toJavaType(attr.type)»>«ELSE»«names.toJavaType(attr.type)»«ENDIF» «attr.name» = object.get«attr.name.toFirstUpper»().stream().map((b)-> b.build()).collect(«Collectors».toList());
 				«ENDFOR»
-				Boolean evalResult = «exprGen.javaCode(rule.expressions.last, paramMap, true)».get();
-				if (evalResult) {
+				
+				List<Boolean> evalResult = «exprGen.javaCode(rule.expressions.last, paramMap, true)».get();
+				List<String> populatedFieldNames = «Streams».mapWithIndex(evalResult.stream(), (yes, idx) -> yes?choiceFieldNames.get((int)idx):null).filter(«Objects»::nonNull).collect(«Collectors».toList());
+				
+				«ChoiceRuleValidationMethod» validationMethod = ChoiceRuleValidationMethod.«validationType»;
+				
+				if (validationMethod.check(populatedFieldNames.size())) {
 					return «importMethod(ValidationResult,"success")»(NAME, «ValidationType».CHOICE_RULE, "«clazz»", path, "");
 				}
-				«ChoiceRuleValidationMethod» validationMethod = ChoiceRuleValidationMethod.«validationType»;
-				return new «ValidationResult».«ChoiceRuleFailure»<«clazz»>(NAME, "«clazz»",  «Arrays».asList(«usedAttributes.join(', ')['"'+name+'"']»), path, «Collections».emptyList(), validationMethod);
+				return new «ValidationResult».«ChoiceRuleFailure»<«clazz»>(NAME, "«clazz»", choiceFieldNames, path, populatedFieldNames, validationMethod);
 			}
 		}
 	'''

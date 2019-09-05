@@ -471,10 +471,18 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			Function: callable.inputs.size
 			default: 0
 		}
-		
+		val minCallableSize =  switch callable {
+			Function: callableSize - callable.inputs.reverseView.takeWhile[it.card.isIsOptional].size
+			default: callableSize
+		}
 		if (callerSize !== callableSize) {
-			error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
-				ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
+			if(callerSize >= minCallableSize) {
+				info('''Less arguments used as expecting. «callableSize» but passed «callerSize».''', element,
+					ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
+			} else {
+				error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
+					ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
+			}
 		}
 	}
 
