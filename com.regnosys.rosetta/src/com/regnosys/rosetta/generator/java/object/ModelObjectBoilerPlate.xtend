@@ -11,6 +11,10 @@ import org.eclipse.xtend.lib.annotations.Data
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.rosetta.util.ListEquals
+import com.regnosys.rosetta.generator.java.util.JavaType
+import com.regnosys.rosetta.generator.java.util.JavaNames
 
 class ModelObjectBoilerPlate {
 
@@ -24,7 +28,7 @@ class ModelObjectBoilerPlate {
 		«c.wrap.boilerPlate»
 	'''
 	
-	def boilerPlate(com.regnosys.rosetta.rosetta.simple.Data d) '''
+	def StringConcatenationClient boilerPlate(com.regnosys.rosetta.rosetta.simple.Data d) '''
 		«d.wrap.processMethod»
 		«d.wrap.boilerPlate»
 	'''
@@ -39,7 +43,7 @@ class ModelObjectBoilerPlate {
 		«c.wrap.contributeToString(toBuilder)»
 	'''
 	
-	def builderBoilerPlate(com.regnosys.rosetta.rosetta.simple.Data c) '''
+	def StringConcatenationClient builderBoilerPlate(com.regnosys.rosetta.rosetta.simple.Data c) '''
 		«c.wrap.contributeEquals(toBuilder)»
 		«c.wrap.contributeHashCode»
 		«c.wrap.contributeToString(toBuilder)»
@@ -60,24 +64,44 @@ class ModelObjectBoilerPlate {
 		
 		if (interfaces.empty) '''''' else '''implements «interfaces.join(', ')» '''
 	}
-
+	
+	@Deprecated
 	def toType(ExpandedAttribute attribute) {
 		if (attribute.isMultiple) '''List<«attribute.toTypeSingle»>''' 
 		else attribute.toTypeSingle;
 	}
-
+	
+	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names) {
+		if (attribute.isMultiple) '''List<«attribute.toTypeSingle(names)»>''' 
+		else attribute.toTypeSingle(names);
+	}
+	
+	@Deprecated
 	def toTypeSingle(ExpandedAttribute attribute) {
 		if (!attribute.hasMetas) attribute.typeName.toJavaType
 		else if (attribute.refIndex >= 0) {
-			if (attribute.type instanceof RosettaClass)
+			if (attribute.isRosettaClassOrData)
 				'''ReferenceWithMeta«attribute.typeName.toFirstUpper»'''
 			else
 				'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''
 		} else
 			'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
 	}
+	
+	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names) {
+		if (!attribute.hasMetas) return '''«attribute.typeName.toJavaType»'''
+		val metaType = if (attribute.refIndex >= 0) {
+			if (attribute.isRosettaClassOrData)
+				'''ReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+			else
+				'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+		} else
+			'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
+			
+		return '''«names.packages.metaField.javaType(metaType)»'''
+	}
 
-	private def boilerPlate(TypeData c) '''
+	private def StringConcatenationClient boilerPlate(TypeData c) '''
 		«c.contributeEquals(identity)»
 		«c.contributeHashCode»
 		«c.contributeToString(identity)»
@@ -124,7 +148,7 @@ class ModelObjectBoilerPlate {
 
 	// the eventEffect attribute should not contribute to the hashcode. The EventEffect must first take the hash from Event, 
 	// but once stamped onto EventEffect, this will change the hash for Event. TODO: Have generic way of excluding attributes from the hash
-	private def contributeEquals(TypeData c, (String)=>String classNameFunc) '''
+	private def StringConcatenationClient contributeEquals(TypeData c, (String)=>String classNameFunc) '''
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
@@ -143,9 +167,9 @@ class ModelObjectBoilerPlate {
 		
 	'''
 
-	private def contributeToEquals(ExpandedAttribute a) '''
+	private def StringConcatenationClient contributeToEquals(ExpandedAttribute a) '''
 	«IF a.cardinalityIsListValue»
-		if (!ListEquals.listEquals(«a.name», _that.«a.name»)) return false;
+		if (!«JavaType.create(ListEquals.name)».listEquals(«a.name», _that.«a.name»)) return false;
 	«ELSE»
 		if («a.name» != null ? !«a.name».equals(_that.«a.name») : _that.«a.name» != null) return false;
 	«ENDIF»
@@ -167,7 +191,7 @@ class ModelObjectBoilerPlate {
 		return new TypeData(
 			data.name,
 			data.expandedAttributes,
-			false,
+			data.hasSuperType,
 			true
 		);
 	}

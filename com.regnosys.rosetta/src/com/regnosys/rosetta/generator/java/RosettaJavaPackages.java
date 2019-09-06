@@ -2,6 +2,8 @@ package com.regnosys.rosetta.generator.java;
 
 import java.util.Optional;
 
+import com.regnosys.rosetta.generator.java.util.JavaType;
+
 public class RosettaJavaPackages {
 
 	private static final String LIB_NAMESPACE = "com.rosetta.model.lib";
@@ -130,6 +132,10 @@ public class RosettaJavaPackages {
 		
 		public Package child(String child) {
 			return new Package(this.packageName(), child);
+		}
+		
+		public JavaType javaType(String typeName) {
+			return JavaType.create(this.packageName() + '.' + typeName);
 		}
 
 		public String packageName() {

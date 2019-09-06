@@ -19,25 +19,34 @@ RootElement:
 fragment Definable:
 	'<'definition=STRING'>';
 
-fragment Annotations returns Annotated:
-	'[' annotations+=AnnotationRef (',' annotations+=AnnotationRef)* ']';
-
-AnnotationRef:
-	annotation = [Annotation|ValidID]
-	(attribute = [Attribute|ValidID])?
-;
-
-
 Annotation:
-	'anno' RosettaNamed ':' Definable?
+	'annotation' RosettaNamed ':' Definable?
 	attributes += Attribute*
 ;
 
+fragment Annotations returns Annotated:
+	annotations+=AnnotationRef;
+
+fragment Synonyms*:
+	synonyms+=RosettaSynonym;
+
+fragment ClassSynonyms*:
+	synonyms+=RosettaClassSynonym;
+	
+AnnotationRef:
+	'[' annotation = [Annotation|ValidID]
+	(attribute = [Attribute|ValidID])?']'
+;
+
 Data:
-	'data' RosettaNamed ':' Definable?
-	Annotations?
+	'data' RosettaNamed ('extends' superType = [Data|ValidID])? ':' Definable?
+	(Annotations| ClassSynonyms)*
 	attributes += Attribute+
 	conditions += Condition*
+;
+
+Attribute:
+	RosettaNamed RosettaTyped card=RosettaCardinality Definable? (Annotations|Synonyms)*
 ;
 
 Function:
@@ -51,18 +60,16 @@ Function:
 	('inputs:' inputs += Attribute+)?
 	('output:' output = Attribute)?
 	
-	(shortcuts    += ShortcutDeclaration ';'?)*
-	conditions    += Condition*
-	operation     = Operation?
-	postConditions+= PostCondition*
+	(shortcuts     += ShortcutDeclaration)*
+	conditions     += Condition*
+	operation       = Operation?
+	postConditions += PostCondition*
 ;
 
 ShortcutDeclaration:
 	'alias' RosettaNamed ':' Definable?  expression=RosettaCalcExpression
 ;
 
-Attribute:
-	RosettaNamed RosettaTyped card=RosettaCardinality Definable? Annotations?;
 
 Condition:
 	'condition' RosettaNamed? ':' Definable?
@@ -70,14 +77,14 @@ Condition:
 		(expressions+=RosettaCalcExpression ';')+
 ;
 
-Operation: // TODO no name? annotations?
-	'assign-output' attribute = [Attribute|ValidID] ':' Definable?
-	expression = RosettaCalcExpression ';'?
-;
-
 PostCondition returns Condition: // TODO no name? annotations?
 	'post-condition' ':' Definable?
 	(expressions+=RosettaCalcExpression ';')+
+;
+
+Operation: // TODO no name? annotations?
+	'assign-output' attribute = [Attribute|ValidID] ':' Definable?
+	expression = RosettaCalcExpression
 ;
 
 EnumValueReference returns RosettaEnumValueReference:
@@ -680,7 +687,7 @@ RosettaCalcExpression returns RosettaExpression:
 
 RosettaCalcConditionalExpression returns RosettaExpression:
 	RosettaCalcOr 
-	| {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression 'else' elsethen=RosettaCalcExpression
+	| {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?
 ;
 
 RosettaCalcOr returns RosettaExpression:

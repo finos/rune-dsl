@@ -5,8 +5,8 @@ import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.calculation.ImportingStringConcatination
 import com.regnosys.rosetta.generator.java.calculation.RosettaFunctionDependencyProvider
+import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaDefinable

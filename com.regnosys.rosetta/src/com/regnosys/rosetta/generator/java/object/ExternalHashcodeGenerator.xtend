@@ -15,7 +15,7 @@ class ExternalHashcodeGenerator {
 				super.process(path, processor);
 			«ENDIF»
 			
-			«FOR a : attributes.filter[!(isRosettaClass || hasMetas)]»
+			«FOR a : attributes.filter[!(isRosettaClassOrData || hasMetas)]»
 				«IF a.multiple»
 					«a.name».stream().forEach(a->processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle».class, a, this«a.metaFlags»));
 				«ELSE»
@@ -23,7 +23,7 @@ class ExternalHashcodeGenerator {
 				«ENDIF»
 			«ENDFOR»
 			
-			«FOR a : attributes.filter[isRosettaClass || hasMetas]»
+			«FOR a : attributes.filter[isRosettaClassOrData || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle».class, «a.name»«a.metaFlags»);
 			«ENDFOR»
 		}

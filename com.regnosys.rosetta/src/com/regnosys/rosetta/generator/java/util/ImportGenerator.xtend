@@ -45,6 +45,8 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class ImportGenerator {
 
@@ -111,6 +113,14 @@ class ImportGenerator {
 				if (feature.metaTypes !== null && !feature.metaTypes.isEmpty) {
 					imports.add('''«packages.lib.packageName».meta.FieldWithMeta''')
 				}
+			}
+			Attribute: {
+				imports.add(feature.type.fullName);
+				imports.add((feature.eContainer as RosettaType).fullName)
+
+//				TODO if (feature.metaTypes !== null && !feature.metaTypes.isEmpty) {
+//					imports.add('''«packages.lib.packageName».meta.FieldWithMeta''')
+//				}
 			}
 			RosettaMetaType:{
 				imports.add('''«packages.metaField.packageName».*''')
@@ -226,7 +236,7 @@ class ImportGenerator {
 	}
 
 	def fullName(RosettaType type) {
-		if (type instanceof RosettaClass)
+		if (type instanceof RosettaClass || type instanceof Data)
 			'''«packages.model.packageName».«type.name»'''.toString
 		else if (type instanceof RosettaEnumeration) {
 			'''«packages.model.packageName».«type.name»'''.toString

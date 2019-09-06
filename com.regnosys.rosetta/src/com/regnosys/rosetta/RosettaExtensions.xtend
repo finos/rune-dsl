@@ -22,14 +22,24 @@ import java.util.LinkedHashSet
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class RosettaExtensions {
 	
 	def Set<RosettaClass> getAllSuperTypes(RosettaClass clazz) {
 		doGetSuperTypes(clazz, newLinkedHashSet)
 	}
+	def Set<Data> getAllSuperTypes(Data clazz) {
+		doGetSuperTypes(clazz, newLinkedHashSet)
+	}
 	
 	private def Set<RosettaClass> doGetSuperTypes(RosettaClass clazz, Set<RosettaClass> seenClasses) {
+		if(clazz !== null && seenClasses.add(clazz)) 
+			doGetSuperTypes(clazz.superType, seenClasses)
+		return seenClasses
+	}
+	
+	private def Set<Data> doGetSuperTypes(Data clazz, Set<Data> seenClasses) {
 		if(clazz !== null && seenClasses.add(clazz)) 
 			doGetSuperTypes(clazz.superType, seenClasses)
 		return seenClasses
@@ -103,7 +113,7 @@ class RosettaExtensions {
 			if(callable instanceof RosettaAlias) {
 				callable.expression.collectRootCalls(visitor)
 			} 
-			else if(callable instanceof RosettaClass) {
+			else if(callable instanceof RosettaClass || callable instanceof Data) {
 				visitor.apply(callable)
 			}
 			else {

@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.calculation;
+package com.regnosys.rosetta.generator.java.util;
 
 public class JavaType {
 
@@ -33,6 +33,6 @@ public class JavaType {
 
 	@Override
 	public String toString() {
-		return getName();
+		return getSimpleName();
 	}
 }
