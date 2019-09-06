@@ -32,7 +32,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleValidationMethod.REQUIRED
-import java.util.Collections
 import java.util.stream.Collectors
 import com.google.common.collect.Streams
 import java.util.Objects
@@ -92,9 +91,9 @@ class ChoiceRuleGenerator {
 			
 			@Override
 			public «ValidationResult»<«clazz»> validate(«RosettaPath» path, «clazz» object) {
-				«List»<String> choiceFieldNames = «Arrays».asList(«usedAttributes.join(', ')['"'+name+'"']»);
+				«List»<String> choiceFieldNames = «importMethod(Arrays,"asList")»(«usedAttributes.join(', ')['"'+name+'"']»);
 				«FOR attr: usedAttributes»
-				«IF attr.card.isMany»«List»<«names.toJavaType(attr.type)»>«ELSE»«names.toJavaType(attr.type)»«ENDIF» «attr.name» = object.get«attr.name.toFirstUpper»();
+				«IF attr.card.isMany»«List»<«names.toJavaType(attr.type)»>«ELSE»«names.toJavaType(attr.type)»«ENDIF» «attr.name» = object.get«attr.name.toFirstUpper»()«IF !attr.metaAnnotations.empty».getValue()«ENDIF»;
 				«ENDFOR»
 				
 				List<Boolean> evalResult = «exprGen.javaCode(rule.expressions.last, paramMap, true)».get();
@@ -112,9 +111,13 @@ class ChoiceRuleGenerator {
 			public ValidationResult<«clazz»> validate(RosettaPath path, «RosettaModelObjectBuilder» builder) {
 				
 				«clazz».«clazz»Builder object = («clazz».«clazz»Builder) builder;
-				«List»<String> choiceFieldNames = «Arrays».asList(«usedAttributes.join(', ')['"'+name+'"']»);
+				«List»<String> choiceFieldNames = asList(«usedAttributes.join(', ')['"'+name+'"']»);
 				«FOR attr: usedAttributes»
-				«IF attr.card.isMany»«List»<«names.toJavaType(attr.type)»>«ELSE»«names.toJavaType(attr.type)»«ENDIF» «attr.name» = object.get«attr.name.toFirstUpper»().stream().map((b)-> b.build()).collect(«Collectors».toList());
+				«IF attr.card.isMany»
+					«List»<«names.toJavaType(attr.type)»> «attr.name» = object.get«attr.name.toFirstUpper»().stream().map((b)-> b.build()«IF !attr.metaAnnotations.empty».getValue()«ENDIF»).collect(«Collectors».toList());
+				«ELSE»
+					«names.toJavaType(attr.type)» «attr.name» = object.get«attr.name.toFirstUpper»().build()«IF !attr.metaAnnotations.empty».getValue()«ENDIF»;
+				«ENDIF»
 				«ENDFOR»
 				
 				List<Boolean> evalResult = «exprGen.javaCode(rule.expressions.last, paramMap, true)».get();
@@ -132,7 +135,7 @@ class ChoiceRuleGenerator {
 	}
 	
 	private def collectusedAttributeCalls(List<RosettaExpression> expressions) {
-		val attributes = <Attribute>newHashSet
+		val attributes = <Attribute>newLinkedHashSet
 		expressions.forEach[exp|
 			EcoreUtil2.getAllContentsOfType(exp,RosettaCallableCall).map[callable].filter(Attribute).forEach[
 				attributes.add(it)

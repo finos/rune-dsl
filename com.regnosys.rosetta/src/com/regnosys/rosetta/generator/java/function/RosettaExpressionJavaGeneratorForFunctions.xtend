@@ -106,8 +106,8 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				}
 				if (many !== null)
 					if (callable instanceof Function) {
-						val callParams = callable.inputs.indexed.map[if(it.key < expr.args.size) expr.args.get(it.key) else null]
-						'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : callParams SEPARATOR ', '»«arg?.javaCode(params)?:'null'»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSEIF arg !== null».get()«ENDIF»«ENDFOR»))'''
+						val callParams = callable.inputs.indexed.map[it.value -> if(it.key < expr.args.size) expr.args.get(it.key) else null]
+						'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR paramToArg : callParams SEPARATOR ', '»«paramToArg.value?.javaCode(params)?:'null'»«IF paramToArg.value !== null»«IF (cardinalityProvider.isMulti(paramToArg.value) || (paramToArg.key.card.isMany && !cardinalityProvider.isMulti(paramToArg.value)))».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDFOR»))'''
 					} else {
 						if (!many) {
 							'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»))'''

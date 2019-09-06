@@ -235,6 +235,10 @@ class RosettaExtensions {
 		allAnnotations.filter[annotation?.name == "metadata"]
 	}
 	
+	def boolean hasMetaReferenceAnnotations(Annotated it) {
+		!allAnnotations.filter[annotation?.name == "metadata" && attribute?.name == "reference"].empty
+	}
+	
 	def validationAnnotations(Annotated it) {
 		allAnnotations.filter[annotation?.name == "validation"]
 	}
