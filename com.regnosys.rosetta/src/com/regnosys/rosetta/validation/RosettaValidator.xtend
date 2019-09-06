@@ -476,10 +476,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			default: callableSize
 		}
 		if (callerSize !== callableSize) {
-			if(callerSize >= minCallableSize) {
-				info('''Less arguments used as expecting. «callableSize» but passed «callerSize».''', element,
-					ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
-			} else {
+			if(callableSize === minCallableSize) {
 				error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
 					ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
 			}

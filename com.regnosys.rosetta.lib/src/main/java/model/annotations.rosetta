@@ -7,7 +7,7 @@ annotation metadata:
      scheme string (0..1)
      reference string (0..1)
 
-anno validation:
+annotation validation:
 	oneOf boolean (0..1)
 	optionalChoice boolean (0..1)
 	requiredChoice boolean (0..1)
