@@ -20,7 +20,7 @@ fragment Definable:
 	'<'definition=STRING'>';
 
 Annotation:
-	'anno' RosettaNamed ':' Definable?
+	'annotation' RosettaNamed ':' Definable?
 	attributes += Attribute*
 ;
 
@@ -46,7 +46,8 @@ Data:
 ;
 
 Attribute:
-	RosettaNamed RosettaTyped card=RosettaCardinality Definable? (Annotations|Synonyms)*;
+	RosettaNamed RosettaTyped card=RosettaCardinality Definable? (Annotations|Synonyms)*
+;
 
 Function:
 	'func' 
@@ -59,7 +60,7 @@ Function:
 	('inputs:' inputs += Attribute+)?
 	('output:' output = Attribute)?
 	
-	(shortcuts     += ShortcutDeclaration ';'?)*
+	(shortcuts     += ShortcutDeclaration)*
 	conditions     += Condition*
 	operation       = Operation?
 	postConditions += PostCondition*
@@ -83,7 +84,7 @@ PostCondition returns Condition: // TODO no name? annotations?
 
 Operation: // TODO no name? annotations?
 	'assign-output' attribute = [Attribute|ValidID] ':' Definable?
-	expression = RosettaCalcExpression ';'?
+	expression = RosettaCalcExpression
 ;
 
 EnumValueReference returns RosettaEnumValueReference:

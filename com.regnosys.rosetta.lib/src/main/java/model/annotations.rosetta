@@ -1,9 +1,9 @@
 namespace "com.rosetta.model"
 version "${project.version}"
 
-anno keyed:
+annotation keyed:
 
-anno metadata:
+annotation metadata:
      scheme string (0..1)
      reference string (0..1)
 
