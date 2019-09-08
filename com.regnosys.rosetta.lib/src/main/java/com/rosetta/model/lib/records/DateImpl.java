@@ -64,7 +64,7 @@ public class DateImpl implements Date {
 
 	@Override
 	public String toString() {
-		return "DateImpl [day=" + day + ", month=" + month + ", year=" + year + "]";
+		return year + "-" + month + "-" + day;
 	}
 
 	@Override
