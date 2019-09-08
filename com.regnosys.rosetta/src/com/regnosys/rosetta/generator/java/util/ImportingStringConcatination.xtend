@@ -1,10 +1,10 @@
-package com.regnosys.rosetta.generator.java.calculation
+package com.regnosys.rosetta.generator.java.util
 
+import java.lang.reflect.Method
 import java.util.Set
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenation
 import org.eclipse.xtext.naming.QualifiedName
-import java.lang.reflect.Method
 
 class ImportingStringConcatination extends StringConcatenation {
 	@Accessors(PUBLIC_GETTER)
@@ -16,7 +16,7 @@ class ImportingStringConcatination extends StringConcatenation {
 	}
 
 	def dispatch protected String getStringRepresentation(Class<?> object) {
-		addImport(object.name)
+		addImport(object.name, object.isEnum && object.isMemberClass)
 		return object.simpleName
 	}
 	
@@ -26,7 +26,7 @@ class ImportingStringConcatination extends StringConcatenation {
 	}
 
 	def dispatch protected String getStringRepresentation(JavaType object) {
-		addImport(object.name)
+		addImport(object.name, false)
 		return object.simpleName
 	}
 	
@@ -44,15 +44,18 @@ class ImportingStringConcatination extends StringConcatenation {
 		}
 	}
 
-	def private addImport(String qName) {
+	def private addImport(String qName, boolean qualifyMemberClass) {
 		val qualified = QualifiedName.create(qName.split('\\.'))
 		val target = qualified.lastSegment
-		
 		if (target.contains('$')) {
-			val toImport = qualified.skipLast(1).append(target.split('\\$').head)
-			imports.add(toImport.toString)	
+			if (!qualifyMemberClass) {
+				val toImport = qualified.skipLast(1).append(target.split('\\$').head)
+				imports.add(toImport.toString)
+			} else
+				imports.add(qName.replaceAll('\\$', '.'))
+
 		} else {
-			imports.add(qName)	
+			imports.add(qName)
 		}
 	}
 	

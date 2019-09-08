@@ -112,8 +112,8 @@ final class ExpandedAttribute {
 		!metas.empty
 	}
 	
-	def isRosettaClass() {
-		getType() instanceof RosettaClass
+	def isRosettaClassOrData() {
+		getType() instanceof RosettaClass || getType() instanceof com.regnosys.rosetta.rosetta.simple.Data 
 	}
 	
 	def builtInType() {

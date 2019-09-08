@@ -91,3 +91,4 @@ steps:
           skipNextBuild: "${{SKIP_NEXT_BUILD}} == false"
     commands:
       - codefresh run REGnosys/rosetta-common/rosetta-common --branch master --detach
+      - codefresh run REGnosys/rosetta-code-generators/rosetta-code-generators --branch master --detach

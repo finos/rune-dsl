@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.calculation.ImportingStringConcatination
+import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
 import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper

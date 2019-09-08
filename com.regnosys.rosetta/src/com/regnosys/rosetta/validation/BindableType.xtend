@@ -11,7 +11,7 @@ class BindableType {
 			type !== null || genericName !== null
 		}
 
-		def getEither() {
+		def String getEither() {
 			if(type !== null) return JavaClassTranslator.toJavaType(type.name)
 			if(genericName !== null) return genericName else return "?"
 		}

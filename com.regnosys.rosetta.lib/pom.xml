@@ -51,7 +51,7 @@
                 </executions>
                 <configuration>
                 	<excludes>
-                		<exclude>model/basictypes.rosetta</exclude>
+                		<exclude>model/*.rosetta</exclude>
                 	</excludes>
                     <source>8</source>
                     <target>8</target>

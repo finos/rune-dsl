@@ -6,6 +6,10 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.object.ModelObjectBoilerPlate
+import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
+import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.java.util.JavaType
+import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
@@ -41,9 +45,6 @@ import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.generator.IFileSystemAccess2
-import org.eclipse.xtext.nodemodel.ICompositeNode
-import org.eclipse.xtext.nodemodel.ILeafNode
-import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
@@ -497,7 +498,7 @@ class CalculationGenerator {
 				@Override
 				public «List»<«Formula»> getFormulas() {
 					return «Arrays».asList(«FOR feature : #[function.operation] SEPARATOR ','»
-						new «Formula»("«calculationName.escape»", "«feature.extractNodeText(OPERATION__EXPRESSION).escape»", this)«ENDFOR»);
+						new «Formula»("«calculationName.escape»", "«RosettaGrammarUtil.extractNodeText(feature, OPERATION__EXPRESSION).escape»", this)«ENDFOR»);
 				}
 				
 				«FOR feature :  inputs»
@@ -574,7 +575,7 @@ class CalculationGenerator {
 				@Override
 				public «List»<«Formula»> getFormulas() {
 					return «Arrays».asList(«FOR feature : arguments.calculation.features SEPARATOR ','»
-						new «Formula»("«calculationName.escape»", "«feature.extractGrammarText.escape»", this)«ENDFOR»);
+						new «Formula»("«calculationName.escape»", "«RosettaGrammarUtil.extractGrammarText(feature).escape»", this)«ENDFOR»);
 				}
 				
 				«IF !arguments.features.filter(RosettaArgumentFeature).map[typeProvider.getRType(expression)].filter(RUnionType).empty»
@@ -667,26 +668,7 @@ class CalculationGenerator {
 		'''
 	}
 		
-	private def String extractNodeText(EObject rosettaFeature, EStructuralFeature feature) {
-		NodeModelUtils.findNodesForFeature(rosettaFeature, feature).map[NodeModelUtils.getTokenText(it)].join
-	}
 	
-	protected def String extractGrammarText(RosettaFeature rosettaFeature) {	
-		val ICompositeNode node = NodeModelUtils.getNode(rosettaFeature);
-		if (node === null) {
-			return null;
-		}
-		if (node instanceof ILeafNode) {
-			return node.getText();
-		} else {
-			val StringBuilder builder = new StringBuilder(Math.max(node.getTotalLength(), 1));
-
-			for (ILeafNode leaf : node.getLeafNodes()) {
-				builder.append(leaf.getText());
-			}
-			return builder.toString().trim.replace('\n', '\\n').replace("\r","");
-		}
-	}
 	
 	protected def StringConcatenationClient calulationInputClass(boolean enumGeneration)
 		'''«IF enumGeneration»«ICalculationInput»«ELSE»CalculationInput«ENDIF»'''

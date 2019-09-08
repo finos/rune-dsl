@@ -244,7 +244,7 @@ class ModelObjectGenerator {
 	'''
 
 	private def attributeFromBuilder(ExpandedAttribute attribute) {
-		if(attribute.type instanceof RosettaClass || attribute.hasMetas) {
+		if(attribute.isRosettaClassOrData || attribute.hasMetas) {
 			'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
 		} else {
 			'''builder.get«attribute.name.toFirstUpper»()'''

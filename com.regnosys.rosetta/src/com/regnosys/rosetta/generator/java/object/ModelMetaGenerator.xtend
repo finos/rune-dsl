@@ -4,12 +4,12 @@ import com.google.common.collect.Sets
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.calculation.ImportingStringConcatination
-import com.regnosys.rosetta.generator.java.calculation.JavaNames
 import com.regnosys.rosetta.generator.java.qualify.QualifyFunctionGenerator
 import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
 import com.regnosys.rosetta.rosetta.RosettaClass
@@ -21,6 +21,7 @@ import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.annotations.RosettaMeta
 import com.rosetta.model.lib.meta.RosettaMetaData
@@ -39,6 +40,7 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 
 class ModelMetaGenerator {
 
+	@Inject extension ImportManagerExtension
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
 	
@@ -52,20 +54,19 @@ class ModelMetaGenerator {
 	
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, Data data, String version) {
 		val className = '''«data.name»Meta'''
-		val concat = new ImportingStringConcatination()
-		concat.append(data.metaClassBody(packages, className, version))
 		
+		val classBody = tracImports(data.metaClassBody(packages, className, version))
 		val javaFileContents = '''
 			package «packages.meta.packageName»;
 			
-			«FOR imp : concat.imports»
+			«FOR imp : classBody.imports»
 				import «imp»;
 			«ENDFOR»
-			«FOR imp : concat.staticImports»
+			«FOR imp : classBody.staticImports»
 				import static «imp»;
 			«ENDFOR»
 			
-			«concat.toString»
+			«classBody.toString»
 		'''
 		fsa.generateFile('''«packages.meta.directoryName»/«className».java''', javaFileContents)
 	}
@@ -83,9 +84,9 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules() {
 					return «Arrays».asList(
-«««						«FOR r : dataRules(elements, c) SEPARATOR ','»
-«««							new «packages.dataRule.packageName».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
-«««						«ENDFOR»
+						«FOR r : dataRules(c.conditions) SEPARATOR ','»
+							new «packages.dataRule.packageName».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
+						«ENDFOR»
 					);
 				}
 			
@@ -112,14 +113,12 @@ class ModelMetaGenerator {
 				
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
-«««					return new «packages.classValidation.packageName».«dataClass»Validator();
-					return null;
+					return new «packages.classValidation.packageName».«dataClass»Validator();
 				}
 				
 				@Override
 				public «ValidatorWithArg»<? super «dataClass», String> onlyExistsValidator() {
-«««					return new «packages.existsValidation.packageName».«ModelObjectGenerator.onlyExistsValidatorName(c)»();
-					return null;
+					return new «packages.existsValidation.packageName».«ModelObjectGenerator.onlyExistsValidatorName(c)»();
 				}
 			}
 		'''
@@ -254,6 +253,10 @@ class ModelMetaGenerator {
 			dataRuleMappingSet.addAll(classRules.toSet)
 		]
 		return dataRuleMappingSet.filter[it.className === thisClass.name].toList
+	}
+	
+	private def List<ClassRule> dataRules(List<Condition> elements) {
+		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.name)]
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data
