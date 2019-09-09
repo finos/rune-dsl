@@ -48,6 +48,7 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.rosetta.model.lib.validation.ComparisonResult
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	@Inject
@@ -125,7 +126,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				'''«MapperS».of(«expr.enumeration.name».«expr.value.convertValues»)'''
 			}
 			RosettaConditionalExpression : {
-				'''doIf(«expr.^if.javaCode(params)»,«expr.ifthen.javaCode(params)»,«expr.elsethen.javaCode(params)»)'''
+				'''doIf(«expr.^if.javaCode(params)»,«expr.ifthen.javaCode(params)»,«IF expr.elsethen !== null»«expr.elsethen.javaCode(params)»«ELSE»«ComparisonResult».success()«ENDIF»)'''
 			}
 			RosettaContainsExpression : {
 				'''contains(«expr.container.javaCode(params)», «expr.contained.javaCode(params)»)'''
