@@ -5,6 +5,7 @@ package com.regnosys.rosetta.scoping
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
@@ -53,6 +54,7 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 	@Inject extension RosettaExtensions
 	@Inject IResourceDescriptionsProvider indexProvider
 	@Inject IQualifiedNameProvider qNames
+	@Inject extension RosettaFunctionExtensions
 
 	override getScope(EObject context, EReference reference) {
 		switch reference {
@@ -105,6 +107,28 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 								allPosibilities.addAll(metaScope.allElements);
 							}
 						}
+					}
+					return new SimpleScope(allPosibilities)
+				}
+				return IScope.NULLSCOPE
+			}
+			case OPERATION__ATTRIBUTE: {
+				if (context instanceof Operation) {
+					val out = getOutput(context.function)
+					if (out !== null) {
+						return Scopes.scopeFor(#[out])
+					}
+				}
+				return IScope.NULLSCOPE
+			}
+			case OPERATION__FEATURE: {
+				if (context instanceof Operation) {
+					val receiverType = typeProvider.getRType(context.attribute)
+					val featureScope = receiverType.createFeatureScope
+					var allPosibilities = newArrayList
+					
+					if (featureScope!==null) {
+						allPosibilities.addAll(featureScope.allElements);
 					}
 					return new SimpleScope(allPosibilities)
 				}

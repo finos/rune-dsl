@@ -11,6 +11,7 @@ import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaArguments
@@ -39,8 +40,6 @@ import com.rosetta.model.lib.functions.IResult.Attribute
 import java.util.ArrayList
 import java.util.Arrays
 import java.util.List
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.EStructuralFeature
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
@@ -49,7 +48,6 @@ import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.generator.util.Util
 
 class CalculationGenerator {
 
@@ -210,7 +208,9 @@ class CalculationGenerator {
 					CalculationInput input = new CalculationInput().create(«inputArguments.join(', ')»);
 «««					// TODO: code generate local variables for fields inside CalculationInput s.t. assignments below can access them as local variables
 					CalculationResult result = new CalculationResult(input);
-					result.«getOutput(function).getNameOrDefault» = «if(function.operation !== null)asignment(function.operation) else null»;
+					«FOR operation : function.operation»
+					result.«getOutput(function).getNameOrDefault» = «if(operation !== null) assignment(operation) else null»;
+					«ENDFOR»
 					return result;
 				}
 				
@@ -373,7 +373,7 @@ class CalculationGenerator {
 «««					// TODO: code generate local variables for fields inside CalculationInput s.t. assignments below can access them as local variables
 					CalculationResult result = new CalculationResult(input);
 					«FOR feature : calculation.features.filter(RosettaCalculationFeature)»
-						result.«feature.getNameOrDefault» = «asignment(feature)»;
+						result.«feature.getNameOrDefault» = «assignment(feature)»;
 					«ENDFOR»
 					return result;
 				}
@@ -497,7 +497,7 @@ class CalculationGenerator {
 
 				@Override
 				public «List»<«Formula»> getFormulas() {
-					return «Arrays».asList(«FOR feature : #[function.operation] SEPARATOR ','»
+					return «Arrays».asList(«FOR feature : function.operation SEPARATOR ','»
 						new «Formula»("«calculationName.escape»", "«RosettaGrammarUtil.extractNodeText(feature, OPERATION__EXPRESSION).escape»", this)«ENDFOR»);
 				}
 				
@@ -674,11 +674,11 @@ class CalculationGenerator {
 		'''«IF enumGeneration»«ICalculationInput»«ELSE»CalculationInput«ENDIF»'''
 	
 
-	dispatch def private StringConcatenationClient asignment(extension JavaNames it, Operation op) {
+	dispatch def private StringConcatenationClient assignment(extension JavaNames it, Operation op) {
 		'''«toJava(op.expression)»'''
 	}
 	
-	dispatch def private StringConcatenationClient asignment(extension JavaNames it, RosettaCalculationFeature feature) {
+	dispatch def private StringConcatenationClient assignment(extension JavaNames it, RosettaCalculationFeature feature) {
 		if (feature.isTypeInferred) {
 			toJava(feature.expression)
 		} else {

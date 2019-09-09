@@ -15,8 +15,8 @@ import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaSynonym
+import com.regnosys.rosetta.rosetta.RosettaType
 
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
@@ -58,7 +58,7 @@ class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
 	contains Attribute output
 	contains ShortcutDeclaration[] shortcuts
 	contains Condition[] conditions
-	contains Operation operation opposite function
+	contains Operation[] operation opposite function
 	contains Condition[] postConditions
 }
 
@@ -75,6 +75,7 @@ class Condition extends Definable, Annotated, RosettaCallable, RosettaNamed {
 class Operation extends Definable {
 	container Function function opposite operation
 	refers Attribute attribute
+	refers RosettaFeature feature
 	contains RosettaExpression expression
 }
 class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable {

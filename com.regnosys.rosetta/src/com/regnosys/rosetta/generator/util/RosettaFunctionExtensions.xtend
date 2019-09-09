@@ -9,11 +9,11 @@ class RosettaFunctionExtensions {
 	 * spec functions do not have operation hence, do not provide an implementation
 	 */
 	def Boolean handleAsSpecFunction(Function function) {
-		function.operation === null && !function.isDispatchingFunction() && !function.handleAsEnumFunction
+		function.operation.nullOrEmpty && !function.isDispatchingFunction() && !function.handleAsEnumFunction
 	}
 
 	def Boolean handleAsEnumFunction(Function function) {
-		function.operation === null && !function.dispatchingFunctions.empty
+		function.operation.nullOrEmpty && !function.dispatchingFunctions.empty
 	}
 	
 	def Boolean isDispatchingFunction(Function function) {
@@ -30,7 +30,7 @@ class RosettaFunctionExtensions {
 		// TODO Look-up other Rosetta files?
 		if (function.isDispatchingFunction) {
 			return EcoreUtil2.getSiblingsOfType(function, Function).filter [
-				it.name == function.name && it.operation === null
+				it.name == function.name && it.operation.nullOrEmpty
 			].head
 		}
 	}

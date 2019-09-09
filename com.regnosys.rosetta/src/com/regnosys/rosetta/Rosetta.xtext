@@ -62,7 +62,7 @@ Function:
 	
 	(shortcuts     += ShortcutDeclaration)*
 	conditions     += Condition*
-	operation       = Operation?
+	operation      += Operation*
 	postConditions += PostCondition*
 ;
 
@@ -83,7 +83,7 @@ PostCondition returns Condition: // TODO no name? annotations?
 ;
 
 Operation: // TODO no name? annotations?
-	'assign-output' attribute = [Attribute|ValidID] ':' Definable?
+	'assign-output' attribute = [Attribute|ValidID] ( '->' feature=[RosettaFeature|ValidID])? ':' Definable?
 	expression = RosettaCalcExpression
 ;
 
