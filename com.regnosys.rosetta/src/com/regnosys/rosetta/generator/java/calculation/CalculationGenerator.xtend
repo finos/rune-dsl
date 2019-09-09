@@ -208,12 +208,19 @@ class CalculationGenerator {
 					CalculationInput input = new CalculationInput().create(«inputArguments.join(', ')»);
 «««					// TODO: code generate local variables for fields inside CalculationInput s.t. assignments below can access them as local variables
 					CalculationResult result = new CalculationResult(input);
-					«FOR operation : function.operation»
-					result.«getOutput(function).getNameOrDefault» = «if(operation !== null) assignment(operation) else null»;
+					«FOR indexed : function.operation.indexed»
+					«val operation = indexed.value»
+					«IF operation.feature === null»
+					result.«operation.attribute.name» = «if(operation !== null) assignment(operation) else null»;
+					«ELSE»
+					«IF indexed.key == 0»
+					if(result.«operation.attribute.name» == null) result.«operation.attribute.name» = «operation.attribute.toJavaQualifiedType».builder().build();
+					«ENDIF»
+					result.«operation.attribute.name» = result.«operation.attribute.name».toBuilder().«IF operation.attribute.card.isIsMany»add«ELSE»set«ENDIF»«operation.feature.name.toFirstUpper»(«assignment(operation)»).build();
+					«ENDIF»
 					«ENDFOR»
 					return result;
 				}
-				
 				«createInputClass(className, function, funcDeps)»
 				«IF !enumGeneration»
 					
