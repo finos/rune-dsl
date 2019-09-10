@@ -199,7 +199,7 @@ class CalculationGenerator {
 		if(inputs.nullOrEmpty)
 			return null
 			
-		val funcDeps = Util.distinctBy(function.shortcuts.map[functionDependencies()].flatten,[name])
+		val funcDeps = Util.distinctBy(function.shortcuts.map[functionDependencies()].flatten + function.operation.map[functionDependencies()].flatten,[name])
 		val inputArguments = inputs.map[name.toFirstLower].toList + funcDeps.asArguments
 
 		'''
@@ -217,11 +217,9 @@ class CalculationGenerator {
 					«ELSE»
 					«IF indexed.key == 0»
 					if(result.«operation.attribute.name» == null) result.«operation.attribute.name» = «operation.attribute.toJavaQualifiedType».builder().build();
-					«ENDIF»
 					«operation.attribute.toJavaQualifiedType».«operation.attribute.toJavaQualifiedType»Builder __builder = result.«operation.attribute.name».toBuilder();
-					__builder«operation.path.asSegmentList.map[seg | 
-						'''«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»()«ELSE».«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«assignment(operation)»)«ENDIF»'''
-					].join»;
+					«ENDIF»
+					__builder«FOR seg : operation.path.asSegmentList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»()«ELSE».«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«assignment(operation)»)«ENDIF»«ENDFOR»;
 					result.«operation.attribute.name» = __builder.build();
 					«ENDIF»
 					«ENDFOR»

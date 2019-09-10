@@ -177,7 +177,7 @@ class RosettaToJavaExtensions {
 	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaConditionalExpression ele) {
-		'''«toJava(ele.^if)» ? «toJava(ele.ifthen)» : «toJava(ele.elsethen)»'''
+		'''«toJava(ele.^if)» ? «toJava(ele.ifthen)» : «IF ele.elsethen !== null»«toJava(ele.elsethen)»«ELSE»null«ENDIF»'''
 	}
 	
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaExistsExpression ele) {
