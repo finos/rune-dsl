@@ -23,9 +23,11 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaPackage
+import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RRecordType
@@ -210,13 +212,17 @@ class CalculationGenerator {
 					CalculationResult result = new CalculationResult(input);
 					«FOR indexed : function.operation.indexed»
 					«val operation = indexed.value»
-					«IF operation.feature === null»
+					«IF operation.path === null»
 					result.«operation.attribute.name» = «if(operation !== null) assignment(operation) else null»;
 					«ELSE»
 					«IF indexed.key == 0»
 					if(result.«operation.attribute.name» == null) result.«operation.attribute.name» = «operation.attribute.toJavaQualifiedType».builder().build();
 					«ENDIF»
-					result.«operation.attribute.name» = result.«operation.attribute.name».toBuilder().«IF operation.attribute.card.isIsMany»add«ELSE»set«ENDIF»«operation.feature.name.toFirstUpper»(«assignment(operation)»).build();
+					«operation.attribute.toJavaQualifiedType».«operation.attribute.toJavaQualifiedType»Builder __builder = result.«operation.attribute.name».toBuilder();
+					__builder«operation.path.asSegmentList.map[seg | 
+						'''«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»()«ELSE».«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«assignment(operation)»)«ENDIF»'''
+					].join»;
+					result.«operation.attribute.name» = __builder.build();
 					«ENDIF»
 					«ENDFOR»
 					return result;
@@ -228,6 +234,27 @@ class CalculationGenerator {
 				«ENDIF»
 			}
 		'''
+	}
+	
+	def isMany(RosettaFeature feature) {
+		switch(feature){
+			RosettaRegularAttribute: feature.card.isMany
+			com.regnosys.rosetta.rosetta.simple.Attribute: feature.card.isMany
+			default: throw new IllegalStateException('Unsupported type passed '+ feature?.eClass?.name)
+		}
+	}
+	
+	def List<Segment> asSegmentList(Segment segment) {
+		val result = newArrayList
+		if (segment !== null) {
+			result.add(segment)
+			val segmentNext = segment?.next
+			if(segmentNext !== null) {
+				result.addAll(asSegmentList(segmentNext))
+			}
+		}
+		return result
+
 	}
 	
 	def private StringConcatenationClient enumCalculationFunctionBody(Function function, String className, extension JavaNames it, String version) {
