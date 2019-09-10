@@ -75,9 +75,16 @@ class Condition extends Definable, Annotated, RosettaCallable, RosettaNamed {
 class Operation extends Definable {
 	container Function function opposite operation
 	refers Attribute attribute
-	refers RosettaFeature feature
+	contains Segment path
 	contains RosettaExpression expression
 }
+
+class Segment {
+	refers RosettaFeature attribute
+	contains Segment next opposite prev
+	container Segment prev opposite next
+}
+
 class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable {
 	contains RosettaExpression expression
 }

@@ -70,22 +70,24 @@ ShortcutDeclaration:
 	'alias' RosettaNamed ':' Definable?  expression=RosettaCalcExpression
 ;
 
-
 Condition:
 	'condition' RosettaNamed? ':' Definable?
 		Annotations?
 		(expressions+=RosettaCalcExpression ';')+
 ;
 
-PostCondition returns Condition: // TODO no name? annotations?
+PostCondition returns Condition:
 	'post-condition' ':' Definable?
 	(expressions+=RosettaCalcExpression ';')+
 ;
 
-Operation: // TODO no name? annotations?
-	'assign-output' attribute = [Attribute|ValidID] ( '->' feature=[RosettaFeature|ValidID])? ':' Definable?
+Operation:
+	'assign-output' attribute = [Attribute|ValidID] (path = Segment)? ':' Definable?
 	expression = RosettaCalcExpression
 ;
+
+Segment:
+	'->' attribute = [RosettaFeature|ValidID] (next = Segment)?;
 
 EnumValueReference returns RosettaEnumValueReference:
 	enumeration=[RosettaEnumeration|ValidID] '->' value=[RosettaEnumValue|ValidID]

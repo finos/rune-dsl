@@ -19,6 +19,7 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RFeatureCallType
@@ -121,18 +122,36 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 				}
 				return IScope.NULLSCOPE
 			}
-			case OPERATION__FEATURE: {
-				if (context instanceof Operation) {
-					val receiverType = typeProvider.getRType(context.attribute)
-					val featureScope = receiverType.createFeatureScope
-					var allPosibilities = newArrayList
-					
-					if (featureScope!==null) {
-						allPosibilities.addAll(featureScope.allElements);
+			case SEGMENT__ATTRIBUTE: {
+				switch (context) {
+					Operation: {
+						val receiverType = typeProvider.getRType(context.attribute)
+						val featureScope = receiverType.createFeatureScope
+						if (featureScope !== null) {
+							return featureScope;
+						}
+						return IScope.NULLSCOPE
 					}
-					return new SimpleScope(allPosibilities)
+					Segment: {
+						val prev = context.prev
+						if (prev !== null) {
+							if (prev.attribute !== null && !prev.attribute.eIsProxy) {
+								val receiverType = typeProvider.getRType(prev.attribute)
+								val featureScope = receiverType.createFeatureScope
+								if (featureScope !== null) {
+									return featureScope;
+								}
+								return IScope.NULLSCOPE
+							}
+						}
+						if (context.eContainer instanceof Operation) {
+							return getScope(context.eContainer, reference)
+						}
+						return super.getScope(context, reference)
+					}
+					default:
+						return super.getScope(context, reference)
 				}
-				return IScope.NULLSCOPE
 			}
 			case ROSETTA_CALLABLE_CALL__CALLABLE: {
 				if (context instanceof RosettaWorkflowRule) {
