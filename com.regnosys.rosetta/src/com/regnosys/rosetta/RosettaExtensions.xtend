@@ -23,6 +23,8 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.rosetta.simple.Annotated
 
 class RosettaExtensions {
 	
@@ -47,6 +49,10 @@ class RosettaExtensions {
 
 	def getAllAttributes(RosettaClass clazz) {
 		clazz.allSuperTypes.map[regularAttributes].flatten	
+	}
+
+	def getAllAttributes(Data clazz) {
+		clazz.allSuperTypes.map[attributes].flatten
 	}
 	
 	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {
@@ -154,6 +160,9 @@ class RosettaExtensions {
 			else if(callable instanceof RosettaClass) {
 				visitor.apply(callable)
 			}
+			else if(callable instanceof Data) {
+				visitor.apply(callable)
+			}
 			else {
 				throw new IllegalArgumentException("Failed to collect leaf type: " + callable)
 			}
@@ -220,5 +229,22 @@ class RosettaExtensions {
 			return projectName == candidateUri.segment(1)
 		}
 		return false
+	}
+	
+	def boolean isChoiceRuleCondition(Condition cond) {
+		return cond.constraint !== null
+	}
+	
+	def metaAnnotations(Annotated it) {
+		allAnnotations.filter[annotation?.name == "metadata"]
+	}
+	
+	def boolean hasMetaReferenceAnnotations(Annotated it) {
+		!allAnnotations.filter[annotation?.name == "metadata" && attribute?.name == "reference"].empty
+	}
+	
+	
+	def private allAnnotations(Annotated withAnnotations) {
+		withAnnotations?.annotations?.filter[annotation !== null && !annotation.eIsProxy]
 	}
 }

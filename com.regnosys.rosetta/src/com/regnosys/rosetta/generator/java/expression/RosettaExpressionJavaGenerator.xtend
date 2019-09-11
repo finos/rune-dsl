@@ -22,10 +22,13 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import java.util.HashMap
 import org.eclipse.xtend.lib.annotations.Data
@@ -33,10 +36,11 @@ import org.eclipse.xtend.lib.annotations.Data
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 
+/**
+ * use {@link RosettaExpressionJavaGeneratorForFunctions} instead
+ */
+@Deprecated
 class RosettaExpressionJavaGenerator {
 	@Inject
 	RosettaTypeProvider typeProvider
@@ -108,7 +112,7 @@ class RosettaExpressionJavaGenerator {
 				expr.expression.javaCode(params, isLast)
 			}
 			default: 
-				throw new UnsupportedOperationException("Unsupported expression type of " + expr.class.simpleName)
+				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
 		}
 	}
 	

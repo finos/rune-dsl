@@ -5,19 +5,21 @@
 package com.regnosys.rosetta.generator
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.external.ExternalGenerators
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.calculation.CalculationGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.generator.java.object.DataGenerator
+import com.regnosys.rosetta.generator.java.object.DataValidatorsGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
 import com.regnosys.rosetta.generator.java.qualify.QualifyFunctionGenerator
 import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
+import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEvent
@@ -33,7 +35,6 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.regnosys.rosetta.generator.java.object.DataValidatorsGenerator
 
 /**
  * Generates code from your model files on save.
@@ -60,7 +61,9 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject DataGenerator dataGenerator
 	@Inject DataValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
+	@Inject extension RosettaExtensions
 
+	@Inject JavaNames.Factory factory
 	
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta'}
@@ -74,23 +77,29 @@ class RosettaGenerator extends AbstractGenerator {
 		if (!ignoredFiles.contains(resource.URI.segments.last)) {	
 			// generate for each model object
 			resource.contents.filter(RosettaModel).forEach [
-				val packages = new RosettaJavaPackages(header.namespace)
 				val version = header.version
+				val javaNames = factory.create(it)
+				val packages = javaNames.packages
+				
 				elements.forEach [
 					switch(it) {
 						Data: {
-							dataGenerator.generate(packages, fsa, it, version)
-							metaGenerator.generate(packages, fsa, it, version)
-							validatorsGenerator.generate(packages, fsa, it, version)
-							it.conditions.forEach[
-								dataRuleGenerator.generate(packages, fsa, it, version)
+							dataGenerator.generate(javaNames, fsa, it, version)
+							metaGenerator.generate(javaNames, fsa, it, version)
+							validatorsGenerator.generate(javaNames, fsa, it, version)
+							it.conditions.forEach [ cond |
+								if (cond.isChoiceRuleCondition) {
+									choiceRuleGenerator.generate(javaNames, fsa, it, cond, version)
+								} else {
+									dataRuleGenerator.generate(javaNames, fsa, cond, version)
+								}
 							]
 						}
 						Function:{
 							if(handleAsSpecFunction) {
-								functionGenerator.generate(packages, fsa, it, version)
+								functionGenerator.generate(javaNames, fsa, it, version)
 							} else if(!isDispatchingFunction){
-								calculationGenerator.generateFunction(packages, fsa, it, version)
+								calculationGenerator.generateFunction(javaNames, fsa, it, version)
 							}
 						}
 					}
@@ -117,7 +126,7 @@ class RosettaGenerator extends AbstractGenerator {
 			val allElements = models.flatMap[elements].toList
 
 			val classes = resource.contents.filter(RosettaModel).head.elements.filter[it instanceof RosettaClass || it instanceof Data]
-			metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), classes, models.map[header].filter(a|a!==null).map[namespace])
+			metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), classes, models.map[header].filter(a|a!==null).map[namespace].toSet)
 		}}
 		catch (Exception e) {
 			LOGGER.warn("Unexpected calling standard generate for rosetta -"+e.message+" - see debug logging for more")

@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import com.regnosys.rosetta.rosetta.RosettaExpression;
 
+/* FIXME Unused - remove if not needed*/
 public interface Expression {
 
 	String javaCode();

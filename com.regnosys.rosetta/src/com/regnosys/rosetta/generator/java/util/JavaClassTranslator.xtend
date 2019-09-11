@@ -14,6 +14,8 @@ class JavaClassTranslator {
 				
 	static def toJavaFullType(String typename) {
 		switch typename {
+			case 'any':
+				'java.lang.Object'
 			case 'string':
 				'java.lang.String'
 			case 'int':

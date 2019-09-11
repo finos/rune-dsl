@@ -11,6 +11,7 @@ import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaArguments
@@ -39,8 +40,6 @@ import com.rosetta.model.lib.functions.IResult.Attribute
 import java.util.ArrayList
 import java.util.Arrays
 import java.util.List
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.EStructuralFeature
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
@@ -49,7 +48,6 @@ import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.generator.util.Util
 
 class CalculationGenerator {
 
@@ -160,8 +158,7 @@ class CalculationGenerator {
 			generateExternalFunction(fsa, function, it, version)
 		]
 	}
-	def generateFunction(RosettaJavaPackages _packages,IFileSystemAccess2 fsa, Function function, String version) {
-		val javaNames = factory.create(_packages)
+	def generateFunction(JavaNames javaNames,IFileSystemAccess2 fsa, Function function, String version) {
 		if(function.handleAsSpecFunction)
 			generateExternalFunction(fsa, function, javaNames, version)
 		else

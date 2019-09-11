@@ -62,10 +62,21 @@ class JavaNames {
 		}
 	}
 	
+	def JavaType toJavaType(RosettaCallableWithArgs func) {
+		switch (func) {
+			Function case func.operation !== null:
+				JavaType.create(packages.calculation.packageName+'.'+ func.name)
+			Function:
+				JavaType.create(packages.functions.packageName+'.'+ func.name)
+			default:
+				throw new UnsupportedOperationException("Not implemented for type " + func?.class?.name)
+		}
+	}
+	
 	def JavaType toJavaType(RosettaType type) {
 		switch (type) {
 			RosettaBasicType:
-				toJavaType(type.name)
+				createForBasicType(type.name)
 			RosettaClass,
 			Data,
 			RosettaEnumeration: JavaType.create(packages.model.packageName+'.'+ type.name)
@@ -77,7 +88,7 @@ class JavaNames {
 		}
 	}
 	
-	def JavaType toJavaType(String typeName) {
+	private def JavaType createForBasicType(String typeName) {
 		return  JavaType.create(JavaClassTranslator.toJavaFullType(typeName)?:"missing builtin type " + typeName)
 	}
 	

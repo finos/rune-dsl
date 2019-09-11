@@ -220,6 +220,8 @@ class RosettaTypeProvider {
 			RosettaBasicType:{
 				val typeName = idConverter.toValue(expression.name, null)
 				switch typeName {
+					case RBuiltinType.ANY.name:
+						RBuiltinType.ANY
 					case 'boolean':
 						RBuiltinType.BOOLEAN
 					case 'string':
