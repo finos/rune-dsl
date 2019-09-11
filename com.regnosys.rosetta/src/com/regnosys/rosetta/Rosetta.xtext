@@ -74,17 +74,22 @@ ShortcutDeclaration:
 Condition:
 	'condition' RosettaNamed? ':' Definable?
 		Annotations?
-		(constraints += OneOf
-		| (constraints += Constraint)+
+		( constraint = OneOf
+		| constraint = Constraint
 		| (expressions += RosettaCalcExpression ';')+)
 ;
 
 Constraint:
-	required ?= 'required'? 'choice' attributes += [Attribute | ValidID] (',' attributes += [Attribute | ValidID])*
+	necessity = Necessity 'choice' attributes += [Attribute | ValidID] (',' attributes += [Attribute | ValidID])*
+;
+
+
+enum Necessity:
+	optional | required
 ;
 
 OneOf returns Constraint :
-	oneOf ?= 'oneOf' 
+	oneOf ?= 'one-of'
 ;
 
 PostCondition returns Condition: // TODO no name? annotations?

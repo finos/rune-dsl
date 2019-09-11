@@ -232,7 +232,7 @@ class RosettaExtensions {
 	}
 	
 	def boolean isChoiceRuleCondition(Condition cond) {
-		return !cond.constraints.nullOrEmpty
+		return cond.constraint !== null
 	}
 	
 	def metaAnnotations(Annotated it) {

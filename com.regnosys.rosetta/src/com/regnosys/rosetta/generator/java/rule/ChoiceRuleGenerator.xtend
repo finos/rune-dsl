@@ -28,6 +28,7 @@ import static com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleValida
 import com.rosetta.model.lib.validation.ExistenceChecker
 import java.util.LinkedList
 import com.rosetta.model.lib.RosettaModelObjectBuilder
+import com.regnosys.rosetta.rosetta.simple.Necessity
 
 class ChoiceRuleGenerator {
 	
@@ -65,8 +66,8 @@ class ChoiceRuleGenerator {
 		val clazz = data.name
 		val ruleName = rule.name
 		val className = choiceRuleClassName(rule.name?:'NoName')
-		val usedAttributes = if(rule.constraints.exists[isOneOf]) data.allAttributes else rule.constraints.map[attributes].flatten // TODO multi choice rules? 
-		val validationType = if(rule.constraints.exists[isOneOf || required]) 'REQUIRED' else 'OPTIONAL'
+		val usedAttributes = if(rule.constraint.isOneOf) data.allAttributes else rule.constraint.attributes // TODO multi choice rules? 
+		val validationType = if(rule.constraint.isOneOf || rule.constraint.necessity === Necessity.REQUIRED) 'REQUIRED' else 'OPTIONAL'
 		'''
 		«emptyJavadocWithVersion(version)»
 		@«com.rosetta.model.lib.annotations.RosettaChoiceRule»("«ruleName»")
