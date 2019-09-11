@@ -34,7 +34,11 @@ class AnnotationRef {
 	refers Attribute attribute
 }
 
-class Attribute extends RosettaFeature, Definable, Annotated, RosettaCallable {
+abstract class ConvertableCardinality extends RosettaCallable {
+	boolean toOne
+}
+
+class Attribute extends RosettaFeature, Definable, Annotated, RosettaCallable, ConvertableCardinality {
 	contains RosettaSynonym[] synonyms
 	contains RosettaCardinality card
 }
@@ -68,7 +72,7 @@ class FunctionDispatch extends Function {
 }
 
 
-class Condition extends Definable, Annotated, RosettaCallable, RosettaNamed {
+class Condition extends Definable, Annotated, RosettaNamed {
 	contains RosettaExpression[] expressions
 }
 
@@ -77,6 +81,7 @@ class Operation extends Definable {
 	refers Attribute attribute
 	contains RosettaExpression expression
 }
-class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable {
+
+class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable, ConvertableCardinality {
 	contains RosettaExpression expression
 }
