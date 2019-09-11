@@ -26,6 +26,7 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.rosetta.simple.Operation
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -112,6 +113,9 @@ class RosettaExternalFunctionDependencyProvider {
 				}
 			}
 			ShortcutDeclaration: {
+				functionDependencies(object.expression)
+			}
+			Operation: {
 				functionDependencies(object.expression)
 			}
 			default:

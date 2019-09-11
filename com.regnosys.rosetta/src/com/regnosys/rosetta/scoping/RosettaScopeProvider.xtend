@@ -5,6 +5,7 @@ package com.regnosys.rosetta.scoping
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
@@ -18,6 +19,7 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RFeatureCallType
@@ -53,6 +55,7 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 	@Inject extension RosettaExtensions
 	@Inject IResourceDescriptionsProvider indexProvider
 	@Inject IQualifiedNameProvider qNames
+	@Inject extension RosettaFunctionExtensions
 
 	override getScope(EObject context, EReference reference) {
 		switch reference {
@@ -109,6 +112,46 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 					return new SimpleScope(allPosibilities)
 				}
 				return IScope.NULLSCOPE
+			}
+			case OPERATION__ATTRIBUTE: {
+				if (context instanceof Operation) {
+					val out = getOutput(context.function)
+					if (out !== null) {
+						return Scopes.scopeFor(#[out])
+					}
+				}
+				return IScope.NULLSCOPE
+			}
+			case SEGMENT__ATTRIBUTE: {
+				switch (context) {
+					Operation: {
+						val receiverType = typeProvider.getRType(context.attribute)
+						val featureScope = receiverType.createFeatureScope
+						if (featureScope !== null) {
+							return featureScope;
+						}
+						return IScope.NULLSCOPE
+					}
+					Segment: {
+						val prev = context.prev
+						if (prev !== null) {
+							if (prev.attribute !== null && !prev.attribute.eIsProxy) {
+								val receiverType = typeProvider.getRType(prev.attribute)
+								val featureScope = receiverType.createFeatureScope
+								if (featureScope !== null) {
+									return featureScope;
+								}
+								return IScope.NULLSCOPE
+							}
+						}
+						if (context.eContainer instanceof Operation) {
+							return getScope(context.eContainer, reference)
+						}
+						return super.getScope(context, reference)
+					}
+					default:
+						return super.getScope(context, reference)
+				}
 			}
 			case ROSETTA_CALLABLE_CALL__CALLABLE: {
 				if (context instanceof RosettaWorkflowRule) {

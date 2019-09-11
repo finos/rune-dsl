@@ -62,14 +62,13 @@ Function:
 	
 	(shortcuts     += ShortcutDeclaration)*
 	conditions     += Condition*
-	operation       = Operation?
+	operation      += Operation*
 	postConditions += PostCondition*
 ;
 
 ShortcutDeclaration:
 	'alias' RosettaNamed ':' Definable?  expression=RosettaCalcExpression
 ;
-
 
 Condition:
 	'condition' RosettaNamed? ':' Definable?
@@ -92,15 +91,18 @@ OneOf returns Constraint :
 	oneOf ?= 'one-of'
 ;
 
-PostCondition returns Condition: // TODO no name? annotations?
+PostCondition returns Condition:
 	'post-condition' ':' Definable?
 	(expressions+=RosettaCalcExpression ';')+
 ;
 
-Operation: // TODO no name? annotations?
-	'assign-output' attribute = [Attribute|ValidID] ':' Definable?
+Operation:
+	'assign-output' attribute = [Attribute|ValidID] (path = Segment)? ':' Definable?
 	expression = RosettaCalcExpression
 ;
+
+Segment:
+	'->' attribute = [RosettaFeature|ValidID] (next = Segment)?;
 
 EnumValueReference returns RosettaEnumValueReference:
 	enumeration=[RosettaEnumeration|ValidID] '->' value=[RosettaEnumValue|ValidID]

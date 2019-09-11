@@ -105,7 +105,7 @@ class JavaNames {
 					toJavaQualifiedType(feature.type)
 			}
 		} else {
-			toJavaQualifiedType(feature.type)		
+			toJavaQualifiedType(feature.type)
 		}
 	}
 

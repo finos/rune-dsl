@@ -104,7 +104,7 @@ class RosettaToJavaExtensions {
 				if (returnVal !== null) {
 					if(callable.handleAsSpecFunction) {
 						return '''«toJava(ele.callable)».evaluate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»)'''
-					} else if(callable.operation !== null || callable.handleAsEnumFunction) {
+					} else if(!callable.operation.nullOrEmpty || callable.handleAsEnumFunction) {
 						return '''«toJava(ele.callable)».calculate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
 					} else {
 						return '''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
@@ -177,7 +177,7 @@ class RosettaToJavaExtensions {
 	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaConditionalExpression ele) {
-		'''«toJava(ele.^if)» ? «toJava(ele.ifthen)» : «toJava(ele.elsethen)»'''
+		'''«toJava(ele.^if)» ? «toJava(ele.ifthen)» : «IF ele.elsethen !== null»«toJava(ele.elsethen)»«ELSE»null«ENDIF»'''
 	}
 	
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaExistsExpression ele) {
