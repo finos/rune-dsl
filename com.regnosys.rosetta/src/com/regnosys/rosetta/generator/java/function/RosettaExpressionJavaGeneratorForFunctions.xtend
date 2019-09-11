@@ -48,11 +48,12 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 
 class RosettaExpressionJavaGeneratorForFunctions {
-	@Inject
-	RosettaTypeProvider typeProvider
-	val cardinalityProvider = new CardinalityProvider
+	
+	@Inject RosettaTypeProvider typeProvider
+	@Inject ConvertableCardinalityProvider cardinalityProvider
 	@Inject JavaNames.Factory factory 
 	@Inject RosettaFunctionExtensions func
 	
@@ -190,6 +191,9 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				'''«MapperS».of(«call.name»)'''
 			}
 			Attribute : {
+				'''«MapperS».of(«call.name»)'''
+			}
+			ShortcutDeclaration : {
 				'''«MapperS».of(«call.name»)'''
 			}
 			default: 
