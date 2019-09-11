@@ -5,19 +5,13 @@ import com.google.common.collect.ImmutableSet
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.calculation.RosettaFunctionDependencyProvider
-import com.regnosys.rosetta.generator.java.function.RosettaExpressionJavaGeneratorForFunctions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
 import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ValidationResult
 import com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleFailure
@@ -27,21 +21,18 @@ import com.rosetta.model.lib.validation.Validator
 import java.util.Arrays
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleValidationMethod.REQUIRED
-import java.util.stream.Collectors
-import com.google.common.collect.Streams
-import java.util.Objects
+import com.rosetta.model.lib.validation.ExistenceChecker
+import java.util.LinkedList
+import com.rosetta.model.lib.RosettaModelObjectBuilder
 
 class ChoiceRuleGenerator {
 	
 	@Inject extension RosettaExtensions
 	@Inject extension ImportManagerExtension
-	@Inject RosettaExpressionJavaGeneratorForFunctions exprGen
-	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
 
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaChoiceRule).forEach [
@@ -67,17 +58,15 @@ class ChoiceRuleGenerator {
 			
 			«classBody.toString»
 		'''
-		fsa.generateFile('''«names.packages.choiceRule.directoryName»/«choiceRuleClassName(cond.name)».java''', fileContent)
+		fsa.generateFile('''«names.packages.choiceRule.directoryName»/«choiceRuleClassName(cond.name?:'NoName')».java''', fileContent)
 	}
 
 	private def StringConcatenationClient toChoiceRuleJava(Condition rule, Data data, JavaNames names, String version) {
 		val clazz = data.name
 		val ruleName = rule.name
-		val className = choiceRuleClassName(rule.name)
-		val paramMap = new RosettaExpressionJavaGeneratorForFunctions.ParamMap(data,'object')
-		val funcDeps = functionDependencyProvider.functionDependencies(rule.expressions)
-		val usedAttributes = collectusedAttributeCalls(rule.expressions)
-		val validationType = if(rule.validationAnnotations.findFirst['requiredChoice' == attribute?.name]!==null)'REQUIRED' else 'OPTIONAL'
+		val className = choiceRuleClassName(rule.name?:'NoName')
+		val usedAttributes = if(rule.constraints.exists[isOneOf]) data.allAttributes else rule.constraints.map[attributes].flatten // TODO multi choice rules? 
+		val validationType = if(rule.constraints.exists[isOneOf || required]) 'REQUIRED' else 'OPTIONAL'
 		'''
 		«emptyJavadocWithVersion(version)»
 		@«com.rosetta.model.lib.annotations.RosettaChoiceRule»("«ruleName»")
@@ -85,19 +74,13 @@ class ChoiceRuleGenerator {
 			
 			private static final String NAME = "«ruleName»";
 			
-			«FOR dep: funcDeps»
-			@«Inject» «names.toJavaType(dep)» «dep.name.toFirstLower»;
-			«ENDFOR»
-			
 			@Override
 			public «ValidationResult»<«clazz»> validate(«RosettaPath» path, «clazz» object) {
 				«List»<String> choiceFieldNames = «importMethod(Arrays,"asList")»(«usedAttributes.join(', ')['"'+name+'"']»);
-				«FOR attr: usedAttributes»
-				«IF attr.card.isMany»«List»<«names.toJavaType(attr.type)»>«ELSE»«names.toJavaType(attr.type)»«ENDIF» «attr.name» = object.get«attr.name.toFirstUpper»()«IF !attr.metaAnnotations.empty».getValue()«ENDIF»;
+				List<String> populatedFieldNames = new «LinkedList»<>();
+				«FOR a : usedAttributes»
+					if («importMethod(ExistenceChecker,"isSet")»(object.get« a.name.toFirstUpper »())) populatedFieldNames.add("«a.name»");
 				«ENDFOR»
-				
-				List<Boolean> evalResult = «exprGen.javaCode(rule.expressions.last, paramMap, true)».get();
-				List<String> populatedFieldNames = «Streams».mapWithIndex(evalResult.stream(), (yes, idx) -> yes?choiceFieldNames.get((int)idx):null).filter(«Objects»::nonNull).collect(«Collectors».toList());
 				
 				«ChoiceRuleValidationMethod» validationMethod = ChoiceRuleValidationMethod.«validationType»;
 				
@@ -108,20 +91,13 @@ class ChoiceRuleGenerator {
 			}
 		
 			@Override
-			public ValidationResult<«clazz»> validate(RosettaPath path, «RosettaModelObjectBuilder» builder) {
-				
+			public «ValidationResult»<«clazz»> validate(«RosettaPath» path, «RosettaModelObjectBuilder» builder) {
 				«clazz».«clazz»Builder object = («clazz».«clazz»Builder) builder;
-				«List»<String> choiceFieldNames = asList(«usedAttributes.join(', ')['"'+name+'"']»);
-				«FOR attr: usedAttributes»
-				«IF attr.card.isMany»
-					«List»<«names.toJavaType(attr.type)»> «attr.name» = object.get«attr.name.toFirstUpper»().stream().map((b)-> b.build()«IF !attr.metaAnnotations.empty».getValue()«ENDIF»).collect(«Collectors».toList());
-				«ELSE»
-					«names.toJavaType(attr.type)» «attr.name» = object.get«attr.name.toFirstUpper»().build()«IF !attr.metaAnnotations.empty».getValue()«ENDIF»;
-				«ENDIF»
+				«List»<String> choiceFieldNames = «importMethod(Arrays,"asList")»(«usedAttributes.join(', ')['"'+name+'"']»);
+				List<String> populatedFieldNames = new «LinkedList»<>();
+				«FOR a : usedAttributes»
+					if (isSet(object.get« a.name.toFirstUpper »())) populatedFieldNames.add("«a.name»");
 				«ENDFOR»
-				
-				List<Boolean> evalResult = «exprGen.javaCode(rule.expressions.last, paramMap, true)».get();
-				List<String> populatedFieldNames = «Streams».mapWithIndex(evalResult.stream(), (yes, idx) -> yes?choiceFieldNames.get((int)idx):null).filter(«Objects»::nonNull).collect(«Collectors».toList());
 				
 				«ChoiceRuleValidationMethod» validationMethod = ChoiceRuleValidationMethod.«validationType»;
 				
@@ -134,15 +110,6 @@ class ChoiceRuleGenerator {
 	'''
 	}
 	
-	private def collectusedAttributeCalls(List<RosettaExpression> expressions) {
-		val attributes = <Attribute>newLinkedHashSet
-		expressions.forEach[exp|
-			EcoreUtil2.getAllContentsOfType(exp,RosettaCallableCall).map[callable].filter(Attribute).forEach[
-				attributes.add(it)
-			]
-		]
-		return attributes
-	}
 	
 	private def toChoiceRuleJava(RosettaChoiceRule rule, RosettaJavaPackages packages, String version) {
 		val choiceAttributeNames = ImmutableSet.builder.add(rule.thisOne).addAll(rule.thatOnes).build.map[name].toList

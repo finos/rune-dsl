@@ -67,9 +67,15 @@ class FunctionDispatch extends Function {
 	contains RosettaEnumValueReference value
 }
 
-
 class Condition extends Definable, Annotated, RosettaCallable, RosettaNamed {
+	contains Constraint[] constraints
 	contains RosettaExpression[] expressions
+}
+
+class Constraint {
+	boolean oneOf
+	boolean required
+	refers Attribute[] attributes
 }
 
 class Operation extends Definable {

@@ -29,6 +29,9 @@ import org.eclipse.xtext.ide.editor.syntaxcoloring.DefaultSemanticHighlightingCa
 import org.eclipse.xtext.ide.editor.syntaxcoloring.IHighlightedPositionAcceptor
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.util.CancelIndicator
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 
 class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculator implements RosettaHighlightingStyles {
 
@@ -36,7 +39,7 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 		CancelIndicator cancelIndicator) {
 		if (object instanceof RosettaFeature) {
 			switch (object.type) {
-				RosettaClass:
+				RosettaClass, Data:
 					highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_TYPED__TYPE, CLASS_ID)
 				RosettaEnumeration:
 					highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_TYPED__TYPE, ENUM_ID)
@@ -54,6 +57,9 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 		} else if (object instanceof RosettaClass) {
 			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_NAMED__NAME, CLASS_ID)
 			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_CLASS__SUPER_TYPE, CLASS_ID)
+		} else if (object instanceof Data) {
+			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_NAMED__NAME, CLASS_ID)
+			highlightFeature(acceptor, object, SimplePackage.Literals.DATA__SUPER_TYPE, CLASS_ID)
 		} else if (object instanceof RosettaEnumeration) {
 			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_NAMED__NAME, ENUM_ID)
 			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_ENUMERATION__SUPER_TYPE, ENUM_ID)
@@ -90,7 +96,10 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 		} else if (object instanceof RosettaExternalSynonymSource) {
 			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_NAMED__NAME, SOURCE_ID)
 			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_EXTERNAL_SYNONYM_SOURCE__SUPER_SYNONYM, SOURCE_ID)
-		}else {
+		} else if (object instanceof AnnotationRef) {
+			highlightFeature(acceptor, object, SimplePackage.Literals.ANNOTATION_REF__ANNOTATION, ANNO_ID)
+			highlightFeature(acceptor, object, SimplePackage.Literals.ANNOTATION_REF__ATTRIBUTE, ANNO_ATTR_ID)
+		} else {
 			switch(object) {
 				RosettaFeatureCall:
 					highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_FEATURE_CALL__FEATURE, DEFAULT_ID)

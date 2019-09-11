@@ -249,7 +249,7 @@ class ModelMetaGenerator {
 	}
 	
 	private def List<ClassRule> conditionRules(List<Condition> elements, (Condition)=>boolean filter) {
-		return elements.filter(filter).map[new ClassRule((it.eContainer as RosettaNamed).getName, it.name)].toList
+		return elements.filter(filter).map[new ClassRule((it.eContainer as RosettaNamed).getName, it.name?:"NoName")].toList
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data

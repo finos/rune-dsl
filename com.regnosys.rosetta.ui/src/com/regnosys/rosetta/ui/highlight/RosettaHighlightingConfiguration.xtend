@@ -23,6 +23,8 @@ class RosettaHighlightingConfiguration extends DefaultHighlightingConfiguration 
 		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.RULE_ID, "Rule", ruleTextStyle)
 		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.ALIASES_ID, "Aliases", aliasesTextStyle)
 		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.META_ID, "Meta", metaTextStyle)
+		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.ANNO_ID, "Annotation", annotationTextStyle)
+		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.ANNO_ATTR_ID, "AnnotationAttribute", annotationAttrTextStyle)
 	}
 
 	def TextStyle namedTextStyle() {
@@ -50,6 +52,16 @@ class RosettaHighlightingConfiguration extends DefaultHighlightingConfiguration 
 		defaultTextStyle.copy => [
 			style = SWT.BOLD
 			color = new RGB(14, 84, 38)
+		]
+	}
+	def TextStyle annotationTextStyle() {
+		basicTypeTextStyle.copy => [
+			style = SWT.NORMAL
+		]
+	}
+	def TextStyle annotationAttrTextStyle() {
+		annotationTextStyle.copy => [
+			color = new RGB(224, 94, 58)
 		]
 	}
 

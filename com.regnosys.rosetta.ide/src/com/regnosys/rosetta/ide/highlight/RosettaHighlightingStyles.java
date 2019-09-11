@@ -16,4 +16,6 @@ public interface RosettaHighlightingStyles extends HighlightingStyles {
 	final static String RULE_ID = "rule";
 	final static String ALIASES_ID = "aliases";
 	final static String META_ID = "meta";
+	final static String ANNO_ID = "anno";
+	final static String ANNO_ATTR_ID = "annoAttr";
 }

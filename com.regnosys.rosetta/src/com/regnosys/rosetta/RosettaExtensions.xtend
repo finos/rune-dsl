@@ -50,6 +50,10 @@ class RosettaExtensions {
 	def getAllAttributes(RosettaClass clazz) {
 		clazz.allSuperTypes.map[regularAttributes].flatten	
 	}
+
+	def getAllAttributes(Data clazz) {
+		clazz.allSuperTypes.map[attributes].flatten
+	}
 	
 	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {
 		doGetSuperEnumerations(e, newLinkedHashSet)
@@ -228,7 +232,7 @@ class RosettaExtensions {
 	}
 	
 	def boolean isChoiceRuleCondition(Condition cond) {
-		return !cond.validationAnnotations.empty
+		return !cond.constraints.nullOrEmpty
 	}
 	
 	def metaAnnotations(Annotated it) {
@@ -239,9 +243,6 @@ class RosettaExtensions {
 		!allAnnotations.filter[annotation?.name == "metadata" && attribute?.name == "reference"].empty
 	}
 	
-	def validationAnnotations(Annotated it) {
-		allAnnotations.filter[annotation?.name == "validation"]
-	}
 	
 	def private allAnnotations(Annotated withAnnotations) {
 		withAnnotations?.annotations?.filter[annotation !== null && !annotation.eIsProxy]
