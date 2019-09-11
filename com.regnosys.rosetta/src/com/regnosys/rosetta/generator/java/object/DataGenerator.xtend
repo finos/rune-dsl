@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
@@ -32,14 +31,9 @@ class DataGenerator {
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
 	
-	@Inject JavaNames.Factory factory
-
-	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, Data data, String version) {
-		fsa.generateFile(packages.model.directoryName + '/' + data.name + '.java',
-			generateRosettaClass(packages, data, version))
-			
-		fsa.generateFile(packages.model.directoryName + '/' + data.name + '.java',
-			generateRosettaClass(packages, data, version))
+	def generate(JavaNames javaNames, IFileSystemAccess2 fsa, Data data, String version) {
+		fsa.generateFile(javaNames.packages.model.directoryName + '/' + data.name + '.java',
+			generateRosettaClass(javaNames, data, version))
 	}
 
 	
@@ -51,10 +45,10 @@ class DataGenerator {
 		return hasSynonymPath(p.toRosettaExpandedSynonym)
 	}
 	
-	private def generateRosettaClass(RosettaJavaPackages packages, Data d, String version) {
-		val classBody = tracImports(d.classBody(factory.create(packages), version))
+	private def generateRosettaClass(JavaNames javaNames, Data d, String version) {
+		val classBody = tracImports(d.classBody(javaNames, version))
 		'''
-			package «packages.model.packageName»;
+			package «javaNames.packages.model.packageName»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;

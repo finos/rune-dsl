@@ -5,7 +5,8 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator.ParamMap
+import com.regnosys.rosetta.generator.java.function.RosettaExpressionJavaGeneratorForFunctions
+import com.regnosys.rosetta.generator.java.function.RosettaExpressionJavaGeneratorForFunctions.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
@@ -31,9 +32,8 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSIONS
 
 class DataRuleGenerator {
-	@Inject RosettaExpressionJavaGenerator expressionHandler
+	@Inject RosettaExpressionJavaGeneratorForFunctions expressionHandler
 	@Inject extension ImportManagerExtension
-	@Inject JavaNames.Factory factory
 	
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaDataRule).forEach [
@@ -41,10 +41,10 @@ class DataRuleGenerator {
 		]
 	}
 	
-	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, Condition ele, String version) {
-		val classBody = tracImports(ele.dataRuleClassBody(factory.create(packages), version))
+	def generate(JavaNames names, IFileSystemAccess2 fsa, Condition ele, String version) {
+		val classBody = tracImports(ele.dataRuleClassBody(names, version))
 		val content = '''
-			package «packages.dataRule.packageName»;
+			package «names.packages.dataRule.packageName»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -55,15 +55,12 @@ class DataRuleGenerator {
 			«ENDFOR»
 «««			TODO fix it in com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator.javaCode(RosettaExpression, ParamMap)
 			import org.isda.cdm.*;
-			import java.math.*;
-			import com.rosetta.model.lib.functions.*;
-			import com.rosetta.model.lib.records.Date;
 			//import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			«classBody.toString»
 		'''
-		fsa.generateFile('''«packages.dataRule.directoryName»/«dataRuleClassName(ele.name)».java''', content)
+		fsa.generateFile('''«names.packages.dataRule.directoryName»/«dataRuleClassName(ele.name)».java''', content)
 	}
 
 	def static String dataRuleClassName(String dataRuleName) {
@@ -202,11 +199,11 @@ class DataRuleGenerator {
 			}
 			
 			private ComparisonResult ruleIsApplicable(«rosettaClass.name» «rosettaClass.name.toFirstLower») {
-				return «expressionHandler.javaCode(rule.when, new ParamMap(rosettaClass))»;
+				return «expressionHandler.javaCode(rule.when, new RosettaExpressionJavaGenerator.ParamMap(rosettaClass))»;
 			}
 			
 			private ComparisonResult evaluateThenExpression(«rosettaClass.name» «rosettaClass.name.toFirstLower») {
-				return «expressionHandler.javaCode(rule.then, new ParamMap(rosettaClass))»;
+				return «expressionHandler.javaCode(rule.then, new RosettaExpressionJavaGenerator.ParamMap(rosettaClass))»;
 			}
 		}
 	'''

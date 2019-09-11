@@ -171,6 +171,9 @@ class RosettaCardinality {
 	derived boolean isMany get {
 		unbounded || sup > 1
 	}
+	derived boolean isOptional get{
+		inf == 0
+	}
 }
 
 class RosettaEnumStyle extends RosettaRootElement, RosettaNamed {

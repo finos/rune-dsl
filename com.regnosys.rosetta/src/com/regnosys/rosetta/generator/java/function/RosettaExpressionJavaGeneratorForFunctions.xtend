@@ -29,6 +29,8 @@ import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -51,11 +53,12 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import com.rosetta.model.lib.validation.ComparisonResult
 
 class RosettaExpressionJavaGeneratorForFunctions {
-	@Inject
-	RosettaTypeProvider typeProvider
-	val cardinalityProvider = new CardinalityProvider
+	
+	@Inject RosettaTypeProvider typeProvider
+	@Inject CardinalityProvider cardinalityProvider
 	@Inject JavaNames.Factory factory 
 	@Inject RosettaFunctionExtensions func
+	@Inject extension RosettaExtensions
 	
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		expr.javaCode(params, true);
@@ -103,11 +106,16 @@ class RosettaExpressionJavaGeneratorForFunctions {
 						null
 				}
 				if (many !== null)
-					if (!many) {
-						'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»))'''
+					if (callable instanceof Function) {
+						val callParams = callable.inputs.indexed.map[it.value -> if(it.key < expr.args.size) expr.args.get(it.key) else null]
+						'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR paramToArg : callParams SEPARATOR ', '»«paramToArg.value?.javaCode(params)?:'null'»«IF paramToArg.value !== null»«IF (cardinalityProvider.isMulti(paramToArg.value) || (paramToArg.key.card.isMany && !cardinalityProvider.isMulti(paramToArg.value)))».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDFOR»))'''
 					} else {
-						throw new IllegalArgumentException(
-							'Calling Functions with multiple cardinality return types not yet supported')
+						if (!many) {
+							'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»))'''
+						} else {
+							throw new IllegalArgumentException(
+								'Calling Functions with multiple cardinality return types not yet supported')
+						}
 					}
 			}
 			RosettaBigDecimalLiteral : {
@@ -130,6 +138,9 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			}
 			RosettaContainsExpression : {
 				'''contains(«expr.container.javaCode(params)», «expr.contained.javaCode(params)»)'''
+			}
+			RosettaParenthesisCalcExpression : {
+				expr.expression.javaCode(params, isLast)
 			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr.class.simpleName)
@@ -181,6 +192,9 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			RosettaClass : {
 				'''«MapperS».of(«params.getClass(call)»)'''
 			}
+			com.regnosys.rosetta.rosetta.simple.Data : {
+				'''«MapperS».of(«params.getClass(call)»)'''
+			}
 			RosettaArgumentFeature : {
 				'''args.get("«call.name»")'''
 			}
@@ -203,7 +217,13 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	 */
 	def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params, boolean isLast, boolean autoValue) {
 		val feature = call.feature
-		val StringConcatenationClient right = if (feature instanceof RosettaRegularAttribute) feature.buildMapFunc(isLast, autoValue) else throw new UnsupportedOperationException("Unsupported expression type of "+feature.class.simpleName)
+		val StringConcatenationClient right = 
+			if (feature instanceof RosettaRegularAttribute)
+				feature.buildMapFunc(isLast, autoValue)
+			else if (feature instanceof Attribute)
+				feature.buildMapFunc(isLast, autoValue)
+			else
+				throw new UnsupportedOperationException("Unsupported expression type of "+feature.class.simpleName)
 		'''«javaCode(call.receiver, params, false)»«right»'''
 	}
 	
@@ -379,6 +399,36 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				'''.map(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
 		}
 	}
+	/**
+	 * Builds the expression of mapping functions to extract a path of attributes
+	 */
+	def StringConcatenationClient buildMapFunc(Attribute attribute, boolean isLast, boolean autoValue) {
+		val mapFunc = attribute.buildMapFuncAttribute
+		if (attribute.card.isIsMany) {
+			if (attribute.metaAnnotations.nullOrEmpty)
+				'''.<«attribute.type.name.toJavaType»>mapC(«mapFunc»)'''
+			else if (!autoValue) {
+				'''.<«attribute.metaClass»>mapC(«mapFunc»)'''
+			}
+			else {
+				'''.mapC(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
+			}
+		}
+		else
+		{
+			if (attribute.metaAnnotations.nullOrEmpty){
+				if(attribute.type instanceof RosettaClass) 
+				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
+				else
+				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
+			}
+			else if (!autoValue) {
+				'''.<«attribute.metaClass»>map(«mapFunc»)'''
+			}
+			else
+				'''.map(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", FieldWithMeta::getValue)'''
+		}
+	}
 	
 	def JavaType toJavaType(RosettaType rosType) {
 		val model = EcoreUtil2.getContainerOfType(rosType, RosettaModel)
@@ -390,6 +440,10 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	
 	def static metaClass(RosettaRegularAttribute attribute) {
 		if (attribute.metaTypes.exists[m|m.name=="reference"]) "ReferenceWithMeta"+attribute.type.name.toJavaType.toFirstUpper
+		else "FieldWithMeta"+attribute.type.name.toJavaType.toFirstUpper
+	}
+	def static metaClass(Attribute attribute) {
+		if (attribute.annotations.exists[a|a.annotation?.name=="metadata" && a.attribute?.name=="reference"]) "ReferenceWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 		else "FieldWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 	}
 	
@@ -416,6 +470,9 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	private def static String buildMapFuncAttribute(RosettaRegularAttribute attribute)
 		'''"get«attribute.name.toFirstUpper»", «(attribute.eContainer as RosettaClass).name»::get«attribute.name.toFirstUpper»'''
 
+	private def static String buildMapFuncAttribute(Attribute attribute)
+		'''"get«attribute.name.toFirstUpper»", «(attribute.eContainer as RosettaNamed).name»::get«attribute.name.toFirstUpper»'''
+
 	/**
 	 * The id for a parameter - either a Class name or a positional index
 	 */
@@ -439,7 +496,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		new(){
 		}
 		
-		def getClass(RosettaClass c) {
+		def getClass(RosettaType c) {
 			return get(new ParamID(c, -1, null));
 		}
 	}

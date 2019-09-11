@@ -19,6 +19,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
+import com.regnosys.rosetta.generator.java.util.JavaNames
 
 class FunctionGenerator implements RosettaInternalGenerator {
 
@@ -44,8 +45,8 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	}
 	
 
-	def void generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, Function func, String version) {
-		val names = factory.create(packages)
+	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
+		val names = factory.create(javaNames.packages)
 		val fileName = names.packages.functions.directoryName + '/' + func.name + '.java'
 			
 		try {
