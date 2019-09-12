@@ -102,7 +102,7 @@ Operation:
 ;
 
 Segment:
-	'->' attribute = [RosettaFeature|ValidID] (next = Segment)?;
+	'->' attribute = [RosettaFeature|ValidID] ('['index = INT']')?(next = Segment)?;
 
 EnumValueReference returns RosettaEnumValueReference:
 	enumeration=[RosettaEnumeration|ValidID] '->' value=[RosettaEnumValue|ValidID]
@@ -125,6 +125,7 @@ RosettaRootElement:
 	RosettaBlueprintReport
 ;
 
+@Deprecated
 RosettaFunction:
 	'spec' RosettaNamed RosettaDefinable ':'
 		('inputs:' (inputs += RosettaFunctionInput)+)*
@@ -203,6 +204,8 @@ RosettaParameter:
 	RosettaNamed RosettaTyped isArray?='[]'?
 ;
 
+/** only library function allowed */
+@Deprecated
 RosettaExternalFunction:
 	library?='library'? 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable (('{'
 		features+=RosettaFunctionFeature*
@@ -687,6 +690,7 @@ RosettaArgumentFeature:
 	RosettaNamed RosettaTyped? RosettaDefinable ':' 'is'? expression=RosettaCalcExpression
 ;
 
+@Deprecated
 RosettaCalculation:
 	'calculation' name=QualifiedName RosettaDefinable '{'
 		features+=RosettaCalculationFeature*
