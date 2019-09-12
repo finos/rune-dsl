@@ -494,8 +494,8 @@ class CalculationGenerator {
 	}
 	
 	def private StringConcatenationClient createInputClass(extension JavaNames it, String calculationName, Function function, Iterable<RosettaCallableWithArgs> funcDeps) {
-		val inputs = getInputs(function)
-		val functionParameters = inputs.map[new Parameter(it.type.toJavaType.simpleName, name.toFirstLower)] + funcDeps.asParameters
+		val inputs = getInputs(function).map[new Parameter('''«IF it.many»List<«it.type.toJavaType.simpleName»>«ELSE»«it.type.toJavaType.simpleName»«ENDIF»''', name.toFirstLower)]
+		val functionParameters = inputs + funcDeps.asParameters
 
 		'''
 			public static class CalculationInput implements «ICalculationInput» {
@@ -506,7 +506,7 @@ class CalculationGenerator {
 					private final «List»<«ICalculationResult»> calculationResults = new «ArrayList»<>();
 				«ENDIF»
 				«FOR feature : inputs»
-					private «feature.type.toJavaType» «feature.getName»;
+					private «feature.type» «feature.name»;
 				«ENDFOR»
 				«FOR feature : function.shortcuts»
 					private «shortcutJavaType(feature)» «feature.getName»;
@@ -533,7 +533,7 @@ class CalculationGenerator {
 				}
 				
 				«FOR feature :  inputs»
-					public «feature.type.toJavaType» get«feature.name.toFirstUpper»() {
+					public «feature.type» get«feature.name.toFirstUpper»() {
 						return «feature.name»;
 					}
 
