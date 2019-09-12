@@ -22,6 +22,8 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import java.util.List
 
 class JavaNames {
 
@@ -106,7 +108,13 @@ class JavaNames {
 		}
 	}
 
-
+	def StringConcatenationClient toJavaQualifiedType(Attribute attribute) {
+		if (attribute.card.isIsMany) {
+			'''«List»<«attribute.type.toJavaQualifiedType()»>'''
+		}
+		else
+		'''«attribute.type.toJavaQualifiedType()»'''
+	}
 	def QualifiedName toTargetClassName(RosettaCalculation ele) {
 		return QualifiedName.create(ele.name.split('\\.'))
 	}
