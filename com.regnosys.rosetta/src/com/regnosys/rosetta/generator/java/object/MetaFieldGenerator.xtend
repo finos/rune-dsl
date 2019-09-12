@@ -59,8 +59,8 @@ class MetaFieldGenerator {
 		val externalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
 		externalKeyType.setName("externalKey")
 		externalKeyType.type = stringType;
-		// Do not generated getters and setters for reference and id - this functionality is covered by externalReference and externalKey 
-		val filteredTypes = new ArrayList(utypes.filter[!it.name.equals("reference") && !it.name.equals("id")].toList);
+		// Do not generated getters and setters for reference - this functionality is covered by externalReference
+		val filteredTypes = new ArrayList(utypes.filter[!it.name.equals("reference")].toList);
 		filteredTypes.add(rosettaKeyType)
 		filteredTypes.add(externalKeyType)
 		

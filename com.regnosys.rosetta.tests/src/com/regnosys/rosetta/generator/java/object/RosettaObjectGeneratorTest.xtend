@@ -427,8 +427,8 @@ class RosettaObjectGeneratorTest {
 		assertThat(metaFieldsCode.contains("setScheme("), is(true))
 		assertThat(metaFieldsCode.contains("getReference()"), is(false))
 		assertThat(metaFieldsCode.contains("setReference("), is(false))
-		assertThat(metaFieldsCode.contains("getId()"), is(false))
-		assertThat(metaFieldsCode.contains("setId("), is(false))
+		assertThat(metaFieldsCode.contains("getId()"), is(true))
+		assertThat(metaFieldsCode.contains("setId("), is(true))
 	}
 
 	@Test
