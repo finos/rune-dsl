@@ -7,6 +7,7 @@ import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.calculation.RosettaFunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
+import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaDefinable
@@ -19,7 +20,6 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
-import com.regnosys.rosetta.generator.java.util.JavaNames
 
 class FunctionGenerator implements RosettaInternalGenerator {
 
@@ -46,8 +46,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
-		val names = factory.create(javaNames.packages)
-		val fileName = names.packages.functions.directoryName + '/' + func.name + '.java'
+		val fileName = javaNames.packages.functions.directoryName + '/' + func.name + '.java'
 			
 		try {
 			val concatenator = new ImportingStringConcatination()
@@ -55,9 +54,9 @@ class FunctionGenerator implements RosettaInternalGenerator {
 				functionDependencyProvider.functionDependencies(it)
 			].toSet.sortBy[it.name]
 
-			concatenator.append(functionClass(func, dependencies, names))
+			concatenator.append(functionClass(func, dependencies, javaNames))
 			val content = '''
-				package «names.packages.functions.packageName»;
+				package «javaNames.packages.functions.packageName»;
 				
 				«FOR _import : concatenator.imports»
 					import «_import»;
@@ -110,7 +109,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		'''
 	}
 	
-	private def StringConcatenationClient functionClass(Function function,  Iterable<? extends RosettaCallableWithArgs> dependencies, JavaQualifiedTypeProvider javaNames) {
+	private def StringConcatenationClient functionClass(Function function,  Iterable<? extends RosettaCallableWithArgs> dependencies, JavaNames javaNames) {
 		'''
 			«function.contributeJavaDoc»
 			@«ImplementedBy»(«function.name»Impl.class)
@@ -159,7 +158,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		protected abstract «output.toJavaQualifiedType(false)» doEvaluate(«function.inputsAsParameters(names)»);
 	'''
 	
-	def dispatch StringConcatenationClient contributeEnrichMethod(extension Function function, extension JavaQualifiedTypeProvider names) '''
+	def dispatch StringConcatenationClient contributeEnrichMethod(extension Function function, extension JavaNames names) '''
 			
 		protected abstract «function.outputTypeOrVoid(names)» doEvaluate(«function.inputsAsParameters(names)»);
 	'''
@@ -186,7 +185,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		}
 	'''
 	
-	def StringConcatenationClient contributeEvaluateMethod(Function function, extension JavaQualifiedTypeProvider names) '''
+	def StringConcatenationClient contributeEvaluateMethod(Function function, extension JavaNames names) '''
 			
 		/**
 		 «FOR input : getInputs(function)»
@@ -206,7 +205,7 @@ class FunctionGenerator implements RosettaInternalGenerator {
 			«ENDIF»
 			// Delegate to implementation
 			//
-			«IF getOutput(function) !== null»«getOutput(function).toJavaQualifiedType(false)» «getOutput(function).name» = «ENDIF»doEvaluate(«function.inputsAsArguments(names)»);
+			«IF getOutput(function) !== null»«getOutput(function).toJavaQualifiedType()» «getOutput(function).name» = «ENDIF»doEvaluate(«function.inputsAsArguments(names)»);
 			«IF !function.postConditions.empty»
 			// post-conditions
 			//
@@ -220,23 +219,23 @@ class FunctionGenerator implements RosettaInternalGenerator {
 		}
 	'''
 	
-	def outputTypeOrVoid(Function function,  extension JavaQualifiedTypeProvider names) {
+	def outputTypeOrVoid(Function function,  extension JavaNames names) {
 		val out = getOutput(function)
 		if (out === null) {
 			'void'
 		} else {
-			out.toJavaQualifiedType(false)
+			out.toJavaQualifiedType()
 		}
 	}
 	
-	private def StringConcatenationClient contributeFieldDependencies(extension JavaQualifiedTypeProvider provider, Iterable<? extends RosettaCallableWithArgs> dependencies) {
+	private def StringConcatenationClient contributeFieldDependencies(extension JavaNames javaNames, Iterable<? extends RosettaCallableWithArgs> dependencies) {
 		if (!dependencies.empty) {
 			'''
 			
 			// RosettaFunction dependencies
 			//
 			«FOR dep : dependencies»
-			@«Inject» protected «dep.name» «dep.name.toFirstLower»;
+			@«Inject» protected «dep.toJavaQualifiedType» «dep.name.toFirstLower»;
 			«ENDFOR»
 			'''
 		}
@@ -327,14 +326,14 @@ class FunctionGenerator implements RosettaInternalGenerator {
 	private def StringConcatenationClient inputsAsParameters(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
 		'''«FOR input : inputs SEPARATOR ', '»«input.toJavaQualifiedType(false)» «input.name»«ENDFOR»'''
 	}
-	private def StringConcatenationClient inputsAsParameters(extension Function function, extension JavaQualifiedTypeProvider names) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.toJavaQualifiedType(false)» «input.name»«ENDFOR»'''
+	private def StringConcatenationClient inputsAsParameters(extension Function function, extension JavaNames names) {
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.toJavaQualifiedType()» «input.name»«ENDFOR»'''
 	}
 	
 	private dispatch def StringConcatenationClient inputsAsArguments(extension RosettaFunction function, extension JavaQualifiedTypeProvider names) {
 		'''«FOR input : inputs SEPARATOR ', '»«input.name»«ENDFOR»'''
 	}
-	private dispatch def StringConcatenationClient inputsAsArguments(extension Function function, extension JavaQualifiedTypeProvider names) {
+	private dispatch def StringConcatenationClient inputsAsArguments(extension Function function, extension JavaNames names) {
 		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.name»«ENDFOR»'''
 	}
 

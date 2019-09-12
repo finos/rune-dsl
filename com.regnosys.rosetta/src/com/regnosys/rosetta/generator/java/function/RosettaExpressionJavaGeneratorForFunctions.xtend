@@ -52,6 +52,8 @@ import static extension com.regnosys.rosetta.generator.java.util.JavaClassTransl
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
 import com.rosetta.model.lib.validation.ComparisonResult
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
+import com.regnosys.rosetta.generator.java.function.RosettaExpressionJavaGeneratorForFunctions.ParamMap
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	
@@ -97,27 +99,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				callableCall(expr, params) 
 			}
 			RosettaCallableWithArgsCall: {
-				val callable = expr.callable
-				val many = switch (callable) {
-					Function:
-						func.getOutput(callable).card.isMany
-					RosettaFunction:
-						callable.output.card.isMany
-					default:
-						null
-				}
-				if (many !== null)
-					if (callable instanceof Function) {
-						val callParams = callable.inputs.indexed.map[it.value -> if(it.key < expr.args.size) expr.args.get(it.key) else null]
-						'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR paramToArg : callParams SEPARATOR ', '»«paramToArg.value?.javaCode(params)?:'null'»«IF paramToArg.value !== null»«IF (cardinalityProvider.isMulti(paramToArg.value) || (paramToArg.key.card.isMany && !cardinalityProvider.isMulti(paramToArg.value)))».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDFOR»))'''
-					} else {
-						if (!many) {
-							'''«MapperS».of(«callable.name.toFirstLower».evaluate(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»))'''
-						} else {
-							throw new IllegalArgumentException(
-								'Calling Functions with multiple cardinality return types not yet supported')
-						}
-					}
+				callableWithArgs(expr, params)
 			}
 			RosettaBigDecimalLiteral : {
 				'''«MapperS».of(«BigDecimal».valueOf(«expr.value»))'''
@@ -143,9 +125,33 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			RosettaParenthesisCalcExpression : {
 				expr.expression.javaCode(params, isLast)
 			}
+			EmptyLiteral : {
+				'''null'''
+			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr.class.simpleName)
 		}
+	}
+	
+	def StringConcatenationClient callableWithArgs(RosettaCallableWithArgsCall expr, ParamMap params) {
+		val callable = expr.callable
+		
+		val many = switch (callable) {
+			Function:
+				func.getOutput(callable).card.isMany
+			RosettaFunction:
+				callable.output.card.isMany
+			default:
+				null
+		}
+		if (many !== null)
+			if (!many) {
+				val evaluate = if(callable instanceof Function && (callable as Function).operations.nullOrEmpty) 'evaluate' else 'calculate'
+				'''«MapperS».of(«callable.name.toFirstLower».«evaluate»(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF !(arg instanceof EmptyLiteral)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDFOR»))'''
+			} else {
+				throw new IllegalArgumentException(
+					'Calling Functions with multiple cardinality return types not yet supported')
+			}
 	}
 	
 	def StringConcatenationClient existsExpr(RosettaExistsExpression exists, RosettaExpression argument, ParamMap params) {

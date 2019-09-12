@@ -62,7 +62,7 @@ Function:
 	
 	(shortcuts     += ShortcutDeclaration)*
 	conditions     += Condition*
-	operation      += Operation*
+	operations     += Operation*
 	postConditions += PostCondition*
 ;
 

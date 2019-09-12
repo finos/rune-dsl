@@ -47,6 +47,7 @@ import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 
 class RosettaTypeProvider {
 
@@ -171,6 +172,8 @@ class RosettaTypeProvider {
 				RBuiltinType.INT
 			RosettaBigDecimalLiteral:
 				RBuiltinType.NUMBER
+			EmptyLiteral:
+				RBuiltinType.ANY
 			RosettaCalculation,
 			RosettaExternalFunction: {
 				if (expression.features.size === 1 && expression.features.head.name === null) {

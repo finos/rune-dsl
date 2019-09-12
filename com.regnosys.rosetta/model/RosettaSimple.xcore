@@ -63,7 +63,7 @@ class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
 	contains Attribute output
 	contains ShortcutDeclaration[] shortcuts
 	contains Condition[] conditions
-	contains Operation[] operation opposite function
+	contains Operation[] operations opposite function
 	contains Condition[] postConditions
 }
 
@@ -87,7 +87,7 @@ enum Necessity {
 	optional, required
 }
 class Operation extends Definable {
-	container Function function opposite operation
+	container Function function opposite operations
 	refers Attribute attribute
 	contains Segment path
 	contains RosettaExpression expression

@@ -26,6 +26,7 @@ import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
+import com.regnosys.rosetta.rosetta.simple.Function
 
 class JavaQualifiedTypeProvider {
 
@@ -35,10 +36,10 @@ class JavaQualifiedTypeProvider {
 	@Inject RosettaTypeProvider typeProvider
 
 	def StringConcatenationClient toJavaQualifiedType(RosettaCallableWithArgs ele) {
-		if (ele instanceof RosettaType) {
-			toJavaQualifiedType(ele as RosettaType)
-		} else {
-			'''«ele.name»'''
+		switch (ele) {
+			RosettaType: toJavaQualifiedType(ele as RosettaType)
+			Function: '''«JavaType.create(packages.functions.packageName + '.' + ele.name)»'''
+			default: '''«ele.name»'''
 		}
 	}
 
@@ -96,7 +97,7 @@ class JavaQualifiedTypeProvider {
 					toJavaQualifiedType(feature.type)
 			}
 		} else {
-			toJavaQualifiedType(feature.type)		
+			toJavaQualifiedType(feature.type)
 		}
 	}
 
