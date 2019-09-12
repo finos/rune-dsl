@@ -406,6 +406,32 @@ class RosettaObjectGeneratorTest {
 	}
 
 	@Test
+	def void shouldGenerateMetaFieldsWithoutReferenceAndId() {
+		val code = '''
+			metaType reference string
+			metaType id string
+			metaType scheme string
+			
+			class Foo key {
+				bar string (1..1);
+			}
+			
+			class AttributeRosettaKeyTest {
+				withRosettaKey Foo (1..1) reference;
+			}
+		'''.generateCode
+		
+		val metaFieldsCode = code.get('com.rosetta.test.model.metafields.MetaFields')
+		println(metaFieldsCode)
+		assertThat(metaFieldsCode.contains("getScheme()"), is(true))
+		assertThat(metaFieldsCode.contains("setScheme("), is(true))
+		assertThat(metaFieldsCode.contains("getReference()"), is(false))
+		assertThat(metaFieldsCode.contains("setReference("), is(false))
+		assertThat(metaFieldsCode.contains("getId()"), is(false))
+		assertThat(metaFieldsCode.contains("setId("), is(false))
+	}
+
+	@Test
 	@Disabled
 	def void testGenerateClassList() {
 		val code = '''
