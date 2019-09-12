@@ -183,7 +183,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 
 	private def checkType(RType expectedType, EObject object, EObject owner, EReference ref, int index) {
 		val actualType = object.RType
-		if (actualType === null) {
+		if (actualType === null || actualType == RBuiltinType.ANY) {
 			return
 		}
 		if (actualType instanceof RErrorType)
@@ -193,8 +193,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				TYPE_ERROR)
 		else if (expectedType instanceof RErrorType)
 			error('''«expectedType.name»''', owner, ref, index, TYPE_ERROR)
-		else if (expectedType !== null && !actualType.isUseableAs(expectedType) &&
-			(expectedType != RBuiltinType.MISSING))
+		else if (expectedType !== null && !actualType.isUseableAs(expectedType) && expectedType != RBuiltinType.MISSING)
 			error('''Expected type '«expectedType.name»' but was '«actualType?.name ?: 'null'»'«»''', owner, ref, index,
 				TYPE_ERROR)
 	}
@@ -471,17 +470,16 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			Function: callable.inputs.size
 			default: 0
 		}
-		val minCallableSize =  switch callable {
-			Function: callableSize - callable.inputs.reverseView.takeWhile[it.card.isIsOptional].size
-			default: callableSize
-		}
 		if (callerSize !== callableSize) {
-			if(callableSize === minCallableSize || callerSize > callableSize) {
-				error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
-					ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
-			} else if(callerSize < minCallableSize) {
-				error('''Invalid number of arguments. Expecting at least «minCallableSize» but passed «callerSize».''', element,
-					ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
+			error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
+				ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
+		} else {
+			if(callable instanceof Function) {
+				element.args.indexed.forEach[indexed|
+					val callerArg = indexed.value
+					val param = callable.inputs.get(indexed.key)
+					checkType(param.type.RType, callerArg, element, ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, indexed.key)
+				]
 			}
 		}
 	}
