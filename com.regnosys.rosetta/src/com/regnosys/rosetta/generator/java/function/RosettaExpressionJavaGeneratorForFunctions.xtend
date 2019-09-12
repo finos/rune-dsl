@@ -51,11 +51,12 @@ import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
 import com.rosetta.model.lib.validation.ComparisonResult
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	
 	@Inject RosettaTypeProvider typeProvider
-	@Inject CardinalityProvider cardinalityProvider
+	@Inject ConvertableCardinalityProvider cardinalityProvider
 	@Inject JavaNames.Factory factory 
 	@Inject RosettaFunctionExtensions func
 	@Inject extension RosettaExtensions
@@ -205,6 +206,9 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				'''«MapperS».of(«call.name»)'''
 			}
 			Attribute : {
+				'''«MapperS».of(«call.name»)'''
+			}
+			ShortcutDeclaration : {
 				'''«MapperS».of(«call.name»)'''
 			}
 			default: 
