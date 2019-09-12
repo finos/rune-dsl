@@ -62,7 +62,7 @@ Function:
 	
 	(shortcuts     += ShortcutDeclaration)*
 	conditions     += Condition*
-	operation      += Operation*
+	operations     += Operation*
 	postConditions += PostCondition*
 ;
 
@@ -108,6 +108,9 @@ EnumValueReference returns RosettaEnumValueReference:
 	enumeration=[RosettaEnumeration|ValidID] '->' value=[RosettaEnumValue|ValidID]
 ;
 
+EmptyLiteral:
+	{EmptyLiteral} 'empty'
+;
 
 // old stuff
 RosettaRootElement:
@@ -513,6 +516,7 @@ RosettaLiteral:
 	| RosettaStringLiteral
 	| RosettaBigDecimalLiteral
 	| RosettaIntLiteral
+	| EmptyLiteral
 ;
 
 RosettaBooleanLiteral:
@@ -742,16 +746,19 @@ RosettaCalcMultiplicative returns RosettaExpression:
 
 RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
-	({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID])*
+	({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID] toOne ?= 'only-element'?)*
 ;
 
 RosettaCalcPrimary returns RosettaExpression:
-	{RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|ValidID] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')'	
+	{RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|ValidID] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' toOne ?= 'only-element'?
+	| {RosettaCallableCall} callable=[ConvertableCardinality|ValidID] toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
 	| RosettaCallableCall
 	| RosettaEnumValueReference
 	| RosettaLiteral
 	| RosettaParenthesisCalcExpression
 ;
+
+
 RosettaParenthesisCalcExpression:
 	'(' expression = RosettaCalcExpression ')'
 ;

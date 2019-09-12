@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.util
 import com.google.inject.Inject
 import com.google.inject.Injector
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaCalculation
 import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
@@ -23,6 +22,8 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import java.util.List
 
 class JavaNames {
 
@@ -30,14 +31,12 @@ class JavaNames {
 	RosettaJavaPackages packages
 
 	@Inject RosettaTypeProvider typeProvider
-	@Inject extension RosettaFunctionExtensions
 
 	def StringConcatenationClient toJavaQualifiedType(RosettaCallableWithArgs ele) {
 		switch (ele) {
 			RosettaType:
 				toJavaQualifiedType(ele as RosettaType)
-			Function case ele.
-				handleAsSpecFunction: '''«JavaType.create(packages.functions.packageName + "." + ele.name.toFirstUpper)»'''
+			Function: '''«ele.toJavaType()»'''
 			default: '''«ele.name»'''
 		}
 	}
@@ -64,7 +63,7 @@ class JavaNames {
 	
 	def JavaType toJavaType(RosettaCallableWithArgs func) {
 		switch (func) {
-			Function case func.operation !== null:
+			Function case !func.operations.nullOrEmpty:
 				JavaType.create(packages.calculation.packageName+'.'+ func.name)
 			Function:
 				JavaType.create(packages.functions.packageName+'.'+ func.name)
@@ -109,7 +108,13 @@ class JavaNames {
 		}
 	}
 
-
+	def StringConcatenationClient toJavaQualifiedType(Attribute attribute) {
+		if (attribute.card.isIsMany) {
+			'''«List»<«attribute.type.toJavaQualifiedType()»>'''
+		}
+		else
+		'''«attribute.type.toJavaQualifiedType()»'''
+	}
 	def QualifiedName toTargetClassName(RosettaCalculation ele) {
 		return QualifiedName.create(ele.name.split('\\.'))
 	}

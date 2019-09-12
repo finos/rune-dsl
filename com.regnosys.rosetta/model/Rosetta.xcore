@@ -289,6 +289,7 @@ abstract class RosettaExpression {
 }
 
 class RosettaCallableCall extends RosettaExpression {
+	boolean toOne
 	refers RosettaCallable callable
 }
 
@@ -544,6 +545,7 @@ class RosettaGroupByExpression {
 }
 
 class RosettaFeatureCall extends RosettaExpression {
+	boolean toOne
 	contains RosettaExpression receiver
 	refers RosettaFeature feature
 }
@@ -578,6 +580,7 @@ class RosettaCalculationFeature extends RosettaFeature {
 }
 
 class RosettaCallableWithArgsCall extends RosettaExpression {
+	boolean toOne
 	refers RosettaCallableWithArgs callable
 	contains RosettaExpression[] args
 }

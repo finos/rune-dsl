@@ -198,7 +198,7 @@ class CalculationGenerator {
 		if(inputs.nullOrEmpty)
 			return null
 			
-		val funcDeps = Util.distinctBy(function.shortcuts.map[functionDependencies()].flatten + function.operation.map[functionDependencies()].flatten,[name])
+		val funcDeps = Util.distinctBy(function.shortcuts.map[functionDependencies()].flatten + function.operations.map[functionDependencies()].flatten,[name])
 		val inputArguments = inputs.map[name.toFirstLower].toList + funcDeps.asArguments
 
 		'''
@@ -209,7 +209,7 @@ class CalculationGenerator {
 					CalculationInput input = new CalculationInput().create(«inputArguments.join(', ')»);
 «««					// TODO: code generate local variables for fields inside CalculationInput s.t. assignments below can access them as local variables
 					CalculationResult result = new CalculationResult(input);
-					«FOR indexed : function.operation.indexed»
+					«FOR indexed : function.operations.indexed»
 					«val operation = indexed.value»
 					«IF operation.path === null»
 					result.«operation.attribute.name» = «if(operation !== null) assignment(operation) else null»;
@@ -218,7 +218,7 @@ class CalculationGenerator {
 					if(result.«operation.attribute.name» == null) result.«operation.attribute.name» = «operation.attribute.toJavaQualifiedType».builder().build();
 					«operation.attribute.toJavaQualifiedType».«operation.attribute.toJavaQualifiedType»Builder __builder = result.«operation.attribute.name».toBuilder();
 					«ENDIF»
-					__builder«FOR seg : operation.path.asSegmentList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»()«ELSE».«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«assignment(operation)»)«ENDIF»«ENDFOR»;
+					__builder«FOR seg : operation.path.asSegmentList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»0«ENDIF»)«ELSE».«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«assignment(operation)»)«ENDIF»«ENDFOR»;
 					result.«operation.attribute.name» = __builder.build();
 					«ENDIF»
 					«ENDFOR»
@@ -528,7 +528,7 @@ class CalculationGenerator {
 
 				@Override
 				public «List»<«Formula»> getFormulas() {
-					return «Arrays».asList(«FOR feature : function.operation SEPARATOR ','»
+					return «Arrays».asList(«FOR feature : function.operations SEPARATOR ','»
 						new «Formula»("«calculationName.escape»", "«RosettaGrammarUtil.extractNodeText(feature, OPERATION__EXPRESSION).escape»", this)«ENDFOR»);
 				}
 				

@@ -19,7 +19,7 @@ class CardinalityProvider {
 			RosettaCallableCall: obj.callable.isMulti
 			RosettaCallableWithArgsCall: obj.callable.isMulti
 			RosettaFunction: obj.output.card.isIsMany
-			Function: obj.output?.isMulti
+			Function: if(obj.output === null) false else obj.output.isMulti
 			Attribute: obj.card.isMany
 			default: {println(obj.eClass) false}
 		}
