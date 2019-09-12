@@ -146,7 +146,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		}
 		if (many !== null)
 			if (!many) {
-				val evaluate = if(callable instanceof Function && (callable as Function).operations.nullOrEmpty) 'evaluate' else 'calculate'
+				val evaluate = if(callable instanceof Function && !(callable as Function).operations.nullOrEmpty) 'calculate' else 'evaluate'
 				'''«MapperS».of(«callable.name.toFirstLower».«evaluate»(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF !(arg instanceof EmptyLiteral)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDFOR»))'''
 			} else {
 				throw new IllegalArgumentException(
