@@ -26,7 +26,6 @@ import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.types.RBuiltinType
 
 class JavaQualifiedTypeProvider {
 
@@ -78,9 +77,6 @@ class JavaQualifiedTypeProvider {
 	
 	def StringConcatenationClient toJavaQualifiedType(Attribute attribute, boolean asBuilder) {
 		if (attribute.card.isIsMany) {
-			if(attribute.type instanceof RosettaBasicType && RBuiltinType.ANY.name ==  attribute.type.name)
-			'''«List»<? extends «attribute.type.toJavaQualifiedType(asBuilder)»>'''
-			else
 			'''«List»<«attribute.type.toJavaQualifiedType(asBuilder)»>'''
 		}
 		else

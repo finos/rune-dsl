@@ -6,7 +6,6 @@ basicType int
 basicType number
 basicType boolean
 basicType time
-basicType any
 
 library function DateRanges() date
 library function Min(x number, y number) number

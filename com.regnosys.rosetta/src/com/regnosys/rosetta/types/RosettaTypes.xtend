@@ -58,7 +58,6 @@ class RRecordType implements RType {
 
 @Data
 class RBuiltinType implements RType {
-	public static val ANY = new RBuiltinType('any')
 	public static val BOOLEAN = new RBuiltinType('boolean')
 	public static val STRING = new RBuiltinType('string')
 

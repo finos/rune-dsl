@@ -108,6 +108,9 @@ EnumValueReference returns RosettaEnumValueReference:
 	enumeration=[RosettaEnumeration|ValidID] '->' value=[RosettaEnumValue|ValidID]
 ;
 
+EmptyLiteral:
+	{EmptyLiteral} 'empty'
+;
 
 // old stuff
 RosettaRootElement:
@@ -513,6 +516,7 @@ RosettaLiteral:
 	| RosettaStringLiteral
 	| RosettaBigDecimalLiteral
 	| RosettaIntLiteral
+	| EmptyLiteral
 ;
 
 RosettaBooleanLiteral:

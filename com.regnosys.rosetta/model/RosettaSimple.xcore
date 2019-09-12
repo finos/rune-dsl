@@ -17,6 +17,7 @@ import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.RosettaLiteral
 
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
@@ -97,3 +98,5 @@ class Segment {
 class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable {
 	contains RosettaExpression expression
 }
+
+class EmptyLiteral extends RosettaLiteral {}
