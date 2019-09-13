@@ -532,6 +532,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	@Check
 	def checkDispatch(Function ele) {
+		if (ele instanceof FunctionDispatch)
+			return
 		val dispath = ele.dispatchingFunctions.toList
 		if (dispath.empty)
 			return
@@ -543,12 +545,18 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		]
 		val structured = enumsUsed.keys.map[it -> enumsUsed.get(it)]
-		
 		val mostUsedEnum = structured.max[$0.value.size <=> $1.value.size].key
+		val toImplement = mostUsedEnum.allEnumValues.map[name].toSet
+		enumsUsed.get(mostUsedEnum).forEach[
+			toImplement.remove(it.key)
+		]
+		if (!toImplement.empty) {
+			warning('''Missing implementation for «mostUsedEnum.name»: «toImplement.sort.join(', ')»''', ele,
+				ROSETTA_NAMED__NAME)
+		}
 		structured.forEach [
-			// TODO check attribute enum type
 			if (it.key != mostUsedEnum) {
-				it.value.forEach [ entry|
+				it.value.forEach [ entry |
 					error('''Wrong «it.key.name» enumeration used. Expecting «mostUsedEnum.name».''', entry.value.value,
 						ROSETTA_ENUM_VALUE_REFERENCE__ENUMERATION)
 				]
