@@ -16,6 +16,8 @@ import org.eclipse.xtext.resource.IResourceDescription
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy
 import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.google.inject.Provider
+import com.regnosys.rosetta.scoping.RosettaLinkingService
+import org.eclipse.xtext.linking.ILinkingService
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -42,4 +44,9 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	def Class<? extends Provider<ExternalGenerators>> provideExternalGenerators() {
 		EmptyExternalGeneratorsProvider
 	}
+	
+	override Class<? extends ILinkingService>  bindILinkingService() {
+		RosettaLinkingService
+	}
+	
 }

@@ -36,6 +36,7 @@ import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RRecordType
@@ -59,7 +60,6 @@ import static org.eclipse.xtext.EcoreUtil2.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 
 /**
  * This class contains custom validation rules. 
@@ -516,5 +516,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		} catch (BlueprintUnresolvedTypeException e) {
 			error(e.message, e.getEStructuralFeature, e.code, e.issueData)
 		}
+	}
+	
+	@Check
+	def checkDispatch(Function ele) {
+		
 	}
 }

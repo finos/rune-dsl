@@ -3,6 +3,7 @@
  */
 package com.regnosys.rosetta.scoping
 
+import com.google.common.base.Predicate
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
@@ -15,9 +16,11 @@ import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.types.RClassType
@@ -37,11 +40,13 @@ import org.eclipse.xtext.resource.IResourceDescriptionsProvider
 import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
+import org.eclipse.xtext.scoping.impl.FilteringScope
 import org.eclipse.xtext.scoping.impl.MapBasedScope
 import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 
 /**
  * This class contains custom scoping description.
@@ -147,10 +152,10 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 						if (context.eContainer instanceof Operation) {
 							return getScope(context.eContainer, reference)
 						}
-						return super.getScope(context, reference)
+						return defaultScope(context, reference)
 					}
 					default:
-						return super.getScope(context, reference)
+						return defaultScope(context, reference)
 				}
 			}
 			case ROSETTA_CALLABLE_CALL__CALLABLE: {
@@ -164,23 +169,12 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 				} else if (context instanceof Operation) {
 					val function = context.function
 					val inputsAndOutputs = newArrayList
-					inputsAndOutputs.addAll(function.inputs)
-					inputsAndOutputs.add(function.output)
-					return Scopes.scopeFor(inputsAndOutputs)
-				}
-				 /*else if (context instanceof RosettaFuncitonCondition) {
-					val function = (context.eContainer as RosettaFunction)
-					
-					if (context.type == RosettaFunctionConditionType.PRE) {
-						return Scopes.scopeFor(function.inputs)	
-					} else {
-						val inputsAndOutputs = newArrayList
+					if(!function.inputs.nullOrEmpty)
 						inputsAndOutputs.addAll(function.inputs)
+					if(function.output!==null)
 						inputsAndOutputs.add(function.output)
-						
-						return Scopes.scopeFor(inputsAndOutputs)
-					}
-				}*/ else {
+					return Scopes.scopeFor(inputsAndOutputs)
+				} else {
 					val calculationTarget = EcoreUtil2.getContainerOfType(context, RosettaArguments)?.calculation
 					if (calculationTarget !== null) {
 						val index = indexProvider.getResourceDescriptions(context.eResource.resourceSet)
@@ -190,10 +184,20 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 							new AliasedEObjectDescription(QualifiedName.create(qualifiedName.lastSegment),
 								it) as IEObjectDescription
 						]
-						return MapBasedScope.createScope(super.getScope(context, reference), synonymDescriptions, false)
+						return MapBasedScope.createScope(defaultScope(context, reference), synonymDescriptions, false)
 					}
+					val funcContainer = EcoreUtil2.getContainerOfType(context, Function)
+					if(funcContainer !== null) {
+						return filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
+							descr | descr.EClass !== ROSETTA_CLASS && descr.EClass !== DATA
+						])
+					}
+					
 				}
-				return super.getScope(context, reference)
+				return defaultScope(context, reference)
+			}
+			case ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE: {
+				return filteredScope(defaultScope(context, reference), [EClass !== FUNCTION_DISPATCH])
 			}
 			case ROSETTA_ENUM_VALUE_REFERENCE__VALUE: {
 				if (context instanceof RosettaEnumValueReference) {
@@ -223,8 +227,10 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 					}
 				}
 			case ROSETTA_ENUM_VALUE_REFERENCE__ENUMERATION: {
-				if (context instanceof RosettaEnumValueReference || context instanceof RosettaBinaryOperation) {
-					return super.getScope(context, reference)
+				if (context instanceof RosettaEnumValueReference
+					|| context instanceof FunctionDispatch
+					|| context instanceof RosettaBinaryOperation) {
+					return defaultScope(context, reference)
 				}
 				return IScope.NULLSCOPE
 			}
@@ -244,7 +250,34 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 				return IScope.NULLSCOPE
 			}
 		}
-		super.getScope(context, reference)
+		defaultScope(context, reference)
+	}
+	
+	def IScope defaultScope(EObject object, EReference reference) {
+		filteredScope(super.getScope(object,reference), [it.EClass !== FUNCTION_DISPATCH])
+	}
+	
+	def IScope getParentScope(EObject object, EReference reference, IScope outer) {
+		if(object === null) {
+			return IScope.NULLSCOPE
+		}
+		switch(object) {
+			Function: {
+				val features = newArrayList
+				features.addAll(getInputs(object))
+				val out = getOutput(object)
+				if(out!== null)
+					features.add(getOutput(object))
+				features.addAll(object.shortcuts)
+				return Scopes.scopeFor(features, outer)
+			}
+			RosettaModel: defaultScope(object, reference)
+			default: getParentScope(object.eContainer, reference, outer)
+		}
+	}
+	
+	def private IScope filteredScope(IScope scope, Predicate<IEObjectDescription> filter) {
+		new FilteringScope(scope,filter)
 	}
 
 	private def IScope createFeatureScope(RType receiverType) {
