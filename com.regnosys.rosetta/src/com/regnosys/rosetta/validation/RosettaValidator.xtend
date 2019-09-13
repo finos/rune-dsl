@@ -62,6 +62,7 @@ import static org.eclipse.xtext.EcoreUtil2.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.simple.Data
 
 /**
  * This class contains custom validation rules. 
@@ -530,6 +531,17 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		}
 	}
+	
+	@Check
+	def checkData(Data ele) {
+		val onOfs = ele.conditions.groupBy[it.constraint.oneOf].get(Boolean.TRUE)
+		if (onOfs.size > 1) {
+			onOfs.forEach [
+				error('''Only one 'oneOf' condition is allowed.''', it.constraint, null)
+			]
+		}
+	}
+	
 	@Check
 	def checkDispatch(Function ele) {
 		if (ele instanceof FunctionDispatch)
