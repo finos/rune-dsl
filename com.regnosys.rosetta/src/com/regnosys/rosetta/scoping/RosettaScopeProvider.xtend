@@ -249,6 +249,12 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 				}
 				return IScope.NULLSCOPE
 			}
+			case FUNCTION_DISPATCH__ATTRIBUTE: {
+				if(context instanceof FunctionDispatch) {
+					return Scopes.scopeFor(getInputs(context))
+				}
+				return IScope.NULLSCOPE
+			}
 		}
 		defaultScope(context, reference)
 	}

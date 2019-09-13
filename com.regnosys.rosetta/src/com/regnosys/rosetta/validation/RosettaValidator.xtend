@@ -5,8 +5,10 @@ package com.regnosys.rosetta.validation
 
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.HashMultimap
+import com.google.common.collect.LinkedHashMultimap
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
@@ -77,6 +79,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension IQualifiedNameProvider
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaBlueprintTypeResolver
+	@Inject extension RosettaFunctionExtensions
 
 	@Check
 	def void checkClassNameStartsWithCapital(RosettaClass classe) {
@@ -207,20 +210,21 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				RosettaFeatureCall: {
 					val parentType = featureCall.feature.type
 					switch (parentType) {
-						RosettaClass:{
-							//must have single cardinality in group by function
+						RosettaClass: {
+							// must have single cardinality in group by function
 							var gbe = groupByExp
-							while (gbe!==null) {
+							while (gbe !== null) {
 								if (gbe.attribute.card.isIsMany) {
-									error('''attribute «gbe.attribute.name» of «(gbe.attribute.eContainer as RosettaClass).name» has multiple cardinality. Group by expressions must be single''', 
+									error('''attribute «gbe.attribute.name» of «(gbe.attribute.eContainer as RosettaClass).name» has multiple cardinality. Group by expressions must be single''',
 										featureCallGroupBy, ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, CARDINALITY_ERROR)
 									return
 								}
 								gbe = gbe.right
 							}
 						}
-						default :{
-							error('''Parent of group by «featureCall.feature.type.name» by must be a class''', featureCallGroupBy, ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, INVALID_TYPE)
+						default: {
+							error('''Parent of group by «featureCall.feature.type.name» by must be a class''',
+								featureCallGroupBy, ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, INVALID_TYPE)
 						}
 					}
 				}
@@ -257,7 +261,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					else
 						' (overrides ' + fromSuperClasses.map[(eContainer as RosettaNamed).name].join(', ') + ')'
 				attrByName.filter[eContainer == clazz].forEach [
-					error('''Duplicate attribute '«name»'«messageExtension»''', it, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
+					error('''Duplicate attribute '«name»'«messageExtension»''', it, ROSETTA_NAMED__NAME,
+						DUPLICATE_ATTRIBUTE)
 				]
 			}
 		}
@@ -296,8 +301,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 
 	@Check
 	def checkClassWithChoiceRuleAndOneOfRule(RosettaChoiceRule choiceRule) {
-		if(choiceRule.scope.oneOf) {
-			error('''Class «choiceRule.scope.name» has both choice rule («choiceRule.name») and one of rule.''', ROSETTA_NAMED__NAME, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE)
+		if (choiceRule.scope.oneOf) {
+			error('''Class «choiceRule.scope.name» has both choice rule («choiceRule.name») and one of rule.''',
+				ROSETTA_NAMED__NAME, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE)
 		}
 	}
 
@@ -312,11 +318,11 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		]
 	}
 
-	//TODO This probably should be made namespace aware
+	// TODO This probably should be made namespace aware
 	@Check(FAST) // switch to NORMAL if it becomes slow
 	def checkTypeNamesAreUnique(RosettaModel model) {
 		val name2attr = HashMultimap.create
-		model.elements.filter(RosettaNamed).filter[!(it instanceof FunctionDispatch)].forEach [ //TODO better FunctionDispatch handling
+		model.elements.filter(RosettaNamed).filter[!(it instanceof FunctionDispatch)].forEach [ // TODO better FunctionDispatch handling
 			name2attr.put(name, it)
 		]
 		val resources = getResourceDescriptions(model.eResource)
@@ -361,7 +367,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				ele, ROSETTA_NAMED__NAME, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE)
 		}
 		if (usedClasses.size == 1) {
-			val allowedClass = switch(ele) { RosettaProduct: findProductRootName(ele) RosettaEvent: findEventRootName(ele) default: null} 
+			val allowedClass = switch (ele) { RosettaProduct: findProductRootName(ele) RosettaEvent: findEventRootName(
+				ele) default: null }
 			if (allowedClass !== null && usedClasses.head.name != allowedClass) {
 				error('''«qualifiableType» expressions should always start from the '«allowedClass»' class. But found '«usedClasses.head.name»'.''',
 					ele, ROSETTA_NAMED__NAME, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE)
@@ -385,16 +392,15 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		val type = attribute.getType
 		if (type instanceof RosettaClass && !element.instances.filter[^set !== null].empty) {
 			error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
-		}
-		else if (type instanceof RosettaEnumeration) {
-			for (inst : element.instances.filter[^set !== null ]) {
+		} else if (type instanceof RosettaEnumeration) {
+			for (inst : element.instances.filter[^set !== null]) {
 				if (!(inst.set instanceof RosettaEnumValueReference)) {
 					error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
-				}
-				else {
+				} else {
 					val setEnum = inst.set as RosettaEnumValueReference
-					if (type.name!=setEnum.enumeration.name) {
-						error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
+					if (type.name != setEnum.enumeration.name) {
+						error('''Set to constant type does not match type of field.''', element,
+							ROSETTA_MAPPING__INSTANCES)
 					}
 				}
 			}
@@ -426,17 +432,14 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					MISSING_ENUM_VALUE)
 			} else {
 				val thisType = calculation.RType
-				
-				val step1 = index.getExportedObjectsByType(ROSETTA_CALCULATION)
-					.filter[d | d.qualifiedName.firstSegment == qualifiedName.firstSegment ]
-					.map[EObjectOrProxy.resolve(calculation)]
-					.filter[!eIsProxy]
-					
+
+				val step1 = index.getExportedObjectsByType(ROSETTA_CALCULATION).filter [ d |
+					d.qualifiedName.firstSegment == qualifiedName.firstSegment
+				].map[EObjectOrProxy.resolve(calculation)].filter[!eIsProxy]
+
 				val step2 = step1.map[RType]
-				
-				val calcsWithOtherTypes = step2
-					.filter[!typesEqual(it, thisType)]
-					.map[name].toSet
+
+				val calcsWithOtherTypes = step2.filter[!typesEqual(it, thisType)].map[name].toSet
 				if (!calcsWithOtherTypes.empty)
 					error('''All calculations for enum '«qualifiedName.firstSegment»' must have same return type. (expected «thisType.name» but was «calcsWithOtherTypes.join(',')»)''',
 						calculation, ROSETTA_NAMED__NAME, -1, TYPE_ERROR)
@@ -463,7 +466,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def checkFunctionCall(RosettaCallableWithArgsCall element) {
 		val callerSize = element.args.size
 		val callable = element.callable
-	
+
 		val callableSize = switch callable {
 			RosettaExternalFunction: callable.parameters.size
 			RosettaFunction: callable.inputs.size
@@ -474,8 +477,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
 				ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
 		} else {
-			if(callable instanceof Function) {
-				element.args.indexed.forEach[indexed|
+			if (callable instanceof Function) {
+				element.args.indexed.forEach [ indexed |
 					val callerArg = indexed.value
 					val param = callable.inputs.get(indexed.key)
 					checkType(param.type.RType, callerArg, element, ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, indexed.key)
@@ -507,8 +510,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			]
 		}
 
-	}	
-	
+	}
+
 	@Check
 	def checkNodeTypeGraph(RosettaBlueprint bp) {
 		try {
@@ -517,9 +520,46 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			error(e.message, e.getEStructuralFeature, e.code, e.issueData)
 		}
 	}
-	
+
+	@Check
+	def checkFuncDispatchAttr(FunctionDispatch ele) {
+		if (ele.attribute !== null && ele.attribute.type !== null && !ele.attribute.type.eIsProxy) {
+			if (!(ele.attribute.type instanceof RosettaEnumeration)) {
+				error('''Dispatching function may refer to an enumeration typed attributes only. Current type is «ele.attribute.type.name»''', ele,
+					FUNCTION_DISPATCH__ATTRIBUTE)
+			}
+		}
+	}
 	@Check
 	def checkDispatch(Function ele) {
+		val dispath = ele.dispatchingFunctions.toList
+		if (dispath.empty)
+			return
+		val enumsUsed = LinkedHashMultimap.create
+		dispath.forEach [
+			val enumRef = it.value
+			if (enumRef !== null && enumRef.enumeration !== null && enumRef.value !== null) {
+				enumsUsed.put(enumRef.enumeration, enumRef.value.name -> it)
+			}
+		]
+		val structured = enumsUsed.keys.map[it -> enumsUsed.get(it)]
 		
+		val mostUsedEnum = structured.max[$0.value.size <=> $1.value.size].key
+		structured.forEach [
+			// TODO check attribute enum type
+			if (it.key != mostUsedEnum) {
+				it.value.forEach [ entry|
+					error('''Wrong «it.key.name» enumeration used. Expecting «mostUsedEnum.name».''', entry.value.value,
+						ROSETTA_ENUM_VALUE_REFERENCE__ENUMERATION)
+				]
+			} else {
+				it.value.groupBy[it.key].filter[enumVal, entries|entries.size > 1].forEach [ enumVal, entries |
+					entries.forEach [
+						error('''Dupplicate usage of «it.key» enumeration value.''', it.value.value,
+							ROSETTA_ENUM_VALUE_REFERENCE__VALUE)
+					]
+				]
+			}
+		]
 	}
 }
