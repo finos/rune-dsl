@@ -48,6 +48,7 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 
 /**
  * This class contains custom scoping description.
@@ -268,6 +269,7 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 		if (object === null) {
 			return IScope.NULLSCOPE
 		}
+		val parentScope = getParentScope(object.eContainer, reference, outer)
 		switch (object) {
 			Function: {
 				val features = newArrayList
@@ -278,15 +280,20 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 				features.addAll(object.shortcuts)
 				return Scopes.scopeFor(features, outer)
 			}
-			Condition case !object.postCondition: {
-				filteredScope(getParentScope(object.eContainer, reference, outer), [ descr |
-					descr.EObjectOrProxy.eContainingFeature !== FUNCTION__OUTPUT
+			ShortcutDeclaration: {
+				filteredScope(parentScope, [descr|
+					descr.qualifiedName.toString != object.name // TODO use qnames
+				])
+			}
+			Condition: {
+				filteredScope(parentScope, [ descr |
+					object.isPostCondition || descr.EObjectOrProxy.eContainingFeature !== FUNCTION__OUTPUT
 				])
 			}
 			RosettaModel:
 				defaultScope(object, reference)
 			default:
-				getParentScope(object.eContainer, reference, outer)
+				parentScope
 		}
 	}
 	

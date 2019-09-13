@@ -19,7 +19,7 @@ class RosettaHoverProvider extends DefaultEObjectHoverProvider {
 		val documentation = o.documentation
 		'''
 			«getFirstLine(o)»
-			«IF type !== RBuiltinType.MISSING»
+			«IF type !== null && type !== RBuiltinType.MISSING»
 				<br />Type: «type.name»
 			«ENDIF»
 			«IF definition !== null»
