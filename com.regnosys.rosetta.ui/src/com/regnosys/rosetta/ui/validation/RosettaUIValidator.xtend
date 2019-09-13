@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.ui.validation
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.resource.Indexed
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.validation.RosettaIssueCodes
@@ -12,7 +13,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.xtext.validation.Check
 
-import static com.regnosys.rosetta.resource.RosettaResourceDescriptionStrategy.ROOT_CLASS
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 
 class RosettaUIValidator extends AbstractDeclarativeValidator implements RosettaIssueCodes{
@@ -29,7 +29,7 @@ class RosettaUIValidator extends AbstractDeclarativeValidator implements Rosetta
 		if (element.root) {
 			val resources = resDecrProvider.getResourceDescriptions(element.eResource)
 			val allRootClasses = resources.getExportedObjectsByType(ROSETTA_CLASS).filter [
-				"true" == it.getUserData(ROOT_CLASS)
+				"true" == Indexed.CLASS_ROOT.getValue(it)
 			].map[EObjectOrProxy]
 			val resolved = allRootClasses.map[if(eIsProxy) EcoreUtil.resolve(it, element) else it].filter(RosettaClass)
 			val allRootAttributes = resolved.flatMap[regularAttributes]

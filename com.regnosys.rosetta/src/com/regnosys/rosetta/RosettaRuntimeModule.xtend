@@ -3,8 +3,10 @@
  */
 package com.regnosys.rosetta
 
+import com.google.inject.Provider
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.generator.external.EmptyExternalGeneratorsProvider
+import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.resource.RosettaFragmentProvider
 import com.regnosys.rosetta.resource.RosettaResourceDescriptionManager
 import com.regnosys.rosetta.resource.RosettaResourceDescriptionStrategy
@@ -14,10 +16,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.IFragmentProvider
 import org.eclipse.xtext.resource.IResourceDescription
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy
-import com.regnosys.rosetta.generator.external.ExternalGenerators
-import com.google.inject.Provider
-import com.regnosys.rosetta.scoping.RosettaLinkingService
-import org.eclipse.xtext.linking.ILinkingService
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -43,10 +41,6 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	def Class<? extends Provider<ExternalGenerators>> provideExternalGenerators() {
 		EmptyExternalGeneratorsProvider
-	}
-	
-	override Class<? extends ILinkingService>  bindILinkingService() {
-		RosettaLinkingService
 	}
 	
 }

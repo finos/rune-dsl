@@ -92,7 +92,7 @@ OneOf returns Constraint :
 ;
 
 PostCondition returns Condition:
-	'post-condition' ':' Definable?
+	postCondition ?= 'post-condition' ':' Definable?
 	(expressions+=RosettaCalcExpression ';')+
 ;
 

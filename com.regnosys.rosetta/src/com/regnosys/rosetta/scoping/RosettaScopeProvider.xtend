@@ -20,7 +20,9 @@ import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
+import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.types.RClassType
@@ -46,7 +48,6 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 
 /**
  * This class contains custom scoping description.
@@ -264,21 +265,28 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 	}
 	
 	def IScope getParentScope(EObject object, EReference reference, IScope outer) {
-		if(object === null) {
+		if (object === null) {
 			return IScope.NULLSCOPE
 		}
-		switch(object) {
+		switch (object) {
 			Function: {
 				val features = newArrayList
 				features.addAll(getInputs(object))
 				val out = getOutput(object)
-				if(out!== null)
+				if (out !== null)
 					features.add(getOutput(object))
 				features.addAll(object.shortcuts)
 				return Scopes.scopeFor(features, outer)
 			}
-			RosettaModel: defaultScope(object, reference)
-			default: getParentScope(object.eContainer, reference, outer)
+			Condition case !object.postCondition: {
+				filteredScope(getParentScope(object.eContainer, reference, outer), [ descr |
+					descr.EObjectOrProxy.eContainingFeature !== FUNCTION__OUTPUT
+				])
+			}
+			RosettaModel:
+				defaultScope(object, reference)
+			default:
+				getParentScope(object.eContainer, reference, outer)
 		}
 	}
 	
