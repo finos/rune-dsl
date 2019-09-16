@@ -13,6 +13,7 @@ import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCalculation
+import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
@@ -21,6 +22,7 @@ import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
+import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
@@ -37,8 +39,11 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RRecordType
@@ -49,6 +54,7 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
 import java.util.List
+import java.util.Stack
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.naming.IQualifiedNameConverter
@@ -62,7 +68,6 @@ import static org.eclipse.xtext.EcoreUtil2.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.simple.Data
 
 /**
  * This class contains custom validation rules. 
@@ -588,5 +593,43 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		ele.conditions.filter[constraint !== null].forEach [ cond |
 			error('''Constrains 'one-of' and 'choice' a not supported inside function.''', cond, CONDITION__CONSTRAINT)
 		]
+	}
+	
+	@Check
+	def checkConditionDontUseOutput(Function ele) {
+		ele.conditions.filter[!isPostCondition].forEach [ cond |
+			cond.expressions.forEach [
+				val trace = new Stack
+				val outRef = findOutputRef(trace)
+				if (!outRef.nullOrEmpty) {
+					error('''
+					Output '«outRef.head.name»' or alias referencing it can not be used in conditions.
+					«IF !trace.isEmpty»
+					«trace.join(' > ')» > «outRef.head.name»«ENDIF»''', it, null)
+				}
+			]
+		]
+	}
+
+	def List<RosettaCallable> findOutputRef(EObject ele, Stack<String> trace) {
+		switch (ele) {
+			ShortcutDeclaration: {
+				trace.push(ele.name)
+				val result = findOutputRef(ele.expression, trace)
+				if (result.empty)
+					trace.pop()
+				return result
+			}
+			RosettaCallableCall: {
+				if (ele.callable instanceof Attribute && ele.callable.eContainingFeature === FUNCTION__OUTPUT)
+					return #[ele.callable]
+				return findOutputRef(ele.callable, trace)
+			}
+		}
+		return (ele.eContents + ele.eCrossReferences.filter [
+			it instanceof RosettaExpression || it instanceof ShortcutDeclaration
+		]).flatMap [
+			findOutputRef(trace)
+		].toList
 	}
 }
