@@ -104,12 +104,6 @@ class FuncGenerator {
 				«ENDIF»
 				*/
 				public «outputType» evaluate(«func.inputsAsParameters(names)») {
-							
-					// Define alias on inputs
-					//
-					«FOR alias : func.shortcuts.filter[!aliasOut.get(it)]»
-						«MapperBuilder»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name» = «alias.name»(«func.inputsAsArguments(names)»);
-					«ENDFOR»
 					«IF !func.conditions.empty»
 						// pre-conditions
 						//
@@ -119,35 +113,20 @@ class FuncGenerator {
 					«ENDIF»
 					
 					«IF isAbstract»
-						«IF getOutput(func) !== null»«getOutput(func).toBuilderType(names)» «outputName» = «ENDIF»doEvaluate(«func.inputsAsArguments(names)»);
+						«IF getOutput(func) !== null»«getOutput(func).toBuilderType(names)» «outputName»Builder = «ENDIF»doEvaluate(«func.inputsAsArguments(names)»);
 					«ELSE»
-						«IF getOutput(func) !== null»«getOutput(func).toBuilderType(names)» «outputName» = «getOutput(func).toJavaQualifiedType».builder();«ENDIF»
+						«IF getOutput(func) !== null»«getOutput(func).toBuilderType(names)» «outputName»Builder = «getOutput(func).toJavaQualifiedType».builder();«ENDIF»
 						«FOR indexed : func.operations.indexed»
 							«val operation = indexed.value»
 							«IF operation.path === null»
 								«operation.attribute.name» = «toJava(names, operation)»;
 							«ELSE»
-							«outputName»«FOR seg : operation.path.asSegmentList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index»«ENDIF»)«ELSE».«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«toJava(names,operation.expression)»)«ENDIF»«ENDFOR»;
+							«outputName»Builder«FOR seg : operation.path.asSegmentList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index»«ENDIF»)«ELSE».«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«toJava(names,operation.expression)»)«ENDIF»«ENDFOR»;
 						«ENDIF»
 						«ENDFOR»
 					«ENDIF»
-					// Assign values to the output
-					//
-					/*
-					aliasEquityPayoutAfter(resetPrimitiveBuilder)
-					.setRateOfReturn(rateOfReturn.calculate(equityPayout).getRateOfReturn());
 					
-					aliasEquityPayoutAfter(resetPrimitiveBuilder)
-						.setPerformance(equityPerformance.calculate(equityPayout).getEquityPerformance());
-					
-					aliasEquityPayoutAfter(resetPrimitiveBuilder)
-						.setEquityCashSettlementAmount(equityCashSettlementAmount.calculate(equityPayout).getEquityCashSettlementAmount());
-					
-					aliasPayoutBefore(resetPrimitiveBuilder)
-						.addEquityPayout(equityPayout);
-					*/
-					
-						
+					«outputType» «outputName» = «outputName»Builder.build();
 					«IF !func.postConditions.empty»
 						// post-conditions
 						//
@@ -157,14 +136,14 @@ class FuncGenerator {
 					«ENDIF»
 					// Build and return the output object
 					//
-					return «getOutput(func).name».build();
+					return «outputName»;
 				}
 				«IF isAbstract»
 					protected abstract «func.outputTypeOrVoid(names)» doEvaluate(«func.inputsAsParameters(names)»);
 				«ENDIF»
 				«FOR alias : func.shortcuts»
 					«IF aliasOut.get(alias)»
-					protected «names.shortcutJavaType(alias)» «alias.name»(«outputType» «outputName», «IF !getInputs(func).empty»«func.inputsAsParameters(names)»«ENDIF») {
+					protected «names.shortcutJavaType(alias)» «alias.name»(«getOutput(func).toBuilderType(names)» «outputName», «IF !getInputs(func).empty»«func.inputsAsParameters(names)»«ENDIF») {
 						return «toJava(names, alias.expression)»;
 					}
 					«ELSE»

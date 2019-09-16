@@ -54,13 +54,14 @@ import com.rosetta.model.lib.validation.ComparisonResult
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.generator.java.function.RosettaExpressionJavaGeneratorForFunctions.ParamMap
+import org.eclipse.emf.ecore.util.EcoreUtil
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	
 	@Inject RosettaTypeProvider typeProvider
 	@Inject ConvertableCardinalityProvider cardinalityProvider
 	@Inject JavaNames.Factory factory 
-	@Inject RosettaFunctionExtensions func
+	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension RosettaExtensions
 	
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
@@ -138,7 +139,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		
 		val many = switch (callable) {
 			Function:
-				func.getOutput(callable).card.isMany
+				funcExt.getOutput(callable).card.isMany
 			RosettaFunction:
 				callable.output.card.isMany
 			default:
@@ -215,11 +216,16 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				'''«MapperS».of(«call.name»)'''
 			}
 			ShortcutDeclaration : {
-				'''«MapperS».of(«call.name»)'''
+				'''«call.name»(«inputsAsArgs(call)»)'''
 			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable type of "+call.class.simpleName)
 		}
+	}
+	
+	def inputsAsArgs(ShortcutDeclaration alias) {
+		val func = EcoreUtil2.getContainerOfType(alias, Function)
+		funcExt.getInputs(func).join(', ')[name]
 	}
 	
 	/**

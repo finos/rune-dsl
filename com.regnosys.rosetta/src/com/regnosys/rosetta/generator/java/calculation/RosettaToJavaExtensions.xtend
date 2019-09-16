@@ -44,6 +44,7 @@ import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
+import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 
 class RosettaToJavaExtensions {
 	@Inject RosettaTypeProvider typeProvider
@@ -129,6 +130,9 @@ class RosettaToJavaExtensions {
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaLiteral ele) {
 		'''«ele.stringValue»'''
+	}
+	def dispatch StringConcatenationClient toJava(extension JavaNames it, EmptyLiteral ele) {
+		'''null'''
 	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaBigDecimalLiteral ele) {
