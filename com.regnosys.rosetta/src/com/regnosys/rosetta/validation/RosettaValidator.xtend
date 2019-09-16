@@ -591,7 +591,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Check
 	def checkConstraintNotUsed(Function ele) {
 		ele.conditions.filter[constraint !== null].forEach [ cond |
-			error('''Constrains 'one-of' and 'choice' a not supported inside function.''', cond, CONDITION__CONSTRAINT)
+			error('''Constraints: 'one-of' and 'choice' are not supported inside function.''', cond, CONDITION__CONSTRAINT)
 		]
 	}
 	
