@@ -55,5 +55,6 @@ class RosettaFunctionExtensions {
 		if (mainFunction !== null) {
 			return mainFunction.inputs
 		}
+		emptyList
 	}
 }
