@@ -49,6 +49,7 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.rosetta.simple.Data
 
 /**
  * This class contains custom scoping description.
@@ -257,6 +258,9 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 				}
 				return IScope.NULLSCOPE
 			}
+			case CONSTRAINT__ATTRIBUTES: {
+				return context.getParentScope(reference, IScope.NULLSCOPE)
+			}
 		}
 		defaultScope(context, reference)
 	}
@@ -271,6 +275,9 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 		}
 		val parentScope = getParentScope(object.eContainer, reference, outer)
 		switch (object) {
+			Data: {
+				return Scopes.scopeFor(object.allAttributes, outer)
+			}
 			Function: {
 				val features = newArrayList
 				features.addAll(getInputs(object))
