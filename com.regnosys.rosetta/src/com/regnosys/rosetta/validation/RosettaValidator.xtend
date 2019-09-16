@@ -542,7 +542,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		val onOfs = ele.conditions.groupBy[it.constraint.oneOf].get(Boolean.TRUE)
 		if (onOfs.size > 1) {
 			onOfs.forEach [
-				error('''Only one 'oneOf' condition is allowed.''', it.constraint, null)
+				error('''Only a single 'one-of' constraint is allowed.''', it.constraint, null)
 			]
 		}
 	}
