@@ -603,7 +603,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				val outRef = findOutputRef(trace)
 				if (!outRef.nullOrEmpty) {
 					error('''
-					Output '«outRef.head.name»' or alias referencing it can not be used in conditions.
+					output '«outRef.head.name»' or alias' on output '«outRef.head.name»' not allowed in condition blocks.
 					«IF !trace.isEmpty»
 					«trace.join(' > ')» > «outRef.head.name»«ENDIF»''', it, null)
 				}
