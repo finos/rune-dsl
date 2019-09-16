@@ -73,6 +73,7 @@ class FunctionDispatch extends Function {
 }
 
 class Condition extends Definable, Annotated, RosettaNamed {
+	boolean postCondition
 	contains Constraint constraint
 	contains RosettaExpression[] expressions
 }
