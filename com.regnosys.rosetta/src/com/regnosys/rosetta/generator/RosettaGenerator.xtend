@@ -35,6 +35,7 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import com.regnosys.rosetta.generator.java.function.FuncGenerator
 
 /**
  * Generates code from your model files on save.
@@ -62,8 +63,8 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject DataValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaExtensions
-
 	@Inject JavaNames.Factory factory
+	@Inject FuncGenerator funcGenerator
 	
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta'}
@@ -96,10 +97,14 @@ class RosettaGenerator extends AbstractGenerator {
 							]
 						}
 						Function:{
-							if(handleAsSpecFunction) {
-								functionGenerator.generate(javaNames, fsa, it, version)
-							} else if(!isDispatchingFunction){
-								calculationGenerator.generateFunction(javaNames, fsa, it, version)
+							if(name == "EquityReset2") {
+								funcGenerator.generate(javaNames, fsa, it, version)
+							} else {
+								if(handleAsSpecFunction) {
+									functionGenerator.generate(javaNames, fsa, it, version)
+								} else if(!isDispatchingFunction){
+									calculationGenerator.generateFunction(javaNames, fsa, it, version)
+								}
 							}
 						}
 					}

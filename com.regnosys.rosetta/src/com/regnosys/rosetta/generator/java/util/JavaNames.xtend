@@ -14,16 +14,23 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
+import com.regnosys.rosetta.types.RBuiltinType
+import com.regnosys.rosetta.types.RClassType
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.RFeatureCallType
+import com.regnosys.rosetta.types.RRecordType
+import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.rosetta.simple.Attribute
-import java.util.List
 
 class JavaNames {
 
@@ -86,7 +93,7 @@ class JavaNames {
 				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
 		}
 	}
-	
+		
 	private def JavaType createForBasicType(String typeName) {
 		return  JavaType.create(JavaClassTranslator.toJavaFullType(typeName)?:"missing builtin type " + typeName)
 	}
@@ -115,6 +122,26 @@ class JavaNames {
 		else
 		'''«attribute.type.toJavaQualifiedType()»'''
 	}
+	
+	def  JavaType toJavaType(RType rType) {
+		switch (rType) {
+			RBuiltinType:
+				rType.name.createForBasicType
+			REnumType:
+				rType.enumeration.toJavaType
+			RClassType:
+				rType.clazz.toJavaType
+			RDataType:
+				rType.data.toJavaType
+			RFeatureCallType:
+				rType.featureType.toJavaType
+			RRecordType:
+				(rType.record as RosettaType).toJavaType
+			default:
+				JavaType.create(rType.name)
+		}
+	}
+	
 	def QualifiedName toTargetClassName(RosettaCalculation ele) {
 		return QualifiedName.create(ele.name.split('\\.'))
 	}
