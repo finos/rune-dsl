@@ -78,8 +78,6 @@ class JavaNames {
 	
 	def JavaType toJavaType(RosettaCallableWithArgs func) {
 		switch (func) {
-			Function case !func.operations.nullOrEmpty:
-				JavaType.create(packages.calculation.packageName+'.'+ func.name)
 			Function:
 				JavaType.create(packages.functions.packageName+'.'+ func.name)
 			default:

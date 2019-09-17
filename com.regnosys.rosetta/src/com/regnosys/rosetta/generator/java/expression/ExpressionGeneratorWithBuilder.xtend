@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.function
+package com.regnosys.rosetta.generator.java.expression
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
@@ -24,7 +24,7 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 class ExpressionGeneratorWithBuilder {
 
 	@Inject RosettaTypeProvider typeProvider
-	@Inject ConvertableCardinalityProvider cardinalityProvider
+	@Inject com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider cardinalityProvider
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension RosettaExtensions
 

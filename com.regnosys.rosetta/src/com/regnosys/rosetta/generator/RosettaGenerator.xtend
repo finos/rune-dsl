@@ -53,7 +53,6 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject BlueprintGenerator blueprintGenerator
 	@Inject QualifyFunctionGenerator<RosettaEvent> qualifyEventsGenerator
 	@Inject QualifyFunctionGenerator<RosettaProduct> qualifyProductsGenerator
-	//@Inject ClassListGenerator classListGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
 	
@@ -95,14 +94,8 @@ class RosettaGenerator extends AbstractGenerator {
 							]
 						}
 						Function:{
-							if(name == "EquityReset2") {
+							if(!isDispatchingFunction){
 								funcGenerator.generate(javaNames, fsa, it, version)
-							} else {
-								if(handleAsSpecFunction) {
-									funcGenerator.generate(javaNames, fsa, it, version)
-								} else if(!isDispatchingFunction){
-									calculationGenerator.generateFunction(javaNames, fsa, it, version)
-								}
 							}
 						}
 					}
@@ -112,7 +105,6 @@ class RosettaGenerator extends AbstractGenerator {
 				choiceRuleGenerator.generate(packages, fsa, elements, version)
 				dataRuleGenerator.generate(packages, fsa, elements, version)
 				metaGenerator.generate(packages, fsa, elements, version)
-				calculationGenerator.generate(packages, fsa, elements, version)
 				blueprintGenerator.generate(packages, fsa, elements, version)
 				qualifyEventsGenerator.generate(packages, fsa, elements, packages.qualifyEvent, RosettaEvent, version)
 				qualifyProductsGenerator.generate(packages, fsa, elements, packages.qualifyProduct, RosettaProduct, version)
