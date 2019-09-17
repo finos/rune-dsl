@@ -4,17 +4,22 @@ import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.calculation.RosettaFunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.calculation.RosettaToJavaExtensions
+import com.regnosys.rosetta.generator.java.function.RosettaExpressionJavaGeneratorForFunctions.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RClassType
@@ -25,16 +30,15 @@ import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.MapperBuilder
 import com.rosetta.model.lib.functions.RosettaFunction
 import java.util.List
+import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
-import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.generator.util.Util
-import com.regnosys.rosetta.generator.java.function.RosettaExpressionJavaGeneratorForFunctions.ParamMap
+import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 
 class FuncGenerator {
 
 	@Inject RosettaExpressionJavaGeneratorForFunctions rosettaExpressionGenerator
+	@Inject ExpressionGeneratorWithBuilder expressionWithBuilder
 	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
@@ -52,7 +56,7 @@ class FuncGenerator {
 				functionDependencyProvider.functionDependencies(it)
 			]
 			val dependencies = Util.distinctBy(deps + condDeps, [name]).sortBy[it.name]
-			
+
 			concatenator.append(functionClass(func, dependencies, javaNames))
 			val content = '''
 				package «javaNames.packages.functions.packageName»;
@@ -84,14 +88,14 @@ class FuncGenerator {
 		val isAbstract = func.operations.nullOrEmpty
 		val outputName = getOutput(func)?.name
 		val outputType = func.outputTypeOrVoid(names)
-		val aliasOut = func.shortcuts.toMap([it],[exprHelper.usesOutputParameter(it.expression)])
+		val aliasOut = func.shortcuts.toMap([it], [exprHelper.usesOutputParameter(it.expression)])
 		'''
 			«IF isAbstract»@«ImplementedBy»(«func.name»Impl.class)«ENDIF»
 			public «IF isAbstract»abstract«ENDIF» class «func.name» implements «RosettaFunction» {
 				«IF !dependencies.empty»
-				
-				// RosettaFunction dependencies
-				//
+					
+					// RosettaFunction dependencies
+					//
 				«ENDIF»
 				«FOR dep : dependencies»
 					@«Inject» protected «dep.toJavaQualifiedType» «dep.name.toFirstLower»;
@@ -120,11 +124,7 @@ class FuncGenerator {
 						«IF getOutput(func) !== null»«getOutput(func).toBuilderType(names)» «outputName»Builder = «getOutput(func).toJavaQualifiedType».builder();«ENDIF»
 						«FOR indexed : func.operations.indexed»
 							«val operation = indexed.value»
-							«IF operation.path === null»
-								«operation.attribute.name» = «toJava(names, operation)»;
-							«ELSE»
-							«outputName»Builder«FOR seg : operation.path.asSegmentList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index»«ENDIF»)«ELSE».«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«toJava(names,operation.expression)»)«ENDIF»«ENDFOR»;
-						«ENDIF»
+							«operation.assign(aliasOut, names)»;
 						«ENDFOR»
 					«ENDIF»
 					
@@ -143,17 +143,41 @@ class FuncGenerator {
 				«ENDIF»
 				«FOR alias : func.shortcuts»
 					«IF aliasOut.get(alias)»
-					protected «names.shortcutJavaType(alias)» «alias.name»(«getOutput(func).toBuilderType(names)» «outputName», «IF !getInputs(func).empty»«func.inputsAsParameters(names)»«ENDIF») {
-						return «toJava(names, alias.expression)»;
-					}
+						protected «names.shortcutJavaType(alias)» «alias.name»(«getOutput(func).toBuilderType(names)» «outputName», «IF !getInputs(func).empty»«func.inputsAsParameters(names)»«ENDIF») {
+							return «expressionWithBuilder.javaCode(alias.expression, Context.create(names))»;
+						}
 					«ELSE»
-					protected «MapperBuilder»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
-						return «rosettaExpressionGenerator.javaCode(alias.expression, new ParamMap)»;
-					}
+						protected «MapperBuilder»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
+							return «rosettaExpressionGenerator.javaCode(alias.expression, new ParamMap)»;
+						}
 					«ENDIF»
 				«ENDFOR»
 			}
 		'''
+	}
+
+	private def StringConcatenationClient assign(Operation operation, Map<ShortcutDeclaration, Boolean> outs, JavaNames names) {
+		val pathAsList = operation.path.asSegmentList
+		if(pathAsList.isEmpty)
+		'''
+			«operation.assignTarget(outs, names)»
+				.«IF operation.assignRoot.isMany»add«ELSE»set«ENDIF»«operation.assignRoot.name.toFirstUpper»(«toJava(names, operation.expression)»);
+		'''
+		else
+		'''
+			«operation.assignTarget(outs, names)»
+				«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index»«ENDIF»)«ELSE»
+				.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«toJava(names, operation.expression)»)«ENDIF»«ENDFOR»;
+		'''
+	}
+
+	private def StringConcatenationClient assignTarget(Operation operation, Map<ShortcutDeclaration, Boolean> outs, JavaNames names) {
+		val root = operation.assignRoot
+		switch (root) {
+			Attribute: '''«root.name»Builder'''
+			ShortcutDeclaration: 
+			'''«root.name»(«IF outs.get(root)»«getOutput(operation.function)?.name»Builder«IF !getInputs(operation.function).empty», «ENDIF»«ENDIF»«inputsAsArguments(operation.function, names)»)'''
+		}
 	}
 
 	private def StringConcatenationClient contributeCondition(Condition condition) {
@@ -162,7 +186,7 @@ class FuncGenerator {
 				«FOR expr : condition.expressions SEPARATOR ' &&'» 
 					«rosettaExpressionGenerator.javaCode(expr, null)».get()
 				«ENDFOR»
-				: "«condition.definition»";
+					: "«condition.definition»";
 		'''
 	}
 
@@ -222,6 +246,11 @@ class FuncGenerator {
 		return result
 	}
 
+	private def isMany(AssignPathRoot root) {
+		switch(root) {
+			Attribute: root.card.isMany
+		}
+	}
 	private def isMany(RosettaFeature feature) {
 		switch (feature) {
 			RosettaRegularAttribute: feature.card.isMany

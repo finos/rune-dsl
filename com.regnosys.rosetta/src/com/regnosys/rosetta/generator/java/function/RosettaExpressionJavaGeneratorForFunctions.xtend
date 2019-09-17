@@ -36,11 +36,14 @@ import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.functions.MapperMaths
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.MapperTree
+import com.rosetta.model.lib.validation.ComparisonResult
 import java.math.BigDecimal
 import java.util.HashMap
 import org.eclipse.xtend.lib.annotations.Data
@@ -50,10 +53,6 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.rosetta.model.lib.validation.ComparisonResult
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
-import com.regnosys.rosetta.generator.java.function.RosettaExpressionJavaGeneratorForFunctions.ParamMap
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	

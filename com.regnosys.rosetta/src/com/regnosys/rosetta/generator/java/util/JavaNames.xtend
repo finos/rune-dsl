@@ -31,6 +31,8 @@ import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 
 class JavaNames {
 
@@ -48,6 +50,12 @@ class JavaNames {
 		}
 	}
 
+	def StringConcatenationClient toJavaQualifiedType(AssignPathRoot ele) {
+		switch(ele) {
+			Attribute: toJavaQualifiedType(ele.type)
+			ShortcutDeclaration: '''«toJavaType(typeProvider.getRType(ele.expression))»'''
+		}
+	}
 
 	def StringConcatenationClient toJavaQualifiedType(String typeName) {
 		return '''«JavaType.create(JavaClassTranslator.toJavaFullType(typeName)?:"missing builtin type " + typeName)»'''

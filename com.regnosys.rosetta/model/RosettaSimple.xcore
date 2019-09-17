@@ -35,11 +35,11 @@ class AnnotationRef {
 	refers Attribute attribute
 }
 
-abstract class ConvertableCardinality extends RosettaCallable {
+abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
 	boolean toOne
 }
 
-class Attribute extends RosettaFeature, Definable, Annotated, RosettaCallable, ConvertableCardinality {
+class Attribute extends RosettaFeature, Definable, Annotated, RosettaCallable, AssignPathRoot {
 	contains RosettaSynonym[] synonyms
 	contains RosettaCardinality card
 }
@@ -89,7 +89,7 @@ enum Necessity {
 }
 class Operation extends Definable {
 	container Function function opposite operations
-	refers Attribute attribute
+	refers AssignPathRoot assignRoot
 	contains Segment path
 	contains RosettaExpression expression
 }
@@ -101,7 +101,7 @@ class Segment {
 	container Segment prev opposite next
 }
 
-class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable, ConvertableCardinality {
+class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable, AssignPathRoot {
 	contains RosettaExpression expression
 }
 

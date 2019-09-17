@@ -209,14 +209,14 @@ class CalculationGenerator {
 					«FOR indexed : function.operations.indexed»
 					«val operation = indexed.value»
 					«IF operation.path === null»
-					result.«operation.attribute.name» = «if(operation !== null) assignment(operation) else null»;
+					result.«operation.assignRoot.name» = «if(operation !== null) assignment(operation) else null»;
 					«ELSE»
 					«IF indexed.key == 0»
-					if(result.«operation.attribute.name» == null) result.«operation.attribute.name» = «operation.attribute.toJavaQualifiedType».builder().build();
-					«operation.attribute.toJavaQualifiedType».«operation.attribute.toJavaQualifiedType»Builder __builder = result.«operation.attribute.name».toBuilder();
+					if(result.«operation.assignRoot.name» == null) result.«operation.assignRoot.name» = «operation.assignRoot.toJavaQualifiedType».builder().build();
+					«operation.assignRoot.toJavaQualifiedType».«operation.assignRoot.toJavaQualifiedType»Builder __builder = result.«operation.assignRoot.name».toBuilder();
 					«ENDIF»
 					__builder«FOR seg : operation.path.asSegmentList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index»«ENDIF»)«ELSE».«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«assignment(operation)»)«ENDIF»«ENDFOR»;
-					result.«operation.attribute.name» = __builder.build();
+					result.«operation.assignRoot.name» = __builder.build();
 					«ENDIF»
 					«ENDFOR»
 					return result;
