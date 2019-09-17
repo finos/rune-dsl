@@ -22,6 +22,7 @@ import java.util.ArrayList
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.rosetta.model.lib.functions.MapperBuilder
 
 class ModelObjectBuilderGenerator {
 	
@@ -299,6 +300,11 @@ class ModelObjectBuilderGenerator {
 					this.«attribute.name» = «attribute.toBuilder»;
 					return this;
 				}
+				
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»(«MapperBuilder»<«attribute.toType(names)»> «attribute.name») {
+					set«attribute.name.toFirstUpper»(«attribute.name».get());
+					return this;
+				}
 
 				«IF attribute.isRosettaClassOrData»
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Builder(«attribute.toBuilderType» «attribute.name») {
@@ -321,6 +327,10 @@ class ModelObjectBuilderGenerator {
 					} else {
 						this.«attribute.name».add(«attribute.toBuilder»);
 					}
+					return this;
+				}
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(com.rosetta.model.lib.functions.MapperBuilder<«attribute.toTypeSingle»> «attribute.name») {
+					add«attribute.name.toFirstUpper»(«attribute.name».get());
 					return this;
 				}
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(List<«attribute.toTypeSingle()»> «attribute.name»s) {
@@ -352,6 +362,10 @@ class ModelObjectBuilderGenerator {
 			«ELSE»
 				«IF isSuper || clazz.globalKey && attribute.name === 'globalKey'»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»(«attribute.toType» «attribute.name») {
 					this.«attribute.name» = «attribute.toBuilder»;
+					return this;
+				}
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»(com.rosetta.model.lib.functions.MapperBuilder<«attribute.toType»> «attribute.name») {
+					set«attribute.name.toFirstUpper»(«attribute.name».get());
 					return this;
 				}
 

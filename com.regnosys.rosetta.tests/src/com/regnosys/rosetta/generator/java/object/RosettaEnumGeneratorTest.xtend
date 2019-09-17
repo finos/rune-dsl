@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.enums.EnumGenerator
+import com.regnosys.rosetta.generator.java.enums.EnumHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -15,7 +15,7 @@ import static org.hamcrest.MatcherAssert.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaEnumGeneratorTest {
+class RosettaEnumHelperTest {
     
     @Inject extension CodeGeneratorTestHelper
     @Inject extension ModelHelper
@@ -59,26 +59,26 @@ class RosettaEnumGeneratorTest {
 
     @Test
     def void shouldGenerateUppercaseUnderscoreFormattedEnumNames() {
-        assertThat(EnumGenerator.formatEnumName("ISDA1993Commodity"), is("ISDA_1993_COMMODITY"))
-        assertThat(EnumGenerator.formatEnumName("ISDA1998FX"), is("ISDA1998FX"))
-        assertThat(EnumGenerator.formatEnumName("iTraxxEuropeDealer"), is("I_TRAXX_EUROPE_DEALER"))
-        assertThat(EnumGenerator.formatEnumName("StandardLCDS"), is("STANDARD_LCDS"))
-        assertThat(EnumGenerator.formatEnumName("_1_1"), is("_1_1"))
-        assertThat(EnumGenerator.formatEnumName("_30E_360_ISDA"), is("_30E_360_ISDA"))
-        assertThat(EnumGenerator.formatEnumName("ACT_365L"), is("ACT_365L"))
-        assertThat(EnumGenerator.formatEnumName("OSPPrice"), is("OSP_PRICE"))
-        assertThat(EnumGenerator.formatEnumName("FRAYield"), is("FRA_YIELD"))
-        assertThat(EnumGenerator.formatEnumName("AED-EBOR-Reuters"), is("AED_EBOR_REUTERS"))
-        assertThat(EnumGenerator.formatEnumName("EUR-EURIBOR-Reuters"), is("EUR_EURIBOR_REUTERS"))
-        assertThat(EnumGenerator.formatEnumName("DJ.iTraxx.Europe"), is("DJ_I_TRAXX_EUROPE"))
-        assertThat(EnumGenerator.formatEnumName("IVS1OpenMarkets"), is("IVS_1_OPEN_MARKETS"))
-        assertThat(EnumGenerator.formatEnumName("D"), is("D"))
-        assertThat(EnumGenerator.formatEnumName("_1"), is("_1"))
-        assertThat(EnumGenerator.formatEnumName("DJ.CDX.NA"), is("DJ_CDX_NA"))
-        assertThat(EnumGenerator.formatEnumName("novation"), is("NOVATION"))
-        assertThat(EnumGenerator.formatEnumName("partialNovation"), is("PARTIAL_NOVATION"))
-        assertThat(EnumGenerator.formatEnumName("ALUMINIUM_ALLOY_LME_15_MONTH"), is("ALUMINIUM_ALLOY_LME_15_MONTH"))
-        assertThat(EnumGenerator.formatEnumName("AggregateClient"), is("AGGREGATE_CLIENT"))
-        assertThat(EnumGenerator.formatEnumName("Currency1PerCurrency2"), is("CURRENCY_1_PER_CURRENCY_2"))
+        assertThat(EnumHelper.formatEnumName("ISDA1993Commodity"), is("ISDA_1993_COMMODITY"))
+        assertThat(EnumHelper.formatEnumName("ISDA1998FX"), is("ISDA1998FX"))
+        assertThat(EnumHelper.formatEnumName("iTraxxEuropeDealer"), is("I_TRAXX_EUROPE_DEALER"))
+        assertThat(EnumHelper.formatEnumName("StandardLCDS"), is("STANDARD_LCDS"))
+        assertThat(EnumHelper.formatEnumName("_1_1"), is("_1_1"))
+        assertThat(EnumHelper.formatEnumName("_30E_360_ISDA"), is("_30E_360_ISDA"))
+        assertThat(EnumHelper.formatEnumName("ACT_365L"), is("ACT_365L"))
+        assertThat(EnumHelper.formatEnumName("OSPPrice"), is("OSP_PRICE"))
+        assertThat(EnumHelper.formatEnumName("FRAYield"), is("FRA_YIELD"))
+        assertThat(EnumHelper.formatEnumName("AED-EBOR-Reuters"), is("AED_EBOR_REUTERS"))
+        assertThat(EnumHelper.formatEnumName("EUR-EURIBOR-Reuters"), is("EUR_EURIBOR_REUTERS"))
+        assertThat(EnumHelper.formatEnumName("DJ.iTraxx.Europe"), is("DJ_I_TRAXX_EUROPE"))
+        assertThat(EnumHelper.formatEnumName("IVS1OpenMarkets"), is("IVS_1_OPEN_MARKETS"))
+        assertThat(EnumHelper.formatEnumName("D"), is("D"))
+        assertThat(EnumHelper.formatEnumName("_1"), is("_1"))
+        assertThat(EnumHelper.formatEnumName("DJ.CDX.NA"), is("DJ_CDX_NA"))
+        assertThat(EnumHelper.formatEnumName("novation"), is("NOVATION"))
+        assertThat(EnumHelper.formatEnumName("partialNovation"), is("PARTIAL_NOVATION"))
+        assertThat(EnumHelper.formatEnumName("ALUMINIUM_ALLOY_LME_15_MONTH"), is("ALUMINIUM_ALLOY_LME_15_MONTH"))
+        assertThat(EnumHelper.formatEnumName("AggregateClient"), is("AGGREGATE_CLIENT"))
+        assertThat(EnumHelper.formatEnumName("Currency1PerCurrency2"), is("CURRENCY_1_PER_CURRENCY_2"))
     }
 }

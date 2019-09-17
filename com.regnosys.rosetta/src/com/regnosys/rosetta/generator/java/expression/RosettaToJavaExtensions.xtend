@@ -43,7 +43,7 @@ import java.math.BigDecimal
 import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
-import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
+import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 
 class RosettaToJavaExtensions {

@@ -33,7 +33,7 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import java.util.HashMap
 import org.eclipse.xtend.lib.annotations.Data
 
-import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
+import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
 

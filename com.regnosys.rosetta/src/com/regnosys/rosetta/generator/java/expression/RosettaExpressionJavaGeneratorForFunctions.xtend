@@ -2,6 +2,8 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
@@ -50,18 +52,19 @@ import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
-import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
+import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.rosetta.model.lib.validation.ValidatorHelper
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	
 	@Inject RosettaTypeProvider typeProvider
-	@Inject com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider cardinalityProvider
+	@Inject ConvertableCardinalityProvider cardinalityProvider
 	@Inject JavaNames.Factory factory 
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension RosettaExtensions
-	
+	@Inject extension ImportManagerExtension
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		expr.javaCode(params, true);
 	}
@@ -169,11 +172,11 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	
 	private def StringConcatenationClient doExistsExpr(RosettaExistsExpression exists, StringConcatenationClient arg) {
 		if(exists.single)
-			'''singleExists(«arg», «exists.only»)'''
+			'''«importMethod(ValidatorHelper,"singleExists")»(«arg», «exists.only»)'''
 		else if(exists.multiple)
-			'''multipleExists(«arg», «exists.only»)'''
+			'''«importMethod(ValidatorHelper,"multipleExists")»(«arg», «exists.only»)'''
 		else
-			'''exists(«arg», «exists.only»)'''
+			'''«importMethod(ValidatorHelper,"exists")»(«arg», «exists.only»)'''
 	}
 	
 	def StringConcatenationClient absentExpr(RosettaAbsentExpression notSet, RosettaExpression argument, ParamMap params) {
@@ -181,13 +184,13 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		
 		if (arg instanceof RosettaBinaryOperation) {
 			if(arg.operator.equals("or") || arg.operator.equals("and"))
-				'''notExists(«arg.binaryExpr(notSet, params)»)'''
+				'''«importMethod(ValidatorHelper,"notExists")»(«arg.binaryExpr(notSet, params)»)'''
 			else
 				//if the arg is binary then the operator needs to be pushed down
 				arg.binaryExpr(notSet, params)
 		}
 		else {
-			'''notExists(«arg.javaCode(params)»)'''
+			'''«importMethod(ValidatorHelper,"notExists")»(«arg.javaCode(params)»)'''
 		}
 	}
 	
@@ -339,7 +342,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		
 		switch operator {
 			case ("="):
-				'''areEqual(«left», «right»)'''
+				'''«importMethod(ValidatorHelper, "areEqual")»(«left», «right»)'''
 			case ("<>"):
 				'''notEqual(«left», «right»)'''
 			case ("<") : 
