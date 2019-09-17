@@ -262,13 +262,21 @@ class ModelObjectBuilderGenerator {
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name») {
 					if(this.«attribute.name» == null){
 						this.«attribute.name» = new ArrayList<>();
-						this.«attribute.name».add(«attribute.toBuilder»);
-					} else {
-						this.«attribute.name».add(«attribute.toBuilder»);
+					}
+					this.«attribute.name».add(«attribute.toBuilder»);
+					return this;
+				}
+				
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(List<«attribute.toTypeSingle(names)»> «attribute.name»s) {
+					if(this.«attribute.name» == null){
+						this.«attribute.name» = new «ArrayList»<>();
+					}
+					for («attribute.toTypeSingle(names)» toAdd : «attribute.name»s) {
+						this.«attribute.name».add(toAdd.toBuilder());
 					}
 					return this;
 				}
-
+				
 				«IF attribute.isRosettaClassOrData»
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle(names)» «attribute.name») {
 						if(this.«attribute.name» == null){
@@ -315,7 +323,15 @@ class ModelObjectBuilderGenerator {
 					}
 					return this;
 				}
-
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(List<«attribute.toTypeSingle()»> «attribute.name»s) {
+					if(this.«attribute.name» == null){
+						this.«attribute.name» = new ArrayList<>();
+					}
+					for («attribute.toTypeSingle()» toAdd : «attribute.name»s) {
+						this.«attribute.name».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
+					}
+					return this;
+				}
 				«IF attribute.isRosettaClassOrData»
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle» «attribute.name») {
 						if(this.«attribute.name» == null){
@@ -424,10 +440,13 @@ class ModelObjectBuilderGenerator {
 	
 		
 	private def toBuilder(ExpandedAttribute attribute) {
-		if(attribute.isRosettaClassOrData || attribute.hasMetas) {
+		if(needsBuilder(attribute)) {
 			'''«attribute.name».toBuilder()'''
 		} else {
 			attribute.name
 		}
-	}	
+	}
+	private def needsBuilder(ExpandedAttribute attribute){
+		attribute.isRosettaClassOrData || attribute.hasMetas
+	}
 }

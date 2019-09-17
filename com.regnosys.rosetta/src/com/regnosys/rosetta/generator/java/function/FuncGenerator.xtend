@@ -88,9 +88,11 @@ class FuncGenerator {
 		'''
 			«IF isAbstract»@«ImplementedBy»(«func.name»Impl.class)«ENDIF»
 			public «IF isAbstract»abstract«ENDIF» class «func.name» implements «RosettaFunction» {
+				«IF !dependencies.empty»
 				
 				// RosettaFunction dependencies
 				//
+				«ENDIF»
 				«FOR dep : dependencies»
 					@«Inject» protected «dep.toJavaQualifiedType» «dep.name.toFirstLower»;
 				«ENDFOR»
@@ -126,7 +128,7 @@ class FuncGenerator {
 						«ENDFOR»
 					«ENDIF»
 					
-					«outputType» «outputName» = «outputName»Builder.build();
+					«outputType» «outputName» = «outputName»Builder«IF getOutput(func).type.needsBuilder».build()«ENDIF»;
 					«IF !func.postConditions.empty»
 						// post-conditions
 						//
@@ -134,12 +136,10 @@ class FuncGenerator {
 							«cond.contributeCondition»
 						«ENDFOR»
 					«ENDIF»
-					// Build and return the output object
-					//
 					return «outputName»;
 				}
 				«IF isAbstract»
-					protected abstract «func.outputTypeOrVoid(names)» doEvaluate(«func.inputsAsParameters(names)»);
+					protected abstract «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
 				«ENDIF»
 				«FOR alias : func.shortcuts»
 					«IF aliasOut.get(alias)»

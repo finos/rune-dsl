@@ -10,7 +10,7 @@ import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.calculation.CalculationGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
-import com.regnosys.rosetta.generator.java.function.FunctionGenerator
+import com.regnosys.rosetta.generator.java.function.FuncGenerator
 import com.regnosys.rosetta.generator.java.object.DataGenerator
 import com.regnosys.rosetta.generator.java.object.DataValidatorsGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
@@ -35,7 +35,6 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.regnosys.rosetta.generator.java.function.FuncGenerator
 
 /**
  * Generates code from your model files on save.
@@ -51,7 +50,6 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject ChoiceRuleGenerator choiceRuleGenerator
 	@Inject DataRuleGenerator dataRuleGenerator
 	@Inject CalculationGenerator calculationGenerator
-	@Inject FunctionGenerator functionGenerator
 	@Inject BlueprintGenerator blueprintGenerator
 	@Inject QualifyFunctionGenerator<RosettaEvent> qualifyEventsGenerator
 	@Inject QualifyFunctionGenerator<RosettaProduct> qualifyProductsGenerator
@@ -101,7 +99,7 @@ class RosettaGenerator extends AbstractGenerator {
 								funcGenerator.generate(javaNames, fsa, it, version)
 							} else {
 								if(handleAsSpecFunction) {
-									functionGenerator.generate(javaNames, fsa, it, version)
+									funcGenerator.generate(javaNames, fsa, it, version)
 								} else if(!isDispatchingFunction){
 									calculationGenerator.generateFunction(javaNames, fsa, it, version)
 								}
@@ -115,7 +113,6 @@ class RosettaGenerator extends AbstractGenerator {
 				dataRuleGenerator.generate(packages, fsa, elements, version)
 				metaGenerator.generate(packages, fsa, elements, version)
 				calculationGenerator.generate(packages, fsa, elements, version)
-				functionGenerator.generate(packages, fsa, elements, version)
 				blueprintGenerator.generate(packages, fsa, elements, version)
 				qualifyEventsGenerator.generate(packages, fsa, elements, packages.qualifyEvent, RosettaEvent, version)
 				qualifyProductsGenerator.generate(packages, fsa, elements, packages.qualifyProduct, RosettaProduct, version)

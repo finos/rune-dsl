@@ -54,7 +54,6 @@ import com.rosetta.model.lib.validation.ComparisonResult
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.generator.java.function.RosettaExpressionJavaGeneratorForFunctions.ParamMap
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	

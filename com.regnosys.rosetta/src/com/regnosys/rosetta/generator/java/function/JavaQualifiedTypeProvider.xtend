@@ -27,7 +27,6 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 
 class JavaQualifiedTypeProvider {
 

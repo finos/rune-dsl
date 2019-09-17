@@ -161,10 +161,7 @@ class CalculationGenerator {
 		]
 	}
 	def generateFunction(JavaNames javaNames,IFileSystemAccess2 fsa, Function function, String version) {
-		if(function.handleAsSpecFunction)
-			generateExternalFunction(fsa, function, javaNames, version)
-		else
-			generateCalculationFunction(fsa, function, javaNames, version)
+		generateCalculationFunction(fsa, function, javaNames, version)
 	}
 	
 	def generateCalculationFunction(IFileSystemAccess2 fsa, Function function, JavaNames names, String version) {
