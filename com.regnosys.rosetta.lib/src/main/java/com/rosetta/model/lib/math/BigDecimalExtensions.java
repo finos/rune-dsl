@@ -3,7 +3,7 @@ package com.rosetta.model.lib.math;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
-import com.rosetta.model.lib.functions.MapperBuilder;
+import com.rosetta.model.lib.functions.Mapper;
 import com.rosetta.model.lib.functions.MapperS;
 
 public class BigDecimalExtensions {
@@ -43,39 +43,39 @@ public class BigDecimalExtensions {
 		return a.subtract(b).abs().compareTo(error) < 0;
 	}
 	
-	/// for builders
+	/// for Mappers
 	/**
 	 * Add a and b
 	 */
-	public static MapperBuilder<BigDecimal> add(MapperBuilder<BigDecimal> a, MapperBuilder<BigDecimal> b) {
+	public static Mapper<BigDecimal> add(Mapper<BigDecimal> a, Mapper<BigDecimal> b) {
 		return MapperS.of(add(a.get(),b.get()));
 	}
 	
 	/**
 	 * Subtract b from a
 	 */
-	public static MapperBuilder<BigDecimal> subtract(MapperBuilder<BigDecimal> a, MapperBuilder<BigDecimal> b) {
+	public static Mapper<BigDecimal> subtract(Mapper<BigDecimal> a, Mapper<BigDecimal> b) {
 		return  MapperS.of(subtract(a.get(),b.get()));
 	}
 	
 	/**
 	 * Multiply a and b
 	 */
-	public static MapperBuilder<BigDecimal> multiply(MapperBuilder<BigDecimal> a, MapperBuilder<BigDecimal> b) {
+	public static Mapper<BigDecimal> multiply(Mapper<BigDecimal> a, Mapper<BigDecimal> b) {
 		return  MapperS.of(multiply(a.get(),b.get()));
 	}
 	
 	/**
 	 * Divide a by b 
 	 */
-	public static MapperBuilder<BigDecimal> divide(MapperBuilder<BigDecimal> a, MapperBuilder<BigDecimal> b) {
+	public static Mapper<BigDecimal> divide(Mapper<BigDecimal> a, Mapper<BigDecimal> b) {
 		return MapperS.of(divide(a.get(),b.get()));
 	}
 	
 	/**
 	 * Is a close to b, with given error
 	 */
-	public static boolean closeTo(MapperBuilder<BigDecimal> a, MapperBuilder<BigDecimal> b, MapperBuilder<BigDecimal> error) {
+	public static boolean closeTo(Mapper<BigDecimal> a, Mapper<BigDecimal> b, Mapper<BigDecimal> error) {
 		return closeTo(a.get(), b.get(), error.get());
 	}
 }

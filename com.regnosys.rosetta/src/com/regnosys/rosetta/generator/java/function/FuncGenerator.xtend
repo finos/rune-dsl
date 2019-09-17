@@ -30,12 +30,13 @@ import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
-import com.rosetta.model.lib.functions.MapperBuilder
+import com.rosetta.model.lib.functions.Mapper
 import com.rosetta.model.lib.functions.RosettaFunction
 import java.util.List
 import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
+import com.rosetta.model.lib.functions.MapperBuilder
 
 class FuncGenerator {
 
@@ -70,6 +71,11 @@ class FuncGenerator {
 				«FOR imp : classBody.staticImports»
 					import static «imp»;
 				«ENDFOR»
+				// TODO fix unused imports
+				import java.math.BigDecimal;
+				import org.isda.cdm.*;
+				import com.rosetta.model.lib.meta.*;
+				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 				
 				«classBody.toString»
 			'''
@@ -145,7 +151,7 @@ class FuncGenerator {
 							return «expressionWithBuilder.toJava(alias.expression, Context.create(names))»;
 						}
 					«ELSE»
-						protected «MapperBuilder»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
+						protected «IF alias.needsBuilder»«MapperBuilder»«ELSE»«Mapper»«ENDIF»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
 							return «expressionGenerator.javaCode(alias.expression, new ParamMap)»;
 						}
 					«ENDIF»
@@ -218,9 +224,12 @@ class FuncGenerator {
 
 	private def StringConcatenationClient toBuilderType(Attribute attr, JavaNames names) {
 		val javaType = names.toJavaType(attr.type)
-		'''«IF attr.type.needsBuilder»«javaType».«javaType»Builder«ELSE»«MapperBuilder»<«javaType»>«ENDIF»'''
+		'''«IF attr.type.needsBuilder»«javaType».«javaType»Builder«ELSE»«Mapper»<«javaType»>«ENDIF»'''
 	}
 
+	private def boolean needsBuilder(ShortcutDeclaration alias) {
+		needsBuilder(typeProvider.getRType(alias.expression))
+	}
 	private def boolean needsBuilder(AssignPathRoot root) {
 		switch (root) {
 			Attribute: root.type.needsBuilder

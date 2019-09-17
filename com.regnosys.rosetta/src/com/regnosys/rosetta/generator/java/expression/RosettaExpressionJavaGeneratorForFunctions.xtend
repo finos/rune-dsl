@@ -172,11 +172,11 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	
 	private def StringConcatenationClient doExistsExpr(RosettaExistsExpression exists, StringConcatenationClient arg) {
 		if(exists.single)
-			'''«importMethod(ValidatorHelper,"singleExists")»(«arg», «exists.only»)'''
+			'''singleExists(«arg», «exists.only»)'''
 		else if(exists.multiple)
-			'''«importMethod(ValidatorHelper,"multipleExists")»(«arg», «exists.only»)'''
+			'''multipleExists(«arg», «exists.only»)'''
 		else
-			'''«importMethod(ValidatorHelper,"exists")»(«arg», «exists.only»)'''
+			'''exists(«arg», «exists.only»)'''
 	}
 	
 	def StringConcatenationClient absentExpr(RosettaAbsentExpression notSet, RosettaExpression argument, ParamMap params) {
@@ -184,13 +184,13 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		
 		if (arg instanceof RosettaBinaryOperation) {
 			if(arg.operator.equals("or") || arg.operator.equals("and"))
-				'''«importMethod(ValidatorHelper,"notExists")»(«arg.binaryExpr(notSet, params)»)'''
+				'''notExists(«arg.binaryExpr(notSet, params)»)'''
 			else
 				//if the arg is binary then the operator needs to be pushed down
 				arg.binaryExpr(notSet, params)
 		}
 		else {
-			'''«importMethod(ValidatorHelper,"notExists")»(«arg.javaCode(params)»)'''
+			'''notExists(«arg.javaCode(params)»)'''
 		}
 	}
 	
