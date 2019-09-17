@@ -5,6 +5,7 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import com.regnosys.rosetta.generator.java.expression.RosettaToJavaExtensions
 import com.regnosys.rosetta.generator.java.object.ModelObjectBoilerPlate
 import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
 import com.regnosys.rosetta.generator.java.util.JavaNames

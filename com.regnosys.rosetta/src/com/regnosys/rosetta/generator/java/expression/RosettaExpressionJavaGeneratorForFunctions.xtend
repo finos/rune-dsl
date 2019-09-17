@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.function
+package com.regnosys.rosetta.generator.java.expression
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
@@ -57,7 +57,7 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 class RosettaExpressionJavaGeneratorForFunctions {
 	
 	@Inject RosettaTypeProvider typeProvider
-	@Inject ConvertableCardinalityProvider cardinalityProvider
+	@Inject com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider cardinalityProvider
 	@Inject JavaNames.Factory factory 
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension RosettaExtensions
@@ -562,7 +562,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		
 		val receiver = call.receiver
 		val left = switch receiver {
-			RosettaCallableCall: ''''''//(receiver.callable as RosettaClass).name
+			RosettaCallableCall: '''''' //(receiver.callable as RosettaClass).name
 			RosettaFeatureCall: toNodeLabel(receiver)
 			default: throw new UnsupportedOperationException("Unsupported expression type")
 		}
