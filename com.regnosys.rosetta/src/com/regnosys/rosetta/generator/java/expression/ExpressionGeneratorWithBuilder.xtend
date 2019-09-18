@@ -9,6 +9,8 @@ import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaClass
+import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
@@ -22,11 +24,15 @@ import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
+import com.regnosys.rosetta.types.RClassType
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.math.BigDecimalExtensions
@@ -36,6 +42,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
+import com.regnosys.rosetta.rosetta.RosettaTyped
 
 class ExpressionGeneratorWithBuilder {
 
@@ -64,22 +71,20 @@ class ExpressionGeneratorWithBuilder {
 		'''«ele.receiver.toJava(ctx)».«right»(«IF cardinalityProvider.isMulti(feature)»0«ENDIF»)'''
 	}
 
-	
 	def dispatch StringConcatenationClient toJava(Function ele, Context ctx) {
-		'''«ele.name.toFirstLower»'''	
+		'''«ele.name.toFirstLower»'''
 	}
 
 	def dispatch StringConcatenationClient toJava(RosettaGroupByFeatureCall ele, Context ctx) {
-		toJava(ele.call, ctx)	
+		toJava(ele.call, ctx)
 	}
-	
+
 	def dispatch StringConcatenationClient toJava(RosettaEnumValueReference ele, Context ctx) {
 		'''«ctx.names.toJavaQualifiedType(ele.enumeration)».«ele.value.convertValues»'''
 	}
 
-
 	def dispatch StringConcatenationClient toJava(RosettaRegularAttribute ele, Context ctx) {
-		if (ele.metaTypes===null || ele.metaTypes.isEmpty)
+		if (ele.metaTypes === null || ele.metaTypes.isEmpty)
 			'''get«ele.name.toFirstUpper»()'''
 		else {
 			'''get«ele.name.toFirstUpper»().getValue()'''
@@ -96,22 +101,21 @@ class ExpressionGeneratorWithBuilder {
 			Function: {
 				val returnVal = funcExt.getOutput(callable)
 				if (returnVal !== null) {
- 					return '''«toJava(ele.callable, ctx)».evaluate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg, ctx)»«ENDFOR»)'''
+					return '''«toJava(ele.callable, ctx)».evaluate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg, ctx)»«ENDFOR»)'''
 				}
 			}
 			default: '''«toJava(ele.callable, ctx)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg, ctx)»«ENDFOR»)'''
 		}
 	}
-	
+
 	def dispatch StringConcatenationClient toJava(RosettaExternalFunction ele, Context ctx) {
 		if (ele.isLibrary) {
 			'''new «ctx.names.toJavaQualifiedType(ele as RosettaType)»()'''
 		} else {
-			'''«ele.name.toFirstLower»'''	
+			'''«ele.name.toFirstLower»'''
 		}
 	}
-	
-	
+
 	def dispatch StringConcatenationClient toJava(RosettaRecordType ele, Context ctx) {
 		'''new «ctx.names.toJavaQualifiedType(ele as RosettaType)»()'''
 	}
@@ -119,6 +123,7 @@ class ExpressionGeneratorWithBuilder {
 	def dispatch StringConcatenationClient toJava(RosettaLiteral ele, Context ctx) {
 		'''«ele.stringValue»'''
 	}
+
 	def dispatch StringConcatenationClient toJava(EmptyLiteral ele, Context ctx) {
 		'''null'''
 	}
@@ -185,14 +190,51 @@ class ExpressionGeneratorWithBuilder {
 		}
 	}
 
+	def dispatch StringConcatenationClient toJava(RosettaConditionalExpression ele, Context ctx) {
+		'''«toJava(ele.^if, ctx)» ? «toJava(ele.ifthen, ctx)» : «IF ele.elsethen !== null»«toJava(ele.elsethen, ctx)»«ELSE»null«ENDIF»'''
+	}
+
 	private def StringConcatenationClient attributeAccess(RosettaFeature feature, Context ctx, boolean autoVal) {
-		'''getOrCreate«feature.name.toFirstUpper»'''
+		 '''«IF feature.needsBuilder»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»'''
 	}
 
 	private def inputsAsArgs(ShortcutDeclaration alias) {
 		val func = EcoreUtil2.getContainerOfType(alias, Function)
 		funcExt.getInputs(func).join(', ')[name]
 	}
+
+	dispatch def boolean needsBuilder(RosettaTyped ele) {
+		needsBuilder(ele.type)
+	}
+	
+	dispatch def boolean needsBuilder(ShortcutDeclaration alias) {
+		needsBuilder(typeProvider.getRType(alias.expression))
+	}
+
+	dispatch def boolean needsBuilder(AssignPathRoot root) {
+		switch (root) {
+			Attribute: root.type.needsBuilder
+			ShortcutDeclaration: typeProvider.getRType(root.expression).needsBuilder
+			default: false
+		}
+	}
+
+	dispatch def boolean needsBuilder(RosettaType type) {
+		switch (type) {
+			RosettaClass,
+			com.regnosys.rosetta.rosetta.simple.Data: true
+			default: false
+		}
+	}
+
+	dispatch def boolean needsBuilder(RType type) {
+		switch (type) {
+			RClassType,
+			RDataType: true
+			default: false
+		}
+	}
+
 //
 //	private dispatch def metaClass(RosettaRegularAttribute attribute) {
 //		if (attribute.metaTypes.exists[m|m.name == "reference"])
@@ -207,7 +249,6 @@ class ExpressionGeneratorWithBuilder {
 //		else
 //			"FieldWithMeta" + attribute.type.name.toJavaType.toFirstUpper
 //	}
-
 	private def StringConcatenationClient toBigDecimal(StringConcatenationClient sequence) {
 		'''«BigDecimalExtensions».valueOf(«sequence»)'''
 	}

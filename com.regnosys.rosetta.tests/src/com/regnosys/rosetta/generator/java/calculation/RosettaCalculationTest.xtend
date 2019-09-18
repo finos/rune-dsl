@@ -153,14 +153,15 @@ class RosettaCalculationTest  implements RosettaIssueCodes {
 				a number (1..1);
 				b number (1..1);
 			}
-			
-			calculation FooNumberCalc {
-				number: 1 + aArg + bArg 
+						
+			func FooNumberCalc:
+				inputs: f Foo(1..1)
+				output:
+					out number (1..1)
+				alias aArg: f -> a
+				alias bArg: f -> b
 				
-				where
-					aArg: is Foo -> a 
-					bArg: is Foo -> b 
-			}
+				assign-output  out : 1 + aArg + bArg 
 		'''.generateCode
 		
 		val classes = code.compileToClasses
@@ -180,13 +181,14 @@ class RosettaCalculationTest  implements RosettaIssueCodes {
 				b int (1..1);
 			}
 			
-			calculation FooIntCalc {
-				defined by: if aArg > 0 then aArg * 5 else bArg + 5
+			func FooIntCalc:
+				inputs: f Foo(1..1)
+				output:
+					out int (1..1)
+				alias aArg: f -> a
+				alias bArg: f -> b
 				
-				where
-					aArg: is Foo -> a 
-					bArg: is Foo -> b 
-			}
+				assign-output  out : if aArg > 0 then aArg * 5 else bArg + 5
 		'''.generateCode
 		
 		val classes = code.compileToClasses
@@ -212,13 +214,14 @@ class RosettaCalculationTest  implements RosettaIssueCodes {
 				b number (1..1);
 			}
 			
-			calculation FooNumberCalc {
-				number: if aArg >= 0.0 then aArg * 5.0 else bArg / 5
+			func FooNumberCalc:
+				inputs: f Foo(1..1)
+				output:
+					out number (1..1)
+				alias aArg: f -> a
+				alias bArg: f -> b
 				
-				where
-					aArg: is Foo -> a 
-					bArg: is Foo -> b  
-			}
+				assign-output  out : if aArg >= 0.0 then aArg * 5.0 else bArg / 5
 		'''.generateCode
 		
 		val classes = code.compileToClasses
@@ -237,10 +240,7 @@ class RosettaCalculationTest  implements RosettaIssueCodes {
 	}
 
 	def private calculate(Object calc, Object input) {
-		val result = IResult.cast(calc.class.getMethod('calculate', input.class).invoke(calc, input))
-		
-		assertThat('Unexpected number of result attributes', result.attributes.size, is(1))
-		
-		result.attributes.get(0).get(result)
+		val result =  calc.class.getMethod('evaluate', input.class).invoke(calc, input)
+		result
 	}
 }

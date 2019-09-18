@@ -13,22 +13,16 @@ import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
-import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
-import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.types.RClassType
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.Mapper
@@ -94,6 +88,7 @@ class FuncGenerator {
 		val outputName = getOutput(func)?.name
 		val outputType = func.outputTypeOrVoid(names)
 		val aliasOut = func.shortcuts.toMap([it], [exprHelper.usesOutputParameter(it.expression)])
+		val outNeedsBuilder = expressionWithBuilder.needsBuilder(getOutput(func))
 		'''
 			«IF isAbstract»@«ImplementedBy»(«className»Impl.class)«ENDIF»
 			public «IF isAbstract»abstract «ENDIF»class «className» implements «RosettaFunction» {
@@ -123,7 +118,7 @@ class FuncGenerator {
 						«ENDFOR»
 					«ENDIF»
 					
-					«outputType» «outputName» = doEvaluate(«func.inputsAsArguments(names)»)«IF getOutput(func).type.needsBuilder».build()«ENDIF»;
+					«outputType» «outputName» = doEvaluate(«func.inputsAsArguments(names)»)«IF outNeedsBuilder».build()«ENDIF»;
 					
 					«IF !func.postConditions.empty»
 						// post-conditions
@@ -140,12 +135,12 @@ class FuncGenerator {
 				«ELSE»
 					protected «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
 						«IF getOutput(func) !== null»
-							«getOutput(func).toHolderType(names)» «outputName»Holder = «IF getOutput(func).type.needsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
+							«getOutput(func).toHolderType(names)» «outputName»Holder = «IF outNeedsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
 						«ENDIF»
 						«FOR indexed : func.operations.indexed»
 							«indexed.value.assign(aliasOut, names)»;
 						«ENDFOR»
-						return «outputName»Holder«IF !getOutput(func).needsBuilder».get()«ENDIF»;
+						return «outputName»Holder«IF !outNeedsBuilder».get()«ENDIF»;
 					}
 					
 				«ENDIF»
@@ -156,7 +151,7 @@ class FuncGenerator {
 							return «expressionWithBuilder.toJava(alias.expression, Context.create(names))»;
 						}
 					«ELSE»
-						protected «IF alias.needsBuilder»«MapperBuilder»«ELSE»«Mapper»«ENDIF»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
+						protected «IF expressionWithBuilder.needsBuilder(alias)»«MapperBuilder»«ELSE»«Mapper»«ENDIF»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
 							return «expressionGenerator.javaCode(alias.expression, new ParamMap)»;
 						}
 					«ENDIF»
@@ -208,7 +203,7 @@ class FuncGenerator {
 		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
 			'''
-			«IF operation.assignRoot.needsBuilder»
+			«IF expressionWithBuilder.needsBuilder(operation.assignRoot)»
 				«operation.assignTarget(outs, names)»
 					.«IF operation.assignRoot.isMany»add«ELSE»set«ENDIF»«operation.assignRoot.name.toFirstUpper»(«expressionWithBuilder.toJava(operation.expression, ctx)»)
 			«ELSE»
@@ -217,7 +212,7 @@ class FuncGenerator {
 			'''
 				«operation.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index»«ENDIF»)«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«expressionGenerator.javaCode(operation.expression, new ParamMap)»)«ENDIF»«ENDFOR»;
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»(«expressionGenerator.javaCode(operation.expression, new ParamMap)».get())«ENDIF»«ENDFOR»;
 			'''
 	}
 
@@ -260,46 +255,19 @@ class FuncGenerator {
 	def private StringConcatenationClient shortcutJavaType(JavaNames names, ShortcutDeclaration feature) {
 		val rType = typeProvider.getRType(feature.expression)
 		val javaType = names.toJavaType(rType)
-		'''«javaType»«IF rType.needsBuilder».«javaType»Builder«ENDIF»'''
+		'''«javaType»«IF expressionWithBuilder.needsBuilder(rType)».«javaType»Builder«ENDIF»'''
 	}
 
 	private def StringConcatenationClient toBuilderType(Attribute attr, JavaNames names) {
 		val javaType = names.toJavaType(attr.type)
-		'''«IF attr.type.needsBuilder»«javaType».«javaType»Builder«ELSE»«javaType»«ENDIF»'''
+		'''«IF expressionWithBuilder.needsBuilder(attr)»«javaType».«javaType»Builder«ELSE»«javaType»«ENDIF»'''
 	}
 	
 	private def StringConcatenationClient toHolderType(Attribute attr, JavaNames names) {
 		val javaType = names.toJavaType(attr.type)
-		'''«IF attr.type.needsBuilder»«javaType».«javaType»Builder«ELSE»«Mapper»<«javaType»>«ENDIF»'''
+		'''«IF expressionWithBuilder.needsBuilder(attr)»«javaType».«javaType»Builder«ELSE»«Mapper»<«javaType»>«ENDIF»'''
 	}
-
-	private def boolean needsBuilder(ShortcutDeclaration alias) {
-		needsBuilder(typeProvider.getRType(alias.expression))
-	}
-	private def boolean needsBuilder(AssignPathRoot root) {
-		switch (root) {
-			Attribute: root.type.needsBuilder
-			ShortcutDeclaration: typeProvider.getRType(root.expression).needsBuilder
-			default: false
-		}
-	}
-
-	private def boolean needsBuilder(RosettaType type) {
-		switch (type) {
-			RosettaClass,
-			Data: true
-			default: false
-		}
-	}
-
-	private def boolean needsBuilder(RType type) {
-		switch (type) {
-			RClassType,
-			RDataType: true
-			default: false
-		}
-	}
-
+	
 	private def List<Segment> asSegmentList(Segment segment) {
 		val result = newArrayList
 		if (segment !== null) {

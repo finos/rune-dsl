@@ -436,7 +436,7 @@ class RosettaExpressionJavaGenerator {
 		else "FieldWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 	}
 	
-	def static buildMapFunc(RosettaMetaType meta, boolean isLast) {
+	def buildMapFunc(RosettaMetaType meta, boolean isLast) {
 		if (meta.name=="reference") {
 			'''.map("get«meta.name.toFirstUpper»", a->a.getGlobalReference())'''
 		}
