@@ -114,38 +114,40 @@ class FuncGenerator {
 				public «outputType» evaluate(«func.inputsAsParameters(names)») {
 					«IF !func.conditions.empty»
 						// pre-conditions
-						//
 						«FOR cond:func.conditions»
+						
 							«cond.contributeCondition»
 						«ENDFOR»
 					«ENDIF»
 					
-					«IF isAbstract»
-						«IF getOutput(func) !== null»«getOutput(func).toBuilderType(names)» «outputName»Holder = «ENDIF»doEvaluate(«func.inputsAsArguments(names)»);
-					«ELSE»
-						«IF getOutput(func) !== null»
-							«getOutput(func).toBuilderType(names)» «outputName»Holder = «IF getOutput(func).type.needsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
-						«ENDIF»
-						«FOR indexed : func.operations.indexed»
-							«val operation = indexed.value»
-							«operation.assign(aliasOut, names)»;
-						«ENDFOR»
-					«ENDIF»
+					«outputType» «outputName» = doEvaluate(«func.inputsAsArguments(names)»)«IF getOutput(func).type.needsBuilder».build()«ENDIF»;
 					
-					«outputType» «outputName» = «outputName»Holder«IF getOutput(func).type.needsBuilder».build()«ELSE».get()«ENDIF»;
 					«IF !func.postConditions.empty»
 						// post-conditions
-						//
 						«FOR cond:func.postConditions»
+
 							«cond.contributeCondition»
 						«ENDFOR»
 					«ENDIF»
 					return «outputName»;
 				}
+				
 				«IF isAbstract»
 					protected abstract «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
+				«ELSE»
+					protected «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
+						«IF getOutput(func) !== null»
+							«getOutput(func).toHolderType(names)» «outputName»Holder = «IF getOutput(func).type.needsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
+						«ENDIF»
+						«FOR indexed : func.operations.indexed»
+							«indexed.value.assign(aliasOut, names)»;
+						«ENDFOR»
+						return «outputName»Holder«IF !getOutput(func).needsBuilder».get()«ENDIF»;
+					}
+					
 				«ENDIF»
 				«FOR alias : func.shortcuts»
+					
 					«IF aliasOut.get(alias)»
 						protected «names.shortcutJavaType(alias)» «alias.name»(«getOutput(func).toBuilderType(names)» «outputName», «IF !getInputs(func).empty»«func.inputsAsParameters(names)»«ENDIF») {
 							return «expressionWithBuilder.toJava(alias.expression, Context.create(names))»;
@@ -170,8 +172,7 @@ class FuncGenerator {
 				«operation.assignTarget(outs, names)»
 					.«IF operation.assignRoot.isMany»add«ELSE»set«ENDIF»«operation.assignRoot.name.toFirstUpper»(«expressionWithBuilder.toJava(operation.expression, ctx)»)
 			«ELSE»
-				«operation.assignTarget(outs, names)» = «expressionWithBuilder.toJava(operation.expression, ctx)»
-			«ENDIF»'''
+				«operation.assignTarget(outs, names)» = «expressionWithBuilder.toJava(operation.expression, ctx)»«ENDIF»'''
 		else
 			'''
 				«operation.assignTarget(outs, names)»
@@ -223,6 +224,11 @@ class FuncGenerator {
 	}
 
 	private def StringConcatenationClient toBuilderType(Attribute attr, JavaNames names) {
+		val javaType = names.toJavaType(attr.type)
+		'''«IF attr.type.needsBuilder»«javaType».«javaType»Builder«ELSE»«javaType»«ENDIF»'''
+	}
+	
+	private def StringConcatenationClient toHolderType(Attribute attr, JavaNames names) {
 		val javaType = names.toJavaType(attr.type)
 		'''«IF attr.type.needsBuilder»«javaType».«javaType»Builder«ELSE»«Mapper»<«javaType»>«ENDIF»'''
 	}
