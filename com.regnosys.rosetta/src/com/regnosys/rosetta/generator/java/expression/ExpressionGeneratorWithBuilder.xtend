@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.base.Objects
 import com.google.inject.Inject
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
@@ -32,13 +31,11 @@ import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.math.BigDecimalExtensions
 import com.rosetta.model.lib.records.Date
-import java.math.BigDecimal
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 
 class ExpressionGeneratorWithBuilder {
 
@@ -46,7 +43,6 @@ class ExpressionGeneratorWithBuilder {
 	@Inject RosettaTypeProvider typeProvider
 	@Inject ConvertableCardinalityProvider cardinalityProvider
 	@Inject RosettaFunctionExtensions funcExt
-	@Inject extension RosettaExtensions
 
 	dispatch def StringConcatenationClient toJava(RosettaExpression ele, Context ctx) {
 		throw new UnsupportedOperationException('Not supported expression: ' + ele.eClass.name)
@@ -179,7 +175,7 @@ class ExpressionGeneratorWithBuilder {
 				'''«callee.name»'''
 			}
 			ShortcutDeclaration: {
-				'''«callee.name»(«inputsAsArgs(callee)»)'''
+				'''«callee.name»(«inputsAsArgs(callee)»).get()'''
 			}
 			RosettaNamed: {
 				'''«callee.name»'''
@@ -197,23 +193,23 @@ class ExpressionGeneratorWithBuilder {
 		val func = EcoreUtil2.getContainerOfType(alias, Function)
 		funcExt.getInputs(func).join(', ')[name]
 	}
-
-	private dispatch def metaClass(RosettaRegularAttribute attribute) {
-		if (attribute.metaTypes.exists[m|m.name == "reference"])
-			"ReferenceWithMeta" + attribute.type.name.toJavaType.toFirstUpper
-		else
-			"FieldWithMeta" + attribute.type.name.toJavaType.toFirstUpper
-	}
-
-	private dispatch def metaClass(Attribute attribute) {
-		if (attribute.annotations.exists[a|a.annotation?.name == "metadata" && a.attribute?.name == "reference"])
-			"ReferenceWithMeta" + attribute.type.name.toJavaType.toFirstUpper
-		else
-			"FieldWithMeta" + attribute.type.name.toJavaType.toFirstUpper
-	}
+//
+//	private dispatch def metaClass(RosettaRegularAttribute attribute) {
+//		if (attribute.metaTypes.exists[m|m.name == "reference"])
+//			"ReferenceWithMeta" + attribute.type.name.toJavaType.toFirstUpper
+//		else
+//			"FieldWithMeta" + attribute.type.name.toJavaType.toFirstUpper
+//	}
+//
+//	private dispatch def metaClass(Attribute attribute) {
+//		if (attribute.annotations.exists[a|a.annotation?.name == "metadata" && a.attribute?.name == "reference"])
+//			"ReferenceWithMeta" + attribute.type.name.toJavaType.toFirstUpper
+//		else
+//			"FieldWithMeta" + attribute.type.name.toJavaType.toFirstUpper
+//	}
 
 	private def StringConcatenationClient toBigDecimal(StringConcatenationClient sequence) {
-		'''«BigDecimal».valueOf(«sequence»)'''
+		'''«BigDecimalExtensions».valueOf(«sequence»)'''
 	}
 
 }

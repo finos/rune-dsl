@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.ImplementedBy
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.calculation.RosettaFunctionDependencyProvider
+import com.google.inject.Provider
 import com.regnosys.rosetta.generator.java.expression.Context
 import com.regnosys.rosetta.generator.java.expression.ExpressionGeneratorWithBuilder
 import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions
@@ -14,6 +14,7 @@ import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaClass
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -31,12 +32,15 @@ import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.Mapper
+import com.rosetta.model.lib.functions.MapperBuilder
+import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.RosettaFunction
 import java.util.List
 import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
-import com.rosetta.model.lib.functions.MapperBuilder
+
+import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 class FuncGenerator {
 
@@ -51,49 +55,48 @@ class FuncGenerator {
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = javaNames.packages.functions.directoryName + '/' + func.name + '.java'
 
-		try {
-			val deps = func.shortcuts.flatMap[functionDependencyProvider.functionDependencies(it.expression)] +
-				func.operations.flatMap[functionDependencyProvider.functionDependencies(it.expression)]
-			val condDeps = (func.conditions + func.postConditions).flatMap[expressions].flatMap [
-				functionDependencyProvider.functionDependencies(it)
-			]
-			val dependencies = Util.distinctBy(deps + condDeps, [name]).sortBy[it.name]
+		
+		val dependencies = collectFunctionDependencies(func)
 
-			val classBody = tracImports(func.classBody(dependencies, javaNames, version))
-
-			val content = '''
-				package «javaNames.packages.functions.packageName»;
-				
-				«FOR imp : classBody.imports»
-					import «imp»;
-				«ENDFOR»
-				
-				«FOR imp : classBody.staticImports»
-					import static «imp»;
-				«ENDFOR»
-				// TODO fix unused imports
-				import java.math.BigDecimal;
-				import org.isda.cdm.*;
-				import com.rosetta.model.lib.meta.*;
-				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
-				
-				«classBody.toString»
-			'''
-			fsa.generateFile(fileName, content)
-		} catch (Exception e) {
-			throw new UnsupportedOperationException('Unable to generate code for: ' + fileName, e)
-		}
+		val classBody = if (func.handleAsEnumFunction) {
+				tracImports(func.dispatchClassBody(func.name, dependencies, javaNames, version))
+			} else {
+				tracImports(func.classBody(func.name, dependencies, javaNames, version))
+			}
+		val content = '''
+			package «javaNames.packages.functions.packageName»;
+			
+			«FOR imp : classBody.imports»
+				import «imp»;
+			«ENDFOR»
+			
+			«FOR imp : classBody.staticImports»
+				import static «imp»;
+			«ENDFOR»
+			
+			«classBody.toString»
+		'''
+		fsa.generateFile(fileName, content)
+	}
+	
+	private def collectFunctionDependencies(Function func) {
+		val deps = func.shortcuts.flatMap[functionDependencyProvider.functionDependencies(it.expression)] +
+			func.operations.flatMap[functionDependencyProvider.functionDependencies(it.expression)]
+		val condDeps = (func.conditions + func.postConditions).flatMap[expressions].flatMap [
+			functionDependencyProvider.functionDependencies(it)
+		]
+	return Util.distinctBy(deps + condDeps, [name]).sortBy[it.name]
 	}
 
-	private def StringConcatenationClient classBody(Function func,
+	private def StringConcatenationClient classBody(Function func, String className,
 		Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version) {
 		val isAbstract = func.operations.nullOrEmpty
 		val outputName = getOutput(func)?.name
 		val outputType = func.outputTypeOrVoid(names)
 		val aliasOut = func.shortcuts.toMap([it], [exprHelper.usesOutputParameter(it.expression)])
 		'''
-			«IF isAbstract»@«ImplementedBy»(«func.name»Impl.class)«ENDIF»
-			public «IF isAbstract»abstract«ENDIF» class «func.name» implements «RosettaFunction» {
+			«IF isAbstract»@«ImplementedBy»(«className»Impl.class)«ENDIF»
+			public «IF isAbstract»abstract «ENDIF»class «className» implements «RosettaFunction» {
 				«IF !dependencies.empty»
 					
 					// RosettaFunction dependencies
@@ -162,6 +165,43 @@ class FuncGenerator {
 		'''
 	}
 
+	
+	def private StringConcatenationClient dispatchClassBody(Function function,String className, Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version) {
+		val dispatchingFuncs = function.dispatchingFunctions.sortBy[name].toList
+		val enumParam = function.inputs.filter[type instanceof RosettaEnumeration].head.name
+		val outputType = function.outputTypeOrVoid(names)
+		'''
+		«emptyJavadocWithVersion(version)»
+		public class «className» {
+			«FOR dep : dependencies»
+				@«Inject» protected «dep.toJavaQualifiedType» «dep.name.toFirstLower»;
+			«ENDFOR»
+			
+			«FOR enumFunc : dispatchingFuncs»
+				@«Inject» protected «Provider»<«toTargetClassName(enumFunc)»> «toTargetClassName(enumFunc).lastSegment»Provider;
+			«ENDFOR»
+			
+			public «outputType» evaluate(«function.inputsAsParameters(names)») {
+				switch («enumParam») {
+					«FOR enumFunc : dispatchingFuncs»
+						«val enumValClass = toTargetClassName(enumFunc).lastSegment»
+						case «enumValClass»:
+							return «enumValClass»Provider.get().evaluate(«function.inputsAsArguments(names)»);
+					«ENDFOR»
+					default:
+						throw new IllegalArgumentException("Enum value not implemented: " + «enumParam»);
+				}
+			}
+			
+			«FOR enumFunc : dispatchingFuncs»
+			
+			«val enumValClass = toTargetClassName(enumFunc).lastSegment»
+			«enumFunc.classBody(enumValClass, collectFunctionDependencies(enumFunc),names,  version)»
+			«ENDFOR»
+		}'''
+	}
+	
+	
 	private def StringConcatenationClient assign(Operation operation, Map<ShortcutDeclaration, Boolean> outs,
 		JavaNames names) {
 		val pathAsList = operation.path.asSegmentList
@@ -172,7 +212,7 @@ class FuncGenerator {
 				«operation.assignTarget(outs, names)»
 					.«IF operation.assignRoot.isMany»add«ELSE»set«ENDIF»«operation.assignRoot.name.toFirstUpper»(«expressionWithBuilder.toJava(operation.expression, ctx)»)
 			«ELSE»
-				«operation.assignTarget(outs, names)» = «expressionWithBuilder.toJava(operation.expression, ctx)»«ENDIF»'''
+				«operation.assignTarget(outs, names)» = «MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)«ENDIF»'''
 		else
 			'''
 				«operation.assignTarget(outs, names)»

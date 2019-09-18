@@ -53,10 +53,6 @@ class DataRuleGenerator {
 			«FOR imp : classBody.staticImports»
 				import static «imp»;
 			«ENDFOR»
-«««			TODO fix it in com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator.javaCode(RosettaExpression, ParamMap)
-			import org.isda.cdm.*;
-			//import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			«classBody.toString»
 		'''

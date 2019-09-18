@@ -8,7 +8,6 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
-import com.regnosys.rosetta.generator.java.calculation.CalculationGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
 import com.regnosys.rosetta.generator.java.function.FuncGenerator
 import com.regnosys.rosetta.generator.java.object.DataGenerator
@@ -49,7 +48,6 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject ModelMetaGenerator metaGenerator
 	@Inject ChoiceRuleGenerator choiceRuleGenerator
 	@Inject DataRuleGenerator dataRuleGenerator
-	@Inject CalculationGenerator calculationGenerator
 	@Inject BlueprintGenerator blueprintGenerator
 	@Inject QualifyFunctionGenerator<RosettaEvent> qualifyEventsGenerator
 	@Inject QualifyFunctionGenerator<RosettaProduct> qualifyProductsGenerator
