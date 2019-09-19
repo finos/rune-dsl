@@ -188,6 +188,38 @@ class MetaFieldGenerator {
 						processor.processBasic(path.newSubPath("«type.name.toFirstLower»"), «type.type.name.toJavaType».class, «type.name.toFirstLower», this, AttributeMeta.IS_META);
 					«ENDFOR»
 				}
+				
+				@Override
+				public int hashCode() {
+					final int prime = 31;
+					int _result = 1;
+					«FOR type:filteredTypes»
+						_result = prime * _result + ((«type.name.toFirstLower» == null) ? 0 : «type.name.toFirstLower».hashCode());
+					«ENDFOR»
+					return _result;
+				}
+			
+				@Override
+				public boolean equals(Object obj) {
+					if (this == obj)
+						return true;
+					if (obj == null || getClass() != obj.getClass())
+						return false;
+					MetaFieldsBuilder other = (MetaFieldsBuilder) obj;
+					«FOR type:filteredTypes»
+						if («type.name.toFirstLower» != null ? !«type.name.toFirstLower».equals(other.«type.name.toFirstLower») : other.«type.name.toFirstLower»!=null) return false;
+					«ENDFOR»
+					return true;
+				}
+			
+				@Override
+				public String toString() {
+					return "MetaFieldsBuilder {" +
+					«FOR type:filteredTypes»
+							"«type.name.toFirstLower»=" + this.«type.name.toFirstLower» + ", " +
+					«ENDFOR»
+					'}';
+				}
 			}
 			
 			@Override
@@ -287,7 +319,7 @@ class MetaFieldGenerator {
 		
 			@Override
 			public String toString() {
-				return "FieldWithMeta {" +
+				return "FieldWithMeta«type.name.toFirstUpper» {" +
 					"value=" + this.value + ", " +
 					"meta=" + this.meta + ", " +
 				'}';
@@ -373,6 +405,35 @@ class MetaFieldGenerator {
 					«ELSE»
 						processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
 					«ENDIF»
+				}
+				
+				@Override
+				public int hashCode() {
+					final int prime = 31;
+					int _result = 1;
+					_result = prime * _result + ((meta == null) ? 0 : meta.hashCode());
+					_result = prime * _result + ((value == null) ? 0 : value.hashCode());
+					return _result;
+				}
+			
+				@Override
+				public boolean equals(Object obj) {
+					if (this == obj)
+						return true;
+					if (obj == null || getClass() != obj.getClass())
+						return false;
+					FieldWithMeta«type.name.toFirstUpper»Builder other = (FieldWithMeta«type.name.toFirstUpper»Builder) obj;
+					if (meta != null ? !meta.equals(other.meta) : other.meta!=null) return false;
+					if (value != null ? !value.equals(other.value) : other.value!=null) return false;
+					return true;
+				}
+			
+				@Override
+				public String toString() {
+					return "FieldWithMeta«type.name.toFirstUpper»Builder {" +
+						"value=" + this.value + ", " +
+						"meta=" + this.meta + ", " +
+					'}';
 				}
 			}
 		}
