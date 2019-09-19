@@ -58,7 +58,6 @@ class RosettaCalculationGenerationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.Inject;
-				import com.google.inject.Provider;
 				import com.rosetta.model.lib.functions.Mapper;
 				import com.rosetta.model.lib.functions.MapperS;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -74,19 +73,19 @@ class RosettaCalculationGenerationTest {
 				 */
 				public class PeriodEnumFunc {
 					
-					@Inject protected Provider<PeriodEnumFunc.MONTH> MONTHProvider;
+					@Inject protected PeriodEnumFunc.MONTH MONTH;
 					
 					public BigDecimal evaluate(PeriodEnum in1, Period in2) {
 						switch (in1) {
 							case MONTH:
-								return MONTHProvider.get().evaluate(in1, in2);
+								return MONTH.evaluate(in1, in2);
 							default:
 								throw new IllegalArgumentException("Enum value not implemented: " + in1);
 						}
 					}
 					
 					
-					public class MONTH implements RosettaFunction {
+					public static class MONTH implements RosettaFunction {
 					
 						/**
 						* @param in1 
@@ -604,7 +603,6 @@ class RosettaCalculationGenerationTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.Inject;
-			import com.google.inject.Provider;
 			import com.rosetta.model.lib.functions.Mapper;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
@@ -620,22 +618,22 @@ class RosettaCalculationGenerationTest {
 			 */
 			public class MathFunc {
 				
-				@Inject protected Provider<MathFunc.INCR> INCRProvider;
-				@Inject protected Provider<MathFunc.DECR> DECRProvider;
+				@Inject protected MathFunc.INCR INCR;
+				@Inject protected MathFunc.DECR DECR;
 				
 				public String evaluate(Math in1, MathInput in2) {
 					switch (in1) {
 						case INCR:
-							return INCRProvider.get().evaluate(in1, in2);
+							return INCR.evaluate(in1, in2);
 						case DECR:
-							return DECRProvider.get().evaluate(in1, in2);
+							return DECR.evaluate(in1, in2);
 						default:
 							throw new IllegalArgumentException("Enum value not implemented: " + in1);
 					}
 				}
 				
 				
-				public class INCR implements RosettaFunction {
+				public static class INCR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -661,7 +659,7 @@ class RosettaCalculationGenerationTest {
 					
 				}
 				
-				public class DECR implements RosettaFunction {
+				public static class DECR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//

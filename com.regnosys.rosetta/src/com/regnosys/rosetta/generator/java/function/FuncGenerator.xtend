@@ -55,7 +55,7 @@ class FuncGenerator {
 		val classBody = if (func.handleAsEnumFunction) {
 				tracImports(func.dispatchClassBody(func.name, dependencies, javaNames, version))
 			} else {
-				tracImports(func.classBody(func.name, dependencies, javaNames, version))
+				tracImports(func.classBody(func.name, dependencies, javaNames, version, false))
 			}
 		val content = '''
 			package «javaNames.packages.functions.packageName»;
@@ -79,11 +79,11 @@ class FuncGenerator {
 		val condDeps = (func.conditions + func.postConditions).flatMap[expressions].flatMap [
 			functionDependencyProvider.functionDependencies(it)
 		]
-	return Util.distinctBy(deps + condDeps, [name]).sortBy[it.name]
+		return Util.distinctBy(deps + condDeps, [name]).sortBy[it.name]
 	}
 
 	private def StringConcatenationClient classBody(Function func, String className,
-		Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version) {
+		Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version, boolean isStatic) {
 		val isAbstract = func.operations.nullOrEmpty
 		val outputName = getOutput(func)?.name
 		val outputType = func.outputTypeOrVoid(names)
@@ -91,7 +91,7 @@ class FuncGenerator {
 		val outNeedsBuilder = expressionWithBuilder.needsBuilder(getOutput(func))
 		'''
 			«IF isAbstract»@«ImplementedBy»(«className»Impl.class)«ENDIF»
-			public «IF isAbstract»abstract «ENDIF»class «className» implements «RosettaFunction» {
+			public «IF isStatic»static «ENDIF»«IF isAbstract»abstract «ENDIF»class «className» implements «RosettaFunction» {
 				«IF !dependencies.empty»
 					
 					// RosettaFunction dependencies
@@ -173,7 +173,7 @@ class FuncGenerator {
 			«ENDFOR»
 			
 			«FOR enumFunc : dispatchingFuncs»
-				@«Inject» protected «Provider»<«toTargetClassName(enumFunc)»> «toTargetClassName(enumFunc).lastSegment»Provider;
+				@«Inject» protected «toTargetClassName(enumFunc)» «toTargetClassName(enumFunc).lastSegment»;
 			«ENDFOR»
 			
 			public «outputType» evaluate(«function.inputsAsParameters(names)») {
@@ -181,7 +181,7 @@ class FuncGenerator {
 					«FOR enumFunc : dispatchingFuncs»
 						«val enumValClass = toTargetClassName(enumFunc).lastSegment»
 						case «enumValClass»:
-							return «enumValClass»Provider.get().evaluate(«function.inputsAsArguments(names)»);
+							return «enumValClass».evaluate(«function.inputsAsArguments(names)»);
 					«ENDFOR»
 					default:
 						throw new IllegalArgumentException("Enum value not implemented: " + «enumParam»);
@@ -191,7 +191,7 @@ class FuncGenerator {
 			«FOR enumFunc : dispatchingFuncs»
 			
 			«val enumValClass = toTargetClassName(enumFunc).lastSegment»
-			«enumFunc.classBody(enumValClass, collectFunctionDependencies(enumFunc),names,  version)»
+			«enumFunc.classBody(enumValClass, collectFunctionDependencies(enumFunc), names,  version, true)»
 			«ENDFOR»
 		}'''
 	}
