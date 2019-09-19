@@ -7,7 +7,6 @@ import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
-import java.util.ArrayList
 import java.util.Collection
 import java.util.Collections
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -59,7 +58,7 @@ class MetaFieldGenerator {
 		val externalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
 		externalKeyType.setName("externalKey")
 		externalKeyType.type = stringType;
-		val filteredTypes = new ArrayList(utypes);
+		val filteredTypes = utypes.filter[t|t.name!="id" && t.name!="reference"].toList();
 		filteredTypes.add(rosettaKeyType)
 		filteredTypes.add(externalKeyType)
 		
@@ -398,13 +397,11 @@ class MetaFieldGenerator {
 			private final String globalReference;
 			private final String externalReference;
 			private final «type.name» value;
-			private final MetaFields meta;
 			
 			private ReferenceWithMeta«type.name.toFirstUpper»(ReferenceWithMeta«type.name.toFirstUpper»Builder builder) {
 				value = ofNullable(builder.getValue()).map(v->v.build()).orElse(null);
 				globalReference = builder.globalReference;
 				externalReference = builder.externalReference;
-				meta = ofNullable(builder.getMeta()).map(MetaFields.MetaFieldsBuilder::build).orElse(null);
 			}
 			
 			public «type.name» getValue() {
@@ -419,10 +416,6 @@ class MetaFieldGenerator {
 				return externalReference;
 			}
 			
-			public MetaFields getMeta() {
-				return meta;
-			}
-			
 			private static BasicRosettaMetaData<ReferenceWithMeta«type.name.toFirstUpper»> metaData = new BasicRosettaMetaData<>();
 									
 			@Override
@@ -435,7 +428,6 @@ class MetaFieldGenerator {
 				builder.setValue(value);
 				builder.setGlobalReference(globalReference);
 				builder.setExternalReference(externalReference);
-				builder.setMeta(meta);
 				return builder;
 			}
 			
@@ -448,14 +440,12 @@ class MetaFieldGenerator {
 				processRosetta(path.newSubPath("value"), processor, «type.name.toJavaType».class, value);
 				processor.processBasic(path.newSubPath("globalReference"), String.class, globalReference, this, AttributeMeta.IS_META);
 				processor.processBasic(path.newSubPath("externalReference"), String.class, externalReference, this, AttributeMeta.IS_META);
-				processRosetta(path.newSubPath("meta"), processor, MetaFields.class, meta, AttributeMeta.IS_META);
 			}
 			
 			@Override
 			public int hashCode() {
 				final int prime = 31;
 				int _result = 1;
-				_result = prime * _result + ((meta == null) ? 0 : meta.hashCode());
 				_result = prime * _result + ((globalReference == null) ? 0 : globalReference.hashCode());
 				_result = prime * _result + ((externalReference == null) ? 0 : externalReference.hashCode());
 				_result = prime * _result + ((value == null) ? 0 : value.hashCode());
@@ -469,7 +459,6 @@ class MetaFieldGenerator {
 				if (obj == null || getClass() != obj.getClass())
 					return false;
 				ReferenceWithMeta«type.name.toFirstUpper» other = (ReferenceWithMeta«type.name.toFirstUpper») obj;
-				if (meta != null ? !meta.equals(other.meta) : other.meta!=null) return false;
 				if (globalReference != null ? !globalReference.equals(other.globalReference) : other.globalReference!=null) return false;
 				if (externalReference != null ? !externalReference.equals(other.externalReference) : other.externalReference!=null) return false;
 				if (value != null ? !value.equals(other.value) : other.value!=null) return false;
@@ -482,7 +471,6 @@ class MetaFieldGenerator {
 					"globalReference=" + this.globalReference + ", " +
 					"externalReference=" + this.externalReference + ", " +
 					"value=" + this.value + ", " +
-					"meta=" + this.meta +
 				'}';
 			}
 			
@@ -490,7 +478,6 @@ class MetaFieldGenerator {
 				private «type.name».«type.name»Builder value;
 				private String globalReference;
 				private String externalReference;
-				private MetaFields.MetaFieldsBuilder meta;
 				
 				public ReferenceWithMeta«type.name.toFirstUpper»Builder() {}
 				
@@ -509,14 +496,6 @@ class MetaFieldGenerator {
 				
 				public String getExternalReference() {
 					return externalReference;
-				}
-				
-				public MetaFields.MetaFieldsBuilder getMeta() {
-					return meta;
-				}
-							
-				public MetaFields.MetaFieldsBuilder getOrCreateMeta() {
-					return meta=ofNullable(meta).orElseGet(MetaFields::builder);
 				}
 				
 				@SuppressWarnings("unchecked")
@@ -540,16 +519,6 @@ class MetaFieldGenerator {
 					return this;
 				}
 				
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder setMeta(MetaFields meta) {
-					this.meta = ofNullable(meta).map(MetaFields::toBuilder).orElse(null);
-					return this;
-				}
-				
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder setMetaBuilder(MetaFields.MetaFieldsBuilder meta) {
-					this.meta = meta;
-					return this;
-				}
-				
 				public ReferenceWithMeta«type.name.toFirstUpper» build() {
 					return new ReferenceWithMeta«type.name.toFirstUpper»(this);
 				}
@@ -557,7 +526,6 @@ class MetaFieldGenerator {
 				@Override
 				public ReferenceWithMeta«type.name.toFirstUpper»Builder prune() {
 					if (value!=null && !value.hasData()) value = null;
-					if (meta!=null && !meta.hasData()) meta = null;
 					return this;
 				}
 				
@@ -571,7 +539,6 @@ class MetaFieldGenerator {
 					processRosetta(path.newSubPath("value"), processor, «type.name.toJavaType».class, value);
 					processor.processBasic(path.newSubPath("globalReference"), String.class, globalReference, this, AttributeMeta.IS_META);
 					processor.processBasic(path.newSubPath("externalReference"), String.class, externalReference, this, AttributeMeta.IS_META);
-					processRosetta(path.newSubPath("meta"), processor, MetaFields.class, meta, AttributeMeta.IS_META);
 				}
 			}
 		}
@@ -597,13 +564,11 @@ class MetaFieldGenerator {
 		private final String globalReference;
 		private final String externalReference;
 		private final «type.name.toJavaType» value;
-		private final MetaFields meta;
 		
 		private BasicReferenceWithMeta«type.name.toFirstUpper»(BasicReferenceWithMeta«type.name.toFirstUpper»Builder builder){
 			value = builder.getValue();
 			globalReference = builder.globalReference;
 			externalReference = builder.externalReference;
-			meta = ofNullable(builder.getMeta()).map(MetaFields.MetaFieldsBuilder::build).orElse(null);
 		}
 		
 		public «type.name.toJavaType» getValue() {
@@ -618,10 +583,6 @@ class MetaFieldGenerator {
 			return externalReference;
 		}
 		
-		public MetaFields getMeta() {
-			return meta;
-		}
-		
 		private static BasicRosettaMetaData<BasicReferenceWithMeta«type.name.toFirstUpper»> metaData = new BasicRosettaMetaData<>();
 		
 		@Override
@@ -634,7 +595,6 @@ class MetaFieldGenerator {
 			builder.setValue(value);
 			builder.setGlobalReference(globalReference);
 			builder.setExternalReference(externalReference);
-			builder.setMeta(meta);
 			return builder;
 		}
 		
@@ -647,14 +607,12 @@ class MetaFieldGenerator {
 			processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
 			processor.processBasic(path.newSubPath("globalReference"), String.class, globalReference, this, AttributeMeta.IS_META);
 			processor.processBasic(path.newSubPath("externalReference"), String.class, externalReference, this, AttributeMeta.IS_META);
-			processRosetta(path.newSubPath("meta"), processor, MetaFields.class, meta, AttributeMeta.IS_META);
 		}
 		
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int _result = 1;
-			_result = prime * _result + ((meta == null) ? 0 : meta.hashCode());
 			_result = prime * _result + ((globalReference == null) ? 0 : globalReference.hashCode());
 			_result = prime * _result + ((externalReference == null) ? 0 : externalReference.hashCode());
 			_result = prime * _result + ((value == null) ? 0 : value.hashCode());
@@ -668,7 +626,6 @@ class MetaFieldGenerator {
 			if (obj == null || getClass() != obj.getClass())
 				return false;
 			BasicReferenceWithMeta«type.name.toFirstUpper» other = (BasicReferenceWithMeta«type.name.toFirstUpper») obj;
-			if (meta != null ? !meta.equals(other.meta) : other.meta!=null) return false;
 			if (globalReference != null ? !globalReference.equals(other.globalReference) : other.globalReference!=null) return false;
 			if (externalReference != null ? !externalReference.equals(other.externalReference) : other.externalReference!=null) return false;
 			if (value != null ? !value.equals(other.value) : other.value!=null) return false;
@@ -681,7 +638,6 @@ class MetaFieldGenerator {
 				"globalReference=" + this.globalReference + ", " +
 				"externalReference=" + this.externalReference + ", " +
 				"value=" + this.value + ", " +
-				"meta=" + this.meta + ", " +
 			'}';
 		}
 		
@@ -689,7 +645,6 @@ class MetaFieldGenerator {
 			private «type.name.toJavaType» value;
 			private String globalReference;
 			private String externalReference;
-			private MetaFields.MetaFieldsBuilder meta;
 			
 			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder() {}
 			
@@ -710,14 +665,6 @@ class MetaFieldGenerator {
 				return externalReference;
 			}
 			
-			public MetaFields.MetaFieldsBuilder getMeta() {
-				return meta;
-			}
-						
-			public MetaFields.MetaFieldsBuilder getOrCreateMeta() {
-				return ofNullable(meta).orElseGet(MetaFields::builder);
-			}
-			
 			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder setValue(«type.name.toJavaType» value) {
 				this.value = value;
 				return this;
@@ -733,23 +680,12 @@ class MetaFieldGenerator {
 				return this;
 			}
 			
-			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder setMeta(MetaFields meta) {
-				this.meta = ofNullable(meta).map(MetaFields::toBuilder).orElse(null);
-				return this;
-			}
-			
-			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder setMetaBuilder(MetaFields.MetaFieldsBuilder meta) {
-				this.meta = meta;
-				return this;
-			}
-			
 			public BasicReferenceWithMeta«type.name.toFirstUpper» build() {
 				return new BasicReferenceWithMeta«type.name.toFirstUpper»(this);
 			}
 			
 			@Override
 			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder prune() {
-				if (meta!=null && !meta.hasData()) meta = null;
 				return this;
 			}
 			
@@ -763,7 +699,6 @@ class MetaFieldGenerator {
 				processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
 				processor.processBasic(path.newSubPath("globalReference"), String.class, globalReference, this, AttributeMeta.IS_META);
 				processor.processBasic(path.newSubPath("externalReference"), String.class, externalReference, this, AttributeMeta.IS_META);
-				processRosetta(path.newSubPath("meta"), processor, MetaFields.class, meta, AttributeMeta.IS_META);
 			}
 		}
 	}'''
