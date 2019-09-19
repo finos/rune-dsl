@@ -41,7 +41,7 @@ class ModelObjectBuilderGenerator {
 		Optional.ofNullable(clazz.superType).map[builderName].orElse('RosettaModelObjectBuilder')
 	}
 	
-	dispatch def StringConcatenationClient builderClass(Data c, JavaNames names) '''
+	def StringConcatenationClient builderClass(Data c, JavaNames names) '''
 		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderName»«ELSE»«RosettaModelObjectBuilder»«ENDIF»{
 		
 			«FOR attribute : c.expandedAttributes»
@@ -329,10 +329,6 @@ class ModelObjectBuilderGenerator {
 					}
 					return this;
 				}
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(com.rosetta.model.lib.functions.MapperBuilder<«attribute.toTypeSingle»> «attribute.name») {
-					add«attribute.name.toFirstUpper»(«attribute.name».get());
-					return this;
-				}
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(List<«attribute.toTypeSingle()»> «attribute.name»s) {
 					if(this.«attribute.name» == null){
 						this.«attribute.name» = new ArrayList<>();
@@ -364,11 +360,6 @@ class ModelObjectBuilderGenerator {
 					this.«attribute.name» = «attribute.toBuilder»;
 					return this;
 				}
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»(com.rosetta.model.lib.functions.MapperBuilder<«attribute.toType»> «attribute.name») {
-					set«attribute.name.toFirstUpper»(«attribute.name».get());
-					return this;
-				}
-
 				«IF attribute.isRosettaClassOrData»
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Builder(«attribute.toBuilderType» «attribute.name») {
 						this.«attribute.name» = «attribute.name»;
