@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.generator.external;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -16,7 +17,7 @@ public interface ExternalGenerator {
 	void generate(RosettaJavaPackages packages, List<RosettaRootElement> elements, String version, 
 			Consumer<Map<String, ? extends CharSequence>> processResults, Resource resource, DemandableLock generateLock);
 	
-	void afterGenerate(List<RosettaModel> models,
+	void afterGenerate(Collection<? extends RosettaModel> models,
 			Consumer<Map<String, ? extends CharSequence>> processResults, Resource resource, DemandableLock generateLock);
 	
 	ExternalOutputConfiguration getOutputConfiguration();
