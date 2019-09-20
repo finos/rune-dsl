@@ -8,6 +8,7 @@ import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArguments
@@ -86,7 +87,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension RosettaFunctionExtensions
-
+	@Inject ConvertableCardinalityProvider cardinality
+	
 	@Check
 	def void checkClassNameStartsWithCapital(RosettaClass classe) {
 		if (!Character.isUpperCase(classe.name.charAt(0))) {
@@ -323,6 +325,16 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		]
 	}
+	@Check
+	def checkFunctionElementNamesAreUnique(Function ele) {
+		(ele.inputs + ele.shortcuts + #[ele.output]).filterNull.groupBy[name].forEach [ k, v |
+			if (v.size > 1) {
+				v.forEach [
+					error('''Duplicate feature "«k»"''', it, ROSETTA_NAMED__NAME)
+				]
+			}
+		]
+	}
 
 	// TODO This probably should be made namespace aware
 	@Check(FAST) // switch to NORMAL if it becomes slow
@@ -488,6 +500,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					val callerArg = indexed.value
 					val param = callable.inputs.get(indexed.key)
 					checkType(param.type.RType, callerArg, element, ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, indexed.key)
+					if(!param.card.isMany && cardinality.isMulti(callerArg)) {
+						error('''Expecting single cardinality for parameter '«param.name»'.''', element,
+							ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, indexed.key)
+					}
 				]
 			}
 		}
