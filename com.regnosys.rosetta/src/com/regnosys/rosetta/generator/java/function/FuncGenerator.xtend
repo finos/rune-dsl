@@ -139,7 +139,7 @@ class FuncGenerator {
 							«getOutput(func).toHolderType(names)» «outputName»Holder = «IF outNeedsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
 						«ENDIF»
 						«FOR indexed : func.operations.indexed»
-							«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType»«ENDIF» «outputName» = «outputName»Holder.build();«ENDIF»
+							«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType» «ENDIF»«outputName» = «outputName»Holder.build();«ENDIF»
 							«indexed.value.assign(aliasOut, names)»;
 						«ENDFOR»
 						return «outputName»Holder«IF !outNeedsBuilder».get()«ENDIF»;

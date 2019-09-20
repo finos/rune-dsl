@@ -260,6 +260,7 @@ class RosettaCalculationGenerationTest {
 		import com.rosetta.model.lib.records.Date;
 		import com.rosetta.test.model.FoncOut;
 		import com.rosetta.test.model.FuncIn;
+		import java.lang.SuppressWarnings;
 		import java.time.LocalTime;
 		
 		
@@ -280,9 +281,11 @@ class RosettaCalculationGenerationTest {
 			
 			protected FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn, Date arg1, LocalTime arg2) {
 				FoncOut.FoncOutBuilder resHolder = FoncOut.builder();
+				@SuppressWarnings("unused") FoncOut res = resHolder.build();
 				resHolder
 					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1), MapperS.of(arg2)).get());
 				;
+				res = resHolder.build();
 				resHolder
 					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1), MapperS.of(arg2)).get());
 				;
@@ -340,6 +343,7 @@ class RosettaCalculationGenerationTest {
 		import com.rosetta.test.model.FuncIn;
 		import com.rosetta.test.model.FuncOut;
 		import java.lang.String;
+		import java.lang.SuppressWarnings;
 		import java.time.LocalTime;
 		
 		
@@ -358,9 +362,11 @@ class RosettaCalculationGenerationTest {
 			
 			protected FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
 				FuncOut.FuncOutBuilder outHolder = FuncOut.builder();
+				@SuppressWarnings("unused") FuncOut out = outHolder.build();
 				outHolder
 					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
 				;
+				out = outHolder.build();
 				outHolder
 					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
 				;
