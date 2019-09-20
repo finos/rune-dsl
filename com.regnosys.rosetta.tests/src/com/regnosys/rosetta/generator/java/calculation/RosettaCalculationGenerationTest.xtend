@@ -125,8 +125,8 @@ class RosettaCalculationGenerationTest {
 				inputs:
 					one int (1..1)
 				output: out int (1..1)
-				alias one : 1
-				assign-output out: one + one
+				alias oneA : 1
+				assign-output out: oneA + oneA
 		'''.assertToGeneratedCalculation(
 			'''
 			package com.rosetta.test.model.functions;
@@ -152,18 +152,17 @@ class RosettaCalculationGenerationTest {
 				
 				protected Integer doEvaluate(Integer one) {
 					Mapper<Integer> outHolder = null;
-					outHolder = MapperS.of((one + one));
+					outHolder = MapperS.of((oneA(one).get() + oneA(one).get()));
 					return outHolder.get();
 				}
 				
 				
-				protected Mapper<Integer> one(Integer one) {
+				protected Mapper<Integer> oneA(Integer one) {
 					return MapperS.of(Integer.valueOf(1));
 				}
 			}
 			'''
 		)
-
 	}
 	
 	@Test
@@ -237,8 +236,6 @@ class RosettaCalculationGenerationTest {
 			func Calc:
 				inputs:
 					funIn FuncIn(1..1)
-					arg1 date (1..1)
-					arg2 time (1..1)
 			
 				output:
 					res FoncOut(1..1)
@@ -268,36 +265,34 @@ class RosettaCalculationGenerationTest {
 		
 			/**
 			* @param funIn 
-			* @param arg1 
-			* @param arg2 
 			* @return res 
 			*/
-			public FoncOut evaluate(FuncIn funIn, Date arg1, LocalTime arg2) {
+			public FoncOut evaluate(FuncIn funIn) {
 				
-				FoncOut res = doEvaluate(funIn, arg1, arg2).build();
+				FoncOut res = doEvaluate(funIn).build();
 				
 				return res;
 			}
 			
-			protected FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn, Date arg1, LocalTime arg2) {
+			protected FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
 				FoncOut.FoncOutBuilder resHolder = FoncOut.builder();
 				@SuppressWarnings("unused") FoncOut res = resHolder.build();
 				resHolder
-					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1), MapperS.of(arg2)).get());
+					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
 				;
 				res = resHolder.build();
 				resHolder
-					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1), MapperS.of(arg2)).get());
+					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
 				;
 				return resHolder;
 			}
 			
 			
-			protected Mapper<Date> arg1(FuncIn funIn, Date arg1, LocalTime arg2) {
+			protected Mapper<Date> arg1(FuncIn funIn) {
 				return MapperS.of(funIn).<Date>map("getVal1", FuncIn::getVal1);
 			}
 			
-			protected Mapper<LocalTime> arg2(FuncIn funIn, Date arg1, LocalTime arg2) {
+			protected Mapper<LocalTime> arg2(FuncIn funIn) {
 				return MapperS.of(funIn).<LocalTime>map("getVal2", FuncIn::getVal2);
 			}
 		}
