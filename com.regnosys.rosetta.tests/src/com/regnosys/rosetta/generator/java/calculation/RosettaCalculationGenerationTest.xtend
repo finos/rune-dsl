@@ -359,10 +359,10 @@ class RosettaCalculationGenerationTest {
 			protected FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
 				FuncOut.FuncOutBuilder outHolder = FuncOut.builder();
 				outHolder
-					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), linkId(funcIn)).get());
+					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
 				;
 				outHolder
-					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(tradeDate(funcIn), tradeTime(funcIn)).get());
+					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
 				;
 				return outHolder;
 			}

@@ -10,7 +10,6 @@ import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
@@ -26,16 +25,11 @@ import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.RosettaTyped
-import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
-import com.regnosys.rosetta.types.RClassType
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.functions.ExpressionOperators
@@ -43,7 +37,6 @@ import com.rosetta.model.lib.math.BigDecimalExtensions
 import com.rosetta.model.lib.records.Date
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 
@@ -60,16 +53,17 @@ class ExpressionGeneratorWithBuilder {
 	}
 
 	dispatch def StringConcatenationClient toJava(RosettaFeatureCall ele, Context ctx) {
-		var autoValue = true // if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-		if (ele.eContainer !== null && ele.eContainer instanceof RosettaFeatureCall &&
-			(ele.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-			autoValue = false;
-		}
+		// if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
+		val autoValue = if (ele.eContainer !== null && ele.eContainer instanceof RosettaFeatureCall &&
+				(ele.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
+				false;
+			} else
+				true
 		val feature = ele.feature
 		val StringConcatenationClient right = if (feature instanceof RosettaRegularAttribute)
-				feature.attributeAccess(ctx, autoValue)
+				feature.attributeAccess(ctx)
 			else if (feature instanceof Attribute)
-				feature.attributeAccess(ctx, autoValue)
+				feature.attributeAccess(ctx)
 			else
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.class.simpleName)
 		'''«ele.receiver.toJava(ctx)».«right»(«IF cardinalityProvider.isMulti(feature)»0«ENDIF»)'''
@@ -184,7 +178,7 @@ class ExpressionGeneratorWithBuilder {
 				'''«callee.name»'''
 			}
 			ShortcutDeclaration: {
-				'''«callee.name»(«inputsAsArgs(callee)»).get()«IF callee.needsBuilder».toBuilder()«ENDIF»'''
+				'''«callee.name»(«funcExt.inputsAsArgs(callee)»).get()«IF funcExt.needsBuilder(callee)».toBuilder()«ENDIF»'''
 			}
 			RosettaNamed: {
 				'''«callee.name»'''
@@ -202,45 +196,8 @@ class ExpressionGeneratorWithBuilder {
 		'''«importMethod(ExpressionOperators, 'exists')»(«toJava(ele.argument, ctx)»)'''
 	}
 	
-	private def StringConcatenationClient attributeAccess(RosettaFeature feature, Context ctx, boolean autoVal) {
-		 '''«IF feature.needsBuilder»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»'''
-	}
-
-	private def inputsAsArgs(ShortcutDeclaration alias) {
-		val func = EcoreUtil2.getContainerOfType(alias, Function)
-		funcExt.getInputs(func).join(', ')[name]
-	}
-
-	dispatch def boolean needsBuilder(RosettaTyped ele) {
-		needsBuilder(ele.type)
-	}
-	
-	dispatch def boolean needsBuilder(ShortcutDeclaration alias) {
-		needsBuilder(typeProvider.getRType(alias.expression))
-	}
-
-	dispatch def boolean needsBuilder(AssignPathRoot root) {
-		switch (root) {
-			Attribute: root.type.needsBuilder
-			ShortcutDeclaration: typeProvider.getRType(root.expression).needsBuilder
-			default: false
-		}
-	}
-
-	dispatch def boolean needsBuilder(RosettaType type) {
-		switch (type) {
-			RosettaClass,
-			com.regnosys.rosetta.rosetta.simple.Data: true
-			default: false
-		}
-	}
-
-	dispatch def boolean needsBuilder(RType type) {
-		switch (type) {
-			RClassType,
-			RDataType: true
-			default: false
-		}
+	private def StringConcatenationClient attributeAccess(RosettaFeature feature, Context ctx) {
+		 '''«IF funcExt.needsBuilder(feature)»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»'''
 	}
 
 //

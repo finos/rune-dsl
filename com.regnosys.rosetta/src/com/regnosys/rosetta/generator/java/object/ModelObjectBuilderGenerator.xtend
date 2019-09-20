@@ -323,10 +323,8 @@ class ModelObjectBuilderGenerator {
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle» «attribute.name») {
 					if(this.«attribute.name» == null){
 						this.«attribute.name» = new ArrayList<>();
-						this.«attribute.name».add(«attribute.toBuilder»);
-					} else {
-						this.«attribute.name».add(«attribute.toBuilder»);
 					}
+					this.«attribute.name».add(«attribute.toBuilder»);
 					return this;
 				}
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(List<«attribute.toTypeSingle()»> «attribute.name»s) {
@@ -342,13 +340,18 @@ class ModelObjectBuilderGenerator {
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle» «attribute.name») {
 						if(this.«attribute.name» == null){
 							this.«attribute.name» = new ArrayList<>();
-							this.«attribute.name».add(«attribute.name»);
-						} else {
-							this.«attribute.name».add(«attribute.name»);
 						}
+						this.«attribute.name».add(«attribute.name»);
 						return this;
 					}
-					
+					«IF !attribute.metas.empty»
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name») {
+						return add«attribute.name.toFirstUpper»(«attribute.toTypeSingle».builder().setValueBuilder(«attribute.name»).build());
+					}
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.type.name» «attribute.name») {
+						return add«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
+					}
+					«ENDIF»
 				«ENDIF»
 				
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» clear«attribute.name.toFirstUpper»() {
@@ -365,7 +368,20 @@ class ModelObjectBuilderGenerator {
 						this.«attribute.name» = «attribute.name»;
 						return this;
 					}
-					
+					«IF !attribute.metas.empty»
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name») {
+						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle».builder().setValueBuilder(«attribute.name»).build());
+					}
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.type.name» «attribute.name») {
+						return set«attribute.name.toFirstUpper»Ref(«attribute.type.name».builder());
+					}
+					«ENDIF»
+				«ELSE»
+					«IF !attribute.metas.empty»
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name») {
+						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle».builder().setValue(«attribute.name»).build());
+					}
+					«ENDIF»
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
@@ -403,7 +419,9 @@ class ModelObjectBuilderGenerator {
 		if (attribute.isMultiple) '''List<«attribute.toBuilderTypeSingle»>'''
 		else attribute.toBuilderTypeSingle;
 	}
-	
+	/**
+	 * Use toBuilderTypeSingle(ExpandedAttribute, JavaNames)
+	 */
 	@Deprecated
 	private def StringConcatenationClient toBuilderTypeSingle(ExpandedAttribute attribute) {
 		if (attribute.hasMetas) {

@@ -49,7 +49,6 @@ import com.rosetta.model.lib.functions.MapperMaths
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.MapperTree
 import com.rosetta.model.lib.meta.FieldWithMeta
-import com.rosetta.model.lib.validation.ComparisonResult
 import com.rosetta.model.lib.validation.ValidatorHelper
 import java.math.BigDecimal
 import java.util.HashMap
@@ -123,7 +122,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				'''«MapperS».of("«expr.value»")'''
 			}
 			RosettaEnumValueReference : {
-				'''«MapperS».of(«expr.enumeration.name».«expr.value.convertValues»)'''
+				'''«MapperS».of(«expr.enumeration.toJavaType».«expr.value.convertValues»)'''
 			}
 			RosettaConditionalExpression : {
 				'''«importMethod(ValidatorHelper,"doIf")»(«expr.^if.javaCode(params)»,«expr.ifthen.javaCode(params)»«IF expr.elsethen !== null»,«expr.elsethen.javaCode(params)»«ENDIF»)'''
@@ -223,14 +222,14 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				'''«MapperS».of(«call.name»)'''
 			}
 			ShortcutDeclaration : {
-				'''«call.name»(«inputsAsArgs(call)»)'''
+				'''«MapperS».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»get()«ENDIF»)'''
 			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable type of "+call.class.simpleName)
 		}
 	}
 	
-	def inputsAsArgs(ShortcutDeclaration alias) {
+	def aliasCallArgs(ShortcutDeclaration alias) {
 		val func = EcoreUtil2.getContainerOfType(alias, Function)
 		val attrs = <String>newArrayList
 		attrs.addAll(funcExt.getInputs(func).map[name].toList)
