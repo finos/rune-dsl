@@ -2,6 +2,7 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
@@ -22,6 +23,8 @@ import com.regnosys.rosetta.rosetta.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFunctionInput
 import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
@@ -39,7 +42,9 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.MapperMaths
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.MapperTree
@@ -55,10 +60,6 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.rosetta.RosettaFeature
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.types.RosettaOperators
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	
@@ -69,6 +70,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension RosettaExtensions
 	@Inject extension ImportManagerExtension
+	@Inject ExpressionHelper exprHelper
 	
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		expr.javaCode(params, true);
@@ -124,7 +126,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				'''«MapperS».of(«expr.enumeration.name».«expr.value.convertValues»)'''
 			}
 			RosettaConditionalExpression : {
-				'''«importMethod(ValidatorHelper,"doIf")»(«expr.^if.javaCode(params)»,«expr.ifthen.javaCode(params)»,«IF expr.elsethen !== null»«expr.elsethen.javaCode(params)»«ELSE»«ComparisonResult».success()«ENDIF»)'''
+				'''«importMethod(ValidatorHelper,"doIf")»(«expr.^if.javaCode(params)»,«expr.ifthen.javaCode(params)»«IF expr.elsethen !== null»,«expr.elsethen.javaCode(params)»«ENDIF»)'''
 			}
 			RosettaContainsExpression : {
 				'''«importMethod(ValidatorHelper,"contains")»(«expr.container.javaCode(params)», «expr.contained.javaCode(params)»)'''
@@ -230,7 +232,12 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	
 	def inputsAsArgs(ShortcutDeclaration alias) {
 		val func = EcoreUtil2.getContainerOfType(alias, Function)
-		funcExt.getInputs(func).join(', ')[name]
+		val attrs = <String>newArrayList
+		attrs.addAll(funcExt.getInputs(func).map[name].toList)
+		if(exprHelper.usesOutputParameter(alias.expression)) {
+			attrs.add(0, funcExt.getOutput(func)?.name + '.toBuilder()')
+		}
+		attrs.join(', ')
 	}
 	
 	/**
@@ -368,7 +375,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			case (">=") : 
 				'''«importMethod(ValidatorHelper,"greaterThanEquals")»(«left», «right»)'''
 			default: 
-				throw new UnsupportedOperationException("Unsupported binary operation of "+operator)
+				throw new UnsupportedOperationException("Unsupported binary operation of " + operator)
 		}
 	}
 	

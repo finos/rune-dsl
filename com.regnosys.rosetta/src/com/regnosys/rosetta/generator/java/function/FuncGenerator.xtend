@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.ImplementedBy
 import com.google.inject.Inject
-import com.google.inject.Provider
 import com.regnosys.rosetta.generator.java.expression.Context
 import com.regnosys.rosetta.generator.java.expression.ExpressionGeneratorWithBuilder
 import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions
@@ -21,7 +20,6 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
@@ -29,7 +27,6 @@ import com.rosetta.model.lib.functions.Mapper
 import com.rosetta.model.lib.functions.MapperBuilder
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.RosettaFunction
-import java.util.List
 import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -199,13 +196,12 @@ class FuncGenerator {
 	
 	private def StringConcatenationClient assign(Operation operation, Map<ShortcutDeclaration, Boolean> outs,
 		JavaNames names) {
-		val pathAsList = operation.path.asSegmentList
+		val pathAsList = operation.pathAsSegmentList
 		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
 			'''
 			«IF expressionWithBuilder.needsBuilder(operation.assignRoot)»
-				«operation.assignTarget(outs, names)»
-					.«IF operation.assignRoot.isMany»add«ELSE»set«ENDIF»«operation.assignRoot.name.toFirstUpper»(«expressionWithBuilder.toJava(operation.expression, ctx)»)
+				«operation.assignTarget(outs, names)» = «expressionWithBuilder.toJava(operation.expression, ctx)»
 			«ELSE»
 				«operation.assignTarget(outs, names)» = «MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)«ENDIF»'''
 		else
@@ -268,18 +264,6 @@ class FuncGenerator {
 		'''«IF expressionWithBuilder.needsBuilder(attr)»«javaType».«javaType»Builder«ELSE»«Mapper»<«javaType»>«ENDIF»'''
 	}
 	
-	private def List<Segment> asSegmentList(Segment segment) {
-		val result = newArrayList
-		if (segment !== null) {
-			result.add(segment)
-			val segmentNext = segment?.next
-			if (segmentNext !== null) {
-				result.addAll(asSegmentList(segmentNext))
-			}
-		}
-		return result
-	}
-
 	private def isMany(AssignPathRoot root) {
 		switch (root) {
 			Attribute: root.card.isMany

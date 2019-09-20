@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.expression
 import com.google.common.base.Objects
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
@@ -12,6 +13,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -24,6 +26,7 @@ import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
@@ -35,6 +38,7 @@ import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.rosetta.model.lib.functions.ExpressionOperators
 import com.rosetta.model.lib.math.BigDecimalExtensions
 import com.rosetta.model.lib.records.Date
 import org.eclipse.xtend.lib.annotations.Data
@@ -42,7 +46,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
-import com.regnosys.rosetta.rosetta.RosettaTyped
 
 class ExpressionGeneratorWithBuilder {
 
@@ -50,6 +53,7 @@ class ExpressionGeneratorWithBuilder {
 	@Inject RosettaTypeProvider typeProvider
 	@Inject ConvertableCardinalityProvider cardinalityProvider
 	@Inject RosettaFunctionExtensions funcExt
+	@Inject extension ImportManagerExtension
 
 	dispatch def StringConcatenationClient toJava(RosettaExpression ele, Context ctx) {
 		throw new UnsupportedOperationException('Not supported expression: ' + ele.eClass.name)
@@ -180,7 +184,7 @@ class ExpressionGeneratorWithBuilder {
 				'''«callee.name»'''
 			}
 			ShortcutDeclaration: {
-				'''«callee.name»(«inputsAsArgs(callee)»).get()'''
+				'''«callee.name»(«inputsAsArgs(callee)»).get()«IF callee.needsBuilder».toBuilder()«ENDIF»'''
 			}
 			RosettaNamed: {
 				'''«callee.name»'''
@@ -193,7 +197,11 @@ class ExpressionGeneratorWithBuilder {
 	def dispatch StringConcatenationClient toJava(RosettaConditionalExpression ele, Context ctx) {
 		'''«toJava(ele.^if, ctx)» ? «toJava(ele.ifthen, ctx)» : «IF ele.elsethen !== null»«toJava(ele.elsethen, ctx)»«ELSE»null«ENDIF»'''
 	}
-
+	
+	def dispatch StringConcatenationClient toJava(RosettaExistsExpression ele, Context ctx) {
+		'''«importMethod(ExpressionOperators, 'exists')»(«toJava(ele.argument, ctx)»)'''
+	}
+	
 	private def StringConcatenationClient attributeAccess(RosettaFeature feature, Context ctx, boolean autoVal) {
 		 '''«IF feature.needsBuilder»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»'''
 	}

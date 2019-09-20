@@ -13,12 +13,12 @@ import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.RosettaLiteral
-
+import org.eclipse.emf.common.util.BasicEList
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
 
@@ -92,13 +92,30 @@ class Operation extends Definable {
 	refers AssignPathRoot assignRoot
 	contains Segment path
 	contains RosettaExpression expression
+	
+	op Segment[] pathAsSegmentList() {
+		return if(path !== null) path.asSegmentList(path) else new BasicEList
+	}
 }
 
 class Segment {
+	
 	int index
 	refers RosettaFeature attribute
 	contains Segment next opposite prev
 	container Segment prev opposite next
+	
+	op Segment[] asSegmentList(Segment path) {
+		val result = new BasicEList
+		if (path !== null) {
+			result.add(path)
+			val segmentNext = path?.next
+			if (segmentNext !== null) {
+				result.addAll(asSegmentList(segmentNext))
+			}
+		}
+		return result
+	}
 }
 
 class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable, AssignPathRoot {
