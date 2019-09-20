@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCalculation
-import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
@@ -23,7 +22,6 @@ import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
-import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
@@ -40,11 +38,9 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
-import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RRecordType
@@ -52,6 +48,7 @@ import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
 import java.util.List
@@ -87,6 +84,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension RosettaFunctionExtensions
+	@Inject ExpressionHelper exprHelper
 	@Inject ConvertableCardinalityProvider cardinality
 	
 	@Check
@@ -616,7 +614,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		ele.conditions.filter[!isPostCondition].forEach [ cond |
 			cond.expressions.forEach [
 				val trace = new Stack
-				val outRef = findOutputRef(trace)
+				val outRef = exprHelper.findOutputRef(it, trace)
 				if (!outRef.nullOrEmpty) {
 					error('''
 					output '«outRef.head.name»' or alias' on output '«outRef.head.name»' not allowed in condition blocks.
@@ -625,27 +623,5 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				}
 			]
 		]
-	}
-
-	def List<RosettaCallable> findOutputRef(EObject ele, Stack<String> trace) {
-		switch (ele) {
-			ShortcutDeclaration: {
-				trace.push(ele.name)
-				val result = findOutputRef(ele.expression, trace)
-				if (result.empty)
-					trace.pop()
-				return result
-			}
-			RosettaCallableCall: {
-				if (ele.callable instanceof Attribute && ele.callable.eContainingFeature === FUNCTION__OUTPUT)
-					return #[ele.callable]
-				return findOutputRef(ele.callable, trace)
-			}
-		}
-		return (ele.eContents + ele.eCrossReferences.filter [
-			it instanceof RosettaExpression || it instanceof ShortcutDeclaration
-		]).flatMap [
-			findOutputRef(trace)
-		].toList
 	}
 }

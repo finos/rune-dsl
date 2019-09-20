@@ -19,7 +19,6 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
-import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRecordType
@@ -35,7 +34,8 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.functions.ExpressionOperators
 import com.rosetta.model.lib.math.BigDecimalExtensions
 import com.rosetta.model.lib.records.Date
-import org.eclipse.xtend.lib.annotations.Data
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
@@ -54,11 +54,6 @@ class ExpressionGeneratorWithBuilder {
 
 	dispatch def StringConcatenationClient toJava(RosettaFeatureCall ele, Context ctx) {
 		// if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-		val autoValue = if (ele.eContainer !== null && ele.eContainer instanceof RosettaFeatureCall &&
-				(ele.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-				false;
-			} else
-				true
 		val feature = ele.feature
 		val StringConcatenationClient right = if (feature instanceof RosettaRegularAttribute)
 				feature.attributeAccess(ctx)
@@ -99,7 +94,10 @@ class ExpressionGeneratorWithBuilder {
 			Function: {
 				val returnVal = funcExt.getOutput(callable)
 				if (returnVal !== null) {
-					return '''«toJava(ele.callable, ctx)».evaluate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg, ctx)»«ENDFOR»)'''
+					val toBuilder = if(funcExt.needsBuilder(returnVal)) '.toBuilder()' else ''
+					val StringConcatenationClient result = 
+					'''«toJava(ele.callable, ctx)».evaluate(«ctx.setInFunctionCall = true»«FOR arg : ele.args SEPARATOR ','»«toJava(arg, ctx)»«ENDFOR»«ctx.setInFunctionCall = false»)«toBuilder»'''
+					return result
 				}
 			}
 			default: '''«toJava(ele.callable, ctx)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg, ctx)»«ENDFOR»)'''
@@ -175,6 +173,9 @@ class ExpressionGeneratorWithBuilder {
 		val callee = expr.callable
 		switch (callee) {
 			Attribute: {
+				if(funcExt.needsBuilder(callee) && !funcExt.isOutput(callee) && !ctx.inFunctionCall)
+				'''«callee.name».toBuilder()'''
+				else
 				'''«callee.name»'''
 			}
 			ShortcutDeclaration: {
@@ -220,10 +221,11 @@ class ExpressionGeneratorWithBuilder {
 
 }
 
-@Data
+@Accessors
+@FinalFieldsConstructor
 class Context {
-	JavaNames names
-
+	final JavaNames names
+	boolean inFunctionCall
 	static def create(JavaNames names) {
 		new Context(names)
 	}

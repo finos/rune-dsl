@@ -10,6 +10,7 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RType
@@ -108,5 +109,9 @@ class RosettaFunctionExtensions {
 			RDataType: true
 			default: false
 		}
+	}
+	
+	def boolean isOutput(Attribute attr) {
+		attr.eContainingFeature === SimplePackage.Literals.FUNCTION__OUTPUT
 	}
 }
