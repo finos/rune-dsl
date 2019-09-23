@@ -144,16 +144,23 @@ public class ValidatorHelperTest {
 		
 		Mapper<BranchNode> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes);
 		
-		ComparisonResult result = ValidatorHelper.contains(mapperC, MapperC.of(BRANCH_NODE_1, BRANCH_NODE_2));
+		ComparisonResult result = ValidatorHelper.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_2)));
 		assertThat(result.get(), is(true));
 		
 		result = ValidatorHelper.contains(mapperC, MapperS.of(BRANCH_NODE_3));
 		assertThat(result.get(), is(false));
 
-		result = ValidatorHelper.contains(mapperC, MapperC.of(BRANCH_NODE_1, BRANCH_NODE_3));
+		result = ValidatorHelper.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)));
 		assertThat(result.get(), is(false));
 		
 		assertThat(result.getError(), is("[5, 5] does not contain all of [5, 10]"));
+	}
+	
+	@Test
+	public void countElementsListLiteral() {
+		ComparisonResult result = ValidatorHelper.areEqual(MapperS.of(MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)).resultCount()),
+				MapperS.of(Integer.valueOf(2)));
+		assertThat(result.get(), is(true));
 	}
 	
 	// Test classes

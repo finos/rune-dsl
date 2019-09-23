@@ -112,6 +112,9 @@ EmptyLiteral:
 	{EmptyLiteral} 'empty'
 ;
 
+ListLiteral:
+	'[' elements += RosettaPrimaryExpression (',' elements += RosettaPrimaryExpression )']';
+
 // old stuff
 RosettaRootElement:
 	RosettaClass | RosettaEnumeration |
@@ -520,6 +523,7 @@ RosettaLiteral:
 	| RosettaBigDecimalLiteral
 	| RosettaIntLiteral
 	| EmptyLiteral
+	| ListLiteral
 ;
 
 RosettaBooleanLiteral:

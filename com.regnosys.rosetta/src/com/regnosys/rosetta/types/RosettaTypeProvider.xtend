@@ -40,6 +40,7 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
@@ -193,6 +194,8 @@ class RosettaTypeProvider {
 				RBuiltinType.NUMBER
 			EmptyLiteral:
 				RBuiltinType.ANY
+			ListLiteral:
+				expression.elements.head.RType
 			RosettaCalculation,
 			RosettaExternalFunction: {
 				if (expression.features.size === 1 && expression.features.head.name === null) {

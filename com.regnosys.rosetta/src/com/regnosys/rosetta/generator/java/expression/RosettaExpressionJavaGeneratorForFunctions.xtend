@@ -59,6 +59,9 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import com.google.common.collect.Lists
+import com.rosetta.model.lib.functions.MapperC
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	
@@ -135,6 +138,9 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			}
 			EmptyLiteral : {
 				'''null'''
+			}
+			ListLiteral : {
+				'''«MapperC».of(«FOR ele: expr.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
 			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr.class.simpleName)
