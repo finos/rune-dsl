@@ -174,15 +174,15 @@ class ExpressionGeneratorWithBuilder {
 		switch (callee) {
 			Attribute: {
 				if(funcExt.needsBuilder(callee) && !funcExt.isOutput(callee) && !ctx.inFunctionCall)
-				'''«callee.name».toBuilder()'''
+				'''«callee.name»«IF expr.toOne».get(0)«ENDIF».toBuilder()'''
 				else
-				'''«callee.name»'''
+				'''«callee.name»«IF expr.toOne».get(0)«ENDIF»'''
 			}
 			ShortcutDeclaration: {
-				'''«callee.name»(«funcExt.inputsAsArgs(callee)»).get()«IF funcExt.needsBuilder(callee)».toBuilder()«ENDIF»'''
+				'''«callee.name»(«funcExt.inputsAsArgs(callee)»)«IF expr.toOne».get(0)«ENDIF».get()«IF funcExt.needsBuilder(callee)».toBuilder()«ENDIF»'''
 			}
 			RosettaNamed: {
-				'''«callee.name»'''
+				'''«callee.name»«IF expr.toOne».get(0)«ENDIF»'''
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported callable type of " + callee.class.simpleName)
