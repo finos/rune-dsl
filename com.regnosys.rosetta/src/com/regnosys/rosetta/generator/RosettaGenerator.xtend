@@ -8,9 +8,8 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
-import com.regnosys.rosetta.generator.java.calculation.CalculationGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
-import com.regnosys.rosetta.generator.java.function.FunctionGenerator
+import com.regnosys.rosetta.generator.java.function.FuncGenerator
 import com.regnosys.rosetta.generator.java.object.DataGenerator
 import com.regnosys.rosetta.generator.java.object.DataValidatorsGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
@@ -49,12 +48,9 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject ModelMetaGenerator metaGenerator
 	@Inject ChoiceRuleGenerator choiceRuleGenerator
 	@Inject DataRuleGenerator dataRuleGenerator
-	@Inject CalculationGenerator calculationGenerator
-	@Inject FunctionGenerator functionGenerator
 	@Inject BlueprintGenerator blueprintGenerator
 	@Inject QualifyFunctionGenerator<RosettaEvent> qualifyEventsGenerator
 	@Inject QualifyFunctionGenerator<RosettaProduct> qualifyProductsGenerator
-	//@Inject ClassListGenerator classListGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
 	
@@ -62,8 +58,8 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject DataValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaExtensions
-
 	@Inject JavaNames.Factory factory
+	@Inject FuncGenerator funcGenerator
 	
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta'}
@@ -96,10 +92,8 @@ class RosettaGenerator extends AbstractGenerator {
 							]
 						}
 						Function:{
-							if(handleAsSpecFunction) {
-								functionGenerator.generate(javaNames, fsa, it, version)
-							} else if(!isDispatchingFunction){
-								calculationGenerator.generateFunction(javaNames, fsa, it, version)
+							if(!isDispatchingFunction){
+								funcGenerator.generate(javaNames, fsa, it, version)
 							}
 						}
 					}
@@ -109,8 +103,6 @@ class RosettaGenerator extends AbstractGenerator {
 				choiceRuleGenerator.generate(packages, fsa, elements, version)
 				dataRuleGenerator.generate(packages, fsa, elements, version)
 				metaGenerator.generate(packages, fsa, elements, version)
-				calculationGenerator.generate(packages, fsa, elements, version)
-				functionGenerator.generate(packages, fsa, elements, version)
 				blueprintGenerator.generate(packages, fsa, elements, version)
 				qualifyEventsGenerator.generate(packages, fsa, elements, packages.qualifyEvent, RosettaEvent, version)
 				qualifyProductsGenerator.generate(packages, fsa, elements, packages.qualifyProduct, RosettaProduct, version)

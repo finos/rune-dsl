@@ -13,7 +13,9 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.rosetta.simple.Operation
 
 class RosettaExpectedTypeProvider {
 	
@@ -53,6 +55,11 @@ class RosettaExpectedTypeProvider {
 						targetParam.type.RType
 					}
 				}
+			}
+			Operation case reference == OPERATION__EXPRESSION:{
+				if(owner.path === null)
+					owner.assignRoot.RType
+				else owner.pathAsSegmentList.last?.attribute?.RType
 			}
 		}
 	}

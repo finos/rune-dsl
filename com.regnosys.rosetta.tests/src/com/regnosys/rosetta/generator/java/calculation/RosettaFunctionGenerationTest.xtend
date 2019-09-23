@@ -16,93 +16,37 @@ class RosettaFunctionGenerationTest {
 	@Test
 	def void testSimpleFunctionGeneration() {
 		'''
-			function FuncFoo (name string, name2 string) {
-				result string;
-				result2 string;
-			} 
+			func FuncFoo:
+			 	inputs:
+			 		name string  (0..1)
+					name2 string (0..1)
+				output:
+					result string (0..1)
 		'''.assertToGeneratedFunction(
 			'''
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.rosetta.model.lib.functions.IFunctionResult;
-			import com.rosetta.model.lib.functions.IResult;
+			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.String;
-			import java.util.Arrays;
-			import java.util.List;
 			
-			/**
-			 * @version test
-			 */
+			
 			@ImplementedBy(FuncFooImpl.class)
-			public interface FuncFoo {
-				
-				CalculationResult execute(String name, String name2);
-				
-				class CalculationResult implements IFunctionResult {
-				
-				
-					private String result;
-					private String result2;
+			public abstract class FuncFoo implements RosettaFunction {
+			
+				/**
+				* @param name 
+				* @param name2 
+				* @return result 
+				*/
+				public String evaluate(String name, String name2) {
 					
-					public CalculationResult() {
-					}
-					public String getResult() {
-						return this.result;
-					}
+					String result = doEvaluate(name, name2);
 					
-					public CalculationResult setResult(String result) {
-						this.result = result;
-						return this;
-					}
-					
-					public String getResult2() {
-						return this.result2;
-					}
-					
-					public CalculationResult setResult2(String result2) {
-						this.result2 = result2;
-						return this;
-					}
-					
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("result", String.class, (IResult res) -> ((CalculationResult) res).getResult()),
-						new Attribute<>("result2", String.class, (IResult res) -> ((CalculationResult) res).getResult2())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-					@Override
-					public boolean equals(Object o) {
-						if (this == o) return true;
-						if (o == null || getClass() != o.getClass()) return false;
-					
-						CalculationResult _that = (CalculationResult) o;
-					
-						if (result != null ? !result.equals(_that.result) : _that.result != null) return false;
-						if (result2 != null ? !result2.equals(_that.result2) : _that.result2 != null) return false;
-						return true;
-					}
-					
-					@Override
-					public int hashCode() {
-						int _result = 0;
-						_result = 31 * _result + (result != null ? result.hashCode() : 0);
-						_result = 31 * _result + (result2 != null ? result2.hashCode() : 0);
-						return _result;
-					}
-					
-					@Override
-					public String toString() {
-						return "CalculationResult {" +
-							"result=" + this.result + ", " +
-							"result2=" + this.result2 +
-						'}';
-					}
+					return result;
 				}
+				
+				protected abstract String doEvaluate(String name, String name2);
 			}
 			'''
 		)

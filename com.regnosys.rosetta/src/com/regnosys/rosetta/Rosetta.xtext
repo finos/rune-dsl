@@ -97,7 +97,7 @@ PostCondition returns Condition:
 ;
 
 Operation:
-	'assign-output' attribute = [Attribute|ValidID] (path = Segment)? ':' Definable?
+	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
 	expression = RosettaCalcExpression
 ;
 
@@ -755,7 +755,7 @@ RosettaCalcAttributeCall returns RosettaExpression:
 
 RosettaCalcPrimary returns RosettaExpression:
 	{RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|ValidID] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' toOne ?= 'only-element'?
-	| {RosettaCallableCall} callable=[ConvertableCardinality|ValidID] toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
+	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
 	| RosettaCallableCall
 	| RosettaEnumValueReference
 	| RosettaLiteral

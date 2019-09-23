@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.calculation
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.blueprints.RosettaBlueprintTest
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
@@ -23,10 +22,10 @@ class RosettaCalculationGenerationTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
-
+	
 	@Test
 	def void testSimpleTransDep() {
-		'''
+		val genereated = '''
 			class Period {
 				frequency int (1..1);
 				periodEnum PeriodEnum (1..1);
@@ -36,141 +35,84 @@ class RosettaCalculationGenerationTest {
 			enum PeriodEnum {
 				MONTH
 			}
+			
+			func DayFraction :
+				inputs: in2 Period( 1..1 )
+				output: res number (1..1)
+				alias p: PeriodEnumFunc(in2 -> periodEnum, in2)
+				assign-output res: p / 360
+				
+			func PeriodEnumFunc :
+				inputs:
+					in1 PeriodEnum( 1..1 )
+						in2 Period( 1..1 )
+				output: out number( 1..1 )
+			
+			func PeriodEnumFunc(in1: PeriodEnum -> MONTH ):
+				alias i: in2 -> frequency
+				assign-output out: i * 30.0
+		'''.generateCode.get("com.rosetta.test.model.functions.PeriodEnumFunc")
 
-			calculation DayFraction {
-				res defined by: p / 360
-				
-				where
-					p: is Period -> periodEnum
-			}
-			
-			calculation PeriodEnum.MONTH {
-				defined by: i * 30.0
-				
-				where
-					i: is Period -> frequency
-			}
-		'''.assertToGeneratedCalculation(
+		assertEquals(
 			'''
-			package com.rosetta.test.model.calculation;
-			
-			import com.rosetta.model.lib.functions.Formula;
-			import com.rosetta.model.lib.functions.ICalculationInput;
-			import com.rosetta.model.lib.functions.ICalculationResult;
-			import com.rosetta.model.lib.functions.IResult;
-			import com.rosetta.model.lib.math.BigDecimalExtensions;
-			import com.rosetta.test.model.Period;
-			import java.math.BigDecimal;
-			import java.util.ArrayList;
-			import java.util.Arrays;
-			import java.util.List;
-			
-			public class DayFraction {
+				package com.rosetta.test.model.functions;
 				
-				public CalculationResult calculate(Period paramPeriod) {
-					CalculationInput input = new CalculationInput().create(paramPeriod);
-					CalculationResult result = new CalculationResult(input);
-					result.res = BigDecimalExtensions.divide(input.p, BigDecimal.valueOf(360));
-					return result;
-				}
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.Mapper;
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.math.BigDecimalExtensions;
+				import com.rosetta.test.model.Period;
+				import com.rosetta.test.model.PeriodEnum;
+				import java.lang.Integer;
+				import java.math.BigDecimal;
 				
-				public static class CalculationInput implements ICalculationInput {
-					private CalculationInput input = this;  // For when arguments need to reference other arguments
-					private final List<ICalculationResult> calculationResults = new ArrayList<>();
-					private BigDecimal p;
-					
-					public CalculationInput create(Period inputParam) {
-						PeriodEnum.CalculationResult periodEnumCalculationResult = new PeriodEnum().calculate(inputParam, inputParam.getPeriodEnum());
-						this.calculationResults.add(periodEnumCalculationResult);
-						this.p = periodEnumCalculationResult.getValue();
-						return this;
-					}
 				
-					@Override
-					public List<Formula> getFormulas() {
-						return Arrays.asList(
-						new Formula("DayFraction", "res defined by: p / 360", this));
+				/**
+				 * @version test
+				 */
+				public class PeriodEnumFunc {
+					
+					@Inject protected PeriodEnumFunc.MONTH MONTH;
+					
+					public BigDecimal evaluate(PeriodEnum in1, Period in2) {
+						switch (in1) {
+							case MONTH:
+								return MONTH.evaluate(in1, in2);
+							default:
+								throw new IllegalArgumentException("Enum value not implemented: " + in1);
+						}
 					}
 					
-					@Override
-					public List<ICalculationResult> getCalculationResults() {
-						return calculationResults;
-					}
 					
-					public BigDecimal getP() {
-						return p;
-					}
-				
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("p", BigDecimal.class, (IResult res) -> ((CalculationInput) res).getP())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
+					public static class MONTH implements RosettaFunction {
 					
-				}
-				
-				public static class CalculationResult implements ICalculationResult {
-				
-					private CalculationInput calculationInput;
-				
-					private BigDecimal res;
-					
-					public CalculationResult(CalculationInput calculationInput) {
-						this.calculationInput = calculationInput;
-					}
-					public BigDecimal getRes() {
-						return this.res;
-					}
-					
-					public CalculationResult setRes(BigDecimal res) {
-						this.res = res;
-						return this;
-					}
-					
-					@Override
-					public CalculationInput getCalculationInput() {
-						return calculationInput;
-					}
-					
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("res", BigDecimal.class, (IResult res) -> ((CalculationResult) res).getRes())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-					@Override
-					public boolean equals(Object o) {
-						if (this == o) return true;
-						if (o == null || getClass() != o.getClass()) return false;
-					
-						CalculationResult _that = (CalculationResult) o;
-					
-						if (res != null ? !res.equals(_that.res) : _that.res != null) return false;
-						return true;
-					}
-					
-					@Override
-					public int hashCode() {
-						int _result = 0;
-						_result = 31 * _result + (res != null ? res.hashCode() : 0);
-						return _result;
-					}
-					
-					@Override
-					public String toString() {
-						return "CalculationResult {" +
-							"res=" + this.res +
-						'}';
+						/**
+						* @param in1 
+						* @param in2 
+						* @return out 
+						*/
+						public BigDecimal evaluate(PeriodEnum in1, Period in2) {
+							
+							BigDecimal out = doEvaluate(in1, in2);
+							
+							return out;
+						}
+						
+						protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
+							Mapper<BigDecimal> outHolder = null;
+							outHolder = MapperS.of(BigDecimalExtensions.multiply(BigDecimalExtensions.valueOf(i(in1, in2).get()), BigDecimalExtensions.valueOf(30.0)));
+							return outHolder.get();
+						}
+						
+						
+						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
+							return MapperS.of(in2).<Integer>map("getFrequency", Period::getFrequency);
+						}
 					}
 				}
-			}
-			'''
+			'''.toString,
+			genereated
 		)
 
 	}
@@ -179,252 +121,101 @@ class RosettaCalculationGenerationTest {
 	@Test
 	def void testOnePlusOneGeneration() {
 		'''
-			calculation Calc {
-				defined by: one + one
-				
-				where
-					one int : is 1
-			}
+			func Calc:
+				inputs:
+					one int (1..1)
+				output: out int (1..1)
+				alias oneA : 1
+				assign-output out: oneA + oneA
 		'''.assertToGeneratedCalculation(
 			'''
-			package com.rosetta.test.model.calculation;
+			package com.rosetta.test.model.functions;
 			
-			import com.rosetta.model.lib.functions.Formula;
-			import com.rosetta.model.lib.functions.ICalculationInput;
-			import com.rosetta.model.lib.functions.ICalculationResult;
-			import com.rosetta.model.lib.functions.IResult;
+			import com.rosetta.model.lib.functions.Mapper;
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.Integer;
-			import java.util.Arrays;
-			import java.util.List;
 			
-			public class Calc {
-				
-				public CalculationResult calculate() {
-					CalculationInput input = new CalculationInput().create();
-					CalculationResult result = new CalculationResult(input);
-					result.value = (input.one + input.one);
-					return result;
+			
+			public class Calc implements RosettaFunction {
+			
+				/**
+				* @param one 
+				* @return out 
+				*/
+				public Integer evaluate(Integer one) {
+					
+					Integer out = doEvaluate(one);
+					
+					return out;
 				}
 				
-				public static class CalculationInput implements ICalculationInput {
-					private CalculationInput input = this;  // For when arguments need to reference other arguments
-					private Integer one;
-					
-					public CalculationInput create() {
-						this.one = 1;
-						return this;
-					}
-				
-					@Override
-					public List<Formula> getFormulas() {
-						return Arrays.asList(
-						new Formula("Calc", "defined by: one + one", this));
-					}
-					
-					public Integer getOne() {
-						return one;
-					}
-				
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("one", Integer.class, (IResult res) -> ((CalculationInput) res).getOne())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
+				protected Integer doEvaluate(Integer one) {
+					Mapper<Integer> outHolder = null;
+					outHolder = MapperS.of((oneA(one).get() + oneA(one).get()));
+					return outHolder.get();
 				}
 				
-				public static class CalculationResult implements ICalculationResult {
 				
-					private CalculationInput calculationInput;
-				
-					private Integer value;
-					
-					public CalculationResult(CalculationInput calculationInput) {
-						this.calculationInput = calculationInput;
-					}
-					public Integer getValue() {
-						return this.value;
-					}
-					
-					public CalculationResult setValue(Integer value) {
-						this.value = value;
-						return this;
-					}
-					
-					@Override
-					public CalculationInput getCalculationInput() {
-						return calculationInput;
-					}
-					
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("value", Integer.class, (IResult res) -> ((CalculationResult) res).getValue())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-					@Override
-					public boolean equals(Object o) {
-						if (this == o) return true;
-						if (o == null || getClass() != o.getClass()) return false;
-					
-						CalculationResult _that = (CalculationResult) o;
-					
-						if (value != null ? !value.equals(_that.value) : _that.value != null) return false;
-						return true;
-					}
-					
-					@Override
-					public int hashCode() {
-						int _result = 0;
-						_result = 31 * _result + (value != null ? value.hashCode() : 0);
-						return _result;
-					}
-					
-					@Override
-					public String toString() {
-						return "CalculationResult {" +
-							"value=" + this.value +
-						'}';
-					}
+				protected Mapper<Integer> oneA(Integer one) {
+					return MapperS.of(Integer.valueOf(1));
 				}
 			}
 			'''
 		)
-
 	}
 	
 	@Test
 	def void testSimpleCalculationGeneration() {
 		'''
-			calculation Calc {
-				res defined by: arg1 + arg2 * 215
-				
-				where
-					arg1 int : is Min(1,2)
-					arg2 int : is Max(1,2)
-			}
+			func Calc:
+				inputs:
+					arg1 int  (1..1)
+					arg2 int  (1..1)
+				output: res int (1..1)
+				alias a1 : Min(1,2)
+				alias a2 :  Max(1,2)
+			
+				assign-output res: a1 + a2 * 215
 		'''.assertToGeneratedCalculation(
 			'''
-			package com.rosetta.test.model.calculation;
+			package com.rosetta.test.model.functions;
 			
-			import com.rosetta.model.lib.functions.Formula;
-			import com.rosetta.model.lib.functions.ICalculationInput;
-			import com.rosetta.model.lib.functions.ICalculationResult;
-			import com.rosetta.model.lib.functions.IResult;
+			import com.rosetta.model.lib.functions.Mapper;
+			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.Max;
 			import com.rosetta.model.lib.functions.Min;
+			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.Integer;
-			import java.util.Arrays;
-			import java.util.List;
 			
-			public class Calc {
-				
-				public CalculationResult calculate() {
-					CalculationInput input = new CalculationInput().create();
-					CalculationResult result = new CalculationResult(input);
-					result.res = (input.arg1 + (input.arg2 * 215));
-					return result;
+			
+			public class Calc implements RosettaFunction {
+			
+				/**
+				* @param arg1 
+				* @param arg2 
+				* @return res 
+				*/
+				public Integer evaluate(Integer arg1, Integer arg2) {
+					
+					Integer res = doEvaluate(arg1, arg2);
+					
+					return res;
 				}
 				
-				public static class CalculationInput implements ICalculationInput {
-					private CalculationInput input = this;  // For when arguments need to reference other arguments
-					private Integer arg1;
-					private Integer arg2;
-					
-					public CalculationInput create() {
-						this.arg1 = new Min().execute(1,2);
-						this.arg2 = new Max().execute(1,2);
-						return this;
-					}
-				
-					@Override
-					public List<Formula> getFormulas() {
-						return Arrays.asList(
-						new Formula("Calc", "res defined by: arg1 + arg2 * 215", this));
-					}
-					
-					public Integer getArg1() {
-						return arg1;
-					}
-				
-					public Integer getArg2() {
-						return arg2;
-					}
-				
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("arg1", Integer.class, (IResult res) -> ((CalculationInput) res).getArg1()),
-						new Attribute<>("arg2", Integer.class, (IResult res) -> ((CalculationInput) res).getArg2())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
+				protected Integer doEvaluate(Integer arg1, Integer arg2) {
+					Mapper<Integer> resHolder = null;
+					resHolder = MapperS.of((a1(arg1, arg2).get() + (a2(arg1, arg2).get() * 215)));
+					return resHolder.get();
 				}
 				
-				public static class CalculationResult implements ICalculationResult {
 				
-					private CalculationInput calculationInput;
+				protected Mapper<Integer> a1(Integer arg1, Integer arg2) {
+					return MapperS.of(new Min().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
+				}
 				
-					private Integer res;
-					
-					public CalculationResult(CalculationInput calculationInput) {
-						this.calculationInput = calculationInput;
-					}
-					public Integer getRes() {
-						return this.res;
-					}
-					
-					public CalculationResult setRes(Integer res) {
-						this.res = res;
-						return this;
-					}
-					
-					@Override
-					public CalculationInput getCalculationInput() {
-						return calculationInput;
-					}
-					
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("res", Integer.class, (IResult res) -> ((CalculationResult) res).getRes())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-					@Override
-					public boolean equals(Object o) {
-						if (this == o) return true;
-						if (o == null || getClass() != o.getClass()) return false;
-					
-						CalculationResult _that = (CalculationResult) o;
-					
-						if (res != null ? !res.equals(_that.res) : _that.res != null) return false;
-						return true;
-					}
-					
-					@Override
-					public int hashCode() {
-						int _result = 0;
-						_result = 31 * _result + (res != null ? res.hashCode() : 0);
-						return _result;
-					}
-					
-					@Override
-					public String toString() {
-						return "CalculationResult {" +
-							"res=" + this.res +
-						'}';
-					}
+				protected Mapper<Integer> a2(Integer arg1, Integer arg2) {
+					return MapperS.of(new Max().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
 				}
 			}
 			'''
@@ -434,156 +225,75 @@ class RosettaCalculationGenerationTest {
 	@Test
 	def void testDateTimeAdd() {
 		val calculation = '''
-			calculation Calc {
-				res defined by: arg1 + arg2 
-				string res2 defined by: arg1 + arg2
-				
-				where
-					arg1 date : is FuncIn->val1
-					arg2 time : is FuncIn->val2
-			}
-			
 			class FuncIn {
 				val1 date (1..1);
 				val2 time (1..1);
 			}
+			data FoncOut: 
+				res1 string (1..1)
+				res2 string (1..1)
+			
+			func Calc:
+				inputs:
+					funIn FuncIn(1..1)
+			
+				output:
+					res FoncOut(1..1)
+				alias arg1: funIn-> val1
+				alias arg2: funIn-> val2
+				assign-output res -> res1:  arg1 + arg2 
+				assign-output res -> res2:  arg1 + arg2 
 		'''.generateCode
-		val calcJava = calculation.get("com.rosetta.test.model.calculation.Calc")
+		val calcJava = calculation.get("com.rosetta.test.model.functions.Calc")
 		//RosettaBlueprintTest.writeOutClasses(calculation, "testDateTimeAdd")
 		calculation.compileToClasses
 		val expected = '''
-		package com.rosetta.test.model.calculation;
+		package com.rosetta.test.model.functions;
 		
-		import com.rosetta.model.lib.functions.Formula;
-		import com.rosetta.model.lib.functions.ICalculationInput;
-		import com.rosetta.model.lib.functions.ICalculationResult;
-		import com.rosetta.model.lib.functions.IResult;
+		import com.rosetta.model.lib.functions.Mapper;
+		import com.rosetta.model.lib.functions.MapperMaths;
+		import com.rosetta.model.lib.functions.MapperS;
+		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.records.Date;
+		import com.rosetta.test.model.FoncOut;
 		import com.rosetta.test.model.FuncIn;
-		import java.lang.String;
-		import java.time.LocalDateTime;
+		import java.lang.SuppressWarnings;
 		import java.time.LocalTime;
-		import java.util.Arrays;
-		import java.util.List;
 		
-		public class Calc {
-			
-			public CalculationResult calculate(FuncIn paramFuncIn) {
-				CalculationInput input = new CalculationInput().create(paramFuncIn);
-				CalculationResult result = new CalculationResult(input);
-				result.res = Date.of(input.arg1, input.arg2);
-				result.res2 = Date.of(input.arg1, input.arg2).toString();
-				return result;
+		
+		public class Calc implements RosettaFunction {
+		
+			/**
+			* @param funIn 
+			* @return res 
+			*/
+			public FoncOut evaluate(FuncIn funIn) {
+				
+				FoncOut res = doEvaluate(funIn).build();
+				
+				return res;
 			}
 			
-			public static class CalculationInput implements ICalculationInput {
-				private CalculationInput input = this;  // For when arguments need to reference other arguments
-				private Date arg1;
-				private LocalTime arg2;
-				
-				public CalculationInput create(FuncIn inputParam) {
-					this.arg1 = inputParam.getVal1();
-					this.arg2 = inputParam.getVal2();
-					return this;
-				}
-			
-				@Override
-				public List<Formula> getFormulas() {
-					return Arrays.asList(
-					new Formula("Calc", "res defined by: arg1 + arg2", this),
-					new Formula("Calc", "string res2 defined by: arg1 + arg2", this));
-				}
-				
-				public Date getArg1() {
-					return arg1;
-				}
-			
-				public LocalTime getArg2() {
-					return arg2;
-				}
-			
-				private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-					new Attribute<>("arg1", Date.class, (IResult res) -> ((CalculationInput) res).getArg1()),
-					new Attribute<>("arg2", LocalTime.class, (IResult res) -> ((CalculationInput) res).getArg2())
-				);
-			
-				@Override
-				public List<Attribute<?>> getAttributes() {
-					return ATTRIBUTES;
-				}
-				
+			protected FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
+				FoncOut.FoncOutBuilder resHolder = FoncOut.builder();
+				@SuppressWarnings("unused") FoncOut res = resHolder.build();
+				resHolder
+					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+				;
+				res = resHolder.build();
+				resHolder
+					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+				;
+				return resHolder;
 			}
 			
-			public static class CalculationResult implements ICalculationResult {
 			
-				private CalculationInput calculationInput;
+			protected Mapper<Date> arg1(FuncIn funIn) {
+				return MapperS.of(funIn).<Date>map("getVal1", FuncIn::getVal1);
+			}
 			
-				private LocalDateTime res;
-				private String res2;
-				
-				public CalculationResult(CalculationInput calculationInput) {
-					this.calculationInput = calculationInput;
-				}
-				public LocalDateTime getRes() {
-					return this.res;
-				}
-				
-				public CalculationResult setRes(LocalDateTime res) {
-					this.res = res;
-					return this;
-				}
-				
-				public String getRes2() {
-					return this.res2;
-				}
-				
-				public CalculationResult setRes2(String res2) {
-					this.res2 = res2;
-					return this;
-				}
-				
-				@Override
-				public CalculationInput getCalculationInput() {
-					return calculationInput;
-				}
-				
-				private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-					new Attribute<>("res", LocalDateTime.class, (IResult res) -> ((CalculationResult) res).getRes()),
-					new Attribute<>("res2", String.class, (IResult res) -> ((CalculationResult) res).getRes2())
-				);
-			
-				@Override
-				public List<Attribute<?>> getAttributes() {
-					return ATTRIBUTES;
-				}
-				
-				@Override
-				public boolean equals(Object o) {
-					if (this == o) return true;
-					if (o == null || getClass() != o.getClass()) return false;
-				
-					CalculationResult _that = (CalculationResult) o;
-				
-					if (res != null ? !res.equals(_that.res) : _that.res != null) return false;
-					if (res2 != null ? !res2.equals(_that.res2) : _that.res2 != null) return false;
-					return true;
-				}
-				
-				@Override
-				public int hashCode() {
-					int _result = 0;
-					_result = 31 * _result + (res != null ? res.hashCode() : 0);
-					_result = 31 * _result + (res2 != null ? res2.hashCode() : 0);
-					return _result;
-				}
-				
-				@Override
-				public String toString() {
-					return "CalculationResult {" +
-						"res=" + this.res + ", " +
-						"res2=" + this.res2 +
-					'}';
-				}
+			protected Mapper<LocalTime> arg2(FuncIn funIn) {
+				return MapperS.of(funIn).<LocalTime>map("getVal2", FuncIn::getVal2);
 			}
 		}
 		'''
@@ -593,163 +303,82 @@ class RosettaCalculationGenerationTest {
 	@Test
 	def void testWierdness() {
 		val calculation = '''			
-			calculation RTS_22_Fields {
-				string transactionReferenceNumber defined by: "SPH"+linkId
-				string tradingDateTime defined by: tradeDate + tradeTime
-				
-				where 
-					linkId string : is FuncIn->valS
-					tradeDate date : is FuncIn->val1
-					tradeTime time : is FuncIn->val2
-			}
 			class FuncIn {
 				valS string (1..1);
 				val1 date (1..1);
 				val2 time (1..1);
 			}
+			class FuncOut {
+				transactionReferenceNumber string (1..1);
+				tradingDateTime string (1..1);
+			}
+			
+			func RTS_22_Fields :
+				inputs: funcIn FuncIn (1..1)
+			
+				output: out FuncOut (1..1)
+				alias linkId: funcIn -> valS
+				alias tradeDate: funcIn -> val1
+				alias tradeTime: funcIn -> val2
+				assign-output out -> transactionReferenceNumber: "SPH"+linkId
+				assign-output out -> tradingDateTime:
+					tradeDate + tradeTime
 		'''.generateCode
-		val calcJava = calculation.get("com.rosetta.test.model.calculation.RTS_22_Fields")
+		val calcJava = calculation.get("com.rosetta.test.model.functions.RTS_22_Fields")
 		//RosettaBlueprintTest.writeOutClasses(calculation, "testWierdness")
 		calculation.compileToClasses
 		val expected = '''
-		package com.rosetta.test.model.calculation;
+		package com.rosetta.test.model.functions;
 		
-		import com.rosetta.model.lib.functions.Formula;
-		import com.rosetta.model.lib.functions.ICalculationInput;
-		import com.rosetta.model.lib.functions.ICalculationResult;
-		import com.rosetta.model.lib.functions.IResult;
+		import com.rosetta.model.lib.functions.Mapper;
+		import com.rosetta.model.lib.functions.MapperMaths;
+		import com.rosetta.model.lib.functions.MapperS;
+		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.records.Date;
 		import com.rosetta.test.model.FuncIn;
+		import com.rosetta.test.model.FuncOut;
 		import java.lang.String;
+		import java.lang.SuppressWarnings;
 		import java.time.LocalTime;
-		import java.util.Arrays;
-		import java.util.List;
 		
-		public class RTS_22_Fields {
-			
-			public CalculationResult calculate(FuncIn paramFuncIn) {
-				CalculationInput input = new CalculationInput().create(paramFuncIn);
-				CalculationResult result = new CalculationResult(input);
-				result.transactionReferenceNumber = ("SPH" + input.linkId);
-				result.tradingDateTime = Date.of(input.tradeDate, input.tradeTime).toString();
-				return result;
+		
+		public class RTS_22_Fields implements RosettaFunction {
+		
+			/**
+			* @param funcIn 
+			* @return out 
+			*/
+			public FuncOut evaluate(FuncIn funcIn) {
+				
+				FuncOut out = doEvaluate(funcIn).build();
+				
+				return out;
 			}
 			
-			public static class CalculationInput implements ICalculationInput {
-				private CalculationInput input = this;  // For when arguments need to reference other arguments
-				private String linkId;
-				private Date tradeDate;
-				private LocalTime tradeTime;
-				
-				public CalculationInput create(FuncIn inputParam) {
-					this.linkId = inputParam.getValS();
-					this.tradeDate = inputParam.getVal1();
-					this.tradeTime = inputParam.getVal2();
-					return this;
-				}
-			
-				@Override
-				public List<Formula> getFormulas() {
-					return Arrays.asList(
-					new Formula("RTS_22_Fields", "string transactionReferenceNumber defined by: 'SPH'+linkId", this),
-					new Formula("RTS_22_Fields", "string tradingDateTime defined by: tradeDate + tradeTime", this));
-				}
-				
-				public String getLinkId() {
-					return linkId;
-				}
-			
-				public Date getTradeDate() {
-					return tradeDate;
-				}
-			
-				public LocalTime getTradeTime() {
-					return tradeTime;
-				}
-			
-				private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-					new Attribute<>("linkId", String.class, (IResult res) -> ((CalculationInput) res).getLinkId()),
-					new Attribute<>("tradeDate", Date.class, (IResult res) -> ((CalculationInput) res).getTradeDate()),
-					new Attribute<>("tradeTime", LocalTime.class, (IResult res) -> ((CalculationInput) res).getTradeTime())
-				);
-			
-				@Override
-				public List<Attribute<?>> getAttributes() {
-					return ATTRIBUTES;
-				}
-				
+			protected FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
+				FuncOut.FuncOutBuilder outHolder = FuncOut.builder();
+				@SuppressWarnings("unused") FuncOut out = outHolder.build();
+				outHolder
+					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
+				;
+				out = outHolder.build();
+				outHolder
+					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
+				;
+				return outHolder;
 			}
 			
-			public static class CalculationResult implements ICalculationResult {
 			
-				private CalculationInput calculationInput;
+			protected Mapper<String> linkId(FuncIn funcIn) {
+				return MapperS.of(funcIn).<String>map("getValS", FuncIn::getValS);
+			}
 			
-				private String transactionReferenceNumber;
-				private String tradingDateTime;
-				
-				public CalculationResult(CalculationInput calculationInput) {
-					this.calculationInput = calculationInput;
-				}
-				public String getTransactionReferenceNumber() {
-					return this.transactionReferenceNumber;
-				}
-				
-				public CalculationResult setTransactionReferenceNumber(String transactionReferenceNumber) {
-					this.transactionReferenceNumber = transactionReferenceNumber;
-					return this;
-				}
-				
-				public String getTradingDateTime() {
-					return this.tradingDateTime;
-				}
-				
-				public CalculationResult setTradingDateTime(String tradingDateTime) {
-					this.tradingDateTime = tradingDateTime;
-					return this;
-				}
-				
-				@Override
-				public CalculationInput getCalculationInput() {
-					return calculationInput;
-				}
-				
-				private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-					new Attribute<>("transactionReferenceNumber", String.class, (IResult res) -> ((CalculationResult) res).getTransactionReferenceNumber()),
-					new Attribute<>("tradingDateTime", String.class, (IResult res) -> ((CalculationResult) res).getTradingDateTime())
-				);
+			protected Mapper<Date> tradeDate(FuncIn funcIn) {
+				return MapperS.of(funcIn).<Date>map("getVal1", FuncIn::getVal1);
+			}
 			
-				@Override
-				public List<Attribute<?>> getAttributes() {
-					return ATTRIBUTES;
-				}
-				
-				@Override
-				public boolean equals(Object o) {
-					if (this == o) return true;
-					if (o == null || getClass() != o.getClass()) return false;
-				
-					CalculationResult _that = (CalculationResult) o;
-				
-					if (transactionReferenceNumber != null ? !transactionReferenceNumber.equals(_that.transactionReferenceNumber) : _that.transactionReferenceNumber != null) return false;
-					if (tradingDateTime != null ? !tradingDateTime.equals(_that.tradingDateTime) : _that.tradingDateTime != null) return false;
-					return true;
-				}
-				
-				@Override
-				public int hashCode() {
-					int _result = 0;
-					_result = 31 * _result + (transactionReferenceNumber != null ? transactionReferenceNumber.hashCode() : 0);
-					_result = 31 * _result + (tradingDateTime != null ? tradingDateTime.hashCode() : 0);
-					return _result;
-				}
-				
-				@Override
-				public String toString() {
-					return "CalculationResult {" +
-						"transactionReferenceNumber=" + this.transactionReferenceNumber + ", " +
-						"tradingDateTime=" + this.tradingDateTime +
-					'}';
-				}
+			protected Mapper<LocalTime> tradeTime(FuncIn funcIn) {
+				return MapperS.of(funcIn).<LocalTime>map("getVal2", FuncIn::getVal2);
 			}
 		}
 		'''
@@ -880,683 +509,237 @@ class RosettaCalculationGenerationTest {
 
 	@Test
 	def void shouldResolveFunctionDependencies() {
-		'''			
-			calculation Adder {
-				res defined by: arg1
-				
-				where
-					arg1 int : is AddOne( 1 ) -> out
-			}
+		'''
+			func Adder:
+				output: res int (1..1)
+				alias arg1 : AddOne( 1 )
+				assign-output res : arg1
 			
-			function AddOne( arg int ) {
-				out int;
-			}
+			func AddOne:
+				inputs:  arg int (1..1)
+				output: out int(1..1)
 		'''.assertToGeneratedCalculation(
 			'''
-			package com.rosetta.test.model.calculation;
+			package com.rosetta.test.model.functions;
 			
-			import com.rosetta.model.lib.functions.Formula;
-			import com.rosetta.model.lib.functions.ICalculationInput;
-			import com.rosetta.model.lib.functions.ICalculationResult;
-			import com.rosetta.model.lib.functions.IResult;
+			import com.google.inject.Inject;
+			import com.rosetta.model.lib.functions.Mapper;
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.test.model.functions.AddOne;
 			import java.lang.Integer;
-			import java.util.Arrays;
-			import java.util.List;
 			
-			public class Adder {
+			
+			public class Adder implements RosettaFunction {
 				
-				private final AddOne addOne;
-				
-				public Adder(AddOne addOne) {
-					this.addOne = addOne;
+				// RosettaFunction dependencies
+				//
+				@Inject protected AddOne addOne;
+			
+				/**
+				* @return res 
+				*/
+				public Integer evaluate() {
+					
+					Integer res = doEvaluate();
+					
+					return res;
 				}
 				
-				public CalculationResult calculate() {
-					CalculationInput input = new CalculationInput().create(addOne);
-					CalculationResult result = new CalculationResult(input);
-					result.res = input.arg1;
-					return result;
+				protected Integer doEvaluate() {
+					Mapper<Integer> resHolder = null;
+					resHolder = MapperS.of(arg1().get());
+					return resHolder.get();
 				}
 				
-				public static class CalculationInput implements ICalculationInput {
-					private CalculationInput input = this;  // For when arguments need to reference other arguments
-					private Integer arg1;
-					
-					public CalculationInput create(AddOne addOne) {
-						this.arg1 = addOne.execute(1).getOut();
-						return this;
-					}
 				
-					@Override
-					public List<Formula> getFormulas() {
-						return Arrays.asList(
-						new Formula("Adder", "res defined by: arg1", this));
-					}
-					
-					public Integer getArg1() {
-						return arg1;
-					}
-				
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("arg1", Integer.class, (IResult res) -> ((CalculationInput) res).getArg1())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-				}
-				
-				public static class CalculationResult implements ICalculationResult {
-				
-					private CalculationInput calculationInput;
-				
-					private Integer res;
-					
-					public CalculationResult(CalculationInput calculationInput) {
-						this.calculationInput = calculationInput;
-					}
-					public Integer getRes() {
-						return this.res;
-					}
-					
-					public CalculationResult setRes(Integer res) {
-						this.res = res;
-						return this;
-					}
-					
-					@Override
-					public CalculationInput getCalculationInput() {
-						return calculationInput;
-					}
-					
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("res", Integer.class, (IResult res) -> ((CalculationResult) res).getRes())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-					@Override
-					public boolean equals(Object o) {
-						if (this == o) return true;
-						if (o == null || getClass() != o.getClass()) return false;
-					
-						CalculationResult _that = (CalculationResult) o;
-					
-						if (res != null ? !res.equals(_that.res) : _that.res != null) return false;
-						return true;
-					}
-					
-					@Override
-					public int hashCode() {
-						int _result = 0;
-						_result = 31 * _result + (res != null ? res.hashCode() : 0);
-						return _result;
-					}
-					
-					@Override
-					public String toString() {
-						return "CalculationResult {" +
-							"res=" + this.res +
-						'}';
-					}
+				protected Mapper<Integer> arg1() {
+					return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
 				}
 			}
 			'''
 		)
 	}
 
-	@Test
-	def void shouldResolveTransitiveFunctionDependencies() {
-		'''
-			class MathInput
-			{
-			    mathInput string (1..1);
-			    math Math (1..1);
-			}
-			
-			calculation AddOrSubtract {
-			    res defined by: arg1
-			    
-			    where
-			    	arg1 string : is MathInput -> math
-				    arg2 string : is AddThree( '3' ) -> out
-			}
-			
-			function AddOne( arg string ) {
-			    out string;
-			}
-			
-			function SubOne( arg string ) {
-			    out string;
-			}
-			
-			function AddThree( arg string ) {
-				out string;
-			}
-			
-			enum Math
-			{
-			    INCR,
-			    DECR
-			}
-			
-			calculation Math.INCR {
-			    defined by: arg1
-			    
-			    where
-			    	arg1 string : is AddOne(MathInput -> mathInput) -> out
-			}
-			
-			calculation Math.DECR {
-			    defined by: arg1
-			    
-			    where
-			        arg1 string : is SubOne(MathInput -> mathInput) -> out
-			}
-		'''.assertToGeneratedCalculation(
-			'''
-			package com.rosetta.test.model.calculation;
-			
-			import com.rosetta.model.lib.functions.Formula;
-			import com.rosetta.model.lib.functions.ICalculationInput;
-			import com.rosetta.model.lib.functions.ICalculationResult;
-			import com.rosetta.model.lib.functions.IResult;
-			import com.rosetta.test.model.MathInput;
-			import com.rosetta.test.model.functions.AddOne;
-			import com.rosetta.test.model.functions.AddThree;
-			import com.rosetta.test.model.functions.SubOne;
-			import java.lang.String;
-			import java.util.ArrayList;
-			import java.util.Arrays;
-			import java.util.List;
-			
-			public class AddOrSubtract {
-				
-				private final AddOne addOne;
-				private final SubOne subOne;
-				private final AddThree addThree;
-				
-				public AddOrSubtract(AddOne addOne, SubOne subOne, AddThree addThree) {
-					this.addOne = addOne;
-					this.subOne = subOne;
-					this.addThree = addThree;
-				}
-				
-				public CalculationResult calculate(MathInput paramMathInput) {
-					CalculationInput input = new CalculationInput().create(paramMathInput, addOne, subOne, addThree);
-					CalculationResult result = new CalculationResult(input);
-					result.res = input.arg1;
-					return result;
-				}
-				
-				public static class CalculationInput implements ICalculationInput {
-					private CalculationInput input = this;  // For when arguments need to reference other arguments
-					private final List<ICalculationResult> calculationResults = new ArrayList<>();
-					private String arg1;
-					private String arg2;
-					
-					public CalculationInput create(MathInput inputParam, AddOne addOne, SubOne subOne, AddThree addThree) {
-						Math.CalculationResult mathCalculationResult = new Math(addOne, subOne).calculate(inputParam, inputParam.getMath());
-						this.calculationResults.add(mathCalculationResult);
-						this.arg1 = mathCalculationResult.getValue();
-						this.arg2 = addThree.execute("3").getOut();
-						return this;
-					}
-				
-					@Override
-					public List<Formula> getFormulas() {
-						return Arrays.asList(
-						new Formula("AddOrSubtract", "res defined by: arg1", this));
-					}
-					
-					@Override
-					public List<ICalculationResult> getCalculationResults() {
-						return calculationResults;
-					}
-					
-					public String getArg1() {
-						return arg1;
-					}
-				
-					public String getArg2() {
-						return arg2;
-					}
-				
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("arg1", String.class, (IResult res) -> ((CalculationInput) res).getArg1()),
-						new Attribute<>("arg2", String.class, (IResult res) -> ((CalculationInput) res).getArg2())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-				}
-				
-				public static class CalculationResult implements ICalculationResult {
-				
-					private CalculationInput calculationInput;
-				
-					private String res;
-					
-					public CalculationResult(CalculationInput calculationInput) {
-						this.calculationInput = calculationInput;
-					}
-					public String getRes() {
-						return this.res;
-					}
-					
-					public CalculationResult setRes(String res) {
-						this.res = res;
-						return this;
-					}
-					
-					@Override
-					public CalculationInput getCalculationInput() {
-						return calculationInput;
-					}
-					
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("res", String.class, (IResult res) -> ((CalculationResult) res).getRes())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-					@Override
-					public boolean equals(Object o) {
-						if (this == o) return true;
-						if (o == null || getClass() != o.getClass()) return false;
-					
-						CalculationResult _that = (CalculationResult) o;
-					
-						if (res != null ? !res.equals(_that.res) : _that.res != null) return false;
-						return true;
-					}
-					
-					@Override
-					public int hashCode() {
-						int _result = 0;
-						_result = 31 * _result + (res != null ? res.hashCode() : 0);
-						return _result;
-					}
-					
-					@Override
-					public String toString() {
-						return "CalculationResult {" +
-							"res=" + this.res +
-						'}';
-					}
-				}
-			}
-			'''
-		)
-	}
-
+	
 	@Test
 	def void shouldResolveExternalFunctionDependenciesWhenEnumCalculation() {
-		'''
+		val generated = '''
 			class MathInput
 			{
-			    mathInput string (1..1);
-			    math Math (1..1);
+				mathInput string (1..1);
+				math Math (1..1);
 			}
 			
-			function AddOne( arg string ) {
-			    out string;
-			}
+			func AddOne:
+				inputs: arg string (1..1)
+				output: out string (1..1)
+						
+			func SubOne:
+				inputs: arg string (1..1)
+				output: out string (1..1)
 			
-			function SubOne( arg string ) {
-			    out string;
-			}
 			
 			enum Math
 			{
-			    INCR,
-			    DECR
+				INCR,
+				DECR
 			}
 			
-			calculation Math.INCR {
-			    defined by: arg1
-			    
-			    where 
-			    	arg1 string : is AddOne(MathInput -> mathInput) -> out
-			}
+			func MathFunc:
+				inputs:
+					in1 Math (1..1)
+					in2 MathInput (1..1)
+				output: arg1 string (1..1)
 			
-			calculation Math.DECR {
-			    defined by: arg1
-			    
-			    where
-			    	arg1 string : is SubOne(MathInput -> mathInput) -> out
-			}
-		'''.assertToGeneratedCalculation(
+			func MathFunc (in1 : Math -> INCR ):
+				assign-output arg1: AddOne(in2 -> mathInput)
+				
+			func MathFunc (in1 : Math -> DECR ):
+				assign-output arg1: SubOne(in2 -> mathInput)
+		'''.generateCode
+		.get("com.rosetta.test.model.functions.MathFunc")
+		assertEquals(
 			'''
-			package com.rosetta.test.model.calculation;
+			package com.rosetta.test.model.functions;
 			
-			import com.rosetta.model.lib.functions.Formula;
-			import com.rosetta.model.lib.functions.ICalculationInput;
-			import com.rosetta.model.lib.functions.ICalculationResult;
-			import com.rosetta.model.lib.functions.IResult;
+			import com.google.inject.Inject;
+			import com.rosetta.model.lib.functions.Mapper;
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.test.model.Math;
 			import com.rosetta.test.model.MathInput;
 			import com.rosetta.test.model.functions.AddOne;
 			import com.rosetta.test.model.functions.SubOne;
 			import java.lang.String;
-			import java.util.Arrays;
-			import java.util.List;
+			
 			
 			/**
 			 * @version test
 			 */
-			public class Math {
+			public class MathFunc {
 				
-				private final AddOne addOne;
-				private final SubOne subOne;
+				@Inject protected MathFunc.INCR INCR;
+				@Inject protected MathFunc.DECR DECR;
 				
-				public Math(AddOne addOne, SubOne subOne) {
-					this.addOne = addOne;
-					this.subOne = subOne;
-				}
-				
-				public CalculationResult calculate(MathInput mathInput, com.rosetta.test.model.Math enumValue) {
-					switch (enumValue) {
+				public String evaluate(Math in1, MathInput in2) {
+					switch (in1) {
 						case INCR:
-							return new INCR(addOne).calculate(mathInput);
+							return INCR.evaluate(in1, in2);
 						case DECR:
-							return new DECR(subOne).calculate(mathInput);
+							return DECR.evaluate(in1, in2);
 						default:
-							throw new IllegalArgumentException("Enum value not implemented: " + enumValue);
+							throw new IllegalArgumentException("Enum value not implemented: " + in1);
 					}
 				}
 				
-				public static class INCR {
+				
+				public static class INCR implements RosettaFunction {
 					
-					private final AddOne addOne;
-					
-					public INCR(AddOne addOne) {
-						this.addOne = addOne;
+					// RosettaFunction dependencies
+					//
+					@Inject protected AddOne addOne;
+				
+					/**
+					* @param in1 
+					* @param in2 
+					* @return arg1 
+					*/
+					public String evaluate(Math in1, MathInput in2) {
+						
+						String arg1 = doEvaluate(in1, in2);
+						
+						return arg1;
 					}
 					
-					public CalculationResult calculate(MathInput paramMathInput) {
-						CalculationInput input = new CalculationInput().create(paramMathInput, addOne);
-						CalculationResult result = new CalculationResult(input);
-						result.value = input.arg1;
-						return result;
+					protected String doEvaluate(Math in1, MathInput in2) {
+						Mapper<String> arg1Holder = null;
+						arg1Holder = MapperS.of(addOne.evaluate(in2.getMathInput()));
+						return arg1Holder.get();
 					}
 					
-					public static class CalculationInput implements ICalculationInput {
-						private CalculationInput input = this;  // For when arguments need to reference other arguments
-						private String arg1;
-						
-						public CalculationInput create(MathInput inputParam, AddOne addOne) {
-							this.arg1 = addOne.execute(inputParam.getMathInput()).getOut();
-							return this;
-						}
-					
-						@Override
-						public List<Formula> getFormulas() {
-							return Arrays.asList(
-							new Formula("INCR", "defined by: arg1", this));
-						}
-						
-						public String getArg1() {
-							return arg1;
-						}
-					
-						private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-							new Attribute<>("arg1", String.class, (IResult res) -> ((CalculationInput) res).getArg1())
-						);
-					
-						@Override
-						public List<Attribute<?>> getAttributes() {
-							return ATTRIBUTES;
-						}
-						
-					}
 				}
-				public static class DECR {
-					
-					private final SubOne subOne;
-					
-					public DECR(SubOne subOne) {
-						this.subOne = subOne;
-					}
-					
-					public CalculationResult calculate(MathInput paramMathInput) {
-						CalculationInput input = new CalculationInput().create(paramMathInput, subOne);
-						CalculationResult result = new CalculationResult(input);
-						result.value = input.arg1;
-						return result;
-					}
-					
-					public static class CalculationInput implements ICalculationInput {
-						private CalculationInput input = this;  // For when arguments need to reference other arguments
-						private String arg1;
-						
-						public CalculationInput create(MathInput inputParam, SubOne subOne) {
-							this.arg1 = subOne.execute(inputParam.getMathInput()).getOut();
-							return this;
-						}
-					
-						@Override
-						public List<Formula> getFormulas() {
-							return Arrays.asList(
-							new Formula("DECR", "defined by: arg1", this));
-						}
-						
-						public String getArg1() {
-							return arg1;
-						}
-					
-						private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-							new Attribute<>("arg1", String.class, (IResult res) -> ((CalculationInput) res).getArg1())
-						);
-					
-						@Override
-						public List<Attribute<?>> getAttributes() {
-							return ATTRIBUTES;
-						}
-						
-					}
-				}
-				public static class CalculationResult implements ICalculationResult {
 				
-					private ICalculationInput calculationInput;
+				public static class DECR implements RosettaFunction {
+					
+					// RosettaFunction dependencies
+					//
+					@Inject protected SubOne subOne;
 				
-					private String value;
-					
-					public CalculationResult(ICalculationInput calculationInput) {
-						this.calculationInput = calculationInput;
-					}
-					public String getValue() {
-						return this.value;
-					}
-					
-					public CalculationResult setValue(String value) {
-						this.value = value;
-						return this;
+					/**
+					* @param in1 
+					* @param in2 
+					* @return arg1 
+					*/
+					public String evaluate(Math in1, MathInput in2) {
+						
+						String arg1 = doEvaluate(in1, in2);
+						
+						return arg1;
 					}
 					
-					@Override
-					public ICalculationInput getCalculationInput() {
-						return calculationInput;
+					protected String doEvaluate(Math in1, MathInput in2) {
+						Mapper<String> arg1Holder = null;
+						arg1Holder = MapperS.of(subOne.evaluate(in2.getMathInput()));
+						return arg1Holder.get();
 					}
 					
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("value", String.class, (IResult res) -> ((CalculationResult) res).getValue())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-					@Override
-					public boolean equals(Object o) {
-						if (this == o) return true;
-						if (o == null || getClass() != o.getClass()) return false;
-					
-						CalculationResult _that = (CalculationResult) o;
-					
-						if (value != null ? !value.equals(_that.value) : _that.value != null) return false;
-						return true;
-					}
-					
-					@Override
-					public int hashCode() {
-						int _result = 0;
-						_result = 31 * _result + (value != null ? value.hashCode() : 0);
-						return _result;
-					}
-					
-					@Override
-					public String toString() {
-						return "CalculationResult {" +
-							"value=" + this.value +
-						'}';
-					}
 				}
 			}
-			''')
+			'''.toString, generated)
 	}
 	
 	@Test
 	def void shouldResolveFunctionDependenciesWhenReferencedInAlias() {
 		'''	
-			calculation Adder {
-				res defined by: arg1
+			func Adder :
+				inputs: arg1 int (1..1)
+				output: res int (1..1)
 				
-				where
-					alias addedOne AddOne( 1 )
-					arg1 int : is addedOne -> out
-			}
+				alias addedOne: AddOne( 1 )
+				assign-output res: addedOne
 			
-			function AddOne( arg int ) {
-				out int;
-			}
+			func AddOne:
+				inputs: arg int (1..1)
+				output: out int (1..1)
 		'''.assertToGeneratedCalculation(
 			'''
-			package com.rosetta.test.model.calculation;
+			package com.rosetta.test.model.functions;
 			
-			import com.rosetta.model.lib.functions.Formula;
-			import com.rosetta.model.lib.functions.ICalculationInput;
-			import com.rosetta.model.lib.functions.ICalculationResult;
-			import com.rosetta.model.lib.functions.IResult;
+			import com.google.inject.Inject;
+			import com.rosetta.model.lib.functions.Mapper;
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.test.model.functions.AddOne;
 			import java.lang.Integer;
-			import java.util.Arrays;
-			import java.util.List;
 			
-			public class Adder {
+			
+			public class Adder implements RosettaFunction {
 				
-				private final AddOne addOne;
-				
-				public Adder(AddOne addOne) {
-					this.addOne = addOne;
+				// RosettaFunction dependencies
+				//
+				@Inject protected AddOne addOne;
+			
+				/**
+				* @param arg1 
+				* @return res 
+				*/
+				public Integer evaluate(Integer arg1) {
+					
+					Integer res = doEvaluate(arg1);
+					
+					return res;
 				}
 				
-				public CalculationResult calculate() {
-					CalculationInput input = new CalculationInput().create(addOne);
-					CalculationResult result = new CalculationResult(input);
-					result.res = input.arg1;
-					return result;
+				protected Integer doEvaluate(Integer arg1) {
+					Mapper<Integer> resHolder = null;
+					resHolder = MapperS.of(addedOne(arg1).get());
+					return resHolder.get();
 				}
 				
-				public static class CalculationInput implements ICalculationInput {
-					private CalculationInput input = this;  // For when arguments need to reference other arguments
-					private Integer arg1;
-					
-					public CalculationInput create(AddOne addOne) {
-						AddOne.CalculationResult addedOneAlias = addOne.execute(1);
-						this.arg1 = addedOneAlias.getOut();
-						return this;
-					}
 				
-					@Override
-					public List<Formula> getFormulas() {
-						return Arrays.asList(
-						new Formula("Adder", "res defined by: arg1", this));
-					}
-					
-					public Integer getArg1() {
-						return arg1;
-					}
-				
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("arg1", Integer.class, (IResult res) -> ((CalculationInput) res).getArg1())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-				}
-				
-				public static class CalculationResult implements ICalculationResult {
-				
-					private CalculationInput calculationInput;
-				
-					private Integer res;
-					
-					public CalculationResult(CalculationInput calculationInput) {
-						this.calculationInput = calculationInput;
-					}
-					public Integer getRes() {
-						return this.res;
-					}
-					
-					public CalculationResult setRes(Integer res) {
-						this.res = res;
-						return this;
-					}
-					
-					@Override
-					public CalculationInput getCalculationInput() {
-						return calculationInput;
-					}
-					
-					private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-						new Attribute<>("res", Integer.class, (IResult res) -> ((CalculationResult) res).getRes())
-					);
-				
-					@Override
-					public List<Attribute<?>> getAttributes() {
-						return ATTRIBUTES;
-					}
-					
-					@Override
-					public boolean equals(Object o) {
-						if (this == o) return true;
-						if (o == null || getClass() != o.getClass()) return false;
-					
-						CalculationResult _that = (CalculationResult) o;
-					
-						if (res != null ? !res.equals(_that.res) : _that.res != null) return false;
-						return true;
-					}
-					
-					@Override
-					public int hashCode() {
-						int _result = 0;
-						_result = 31 * _result + (res != null ? res.hashCode() : 0);
-						return _result;
-					}
-					
-					@Override
-					public String toString() {
-						return "CalculationResult {" +
-							"res=" + this.res +
-						'}';
-					}
+				protected Mapper<Integer> addedOne(Integer arg1) {
+					return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
 				}
 			}
 			'''

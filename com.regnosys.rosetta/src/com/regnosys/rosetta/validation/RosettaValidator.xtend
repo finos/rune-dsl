@@ -8,12 +8,12 @@ import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCalculation
-import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
@@ -22,7 +22,6 @@ import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
-import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
@@ -39,10 +38,11 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
-import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
+import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
@@ -51,6 +51,7 @@ import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
 import java.util.List
@@ -86,7 +87,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension RosettaFunctionExtensions
-
+	@Inject ExpressionHelper exprHelper
+	@Inject ConvertableCardinalityProvider cardinality
+	
 	@Check
 	def void checkClassNameStartsWithCapital(RosettaClass classe) {
 		if (!Character.isUpperCase(classe.name.charAt(0))) {
@@ -323,6 +326,16 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		]
 	}
+	@Check
+	def checkFunctionElementNamesAreUnique(Function ele) {
+		(ele.inputs + ele.shortcuts + #[ele.output]).filterNull.groupBy[name].forEach [ k, v |
+			if (v.size > 1) {
+				v.forEach [
+					error('''Duplicate feature "«k»"''', it, ROSETTA_NAMED__NAME)
+				]
+			}
+		]
+	}
 
 	// TODO This probably should be made namespace aware
 	@Check(FAST) // switch to NORMAL if it becomes slow
@@ -488,6 +501,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					val callerArg = indexed.value
 					val param = callable.inputs.get(indexed.key)
 					checkType(param.type.RType, callerArg, element, ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, indexed.key)
+					if(!param.card.isMany && cardinality.isMulti(callerArg)) {
+						error('''Expecting single cardinality for parameter '«param.name»'.''', element,
+							ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, indexed.key)
+					}
 				]
 			}
 		}
@@ -600,7 +617,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		ele.conditions.filter[!isPostCondition].forEach [ cond |
 			cond.expressions.forEach [
 				val trace = new Stack
-				val outRef = findOutputRef(trace)
+				val outRef = exprHelper.findOutputRef(it, trace)
 				if (!outRef.nullOrEmpty) {
 					error('''
 					output '«outRef.head.name»' or alias' on output '«outRef.head.name»' not allowed in condition blocks.
@@ -610,26 +627,16 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			]
 		]
 	}
-
-	def List<RosettaCallable> findOutputRef(EObject ele, Stack<String> trace) {
-		switch (ele) {
-			ShortcutDeclaration: {
-				trace.push(ele.name)
-				val result = findOutputRef(ele.expression, trace)
-				if (result.empty)
-					trace.pop()
-				return result
-			}
-			RosettaCallableCall: {
-				if (ele.callable instanceof Attribute && ele.callable.eContainingFeature === FUNCTION__OUTPUT)
-					return #[ele.callable]
-				return findOutputRef(ele.callable, trace)
-			}
-		}
-		return (ele.eContents + ele.eCrossReferences.filter [
-			it instanceof RosettaExpression || it instanceof ShortcutDeclaration
-		]).flatMap [
-			findOutputRef(trace)
-		].toList
+	
+	@Check
+	def checkAssignAnAlias(Operation ele) {
+		if (ele.path === null && ele.assignRoot instanceof ShortcutDeclaration)
+			error('''An alias can not be assigned. Assign target must be an attribute.''', ele, OPERATION__ASSIGN_ROOT)
+	}
+	
+	@Check
+	def checkListElementAccess(Segment ele) {
+		if (ele.index !== null && !ele.attribute.card.isIsMany)
+			error('''Element access only possible for multiple cardinality.''', ele, SEGMENT__NEXT)
 	}
 }

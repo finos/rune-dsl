@@ -33,7 +33,7 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import java.util.HashMap
 import org.eclipse.xtend.lib.annotations.Data
 
-import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
+import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
 
@@ -436,7 +436,7 @@ class RosettaExpressionJavaGenerator {
 		else "FieldWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 	}
 	
-	def static buildMapFunc(RosettaMetaType meta, boolean isLast) {
+	def buildMapFunc(RosettaMetaType meta, boolean isLast) {
 		if (meta.name=="reference") {
 			'''.map("get«meta.name.toFirstUpper»", a->a.getGlobalReference())'''
 		}

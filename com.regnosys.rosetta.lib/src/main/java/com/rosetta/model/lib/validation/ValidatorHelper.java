@@ -87,15 +87,29 @@ public class ValidatorHelper {
 		if (testResult) return ifthen;
 		else return elsethen;
 	}
+	public static <T> Mapper<T> doIf(Mapper<Boolean> test, Mapper<T> ifthen) {
+		boolean testResult = test.getMulti().stream().allMatch(b->b.booleanValue());
+		if (testResult) return ifthen;
+		else return null;
+	}
 	
 	public static ComparisonResult doIf(ComparisonResult test, ComparisonResult ifthen, ComparisonResult elsethen) {
 		if (test.get()) return ifthen;
 		else return elsethen;
 	}
+	public static ComparisonResult doIf(ComparisonResult test, ComparisonResult ifthen) {
+		if (test.get()) return ifthen;
+		else return ComparisonResult.success();
+	}
 
 	public static <T> Mapper<T> doIf(ComparisonResult test, Mapper<T> ifthen, Mapper<T> elsethen) {	
 		if (test.get()) return ifthen;
 		else return elsethen;
+	}
+	
+	public static <T> Mapper<T> doIf(ComparisonResult test, Mapper<T> ifthen) {	
+		if (test.get()) return ifthen;
+		else return null;
 	}
 	
 	public static <T> ComparisonResult doWhenPresent(Mapper<T> whenPresent, ComparisonResult compare) {

@@ -51,7 +51,7 @@ class JavaQualifiedTypeProvider {
 	def StringConcatenationClient toJavaQualifiedType(RosettaType type) {
 		type.toJavaQualifiedType(false)
 	}
-	
+
 	def StringConcatenationClient toJavaQualifiedType(RosettaType type, boolean asBuilder) {
 		switch (type) {
 			RosettaBasicType:
