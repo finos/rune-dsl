@@ -66,6 +66,8 @@ import static org.eclipse.xtext.EcoreUtil2.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.rosetta.simple.Operation
 
 /**
  * This class contains custom validation rules. 
@@ -623,5 +625,11 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				}
 			]
 		]
+	}
+	
+	@Check
+	def checkAssignAnAlias(Operation ele) {
+		if (ele.path === null && ele.assignRoot instanceof ShortcutDeclaration)
+			error('''An alias can not be assigned. Assign target must be an attribute.''', ele, OPERATION__ASSIGN_ROOT)
 	}
 }
