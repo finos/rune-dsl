@@ -229,12 +229,12 @@ public class ValidatorHelper {
 	}
 
 	public static <T> ComparisonResult contains(Mapper<T> o1, Mapper<T> o2) {
-		boolean result =  o2.getMulti().containsAll(o2.getMulti());
+		boolean result =  o1.getMulti().containsAll(o2.getMulti());
 		if (result) {
 			return ComparisonResult.success();
 		}
 		else {
-			return ComparisonResult.failure(o1.getMulti() + " does not contain all of "+o2.getMulti());
+			return ComparisonResult.failure(formatMultiError(o1) + " does not contain all of " +formatMultiError(o2));
 		}
 	}
 	
