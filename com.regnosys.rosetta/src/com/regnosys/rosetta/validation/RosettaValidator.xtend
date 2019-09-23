@@ -71,7 +71,6 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import org.eclipse.xtext.EcoreUtil2
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.simple.Condition
 
 /**

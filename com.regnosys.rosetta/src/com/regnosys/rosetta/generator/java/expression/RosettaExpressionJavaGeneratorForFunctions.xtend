@@ -60,7 +60,6 @@ import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.con
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
-import com.google.common.collect.Lists
 import com.rosetta.model.lib.functions.MapperC
 
 class RosettaExpressionJavaGeneratorForFunctions {

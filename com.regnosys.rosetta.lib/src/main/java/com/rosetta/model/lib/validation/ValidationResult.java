@@ -35,7 +35,7 @@ public interface ValidationResult<T> {
 	}
 
 	enum ValidationType {
-		DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, ONLY_EXISTS
+		DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, ONLY_EXISTS, POST_PROCESS_EXCEPTION
 	}
 
 	class ModelValidationResult<T> implements ValidationResult<T> {
@@ -194,6 +194,55 @@ public interface ValidationResult<T> {
 
 		public boolean check(int fields) {
 			return check.apply(fields);
+		}
+	}
+	
+	class ProcessValidationResult<T> implements ValidationResult<T> {
+		private String message;
+		private String modelObjectName;
+		private String processorName;
+		private RosettaPath path;
+
+		public ProcessValidationResult(String message, String modelObjectName, String processorName, RosettaPath path) {
+			this.message = message;
+			this.modelObjectName = modelObjectName;
+			this.processorName = processorName;
+			this.path = path;
+		}
+
+		@Override
+		public boolean isSuccess() {
+			return false;
+		}
+
+		@Override
+		public String getModelObjectName() {
+			return modelObjectName;
+		}
+
+		@Override
+		public String getName() {
+			return processorName;
+		}
+
+		@Override
+		public ValidationType getValidationType() {
+			return ValidationType.POST_PROCESS_EXCEPTION;
+		}
+
+		@Override
+		public String getDefinition() {
+			return "";
+		}
+
+		@Override
+		public Optional<String> getFailureReason() {
+			return Optional.of(message);
+		}
+
+		@Override
+		public RosettaPath getPath() {
+			return path;
 		}
 	}
 }

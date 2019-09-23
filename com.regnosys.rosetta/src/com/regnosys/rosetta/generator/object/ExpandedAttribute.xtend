@@ -76,7 +76,11 @@ final class ExpandedAttribute {
 		new ExpandedAttribute(att.enclosingType, "value", att.type, att.type.getName, 1, 1, false, Collections.emptyList(), null, false, false, false, Collections.emptyList())
 	}
 	static def ExpandedAttribute metaDataField(ExpandedAttribute att) {
-		new ExpandedAttribute(att.enclosingType, att.getName, att.getType, "string", 1, 1, false, Collections.emptyList(), null, false, false, false, Collections.emptyList())
+		var name = att.name;
+		if (name=="id") {
+			name="externalKey"//the id meta attribute is implemented as externalkey
+		}
+		new ExpandedAttribute(att.enclosingType, name, att.getType, "string", 1, 1, false, Collections.emptyList(), null, false, false, false, Collections.emptyList())
 	}
 	static def ExpandedAttribute metaAtt() {
 		new ExpandedAttribute(null, "meta", META_TYPE, "meta", 1, 1, false, Collections.emptyList(), null, false, false, false, Collections.emptyList())
