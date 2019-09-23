@@ -58,6 +58,7 @@ class RosettaTypeProvider {
 	@Inject extension RosettaFunctionExtensions
 	@Inject IQualifiedNameProvider qNames
 	@Inject IDValueConverter idConverter
+	@Inject RosettaTypeCompatibility compatibility
 
 	def RType getRType(EObject expression) {
 		expression.safeRType(newHashMap)
@@ -265,8 +266,25 @@ class RosettaTypeProvider {
 			}
 			RosettaParenthesisCalcExpression:
 				expression.expression.safeRType(cycleTracker)
-			RosettaConditionalExpression:
-				expression.ifthen.safeRType(cycleTracker)
+			RosettaConditionalExpression: {
+				val ifT = expression.ifthen.safeRType(cycleTracker)
+				if (expression.elsethen === null) {
+					ifT
+				} else {
+					val elseT = expression.elsethen.safeRType(cycleTracker)
+					if (ifT instanceof RErrorType) {
+						elseT
+					} else if (elseT instanceof RErrorType) {
+						ifT
+					} else if (compatibility.isUseableAs(ifT, elseT)) {
+						elseT
+					} else if (compatibility.isUseableAs(elseT, ifT)) {
+						ifT
+					} else {
+						new RErrorType("Can not infer common type for '" + ifT.name + "' and " + elseT.name + "'.")
+					}
+				}
+			}
 			RosettaMapPathValue:
 				RBuiltinType.STRING
 			RosettaMapPath:

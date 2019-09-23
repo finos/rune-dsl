@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.calculation
+package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaAlias

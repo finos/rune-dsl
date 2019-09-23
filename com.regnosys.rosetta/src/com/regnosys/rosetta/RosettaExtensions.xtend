@@ -18,13 +18,13 @@ import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
+import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.rosetta.simple.Data
 import java.util.LinkedHashSet
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
-import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.Condition
-import com.regnosys.rosetta.rosetta.simple.Annotated
 
 class RosettaExtensions {
 	
@@ -247,4 +247,5 @@ class RosettaExtensions {
 	def private allAnnotations(Annotated withAnnotations) {
 		withAnnotations?.annotations?.filter[annotation !== null && !annotation.eIsProxy]
 	}
+	
 }

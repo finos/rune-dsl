@@ -121,19 +121,22 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 				}
 				return IScope.NULLSCOPE
 			}
-			case OPERATION__ATTRIBUTE: {
+			case OPERATION__ASSIGN_ROOT: {
 				if (context instanceof Operation) {
+					val outAndAliases = newArrayList
 					val out = getOutput(context.function)
 					if (out !== null) {
-						return Scopes.scopeFor(#[out])
+						outAndAliases.add(out)
 					}
+					outAndAliases.addAll(context.function.shortcuts)
+					return Scopes.scopeFor(outAndAliases)
 				}
 				return IScope.NULLSCOPE
 			}
 			case SEGMENT__ATTRIBUTE: {
 				switch (context) {
 					Operation: {
-						val receiverType = typeProvider.getRType(context.attribute)
+						val receiverType = typeProvider.getRType(context.assignRoot)
 						val featureScope = receiverType.createFeatureScope
 						if (featureScope !== null) {
 							return featureScope;

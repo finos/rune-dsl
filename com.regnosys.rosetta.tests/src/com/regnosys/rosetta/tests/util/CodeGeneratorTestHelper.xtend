@@ -85,7 +85,11 @@ class CodeGeneratorTestHelper {
 	}
 
 	def createCalculationInstance(Map<String, Class<?>> classes, String className) {
-		return classes.get(javaPackages.calculation.packageName + '.' + className).newInstance
+		val fqn = javaPackages.functions.packageName + '.' + className
+		val foundClazz = classes.get(fqn)
+		if(foundClazz === null)
+			throw new IllegalStateException('''No generated class '«fqn»' found''')
+		return foundClazz.newInstance
 	}
 
 	@Deprecated

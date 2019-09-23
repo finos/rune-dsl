@@ -112,7 +112,7 @@ class RosettaOperators {
 			operation(number, number) => number
 		}
 		'+'.operation(string, string) => string
-		'+'.operation(date, time) => dateTime
+		'+'.operation(date, time) => string
 		'-'.operation(date, date) => number
 
 		for (it : COMPARISON_OPS) {

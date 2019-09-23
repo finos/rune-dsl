@@ -21,7 +21,7 @@ class CardinalityProvider {
 			RosettaFunction: obj.output.card.isIsMany
 			Function: if(obj.output === null) false else obj.output.isMulti
 			Attribute: obj.card.isMany
-			default: {println(obj.eClass) false}
+			default: false
 		}
 	} 
 }

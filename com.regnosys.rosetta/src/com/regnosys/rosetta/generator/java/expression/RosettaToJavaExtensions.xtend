@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.calculation
+package com.regnosys.rosetta.generator.java.expression
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.util.JavaNames
@@ -43,7 +43,8 @@ import java.math.BigDecimal
 import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
-import static extension com.regnosys.rosetta.generator.java.enums.EnumGenerator.convertValues
+import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
+import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 
 class RosettaToJavaExtensions {
 	@Inject RosettaTypeProvider typeProvider
@@ -104,8 +105,6 @@ class RosettaToJavaExtensions {
 				if (returnVal !== null) {
 					if(callable.handleAsSpecFunction) {
 						return '''«toJava(ele.callable)».evaluate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»)'''
-					} else if(!callable.operations.nullOrEmpty || callable.handleAsEnumFunction) {
-						return '''«toJava(ele.callable)».calculate(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
 					} else {
 						return '''«toJava(ele.callable)».execute(«FOR arg : ele.args SEPARATOR ','»«toJava(arg)»«ENDFOR»).get«returnVal.name.toFirstUpper»()'''
 					}
@@ -129,6 +128,9 @@ class RosettaToJavaExtensions {
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaLiteral ele) {
 		'''«ele.stringValue»'''
+	}
+	def dispatch StringConcatenationClient toJava(extension JavaNames it, EmptyLiteral ele) {
+		'''null'''
 	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaBigDecimalLiteral ele) {
@@ -222,7 +224,7 @@ class RosettaToJavaExtensions {
 	def dispatch StringConcatenationClient toJava(extension JavaNames names, RosettaCallableCall ele) {
 		val callable = ele.callable
 		switch (callable) {
-			RosettaArgumentFeature, ShortcutDeclaration: '''input.«callable.name»'''
+			RosettaArgumentFeature, ShortcutDeclaration: '''«callable.name»'''
 			RosettaAlias: '''«callable.name»Alias'''
 			RosettaClass: '''inputParam'''
 			default: '''«callable.name»'''

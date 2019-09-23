@@ -36,7 +36,11 @@ abstract class RosettaTyped {
 	refers RosettaType ^type
 }
 
-class RosettaFeature extends RosettaNamed, RosettaTyped {
+abstract class WithCardinality {
+	contains RosettaCardinality card
+}
+
+class RosettaFeature extends RosettaNamed, RosettaTyped, WithCardinality {
 	/**
 	 * @return The name or 'value' if it's <code>null</code>
 	 */
@@ -129,7 +133,6 @@ class RosettaMetaType extends RosettaRootElement, RosettaFeature  {
 
 abstract class RosettaAttributeBase extends RosettaFeature, RosettaDefinable  {
 	contains RosettaRegulatoryReference[] references
-	contains RosettaCardinality card
 	contains RosettaMarketPractice[] marketPractice
 }
 
