@@ -632,6 +632,13 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
+	def checkFunctionOutput(Function ele) {
+		if(!ele.operations.nullOrEmpty && ele?.output?.card?.isMany) {
+			error('''Assigning output with multiple cardinality is not supported yet.''', ele, FUNCTION__OUTPUT)
+		}
+	}
+	
+	@Check
 	def checkAssignAnAlias(Operation ele) {
 		if (ele.path === null && ele.assignRoot instanceof ShortcutDeclaration)
 			error('''An alias can not be assigned. Assign target must be an attribute.''', ele, OPERATION__ASSIGN_ROOT)

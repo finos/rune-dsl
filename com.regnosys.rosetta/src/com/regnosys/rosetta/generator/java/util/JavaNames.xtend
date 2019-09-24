@@ -67,10 +67,9 @@ class JavaNames {
 				toJavaQualifiedType(type.name)
 			RosettaClass,
 			Data,
-			RosettaEnumeration: '''«JavaType.create(packages.model.packageName+'.'+ type.name)»'''
-			RosettaCalculation: '''«JavaType.create(packages.calculation.packageName+'.'+ type.name)»'''
-			RosettaRecordType: '''«JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)»'''
-			RosettaExternalFunction: '''«JavaType.create(if(type.isLibrary) packages.libFunctions.packageName + "." + type.name.toFirstUpper else packages.functions.packageName + "." + type.name.toFirstUpper)»'''
+			RosettaEnumeration: '''«toJavaType(type)»'''
+			RosettaRecordType: '''«toJavaType(type as RosettaType)»'''
+			RosettaExternalFunction: '''«toJavaType(type as RosettaType)»'''
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
 		}
@@ -92,8 +91,7 @@ class JavaNames {
 			RosettaClass,
 			Data,
 			RosettaEnumeration: JavaType.create(packages.model.packageName+'.'+ type.name)
-			RosettaCalculation: JavaType.create(packages.calculation.packageName+'.'+ type.name)
-			RosettaRecordType: JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)
+			RosettaRecordType: JavaType.create(JavaClassTranslator.toJavaFullType(type.name))?:JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)
 			RosettaExternalFunction: JavaType.create(if(type.isLibrary) packages.libFunctions.packageName + "." + type.name.toFirstUpper else packages.functions.packageName + "." + type.name.toFirstUpper)
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
