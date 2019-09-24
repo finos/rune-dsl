@@ -316,7 +316,23 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
 				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
 				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>subtract(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
-			}			
+			}
+			case ("*"): {
+				val leftRtype = typeProvider.getRType(expr.left)
+				val rightRtype = typeProvider.getRType(expr.right)
+				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
+				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
+				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
+				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>multiply(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+			}
+			case ("/"): {
+				val leftRtype = typeProvider.getRType(expr.left)
+				val rightRtype = typeProvider.getRType(expr.right)
+				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
+				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
+				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
+				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>divide(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+			}
 			default: {
 				toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''')
 			}
