@@ -602,4 +602,28 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertWarning(ROSETTA_ALIAS, INVALID_CASE,
             "Alias name should start with a lower case")
 	}
+	
+	
+	@Test
+	def checkDateZonedDateTypes() {
+		val model = '''
+			recordType date{}
+			recordType zonedDateTime{}
+			
+			func Foo:
+			  inputs:
+			    timestamp zonedDateTime (1..1)
+			  output: result date (1..1)
+			
+			func Bar:
+			  inputs:
+			    timestamp date (1..1)
+			  output: result boolean (1..1)
+			  assign-output result:
+			     Foo(timestamp) = timestamp
+			
+		'''.parseRosetta
+		model.assertError(ROSETTA_CALLABLE_WITH_ARGS_CALL, TYPE_ERROR, 
+			"Expected type 'zonedDateTime' but was 'date'")
+	}
 }

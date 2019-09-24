@@ -56,7 +56,7 @@ class RosettaExpectedTypeProvider {
 					}
 				}
 			}
-			Operation case reference == OPERATION__EXPRESSION:{
+			Operation case reference == OPERATION__EXPRESSION: {
 				if(owner.path === null)
 					owner.assignRoot.RType
 				else owner.pathAsSegmentList.last?.attribute?.RType
