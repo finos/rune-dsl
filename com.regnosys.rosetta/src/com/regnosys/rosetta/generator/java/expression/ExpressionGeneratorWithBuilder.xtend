@@ -179,7 +179,10 @@ class ExpressionGeneratorWithBuilder {
 				'''«callee.name»«IF expr.toOne».get(0)«ENDIF»'''
 			}
 			ShortcutDeclaration: {
-				'''«callee.name»(«funcExt.inputsAsArgs(callee)»)«IF expr.toOne».get(0)«ENDIF».get()«IF funcExt.needsBuilder(callee)».toBuilder()«ENDIF»'''
+				if(funcExt.needsBuilder(callee) && !ctx.inFunctionCall)
+				'''«callee.name»(«funcExt.inputsAsArgs(callee)»)«IF expr.toOne».get(0)«ENDIF».get().toBuilder()'''
+				else
+				'''«callee.name»(«funcExt.inputsAsArgs(callee)»)«IF expr.toOne».get(0)«ENDIF».get()'''
 			}
 			RosettaNamed: {
 				'''«callee.name»«IF expr.toOne».get(0)«ENDIF»'''
