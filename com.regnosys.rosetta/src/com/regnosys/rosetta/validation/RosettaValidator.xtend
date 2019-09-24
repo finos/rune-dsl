@@ -69,6 +69,9 @@ import static org.eclipse.xtext.EcoreUtil2.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.simple.Condition
 
 /**
  * This class contains custom validation rules. 
@@ -629,6 +632,13 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
+	def checkFunctionOutput(Function ele) {
+		if(!ele.operations.nullOrEmpty && ele?.output?.card?.isMany) {
+			error('''Assigning output with multiple cardinality is not supported yet.''', ele, FUNCTION__OUTPUT)
+		}
+	}
+	
+	@Check
 	def checkAssignAnAlias(Operation ele) {
 		if (ele.path === null && ele.assignRoot instanceof ShortcutDeclaration)
 			error('''An alias can not be assigned. Assign target must be an attribute.''', ele, OPERATION__ASSIGN_ROOT)
@@ -638,5 +648,21 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def checkListElementAccess(Segment ele) {
 		if (ele.index !== null && !ele.attribute.card.isIsMany)
 			error('''Element access only possible for multiple cardinality.''', ele, SEGMENT__NEXT)
+	}
+	
+	@Check
+	def checkListLiteral(ListLiteral ele) {
+		if (EcoreUtil2.getContainerOfType(ele, Condition) === null) {
+			warning('''Creating a collection of elements is only supported inside a conditional expression.''', ele,
+				null)
+			return
+		}
+		if (ele.elements.size > 1) {
+			val types = ele.elements.map[RType].filterNull.groupBy[name]
+			if (types.size > 1) {
+				val mostUsed = types.keySet.sortBy[types.get(it).size].reverseView
+				error('''All collection elements must have the same type. Types used: «mostUsed.join(', ')»''', ele, null)
+			}
+		}
 	}
 }

@@ -16,7 +16,18 @@ public class MapperC<T> implements MapperBuilder<T> {
 	protected MapperC(List<MapperItem<T,?>> items) {
 		this.items = items;
 	}
-
+	
+	@SafeVarargs
+	public static <T> MapperBuilder<T> of(MapperBuilder<T>... ts) {
+		List<MapperItem<T, ?>> items = new ArrayList<>();
+		for (MapperBuilder<T> ele : ts) {
+			if (ele != null) {
+				ele.getItems().forEach(item -> items.add(item));
+			}
+		}
+		return new MapperC<T>(items);
+	}
+	
 	/**
 	 * Maps list parent item to single child item.
 	 */

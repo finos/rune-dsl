@@ -59,6 +59,8 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import com.rosetta.model.lib.functions.MapperC
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	
@@ -135,6 +137,9 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			}
 			EmptyLiteral : {
 				'''null'''
+			}
+			ListLiteral : {
+				'''«MapperC».of(«FOR ele: expr.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
 			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr.class.simpleName)
@@ -311,7 +316,23 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
 				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
 				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>subtract(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
-			}			
+			}
+			case ("*"): {
+				val leftRtype = typeProvider.getRType(expr.left)
+				val rightRtype = typeProvider.getRType(expr.right)
+				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
+				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
+				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
+				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>multiply(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+			}
+			case ("/"): {
+				val leftRtype = typeProvider.getRType(expr.left)
+				val rightRtype = typeProvider.getRType(expr.right)
+				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
+				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
+				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
+				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>divide(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+			}
 			default: {
 				toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''')
 			}

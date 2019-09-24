@@ -72,7 +72,7 @@ ShortcutDeclaration:
 
 Condition:
 	'condition' RosettaNamed? ':' Definable?
-		Annotations?
+		->(Annotations)? // conflicts with ListLiteral as RosettaCalcExpression
 		( constraint = OneOf
 		| constraint = Constraint
 		| (expressions += RosettaCalcExpression ';')+)
@@ -111,6 +111,9 @@ EnumValueReference returns RosettaEnumValueReference:
 EmptyLiteral:
 	{EmptyLiteral} 'empty'
 ;
+
+ListLiteral:
+	'[' elements += RosettaPrimaryExpression (',' elements += RosettaPrimaryExpression )* ']';
 
 // old stuff
 RosettaRootElement:
@@ -520,6 +523,7 @@ RosettaLiteral:
 	| RosettaBigDecimalLiteral
 	| RosettaIntLiteral
 	| EmptyLiteral
+	| ListLiteral
 ;
 
 RosettaBooleanLiteral:

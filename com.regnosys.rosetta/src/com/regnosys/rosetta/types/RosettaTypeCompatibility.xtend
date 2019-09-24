@@ -15,6 +15,10 @@ class RosettaTypeCompatibility {
 		t0.rank <= t1.rank
 	}
 
+	def dispatch boolean isUseableAs(RRecordType t0, RRecordType t1) {
+		t0.name  == t1.name
+	}
+	
 	def dispatch boolean isUseableAs(RType t0, RType t1) {
 		t0.class === t1.class
 	}

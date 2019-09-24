@@ -18,7 +18,6 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.simple.Annotated
-import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -282,12 +281,6 @@ class FuncGenerator {
 	private def StringConcatenationClient toHolderType(Attribute attr, JavaNames names) {
 		val javaType = names.toJavaType(attr.type)
 		'''«IF needsBuilder(attr)»«javaType».«javaType»Builder«ELSE»«Mapper»<«javaType»>«ENDIF»'''
-	}
-	
-	private def isMany(AssignPathRoot root) {
-		switch (root) {
-			Attribute: root.card.isMany
-		}
 	}
 
 	private def isMany(RosettaFeature feature) {

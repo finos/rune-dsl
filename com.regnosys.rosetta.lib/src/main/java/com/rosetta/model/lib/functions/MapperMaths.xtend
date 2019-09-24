@@ -25,12 +25,20 @@ class MapperMaths {
 		}
 		return null;
 	}
-	
-	def static <R, A, B> Mapper<R> greaterThanEquals(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> Mapper<R> multiply(Mapper<A> in1, Mapper<B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
-			return MapperS.of((arg1 - arg2) as R)
+			return MapperS.of((arg1 * arg2) as R)
+		}
+		return null;
+	}
+	
+	def static <R, A, B> Mapper<R> divide(Mapper<A> in1, Mapper<B> in2) {
+		if (in1.resultCount()==1 && in2.resultCount()==1) {
+			val arg1 = in1.get()
+			val arg2 = in2.get()
+			return MapperS.of((arg1 / arg2) as R)
 		}
 		return null;
 	}
@@ -84,6 +92,58 @@ class MapperMaths {
 	}
 	
 	private static def dispatch BigDecimal operator_minus(Number a, Number b) {
+		val bigA = toBigD(a);
+		val bigB = toBigD(b);
+		return bigA-bigB;
+	}
+
+	private static def dispatch Object *(Object a, Object b) {
+		throw new RuntimeException('''Cant multiply two random («a.class.simpleName», «b.class.simpleName») together''')
+	}
+	
+	private static def dispatch BigDecimal *(LocalDate d1, LocalDate d2) {
+		throw new RuntimeException('''Cant multiply date and date''')
+	}
+	
+	private static def dispatch LocalDateTime *(LocalDate d, LocalTime t) {
+		throw new RuntimeException('''Cant multiply time and date''')
+	}
+	
+	private static def dispatch String * (String a, String b) {
+		throw new RuntimeException('''Cant multiply two strings together''')
+	}
+	
+	private static def dispatch Integer * (Integer a, Integer b) {
+		return a.intValue-b.intValue;
+	}
+	
+	private static def dispatch BigDecimal * (Number a, Number b) {
+		val bigA = toBigD(a);
+		val bigB = toBigD(b);
+		return bigA-bigB;
+	}
+	
+	private static def dispatch Object /(Object a, Object b) {
+		throw new RuntimeException('''Cant multiply two random («a.class.simpleName», «b.class.simpleName») together''')
+	}
+	
+	private static def dispatch BigDecimal /(LocalDate d1, LocalDate d2) {
+		throw new RuntimeException('''Cant multiply date and date''')
+	}
+	
+	private static def dispatch LocalDateTime /(LocalDate d, LocalTime t) {
+		throw new RuntimeException('''Cant multiply time and date''')
+	}
+	
+	private static def dispatch String / (String a, String b) {
+		throw new RuntimeException('''Cant multiply two strings together''')
+	}
+	
+	private static def dispatch Integer / (Integer a, Integer b) {
+		return a.intValue-b.intValue;
+	}
+	
+	private static def dispatch BigDecimal / (Number a, Number b) {
 		val bigA = toBigD(a);
 		val bigB = toBigD(b);
 		return bigA-bigB;

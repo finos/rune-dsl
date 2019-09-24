@@ -121,7 +121,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			}
 			isProduct test
 				Quote -> action <> <|>
-		''' >> #['ActionEnum.cancel', 'ActionEnum.correct', 'ActionEnum.new', '"Value"', "(", "empty", "False", "True"]
+		''' >> #['ActionEnum.cancel', 'ActionEnum.correct', 'ActionEnum.new', '"Value"', "(", "[", "empty", "False", "True"]
 	}
 	
 	@Test
@@ -176,7 +176,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			
 			isProduct test
 				EconomicTerms or <|>
-		''' >> #['EconomicTerms', '"Value"', "(", "empty", "False", "True"]
+		''' >> #['EconomicTerms', '"Value"', "(", "[",  "empty", "False", "True"]
 	}
 
 	@Test
@@ -223,7 +223,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			
 			isEvent test
 				Event and <|>
-		''' >> #['Event', 'EventAlias', '"Value"', "(", "empty", "False", "True"]  
+		''' >> #['Event', 'EventAlias', '"Value"', "(", "[", "empty", "False", "True"]  
 	}
 	
 }

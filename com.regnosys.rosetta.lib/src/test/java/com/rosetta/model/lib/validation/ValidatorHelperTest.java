@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.rosetta.model.lib.functions.Mapper;
+import com.rosetta.model.lib.functions.MapperC;
 import com.rosetta.model.lib.functions.MapperS;
 
 public class ValidatorHelperTest {
@@ -136,6 +137,32 @@ public class ValidatorHelperTest {
 		assertThat(result.getError(), is("[Foo->getListBranchNodes] cannot be compared to [Foo->getObjectBranchNode]"));
 	}
 	
+	
+	@Test
+	public void containsTest() {
+		Foo foo = new Foo(Arrays.asList(BRANCH_NODE_1,BRANCH_NODE_2), null);
+		
+		Mapper<BranchNode> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes);
+		
+		ComparisonResult result = ValidatorHelper.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_2)));
+		assertThat(result.get(), is(true));
+		
+		result = ValidatorHelper.contains(mapperC, MapperS.of(BRANCH_NODE_3));
+		assertThat(result.get(), is(false));
+
+		result = ValidatorHelper.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)));
+		assertThat(result.get(), is(false));
+		
+		assertThat(result.getError(), is("[5, 5] does not contain all of [5, 10]"));
+	}
+	
+	@Test
+	public void countElementsListLiteral() {
+		ComparisonResult result = ValidatorHelper.areEqual(MapperS.of(MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)).resultCount()),
+				MapperS.of(Integer.valueOf(2)));
+		assertThat(result.get(), is(true));
+	}
+	
 	// Test classes
 	
 	private static class Foo {
@@ -165,6 +192,11 @@ public class ValidatorHelperTest {
 
 		public Integer getIntLeafNode() {
 			return intLeafNode;
+		}
+		
+		@Override
+		public String toString() {
+			return intLeafNode == null?"null":String.valueOf(intLeafNode);
 		}
 	}
 }
