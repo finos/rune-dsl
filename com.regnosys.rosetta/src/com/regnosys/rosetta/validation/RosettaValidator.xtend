@@ -38,9 +38,11 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
@@ -58,6 +60,7 @@ import java.util.List
 import java.util.Stack
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
@@ -69,9 +72,6 @@ import static org.eclipse.xtext.EcoreUtil2.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.simple.ListLiteral
-import org.eclipse.xtext.EcoreUtil2
-import com.regnosys.rosetta.rosetta.simple.Condition
 
 /**
  * This class contains custom validation rules. 
@@ -618,16 +618,17 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Check
 	def checkConditionDontUseOutput(Function ele) {
 		ele.conditions.filter[!isPostCondition].forEach [ cond |
-			cond.expressions.forEach [
+			val expr = cond.expression
+			if (expr !== null) {
 				val trace = new Stack
-				val outRef = exprHelper.findOutputRef(it, trace)
+				val outRef = exprHelper.findOutputRef(expr, trace)
 				if (!outRef.nullOrEmpty) {
 					error('''
 					output '«outRef.head.name»' or alias' on output '«outRef.head.name»' not allowed in condition blocks.
 					«IF !trace.isEmpty»
-					«trace.join(' > ')» > «outRef.head.name»«ENDIF»''', it, null)
+					«trace.join(' > ')» > «outRef.head.name»«ENDIF»''', expr, null)
 				}
-			]
+			}
 		]
 	}
 	

@@ -76,7 +76,7 @@ class FuncGenerator {
 	private def collectFunctionDependencies(Function func) {
 		val deps = func.shortcuts.flatMap[functionDependencyProvider.functionDependencies(it.expression)] +
 			func.operations.flatMap[functionDependencyProvider.functionDependencies(it.expression)]
-		val condDeps = (func.conditions + func.postConditions).flatMap[expressions].flatMap [
+		val condDeps = (func.conditions + func.postConditions).map[expression].flatMap [
 			functionDependencyProvider.functionDependencies(it)
 		]
 		return Util.distinctBy(deps + condDeps, [name]).sortBy[it.name]
@@ -243,9 +243,7 @@ class FuncGenerator {
 	private def StringConcatenationClient contributeCondition(Condition condition) {
 		'''
 			assert
-				«FOR expr : condition.expressions SEPARATOR ' &&'» 
-					«expressionGenerator.javaCode(expr, null)».get()
-				«ENDFOR»
+				«expressionGenerator.javaCode(condition.expression, null)».get()
 				: "«condition.definition»";
 		'''
 	}

@@ -297,7 +297,7 @@ class RosettaTypeProvider {
 			Function:
 				getOutput(expression).safeRType(cycleTracker)
 			Condition:
-				expression.expressions.last.safeRType(cycleTracker)
+				expression.expression.safeRType(cycleTracker)
 			default:
 				RBuiltinType.MISSING
 		}

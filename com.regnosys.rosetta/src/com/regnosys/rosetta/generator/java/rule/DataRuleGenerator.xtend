@@ -29,7 +29,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSIONS
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
 
 class DataRuleGenerator {
 	@Inject RosettaExpressionJavaGeneratorForFunctions expressionHandler
@@ -94,12 +94,12 @@ class DataRuleGenerator {
 	}
 	private def StringConcatenationClient dataRuleClassBody(Condition rule, JavaNames javaName, String version)  {
 		val rosettaClass = rule.eContainer as RosettaType
-		val expression = rule.expressions.last // TODO allow only one conditional expression here
+		val expression = rule.expression // TODO allow only one conditional expression here
 		
 		val ruleWhen = if(expression instanceof RosettaConditionalExpression ) expression.^if
 		val ruleThen = if(expression instanceof RosettaConditionalExpression ) expression.ifthen
 		
-		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule,CONDITION__EXPRESSIONS));
+		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION));
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«com.rosetta.model.lib.annotations.RosettaDataRule»("«rule.name»")
