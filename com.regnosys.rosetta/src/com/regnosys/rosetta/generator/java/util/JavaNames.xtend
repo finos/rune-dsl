@@ -6,6 +6,7 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaCalculation
 import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
+import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -14,10 +15,12 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
@@ -31,8 +34,8 @@ import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
+import com.regnosys.rosetta.rosetta.RosettaQualifiedType
+import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 
 class JavaNames {
 
@@ -67,41 +70,16 @@ class JavaNames {
 				toJavaQualifiedType(type.name)
 			RosettaClass,
 			Data,
+			RosettaQualifiedType,
 			RosettaEnumeration: '''«toJavaType(type)»'''
 			RosettaRecordType: '''«toJavaType(type as RosettaType)»'''
 			RosettaExternalFunction: '''«toJavaType(type as RosettaType)»'''
-			default:
-				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
-		}
-	}
-	
-	def JavaType toJavaType(RosettaCallableWithArgs func) {
-		switch (func) {
-			Function:
-				JavaType.create(packages.functions.packageName+'.'+ func.name)
-			default:
-				throw new UnsupportedOperationException("Not implemented for type " + func?.class?.name)
-		}
-	}
-	
-	def JavaType toJavaType(RosettaType type) {
-		switch (type) {
-			RosettaBasicType:
-				createForBasicType(type.name)
-			RosettaClass,
-			Data,
-			RosettaEnumeration: JavaType.create(packages.model.packageName+'.'+ type.name)
-			RosettaRecordType: JavaType.create(JavaClassTranslator.toJavaFullType(type.name))?:JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)
-			RosettaExternalFunction: JavaType.create(if(type.isLibrary) packages.libFunctions.packageName + "." + type.name.toFirstUpper else packages.functions.packageName + "." + type.name.toFirstUpper)
+			RosettaCalculationType: '''«toJavaType(type as RosettaType)»'''
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
 		}
 	}
 		
-	private def JavaType createForBasicType(String typeName) {
-		return  JavaType.create(JavaClassTranslator.toJavaFullType(typeName)?:"missing builtin type " + typeName)
-	}
-	
 	def StringConcatenationClient toJavaQualifiedType(RosettaFeature feature) {
 		if (feature.isTypeInferred) {
 			switch (feature) {
@@ -127,6 +105,42 @@ class JavaNames {
 		'''«attribute.type.toJavaQualifiedType()»'''
 	}
 	
+	def JavaType toJavaType(RosettaCallableWithArgs func) {
+		switch (func) {
+			Function:
+				packages.functions.javaType(func.name)
+			default:
+				throw new UnsupportedOperationException("Not implemented for type " + func?.class?.name)
+		}
+	}
+	
+	def JavaType toJavaType(RosettaType type) {
+		switch (type) {
+			RosettaBasicType:
+				createForBasicType(type.name)
+			RosettaClass case type.name == RosettaAttributeExtensions.METAFIELDSCLASSNAME: {
+				packages.metaField.javaType(type.name)
+			}
+			RosettaClass,
+			Data,
+			RosettaEnumeration: packages.model.javaType(type.name)
+			RosettaRecordType: JavaType.create(JavaClassTranslator.toJavaFullType(type.name))?:JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)
+			RosettaExternalFunction:
+					if(type.isLibrary)
+						packages.libFunctions.javaType(type.name.toFirstUpper)
+					else 
+						packages.functions.javaType(type.name.toFirstUpper)
+			RosettaCalculationType,
+			RosettaQualifiedType: JavaType.create('java.lang.String')
+			default:
+				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
+		}
+	}
+		
+	private def JavaType createForBasicType(String typeName) {
+		return  JavaType.create(JavaClassTranslator.toJavaFullType(typeName)?:"missing builtin type " + typeName)
+	}
+
 	def  JavaType toJavaType(RType rType) {
 		switch (rType) {
 			RBuiltinType:
