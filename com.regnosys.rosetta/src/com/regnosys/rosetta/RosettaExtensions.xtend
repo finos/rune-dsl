@@ -2,7 +2,6 @@ package com.regnosys.rosetta
 
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
@@ -78,15 +77,7 @@ class RosettaExtensions {
 			doGetSynonyms(s, seenSynonyms)
 		return seenSynonyms		
 	}
-	
-	def classUsages(RosettaArguments arguments) {
-		arguments.eAllContents.filter(RosettaCallableCall).filter[callable instanceof RosettaClass].groupBy[callable]
-	}
-	
-	def commonInputClass(RosettaArguments arguments) {
-		return arguments.classUsages.keySet.filter(RosettaClass).head
-	}
-	
+		
 	def collectRootCalls(RosettaAlias alias) {
 		return doCollectRootCalls(alias)
 	}

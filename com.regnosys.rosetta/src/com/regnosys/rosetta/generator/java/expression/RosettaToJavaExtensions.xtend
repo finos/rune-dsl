@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
@@ -23,8 +22,8 @@ import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
@@ -44,7 +43,6 @@ import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
-import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 
 class RosettaToJavaExtensions {
 	@Inject RosettaTypeProvider typeProvider
@@ -73,17 +71,9 @@ class RosettaToJavaExtensions {
 	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaFeatureCall ele) {
-		val recieverType = typeProvider.getRType(ele.receiver)
-		if (recieverType instanceof RUnionType) {
-			'''«wrapInToConverter(recieverType, toJava(ele.receiver))».«toJava(ele.feature)»'''
-		} else {
-			'''«toJava(ele.receiver)».«toJava(ele.feature)»'''
-		}
+		'''«toJava(ele.receiver)».«toJava(ele.feature)»'''
 	}
 
-	def StringConcatenationClient wrapInToConverter(extension JavaNames it, RUnionType ele, StringConcatenationClient toWrap) {
-		'''new «ele.converter.toTargetClassName.firstSegment»().calculate(inputParam, «toWrap»)'''
-	}
 
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaRegularAttribute ele) {
 		if (ele.metaTypes===null || ele.metaTypes.isEmpty)
@@ -224,7 +214,6 @@ class RosettaToJavaExtensions {
 	def dispatch StringConcatenationClient toJava(extension JavaNames names, RosettaCallableCall ele) {
 		val callable = ele.callable
 		switch (callable) {
-			RosettaArgumentFeature, ShortcutDeclaration: '''«callable.name»'''
 			RosettaAlias: '''«callable.name»Alias'''
 			RosettaClass: '''inputParam'''
 			default: '''«callable.name»'''

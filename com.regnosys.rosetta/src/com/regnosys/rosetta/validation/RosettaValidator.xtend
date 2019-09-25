@@ -11,9 +11,7 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
-import com.regnosys.rosetta.rosetta.RosettaCalculation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
@@ -23,15 +21,12 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
-import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaParameter
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
@@ -48,7 +43,6 @@ import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
-import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
@@ -61,14 +55,12 @@ import java.util.Stack
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.Check
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import static org.eclipse.xtext.EcoreUtil2.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
@@ -85,7 +77,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension RosettaTypeProvider
 	@Inject extension RosettaQualifiableExtension qualifiableExtension
 	@Inject extension RosettaTypeCompatibility
-	@Inject extension IQualifiedNameConverter
 	@Inject extension IQualifiedNameProvider
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaBlueprintTypeResolver
@@ -239,20 +230,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 								featureCallGroupBy, ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, INVALID_TYPE)
 						}
 					}
-				}
-			}
-		}
-	}
-
-	@Check
-	def checkCollectionTypeCall(RosettaFeatureCall element) {
-		val feature = element.feature
-		switch (feature) {
-			RosettaRegularAttribute case feature.card.isIsMany,
-			RosettaParameter case feature.isIsArray: {
-				if (getContainerOfType(element, RosettaArguments) !== null) {
-					error('''Can't map from collection of '«feature.type.name»' to a single value''', element,
-						ROSETTA_FEATURE_CALL__FEATURE)
 				}
 			}
 		}
@@ -443,44 +420,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 	}
 
-	@Check
-	def checkCalculationName(RosettaCalculation calculation) {
-		val qualifiedName = calculation.name?.toQualifiedName
-		if (qualifiedName !== null && qualifiedName.segmentCount == 2) {
-			val index = calculation.eResource.resourceDescriptions
-			val enumValues = index.getExportedObjects(ROSETTA_ENUM_VALUE, qualifiedName, false)
-			if (enumValues.empty) {
-				error('''Cannot find enum value '«qualifiedName.toString»'«»''', calculation, ROSETTA_NAMED__NAME, -1,
-					MISSING_ENUM_VALUE)
-			} else {
-				val thisType = calculation.RType
-
-				val step1 = index.getExportedObjectsByType(ROSETTA_CALCULATION).filter [ d |
-					d.qualifiedName.firstSegment == qualifiedName.firstSegment
-				].map[EObjectOrProxy.resolve(calculation)].filter[!eIsProxy]
-
-				val step2 = step1.map[RType]
-
-				val calcsWithOtherTypes = step2.filter[!typesEqual(it, thisType)].map[name].toSet
-				if (!calcsWithOtherTypes.empty)
-					error('''All calculations for enum '«qualifiedName.firstSegment»' must have same return type. (expected «thisType.name» but was «calcsWithOtherTypes.join(',')»)''',
-						calculation, ROSETTA_NAMED__NAME, -1, TYPE_ERROR)
-			}
-		}
-	}
-
 	def boolean typesEqual(RType type, RType type2) {
-		if (type instanceof RRecordType && type2 instanceof RRecordType) {
-			val record = (type as RRecordType).record
-			val record2 = (type2 as RRecordType).record
-			if (record instanceof RosettaCalculation && record2 instanceof RosettaCalculation) {
-				if (record.features.size != record.features.size) {
-					return false
-				}
-				val mapper = [RosettaFeature it|it.name + it.type.name]
-				return record.features.map(mapper).containsAll(record2.features.map(mapper))
-			}
-		}
 		return type == type2
 	}
 
@@ -491,7 +431,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 
 		val callableSize = switch callable {
 			RosettaExternalFunction: callable.parameters.size
-			RosettaFunction: callable.inputs.size
 			Function: callable.inputs.size
 			default: 0
 		}
@@ -511,31 +450,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				]
 			}
 		}
-	}
-
-	@Check
-	def checkArgumentsType(RosettaArguments element) {
-		val clazzUsages = element.classUsages
-		val sortedUsages = clazzUsages.keySet.sortBy[clazzUsages.get(it).size].reverseView
-		val calcName = element.calculation?.name
-		if (calcName !== null && calcName.toQualifiedName.segmentCount == 1) { // TODO check Enum conversion calculation
-			sortedUsages.filter(RosettaClass).forEach [ clazz |
-				clazzUsages.get(clazz).forEach [
-					if (!clazz.calculations.values.contains(element.calculation)) {
-						error('''«clazz.name» doesn't refer to calculation «element.calculation.name».''', it,
-							ROSETTA_CALLABLE_CALL__CALLABLE)
-					}
-				]
-			]
-		}
-		if (clazzUsages.keySet.size > 0) {
-			sortedUsages.tail.forEach [ clazz |
-				clazzUsages.get(clazz).forEach [
-					error('''Use common type in all expressions.''', it, ROSETTA_CALLABLE_CALL__CALLABLE)
-				]
-			]
-		}
-
 	}
 
 	@Check

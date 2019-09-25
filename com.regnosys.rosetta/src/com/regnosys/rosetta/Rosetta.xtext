@@ -122,37 +122,11 @@ RosettaRootElement:
 	RosettaAlias | RosettaProduct |
 	RosettaOrganisation | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | RosettaStereotypeValue |
 	RosettaEvent | RosettaEnumStyle |
-	RosettaCalculation | RosettaFunction |
-	RosettaBasicType | RosettaRecordType | RosettaExternalFunction | RosettaSynonymSource |
+	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaBlueprint | RosettaQualifiedType | RosettaCalculationType  | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaBlueprintReport
 ;
 
-@Deprecated
-RosettaFunction:
-	'spec' RosettaNamed RosettaDefinable ':'
-		('inputs:' (inputs += RosettaFunctionInput)+)*
-		'output:' output = RosettaFunctionInput
-		preConditions += RosettaFunctionPreCondition*
-		postConditions += RosettaFunctionPostCondition*
-;
-
-RosettaFunctionPreCondition returns RosettaFuncitonCondition: 
-	'pre-condition' RosettaFuncitonCondition
-;
-
-RosettaFunctionPostCondition returns RosettaFuncitonCondition: 
-	'post-condition' RosettaFuncitonCondition
-;
-
-RosettaFunctionInput:
-	RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable
-;
-
-RosettaFuncitonCondition: 
-	RosettaDefinable ':'
-		(expressions+=RosettaCalcExpression ';')+
-;
 
 
 /**********************************************************************
@@ -207,16 +181,8 @@ RosettaParameter:
 	RosettaNamed RosettaTyped isArray?='[]'?
 ;
 
-/** only library function allowed */
-@Deprecated
-RosettaExternalFunction:
-	library?='library'? 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable (('{'
-		features+=RosettaFunctionFeature*
-	'}') | RosettaTyped)
-;
-
-RosettaFunctionFeature returns RosettaFeature:
-	RosettaNamed RosettaTyped ';'
+RosettaLibraryFunction returns RosettaExternalFunction:
+	library?='library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable RosettaTyped
 ;
 
 RosettaQualifiedType:
@@ -245,7 +211,6 @@ RosettaCalculationTypeFeature returns RosettaFeature:
 
 RosettaClass:
 	(abstract?='abstract' | root?='root')? 'class' RosettaNamed ('extends' superType=[RosettaClass|ValidID])?
-	('calculation' calculations = RosettaCalculationHook)?
 	('stereotype' stereotype = RosettaStereotype)? 
 	(globalKey ?= 'key')?
 	(rosettaKeyValue ?= 'rosettaKeyValue')?
@@ -261,10 +226,6 @@ RosettaClass:
 
 RosettaMetaType:
 	'metaType' RosettaNamed RosettaTyped
-;
-
-RosettaCalculationHook:
-	(values += [RosettaCalculation|ValidID] ',')* values += [RosettaCalculation|ValidID]
 ;
 
 RosettaStereotype:
@@ -676,39 +637,6 @@ enum RosettaQualifiableType :
  * Calculations
  */
 
-RosettaCalculationArguments:
-	{RosettaCalculationArguments}
-	aliases+=RosettaArgumentAlias*
-	features+=RosettaArgumentFeature*
-;
-
-QualifiedName:
-	ValidID ('.' ValidID)?
-;
-
-RosettaArgumentAlias returns RosettaAlias:
-	'alias' RosettaNamed expression=RosettaCalcExpression
-;
-
-RosettaArgumentFeature:
-	RosettaNamed RosettaTyped? RosettaDefinable ':' 'is'? expression=RosettaCalcExpression
-;
-
-@Deprecated
-RosettaCalculation:
-	'calculation' name=QualifiedName RosettaDefinable '{'
-		features+=RosettaCalculationFeature*
-		(
-			'where'
-			arguments=RosettaCalculationArguments
-		)?
-	'}'
-;
-
-RosettaCalculationFeature returns RosettaFeature:
-	{RosettaCalculationFeature}
-	 (RosettaNamed | (RosettaTyped RosettaNamed))? (('defined' 'by' ':') | ':' ) expression=RosettaCalcExpression 
-;
 
 RosettaCalcExpression returns RosettaExpression:
 	RosettaCalcOr

@@ -644,22 +644,6 @@ class RosettaParsingTest {
 			
 		'''.parseRosettaWithNoErrors	
 	}
-
-	@Test
-	def void testClassWithAssociatedCalculation() {
-	'''
-			class Foo calculation Plus, Minus
-			{
-			}
-			calculation Plus
-			{
-			}
-			calculation Minus
-			{
-			}
-		'''.parseRosettaWithNoErrors
-	}
-	
 	@Test
 	def void externalSynonymWithMapperShouldParseWithNoErrors() {
 	'''

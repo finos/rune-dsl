@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.calculation
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -482,30 +481,6 @@ class RosettaCalculationGenerationTest {
 		)
 	}
 
-	@Disabled
-	@Test
-	def void testBrokenArgs() {
-		'''
-			function Min(x number, y number) number
-			function Max(x number, y number) number
-			
-			calculation Calc {
-				res defined by: arg1 + arg2 * 215
-			}
-			 
-			arguments Calc {
-				arg1 int : is FuncIn1->val1
-				arg2 int : is FuncIn2->val2
-			}
-			
-			class FuncIn1 {
-				val1 int (1..1);
-			}
-			class FuncIn2 {
-				val2 int (1..1);
-			}
-		'''.parseRosetta.assertError(RosettaPackage.Literals.ROSETTA_CALCULATION, "")
-	}
 
 	@Test
 	def void shouldResolveFunctionDependencies() {

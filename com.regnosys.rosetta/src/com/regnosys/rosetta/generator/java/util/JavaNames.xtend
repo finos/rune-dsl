@@ -4,20 +4,19 @@ import com.google.inject.Inject
 import com.google.inject.Injector
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.rosetta.RosettaBasicType
-import com.regnosys.rosetta.rosetta.RosettaCalculation
-import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
@@ -25,14 +24,11 @@ import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RFeatureCallType
 import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 
 class JavaNames {
 
@@ -102,23 +98,6 @@ class JavaNames {
 		return  JavaType.create(JavaClassTranslator.toJavaFullType(typeName)?:"missing builtin type " + typeName)
 	}
 	
-	def StringConcatenationClient toJavaQualifiedType(RosettaFeature feature) {
-		if (feature.isTypeInferred) {
-			switch (feature) {
-				RosettaCalculationFeature: {
-					val rType = typeProvider.getRType(feature)
-					val rTypeName = if (rType instanceof RUnionType) rType.toName else rType.name
-					val javaType = toJavaQualifiedType(rTypeName)
-					javaType
-				}
-				default:
-					toJavaQualifiedType(feature.type)
-			}
-		} else {
-			toJavaQualifiedType(feature.type)
-		}
-	}
-
 	def StringConcatenationClient toJavaQualifiedType(Attribute attribute) {
 		if (attribute.card.isIsMany) {
 			'''«List»<«attribute.type.toJavaQualifiedType()»>'''
@@ -144,10 +123,6 @@ class JavaNames {
 			default:
 				JavaType.create(rType.name)
 		}
-	}
-	
-	def QualifiedName toTargetClassName(RosettaCalculation ele) {
-		return QualifiedName.create(ele.name.split('\\.'))
 	}
 
 	def QualifiedName toTargetClassName(RosettaCallableWithArgs ele) {

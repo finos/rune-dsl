@@ -2,9 +2,8 @@ package com.regnosys.rosetta.generator.java.util
 
 import com.google.common.base.Splitter
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
-import com.regnosys.rosetta.rosetta.RosettaCalculation
 import com.regnosys.rosetta.rosetta.RosettaClass
+import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.types.RCalculationType
 import com.regnosys.rosetta.types.RQualifiedType
 
@@ -71,9 +70,6 @@ class JavaClassTranslator {
 		
 		if(attribute.type instanceof RosettaClass) {
 			imports.add('static java.util.Optional.ofNullable')
-		}
-		if(attribute.type instanceof RosettaCalculation) {
-			imports.add(packages.calculation.packageName + "." + attribute.type.name)
 		}
 		return imports
 	}

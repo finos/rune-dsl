@@ -464,61 +464,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertNoErrors
 	}
- 
-	@Test
-	def checkValidFunctionParameterType() {
-		val model = '''
-			calculation  Calc {
-				where
-					someString string: is TestFunction(2) -> slot
-			}
-			function TestFunction(param string) {
-				slot string;
-			}
-		'''.parseRosetta
-		model.assertError(ROSETTA_CALLABLE_WITH_ARGS_CALL, TYPE_ERROR, "Expected type 'string' but was 'int'")
-	}
-	
-	@Test
-	def checkArgumentsCount() {
-		val model = '''
-			calculation  Calc 
-			{
-				where
-					someString string: is TestFunction("foo") -> slot
-					someString string: is TestFunction("foo","bar","baz") -> slot
-			}
-			
-			function TestFunction(param string, param string) {
-				slot string;
-			}
-		'''.parseRosetta.eAllContents.filter(RosettaCallableWithArgsCall).toList
-		model.get(0).assertError(ROSETTA_CALLABLE_WITH_ARGS_CALL, null, "Invalid number of arguments. Expecting 2 but passed 1.")
-		model.get(1).assertError(ROSETTA_CALLABLE_WITH_ARGS_CALL, null, "Invalid number of arguments. Expecting 2 but passed 3.")
-	}
-	
-	@Test
-	def checkCollectionTypeCall() {
-	val model = '''
-			class Test
-			{
-				num number (1..1);
-				foo string (1..*);
-				otherAttr Other (1..*);
-			}
-			class Other
-			{
-				testAttr Test (1..1); 
-			}
-			calculation Calc {
-				result int : 1
-				
-				where
-					arg: is Other -> testAttr -> otherAttr -> testAttr -> num
-			}
-		'''.parseRosetta
-		model.assertError(ROSETTA_FEATURE_CALL, null, "Can't map from collection of 'Other' to a single value")
-	}
 	
 	@Test
 	def checkOperationTypes() {

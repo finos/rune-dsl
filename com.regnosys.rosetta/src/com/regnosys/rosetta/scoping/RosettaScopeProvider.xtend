@@ -7,7 +7,6 @@ import com.google.common.base.Predicate
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.RosettaArguments
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
@@ -21,35 +20,29 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RFeatureCallType
 import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.types.RUnionType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.resource.IEObjectDescription
-import org.eclipse.xtext.resource.IResourceDescriptionsProvider
-import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.FilteringScope
-import org.eclipse.xtext.scoping.impl.MapBasedScope
 import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.rosetta.simple.Data
 
 /**
  * This class contains custom scoping description.
@@ -61,8 +54,6 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaExtensions
-	@Inject IResourceDescriptionsProvider indexProvider
-	@Inject IQualifiedNameProvider qNames
 	@Inject extension RosettaFunctionExtensions
 
 	override getScope(EObject context, EReference reference) {
@@ -181,17 +172,6 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 						inputsAndOutputs.add(function.output)
 					return Scopes.scopeFor(inputsAndOutputs)
 				} else {
-					val calculationTarget = EcoreUtil2.getContainerOfType(context, RosettaArguments)?.calculation
-					if (calculationTarget !== null) {
-						val index = indexProvider.getResourceDescriptions(context.eResource.resourceSet)
-						val synonymDescriptions = index.getExportedObjectsByType(ROSETTA_ALIAS).filter [
-							it.qualifiedName.startsWith(qNames.getFullyQualifiedName(calculationTarget))
-						].map [
-							new AliasedEObjectDescription(QualifiedName.create(qualifiedName.lastSegment),
-								it) as IEObjectDescription
-						]
-						return MapBasedScope.createScope(defaultScope(context, reference), synonymDescriptions, false)
-					}
 					val funcContainer = EcoreUtil2.getContainerOfType(context, Function)
 					if(funcContainer !== null) {
 						return filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
@@ -321,8 +301,6 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 				Scopes.scopeFor(receiverType.record.features)
 			RFeatureCallType:
 				receiverType.featureType.createFeatureScope
-			RUnionType:
-				Scopes.scopeFor(receiverType.converter.features)
 			default:
 				null
 		}
