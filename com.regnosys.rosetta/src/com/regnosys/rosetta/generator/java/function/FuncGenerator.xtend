@@ -198,22 +198,32 @@ class FuncGenerator {
 	}
 	
 	
-	private def StringConcatenationClient assign(Operation operation, Map<ShortcutDeclaration, Boolean> outs,
+	private def StringConcatenationClient assign(Operation op, Map<ShortcutDeclaration, Boolean> outs,
 		JavaNames names) {
-		val pathAsList = operation.pathAsSegmentList
+		val pathAsList = op.pathAsSegmentList
 		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
 			'''
-			«IF needsBuilder(operation.assignRoot)»
-				«operation.assignTarget(outs, names)» = «expressionWithBuilder.toJava(operation.expression, ctx)»
+			«IF needsBuilder(op.assignRoot)»
+				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)»
 			«ELSE»
-				«operation.assignTarget(outs, names)» = «MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)«ENDIF»'''
+				«op.assignTarget(outs, names)» = «MapperS».of(«expressionWithBuilder.toJava(op.expression, ctx)»)«ENDIF»'''
 		else
 			'''
-				«operation.assignTarget(outs, names)»
+				«op.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)«IF isReference(seg.attribute)».getValue()«ENDIF»«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF operation.assignTarget().reference»Ref«ENDIF»(«expressionGenerator.javaCode(operation.expression, new ParamMap)».get())«ENDIF»«ENDFOR»;
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF op.assignTarget().reference»Ref«ENDIF»(«expressionGenerator.javaCode(op.expression, new ParamMap)».get()«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»;
 			'''
+	}
+	
+	def boolean useIdx(Operation operation) {
+		if (operation.pathAsSegmentList.nullOrEmpty)
+			return false
+		return operation.pathAsSegmentList.last.index !== null
+	}
+	
+	def idx(Operation operation) {
+		operation.pathAsSegmentList.last.index
 	}
 	
 	def boolean isReference(RosettaNamed ele) {

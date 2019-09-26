@@ -60,10 +60,10 @@ class RosettaAttributeExtensions {
 	dispatch  static def List<ExpandedAttribute> getExpandedAttributes(Set<RosettaClass> classes) {
 		classes.flatMap[expandedAttributes].toList.sortBy[name]
 	}
-	
+	public static val METAFIELDSCLASSNAME = 'MetaFields'
 	private static def provideMetaFeildsType() {
 		val metaFields = RosettaFactory.eINSTANCE.createRosettaClass
-		metaFields.name = 'MetaFields' 
+		metaFields.name = METAFIELDSCLASSNAME
 		return metaFields
 	}
 

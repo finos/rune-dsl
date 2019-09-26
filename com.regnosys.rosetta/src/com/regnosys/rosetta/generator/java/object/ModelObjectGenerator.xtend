@@ -5,6 +5,8 @@ import com.google.common.collect.Iterables
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.rosetta.RosettaClass
@@ -16,6 +18,7 @@ import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.types.RQualifiedType
 import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import java.util.List
+import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
@@ -29,15 +32,15 @@ class ModelObjectGenerator {
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension RosettaQualifiableExtension
 	@Inject extension ModelObjectBuilderGenerator
+	@Inject extension ImportManagerExtension
 
-
-	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
+	def generate(JavaNames javaNames, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaClass).forEach [ RosettaClass clazz |
-			fsa.generateFile(packages.model.directoryName + '/' + clazz.name + '.java', generateRosettaClass(packages, clazz, version))
+			fsa.generateFile(javaNames.packages.model.directoryName + '/' + clazz.name + '.java', generateRosettaClass(javaNames, clazz, version))
 			// TODO think about skipping the validation if lazz.attributes == 0 and provide an EmptyValidator
-			fsa.generateFile(packages.classValidation.directoryName + '/' + clazz.name + 'Validator.java', validatorImpl(packages, clazz))
+			fsa.generateFile(javaNames.packages.classValidation.directoryName + '/' + clazz.name + 'Validator.java', validatorImpl(javaNames.packages, clazz))
 			
-			fsa.generateFile(packages.existsValidation.directoryName + '/' + onlyExistsValidatorName(clazz) + '.java', onlyExistsValidator(packages, clazz))
+			fsa.generateFile(javaNames.packages.existsValidation.directoryName + '/' + onlyExistsValidatorName(clazz) + '.java', onlyExistsValidator(javaNames.packages, clazz))
 		]
 	}
 
@@ -61,35 +64,52 @@ class ModelObjectGenerator {
 		synonym !== null && synonym.values.exists[path!==null]
 	}
 
-	private def generateRosettaClass(RosettaJavaPackages packages, RosettaClass c, String version) '''
-		package «packages.model.packageName»;
+	private def  generateRosettaClass(JavaNames javaNames, RosettaClass c, String version) {
 		
-		«imports(packages, c)»
+		val clazz = tracImports(classBody(javaNames,c,version))
+		'''
+			package «javaNames.packages.model.packageName»;
+			
+			«FOR imp : clazz.imports»
+				import «imp»;
+			«ENDFOR»
 
-		«javadocWithVersion(c.definition, version)»
-		«IF c.isRoot»
-			@RosettaRoot
-		«ENDIF»
-		@RosettaClass
-		«IF c.hasQualifiedAttribute»
-			@RosettaQualified(attribute="«c.qualifiedAttribute»",qualifiedClass=«c.qualifiedClass».class)
-		«ENDIF»
-		«FOR stereotype : c.stereotype?.values?.map[it?.name]?:emptyList »
-			@RosettaStereotype("«stereotype»")
-		«ENDFOR»
-		«contributeClassSynonyms(c.synonyms)»
-		public «IF c.isAbstract »abstract «ENDIF»class «c.name» extends «IF c.hasSuperType »«c.superType.name»«ELSE»RosettaModelObject«ENDIF» «c.implementsClause»{
-			«c.rosettaClass»
-
-			«c.staticBuilderMethod»
-
-			«c.builderClass»
-
-			«c.boilerPlate»
-		}
-	'''
-
-	private def imports(RosettaJavaPackages packages, RosettaClass c) '''
+			«FOR imp : clazz.staticImports»
+				import static «imp»;
+			«ENDFOR»
+			
+			«imports(javaNames.packages, c)»
+			
+			«clazz.toString»
+		'''
+	}
+	
+	private def StringConcatenationClient classBody(JavaNames javaNames, RosettaClass c, String version) {
+		'''
+			«javadocWithVersion(c.definition, version)»
+			«IF c.isRoot»
+				@RosettaRoot
+			«ENDIF»
+			@RosettaClass
+			«IF c.hasQualifiedAttribute»
+				@RosettaQualified(attribute="«c.qualifiedAttribute»",qualifiedClass=«c.qualifiedClass».class)
+			«ENDIF»
+			«FOR stereotype : c.stereotype?.values?.map[it?.name]?:emptyList»
+				@RosettaStereotype("«stereotype»")
+			«ENDFOR»
+			«contributeClassSynonyms(c.synonyms)»
+			public «IF c.isAbstract »abstract «ENDIF»class «c.name» extends «IF c.hasSuperType »«c.superType.name»«ELSE»RosettaModelObject«ENDIF» «c.implementsClause»{
+				«c.rosettaClass(javaNames)»
+			
+				«c.staticBuilderMethod»
+			
+				«c.builderClass(javaNames)»
+			
+				«c.boilerPlate»
+			}
+		'''
+	}
+	private  def imports(RosettaJavaPackages packages, RosettaClass c) '''
 		«IF !c.hasSuperType »
 			import «packages.lib.packageName».RosettaModelObject;
 		«ENDIF»
@@ -163,9 +183,9 @@ class ModelObjectGenerator {
 		return qualifiedRootClassName
 	}
 
-	private def rosettaClass(RosettaClass c) '''
+	private def StringConcatenationClient rosettaClass(RosettaClass c, JavaNames names) '''
 		«FOR attribute : c.expandedAttributes»
-			private final «attribute.toType» «attribute.name»;
+			private final «attribute.toJavaType(names)» «attribute.name»;
 		«ENDFOR»
 		private static «c.name»Meta metaData = new «c.name»Meta();
 
@@ -181,7 +201,7 @@ class ModelObjectGenerator {
 		«FOR attribute : c.expandedAttributes»
 			«javadoc(attribute.definition)»
 			«contributeSynonyms(attribute.synonyms)»
-			public final «attribute.toType» get«attribute.name.toFirstUpper»() {
+			public final «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
 				return «attribute.name»;
 			}
 			
@@ -208,7 +228,24 @@ class ModelObjectGenerator {
 			public abstract «c.builderName» toBuilder();
 		«ENDIF»
 	'''
+	
+	private def StringConcatenationClient toJavaType(ExpandedAttribute attribute, JavaNames names) {
+		if (attribute.isMultiple) '''«List»<«attribute.toJavaTypeSingle(names)»>''' 
+		else attribute.toJavaTypeSingle(names);
+	}
 
+	private def StringConcatenationClient toJavaTypeSingle(ExpandedAttribute attribute, JavaNames names) {
+		if (!attribute.hasMetas)
+			names.toJavaQualifiedType(attribute.type)
+		else if (attribute.refIndex >= 0) {
+			if (attribute.isRosettaClassOrData)
+				'''«names.packages.metaField.javaType('ReferenceWithMeta'+attribute.typeName.toFirstUpper)»'''
+			else
+				'''«names.packages.metaField.javaType('BasicReferenceWithMeta'+attribute.typeName.toFirstUpper)»'''
+		} else
+			'''«names.packages.metaField.javaType('FieldWithMeta'+attribute.typeName.toFirstUpper)»'''
+	}
+	
 	private def contributeSynonyms(List<ExpandedSynonym> synonyms) '''		
 		«FOR synonym : synonyms »
 					«val maps = if (synonym.values.exists[v|v.maps>1]) ''', maps=«synonym.values.map[maps].join(",")»''' else ''»
