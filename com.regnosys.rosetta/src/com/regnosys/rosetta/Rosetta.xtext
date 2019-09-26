@@ -153,7 +153,6 @@ ValidHint:
        ValidID'*'?
 ;
 
-terminal ID_STRING: '^'?'`'('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*'`';
 
 /**********************************************************************
  * Built-in
@@ -182,7 +181,7 @@ RosettaParameter:
 ;
 
 RosettaLibraryFunction returns RosettaExternalFunction:
-	library?='library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable RosettaTyped
+	'library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable RosettaTyped
 ;
 
 RosettaQualifiedType:

@@ -12,12 +12,9 @@ import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaDataRule
-import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import java.util.List
-import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
@@ -100,13 +97,5 @@ class QualifyFunctionGenerator<T extends RosettaQualifiable> {
 			}
 		}
 		'''
-	}
-	
-	@Data
-	static class ExpressionDataRules {
-		String definition
-		RosettaExpression expression
-		List<RosettaDataRule> andDataRules
-		List<RosettaDataRule> orDataRules
 	}
 }

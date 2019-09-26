@@ -548,7 +548,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkFunctionOutput(Function ele) {
-		if(!ele.operations.nullOrEmpty && ele?.output?.card?.isMany) {
+		if(!ele.operations.nullOrEmpty && ele.output?.card?.isMany) {
 			error('''Assigning output with multiple cardinality is not supported yet.''', ele, FUNCTION__OUTPUT)
 		}
 	}

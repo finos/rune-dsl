@@ -105,11 +105,7 @@ class RosettaToJavaExtensions {
 	}
 	
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaExternalFunction ele) {
-		if (ele.isLibrary) {
-			'''new «toJavaQualifiedType(ele as RosettaType)»()'''
-		} else {
-			'''«ele.name.toFirstLower»'''	
-		}
+		'''new «toJavaQualifiedType(ele as RosettaType)»()'''
 	}
 	
 	def dispatch StringConcatenationClient toJava(extension JavaNames it, RosettaRecordType ele) {

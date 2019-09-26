@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBasicType
@@ -47,7 +46,6 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 class RosettaTypeProvider {
 
 	@Inject extension RosettaOperators
-	@Inject extension RosettaFunctionExtensions
 	@Inject IQualifiedNameProvider qNames
 	@Inject IDValueConverter idConverter
 	@Inject RosettaTypeCompatibility compatibility
@@ -255,7 +253,7 @@ class RosettaTypeProvider {
 			RosettaMapRosettaPath:
 				expression.path.safeRType(cycleTracker)
 			Function:
-				getOutput(expression).safeRType(cycleTracker)
+				if(expression.output !== null) expression.output.safeRType(cycleTracker) else RBuiltinType.MISSING
 			Condition:
 				expression.expression.safeRType(cycleTracker)
 			default:

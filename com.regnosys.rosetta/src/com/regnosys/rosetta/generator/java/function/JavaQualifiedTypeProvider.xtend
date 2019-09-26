@@ -29,7 +29,7 @@ class JavaQualifiedTypeProvider {
 	def StringConcatenationClient toJavaQualifiedType(RosettaCallableWithArgs ele) {
 		switch (ele) {
 			RosettaType: toJavaQualifiedType(ele as RosettaType)
-			Function: '''«JavaType.create(packages.functions.packageName + '.' + ele.name)»'''
+			Function: '''«packages.functions.javaType(ele.name)»'''
 			default: '''«ele.name»'''
 		}
 	}
@@ -49,13 +49,11 @@ class JavaQualifiedTypeProvider {
 				toJavaQualifiedType(type.name)
 			RosettaClass, Data: {
 				val builderSuffix = if (asBuilder) '''.«type.name»Builder''' else ''
-				'''«JavaType.create(packages.model.packageName+'.'+ type.name + builderSuffix)»'''
+				'''«packages.model.javaType(type.name + builderSuffix)»'''
 			}
-			RosettaEnumeration: '''«JavaType.create(packages.model.packageName+'.'+ type.name)»'''
-			RosettaRecordType: {
-				'''«JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)»'''	
-			}
-			RosettaExternalFunction: '''«JavaType.create(if(type.isLibrary) packages.libFunctions.packageName + "." + type.name.toFirstUpper else packages.functions.packageName + "." + type.name.toFirstUpper)»'''
+			RosettaEnumeration: '''«packages.model.javaType(type.name)»'''
+			RosettaRecordType: '''«packages.libRecords.javaType(type.name.toFirstUpper)»'''
+			RosettaExternalFunction: '''«packages.libFunctions.javaType(type.name.toFirstUpper)»'''
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
 		}

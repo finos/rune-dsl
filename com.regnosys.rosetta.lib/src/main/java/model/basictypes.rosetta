@@ -23,7 +23,7 @@ recordType date
 	day   int
 	month int
 	year  int
-}  
+}
 
 recordType zonedDateTime
 {

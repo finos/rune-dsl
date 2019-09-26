@@ -89,7 +89,6 @@ class RosettaRecordType extends RosettaRootElement, RosettaFeatureOwner, Rosetta
 
 class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaCallableWithArgs, RosettaBuiltinType , RosettaDefinable {
 	contains RosettaParameter[] parameters
-	boolean library
 }
 
 class RosettaParameter extends RosettaFeature {

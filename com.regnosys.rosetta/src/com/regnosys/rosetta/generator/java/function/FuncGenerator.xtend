@@ -23,12 +23,14 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.Mapper
 import com.rosetta.model.lib.functions.MapperBuilder
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.RosettaFunction
+import com.rosetta.model.lib.math.BigDecimalExtensions
 import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -207,13 +209,25 @@ class FuncGenerator {
 			«IF needsBuilder(operation.assignRoot)»
 				«operation.assignTarget(outs, names)» = «expressionWithBuilder.toJava(operation.expression, ctx)»
 			«ELSE»
-				«operation.assignTarget(outs, names)» = «MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)«ENDIF»'''
+				«operation.assignTarget(outs, names)» = «assignPlainValue(operation, ctx)»«ENDIF»'''
 		else
 			'''
 				«operation.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)«IF isReference(seg.attribute)».getValue()«ENDIF»«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF operation.assignTarget().reference»Ref«ENDIF»(«expressionGenerator.javaCode(operation.expression, new ParamMap)».get())«ENDIF»«ENDFOR»;
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF operation.namedAssignTarget().reference»Ref«ENDIF»(«expressionGenerator.javaCode(operation.expression, new ParamMap)».get())«ENDIF»«ENDFOR»;
 			'''
+	}
+	
+	def StringConcatenationClient assignPlainValue(Operation operation, Context ctx) {
+		if(operation.path === null && operation.assignRoot instanceof Attribute ) {
+			val rType = typeProvider.getRType((operation.assignRoot as Attribute ).type)
+			val valType = typeProvider.getRType(operation.expression)
+			if (rType === RBuiltinType.NUMBER && valType !== RBuiltinType.NUMBER) {
+				/// case: number = 1
+				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
+			}
+		}
+		'''«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)'''
 	}
 	
 	def boolean isReference(RosettaNamed ele) {
@@ -224,7 +238,7 @@ class FuncGenerator {
 		}
 	}
 
-	private def assignTarget(Operation operation) {
+	private def namedAssignTarget(Operation operation) {
 		if (operation.path === null) {
 			return operation.assignRoot
 		} else {

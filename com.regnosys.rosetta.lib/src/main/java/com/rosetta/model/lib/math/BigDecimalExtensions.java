@@ -104,7 +104,7 @@ public class BigDecimalExtensions {
 	 * 
 	 * @see BigDecimal.valueOf(long);
 	 */
-	public static Mapper<BigDecimal> valueOf(Mapper<Number> a) {
+	public static Mapper<BigDecimal> valueOf(Mapper<? extends Number> a) {
 		Number number = a.get();
 		if (number instanceof BigDecimal)
 			return MapperS.of(valueOf(((BigDecimal) number).doubleValue()));

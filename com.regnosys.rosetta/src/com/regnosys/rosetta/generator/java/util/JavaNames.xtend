@@ -74,7 +74,7 @@ class JavaNames {
 	def JavaType toJavaType(RosettaCallableWithArgs func) {
 		switch (func) {
 			Function:
-				JavaType.create(packages.functions.packageName+'.'+ func.name)
+				packages.functions.javaType(func.name)
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + func?.class?.name)
 		}
@@ -86,9 +86,9 @@ class JavaNames {
 				createForBasicType(type.name)
 			RosettaClass,
 			Data,
-			RosettaEnumeration: JavaType.create(packages.model.packageName+'.'+ type.name)
-			RosettaRecordType: JavaType.create(JavaClassTranslator.toJavaFullType(type.name))?:JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)
-			RosettaExternalFunction: JavaType.create(if(type.isLibrary) packages.libFunctions.packageName + "." + type.name.toFirstUpper else packages.functions.packageName + "." + type.name.toFirstUpper)
+			RosettaEnumeration: packages.model.javaType(type.name)
+			RosettaRecordType: JavaType.create(JavaClassTranslator.toJavaFullType(type.name))?:packages.libRecords.javaType(type.name.toFirstUpper)
+			RosettaExternalFunction: packages.libFunctions.javaType(type.name.toFirstUpper)
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
 		}

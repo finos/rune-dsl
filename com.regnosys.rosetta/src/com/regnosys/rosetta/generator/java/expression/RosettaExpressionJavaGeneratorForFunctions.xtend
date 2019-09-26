@@ -152,7 +152,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				funcExt.getOutput(callable).card.isMany
 				'''«MapperS».of(«callable.name.toFirstLower».evaluate(«args(expr, params)»))'''
 			}
-			RosettaExternalFunction case callable.isLibrary:
+			RosettaExternalFunction:
 				'''«MapperS».of(new «new RosettaJavaPackages(null).libFunctions.javaType(callable.name)»().execute(«args(expr, params)»))'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable with args type of " + expr.eClass.name)

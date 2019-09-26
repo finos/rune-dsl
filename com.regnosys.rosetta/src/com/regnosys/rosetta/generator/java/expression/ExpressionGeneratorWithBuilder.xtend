@@ -6,6 +6,7 @@ import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvid
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
@@ -105,11 +106,7 @@ class ExpressionGeneratorWithBuilder {
 	}
 
 	def dispatch StringConcatenationClient toJava(RosettaExternalFunction ele, Context ctx) {
-		if (ele.isLibrary) {
-			'''new «ctx.names.toJavaQualifiedType(ele as RosettaType)»()'''
-		} else {
-			'''«ele.name.toFirstLower»'''
-		}
+		'''new «ctx.names.toJavaQualifiedType(ele as RosettaType)»()'''
 	}
 
 	def dispatch StringConcatenationClient toJava(RosettaRecordType ele, Context ctx) {
@@ -198,6 +195,10 @@ class ExpressionGeneratorWithBuilder {
 	
 	def dispatch StringConcatenationClient toJava(RosettaExistsExpression ele, Context ctx) {
 		'''«importMethod(ExpressionOperators, 'exists')»(«toJava(ele.argument, ctx)»)'''
+	}
+	
+	def dispatch StringConcatenationClient toJava(RosettaAbsentExpression ele, Context ctx) {
+		'''«importMethod(ExpressionOperators, 'notExists')»(«toJava(ele.argument, ctx)»)'''
 	}
 	
 	private def StringConcatenationClient attributeAccess(RosettaFeature feature, Context ctx) {
