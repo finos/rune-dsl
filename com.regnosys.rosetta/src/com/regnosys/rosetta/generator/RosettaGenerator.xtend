@@ -98,7 +98,7 @@ class RosettaGenerator extends AbstractGenerator {
 						}
 					}
 				]
-				modelObjectGenerator.generate(packages, fsa, elements, version)
+				modelObjectGenerator.generate(javaNames, fsa, elements, version)
 				enumGenerator.generate(packages, fsa, elements, version)
 				choiceRuleGenerator.generate(packages, fsa, elements, version)
 				dataRuleGenerator.generate(packages, fsa, elements, version)
