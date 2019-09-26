@@ -35,6 +35,7 @@ import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.rosetta.model.lib.validation.ModelObjectValidator
 
 class FuncGenerator {
 
@@ -93,6 +94,10 @@ class FuncGenerator {
 		'''
 			«IF isAbstract»@«ImplementedBy»(«className»Impl.class)«ENDIF»
 			public «IF isStatic»static «ENDIF»«IF isAbstract»abstract «ENDIF»class «className» implements «RosettaFunction» {
+				«IF outNeedsBuilder»
+				
+				@«Inject» protected «ModelObjectValidator» objectValidator;
+				«ENDIF»
 				«IF !dependencies.empty»
 					
 					// RosettaFunction dependencies
@@ -129,7 +134,7 @@ class FuncGenerator {
 						«ENDFOR»
 					«ENDIF»
 					«IF outNeedsBuilder»
-					new «JavaType.create('com.regnosys.rosetta.common.validation.RosettaTypeValidator')»().validateAndFailOnErorr(«outputType».class, «outputName»);
+					objectValidator.validateAndFailOnErorr(«outputType».class, «outputName»);
 					«ENDIF»
 					return «outputName»;
 				}

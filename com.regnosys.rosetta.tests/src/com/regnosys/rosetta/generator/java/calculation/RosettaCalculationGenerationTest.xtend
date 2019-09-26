@@ -3,10 +3,8 @@ package com.regnosys.rosetta.generator.java.calculation
 import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
@@ -19,8 +17,6 @@ class RosettaCalculationGenerationTest {
 
 	@Inject extension CalculationGeneratorHelper
 	@Inject extension CodeGeneratorTestHelper
-	@Inject extension ModelHelper
-	@Inject extension ValidationTestHelper
 	
 	@Test
 	def void testSimpleTransDep() {
@@ -249,11 +245,13 @@ class RosettaCalculationGenerationTest {
 		val expected = '''
 		package com.rosetta.test.model.functions;
 		
+		import com.google.inject.Inject;
 		import com.rosetta.model.lib.functions.Mapper;
 		import com.rosetta.model.lib.functions.MapperMaths;
 		import com.rosetta.model.lib.functions.MapperS;
 		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.records.Date;
+		import com.rosetta.model.lib.validation.ModelObjectValidator;
 		import com.rosetta.test.model.FoncOut;
 		import com.rosetta.test.model.FuncIn;
 		import java.lang.SuppressWarnings;
@@ -261,6 +259,8 @@ class RosettaCalculationGenerationTest {
 		
 		
 		public class Calc implements RosettaFunction {
+			
+			@Inject protected ModelObjectValidator objectValidator;
 		
 			/**
 			* @param funIn 
@@ -270,6 +270,7 @@ class RosettaCalculationGenerationTest {
 				
 				FoncOut res = doEvaluate(funIn).build();
 				
+				objectValidator.validateAndFailOnErorr(FoncOut.class, res);
 				return res;
 			}
 			
@@ -329,11 +330,13 @@ class RosettaCalculationGenerationTest {
 		val expected = '''
 		package com.rosetta.test.model.functions;
 		
+		import com.google.inject.Inject;
 		import com.rosetta.model.lib.functions.Mapper;
 		import com.rosetta.model.lib.functions.MapperMaths;
 		import com.rosetta.model.lib.functions.MapperS;
 		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.records.Date;
+		import com.rosetta.model.lib.validation.ModelObjectValidator;
 		import com.rosetta.test.model.FuncIn;
 		import com.rosetta.test.model.FuncOut;
 		import java.lang.String;
@@ -342,6 +345,8 @@ class RosettaCalculationGenerationTest {
 		
 		
 		public class RTS_22_Fields implements RosettaFunction {
+			
+			@Inject protected ModelObjectValidator objectValidator;
 		
 			/**
 			* @param funcIn 
@@ -351,6 +356,7 @@ class RosettaCalculationGenerationTest {
 				
 				FuncOut out = doEvaluate(funcIn).build();
 				
+				objectValidator.validateAndFailOnErorr(FuncOut.class, out);
 				return out;
 			}
 			
