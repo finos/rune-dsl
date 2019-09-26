@@ -34,7 +34,6 @@ import com.rosetta.model.lib.math.BigDecimalExtensions
 import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
-
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 class FuncGenerator {
@@ -129,6 +128,9 @@ class FuncGenerator {
 							«cond.contributeCondition»
 						«ENDFOR»
 					«ENDIF»
+					«IF outNeedsBuilder»
+					new «JavaType.create('com.regnosys.rosetta.common.validation.RosettaTypeValidator')»().validateAndFailOnErorr(«outputType».class, «outputName»);
+					«ENDIF»
 					return «outputName»;
 				}
 				
@@ -218,7 +220,7 @@ class FuncGenerator {
 			'''
 	}
 	
-	def StringConcatenationClient assignPlainValue(Operation operation, Context ctx) {
+	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx) {
 		if(operation.path === null && operation.assignRoot instanceof Attribute ) {
 			val rType = typeProvider.getRType((operation.assignRoot as Attribute ).type)
 			val valType = typeProvider.getRType(operation.expression)
@@ -230,17 +232,17 @@ class FuncGenerator {
 		'''«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)'''
 	}
 	
-	def boolean useIdx(Operation operation) {
+	private def boolean useIdx(Operation operation) {
 		if (operation.pathAsSegmentList.nullOrEmpty)
 			return false
 		return operation.pathAsSegmentList.last.index !== null
 	}
 	
-	def idx(Operation operation) {
+	private def idx(Operation operation) {
 		operation.pathAsSegmentList.last.index
 	}
 	
-	def boolean isReference(RosettaNamed ele) {
+	private def boolean isReference(RosettaNamed ele) {
 		switch(ele) {
 			Annotated: hasMetaReferenceAnnotations(ele)
 			RosettaRegularAttribute: !ele.metaTypes.empty
