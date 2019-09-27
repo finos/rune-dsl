@@ -7,12 +7,14 @@ import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.WithCardinality
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
-import com.regnosys.rosetta.rosetta.simple.Function
 
 class CardinalityProvider {
 	
@@ -30,12 +32,18 @@ class CardinalityProvider {
 			Function: if(obj.output === null) false else obj.output.isMulti
 			ShortcutDeclaration: obj.expression.isMulti
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
-			RosettaBinaryOperation: obj.left.isMulti || obj.right.multi // check this 
+			RosettaBinaryOperation: obj.left.isMulti || obj.right.multi // check this
+			RosettaParenthesisCalcExpression: obj.expression.isMulti
 			ListLiteral: true
 			RosettaLiteral,
 			RosettaRecordType,
 			RosettaEnumValueReference: false
 			default: {println(obj?.eClass?.name)false }
 		}
-	} 
+	}
+	
+	def boolean expectedCardinalityMany(Operation op) {
+		val assignTarget = if(op.path === null) op.assignRoot else op.pathAsSegmentList.last.attribute
+		return assignTarget.isMulti
+	}
 }

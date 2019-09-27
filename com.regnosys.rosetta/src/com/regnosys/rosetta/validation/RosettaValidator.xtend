@@ -560,6 +560,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
+	def checkAssignCardinality(Operation ele) {
+		if (!cardinality.expectedCardinalityMany(ele) && cardinality.isMulti(ele.expression))
+			error('''Expecting single cardinality as value. Use 'only-element' to assign only first value.''', ele, OPERATION__EXPRESSION)
+	}
+	
+	@Check
 	def checkListElementAccess(Segment ele) {
 		if (ele.index !== null && !ele.attribute.card.isIsMany)
 			error('''Element access only possible for multiple cardinality.''', ele, SEGMENT__NEXT)
