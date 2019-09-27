@@ -75,7 +75,7 @@ Condition:
 		->(Annotations)? // conflicts with ListLiteral as RosettaCalcExpression
 		( constraint = OneOf
 		| constraint = Constraint
-		| (expressions += RosettaCalcExpression ';')+)
+		| expression = RosettaCalcExpression)
 ;
 
 Constraint:
@@ -93,7 +93,7 @@ OneOf returns Constraint :
 
 PostCondition returns Condition:
 	postCondition ?= 'post-condition' ':' Definable?
-	(expressions+=RosettaCalcExpression ';')+
+	expression     = RosettaCalcExpression
 ;
 
 Operation:
@@ -122,37 +122,11 @@ RosettaRootElement:
 	RosettaAlias | RosettaProduct |
 	RosettaOrganisation | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | RosettaStereotypeValue |
 	RosettaEvent | RosettaEnumStyle |
-	RosettaCalculation | RosettaFunction |
-	RosettaBasicType | RosettaRecordType | RosettaExternalFunction | RosettaSynonymSource |
+	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaBlueprint | RosettaQualifiedType | RosettaCalculationType  | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaBlueprintReport
 ;
 
-@Deprecated
-RosettaFunction:
-	'spec' RosettaNamed RosettaDefinable ':'
-		('inputs:' (inputs += RosettaFunctionInput)+)*
-		'output:' output = RosettaFunctionInput
-		preConditions += RosettaFunctionPreCondition*
-		postConditions += RosettaFunctionPostCondition*
-;
-
-RosettaFunctionPreCondition returns RosettaFuncitonCondition: 
-	'pre-condition' RosettaFuncitonCondition
-;
-
-RosettaFunctionPostCondition returns RosettaFuncitonCondition: 
-	'post-condition' RosettaFuncitonCondition
-;
-
-RosettaFunctionInput:
-	RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable
-;
-
-RosettaFuncitonCondition: 
-	RosettaDefinable ':'
-		(expressions+=RosettaCalcExpression ';')+
-;
 
 
 /**********************************************************************
@@ -179,7 +153,6 @@ ValidHint:
        ValidID'*'?
 ;
 
-terminal ID_STRING: '^'?'`'('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*'`';
 
 /**********************************************************************
  * Built-in
@@ -207,16 +180,8 @@ RosettaParameter:
 	RosettaNamed RosettaTyped isArray?='[]'?
 ;
 
-/** only library function allowed */
-@Deprecated
-RosettaExternalFunction:
-	library?='library'? 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable (('{'
-		features+=RosettaFunctionFeature*
-	'}') | RosettaTyped)
-;
-
-RosettaFunctionFeature returns RosettaFeature:
-	RosettaNamed RosettaTyped ';'
+RosettaLibraryFunction returns RosettaExternalFunction:
+	'library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable RosettaTyped
 ;
 
 RosettaQualifiedType:
@@ -245,7 +210,6 @@ RosettaCalculationTypeFeature returns RosettaFeature:
 
 RosettaClass:
 	(abstract?='abstract' | root?='root')? 'class' RosettaNamed ('extends' superType=[RosettaClass|ValidID])?
-	('calculation' calculations = RosettaCalculationHook)?
 	('stereotype' stereotype = RosettaStereotype)? 
 	(globalKey ?= 'key')?
 	(rosettaKeyValue ?= 'rosettaKeyValue')?
@@ -261,10 +225,6 @@ RosettaClass:
 
 RosettaMetaType:
 	'metaType' RosettaNamed RosettaTyped
-;
-
-RosettaCalculationHook:
-	(values += [RosettaCalculation|ValidID] ',')* values += [RosettaCalculation|ValidID]
 ;
 
 RosettaStereotype:
@@ -676,94 +636,62 @@ enum RosettaQualifiableType :
  * Calculations
  */
 
-RosettaCalculationArguments:
-	{RosettaCalculationArguments}
-	aliases+=RosettaArgumentAlias*
-	features+=RosettaArgumentFeature*
-;
-
-QualifiedName:
-	ValidID ('.' ValidID)?
-;
-
-RosettaArgumentAlias returns RosettaAlias:
-	'alias' RosettaNamed expression=RosettaCalcExpression
-;
-
-RosettaArgumentFeature:
-	RosettaNamed RosettaTyped? RosettaDefinable ':' 'is'? expression=RosettaCalcExpression
-;
-
-@Deprecated
-RosettaCalculation:
-	'calculation' name=QualifiedName RosettaDefinable '{'
-		features+=RosettaCalculationFeature*
-		(
-			'where'
-			arguments=RosettaCalculationArguments
-		)?
-	'}'
-;
-
-RosettaCalculationFeature returns RosettaFeature:
-	{RosettaCalculationFeature}
-	 (RosettaNamed | (RosettaTyped RosettaNamed))? (('defined' 'by' ':') | ':' ) expression=RosettaCalcExpression 
-;
 
 RosettaCalcExpression returns RosettaExpression:
-	RosettaCalcConditionalExpression
-;
-
-RosettaCalcConditionalExpression returns RosettaExpression:
-	RosettaCalcOr 
-	| {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?
+	RosettaCalcOr
 ;
 
 RosettaCalcOr returns RosettaExpression:
-	RosettaCalcAnd ({RosettaBinaryOperation.left=current} operator=('or') right=RosettaCalcAnd)*
+	RosettaCalcAnd ( =>({RosettaBinaryOperation.left=current} operator=('or')) right=RosettaCalcAnd)*
 ;
 
 RosettaCalcAnd returns RosettaExpression:
-	RosettaCalcExists ({RosettaBinaryOperation.left=current} operator=('and') right=RosettaCalcExists)*
+	RosettaCalcExists ( =>({RosettaBinaryOperation.left=current} operator=('and')) right=RosettaCalcExists)*
 ;
 
 RosettaCalcExists returns RosettaExpression:
 	RosettaCalcEquality (
-		{RosettaExistsExpression.argument=current} only?='only'? (single?='single' | multiple?='multiple')? 'exists'
+		->(
+		  {RosettaExistsExpression.argument=current} only?='only'? (single?='single' | multiple?='multiple')? 'exists'
 		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
-		| {RosettaCountOperation.left=current} 'count' operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaFeatureCall
-		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaFeatureCall
+		| {RosettaCountOperation.left=current} 'count' operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaCalcAttributeCall
+		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaCalcAttributeCall
+		)
 	)?
 ;
 
 RosettaCalcEquality returns RosettaExpression:
-	RosettaCalcComparison ({RosettaBinaryOperation.left=current} operator=('='|'<>') right=RosettaCalcComparison)*
+	RosettaCalcComparison ( =>({RosettaBinaryOperation.left=current} operator=('='|'<>')) right=RosettaCalcComparison)*
 ;
 	
 RosettaCalcComparison returns RosettaExpression:
-	RosettaCalcAdditive ({RosettaBinaryOperation.left=current} operator=(">="|"<="|">"|"<") right=RosettaCalcAdditive)*
+	RosettaCalcAdditive ( =>({RosettaBinaryOperation.left=current} operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
 ;
 
 RosettaCalcAdditive returns RosettaExpression:
-	RosettaCalcMultiplicative ({RosettaBinaryOperation.left=current} operator=('+'|'-') right=RosettaCalcMultiplicative)*
+	RosettaCalcMultiplicative ( =>({RosettaBinaryOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*
 ;
 
 RosettaCalcMultiplicative returns RosettaExpression:
-	RosettaCalcAttributeCall ({RosettaBinaryOperation.left=current} operator=('*'|'/') right=RosettaCalcAttributeCall)*
+	RosettaCalcAttributeCall ( =>({RosettaBinaryOperation.left=current} operator=('*'|'/')) right=RosettaCalcAttributeCall)*
 ;
 
 RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
-	({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID] toOne ?= 'only-element'?)*
+	( =>({RosettaFeatureCall.receiver=current} '->') feature=[RosettaFeature|ValidID] toOne ?= 'only-element'?)*
 ;
 
 RosettaCalcPrimary returns RosettaExpression:
-	{RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|ValidID] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' toOne ?= 'only-element'?
+	RosettaCalcConditionalExpression
+	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|ValidID] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' toOne ?= 'only-element'?
 	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
 	| RosettaCallableCall
 	| RosettaEnumValueReference
 	| RosettaLiteral
 	| RosettaParenthesisCalcExpression
+;
+RosettaCalcConditionalExpression returns RosettaExpression:
+	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?
 ;
 
 

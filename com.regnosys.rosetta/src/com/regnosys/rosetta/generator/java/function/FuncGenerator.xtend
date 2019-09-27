@@ -23,17 +23,19 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.Mapper
 import com.rosetta.model.lib.functions.MapperBuilder
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.RosettaFunction
+import com.rosetta.model.lib.math.BigDecimalExtensions
 import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
-
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.rosetta.model.lib.validation.ModelObjectValidator
 
 class FuncGenerator {
 
@@ -76,7 +78,7 @@ class FuncGenerator {
 	private def collectFunctionDependencies(Function func) {
 		val deps = func.shortcuts.flatMap[functionDependencyProvider.functionDependencies(it.expression)] +
 			func.operations.flatMap[functionDependencyProvider.functionDependencies(it.expression)]
-		val condDeps = (func.conditions + func.postConditions).flatMap[expressions].flatMap [
+		val condDeps = (func.conditions + func.postConditions).map[expression].flatMap [
 			functionDependencyProvider.functionDependencies(it)
 		]
 		return Util.distinctBy(deps + condDeps, [name]).sortBy[it.name]
@@ -92,6 +94,10 @@ class FuncGenerator {
 		'''
 			«IF isAbstract»@«ImplementedBy»(«className»Impl.class)«ENDIF»
 			public «IF isStatic»static «ENDIF»«IF isAbstract»abstract «ENDIF»class «className» implements «RosettaFunction» {
+				«IF outNeedsBuilder»
+				
+				@«Inject» protected «ModelObjectValidator» objectValidator;
+				«ENDIF»
 				«IF !dependencies.empty»
 					
 					// RosettaFunction dependencies
@@ -126,6 +132,9 @@ class FuncGenerator {
 
 							«cond.contributeCondition»
 						«ENDFOR»
+					«ENDIF»
+					«IF outNeedsBuilder»
+					objectValidator.validateAndFailOnErorr(«outputType».class, «outputName»);
 					«ENDIF»
 					return «outputName»;
 				}
@@ -207,26 +216,38 @@ class FuncGenerator {
 			«IF needsBuilder(op.assignRoot)»
 				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)»
 			«ELSE»
-				«op.assignTarget(outs, names)» = «MapperS».of(«expressionWithBuilder.toJava(op.expression, ctx)»)«ENDIF»'''
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
 		else
 			'''
 				«op.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)«IF isReference(seg.attribute)».getValue()«ENDIF»«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF op.assignTarget().reference»Ref«ENDIF»(«expressionGenerator.javaCode(op.expression, new ParamMap)».get()«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»;
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF op.namedAssignTarget().reference»Ref«ENDIF»(«expressionGenerator.javaCode(op.expression, new ParamMap)».get()«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»;
 			'''
 	}
 	
-	def boolean useIdx(Operation operation) {
+	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx) {
+		if(operation.path === null && operation.assignRoot instanceof Attribute ) {
+			val rType = typeProvider.getRType((operation.assignRoot as Attribute ).type)
+			val valType = typeProvider.getRType(operation.expression)
+			if (rType === RBuiltinType.NUMBER && valType !== RBuiltinType.NUMBER) {
+				/// case: number = 1
+				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
+			}
+		}
+		'''«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)'''
+	}
+	
+	private def boolean useIdx(Operation operation) {
 		if (operation.pathAsSegmentList.nullOrEmpty)
 			return false
 		return operation.pathAsSegmentList.last.index !== null
 	}
 	
-	def idx(Operation operation) {
+	private def idx(Operation operation) {
 		operation.pathAsSegmentList.last.index
 	}
 	
-	def boolean isReference(RosettaNamed ele) {
+	private def boolean isReference(RosettaNamed ele) {
 		switch(ele) {
 			Annotated: hasMetaReferenceAnnotations(ele)
 			RosettaRegularAttribute: !ele.metaTypes.empty
@@ -234,7 +255,7 @@ class FuncGenerator {
 		}
 	}
 
-	private def assignTarget(Operation operation) {
+	private def namedAssignTarget(Operation operation) {
 		if (operation.path === null) {
 			return operation.assignRoot
 		} else {
@@ -253,9 +274,7 @@ class FuncGenerator {
 	private def StringConcatenationClient contributeCondition(Condition condition) {
 		'''
 			assert
-				«FOR expr : condition.expressions SEPARATOR ' &&'» 
-					«expressionGenerator.javaCode(expr, null)».get()
-				«ENDFOR»
+				«expressionGenerator.javaCode(condition.expression, null)».get()
 				: "«condition.definition»";
 		'''
 	}

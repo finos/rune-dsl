@@ -1,24 +1,24 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.google.inject.Inject
+import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.java.util.JavaType
+import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.rosetta.util.ListEquals
 import java.util.Collections
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
-
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
-import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import org.eclipse.xtend2.lib.StringConcatenationClient
-import com.rosetta.util.ListEquals
-import com.regnosys.rosetta.generator.java.util.JavaType
-import com.regnosys.rosetta.generator.java.util.JavaNames
+
+import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class ModelObjectBoilerPlate {
 
-	@Inject extension ExternalHashcodeGenerator
+//	@Inject extension ExternalHashcodeGenerator
 
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
@@ -202,7 +202,36 @@ class ModelObjectBoilerPlate {
 				false, it == RosettaEnumeration, false, Collections.emptyList)
 		], false, false);
 	}
-
+	
+	private def processMethod(extension TypeData it) '''
+		@Override
+		public void process(RosettaPath path, Processor processor) {
+			«IF hasSuperType»
+				super.process(path, processor);
+			«ENDIF»
+			
+			«FOR a : attributes.filter[!(isRosettaClassOrData || hasMetas)]»
+				«IF a.multiple»
+					«a.name».stream().forEach(a->processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle».class, a, this«a.metaFlags»));
+				«ELSE»
+					processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle».class, «a.name», this«a.metaFlags»);
+				«ENDIF»
+			«ENDFOR»
+			
+			«FOR a : attributes.filter[isRosettaClassOrData || hasMetas]»
+				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle».class, «a.name»«a.metaFlags»);
+			«ENDFOR»
+		}
+		
+	'''
+	
+	private def getMetaFlags(ExpandedAttribute attribute) {
+		val result = new StringBuilder()
+		if (attribute.type instanceof RosettaMetaType) {
+			result.append(", AttributeMeta.IS_META")
+		}
+		result.toString
+	}
 	// the eventEffect attribute should not contribute to the rosettaKeyValueHashCode. 
 	// TODO: Have generic way of excluding attributes from the hash
 	static def boolean isIncludedInRosettaKeyValueHashCode(ExpandedAttribute a) {

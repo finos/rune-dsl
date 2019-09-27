@@ -2,7 +2,6 @@ package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaDataRule
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
-import com.regnosys.rosetta.rosetta.RosettaCalculation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -90,26 +88,6 @@ class RosettaTypeProviderTest {
 		assertEquals('number', then.right.RType.name)
 	}
 
-	@Test
-	def testNumberTypesInFunctions() {
-		val calculation = '''
-			function Max2 (x number, y number) number
-			
-			calculation testMax2 {
-				number checkNumber : foo
-				int checkInt : bar
-				
-				where
-					foo: is Max2(1, 2.0)
-					bar: is Max2(1, 2)
-			}
-		'''.parseRosettaWithNoErrors.elements.filter(RosettaCalculation).head
-		
-		val args = calculation.arguments.features.map[it as RosettaArgumentFeature]
-
-		assertEquals('number', args.head.expression.RType.name)
-		assertEquals('int', args.tail.head.expression.RType.name)
-	}
 
 	@Test
 	def testAliasStackOverflow() {

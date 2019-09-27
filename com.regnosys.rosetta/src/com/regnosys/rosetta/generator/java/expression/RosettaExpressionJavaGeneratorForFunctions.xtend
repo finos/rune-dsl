@@ -10,7 +10,6 @@ import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
@@ -26,7 +25,6 @@ import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaFunctionInput
 import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
@@ -41,10 +39,12 @@ import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
+import com.rosetta.model.lib.functions.MapperC
 import com.rosetta.model.lib.functions.MapperMaths
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.MapperTree
@@ -59,8 +59,6 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.rosetta.simple.ListLiteral
-import com.rosetta.model.lib.functions.MapperC
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	
@@ -154,7 +152,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				funcExt.getOutput(callable).card.isMany
 				'''«MapperS».of(«callable.name.toFirstLower».evaluate(«args(expr, params)»))'''
 			}
-			RosettaExternalFunction case callable.isLibrary:
+			RosettaExternalFunction:
 				'''«MapperS».of(new «new RosettaJavaPackages(null).libFunctions.javaType(callable.name)»().execute(«args(expr, params)»))'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable with args type of " + expr.eClass.name)
@@ -214,14 +212,8 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			com.regnosys.rosetta.rosetta.simple.Data : {
 				'''«MapperS».of(«params.getClass(call)»)'''
 			}
-			RosettaArgumentFeature : {
-				'''args.get("«call.name»")'''
-			}
 			RosettaAlias : {
 				call.expression.javaCode(params)
-			}
-			RosettaFunctionInput : {
-				'''«MapperS».of(«call.name»)'''
 			}
 			Attribute : {
 				'''«MapperS».of(«call.name»)'''

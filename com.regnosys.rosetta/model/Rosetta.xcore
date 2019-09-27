@@ -87,9 +87,8 @@ class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 class RosettaRecordType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType, RosettaCallableWithArgs {
 }
 
-class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaFeatureOwner, RosettaCallableWithArgs, RosettaBuiltinType {
+class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaCallableWithArgs, RosettaBuiltinType , RosettaDefinable {
 	contains RosettaParameter[] parameters
-	boolean library
 }
 
 class RosettaParameter extends RosettaFeature {
@@ -116,15 +115,14 @@ class RosettaClass extends RosettaRootElement, RosettaFeatureOwner, RosettaType,
 	boolean rosettaKeyValue
 	
 	refers RosettaClass superType
-	contains RosettaCalculationHook calculations
 	contains RosettaStereotype stereotype
 	contains RosettaClassSynonym[] synonyms
 	contains RosettaRegulatoryReference[] references
 	contains RosettaMarketPractice[] marketPractice
 	
-	op RosettaRegularAttribute[] getRegularAttributes() {		
+	op RosettaRegularAttribute[] getRegularAttributes() {
 		features.filter(RosettaRegularAttribute).toEList
-	}	
+	}
 }
 
 class RosettaMetaType extends RosettaRootElement, RosettaFeature  {
@@ -141,9 +139,6 @@ class RosettaRegularAttribute extends RosettaAttributeBase {
 	refers RosettaMetaType[] metaTypes
 }
 
-class RosettaCalculationHook {
-	refers RosettaCalculation[] values
-}
 
 class RosettaStereotype {
 	refers RosettaStereotypeValue[] values
@@ -471,38 +466,7 @@ class RosettaEvent extends RosettaQualifiable {
 }
   */
  
-class RosettaFunction extends RosettaRootElement, RosettaNamed, RosettaDefinable, RosettaCallableWithArgs, RosettaBuiltinType {
-	contains RosettaFunctionInput[] inputs
-	contains RosettaFunctionInput output
-	contains RosettaFuncitonCondition[] preConditions
-	contains RosettaFuncitonCondition[] postConditions
-	
-	op RosettaFunctionConditions getConditions() {
-		preConditions + postConditions
-	}
-}
 
-type RosettaFunctionConditions wraps Iterable<RosettaFuncitonCondition>
-
-class RosettaFunctionInput extends RosettaAttributeBase, RosettaCallable {
-}
-
-class RosettaFuncitonCondition extends RosettaDefinable {
-	contains RosettaExpression[] expressions
-}
-
-class RosettaArguments extends RosettaFeatureOwner {
-	op RosettaCalculation getCalculation()
-	contains RosettaAlias[] aliases
-}
-
-class RosettaCalculationArguments extends RosettaArguments {
-	container RosettaCalculation calculation opposite arguments
-}
-
-class RosettaArgumentFeature extends RosettaFeature, RosettaDefinable, RosettaCallable {
-	contains RosettaExpression expression
-}
 
 class RosettaWhenClause {
 	contains RosettaExpression when
@@ -572,14 +536,6 @@ class RosettaWhenCascadeExpression extends RosettaExpression {
 class RosettaWhenExpression extends RosettaExpression {
 	contains RosettaExpression condition
 	contains RosettaExpression then
-}
-
-class RosettaCalculation extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType {
-	contains RosettaCalculationArguments arguments opposite calculation
-}
-
-class RosettaCalculationFeature extends RosettaFeature {
-	contains RosettaExpression expression
 }
 
 class RosettaCallableWithArgsCall extends RosettaExpression {

@@ -1,13 +1,12 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.regnosys.rosetta.rosetta.RosettaAttributeBase
+import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaFunction
-import org.eclipse.emf.ecore.EObject
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.simple.Function
+import org.eclipse.emf.ecore.EObject
 
 class CardinalityProvider {
 	
@@ -18,7 +17,6 @@ class CardinalityProvider {
 			RosettaAttributeBase: obj.card.isIsMany
 			RosettaCallableCall: obj.callable.isMulti
 			RosettaCallableWithArgsCall: obj.callable.isMulti
-			RosettaFunction: obj.output.card.isIsMany
 			Function: if(obj.output === null) false else obj.output.isMulti
 			Attribute: obj.card.isMany
 			default: false

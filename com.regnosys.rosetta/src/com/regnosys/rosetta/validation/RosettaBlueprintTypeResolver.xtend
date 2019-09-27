@@ -554,7 +554,6 @@ class RosettaBlueprintTypeResolver {
 	
 	static class BlueprintUnresolvedTypeException extends Exception {
 
-		EObject source
 		EStructuralFeature feature
 		String code
 		String[] issueData
@@ -570,11 +569,6 @@ class RosettaBlueprintTypeResolver {
 			throw new BlueprintUnresolvedTypeException(message, source, feature, code, issueData)
 		}
 		
-		
-		def getSource() {
-			source
-		}
-	
 		def getEStructuralFeature() {
 			feature
 		}

@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.types
 
-import com.regnosys.rosetta.rosetta.RosettaCalculation
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
@@ -108,12 +107,10 @@ class RUnionType implements RType {
 	val RType from
 	val RType to
 	val String name
-	val RosettaCalculation converter
 
-	new(RType from, RType to, RosettaCalculation converter) {
+	new(RType from, RType to) {
 		this.from = from
 		this.to = to
-		this.converter = converter
 		this.name = from.name + ' or ' + to.name
 	}
 

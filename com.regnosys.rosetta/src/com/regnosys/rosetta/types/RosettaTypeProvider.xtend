@@ -1,16 +1,12 @@
 package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
-import com.regnosys.rosetta.rosetta.RosettaCalculation
-import com.regnosys.rosetta.rosetta.RosettaCalculationFeature
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
@@ -25,7 +21,6 @@ import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaFunction
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaMapPath
@@ -44,19 +39,13 @@ import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
-
-import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 
 class RosettaTypeProvider {
 
-	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaOperators
-	@Inject extension RosettaFunctionExtensions
 	@Inject IQualifiedNameProvider qNames
 	@Inject IDValueConverter idConverter
 	@Inject RosettaTypeCompatibility compatibility
@@ -87,9 +76,6 @@ class RosettaTypeProvider {
 					} else {
 						returnType
 					}
-				} else if (expression.callable instanceof RosettaFunction) {
-					val fun = expression.callable as RosettaFunction
-					fun.safeRType(cycleTracker)
 				} else {
 					expression.callable.safeRType(cycleTracker).wrapInFeatureCallType(expression)
 				}
@@ -133,14 +119,7 @@ class RosettaTypeProvider {
 				new REnumType(expression.enumeration)
 			}
 			RosettaEnumeration: {
-				val enumType = new REnumType(expression)
-				val conversion = enumType.typeConversion
-				val convertedType = conversion?.safeRType(cycleTracker)
-				if (convertedType !== null) {
-					new RUnionType(enumType, convertedType, conversion)
-				} else {
-					enumType
-				}
+				new REnumType(expression)
 			}
 			RosettaBinaryOperation: {
 				// Synonym path expressions refer to external documents so type checking is not possible
@@ -196,29 +175,8 @@ class RosettaTypeProvider {
 				RBuiltinType.ANY
 			ListLiteral:
 				expression.elements.head.RType
-			RosettaCalculation,
 			RosettaExternalFunction: {
-				if (expression.features.size === 1 && expression.features.head.name === null) {
-					if (expression.features.head.isTypeInferred)
-						expression.features.head.safeRType(cycleTracker)
-					else 
-						expression.features.head.type.safeRType(cycleTracker)
-				}
-				else if (expression instanceof RosettaExternalFunction && (expression as RosettaExternalFunction).type !== null)
-					(expression as RosettaExternalFunction).type.safeRType(cycleTracker)
-				else
-					new RRecordType(expression)
-			}
-			RosettaFunction: {
-				expression.output.type.safeRType(cycleTracker)
-			}
-			RosettaArgumentFeature:
-				expression.expression.safeRType(cycleTracker)
-			RosettaCalculationFeature: {
-				if (expression.isIsTypeInferred)
-					expression.expression.safeRType(cycleTracker)
-				else
-					expression.type.safeRType(cycleTracker)
+				expression.type.safeRType(cycleTracker)
 			}
 			RosettaFeature:
 				expression.type.safeRType(cycleTracker)
@@ -295,9 +253,9 @@ class RosettaTypeProvider {
 			RosettaMapRosettaPath:
 				expression.path.safeRType(cycleTracker)
 			Function:
-				getOutput(expression).safeRType(cycleTracker)
+				if(expression.output !== null) expression.output.safeRType(cycleTracker) else RBuiltinType.MISSING
 			Condition:
-				expression.expressions.last.safeRType(cycleTracker)
+				expression.expression.safeRType(cycleTracker)
 			default:
 				RBuiltinType.MISSING
 		}
@@ -324,14 +282,4 @@ class RosettaTypeProvider {
 		}
 	}
 
-	private def typeConversion(REnumType t0) {
-		val index = t0.enumeration.eResource.resourceDescriptions
-		val calculationDesc = index.getExportedObjectsByType(ROSETTA_CALCULATION).filter [
-			qualifiedName.segments.size == 2 && qualifiedName.firstSegment == t0.enumeration.name
-		].head
-		if (calculationDesc !== null) {
-			return EcoreUtil.resolve(calculationDesc.EObjectOrProxy, t0.enumeration) as RosettaCalculation
-		}
-		return null
-	}
 }

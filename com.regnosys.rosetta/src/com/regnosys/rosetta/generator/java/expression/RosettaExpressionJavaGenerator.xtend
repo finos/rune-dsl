@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.regnosys.rosetta.rosetta.RosettaArgumentFeature
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
@@ -160,9 +159,6 @@ class RosettaExpressionJavaGenerator {
 		switch (call)  {
 			RosettaClass, com.regnosys.rosetta.rosetta.simple.Data : {
 				'''MapperS.of(«params.getClass(call)»)'''
-			}
-			RosettaArgumentFeature : {
-				'''args.get("«call.name»")'''
 			}
 			RosettaAlias : {
 				call.expression.javaCode(params)
