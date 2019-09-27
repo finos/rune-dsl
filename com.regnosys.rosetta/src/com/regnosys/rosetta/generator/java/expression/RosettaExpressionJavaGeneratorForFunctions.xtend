@@ -3,7 +3,7 @@ package com.regnosys.rosetta.generator.java.expression
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider
+import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
@@ -64,7 +64,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	
 	@Inject RosettaTypeProvider typeProvider
 	@Inject RosettaOperators operators
-	@Inject ConvertableCardinalityProvider cardinalityProvider
+	@Inject CardinalityProvider cardinalityProvider
 	@Inject JavaNames.Factory factory 
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension RosettaExtensions
