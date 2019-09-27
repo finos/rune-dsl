@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.functions.Mapper;
+import com.rosetta.model.lib.functions.MapperBuilder;
 import com.rosetta.model.lib.functions.MapperC;
 import com.rosetta.model.lib.functions.MapperS;
 import com.rosetta.model.lib.meta.RosettaMetaData;
@@ -90,7 +91,7 @@ public class ValidatorHelper {
 	public static <T> Mapper<T> doIf(Mapper<Boolean> test, Mapper<T> ifthen) {
 		boolean testResult = test.getMulti().stream().allMatch(b->b.booleanValue());
 		if (testResult) return ifthen;
-		else return null;
+		else return MapperS.of(null);
 	}
 	
 	public static ComparisonResult doIf(ComparisonResult test, ComparisonResult ifthen, ComparisonResult elsethen) {
@@ -109,7 +110,7 @@ public class ValidatorHelper {
 	
 	public static <T> Mapper<T> doIf(ComparisonResult test, Mapper<T> ifthen) {	
 		if (test.get()) return ifthen;
-		else return null;
+		else return MapperS.of(null);
 	}
 	
 	public static <T> ComparisonResult doWhenPresent(Mapper<T> whenPresent, ComparisonResult compare) {
