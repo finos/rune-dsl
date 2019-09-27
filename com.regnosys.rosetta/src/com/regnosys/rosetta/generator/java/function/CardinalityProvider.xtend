@@ -5,6 +5,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
@@ -37,6 +38,7 @@ class CardinalityProvider {
 			ListLiteral: true
 			RosettaLiteral,
 			RosettaRecordType,
+			RosettaExternalFunction,
 			RosettaEnumValueReference: false
 			default: {println(obj?.eClass?.name)false }
 		}

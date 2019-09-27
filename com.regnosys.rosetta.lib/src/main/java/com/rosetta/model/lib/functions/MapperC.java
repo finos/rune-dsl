@@ -27,6 +27,17 @@ public class MapperC<T> implements MapperBuilder<T> {
 		}
 		return new MapperC<T>(items);
 	}
+
+	public static <T> MapperBuilder<T> of(List<T> ts) {
+		List<MapperItem<T, ?>> items = new ArrayList<>();
+		for (T ele : ts) {
+			if (ele == null) {
+				items.add(new MapperItem<>(ele, MapperPath.builder().addNull(), true, Optional.empty()));
+			}
+			items.add(new MapperItem<>(ele, MapperPath.builder().addRoot(ele.getClass()), false, Optional.empty()));
+		}
+		return new MapperC<T>(items);
+	}
 	
 	/**
 	 * Maps list parent item to single child item.

@@ -216,7 +216,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 				call.expression.javaCode(params)
 			}
 			Attribute : {
-				'''«MapperS».of(«call.name»)'''
+				'''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)'''
 			}
 			ShortcutDeclaration : {
 				'''«MapperS».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»get()«ENDIF»)'''
