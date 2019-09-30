@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.expression
+package com.regnosys.rosetta.generator.java.qualify
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
@@ -542,7 +542,7 @@ class RosettaExpressionJavaGenerator {
 		val receiver = call.receiver
 		switch (receiver) {
 			RosettaCallableCall: {
-				left =""//(receiver.callable as RosettaClass).name
+				left ="" //(receiver.callable as RosettaClass).name
 			}
 			RosettaFeatureCall: {
 				left= toNodeLabel(receiver)

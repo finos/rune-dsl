@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator.ParamMap
+import com.regnosys.rosetta.generator.java.qualify.RosettaExpressionJavaGenerator.ParamMap
+import com.regnosys.rosetta.generator.java.qualify.RosettaExpressionJavaGenerator
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCardinality

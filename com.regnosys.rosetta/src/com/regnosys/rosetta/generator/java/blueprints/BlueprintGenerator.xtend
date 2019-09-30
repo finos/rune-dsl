@@ -1,8 +1,7 @@
 package com.regnosys.rosetta.generator.java.blueprints
 
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator.ParamMap
+import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.rosetta.BlueprintAnd
 import com.regnosys.rosetta.rosetta.BlueprintCustomNode
@@ -43,11 +42,15 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
+import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 
 class BlueprintGenerator {
 	
+	@Inject extension ImportManagerExtension
 	@Inject extension RosettaBlueprintTypeResolver
-	@Inject extension RosettaExpressionJavaGenerator
+	@Inject extension RosettaExpressionJavaGeneratorForFunctions
 
 	/**
 	 * generate a blueprint java file
@@ -75,7 +78,7 @@ class BlueprintGenerator {
 		val typed = buildTypeGraph(nodes, output)
 		val typeArgs = bindArgs(typed)
 		imports.addTypes(typed)
-		val body = nodes.buildBody(typed, imports)		 
+		val body = tracImports(nodes.buildBody(typed, imports))
 		
 		return '''
 			package «packageName.blueprint.packageName»;
@@ -106,7 +109,7 @@ class BlueprintGenerator {
 					return "«uri»";
 				}
 				
-				«body»
+				«body.toString»
 			}
 			'''
 	}
@@ -146,7 +149,7 @@ class BlueprintGenerator {
 	/**
 	 * build the body of the blueprint class
 	 */
-	def	buildBody(BlueprintNodeExp nodes, TypedBPNode typedNode, ImportGenerator imports) {
+	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, TypedBPNode typedNode, ImportGenerator imports) {
 		val context = new Context(nodes, imports)
 		return '''
 			
@@ -186,7 +189,7 @@ class BlueprintGenerator {
 	/**
 	 * recursive function that builds the graph of nodes
 	 */
-	def String buildGraph(BlueprintNodeExp nodeExp, TypedBPNode typedNode, Context context) 
+	def StringConcatenationClient buildGraph(BlueprintNodeExp nodeExp, TypedBPNode typedNode, Context context) 
 		'''
 		«nodeExp.node.buildNode(typedNode, context)»«IF nodeExp.next!==null»)
 		.then(«nodeExp.next.buildGraph(typedNode.next, context)»«ENDIF»'''
@@ -194,7 +197,7 @@ class BlueprintGenerator {
 	/**
 	 * write out an individual graph node
 	 */
-	def buildNode(BlueprintNode node, TypedBPNode typedNode, Context context) {
+	def StringConcatenationClient buildNode(BlueprintNode node, TypedBPNode typedNode, Context context) {
 		switch (node) {
 			BlueprintMerge: {
 				context.addMerger(node, typedNode)
@@ -324,27 +327,25 @@ class BlueprintGenerator {
 		}
 	}
 	
-	def andNode(BlueprintAnd andNode, TypedBPNode andTyped, Context context) {
-		var counter=0
+	def StringConcatenationClient andNode(BlueprintAnd andNode, TypedBPNode andTyped, Context context) {
 		'''
 		BlueprintBuilder.<«andTyped.outFullS»>and(actionFactory,
-			«FOR bp:andNode.bps SEPARATOR ","»
-			startsWith(actionFactory, «bp.buildGraph(andTyped.andNodes.get(counter), context)»)«{counter++;""}»
+			«FOR bp:andNode.bps.indexed  SEPARATOR ","»
+			startsWith(actionFactory, «bp.value.buildGraph(andTyped.andNodes.get(bp.key), context)»)
 			«ENDFOR»
 			)
 		'''
 	}
 	
-	def ifElse(BlueprintOneOf node, TypedBPNode andTyped, Context context) {
-		var counter=0
+	def StringConcatenationClient ifElse(BlueprintOneOf node, TypedBPNode andTyped, Context context) {
 		'''ifElse(actionFactory, getURI(), getName(),
-				«FOR bp:node.bps SEPARATOR ","»
-					new BlueprintIfThen(startsWith(actionFactory, «bp.ifNode.buildGraph(andTyped.ifNodes.get(counter), context)»),
-						startsWith(actionFactory, «bp.thenNode.buildGraph(andTyped.andNodes.get(counter), context)»))«{counter++;""}»
+				«FOR bp:node.bps.indexed SEPARATOR ","»
+					new BlueprintIfThen(startsWith(actionFactory, «bp.value.ifNode.buildGraph(andTyped.ifNodes.get(bp.key), context)»),
+						startsWith(actionFactory, «bp.value.thenNode.buildGraph(andTyped.andNodes.get(bp.key), context)»))
 				«ENDFOR»
 				«IF node.elseNode!==null»,
 					new BlueprintIfThen(
-						startsWith(actionFactory, «node.elseNode.buildGraph(andTyped.andNodes.get(counter), context)»))«{counter++;""}»
+						startsWith(actionFactory, «node.elseNode.buildGraph(andTyped.andNodes.get(node.bps.size), context)»))
 				«ENDIF»
 		)'''
 	}

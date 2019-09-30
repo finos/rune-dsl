@@ -59,6 +59,7 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import org.eclipse.xtext.util.Wrapper
 
 class RosettaExpressionJavaGeneratorForFunctions {
 	
@@ -81,6 +82,13 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	 */
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params, boolean isLast) {
 		switch (expr) {
+			RosettaGroupByFeatureCall : {
+				var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
+				if (expr.eContainer!==null && expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
+					autoValue=false;
+				}
+				groupByFeatureCall(expr, params, isLast, autoValue)
+			}
 			RosettaFeatureCall : {
 				var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
 				if (expr.eContainer!==null && expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
@@ -141,6 +149,33 @@ class RosettaExpressionJavaGeneratorForFunctions {
 			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr.class.simpleName)
+		}
+	}
+	/**
+	 * feature call is a call to get an attribute of an object e.g. Quote->amount
+	 */
+	def StringConcatenationClient groupByFeatureCall(RosettaGroupByFeatureCall groupByCall, ParamMap params, boolean isLast, boolean autoValue) {
+		val call = groupByCall.call
+		switch(call) {
+			RosettaFeatureCall: {
+				val feature = call.feature
+				val groupByFeature = groupByCall.groupBy
+				val StringConcatenationClient right =
+				switch (feature) {
+					RosettaRegularAttribute: {
+						'''«feature.buildMapFunc(isLast, autoValue)»«IF groupByFeature!==null»«buildGroupBy(groupByFeature, isLast)»«ENDIF»'''
+					}
+					RosettaMetaType: {
+						'''«feature.buildMapFunc(isLast)»«IF groupByFeature!==null»«buildGroupBy(groupByFeature, isLast)»«ENDIF»'''
+					}
+					default: 
+						throw new UnsupportedOperationException("Unsupported expression type of "+feature.class.simpleName)
+				}
+				'''«javaCode(call.receiver, params, false)»«right»'''
+			}
+			default: {
+				javaCode(groupByCall.call, params)
+			}
 		}
 	}
 	
@@ -255,7 +290,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 	}
 	
 	def StringConcatenationClient countExpr(RosettaCountOperation expr, RosettaExpression test, ParamMap params) {
-		toComparisonOp('''«MapperS».of(«expr.left.javaCode(params)».resultCount())''', expr.operator, expr.right.javaCode(params))
+		toComparisonOp('''«MapperS».of(«expr.left.javaCode(params)».resultCount())''',  expr.operator, expr.right.javaCode(params))
 	}
 	
 	def StringConcatenationClient whenPresentExpr(RosettaWhenPresentExpression expr, RosettaExpression left, ParamMap params) {
@@ -273,7 +308,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 					if(isComparableTypes(expr))
 						'''«MapperTree».and(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
 					else
-						'''.andDifferent(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
+						'''«MapperTree».andDifferent(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
 				}
 				else {
 					// ComparisonResults
@@ -369,10 +404,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		return type.isPresent && rosettaTypes.stream.allMatch[it.equals(type.get)]
 	}
 		
-	private def StringConcatenationClient toComparisonOp(StringConcatenationClient leftExpr, String operator, StringConcatenationClient rightExpr) {
-		val left = toCommonType(leftExpr, rightExpr)
-		val right = toCommonType(rightExpr, leftExpr)
-		
+	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right) {
 		switch operator {
 			case ("="):
 				'''«importMethod(ValidatorHelper, "areEqual")»(«left», «right»)'''
@@ -503,7 +535,7 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		else "FieldWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 	}
 	
-	def static buildMapFunc(RosettaMetaType meta, boolean isLast) {
+	def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, boolean isLast) {
 		if (meta.name=="reference") {
 			'''.map("get«meta.name.toFirstUpper»", a->a.getGlobalReference())'''
 		}
@@ -512,15 +544,15 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		}
 	}
 
-	def String buildGroupBy(RosettaGroupByExpression expression, boolean isLast) {
-		var exprs = newArrayList
-		var expr = expression
-		exprs.add(expr)
-		while (expr.right!==null) {
-			expr = expr.right;
-			exprs.add(expr)
+	def StringConcatenationClient buildGroupBy(RosettaGroupByExpression expression, boolean isLast) {
+		val exprs = newArrayList
+		val expr = Wrapper.wrap(expression)
+		exprs.add(expr.get)
+		while (expr.get.right!==null) {
+			expr.set(expr.get.right)
+			exprs.add(expr.get)
 		}
-		'''.<«expr.attribute.type.name.toJavaType»>groupBy(g->new «MapperS»<>(g)«FOR ex:exprs»«buildMapFunc(ex.attribute, isLast, true)»«ENDFOR»)'''
+		'''.<«expr.get.attribute.type.name.toJavaType»>groupBy(g->new «MapperS»<>(g)«FOR ex:exprs»«buildMapFunc(ex.attribute, isLast, true)»«ENDFOR»)'''
 	}
 	
 	private def StringConcatenationClient buildMapFuncAttribute(RosettaRegularAttribute attribute)
@@ -619,18 +651,8 @@ class RosettaExpressionJavaGeneratorForFunctions {
 		'''«binOp.left.toNodeLabel»«binOp.operator»«binOp.right.toNodeLabel»'''
 	}
 	
-	private def toCommonType(StringConcatenationClient code, StringConcatenationClient otherCode) {
-		if(!isMapperTree(code) && isMapperTree(otherCode)) 
-			return code.toMapperTree
-		else
-			return code
-	}
-	
 	protected def StringConcatenationClient toMapperTree(StringConcatenationClient code) {
 		return '''«MapperTree».of(«code»)'''
 	}
 	
-	private def isMapperTree(StringConcatenationClient code) {
-		return code.toString.startsWith('MapperTree')
-	}
 }

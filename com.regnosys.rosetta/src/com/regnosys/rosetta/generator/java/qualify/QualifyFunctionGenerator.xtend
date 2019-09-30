@@ -5,8 +5,7 @@ import com.google.inject.Inject
 import com.google.inject.Provider
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator.ParamMap
+import com.regnosys.rosetta.generator.java.qualify.RosettaExpressionJavaGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
