@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.base.Objects
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider
+import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
@@ -28,6 +28,7 @@ import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
@@ -35,6 +36,7 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.functions.ExpressionOperators
 import com.rosetta.model.lib.math.BigDecimalExtensions
 import com.rosetta.model.lib.records.Date
+import java.util.Arrays
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -45,7 +47,7 @@ class ExpressionGeneratorWithBuilder {
 
 	@Inject extension RosettaTypeCompatibility
 	@Inject RosettaTypeProvider typeProvider
-	@Inject ConvertableCardinalityProvider cardinalityProvider
+	@Inject CardinalityProvider cardinalityProvider
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension ImportManagerExtension
 
@@ -115,6 +117,10 @@ class ExpressionGeneratorWithBuilder {
 
 	def dispatch StringConcatenationClient toJava(RosettaLiteral ele, Context ctx) {
 		'''«ele.stringValue»'''
+	}
+	
+	def dispatch StringConcatenationClient toJava(ListLiteral ele, Context ctx) {
+		'''«importMethod(Arrays,"asList")»(«FOR entry: ele.elements SEPARATOR ', '»«entry.toJava(ctx)»«ENDFOR»)'''
 	}
 
 	def dispatch StringConcatenationClient toJava(EmptyLiteral ele, Context ctx) {

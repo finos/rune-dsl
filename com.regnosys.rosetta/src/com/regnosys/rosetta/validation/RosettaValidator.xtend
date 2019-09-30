@@ -8,7 +8,7 @@ import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.function.ConvertableCardinalityProvider
+import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
@@ -82,7 +82,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension RosettaFunctionExtensions
 	@Inject ExpressionHelper exprHelper
-	@Inject ConvertableCardinalityProvider cardinality
+	@Inject CardinalityProvider cardinality
 	
 	@Check
 	def void checkClassNameStartsWithCapital(RosettaClass classe) {
@@ -557,6 +557,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def checkAssignAnAlias(Operation ele) {
 		if (ele.path === null && ele.assignRoot instanceof ShortcutDeclaration)
 			error('''An alias can not be assigned. Assign target must be an attribute.''', ele, OPERATION__ASSIGN_ROOT)
+	}
+	
+	@Check
+	def checkAssignCardinality(Operation ele) {
+		if (!cardinality.expectedCardinalityMany(ele) && cardinality.isMulti(ele.expression))
+			error('''Expecting single cardinality as value. Use 'only-element' to assign only first value.''', ele, OPERATION__EXPRESSION)
 	}
 	
 	@Check

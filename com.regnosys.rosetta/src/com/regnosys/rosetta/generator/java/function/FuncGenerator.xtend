@@ -47,6 +47,7 @@ class FuncGenerator {
 	@Inject extension RosettaExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
+	@Inject  CardinalityProvider cardinality
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = javaNames.packages.functions.directoryName + '/' + func.name + '.java'
@@ -217,12 +218,17 @@ class FuncGenerator {
 				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)»
 			«ELSE»
 				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
-		else
+		else {
 			'''
 				«op.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)«IF isReference(seg.attribute)».getValue()«ENDIF»«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF op.namedAssignTarget().reference»Ref«ENDIF»(«expressionGenerator.javaCode(op.expression, new ParamMap)».get()«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»;
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«
+					seg.attribute.name.toFirstUpper»«IF op.namedAssignTarget().reference»Ref«ENDIF
+					»(«expressionGenerator.javaCode(op.expression, new ParamMap)»«
+					IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»«IF op.useIdx», «op.idx»«ENDIF»)«
+					ENDIF»«ENDFOR»;
 			'''
+		}
 	}
 	
 	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx) {
