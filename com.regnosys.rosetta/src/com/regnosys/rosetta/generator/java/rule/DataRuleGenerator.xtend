@@ -4,8 +4,7 @@ import com.google.common.base.CaseFormat
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions.ParamMap
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
@@ -29,9 +28,10 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 
 class DataRuleGenerator {
-	@Inject RosettaExpressionJavaGeneratorForFunctions expressionHandler
+	@Inject ExpressionGenerator expressionHandler
 	@Inject extension ImportManagerExtension
 	
 	def generate(JavaNames names, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
@@ -144,7 +144,7 @@ class DataRuleGenerator {
 			}
 		'''
 	}
-	private def StringConcatenationClient toJava(RosettaJavaPackages packages, RosettaDataRule rule, RosettaClass rosettaClass, RosettaExpressionJavaGeneratorForFunctions expressionHandler, String version)  {
+	private def StringConcatenationClient toJava(RosettaJavaPackages packages, RosettaDataRule rule, RosettaClass rosettaClass, ExpressionGenerator expressionHandler, String version)  {
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.grammarWhenThen(rule.when, rule.then) );
 		val imports = new ImportGenerator(packages)
 		imports.addRule(rule)

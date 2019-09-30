@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.blueprints
 
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions.ParamMap
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.rosetta.BlueprintAnd
 import com.regnosys.rosetta.rosetta.BlueprintCustomNode
@@ -42,15 +42,15 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 
 class BlueprintGenerator {
 	
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaBlueprintTypeResolver
-	@Inject extension RosettaExpressionJavaGeneratorForFunctions
+	@Inject extension ExpressionGenerator
 
 	/**
 	 * generate a blueprint java file

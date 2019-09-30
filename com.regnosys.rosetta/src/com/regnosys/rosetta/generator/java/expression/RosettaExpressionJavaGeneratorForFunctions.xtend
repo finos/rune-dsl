@@ -61,7 +61,7 @@ import static extension com.regnosys.rosetta.generator.java.util.JavaClassTransl
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
 import org.eclipse.xtext.util.Wrapper
 
-class RosettaExpressionJavaGeneratorForFunctions {
+class ExpressionGenerator {
 	
 	@Inject RosettaTypeProvider typeProvider
 	@Inject RosettaOperators operators

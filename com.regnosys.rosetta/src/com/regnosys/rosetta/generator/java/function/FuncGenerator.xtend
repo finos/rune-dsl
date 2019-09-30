@@ -5,8 +5,7 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.expression.Context
 import com.regnosys.rosetta.generator.java.expression.ExpressionGeneratorWithBuilder
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions.ParamMap
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
@@ -36,10 +35,11 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.rosetta.model.lib.validation.ModelObjectValidator
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 
 class FuncGenerator {
 
-	@Inject RosettaExpressionJavaGeneratorForFunctions expressionGenerator
+	@Inject ExpressionGenerator expressionGenerator
 	@Inject ExpressionGeneratorWithBuilder expressionWithBuilder
 	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
 	@Inject RosettaTypeProvider typeProvider
