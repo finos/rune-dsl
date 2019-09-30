@@ -40,7 +40,7 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
  * use {@link RosettaExpressionJavaGeneratorForFunctions} instead
  */
 @Deprecated
-class RosettaExpressionJavaGenerator {
+package class RosettaExpressionJavaGenerator {
 	@Inject
 	RosettaTypeProvider typeProvider
 

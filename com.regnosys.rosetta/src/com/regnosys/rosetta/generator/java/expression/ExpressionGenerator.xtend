@@ -63,7 +63,7 @@ import org.eclipse.xtext.util.Wrapper
 
 class ExpressionGenerator {
 	
-	@Inject RosettaTypeProvider typeProvider
+	@Inject protected RosettaTypeProvider typeProvider
 	@Inject RosettaOperators operators
 	@Inject CardinalityProvider cardinalityProvider
 	@Inject JavaNames.Factory factory 
@@ -369,7 +369,7 @@ class ExpressionGenerator {
 	/**
 	 * Inspect expression and return alias expression if present.  Currently, nested aliases are not supported.
 	 */
-	private def getAliasExpressionIfPresent(RosettaExpression expr) {
+	protected def getAliasExpressionIfPresent(RosettaExpression expr) {
 		if (expr instanceof RosettaCallableCall) {
 			val callable = expr.callable
 			if(callable instanceof RosettaAlias) {
@@ -382,7 +382,7 @@ class ExpressionGenerator {
 	/**
 	 * Collects all expressions down the tree, and checks that they're all either FeatureCalls or CallableCalls
 	 */
-	private def boolean containsFeatureCallOrCallableCall(RosettaExpression expr) {
+	protected def boolean containsFeatureCallOrCallableCall(RosettaExpression expr) {
 		val exprs = newHashSet
 		val extensions = new RosettaExtensions
 		extensions.collectExpressions(expr, [exprs.add(it)])
@@ -393,7 +393,7 @@ class ExpressionGenerator {
 	/**
 	 * Search leaf node objects to determine whether this is a comparison of matching objects types
 	 */
-	private def isComparableTypes(RosettaBinaryOperation binaryExpr) {
+	protected def isComparableTypes(RosettaBinaryOperation binaryExpr) {
 		// get list of the object type at each leaf node
 		val rosettaTypes = newHashSet
 		val extensions = new RosettaExtensions
@@ -651,7 +651,7 @@ class ExpressionGenerator {
 		'''«binOp.left.toNodeLabel»«binOp.operator»«binOp.right.toNodeLabel»'''
 	}
 	
-	protected def StringConcatenationClient toMapperTree(StringConcatenationClient code) {
+	private def StringConcatenationClient toMapperTree(StringConcatenationClient code) {
 		return '''«MapperTree».of(«code»)'''
 	}
 	
