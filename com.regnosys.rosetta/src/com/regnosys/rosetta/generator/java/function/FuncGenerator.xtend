@@ -87,13 +87,14 @@ class FuncGenerator {
 
 	private def StringConcatenationClient classBody(Function func, String className,
 		Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version, boolean isStatic) {
+//		val isAbstract = func.hasCalculationAnnotation
 		val isAbstract = func.operations.nullOrEmpty
 		val outputName = getOutput(func)?.name
 		val outputType = func.outputTypeOrVoid(names)
 		val aliasOut = func.shortcuts.toMap([it], [exprHelper.usesOutputParameter(it.expression)])
 		val outNeedsBuilder = needsBuilder(getOutput(func))
 		'''
-			«IF isAbstract»@«ImplementedBy»(«className»Impl.class)«ENDIF»
+			«IF isAbstract»@«ImplementedBy»(«className».«className»Default.class)«ENDIF»
 			public «IF isStatic»static «ENDIF»«IF isAbstract»abstract «ENDIF»class «className» implements «RosettaFunction» {
 				«IF outNeedsBuilder»
 				
@@ -140,9 +141,8 @@ class FuncGenerator {
 					return «outputName»;
 				}
 				
-				«IF isAbstract»
-					protected abstract «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
-				«ELSE»
+				«IF !isAbstract»
+					
 					protected «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
 						«IF getOutput(func) !== null»
 							«getOutput(func).toHolderType(names)» «outputName»Holder = «IF outNeedsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
@@ -154,7 +154,11 @@ class FuncGenerator {
 						return «outputName»Holder«IF !outNeedsBuilder».get()«ENDIF»;
 					}
 					
+					
+				«ELSE»
+					protected abstract «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
 				«ENDIF»
+				
 				«FOR alias : func.shortcuts»
 					
 					«IF aliasOut.get(alias)»
@@ -167,6 +171,14 @@ class FuncGenerator {
 						}
 					«ENDIF»
 				«ENDFOR»
+				«IF isAbstract»
+				public static final class «className»Default extends «className» {
+					@Override
+					protected  «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
+						throw new «UnsupportedOperationException»();
+					}
+				}
+				«ENDIF»
 			}
 		'''
 	}
