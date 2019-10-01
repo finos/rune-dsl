@@ -142,7 +142,6 @@ class FuncGenerator {
 				}
 				
 				«IF !isAbstract»
-					
 					protected «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
 						«IF getOutput(func) !== null»
 							«getOutput(func).toHolderType(names)» «outputName»Holder = «IF outNeedsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
@@ -153,8 +152,6 @@ class FuncGenerator {
 						«ENDFOR»
 						return «outputName»Holder«IF !outNeedsBuilder».get()«ENDIF»;
 					}
-					
-					
 				«ELSE»
 					protected abstract «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
 				«ENDIF»

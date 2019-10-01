@@ -29,9 +29,10 @@ class RosettaFunctionGenerationTest {
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.String;
+			import java.lang.UnsupportedOperationException;
 			
 			
-			@ImplementedBy(FuncFooImpl.class)
+			@ImplementedBy(FuncFoo.FuncFooDefault.class)
 			public abstract class FuncFoo implements RosettaFunction {
 			
 				/**
@@ -47,6 +48,13 @@ class RosettaFunctionGenerationTest {
 				}
 				
 				protected abstract String doEvaluate(String name, String name2);
+				
+				public static final class FuncFooDefault extends FuncFoo {
+					@Override
+					protected  String doEvaluate(String name, String name2) {
+						throw new UnsupportedOperationException();
+					}
+				}
 			}
 			'''
 		)
