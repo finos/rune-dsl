@@ -60,6 +60,7 @@ import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.con
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
 import org.eclipse.xtext.util.Wrapper
+import java.util.function.BinaryOperator
 
 class ExpressionGenerator {
 	
@@ -203,7 +204,7 @@ class ExpressionGenerator {
 		val arg = getAliasExpressionIfPresent(argument)
 		
 		if (arg instanceof RosettaBinaryOperation) {
-			if(arg.operator.equals("or") || arg.operator.equals("and"))
+			if(arg.isLogicalOperation)
 				doExistsExpr(exists, arg.binaryExpr(exists, params))
 			else 
 				//if the argument is a binary expression then the exists needs to be pushed down into it
@@ -227,7 +228,7 @@ class ExpressionGenerator {
 		val arg = getAliasExpressionIfPresent(argument)
 		
 		if (arg instanceof RosettaBinaryOperation) {
-			if(arg.operator.equals("or") || arg.operator.equals("and"))
+			if(arg.isLogicalOperation)
 				'''«importMethod(ValidatorHelper,"notExists")»(«arg.binaryExpr(notSet, params)»)'''
 			else
 				//if the arg is binary then the operator needs to be pushed down
@@ -361,9 +362,37 @@ class ExpressionGenerator {
 				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>divide(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			default: {
-				toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''')
+				// FIXME isProduct isEvent stuff in QualifyFunctionGenerator. Should be removed after alias migration
+				if(left.needsMapperTree && !right.needsMapperTree) {
+					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«toMapperTree(expr.right.javaCode(params))»''')
+				} else if(!left.needsMapperTree && right.needsMapperTree) {
+					toComparisonOp('''«toMapperTree(expr.left.javaCode(params))»''', expr.operator, '''«expr.right.javaCode(params)»''')
+				} else {
+					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''')
+				}
 			}
 		}
+	}
+	
+	private def boolean needsMapperTree(RosettaExpression expr) {
+		if (expr instanceof RosettaGroupByFeatureCall) {
+			val call = expr.call
+			switch (call) {
+				RosettaCallableCall: {
+					val callable = call.callable
+					if (callable instanceof RosettaAlias) {
+						return callable.expression.isLogicalOperation
+					}
+				}
+				RosettaBinaryOperation: return call.isLogicalOperation
+			}
+		}
+		return expr.isLogicalOperation
+	}
+	
+	private def boolean isLogicalOperation(RosettaExpression expr) {
+		if(expr instanceof RosettaBinaryOperation) return expr.operator == "and" || expr.operator == "or"
+		return false
 	}
 	
 	/**

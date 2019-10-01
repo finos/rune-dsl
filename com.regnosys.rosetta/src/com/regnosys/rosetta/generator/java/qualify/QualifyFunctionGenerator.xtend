@@ -5,7 +5,8 @@ import com.google.inject.Inject
 import com.google.inject.Provider
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.qualify.RosettaExpressionJavaGenerator.ParamMap
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -22,7 +23,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 class QualifyFunctionGenerator<T extends RosettaQualifiable> {
 	@Inject extension ImportManagerExtension
-	@Inject Provider<RosettaExpressionJavaGenerator> expressionHandlerProvider
+	@Inject Provider<ExpressionGenerator> expressionHandlerProvider
 	
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, RosettaJavaPackages.Package javaPackage, Class<T> qualifiableClassType, String version) {
 		// create is function classes (e.g. isFooEvent or isBarProduct)
@@ -60,7 +61,7 @@ class QualifyFunctionGenerator<T extends RosettaQualifiable> {
 		'''«classBody.toString»'''
 	}
 	
-	private def StringConcatenationClient toIsFunctionJava(RosettaJavaPackages packages, RosettaJavaPackages.Package javaPackage, String className, RosettaQualifiable qualifiableClass, RosettaExpressionJavaGenerator expressionHandler, String version) { 
+	private def StringConcatenationClient toIsFunctionJava(RosettaJavaPackages packages, RosettaJavaPackages.Package javaPackage, String className, RosettaQualifiable qualifiableClass, ExpressionGenerator expressionHandler, String version) { 
 		val rosettaClass = getRosettaClass(qualifiableClass)
 		
 		val imports = new ImportGenerator(packages) 

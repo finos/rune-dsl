@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.RosettaAlias
 
 class CardinalityProvider {
 	
@@ -35,6 +36,7 @@ class CardinalityProvider {
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
 			RosettaBinaryOperation: obj.left.isMulti || obj.right.multi // check this
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
+			RosettaAlias: obj.expression.isMulti
 			ListLiteral: true
 			RosettaLiteral,
 			RosettaRecordType,

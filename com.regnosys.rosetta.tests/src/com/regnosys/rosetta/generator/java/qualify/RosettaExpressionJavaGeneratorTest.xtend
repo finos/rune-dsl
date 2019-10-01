@@ -1,7 +1,9 @@
 package com.regnosys.rosetta.generator.java.qualify
 
-import com.regnosys.rosetta.generator.java.qualify.RosettaExpressionJavaGenerator.ParamMap
-import com.regnosys.rosetta.generator.java.qualify.RosettaExpressionJavaGenerator
+import com.google.inject.Inject
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
+import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCardinality
@@ -11,8 +13,12 @@ import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
-import org.junit.jupiter.api.BeforeEach
+import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import org.eclipse.xtext.testing.InjectWith
+import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
@@ -20,14 +26,10 @@ import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
 
+@ExtendWith(InjectionExtension)
+@InjectWith(RosettaInjectorProvider)
 class RosettaExpressionJavaGeneratorTest {
-	
-	RosettaExpressionJavaGenerator expressionHandler
-	
- 	@BeforeEach
-	def void setUp() {
-		expressionHandler = new RosettaExpressionJavaGenerator
-	}
+	@Inject ExpressionGenerator expressionHandler
 	
 	/**
 	 *  ( Foo -> attr1 ) > 5
@@ -44,7 +46,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(lhsMockClass))
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction.toString), 
+		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
 			is('greaterThan(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)))'))
 	}
 
@@ -66,7 +68,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction.toString), 
+		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
 			is('greaterThan(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5))).or(greaterThan(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2), MapperS.of(Integer.valueOf(5))))'))
 	}
 
@@ -87,7 +89,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(mockClass))
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction.toString), 
+		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
 			is('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2))), MapperTree.of(MapperS.of(Integer.valueOf(5))))'))
 	}
 	
@@ -112,7 +114,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(mockClass))
 		
 		assertNotNull(generatedFunction)
-		assertEquals('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1)), MapperTree.or(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr3", Foo::getAttr3))), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr4", Foo::getAttr4)))), MapperTree.of(MapperS.of(Integer.valueOf(5))))',formatGeneratedFunction(generatedFunction.toString))
+		assertEquals('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1)), MapperTree.or(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr3", Foo::getAttr3))), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr4", Foo::getAttr4)))), MapperTree.of(MapperS.of(Integer.valueOf(5))))',formatGeneratedFunction('''«generatedFunction»'''))
 	}
 	
 	/**
@@ -135,7 +137,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(mockClass))
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction.toString), 
+		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
 			is('greaterThan(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2))), MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr3", Foo::getAttr3)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr4", Foo::getAttr4))))'))
 	}
 	
@@ -151,7 +153,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(lhsExistsOp, new ParamMap(lhsMockClass))
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction.toString), 
+		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
 			is('exists(MapperS.of(foo).<Foo>map("getAttr", Foo::getAttr), false)'))
 	}
 
@@ -173,7 +175,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction.toString), 
+		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
 			is('exists(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), false).or(exists(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2), false))'))
 	}
 	
@@ -194,7 +196,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(existsExpression, new ParamMap(mockClass))
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction.toString), 
+		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
 			is('exists(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2))), false)'))
 	}
 
@@ -219,12 +221,14 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction.toString), 
+		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
 			is('areEqual(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2)).or(areEqual(MapperS.of(foo).<Foo>map("getAttr3", Foo::getAttr3), MapperS.of(foo).<Foo>map("getAttr4", Foo::getAttr4)))'))
 	}
 	
-	private def String formatGeneratedFunction(CharSequence generatedFunction) {
-		generatedFunction.toString.replace('\n','').replace('\t','')
+	private def String formatGeneratedFunction(StringConcatenationClient generatedFunction) {
+		val isc = new ImportingStringConcatination()
+		isc.append(generatedFunction)
+		isc.toString.replace('\n','').replace('\t','')
 	}
 
 	// Mock utils
