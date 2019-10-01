@@ -96,7 +96,7 @@ class FuncGenerator {
 		val outNeedsBuilder = needsBuilder(getOutput(func))
 		'''
 			@«ImplementedBy»(«className».«className»Default.class)
-			public «IF isStatic»static «ENDIF» abstract class «className» implements «RosettaFunction» {
+			public «IF isStatic»static «ENDIF»abstract class «className» implements «RosettaFunction» {
 				«IF outNeedsBuilder»
 				
 				@«Inject» protected «ModelObjectValidator» objectValidator;
@@ -169,7 +169,7 @@ class FuncGenerator {
 						}
 					«ENDIF»
 				«ENDFOR»
-				public final static class «className»Default extends «className» {
+				public static final class «className»Default extends «className» {
 					@Override
 					protected  «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
 						«IF hasOperations && func.hasCalculationAnnotation»
