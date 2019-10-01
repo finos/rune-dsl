@@ -4,8 +4,9 @@ import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.expression.Context
-import com.regnosys.rosetta.generator.java.expression.ExpressionGeneratorWithBuilder
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
+import com.regnosys.rosetta.generator.java.expression.ExpressionGeneratorWithBuilder
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
@@ -30,12 +31,12 @@ import com.rosetta.model.lib.functions.MapperBuilder
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.math.BigDecimalExtensions
+import com.rosetta.model.lib.validation.ModelObjectValidator
 import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
+
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.rosetta.model.lib.validation.ModelObjectValidator
-import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 
 class FuncGenerator {
 
@@ -88,14 +89,14 @@ class FuncGenerator {
 	private def StringConcatenationClient classBody(Function func, String className,
 		Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version, boolean isStatic) {
 //		val isAbstract = func.hasCalculationAnnotation
-		val isAbstract = func.operations.nullOrEmpty
+		val hasOperations = !func.operations.nullOrEmpty
 		val outputName = getOutput(func)?.name
 		val outputType = func.outputTypeOrVoid(names)
 		val aliasOut = func.shortcuts.toMap([it], [exprHelper.usesOutputParameter(it.expression)])
 		val outNeedsBuilder = needsBuilder(getOutput(func))
 		'''
-			«IF isAbstract»@«ImplementedBy»(«className».«className»Default.class)«ENDIF»
-			public «IF isStatic»static «ENDIF»«IF isAbstract»abstract «ENDIF»class «className» implements «RosettaFunction» {
+			@«ImplementedBy»(«className».«className»Default.class)
+			public «IF isStatic»static «ENDIF» abstract class «className» implements «RosettaFunction» {
 				«IF outNeedsBuilder»
 				
 				@«Inject» protected «ModelObjectValidator» objectValidator;
@@ -141,7 +142,7 @@ class FuncGenerator {
 					return «outputName»;
 				}
 				
-				«IF !isAbstract»
+				«IF hasOperations»
 					protected «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
 						«IF getOutput(func) !== null»
 							«getOutput(func).toHolderType(names)» «outputName»Holder = «IF outNeedsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
@@ -168,14 +169,16 @@ class FuncGenerator {
 						}
 					«ENDIF»
 				«ENDFOR»
-				«IF isAbstract»
-				public static final class «className»Default extends «className» {
+				public final static class «className»Default extends «className» {
 					@Override
 					protected  «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
-						throw new «UnsupportedOperationException»();
+						«IF hasOperations && func.hasCalculationAnnotation»
+						return super.doEvaluate(«func.inputsAsArguments(names)»);
+						«ELSE»
+						throw new «UnsupportedOperationException»(«IF hasOperations»"Function «func.name» has operation implementation but is not annotated with 'calculation' annotation"«ENDIF»);
+						«ENDIF»
 					}
 				}
-				«ENDIF»
 			}
 		'''
 	}
