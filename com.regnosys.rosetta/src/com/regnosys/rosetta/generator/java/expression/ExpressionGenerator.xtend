@@ -664,7 +664,7 @@ class ExpressionGenerator {
 	def StringConcatenationClient toNodeLabel(RosettaFeatureCall call) {
 		val feature = call.feature
 		val right = switch feature {
-			RosettaRegularAttribute, RosettaMetaType: feature.name
+			RosettaRegularAttribute, RosettaMetaType, Attribute: feature.name
 			default: throw new UnsupportedOperationException("Unsupported expression type "+feature.getClass)
 		}
 		

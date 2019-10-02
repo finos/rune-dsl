@@ -623,7 +623,7 @@ RosettaEvent:
  * QualifiableConfiguration
  */
 RosettaQualifiableConfiguration:
-	qType = RosettaQualifiableType 'root' rosettaClass = [RosettaClass|ValidID]';'
+	qType = RosettaQualifiableType 'root' rosettaClass = [Data|ValidID]';'
 ;
 
 enum RosettaQualifiableType :

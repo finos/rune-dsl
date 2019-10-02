@@ -1,7 +1,8 @@
 namespace "com.rosetta.model"
 version "${project.version}"
 
-annotation keyed:
+annotation keyed: <"Represents a key.">
+annotation partialKey: <"Represents a rosettaKeyValue.">
 
 annotation metadata:
      scheme string (0..1)

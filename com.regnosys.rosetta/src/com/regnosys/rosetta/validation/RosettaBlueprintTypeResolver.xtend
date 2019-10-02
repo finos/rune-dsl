@@ -53,7 +53,7 @@ class RosettaBlueprintTypeResolver {
 	@Inject extension RosettaTypeCompatibility
 	@Inject extension RosettaExtensions
 
-	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp, RosettaClass output) {
+	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp, RosettaType output) {
 		val prevNode = new TypedBPNode // a hypothetical node before this BP
 		val nextNode = new TypedBPNode // a hypothetical node after this BP
 		nextNode.input.type = output
@@ -82,8 +82,8 @@ class RosettaBlueprintTypeResolver {
 			typedNode.next = nodeExp.next.bindTypes(typedNode, outputNode)
 		} else {
 			if (!typedNode.output.isAssignableTo(outputNode.input)) {
-				BlueprintUnresolvedTypeException.error('''output type of node «typedNode.output.either» does not match required type of «outputNode.input.either»''', nodeExp,
-							ROSETTA_BLUEPRINT__NODES, RosettaIssueCodes.TYPE_ERROR)
+				BlueprintUnresolvedTypeException.error('''output type of node «typedNode.output.either» does not match required type of «outputNode.input.either»''', nodeExp.node,
+							BLUEPRINT_NODE__NAME, RosettaIssueCodes.TYPE_ERROR)
 			}
 			// check the terminal types match the expected
 			if (typedNode.output.type !== null && outputNode.input.type !== null) {
@@ -351,7 +351,7 @@ class RosettaBlueprintTypeResolver {
 		else if (inputTypes.forall[it.name == "int" || it.name == "number"])
 			tNode.input.setGenericName("Integer")
 		else
-			BlueprintUnresolvedTypeException.error('''input types of andNode «inputTypes.map[name]» are not compatible''', node, BLUEPRINT_AND__BPS,
+			BlueprintUnresolvedTypeException.error('''input types of andNode «inputTypes.map[name]» are not compatible''', node, BLUEPRINT_NODE__INPUT,
 				RosettaIssueCodes.TYPE_ERROR)
 
 		// now for keys
@@ -363,7 +363,7 @@ class RosettaBlueprintTypeResolver {
 			tNode.inputKey.setGenericName("Integer")
 		else
 			BlueprintUnresolvedTypeException.error('''inputKey types of andNode «inputKeyTypes.map[name]» are not compatible''', node,
-				BLUEPRINT_AND__BPS, RosettaIssueCodes.TYPE_ERROR)
+				BLUEPRINT_NODE__INPUT_KEY, RosettaIssueCodes.TYPE_ERROR)
 	}
 
 	def bindFixedTypes(TypedBPNode node, TypedBPNode expected, BlueprintNode bpNode) {
@@ -381,7 +381,7 @@ class RosettaBlueprintTypeResolver {
 				nodeType.genericName = expected.genericName
 			} else if (expected.either != nodeType.either) {
 				BlueprintUnresolvedTypeException.error('''«fieldName» type of «expected.either» is not assignable from type «nodeType.either» of previous node «node.name»''',
-					node, ROSETTA_BLUEPRINT__NODES, RosettaIssueCodes.TYPE_ERROR)
+					node, BLUEPRINT_NODE__NAME, RosettaIssueCodes.TYPE_ERROR)
 			}
 		}
 	}
@@ -613,6 +613,11 @@ class RosettaBlueprintTypeResolver {
 		else if (type2.type instanceof RosettaClass && type1.type instanceof RosettaClass) {
 			val class2 = type2.type as RosettaClass
 			val class1 = type1.type as RosettaClass
+			return class1.allSuperTypes.contains(class2);
+		}
+		else if (type2.type instanceof Data && type1.type instanceof Data) {
+			val class2 = type2.type as Data
+			val class1 = type1.type as Data
 			return class1.allSuperTypes.contains(class2);
 		}
 		else return type1.type == type2.type;

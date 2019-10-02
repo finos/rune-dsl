@@ -6,7 +6,7 @@ import com.google.common.collect.Lists
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.path.RosettaPath
@@ -17,6 +17,7 @@ import com.rosetta.model.lib.validation.ValidationResult.ValidationType
 import com.rosetta.model.lib.validation.Validator
 import com.rosetta.model.lib.validation.ValidatorHelper
 import com.rosetta.model.lib.validation.ValidatorWithArg
+import java.util.List
 import java.util.Map
 import java.util.Set
 import java.util.stream.Collectors
@@ -25,10 +26,11 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.object.ModelObjectGenerator.*
 
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+
 class DataValidatorsGenerator {
 
 	@Inject extension ImportManagerExtension
-
 
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version) {
 		fsa.generateFile(names.packages.classValidation.directoryName + '/' + data.name + 'Validator.java',
@@ -38,7 +40,7 @@ class DataValidatorsGenerator {
 	}
 
 	private def generatClass(JavaNames names, Data d, String version) {
-		val classBody = tracImports(d.classBody(names, version))
+		val classBody = tracImports(d.classBody(names, version, d.getExpandedAttributes(false)))
 		'''
 			package «names.packages.classValidation.packageName»;
 			
@@ -69,14 +71,14 @@ class DataValidatorsGenerator {
 		'''
 	}
 
-	def private StringConcatenationClient classBody(Data c, JavaNames names, String version) '''
+	def private StringConcatenationClient classBody(Data c, JavaNames names, String version, List<ExpandedAttribute> attributes) '''
 		public class «c.name»Validator implements «Validator»<«names.toJavaQualifiedType(c)»> {
 		
 			@Override
 			public «ValidationResult»<«c.name»> validate(«RosettaPath» path, «c.name» o) {
 				String error = 
 					«Lists».<«ComparisonResult»>newArrayList(
-						«FOR attr : c.regularAndMaterialisedAttributes SEPARATOR ","»
+						«FOR attr : attributes SEPARATOR ","»
 							«checkCardinality(attr)»
 						«ENDFOR»
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«Collectors.importMethod("joining")»("; "));
@@ -92,7 +94,7 @@ class DataValidatorsGenerator {
 				«c.name».«c.name»Builder o = («c.name».«c.name»Builder) b;
 				String error = 
 					Lists.<ComparisonResult>newArrayList(
-						«FOR attr : c.regularAndMaterialisedAttributes SEPARATOR ","»
+						«FOR attr : attributes SEPARATOR ","»
 							«checkCardinality(attr)»
 						«ENDFOR»
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«Collectors.importMethod("joining")»("; "));
@@ -160,14 +162,11 @@ class DataValidatorsGenerator {
 		}
 	'''
 
-	private def StringConcatenationClient checkCardinality(Attribute attr) '''
-		«IF attr.card.isMany»
-			«ValidatorHelper.importMethod("checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.card.inf», «attr.card.sup»)
+	private def StringConcatenationClient checkCardinality(ExpandedAttribute attr) '''
+		«IF attr.isUnbound»
+			«ValidatorHelper.importMethod("checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
 		«ELSE»
-			«ValidatorHelper.importMethod("checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.card.inf», «attr.card.sup»)
+			«ValidatorHelper.importMethod("checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)
 		«ENDIF»
 	'''
-
-	def regularAndMaterialisedAttributes(Data data) { data.attributes }
-
 }

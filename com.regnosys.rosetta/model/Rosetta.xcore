@@ -431,8 +431,8 @@ class RosettaQualifiable extends RosettaRootElement, RosettaNamed, RosettaDefina
 
 class RosettaQualifiableConfiguration {
 	RosettaQualifiableType qType
-	
-	refers RosettaClass rosettaClass
+	/* TODO Change type to Data after migration is finished */
+	refers RosettaType rosettaClass
 }
 
 enum RosettaQualifiableType {

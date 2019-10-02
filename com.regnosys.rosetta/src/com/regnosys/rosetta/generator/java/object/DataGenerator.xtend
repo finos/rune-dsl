@@ -10,8 +10,11 @@ import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.types.RQualifiedType
+import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaClass
+import com.rosetta.model.lib.annotations.RosettaQualified
 import com.rosetta.model.lib.annotations.RosettaSynonym
 import com.rosetta.model.lib.meta.RosettaMetaData
 import java.util.List
@@ -30,6 +33,7 @@ class DataGenerator {
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
+	@Inject extension RosettaQualifiableExtension
 	
 	def generate(JavaNames javaNames, IFileSystemAccess2 fsa, Data data, String version) {
 		fsa.generateFile(javaNames.packages.model.directoryName + '/' + data.name + '.java',
@@ -70,8 +74,11 @@ class DataGenerator {
 	def private StringConcatenationClient classBody(Data d, JavaNames names, String version) '''
 		«javadocWithVersion(d.definition, version)»
 		@«RosettaClass»
+		«IF d.hasQualifiedAttribute»
+			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«d.qualifiedClass».class)
+		«ENDIF»
 		«contributeClassSynonyms(d.synonyms)»
-		public class «d.name» extends «IF d.hasSuperType»«d.superType?.name»«ELSE»«RosettaModelObject»«ENDIF» {
+		public class «d.name» extends «IF d.hasSuperType»«d.superType?.name»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
 			«d.rosettaClass(names)»
 
 			«d.staticBuilderMethod»
@@ -82,9 +89,39 @@ class DataGenerator {
 		}
 	'''
 	
+	def boolean globalKeyRecursive(Data class1) {
+		return class1.globalKey || class1.superType?.globalKeyRecursive
+	}
+
+	def private hasQualifiedAttribute(Data c) {
+		c.qualifiedAttribute !== null && c.qualifiedClass !== null
+	}
+	
+	def private getQualifiedAttribute(Data c) {
+		c.allSuperTypes.flatMap[expandedAttributes].findFirst[qualified]?.name
+	}
+	
+	def private getQualifiedClass(Data c) {
+		val allExpandedAttributes = c.allSuperTypes.flatMap[expandedAttributes].toList
+		if(!allExpandedAttributes.stream.anyMatch[qualified])
+			return null
+		
+		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].typeName
+		var qualifiedRootClassName = switch qualifiedClassType { 
+			case RQualifiedType.PRODUCT_TYPE.qualifiedType: c.findProductRootName
+			case RQualifiedType.EVENT_TYPE.qualifiedType: c.findEventRootName
+			default: throw new IllegalArgumentException("Unknown qualifiedType " + qualifiedClassType)
+		}
+		
+		if(qualifiedRootClassName === null || qualifiedRootClassName.length == 0)
+			throw new IllegalArgumentException("QualifiedType " + qualifiedClassType + " must have qualifiable root class")
+			
+		return qualifiedRootClassName
+	}
+	
 	private def StringConcatenationClient rosettaClass(Data c, JavaNames names) {
-	val expandedAttributes = c.expandedAttributes
-	 '''
+		val expandedAttributes = c.expandedAttributes
+		'''
 		«FOR attribute : expandedAttributes»
 			private final «attribute.toJavaType(names)» «attribute.name»;
 		«ENDFOR»
@@ -114,7 +151,6 @@ class DataGenerator {
 			return metaData;
 		} 
 
-«««		«IF !c.isAbstract»
 		public «c.builderName» toBuilder() {
 			«c.builderName» builder = new «c.builderName»();
 			«FOR attribute : c.getAllSuperTypes.map[it.expandedAttributes].flatten»
@@ -126,10 +162,7 @@ class DataGenerator {
 			«ENDFOR»
 			return builder;
 		}
-«««		«ELSE»
-«««			public abstract «c.builderName» toBuilder();
-«««		«ENDIF»
-	'''
+		'''
 	}
 	
 	private def StringConcatenationClient toJavaType(ExpandedAttribute attribute, JavaNames names) {

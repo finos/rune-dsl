@@ -305,7 +305,7 @@ class ImportGenerator {
 	}
 
 	def addQualifyClass(RosettaExpression expr, List<RosettaDataRule> andDataRules, List<RosettaDataRule> orDataRules,
-		RosettaClass rClass) {
+		RosettaType rClass) {
 		imports.addAll("com.rosetta.model.lib.annotations.RosettaQualifiable", "java.util.function.Function",
 			rClass.fullName, packages.dataRule.packageName + ".*")
 		imports.add('''«packages.qualify.packageName».QualifyResult''')

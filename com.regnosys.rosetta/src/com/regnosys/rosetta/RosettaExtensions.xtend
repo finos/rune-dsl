@@ -234,6 +234,13 @@ class RosettaExtensions {
 		allAnnotations.exists[annotation?.name == "calculation"]
 	}
 	
+	def hasKeyedAnnotation(Annotated it) {
+		allAnnotations.exists[annotation?.name == "keyed"]
+	}
+	def hasPartialKeyAnnotation(Annotated it) {
+		allAnnotations.exists[annotation?.name == "partialKey"]
+	}
+	
 	def boolean hasMetaReferenceAnnotations(Annotated it) {
 		allAnnotations.exists[annotation?.name == "metadata" && attribute?.name == "reference"]
 	}

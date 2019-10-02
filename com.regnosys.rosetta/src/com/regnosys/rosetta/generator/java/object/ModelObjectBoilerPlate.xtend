@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.generator.java.object
 
+import com.google.inject.Inject
+import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
@@ -7,6 +9,8 @@ import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.rosetta.model.lib.GlobalKey
+import com.rosetta.model.lib.RosettaKeyValue
 import com.rosetta.util.ListEquals
 import java.util.Collections
 import java.util.List
@@ -15,10 +19,13 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.rosetta.model.lib.qualify.Qualified
+import com.rosetta.model.lib.GlobalKeyBuilder
+import com.rosetta.model.lib.RosettaKeyValueBuilder
 
 class ModelObjectBoilerPlate {
 
-//	@Inject extension ExternalHashcodeGenerator
+	@Inject extension RosettaExtensions
 
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
@@ -53,6 +60,27 @@ class ModelObjectBoilerPlate {
 		implementsClause(c)[String s|s]
 	}
 
+	def StringConcatenationClient implementsClause(extension com.regnosys.rosetta.rosetta.simple.Data d) {
+		val interfaces = newHashSet
+		if(d.hasKeyedAnnotation)
+			interfaces.add(GlobalKey)
+		if(d.hasPartialKeyAnnotation)
+			interfaces.add(RosettaKeyValue)
+		if (interfaces.empty) null else '''implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
+	}
+	
+	def StringConcatenationClient implementsClauseBuilder(extension com.regnosys.rosetta.rosetta.simple.Data d) {
+		val interfaces = <StringConcatenationClient>newHashSet
+		if (d.name == "ContractualProduct" || d.name=="Event") {
+			if(d.hasKeyedAnnotation)
+				interfaces.add('''«GlobalKeyBuilder»<«d.name»Builder>''')
+			if(d.hasPartialKeyAnnotation)
+				interfaces.add('''«RosettaKeyValueBuilder»<«d.name»Builder>''')
+			interfaces.add('''«Qualified»''')
+		}
+		if (interfaces.empty) null else ''' implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
+	}
+	
 	def implementsClause(extension RosettaClass it, (String)=>String nameFunc) {
 		val interfaces = newHashSet
 		

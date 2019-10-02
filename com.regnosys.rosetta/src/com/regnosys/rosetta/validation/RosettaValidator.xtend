@@ -32,6 +32,7 @@ import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -39,7 +40,6 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.rosetta.simple.RootElement
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
@@ -53,18 +53,10 @@ import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
 import java.util.List
 import java.util.Stack
-import org.eclipse.core.runtime.NullProgressMonitor
-import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.xtext.findReferences.IReferenceFinder
-import org.eclipse.xtext.findReferences.IReferenceFinder.Acceptor
-import org.eclipse.xtext.findReferences.TargetURIConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.resource.IReferenceDescription
-import org.eclipse.xtext.resource.IResourceDescriptionsProvider
-import org.eclipse.xtext.resource.impl.DefaultReferenceDescription
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.Check
 
@@ -73,12 +65,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import org.eclipse.xtext.util.concurrent.IUnitOfWork
-import org.eclipse.emf.ecore.resource.ResourceSet
-import org.eclipse.emf.common.util.WrappedException
-import org.eclipse.core.runtime.OperationCanceledException
-import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.RosettaTyped
 
 /**
  * This class contains custom validation rules. 
@@ -602,7 +588,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 	}
 	
-	// FIXME remove after model migration
+	/*
 	@Inject TargetURIConverter converter
 	@Inject IResourceDescriptionsProvider index
 	@Inject IReferenceFinder refFinder
@@ -610,7 +596,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Check(EXPENSIVE)
 	def checkNeverUsedModelElement(RosettaModel model) {
 		model.elements.forEach [ele|
-			if (!(ele instanceof RosettaNamed) || ele instanceof RosettaEvent || ele instanceof RosettaDataRule|| ele instanceof RosettaChoiceRule) {
+			if (!(ele instanceof RosettaNamed) || ele instanceof RosettaEvent ||  ele instanceof RosettaProduct || ele instanceof RosettaDataRule|| ele instanceof RosettaChoiceRule) {
 				return
 			}
 			val refs = newHashSet
@@ -635,4 +621,5 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		]
 	}
+	*/
 }

@@ -10,6 +10,10 @@ class RosettaTypeCompatibility {
 	def dispatch boolean isUseableAs(RClassType t0, RClassType t1) {
 		t0.clazz.allSuperTypes.contains(t1.clazz)
 	}
+	
+//	def dispatch boolean isUseableAs(RDataType t0, RDataType t1) {
+//		t0.data.allSuperTypes.contains(t1.data)
+//	}
 
 	def dispatch boolean isUseableAs(RNumberType t0, RNumberType t1) {
 		t0.rank <= t1.rank

@@ -807,7 +807,7 @@ class RosettaBlueprintTest {
 			class Input2 {
 				colour string (1..1);
 			}
-		'''.parseRosetta.assertError(ROSETTA_BLUEPRINT, RosettaIssueCodes.TYPE_ERROR,
+		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
 			"Input type of Input2 is not assignable from type Input of previous node ")
 	}
 
@@ -825,7 +825,7 @@ class RosettaBlueprintTest {
 			class Input2 extends Input{//Rosetta extension isn't polymorphic
 				colour string (1..1);
 			}
-		'''.parseRosetta.assertError(ROSETTA_BLUEPRINT, RosettaIssueCodes.TYPE_ERROR,
+		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
 			"Input type of Input2 is not assignable from type Input of previous node ")
 	}
 
@@ -1566,7 +1566,7 @@ class RosettaBlueprintTest {
 				traderef string (1..1);
 				flag number (1..1);
 			}
-		'''.parseRosetta.assertError(ROSETTA_BLUEPRINT, RosettaIssueCodes.TYPE_ERROR,
+		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
 			"output type of node BigDecimal does not match required type of Boolean")
 
 	}

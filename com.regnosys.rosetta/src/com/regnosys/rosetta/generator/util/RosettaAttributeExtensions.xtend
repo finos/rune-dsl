@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.generator.util
 
 import com.google.common.collect.Iterables
+import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.generator.object.ExpandedSynonymValue
@@ -23,14 +24,15 @@ import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaSynonymValue
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
 import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Set
-import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class RosettaAttributeExtensions {
+
 	static def boolean cardinalityIsSingleValue(RosettaAttributeBase attribute) {
 		return (attribute as RosettaRegularAttribute).card.sup === 1
 	}
@@ -53,8 +55,37 @@ class RosettaAttributeExtensions {
 			rosettaClass.materialiseAttributes.expandedAttributesForList
 		).toList.sortBy[ExpandedAttribute a|a.name]
 	}
+	
+	static def List<ExpandedAttribute> getExpandedAttributes(Data data, boolean sort) {
+		val attrs = (data.attributes.map[toExpandedAttribute()].toList + data.additionalAttributes)
+		return if(sort)attrs.sortBy[ExpandedAttribute a|a.name] else attrs.toList
+	}
+	
 	dispatch static def List<ExpandedAttribute> getExpandedAttributes(Data data) {
-		data.attributes.map[toExpandedAttribute()].toList.sortBy[ExpandedAttribute a|a.name]
+		data.getExpandedAttributes(true)
+	}
+	
+	private static def List<ExpandedAttribute> additionalAttributes(Data data) {
+		val res = newArrayList
+		val rosExt = new RosettaExtensions // Can't inject as used in rosetta translate and daml directly
+		if(rosExt.hasKeyedAnnotation(data)){
+			res.add(new ExpandedAttribute(
+				data,
+				'meta',
+				provideMetaFeildsType,
+				METAFIELDSCLASSNAME,
+				0,
+				1,
+				false,
+				emptyList,
+				"",
+				false,
+				false,
+				false,
+				emptyList
+			))
+		}
+		return res
 	}
 	
 	dispatch  static def List<ExpandedAttribute> getExpandedAttributes(Set<RosettaClass> classes) {

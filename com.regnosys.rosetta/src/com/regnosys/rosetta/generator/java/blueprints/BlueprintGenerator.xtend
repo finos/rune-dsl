@@ -1,8 +1,10 @@
 package com.regnosys.rosetta.generator.java.blueprints
 
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.BlueprintAnd
 import com.regnosys.rosetta.rosetta.BlueprintCustomNode
 import com.regnosys.rosetta.rosetta.BlueprintDataJoin
@@ -23,10 +25,12 @@ import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.UnimplementedNode
 import com.regnosys.rosetta.validation.BindableType
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver
@@ -37,14 +41,12 @@ import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtend.lib.annotations.Data
+import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import org.eclipse.xtend2.lib.StringConcatenationClient
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
-import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 
 class BlueprintGenerator {
 	
@@ -70,7 +72,7 @@ class BlueprintGenerator {
 	/**
 	 * Generate the text of a blueprint
 	 */
-	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RosettaClass output, String name, String type, String uri, String version) {
+	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RosettaType output, String name, String type, String uri, String version) {
 		val imports = new ImportGenerator(packageName)
 		imports.addBlueprintImports
 		imports.addSourceAndSink
@@ -221,7 +223,7 @@ class BlueprintGenerator {
 				else
 				'''actionFactory.<«typedNode.input.getEither», «
 									typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaMultipleMapper("«node.URI»", "«(cond).toNodeLabel
-														»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type as RosettaClass))»)'''
+														»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type as RosettaType))»)'''
 			}
 			BlueprintReturn: {
 				context.imports.addTypes(typedNode)
@@ -265,7 +267,7 @@ class BlueprintGenerator {
 				context.imports.addFilter(node);
 				if(node.filter!==null) {
 				'''new Filter<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filter.toNodeLabel»", «typedNode.input.either.toFirstLower
-					» -> «node.filter.javaCode(new ParamMap(typedNode.input.type as RosettaClass))».get())'''
+					» -> «node.filter.javaCode(new ParamMap(typedNode.input.type))».get())'''
 				}
 				else {
 					'''new FilterByRule<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filterBP.blueprint.name»", new «node.filterBP.blueprint.name»Rule<«typedNode.inputKey.either»>(actionFactory).blueprint())'''
@@ -276,7 +278,7 @@ class BlueprintGenerator {
 				if (node.expression!==null) {
 					'''new ReduceBy<«typedNode.input.either», «node.expression.getOutput.name.toJavaType», «typedNode.inputKey.either»>("«
 					node.URI»", "«node.expression.toNodeLabel»", ReduceBy.Action.«node.action.toUpperCase», 
-					«typedNode.input.either.toFirstLower» -> «node.expression.javaCode(new ParamMap(typedNode.input.type as RosettaClass))».get())'''
+					«typedNode.input.either.toFirstLower» -> «node.expression.javaCode(new ParamMap(typedNode.input.type))».get())'''
 				}
 				else {
 					'''new ReduceBy<«typedNode.input.either», Integer, «typedNode.inputKey.either»>("«node.URI»", "«node.expression.toNodeLabel»
@@ -304,7 +306,7 @@ class BlueprintGenerator {
 			BlueprintGroup : {
 				context.imports.addGrouper(node);
 				'''actionFactory.<«typedNode.input.either», «typedNode.inputKey.either», «typedNode.outputKey.either
-				»>newRosettaGrouper("«node.URI»", "group by «node.key.toNodeLabel»", «typedNode.input.type.name.toFirstLower» -> «node.key.javaCode(new ParamMap(typedNode.input.type as RosettaClass))»)'''
+				»>newRosettaGrouper("«node.URI»", "group by «node.key.toNodeLabel»", «typedNode.input.type.name.toFirstLower» -> «node.key.javaCode(new ParamMap(typedNode.input.type))»)'''
 			}
 			default: {
 				throw new UnsupportedOperationException("Can't generate code for node of type "+node.class)
@@ -403,11 +405,19 @@ class BlueprintGenerator {
 			«FOR outputRef: outputRefs»
 ««« TODO - add this in when things break			result.put(new RosettaIdentifier("«outputRef.ref.refId»"), (builder, input) -> builder.set«outputRef.attrib.name.toFirstUpper»(Converter.convert(«outputRef.attrib.type.name.toJavaType».class, input)));
 			«ENDFOR»
-			«FOR field : (merge.output as RosettaClass).regularAttributes»
-			result.put(new StringIdentifier("«field.name»"), (builder, input) -> builder.set«field.name.toFirstUpper»(Converter.convert(«field.type.name.toJavaType».class, input)));
+			«FOR field : (merge.output).getAttributes»
+			result.put(new StringIdentifier("«field.name»"), (builder, input) -> builder.set«field.name.toFirstUpper»(Converter.convert(«(field as RosettaTyped).type .name.toJavaType».class, input)));
 			«ENDFOR»
 			return result;
 		}''' 
+	}
+	
+	dispatch def  List<? extends RosettaNamed> getAttributes(RosettaClass type) {
+		return type.regularAttributes
+	}
+	
+	dispatch def List<? extends RosettaNamed> getAttributes(com.regnosys.rosetta.rosetta.simple.Data type) {
+		return type.attributes
 	}
 	
 	def getSource(String source, TypedBPNode node, Context context)
@@ -434,7 +444,7 @@ class BlueprintGenerator {
 	}
 	
 	def fullname(RosettaType type, RosettaJavaPackages packageName) {
-		if (type instanceof RosettaClass)
+		if (type instanceof RosettaClass || type instanceof com.regnosys.rosetta.rosetta.simple.Data)
 			'''«packageName.model.packageName».«type.name»'''.toString
 		else 
 			type.name.toJavaFullType

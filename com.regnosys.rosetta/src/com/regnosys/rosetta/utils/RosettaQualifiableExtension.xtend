@@ -11,6 +11,7 @@ import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.resource.IResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 class RosettaQualifiableExtension {
 
@@ -50,14 +51,14 @@ class RosettaQualifiableExtension {
 	}
 
 	def boolean isEventRootClass(IEObjectDescription eObjDesc, EObject ctx) {
-		if (eObjDesc.EClass == ROSETTA_CLASS) {
+		if (eObjDesc.EClass == ROSETTA_CLASS || eObjDesc.EClass == DATA) {
 			return ctx.findEventRootName == eObjDesc.name.toString
 		}
 		false
 	}
 
 	def boolean isProductRootClass(IEObjectDescription eObjDesc, EObject ctx) {
-		if (eObjDesc.EClass == ROSETTA_CLASS) {
+		if (eObjDesc.EClass == ROSETTA_CLASS || eObjDesc.EClass == DATA) {
 			return ctx.findProductRootName == eObjDesc.name.toString
 		}
 		false

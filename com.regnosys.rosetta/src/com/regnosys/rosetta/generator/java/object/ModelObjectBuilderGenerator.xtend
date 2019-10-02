@@ -22,6 +22,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.rosetta.model.lib.qualify.Qualified
 
 class ModelObjectBuilderGenerator {
 	
@@ -41,7 +42,7 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	def StringConcatenationClient builderClass(Data c, JavaNames names) '''
-		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderName»«ELSE»«RosettaModelObjectBuilder»«ENDIF»{
+		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderName»«ELSE»«RosettaModelObjectBuilder»«ENDIF»«implementsClauseBuilder(c)»{
 		
 			«FOR attribute : c.expandedAttributes»
 				protected «attribute.toBuilderType(names)» «attribute.name»;
@@ -58,6 +59,9 @@ class ModelObjectBuilderGenerator {
 			«c.expandedAttributes.builderGetters(names)»
 		
 			«c.setters(names)»
+			«IF c.name=="ContractualProduct" || c.name=="Event"»
+				«qualificationSetter(c)»
+			«ENDIF»
 		
 			public «c.name» build() {
 				return new «c.name»(this);
@@ -159,6 +163,16 @@ class ModelObjectBuilderGenerator {
 			'''
 			public void setQualification(String qualification) {
 				this«path.toSetter»
+			}
+			'''
+		}
+	}
+	private def qualificationSetter(Data clazz) {
+		val attr = clazz.attributes.findFirst[type instanceof RosettaQualifiedType]
+		if (attr!==null) {
+			'''
+			public void setQualification(String qualification) {
+				this.set«attr.name.toFirstUpper»(qualification);
 			}
 			'''
 		}
@@ -347,6 +361,7 @@ class ModelObjectBuilderGenerator {
 	def boolean globalKey(RosettaType type) {
 		switch (type) {
 			RosettaClass: type.isGlobalKey
+			Data: type.hasKeyedAnnotation
 			default: false
 		}
 	}
