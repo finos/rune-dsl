@@ -39,6 +39,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.RootElement
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
@@ -52,10 +53,18 @@ import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
 import java.util.List
 import java.util.Stack
+import org.eclipse.core.runtime.NullProgressMonitor
+import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.findReferences.IReferenceFinder
+import org.eclipse.xtext.findReferences.IReferenceFinder.Acceptor
+import org.eclipse.xtext.findReferences.TargetURIConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import org.eclipse.xtext.resource.IReferenceDescription
+import org.eclipse.xtext.resource.IResourceDescriptionsProvider
+import org.eclipse.xtext.resource.impl.DefaultReferenceDescription
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.Check
 
@@ -64,6 +73,12 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import org.eclipse.xtext.util.concurrent.IUnitOfWork
+import org.eclipse.emf.ecore.resource.ResourceSet
+import org.eclipse.emf.common.util.WrappedException
+import org.eclipse.core.runtime.OperationCanceledException
+import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaTyped
 
 /**
  * This class contains custom validation rules. 
@@ -387,7 +402,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				error('''Set to without when case must be ordered last.''', element, ROSETTA_MAPPING__INSTANCES)
 			}
 		}
-		val attribute = element.eContainer.eContainer.eContainer as RosettaRegularAttribute
+		val attribute = element.eContainer.eContainer.eContainer as RosettaTyped
 		val type = attribute.getType
 		if (type instanceof RosettaClass && !element.instances.filter[^set !== null].empty) {
 			error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
@@ -457,7 +472,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		try {
 			buildTypeGraph(bp.nodes, bp.output)
 		} catch (BlueprintUnresolvedTypeException e) {
-			error(e.message, e.getEStructuralFeature, e.code, e.issueData)
+			error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
 		}
 	}
 
@@ -585,5 +600,39 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				error('''All collection elements must have the same type. Types used: «mostUsed.join(', ')»''', ele, null)
 			}
 		}
+	}
+	
+	// FIXME remove after model migration
+	@Inject TargetURIConverter converter
+	@Inject IResourceDescriptionsProvider index
+	@Inject IReferenceFinder refFinder
+	
+	@Check(EXPENSIVE)
+	def checkNeverUsedModelElement(RosettaModel model) {
+		model.elements.forEach [ele|
+			if (!(ele instanceof RosettaNamed) || ele instanceof RosettaEvent || ele instanceof RosettaDataRule|| ele instanceof RosettaChoiceRule) {
+				return
+			}
+			val refs = newHashSet
+			val resSet = ele.eResource.resourceSet
+			refFinder.findAllReferences(converter.fromIterable(#[ele.URI]), [ targetURI, work |
+				work.exec(resSet)
+			], index.getResourceDescriptions(resSet), new Acceptor() {
+				override accept(IReferenceDescription description) {
+					refs.add(description)
+				}
+
+				override accept(EObject source, URI sourceURI, EReference eReference, int index, EObject targetOrProxy,
+					URI targetURI) {
+					refs.add(
+						new DefaultReferenceDescription(EcoreUtil2.getFragmentPathURI(source), targetURI, eReference,
+							index, null))
+				}
+
+			}, new NullProgressMonitor)
+			if (refs.empty) {
+				warning('''«(ele as RosettaNamed).name» is never used.''', ele, ROSETTA_NAMED__NAME)
+			}
+		]
 	}
 }

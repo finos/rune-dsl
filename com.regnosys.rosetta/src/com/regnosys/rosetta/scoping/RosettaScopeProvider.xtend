@@ -296,7 +296,7 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 			RClassType:
 				Scopes.scopeFor(receiverType.clazz.allAttributes)
 			RDataType:
-				Scopes.scopeFor(receiverType.data.attributes)
+				Scopes.scopeFor(receiverType.data.allAttributes)
 			RRecordType:
 				Scopes.scopeFor(receiverType.record.features)
 			RFeatureCallType:

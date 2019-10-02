@@ -55,12 +55,11 @@ import java.util.HashMap
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.util.Wrapper
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import org.eclipse.xtext.util.Wrapper
-import java.util.function.BinaryOperator
 
 class ExpressionGenerator {
 	
@@ -164,6 +163,9 @@ class ExpressionGenerator {
 				val StringConcatenationClient right =
 				switch (feature) {
 					RosettaRegularAttribute: {
+						'''«feature.buildMapFunc(isLast, autoValue)»«IF groupByFeature!==null»«buildGroupBy(groupByFeature, isLast)»«ENDIF»'''
+					}
+					Attribute: {
 						'''«feature.buildMapFunc(isLast, autoValue)»«IF groupByFeature!==null»«buildGroupBy(groupByFeature, isLast)»«ENDIF»'''
 					}
 					RosettaMetaType: {

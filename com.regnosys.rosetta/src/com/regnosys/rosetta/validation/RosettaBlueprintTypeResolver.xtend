@@ -35,6 +35,7 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -44,6 +45,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class RosettaBlueprintTypeResolver {
 	
@@ -454,6 +456,9 @@ class RosettaBlueprintTypeResolver {
 			RosettaClass: {
 				return callable as RosettaClass
 			}
+			Data: {
+				return callable
+			}
 			RosettaAlias: {
 				return getInput(callable.expression)
 			}
@@ -529,6 +534,9 @@ class RosettaBlueprintTypeResolver {
 			RosettaRegularAttribute: {
 				return feature.type
 			}
+			Attribute: {
+				return feature.type
+			}
 			RosettaFeatureImpl: {
 				// This is the result when the expression hasn't bound to an attribute properly
 				val wrongType = getLastType(call.receiver)
@@ -553,13 +561,14 @@ class RosettaBlueprintTypeResolver {
 	}
 	
 	static class BlueprintUnresolvedTypeException extends Exception {
-
+		EObject source
 		EStructuralFeature feature
 		String code
 		String[] issueData
 		
 		new(String message, EObject source, EStructuralFeature feature, String code, String... issueData) {
 			super(message)
+			this.source = source
 			this.feature = feature
 			this.code = code
 			this.issueData = issueData
@@ -579,6 +588,10 @@ class RosettaBlueprintTypeResolver {
 		
 		def getIssueData() {
 			issueData
+		}
+		
+		def getSource(){
+			source
 		}
 	}
 

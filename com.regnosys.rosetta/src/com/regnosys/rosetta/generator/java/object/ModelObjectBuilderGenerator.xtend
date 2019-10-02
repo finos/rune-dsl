@@ -258,22 +258,22 @@ class ModelObjectBuilderGenerator {
 			«IF attribute.cardinalityIsListValue»
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name») {
 					if(this.«attribute.name» == null){
-						this.«attribute.name» = new ArrayList<>();
+						this.«attribute.name» = new «ArrayList»<>();
 					}
 					this.«attribute.name».add(«attribute.toBuilder»);
 					return this;
 				}
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx) {
 					if(this.«attribute.name» == null){
-						this.«attribute.name» = new ArrayList<>();
+						this.«attribute.name» = new «ArrayList»<>();
 					}
 					getIndex(this.«attribute.name», _idx, () -> «attribute.toBuilder»);
 					this.«attribute.name».set(_idx, «attribute.toBuilder»);
 					return this;
 				}
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(List<«attribute.toTypeSingle(names)»> «attribute.name»s) {
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«List»<«attribute.toTypeSingle(names)»> «attribute.name»s) {
 					if(this.«attribute.name» == null){
-						this.«attribute.name» = new ArrayList<>();
+						this.«attribute.name» = new «ArrayList»<>();
 					}
 					for («attribute.toTypeSingle(names)» toAdd : «attribute.name»s) {
 						this.«attribute.name».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
@@ -283,7 +283,7 @@ class ModelObjectBuilderGenerator {
 				«IF attribute.isRosettaClassOrData»
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle(names)» «attribute.name») {
 						if(this.«attribute.name» == null){
-							this.«attribute.name» = new ArrayList<>();
+							this.«attribute.name» = new «ArrayList»<>();
 						}
 						this.«attribute.name».add(«attribute.name»);
 						return this;
@@ -298,7 +298,7 @@ class ModelObjectBuilderGenerator {
 						return add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build(), _idx);
 					}
 					
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(List<«attribute.type.name»> «attribute.name»s) {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«List»<«attribute.type.name»> «attribute.name»s) {
 						for («attribute.type.name» toAdd : «attribute.name»s) {
 							add«attribute.name.toFirstUpper»Ref(toAdd);
 						}
