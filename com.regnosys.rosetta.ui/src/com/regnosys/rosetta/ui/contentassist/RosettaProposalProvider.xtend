@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RosettaTypeProvider
-import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.jface.text.contentassist.ICompletionProposal
@@ -28,6 +27,7 @@ import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext
 import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 
 /**
  * See https://www.eclipse.org/Xtext/documentation/304_ide_concepts.html#content-assist
@@ -37,7 +37,7 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 
 	@Inject extension RosettaTypeProvider
 	@Inject extension RosettaExtensions
-	@Inject extension RosettaQualifiableExtension
+	@Inject extension RosettaConfigExtension
 	
 	@Inject IQualifiedNameProvider qNames
 

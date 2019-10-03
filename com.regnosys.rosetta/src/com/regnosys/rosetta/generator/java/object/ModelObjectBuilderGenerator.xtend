@@ -22,7 +22,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.rosetta.model.lib.qualify.Qualified
 
 class ModelObjectBuilderGenerator {
 	

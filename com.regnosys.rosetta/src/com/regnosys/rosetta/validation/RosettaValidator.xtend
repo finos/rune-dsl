@@ -49,7 +49,6 @@ import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
-import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
 import java.util.List
 import java.util.Stack
@@ -65,6 +64,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 
 /**
  * This class contains custom validation rules. 
@@ -76,7 +76,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaExpectedTypeProvider
 	@Inject extension RosettaTypeProvider
-	@Inject extension RosettaQualifiableExtension qualifiableExtension
+	@Inject extension RosettaConfigExtension qualifiableExtension
 	@Inject extension RosettaTypeCompatibility
 	@Inject extension IQualifiedNameProvider
 	@Inject extension ResourceDescriptionsProvider

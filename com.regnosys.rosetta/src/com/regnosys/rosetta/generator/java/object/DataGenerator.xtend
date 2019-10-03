@@ -11,7 +11,6 @@ import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RQualifiedType
-import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaClass
 import com.rosetta.model.lib.annotations.RosettaQualified
@@ -27,13 +26,14 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 
 class DataGenerator {
 	@Inject extension RosettaExtensions
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
-	@Inject extension RosettaQualifiableExtension
+	@Inject extension RosettaConfigExtension
 	
 	def generate(JavaNames javaNames, IFileSystemAccess2 fsa, Data data, String version) {
 		fsa.generateFile(javaNames.packages.model.directoryName + '/' + data.name + '.java',
@@ -90,7 +90,7 @@ class DataGenerator {
 	'''
 	
 	def boolean globalKeyRecursive(Data class1) {
-		return class1.globalKey || class1.superType?.globalKeyRecursive
+		return class1.globalKey || (class1.superType !== null && class1.superType.globalKeyRecursive)
 	}
 
 	def private hasQualifiedAttribute(Data c) {

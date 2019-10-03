@@ -43,6 +43,8 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 
 /**
  * This class contains custom scoping description.
@@ -54,6 +56,7 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaExtensions
+	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
 
 	override getScope(EObject context, EReference reference) {
@@ -100,11 +103,21 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 					val receiver = context.receiver;
 					if (receiver instanceof RosettaFeatureCall) {
 						val feature = receiver.feature
-						if (feature instanceof RosettaRegularAttribute) {
-							val metas = feature.metaTypes;
-							if (metas!==null && !metas.isEmpty) {
-								val metaScope = Scopes.scopeFor(metas)
-								allPosibilities.addAll(metaScope.allElements);
+						switch(feature) {
+							RosettaRegularAttribute:  {
+								val metas = feature.metaTypes;
+								if (metas !== null && !metas.isEmpty) {
+									val metaScope = Scopes.scopeFor(metas)
+									allPosibilities.addAll(metaScope.allElements);
+								}
+							}
+							Attribute: {
+								val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
+								if (metas !== null && !metas.isEmpty) {
+									allPosibilities.addAll(configs.findMetaTypes(feature).filter[
+										metas.contains(it.name.toString)
+									]);
+								}
 							}
 						}
 					}

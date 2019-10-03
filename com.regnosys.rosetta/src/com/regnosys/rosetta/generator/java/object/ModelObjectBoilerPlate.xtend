@@ -70,7 +70,7 @@ class ModelObjectBoilerPlate {
 	}
 	
 	def StringConcatenationClient implementsClauseBuilder(extension com.regnosys.rosetta.rosetta.simple.Data d) {
-		val interfaces = <StringConcatenationClient>newHashSet
+		val interfaces = <StringConcatenationClient>newArrayList
 		if (d.name == "ContractualProduct" || d.name=="Event") {
 			if(d.hasKeyedAnnotation)
 				interfaces.add('''«GlobalKeyBuilder»<«d.name»Builder>''')

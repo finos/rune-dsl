@@ -242,7 +242,7 @@ class RosettaExtensions {
 	}
 	
 	def boolean hasMetaReferenceAnnotations(Annotated it) {
-		allAnnotations.exists[annotation?.name == "metadata" && attribute?.name == "reference"]
+		metaAnnotations.exists[attribute?.name == "reference"]
 	}
 	
 	

@@ -148,7 +148,7 @@ class ExpressionGenerator {
 				'''«MapperC».of(«FOR ele: expr.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
 			}
 			default: 
-				throw new UnsupportedOperationException("Unsupported expression type of " + expr.class.simpleName)
+				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
 		}
 	}
 	/**

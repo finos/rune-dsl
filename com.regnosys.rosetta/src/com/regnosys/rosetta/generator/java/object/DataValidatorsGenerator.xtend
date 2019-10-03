@@ -163,7 +163,7 @@ class DataValidatorsGenerator {
 	'''
 
 	private def StringConcatenationClient checkCardinality(ExpandedAttribute attr) '''
-		«IF attr.isUnbound»
+		«IF attr.isMultiple»
 			«ValidatorHelper.importMethod("checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
 		«ELSE»
 			«ValidatorHelper.importMethod("checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)

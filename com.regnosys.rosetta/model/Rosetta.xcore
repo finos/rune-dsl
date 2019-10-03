@@ -167,10 +167,18 @@ class RosettaCardinality {
 	boolean unbounded
 	
 	derived boolean isMany get {
-		unbounded || sup > 1
+		unbounded || sup > 1 || sup != 1 // ??? sup of 0 is counted as multiple
 	}
 	derived boolean isOptional get{
 		inf == 0
+	}
+	
+	/**
+	 * The (0..0) cardinality reflects the fact that there is no object available.
+	 * This is expected to change once the CDM scope is extended to the pre-execution space.
+	 */
+	derived boolean isHidden get{
+		inf == 0 && sup == 0
 	}
 }
 
