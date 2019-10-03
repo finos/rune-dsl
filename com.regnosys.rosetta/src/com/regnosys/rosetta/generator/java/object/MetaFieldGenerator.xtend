@@ -14,6 +14,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaFullType
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class MetaFieldGenerator {
 	def generate(IFileSystemAccess2 fsa, Iterable<RosettaMetaType> metaTypes, Iterable<RosettaRootElement> allClasses, Iterable<String> namespaces) {
@@ -35,7 +36,7 @@ class MetaFieldGenerator {
 			val refs = nsc.value.flatMap[expandedAttributes].filter[hasMetas && metas.exists[name=="reference"]].map[type].toSet
 			
 			for (ref:refs) {
-				if (ref instanceof RosettaClass)
+				if (ref instanceof RosettaClass || ref instanceof Data)
 					fsa.generateFile('''«packages.metaField.directoryName»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(packages, ref))
 				else
 					fsa.generateFile('''«packages.metaField.directoryName»/BasicReferenceWithMeta«ref.name.toFirstUpper».java''', basicReferenceWithMeta(packages, ref))
@@ -439,7 +440,7 @@ class MetaFieldGenerator {
 		}
 	'''
 	
-	def referenceWithMeta(RosettaJavaPackages packages, RosettaClass type) '''
+	def referenceWithMeta(RosettaJavaPackages packages, RosettaType type) '''
 		package «packages.metaField.packageName»;
 		
 		import static java.util.Optional.ofNullable;
