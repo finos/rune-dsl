@@ -151,7 +151,7 @@ class ImportGenerator {
 	def void addExpression(RosettaGroupByExpression groupBy) {
 		if (groupBy.attribute === null) return;
 		imports.add(groupBy.attribute.type.fullName)
-		imports.add((groupBy.attribute.eContainer as RosettaClass).fullName)
+		imports.add((groupBy.attribute.eContainer as RosettaType).fullName)
 		if (groupBy.right !== null) {
 			addExpression(groupBy.right)
 		}
