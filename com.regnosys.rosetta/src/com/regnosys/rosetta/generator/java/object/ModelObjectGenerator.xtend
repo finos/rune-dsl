@@ -154,7 +154,7 @@ class ModelObjectGenerator {
 		«ENDFOR»	'''
 	
 	def boolean globalKeyRecursive(RosettaClass class1) {
-		return class1.globalKey || class1.superType?.globalKeyRecursive
+		return class1.globalKey || (class1.superType !== null && class1.superType.globalKeyRecursive)
 	}
 
 	def private hasQualifiedAttribute(RosettaClass c) {

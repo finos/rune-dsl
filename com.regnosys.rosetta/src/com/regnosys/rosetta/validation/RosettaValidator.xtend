@@ -214,7 +214,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				RosettaFeatureCall: {
 					val parentType = featureCall.feature.type
 					switch (parentType) {
-						RosettaClass: {
+						RosettaClass, Data: {
 							// must have single cardinality in group by function
 							var gbe = groupByExp
 							while (gbe !== null) {

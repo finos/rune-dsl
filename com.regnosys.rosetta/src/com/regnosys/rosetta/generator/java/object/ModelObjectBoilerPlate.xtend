@@ -14,7 +14,6 @@ import com.rosetta.model.lib.RosettaKeyValue
 import com.rosetta.util.ListEquals
 import java.util.Collections
 import java.util.List
-import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
@@ -22,6 +21,7 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import com.rosetta.model.lib.qualify.Qualified
 import com.rosetta.model.lib.GlobalKeyBuilder
 import com.rosetta.model.lib.RosettaKeyValueBuilder
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class ModelObjectBoilerPlate {
 
@@ -35,7 +35,7 @@ class ModelObjectBoilerPlate {
 		«c.wrap.boilerPlate»
 	'''
 	
-	def StringConcatenationClient boilerPlate(com.regnosys.rosetta.rosetta.simple.Data d) '''
+	def StringConcatenationClient boilerPlate(Data d) '''
 		«d.wrap.processMethod»
 		«d.wrap.boilerPlate»
 	'''
@@ -44,23 +44,32 @@ class ModelObjectBoilerPlate {
 		features.wrapCalculationResult(ownerName).boilerPlate
 	}
 
-	def builderBoilerPlate(RosettaClass c) '''
-		«c.wrap.contributeEquals(toBuilder)»
-		«c.wrap.contributeHashCode»
-		«c.wrap.contributeToString(toBuilder)»
-	'''
-	
-	def StringConcatenationClient builderBoilerPlate(com.regnosys.rosetta.rosetta.simple.Data c) '''
-		«c.wrap.contributeEquals(toBuilder)»
-		«c.wrap.contributeHashCode»
-		«c.wrap.contributeToString(toBuilder)»
-	'''
+	def builderBoilerPlate(RosettaClass c) {
+		val wrap = c.wrap
+		val attrs = wrap.attributes.filter[name != 'eventEffect'].toList
+		'''
+			«wrap.contributeEquals(attrs, toBuilder)»
+			«wrap.contributeHashCode(attrs)»
+			«wrap.contributeToString(toBuilder)»
+		'''
+	}
+
+	def StringConcatenationClient builderBoilerPlate(Data c) {
+		val wrap = c.wrap
+		val attrs = wrap.attributes.filter[name != 'eventEffect'].toList
+		'''
+			«wrap.contributeEquals(attrs, toBuilder)»
+			«wrap.contributeHashCode(attrs)»
+			«wrap.contributeToString(toBuilder)»
+		'''
+	}
+		
 
 	def implementsClause(RosettaClass c) {
 		implementsClause(c)[String s|s]
 	}
 
-	def StringConcatenationClient implementsClause(extension com.regnosys.rosetta.rosetta.simple.Data d) {
+	def StringConcatenationClient implementsClause(extension Data d) {
 		val interfaces = newHashSet
 		if(d.hasKeyedAnnotation)
 			interfaces.add(GlobalKey)
@@ -69,16 +78,16 @@ class ModelObjectBoilerPlate {
 		if (interfaces.empty) null else '''implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
 	}
 	
-	def StringConcatenationClient implementsClauseBuilder(extension com.regnosys.rosetta.rosetta.simple.Data d) {
+	def StringConcatenationClient implementsClauseBuilder(extension Data d) {
 		val interfaces = <StringConcatenationClient>newArrayList
-		if (d.name == "ContractualProduct" || d.name=="Event") {
-			if(d.hasKeyedAnnotation)
-				interfaces.add('''«GlobalKeyBuilder»<«d.name»Builder>''')
-			if(d.hasPartialKeyAnnotation)
-				interfaces.add('''«RosettaKeyValueBuilder»<«d.name»Builder>''')
+		if (d.hasKeyedAnnotation)
+			interfaces.add('''«GlobalKeyBuilder»<«d.name»Builder>''')
+		if (d.hasPartialKeyAnnotation)
+			interfaces.add('''«RosettaKeyValueBuilder»<«d.name»Builder>''')
+		if (d.name == "ContractualProduct" || d.name == "Event") {
 			interfaces.add('''«Qualified»''')
 		}
-		if (interfaces.empty) null else ''' implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
+		if(interfaces.empty) null else ''' implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
 	}
 	
 	def implementsClause(extension RosettaClass it, (String)=>String nameFunc) {
@@ -117,23 +126,26 @@ class ModelObjectBoilerPlate {
 	}
 	
 	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names) {
-		if (!attribute.hasMetas) return '''«attribute.typeName.toJavaType»'''
+		if(!attribute.hasMetas) return '''«names.toJavaType(attribute.type)»'''
 		val metaType = if (attribute.refIndex >= 0) {
-			if (attribute.isRosettaClassOrData)
-				'''ReferenceWithMeta«attribute.typeName.toFirstUpper»'''
-			else
-				'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''
-		} else
-			'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
-			
+				if (attribute.isRosettaClassOrData)
+					'''ReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+				else
+					'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+			} else
+				'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
+
 		return '''«names.packages.metaField.javaType(metaType)»'''
 	}
 
-	private def StringConcatenationClient boilerPlate(TypeData c) '''
-		«c.contributeEquals(identity)»
-		«c.contributeHashCode»
-		«c.contributeToString(identity)»
-	'''
+	private def StringConcatenationClient boilerPlate(TypeData c) {
+		val attributesNoEventEffect = c.attributes.filter[name != 'eventEffect'].toList
+		'''
+			«c.contributeEquals(attributesNoEventEffect, identity)»
+			«c.contributeHashCode(attributesNoEventEffect)»
+			«c.contributeToString(identity)»
+		'''
+	} 
 
 	private def contributeHashCode(extension ExpandedAttribute it) {
 		'''
@@ -151,11 +163,11 @@ class ModelObjectBoilerPlate {
 
 	// the eventEffect attribute should not contribute to the hashcode. The EventEffect must first take the hash from Event, 
 	// but once stamped onto EventEffect, this will change the hash for Event. 
-	private def contributeHashCode(TypeData c) '''
+	private def contributeHashCode(TypeData c, List<ExpandedAttribute> attributes) '''
 		@Override
 		public int hashCode() {
 			int _result = «c.contribtueSuperHashCode»;
-			«FOR field : c.attributes.filter[name != 'eventEffect']»
+			«FOR field : attributes»
 				«field.contributeHashCode»
 			«ENDFOR»
 			return _result;
@@ -176,7 +188,7 @@ class ModelObjectBoilerPlate {
 
 	// the eventEffect attribute should not contribute to the hashcode. The EventEffect must first take the hash from Event, 
 	// but once stamped onto EventEffect, this will change the hash for Event. TODO: Have generic way of excluding attributes from the hash
-	private def StringConcatenationClient contributeEquals(TypeData c, (String)=>String classNameFunc) '''
+	private def StringConcatenationClient contributeEquals(TypeData c, List<ExpandedAttribute> attributes, (String)=>String classNameFunc) '''
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
@@ -185,9 +197,9 @@ class ModelObjectBoilerPlate {
 				if (!super.equals(o)) return false;
 			«ENDIF»
 		
-			«classNameFunc.apply(c.name)» _that = («classNameFunc.apply(c.name)») o;
+			«IF !attributes.empty»«classNameFunc.apply(c.name)» _that = («classNameFunc.apply(c.name)») o;«ENDIF»
 		
-			«FOR field : c.attributes.filter[s | s.name != 'eventEffect']»
+			«FOR field : attributes»
 				«field.contributeToEquals»
 			«ENDFOR»
 			return true;
@@ -215,7 +227,7 @@ class ModelObjectBoilerPlate {
 			true
 		);
 	}
-	private def TypeData wrap(com.regnosys.rosetta.rosetta.simple.Data data) {
+	private def TypeData wrap(Data data) {
 		return new TypeData(
 			data.name,
 			data.expandedAttributes,
@@ -266,7 +278,7 @@ class ModelObjectBoilerPlate {
 		return !( a.hasCalculation || a.isQualified || a.name == 'eventEffect' || a.name == 'globalKey')
 	}
 
-	@Data
+	@org.eclipse.xtend.lib.annotations.Data
 	static class TypeData {
 		val String name
 		val List<ExpandedAttribute> attributes

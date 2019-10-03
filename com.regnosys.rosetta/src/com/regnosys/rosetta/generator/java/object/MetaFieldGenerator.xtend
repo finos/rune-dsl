@@ -560,7 +560,6 @@ class MetaFieldGenerator {
 					return externalReference;
 				}
 				
-				@SuppressWarnings("unchecked")
 				public ReferenceWithMeta«type.name.toFirstUpper»Builder setValue(«type.name» value) {
 					this.value = ofNullable(value).map(t->t.toBuilder()).orElse(null);
 					return this;

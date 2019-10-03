@@ -81,7 +81,7 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules() {
 					return «Arrays».asList(
-						«FOR r : conditionRules(c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
+						«FOR r : conditionRules(c, c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
 							new «javaNames.packages.dataRule.packageName».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
 						«ENDFOR»
 					);
@@ -90,7 +90,7 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> choiceRuleValidators() {
 					return Arrays.asList(
-						«FOR r : conditionRules(c.conditions)[isChoiceRuleCondition] SEPARATOR ','»
+						«FOR r : conditionRules(c, c.conditions)[isChoiceRuleCondition] SEPARATOR ','»
 							new «javaNames.packages.choiceRule.packageName».«ChoiceRuleGenerator.choiceRuleClassName(r.ruleName)»()
 						«ENDFOR»
 					);
@@ -249,8 +249,8 @@ class ModelMetaGenerator {
 		return dataRuleMappingSet.filter[it.className === thisClass.name].toList
 	}
 	
-	private def List<ClassRule> conditionRules(List<Condition> elements, (Condition)=>boolean filter) {
-		return elements.filter(filter).map[new ClassRule((it.eContainer as RosettaNamed).getName, it.name?:"NoName")].toList
+	private def List<ClassRule> conditionRules(Data d, List<Condition> elements, (Condition)=>boolean filter) {
+		return elements.filter(filter).map[new ClassRule((it.eContainer as RosettaNamed).getName, conditionName(d, it))].toList
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data

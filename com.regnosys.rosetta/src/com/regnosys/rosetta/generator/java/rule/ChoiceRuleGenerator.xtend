@@ -59,13 +59,13 @@ class ChoiceRuleGenerator {
 			
 			«classBody.toString»
 		'''
-		fsa.generateFile('''«names.packages.choiceRule.directoryName»/«choiceRuleClassName(cond.name?:'NoName')».java''', fileContent)
+		fsa.generateFile('''«names.packages.choiceRule.directoryName»/«choiceRuleClassName(conditionName(data, cond))».java''', fileContent)
 	}
-
+	
 	private def StringConcatenationClient toChoiceRuleJava(Condition rule, Data data, JavaNames names, String version) {
 		val clazz = data.name
-		val ruleName = rule.name
-		val className = choiceRuleClassName(rule.name?:'NoName')
+		val ruleName = conditionName(data, rule)
+		val className = choiceRuleClassName(conditionName(data, rule))
 		val usedAttributes = if(rule.constraint.isOneOf) data.allAttributes else rule.constraint.attributes // TODO multi choice rules? 
 		val validationType = if(rule.constraint.isOneOf || rule.constraint.necessity === Necessity.REQUIRED) 'REQUIRED' else 'OPTIONAL'
 		'''

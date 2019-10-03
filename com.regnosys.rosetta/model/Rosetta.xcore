@@ -515,7 +515,7 @@ class RosettaGroupByFeatureCall extends RosettaExpression {
 }
 
 class RosettaGroupByExpression {
-	refers RosettaRegularAttribute attribute
+	refers RosettaFeature attribute
 	contains RosettaGroupByExpression right
 }
 

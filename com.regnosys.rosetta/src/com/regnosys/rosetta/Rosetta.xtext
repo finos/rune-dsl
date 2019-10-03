@@ -41,7 +41,7 @@ AnnotationRef:
 Data:
 	'data' RosettaNamed ('extends' superType = [Data|ValidID])? ':' Definable?
 	(Annotations| ClassSynonyms)*
-	attributes += Attribute+
+	attributes += Attribute*
 	conditions += Condition*
 ;
 
@@ -146,7 +146,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'value')
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'key' | 'value')
 ;
 
 ValidHint: 
@@ -450,7 +450,8 @@ RosettaGroupByFeatureCall returns RosettaExpression:
 ;
 
 RosettaGroupByExpression:
-	attribute = [RosettaRegularAttribute] ('->' right = RosettaGroupByExpression)?
+	// TODO change to Attribute after migration
+	attribute = [RosettaFeature|ValidID] ('->' right = RosettaGroupByExpression)?
 ;
 
 RosettaFeatureCall returns RosettaExpression:

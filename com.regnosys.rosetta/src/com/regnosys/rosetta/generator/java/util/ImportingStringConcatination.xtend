@@ -44,7 +44,9 @@ class ImportingStringConcatination extends StringConcatenation {
 		}
 	}
 
-	def private addImport(String qName, boolean qualifyMemberClass) {
+	def private void addImport(String qName, boolean qualifyMemberClass) {
+		if(qName.startsWith('java.lang.'))
+			return
 		val qualified = QualifiedName.create(qName.split('\\.'))
 		val target = qualified.lastSegment
 		if (target.contains('$')) {

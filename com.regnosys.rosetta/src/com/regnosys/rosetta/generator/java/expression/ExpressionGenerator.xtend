@@ -484,7 +484,7 @@ class ExpressionGenerator {
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	def StringConcatenationClient buildMapFunc(RosettaRegularAttribute attribute, boolean isLast, boolean autoValue) {
+	dispatch def StringConcatenationClient buildMapFunc(RosettaRegularAttribute attribute, boolean isLast, boolean autoValue) {
 		val mapFunc = attribute.buildMapFuncAttribute
 		if (attribute.cardinalityIsListValue) {
 			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty)
@@ -514,7 +514,7 @@ class ExpressionGenerator {
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	def StringConcatenationClient buildMapFunc(Attribute attribute, boolean isLast, boolean autoValue) {
+	dispatch def StringConcatenationClient buildMapFunc(Attribute attribute, boolean isLast, boolean autoValue) {
 		val mapFunc = attribute.buildMapFuncAttribute
 		if (attribute.card.isIsMany) {
 			if (attribute.metaAnnotations.nullOrEmpty)

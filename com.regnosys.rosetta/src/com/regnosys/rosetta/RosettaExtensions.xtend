@@ -230,24 +230,29 @@ class RosettaExtensions {
 		allAnnotations.filter[annotation?.name == "metadata"]
 	}
 	
-	def hasCalculationAnnotation(Annotated it) {
-		allAnnotations.exists[annotation?.name == "calculation"]
-	}
-	
 	def hasKeyedAnnotation(Annotated it) {
-		allAnnotations.exists[annotation?.name == "keyed"]
-	}
-	def hasPartialKeyAnnotation(Annotated it) {
-		allAnnotations.exists[annotation?.name == "partialKey"]
+		metaAnnotations.exists[attribute?.name == "key"]
 	}
 	
 	def boolean hasMetaReferenceAnnotations(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "reference"]
 	}
+	def boolean hasIdAnnotation(Annotated it) {
+		metaAnnotations.exists[attribute?.name == "id"]
+	}
 	
+	def hasCalculationAnnotation(Annotated it) {
+		allAnnotations.exists[annotation?.name == "calculation"]
+	}
+	def hasPartialKeyAnnotation(Annotated it) {
+		allAnnotations.exists[annotation?.name == "partialKey"]
+	}
 	
 	def private allAnnotations(Annotated withAnnotations) {
 		withAnnotations?.annotations?.filter[annotation !== null && !annotation.eIsProxy]
 	}
 	
+	def String conditionName(Data data, Condition cond) {
+		cond.name?:data.name
+	}
 }

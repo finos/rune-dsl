@@ -303,11 +303,11 @@ class ModelObjectBuilderGenerator {
 					}
 					«IF !attribute.metas.empty»
 					
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
 						return add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
 					}
 					
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name», int _idx) {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name», int _idx) {
 						return add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build(), _idx);
 					}
 					
@@ -339,16 +339,16 @@ class ModelObjectBuilderGenerator {
 						return this;
 					}
 					«IF !attribute.metas.empty»
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
 						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
 					}
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.type.name» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«names.toJavaType(attribute.type)» «attribute.name») {
 						return set«attribute.name.toFirstUpper»Ref(«attribute.type.name».builder());
 					}
 					«ENDIF»
 				«ELSE»
 					«IF !attribute.metas.empty»
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
 						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValue(«attribute.name»).build());
 					}
 					«ENDIF»
@@ -410,13 +410,13 @@ class ModelObjectBuilderGenerator {
 				}
 			'''«names.packages.metaField.javaType(buildername)»'''
 		} else {
-			'''«attribute.toBuilderTypeUnderlying»'''
+			'''«attribute.toBuilderTypeUnderlying(names)»'''
 		}
 	}
 	
-	private def toBuilderTypeUnderlying(ExpandedAttribute attribute) {
+	private def StringConcatenationClient toBuilderTypeUnderlying(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.isRosettaClassOrData) '''«attribute.typeName».«attribute.typeName»Builder'''
-		else '''«attribute.typeName.toJavaType»'''
+		else '''«names.toJavaQualifiedType(attribute.type)»'''
 	}
 	
 		
