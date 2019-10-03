@@ -146,7 +146,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'calculation' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'value')
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'value')
 ;
 
 ValidHint: 

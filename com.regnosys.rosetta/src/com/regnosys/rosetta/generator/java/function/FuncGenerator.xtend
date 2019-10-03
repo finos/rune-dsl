@@ -4,9 +4,9 @@ import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.expression.Context
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.expression.ExpressionGeneratorWithBuilder
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
@@ -31,15 +31,16 @@ import com.rosetta.model.lib.functions.MapperBuilder
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.math.BigDecimalExtensions
+import com.rosetta.model.lib.validation.ModelObjectValidator
 import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
+
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.rosetta.model.lib.validation.ModelObjectValidator
 
 class FuncGenerator {
 
-	@Inject RosettaExpressionJavaGeneratorForFunctions expressionGenerator
+	@Inject ExpressionGenerator expressionGenerator
 	@Inject ExpressionGeneratorWithBuilder expressionWithBuilder
 	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
 	@Inject RosettaTypeProvider typeProvider
@@ -87,14 +88,14 @@ class FuncGenerator {
 
 	private def StringConcatenationClient classBody(Function func, String className,
 		Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version, boolean isStatic) {
-		val isAbstract = func.operations.nullOrEmpty
+//		val isAbstract = func.hasCalculationAnnotation
 		val outputName = getOutput(func)?.name
 		val outputType = func.outputTypeOrVoid(names)
 		val aliasOut = func.shortcuts.toMap([it], [exprHelper.usesOutputParameter(it.expression)])
 		val outNeedsBuilder = needsBuilder(getOutput(func))
 		'''
-			«IF isAbstract»@«ImplementedBy»(«className»Impl.class)«ENDIF»
-			public «IF isStatic»static «ENDIF»«IF isAbstract»abstract «ENDIF»class «className» implements «RosettaFunction» {
+			@«ImplementedBy»(«className».«className»Default.class)
+			public «IF isStatic»static «ENDIF»abstract class «className» implements «RosettaFunction» {
 				«IF outNeedsBuilder»
 				
 				@«Inject» protected «ModelObjectValidator» objectValidator;
@@ -125,7 +126,8 @@ class FuncGenerator {
 						«ENDFOR»
 					«ENDIF»
 					
-					«outputType» «outputName» = doEvaluate(«func.inputsAsArguments(names)»)«IF outNeedsBuilder».build()«ENDIF»;
+					«getOutput(func).toBuilderType(names)» «outputName»Holder = doEvaluate(«func.inputsAsArguments(names)»);
+					«outputType» «outputName» = assignOutput(«outputName»Holder«IF !getInputs(func).empty», «ENDIF»«func.inputsAsArguments(names)»)«IF outNeedsBuilder».build()«ENDIF»;
 					
 					«IF !func.postConditions.empty»
 						// post-conditions
@@ -140,21 +142,16 @@ class FuncGenerator {
 					return «outputName»;
 				}
 				
-				«IF isAbstract»
-					protected abstract «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
-				«ELSE»
-					protected «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
-						«IF getOutput(func) !== null»
-							«getOutput(func).toHolderType(names)» «outputName»Holder = «IF outNeedsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
-						«ENDIF»
-						«FOR indexed : func.operations.indexed»
-							«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType» «ENDIF»«outputName» = «outputName»Holder.build();«ENDIF»
-							«indexed.value.assign(aliasOut, names)»;
-						«ENDFOR»
-						return «outputName»Holder«IF !outNeedsBuilder».get()«ENDIF»;
-					}
-					
-				«ENDIF»
+				private «getOutput(func).toBuilderType(names)» assignOutput(«getOutput(func).toBuilderType(names)» «outputName»Holder«IF !getInputs(func).empty», «ENDIF»«func.inputsAsParameters(names)») {
+					«FOR indexed : func.operations.indexed»
+						«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType» «ENDIF»«outputName» = «outputName»Holder.build();«ENDIF»
+						«indexed.value.assign(aliasOut, names)»;
+					«ENDFOR»
+					return «outputName»Holder;
+				}
+
+				protected abstract «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
+				
 				«FOR alias : func.shortcuts»
 					
 					«IF aliasOut.get(alias)»
@@ -167,6 +164,12 @@ class FuncGenerator {
 						}
 					«ENDIF»
 				«ENDFOR»
+				public static final class «className»Default extends «className» {
+					@Override
+					protected  «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
+						return «IF outNeedsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
+					}
+				}
 			}
 		'''
 	}
@@ -217,7 +220,7 @@ class FuncGenerator {
 			«IF needsBuilder(op.assignRoot)»
 				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)»
 			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)».get()«ENDIF»'''
 		else {
 			'''
 				«op.assignTarget(outs, names)»
@@ -311,11 +314,6 @@ class FuncGenerator {
 	private def StringConcatenationClient toBuilderType(Attribute attr, JavaNames names) {
 		val javaType = names.toJavaType(attr.type)
 		'''«IF needsBuilder(attr)»«javaType».«javaType»Builder«ELSE»«javaType»«ENDIF»'''
-	}
-	
-	private def StringConcatenationClient toHolderType(Attribute attr, JavaNames names) {
-		val javaType = names.toJavaType(attr.type)
-		'''«IF needsBuilder(attr)»«javaType».«javaType»Builder«ELSE»«Mapper»<«javaType»>«ENDIF»'''
 	}
 
 	private def isMany(RosettaFeature feature) {

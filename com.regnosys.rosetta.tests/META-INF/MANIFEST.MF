@@ -36,7 +36,6 @@ Bundle-ActivationPolicy: lazy
 Export-Package: com.regnosys.rosetta.formatting2,
  com.regnosys.rosetta.generator.java.blueprints,
  com.regnosys.rosetta.generator.java.calculation,
- com.regnosys.rosetta.generator.java.expression,
  com.regnosys.rosetta.generator.java.object,
  com.regnosys.rosetta.generator.java.qualify,
  com.regnosys.rosetta.generator.java.rule,

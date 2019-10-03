@@ -206,7 +206,7 @@ class DataRuleGeneratorTest {
 		val validationResult = classes.runDataRule(fooInstance, 'ListDataRule')
 		assertFalse(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("when Foo -> bar -> baz exists\nthen Foo -> bar -> baz -> bazValue = 1.0"))
-		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue] [2.0] does not equal [BigDecimal] [1]"))
+		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue] [2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
 	@Test
@@ -244,7 +244,7 @@ class DataRuleGeneratorTest {
 		val validationResult = classes.runDataRule(fooInstance, 'ListDataRule')
 		assertFalse(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("when Foo -> bar -> baz exists\nthen Foo -> bar -> baz -> bazValue = 1.0"))
-		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[0]->getBaz[1]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1]"))
+		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[0]->getBaz[1]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
 	@Test
@@ -263,7 +263,7 @@ class DataRuleGeneratorTest {
 		val validationResult = classes.runDataRule(fooInstance, 'ListDataRule')
 		assertFalse(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("when Foo -> bar -> baz exists\nthen Foo -> bar -> baz -> bazValue = 1.0"))
-		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[1]->getBaz[0]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1]"))
+		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[1]->getBaz[0]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
 	def Map<String, Class<?>> createListClassAndDataRule() {

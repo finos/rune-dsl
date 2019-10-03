@@ -230,8 +230,12 @@ class RosettaExtensions {
 		allAnnotations.filter[annotation?.name == "metadata"]
 	}
 	
+	def hasCalculationAnnotation(Annotated it) {
+		allAnnotations.exists[annotation?.name == "calculation"]
+	}
+	
 	def boolean hasMetaReferenceAnnotations(Annotated it) {
-		!allAnnotations.filter[annotation?.name == "metadata" && attribute?.name == "reference"].empty
+		allAnnotations.exists[annotation?.name == "metadata" && attribute?.name == "reference"]
 	}
 	
 	
