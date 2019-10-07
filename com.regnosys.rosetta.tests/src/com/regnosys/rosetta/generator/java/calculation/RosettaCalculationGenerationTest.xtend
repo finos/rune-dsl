@@ -61,7 +61,6 @@ class RosettaCalculationGenerationTest {
 				import com.rosetta.test.model.Period;
 				import com.rosetta.test.model.PeriodEnum;
 				import java.lang.Integer;
-				import java.lang.UnsupportedOperationException;
 				import java.math.BigDecimal;
 				
 				
@@ -92,16 +91,18 @@ class RosettaCalculationGenerationTest {
 						*/
 						public BigDecimal evaluate(PeriodEnum in1, Period in2) {
 							
-							BigDecimal out = doEvaluate(in1, in2);
+							BigDecimal outHolder = doEvaluate(in1, in2);
+							BigDecimal out = assignOutput(outHolder, in1, in2);
 							
 							return out;
 						}
 						
-						protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
-							Mapper<BigDecimal> outHolder = null;
-							outHolder = MapperS.of(BigDecimalExtensions.multiply(BigDecimalExtensions.valueOf(i(in1, in2).get()), BigDecimalExtensions.valueOf(30.0)));
-							return outHolder.get();
+						private BigDecimal assignOutput(BigDecimal outHolder, PeriodEnum in1, Period in2) {
+							outHolder = MapperS.of(BigDecimalExtensions.multiply(BigDecimalExtensions.valueOf(i(in1, in2).get()), BigDecimalExtensions.valueOf(30.0))).get();
+							return outHolder;
 						}
+					
+						protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
 						
 						
 						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
@@ -110,7 +111,7 @@ class RosettaCalculationGenerationTest {
 						public static final class MONTHDefault extends MONTH {
 							@Override
 							protected  BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
-								throw new UnsupportedOperationException("Function PeriodEnumFunc has operation implementation but is not annotated with 'calculation' annotation");
+								return null;
 							}
 						}
 					}
@@ -140,7 +141,6 @@ class RosettaCalculationGenerationTest {
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.Integer;
-			import java.lang.UnsupportedOperationException;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -152,16 +152,18 @@ class RosettaCalculationGenerationTest {
 				*/
 				public Integer evaluate(Integer one) {
 					
-					Integer out = doEvaluate(one);
+					Integer outHolder = doEvaluate(one);
+					Integer out = assignOutput(outHolder, one);
 					
 					return out;
 				}
 				
-				protected Integer doEvaluate(Integer one) {
-					Mapper<Integer> outHolder = null;
-					outHolder = MapperS.of((oneA(one).get() + oneA(one).get()));
-					return outHolder.get();
+				private Integer assignOutput(Integer outHolder, Integer one) {
+					outHolder = MapperS.of((oneA(one).get() + oneA(one).get())).get();
+					return outHolder;
 				}
+			
+				protected abstract Integer doEvaluate(Integer one);
 				
 				
 				protected Mapper<Integer> oneA(Integer one) {
@@ -170,7 +172,7 @@ class RosettaCalculationGenerationTest {
 				public static final class CalcDefault extends Calc {
 					@Override
 					protected  Integer doEvaluate(Integer one) {
-						throw new UnsupportedOperationException("Function Calc has operation implementation but is not annotated with 'calculation' annotation");
+						return null;
 					}
 				}
 			}
@@ -214,16 +216,18 @@ class RosettaCalculationGenerationTest {
 				*/
 				public Integer evaluate(Integer arg1, Integer arg2) {
 					
-					Integer res = doEvaluate(arg1, arg2);
+					Integer resHolder = doEvaluate(arg1, arg2);
+					Integer res = assignOutput(resHolder, arg1, arg2);
 					
 					return res;
 				}
 				
-				protected Integer doEvaluate(Integer arg1, Integer arg2) {
-					Mapper<Integer> resHolder = null;
-					resHolder = MapperS.of((a1(arg1, arg2).get() + (a2(arg1, arg2).get() * 215)));
-					return resHolder.get();
+				private Integer assignOutput(Integer resHolder, Integer arg1, Integer arg2) {
+					resHolder = MapperS.of((a1(arg1, arg2).get() + (a2(arg1, arg2).get() * 215))).get();
+					return resHolder;
 				}
+			
+				protected abstract Integer doEvaluate(Integer arg1, Integer arg2);
 				
 				
 				protected Mapper<Integer> a1(Integer arg1, Integer arg2) {
@@ -236,7 +240,7 @@ class RosettaCalculationGenerationTest {
 				public static final class CalcDefault extends Calc {
 					@Override
 					protected  Integer doEvaluate(Integer arg1, Integer arg2) {
-						return super.doEvaluate(arg1, arg2);
+						return null;
 					}
 				}
 			}
@@ -283,7 +287,6 @@ class RosettaCalculationGenerationTest {
 		import com.rosetta.test.model.FoncOut;
 		import com.rosetta.test.model.FuncIn;
 		import java.lang.SuppressWarnings;
-		import java.lang.UnsupportedOperationException;
 		import java.time.LocalTime;
 		
 		
@@ -298,14 +301,14 @@ class RosettaCalculationGenerationTest {
 			*/
 			public FoncOut evaluate(FuncIn funIn) {
 				
-				FoncOut res = doEvaluate(funIn).build();
+				FoncOut.FoncOutBuilder resHolder = doEvaluate(funIn);
+				FoncOut res = assignOutput(resHolder, funIn).build();
 				
 				objectValidator.validateAndFailOnErorr(FoncOut.class, res);
 				return res;
 			}
 			
-			protected FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
-				FoncOut.FoncOutBuilder resHolder = FoncOut.builder();
+			private FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder resHolder, FuncIn funIn) {
 				@SuppressWarnings("unused") FoncOut res = resHolder.build();
 				resHolder
 					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
@@ -316,6 +319,8 @@ class RosettaCalculationGenerationTest {
 				;
 				return resHolder;
 			}
+		
+			protected abstract FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn);
 			
 			
 			protected Mapper<Date> arg1(FuncIn funIn) {
@@ -328,7 +333,7 @@ class RosettaCalculationGenerationTest {
 			public static final class CalcDefault extends Calc {
 				@Override
 				protected  FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
-					throw new UnsupportedOperationException("Function Calc has operation implementation but is not annotated with 'calculation' annotation");
+					return FoncOut.builder();
 				}
 			}
 		}
@@ -393,14 +398,14 @@ class RosettaCalculationGenerationTest {
 			*/
 			public FuncOut evaluate(FuncIn funcIn) {
 				
-				FuncOut out = doEvaluate(funcIn).build();
+				FuncOut.FuncOutBuilder outHolder = doEvaluate(funcIn);
+				FuncOut out = assignOutput(outHolder, funcIn).build();
 				
 				objectValidator.validateAndFailOnErorr(FuncOut.class, out);
 				return out;
 			}
 			
-			protected FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
-				FuncOut.FuncOutBuilder outHolder = FuncOut.builder();
+			private FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder outHolder, FuncIn funcIn) {
 				@SuppressWarnings("unused") FuncOut out = outHolder.build();
 				outHolder
 					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
@@ -411,6 +416,8 @@ class RosettaCalculationGenerationTest {
 				;
 				return outHolder;
 			}
+		
+			protected abstract FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn);
 			
 			
 			protected Mapper<String> linkId(FuncIn funcIn) {
@@ -427,7 +434,7 @@ class RosettaCalculationGenerationTest {
 			public static final class RTS_22_FieldsDefault extends RTS_22_Fields {
 				@Override
 				protected  FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
-					return super.doEvaluate(funcIn);
+					return FuncOut.builder();
 				}
 			}
 		}
@@ -555,7 +562,6 @@ class RosettaCalculationGenerationTest {
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.test.model.functions.AddOne;
 			import java.lang.Integer;
-			import java.lang.UnsupportedOperationException;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)
@@ -570,16 +576,18 @@ class RosettaCalculationGenerationTest {
 				*/
 				public Integer evaluate() {
 					
-					Integer res = doEvaluate();
+					Integer resHolder = doEvaluate();
+					Integer res = assignOutput(resHolder);
 					
 					return res;
 				}
 				
-				protected Integer doEvaluate() {
-					Mapper<Integer> resHolder = null;
-					resHolder = MapperS.of(arg1().get());
-					return resHolder.get();
+				private Integer assignOutput(Integer resHolder) {
+					resHolder = MapperS.of(arg1().get()).get();
+					return resHolder;
 				}
+			
+				protected abstract Integer doEvaluate();
 				
 				
 				protected Mapper<Integer> arg1() {
@@ -588,7 +596,7 @@ class RosettaCalculationGenerationTest {
 				public static final class AdderDefault extends Adder {
 					@Override
 					protected  Integer doEvaluate() {
-						throw new UnsupportedOperationException("Function Adder has operation implementation but is not annotated with 'calculation' annotation");
+						return null;
 					}
 				}
 			}
@@ -640,7 +648,6 @@ class RosettaCalculationGenerationTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
-			import com.rosetta.model.lib.functions.Mapper;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.test.model.Math;
@@ -648,7 +655,6 @@ class RosettaCalculationGenerationTest {
 			import com.rosetta.test.model.functions.AddOne;
 			import com.rosetta.test.model.functions.SubOne;
 			import java.lang.String;
-			import java.lang.UnsupportedOperationException;
 			
 			
 			/**
@@ -685,21 +691,23 @@ class RosettaCalculationGenerationTest {
 					*/
 					public String evaluate(Math in1, MathInput in2) {
 						
-						String arg1 = doEvaluate(in1, in2);
+						String arg1Holder = doEvaluate(in1, in2);
+						String arg1 = assignOutput(arg1Holder, in1, in2);
 						
 						return arg1;
 					}
 					
-					protected String doEvaluate(Math in1, MathInput in2) {
-						Mapper<String> arg1Holder = null;
-						arg1Holder = MapperS.of(addOne.evaluate(in2.getMathInput()));
-						return arg1Holder.get();
+					private String assignOutput(String arg1Holder, Math in1, MathInput in2) {
+						arg1Holder = MapperS.of(addOne.evaluate(in2.getMathInput())).get();
+						return arg1Holder;
 					}
+				
+					protected abstract String doEvaluate(Math in1, MathInput in2);
 					
 					public static final class INCRDefault extends INCR {
 						@Override
 						protected  String doEvaluate(Math in1, MathInput in2) {
-							throw new UnsupportedOperationException("Function MathFunc has operation implementation but is not annotated with 'calculation' annotation");
+							return null;
 						}
 					}
 				}
@@ -718,21 +726,23 @@ class RosettaCalculationGenerationTest {
 					*/
 					public String evaluate(Math in1, MathInput in2) {
 						
-						String arg1 = doEvaluate(in1, in2);
+						String arg1Holder = doEvaluate(in1, in2);
+						String arg1 = assignOutput(arg1Holder, in1, in2);
 						
 						return arg1;
 					}
 					
-					protected String doEvaluate(Math in1, MathInput in2) {
-						Mapper<String> arg1Holder = null;
-						arg1Holder = MapperS.of(subOne.evaluate(in2.getMathInput()));
-						return arg1Holder.get();
+					private String assignOutput(String arg1Holder, Math in1, MathInput in2) {
+						arg1Holder = MapperS.of(subOne.evaluate(in2.getMathInput())).get();
+						return arg1Holder;
 					}
+				
+					protected abstract String doEvaluate(Math in1, MathInput in2);
 					
 					public static final class DECRDefault extends DECR {
 						@Override
 						protected  String doEvaluate(Math in1, MathInput in2) {
-							throw new UnsupportedOperationException("Function MathFunc has operation implementation but is not annotated with 'calculation' annotation");
+							return null;
 						}
 					}
 				}
@@ -764,7 +774,6 @@ class RosettaCalculationGenerationTest {
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.test.model.functions.AddOne;
 			import java.lang.Integer;
-			import java.lang.UnsupportedOperationException;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)
@@ -780,16 +789,18 @@ class RosettaCalculationGenerationTest {
 				*/
 				public Integer evaluate(Integer arg1) {
 					
-					Integer res = doEvaluate(arg1);
+					Integer resHolder = doEvaluate(arg1);
+					Integer res = assignOutput(resHolder, arg1);
 					
 					return res;
 				}
 				
-				protected Integer doEvaluate(Integer arg1) {
-					Mapper<Integer> resHolder = null;
-					resHolder = MapperS.of(addedOne(arg1).get());
-					return resHolder.get();
+				private Integer assignOutput(Integer resHolder, Integer arg1) {
+					resHolder = MapperS.of(addedOne(arg1).get()).get();
+					return resHolder;
 				}
+			
+				protected abstract Integer doEvaluate(Integer arg1);
 				
 				
 				protected Mapper<Integer> addedOne(Integer arg1) {
@@ -798,7 +809,7 @@ class RosettaCalculationGenerationTest {
 				public static final class AdderDefault extends Adder {
 					@Override
 					protected  Integer doEvaluate(Integer arg1) {
-						throw new UnsupportedOperationException("Function Adder has operation implementation but is not annotated with 'calculation' annotation");
+						return null;
 					}
 				}
 			}
