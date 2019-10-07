@@ -84,7 +84,14 @@ class BlueprintGenerator {
 		
 		return '''
 			package «packageName.blueprint.packageName»;
-						
+			
+			«FOR imp : body.imports»
+				import «imp»;
+			«ENDFOR»
+			«FOR imp : body.staticImports»
+				import static «imp»;
+			«ENDFOR»
+			// manual imports
 			«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
 			import «importClass»;
 			«ENDFOR»

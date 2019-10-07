@@ -557,11 +557,11 @@ class ExpressionGenerator {
 			JavaType.create(ele.name.toJavaType)
 	}
 	
-	def static metaClass(RosettaRegularAttribute attribute) {
+	def metaClass(RosettaRegularAttribute attribute) {
 		if (attribute.metaTypes.exists[m|m.name=="reference"]) "ReferenceWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 		else "FieldWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 	}
-	def static metaClass(Attribute attribute) {
+	def metaClass(Attribute attribute) {
 		if (attribute.annotations.exists[a|a.annotation?.name=="metadata" && a.attribute?.name=="reference"]) "ReferenceWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 		else "FieldWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 	}

@@ -20,7 +20,6 @@ import java.util.List
 import java.util.Optional
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class ModelObjectBuilderGenerator {
