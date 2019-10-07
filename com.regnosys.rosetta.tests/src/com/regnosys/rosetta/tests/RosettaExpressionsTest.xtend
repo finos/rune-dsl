@@ -32,10 +32,9 @@ class RosettaExpressionsTest {
 	@Test
 	def void shouldParseQualifierWithAdditiveExpression() {
 		'''
-			class Test {
-				one number (1..1);
-				two number (1..1);
-			}
+			data Test:
+				one number (1..1)
+				two number (1..1)
 			
 			isProduct TestQualifier
 				Test -> one + Test -> two = 42
@@ -45,10 +44,9 @@ class RosettaExpressionsTest {
 	@Test
 	def void shouldParseNoIssuesWhenDateSubtraction() {
 		'''
-			class Test {
-				one date (1..1);
-				two date (1..1);
-			}
+			data Test:
+				one date (1..1)
+				two date (1..1)
 			
 			isProduct TestQualifier
 				Test -> one - Test -> two = 42
@@ -58,10 +56,10 @@ class RosettaExpressionsTest {
 	@Test
 	def void shouldParseWithErrorWhenAddingDates() {
 		'''
-			class Test {
-				one date (1..1);
-				two date (1..1);
-			}
+			data Test:
+				one date (1..1)
+				two date (1..1)
+			
 			
 			isProduct TestQualifier
 				Test -> one + Test -> two = 42
@@ -75,10 +73,9 @@ class RosettaExpressionsTest {
 	@Test
 	def void shouldCodeGenerateWithMoreGenericsInformation() {
 		val code = '''
-			class Test {
-				one date (1..1);
-				two date (1..1);
-			}
+			data Test:
+				one date (1..1)
+				two date (1..1)
 			
 			isProduct TestQualifier
 				Test -> one - Test -> two = 42
@@ -91,10 +88,9 @@ class RosettaExpressionsTest {
 	@Test
 	def void shoudCodeGenerateAndCompileWhenSubtractingDates() {
 		val code = '''
-			class Test {
-				one date (1..1);
-				two date (1..1);
-			}
+			data Test:
+				one date (1..1)
+				two date (1..1)
 			
 			isProduct TestQualifier
 				Test -> one - Test -> two = 42
@@ -106,10 +102,10 @@ class RosettaExpressionsTest {
 	@Test
 	def void shoudCodeGenerateAndCompileWhenAddingNumbers() {
 		val code = '''
-			class Test {
-				one number (1..1);
-				two int (1..1);
-			}
+			data Test:
+				one number (1..1)
+				two int (1..1)
+			
 			
 			isProduct TestQualifier
 				Test -> one + Test -> two = 42
@@ -121,14 +117,12 @@ class RosettaExpressionsTest {
 	@Test
 	def void shoudCodeGenerateAndCompileAccessingMetaSimple() {
 		val code = '''
-			metaType reference string
 			metaType scheme string
-			metaType id string
 			
-			class Test {
-				one string (1..1) scheme;
-				two int (1..1);
-			}
+			data Test:
+				one string (1..1)
+					[metadata scheme]
+				two int (1..1)
 			
 			isProduct TestQualifier
 				Test -> one -> scheme = "scheme"
@@ -139,19 +133,17 @@ class RosettaExpressionsTest {
 	@Test
 	def void shoudCodeGenerateAndCompileAccessingMeta() {
 		val code = '''
-			metaType reference string
 			metaType scheme string
-			metaType id string
 			
-			class Test {
-				one Foo (1..1) scheme;
-				two int (1..1);
-			}
+			data Test:
+				one Foo (1..1)
+					[metadata scheme]
+				two int (1..1)
 			
-			class Foo {
-				one string (1..1) scheme;
-				two int (1..1);
-			}
+			data Foo:
+				one string (1..1)
+					[metadata scheme]
+				two int (1..1)
 			
 			isProduct TestQualifier
 				Test -> one -> scheme = "scheme"
@@ -167,15 +159,15 @@ class RosettaExpressionsTest {
 			metaType scheme string
 			metaType id string
 			
-			class Test {
-				one Foo (1..*) scheme;
-				two int (1..1);
-			}
+			data Test:
+				one Foo (1..*)
+					[metadata scheme]
+				two int (1..1)
 			
-			class Foo {
-				one string (1..1) scheme;
-				two int (1..1);
-			}
+			data Foo:
+				one string (1..1)
+					[metadata scheme]
+				two int (1..1)
 			
 			isProduct TestQualifier
 				(Test -> one group by two) -> one = "scheme"
@@ -191,15 +183,15 @@ class RosettaExpressionsTest {
 			metaType scheme string
 			metaType id string
 			
-			class Test {
-				one Foo (1..1) scheme;
-				two int (1..1);
-			}
+			data Test:
+				one Foo (1..1)
+					[metadata scheme]
+				two int (1..1)
 			
-			class Foo {
-				one string (1..1) scheme;
-				two int (1..1);
-			}
+			data Foo:
+				one string (1..1)
+					[metadata scheme]
+				two int (1..1)
 			
 			isProduct TestQualifier
 				Test -> one -> one = "scheme"
