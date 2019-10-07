@@ -60,7 +60,6 @@ class RosettaCalculationGenerationTest {
 				import com.rosetta.model.lib.math.BigDecimalExtensions;
 				import com.rosetta.test.model.Period;
 				import com.rosetta.test.model.PeriodEnum;
-				import java.lang.Integer;
 				import java.math.BigDecimal;
 				
 				
@@ -140,7 +139,6 @@ class RosettaCalculationGenerationTest {
 			import com.rosetta.model.lib.functions.Mapper;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import java.lang.Integer;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -203,7 +201,6 @@ class RosettaCalculationGenerationTest {
 			import com.rosetta.model.lib.functions.Max;
 			import com.rosetta.model.lib.functions.Min;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import java.lang.Integer;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -286,7 +283,6 @@ class RosettaCalculationGenerationTest {
 		import com.rosetta.model.lib.validation.ModelObjectValidator;
 		import com.rosetta.test.model.FoncOut;
 		import com.rosetta.test.model.FuncIn;
-		import java.lang.SuppressWarnings;
 		import java.time.LocalTime;
 		
 		
@@ -382,8 +378,6 @@ class RosettaCalculationGenerationTest {
 		import com.rosetta.model.lib.validation.ModelObjectValidator;
 		import com.rosetta.test.model.FuncIn;
 		import com.rosetta.test.model.FuncOut;
-		import java.lang.String;
-		import java.lang.SuppressWarnings;
 		import java.time.LocalTime;
 		
 		
@@ -561,7 +555,6 @@ class RosettaCalculationGenerationTest {
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.test.model.functions.AddOne;
-			import java.lang.Integer;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)
@@ -654,7 +647,6 @@ class RosettaCalculationGenerationTest {
 			import com.rosetta.test.model.MathInput;
 			import com.rosetta.test.model.functions.AddOne;
 			import com.rosetta.test.model.functions.SubOne;
-			import java.lang.String;
 			
 			
 			/**
@@ -773,7 +765,6 @@ class RosettaCalculationGenerationTest {
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.test.model.functions.AddOne;
-			import java.lang.Integer;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)
