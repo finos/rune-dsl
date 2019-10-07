@@ -21,6 +21,7 @@ import java.util.Optional
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class ModelObjectBuilderGenerator {
 	
@@ -166,14 +167,36 @@ class ModelObjectBuilderGenerator {
 		}
 	}
 	private def qualificationSetter(Data clazz) {
-		val attr = clazz.attributes.findFirst[type instanceof RosettaQualifiedType]
-		if (attr!==null) {
+		val attr =  BreadthFirstSearch.search(null as Attribute, [ att |
+			if (att === null)
+				clazz.attributes
+			else
+				att.type.eContents.filter(Attribute).toList
+		], [att | att?.type instanceof RosettaQualifiedType])
+		
+		if (attr !== null) {
 			'''
 			public void setQualification(String qualification) {
-				this.set«attr.name.toFirstUpper»(qualification);
+				this«attr.pathToSetter»
 			}
 			'''
 		}
+	}
+	
+	private def String pathToSetter(List<Attribute> path) {
+		val result = new StringBuilder
+		for (var i=1;i<path.size-1;i++) {
+			val att = path.get(i);
+			result.append('''.getOrCreate«att.name.toFirstUpper»(«IF att.card.isIsMany»0«ENDIF»)''')
+		}
+		val last = path.last
+		if (last.card.isIsMany) {
+			result.append(".add"+last.name.toFirstUpper+"(qualification);")
+		}
+		else {
+			result.append(".set"+last.name.toFirstUpper+"(qualification);")
+		}
+		result.toString()
 	}
 	
 	private def String toSetter(List<RosettaRegularAttribute> path) {

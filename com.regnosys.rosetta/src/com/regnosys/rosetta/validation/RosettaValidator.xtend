@@ -86,6 +86,19 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject CardinalityProvider cardinality
 	
 	@Check
+	def void deprecatedInfo(RosettaClass classe) {
+		info('''Class is deprecated use data instead''', ROSETTA_NAMED__NAME)
+	}
+	@Check
+	def void deprecatedInfo(RosettaChoiceRule classe) {
+		info('''ChoiceRule is deprecated use data instead''', ROSETTA_NAMED__NAME)
+	}
+	@Check
+	def void deprecatedInfo(RosettaDataRule classe) {
+		info('''DataRule is deprecated use data instead''', ROSETTA_NAMED__NAME)
+	}
+	
+	@Check
 	def void checkClassNameStartsWithCapital(RosettaClass classe) {
 		if (!Character.isUpperCase(classe.name.charAt(0))) {
 			warning("Class name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
@@ -474,8 +487,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkData(Data ele) {
-		val onOfs = ele.conditions.groupBy[it.constraint.oneOf].get(Boolean.TRUE)
-		if (onOfs.size > 1) {
+		val onOfs = ele.conditions.filter[it.constraint !== null].groupBy[it.constraint.oneOf].get(Boolean.TRUE)
+		if (onOfs !== null && onOfs.size > 1) {
 			onOfs.forEach [
 				error('''Only a single 'one-of' constraint is allowed.''', it.constraint, null)
 			]

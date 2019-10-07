@@ -85,6 +85,23 @@ class RosettaAttributeExtensions {
 				emptyList
 			))
 		}
+		if(rosExt.hasPartialKeyAnnotation(data)) {
+			res.add(new ExpandedAttribute(
+				data,
+				'rosettaKeyValue',
+				provideStringType,
+				'string',
+				1,
+				1,
+				false,
+				emptyList,
+				"",
+				false,
+				false,
+				false,
+				emptyList
+			))
+		}
 		return res
 	}
 	
@@ -97,7 +114,6 @@ class RosettaAttributeExtensions {
 		metaFields.name = METAFIELDSCLASSNAME
 		return metaFields
 	}
-
 	private static def provideStringType() {
 		val stringType = RosettaFactory.eINSTANCE.createRosettaBasicType
 		stringType.name = 'string'
