@@ -6,3 +6,5 @@ annotation keyed:
 annotation metadata:
      scheme string (0..1)
      reference string (0..1)
+
+annotation calculation: <"Marks a function as fully implemented calculation.">
