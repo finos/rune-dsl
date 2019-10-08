@@ -26,8 +26,13 @@ class ImportingStringConcatination extends StringConcatenation {
 	}
 
 	def dispatch protected String getStringRepresentation(JavaType object) {
-		addImport(object.name, false)
-		return object.simpleName
+		if(object.simpleName == '*') {
+			staticImports.add(object.name)
+			return ''
+		} else {
+			addImport(object.name, false)
+			return object.simpleName
+		}
 	}
 	
 	def private addStaticImport(Method method) {

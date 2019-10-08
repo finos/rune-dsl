@@ -855,7 +855,7 @@ class RosettaBlueprintTest {
 			
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.test.model.Input;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.areEqual;
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1406,7 +1406,7 @@ class RosettaBlueprintTest {
 		
 		import com.rosetta.model.lib.functions.MapperS;
 		import com.rosetta.test.model.Input;
-		import static com.rosetta.model.lib.validation.ValidatorHelper.areEqual;
+		import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 		// manual imports
 		import com.regnosys.rosetta.blueprints.Blueprint;
 		import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1526,7 +1526,7 @@ class RosettaBlueprintTest {
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.test.model.Avengers;
 			import com.rosetta.test.model.Hero;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.notEqual;
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1620,7 +1620,7 @@ class RosettaBlueprintTest {
 			
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.test.model.Foo;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.areEqual;
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;

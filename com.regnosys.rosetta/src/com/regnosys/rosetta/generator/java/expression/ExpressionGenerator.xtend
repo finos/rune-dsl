@@ -208,13 +208,13 @@ class ExpressionGenerator {
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
-				doExistsExpr(exists, if(containsFeatureCallOrCallableCall(binary.left)) MapperTreeValidatorHelper else ValidatorHelper, binary.binaryExpr(exists, params))
+				'''«importWildCard(if(containsFeatureCallOrCallableCall(binary.left)) MapperTreeValidatorHelper else ValidatorHelper)»«doExistsExpr(exists, arg.javaCode(params))»'''
 			else 
 				//if the argument is a binary expression then the exists needs to be pushed down into it
 				binary.binaryExpr(exists, params)
 		}
 		else {
-			doExistsExpr(exists, ValidatorHelper,  arg.javaCode(params))
+			'''«importWildCard(ValidatorHelper)»«doExistsExpr(exists, arg.javaCode(params))»'''
 		}
 	}
 	
@@ -226,13 +226,13 @@ class ExpressionGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient doExistsExpr(RosettaExistsExpression exists, Class<?> validatorClass, StringConcatenationClient arg) {
+	private def StringConcatenationClient doExistsExpr(RosettaExistsExpression exists, StringConcatenationClient arg) {
 		if(exists.single)
-			'''«importMethod(validatorClass,"singleExists")»(«arg», «exists.only»)'''
+			'''singleExists(«arg», «exists.only»)'''
 		else if(exists.multiple)
-			'''«importMethod(validatorClass,"multipleExists")»(«arg», «exists.only»)'''
+			'''multipleExists(«arg», «exists.only»)'''
 		else 
-			'''«importMethod(validatorClass,"exists")»(«arg», «exists.only»)'''
+			'''exists(«arg», «exists.only»)'''
 	}
 	
 	def StringConcatenationClient absentExpr(RosettaAbsentExpression notSet, RosettaExpression argument, ParamMap params) {
@@ -240,7 +240,7 @@ class ExpressionGenerator {
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
-				'''«importMethod(MapperTreeValidatorHelper,"notExists")»(«binary.binaryExpr(notSet, params)»)'''
+				'''«MapperTreeValidatorHelper».notExists(«binary.binaryExpr(notSet, params)»)'''
 			else
 				//if the arg is binary then the operator needs to be pushed down
 				binary.binaryExpr(notSet, params)
@@ -453,17 +453,17 @@ class ExpressionGenerator {
 	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right) {
 		switch operator {
 			case ("="):
-				'''«importMethod(ValidatorHelper, "areEqual")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»areEqual(«left», «right»)'''
 			case ("<>"):
-				'''«importMethod(ValidatorHelper,"notEqual")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»notEqual(«left», «right»)'''
 			case ("<") : 
-				'''«importMethod(ValidatorHelper,"lessThan")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»lessThan(«left», «right»)'''
 			case ("<=") : 
-				'''«importMethod(ValidatorHelper,"lessThanEquals")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»lessThanEquals(«left», «right»)'''
 			case (">") : 
-				'''«importMethod(ValidatorHelper,"greaterThan")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»greaterThan(«left», «right»)'''
 			case (">=") : 
-				'''«importMethod(ValidatorHelper,"greaterThanEquals")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»greaterThanEquals(«left», «right»)'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported binary operation of " + operator)
 		}

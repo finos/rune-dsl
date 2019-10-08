@@ -8,6 +8,10 @@ class ImportManagerExtension {
 		clazz.methods.findFirst[name == methodName]
 	}
 
+	def importWildCard(Class<?> clazz) {
+		JavaType.create(clazz.name + '.*')
+	}
+
 	def ImportingStringConcatination tracImports(StringConcatenationClient scc) {
 		val isc = new ImportingStringConcatination()
 		isc.append(scc)
