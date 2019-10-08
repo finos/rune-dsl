@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -122,12 +123,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testInconsistentCommonAttributeType() {
 		val model =
 		'''
-			class Foo {
-				id int (1..1);
-			}
-			class Bar {
-				id boolean (1..1);
-			}
+			data Foo:
+				id int (1..1)
+			data Bar:
+				id boolean (1..1)
 			
 			workflow rule WorkflowRule
 			Foo precedes Bar
@@ -141,11 +140,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testMissingCommonAttribute() {
 		val model =
 		'''
-			class Foo {
-				id int (1..1);
-			}
-			class Bar {
-			}
+			data Foo:
+				id int (1..1)
+			data Bar: <"">
 			
 			workflow rule
 			WorkflowRule
@@ -343,17 +340,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testDuplicateChoiceRuleAttribute_thatOne() {
 		val model = '''
-			class Bar {
-				attribute1 string (0..1);
-				attribute2 string (0..1);
-				attribute3 string (0..1);
-			}
+			data Bar:
+				attribute1 string (0..1)
+				attribute2 string (0..1)
+				attribute3 string (0..1)
 			
-			choice rule Foo
-				for Bar required choice between
-				attribute1 and attribute2 and attribute2
+			condition Foo:
+				required choice attribute1 , attribute2 , attribute2
 		'''.parseRosetta
-		model.assertError(ROSETTA_CHOICE_RULE, DUPLICATE_CHOICE_RULE_ATTRIBUTE, 'Duplicate attribute')
+		model.assertError(CONDITION, DUPLICATE_CHOICE_RULE_ATTRIBUTE, 'Duplicate attribute')
 	}
 	
 	@Test

@@ -171,8 +171,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 
 	private def void checkAttributeExists(RosettaTreeNode node, String expectedName, RosettaType expectedType) {
 		node.children.forEach [
-			if (parent !== null && !parent.eIsProxy) {
-				val attribute = parent.allAttributes.findFirst[name == expectedName]
+			if (parent instanceof Data && !parent.eIsProxy) {
+				val attribute = (parent as Data).allAttributes.findFirst[name == expectedName]
 				if (attribute === null)
 					error('''Class '«parent.name»' does not have an attribute '«expectedName»'«»''', it,
 						ROSETTA_TREE_NODE__PARENT, MISSING_ATTRIBUTE)
@@ -297,6 +297,23 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				error('''Duplicate attribute '«value.name»'«»''', ROSETTA_NAMED__NAME, DUPLICATE_CHOICE_RULE_ATTRIBUTE)
 			}
 			if (value.name == choiceRule.thisOne.name) {
+				error('''Duplicate attribute '«value.name»'«»''', ROSETTA_NAMED__NAME, DUPLICATE_CHOICE_RULE_ATTRIBUTE)
+			}
+		}
+	}
+	@Check
+	def checkChoiceRuleAttributesAreUnique(Condition choiceRule) {
+		if(!choiceRule.isChoiceRuleCondition) {
+			return
+		}
+		val name2attr = ArrayListMultimap.create
+		
+		choiceRule.constraint.attributes.forEach [
+			name2attr.put(name, it)
+		]
+		for (value : choiceRule.constraint.attributes) {
+			val attributeByName = name2attr.get(value.name)
+			if (attributeByName.size > 1) {
 				error('''Duplicate attribute '«value.name»'«»''', ROSETTA_NAMED__NAME, DUPLICATE_CHOICE_RULE_ATTRIBUTE)
 			}
 		}

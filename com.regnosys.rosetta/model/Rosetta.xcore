@@ -364,12 +364,12 @@ class RosettaWorkflowRule extends RosettaRootElement, RosettaNamed, RosettaDefin
 	contains RosettaExpression when
 	contains RosettaTreeNode root
 	contains RosettaExpression data
-	refers RosettaRegularAttribute commonIdentifier
+	refers RosettaFeature commonIdentifier
 	contains RosettaExpression commonIdPath
 }
 
 class RosettaTreeNode {
-	refers RosettaClass parent
+	refers RosettaType parent
 	boolean not
 	contains RosettaTreeNode[] children
 }
@@ -564,7 +564,7 @@ class RosettaExternalSynonymSource extends RosettaSynonymSource {
 }
 
 class RosettaExternalClass {
-	refers RosettaClass classRef
+	refers RosettaType classRef
 	contains RosettaExternalRegularAttribute[] regularAttributes
 }
 
@@ -574,7 +574,7 @@ class RosettaExternalEnum {
 }
 
 class RosettaExternalRegularAttribute {
-	refers RosettaRegularAttribute attributeRef
+	refers RosettaFeature attributeRef
 	contains RosettaExternalSynonym[] externalSynonyms
 }
 
@@ -649,7 +649,7 @@ class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinabl
 	contains RosettaRegulatoryReference[] references
 	contains RosettaMarketPractice[] marketPractice
 	contains BlueprintNodeExp nodes
-	refers RosettaClass output
+	refers RosettaType output
 }
 
 class BlueprintNodeExp {
