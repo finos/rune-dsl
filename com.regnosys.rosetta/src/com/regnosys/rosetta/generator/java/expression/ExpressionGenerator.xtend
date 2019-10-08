@@ -514,7 +514,7 @@ class ExpressionGenerator {
 		else
 		{
 			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty){
-				if(attribute.type instanceof RosettaClass) 
+				if(attribute.type instanceof RosettaClass || attribute.type instanceof Data) 
 				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
 				else
 				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
@@ -544,7 +544,7 @@ class ExpressionGenerator {
 		else
 		{
 			if (attribute.metaAnnotations.nullOrEmpty){
-				if(attribute.type instanceof RosettaClass) 
+				if(attribute.type instanceof RosettaClass || attribute.type instanceof Data) 
 				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
 				else
 				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''

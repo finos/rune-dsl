@@ -184,7 +184,7 @@ class ModelMetaGenerator {
 	def isField(RosettaExpression expression) {
 		if(expression === null) return false
 		val feat = expression as RosettaFeatureCall
-		!(feat.feature.type instanceof RosettaClass)
+		!((feat.feature.type instanceof RosettaClass || feat.feature.type instanceof Data))
 	}
 
 	def isList(RosettaExpression call) {

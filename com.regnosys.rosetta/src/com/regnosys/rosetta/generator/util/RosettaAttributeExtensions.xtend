@@ -240,7 +240,7 @@ class RosettaAttributeExtensions {
 					(attr.eContainer as RosettaType),
 					annoAttr.name,
 					annoAttr.type,
-					annoAttr.type.name,
+					annoAttr.type?.name,
 					0,
 					1,
 					false,

@@ -86,10 +86,10 @@ class RosettaExtensions {
 		return doCollectRootCalls(rq)
 	}
 
-	def private LinkedHashSet<RosettaClass> doCollectRootCalls(EObject obj) {
+	def private LinkedHashSet<RosettaType> doCollectRootCalls(EObject obj) {
 		val classes = newLinkedHashSet
 		obj.eAllContents.filter(RosettaCallableCall).forEach [
-			collectRootCalls(it, [if(it instanceof RosettaClass && !it.eIsProxy) classes.add(it as RosettaClass)])
+			collectRootCalls(it, [if((it instanceof RosettaClass || it instanceof Data) && !it.eIsProxy) classes.add(it as RosettaType)])
 		]
 		return classes
 	}
@@ -125,6 +125,9 @@ class RosettaExtensions {
 			expr.receiver.collectRootCalls(visitor)
 		}
 		else if(expr instanceof RosettaClass) {
+			visitor.apply(expr)
+		}
+		else if(expr instanceof Data) {
 			visitor.apply(expr)
 		}
 		else {

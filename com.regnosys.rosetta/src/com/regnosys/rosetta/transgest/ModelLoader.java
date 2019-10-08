@@ -4,16 +4,16 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
-import com.regnosys.rosetta.rosetta.RosettaClass;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
+import com.regnosys.rosetta.rosetta.RosettaType;
 import com.rosetta.model.lib.RosettaModelObject;	
 
 public interface ModelLoader {	
 
-	RosettaClass rosettaClass(Class<? extends RosettaModelObject> rootObject);	
+	RosettaType rosettaClass(Class<? extends RosettaModelObject> rootObject);	
 
-	RosettaClass rosettaClass(String className);	
+	RosettaType rosettaClass(String className);	
 
 	List<RosettaModel> models();	
 

@@ -261,7 +261,7 @@ class ImportGenerator {
 	}
 
 	def fullName(EClass type) {
-		if (type instanceof RosettaClass)
+		if (type instanceof RosettaClass || type instanceof RosettaClass)
 			'''«packages.model.packageName».«type.name»'''.toString
 		else
 			type.name.toJavaFullType
