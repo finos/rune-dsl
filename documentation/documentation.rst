@@ -681,38 +681,49 @@ The ``Increase`` illustrates how the syntax qualifies this event by requiring th
 Function Artefacts
 ------------------
 
+**All function artefacts in Rosetta have been unified** under a single construct called *Function*. Functions allow the domain model to represent not just data but also calculations and processes.
+
 Functions
 ^^^^^^^^^
 
 Purpose
 """""""
 
-A function is a block of code which runs when it is called (or invoked). Data can be passed into the function and the function performs a set of actions (usually) based on that data and can be combined as building blocks into processes.
+In programming languages, a function is a block of code which runs when it is called (a.k.a. *invoked*). Data can be passed as inputs into a function, which performs a set of actions based on that data and returns an output. Functions are then combined as building blocks into processes.
 
-The primary goal of functions in Rosetta is to model computation and processes in the financial domain, in a way that is unambiguous and understandable by domain experts and technical experts alike. There is great potential in the financial industry to standardise computation and processes to reduce friction between technology solutions and increase interoperability. 
-
-Rosetta's function syntax offers a restricted set of language and API features to minimise unintential behaviour of the code logic. For example, Rosetta is not turing complete and does not support looping constructs that have the potential to fail i.e. the loop never ends; nor does it natively support concurrency or I/O operations. If such features are needed, the user should make use of Rosetta's generated code that is expressed in a fully featured programming language, like Java.
+The primary goal of *Functions* in Rosetta is to standardise computations and processes to reduce friction between technology solutions and increase interoperability. For example, the processing of transaction lifecycle events is a key component of the processes used across the financial domain and can be modelled using functions in Rosetta.
 
 Syntax
 """"""
 
-The function syntax is 
+Rosetta's function syntax offers a restricted set of language features to minimise unintential behaviour of the code logic. It is also designed to be unambiguous and understandable by domain experts who are not software engineers.
 
-The inputs and the output
-""""""""""""""""""""""""""""""""""
+Rosetta is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations. If such features are needed, the implementor is meant to extend the code generated from Rosetta that is expressed in a fully featured programming language, like Java.
 
-A function, at minimum specifies a name and an output attribute. An attribute is defined by a name, data type and cardinality, in exactly the same way as attributes on a `class`.
+The function syntax specifies:
 
-The Rosetta convention for a function name is to use one upper CamelCase word.
+* name, inputs and output (mandatory)
+* definitions
+* conditions
+* output construction
 
-.. code-block:: Java
+Name, Inputs and Output
+"""""""""""""""""""""""
+
+At minimum, a function specifies a name and an output attribute. An attribute is defined by a name, data type and cardinality, in exactly the same way as an attribute in a ``class``.
+
+A function is declared using the ``func`` keyword and the Rosetta convention for a function name is to use one upper CamelCase word.
+
+.. code-block:: Haskell
+
  func GetBusinessDate:
     output:
       businessDate date (1..1)
 
-Most functions, however, require inputs, which are also expressed as attributes. The below describes a function called Execute, which defines four inputs and the output. 
+Most functions, however, require inputs, which are also expressed as attributes. The below describes a function called ``Execute``, which defines four inputs and the output. 
 
-.. code-block:: Java
+.. code-block:: Haskell
+
  func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
     inputs:
       product Product (1..1) <"The product underlying the financial transaction.">
@@ -725,19 +736,21 @@ Most functions, however, require inputs, which are also expressed as attributes.
 Definitions
 """""""""""
 
-To better communicate the intention of functions and attributes, Rosetta supports definitions on the function name and attribute level. Definitions are supported after the function name, at the end of an attribute and on statement blocks, look out for examples in the code snippets below.
+To better communicate the intention and use of functions, Rosetta supports multiple definitions in functions. Definitions can be specified after the function name, at the end of each attribute and on each statement block. Look at for definition occurences in the snippets below.
 
-.. code-block:: Java
+.. code-block:: Haskell
+
  func GetBusinessDate: <"Provides the business date from the underlying system implementation.">
     output:
-      businessDate date (1..1) <"The provided buisness date.">
+      businessDate date (1..1) <"The provided business date.">
 
-Constraints
-"""""""""""
+Conditions
+""""""""""
 
-Function inputs and the output can be constrained for validation purposes. The `condition` keyword is used when constraining the inputs only and the `post-condition` keyword is used when constraining the output. The `condition` itself is expressed as a logical statement that evaluates to true or false, otherwise known as a boolean expression.
+Function inputs and the output can be constrained for validation purposes. The ``condition`` keyword is used when constraining the inputs only and the ``post-condition`` keyword is used when constraining the output. The condition itself is expressed as a logical statement that evaluates to true or false (a.k.a. a *boolean* expression).
 
-.. code-block:: Java
+.. code-block:: Haskell
+
  func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
     inputs:
       product Product (1..1) <"The product underlying the financial transaction.">
@@ -753,18 +766,19 @@ Function inputs and the output can be constrained for validation purposes. The `
     post-condition: <"The input product was used to create the execution.">
       executionEvent -> primitive -> execution = NewExecutionPrimitive( product, quantity, partyA, partyB )
 
-The ``condition`` and ``post-condition`` perform a validation step in the same way as ``data rule`` for a `class`, extending this key Rosetta modelling component to functions and not just data. As such, the grammatical rules for logical statements  used for ``data rule`` re-used here.
+The ``condition`` and ``post-condition`` perform a validation step in the same way as ``data rule`` for a `class`. This extends this key Rosetta modelling component to functions and not just data. As such, the same syntax for logical statements used for ``data rule`` is re-used here.
 
 Constructing the Output
 """""""""""""""""""""""
 
-The final `post-condition` statement in the above invokes another function called `NewExecutionPrimitive`. The `post-condition` also asserts that the value returned from `NewExecutionPrimitive` is equal to the value that was stamped onto the path: `executionEvent -> primitive -> execution` by the implementor.
+The final ``post-condition`` statement in the above invokes another function called ``NewExecutionPrimitive``. The ``post-condition`` asserts that the value returned from ``NewExecutionPrimitive`` is equal to the value that was stamped onto the path: ``executionEvent -> primitive -> execution`` by the implementor.
 
-This means implementors must evaluate the `NewExecutionPrimitive` function and assign its output to the correct model element when implemeting this function. Subsequently the post-condition logic will be evaluated, invoking the same `NewExecutionPrimitive` function a second time. 
+This means implementors must evaluate the ``NewExecutionPrimitive`` function and assign its output to the correct model element when implemeting this function. Subsequently the post-condition logic will be evaluated, invoking the same ``NewExecutionPrimitive`` function a second time. 
 
-For efficiency, the function syntax provides support to directly assign values to the output attribute, which avoids the need to evaluate the `NewExecutionPrimitive` function twice, see example below.
+For efficiency, the function syntax in Rosetta provides support to directly assign values to the output attribute, which avoids the need to evaluate the ``NewExecutionPrimitive`` function twice, as in the example below.
 
-.. code-block:: Java
+.. code-block:: Haskell
+
  func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
     inputs:
       product Product (1..1) <"The product underlying the financial transaction.">
@@ -785,25 +799,24 @@ This example demonstrates, in the context of lifecycle events, why a data repres
 Full and Partial Functions
 """"""""""""""""""""""""""
 
-Functions can fully or partially define the output object. The output object (and thus the function) is thought to be fully defined if all validation constraints on the output obejct can be satisfied. 
+The creation of valid output objects can be fully or partially done in a function or completely left to the implementor. The output object (and thus the function) is thought to be fully defined if all validation constraints on the output obejct can be satisfied. 
 
-The job of defining how to create valid output objects can be fully done in a function, partially done in a function or completely left to the implementor.
+All functions require the output object to be fully valid when invoked as part of an implementation and will otherwise throw an exception.
 
-All functions require the output object to be fully valid when invoked as part of an implementation, otherwise an exception will be thrown at runtime.
+Fully Defined Functions: Calculations
+"""""""""""""""""""""""""""""""""""""
 
-Fully Defined Functions - Calculations
-""""""""""""""""""""""""""""""""""""""
+The output object and thus the function is fully defined when all validation constraints on the object have been satisfied. In this case, the generated code (in Java or equivalent) is directly usable in an implementation.
 
-The output object and thus the function is fully defined when all validation constraints on the object have been satisfied. In this case, the generated code (in Java or equivelant), should be directly usable in implementations.
+To mark a function as fully defined, make use of the ``calculation`` annotation per the below to pass enough information to the code generators to create concrete functions.
 
-To mark a function as fully defined, make use of the `calculation` annotation per the below to pass enough information to the code generators to create concrete functions.
+.. code-block:: Haskell
 
-.. code-block:: Java
  func FixedAmount: <"...">
   [calculation]
   inputs:
     interestRatePayout InterestRatePayout (1..1)
-		date date (1..1)
+    date date (1..1)
   output:
     amount number (1..1)
   ...
@@ -813,16 +826,17 @@ Partially Defined Functions
 
 When the output object's validation constraints are only partially satisfied, the function is partially implemented. In this case, implementors will need to extend the generated code and provide the remaining parts of the output object.
 
-The output object will still need to be valid, so the job of assigning the remaining values on the output object falls to the implementor.
+The output object still needs to be valid, so implementor must assign the remaining values on the output object.
 
 Aliases
 """""""
 
-The function syntax supports defining alias' that are only available in the context of the function. It behaves in the same way at the root level alias described earlier in this document although the syntax differs currently, but will be brought into alignment in the comming weeks.
+The function syntax supports defining 'aliases' that are only available in the context of the function. Aliases work like temporary variable assignments used in programming languages. Aliases in a function context behave in the same way as the root level ``alias`` construct described earlier in this document (the syntax currently differs but will be brought into alignment soon).
 
-In the below example an alias `executionPrimitive` is created and is made use of in both the `assign-output` and final `post-condition` statements.
+In the below example an ``executionPrimitive`` alias is created and is used in both the ``assign-output`` and final ``post-condition`` statements.
 
-.. code-block:: Java
+.. code-block:: Haskell
+ 
  func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
     inputs:
       product Product (1..1) <"The product underlying the financial transaction.">
