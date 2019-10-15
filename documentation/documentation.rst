@@ -705,14 +705,14 @@ A function, at minimum specifies a name and an output attribute. An attribute is
 
 The Rosetta convention for a function name is to use one upper CamelCase word.
 
-.. code-block:: Haskell
+.. code-block:: Java
  func GetBusinessDate:
     output:
       businessDate date (1..1)
 
 Most functions, however, require inputs, which are also expressed as attributes. The below describes a function called Execute, which defines four inputs and the output. 
 
-.. code-block:: Haskell
+.. code-block:: Java
  func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
     inputs:
       product Product (1..1) <"The product underlying the financial transaction.">
@@ -727,7 +727,7 @@ Definitions
 
 To better communicate the intention of functions and attributes, Rosetta supports definitions on the function name and attribute level. Definitions are supported after the function name, at the end of an attribute and on statement blocks, look out for examples in the code snippets below.
 
-.. code-block:: Haskell
+.. code-block:: Java
  func GetBusinessDate: <"Provides the business date from the underlying system implementation.">
     output:
       businessDate date (1..1) <"The provided buisness date.">
@@ -737,7 +737,7 @@ Constraints
 
 Function inputs and the output can be constrained for validation purposes. The `condition` keyword is used when constraining the inputs only and the `post-condition` keyword is used when constraining the output. The `condition` itself is expressed as a logical statement that evaluates to true or false, otherwise known as a boolean expression.
 
-.. code-block:: Haskell
+.. code-block:: Java
  func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
     inputs:
       product Product (1..1) <"The product underlying the financial transaction.">
@@ -764,7 +764,7 @@ This means implementors must evaluate the `NewExecutionPrimitive` function and a
 
 For efficiency, the function syntax provides support to directly assign values to the output attribute, which avoids the need to evaluate the `NewExecutionPrimitive` function twice, see example below.
 
-.. code-block:: Haskell
+.. code-block:: Java
  func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
     inputs:
       product Product (1..1) <"The product underlying the financial transaction.">
@@ -798,7 +798,7 @@ The output object and thus the function is fully defined when all validation con
 
 To mark a function as fully defined, make use of the `calculation` annotation per the below to pass enough information to the code generators to create concrete functions.
 
-.. code-block:: Haskell
+.. code-block:: Java
  func FixedAmount: <"...">
   [calculation]
   inputs:
@@ -822,7 +822,7 @@ The function syntax supports defining alias' that are only available in the cont
 
 In the below example an alias `executionPrimitive` is created and is made use of in both the `assign-output` and final `post-condition` statements.
 
-.. code-block:: Haskell
+.. code-block:: Java
  func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
     inputs:
       product Product (1..1) <"The product underlying the financial transaction.">
