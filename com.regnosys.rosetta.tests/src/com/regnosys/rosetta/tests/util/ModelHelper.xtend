@@ -5,6 +5,7 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.rosetta.RosettaModel
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.eclipse.emf.common.util.URI
 
 class ModelHelper {
 
@@ -93,6 +94,7 @@ class ModelHelper {
 			m = versionInfo + "\n" + m
 		}
 		val resourceSet = parse(commonEnums).eResource.resourceSet
+		resourceSet.getResource(URI.createURI('classpath:/model/annotations.rosetta'), true)
 		val parsed = m.parse(resourceSet)
 		return parsed;
 	}

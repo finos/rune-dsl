@@ -101,7 +101,7 @@ class RosettaGenerator extends AbstractGenerator {
 				modelObjectGenerator.generate(javaNames, fsa, elements, version)
 				enumGenerator.generate(packages, fsa, elements, version)
 				choiceRuleGenerator.generate(packages, fsa, elements, version)
-				dataRuleGenerator.generate(packages, fsa, elements, version)
+				dataRuleGenerator.generate(javaNames, fsa, elements, version)
 				metaGenerator.generate(packages, fsa, elements, version)
 				blueprintGenerator.generate(packages, fsa, elements, version)
 				qualifyEventsGenerator.generate(packages, fsa, elements, packages.qualifyEvent, RosettaEvent, version)

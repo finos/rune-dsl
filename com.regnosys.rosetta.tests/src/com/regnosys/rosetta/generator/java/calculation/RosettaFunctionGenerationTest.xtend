@@ -31,7 +31,7 @@ class RosettaFunctionGenerationTest {
 			import java.lang.String;
 			
 			
-			@ImplementedBy(FuncFooImpl.class)
+			@ImplementedBy(FuncFoo.FuncFooDefault.class)
 			public abstract class FuncFoo implements RosettaFunction {
 			
 				/**
@@ -41,12 +41,24 @@ class RosettaFunctionGenerationTest {
 				*/
 				public String evaluate(String name, String name2) {
 					
-					String result = doEvaluate(name, name2);
+					String resultHolder = doEvaluate(name, name2);
+					String result = assignOutput(resultHolder, name, name2);
 					
 					return result;
 				}
 				
+				private String assignOutput(String resultHolder, String name, String name2) {
+					return resultHolder;
+				}
+			
 				protected abstract String doEvaluate(String name, String name2);
+				
+				public static final class FuncFooDefault extends FuncFoo {
+					@Override
+					protected  String doEvaluate(String name, String name2) {
+						return null;
+					}
+				}
 			}
 			'''
 		)

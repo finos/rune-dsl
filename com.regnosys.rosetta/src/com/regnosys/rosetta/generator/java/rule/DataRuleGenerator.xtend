@@ -4,9 +4,7 @@ import com.google.common.base.CaseFormat
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGenerator
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions
-import com.regnosys.rosetta.generator.java.expression.RosettaExpressionJavaGeneratorForFunctions.ParamMap
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
@@ -30,14 +28,15 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 
 class DataRuleGenerator {
-	@Inject RosettaExpressionJavaGeneratorForFunctions expressionHandler
+	@Inject ExpressionGenerator expressionHandler
 	@Inject extension ImportManagerExtension
 	
-	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
+	def generate(JavaNames names, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaDataRule).forEach [
-			fsa.generateFile('''«packages.dataRule.directoryName»/«dataRuleClassName(name)».java''', toJava(packages, version))
+			fsa.generateFile('''«names.packages.dataRule.directoryName»/«dataRuleClassName(name)».java''', toJava(names, version))
 		]
 	}
 	
@@ -71,10 +70,10 @@ class DataRuleGenerator {
 		return camel + 'DataRule'
 	}
 
-	private def toJava(RosettaDataRule rule, RosettaJavaPackages packages, String version) {
+	private def toJava(RosettaDataRule rule, JavaNames names, String version) {
 		val rosettaClass = rosettaClassForRule(rule)
-		val expressionHandler = new RosettaExpressionJavaGenerator()
-		toJava(packages, rule, rosettaClass, expressionHandler, version)
+		val classBody = tracImports(toJava(names.packages, rule, rosettaClass, expressionHandler, version))
+		'''«classBody.toString»'''
 	}
 	
 	private def static rosettaClassForRule(RosettaDataRule rule) {
@@ -145,10 +144,10 @@ class DataRuleGenerator {
 			}
 		'''
 	}
-	private def toJava(RosettaJavaPackages packages, RosettaDataRule rule, RosettaClass rosettaClass, RosettaExpressionJavaGenerator expressionHandler, String version)  {
-	val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.grammarWhenThen(rule.when, rule.then) );
-	val imports = new ImportGenerator(packages)
-	imports.addRule(rule)
+	private def StringConcatenationClient toJava(RosettaJavaPackages packages, RosettaDataRule rule, RosettaClass rosettaClass, ExpressionGenerator expressionHandler, String version)  {
+		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.grammarWhenThen(rule.when, rule.then) );
+		val imports = new ImportGenerator(packages)
+		imports.addRule(rule)
 	return '''
 		package «packages.dataRule.packageName»;
 		
@@ -195,11 +194,11 @@ class DataRuleGenerator {
 			}
 			
 			private ComparisonResult ruleIsApplicable(«rosettaClass.name» «rosettaClass.name.toFirstLower») {
-				return «expressionHandler.javaCode(rule.when, new RosettaExpressionJavaGenerator.ParamMap(rosettaClass))»;
+				return «expressionHandler.javaCode(rule.when, new ParamMap(rosettaClass))»;
 			}
 			
 			private ComparisonResult evaluateThenExpression(«rosettaClass.name» «rosettaClass.name.toFirstLower») {
-				return «expressionHandler.javaCode(rule.then, new RosettaExpressionJavaGenerator.ParamMap(rosettaClass))»;
+				return «expressionHandler.javaCode(rule.then, new ParamMap(rosettaClass))»;
 			}
 		}
 	'''

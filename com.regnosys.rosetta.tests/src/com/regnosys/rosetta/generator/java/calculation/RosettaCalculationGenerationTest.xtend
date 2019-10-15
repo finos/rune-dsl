@@ -52,6 +52,7 @@ class RosettaCalculationGenerationTest {
 			'''
 				package com.rosetta.test.model.functions;
 				
+				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.Mapper;
 				import com.rosetta.model.lib.functions.MapperS;
@@ -80,7 +81,8 @@ class RosettaCalculationGenerationTest {
 					}
 					
 					
-					public static class MONTH implements RosettaFunction {
+					@ImplementedBy(MONTH.MONTHDefault.class)
+					public static abstract class MONTH implements RosettaFunction {
 					
 						/**
 						* @param in1 
@@ -89,20 +91,28 @@ class RosettaCalculationGenerationTest {
 						*/
 						public BigDecimal evaluate(PeriodEnum in1, Period in2) {
 							
-							BigDecimal out = doEvaluate(in1, in2);
+							BigDecimal outHolder = doEvaluate(in1, in2);
+							BigDecimal out = assignOutput(outHolder, in1, in2);
 							
 							return out;
 						}
 						
-						protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
-							Mapper<BigDecimal> outHolder = null;
-							outHolder = MapperS.of(BigDecimalExtensions.multiply(BigDecimalExtensions.valueOf(i(in1, in2).get()), BigDecimalExtensions.valueOf(30.0)));
-							return outHolder.get();
+						private BigDecimal assignOutput(BigDecimal outHolder, PeriodEnum in1, Period in2) {
+							outHolder = MapperS.of(BigDecimalExtensions.multiply(BigDecimalExtensions.valueOf(i(in1, in2).get()), BigDecimalExtensions.valueOf(30.0))).get();
+							return outHolder;
 						}
+					
+						protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
 						
 						
 						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
 							return MapperS.of(in2).<Integer>map("getFrequency", Period::getFrequency);
+						}
+						public static final class MONTHDefault extends MONTH {
+							@Override
+							protected  BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
+								return null;
+							}
 						}
 					}
 				}
@@ -126,13 +136,15 @@ class RosettaCalculationGenerationTest {
 			'''
 			package com.rosetta.test.model.functions;
 			
+			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.Mapper;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import java.lang.Integer;
 			
 			
-			public class Calc implements RosettaFunction {
+			@ImplementedBy(Calc.CalcDefault.class)
+			public abstract class Calc implements RosettaFunction {
 			
 				/**
 				* @param one 
@@ -140,20 +152,28 @@ class RosettaCalculationGenerationTest {
 				*/
 				public Integer evaluate(Integer one) {
 					
-					Integer out = doEvaluate(one);
+					Integer outHolder = doEvaluate(one);
+					Integer out = assignOutput(outHolder, one);
 					
 					return out;
 				}
 				
-				protected Integer doEvaluate(Integer one) {
-					Mapper<Integer> outHolder = null;
-					outHolder = MapperS.of((oneA(one).get() + oneA(one).get()));
-					return outHolder.get();
+				private Integer assignOutput(Integer outHolder, Integer one) {
+					outHolder = MapperS.of((oneA(one).get() + oneA(one).get())).get();
+					return outHolder;
 				}
+			
+				protected abstract Integer doEvaluate(Integer one);
 				
 				
 				protected Mapper<Integer> oneA(Integer one) {
 					return MapperS.of(Integer.valueOf(1));
+				}
+				public static final class CalcDefault extends Calc {
+					@Override
+					protected  Integer doEvaluate(Integer one) {
+						return null;
+					}
 				}
 			}
 			'''
@@ -164,6 +184,7 @@ class RosettaCalculationGenerationTest {
 	def void testSimpleCalculationGeneration() {
 		'''
 			func Calc:
+				[calculation]
 				inputs:
 					arg1 int  (1..1)
 					arg2 int  (1..1)
@@ -176,6 +197,7 @@ class RosettaCalculationGenerationTest {
 			'''
 			package com.rosetta.test.model.functions;
 			
+			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.Mapper;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.Max;
@@ -184,7 +206,8 @@ class RosettaCalculationGenerationTest {
 			import java.lang.Integer;
 			
 			
-			public class Calc implements RosettaFunction {
+			@ImplementedBy(Calc.CalcDefault.class)
+			public abstract class Calc implements RosettaFunction {
 			
 				/**
 				* @param arg1 
@@ -193,16 +216,18 @@ class RosettaCalculationGenerationTest {
 				*/
 				public Integer evaluate(Integer arg1, Integer arg2) {
 					
-					Integer res = doEvaluate(arg1, arg2);
+					Integer resHolder = doEvaluate(arg1, arg2);
+					Integer res = assignOutput(resHolder, arg1, arg2);
 					
 					return res;
 				}
 				
-				protected Integer doEvaluate(Integer arg1, Integer arg2) {
-					Mapper<Integer> resHolder = null;
-					resHolder = MapperS.of((a1(arg1, arg2).get() + (a2(arg1, arg2).get() * 215)));
-					return resHolder.get();
+				private Integer assignOutput(Integer resHolder, Integer arg1, Integer arg2) {
+					resHolder = MapperS.of((a1(arg1, arg2).get() + (a2(arg1, arg2).get() * 215))).get();
+					return resHolder;
 				}
+			
+				protected abstract Integer doEvaluate(Integer arg1, Integer arg2);
 				
 				
 				protected Mapper<Integer> a1(Integer arg1, Integer arg2) {
@@ -211,6 +236,12 @@ class RosettaCalculationGenerationTest {
 				
 				protected Mapper<Integer> a2(Integer arg1, Integer arg2) {
 					return MapperS.of(new Max().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
+				}
+				public static final class CalcDefault extends Calc {
+					@Override
+					protected  Integer doEvaluate(Integer arg1, Integer arg2) {
+						return null;
+					}
 				}
 			}
 			'''
@@ -245,6 +276,7 @@ class RosettaCalculationGenerationTest {
 		val expected = '''
 		package com.rosetta.test.model.functions;
 		
+		import com.google.inject.ImplementedBy;
 		import com.google.inject.Inject;
 		import com.rosetta.model.lib.functions.Mapper;
 		import com.rosetta.model.lib.functions.MapperMaths;
@@ -258,7 +290,8 @@ class RosettaCalculationGenerationTest {
 		import java.time.LocalTime;
 		
 		
-		public class Calc implements RosettaFunction {
+		@ImplementedBy(Calc.CalcDefault.class)
+		public abstract class Calc implements RosettaFunction {
 			
 			@Inject protected ModelObjectValidator objectValidator;
 		
@@ -268,14 +301,14 @@ class RosettaCalculationGenerationTest {
 			*/
 			public FoncOut evaluate(FuncIn funIn) {
 				
-				FoncOut res = doEvaluate(funIn).build();
+				FoncOut.FoncOutBuilder resHolder = doEvaluate(funIn);
+				FoncOut res = assignOutput(resHolder, funIn).build();
 				
 				objectValidator.validateAndFailOnErorr(FoncOut.class, res);
 				return res;
 			}
 			
-			protected FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
-				FoncOut.FoncOutBuilder resHolder = FoncOut.builder();
+			private FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder resHolder, FuncIn funIn) {
 				@SuppressWarnings("unused") FoncOut res = resHolder.build();
 				resHolder
 					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
@@ -286,6 +319,8 @@ class RosettaCalculationGenerationTest {
 				;
 				return resHolder;
 			}
+		
+			protected abstract FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn);
 			
 			
 			protected Mapper<Date> arg1(FuncIn funIn) {
@@ -294,6 +329,12 @@ class RosettaCalculationGenerationTest {
 			
 			protected Mapper<LocalTime> arg2(FuncIn funIn) {
 				return MapperS.of(funIn).<LocalTime>map("getVal2", FuncIn::getVal2);
+			}
+			public static final class CalcDefault extends Calc {
+				@Override
+				protected  FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
+					return FoncOut.builder();
+				}
 			}
 		}
 		'''
@@ -314,6 +355,7 @@ class RosettaCalculationGenerationTest {
 			}
 			
 			func RTS_22_Fields :
+				[calculation]
 				inputs: funcIn FuncIn (1..1)
 			
 				output: out FuncOut (1..1)
@@ -330,6 +372,7 @@ class RosettaCalculationGenerationTest {
 		val expected = '''
 		package com.rosetta.test.model.functions;
 		
+		import com.google.inject.ImplementedBy;
 		import com.google.inject.Inject;
 		import com.rosetta.model.lib.functions.Mapper;
 		import com.rosetta.model.lib.functions.MapperMaths;
@@ -344,7 +387,8 @@ class RosettaCalculationGenerationTest {
 		import java.time.LocalTime;
 		
 		
-		public class RTS_22_Fields implements RosettaFunction {
+		@ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
+		public abstract class RTS_22_Fields implements RosettaFunction {
 			
 			@Inject protected ModelObjectValidator objectValidator;
 		
@@ -354,14 +398,14 @@ class RosettaCalculationGenerationTest {
 			*/
 			public FuncOut evaluate(FuncIn funcIn) {
 				
-				FuncOut out = doEvaluate(funcIn).build();
+				FuncOut.FuncOutBuilder outHolder = doEvaluate(funcIn);
+				FuncOut out = assignOutput(outHolder, funcIn).build();
 				
 				objectValidator.validateAndFailOnErorr(FuncOut.class, out);
 				return out;
 			}
 			
-			protected FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
-				FuncOut.FuncOutBuilder outHolder = FuncOut.builder();
+			private FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder outHolder, FuncIn funcIn) {
 				@SuppressWarnings("unused") FuncOut out = outHolder.build();
 				outHolder
 					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
@@ -372,6 +416,8 @@ class RosettaCalculationGenerationTest {
 				;
 				return outHolder;
 			}
+		
+			protected abstract FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn);
 			
 			
 			protected Mapper<String> linkId(FuncIn funcIn) {
@@ -384,6 +430,12 @@ class RosettaCalculationGenerationTest {
 			
 			protected Mapper<LocalTime> tradeTime(FuncIn funcIn) {
 				return MapperS.of(funcIn).<LocalTime>map("getVal2", FuncIn::getVal2);
+			}
+			public static final class RTS_22_FieldsDefault extends RTS_22_Fields {
+				@Override
+				protected  FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
+					return FuncOut.builder();
+				}
 			}
 		}
 		'''
@@ -503,6 +555,7 @@ class RosettaCalculationGenerationTest {
 			'''
 			package com.rosetta.test.model.functions;
 			
+			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
 			import com.rosetta.model.lib.functions.Mapper;
 			import com.rosetta.model.lib.functions.MapperS;
@@ -511,7 +564,8 @@ class RosettaCalculationGenerationTest {
 			import java.lang.Integer;
 			
 			
-			public class Adder implements RosettaFunction {
+			@ImplementedBy(Adder.AdderDefault.class)
+			public abstract class Adder implements RosettaFunction {
 				
 				// RosettaFunction dependencies
 				//
@@ -522,20 +576,28 @@ class RosettaCalculationGenerationTest {
 				*/
 				public Integer evaluate() {
 					
-					Integer res = doEvaluate();
+					Integer resHolder = doEvaluate();
+					Integer res = assignOutput(resHolder);
 					
 					return res;
 				}
 				
-				protected Integer doEvaluate() {
-					Mapper<Integer> resHolder = null;
-					resHolder = MapperS.of(arg1().get());
-					return resHolder.get();
+				private Integer assignOutput(Integer resHolder) {
+					resHolder = MapperS.of(arg1().get()).get();
+					return resHolder;
 				}
+			
+				protected abstract Integer doEvaluate();
 				
 				
 				protected Mapper<Integer> arg1() {
 					return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
+				}
+				public static final class AdderDefault extends Adder {
+					@Override
+					protected  Integer doEvaluate() {
+						return null;
+					}
 				}
 			}
 			'''
@@ -584,8 +646,8 @@ class RosettaCalculationGenerationTest {
 			'''
 			package com.rosetta.test.model.functions;
 			
+			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
-			import com.rosetta.model.lib.functions.Mapper;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.test.model.Math;
@@ -615,7 +677,8 @@ class RosettaCalculationGenerationTest {
 				}
 				
 				
-				public static class INCR implements RosettaFunction {
+				@ImplementedBy(INCR.INCRDefault.class)
+				public static abstract class INCR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -628,20 +691,29 @@ class RosettaCalculationGenerationTest {
 					*/
 					public String evaluate(Math in1, MathInput in2) {
 						
-						String arg1 = doEvaluate(in1, in2);
+						String arg1Holder = doEvaluate(in1, in2);
+						String arg1 = assignOutput(arg1Holder, in1, in2);
 						
 						return arg1;
 					}
 					
-					protected String doEvaluate(Math in1, MathInput in2) {
-						Mapper<String> arg1Holder = null;
-						arg1Holder = MapperS.of(addOne.evaluate(in2.getMathInput()));
-						return arg1Holder.get();
+					private String assignOutput(String arg1Holder, Math in1, MathInput in2) {
+						arg1Holder = MapperS.of(addOne.evaluate(in2.getMathInput())).get();
+						return arg1Holder;
 					}
+				
+					protected abstract String doEvaluate(Math in1, MathInput in2);
 					
+					public static final class INCRDefault extends INCR {
+						@Override
+						protected  String doEvaluate(Math in1, MathInput in2) {
+							return null;
+						}
+					}
 				}
 				
-				public static class DECR implements RosettaFunction {
+				@ImplementedBy(DECR.DECRDefault.class)
+				public static abstract class DECR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -654,17 +726,25 @@ class RosettaCalculationGenerationTest {
 					*/
 					public String evaluate(Math in1, MathInput in2) {
 						
-						String arg1 = doEvaluate(in1, in2);
+						String arg1Holder = doEvaluate(in1, in2);
+						String arg1 = assignOutput(arg1Holder, in1, in2);
 						
 						return arg1;
 					}
 					
-					protected String doEvaluate(Math in1, MathInput in2) {
-						Mapper<String> arg1Holder = null;
-						arg1Holder = MapperS.of(subOne.evaluate(in2.getMathInput()));
-						return arg1Holder.get();
+					private String assignOutput(String arg1Holder, Math in1, MathInput in2) {
+						arg1Holder = MapperS.of(subOne.evaluate(in2.getMathInput())).get();
+						return arg1Holder;
 					}
+				
+					protected abstract String doEvaluate(Math in1, MathInput in2);
 					
+					public static final class DECRDefault extends DECR {
+						@Override
+						protected  String doEvaluate(Math in1, MathInput in2) {
+							return null;
+						}
+					}
 				}
 			}
 			'''.toString, generated)
@@ -687,6 +767,7 @@ class RosettaCalculationGenerationTest {
 			'''
 			package com.rosetta.test.model.functions;
 			
+			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
 			import com.rosetta.model.lib.functions.Mapper;
 			import com.rosetta.model.lib.functions.MapperS;
@@ -695,7 +776,8 @@ class RosettaCalculationGenerationTest {
 			import java.lang.Integer;
 			
 			
-			public class Adder implements RosettaFunction {
+			@ImplementedBy(Adder.AdderDefault.class)
+			public abstract class Adder implements RosettaFunction {
 				
 				// RosettaFunction dependencies
 				//
@@ -707,20 +789,28 @@ class RosettaCalculationGenerationTest {
 				*/
 				public Integer evaluate(Integer arg1) {
 					
-					Integer res = doEvaluate(arg1);
+					Integer resHolder = doEvaluate(arg1);
+					Integer res = assignOutput(resHolder, arg1);
 					
 					return res;
 				}
 				
-				protected Integer doEvaluate(Integer arg1) {
-					Mapper<Integer> resHolder = null;
-					resHolder = MapperS.of(addedOne(arg1).get());
-					return resHolder.get();
+				private Integer assignOutput(Integer resHolder, Integer arg1) {
+					resHolder = MapperS.of(addedOne(arg1).get()).get();
+					return resHolder;
 				}
+			
+				protected abstract Integer doEvaluate(Integer arg1);
 				
 				
 				protected Mapper<Integer> addedOne(Integer arg1) {
 					return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
+				}
+				public static final class AdderDefault extends Adder {
+					@Override
+					protected  Integer doEvaluate(Integer arg1) {
+						return null;
+					}
 				}
 			}
 			'''

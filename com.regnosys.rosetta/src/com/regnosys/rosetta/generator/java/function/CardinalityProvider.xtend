@@ -1,15 +1,15 @@
 package com.regnosys.rosetta.generator.java.function
 
+import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
-import com.regnosys.rosetta.rosetta.RosettaRecordType
+import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
@@ -35,10 +35,10 @@ class CardinalityProvider {
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
 			RosettaBinaryOperation: obj.left.isMulti || obj.right.multi // check this
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
+			RosettaAlias: obj.expression.isMulti
 			ListLiteral: true
 			RosettaLiteral,
-			RosettaRecordType,
-			RosettaExternalFunction,
+			RosettaRootElement,
 			RosettaEnumValueReference: false
 			default: {println(obj?.eClass?.name)false }
 		}
