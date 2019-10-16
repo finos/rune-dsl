@@ -210,7 +210,7 @@ The ``rosettaKeyValue`` feature is meant to support the reconciliation of econom
 Qualified Types
 """""""""""""""
 
-The ``calculation`` qualified type represents the outcome of a calculation in the model and is specified instead of the type for the attribute. An attribute with the ``calculation`` type is meant to be associated to a ``calculation`` model artefact as described in the *Calculation* section. The type is implied by the calculation output.
+The ``calculation`` qualified type represents the outcome of a calculation in the model and is specified instead of the type for the attribute. An attribute with the ``calculation`` type is meant to be associated to a function annotated with the calculation keyword, as described in the *Function Artefacts* section. The type is implied by the function output.
 
 An example usage is the conversion from clean price to dirty price for a bond, as part of the ``CleanPrice`` class:
 
@@ -282,7 +282,7 @@ Purpose
 An alias is an indirection for an entire Rosetta expression. Aliases have been introduced in the Rosetta syntax because:
 
 * Model tree expressions can be cumbersome, which may contradict the primary goals of clarity and legibility.
-* The same model tree expressions are often reused across multiple modelling artefacts such as data rule, event and product qualification or calculation.
+* The same model tree expressions are often reused across multiple modelling artefacts such as data rule, event and product qualification or function.
 
 Syntax
 """"""
@@ -403,7 +403,7 @@ There are cases where the mapping between existing standards and protocols and t
 Syntax
 """"""
 
-The mapping logic differs from the data rule, choice rule and calculation syntax in that its syntax is not expressed as a stand-alone block with a qualifier prefix such as ``rule``. The mapping rule is positioned as an extension to the synonym expression, and each of the mapping expressions is prefixed with the ``set`` qualifier, followed by the name of the Rosetta attribute to which the synonym is being mapped to. Several mapping expressions can be associated with a given synonym.
+The mapping logic differs from the data rule and choice rule syntax in that its syntax is not expressed as a stand-alone block with a qualifier prefix such as ``rule``. The mapping rule is positioned as an extension to the synonym expression, and each of the mapping expressions is prefixed with the ``set`` qualifier, followed by the name of the Rosetta attribute to which the synonym is being mapped to. Several mapping expressions can be associated with a given synonym.
 
 The mapping syntax is composed of two (optional) expressions:
 
@@ -681,171 +681,177 @@ The ``Increase`` illustrates how the syntax qualifies this event by requiring th
 Function Artefacts
 ------------------
 
-**Rosetta provides three types of functional artefacts** that have been developed to support the modelling of processes:
+**All function artefacts in Rosetta have been unified** under a single construct called *Function*. Functions allow the domain model to represent not just data but also calculations and processes.
 
-* Calculation
-* Function (to be deprecated and replaced by *Function Specification*)
-* Function Specification
-
-Calculation
-^^^^^^^^^^^
+Functions
+^^^^^^^^^
 
 Purpose
 """""""
 
-The Rosetta grammar has been developed to support the expression of financial contract specifications (such as the ISDA Definitions) as machine executable formulas.
+In programming languages, a function is a block of code which runs when it is called (a.k.a. *invoked*). Data can be passed as inputs into a function, which performs a set of actions based on that data and returns an output. Functions are then combined as building blocks into processes.
+
+The primary goal of *Functions* in Rosetta is to standardise computations and processes to reduce friction between technology solutions and increase interoperability. For example, the processing of transaction lifecycle events is a key component of the processes used across the financial domain and can be modelled using functions in Rosetta.
 
 Syntax
 """"""
 
-The calculation syntax has four components:
+Rosetta's function syntax offers a restricted set of language features to minimise unintential behaviour of the code logic. It is also designed to be unambiguous and understandable by domain experts who are not software engineers.
 
-* **name** prefixed with the ``calculation`` qualifier and followed by an associated definition, ideally referencing the ISDA Definition that the calculation is meant to implement
-* **calculation** provided as a formula following an initial ``:``
-* **arguments** provided as inputs to that calculation after a syntactic ``where``, each specified using a ``:`` and sourced from model components
-* **function** (possibly) required to further transform those model components and build the arguments 
+Rosetta is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations. If such features are needed, the implementor is meant to extend the code generated from Rosetta that is expressed in a fully featured programming language, like Java.
 
-The application of this syntax to ``FloatingAmount`` as per the ISDA Definitions provides a good illustration:
+The function syntax specifies:
 
-.. code-block:: Java
+* name, inputs and output (mandatory)
+* definitions
+* conditions
+* output construction
 
- calculation FloatingAmount <"2006 ISDA Definition Article 6 Section 6.1. Calculation of a Floating Amount: Subject to the provisions of Section 6.4 (Negative Interest Rates), the Floating Amount payable by a party on a Payment Date will be: (a) if Compounding is not specified for the Swap Transaction or that party, an amount calculated on a formula basis for that Payment Date or for the related Calculation Period as follows: Floating Amount = Calculation Amount × Floating Rate + Spread × Floating Rate Day Count Fraction (b) if “Compounding” is specified to be applicable to the Swap Transaction or that party and 'Flat Compounding' is not specified, an amount equal to the sum of the Compounding Period Amounts for each of the Compounding Periods in the related Calculation Period; or (c) if 'Flat Compounding' is specified to be applicable to the Swap Transaction or that party, an amount equal to the sum of the Basic Compounding Period Amounts for each of the Compounding Periods in the related Calculation Period plus the sum of the Additional Compounding Period Amounts for each such Compounding Period.">
- {
-  floatingAmount : calculationAmount * ( floatingRate + spread ) * dayCountFraction
-  
-  where
-   calculationAmount : InterestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> initialValue
-   floatingRate : ResolveRateIndex( InterestRatePayout -> rateSpecification -> floatingRate -> floatingRateIndex ) -> rate
-   spread : GetRateSchedule( InterestRatePayout -> rateSpecification -> floatingRate ) -> schedule -> initialValue
-   dayCountFraction : InterestRatePayout -> dayCountFraction
- }
+Name, Inputs and Output
+"""""""""""""""""""""""
 
-The last ``dayCountFraction`` argument, which is sourced from the ``InterestRatePayout``, is an enumeration where each enumeration value is itself a calculation - here illustrated for the ``30/360`` ISDA day count fraction definition:
+At minimum, a function specifies a name and an output attribute. An attribute is defined by a name, data type and cardinality, in exactly the same way as an attribute in a ``class``.
 
-.. code-block:: Java
+A function is declared using the ``func`` keyword and the Rosetta convention for a function name is to use one upper CamelCase word.
 
- calculation DayCountFractionEnum._30_360
- {
-  : (360 * (endYear - startYear) + 30 * (endMonth - startMonth) + (endDay - startDay)) / 360
-  
-  where
-   alias calculationPeriod
-    CalculationPeriod( InterestRatePayout -> calculationPeriodDates )
-  
-  startYear : calculationPeriod -> startDate -> year
-  endYear : calculationPeriod -> endDate -> year
-  startMonth : calculationPeriod -> startDate -> month
-  endMonth : calculationPeriod -> endDate -> month
-  endDay : if calculationPeriod -> startDate -> day > 29
-   then Min( calculationPeriod -> endDate -> day, 30 )
-   else calculationPeriod -> endDate -> day	
-  startDay : Min( calculationPeriod -> startDate -> day, 30 )		
- }
+.. code-block:: Haskell
 
-Function
-^^^^^^^^
+ func GetBusinessDate:
+    output:
+      businessDate date (1..1)
 
-Purpose
-"""""""
+Most functions, however, require inputs, which are also expressed as attributes. The below describes a function called ``Execute``, which defines four inputs and the output. 
 
-When calculation arguments need some further transformation of model components, a ``function`` can be specified to provide that transformation. This is the case of the ``CalculationPeriod`` and ``ResolveRateIndex`` functions used to build some of the arguments in the above example.
+.. code-block:: Haskell
 
-The model only specifies that such function is required but Rosetta does not provide an implementation of those functions. It is the responsibility of model applications to provide an actual implementation where those functions are used.
+ func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
+    inputs:
+      product Product (1..1) <"The product underlying the financial transaction.">
+      quantity ExecutionQuantity (1..1) <"The amount of product being transacted.">
+      partyA Party (1..1) <"Party to the transaction.">
+      partyB Party (1..1) <"Party to the transaction.">
+    output:
+      execution Event (1..1) <"The execution transaction represented as an Event model object.">
 
-Syntax
-""""""
+Definitions
+"""""""""""
 
-The ``function`` syntax specifies the inputs and outputs of the function and their respective types. Both inputs and outputs can be multiple. Components of the function output are accessed using the ``->`` indirection in the same way as the model tree.
+To better communicate the intention and use of functions, Rosetta supports multiple definitions in functions. Definitions can be specified after the function name, at the end of each attribute and on each statement block. Look at for definition occurences in the snippets below.
 
-.. code-block:: Java
+.. code-block:: Haskell
 
- function CalculationPeriod( calculationPeriodDates CalculationPeriodDates )
- {
-  startDate date;
-  endDate date;
-  daysInPeriod int;
-  daysInLeapYearPeriod int;
-  isFirstPeriod boolean;
-  isLastPeriod boolean;
- }
+ func GetBusinessDate: <"Provides the business date from the underlying system implementation.">
+    output:
+      businessDate date (1..1) <"The provided business date.">
 
- function ResolveRateIndex( index FloatingRateIndexEnum )
- {
-  rate number;
- }
+Conditions
+""""""""""
 
-**Note**: This ``function`` syntax will be deprecated and replaced by the new *Function Specification* feature.
+Function inputs and the output can be constrained for validation purposes. The ``condition`` keyword is used when constraining the inputs only and the ``post-condition`` keyword is used when constraining the output. The condition itself is expressed as a logical statement that evaluates to true or false (a.k.a. a *boolean* expression).
 
-Function Specification
-^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: Haskell
 
-Purpose
-"""""""
+ func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
+    inputs:
+      product Product (1..1) <"The product underlying the financial transaction.">
+      quantity ExecutionQuantity (1..1) <"The amount of product being transacted.">
+      partyA Party (1..1) <"Party to the transaction.">
+      partyB Party (1..1) <"Party to the transaction.">
+    output:
+      executionEvent Event (1..1) <"The execution transaction represented as an Event model object.">
+    condition: <"Parties are not the same.">
+      partyA <> partyB
+    post-condition: <"The execution event is the first is any post trade processes and so should not have any lineage information.">
+      executionEvent -> lineage is absent
+    post-condition: <"The input product was used to create the execution.">
+      executionEvent -> primitive -> execution = NewExecutionPrimitive( product, quantity, partyA, partyB )
 
-To allow the domain model to represent processes and not just data, Rosetta must be able to support the building of *functions*. Functions represent the transformation of data from inputs into outputs and are combined as building blocks into processes.
+The ``condition`` and ``post-condition`` perform a validation step in the same way as ``data rule`` for a `class`. This extends this key Rosetta modelling component to functions and not just data. As such, the same syntax for logical statements used for ``data rule`` is re-used here.
 
-While the originally implemented ``function`` feature in Rosetta partly filled that role, it was not rich enough to handle more complex transformations such as the processing of transaction lifecycle events, which is a key component of the processes used across financial markets.
+Constructing the Output
+"""""""""""""""""""""""
 
-A function specification, or ``spec`` for short-hand, is an explicit set of requirements to be satisfied for each function, which are expressed as:
+The final ``post-condition`` statement in the above invokes another function called ``NewExecutionPrimitive``. The ``post-condition`` asserts that the value returned from ``NewExecutionPrimitive`` is equal to the value that was stamped onto the path: ``executionEvent -> primitive -> execution`` by the implementor.
 
-* function inputs and pre-conditions on input data
-* function output and post-condition on both input *and* output data
+This means implementors must evaluate the ``NewExecutionPrimitive`` function and assign its output to the correct model element when implemeting this function. Subsequently the post-condition logic will be evaluated, invoking the same ``NewExecutionPrimitive`` function a second time. 
 
-``spec`` can be used to specify any type of function in Rosetta. The model only specifies those requirements and does not provide an implementation of the function. The actual provision of the function is the responsibility of implementation applications of the model.
+For efficiency, the function syntax in Rosetta provides support to directly assign values to the output attribute, which avoids the need to evaluate the ``NewExecutionPrimitive`` function twice, as in the example below.
 
-Syntax
-""""""
+.. code-block:: Haskell
 
-A function specification has five components to model the function requirements:
+ func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
+    inputs:
+      product Product (1..1) <"The product underlying the financial transaction.">
+      quantity ExecutionQuantity (1..1) <"The amount of product being transacted.">
+      partyA Party (1..1) <"Party to the transaction.">
+      partyB Party (1..1) <"Party to the transaction.">
+    output:
+      executionEvent Event (1..1) <"The execution transaction represented as an Event model object.">
+    condition: <"Parties are not the same.">
+      partyA <> partyB
+    post-condition: <"The execution event is the first is any post trade processes and so should not have any lineage information.">
+      executionEvent -> lineage is absent
+    assign-output executionEvent -> primitive -> execution: <"The input product was used to create the execution.">
+       NewExecutionPrimitive( product, quantity, partyA, partyB )
 
-* a name prefixed with the ``spec`` qualifier and followed by a definition of the function being specified. The Rosetta convention for the name is to use one upper CamelCase word.
-* ``inputs`` and ``output``, each specified with type and cardinality in the same way as attributes for a class and each with an associated definition
-* ``pre-condition`` and ``post-condition``, each specified as Rosetta expressions meant to return a ``boolean`` type based on the ``inputs`` and ``output`` model components and each with an associated definition. The ``output`` model components can only be used as part of the ``post-condition``.
+This example demonstrates, in the context of lifecycle events, why a data representation of those events, although necessary, is not sufficient to direct the implementation of the associated processes - hence the need to define functions. The role of a function must be clear for implementors of the model to build applications that provide such functionality, so **precise descriptions** in either the function definition, input, output, pre- or post-conditions are crucial.
 
-The ``pre-condition`` and ``post-condition`` perform a validation step in the same way as ``data rule`` for a class, extending this key Rosetta modelling component to processes and not just data. As such, the grammatical rules for Boolean logic and statements used for ``data rule`` are transposed here.
+Full and Partial Functions
+""""""""""""""""""""""""""
 
-**Note**: a ``spec`` only specifies the *minimum* requirements that a function should satisfy. In particular, the actual function implementation could have more inputs or outputs than modelled in the ``spec``.
+The creation of valid output objects can be fully or partially done in a function or completely left to the implementor. The output object (and thus the function) is thought to be fully defined if all validation constraints on the output obejct can be satisfied. 
 
-An example of specification is the ``QuantityChange`` function, which represents the state transition logic to update the quantity on a transaction. The return type is a ``QuantityChangePrimitive``, which represents the ``before`` and ``after`` states of that *primitive* (i.e. atomic) state transition.
+All functions require the output object to be fully valid when invoked as part of an implementation and will otherwise throw an exception.
 
-.. code-block:: Java
+Fully Defined Functions: Calculations
+"""""""""""""""""""""""""""""""""""""
 
- spec QuantityChange <"A specification of the inputs, outputs and constraints when calculating the after state of a Quantity Change Primitive Event">:
+The output object and thus the function is fully defined when all validation constraints on the object have been satisfied. In this case, the generated code (in Java or equivalent) is directly usable in an implementation.
+
+To mark a function as fully defined, make use of the ``calculation`` annotation per the below to pass enough information to the code generators to create concrete functions.
+
+.. code-block:: Haskell
+
+ func FixedAmount: <"...">
+  [calculation]
   inputs:
-   trade Trade (1..1)
-   quantityChange ContractualQuantity (1..1)
+    interestRatePayout InterestRatePayout (1..1)
+    date date (1..1)
   output:
-   quantityChangePrimitive QuantityChangePrimitive (1..1)
-  
-  pre-condition <"Non-zero quantity change">:
-   GreaterThan(quantityChange, 0.0);
-  
-  post-condition <"Correctly populate the before attributes on the Primitive Event">:
-   quantityChangePrimitive -> before = trade;
-  post-condition <"The resulting quantity must equal the original quantity plus the quantity change.">:
-   ExtractQuantity( quantityChangePrimitive -> after ) = Plus( ExtractQuantity( trade ), quantityChange );
-  post-condition <"The input and output types need to be consistent, if we started with an Execution, we should end with an Execution">:
-   if quantityChangePrimitive -> after -> execution exists then quantityChangePrimitive -> before exists else False;
-  post-condition:
-   if quantityChangePrimitive -> after -> contract exists then quantityChangePrimitive -> after -> contract exists else False;  
+    amount number (1..1)
+  ...
 
-This example demonstrates, in the context of lifecycle events, why a data representation of those events, although necessary, is not sufficient to direct the implementation of the associated processes - hence the need for function specification. The role of a function must be clear for implementors of the model to build applications that provide such function, so **precise descriptions** in either the function definition, input, output, pre- or post-conditions are crucial.
+Partially Defined Functions
+"""""""""""""""""""""""""""
 
-Function specifications can be nested, as shown in the ``QuantityChange`` specification example that uses the ``ExtractQuantity`` function.
+When the output object's validation constraints are only partially satisfied, the function is partially implemented. In this case, implementors will need to extend the generated code and provide the remaining parts of the output object.
 
-.. code-block:: Java
+The output object still needs to be valid, so implementor must assign the remaining values on the output object.
 
- spec ExtractQuantity <"A function that abstracts away the details of how to retrieve quantity from a given product">:
-  inputs:
-   trade Trade (1..1)
-  output:
-   quantity ContractualQuantity (1..1)
+Aliases
+"""""""
 
-As shown in the ``ExtractQuantity`` example, ``spec`` is richer than the previous ``function`` syntax for simple functions, so the latter will be scheduled for deprecation and existing ``function`` model artefacts will be migrated to ``spec``.
+The function syntax supports defining 'aliases' that are only available in the context of the function. Aliases work like temporary variable assignments used in programming languages. Aliases in a function context behave in the same way as the root level ``alias`` construct described earlier in this document (the syntax currently differs but will be brought into alignment soon).
 
-A ``calculation`` can also be thought of as a ``spec`` except with a body (i.e. an actual implementation), when the function only involves simple numerical operations. Further consideration will be given to possibly fold the ``calculation`` syntax into the ``spec`` one.
+In the below example an ``executionPrimitive`` alias is created and is used in both the ``assign-output`` and final ``post-condition`` statements.
 
-Code Generation
-"""""""""""""""
-
-Regarding code generation (in Java): for each ``spec`` a corresponding abstract class is generated which defines the inputs, outputs, pre- and post-conditions of the function. It also asks implementors to provide a concrete implementation of an *enrichment* function to construct the model objects that are not captured by the `spec` itself. By design the ``pre-condition`` and ``post-condition`` checks are executed respectively before and after the enrichment function.
+.. code-block:: Haskell
+ 
+ func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
+    inputs:
+      product Product (1..1) <"The product underlying the financial transaction.">
+      quantity ExecutionQuantity (1..1) <"The amount of product being transacted.">
+      partyA Party (1..1) <"Party to the transaction.">
+      partyB Party (1..1) <"Party to the transaction.">
+    output:
+      executionEvent Event (1..1) <"The execution transaction represented as an Event model object.">
+    alias executionPrimitive: <"The primitive event that holds details of the execution.">
+      executionEvent -> primitive -> execution
+    condition: <"Parties are not the same.">
+      partyA <> partyB
+    assign-output executionPrimitive: <"The input product was used to create the execution.">
+       NewExecutionPrimitive( product, quantity, partyA, partyB )
+    post-condition: <"The execution event is the first is any post trade processes and so should not have any lineage information.">
+      executionEvent -> lineage is absent
+    post-condition:
+      executionPrimitive -> after -> execution -> executionQuantity = quantity
