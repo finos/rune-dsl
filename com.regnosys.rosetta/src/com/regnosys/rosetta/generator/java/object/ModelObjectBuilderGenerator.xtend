@@ -20,8 +20,8 @@ import java.util.List
 import java.util.Optional
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class ModelObjectBuilderGenerator {
 	
@@ -41,7 +41,7 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	def StringConcatenationClient builderClass(Data c, JavaNames names) '''
-		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderName»«ELSE»«RosettaModelObjectBuilder»«ENDIF»{
+		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderName»«ELSE»«RosettaModelObjectBuilder»«ENDIF»«implementsClauseBuilder(c)»{
 		
 			«FOR attribute : c.expandedAttributes»
 				protected «attribute.toBuilderType(names)» «attribute.name»;
@@ -58,6 +58,9 @@ class ModelObjectBuilderGenerator {
 			«c.expandedAttributes.builderGetters(names)»
 		
 			«c.setters(names)»
+			«IF c.name=="ContractualProduct" || c.name=="Event"»
+				«qualificationSetter(c)»
+			«ENDIF»
 		
 			public «c.name» build() {
 				return new «c.name»(this);
@@ -163,6 +166,38 @@ class ModelObjectBuilderGenerator {
 			'''
 		}
 	}
+	private def qualificationSetter(Data clazz) {
+		val attr =  BreadthFirstSearch.search(null as Attribute, [ att |
+			if (att === null)
+				clazz.attributes
+			else
+				att.type.eContents.filter(Attribute).toList
+		], [att | att?.type instanceof RosettaQualifiedType])
+		
+		if (attr !== null) {
+			'''
+			public void setQualification(String qualification) {
+				this«attr.pathToSetter»
+			}
+			'''
+		}
+	}
+	
+	private def String pathToSetter(List<Attribute> path) {
+		val result = new StringBuilder
+		for (var i=1;i<path.size-1;i++) {
+			val att = path.get(i);
+			result.append('''.getOrCreate«att.name.toFirstUpper»(«IF att.card.isIsMany»0«ENDIF»)''')
+		}
+		val last = path.last
+		if (last.card.isIsMany) {
+			result.append(".add"+last.name.toFirstUpper+"(qualification);")
+		}
+		else {
+			result.append(".set"+last.name.toFirstUpper+"(qualification);")
+		}
+		result.toString()
+	}
 	
 	private def String toSetter(List<RosettaRegularAttribute> path) {
 		val result = new StringBuilder
@@ -258,22 +293,22 @@ class ModelObjectBuilderGenerator {
 			«IF attribute.cardinalityIsListValue»
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name») {
 					if(this.«attribute.name» == null){
-						this.«attribute.name» = new ArrayList<>();
+						this.«attribute.name» = new «ArrayList»<>();
 					}
 					this.«attribute.name».add(«attribute.toBuilder»);
 					return this;
 				}
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx) {
 					if(this.«attribute.name» == null){
-						this.«attribute.name» = new ArrayList<>();
+						this.«attribute.name» = new «ArrayList»<>();
 					}
 					getIndex(this.«attribute.name», _idx, () -> «attribute.toBuilder»);
 					this.«attribute.name».set(_idx, «attribute.toBuilder»);
 					return this;
 				}
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(List<«attribute.toTypeSingle(names)»> «attribute.name»s) {
+				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«List»<«attribute.toTypeSingle(names)»> «attribute.name»s) {
 					if(this.«attribute.name» == null){
-						this.«attribute.name» = new ArrayList<>();
+						this.«attribute.name» = new «ArrayList»<>();
 					}
 					for («attribute.toTypeSingle(names)» toAdd : «attribute.name»s) {
 						this.«attribute.name».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
@@ -283,22 +318,22 @@ class ModelObjectBuilderGenerator {
 				«IF attribute.isRosettaClassOrData»
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle(names)» «attribute.name») {
 						if(this.«attribute.name» == null){
-							this.«attribute.name» = new ArrayList<>();
+							this.«attribute.name» = new «ArrayList»<>();
 						}
 						this.«attribute.name».add(«attribute.name»);
 						return this;
 					}
 					«IF !attribute.metas.empty»
 					
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
 						return add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
 					}
 					
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name», int _idx) {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name», int _idx) {
 						return add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build(), _idx);
 					}
 					
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(List<«attribute.type.name»> «attribute.name»s) {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«List»<«attribute.type.name»> «attribute.name»s) {
 						for («attribute.type.name» toAdd : «attribute.name»s) {
 							add«attribute.name.toFirstUpper»Ref(toAdd);
 						}
@@ -326,16 +361,16 @@ class ModelObjectBuilderGenerator {
 						return this;
 					}
 					«IF !attribute.metas.empty»
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
 						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
 					}
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.type.name» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«names.toJavaType(attribute.type)» «attribute.name») {
 						return set«attribute.name.toFirstUpper»Ref(«attribute.type.name».builder());
 					}
 					«ENDIF»
 				«ELSE»
 					«IF !attribute.metas.empty»
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying» «attribute.name») {
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
 						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValue(«attribute.name»).build());
 					}
 					«ENDIF»
@@ -347,6 +382,7 @@ class ModelObjectBuilderGenerator {
 	def boolean globalKey(RosettaType type) {
 		switch (type) {
 			RosettaClass: type.isGlobalKey
+			Data: type.hasKeyedAnnotation
 			default: false
 		}
 	}
@@ -396,13 +432,13 @@ class ModelObjectBuilderGenerator {
 				}
 			'''«names.packages.metaField.javaType(buildername)»'''
 		} else {
-			'''«attribute.toBuilderTypeUnderlying»'''
+			'''«attribute.toBuilderTypeUnderlying(names)»'''
 		}
 	}
 	
-	private def toBuilderTypeUnderlying(ExpandedAttribute attribute) {
+	private def StringConcatenationClient toBuilderTypeUnderlying(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.isRosettaClassOrData) '''«attribute.typeName».«attribute.typeName»Builder'''
-		else '''«attribute.typeName.toJavaType»'''
+		else '''«names.toJavaQualifiedType(attribute.type)»'''
 	}
 	
 		

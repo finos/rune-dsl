@@ -86,10 +86,10 @@ class RosettaExtensions {
 		return doCollectRootCalls(rq)
 	}
 
-	def private LinkedHashSet<RosettaClass> doCollectRootCalls(EObject obj) {
+	def private LinkedHashSet<RosettaType> doCollectRootCalls(EObject obj) {
 		val classes = newLinkedHashSet
 		obj.eAllContents.filter(RosettaCallableCall).forEach [
-			collectRootCalls(it, [if(it instanceof RosettaClass && !it.eIsProxy) classes.add(it as RosettaClass)])
+			collectRootCalls(it, [if((it instanceof RosettaClass || it instanceof Data) && !it.eIsProxy) classes.add(it as RosettaType)])
 		]
 		return classes
 	}
@@ -125,6 +125,9 @@ class RosettaExtensions {
 			expr.receiver.collectRootCalls(visitor)
 		}
 		else if(expr instanceof RosettaClass) {
+			visitor.apply(expr)
+		}
+		else if(expr instanceof Data) {
 			visitor.apply(expr)
 		}
 		else {
@@ -230,17 +233,29 @@ class RosettaExtensions {
 		allAnnotations.filter[annotation?.name == "metadata"]
 	}
 	
-	def hasCalculationAnnotation(Annotated it) {
-		allAnnotations.exists[annotation?.name == "calculation"]
+	def hasKeyedAnnotation(Annotated it) {
+		metaAnnotations.exists[attribute?.name == "key"]
 	}
 	
 	def boolean hasMetaReferenceAnnotations(Annotated it) {
-		allAnnotations.exists[annotation?.name == "metadata" && attribute?.name == "reference"]
+		metaAnnotations.exists[attribute?.name == "reference" || attribute?.name == "scheme" || attribute?.name == "id"]
+	}
+	def boolean hasIdAnnotation(Annotated it) {
+		metaAnnotations.exists[attribute?.name == "id"]
 	}
 	
+	def hasCalculationAnnotation(Annotated it) {
+		allAnnotations.exists[annotation?.name == "calculation"]
+	}
+	def hasPartialKeyAnnotation(Annotated it) {
+		allAnnotations.exists[annotation?.name == "partialKey"]
+	}
 	
 	def private allAnnotations(Annotated withAnnotations) {
 		withAnnotations?.annotations?.filter[annotation !== null && !annotation.eIsProxy]
 	}
 	
+	def String conditionName(Data data, Condition cond) {
+		cond.name?:data.name
+	}
 }

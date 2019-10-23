@@ -16,7 +16,6 @@ import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.types.RQualifiedType
-import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -25,12 +24,13 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaImportSet
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 
 class ModelObjectGenerator {
 	
 	@Inject extension RosettaExtensions
 	@Inject extension ModelObjectBoilerPlate
-	@Inject extension RosettaQualifiableExtension
+	@Inject extension RosettaConfigExtension
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
 
@@ -154,7 +154,7 @@ class ModelObjectGenerator {
 		«ENDFOR»	'''
 	
 	def boolean globalKeyRecursive(RosettaClass class1) {
-		return class1.globalKey || class1.superType?.globalKeyRecursive
+		return class1.globalKey || (class1.superType !== null && class1.superType.globalKeyRecursive)
 	}
 
 	def private hasQualifiedAttribute(RosettaClass c) {

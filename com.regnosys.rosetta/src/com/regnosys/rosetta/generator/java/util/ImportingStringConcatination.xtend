@@ -26,8 +26,13 @@ class ImportingStringConcatination extends StringConcatenation {
 	}
 
 	def dispatch protected String getStringRepresentation(JavaType object) {
-		addImport(object.name, false)
-		return object.simpleName
+		if(object.simpleName == '*') {
+			staticImports.add(object.name)
+			return ''
+		} else {
+			addImport(object.name, false)
+			return object.simpleName
+		}
 	}
 	
 	def private addStaticImport(Method method) {
@@ -44,7 +49,9 @@ class ImportingStringConcatination extends StringConcatenation {
 		}
 	}
 
-	def private addImport(String qName, boolean qualifyMemberClass) {
+	def private void addImport(String qName, boolean qualifyMemberClass) {
+		if(qName.startsWith('java.lang.'))
+			return
 		val qualified = QualifiedName.create(qName.split('\\.'))
 		val target = qualified.lastSegment
 		if (target.contains('$')) {

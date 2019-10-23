@@ -11,8 +11,9 @@ import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.resource.IResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
-class RosettaQualifiableExtension {
+class RosettaConfigExtension {
 
 	@Inject IResourceDescriptionsProvider index
 	@Inject extension RosettaExtensions
@@ -50,14 +51,14 @@ class RosettaQualifiableExtension {
 	}
 
 	def boolean isEventRootClass(IEObjectDescription eObjDesc, EObject ctx) {
-		if (eObjDesc.EClass == ROSETTA_CLASS) {
+		if (eObjDesc.EClass == ROSETTA_CLASS || eObjDesc.EClass == DATA) {
 			return ctx.findEventRootName == eObjDesc.name.toString
 		}
 		false
 	}
 
 	def boolean isProductRootClass(IEObjectDescription eObjDesc, EObject ctx) {
-		if (eObjDesc.EClass == ROSETTA_CLASS) {
+		if (eObjDesc.EClass == ROSETTA_CLASS || eObjDesc.EClass == DATA) {
 			return ctx.findProductRootName == eObjDesc.name.toString
 		}
 		false
@@ -78,7 +79,15 @@ class RosettaQualifiableExtension {
 	def private boolean isProductAlias(RosettaAlias eObj, String isProductRootClassName) {
 		eObj.collectRootCalls.filterNull.findFirst[isProductRootClassName == it.name] !== null
 	}
+	
+	def findMetaTypes(EObject ctx) {
+		return index.getResourceDescriptions(ctx.eResource.resourceSet).getExportedObjectsByType(ROSETTA_META_TYPE).
+			filter [
+				isProjectLocal(ctx.eResource.URI, it.EObjectURI)
 
+			]
+	}
+	
 	/**
 	 * Can return <code>null</code> if any found
 	 * @param ctx Context to resolve proxies

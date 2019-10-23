@@ -666,7 +666,11 @@ class RosettaBlueprintTest {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
-							
+				
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.test.model.Input;
+				import com.rosetta.test.model.Input2;
+				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
@@ -807,7 +811,7 @@ class RosettaBlueprintTest {
 			class Input2 {
 				colour string (1..1);
 			}
-		'''.parseRosetta.assertError(ROSETTA_BLUEPRINT, RosettaIssueCodes.TYPE_ERROR,
+		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
 			"Input type of Input2 is not assignable from type Input of previous node ")
 	}
 
@@ -825,7 +829,7 @@ class RosettaBlueprintTest {
 			class Input2 extends Input{//Rosetta extension isn't polymorphic
 				colour string (1..1);
 			}
-		'''.parseRosetta.assertError(ROSETTA_BLUEPRINT, RosettaIssueCodes.TYPE_ERROR,
+		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
 			"Input type of Input2 is not assignable from type Input of previous node ")
 	}
 
@@ -847,57 +851,61 @@ class RosettaBlueprintTest {
 		try {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
-				package com.rosetta.test.model.blueprint;
-							
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.Filter;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.model.lib.functions.MapperTree;
-				import com.rosetta.test.model.Input;
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
-				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
-				
-				/**
-				 * @version test
-				 */
-				public class Blueprint1Rule<INKEY extends Comparable<INKEY>> implements Blueprint<Input, String, INKEY, INKEY> {
-				
-					private final RosettaActionFactory actionFactory;
-				
-					public Blueprint1Rule(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
-					@Override
-					public String getName() {
-						return "Blueprint1"; 
-					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#Blueprint1";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Input, String, INKEY, INKEY> blueprint() { 
-						return 
-							startsWith(actionFactory, BlueprintBuilder.<Input, String, INKEY, INKEY>and(actionFactory,
-								startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->traderef=\"3\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", Input::getTraderef), MapperS.of("3")).get()))
-								.then(actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@next/@node", "->traderef", new StringIdentifier("->traderef"), input -> MapperS.of(input).<String>map("getTraderef", Input::getTraderef))),
-								startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->colour", new StringIdentifier("->colour"), input -> MapperS.of(input).<String>map("getColour", Input::getColour)))
-								)
-							)
-							.toBlueprint(getURI(), getName());
-					}
+			package com.rosetta.test.model.blueprint;
+			
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.test.model.Input;
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			// manual imports
+			import com.regnosys.rosetta.blueprints.Blueprint;
+			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+			import com.regnosys.rosetta.blueprints.BlueprintInstance;
+			import com.regnosys.rosetta.blueprints.runner.actions.Filter;
+			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+			import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+			import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
+			import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.MapperTree;
+			import com.rosetta.test.model.Input;
+			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+			import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			
+			/**
+			 * @version test
+			 */
+			public class Blueprint1Rule<INKEY extends Comparable<INKEY>> implements Blueprint<Input, String, INKEY, INKEY> {
+			
+				private final RosettaActionFactory actionFactory;
+			
+				public Blueprint1Rule(RosettaActionFactory actionFactory) {
+					this.actionFactory = actionFactory;
 				}
+				
+				@Override
+				public String getName() {
+					return "Blueprint1"; 
+				}
+				
+				@Override
+				public String getURI() {
+					return "__synthetic1.rosetta#Blueprint1";
+				}
+				
+				
+				@Override
+				public BlueprintInstance<Input, String, INKEY, INKEY> blueprint() { 
+					return 
+						startsWith(actionFactory, BlueprintBuilder.<Input, String, INKEY, INKEY>and(actionFactory,
+							startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->traderef=\"3\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", Input::getTraderef), MapperS.of("3")).get()))
+							.then(actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@next/@node", "->traderef", new StringIdentifier("->traderef"), input -> MapperS.of(input).<String>map("getTraderef", Input::getTraderef))),
+							startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->colour", new StringIdentifier("->colour"), input -> MapperS.of(input).<String>map("getColour", Input::getColour)))
+							)
+						)
+						.toBlueprint(getURI(), getName());
+				}
+			}
 			'''
 			blueprint.compileToClasses
 			assertEquals(expected, blueprintJava)
@@ -924,7 +932,11 @@ class RosettaBlueprintTest {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
-							
+				
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.test.model.Input;
+				import java.math.BigDecimal;
+				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
@@ -1013,7 +1025,12 @@ class RosettaBlueprintTest {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
-							
+				
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Foo;
+				import com.rosetta.test.model.Input;
+				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
@@ -1098,7 +1115,11 @@ class RosettaBlueprintTest {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
-							
+				
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.test.model.Input1;
+				import com.rosetta.test.model.Input2;
+				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
@@ -1381,51 +1402,55 @@ class RosettaBlueprintTest {
 		// writeOutClasses(blueprint, "filter");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		val expected = '''
-			package com.rosetta.test.model.blueprint;
-						
-			import com.regnosys.rosetta.blueprints.Blueprint;
-			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-			import com.regnosys.rosetta.blueprints.BlueprintInstance;
-			import com.regnosys.rosetta.blueprints.runner.actions.Filter;
-			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-			import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-			import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-			import com.rosetta.model.lib.functions.MapperS;
-			import com.rosetta.model.lib.functions.MapperTree;
-			import com.rosetta.test.model.Input;
-			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
-			
-			/**
-			 * @version test
-			 */
-			public class SimpleBlueprintRule<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Input, INKEY, INKEY> {
-			
-				private final RosettaActionFactory actionFactory;
-			
-				public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
-					this.actionFactory = actionFactory;
-				}
-				
-				@Override
-				public String getName() {
-					return "SimpleBlueprint"; 
-				}
-				
-				@Override
-				public String getURI() {
-					return "__synthetic1.rosetta#SimpleBlueprint";
-				}
-				
-				
-				@Override
-				public BlueprintInstance<Input, Input, INKEY, INKEY> blueprint() { 
-					return 
-						startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->traderef=\"Hello\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", Input::getTraderef), MapperS.of("Hello")).get()))
-						.toBlueprint(getURI(), getName());
-				}
+		package com.rosetta.test.model.blueprint;
+		
+		import com.rosetta.model.lib.functions.MapperS;
+		import com.rosetta.test.model.Input;
+		import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+		// manual imports
+		import com.regnosys.rosetta.blueprints.Blueprint;
+		import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+		import com.regnosys.rosetta.blueprints.BlueprintInstance;
+		import com.regnosys.rosetta.blueprints.runner.actions.Filter;
+		import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+		import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
+		import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+		import com.rosetta.model.lib.functions.MapperS;
+		import com.rosetta.model.lib.functions.MapperTree;
+		import com.rosetta.test.model.Input;
+		import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+		import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
+		import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+		
+		/**
+		 * @version test
+		 */
+		public class SimpleBlueprintRule<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Input, INKEY, INKEY> {
+		
+			private final RosettaActionFactory actionFactory;
+		
+			public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
+				this.actionFactory = actionFactory;
 			}
+			
+			@Override
+			public String getName() {
+				return "SimpleBlueprint"; 
+			}
+			
+			@Override
+			public String getURI() {
+				return "__synthetic1.rosetta#SimpleBlueprint";
+			}
+			
+			
+			@Override
+			public BlueprintInstance<Input, Input, INKEY, INKEY> blueprint() { 
+				return 
+					startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->traderef=\"Hello\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", Input::getTraderef), MapperS.of("Hello")).get()))
+					.toBlueprint(getURI(), getName());
+			}
+		}
 		'''
 		blueprint.compileToClasses
 		assertEquals(expected, blueprintJava)
@@ -1497,7 +1522,12 @@ class RosettaBlueprintTest {
 
 		val expected = '''
 			package com.rosetta.test.model.blueprint;
-						
+			
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.test.model.Avengers;
+			import com.rosetta.test.model.Hero;
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 			import com.regnosys.rosetta.blueprints.BlueprintInstance;
@@ -1566,7 +1596,7 @@ class RosettaBlueprintTest {
 				traderef string (1..1);
 				flag number (1..1);
 			}
-		'''.parseRosetta.assertError(ROSETTA_BLUEPRINT, RosettaIssueCodes.TYPE_ERROR,
+		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
 			"output type of node BigDecimal does not match required type of Boolean")
 
 	}
@@ -1587,7 +1617,11 @@ class RosettaBlueprintTest {
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		val expected = '''
 			package com.rosetta.test.model.blueprint;
-						
+			
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.test.model.Foo;
+			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 			import com.regnosys.rosetta.blueprints.BlueprintInstance;
@@ -1694,7 +1728,10 @@ class RosettaBlueprintTest {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
-							
+				
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.test.model.Input;
+				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
@@ -1762,7 +1799,11 @@ class RosettaBlueprintTest {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
-							
+				
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.test.model.Input1;
+				import com.rosetta.test.model.Input2;
+				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;

@@ -270,13 +270,16 @@ class RosettaTypeProvider {
 	}
 
 	private def boolean isFeatureCallTypeContext(EObject expression) {
-		switch expression.eContainer {
+		val container = expression.eContainer
+		switch container {
 			RosettaExistsExpression,
 			RosettaAbsentExpression,
 			RosettaAlias:
 				true
 			RosettaBinaryOperation:
-				expression.eContainer.featureCallTypeContext
+				container.featureCallTypeContext
+			RosettaParenthesisCalcExpression:
+				container.featureCallTypeContext
 			default:
 				false
 		}

@@ -28,7 +28,6 @@ class RosettaFunctionGenerationTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import java.lang.String;
 			
 			
 			@ImplementedBy(FuncFoo.FuncFooDefault.class)

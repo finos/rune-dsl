@@ -41,7 +41,7 @@ AnnotationRef:
 Data:
 	'data' RosettaNamed ('extends' superType = [Data|ValidID])? ':' Definable?
 	(Annotations| ClassSynonyms)*
-	attributes += Attribute+
+	attributes += Attribute*
 	conditions += Condition*
 ;
 
@@ -146,7 +146,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'value')
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'key' | 'value')
 ;
 
 ValidHint: 
@@ -450,7 +450,8 @@ RosettaGroupByFeatureCall returns RosettaExpression:
 ;
 
 RosettaGroupByExpression:
-	attribute = [RosettaRegularAttribute] ('->' right = RosettaGroupByExpression)?
+	// TODO change to Attribute after migration
+	attribute = [RosettaFeature|ValidID] ('->' right = RosettaGroupByExpression)?
 ;
 
 RosettaFeatureCall returns RosettaExpression:
@@ -534,11 +535,11 @@ RosettaWorkflowRule:
 	('when' when = RosettaExpression)?
 	root = RosettaTreeNode
 	('and' data = RosettaExpression)?
-	('commonId' ( commonIdentifier = [RosettaRegularAttribute|ValidID] | 'path' commonIdPath = RosettaClassAttributeCall ) )?
+	('commonId' ( commonIdentifier = [RosettaFeature|ValidID] | 'path' commonIdPath = RosettaClassAttributeCall ) )?
 ;
 
 RosettaTreeNode:
-	parent = [RosettaClass|ValidID]
+	parent = [RosettaType|ValidID]
 	( 
 		(not?='not' 'precedes' | 'precedes')
 		(children+=RosettaTreeNode | '(' children+=RosettaTreeNode ( ('and' | 'or') children+=RosettaTreeNode)* ')' )
@@ -546,12 +547,12 @@ RosettaTreeNode:
 ;
 
 RosettaClassAttributeCall returns RosettaExpression:
-	RosettaClassReference ({RosettaFeatureCall.receiver=current} '->' feature=[RosettaRegularAttribute|ValidID])*
+	RosettaClassReference ({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID])*
 ;
 
 RosettaClassReference returns RosettaExpression:
 	{RosettaCallableCall}
-	callable=[RosettaClass|ValidID]
+	callable=[Data|ValidID]
 ;
 
 
@@ -623,7 +624,7 @@ RosettaEvent:
  * QualifiableConfiguration
  */
 RosettaQualifiableConfiguration:
-	qType = RosettaQualifiableType 'root' rosettaClass = [RosettaClass|ValidID]';'
+	qType = RosettaQualifiableType 'root' rosettaClass = [Data|ValidID]';'
 ;
 
 enum RosettaQualifiableType :
@@ -711,7 +712,7 @@ RosettaExternalSynonymSource:
 ;
 
 RosettaExternalClass:
-	classRef=[RosettaClass] ':'
+	classRef=[RosettaType|ValidID] ':'
 		(regularAttributes += RosettaExternalRegularAttribute)*
 ;
 
@@ -721,7 +722,7 @@ RosettaExternalEnum:
 ;
 
 RosettaExternalRegularAttribute:
-	('+'|'-') attributeRef=[RosettaRegularAttribute]
+	('+'|'-') attributeRef=[RosettaFeature|ValidID]
 		externalSynonyms += RosettaExternalSynonym*
 ;
 
@@ -764,7 +765,7 @@ RosettaBlueprint:
 	(references += RosettaRegulatoryReference)*
 	(marketPractice += RosettaMarketPractice)*
 	(nodes = BlueprintNodeExp)?
-	('output' output=[RosettaClass])?
+	('output' output=[Data])?
 ;
 
 BlueprintNodeExp:
@@ -809,7 +810,7 @@ BlueprintAnd:
 ;
 
 BlueprintMerge :
-	'merge' 'output' output=[RosettaClass]
+	'merge' 'output' output=[Data]
 ;
 
 BlueprintRef:

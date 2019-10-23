@@ -54,7 +54,7 @@ final class ExpandedAttribute {
 	List<ExpandedAttribute> metas;
 	
 	static def ExpandedAttribute referenceTo(ExpandedAttribute att) {
-		if (att.getType instanceof RosettaClass)
+		if (att.getType instanceof RosettaClass || att.getType instanceof com.regnosys.rosetta.rosetta.simple.Data)
 			new ExpandedAttribute(att.enclosingType, att.getName(), referenceType(att.type.name), 
 				"referenceWithMeta" + att.type.name.toFirstUpper, att.getInf(), att.getSup(), att.isUnbound, 
 				Collections.emptyList(), null, false, false, false, Collections.emptyList())
@@ -121,7 +121,7 @@ final class ExpandedAttribute {
 	}
 	
 	def builtInType() {
-		!(type instanceof RosettaClass || type instanceof RosettaEnumeration)
+		!(type instanceof RosettaClass || type instanceof RosettaEnumeration|| type instanceof com.regnosys.rosetta.rosetta.simple.Data)
 	}
 	
 	def shouldCopy() {

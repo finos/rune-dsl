@@ -15,6 +15,8 @@ import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.Data
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -39,11 +41,11 @@ class QualifyFunctionGenerator<T extends RosettaQualifiable> {
 		return 'Is' + CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
 	}
 
-	private def getRosettaClass(RosettaRootElement element) {
-		val rosettaClasses = newHashSet
+	private def RosettaType getRosettaClass(RosettaRootElement element) {
+		val rosettaClasses = <RosettaType>newHashSet
 		val extensions = new RosettaExtensions
 		element.eAllContents.filter(RosettaCallableCall).forEach[
-				extensions.collectRootCalls(it, [if(it instanceof RosettaClass) rosettaClasses.add(it)])
+				extensions.collectRootCalls(it, [if(it instanceof RosettaClass || it instanceof Data) rosettaClasses.add(it as RosettaType)])
 		]
 		
 		if (rosettaClasses.size > 1) {

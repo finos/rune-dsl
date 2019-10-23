@@ -20,6 +20,8 @@ import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.rosetta.RosettaClass;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
+import com.regnosys.rosetta.rosetta.RosettaType;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.rosetta.model.lib.RosettaModelObject;	
 
  public class ModelLoaderImpl implements ModelLoader {	
@@ -56,21 +58,21 @@ import com.rosetta.model.lib.RosettaModelObject;
 	 * @see com.regnosys.rosetta.transgest.ModelLoader#rosettaClass(java.lang.Class)	
 	 */	
     @Override	
-	public RosettaClass rosettaClass(Class<? extends RosettaModelObject> rootObject) {	
+	public RosettaType rosettaClass(Class<? extends RosettaModelObject> rootObject) {	
         return rosettaModels.stream()	
                 .map(RosettaModel::getElements).flatMap(Collection::stream)	
-                .filter(c -> c instanceof RosettaClass)	
-                .map(c -> (RosettaClass) c)	
+                .filter(c -> c instanceof RosettaClass || c instanceof Data)	
+                .map(c -> (RosettaType) c)	
                 .filter(c -> c.getName().equals(rootObject.getSimpleName()))	
                 .findFirst().orElseThrow(() -> new IllegalArgumentException(rootObject.getSimpleName() + " not found in Rosetta Model"));	
     }	
 
      @Override	
-	public RosettaClass rosettaClass(String className) {	
+	public RosettaType rosettaClass(String className) {	
         return rosettaModels.stream()	
                 .map(RosettaModel::getElements).flatMap(Collection::stream)	
-                .filter(c -> c instanceof RosettaClass)	
-                .map(c -> (RosettaClass) c)	
+                .filter(c -> c instanceof RosettaClass || c instanceof Data)	
+                .map(c -> (RosettaType) c)	
                 .filter(c -> c.getName().equals(className))	
                 .findFirst().orElseThrow(() -> new IllegalArgumentException(className + " not found in Rosetta Model"));	
     }	

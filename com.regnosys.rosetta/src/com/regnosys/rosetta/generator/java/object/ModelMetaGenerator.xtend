@@ -10,6 +10,7 @@ import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
 import com.regnosys.rosetta.rosetta.RosettaClass
@@ -80,7 +81,7 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules() {
 					return «Arrays».asList(
-						«FOR r : conditionRules(c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
+						«FOR r : conditionRules(c, c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
 							new «javaNames.packages.dataRule.packageName».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
 						«ENDFOR»
 					);
@@ -89,7 +90,7 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> choiceRuleValidators() {
 					return Arrays.asList(
-						«FOR r : conditionRules(c.conditions)[isChoiceRuleCondition] SEPARATOR ','»
+						«FOR r : conditionRules(c, c.conditions)[isChoiceRuleCondition] SEPARATOR ','»
 							new «javaNames.packages.choiceRule.packageName».«ChoiceRuleGenerator.choiceRuleClassName(r.ruleName)»()
 						«ENDFOR»
 					);
@@ -98,9 +99,9 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Function»<? super «dataClass», «QualifyResult»>> getQualifyFunctions() {
 					return Arrays.asList(
-«««						«FOR qf : qualifyFunctions(packages, elements, c) SEPARATOR ','»
-«««							new «qf.javaPackage».«qf.functionName»()
-«««						«ENDFOR»
+						«FOR qf : qualifyFunctions(javaNames.packages, c.model.elements, c) SEPARATOR ','»
+							new «qf.javaPackage».«qf.functionName»()
+						«ENDFOR»
 					);
 				}
 				
@@ -183,7 +184,7 @@ class ModelMetaGenerator {
 	def isField(RosettaExpression expression) {
 		if(expression === null) return false
 		val feat = expression as RosettaFeatureCall
-		!(feat.feature.type instanceof RosettaClass)
+		!((feat.feature.type instanceof RosettaClass || feat.feature.type instanceof Data))
 	}
 
 	def isList(RosettaExpression call) {
@@ -248,8 +249,8 @@ class ModelMetaGenerator {
 		return dataRuleMappingSet.filter[it.className === thisClass.name].toList
 	}
 	
-	private def List<ClassRule> conditionRules(List<Condition> elements, (Condition)=>boolean filter) {
-		return elements.filter(filter).map[new ClassRule((it.eContainer as RosettaNamed).getName, it.name?:"NoName")].toList
+	private def List<ClassRule> conditionRules(Data d, List<Condition> elements, (Condition)=>boolean filter) {
+		return elements.filter(filter).map[new ClassRule((it.eContainer as RosettaNamed).getName, conditionName(d, it))].toList
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data
@@ -259,14 +260,20 @@ class ModelMetaGenerator {
 	}
 
 	private def List<QualifyFunction> qualifyFunctions(RosettaJavaPackages packages, List<RosettaRootElement> elements,
-		RosettaClass thisClass) {
+		RosettaCallable thisClass) {
 		val allQualifyFns = Sets.newLinkedHashSet
+		val superClasses 
+			= if(thisClass instanceof RosettaClass)
+				thisClass.allSuperTypes.map[name].toList
+			else if(thisClass instanceof Data)
+				thisClass.allSuperTypes.map[name].toList
+				
 		// TODO create public constant with list of qualifiable classes / packages
 		allQualifyFns.addAll(
 			getQualifyFunctionsForRosettaClass(RosettaEvent, packages.qualifyEvent.packageName, elements))
 		allQualifyFns.addAll(
 			getQualifyFunctionsForRosettaClass(RosettaProduct, packages.qualifyProduct.packageName, elements))
-		return allQualifyFns.filter[thisClass.allSuperTypes.map[name].toList.contains(it.className)].toList
+		return allQualifyFns.filter[superClasses.contains(it.className)].toList
 	}
 
 	private def <T extends RosettaRootElement & RosettaNamed> getQualifyFunctionsForRosettaClass(Class<T> clazz,
@@ -284,9 +291,8 @@ class ModelMetaGenerator {
 
 	private def getRosettaClass(RosettaRootElement element) {
 		val rosettaClasses = newHashSet
-		val extensions = new RosettaExtensions
 		element.eAllContents.filter(RosettaCallableCall).forEach [
-			extensions.collectRootCalls(it, [if(it instanceof RosettaClass) rosettaClasses.add(it)])
+			collectRootCalls(it, [if(it instanceof RosettaClass || it instanceof Data) rosettaClasses.add(it)])
 		]
 		return rosettaClasses.stream.findAny
 	}

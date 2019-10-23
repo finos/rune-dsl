@@ -151,7 +151,7 @@ class ImportGenerator {
 	def void addExpression(RosettaGroupByExpression groupBy) {
 		if (groupBy.attribute === null) return;
 		imports.add(groupBy.attribute.type.fullName)
-		imports.add((groupBy.attribute.eContainer as RosettaClass).fullName)
+		imports.add((groupBy.attribute.eContainer as RosettaType).fullName)
 		if (groupBy.right !== null) {
 			addExpression(groupBy.right)
 		}
@@ -261,7 +261,7 @@ class ImportGenerator {
 	}
 
 	def fullName(EClass type) {
-		if (type instanceof RosettaClass)
+		if (type instanceof RosettaClass || type instanceof RosettaClass)
 			'''«packages.model.packageName».«type.name»'''.toString
 		else
 			type.name.toJavaFullType
@@ -305,7 +305,7 @@ class ImportGenerator {
 	}
 
 	def addQualifyClass(RosettaExpression expr, List<RosettaDataRule> andDataRules, List<RosettaDataRule> orDataRules,
-		RosettaClass rClass) {
+		RosettaType rClass) {
 		imports.addAll("com.rosetta.model.lib.annotations.RosettaQualifiable", "java.util.function.Function",
 			rClass.fullName, packages.dataRule.packageName + ".*")
 		imports.add('''«packages.qualify.packageName».QualifyResult''')

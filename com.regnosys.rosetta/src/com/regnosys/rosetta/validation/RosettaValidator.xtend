@@ -32,6 +32,7 @@ import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -48,7 +49,6 @@ import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
-import com.regnosys.rosetta.utils.RosettaQualifiableExtension
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
 import java.util.List
 import java.util.Stack
@@ -64,6 +64,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 
 /**
  * This class contains custom validation rules. 
@@ -75,7 +76,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaExpectedTypeProvider
 	@Inject extension RosettaTypeProvider
-	@Inject extension RosettaQualifiableExtension qualifiableExtension
+	@Inject extension RosettaConfigExtension qualifiableExtension
 	@Inject extension RosettaTypeCompatibility
 	@Inject extension IQualifiedNameProvider
 	@Inject extension ResourceDescriptionsProvider
@@ -83,6 +84,19 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension RosettaFunctionExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject CardinalityProvider cardinality
+	
+	@Check
+	def void deprecatedInfo(RosettaClass classe) {
+		info('''Class is deprecated use data instead''', ROSETTA_NAMED__NAME)
+	}
+	@Check
+	def void deprecatedInfo(RosettaChoiceRule classe) {
+		info('''ChoiceRule is deprecated use data instead''', ROSETTA_NAMED__NAME)
+	}
+	@Check
+	def void deprecatedInfo(RosettaDataRule classe) {
+		info('''DataRule is deprecated use data instead''', ROSETTA_NAMED__NAME)
+	}
 	
 	@Check
 	def void checkClassNameStartsWithCapital(RosettaClass classe) {
@@ -157,8 +171,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 
 	private def void checkAttributeExists(RosettaTreeNode node, String expectedName, RosettaType expectedType) {
 		node.children.forEach [
-			if (parent !== null && !parent.eIsProxy) {
-				val attribute = parent.allAttributes.findFirst[name == expectedName]
+			if (parent instanceof Data && !parent.eIsProxy) {
+				val attribute = (parent as Data).allAttributes.findFirst[name == expectedName]
 				if (attribute === null)
 					error('''Class '«parent.name»' does not have an attribute '«expectedName»'«»''', it,
 						ROSETTA_TREE_NODE__PARENT, MISSING_ATTRIBUTE)
@@ -213,7 +227,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				RosettaFeatureCall: {
 					val parentType = featureCall.feature.type
 					switch (parentType) {
-						RosettaClass: {
+						RosettaClass, Data: {
 							// must have single cardinality in group by function
 							var gbe = groupByExp
 							while (gbe !== null) {
@@ -283,6 +297,23 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				error('''Duplicate attribute '«value.name»'«»''', ROSETTA_NAMED__NAME, DUPLICATE_CHOICE_RULE_ATTRIBUTE)
 			}
 			if (value.name == choiceRule.thisOne.name) {
+				error('''Duplicate attribute '«value.name»'«»''', ROSETTA_NAMED__NAME, DUPLICATE_CHOICE_RULE_ATTRIBUTE)
+			}
+		}
+	}
+	@Check
+	def checkChoiceRuleAttributesAreUnique(Condition choiceRule) {
+		if(!choiceRule.isChoiceRuleCondition) {
+			return
+		}
+		val name2attr = ArrayListMultimap.create
+		
+		choiceRule.constraint.attributes.forEach [
+			name2attr.put(name, it)
+		]
+		for (value : choiceRule.constraint.attributes) {
+			val attributeByName = name2attr.get(value.name)
+			if (attributeByName.size > 1) {
 				error('''Duplicate attribute '«value.name»'«»''', ROSETTA_NAMED__NAME, DUPLICATE_CHOICE_RULE_ATTRIBUTE)
 			}
 		}
@@ -387,7 +418,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				error('''Set to without when case must be ordered last.''', element, ROSETTA_MAPPING__INSTANCES)
 			}
 		}
-		val attribute = element.eContainer.eContainer.eContainer as RosettaRegularAttribute
+		val attribute = element.eContainer.eContainer.eContainer as RosettaTyped
 		val type = attribute.getType
 		if (type instanceof RosettaClass && !element.instances.filter[^set !== null].empty) {
 			error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
@@ -457,7 +488,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		try {
 			buildTypeGraph(bp.nodes, bp.output)
 		} catch (BlueprintUnresolvedTypeException e) {
-			error(e.message, e.getEStructuralFeature, e.code, e.issueData)
+			error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
 		}
 	}
 
@@ -473,8 +504,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkData(Data ele) {
-		val onOfs = ele.conditions.groupBy[it.constraint.oneOf].get(Boolean.TRUE)
-		if (onOfs.size > 1) {
+		val onOfs = ele.conditions.filter[it.constraint !== null].groupBy[it.constraint.oneOf].get(Boolean.TRUE)
+		if (onOfs !== null && onOfs.size > 1) {
 			onOfs.forEach [
 				error('''Only a single 'one-of' constraint is allowed.''', it.constraint, null)
 			]
@@ -548,7 +579,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkFunctionOutput(Function ele) {
-		if(!ele.operations.nullOrEmpty && ele.output?.card?.isMany) {
+		if(!ele.operations.nullOrEmpty && ele.output?.card !== null && ele.output?.card.isMany) {
 			error('''Assigning output with multiple cardinality is not supported yet.''', ele, FUNCTION__OUTPUT)
 		}
 	}
@@ -586,4 +617,39 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		}
 	}
+	
+	/*
+	@Inject TargetURIConverter converter
+	@Inject IResourceDescriptionsProvider index
+	@Inject IReferenceFinder refFinder
+	
+	@Check(EXPENSIVE)
+	def checkNeverUsedModelElement(RosettaModel model) {
+		model.elements.forEach [ele|
+			if (!(ele instanceof RosettaNamed) || ele instanceof RosettaEvent ||  ele instanceof RosettaProduct || ele instanceof RosettaDataRule|| ele instanceof RosettaChoiceRule) {
+				return
+			}
+			val refs = newHashSet
+			val resSet = ele.eResource.resourceSet
+			refFinder.findAllReferences(converter.fromIterable(#[ele.URI]), [ targetURI, work |
+				work.exec(resSet)
+			], index.getResourceDescriptions(resSet), new Acceptor() {
+				override accept(IReferenceDescription description) {
+					refs.add(description)
+				}
+
+				override accept(EObject source, URI sourceURI, EReference eReference, int index, EObject targetOrProxy,
+					URI targetURI) {
+					refs.add(
+						new DefaultReferenceDescription(EcoreUtil2.getFragmentPathURI(source), targetURI, eReference,
+							index, null))
+				}
+
+			}, new NullProgressMonitor)
+			if (refs.empty) {
+				warning('''«(ele as RosettaNamed).name» is never used.''', ele, ROSETTA_NAMED__NAME)
+			}
+		]
+	}
+	*/
 }

@@ -43,6 +43,9 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.utils.RosettaConfigExtension
+import com.regnosys.rosetta.rosetta.RosettaClass
 
 /**
  * This class contains custom scoping description.
@@ -54,6 +57,7 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaExtensions
+	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
 
 	override getScope(EObject context, EReference reference) {
@@ -100,11 +104,21 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 					val receiver = context.receiver;
 					if (receiver instanceof RosettaFeatureCall) {
 						val feature = receiver.feature
-						if (feature instanceof RosettaRegularAttribute) {
-							val metas = feature.metaTypes;
-							if (metas!==null && !metas.isEmpty) {
-								val metaScope = Scopes.scopeFor(metas)
-								allPosibilities.addAll(metaScope.allElements);
+						switch(feature) {
+							RosettaRegularAttribute:  {
+								val metas = feature.metaTypes;
+								if (metas !== null && !metas.isEmpty) {
+									val metaScope = Scopes.scopeFor(metas)
+									allPosibilities.addAll(metaScope.allElements);
+								}
+							}
+							Attribute: {
+								val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
+								if (metas !== null && !metas.isEmpty) {
+									allPosibilities.addAll(configs.findMetaTypes(feature).filter[
+										metas.contains(it.name.toString)
+									]);
+								}
 							}
 						}
 					}
@@ -158,7 +172,11 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 			case ROSETTA_CALLABLE_CALL__CALLABLE: {
 				if (context instanceof RosettaWorkflowRule) {
 					val parent = context.root?.parent
-					if (parent !== null) {
+					if (parent instanceof Data) {
+						val allClasses = parent.allSuperTypes
+						val scope = Scopes.scopeFor(allClasses)
+						return scope
+					}else if(parent instanceof RosettaClass) {
 						val allClasses = parent.allSuperTypes
 						val scope = Scopes.scopeFor(allClasses)
 						return scope
@@ -208,9 +226,10 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 			case ROSETTA_WORKFLOW_RULE__COMMON_IDENTIFIER:
 				if (context instanceof RosettaWorkflowRule) {
 					val parent = context.root?.parent
-					if (parent !== null) {
+					if (parent instanceof Data) {
 						return Scopes.scopeFor(parent.allAttributes)
-					}
+					} else if(parent instanceof RosettaClass)
+						return Scopes.scopeFor(parent.allAttributes)
 				}
 			case ROSETTA_ENUM_VALUE_REFERENCE__ENUMERATION: {
 				if (context instanceof RosettaEnumValueReference
@@ -223,7 +242,9 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 			case ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF: {
 				if (context instanceof RosettaExternalRegularAttribute) {
 					val classRef = (context.eContainer as RosettaExternalClass).classRef
-					if(classRef !==null)
+					if(classRef instanceof Data)
+						return Scopes.scopeFor(classRef.allAttributes)
+					else if(classRef instanceof RosettaClass)
 						return Scopes.scopeFor(classRef.allAttributes)
 				}
 				return IScope.NULLSCOPE
@@ -296,7 +317,7 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 			RClassType:
 				Scopes.scopeFor(receiverType.clazz.allAttributes)
 			RDataType:
-				Scopes.scopeFor(receiverType.data.attributes)
+				Scopes.scopeFor(receiverType.data.allAttributes)
 			RRecordType:
 				Scopes.scopeFor(receiverType.record.features)
 			RFeatureCallType:

@@ -37,6 +37,7 @@ import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
@@ -49,18 +50,17 @@ import com.rosetta.model.lib.functions.MapperMaths
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.MapperTree
 import com.rosetta.model.lib.meta.FieldWithMeta
+import com.rosetta.model.lib.validation.MapperTreeValidatorHelper
 import com.rosetta.model.lib.validation.ValidatorHelper
 import java.math.BigDecimal
 import java.util.HashMap
-import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.util.Wrapper
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import org.eclipse.xtext.util.Wrapper
-import java.util.function.BinaryOperator
 
 class ExpressionGenerator {
 	
@@ -149,7 +149,7 @@ class ExpressionGenerator {
 				'''«MapperC».of(«FOR ele: expr.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
 			}
 			default: 
-				throw new UnsupportedOperationException("Unsupported expression type of " + expr.class.simpleName)
+				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
 		}
 	}
 	/**
@@ -164,6 +164,9 @@ class ExpressionGenerator {
 				val StringConcatenationClient right =
 				switch (feature) {
 					RosettaRegularAttribute: {
+						'''«feature.buildMapFunc(isLast, autoValue)»«IF groupByFeature!==null»«buildGroupBy(groupByFeature, isLast)»«ENDIF»'''
+					}
+					Attribute: {
 						'''«feature.buildMapFunc(isLast, autoValue)»«IF groupByFeature!==null»«buildGroupBy(groupByFeature, isLast)»«ENDIF»'''
 					}
 					RosettaMetaType: {
@@ -202,37 +205,45 @@ class ExpressionGenerator {
 	
 	def StringConcatenationClient existsExpr(RosettaExistsExpression exists, RosettaExpression argument, ParamMap params) {
 		val arg = getAliasExpressionIfPresent(argument)
-		
-		if (arg instanceof RosettaBinaryOperation) {
-			if(arg.isLogicalOperation)
-				doExistsExpr(exists, arg.binaryExpr(exists, params))
+		val binary = arg.findBinaryOperation
+		if (binary !== null) {
+			if(binary.isLogicalOperation)
+				'''«importWildCard(if(containsFeatureCallOrCallableCall(binary.left)) MapperTreeValidatorHelper else ValidatorHelper)»«doExistsExpr(exists, arg.javaCode(params))»'''
 			else 
 				//if the argument is a binary expression then the exists needs to be pushed down into it
-				arg.binaryExpr(exists, params)
+				binary.binaryExpr(exists, params)
 		}
 		else {
-			doExistsExpr(exists, arg.javaCode(params))
+			'''«importWildCard(ValidatorHelper)»«doExistsExpr(exists, arg.javaCode(params))»'''
+		}
+	}
+	
+	def RosettaBinaryOperation findBinaryOperation(RosettaExpression expression) {
+		switch(expression) {
+			RosettaBinaryOperation: expression
+			RosettaParenthesisCalcExpression: expression.expression.findBinaryOperation
+			default: null
 		}
 	}
 	
 	private def StringConcatenationClient doExistsExpr(RosettaExistsExpression exists, StringConcatenationClient arg) {
 		if(exists.single)
-			'''«importMethod(ValidatorHelper,"singleExists")»(«arg», «exists.only»)'''
+			'''singleExists(«arg», «exists.only»)'''
 		else if(exists.multiple)
-			'''«importMethod(ValidatorHelper,"multipleExists")»(«arg», «exists.only»)'''
-		else
-			'''«importMethod(ValidatorHelper,"exists")»(«arg», «exists.only»)'''
+			'''multipleExists(«arg», «exists.only»)'''
+		else 
+			'''exists(«arg», «exists.only»)'''
 	}
 	
 	def StringConcatenationClient absentExpr(RosettaAbsentExpression notSet, RosettaExpression argument, ParamMap params) {
 		val arg = getAliasExpressionIfPresent(argument)
-		
-		if (arg instanceof RosettaBinaryOperation) {
-			if(arg.isLogicalOperation)
-				'''«importMethod(ValidatorHelper,"notExists")»(«arg.binaryExpr(notSet, params)»)'''
+		val binary = arg.findBinaryOperation
+		if (binary !== null) {
+			if(binary.isLogicalOperation)
+				'''«MapperTreeValidatorHelper».notExists(«binary.binaryExpr(notSet, params)»)'''
 			else
 				//if the arg is binary then the operator needs to be pushed down
-				arg.binaryExpr(notSet, params)
+				binary.binaryExpr(notSet, params)
 		}
 		else {
 			'''«importMethod(ValidatorHelper,"notExists")»(«arg.javaCode(params)»)'''
@@ -245,7 +256,7 @@ class ExpressionGenerator {
 			RosettaClass : {
 				'''«MapperS».of(«params.getClass(call)»)'''
 			}
-			com.regnosys.rosetta.rosetta.simple.Data : {
+			Data : {
 				'''«MapperS».of(«params.getClass(call)»)'''
 			}
 			RosettaAlias : {
@@ -282,12 +293,18 @@ class ExpressionGenerator {
 				feature.buildMapFunc(isLast, autoValue)
 			Attribute:
 				feature.buildMapFunc(isLast, autoValue)
+			RosettaMetaType: 
+				'''«feature.buildMapFunc(isLast)»'''
 			RosettaFeature: 
-				'''.map("get«feature.name.toFirstUpper»", «EcoreUtil2.getContainerOfType(feature, RosettaType).toJavaType»::get«feature.name.toFirstUpper»)'''
+				'''.map("get«feature.name.toFirstUpper»", «feature.containerType.toJavaType»::get«feature.name.toFirstUpper»)'''
 			default:
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.eClass.name)
 		}
 		'''«javaCode(call.receiver, params, false)»«right»'''
+	}
+	
+	def private RosettaType containerType(RosettaFeature feature) {
+		EcoreUtil2.getContainerOfType(feature, RosettaType)
 	}
 	
 	def StringConcatenationClient countExpr(RosettaCountOperation expr, RosettaExpression test, ParamMap params) {
@@ -436,17 +453,17 @@ class ExpressionGenerator {
 	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right) {
 		switch operator {
 			case ("="):
-				'''«importMethod(ValidatorHelper, "areEqual")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»areEqual(«left», «right»)'''
 			case ("<>"):
-				'''«importMethod(ValidatorHelper,"notEqual")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»notEqual(«left», «right»)'''
 			case ("<") : 
-				'''«importMethod(ValidatorHelper,"lessThan")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»lessThan(«left», «right»)'''
 			case ("<=") : 
-				'''«importMethod(ValidatorHelper,"lessThanEquals")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»lessThanEquals(«left», «right»)'''
 			case (">") : 
-				'''«importMethod(ValidatorHelper,"greaterThan")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»greaterThan(«left», «right»)'''
 			case (">=") : 
-				'''«importMethod(ValidatorHelper,"greaterThanEquals")»(«left», «right»)'''
+				'''«importWildCard(ValidatorHelper)»greaterThanEquals(«left», «right»)'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported binary operation of " + operator)
 		}
@@ -482,7 +499,7 @@ class ExpressionGenerator {
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	def StringConcatenationClient buildMapFunc(RosettaRegularAttribute attribute, boolean isLast, boolean autoValue) {
+	dispatch def StringConcatenationClient buildMapFunc(RosettaRegularAttribute attribute, boolean isLast, boolean autoValue) {
 		val mapFunc = attribute.buildMapFuncAttribute
 		if (attribute.cardinalityIsListValue) {
 			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty)
@@ -497,7 +514,7 @@ class ExpressionGenerator {
 		else
 		{
 			if (attribute.metaTypes===null || attribute.metaTypes.isEmpty){
-				if(attribute.type instanceof RosettaClass) 
+				if(attribute.type instanceof RosettaClass || attribute.type instanceof Data) 
 				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
 				else
 				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
@@ -512,7 +529,7 @@ class ExpressionGenerator {
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	def StringConcatenationClient buildMapFunc(Attribute attribute, boolean isLast, boolean autoValue) {
+	dispatch def StringConcatenationClient buildMapFunc(Attribute attribute, boolean isLast, boolean autoValue) {
 		val mapFunc = attribute.buildMapFuncAttribute
 		if (attribute.card.isIsMany) {
 			if (attribute.metaAnnotations.nullOrEmpty)
@@ -527,7 +544,7 @@ class ExpressionGenerator {
 		else
 		{
 			if (attribute.metaAnnotations.nullOrEmpty){
-				if(attribute.type instanceof RosettaClass) 
+				if(attribute.type instanceof RosettaClass || attribute.type instanceof Data) 
 				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
 				else
 				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
@@ -547,7 +564,14 @@ class ExpressionGenerator {
 		else
 			JavaType.create(rosType.name.toJavaType)
 	}
-	private def JavaType toJavaType(com.regnosys.rosetta.rosetta.simple.Data ele) {
+	
+	private def javaNames(Attribute attr) {
+		val model = EcoreUtil2.getContainerOfType(attr, RosettaModel)
+		if (model !== null)
+			factory.create(model)
+	}
+	
+	private def JavaType toJavaType(Data ele) {
 		val model = EcoreUtil2.getContainerOfType(ele, RosettaModel)
 		if (model !== null)
 			factory.create(model).toJavaType(ele)
@@ -555,13 +579,15 @@ class ExpressionGenerator {
 			JavaType.create(ele.name.toJavaType)
 	}
 	
-	def static metaClass(RosettaRegularAttribute attribute) {
+	def metaClass(RosettaRegularAttribute attribute) {
 		if (attribute.metaTypes.exists[m|m.name=="reference"]) "ReferenceWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 		else "FieldWithMeta"+attribute.type.name.toJavaType.toFirstUpper
 	}
-	def static metaClass(Attribute attribute) {
-		if (attribute.annotations.exists[a|a.annotation?.name=="metadata" && a.attribute?.name=="reference"]) "ReferenceWithMeta"+attribute.type.name.toJavaType.toFirstUpper
-		else "FieldWithMeta"+attribute.type.name.toJavaType.toFirstUpper
+	
+	def JavaType metaClass(Attribute attribute) {
+		val pack = attribute.javaNames?.packages?.metaField
+		if (attribute.annotations.exists[a|a.annotation?.name=="metadata" && a.attribute?.name=="reference"]) pack?.javaType("ReferenceWithMeta"+attribute.type.name.toFirstUpper)
+		else pack?.javaType("FieldWithMeta"+attribute.type.name.toFirstUpper)
 	}
 	
 	def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, boolean isLast) {
@@ -588,14 +614,14 @@ class ExpressionGenerator {
 		'''"get«attribute.name.toFirstUpper»", «(attribute.eContainer as RosettaClass).toJavaType»::get«attribute.name.toFirstUpper»'''
 
 	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute) {
-		if(attribute.eContainer instanceof com.regnosys.rosetta.rosetta.simple.Data)
-		'''"get«attribute.name.toFirstUpper»", «(attribute.eContainer as com.regnosys.rosetta.rosetta.simple.Data).toJavaType»::get«attribute.name.toFirstUpper»'''
+		if(attribute.eContainer instanceof Data)
+		'''"get«attribute.name.toFirstUpper»", «(attribute.eContainer as Data).toJavaType»::get«attribute.name.toFirstUpper»'''
 	}
 
 	/**
 	 * The id for a parameter - either a Class name or a positional index
 	 */
-	@Data static class ParamID {
+	@org.eclipse.xtend.lib.annotations.Data static class ParamID {
 		RosettaType c
 		int index
 		String name;
@@ -662,7 +688,7 @@ class ExpressionGenerator {
 	def StringConcatenationClient toNodeLabel(RosettaFeatureCall call) {
 		val feature = call.feature
 		val right = switch feature {
-			RosettaRegularAttribute, RosettaMetaType: feature.name
+			RosettaRegularAttribute, RosettaMetaType, Attribute: feature.name
 			default: throw new UnsupportedOperationException("Unsupported expression type "+feature.getClass)
 		}
 		

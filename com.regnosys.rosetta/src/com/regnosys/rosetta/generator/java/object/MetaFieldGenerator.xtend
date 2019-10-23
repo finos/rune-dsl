@@ -14,6 +14,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaFullType
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class MetaFieldGenerator {
 	def generate(IFileSystemAccess2 fsa, Iterable<RosettaMetaType> metaTypes, Iterable<RosettaRootElement> allClasses, Iterable<String> namespaces) {
@@ -35,7 +36,7 @@ class MetaFieldGenerator {
 			val refs = nsc.value.flatMap[expandedAttributes].filter[hasMetas && metas.exists[name=="reference"]].map[type].toSet
 			
 			for (ref:refs) {
-				if (ref instanceof RosettaClass)
+				if (ref.isClassOrData)
 					fsa.generateFile('''«packages.metaField.directoryName»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(packages, ref))
 				else
 					fsa.generateFile('''«packages.metaField.directoryName»/BasicReferenceWithMeta«ref.name.toFirstUpper».java''', basicReferenceWithMeta(packages, ref))
@@ -259,7 +260,7 @@ class MetaFieldGenerator {
 			}
 			
 			private FieldWithMeta«type.name.toFirstUpper»(FieldWithMeta«type.name.toFirstUpper»Builder builder) {
-				«IF type instanceof RosettaClass»
+				«IF type.isClassOrData»
 					value = ofNullable(builder.getValue()).map(v->v.build()).orElse(null);
 				«ELSE»
 					value = builder.getValue();
@@ -289,7 +290,7 @@ class MetaFieldGenerator {
 			@Override
 			protected void process(RosettaPath path, Processor processor) {
 				processRosetta(path.newSubPath("meta"), processor, MetaFields.class, meta, AttributeMeta.IS_META);
-				«IF type instanceof RosettaClass»
+				«IF type.isClassOrData»
 					processRosetta(path.newSubPath("value"), processor, «type.name.toJavaType».class, value);
 				«ELSE»
 					processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
@@ -326,7 +327,7 @@ class MetaFieldGenerator {
 			}
 			
 			public static class FieldWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder{
-				«IF type instanceof RosettaClass»
+				«IF type.isClassOrData»
 					private «type.name».«type.name»Builder  value;
 				«ELSE»
 					private «type.name.toJavaType»  value;
@@ -340,7 +341,7 @@ class MetaFieldGenerator {
 					return metaData;
 				}
 				
-				«IF type instanceof RosettaClass»
+				«IF type.isClassOrData»
 					public «type.name».«type.name»Builder  getValue() {
 				«ELSE»
 					public «type.name.toJavaType» getValue() {
@@ -356,7 +357,7 @@ class MetaFieldGenerator {
 					return meta=ofNullable(meta).orElseGet(MetaFields::builder);
 				}
 				
-				«IF type instanceof RosettaClass»
+				«IF type.isClassOrData»
 					public FieldWithMeta«type.name.toFirstUpper»Builder setValueBuilder(«type.name».«type.name»Builder value) {
 						this.value = value;
 						return this;
@@ -400,7 +401,7 @@ class MetaFieldGenerator {
 				@Override
 				public void process(RosettaPath path, BuilderProcessor processor) {
 					processRosetta(path.newSubPath("meta"), processor, MetaFields.class, meta, AttributeMeta.IS_META);
-					«IF type instanceof RosettaClass»
+					«IF type.isClassOrData»
 						processRosetta(path.newSubPath("value"), processor, «type.name.toJavaType».class, value);
 					«ELSE»
 						processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
@@ -439,7 +440,11 @@ class MetaFieldGenerator {
 		}
 	'''
 	
-	def referenceWithMeta(RosettaJavaPackages packages, RosettaClass type) '''
+	def boolean isClassOrData(RosettaType type) {
+		return type instanceof Data || type instanceof RosettaClass
+	}
+	
+	def referenceWithMeta(RosettaJavaPackages packages, RosettaType type) '''
 		package «packages.metaField.packageName»;
 		
 		import static java.util.Optional.ofNullable;
@@ -559,7 +564,6 @@ class MetaFieldGenerator {
 					return externalReference;
 				}
 				
-				@SuppressWarnings("unchecked")
 				public ReferenceWithMeta«type.name.toFirstUpper»Builder setValue(«type.name» value) {
 					this.value = ofNullable(value).map(t->t.toBuilder()).orElse(null);
 					return this;
