@@ -690,7 +690,7 @@ class RosettaParsingTest {
 			namespace "com.rosetta.model"
 			version "test"
 			
-			data DataFoo: <"A sample data">
+			type DataFoo: <"A sample data">
 				stringAttribute string (1..1)
 				intAttribute int (1..1)
 				multipleAttribute DataFoo (1..*)

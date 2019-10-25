@@ -252,7 +252,7 @@ class RosettaCalculationGenerationTest {
 				val1 date (1..1);
 				val2 time (1..1);
 			}
-			data FoncOut: 
+			type FoncOut: 
 				res1 string (1..1)
 				res2 string (1..1)
 			

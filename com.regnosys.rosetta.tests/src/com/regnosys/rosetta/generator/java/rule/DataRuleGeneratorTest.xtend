@@ -163,7 +163,7 @@ class DataRuleGeneratorTest {
 	@Test
 	def void conditionCount() {
 		val code = '''
-			data CondTest :
+			type CondTest :
 				multiAttr number (0..*)
 			condition:
 				CondTest -> multiAttr count >= 0
@@ -172,7 +172,7 @@ class DataRuleGeneratorTest {
 		val classes = code.compileToClasses
 
 		val coinInstance = classes.createInstanceUsingBuilder('CondTest', of(), of('multiAttr', #[BigDecimal.ONE]))
-		val validationResult = classes.runCondition(coinInstance, 'CondTest0')
+		val validationResult = classes.runCondition(coinInstance, 'CondTest')
 
 		assertTrue(validationResult.isSuccess)
 	}
