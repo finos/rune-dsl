@@ -32,6 +32,7 @@ import org.eclipse.xtext.util.CancelIndicator
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculator implements RosettaHighlightingStyles {
 
@@ -53,6 +54,9 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 			}
 			if (object instanceof RosettaRegularAttribute) {
 				highlightFeatureForAllChildren(acceptor, object, RosettaPackage.Literals.ROSETTA_REGULAR_ATTRIBUTE__META_TYPES, META_ID)
+			}
+			if (object instanceof Attribute) {
+				highlightFeatureForAllChildren(acceptor, object, RosettaPackage.Literals.ROSETTA_NAMED__NAME, DEFAULT_ID)
 			}
 		} else if (object instanceof RosettaClass) {
 			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_NAMED__NAME, CLASS_ID)

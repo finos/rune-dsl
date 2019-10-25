@@ -39,7 +39,7 @@ AnnotationRef:
 ;
 
 Data:
-	('type' |'data') RosettaNamed ('extends' superType = [Data|ValidID])? ':' Definable?
+	('type' | oldStyle ?= 'data') RosettaNamed ('extends' superType = [Data|ValidID])? ':' Definable?
 	(Annotations| ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
