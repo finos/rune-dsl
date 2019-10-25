@@ -20,6 +20,8 @@ import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Function
+import java.util.Collection
 import java.util.LinkedHashSet
 import java.util.Set
 import org.eclipse.emf.common.util.URI
@@ -255,7 +257,20 @@ class RosettaExtensions {
 		withAnnotations?.annotations?.filter[annotation !== null && !annotation.eIsProxy]
 	}
 	
-	def String conditionName(Data data, Condition cond) {
-		cond.name?:data.name
+	def String conditionName(Condition cond, Data data) {
+		return cond.conditionName(data.name, data.conditions)
+	}
+
+	def String conditionName(Condition cond, Function func) {
+		return cond.conditionName(func.name, func.conditions)
+	}
+	
+	private def String conditionName(Condition cond, String containerName, Collection<Condition> conditions) {
+		if (!cond.name.nullOrEmpty)
+			return cond.name
+		else {
+			val idx = conditions.filter[name.nullOrEmpty].toList.indexOf(cond)
+			return '''«containerName»«IF idx != 0»«idx»«ENDIF»'''
+		}
 	}
 }

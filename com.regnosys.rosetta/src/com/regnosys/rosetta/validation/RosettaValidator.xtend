@@ -504,6 +504,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkData(Data ele) {
+		if(ele.oldStyle)
+			error('''Wrong keyword 'data' use 'type' instead.''', DATA__OLD_STYLE)
 		val onOfs = ele.conditions.filter[it.constraint !== null].groupBy[it.constraint.oneOf].get(Boolean.TRUE)
 		if (onOfs !== null && onOfs.size > 1) {
 			onOfs.forEach [

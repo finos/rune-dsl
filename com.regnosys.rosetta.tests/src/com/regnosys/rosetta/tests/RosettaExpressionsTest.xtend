@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.CoreMatchers.*
+import static org.hamcrest.MatcherAssert.*
 
 /**
  * A set of tests for all instances of RosettaExpression i.e. RosettaAdditiveExpression
@@ -32,7 +32,7 @@ class RosettaExpressionsTest {
 	@Test
 	def void shouldParseQualifierWithAdditiveExpression() {
 		'''
-			data Test:
+			type Test:
 				one number (1..1)
 				two number (1..1)
 			
@@ -44,7 +44,7 @@ class RosettaExpressionsTest {
 	@Test
 	def void shouldParseNoIssuesWhenDateSubtraction() {
 		'''
-			data Test:
+			type Test:
 				one date (1..1)
 				two date (1..1)
 			
@@ -56,7 +56,7 @@ class RosettaExpressionsTest {
 	@Test
 	def void shouldParseWithErrorWhenAddingDates() {
 		'''
-			data Test:
+			type Test:
 				one date (1..1)
 				two date (1..1)
 			
@@ -73,7 +73,7 @@ class RosettaExpressionsTest {
 	@Test
 	def void shouldCodeGenerateWithMoreGenericsInformation() {
 		val code = '''
-			data Test:
+			type Test:
 				one date (1..1)
 				two date (1..1)
 			
@@ -88,7 +88,7 @@ class RosettaExpressionsTest {
 	@Test
 	def void shoudCodeGenerateAndCompileWhenSubtractingDates() {
 		val code = '''
-			data Test:
+			type Test:
 				one date (1..1)
 				two date (1..1)
 			
@@ -102,7 +102,7 @@ class RosettaExpressionsTest {
 	@Test
 	def void shoudCodeGenerateAndCompileWhenAddingNumbers() {
 		val code = '''
-			data Test:
+			type Test:
 				one number (1..1)
 				two int (1..1)
 			
@@ -119,7 +119,7 @@ class RosettaExpressionsTest {
 		val code = '''
 			metaType scheme string
 			
-			data Test:
+			type Test:
 				one string (1..1)
 					[metadata scheme]
 				two int (1..1)
@@ -135,12 +135,12 @@ class RosettaExpressionsTest {
 		val code = '''
 			metaType scheme string
 			
-			data Test:
+			type Test:
 				one Foo (1..1)
 					[metadata scheme]
 				two int (1..1)
 			
-			data Foo:
+			type Foo:
 				one string (1..1)
 					[metadata scheme]
 				two int (1..1)
@@ -159,12 +159,12 @@ class RosettaExpressionsTest {
 			metaType scheme string
 			metaType id string
 			
-			data Test:
+			type Test:
 				one Foo (1..*)
 					[metadata scheme]
 				two int (1..1)
 			
-			data Foo:
+			type Foo:
 				one string (1..1)
 					[metadata scheme]
 				two int (1..1)
@@ -183,12 +183,12 @@ class RosettaExpressionsTest {
 			metaType scheme string
 			metaType id string
 			
-			data Test:
+			type Test:
 				one Foo (1..1)
 					[metadata scheme]
 				two int (1..1)
 			
-			data Foo:
+			type Foo:
 				one string (1..1)
 					[metadata scheme]
 				two int (1..1)

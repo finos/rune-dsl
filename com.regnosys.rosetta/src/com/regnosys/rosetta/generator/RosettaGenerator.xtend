@@ -87,7 +87,7 @@ class RosettaGenerator extends AbstractGenerator {
 								if (cond.isChoiceRuleCondition) {
 									choiceRuleGenerator.generate(javaNames, fsa, it, cond, version)
 								} else {
-									dataRuleGenerator.generate(javaNames, fsa, cond, version)
+									dataRuleGenerator.generate(javaNames, fsa, it, cond, version)
 								}
 							]
 						}
