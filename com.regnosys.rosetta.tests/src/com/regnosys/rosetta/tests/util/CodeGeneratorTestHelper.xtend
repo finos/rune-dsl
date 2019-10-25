@@ -68,7 +68,7 @@ class CodeGeneratorTestHelper {
 	}
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, String className, Map<String, Object> itemsToSet,
-		Map<String, List<Object>> itemsToAddToList) {
+		Map<String, List<?>> itemsToAddToList) {
 		val rosettaClassBuilderInstance = classes.get(javaPackages.model.packageName + '.' + className).getMethod(
 			"builder").invoke(null);
 		itemsToSet.forEach [ name, value |

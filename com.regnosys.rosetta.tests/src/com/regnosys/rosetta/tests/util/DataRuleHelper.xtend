@@ -14,6 +14,10 @@ class DataRuleHelper {
 		val dataRuleClass = classes.get(javaPackages.dataRule.packageName + '.' + DataRuleGenerator.dataRuleClassName(dataRuleName))
 		return dataRuleClass.getMethod("validate", #[RosettaPath, instance.class]).invoke(dataRuleClass.newInstance, null, instance)
 	}
+	def runCondition(Map<String, Class<?>> classes, Object instance, String dataRuleName) {
+		val dataRuleClass = classes.get(javaPackages.dataRule.packageName + '.' + DataRuleGenerator.dataRuleClassName(dataRuleName))
+		return dataRuleClass.getMethod("validate", #[RosettaPath, instance.class]).invoke(dataRuleClass.newInstance, null, instance)
+	}
 
 	def isSuccess(Object validationResult) {
 		validationResult.class.getMethod("isSuccess", null).invoke(validationResult) as Boolean
@@ -27,8 +31,5 @@ class DataRuleHelper {
 		validationResult.class.getMethod("getFailureReason", null).invoke(validationResult) as Optional<String>
 	}
 	
-	def printDataRule(Map<String, String> code, String name) {
-		println(code.get(javaPackages.dataRule.packageName + '.' + DataRuleGenerator.dataRuleClassName(name)))
-	}
 	
 }

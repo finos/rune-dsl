@@ -39,7 +39,7 @@ AnnotationRef:
 ;
 
 Data:
-	'data' RosettaNamed ('extends' superType = [Data|ValidID])? ':' Definable?
+	('type' |'data') RosettaNamed ('extends' superType = [Data|ValidID])? ':' Definable?
 	(Annotations| ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
@@ -146,7 +146,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'key' | 'value')
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'key' | 'value' | 'type')
 ;
 
 ValidHint: 

@@ -29,9 +29,11 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class DataRuleGenerator {
 	@Inject ExpressionGenerator expressionHandler
+	@Inject extension RosettaExtensions
 	@Inject extension ImportManagerExtension
 	
 	def generate(JavaNames names, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
@@ -40,8 +42,8 @@ class DataRuleGenerator {
 		]
 	}
 	
-	def generate(JavaNames names, IFileSystemAccess2 fsa, Condition ele, String version) {
-		val classBody = tracImports(ele.dataRuleClassBody(names, version))
+	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, Condition ele, String version) {
+		val classBody = tracImports(ele.dataRuleClassBody(data, names, version))
 		val content = '''
 			package «names.packages.dataRule.packageName»;
 			
@@ -55,7 +57,7 @@ class DataRuleGenerator {
 			
 			«classBody.toString»
 		'''
-		fsa.generateFile('''«names.packages.dataRule.directoryName»/«dataRuleClassName(ele.name)».java''', content)
+		fsa.generateFile('''«names.packages.dataRule.directoryName»/«dataRuleClassName(ele, data)».java''', content)
 	}
 
 	def static String dataRuleClassName(String dataRuleName) {
@@ -68,6 +70,12 @@ class DataRuleGenerator {
 		if (camel.endsWith('Rule'))
 			return camel.substring(0, camel.lastIndexOf('Rule')) + 'DataRule'
 		return camel + 'DataRule'
+	}
+	
+	
+
+	def  String dataRuleClassName(Condition cond, Data data) {
+		dataRuleClassName(cond.conditionName(data))
 	}
 
 	private def toJava(RosettaDataRule rule, JavaNames names, String version) {
@@ -91,20 +99,21 @@ class DataRuleGenerator {
 		
 		return rosettaClasses.get(0)
 	}
-	private def StringConcatenationClient dataRuleClassBody(Condition rule, JavaNames javaName, String version)  {
+	private def StringConcatenationClient dataRuleClassBody(Condition rule, Data data, JavaNames javaName, String version)  {
 		val rosettaClass = rule.eContainer as RosettaType
-		val expression = rule.expression // TODO allow only one conditional expression here
+		val expression = rule.expression
 		
 		val ruleWhen = if(expression instanceof RosettaConditionalExpression ) expression.^if
-		val ruleThen = if(expression instanceof RosettaConditionalExpression ) expression.ifthen
+		val ruleThen = if(expression instanceof RosettaConditionalExpression ) expression.ifthen else expression
 		
-		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION));
+		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION))
+		val ruleName = rule.conditionName(data)
 		'''
 			«emptyJavadocWithVersion(version)»
-			@«com.rosetta.model.lib.annotations.RosettaDataRule»("«rule.name»")
-			public class «dataRuleClassName(rule.name)» implements «Validator»<«javaName.toJavaType(rosettaClass)»> {
+			@«com.rosetta.model.lib.annotations.RosettaDataRule»("«ruleName»")
+			public class «dataRuleClassName(ruleName)» implements «Validator»<«javaName.toJavaType(rosettaClass)»> {
 				
-				private static final String NAME = "«rule.name»";
+				private static final String NAME = "«ruleName»";
 				private static final String DEFINITION = «definition»;
 				
 				@Override
@@ -135,7 +144,7 @@ class DataRuleGenerator {
 				}
 				
 				private ComparisonResult ruleIsApplicable(«rosettaClass.name» «rosettaClass.name.toFirstLower») {
-					return «expressionHandler.javaCode(ruleWhen, new ParamMap(rosettaClass))»;
+					return «IF ruleWhen !== null»«expressionHandler.javaCode(ruleWhen, new ParamMap(rosettaClass))»«ELSE»«ComparisonResult».success()«ENDIF»;
 				}
 				
 				private ComparisonResult evaluateThenExpression(«rosettaClass.name» «rosettaClass.name.toFirstLower») {

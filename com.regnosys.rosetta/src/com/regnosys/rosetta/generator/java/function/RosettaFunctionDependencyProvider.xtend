@@ -18,6 +18,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import org.eclipse.emf.ecore.EObject
 
 import static com.regnosys.rosetta.generator.util.Util.*
+import com.regnosys.rosetta.rosetta.RosettaCountOperation
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -57,6 +58,10 @@ class RosettaFunctionDependencyProvider {
 			}
 			RosettaContainsExpression: {
 				functionDependencies(object.contained) + functionDependencies(object.container)
+			}
+			RosettaCountOperation:{
+				functionDependencies(object.left)+
+				functionDependencies(object.right)
 			}
 			RosettaExternalFunction,
 			RosettaEnumValueReference,

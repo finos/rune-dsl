@@ -136,8 +136,7 @@ class DataRuleGeneratorTest {
 		assertTrue(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("when Coin -> tail = True\nthen Coin -> head = False"))
 	}
-
-	@Test
+@Test
 	def void dataRuleCoinEdge() {
 		val code = '''
 			class Coin {
@@ -158,6 +157,24 @@ class DataRuleGeneratorTest {
 		val validationResult = classes.runDataRule(coinInstance, 'CoinEdgeRule')
 		assertTrue(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("when Coin -> tail = False\nthen Coin -> head = False"))
+	}
+
+	
+	@Test
+	def void conditionCount() {
+		val code = '''
+			data CondTest :
+				multiAttr number (0..*)
+			condition:
+				CondTest -> multiAttr count >= 0
+		'''.generateCode
+
+		val classes = code.compileToClasses
+
+		val coinInstance = classes.createInstanceUsingBuilder('CondTest', of(), of('multiAttr', #[BigDecimal.ONE]))
+		val validationResult = classes.runCondition(coinInstance, 'CondTest0')
+
+		assertTrue(validationResult.isSuccess)
 	}
 	
 		
