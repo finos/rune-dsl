@@ -98,7 +98,7 @@ PostCondition returns Condition:
 
 Operation:
 	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
-	expression = RosettaCalcExpression
+	expression = RosettaCalcExpression assignAsKey?='as-key'?
 ;
 
 Segment:

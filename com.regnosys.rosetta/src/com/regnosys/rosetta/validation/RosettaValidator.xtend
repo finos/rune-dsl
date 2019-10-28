@@ -66,6 +66,9 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
+import com.regnosys.rosetta.services.RosettaGrammarAccess
 
 /**
  * This class contains custom validation rules. 
@@ -85,6 +88,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension RosettaFunctionExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject CardinalityProvider cardinality
+	@Inject RosettaGrammarAccess grammar
 	
 	@Check
 	def void deprecatedInfo(RosettaClass classe) {
@@ -608,6 +612,16 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def checkAssignCardinality(Operation ele) {
 		if (!cardinality.expectedCardinalityMany(ele) && cardinality.isMulti(ele.expression))
 			error('''Expecting single cardinality as value. Use 'only-element' to assign only first value.''', ele, OPERATION__EXPRESSION)
+	}
+	@Check
+	def checkAsKeyUsage(Operation ele) {
+		if (ele.expression === null || !ele.assignAsKey) {
+			return
+		}
+		val typeToUse = ele.expression.RType
+		if(!(typeToUse instanceof RDataType) || !(typeToUse as RDataType).data.hasKeyedAnnotation) {
+			error(''''«grammar.operationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes of complex type annotated with [metadata key] annotation.''', ele, OPERATION__ASSIGN_AS_KEY)
+		}
 	}
 	
 	@Check

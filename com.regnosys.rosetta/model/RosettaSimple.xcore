@@ -93,7 +93,7 @@ class Operation extends Definable {
 	refers AssignPathRoot assignRoot
 	contains Segment path
 	contains RosettaExpression expression
-	
+	boolean assignAsKey
 	op Segment[] pathAsSegmentList() {
 		return if(path !== null) path.asSegmentList(path) else new BasicEList
 	}

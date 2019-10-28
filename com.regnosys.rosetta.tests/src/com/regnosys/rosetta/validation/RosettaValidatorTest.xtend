@@ -4,7 +4,6 @@
 package com.regnosys.rosetta.validation
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -530,5 +529,46 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_CALLABLE_WITH_ARGS_CALL, TYPE_ERROR, 
 			"Expected type 'zonedDateTime' but was 'date'")
+	}
+	
+	@Test
+	def checkAsKeyUsage_01() {
+		val model = '''
+			type WithKey:
+				[metadata key]
+			
+			type TypeToUse:
+				attr WithKey (0..1)
+			
+			func Bar:
+			  inputs:
+			    in0 WithKey (1..1)
+			  output: result TypeToUse (1..1)
+			  assign-output result -> attr:
+			     in0 as-key
+		'''.parseRosetta
+		model.assertNoErrors
+	}
+	
+	@Test
+	def checkAsKeyUsage_02() {
+		val model = '''
+			type WithKey:
+				[metadata key]
+			
+			type TypeToUse:
+				attr WithKey (0..1)
+				attr2 TypeToUse (0..1)
+			
+			func Bar:
+			  inputs:
+			    in0 WithKey (1..1)
+			    in1 TypeToUse (1..1)
+			  output: result TypeToUse (1..1)
+			  assign-output result -> attr2:
+			     in1 as-key
+		'''.parseRosetta
+		model.assertError(OPERATION, null,
+			"'as-key' can only be used with attributes of complex type annotated with [metadata key] annotation.")
 	}
 }
