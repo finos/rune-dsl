@@ -13,49 +13,51 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	@Test
 	def void testInheritedAttributesDataRule() {
 		'''
-			class SuperSuperQuote {
-				superSuperAttr SuperQuote (0..1);
-			}
-			class SuperQuote extends SuperSuperQuote{
-				superAttr SuperQuote (0..1);
-			}
-			
-			data rule SomeRule
-				when Quote -> <|>
-			
-			class Quote extends SuperQuote
-			{
-				attr Quote (1..1);
-			}
+		namespace "test"
+		version "test"
+		type SuperSuperQuote:
+			superSuperAttr SuperQuote (0..1)
+		
+		type SuperQuote extends SuperSuperQuote:
+			superAttr SuperQuote (0..1)
+		
+			condition SomeRule:
+				if Quote -> <|>
+		
+		
+		type Quote extends SuperQuote:
+			attr Quote (1..1)
 		''' >> #["attr", "superAttr", "superSuperAttr"]
 	}
 
 	@Test
 	def void testDataRuleAfterArrow() {
 		'''
+			namespace "test"
 			version "test"
 			
-			class Test { otherAttr Other (1..1); }
+			type Test: otherAttr Other (1..1)
 			
-			data rule CreditDefaultSwap_LongForm 
-				when Test -> otherAttr -> testAttr -> otherAttr -> testAttr
+			condition CreditDefaultSwap_LongForm:
+				if Test -> otherAttr -> testAttr -> otherAttr -> testAttr
 				then Test -> otherAttr -> <|>
 				
-			class Other { testAttr Test (1..1); }
+			type Other: testAttr Test (1..1)
 		''' >> #["testAttr"]
 	}
 
 	@Test
 	def void testDataRuleAfterArrow2() {
 		'''
+			namespace "test"
 			version "test"
 			
-			class Test { otherAttr Other (1..1); }
+			type Test: otherAttr Other (1..1)
 			
-			data rule CreditDefaultSwap_LongForm 
-				when Test -> otherAttr -> <|>
+			condition CreditDefaultSwap_LongForm:
+				if Test -> otherAttr -> <|>
 				
-			class Other { testAttr Test (1..1); }
+			type Other: testAttr Test (1..1)
 		''' >> #["testAttr"]
 	}
 
@@ -65,10 +67,9 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			synonym source FIX
 			synonym source FpML
 			
-			class Foo
+			type Foo:
 				[synonym <|>]
-			{}
-		''' >> #["FIX", "FpML"]
+		''' >= #["FIX", "FpML"]
 	}
 
 	@Test
@@ -77,11 +78,9 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			namespace "test"
 			version "test"
 			
-			class Foo
-			{
-				action ActionEnum (1..1);
+			type Foo:
+				action ActionEnum (1..1)
 					[synonym FpML set to ActionEnum.<|>]
-			}
 			
 			enum ActionEnum
 			{
@@ -89,7 +88,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 				correct,
 				cancel
 			}
-		''' >> #["cancel", "correct", "new", "."] // TODO original expectation is not alphabetical sorted but as declared #["new","correct", "cancel"]
+		''' >= #["cancel", "correct", "new", "."] // TODO original expectation is not alphabetical sorted but as declared #["new","correct", "cancel"]
 	}
 
 	@Test
@@ -98,21 +97,18 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			namespace "test"
 			version "test"
 			
-			class Foo
-			{
-				attr boolean (1..1);
-					[synonym FpML set to T<|>]
+			type Foo:
+				attr boolean (1..1)
+				[synonym FpML set to T<|>]
 			}
-		''' >> #["True", "."]
+		'''  >= #["True", "."]
 	}
 
 	@Test
 	def void testProductExpressionEnumLiteral() {
 		'''
-			class Quote
-			{
-				action ActionEnum (1..1);
-			}
+			type Quote:
+				action ActionEnum (1..1)
 			enum ActionEnum
 			{
 				new,
@@ -121,15 +117,14 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			}
 			isProduct test
 				Quote -> action <> <|>
-		''' >> #['ActionEnum.cancel', 'ActionEnum.correct', 'ActionEnum.new', '"Value"', "(", "[", "empty", "False", "True"]
+		''' >= #['ActionEnum.cancel', 'ActionEnum.correct', 'ActionEnum.new', '"Value"', "(", "[", "empty", "False", "True"]
 	}
 	
 	@Test
 	def void testProductExpressionEnumLiteral2() {
 		'''
-			class Quote
-			{
-				action ActionEnum (1..1);
+			type Quote:
+				action ActionEnum (1..1)
 			}
 			enum ActionEnum
 			{
@@ -139,7 +134,34 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			}
 			isProduct test
 				<|>
-		''' >> #['"Value"', "(", "<", "[", "empty", "False", "True"]
+		''' >= #['"Value"', "(", "<", "[", "empty", "False", "True"]
+	}
+	
+	@Test
+	def void testAssignOutputEnumLiteral() {
+		'''
+			type Quote:
+				action ActionEnum (1..1)
+
+			enum ActionEnum
+			{
+				new,
+				correct,
+				cancel
+			}
+			enum BadEnum
+			{
+				new,
+				correct,
+				cancel
+			}
+			func test:
+				inputs: attrIn Quote (0..1)
+				output: attrOut Quote (0..1)
+				assign-output attrOut -> action:
+					<|>
+			
+		''' >= #['ActionEnum.cancel', 'ActionEnum.correct', 'ActionEnum.new', 'attrIn', 'attrOut', 'test','"Value"', "(", "<", "[", "empty", "False","if", "True"]
 	}
 
 	@Test
@@ -147,36 +169,29 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 		'''
 			isProduct root EconomicTerms;
 
-			class EconomicTerms {
-			}
+			type EconomicTerms:
 			
-			class Quote
-			{
-				attr String (1..1);
-			}
+			type Quote:
+				attr String (1..1)
 			
 			
 			isProduct test
 				<|>
-		''' >> #['EconomicTerms', '"Value"', "(", "<", "[", "empty", "False", "True"]
+		''' >= #['EconomicTerms', '"Value"', "(", "<", "[", "empty", "False", "True"]
 		'''
 			isProduct root EconomicTerms;
 			
-			class EconomicTerms {
-			}
+			type EconomicTerms:
 			
-			class Quote
-			{
-				attr String (1..1);
-			}
+			type Quote:
+				attr String (1..1)
 			
-			class EconomicTerms {
-				ecoTermsAttr String (1..1);
-			}
+			type EconomicTerms:
+				ecoTermsAttr String (1..1)
 			
 			isProduct test
 				EconomicTerms or <|>
-		''' >> #['EconomicTerms', '"Value"', "(", "[",  "empty", "False", "True"]
+		''' >= #['EconomicTerms', '"Value"', "(", "[",  "empty", "False", "True"]
 	}
 
 	@Test
@@ -184,12 +199,11 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 		'''
 			isEvent root Event;
 			
-			class Event {}
+			type Event:
 			
-			class Quote
-			{
-				attr String (1..1);
-			}
+			type Quote:
+				attr String (1..1)
+
 			isProduct root EconomicTerms {
 				ecoTermsAttr String (1..1);
 			}
@@ -202,28 +216,25 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			
 			isEvent test
 				<|>
-		''' >> #['Event', 'EventAlias', '"Value"', "(", "<", "[", "empty", "False", "True"] 
+		''' >= #['Event', 'EventAlias', '"Value"', "(", "<", "[", "empty", "False", "True"] 
 		
 		'''
 			isEvent root Event;
 			
-			class Event {}
+			type Event:
 			
-			class Quote
-			{
-				attr String (1..1);
-			}
+			type Quote:
+				attr String (1..1)
 			
-			class Event {
-				eventAttr String (1..1);
-			}
+			type Event:
+				eventAttr String (1..1)
 			
 			alias EventAlias 
 				Event -> eventAttr
 			
 			isEvent test
 				Event and <|>
-		''' >> #['Event', 'EventAlias', '"Value"', "(", "[", "empty", "False", "True"]  
+		''' >= #['Event', 'EventAlias', '"Value"', "(", "[", "empty", "False", "True"]  
 	}
 	
 }

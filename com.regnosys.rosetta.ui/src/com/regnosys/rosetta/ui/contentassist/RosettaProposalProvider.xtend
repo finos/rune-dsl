@@ -6,28 +6,35 @@ package com.regnosys.rosetta.ui.contentassist
 import com.google.common.base.Function
 import com.google.common.base.Predicate
 import com.google.common.base.Predicates
+import com.google.common.base.Suppliers
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
+import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.jface.text.contentassist.ICompletionProposal
 import org.eclipse.xtext.Assignment
 import org.eclipse.xtext.CrossReference
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.Keyword
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.EObjectDescription
 import org.eclipse.xtext.resource.IEObjectDescription
+import org.eclipse.xtext.ui.editor.contentassist.ConfigurableCompletionProposal
 import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext
 import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.utils.RosettaConfigExtension
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 /**
  * See https://www.eclipse.org/Xtext/documentation/304_ide_concepts.html#content-assist
@@ -36,11 +43,31 @@ import com.regnosys.rosetta.utils.RosettaConfigExtension
 class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 
 	@Inject extension RosettaTypeProvider
+	@Inject extension RosettaExpectedTypeProvider
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaConfigExtension
 	
 	@Inject IQualifiedNameProvider qNames
-
+	@Inject RosettaGrammarAccess grammar
+	
+	val filterKeywords = Suppliers.memoize [
+		#[
+			grammar.rosettaClassAccess.classKeyword_1,
+			grammar.rosettaDataRuleAccess.ruleKeyword_1,
+			grammar.rosettaDataRuleAccess.dataKeyword_0,
+			grammar.dataAccess.oldStyleDataKeyword_0_1_0,
+			grammar.rosettaChoiceRuleAccess.choiceKeyword_0
+		]
+	]
+	
+	
+	override completeKeyword(Keyword keyword, ContentAssistContext contentAssistContext, ICompletionProposalAcceptor acceptor) {
+		if (filterKeywords.get().contains(keyword))
+			return
+		else
+			super.completeKeyword(keyword, contentAssistContext, acceptor)
+	}
+	
 	override protected lookupCrossReference(
 		EObject model,
 		EReference reference,
@@ -49,17 +76,22 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 		Function<IEObjectDescription, ICompletionProposal> proposalFactory
 	) {
 		val expectedType = switch (model) {
+			Operation case reference == ROSETTA_CALLABLE_CALL__CALLABLE: {
+				model.getExpectedType(OPERATION__EXPRESSION)
+			}
 			RosettaBinaryOperation: {
 				model.left?.RType
 			}
 		}
 		if (expectedType instanceof REnumType) {
 			expectedType.enumeration.allEnumValues.forEach [ enumValue |
-				acceptor.accept(
-					proposalFactory.apply(
-						EObjectDescription.create(qNames.getFullyQualifiedName(enumValue), enumValue)))
+				val proposal = proposalFactory.apply(
+						EObjectDescription.create(qNames.getFullyQualifiedName(enumValue), enumValue))
+				if(proposal instanceof ConfigurableCompletionProposal) {
+					proposal.priority = proposal.priority + 5
+				}
+				acceptor.accept(proposal)
 			]
-			return
 		}
 		super.lookupCrossReference(model, reference, acceptor, filter, proposalFactory)
 	}
