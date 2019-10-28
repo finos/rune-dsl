@@ -262,12 +262,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 
 	@Check
-	def checkAttributeNamesAreUnique(RosettaClass clazz) {
+	def checkAttributeNamesAreUnique(Data clazz) {
 		val name2attr = HashMultimap.create
 		clazz.allAttributes.forEach [
 			name2attr.put(name, it)
 		]
-		for (name : clazz.regularAttributes.map[name]) {
+		for (name : clazz.attributes.map[name]) {
 			val attrByName = name2attr.get(name)
 			if (attrByName.size > 1) {
 				val fromSuperClasses = attrByName.filter[eContainer != clazz]
@@ -432,7 +432,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 		val attribute = element.eContainer.eContainer.eContainer as RosettaTyped
 		val type = attribute.getType
-		if (type instanceof RosettaClass && !element.instances.filter[^set !== null].empty) {
+		if (type instanceof Data && !element.instances.filter[^set !== null].empty) {
 			error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
 		} else if (type instanceof RosettaEnumeration) {
 			for (inst : element.instances.filter[^set !== null]) {
