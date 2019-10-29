@@ -11,7 +11,7 @@ import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static org.junit.jupiter.api.Assertions.*
 
-class CalculationGeneratorHelper {
+class FuncGeneratorHelper {
 
 	@Inject FuncGenerator generator
 	@Inject extension ModelHelper

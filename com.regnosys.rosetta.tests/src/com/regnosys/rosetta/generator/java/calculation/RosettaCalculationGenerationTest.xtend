@@ -15,17 +15,16 @@ import static org.junit.jupiter.api.Assertions.*
 @InjectWith(RosettaInjectorProvider)
 class RosettaCalculationGenerationTest {
 
-	@Inject extension CalculationGeneratorHelper
+	@Inject extension FuncGeneratorHelper
 	@Inject extension CodeGeneratorTestHelper
 	
 	@Test
 	def void testSimpleTransDep() {
 		val genereated = '''
-			class Period {
-				frequency int (1..1);
-				periodEnum PeriodEnum (1..1);
-				period number (1..1);
-			}
+			type Period:
+				frequency int (1..1)
+				periodEnum PeriodEnum (1..1)
+				period number (1..1)
 			
 			enum PeriodEnum {
 				MONTH
@@ -248,10 +247,10 @@ class RosettaCalculationGenerationTest {
 	@Test
 	def void testDateTimeAdd() {
 		val calculation = '''
-			class FuncIn {
-				val1 date (1..1);
-				val2 time (1..1);
-			}
+			type FuncIn:
+				val1 date (1..1)
+				val2 time (1..1)
+
 			type FoncOut: 
 				res1 string (1..1)
 				res2 string (1..1)
@@ -339,16 +338,15 @@ class RosettaCalculationGenerationTest {
 
 	@Test
 	def void testWierdness() {
-		val calculation = '''			
-			class FuncIn {
-				valS string (1..1);
-				val1 date (1..1);
-				val2 time (1..1);
-			}
-			class FuncOut {
-				transactionReferenceNumber string (1..1);
-				tradingDateTime string (1..1);
-			}
+		val calculation = '''
+			type FuncIn:
+				valS string (1..1)
+				val1 date (1..1)
+				val2 time (1..1)
+
+			type FuncOut:
+				transactionReferenceNumber string (1..1)
+				tradingDateTime string (1..1)
 			
 			func RTS_22_Fields :
 				[calculation]
@@ -436,96 +434,66 @@ class RosettaCalculationGenerationTest {
 		assertEquals(expected, calcJava)
 	}
 
-	@Disabled
 	@Test
-	def void testSimpleCalculationGeneration2() {
-		'''			
-			calculation Calc {
-				res defined by: arg1 + arg2 * 215
-			}
-			 
-			arguments Calc {
-				arg1 int : is FuncIn->val1
-				arg2 int : is FuncIn->val2
-			}
-			
-			class FuncIn {
-				val1 int (1..1);
-				val2 int (1..1);
-			}
+	def void testAsKeyGeneration() {
+		'''
+type WithMeta:
+	[metadata key]
+
+type OtherType:
+	attrSingle WithMeta (0..1)
+	attrMulti WithMeta (0..*)
+	
+func asKeyUsage:
+	inputs: withMeta WithMeta(0..1)
+	output: out OtherType (0..1)
+	assign-output out -> attrMulti:
+		withMeta as-key
 		'''.assertToGeneratedCalculation(
 			'''
-				package com.rosetta.test.model.calculation;
+				package com.rosetta.test.model.functions;
 				
-				import com.rosetta.model.lib.functions.IResult;
-				import com.rosetta.test.model.FuncIn;
-				import java.util.Arrays;
-				import java.util.List;
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.OtherType;
+				import com.rosetta.test.model.WithMeta;
 				
-				public class Calc {
+				
+				@ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
+				public abstract class asKeyUsage implements RosettaFunction {
 					
-					public Result calculate(FuncIn paramFuncIn) {
-						Input input = new Input().create(paramFuncIn);
-						Result result = new Result();
-						result.res = input.arg1 + input.arg2 * 215;
-						return result;
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param withMeta 
+					* @return out 
+					*/
+					public OtherType evaluate(WithMeta withMeta) {
+						
+						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
+						OtherType out = assignOutput(outHolder, withMeta).build();
+						
+						objectValidator.validateAndFailOnErorr(OtherType.class, out);
+						return out;
 					}
-						
-					public static class Input {
-						private Integer arg1;
-						private Integer arg2;
-						
-						public Input create(FuncIn inputParam) {
-							this.arg1 = MapperS.of(inputParam).map("FuncIn->val1", FuncIn::getVal1).get();
-							this.arg2 = MapperS.of(inputParam).map("FuncIn->val1", FuncIn::getVal2).get();
-							return this;
-						}
+					
+					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder outHolder, WithMeta withMeta) {
+						@SuppressWarnings("unused") OtherType out = outHolder.build();
+						outHolder
+							.addAttrMulti(MapperS.of(withMeta).get());
+						;
+						return outHolder;
 					}
+				
+					protected abstract OtherType.OtherTypeBuilder doEvaluate(WithMeta withMeta);
 					
-					public static class Result implements IResult {
-						private Integer res;
-						
-						public Integer getRes() {
-							return this.res;
-						}
-						
-						public Result setRes(Integer res) {
-							this.res = res;
-							return this;
-						}
-						
-						private static final List<Attribute<?>> ATTRIBUTES =  Arrays.asList(
-							new Attribute<>("res", Integer.class, (IResult res) -> ((Result) res).getRes())
-						);
-					
+					public static final class asKeyUsageDefault extends asKeyUsage {
 						@Override
-						public List<Attribute<?>> getAttributes() {
-							return ATTRIBUTES;
-						}
-						
-						@Override
-						public boolean equals(Object o) {
-							if (this == o) return true;
-							if (o == null || getClass() != o.getClass()) return false;
-						
-							Result _that = (Result) o;
-						
-							if (res != null ? !res.equals(_that.res) : _that.res != null) return false;
-							return true;
-						}
-						
-						@Override
-						public int hashCode() {
-							int _result = 0;
-							_result = 31 * _result + (res != null ? res.hashCode() : 0);
-							return _result;
-						}
-						
-						@Override
-						public String toString() {
-							return "Result {" +
-								"res=" + this.res +
-							'}';
+						protected  OtherType.OtherTypeBuilder doEvaluate(WithMeta withMeta) {
+							return OtherType.builder();
 						}
 					}
 				}
@@ -601,11 +569,9 @@ class RosettaCalculationGenerationTest {
 	@Test
 	def void shouldResolveExternalFunctionDependenciesWhenEnumCalculation() {
 		val generated = '''
-			class MathInput
-			{
-				mathInput string (1..1);
-				math Math (1..1);
-			}
+			type MathInput:
+				mathInput string (1..1)
+				math Math (1..1)
 			
 			func AddOne:
 				inputs: arg string (1..1)

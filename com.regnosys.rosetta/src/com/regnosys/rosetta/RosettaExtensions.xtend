@@ -245,6 +245,9 @@ class RosettaExtensions {
 	def boolean hasIdAnnotation(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "id"]
 	}
+	def boolean hasReferenceAnnotation(Annotated it) {
+		metaAnnotations.exists[attribute?.name == "reference"]
+	}
 	
 	def hasCalculationAnnotation(Annotated it) {
 		allAnnotations.exists[annotation?.name == "calculation"]

@@ -69,6 +69,7 @@ import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
 import com.regnosys.rosetta.services.RosettaGrammarAccess
+import com.regnosys.rosetta.rosetta.simple.Annotated
 
 /**
  * This class contains custom validation rules. 
@@ -531,6 +532,17 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
+	def checkAttribute(Attribute ele) {
+		if (ele.type instanceof Data && !ele.type.eIsProxy) {
+			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(ele.type as Annotated) || (ele.type as Data).allSuperTypes.exists[hasKeyedAnnotation])) {
+				//TODO turn to error if it's okay
+				warning('''«ele.type.name» must be annotated with [metadata key] as reference annotation is used''',
+					ROSETTA_TYPED__TYPE)
+			}
+		}
+	}
+	
+	@Check
 	def checkDispatch(Function ele) {
 		if (ele instanceof FunctionDispatch)
 			return
@@ -619,7 +631,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			return
 		}
 		val typeToUse = ele.expression.RType
-		if(!(typeToUse instanceof RDataType) || !(typeToUse as RDataType).data.hasKeyedAnnotation) {
+		if(!(typeToUse instanceof RDataType) ||
+			!((typeToUse as RDataType).data.hasKeyedAnnotation || (typeToUse as RDataType).data.allSuperTypes.exists [
+				hasKeyedAnnotation
+			])) {
 			error(''''«grammar.operationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes of complex type annotated with [metadata key] annotation.''', ele, OPERATION__ASSIGN_AS_KEY)
 		}
 	}
