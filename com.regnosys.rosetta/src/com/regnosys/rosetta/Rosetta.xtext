@@ -137,7 +137,7 @@ fragment RosettaDefinable:
 ;
 
 fragment RosettaNamed:
-	name=ValidID
+	name = (ValidID | 'type' | 'enum')
 ;
 
 fragment RosettaTyped:
@@ -146,7 +146,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'enum' | 'Enum' | 'version' | 'condition' | 'key' | 'value' | 'type')
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'version' | 'condition' | 'key' | 'value')
 ;
 
 ValidHint: 
@@ -470,7 +470,7 @@ RosettaCallableCall:
 ;
 
 RosettaConditionalExpression returns RosettaExpression:
-	RosettaExpression 
+	RosettaExpression // Blueprint stuff
 	| {RosettaConditionalExpression} 'if' if=RosettaExpression 'then' ifthen=RosettaConditionalExpression 'else' elsethen=RosettaConditionalExpression
 ;
 
@@ -679,7 +679,7 @@ RosettaCalcMultiplicative returns RosettaExpression:
 
 RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
-	( =>({RosettaFeatureCall.receiver=current} '->') feature=[RosettaFeature|ValidID] toOne ?= 'only-element'?)*
+	( =>({RosettaFeatureCall.receiver=current} '->') (=>feature=[RosettaFeature|ValidID])? toOne ?= 'only-element'?)*
 ;
 
 RosettaCalcPrimary returns RosettaExpression:

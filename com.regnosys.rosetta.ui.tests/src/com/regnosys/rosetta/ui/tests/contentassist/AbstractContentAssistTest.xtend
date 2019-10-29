@@ -3,7 +3,6 @@ package com.regnosys.rosetta.ui.tests.contentassist
 import com.google.inject.Inject
 import com.google.inject.Injector
 import java.io.InputStream
-import java.util.List
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
@@ -23,26 +22,44 @@ class AbstractContentAssistTest extends org.eclipse.xtext.ui.testing.AbstractCon
 	}
 
 	override protected TestBuilder newBuilder() throws Exception {
-		return new TestBuilder(injector, this)
+		return new TestBuilder(injector, this, false)
+	}
+	
+	def protected TestBuilder newBuilder(String model, boolean exactMatch) throws Exception {
+		return new TestBuilder(injector, this, exactMatch).append(model) as TestBuilder
 	}
 
 	def protected TestBuilder newBuilder(String model) throws Exception {
-		return new TestBuilder(injector, this).append(model) as TestBuilder
+		model.newBuilder(false)
 	}
 }
 
 class TestBuilder extends ContentAssistProcessorTestBuilder {
 
-	new(Injector injector, ResourceLoadHelper helper) throws Exception {
+	boolean exactMatch
+	
+	new(Injector injector, ResourceLoadHelper helper, boolean exactMatch) throws Exception {
 		super(injector, helper)
+		this.exactMatch = exactMatch
 	}
 
 	def assertProposalsAtCursor(String... expectedText) throws Exception {
+		if(fullTextToBeParsed.indexOf('<|>') < 0)
+			throw new IllegalArgumentException('Model text should contain cursor marker: <|>' )
 		val proposals = getProposalsAtCursorIndicator().map[proposedText]
-		if (!expectedText.elementsEqual(proposals)) {
-			val expected = expectedText.join(', ')
-			val actual = proposals.join(', ')
-			assertEquals('''Wrong proposals proposal: «expected» Found: «actual»''', expected, actual)
+		if (exactMatch) {
+			if (!expectedText.elementsEqual(proposals)) {
+				val expected = expectedText.join(', ')["'" + it + "'"]
+				val actual = proposals.join(', ')["'" + it + "'"]
+				assertEquals(expected, actual, '''Wrong proposals proposal: «expected» Found: «actual»''')
+			}
+		} else {
+			val missing = expectedText.filter[!proposals.contains(it)].toList
+			if (!missing.empty) {
+				val missingStr = missing.join(', ')["'" + it + "'"]
+				val actual = proposals.join(', ')["'" + it + "'"]
+				assertEquals(missingStr, actual, '''Missing expected proposals: «missingStr» Found: «actual»''')
+			}
 		}
 		return null
 	}
@@ -51,22 +68,27 @@ class TestBuilder extends ContentAssistProcessorTestBuilder {
 		super.append(model) as TestBuilder
 	}
 
-	def void operator_doubleGreaterThan(TestBuilder builder, List<String> expect) {
-		builder.assertProposalsAtCursor(expect)
-	}
 }
 
 class TestExtensions {
 	@Inject AbstractContentAssistTest builderProvider
 
 	/**
-	 * Creates a CA test builder and asserts expected proposals at cursor &lt;|&gt;
+	 * Creates a CA test builder and asserts expected proposals contains in the proposal list at cursor &lt;|&gt;
 	 */
 	def operator_doubleGreaterThan(String model, String[] expect) {
 		builderProvider.newBuilder(model) >> expect
+	}
+	
+	/**
+	 * Creates a CA test builder and asserts exact expected proposals at cursor &lt;|&gt;
+	 */
+	def >=(String model, String[] expect) {
+		builderProvider.newBuilder(model, true) >> expect
 	}
 
 	def operator_doubleGreaterThan(TestBuilder builder, String[] expect) {
 		builder.assertProposalsAtCursor(expect)
 	}
+	
 }

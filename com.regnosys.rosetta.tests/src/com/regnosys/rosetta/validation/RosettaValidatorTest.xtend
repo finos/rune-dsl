@@ -28,15 +28,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testLowerCaseClass() {
 		val model =
 		'''
-			class partyIdentifier <"">
-			{
-				partyId string (1..1) <"">;
+			type partyIdentifier: <"">
+				partyId string (1..1) <"">
 					[synonym FIX value PartyID tag 448]
 					[synonym FpML value partyId]
-			}
 		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_CLASS, INVALID_CASE,
-            "Class name should start with a capital")
+		model.assertWarning(DATA, INVALID_CASE,
+            "Type name should start with a capital")
 	}
 	
 	@Test
@@ -57,14 +55,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testUpperCaseAttribute() {
 		val model =
 		'''
-			class PartyIdentifier <"">
-				{
-					PartyId string (1..1) <"">;
+			type PartyIdentifier: <"">
+					PartyId string (1..1) <"">
 						[synonym FIX value PartyID tag 448]
 						[synonym FpML value partyId]
-				}
 		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_REGULAR_ATTRIBUTE, INVALID_CASE,
+		model.assertWarning(ATTRIBUTE, INVALID_CASE,
             "Attribute name should start with a lower case")
 	}
 	
@@ -93,10 +89,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			isProduct bar
 				EconomicTerms -> economic exists
 					
-			class EconomicTerms
-			{
-				economic string (1..1);
-			}
+			type EconomicTerms:
+				economic string (1..1)
 		'''.parseRosettaWithNoErrors
 		model.assertWarning(ROSETTA_PRODUCT, INVALID_CASE,
 			"Product qualifier name should start with a capital")
@@ -109,11 +103,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			workflow rule quote <"Bla">
 				Foo precedes Bar
 					
-			class Foo{
-			}
+			type Foo:
 			
-			class Bar{
-			}
+			type Bar:
 		'''.parseRosettaWithNoErrors
 		model.assertWarning(ROSETTA_WORKFLOW_RULE, INVALID_CASE,
 			"Workflow rule name should start with a capital")
@@ -123,9 +115,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testInconsistentCommonAttributeType() {
 		val model =
 		'''
-			data Foo:
+			type Foo:
 				id int (1..1)
-			data Bar:
+			type Bar:
 				id boolean (1..1)
 			
 			workflow rule WorkflowRule
@@ -140,9 +132,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testMissingCommonAttribute() {
 		val model =
 		'''
-			data Foo:
+			type Foo:
 				id int (1..1)
-			data Bar: <"">
+			type Bar: <"">
 			
 			workflow rule
 			WorkflowRule
@@ -220,15 +212,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testDuplicateAttribute() {
 		val model = '''
-			class Foo {
-				i int (1..1);
-			}
+			type Foo:
+				i int (1..1)
 			
-			class Bar extends Foo {
-				i int (1..1);
-			}
+			type Bar extends Foo:
+				i int (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_REGULAR_ATTRIBUTE, DUPLICATE_ATTRIBUTE, 'Duplicate attribute')
+		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, 'Duplicate attribute')
 	}
 
 	@Test
@@ -244,11 +234,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test 
 	def void testDuplicateType() {
 		val model = '''
-			class Bar {
-			}
+			type Bar:
 			
-			class Foo {
-			}
+			type Foo:
 			
 			enum Foo {
 				BAR
@@ -290,11 +278,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testDuplicateWorkflowRule_ClassName() {
 		val model = '''
-			class Foo {
-			}
+			type Foo:
 			
-			class Bar {
-			}
+			type Bar:
 			
 			workflow rule Foo
 				Foo must precede Bar
@@ -309,11 +295,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				Entry
 			}
 			
-			class Bar {
-			}
+			type Bar:
 			
-			class Baz {
-			}
+			type Baz:
 			
 			workflow rule Foo
 				Bar must precede Baz
@@ -324,23 +308,22 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testDuplicateChoiceRuleAttribute_thisOne() {
 		val model = '''
-			class Bar {
-				attribute1 string (0..1);
-				attribute2 string (0..1);
-				attribute3 string (0..1);
-			}
+			type Bar:
+				attribute1 string (0..1)
+				attribute2 string (0..1)
+				attribute3 string (0..1)
 			
-			choice rule Foo
-				for Bar required choice between
-				attribute1 and attribute1
+				condition Foo:
+					required choice
+					attribute1, attribute1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CHOICE_RULE, DUPLICATE_CHOICE_RULE_ATTRIBUTE, 'Duplicate attribute')
+		model.assertError(CONDITION, DUPLICATE_CHOICE_RULE_ATTRIBUTE, 'Duplicate attribute')
 	}
 	
 	@Test
 	def void testDuplicateChoiceRuleAttribute_thatOne() {
 		val model = '''
-			data Bar:
+			type Bar:
 				attribute1 string (0..1)
 				attribute2 string (0..1)
 				attribute3 string (0..1)
@@ -386,12 +369,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  	@Test
 	def checkMappingMultipleSetToWithoutWhenCases() {
 		val model = '''
-			class Quote {
-				attr int (1..1);
+			type Quote:
+				attr int (1..1)
 					[synonym FIX 
 							set to 1,
 							set to 2]
-			}
 		'''.parseRosetta
 		model.assertError(ROSETTA_MAPPING, null, "Only one set to with no when clause allowed.")
 	}
@@ -399,12 +381,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def checkMappingMultipleSetToOrdering() {
 		val model = '''
-			class Quote {
-				attr int (1..1);
+			type Quote:
+				attr int (1..1)
 					[synonym FIX 
 							set to 1,
 							set to 2 when "a.b.c" exists]
-			}
 		'''.parseRosetta
 		model.assertError(ROSETTA_MAPPING, null, "Set to without when case must be ordered last.")
 	}
@@ -412,15 +393,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def checkMappingSetToTypeCheck() {
 		val model = '''
-			class Foo {
-				value string (1..1);
-			}
+			type Foo:
+				value string (1..1)
 			
-			class Quote {
-				attr Foo (1..1);
+			type Quote:
+				attr Foo (1..1)
 					[synonym FIX 
 							set to "hello"]
-			}
 		'''.parseRosetta
 		model.assertError(ROSETTA_MAPPING, null, "Set to constant type does not match type of field.")
 	}
@@ -436,11 +415,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				BAR;
 			}
 			
-			class Quote {
-				attr Foo (1..1);
+			type Quote:
+				attr Foo (1..1)
 					[synonym FIX 
 							set to Bar.BAR]
-			}
 		'''.parseRosetta
 		model.assertError(ROSETTA_MAPPING, null, "Set to constant type does not match type of field.")
 	}
@@ -448,14 +426,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def checkMappingSetToWhenTypeCheck() {
 		val model = '''
-			class Foo {
-				stringVal string (1..1);
-			}
+			type Foo:
+				stringVal string (1..1)
 			
-			class Quote {
-				attr Foo (1..1);
+			type Quote:
+				attr Foo (1..1)
 					[synonym FpML value foo set when "foo.bar" exists]
-			}
 		'''.parseRosetta
 		model.assertNoErrors
 	}
@@ -489,14 +465,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def checkValidIsProductClassPath() {
 		val model = '''
-			class Foo
-			{
-				foo string (1..1);
-			}
-			class Bar
-			{
-				bar Foo (0..1);
-			}
+			type Foo:
+				foo string (1..1)
+			type Bar:
+				bar Foo (0..1)
+			
 			isProduct FooBar
 				Foo -> foo
 				and Bar -> bar -> foo
@@ -510,14 +483,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		val model = '''
 			isProduct root Foo;
 			
-			class Foo
-			{
-				foo string (1..1);
-			}
-			class Bar
-			{
-				bar Foo (0..1);
-			}
+			type Foo:
+				foo string (1..1)
+			type Bar:
+				bar Foo (0..1)
 			isProduct FooBar
 				Bar -> bar -> foo
 		'''.parseRosetta
@@ -529,15 +498,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testUpperCaseAlias() {
 		val model =
 		'''
-			class Bar
-			{
-				bar string (0..1);
-			}
+			type Bar:
+				bar string (0..1)
 			
 			alias Foo
 				Bar -> bar
-				
-				
 		'''.parseRosettaWithNoErrors
 		model.assertWarning(ROSETTA_ALIAS, INVALID_CASE,
             "Alias name should start with a lower case")
