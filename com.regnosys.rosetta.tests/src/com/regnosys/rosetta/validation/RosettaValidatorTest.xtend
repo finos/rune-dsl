@@ -259,7 +259,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  assign-output result -> attr:
 			     in1 as-key
 		'''.parseRosetta
-		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'boolean' but was 'string'")
+		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'WithKey' but was 'TypeToUse'")
 	}
 	
 	@Test
