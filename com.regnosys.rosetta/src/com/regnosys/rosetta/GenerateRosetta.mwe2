@@ -42,6 +42,9 @@ Workflow {
 			parserGenerator = parser.antlr.XtextAntlrGeneratorFragment2 {
 				// set to true to get a debug Grammar
 				debugGrammar = false
+				options = {
+					casesPerSpecialStateSwitch = "50"
+				}
 			}
 			serializer = {
 				generateStub = false

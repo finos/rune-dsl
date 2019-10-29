@@ -44,6 +44,8 @@ class TestBuilder extends ContentAssistProcessorTestBuilder {
 	}
 
 	def assertProposalsAtCursor(String... expectedText) throws Exception {
+		if(fullTextToBeParsed.indexOf('<|>') < 0)
+			throw new IllegalArgumentException('Model text should contain cursor marker: <|>' )
 		val proposals = getProposalsAtCursorIndicator().map[proposedText]
 		if (exactMatch) {
 			if (!expectedText.elementsEqual(proposals)) {

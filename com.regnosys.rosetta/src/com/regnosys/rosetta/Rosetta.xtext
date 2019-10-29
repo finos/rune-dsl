@@ -137,7 +137,7 @@ fragment RosettaDefinable:
 ;
 
 fragment RosettaNamed:
-	name=ValidID
+	name = (ValidID | 'type' | 'enum')
 ;
 
 fragment RosettaTyped:
@@ -146,7 +146,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'Enum' | 'version' | 'condition' | 'key' | 'value')
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'version' | 'condition' | 'key' | 'value')
 ;
 
 ValidHint: 
