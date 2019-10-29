@@ -239,8 +239,10 @@ class FuncGenerator {
 			val pack = names?.packages?.metaField
 			val metaCalss = pack?.javaType("ReferenceWithMeta"+valueType.name.toFirstUpper)
 			//  ReferenceWithMetaEvent.builder().setExternalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()   
-		'''«metaCalss».builder().setExternalReference(«expressionGenerator.javaCode(op.expression, new ParamMap)»«
-							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF».getMeta().getGlobalKey()).build()'''
+		'''«metaCalss».builder().setExternalReference(
+		«expressionGenerator.javaCode(op.expression, new ParamMap)»«
+		IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF».getMeta().getGlobalKey()
+	).build()'''
 		} else {
 		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
 							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''

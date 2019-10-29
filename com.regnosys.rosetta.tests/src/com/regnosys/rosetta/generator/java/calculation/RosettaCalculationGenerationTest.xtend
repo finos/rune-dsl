@@ -5,7 +5,6 @@ import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -437,18 +436,24 @@ class RosettaCalculationGenerationTest {
 	@Test
 	def void testAsKeyGeneration() {
 		'''
-type WithMeta:
-	[metadata key]
-
-type OtherType:
-	attrSingle WithMeta (0..1)
-	attrMulti WithMeta (0..*)
-	
-func asKeyUsage:
-	inputs: withMeta WithMeta(0..1)
-	output: out OtherType (0..1)
-	assign-output out -> attrMulti:
-		withMeta as-key
+		type WithMeta:
+			[metadata key]
+		
+		type OtherType:
+			attrSingle WithMeta (0..1)
+			[metadata reference]
+			attrMulti WithMeta (0..*)
+			[metadata reference]
+			
+		func asKeyUsage:
+			inputs: withMeta WithMeta(0..1)
+			output: out OtherType (0..1)
+			assign-output out -> attrMulti:
+				withMeta as-key
+			assign-output out -> attrMulti[1]:
+				withMeta as-key
+			assign-output out -> attrSingle:
+				withMeta as-key
 		'''.assertToGeneratedCalculation(
 			'''
 				package com.rosetta.test.model.functions;
@@ -460,6 +465,7 @@ func asKeyUsage:
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.OtherType;
 				import com.rosetta.test.model.WithMeta;
+				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
 				
 				
 				@ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
@@ -483,7 +489,21 @@ func asKeyUsage:
 					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder outHolder, WithMeta withMeta) {
 						@SuppressWarnings("unused") OtherType out = outHolder.build();
 						outHolder
-							.addAttrMulti(MapperS.of(withMeta).get());
+							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setExternalReference(
+									MapperS.of(withMeta).get().getMeta().getGlobalKey()
+								).build());
+						;
+						out = outHolder.build();
+						outHolder
+							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setExternalReference(
+									MapperS.of(withMeta).get().getMeta().getGlobalKey()
+								).build(), 1);
+						;
+						out = outHolder.build();
+						outHolder
+							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setExternalReference(
+									MapperS.of(withMeta).get().getMeta().getGlobalKey()
+								).build());
 						;
 						return outHolder;
 					}

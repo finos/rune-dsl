@@ -15,6 +15,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.Condition
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -148,16 +149,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testTypeExpectation() {
 		val model =
 		'''
-			class Foo {
-				id int (1..1);
-			}
+			type Foo:
+				id int (1..1)
 			
-			data rule R 
-				when Foo -> id = True
-				then Foo -> id < 1
+				condition R: 
+					if id = True
+					then id < 1
 		'''.parseRosetta
-		val rule = model.elements.filter(RosettaDataRule).head
-		rule.when.assertError(ROSETTA_DATA_RULE, TYPE_ERROR, 
+		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, 
 			"Incompatible types: cannot use operator '=' with int and boolean.")
 	}
 	
@@ -165,14 +164,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testTypeExpectationMagicType() {
 		'''
 			qualifiedType productType {}
-			class Foo {
-				id productType (1..1);
-				val int (1..1);
-			}
+			type Foo:
+				id productType (1..1)
+				val int (1..1)
 			
-			data rule R 
-				when Foo -> id = "Type"
-				then Foo -> val < 1
+			condition R:
+				if  id = "Type"
+				then val < 1
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -180,32 +178,88 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testTypeExpectationNoError() {
 		val model =
 		'''
-			class Foo {
-				id int (1..1);
-			}
+			type Foo:
+				id int (1..1)
 			
-			data rule R
-				when Foo -> id = 1
-				then Foo -> id < 1
+			condition R:
+				if id = 1
+				then id < 1
 		'''.parseRosettaWithNoErrors
-		val rule = model.elements.filter(RosettaDataRule).head
-		rule.assertNoError(TYPE_ERROR)
+		model.assertNoError(TYPE_ERROR)
 	}
 	
 	@Test
 	def void testTypeExpectationError() {
 		val model =
 		'''
-			class Foo {
-				id boolean (1..1);
-			}
+			type Foo:
+				id boolean (1..1)
 			
-			data rule R 
-				when Foo -> id = True
-				then Foo -> id < 1
+			condition R:
+				if id = True
+				then id < 1
 		'''.parseRosetta
-		val rule = model.elements.filter(RosettaDataRule).head
-		rule.when.assertError(ROSETTA_DATA_RULE, TYPE_ERROR, "Incompatible types: cannot use operator '<' with boolean and int.")
+		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, "Incompatible types: cannot use operator '<' with boolean and int.")
+	}
+	
+	@Test
+	def void testTypeErrorAssignment_01() {
+		val model =
+		'''
+			namespace "test"
+			version "test"
+			
+			type Foo:
+				id boolean (1..1)
+			
+			func Test:
+				inputs: in0 Foo (0..1)
+				output: out Foo (0..1)
+				assign-output out:
+					"not a Foo"
+		'''.parseRosetta
+		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'Foo' but was 'string'")
+	}
+	
+	
+	@Test
+	def void testTypeErrorAssignment_02() {
+		val model =
+		'''
+			namespace "test"
+			version "test"
+			
+			type Foo:
+				id boolean (1..1)
+			
+			func Test:
+				inputs: in0 Foo (0..1)
+				output: out Foo (0..1)
+				assign-output out -> id:
+					"not a boolean"
+		'''.parseRosetta
+		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'boolean' but was 'string'")
+	}
+	
+	@Test
+	def void testTypeErrorAssignment_03() {
+		val model =
+		'''
+			type WithKey:
+				[metadata key]
+			
+			type TypeToUse:
+				attr WithKey (0..1)
+				[metadata reference]
+			
+			func Bar:
+			  inputs:
+			    in1 TypeToUse (1..1)
+			  output: result TypeToUse (1..1)
+			  assign-output result -> attr:
+			     in1 as-key
+		'''.parseRosetta
+		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'boolean' but was 'string'")
 	}
 	
 	@Test
@@ -539,6 +593,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type TypeToUse:
 				attr WithKey (0..1)
+				[metadata reference]
 			
 			func Bar:
 			  inputs:
@@ -558,6 +613,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type TypeToUse:
 				attr WithKey (0..1)
+				[metadata reference]
 				attr2 TypeToUse (0..1)
 			
 			func Bar:
@@ -568,7 +624,41 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  assign-output result -> attr2:
 			     in1 as-key
 		'''.parseRosetta
+		model.assertError(SEGMENT, null,
+			"'as-key' can only be used with attributes annotated with [metadata reference] annotation.")
+	}
+	
+	@Test
+	def checkAsKeyUsage_03() {
+		val model = '''
+			type WithKey:
+			
+			type TypeToUse:
+				attr WithKey (0..1)
+				[metadata reference]
+		'''.parseRosetta
+		model.assertWarning(ATTRIBUTE, null,
+			"WithKey must be annotated with [metadata key] as reference annotation is used")
+	}
+	
+	@Test
+	def checkAsKeyUsage_04() {
+		val model = '''
+			type WithKey:
+				[metadata key]
+			
+			type TypeToUse:
+				attr WithKey (0..1)
+				[metadata reference]
+			
+			func Bar:
+			  inputs:
+			    in0 WithKey (1..1)
+			  output: result WithKey (1..1)
+			  assign-output result:
+			     in0 as-key
+		'''.parseRosetta
 		model.assertError(OPERATION, null,
-			"'as-key' can only be used with attributes of complex type annotated with [metadata key] annotation.")
+			"'as-key' can only be used when assigning an attribute. Example: \"assign-output out -> attribute: value as-key\"")
 	}
 }
