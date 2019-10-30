@@ -267,7 +267,7 @@ class ModelObjectGenerator {
 			«val maps = if (synonym.value.maps > 0) ''', maps=«synonym.value.maps»''' else ''»
 			
 			«FOR source : synonym.sources»
-				@RosettaSynonym(value="«synonym.value.name»", source="«source.getName»"«path»«maps»)
+				@RosettaSynonym(value="«synonym.value.synonymName»", source="«source.getName»"«path»«maps»)
 			«ENDFOR»
 		«ENDFOR»
 	'''

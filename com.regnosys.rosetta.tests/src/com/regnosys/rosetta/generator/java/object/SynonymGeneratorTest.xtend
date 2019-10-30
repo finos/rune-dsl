@@ -23,10 +23,9 @@ class SynonymGeneratorTest {
 	@Test
 	def void shouldSetManyToTrueWhenFlagSet() {
 		val resource = '''
-			class Test {
-				attr string (1..1);
-					[synonym FpML value testSynonym maps 2]
-			}
+			type Test :
+				attr string (1..1)
+					[synonym FpML value "testSynonym" maps 2]
 		'''
 
 		val classes = resource.compileJava8
@@ -39,10 +38,9 @@ class SynonymGeneratorTest {
 	@Test
 	def void shouldSetManyToFalseWhenFlagNotSet() {
 		val resource = '''
-			class Test {
-				attr string (1..1);
-					[synonym FpML value testSynonym]
-			}
+			type Test :
+				attr string (1..1)
+					[synonym FpML value "testSynonym"]
 		'''
 
 		val classes = resource.compileJava8
@@ -55,20 +53,18 @@ class SynonymGeneratorTest {
 	@Test
 	def void shouldParseListOfSynonymSources() {
 		'''
-			class Test {
-				attr string (1..1);
-					[synonym FpML, DTCC value testSynonym]
-			}
+			type Test:
+				attr string (1..1)
+					[synonym FpML, DTCC value "testSynonym"]
 		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
 	def void shouldGenerateMultipleRosettaSynonyms() {
 		val code = '''
-			class Test {
-				attr string (1..1);
-					[synonym FpML, DTCC value testSynonym]
-			}
+			type Test:
+				attr string (1..1)
+					[synonym FpML, DTCC value "testSynonym"]
 		'''.generateCode
 		
 		val testClass = code.get(javaPackages.model.packageName + '.Test')
@@ -82,16 +78,15 @@ class SynonymGeneratorTest {
 	@Test
 	def void shouldGenerateMultipleRosettaSynonymsWithSinglePathExpression() {
 		val code = '''
-			class Test {
-				attr string (1..1);
-					[synonym FpML, DTCC value testSynonym path "synonym.path.1"]
-			}
+			type Test :
+				attr string (1..1)
+					[synonym FpML, DTCC value "testSynonym" path "synonym->path->1"]
 		'''.generateCode
 		
 		val testClass = code.get(javaPackages.model.packageName + '.Test')
 		
-		val expectedFpML = '@RosettaSynonym(value="testSynonym", source="FpML", path="synonym.path.1")'
-		val expectedDTCC = '@RosettaSynonym(value="testSynonym", source="DTCC", path="synonym.path.1")'
+		val expectedFpML = '@RosettaSynonym(value="testSynonym", source="FpML", path="synonym->path->1")'
+		val expectedDTCC = '@RosettaSynonym(value="testSynonym", source="DTCC", path="synonym->path->1")'
 			
 		assertThat(testClass, allOf(containsString(expectedFpML), containsString(expectedDTCC)))
 	}
@@ -99,18 +94,16 @@ class SynonymGeneratorTest {
 	@Test
 	def void shouldGenerateRosettaSynonymsWithMetaId() {
 		val code = '''
-			metaType id string
+			type Test:
+				[metadata key]
+				[synonym FpML meta "id"]
 			
-			class Test key 
-				[synonym FpML meta id]
-			{
-			
-				adjustedDate date (0..1) id;
-					// synonym "adjustedDate" and "adjustedDate.id"
-					[synonym FpML value adjustedDate meta id]
-					// synonym "relativeDate.adjustedDate" and "relativeDate.adjustedDate.id"
-					[synonym FpML value adjustedDate path "relativeDate" meta id]
-			}
+				adjustedDate date (0..1)
+					[metadata id]
+					// synonym "adjustedDate" and "adjustedDate->id"
+					[synonym FpML value "adjustedDate" meta "id"]
+					// synonym "relativeDate->adjustedDate" and "relativeDate->adjustedDate->id"
+					[synonym FpML value "adjustedDate" path "relativeDate" meta "id"]
 		'''.generateCode
 		
 		val testClass = code.get(javaPackages.model.packageName + '.Test')

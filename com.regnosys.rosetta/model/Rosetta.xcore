@@ -196,17 +196,17 @@ abstract class RosettaSynonymBase {
 	refers RosettaSynonymSource[] sources
 }
 
-class RosettaSynonymValueBase extends RosettaNamed {
+class RosettaSynonymValueBase {
+	String synonymName
 	RosettaSynonymRef refType
 	int value
 	String path
 	int maps
-	
 }
 
 class RosettaClassSynonym extends RosettaSynonymBase {
-	contains RosettaClassSynonymValue value
-	contains RosettaMetaSynonymValue metaValue
+	contains RosettaSynonymValueBase value
+	contains RosettaSynonymValueBase metaValue
 }
 
 class RosettaSynonym extends RosettaSynonymBase {
@@ -214,26 +214,11 @@ class RosettaSynonym extends RosettaSynonymBase {
 }
 
 class RosettaSynonymBody extends RosettaSynonymBase {
-	contains RosettaSynonymValue[] values
+	contains RosettaSynonymValueBase[] values
 	contains RosettaMapping mappingLogic
 	String[] hints
 	String[] metaValues
 	String mapper
-}
-
-class RosettaClassSynonymValue extends RosettaSynonymValueBase {
-}
-
-class RosettaSynonymValue extends RosettaSynonymValueBase {
-	contains RosettaSynonymEnumeration valueExtension
-}
-
-class RosettaMetaSynonymValue extends RosettaSynonymValueBase {
-}
-
-class RosettaSynonymEnumeration {
-	String value
-	String enumValue
 }
 
 class RosettaEnumSynonym extends RosettaSynonymBase, RosettaDefinable {
@@ -244,7 +229,6 @@ enum RosettaSynonymRef {
 	tag
 	componentID = 1
 }
-
 
 
 /**********************************************************************

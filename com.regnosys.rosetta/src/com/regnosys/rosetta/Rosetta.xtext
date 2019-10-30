@@ -137,7 +137,7 @@ fragment RosettaDefinable:
 ;
 
 fragment RosettaNamed:
-	name = (ValidID | 'type' | 'enum')
+	name = ValidID
 ;
 
 fragment RosettaTyped:
@@ -146,11 +146,10 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'version' | 'condition' | 'key' | 'value')
-;
-
-ValidHint: 
-       ValidID'*'?
+	(ID | 'key' // used in Lib: annotations.rosetta
+		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
+		| 'one' // TODO used in CDM model and can be removed after RosettaClass rule is deleted
+	)
 ;
 
 
@@ -272,12 +271,12 @@ RosettaEnumStyle:
 RosettaClassSynonym:
 	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*
 	 ('value' value=RosettaClassSynonymValue)?
-	 ('meta' metaValue = RosettaMetaSynonymValue)?
+	 ('meta' metaValue = RosettaSynonymValue)?
 	 ']'
 ;
 
-RosettaClassSynonymValue:
-	RosettaNamed (refType=RosettaSynonymRef value=INT)? 
+RosettaClassSynonymValue returns RosettaSynonymValueBase:
+	synonymName = STRING (refType=RosettaSynonymRef value=INT)? 
 	('path' path = STRING)? 
 ;
 
@@ -289,27 +288,17 @@ RosettaSynonym:
 
 RosettaSynonymBody:
 	( 'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? 
-		| 'hint' (hints+=ValidHint ',')* hints+=ValidHint
+		| 'hint' (hints+=STRING ',')* hints+=STRING
 		| mappingLogic=RosettaMappingSetTo )
-	('meta' (metaValues += ValidID ',')* metaValues += ValidID)?
+	('meta' (metaValues += STRING ',')* metaValues += STRING)?
 	('mapper' mapper=ValidID)?
 	
 ;
 
-RosettaSynonymValue:
-	RosettaNamed (valueExtension=RosettaSynonymEnumeration)? (refType=RosettaSynonymRef value=INT)? 
-	('path'  path = STRING)? 
-	('maps' maps=INT)?
-;
-
-RosettaMetaSynonymValue:
-	RosettaNamed (refType=RosettaSynonymRef value=INT)? 
+RosettaSynonymValue returns RosettaSynonymValueBase :
+	synonymName = STRING (refType=RosettaSynonymRef value=INT)? 
 	('path' path = STRING)? 
 	('maps' maps=INT)?
-;
-
-RosettaSynonymEnumeration:
-	value = '.' enumValue=STRING
 ;
 
 RosettaEnumSynonym:

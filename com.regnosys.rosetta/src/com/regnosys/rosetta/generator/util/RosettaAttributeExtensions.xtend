@@ -22,7 +22,6 @@ import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
-import com.regnosys.rosetta.rosetta.RosettaSynonymValue
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -30,6 +29,7 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Set
+import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 
 class RosettaAttributeExtensions {
 
@@ -272,7 +272,7 @@ class RosettaAttributeExtensions {
 	
 	static def toRosettaExpandedSynonyms(List<RosettaSynonym> synonyms, int meta) {
 		if (meta<0) {
-			synonyms.map[new ExpandedSynonym(sources, body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], body.hints, 
+			synonyms.map[new ExpandedSynonym(sources, body.values?.map[new ExpandedSynonymValue(synonymName, path, maps, false)], body.hints, 
 				body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], body.mappingLogic, body.mapper
 			)]
 		} else {
@@ -285,8 +285,8 @@ class RosettaAttributeExtensions {
 		
 	}
 	
-	def static metaSynValue(RosettaSynonymValue value, String meta) {
-		val path = if (value.path===null) value.name else value.path+"."+value.name
+	def static metaSynValue(RosettaSynonymValueBase value, String meta) {
+		val path = if (value.path===null) value.synonymName else value.path+"."+value.synonymName
 		val name = meta
 		return new ExpandedSynonymValue(name, path, value.maps, true)
 	}
@@ -295,7 +295,7 @@ class RosettaAttributeExtensions {
 	}
 	
 	static dispatch def toRosettaExpandedSynonym(RosettaSynonym syn) {
-		new ExpandedSynonym(syn.sources, syn.body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], 
+		new ExpandedSynonym(syn.sources, syn.body.values?.map[new ExpandedSynonymValue(synonymName, path, maps, false)], 
 			syn.body.hints, syn.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], syn.body.mappingLogic, syn.body.mapper
 		)
 	}
@@ -312,12 +312,12 @@ class RosettaAttributeExtensions {
 			sources.add(superSynonym)
 		}
 		
-		new ExpandedSynonym(sources, syn.body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], syn.body.hints, syn.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], syn.body.mappingLogic, syn.body.mapper)
+		new ExpandedSynonym(sources, syn.body.values?.map[new ExpandedSynonymValue(synonymName, path, maps, false)], syn.body.hints, syn.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], syn.body.mappingLogic, syn.body.mapper)
 	}
 	
 	static dispatch def toRosettaExpandedSynonym(RosettaClassSynonym syn) {
-		val synVals = if (syn.value===null) Collections.emptyList else newArrayList(new ExpandedSynonymValue(syn.value.name, syn.value.path, syn.value.maps, false))
-		val synMetaVals = if (syn.metaValue!==null) newArrayList(new ExpandedSynonymValue(syn.metaValue.name, syn.metaValue.path, syn.metaValue.maps, true)) else Collections.emptyList
+		val synVals = if (syn.value===null) Collections.emptyList else newArrayList(new ExpandedSynonymValue(syn.value.synonymName, syn.value.path, syn.value.maps, false))
+		val synMetaVals = if (syn.metaValue!==null) newArrayList(new ExpandedSynonymValue(syn.metaValue.synonymName, syn.metaValue.path, syn.metaValue.maps, true)) else Collections.emptyList
 		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null)
 	}
 

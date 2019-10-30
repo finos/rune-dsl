@@ -50,7 +50,7 @@ class RosettaFormattingTest {
 			version "test"
 			
 			class CalculationPeriod stereotype contractualProduct, entityReferenceData <"xxx xxx.">
-				[synonym FpML value CalculationPeriod]
+				[synonym FpML value "CalculationPeriod"]
 			{
 			}
 			
@@ -58,7 +58,7 @@ class RosettaFormattingTest {
 
 		val unFormatted = '''
 			namespace "com.regnosys.rosetta.model" version "test" class CalculationPeriod stereotype contractualProduct,entityReferenceData <"xxx xxx."> 
-			 [synonym FpML value CalculationPeriod]
+			 [synonym FpML value "CalculationPeriod"]
 			{
 			}
 		'''
@@ -73,10 +73,10 @@ class RosettaFormattingTest {
 			version "test"
 			
 			class CalculationPeriod stereotype contractualProduct <"xxx xxx.">
-				[synonym FpML value CalculationPeriod]
+				[synonym FpML value "CalculationPeriod"]
 			{
 				field1 string (1..1) <"Some Field">;
-					[synonym FpML value CalculationPeriod]
+					[synonym FpML value "CalculationPeriod"]
 			}
 			
 		'''
@@ -84,9 +84,9 @@ class RosettaFormattingTest {
 		val unFormatted = '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
-			class CalculationPeriod stereotype contractualProduct <"xxx xxx."> [synonym FpML value CalculationPeriod]
+			class CalculationPeriod stereotype contractualProduct <"xxx xxx."> [synonym FpML value "CalculationPeriod"]
 			{
-								field1 string (1..1) <"Some Field">;[synonym FpML value CalculationPeriod]
+								field1 string (1..1) <"Some Field">;[synonym FpML value "CalculationPeriod"]
 				
 			}
 			
@@ -163,7 +163,7 @@ class RosettaFormattingTest {
 			version "test"
 			
 			enum DayOfWeekEnum <"A day of the seven-day week.">
-				[synonym FpML value DayOfWeekEnum]
+				[synonym FpML value "DayOfWeekEnum"]
 			{
 				MON <"Monday">
 					[synonym FpML value "MON"],
@@ -182,7 +182,7 @@ class RosettaFormattingTest {
 			}
 			
 		'''
-		val unFormatted = '''namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum <"A day of the seven-day week."> [synonym FpML value DayOfWeekEnum]{MON <"Monday">[synonym FpML value "MON"],TUE <"Tuesday">[synonym FpML value "TUE"],WED <"Wednesday">[synonym FpML value "WED"],THU <"Thursday">[synonym FpML value "THU"],FRI <"Friday">[synonym FpML value "FRI"],SAT <"Saturday">[synonym FpML value "SAT"],SUN <"Sunday">[synonym FpML value "SUN"]}'''
+		val unFormatted = '''namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum <"A day of the seven-day week."> [synonym FpML value "DayOfWeekEnum"]{MON <"Monday">[synonym FpML value "MON"],TUE <"Tuesday">[synonym FpML value "TUE"],WED <"Wednesday">[synonym FpML value "WED"],THU <"Thursday">[synonym FpML value "THU"],FRI <"Friday">[synonym FpML value "FRI"],SAT <"Saturday">[synonym FpML value "SAT"],SUN <"Sunday">[synonym FpML value "SUN"]}'''
 		assertEquals(expectedResult, format(unFormatted))
 	}
 	
@@ -193,7 +193,7 @@ class RosettaFormattingTest {
 			version "test"
 			
 			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value.">
-				[synonym FpML value spreadScheduleTypeScheme]
+				[synonym FpML value "spreadScheduleTypeScheme"]
 			{
 				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
 					[synonym FpML value "Long"],
@@ -205,7 +205,7 @@ class RosettaFormattingTest {
 		val unFormatted = '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
-			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value."> 	[synonym FpML value spreadScheduleTypeScheme]
+			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value."> 	[synonym FpML value "spreadScheduleTypeScheme"]
 			{
 				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
 			[synonym FpML value "Long"], Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
@@ -223,7 +223,7 @@ class RosettaFormattingTest {
 			version "test"
 			
 			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value.">
-				[synonym FpML value spreadScheduleTypeScheme]
+				[synonym FpML value "spreadScheduleTypeScheme"]
 			{
 				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
 					[synonym FpML value "Long"],
@@ -236,7 +236,7 @@ class RosettaFormattingTest {
 			namespace "com.regnosys.rosetta.model" 
 			version "test"
 			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value."> 	
-				[synonym FpML value spreadScheduleTypeScheme]
+				[synonym FpML value "spreadScheduleTypeScheme"]
 			{
 				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
 			[synonym FpML value "Long"],
@@ -261,15 +261,15 @@ class RosettaFormattingTest {
 				
 				
 				Contract:
-				+ account	[value my_account]
-				[value my_account_2]
+				+ account	[value "my_account"]
+				[value "my_account_2"]
 				
-				+ party [value my_party]
+				+ party [value "my_party"]
 				
 				
 				Event:
 					+ account
-					[value event_account]
+					[value "event_account"]
 					
 					
 					
@@ -285,14 +285,14 @@ class RosettaFormattingTest {
 			{
 				Contract:
 					+ account
-						[value my_account]
-						[value my_account_2]
+						[value "my_account"]
+						[value "my_account_2"]
 					+ party
-						[value my_party]
+						[value "my_party"]
 			
 				Event:
 					+ account
-						[value event_account]
+						[value "event_account"]
 			}
 			
 		'''
