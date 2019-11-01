@@ -11,7 +11,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 @InjectWith(RosettaInjectorProvider)
 class RosettaFunctionGenerationTest {
 
-	@Inject extension CalculationGeneratorHelper
+	@Inject extension FuncGeneratorHelper
 
 	@Test
 	def void testSimpleFunctionGeneration() {

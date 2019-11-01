@@ -365,7 +365,7 @@ class ModelObjectBuilderGenerator {
 						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
 					}
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«names.toJavaType(attribute.type)» «attribute.name») {
-						return set«attribute.name.toFirstUpper»Ref(«attribute.type.name».builder());
+						return set«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
 					}
 					«ENDIF»
 				«ELSE»

@@ -226,11 +226,26 @@ class FuncGenerator {
 				«op.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)«IF isReference(seg.attribute)».getValue()«ENDIF»«ELSE»
 					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«
-					seg.attribute.name.toFirstUpper»«IF op.namedAssignTarget().reference»Ref«ENDIF
-					»(«expressionGenerator.javaCode(op.expression, new ParamMap)»«
-					IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»«IF op.useIdx», «op.idx»«ENDIF»)«
+					seg.attribute.name.toFirstUpper»«IF op.namedAssignTarget().reference && !op.assignAsKey»Ref«ENDIF
+					»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«
 					ENDIF»«ENDFOR»;
 			'''
+		}
+	}
+	
+	private def StringConcatenationClient assignValue(Operation op, JavaNames names) {
+		if(op.assignAsKey) {
+			val valueType =  typeProvider.getRType(namedAssignTarget(op))
+			val pack = names?.packages?.metaField
+			val metaCalss = pack?.javaType("ReferenceWithMeta"+valueType.name.toFirstUpper)
+			//  ReferenceWithMetaEvent.builder().setExternalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()   
+		'''«metaCalss».builder().setExternalReference(
+		«expressionGenerator.javaCode(op.expression, new ParamMap)»«
+		IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF».getMeta().getGlobalKey()
+	).build()'''
+		} else {
+		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
+							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
 		}
 	}
 	

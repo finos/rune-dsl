@@ -33,6 +33,7 @@ import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -42,6 +43,7 @@ import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RType
@@ -57,6 +59,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.Check
 
@@ -65,7 +68,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 
 /**
  * This class contains custom validation rules. 
@@ -85,6 +87,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension RosettaFunctionExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject CardinalityProvider cardinality
+	@Inject RosettaGrammarAccess grammar
 	
 	@Check
 	def void deprecatedInfo(RosettaClass classe) {
@@ -225,9 +228,11 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				TYPE_ERROR)
 		else if (expectedType instanceof RErrorType)
 			error('''«expectedType.name»''', owner, ref, index, TYPE_ERROR)
-		else if (expectedType !== null && !actualType.isUseableAs(expectedType) && expectedType != RBuiltinType.MISSING)
-			error('''Expected type '«expectedType.name»' but was '«actualType?.name ?: 'null'»'«»''', owner, ref, index,
-				TYPE_ERROR)
+		else if (expectedType !== null && expectedType != RBuiltinType.MISSING) {
+			if (!actualType.isUseableAs(expectedType))
+				error('''Expected type '«expectedType.name»' but was '«actualType?.name ?: 'null'»'«»''', owner, ref,
+					index, TYPE_ERROR)
+		}
 	}
 
 	@Check
@@ -527,6 +532,17 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
+	def checkAttribute(Attribute ele) {
+		if (ele.type instanceof Data && !ele.type.eIsProxy) {
+			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(ele.type as Annotated) || (ele.type as Data).allSuperTypes.exists[hasKeyedAnnotation])) {
+				//TODO turn to error if it's okay
+				warning('''«ele.type.name» must be annotated with [metadata key] as reference annotation is used''',
+					ROSETTA_TYPED__TYPE)
+			}
+		}
+	}
+	
+	@Check
 	def checkDispatch(Function ele) {
 		if (ele instanceof FunctionDispatch)
 			return
@@ -608,6 +624,21 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def checkAssignCardinality(Operation ele) {
 		if (!cardinality.expectedCardinalityMany(ele) && cardinality.isMulti(ele.expression))
 			error('''Expecting single cardinality as value. Use 'only-element' to assign only first value.''', ele, OPERATION__EXPRESSION)
+	}
+	@Check
+	def checkAsKeyUsage(Operation ele) {
+		if (!ele.assignAsKey) {
+			return
+		}
+		if(ele.path === null) {
+			error(''''«grammar.operationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used when assigning an attribute. Example: "assign-output out -> attribute: value as-key"''', ele, OPERATION__ASSIGN_AS_KEY)
+			return
+		}
+		val segments = ele.path?.asSegmentList(ele.path)
+		val attr =  segments?.last?.attribute
+		if(attr instanceof Attribute && !(attr as Attribute).hasReferenceAnnotation) {
+			error(''''«grammar.operationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
+		}
 	}
 	
 	@Check
