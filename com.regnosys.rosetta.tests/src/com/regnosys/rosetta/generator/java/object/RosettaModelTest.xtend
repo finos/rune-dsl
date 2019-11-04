@@ -44,7 +44,7 @@ class RosettaModelTest{
 		assertEquals("The set of [partyId, PartyIdSource] associated with a party.", class.definition)
 		
 		val synonym = class.synonyms.get(0)
-		assertEquals("Foo", synonym.value.synonymName)
+		assertEquals("Foo", synonym.value.name)
 		assertEquals("FpML", synonym.sources.head.getName())
 		
 		val attributes = class.regularAttributes.get(0)
@@ -57,7 +57,7 @@ class RosettaModelTest{
 
 		val synonym1 = attributes.synonyms.get(0)
 		val value1 = synonym1.body.values.get(0)
-		assertEquals("Foo", value1.getSynonymName())
+		assertEquals("Foo", value1.getName())
 		assertEquals("FpML", synonym1.sources.head.getName())
 		assertEquals("tag", value1.refType.getName())
 		assertEquals(24, value1.value)
@@ -65,7 +65,7 @@ class RosettaModelTest{
 		
 		val synonym2 = attributes.synonyms.get(1)
 		val value2 = synonym2.body.values.get(0)
-		assertEquals("Bar.value", value2.getSynonymName())
+		assertEquals("Bar.value", value2.getName())
 		assertEquals("FpML", synonym2.sources.head.getName())
 		
 		val references = attributes.references.get(0)
@@ -101,7 +101,7 @@ class RosettaModelTest{
 		
 		val synonyms = class.synonyms.get(0)
 		assertEquals("FIX", synonyms.sources.head.getName())
-		assertEquals("Foo", synonyms.value.getSynonymName())
+		assertEquals("Foo", synonyms.value.getName())
 		assertEquals("componentID", synonyms.value.refType.getName())
 		assertEquals(24, synonyms.value.value)
 		
@@ -152,7 +152,7 @@ class RosettaModelTest{
 		
 		val synonyms = enum.synonyms.get(0)
 		assertEquals("ISO", synonyms.sources.head.getName())
-		assertEquals("QuoteRejectReason", synonyms.body.values.get(0).getSynonymName())
+		assertEquals("QuoteRejectReason", synonyms.body.values.get(0).getName())
 		assertEquals("componentID", synonyms.body.values.get(0).refType.getName())
 		assertEquals(24, synonyms.body.values.get(0).value)
 		

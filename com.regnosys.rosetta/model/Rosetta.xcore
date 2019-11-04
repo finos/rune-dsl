@@ -197,7 +197,7 @@ abstract class RosettaSynonymBase {
 }
 
 class RosettaSynonymValueBase {
-	String synonymName
+	String name
 	RosettaSynonymRef refType
 	int value
 	String path

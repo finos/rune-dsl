@@ -282,7 +282,7 @@ class RosettaParsingTest {
 				foo string (1..1)
 					[metadata reference]
 					[metadata scheme]
-					[synonym FpML value "foo" meta "href", "id", "fooScheme"]
+					[synonym FpML value "foo" meta href", "id", "fooScheme]
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -634,7 +634,7 @@ class RosettaParsingTest {
 				
 				Foo:
 					+ foo
-						[value "bar" path "baz" meta "barScheme"]
+						[value "bar" path "baz" meta barScheme]
 			}
 		'''.parseRosettaWithNoErrors
 	}

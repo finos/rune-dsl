@@ -96,14 +96,14 @@ class SynonymGeneratorTest {
 		val code = '''
 			type Test:
 				[metadata key]
-				[synonym FpML meta "id"]
+				[synonym FpML meta id]
 			
 				adjustedDate date (0..1)
 					[metadata id]
 					// synonym "adjustedDate" and "adjustedDate->id"
-					[synonym FpML value "adjustedDate" meta "id"]
+					[synonym FpML value "adjustedDate" meta id]
 					// synonym "relativeDate->adjustedDate" and "relativeDate->adjustedDate->id"
-					[synonym FpML value "adjustedDate" path "relativeDate" meta "id"]
+					[synonym FpML value "adjustedDate" path "relativeDate" meta id]
 		'''.generateCode
 		
 		val testClass = code.get(javaPackages.model.packageName + '.Test')

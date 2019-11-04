@@ -276,7 +276,7 @@ RosettaClassSynonym:
 ;
 
 RosettaClassSynonymValue returns RosettaSynonymValueBase:
-	synonymName = STRING (refType=RosettaSynonymRef value=INT)? 
+	name = SynonymID (refType=RosettaSynonymRef value=INT)? 
 	('path' path = STRING)? 
 ;
 
@@ -288,17 +288,21 @@ RosettaSynonym:
 
 RosettaSynonymBody:
 	( 'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? 
-		| 'hint' (hints+=STRING ',')* hints+=STRING
+		| 'hint' (hints+=SynonymID ',')* hints+=SynonymID
 		| mappingLogic=RosettaMappingSetTo )
-	('meta' (metaValues += STRING ',')* metaValues += STRING)?
+	('meta' (metaValues += SynonymID ',')* metaValues += SynonymID)?
 	('mapper' mapper=ValidID)?
 	
 ;
 
 RosettaSynonymValue returns RosettaSynonymValueBase :
-	synonymName = STRING (refType=RosettaSynonymRef value=INT)? 
+	name = STRING (refType=RosettaSynonymRef value=INT)? 
 	('path' path = STRING)? 
 	('maps' maps=INT)?
+;
+
+SynonymID:
+	ID
 ;
 
 RosettaEnumSynonym:
