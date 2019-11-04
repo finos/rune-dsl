@@ -88,8 +88,10 @@ class RosettaFormattingTest {
 			version "test"
 			
 			type CalculationPeriod: <"xxx xxx.">
+				[metadata scheme]
 				[synonym FpML value CalculationPeriod]
 				field3 string (1..1) <"Some Field">
+					[metadata scheme]
 					[synonym FpML value CalculationPeriod]
 				field1 string (1..1) <"Some Field">
 					[synonym FpML value CalculationPeriod]
@@ -107,8 +109,8 @@ class RosettaFormattingTest {
 		val unFormatted = '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
-			type CalculationPeriod : <"xxx xxx."> [synonym FpML value CalculationPeriod]
-						field3 string (1..1) <"Some Field">[synonym FpML value CalculationPeriod] 					field1 string (1..1) <"Some Field">[synonym FpML value CalculationPeriod] condition: one-of condition Foo: field1 
+			type CalculationPeriod : <"xxx xxx.">  [  metadata   scheme  ] [synonym FpML value CalculationPeriod]
+						field3 string (1..1) <"Some Field">  [  metadata   scheme  ][synonym FpML value CalculationPeriod] 					field1 string (1..1) <"Some Field">[synonym FpML value CalculationPeriod] condition: one-of condition Foo: field1 
 			condition Foo12: 	optional 		choice field1 , field3 
 						condition Foo2: 
 			optional 
@@ -119,6 +121,47 @@ class RosettaFormattingTest {
 				one-of
 		'''
 
+		assertEquals(expectedResult, format(unFormatted))
+	}
+	
+	@Test
+	def void conditionOnFunc() {
+		val expectedResult = '''
+			namespace "test"
+			version "test"
+			
+			type Type:
+				foo string (1..1)
+			func Execute2:
+				[metadata scheme]
+				inputs:
+					product string (1..1) <"">
+					quantity string (1..1)
+				output:
+					execution Type (1..1) <"">
+				condition Foo: product
+				assign-output execution -> foo:
+					"sdf"
+				assign-output execution:
+					execution
+				assign-output execution:
+					execution
+				post-condition:
+					execution -> foo is absent
+			'''
+
+		val unFormatted = '''
+			namespace "test"
+			version "test"
+			type Type: foo string (1..1) func Execute2:[ metadata  scheme ] inputs:		product string (1..1) <"">		quantity string (1..1) 	output:
+					execution Type (1..1) <""> condition Foo: product assign-output execution -> foo:
+					"sdf"assign-output execution:
+					execution	
+			assign-output execution:
+			execution
+			post-condition:
+			execution -> foo is absent
+		'''
 		assertEquals(expectedResult, format(unFormatted))
 	}
 

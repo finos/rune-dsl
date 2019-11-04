@@ -42,6 +42,10 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.Constraint
 import com.regnosys.rosetta.rosetta.simple.Necessity
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
+import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -87,6 +91,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 			prepend(NEW_LINE)
 		]
 		ele.annotations.forEach[
+			prepend(NEW_LINE)
 			format
 		]
 		ele.attributes.forEach[
@@ -101,7 +106,11 @@ class RosettaFormatter extends AbstractFormatter2 {
 	}
 
 	def dispatch void format(Attribute ele, extension IFormattableDocument document) {
-		ele.annotations.forEach[format]
+		ele.annotations.forEach[
+			surround(INDENT)
+			prepend(NEW_LINE)
+			format
+		]
 		ele.synonyms.forEach[format]
 	}
 	
@@ -129,8 +138,64 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.allRegionsFor.keyword(',').prepend(NO_SPACE_LOW_PRIO).append(ONE_SPACE_PRESERVE_NEWLINE)
 	}
 	
-	def dispatch void format(Annotation ele, extension IFormattableDocument document) {
+	def dispatch void format(AnnotationRef ele, extension IFormattableDocument document) {
+		ele.regionFor.keyword(annotationRefAccess.leftSquareBracketKeyword_0).append(NO_SPACE)
+		ele.regionFor.keyword(annotationRefAccess.rightSquareBracketKeyword_3).prepend(NO_SPACE)
+		ele.regionFor.assignment(annotationRefAccess.attributeAssignment_2).prepend(ONE_SPACE)
+	}
+	
+	def dispatch void format(Function ele, extension IFormattableDocument document) {
+		ele.regionFor.keyword(functionAccess.funcKeyword_0).append(ONE_SPACE)
+		ele.regionFor.keyword(':').prepend(NO_SPACE).append(ONE_SPACE)
+		ele.annotations.forEach[
+			prepend(NEW_LINE)prepend(NEW_LINE)
+			format
+		]
 		
+		ele.regionFor.keyword(functionAccess.inputsKeyword_5_0).prepend(NEW_LINE).append(NEW_LINE)
+		ele.interior(INDENT).append(NEW_LINE_LOW_PRIO)
+		ele.inputs.forEach[
+			surround(INDENT)
+			prepend(NEW_LINE)
+			format
+		]
+		
+		ele.regionFor.keyword(functionAccess.outputKeyword_6_0).prepend(NEW_LINE).append(ONE_SPACE_PRESERVE_NEWLINE)
+		set(
+			ele.regionFor.keyword(functionAccess.outputKeyword_6_0).nextHiddenRegion,
+			ele.output.nextHiddenRegion,
+			INDENT
+		)
+		ele.output.format
+		
+		ele.shortcuts.forEach[
+			prepend(NEW_LINE)
+			format
+		]
+		ele.conditions.forEach[
+			prepend(NEW_LINE)
+			format
+		]
+		ele.operations.forEach[
+			prepend(NEW_LINE)
+			format
+		]
+		ele.postConditions.forEach[
+			prepend(NEW_LINE)
+			format
+		]
+		
+	}
+	
+	def dispatch void format(Operation ele, extension IFormattableDocument document) {
+		ele.regionFor.keyword(':').prepend(NO_SPACE).append(ONE_SPACE_PRESERVE_NEWLINE)
+		val eleEnd = ele.nextHiddenRegion
+		set(
+			ele.regionFor.keyword(':').nextHiddenRegion,
+			eleEnd,
+			INDENT
+		)
+		ele.expression.format
 	}
 	
 	def dispatch void format(RosettaRegularAttribute rosettaAttribute, extension IFormattableDocument document) {
