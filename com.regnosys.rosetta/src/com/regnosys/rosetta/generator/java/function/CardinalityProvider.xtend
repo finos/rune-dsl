@@ -47,7 +47,14 @@ class CardinalityProvider {
 	}
 	
 	def boolean expectedCardinalityMany(Operation op) {
-		val assignTarget = if(op.path === null) op.assignRoot else op.pathAsSegmentList.last.attribute
-		return assignTarget.isMulti
+		return if (op.path === null)
+			op.assignRoot.isMulti
+		else {
+			val lastSegment = op.pathAsSegmentList.last
+			if (lastSegment.index !== null) {
+				false
+			} else
+				lastSegment.attribute.isMulti
+		}
 	}
 }

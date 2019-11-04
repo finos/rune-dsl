@@ -37,6 +37,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import java.util.stream.Collectors
 
 class FuncGenerator {
 
@@ -228,7 +229,7 @@ class FuncGenerator {
 					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«
 					seg.attribute.name.toFirstUpper»«IF op.namedAssignTarget().reference && !op.assignAsKey»Ref«ENDIF
 					»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«
-					ENDIF»«ENDFOR»;
+					ENDIF»«ENDFOR»
 			'''
 		}
 	}
@@ -238,11 +239,29 @@ class FuncGenerator {
 			val valueType =  typeProvider.getRType(namedAssignTarget(op))
 			val pack = names?.packages?.metaField
 			val metaCalss = pack?.javaType("ReferenceWithMeta"+valueType.name.toFirstUpper)
-			//  ReferenceWithMetaEvent.builder().setExternalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()   
-		'''«metaCalss».builder().setExternalReference(
-		«expressionGenerator.javaCode(op.expression, new ParamMap)»«
-		IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF».getMeta().getGlobalKey()
-	).build()'''
+			if (cardinality.isMulti(op.expression)) {
+				/*
+				.addParty(
+					MapperS.of(parties(product, partyA, partyB, quantity).get())
+					.getItems().map(
+							(item) -> ReferenceWithMetaParty.builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
+						).collect(Collectors.toList())
+					);
+				*/
+				'''
+				«expressionGenerator.javaCode(op.expression, new ParamMap)»
+				.getItems().map(
+						(item) -> «metaCalss».builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
+					).collect(«Collectors».toList())
+				'''
+			} else {
+				//  ReferenceWithMetaEvent.builder().setExternalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()
+				'''
+				«metaCalss».builder().setExternalReference(
+						«expressionGenerator.javaCode(op.expression, new ParamMap)».get().getMeta().getGlobalKey()
+					).build()
+				'''
+			}
 		} else {
 		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
 							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
@@ -264,7 +283,7 @@ class FuncGenerator {
 	private def boolean useIdx(Operation operation) {
 		if (operation.pathAsSegmentList.nullOrEmpty)
 			return false
-		return operation.pathAsSegmentList.last.index !== null
+		return operation.idx !== null
 	}
 	
 	private def idx(Operation operation) {
