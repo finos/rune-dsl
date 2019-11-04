@@ -152,21 +152,29 @@ class RosettaFormatter extends AbstractFormatter2 {
 			format
 		]
 		
-		ele.regionFor.keyword(functionAccess.inputsKeyword_5_0).prepend(NEW_LINE).append(NEW_LINE)
+		val inputsKW = ele.regionFor.keyword(functionAccess.inputsKeyword_5_0)
+		inputsKW.prepend(NEW_LINE)
+		if (ele.inputs.size <= 1) {
+			inputsKW.append(ONE_SPACE_PRESERVE_NEWLINE)
+		} else {
+			inputsKW.append(NEW_LINE)
+		}
 		ele.interior(INDENT).append(NEW_LINE_LOW_PRIO)
 		ele.inputs.forEach[
 			surround(INDENT)
-			prepend(NEW_LINE)
+			prepend(NEW_LINE_LOW_PRIO)
 			format
 		]
 		
 		ele.regionFor.keyword(functionAccess.outputKeyword_6_0).prepend(NEW_LINE).append(ONE_SPACE_PRESERVE_NEWLINE)
-		set(
-			ele.regionFor.keyword(functionAccess.outputKeyword_6_0).nextHiddenRegion,
-			ele.output.nextHiddenRegion,
-			INDENT
-		)
-		ele.output.format
+		if(ele.output !== null) {
+			set(
+				ele.regionFor.keyword(functionAccess.outputKeyword_6_0)?.nextHiddenRegion,
+				ele.output.nextHiddenRegion,
+				INDENT
+			)
+			ele.output.format
+		}
 		
 		ele.shortcuts.forEach[
 			prepend(NEW_LINE)
@@ -303,7 +311,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 	}
 
 	def void singleIndentedLine(EObject eObject, extension IFormattableDocument document) {
-		eObject.prepend[newLine].append[newLine].surround[indent]
+		eObject.prepend[newLine].append(NEW_LINE_LOW_PRIO).surround[indent]
 	}
 
 	def void surroundWithOneSpace(EObject eObject, extension IFormattableDocument document) {
