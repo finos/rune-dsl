@@ -26,18 +26,15 @@ class RosettaFormattingTest {
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			class Test <"Some definition">
-			{
-				field1 string (1..1) <"Field 1">;
-				field2 string (1..1) <"Field 2">;
-			}
-			
+			type Test: <"Some definition">
+				field1 string (1..1) <"Field 1">
+				field2 string (1..1) <"Field 2">
 		'''
 
 		val unFormatted = '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
-			class Test <"Some definition"> { 	field1 string (1..1) <"Field 1">; field2 string (1..1) <"Field 2">; }			}		
+					type Test: <"Some definition"> field1 string (1..1) <"Field 1"> field2 string (1..1) <"Field 2">					
 		'''
 
 		assertEquals(expectedResult, format(unFormatted))
@@ -49,18 +46,13 @@ class RosettaFormattingTest {
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			class CalculationPeriod stereotype contractualProduct, entityReferenceData <"xxx xxx.">
+			type CalculationPeriod: <"xxx xxx.">
 				[synonym FpML value CalculationPeriod]
-			{
-			}
-			
 		'''
 
 		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model" version "test" class CalculationPeriod stereotype contractualProduct,entityReferenceData <"xxx xxx."> 
+			namespace "com.regnosys.rosetta.model" version "test" type CalculationPeriod: <"xxx xxx."> 
 			 [synonym FpML value CalculationPeriod]
-			{
-			}
 		'''
 
 		assertEquals(expectedResult, format(unFormatted))
@@ -72,53 +64,61 @@ class RosettaFormattingTest {
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			class CalculationPeriod stereotype contractualProduct <"xxx xxx.">
+			type CalculationPeriod: <"xxx xxx.">
 				[synonym FpML value CalculationPeriod]
-			{
-				field1 string (1..1) <"Some Field">;
+				field1 string (1..1) <"Some Field">
 					[synonym FpML value CalculationPeriod]
-			}
-			
 		'''
 
 		val unFormatted = '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
-			class CalculationPeriod stereotype contractualProduct <"xxx xxx."> [synonym FpML value CalculationPeriod]
-			{
-								field1 string (1..1) <"Some Field">;[synonym FpML value CalculationPeriod]
+			type CalculationPeriod : <"xxx xxx."> [synonym FpML value CalculationPeriod]
+								field1 string (1..1) <"Some Field">[synonym FpML value CalculationPeriod]
 				
-			}
-			
 		'''
 
 		assertEquals(expectedResult, format(unFormatted))
 	}
 
 	@Test
-	def void classWithProductReferenceDataIsFormattedWithClassAndAttributes() {
+	def void conditionOnType() {
 		val expectedResult = '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			class Product stereotype productReferenceData <"Product Def.">
-				[regulatoryReference ESMA MiFIR article "Article 1" provision "Some provision"]
-			{
-				field1 string (1..1) <"Some Field">;
-					[regulatoryReference ESMA MiFIR article "Article 2" provision "Another provision"]
-				field2 string (1..1) <"Some Field">;
-			}
-			
+			type CalculationPeriod: <"xxx xxx.">
+				[synonym FpML value CalculationPeriod]
+				field3 string (1..1) <"Some Field">
+					[synonym FpML value CalculationPeriod]
+				field1 string (1..1) <"Some Field">
+					[synonym FpML value CalculationPeriod]
+				condition: one-of
+				condition Foo: field1
+				condition Foo12: optional choice field1, field3
+				condition Foo2:
+					optional choice field1, field3
+				condition Foo4:
+					required choice field1, field3
+				condition:
+					one-of
 		'''
+
 		val unFormatted = '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
-			class Product stereotype productReferenceData <"Product Def."> [regulatoryReference ESMA MiFIR article "Article 1" provision "Some provision"]  {
-			field1 string (1..1) <"Some Field">;
-			[regulatoryReference ESMA MiFIR article "Article 2" provision "Another provision"] field2 string (1..1) <"Some Field">;
-			
-			}
+			type CalculationPeriod : <"xxx xxx."> [synonym FpML value CalculationPeriod]
+						field3 string (1..1) <"Some Field">[synonym FpML value CalculationPeriod] 					field1 string (1..1) <"Some Field">[synonym FpML value CalculationPeriod] condition: one-of condition Foo: field1 
+			condition Foo12: 	optional 		choice field1 , field3 
+						condition Foo2: 
+			optional 
+			choice field1 , field3  condition Foo4:
+			required 
+			choice field1 , field3
+				condition:	 
+				one-of
 		'''
+
 		assertEquals(expectedResult, format(unFormatted))
 	}
 

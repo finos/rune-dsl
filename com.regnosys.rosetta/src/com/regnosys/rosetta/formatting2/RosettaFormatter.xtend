@@ -3,6 +3,7 @@
  */
 package com.regnosys.rosetta.formatting2
 
+import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
@@ -27,14 +28,33 @@ import com.regnosys.rosetta.rosetta.RosettaStereotype
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.services.RosettaGrammarAccess
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
+import org.eclipse.xtext.formatting2.IHiddenRegionFormatter
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.rosetta.simple.Annotation
+import com.regnosys.rosetta.rosetta.simple.Constraint
+import com.regnosys.rosetta.rosetta.simple.Necessity
 
 class RosettaFormatter extends AbstractFormatter2 {
-
+	
+	static val Procedure1<? super IHiddenRegionFormatter> NO_SPACE = [noSpace]
+	static val Procedure1<? super IHiddenRegionFormatter> NO_SPACE_LOW_PRIO = [noSpace; lowPriority]
+	static val Procedure1<? super IHiddenRegionFormatter> ONE_SPACE = [oneSpace]
+	static val Procedure1<? super IHiddenRegionFormatter> ONE_SPACE_PRESERVE_NEWLINE = [setNewLines(0, 0, 1); oneSpace]
+	static val Procedure1<? super IHiddenRegionFormatter> NEW_LINE = [setNewLines(1, 1, 2)]
+	static val Procedure1<? super IHiddenRegionFormatter> NEW_LINE_LOW_PRIO = [lowPriority; setNewLines(1, 1, 2)]
+	static val Procedure1<? super IHiddenRegionFormatter> INDENT = [indent]
+	
+	@Inject extension RosettaGrammarAccess
+	
 	def dispatch void format(RosettaModel rosettaModel, extension IFormattableDocument document) {
 		rosettaModel.header.format
 		formatChild(rosettaModel.elements, document)
@@ -52,7 +72,67 @@ class RosettaFormatter extends AbstractFormatter2 {
 		formatChild(rosettaClass.references, document)
 		formatChild(rosettaClass.regularAttributes, document)
 	}
+	
+	def dispatch void format(Data ele, extension IFormattableDocument document) {
+		ele.regionFor.keyword(dataAccess.typeKeyword_0_0).append(ONE_SPACE)
+		ele.regionFor.keyword(dataAccess.extendsKeyword_2_0).append(ONE_SPACE)
+		ele.regionFor.keyword(':').prepend(NO_SPACE).append(ONE_SPACE)
+		val eleEnd = ele.nextHiddenRegion
+		set(
+			ele.regionFor.keyword(':').nextHiddenRegion,
+			eleEnd,
+			INDENT
+		)
+		ele.synonyms.forEach[
+			prepend(NEW_LINE)
+		]
+		ele.annotations.forEach[
+			format
+		]
+		ele.attributes.forEach[
+			prepend(NEW_LINE_LOW_PRIO)
+			format
+		]
+		ele.conditions.forEach[
+			prepend(NEW_LINE_LOW_PRIO)
+			format
+		]
+		set(eleEnd, NEW_LINE_LOW_PRIO)
+	}
 
+	def dispatch void format(Attribute ele, extension IFormattableDocument document) {
+		ele.annotations.forEach[format]
+		ele.synonyms.forEach[format]
+	}
+	
+	def dispatch void format(Condition ele, extension IFormattableDocument document) {
+		
+		ele.annotations.forEach[format]
+		ele.regionFor.keyword(':').append(ONE_SPACE_PRESERVE_NEWLINE)
+		val eleEnd = ele.nextHiddenRegion
+		set(
+			ele.regionFor.keyword(':').nextHiddenRegion,
+			eleEnd,
+			INDENT
+		)
+		ele.constraint.format
+		ele.expression.format
+	}
+	
+	def dispatch void format(Constraint ele, extension IFormattableDocument document) {
+		ele.regionFor.keyword(necessityAccess.requiredRequiredKeyword_1_0).prepend(ONE_SPACE_PRESERVE_NEWLINE)
+		ele.regionFor.keyword(necessityAccess.optionalOptionalKeyword_0_0).prepend(ONE_SPACE_PRESERVE_NEWLINE)
+		ele.regionFor.keyword(
+			constraintAccess.choiceKeyword_1
+		).surround(ONE_SPACE)
+		
+		ele.allRegionsFor.keyword(',').prepend(NO_SPACE_LOW_PRIO).append(ONE_SPACE_PRESERVE_NEWLINE)
+	}
+	
+	def dispatch void format(Annotation ele, extension IFormattableDocument document) {
+		
+	}
+	
 	def dispatch void format(RosettaRegularAttribute rosettaAttribute, extension IFormattableDocument document) {
 		rosettaAttribute.prepend[newLine].append[newLine]
 		formatChild(rosettaAttribute.synonyms, document)
