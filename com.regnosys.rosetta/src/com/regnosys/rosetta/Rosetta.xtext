@@ -271,12 +271,12 @@ RosettaEnumStyle:
 RosettaClassSynonym:
 	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*
 	 ('value' value=RosettaClassSynonymValue)?
-	 ('meta' metaValue = RosettaSynonymValue)?
+	 ('meta' metaValue = RosettaMetaSynonymValue)?
 	 ']'
 ;
 
 RosettaClassSynonymValue returns RosettaSynonymValueBase:
-	name = SynonymID (refType=RosettaSynonymRef value=INT)? 
+	name = STRING (refType=RosettaSynonymRef value=INT)? 
 	('path' path = STRING)? 
 ;
 
@@ -300,7 +300,11 @@ RosettaSynonymValue returns RosettaSynonymValueBase :
 	('path' path = STRING)? 
 	('maps' maps=INT)?
 ;
-
+RosettaMetaSynonymValue  returns RosettaSynonymValueBase :
+	name = SynonymID (refType=RosettaSynonymRef value=INT)? 
+	('path' path = STRING)? 
+	('maps' maps=INT)?
+;
 SynonymID:
 	ID
 ;
