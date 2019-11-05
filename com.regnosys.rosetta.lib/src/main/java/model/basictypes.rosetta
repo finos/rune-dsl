@@ -14,8 +14,8 @@ library function Adjust() date
 library function Within() boolean
 library function IsLeapYear(year number) boolean
 
-metaType scheme string
 metaType reference string
+metaType scheme string
 metaType id string
 
 recordType date

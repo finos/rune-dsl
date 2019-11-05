@@ -286,7 +286,7 @@ class RosettaAttributeExtensions {
 	}
 	
 	def static metaSynValue(RosettaSynonymValueBase value, String meta) {
-		val path = if (value.path===null) value.name else value.path+"."+value.name
+		val path = if (value.path===null) value.name else value.path+"->"+value.name
 		val name = meta
 		return new ExpandedSynonymValue(name, path, value.maps, true)
 	}

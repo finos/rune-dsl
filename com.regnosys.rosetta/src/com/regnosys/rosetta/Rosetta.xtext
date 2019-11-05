@@ -305,6 +305,7 @@ RosettaMetaSynonymValue  returns RosettaSynonymValueBase :
 	('path' path = STRING)? 
 	('maps' maps=INT)?
 ;
+
 SynonymID:
 	ID
 ;
