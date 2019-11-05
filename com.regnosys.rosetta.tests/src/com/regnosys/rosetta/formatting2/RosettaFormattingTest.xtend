@@ -68,6 +68,7 @@ class RosettaFormattingTest {
 				[synonym FpML value CalculationPeriod]
 				field1 string (1..1) <"Some Field">
 					[synonym FpML value CalculationPeriod]
+			
 		'''
 
 		val unFormatted = '''
