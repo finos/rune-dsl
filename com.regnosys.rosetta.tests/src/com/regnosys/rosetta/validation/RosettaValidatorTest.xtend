@@ -194,7 +194,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''
 			type Foo:
 				id boolean (1..1)
-			
 			condition R:
 				if id = True
 				then id < 1
