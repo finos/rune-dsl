@@ -298,7 +298,7 @@ RosettaSynonymBody:
 
 RosettaSynonymValue:
 	RosettaNamed (valueExtension=RosettaSynonymEnumeration)? (refType=RosettaSynonymRef value=INT)? 
-	('path'  path = STRING)? 
+	('path' path = STRING)? 
 	('maps' maps=INT)?
 ;
 

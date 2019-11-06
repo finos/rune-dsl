@@ -127,12 +127,25 @@ class RosettaFormattingTest {
 	
 	@Test
 	def void conditionOnFunc() {
-		val expectedResult = '''
+		'''
+			namespace "test"
+			version "test"
+			type Type: foo string (1..1) func Execute2:[ metadata  scheme ] inputs:		product string (1..1) <"">		quantity string (1..1) 	output:
+					execution Type (1..1) <""> condition Foo: product assign-output execution -> foo:
+					"sdf"assign-output execution:
+					execution	
+			assign-output execution:
+			execution
+			post-condition:
+			execution -> foo is absent
+		'''-> 
+		'''
 			namespace "test"
 			version "test"
 			
 			type Type:
 				foo string (1..1)
+			
 			func Execute2:
 				[metadata scheme]
 				inputs:
@@ -149,21 +162,7 @@ class RosettaFormattingTest {
 					execution
 				post-condition:
 					execution -> foo is absent
-			'''
-
-		val unFormatted = '''
-			namespace "test"
-			version "test"
-			type Type: foo string (1..1) func Execute2:[ metadata  scheme ] inputs:		product string (1..1) <"">		quantity string (1..1) 	output:
-					execution Type (1..1) <""> condition Foo: product assign-output execution -> foo:
-					"sdf"assign-output execution:
-					execution	
-			assign-output execution:
-			execution
-			post-condition:
-			execution -> foo is absent
-		'''
-		assertEquals(expectedResult, format(unFormatted))
+		''' 
 	}
 
 	@Test
@@ -202,7 +201,10 @@ class RosettaFormattingTest {
 
 	@Test
 	def void formatDayOfWeekEnum() {
-		val expectedResult = '''
+		'''namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum <"A day of the seven-day week."> [synonym FpML value DayOfWeekEnum]{MON <"Monday">[synonym FpML value "MON"],TUE <"Tuesday">[synonym FpML value "TUE"],WED <"Wednesday">[synonym FpML value "WED"],THU <"Thursday">[synonym FpML value "THU"],FRI <"Friday">[synonym FpML value "FRI"],SAT <"Saturday">[synonym FpML value "SAT"],SUN <"Sunday">[synonym FpML value "SUN"]}'''
+		
+		->
+		'''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
@@ -226,8 +228,6 @@ class RosettaFormattingTest {
 			}
 			
 		'''
-		val unFormatted = '''namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum <"A day of the seven-day week."> [synonym FpML value DayOfWeekEnum]{MON <"Monday">[synonym FpML value "MON"],TUE <"Tuesday">[synonym FpML value "TUE"],WED <"Wednesday">[synonym FpML value "WED"],THU <"Thursday">[synonym FpML value "THU"],FRI <"Friday">[synonym FpML value "FRI"],SAT <"Saturday">[synonym FpML value "SAT"],SUN <"Sunday">[synonym FpML value "SUN"]}'''
-		assertEquals(expectedResult, format(unFormatted))
 	}
 	
 	@Test
@@ -343,8 +343,109 @@ class RosettaFormattingTest {
 		assertEquals(expectedResult, format(unFormatted))
 	}
 	
+	@Test
+	def void formatAttributeSynomym() {
+		'''
+			namespace "test"
+			version "test"
+			synonym source SynSource
+			
+			type AllocationOutcome:
+				allocatedTrade AllocationOutcome (1..*)
+											[synonym SynSource value originalTrade]
+				originalTrade string (1..1)<"">
+					[synonym SynSource value allocatedTrade]
+			
+				condition AllocationOutcome_executionClosed: <"The allocation outcome must result in execution state of 'Allocated' for an execution.">
+					if AllocationOutcome -> allocatedTrade  exists
+					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+				condition AllocationOutcome_contractClosed: <"The allocation outcome must result in a contract state of 'Allocated' for a contract.">
+					if AllocationOutcome -> allocatedTrade  exists
+					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+				condition AllocationOutcome_contractClosed:
+					one-of
+		''' -> '''
+			namespace "test"
+			version "test"
+			synonym source SynSource
+			
+			type AllocationOutcome:
+				allocatedTrade AllocationOutcome (1..*)
+					[synonym SynSource value originalTrade]
+				originalTrade string (1..1)<"">
+					[synonym SynSource value allocatedTrade]
+			
+				condition AllocationOutcome_executionClosed: <"The allocation outcome must result in execution state of 'Allocated' for an execution.">
+					if AllocationOutcome -> allocatedTrade  exists
+					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+				condition AllocationOutcome_contractClosed: <"The allocation outcome must result in a contract state of 'Allocated' for a contract.">
+					if AllocationOutcome -> allocatedTrade  exists
+					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+				condition AllocationOutcome_contractClosed:
+					one-of
+		'''
+	}
+	
+	@Test
+	def void formatIsEvent() {
+		'''
+			namespace "test"
+			version "test"
+			
+			type Type:
+				other Type (0..1)
+			
+			isEvent TypeEvent
+			Type -> other -> other only exists
+					and Type -> other -> other is absent
+			 and Type -> other -> other  is absent
+					and Type -> other -> other is absent
+		''' -> '''
+			namespace "test"
+			version "test"
+			
+			type Type:
+				other Type (0..1)
+			
+			isEvent TypeEvent
+				Type -> other -> other only exists
+				and Type -> other -> other is absent
+				and Type -> other -> other  is absent
+				and Type -> other -> other is absent
+		'''
+	}
+	
+	@Test
+	def void formatIsProduct() {
+		'''
+			namespace "test"
+						version "test"
+						
+						type Type:
+							other Type (0..1)
+						isProduct TypeProduct
+			Type -> other -> other only exists
+					and Type -> other -> other is absent
+			 and Type -> other -> other  is absent
+					and Type -> other -> other is absent
+			''' -> '''
+			namespace "test"
+			version "test"
+			
+			type Type:
+				other Type (0..1)
+			isProduct TypeProduct
+				Type -> other -> other only exists
+				and Type -> other -> other is absent
+				and Type -> other -> other  is absent
+				and Type -> other -> other is absent
+		'''
+	}
+	
 	def String format(String unFormatted) {
 		unFormatted.parse.serialize(SaveOptions.newBuilder.format().getOptions())
 	}
-
+	def ->(CharSequence unformated, CharSequence expectation){
+			assertEquals(expectation.toString, format(unformated.toString))
+	}
 }
