@@ -58,7 +58,7 @@ class RosettaTypeProviderTest {
 			}
 			
 			data rule DataRule 
-				when Foo->bar contains Bar.X and Foo->bar contains Bar.Y
+				when Foo->bar contains Bar->X and Foo->bar contains Bar->Y
 				then Foo->bar exists
 		'''.parseRosettaWithNoErrors.elements.filter(RosettaDataRule).head
 

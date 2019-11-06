@@ -80,7 +80,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			
 			type Foo:
 				action ActionEnum (1..1)
-					[synonym FpML set to ActionEnum.<|>]
+					[synonym FpML set to ActionEnum -> <|>]
 			
 			enum ActionEnum
 			{
@@ -88,7 +88,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 				correct,
 				cancel
 			}
-		''' >= #["cancel", "correct", "new", "."] // TODO original expectation is not alphabetical sorted but as declared #["new","correct", "cancel"]
+		''' >= #["cancel", "correct", "new"] // TODO original expectation is not alphabetical sorted but as declared #["new","correct", "cancel"]
 	}
 
 	@Test
@@ -101,7 +101,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 				attr boolean (1..1)
 				[synonym FpML set to T<|>]
 			}
-		'''  >= #["True", "."]
+		'''  >= #["True", "->"]
 	}
 
 	@Test
@@ -117,7 +117,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			}
 			isProduct test
 				Quote -> action <> <|>
-		''' >= #['ActionEnum.cancel', 'ActionEnum.correct', 'ActionEnum.new', '"Value"', "(", "[", "empty", "False", "True"]
+		''' >= #['ActionEnum -> cancel', 'ActionEnum -> correct', 'ActionEnum -> new', '"Value"', "(", "[", "empty", "False", "True"]
 	}
 	
 	@Test

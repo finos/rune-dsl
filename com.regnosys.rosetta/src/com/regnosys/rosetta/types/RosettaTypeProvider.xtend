@@ -42,6 +42,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
 
 class RosettaTypeProvider {
 
@@ -178,6 +179,8 @@ class RosettaTypeProvider {
 			RosettaExternalFunction: {
 				expression.type.safeRType(cycleTracker)
 			}
+			RosettaEnumValue:
+				expression.eContainer.safeRType(cycleTracker)
 			RosettaFeature:
 				expression.type.safeRType(cycleTracker)
 			RosettaCalculationType:

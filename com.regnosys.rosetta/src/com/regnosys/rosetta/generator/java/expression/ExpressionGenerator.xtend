@@ -61,6 +61,7 @@ import org.eclipse.xtext.util.Wrapper
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 
 class ExpressionGenerator {
 	
@@ -268,6 +269,7 @@ class ExpressionGenerator {
 			ShortcutDeclaration : {
 				'''«MapperS».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»get()«ENDIF»)'''
 			}
+			RosettaEnumeration: '''«call.toJavaType»'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable type of "+call.class.simpleName)
 		}

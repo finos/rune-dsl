@@ -280,7 +280,7 @@ class RosettaParsingTest {
 			data rule Foo_Bar
 				when Party -> foo = True
 				then
-					if Party -> bar = BarEnum.abc
+					if Party -> bar = BarEnum -> abc
 						then Party -> foobar exists
 					else Party -> foobar is absent
 		'''.parseRosettaWithNoErrors
@@ -496,7 +496,7 @@ class RosettaParsingTest {
 			class Foo
 			{
 				foo BarEnum (0..1);
-					[synonym FpML set to BarEnum.a when "FooSyn" exists]
+					[synonym FpML set to BarEnum -> a when "FooSyn" exists]
 			}
 			
 			enum BarEnum {
@@ -511,7 +511,7 @@ class RosettaParsingTest {
 			class Foo
 			{
 				foo BarEnum (0..1);
-					[synonym FpML value FooSyn default to BarEnum.a]
+					[synonym FpML value FooSyn default to BarEnum -> a]
 			}
 			
 			enum BarEnum {
@@ -526,7 +526,7 @@ class RosettaParsingTest {
 			class Foo
 			{
 				foo boolean (0..1);
-					[synonym FpML value FooSyn set when "relative/path/to/some/enum" = BarEnum.a]
+					[synonym FpML value FooSyn set when "relative/path/to/some/enum" = BarEnum -> a]
 			}
 			
 			enum BarEnum {
@@ -565,7 +565,7 @@ class RosettaParsingTest {
 				foo string (0..1);
 					[synonym FpML
 							set to "1" when "../relative/path/to/string" = "Foo",
-							set to "2" when "../relative/path/to/enum" = BarEnum.a,
+							set to "2" when "../relative/path/to/enum" = BarEnum -> a,
 							set to "3" when "../relative/path/to/string" is absent,
 							set to "4"]
 			}

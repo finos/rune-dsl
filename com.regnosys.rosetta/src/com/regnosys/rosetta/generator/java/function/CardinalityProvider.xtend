@@ -28,6 +28,7 @@ class CardinalityProvider {
 					if (obj.receiver.isMulti) true else obj.feature.isMulti
 				}
 			}
+			RosettaEnumValue:false
 			WithCardinality: if(obj.card === null) false else obj.card.isIsMany
 			RosettaCallableCall: if(obj.toOne) false else obj.callable.isMulti
 			RosettaCallableWithArgsCall: obj.callable.isMulti
@@ -40,7 +41,6 @@ class CardinalityProvider {
 			ListLiteral: true
 			RosettaLiteral,
 			RosettaRootElement,
-			RosettaEnumValue,
 			RosettaEnumValueReference: false
 			default: {println(obj?.eClass?.name)false }
 		}

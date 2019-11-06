@@ -46,6 +46,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.regnosys.rosetta.rosetta.RosettaClass
+import com.regnosys.rosetta.types.REnumType
 
 /**
  * This class contains custom scoping description.
@@ -269,11 +270,11 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 		defaultScope(context, reference)
 	}
 	
-	def IScope defaultScope(EObject object, EReference reference) {
+	private def IScope defaultScope(EObject object, EReference reference) {
 		filteredScope(super.getScope(object,reference), [it.EClass !== FUNCTION_DISPATCH])
 	}
 	
-	def IScope getParentScope(EObject object, EReference reference, IScope outer) {
+	private def IScope getParentScope(EObject object, EReference reference, IScope outer) {
 		if (object === null) {
 			return IScope.NULLSCOPE
 		}
@@ -289,7 +290,9 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 				if (out !== null)
 					features.add(getOutput(object))
 				features.addAll(object.shortcuts)
-				return Scopes.scopeFor(features, outer)
+				return Scopes.scopeFor(features, filteredScope(parentScope)[ descr |
+					descr.EClass == ROSETTA_ENUMERATION
+				])
 			}
 			ShortcutDeclaration: {
 				filteredScope(parentScope, [descr|
@@ -318,6 +321,8 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 				Scopes.scopeFor(receiverType.clazz.allAttributes)
 			RDataType:
 				Scopes.scopeFor(receiverType.data.allAttributes)
+			REnumType:
+				Scopes.scopeFor(receiverType.enumeration.allEnumValues)
 			RRecordType:
 				Scopes.scopeFor(receiverType.record.features)
 			RFeatureCallType:

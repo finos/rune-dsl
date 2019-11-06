@@ -112,7 +112,7 @@ class RosettaExtensions {
 			if(callable instanceof RosettaAlias) {
 				callable.expression.collectRootCalls(visitor)
 			} 
-			else if(callable instanceof RosettaClass || callable instanceof Data) {
+			else if(callable instanceof RosettaClass || callable instanceof Data|| callable instanceof RosettaEnumeration) {
 				visitor.apply(callable)
 			}
 			else {
@@ -130,6 +130,9 @@ class RosettaExtensions {
 			visitor.apply(expr)
 		}
 		else if(expr instanceof Data) {
+			visitor.apply(expr)
+		}
+		else if(expr instanceof RosettaEnumeration) {
 			visitor.apply(expr)
 		}
 		else {

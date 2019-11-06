@@ -373,7 +373,7 @@ RosettaMapTestExpression returns RosettaExpression:
 ;
 
 RosettaMapPrimaryExpression returns RosettaExpression:
-	RosettaEnumValueReference
+	EnumValueReference
 	| RosettaStringLiteral
 	| RosettaBooleanLiteral
 	| RosettaIntLiteral
@@ -402,7 +402,7 @@ RosettaRegulatoryRegime:
 ;
 
 RosettaMandate:
-	('corpus'|'mandate') (corpusType=ID)? (STRING)? RosettaNamed RosettaDefinable
+	('corpus'|'mandate') (corpusType=ID)? (STRING)? RosettaNamed RosettaDefinable // FIXME what is "(STRING)?" for?
 ;
 
 RosettaSegment:
@@ -437,7 +437,7 @@ RosettaTestExpression returns RosettaExpression:
 		| {RosettaAbsentExpression.argument=current} ('is' 'absent')
 		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaFeatureCall
 		| {RosettaCountOperation.left=current} 'count' operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaFeatureCall
-		| {RosettaWhenPresentExpression.left=current} ('when' 'present') operator=('=') right=RosettaPrimaryExpression 
+		| {RosettaWhenPresentExpression.left=current} ('when' 'present') operator=('=') right=RosettaFeatureCall 
 	)?
 ;
 
@@ -460,7 +460,6 @@ RosettaFeatureCall returns RosettaExpression:
 
 RosettaPrimaryExpression returns RosettaExpression:
 	RosettaCallableCall
-	| RosettaEnumValueReference
 	| RosettaLiteral
 	| '(' RosettaExpression ')'
 ;
@@ -472,10 +471,6 @@ RosettaCallableCall:
 RosettaConditionalExpression returns RosettaExpression:
 	RosettaExpression // Blueprint stuff
 	| {RosettaConditionalExpression} 'if' if=RosettaExpression 'then' ifthen=RosettaConditionalExpression 'else' elsethen=RosettaConditionalExpression
-;
-
-RosettaEnumValueReference:
-	enumeration=[RosettaEnumeration|ValidID] '.' value=[RosettaEnumValue|ValidID]
 ;
 
 RosettaLiteral:
@@ -687,7 +682,6 @@ RosettaCalcPrimary returns RosettaExpression:
 	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|ValidID] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' toOne ?= 'only-element'?
 	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
 	| RosettaCallableCall
-	| RosettaEnumValueReference
 	| RosettaLiteral
 	| RosettaParenthesisCalcExpression
 ;

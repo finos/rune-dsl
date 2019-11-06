@@ -263,6 +263,26 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void testTypeErrorAssignment_04() {
+		val model =
+		'''
+			namespace "test"
+			version "test"
+			
+			enum Enumerate {X,Y,Z}
+			
+			type Type:
+				other Enumerate (0..1)
+			
+			func Funcy:
+				inputs: in0 Type (0..1)
+				output: out string (0..1)
+				alias Ali : in0 -> other = Enumerate -> X
+		'''.parseRosetta
+		model.assertNoErrors
+	}
+	
+	@Test
 	def void testDuplicateAttribute() {
 		val model = '''
 			type Foo:
