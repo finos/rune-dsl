@@ -101,7 +101,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 			INDENT
 		)
 		ele.synonyms.forEach[
-			prepend(NEW_LINE_LOW_PRIO)
+			format
 		]
 		ele.annotations.forEach[
 			prepend(NEW_LINE_LOW_PRIO)
@@ -120,12 +120,21 @@ class RosettaFormatter extends AbstractFormatter2 {
 
 	def dispatch void format(Attribute ele, extension IFormattableDocument document) {
 		ele.formatDefinition(document)
+		ele.interior(INDENT)
 		ele.annotations.forEach[
-			surround(INDENT)
 			prepend(NEW_LINE_LOW_PRIO)
 			format
 		]
-		ele.synonyms.forEach[format]
+		ele.synonyms.forEach[
+			formatAttributeSynonym(document)
+		]
+	}
+	
+	/**
+	 * Use default format() when isEvent, isProduct and Enum formatting is implemented
+	 */
+	private def formatAttributeSynonym(RosettaSynonym ele,  extension IFormattableDocument document) {
+		ele.prepend(NEW_LINE_LOW_PRIO).append(NEW_LINE_LOW_PRIO)
 	}
 	
 	def dispatch void format(Condition ele, extension IFormattableDocument document) {
@@ -296,14 +305,14 @@ class RosettaFormatter extends AbstractFormatter2 {
 		rosettaRegulatoryReference.prepend[newLine].surround[indent]
 	}
 
-	def dispatch void format(RosettaClassSynonym rosettaClassSynonym, extension IFormattableDocument document) {
-		singleIndentedLine(rosettaClassSynonym, document)
+	def dispatch void format(RosettaClassSynonym ele, extension IFormattableDocument document) {
+		ele.prepend(NEW_LINE_LOW_PRIO).append(NEW_LINE_LOW_PRIO)
 	}
-
+	
 	def dispatch void format(RosettaSynonym rosettaSynonym, extension IFormattableDocument document) {
 		singleIndentedLine(rosettaSynonym, document)
 	}
-
+	
 	def dispatch void format(RosettaEnumeration ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword(rosettaEnumerationAccess.enumKeyword_0).prepend(NEW_ROOT_ELEMENT)
 		indentedBraces(ele, document)
@@ -433,7 +442,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 		}
 	}
 
-	def void singleIndentedLine(EObject eObject, extension IFormattableDocument document) {
+	private def void singleIndentedLine(EObject eObject, extension IFormattableDocument document) {
 		eObject.prepend(NEW_LINE_LOW_PRIO).append(NEW_LINE_LOW_PRIO).surround[indent]
 	}
 

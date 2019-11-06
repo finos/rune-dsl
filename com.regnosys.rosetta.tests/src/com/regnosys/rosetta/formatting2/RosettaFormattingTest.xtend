@@ -66,6 +66,7 @@ class RosettaFormattingTest {
 			
 			type CalculationPeriod: <"xxx xxx.">
 				[synonym FpML value CalculationPeriod]
+				// sinleline comment
 				field1 string (1..1) <"Some Field">
 					[synonym FpML value CalculationPeriod]
 			
@@ -75,6 +76,7 @@ class RosettaFormattingTest {
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			type CalculationPeriod : <"xxx xxx."> [synonym FpML value CalculationPeriod]
+					// sinleline comment
 								field1 string (1..1) <"Some Field">[synonym FpML value CalculationPeriod]
 				
 		'''
@@ -84,35 +86,16 @@ class RosettaFormattingTest {
 
 	@Test
 	def void conditionOnType() {
-		val expectedResult = '''
-			namespace "com.regnosys.rosetta.model"
-			version "test"
-			
-			type CalculationPeriod: <"xxx xxx.">
-				[metadata scheme]
-				[synonym FpML value CalculationPeriod]
-				field3 string (1..1) <"Some Field">
-					[metadata scheme]
-					[synonym FpML value CalculationPeriod]
-				field1 string (1..1) <"Some Field">
-					[synonym FpML value CalculationPeriod]
-				condition: one-of
-				condition Foo: field1
-				condition Foo12: optional choice field1, field3
-				condition Foo2:
-					optional choice field1, field3
-				condition Foo4:
-					required choice field1, field3
-				condition:
-					one-of
 		'''
-
-		val unFormatted = '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			type CalculationPeriod : <"xxx xxx.">  [  metadata   scheme  ] [synonym FpML value CalculationPeriod]
-						field3 string (1..1) <"Some Field">  [  metadata   scheme  ][synonym FpML value CalculationPeriod] 					field1 string (1..1) <"Some Field">[synonym FpML value CalculationPeriod] condition: one-of condition Foo: field1 
+								// sinleline comment
+						field3 string (1..1) <"Some Field">  [  metadata   scheme  ]
+						// sinleline comment
+						[synonym FpML value CalculationPeriod] 					field1 string (1..1) <"Some Field">[synonym FpML value CalculationPeriod] condition: one-of condition Foo: field1 
 			condition Foo12: 	optional 		choice field1 , field3 
+			// sinleline comment
 						condition Foo2: 
 			optional 
 			choice field1 , field3  condition Foo4:
@@ -120,17 +103,39 @@ class RosettaFormattingTest {
 			choice field1 , field3
 				condition:	 
 				one-of
+		''' -> '''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			
+			type CalculationPeriod: <"xxx xxx.">
+				[metadata scheme]
+				[synonym FpML value CalculationPeriod]
+				// sinleline comment
+				field3 string (1..1) <"Some Field">
+					[metadata scheme]
+					// sinleline comment
+					[synonym FpML value CalculationPeriod]
+				field1 string (1..1) <"Some Field">
+					[synonym FpML value CalculationPeriod]
+				condition: one-of
+				condition Foo: field1
+				condition Foo12: optional choice field1, field3
+			// sinleline comment
+				condition Foo2:
+					optional choice field1, field3
+				condition Foo4:
+					required choice field1, field3
+				condition:
+					one-of
 		'''
-
-		assertEquals(expectedResult, format(unFormatted))
 	}
-	
+
 	@Test
 	def void conditionOnFunc() {
 		'''
 			namespace "test"
 			version "test"
-			type Type: foo string (1..1) func Execute2:[ metadata  scheme ] inputs:		product string (1..1) <"">		quantity string (1..1) 	output:
+			type Type: foo string (1..1) func Execute2:[ metadata  scheme ] inputs:		product string (1..1) <"">[synonym FpML value CalculationPeriod] 		quantity string (1..1) 	output:
 					execution Type (1..1) <""> condition Foo: product assign-output execution -> foo:
 					"sdf"assign-output execution:
 					execution	
@@ -138,8 +143,7 @@ class RosettaFormattingTest {
 			execution
 			post-condition:
 			execution -> foo is absent
-		'''-> 
-		'''
+		''' -> '''
 			namespace "test"
 			version "test"
 			
@@ -150,6 +154,7 @@ class RosettaFormattingTest {
 				[metadata scheme]
 				inputs:
 					product string (1..1) <"">
+						[synonym FpML value CalculationPeriod]
 					quantity string (1..1)
 				output:
 					execution Type (1..1) <"">
@@ -162,7 +167,7 @@ class RosettaFormattingTest {
 					execution
 				post-condition:
 					execution -> foo is absent
-		''' 
+		'''
 	}
 
 	@Test
@@ -201,35 +206,33 @@ class RosettaFormattingTest {
 
 	@Test
 	def void formatDayOfWeekEnum() {
-		'''namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum <"A day of the seven-day week."> [synonym FpML value DayOfWeekEnum]{MON <"Monday">[synonym FpML value "MON"],TUE <"Tuesday">[synonym FpML value "TUE"],WED <"Wednesday">[synonym FpML value "WED"],THU <"Thursday">[synonym FpML value "THU"],FRI <"Friday">[synonym FpML value "FRI"],SAT <"Saturday">[synonym FpML value "SAT"],SUN <"Sunday">[synonym FpML value "SUN"]}'''
-		
-		->
-		'''
-			namespace "com.regnosys.rosetta.model"
-			version "test"
-			
-			enum DayOfWeekEnum <"A day of the seven-day week.">
-				[synonym FpML value DayOfWeekEnum]
-			{
-				MON <"Monday">
-					[synonym FpML value "MON"],
-				TUE <"Tuesday">
-					[synonym FpML value "TUE"],
-				WED <"Wednesday">
-					[synonym FpML value "WED"],
-				THU <"Thursday">
-					[synonym FpML value "THU"],
-				FRI <"Friday">
-					[synonym FpML value "FRI"],
-				SAT <"Saturday">
-					[synonym FpML value "SAT"],
-				SUN <"Sunday">
-					[synonym FpML value "SUN"]
-			}
-			
-		'''
+		'''namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum <"A day of the seven-day week."> [synonym FpML value DayOfWeekEnum]{MON <"Monday">[synonym FpML value "MON"],TUE <"Tuesday">[synonym FpML value "TUE"],WED <"Wednesday">[synonym FpML value "WED"],THU <"Thursday">[synonym FpML value "THU"],FRI <"Friday">[synonym FpML value "FRI"],SAT <"Saturday">[synonym FpML value "SAT"],SUN <"Sunday">[synonym FpML value "SUN"]}''' ->
+			'''
+				namespace "com.regnosys.rosetta.model"
+				version "test"
+				
+				enum DayOfWeekEnum <"A day of the seven-day week.">
+					[synonym FpML value DayOfWeekEnum]
+				{
+					MON <"Monday">
+						[synonym FpML value "MON"],
+					TUE <"Tuesday">
+						[synonym FpML value "TUE"],
+					WED <"Wednesday">
+						[synonym FpML value "WED"],
+					THU <"Thursday">
+						[synonym FpML value "THU"],
+					FRI <"Friday">
+						[synonym FpML value "FRI"],
+					SAT <"Saturday">
+						[synonym FpML value "SAT"],
+					SUN <"Sunday">
+						[synonym FpML value "SUN"]
+				}
+				
+			'''
 	}
-	
+
 	@Test
 	def void formatSpreadScheduleTypeEnum() {
 		val expectedResult = '''
@@ -259,7 +262,7 @@ class RosettaFormattingTest {
 		'''
 		assertEquals(expectedResult, format(unFormatted))
 	}
-	
+
 	@Test
 	def void formatDataRule() {
 		val expectedResult = '''
@@ -291,7 +294,6 @@ class RosettaFormattingTest {
 		'''
 		assertEquals(expectedResult, format(unFormatted))
 	}
-
 
 	@Test
 	def void formatExternalSynomym() {
@@ -342,7 +344,7 @@ class RosettaFormattingTest {
 		'''
 		assertEquals(expectedResult, format(unFormatted))
 	}
-	
+
 	@Test
 	def void formatAttributeSynomym() {
 		'''
@@ -385,7 +387,7 @@ class RosettaFormattingTest {
 					one-of
 		'''
 	}
-	
+
 	@Test
 	def void formatIsEvent() {
 		'''
@@ -399,7 +401,7 @@ class RosettaFormattingTest {
 			Type -> other -> other only exists
 					and Type -> other -> other is absent
 			 and Type -> other -> other  is absent
-					and Type -> other -> other is absent
+			 	and Type -> other -> other is absent
 		''' -> '''
 			namespace "test"
 			version "test"
@@ -414,7 +416,7 @@ class RosettaFormattingTest {
 				and Type -> other -> other is absent
 		'''
 	}
-	
+
 	@Test
 	def void formatIsProduct() {
 		'''
@@ -427,8 +429,8 @@ class RosettaFormattingTest {
 			Type -> other -> other only exists
 					and Type -> other -> other is absent
 			 and Type -> other -> other  is absent
-					and Type -> other -> other is absent
-			''' -> '''
+			 	and Type -> other -> other is absent
+		''' -> '''
 			namespace "test"
 			version "test"
 			
@@ -441,11 +443,12 @@ class RosettaFormattingTest {
 				and Type -> other -> other is absent
 		'''
 	}
-	
+
 	def String format(String unFormatted) {
 		unFormatted.parse.serialize(SaveOptions.newBuilder.format().getOptions())
 	}
-	def ->(CharSequence unformated, CharSequence expectation){
-			assertEquals(expectation.toString, format(unformated.toString))
+
+	def ->(CharSequence unformated, CharSequence expectation) {
+		assertEquals(expectation.toString, format(unformated.toString))
 	}
 }
