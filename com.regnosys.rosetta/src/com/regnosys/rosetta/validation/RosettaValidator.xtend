@@ -543,17 +543,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
-	def checkAttribute(Attribute ele) {
-		if (ele.type instanceof Data && !ele.type.eIsProxy) {
-			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(ele.type as Annotated) || (ele.type as Data).allSuperTypes.exists[hasKeyedAnnotation])) {
-				//TODO turn to error if it's okay
-				warning('''«ele.type.name» must be annotated with [metadata key] as reference annotation is used''',
-					ROSETTA_TYPED__TYPE)
-			}
-		}
-	}
-	
-	@Check
 	def checkDispatch(Function ele) {
 		if (ele instanceof FunctionDispatch)
 			return
