@@ -101,7 +101,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 				attr boolean (1..1)
 				[synonym FpML set to T<|>]
 			}
-		'''  >= #["True", "->"]
+		'''  >= #["True"]
 	}
 
 	@Test
@@ -161,7 +161,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 				assign-output attrOut -> action:
 					<|>
 			
-		''' >= #['ActionEnum.cancel', 'ActionEnum.correct', 'ActionEnum.new', 'attrIn', 'attrOut', 'test','"Value"', "(", "<", "[", "empty", "False","if", "True"]
+		''' >= #['ActionEnum -> cancel', 'ActionEnum -> correct', 'ActionEnum -> new', 'attrIn', 'attrOut', 'test','"Value"', "(", "<", "[", "empty", "False","if", "True"]
 	}
 
 	@Test

@@ -88,6 +88,8 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 				val proposal = proposalFactory.apply(
 						EObjectDescription.create(qNames.getFullyQualifiedName(enumValue), enumValue))
 				if(proposal instanceof ConfigurableCompletionProposal) {
+					val separator = (grammar.FEATURE_CALL_SEPARATORRule.alternatives as Keyword).value
+					proposal.replacementString = '''«enumValue.enumeration.name» «separator» «enumValue.name»'''
 					proposal.priority = proposal.priority + 5
 				}
 				acceptor.accept(proposal)
@@ -127,5 +129,4 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 		}
 	}
 
-	
 }
