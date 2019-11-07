@@ -41,11 +41,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testLowerCaseEnumeration() {
 		val model =
 		'''
-			enum quoteRejectReasonEnum <"">
-				{
-					UnknownSymbol,
-					Other
-				}
+			enum quoteRejectReasonEnum: <"">
+				UnknownSymbol
+				Other
 		'''.parseRosettaWithNoErrors
 		model.assertWarning(ROSETTA_ENUMERATION, INVALID_CASE,
             "Enumeration name should start with a capital")
@@ -269,7 +267,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			namespace "test"
 			version "test"
 			
-			enum Enumerate {X,Y,Z}
+			enum Enumerate : X Y Z
 			
 			type Type:
 				other Enumerate (0..1)
@@ -297,9 +295,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testDuplicateEnumLiteral() {
 		val model = '''
-			enum Foo {
-				BAR, BAZ, BAR
-			}
+			enum Foo:
+				BAR BAZ BAR
 		'''.parseRosetta
 		model.assertError(ROSETTA_ENUM_VALUE, DUPLICATE_ENUM_VALUE, 'Duplicate enum value')
 	}
@@ -311,9 +308,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Foo:
 			
-			enum Foo {
-				BAR
-			}
+			enum Foo: BAR
 		'''.parseRosetta
 		model.assertError(ROSETTA_TYPE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
 	}
@@ -337,9 +332,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			class Foo {
 			}
 			
-			enum Bar {
+			enum Bar: 
 				Entry
-			}
 			
 			data rule Bar
 				when Foo exists
@@ -364,9 +358,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testDuplicateWorkflowRule_EnumName() {
 		val model = '''
-			enum Foo {
-				Entry
-			}
+			enum Foo: Entry
 			
 			type Bar:
 			
@@ -480,13 +472,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def checkMappingSetToEnumTypeCheck() {
 		val model = '''
-			enum Foo {
-				ONE;
-			}
+			enum Foo: ONE
 			
-			enum Bar {
-				BAR;
-			}
+			
+			enum Bar: BAR
 			
 			type Quote:
 				attr Foo (1..1)

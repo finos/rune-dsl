@@ -150,15 +150,12 @@ class RosettaStereotypeValue extends RosettaRootElement, RosettaNamed {
 class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable {
 	refers RosettaEnumeration superType
 	contains RosettaSynonym[] synonyms
-	contains RosettaRegulatoryReference[] references
 	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
 class RosettaEnumValue extends RosettaNamed, RosettaDefinable , RosettaFeature {
 	String display
-	contains RosettaEnumStyle style
 	contains RosettaEnumSynonym[] enumSynonyms
-	contains RosettaRegulatoryReference[] references
 	container RosettaEnumeration enumeration opposite enumValues
 	
 	refers RosettaType ^type get {
@@ -186,10 +183,6 @@ class RosettaCardinality {
 		inf == 0 && sup == 0
 	}
 }
-
-class RosettaEnumStyle extends RosettaRootElement, RosettaNamed {
-}
-
 
 
 /**********************************************************************

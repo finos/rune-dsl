@@ -578,7 +578,7 @@ class RosettaObjectGeneratorTest {
 	@Test
 	def void isProductWithEnumValueRef() {
 		val code = '''
-			enum Enum {A,B}
+			enum Enum: A B
 			type Foo:
 				attr Enum (0..1)
 			

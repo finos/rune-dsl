@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.rosetta.simple.Data
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -25,10 +26,10 @@ class RosettaExtensionsTest {
 	@Test
 	def testSuperClasses() {
 		val classes = '''
-			class Foo extends Bar {}
-			class Bar extends Baz {}
-			class Baz {}
-		'''.parse.elements.filter(RosettaClass)
+			type Foo extends Bar:
+			type Bar extends Baz:
+			type Baz:
+		'''.parse.elements.filter(Data)
 		assertEquals(classes.toSet, classes.head.allSuperTypes)
 		assertEquals(classes.tail.toSet, classes.get(1).allSuperTypes)
 		assertEquals(#{classes.last}, classes.get(2).allSuperTypes)
@@ -37,10 +38,10 @@ class RosettaExtensionsTest {
 	@Test
 	def testSuperClassesWithCycle() {
 		val classes = '''
-			class Foo extends Bar {}
-			class Bar extends Baz {}
-			class Baz extends Foo {}
-		'''.parse.elements.filter(RosettaClass)
+			type Foo extends Bar:
+			type Bar extends Baz:
+			type Baz extends Foo:
+		'''.parse.elements.filter(Data)
 		assertEquals(classes.toSet, classes.head.allSuperTypes)
 		assertEquals(classes.toSet, classes.get(1).allSuperTypes)
 		assertEquals(classes.toSet, classes.get(2).allSuperTypes)
@@ -49,15 +50,13 @@ class RosettaExtensionsTest {
 	@Test 
 	def testEnumValue() {
 		val model = '''
-			enum Foo {
-				foo0, foo1
-			}
-			enum Bar extends Foo {
+			enum Foo:
+				foo0 foo1
+			
+			enum Bar extends Foo:
 				bar
-			}
-			enum Baz extends Bar {
+			enum Baz extends Bar:
 				baz
-			}
 		'''.parse
 		val foo = model.elements.filter(RosettaEnumeration).head()
 		val bar = model.elements.filter(RosettaEnumeration).get(1)
@@ -73,15 +72,11 @@ class RosettaExtensionsTest {
 	@Test
 	def testRootCallsCollector() {
 		val model = '''
-			class Foo
-			{
-				attr string (1..1);
-			}
+			type Foo:
+				attr string (1..1)
 			
-			class Bar
-			{
-				attr2 string (1..1);
-			}
+			type Bar:
+				attr2 string (1..1)
 			
 			alias alias1 Bar -> attr2
 			

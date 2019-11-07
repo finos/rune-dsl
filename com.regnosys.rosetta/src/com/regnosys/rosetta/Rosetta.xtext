@@ -49,6 +49,12 @@ Attribute:
 	RosettaNamed RosettaTyped card=RosettaCardinality Definable? (Annotations|Synonyms)*
 ;
 
+Enumeration returns RosettaEnumeration:
+	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|ValidID])? ':' RosettaDefinable
+		(synonyms += RosettaSynonym)*
+		enumValues += RosettaEnumValue*
+;
+
 Function:
 	'func' 
 	(
@@ -117,11 +123,11 @@ ListLiteral:
 
 // old stuff
 RosettaRootElement:
-	RosettaClass | RosettaEnumeration |
+	RosettaClass | Enumeration |
 	RosettaDataRule | RosettaWorkflowRule | RosettaChoiceRule | 
 	RosettaAlias | RosettaProduct |
 	RosettaOrganisation | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | RosettaStereotypeValue |
-	RosettaEvent | RosettaEnumStyle |
+	RosettaEvent |
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaBlueprint | RosettaQualifiedType | RosettaCalculationType  | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaBlueprintReport
@@ -146,7 +152,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'version' | 'condition' | 'key' | 'value')
+	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'version' | 'condition' | 'key' | 'value')
 ;
 
 ValidHint: 
@@ -237,30 +243,18 @@ RosettaStereotypeValue:
 
 RosettaRegularAttribute:
 	RosettaNamed RosettaTyped card=RosettaCardinality (metaTypes += [RosettaMetaType])? (',' metaTypes += [RosettaMetaType])* RosettaDefinable ';'?
-		(synonyms += RosettaSynonym)*
-		(references += RosettaRegulatoryReference)*
-		(marketPractice += RosettaMarketPractice)*
-;
-
-RosettaEnumeration:
-	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|ValidID])? RosettaDefinable 
-		(synonyms += RosettaSynonym)*
-		(references += RosettaRegulatoryReference)*
-	'{' (enumValues += RosettaEnumValue',')* enumValues += RosettaEnumValue '}'
+	(synonyms += RosettaSynonym)*
+	(references += RosettaRegulatoryReference)*
+	(marketPractice += RosettaMarketPractice)*
 ;
 
 RosettaEnumValue:
-	RosettaNamed ('displayName' display=STRING)? (style=RosettaEnumStyle)? RosettaDefinable
-		(enumSynonyms += RosettaEnumSynonym)*
-		(references += RosettaRegulatoryReference)*
+	RosettaNamed ('displayName' display=STRING)? RosettaDefinable
+	(enumSynonyms += RosettaEnumSynonym)*
 ;
 
 RosettaCardinality:
 	'(' (inf=INT'..' sup=INT | inf=INT'..' unbounded?='*') ')'
-;
-
-RosettaEnumStyle:
-	'style' RosettaNamed
 ;
 
 
@@ -505,7 +499,9 @@ BigDecimal:
 Integer:
 	'-'? INT
 ;
-
+/*
+ * = '->'
+ */
 terminal FEATURE_CALL_SEPARATOR:
 	'->'
 ;

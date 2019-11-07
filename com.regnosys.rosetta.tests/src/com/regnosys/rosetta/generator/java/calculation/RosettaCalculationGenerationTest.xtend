@@ -25,9 +25,7 @@ class RosettaCalculationGenerationTest {
 				periodEnum PeriodEnum (1..1)
 				period number (1..1)
 			
-			enum PeriodEnum {
-				MONTH
-			}
+			enum PeriodEnum:MONTH
 			
 			func DayFraction :
 				inputs: in2 Period( 1..1 )
@@ -602,11 +600,9 @@ class RosettaCalculationGenerationTest {
 				output: out string (1..1)
 			
 			
-			enum Math
-			{
-				INCR,
+			enum Math:
+				INCR
 				DECR
-			}
 			
 			func MathFunc:
 				inputs:

@@ -22,22 +22,17 @@ class ExternalHashcodeGeneratorTest {
 	@Test
 	def void shouldGenerateExternalHashMethod() {
 		val code = '''
-			enum Enum {
-				one
-			}
+			enum Enum: one
 			
-			class RosettaType {
-			}
+			type RosettaType:
 			
-			class PlainOldRosettaObject {
-				basicType string (1..1);
-				basicTypeList string (1..*);
-				rosettaObject RosettaType (1..1);
-				rosettaObjectList RosettaType (1..*);
-				enumeration Enum (1..1);
-				enumerationList Enum (1..*);
-				
-			}
+			type PlainOldRosettaObject:
+				attr string (1..1)
+				basicTypeList string (1..*)
+				rosettaObject RosettaType (1..1)
+				rosettaObjectList RosettaType (1..*)
+				enumeration Enum (1..1)
+				enumerationList Enum (1..*)
 		'''.generateCode
 		//code.writeClasses("shouldGenerateExternalHashMethod")		
 		val classess = code.compileToClasses
@@ -49,28 +44,26 @@ class ExternalHashcodeGeneratorTest {
 	@Test
 	def void shouldHandleSuperClass() {
 		'''
-			class Super {
-			}
+			type Super :
 			
-			class Sub extends Super {
-				basicType string (1..1);
-			}
+			type Sub extends Super:
+				attr string (1..1)
 		'''.generateCode.compileToClasses
 	}
 	
 	@Test
 	def void shouldHandleEmptyClass() {
 		'''
-			class Empty {}
+			type Empty:
 		'''.generateCode.compileToClasses
 	}
 	
 	@Test
 	def void shouldHandleRosettaKeys() {
 		val code = '''
-			class WithRosettaKey key {
-				foo string (1..1);
-			}
+			type WithRosettaKey:
+				[metadata key]
+				foo string (1..1)
 		'''.generateCode
 		code.writeClasses("ShouldHandleRosettaKeys")		
 		code.compileToClasses
@@ -79,9 +72,7 @@ class ExternalHashcodeGeneratorTest {
 	@Test
 	def void shouldNotGenerateForEnums() {
 		val code = '''
-			enum Enum {
-				foo
-			}
+			enum Enum: foo
 		'''.generateCode
 		
 		code.compileToClasses
