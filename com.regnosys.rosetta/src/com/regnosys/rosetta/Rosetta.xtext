@@ -102,7 +102,7 @@ Operation:
 ;
 
 Segment:
-	'->' attribute = [RosettaFeature|ValidID] ('['index = INT']')?(next = Segment)?;
+	'->' attribute = [Attribute|ValidID] ('['index = INT']')?(next = Segment)?;
 
 EnumValueReference returns RosettaEnumValueReference:
 	enumeration=[RosettaEnumeration|ValidID] '->' value=[RosettaEnumValue|ValidID]
@@ -172,7 +172,7 @@ RosettaRecordType:
 	'}'
 ;
 
-RosettaRecordFeature returns RosettaFeature: 
+RosettaRecordFeature returns RosettaTypedFeature:
 	RosettaNamed type=[RosettaBuiltinType|ValidID]
 ;
 
@@ -190,7 +190,7 @@ RosettaQualifiedType:
 	'}'
 ;
 
-RosettaQualifiedTypeFeature returns RosettaFeature: 
+RosettaQualifiedTypeFeature returns RosettaTypedFeature: 
 	RosettaNamed type=[RosettaBuiltinType|ValidID]
 ;
 
@@ -200,7 +200,7 @@ RosettaCalculationType:
 	'}'
 ;
 
-RosettaCalculationTypeFeature returns RosettaFeature: 
+RosettaCalculationTypeFeature returns RosettaTypedFeature: 
 	RosettaNamed type=[RosettaBuiltinType|ValidID]
 ;
 
@@ -451,7 +451,7 @@ RosettaGroupByFeatureCall returns RosettaExpression:
 
 RosettaGroupByExpression:
 	// TODO change to Attribute after migration
-	attribute = [RosettaFeature|ValidID] ('->' right = RosettaGroupByExpression)?
+	attribute = [RosettaTypedFeature|ValidID] ('->' right = RosettaGroupByExpression)?
 ;
 
 RosettaFeatureCall returns RosettaExpression:
@@ -530,7 +530,7 @@ RosettaWorkflowRule:
 	('when' when = RosettaExpression)?
 	root = RosettaTreeNode
 	('and' data = RosettaExpression)?
-	('commonId' ( commonIdentifier = [RosettaFeature|ValidID] | 'path' commonIdPath = RosettaClassAttributeCall ) )?
+	('commonId' ( commonIdentifier = [RosettaTypedFeature|ValidID] | 'path' commonIdPath = RosettaClassAttributeCall ) )?
 ;
 
 RosettaTreeNode:

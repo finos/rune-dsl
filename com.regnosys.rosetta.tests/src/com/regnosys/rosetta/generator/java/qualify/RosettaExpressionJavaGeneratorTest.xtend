@@ -225,6 +225,29 @@ class RosettaExpressionJavaGeneratorTest {
 			is('areEqual(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2)).or(areEqual(MapperS.of(foo).<Foo>map("getAttr3", Foo::getAttr3), MapperS.of(foo).<Foo>map("getAttr4", Foo::getAttr4)))'))
 	}
 	
+	@Test
+	def void shouldGenerateEnumValueRef() {
+		val mockClass = createRosettaClass("Foo")
+		
+		val featureCall1 = createFeatureCall(mockClass, "attr1")
+		val featureCall2 = createFeatureCall(mockClass, "attr2")
+		
+		val lhsEqualsOp = createBinaryOperation("=", featureCall1, featureCall2)
+		
+		val featureCall3 = createFeatureCall(mockClass, "attr3")
+		val featureCall4 = createFeatureCall(mockClass, "attr4")
+		
+		val rhsEqualsOp = createBinaryOperation("=", featureCall3, featureCall4)
+		
+		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp)
+		
+		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
+		
+		assertNotNull(generatedFunction)
+		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
+			is('areEqual(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2)).or(areEqual(MapperS.of(foo).<Foo>map("getAttr3", Foo::getAttr3), MapperS.of(foo).<Foo>map("getAttr4", Foo::getAttr4)))'))
+	}
+	
 	private def String formatGeneratedFunction(StringConcatenationClient generatedFunction) {
 		val isc = new ImportingStringConcatination()
 		isc.append(generatedFunction)
@@ -268,7 +291,7 @@ class RosettaExpressionJavaGeneratorTest {
 		when(mockFeatureCall.receiver).thenReturn(mockCallableCall)
 		return mockFeatureCall
 	}
-	
+
 	private def RosettaIntLiteral createIntLiteral(int value) {
 		val mockIntLiteral = mock(RosettaIntLiteral)
 		when(mockIntLiteral.value).thenReturn(String.valueOf(value))

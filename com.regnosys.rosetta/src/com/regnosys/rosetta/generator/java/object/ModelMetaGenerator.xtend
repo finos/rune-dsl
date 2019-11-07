@@ -181,12 +181,6 @@ class ModelMetaGenerator {
 		'''
 	}
 
-	def isField(RosettaExpression expression) {
-		if(expression === null) return false
-		val feat = expression as RosettaFeatureCall
-		!((feat.feature.type instanceof RosettaClass || feat.feature.type instanceof Data))
-	}
-
 	def isList(RosettaExpression call) {
 		switch (call) {
 			RosettaCallableCall:
@@ -212,17 +206,6 @@ class ModelMetaGenerator {
 		switch (expr) {
 			RosettaFeatureCall:
 				getOutStartClass(expr.receiver)
-			RosettaCallableCall: {
-				val callable = expr.callable as RosettaClass;
-				return callable.name
-			}
-		}
-	}
-
-	def CharSequence getOutEndClass(RosettaExpression expr) {
-		switch (expr) {
-			RosettaFeatureCall:
-				expr.feature.type.name
 			RosettaCallableCall: {
 				val callable = expr.callable as RosettaClass;
 				return callable.name

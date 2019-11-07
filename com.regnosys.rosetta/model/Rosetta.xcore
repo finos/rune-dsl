@@ -32,26 +32,29 @@ abstract class RosettaNamed {
 	String name
 }
 
-abstract class RosettaTyped {
+interface RosettaTyped {
 	refers RosettaType ^type
+		
+	derived boolean isTypeInferred get {
+		return ^type === null
+	}
 }
 
 abstract class WithCardinality {
 	contains RosettaCardinality card
 }
 
-class RosettaFeature extends RosettaNamed, RosettaTyped, WithCardinality {
+class RosettaFeature extends RosettaNamed {
 	/**
 	 * @return The name or 'value' if it's <code>null</code>
 	 */
 	derived String getNameOrDefault get {
 		return name ?: 'value'
 	}
-	
-	derived boolean isTypeInferred get {
-		return ^type === null
-	}
+
 }
+
+class RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
 
 abstract class RosettaCallable extends RosettaNamed {}
 
@@ -63,7 +66,7 @@ interface RosettaRootElement {
 }
 
 abstract class RosettaFeatureOwner extends RosettaDefinable {
-	contains RosettaFeature[] features
+	contains RosettaTypedFeature[] features
 }
 
 abstract class RosettaType extends RosettaNamed {
@@ -91,7 +94,7 @@ class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaC
 	contains RosettaParameter[] parameters
 }
 
-class RosettaParameter extends RosettaFeature {
+class RosettaParameter extends RosettaTypedFeature {
 	boolean isArray
 }
 
@@ -125,16 +128,13 @@ class RosettaClass extends RosettaRootElement, RosettaFeatureOwner, RosettaType,
 	}
 }
 
-class RosettaMetaType extends RosettaRootElement, RosettaFeature  {
+class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature {
 	
 }
 
-abstract class RosettaAttributeBase extends RosettaFeature, RosettaDefinable  {
+class RosettaRegularAttribute extends RosettaTypedFeature, RosettaDefinable, WithCardinality {
 	contains RosettaRegulatoryReference[] references
 	contains RosettaMarketPractice[] marketPractice
-}
-
-class RosettaRegularAttribute extends RosettaAttributeBase {
 	contains RosettaSynonym[] synonyms
 	refers RosettaMetaType[] metaTypes
 }
@@ -151,14 +151,19 @@ class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinab
 	refers RosettaEnumeration superType
 	contains RosettaSynonym[] synonyms
 	contains RosettaRegulatoryReference[] references
-	contains RosettaEnumValue[] enumValues
+	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
-class RosettaEnumValue extends RosettaNamed, RosettaDefinable, RosettaFeature {
+class RosettaEnumValue extends RosettaNamed, RosettaDefinable , RosettaFeature {
 	String display
 	contains RosettaEnumStyle style
 	contains RosettaEnumSynonym[] enumSynonyms
 	contains RosettaRegulatoryReference[] references
+	container RosettaEnumeration enumeration opposite enumValues
+	
+	refers RosettaType ^type get {
+		return enumeration
+	}
 }
 
 class RosettaCardinality {
@@ -364,7 +369,7 @@ class RosettaWorkflowRule extends RosettaRootElement, RosettaNamed, RosettaDefin
 	contains RosettaExpression when
 	contains RosettaTreeNode root
 	contains RosettaExpression data
-	refers RosettaFeature commonIdentifier
+	refers RosettaTypedFeature commonIdentifier
 	contains RosettaExpression commonIdPath
 }
 
@@ -515,7 +520,7 @@ class RosettaGroupByFeatureCall extends RosettaExpression {
 }
 
 class RosettaGroupByExpression {
-	refers RosettaFeature attribute
+	refers RosettaTypedFeature attribute
 	contains RosettaGroupByExpression right
 }
 

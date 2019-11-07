@@ -574,7 +574,22 @@ class RosettaObjectGeneratorTest {
 
 		assertThat(subclassInstance3.invoke("getAttr"), is('blah'))
 	}
+	
+	@Test
+	def void isProductWithEnumValueRef() {
+		val code = '''
+			enum Enum {A,B}
+			type Foo:
+				attr Enum (0..1)
+			
+			isProduct FooProd
+				Foo -> attr = Enum -> A
+		'''.generateCode
 
+		code.compileToClasses
+
+	}
+	
 	@Disabled @Test
 	def void shouldNotCopyCertainFieldsIntoBuilder() {
 		val code = '''

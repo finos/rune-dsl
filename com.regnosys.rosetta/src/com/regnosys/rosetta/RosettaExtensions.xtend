@@ -169,9 +169,12 @@ class RosettaExtensions {
 		else if(expr instanceof RosettaGroupByFeatureCall) {
 			expr.call.collectLeafTypes(visitor)
 		}
+		else if(expr instanceof RosettaTyped) {
+			visitor.apply(expr.type)
+		}
 		else if(expr instanceof RosettaFeatureCall) {
-			// go down to get the feature type
-			visitor.apply(expr.feature.type)
+			if (expr.feature instanceof RosettaTyped)
+				visitor.apply((expr.feature as RosettaTyped).type)
 		}
 		else if(expr instanceof RosettaExistsExpression) {
 			expr.argument.collectLeafTypes(visitor)
@@ -185,9 +188,6 @@ class RosettaExtensions {
 		}
 		else if(expr instanceof RosettaEnumValueReference) {
 			visitor.apply(expr.enumeration)
-		}
-		else if(expr instanceof RosettaTyped) {
-			visitor.apply(expr.type)
 		}
 		else {
 			throw new IllegalArgumentException("Failed to collect leaf type: " + expr)

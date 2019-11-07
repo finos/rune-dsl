@@ -104,6 +104,24 @@ class RosettaTypeProviderTest {
 
 		assertEquals('Can not compute type for A because of recursive call.', rule.RType.name)
 	}
+	
+	@Test
+	def void testEnumCompatibility() {
+		'''
+			namespace "test"
+			version "test"
+			
+			enum Enumerate {X,Y,Z}
+			enum EnumerateExtended extends Enumerate { A, B, C}
+			
+			type Prodtype:
+				attr Enumerate (0..1)
+				attrEx EnumerateExtended (0..1)
+			
+			isProduct Prod 
+				Prodtype -> attrEx = Enumerate -> X
+		'''.parseRosettaWithNoErrors
+	}
 
 	@Test
 	def testBinaryExpressionCommonType() {

@@ -43,6 +43,8 @@ import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
+import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 
 class RosettaTypeProvider {
 
@@ -107,11 +109,20 @@ class RosettaTypeProvider {
 				expression.call.safeRType(cycleTracker).wrapInFeatureCallType(expression)
 			}
 			RosettaFeatureCall: {
-				if (expression.feature.isTypeInferred) {
-					expression.feature.safeRType(cycleTracker).wrapInFeatureCallType(expression)
-				} else {
-					val type = expression.feature?.type
-					type.safeRType(cycleTracker).wrapInFeatureCallType(expression)
+				val feature = expression.feature
+				switch (feature) {
+					RosettaTypedFeature: {
+						if (feature.isTypeInferred) {
+							feature.safeRType(cycleTracker).wrapInFeatureCallType(expression)
+						} else {
+							val type = feature?.type
+							type.safeRType(cycleTracker).wrapInFeatureCallType(expression)
+						}
+					}
+					RosettaEnumValue:
+						feature.type.safeRType(cycleTracker)
+					default:
+						RBuiltinType.MISSING
 				}
 			}
 			RosettaRecordType:
@@ -125,7 +136,7 @@ class RosettaTypeProvider {
 			RosettaBinaryOperation: {
 				// Synonym path expressions refer to external documents so type checking is not possible
 				if (expression.left instanceof RosettaMapPathValue) {
-					return null
+					return RBuiltinType.ANY
 				}
 				val left = expression.left
 				var leftType = left.safeRType(cycleTracker)
@@ -181,7 +192,7 @@ class RosettaTypeProvider {
 			}
 			RosettaEnumValue:
 				expression.eContainer.safeRType(cycleTracker)
-			RosettaFeature:
+			RosettaTyped:
 				expression.type.safeRType(cycleTracker)
 			RosettaCalculationType:
 				switch expression.name {
