@@ -30,8 +30,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''
 			type partyIdentifier: <"">
 				partyId string (1..1) <"">
-					[synonym FIX value PartyID tag 448]
-					[synonym FpML value partyId]
+					[synonym FIX value "PartyID" tag 448]
+					[synonym FpML value "partyId"]
 		'''.parseRosettaWithNoErrors
 		model.assertWarning(DATA, INVALID_CASE,
             "Type name should start with a capital")
@@ -57,8 +57,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''
 			type PartyIdentifier: <"">
 					PartyId string (1..1) <"">
-						[synonym FIX value PartyID tag 448]
-						[synonym FpML value partyId]
+						[synonym FIX value "PartyID" tag 448]
+						[synonym FpML value "partyId"]
 		'''.parseRosettaWithNoErrors
 		model.assertWarning(ATTRIBUTE, INVALID_CASE,
             "Attribute name should start with a lower case")
@@ -194,7 +194,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''
 			type Foo:
 				id boolean (1..1)
-			
 			condition R:
 				if id = True
 				then id < 1
@@ -412,34 +411,19 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testClassWithChoiceRuleAndOneOfRule() {
 		val model = '''
-			class Foo one of {
-				attribute1 string (0..1);
-				attribute2 string (0..1);
-				attribute3 string (0..1);
-			}
+			type Foo:
+				attribute1 string (0..1)
+				attribute2 string (0..1)
+				attribute3 string (0..1)
 			
-			choice rule Foo_choiceRule
-				for Foo required choice between
-				attribute1 and attribute2
+				condition Foo_oneOfRule: one-of 
+				condition Foo_choiceRule:
+					required choice
+						attribute1, attribute2
 		'''.parseRosetta
-		model.assertError(ROSETTA_CHOICE_RULE, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE, 'Class Foo has both choice rule (Foo_choiceRule) and one of rule')
+		model.assertError(DATA, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE, 'Type Foo has both choice condition and one-of condition.')
 	}
 	
-	@Test
-	def void testMultipleWhenReferenceClassesForDataRule() {
-		val model = '''
-			data rule QuoteRule <"">
-				when Foo exists
-				then Bar exists
-					
-			class Foo{
-			}
-			
-			class Bar{
-			}
-		'''.parseRosetta
-		model.assertWarning(ROSETTA_DATA_RULE, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_DATA_RULE, 'Data rule "QuoteRule" has multiple class references Foo, Bar. Data rules when/then should always start from the same class')
-	}
 	
  	@Test
 	def checkMappingMultipleSetToWithoutWhenCases() {
@@ -469,7 +453,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def checkMappingSetToTypeCheck() {
 		val model = '''
 			type Foo:
-				value string (1..1)
+				value0 string (1..1)
 			
 			type Quote:
 				attr Foo (1..1)
@@ -506,7 +490,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Quote:
 				attr Foo (1..1)
-					[synonym FpML value foo set when "foo.bar" exists]
+					[synonym FpML value "foo" set when "foo.bar" exists]
 		'''.parseRosetta
 		model.assertNoErrors
 	}

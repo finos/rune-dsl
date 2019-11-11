@@ -337,14 +337,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 
 	@Check
-	def checkClassWithChoiceRuleAndOneOfRule(RosettaChoiceRule choiceRule) {
-		if (choiceRule.scope.oneOf) {
-			error('''Class «choiceRule.scope.name» has both choice rule («choiceRule.name») and one of rule.''',
-				ROSETTA_NAMED__NAME, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE)
-		}
-	}
-
-	@Check
 	def checkFeatureNamesAreUnique(RosettaFeatureOwner ele) {
 		ele.features.groupBy[name].forEach [ k, v |
 			if (v.size > 1) {
@@ -521,13 +513,21 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkData(Data ele) {
-		if(ele.oldStyle)
+		if (ele.oldStyle)
 			error('''Wrong keyword 'data' use 'type' instead.''', DATA__OLD_STYLE)
-		val onOfs = ele.conditions.filter[it.constraint !== null].groupBy[it.constraint.oneOf].get(Boolean.TRUE)
-		if (onOfs !== null && onOfs.size > 1) {
-			onOfs.forEach [
-				error('''Only a single 'one-of' constraint is allowed.''', it.constraint, null)
-			]
+		val choiceRules = ele.conditions.filter[isChoiceRuleCondition].groupBy[it.constraint.oneOf]
+		val onOfs = choiceRules.get(Boolean.TRUE)
+		if (!onOfs.nullOrEmpty) {
+			if (onOfs.size > 1) {
+				onOfs.forEach [
+					error('''Only a single 'one-of' constraint is allowed.''', it.constraint, null)
+				]
+			} else {
+				if (!choiceRules.get(Boolean.FALSE).nullOrEmpty) {
+					error('''Type «ele.name» has both choice condition and one-of condition.''', ROSETTA_NAMED__NAME,
+						CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE)
+				}
+			}
 		}
 	}
 	

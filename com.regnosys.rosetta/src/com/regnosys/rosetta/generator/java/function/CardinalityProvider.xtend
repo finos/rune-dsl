@@ -11,6 +11,7 @@ import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
@@ -39,6 +40,7 @@ class CardinalityProvider {
 			RosettaAlias: obj.expression.isMulti
 			ListLiteral: true
 			RosettaLiteral,
+			RosettaSynonymValueBase,
 			RosettaRootElement,
 			RosettaEnumValue,
 			RosettaEnumValueReference: false
