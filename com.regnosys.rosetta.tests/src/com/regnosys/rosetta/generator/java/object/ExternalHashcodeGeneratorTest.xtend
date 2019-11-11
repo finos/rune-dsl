@@ -23,11 +23,11 @@ class ExternalHashcodeGeneratorTest {
 	def void shouldGenerateExternalHashMethod() {
 		val code = '''
 			enum Enum: one
-			
+
 			type RosettaType:
-			
+
 			type PlainOldRosettaObject:
-				attr string (1..1)
+				basicTypE string (1..1)
 				basicTypeList string (1..*)
 				rosettaObject RosettaType (1..1)
 				rosettaObjectList RosettaType (1..*)
@@ -44,10 +44,9 @@ class ExternalHashcodeGeneratorTest {
 	@Test
 	def void shouldHandleSuperClass() {
 		'''
-			type Super :
-			
+			type Super:
 			type Sub extends Super:
-				attr string (1..1)
+				basicTypE string (1..1)
 		'''.generateCode.compileToClasses
 	}
 	

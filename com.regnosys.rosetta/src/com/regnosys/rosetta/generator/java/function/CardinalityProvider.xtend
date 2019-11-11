@@ -11,6 +11,7 @@ import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
@@ -44,6 +45,7 @@ class CardinalityProvider {
 			RosettaLiteral,
 			RosettaTypedFeature,
 			RosettaFeature,
+			RosettaSynonymValueBase,
 			RosettaRootElement,
 			RosettaEnumValueReference: false
 			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }
@@ -51,7 +53,14 @@ class CardinalityProvider {
 	}
 	
 	def boolean expectedCardinalityMany(Operation op) {
-		val assignTarget = if(op.path === null) op.assignRoot else op.pathAsSegmentList.last.attribute
-		return assignTarget.isMulti
+		return if (op.path === null)
+			op.assignRoot.isMulti
+		else {
+			val lastSegment = op.pathAsSegmentList.last
+			if (lastSegment.index !== null) {
+				false
+			} else
+				lastSegment.attribute.isMulti
+		}
 	}
 }

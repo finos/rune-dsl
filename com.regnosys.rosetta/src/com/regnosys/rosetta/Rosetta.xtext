@@ -143,7 +143,7 @@ fragment RosettaDefinable:
 ;
 
 fragment RosettaNamed:
-	name = (ValidID | 'type' | 'enum')
+	name = ValidID
 ;
 
 fragment RosettaTyped:
@@ -152,11 +152,10 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'version' | 'condition' | 'key' | 'value')
-;
-
-ValidHint: 
-       ValidID'*'?
+	(ID | 'key' // used in Lib: annotations.rosetta
+		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
+		| 'one' // TODO used in CDM model and can be removed after RosettaClass rule is deleted
+	)
 ;
 
 
@@ -196,7 +195,7 @@ RosettaQualifiedType:
 	'}'
 ;
 
-RosettaQualifiedTypeFeature returns RosettaTypedFeature: 
+RosettaQualifiedTypeFeature returns RosettaTypedFeature:
 	RosettaNamed type=[RosettaBuiltinType|ValidID]
 ;
 
@@ -206,7 +205,7 @@ RosettaCalculationType:
 	'}'
 ;
 
-RosettaCalculationTypeFeature returns RosettaTypedFeature: 
+RosettaCalculationTypeFeature returns RosettaTypedFeature:
 	RosettaNamed type=[RosettaBuiltinType|ValidID]
 ;
 
@@ -270,8 +269,8 @@ RosettaClassSynonym:
 	 ']'
 ;
 
-RosettaClassSynonymValue:
-	RosettaNamed (refType=RosettaSynonymRef value=INT)? 
+RosettaClassSynonymValue returns RosettaSynonymValueBase:
+	name = STRING (refType=RosettaSynonymRef value=INT)?
 	('path' path = STRING)? 
 ;
 
@@ -283,27 +282,26 @@ RosettaSynonym:
 
 RosettaSynonymBody:
 	( 'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? 
-		| 'hint' (hints+=ValidHint ',')* hints+=ValidHint
+		| 'hint' (hints+=SynonymID ',')* hints+=SynonymID
 		| mappingLogic=RosettaMappingSetTo )
-	('meta' (metaValues += ValidID ',')* metaValues += ValidID)?
+	('meta' (metaValues += SynonymID ',')* metaValues += SynonymID)?
 	('mapper' mapper=ValidID)?
 	
 ;
 
-RosettaSynonymValue:
-	RosettaNamed (valueExtension=RosettaSynonymEnumeration)? (refType=RosettaSynonymRef value=INT)? 
+RosettaSynonymValue returns RosettaSynonymValueBase :
+	name = STRING (refType=RosettaSynonymRef value=INT)?
+	('path' path = STRING)? 
+	('maps' maps=INT)?
+;
+RosettaMetaSynonymValue  returns RosettaSynonymValueBase :
+	name = SynonymID (refType=RosettaSynonymRef value=INT)?
 	('path' path = STRING)? 
 	('maps' maps=INT)?
 ;
 
-RosettaMetaSynonymValue:
-	RosettaNamed (refType=RosettaSynonymRef value=INT)? 
-	('path' path = STRING)? 
-	('maps' maps=INT)?
-;
-
-RosettaSynonymEnumeration:
-	value = '.' enumValue=STRING
+SynonymID:
+	ID
 ;
 
 RosettaEnumSynonym:
@@ -431,7 +429,7 @@ RosettaTestExpression returns RosettaExpression:
 		| {RosettaAbsentExpression.argument=current} ('is' 'absent')
 		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaFeatureCall
 		| {RosettaCountOperation.left=current} 'count' operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaFeatureCall
-		| {RosettaWhenPresentExpression.left=current} ('when' 'present') operator=('=') right=RosettaFeatureCall 
+		| {RosettaWhenPresentExpression.left=current} ('when' 'present') operator=('=') right=RosettaFeatureCall
 	)?
 ;
 
