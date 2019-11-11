@@ -17,15 +17,18 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import com.regnosys.rosetta.rosetta.simple.Data
 
 class MetaFieldGenerator {
+	
+	val static LIB_NAMESPACE = 'com.rosetta.model'
+	
 	def generate(IFileSystemAccess2 fsa, Iterable<RosettaMetaType> metaTypes, Iterable<RosettaRootElement> allClasses, Iterable<String> namespaces) {
 		
 		val namespaceToMetas = Multimaps.index(metaTypes, [namespace]).asMap
+		val libMetas = namespaceToMetas.getOrDefault(LIB_NAMESPACE, Collections.emptyList)
 		for (namespace:namespaces) {
-			val rosettaMetas = namespaceToMetas.getOrDefault(namespace, Collections.emptyList)
+			val rosettaMetas = namespaceToMetas.getOrDefault(namespace, libMetas)
 			val packages = new RosettaJavaPackages(namespace)
 			fsa.generateFile('''«packages.metaField.directoryName»/MetaFields.java''',
 				metaFields(packages, rosettaMetas))
-			
 		}
 			
 
