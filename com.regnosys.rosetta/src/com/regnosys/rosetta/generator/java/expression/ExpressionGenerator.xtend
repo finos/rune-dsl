@@ -61,6 +61,8 @@ import org.eclipse.xtext.util.Wrapper
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
 
 class ExpressionGenerator {
 	
@@ -155,7 +157,7 @@ class ExpressionGenerator {
 	/**
 	 * feature call is a call to get an attribute of an object e.g. Quote->amount
 	 */
-	def StringConcatenationClient groupByFeatureCall(RosettaGroupByFeatureCall groupByCall, ParamMap params, boolean isLast, boolean autoValue) {
+	private def StringConcatenationClient groupByFeatureCall(RosettaGroupByFeatureCall groupByCall, ParamMap params, boolean isLast, boolean autoValue) {
 		val call = groupByCall.call
 		switch(call) {
 			RosettaFeatureCall: {
@@ -172,6 +174,8 @@ class ExpressionGenerator {
 					RosettaMetaType: {
 						'''«feature.buildMapFunc(isLast)»«IF groupByFeature!==null»«buildGroupBy(groupByFeature, isLast)»«ENDIF»'''
 					}
+					RosettaEnumValue: 
+						return '''«MapperS».of(«feature.enumeration.toJavaType».«feature.convertValues»)'''
 					default: 
 						throw new UnsupportedOperationException("Unsupported expression type of "+feature.class.simpleName)
 				}
@@ -268,6 +272,7 @@ class ExpressionGenerator {
 			ShortcutDeclaration : {
 				'''«MapperS».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»get()«ENDIF»)'''
 			}
+			RosettaEnumeration: '''«call.toJavaType»'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable type of "+call.class.simpleName)
 		}
@@ -286,7 +291,7 @@ class ExpressionGenerator {
 	/**
 	 * feature call is a call to get an attribute of an object e.g. Quote->amount
 	 */
-	def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params, boolean isLast, boolean autoValue) {
+	private def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params, boolean isLast, boolean autoValue) {
 		val feature = call.feature
 		val StringConcatenationClient right = switch (feature) {
 			RosettaRegularAttribute:
@@ -295,12 +300,14 @@ class ExpressionGenerator {
 				feature.buildMapFunc(isLast, autoValue)
 			RosettaMetaType: 
 				'''«feature.buildMapFunc(isLast)»'''
+			RosettaEnumValue: 
+				return '''«MapperS».of(«feature.enumeration.toJavaType».«feature.convertValues»)'''
 			RosettaFeature: 
 				'''.map("get«feature.name.toFirstUpper»", «feature.containerType.toJavaType»::get«feature.name.toFirstUpper»)'''
 			default:
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.eClass.name)
 		}
-		'''«javaCode(call.receiver, params, false)»«right»'''
+		return '''«javaCode(call.receiver, params, false)»«right»'''
 	}
 	
 	def private RosettaType containerType(RosettaFeature feature) {
@@ -673,6 +680,9 @@ class ExpressionGenerator {
 			RosettaEnumValueReference : {
 				'''«expr.enumeration.name»'''
 			}
+			RosettaEnumValue : {
+				'''«expr.name»'''
+			}
 			RosettaLiteral : {
 				'''«expr.stringValue»'''
 			}
@@ -688,7 +698,7 @@ class ExpressionGenerator {
 	def StringConcatenationClient toNodeLabel(RosettaFeatureCall call) {
 		val feature = call.feature
 		val right = switch feature {
-			RosettaRegularAttribute, RosettaMetaType, Attribute: feature.name
+			RosettaRegularAttribute, RosettaMetaType, Attribute, RosettaEnumValue: feature.name
 			default: throw new UnsupportedOperationException("Unsupported expression type "+feature.getClass)
 		}
 		

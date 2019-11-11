@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.types
 
+import com.google.inject.Inject
 import com.google.inject.Singleton
 import java.util.List
 import java.util.Map
@@ -7,7 +8,7 @@ import org.eclipse.xtend.lib.annotations.Data
 
 @Singleton
 class RosettaOperators {
-
+	
 	public static val ARITHMETIC_OPS = #['+', '-', '*', '/']
 	public static val COMPARISON_OPS = #['<', '<=', '>', '>=']
 	public static val EQUALITY_OPS = #['=', '<>']
@@ -19,6 +20,7 @@ class RosettaOperators {
 		RBuiltinType left
 		RBuiltinType right
 	}
+	@Inject RosettaTypeCompatibility comaptibility
 
 	val Map<BinaryOperation, RType> binaryTypeMap = newHashMap
 	val List<RBuiltinType> builtinTypes = newArrayList
@@ -30,7 +32,8 @@ class RosettaOperators {
 			}
 			return commonType(left,right)
 		}
-		if (left instanceof REnumType && left == right) {
+		if (left instanceof REnumType && right instanceof REnumType &&
+			(comaptibility.isUseableAs(left, right) || comaptibility.isUseableAs(right, left))) {
 			if (EQUALITY_OPS.contains(op))
 				return RBuiltinType.BOOLEAN
 		}

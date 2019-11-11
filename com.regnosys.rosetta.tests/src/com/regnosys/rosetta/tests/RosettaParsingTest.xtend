@@ -59,12 +59,10 @@ class RosettaParsingTest {
 				partyIdSource PartyIdSourceEnum (1..1)
 					[synonym FIX value "PartyIDSource" tag 447]
 					[synonym FpML value "PartyIdScheme"]
-			enum PartyIdSourceEnum
-			{
-				LEI <"The Legal Entity Identifier">,
-				BIC <"The Bank Identifier Code">,
+			enum PartyIdSourceEnum:
+				LEI <"The Legal Entity Identifier">
+				BIC <"The Bank Identifier Code">
 				MIC
-			}
 		'''.parseRosettaWithNoErrors
 	}
 
@@ -112,11 +110,11 @@ class RosettaParsingTest {
 	def void testBasicTypes() {
 	'''
 			type Standards: <"">
-				value1 int (0..1) <""> 
-				value3 number (0..1) <""> 
-				value5 boolean (0..1) <""> 
-				value6 date (0..1) <""> 
-				value7 dateTime (0..1) <""> 
+				value1 int (0..1) <"">
+				value3 number (0..1) <"">
+				value5 boolean (0..1) <"">
+				value6 date (0..1) <"">
+				value7 dateTime (0..1) <"">
 				value8 time (0..1) <"">
 				value9 string (0..1) <"">
 				value10 zonedDateTime (0..1) <"">
@@ -142,59 +140,39 @@ class RosettaParsingTest {
 	@Test
 	def void testEnumRegReferences() {
 	'''
-			enum PartyIdSourceEnum <"The enumeration values associated with party identifier sources.">
-			{
-				LEI <"The ISO 17442:2012 Legal Entity Identifier.">,
-				BIC <"The Bank Identifier Code.">,
-				MIC <"The ISO 10383 Market Identifier Code, applicable to certain types of execution venues, such as exchanges.">,
-				NaturalPersonIdentifier <"The natural person identifier.  When constructed according to the MiFID II specification, this identifier will be provided to the model.">
-					[regulatoryReference ESMA MiFIR RTS_22 article "6(1)" provision "A natural person shall be identified in a transaction report using the designation resulting from the concatenation of the ISO 3166-1 alpha-2 (2 letter country code) of the nationality of the person, followed by the national client identifier listed in Annex II based on the nationality of the person."]
-			}
+			enum PartyIdSourceEnum: <"The enumeration values associated with party identifier sources.">
+				LEI <"The ISO 17442:2012 Legal Entity Identifier.">
+				BIC <"The Bank Identifier Code.">
+				MIC <"The ISO 10383 Market Identifier Code, applicable to certain types of execution venues, such as exchanges.">
+				NaturalPersonIdentifier <"The natural person identifier.  When constructed according.">
 		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
 	def void testMultipleSynonyms() {
 	'''
-			class PartyIdentifier <"The set of [partyId, PartyIdSource] associated with a party.">
-			{
+			type PartyIdentifier: <"The set of [partyId, PartyIdSource] associated with a party.">
 				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">
 					[synonym FIX value "PartyID" tag 448]
 					[synonym FpML value "partyId"]
 				partyIdSource PartyIdSourceEnum (1..1) <"The reference source for the partyId, e.g. LEI, BIC.">
 					[synonym FIX value "PartyIDSource" tag 447]
 					[synonym FpML value "PartyIdScheme"]
-			}
-			enum PartyIdSourceEnum <"The enumeration values associated with party identifier sources.">
-			{
-				LEI <"The Legal Entity Identifier">,
-				BIC <"The Bank Identifier Code">,
+			enum PartyIdSourceEnum: <"The enumeration values associated with party identifier sources.">
+				LEI <"The Legal Entity Identifier">
+				BIC <"The Bank Identifier Code">
 				MIC <"The ISO 10383 Market Identifier Code, applicable to certain types of execution venues, such as exchanges.">
-			}
 		'''.parseRosettaWithNoErrors
 	}
 
 	@Test
 	def void testEnumeration() {
 	'''
-			enum QuoteRejectReasonEnum <"The enumeration values to qualify the reason as to why a quote has been rejected.">
-			{
+			enum QuoteRejectReasonEnum: <"The enumeration values to qualify the reason as to why a quote has been rejected.">
 				UnknownSymbol
-					[synonym FIX value "1" definition "foo"],
+					[synonym FIX value "1" definition "foo"]
 				ExchangeClosed
 					[synonym FpML value "exchangeClosed" definition "foo"]
-			}
-		'''.parseRosettaWithNoErrors
-	}
-	
-	@Test
-	def void testEnumerationWithStyle() {
-	'''
-			enum CountEnum
-			{
-				One style Number,
-				Two displayName "2" style Number
-			}
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -207,26 +185,6 @@ class RosettaParsingTest {
 				tradeId string (1..1) <"In FIX, the unique ID assigned to the trade entity once it is received or matched by the exchange or central counterparty.">
 					[synonym FIX value "TradeID" tag 1003]
 					[synonym FIX value "SecondaryTradeID" tag 1040]
-		'''.parseRosettaWithNoErrors
-	}
-	
-	@Test
-	def void testStereotypeParticipant() {
-	'''
-			class ExecutionVenue stereotype entityReferenceData, preExecutionActivity <"The trading venue.">
-			{
-				countryOfCompetentAuthority string (1..*) <"The country which regulates the trading venue. This information is required as part of MiFID II.">
-			} 
-		'''.parseRosettaWithNoErrors
-	}
-	
-	@Test
-	def void testStereotypePreTradeMessage() {
-	'''
-			class RegulatoryReportQuoteCancel stereotype preExecutionActivity  <"The regulatory reporting base structure for the quote cancel.">
-			{
-				regulatoryInformation string (1..1) <"The regulatory information that is common among regulators.">
-			}
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -254,24 +212,20 @@ class RosettaParsingTest {
 	@Test
 	def void testDataRuleWithChoice() {
 	'''
-			class Party
-			{
+			type Party:
 				foo boolean (1..1)
 				bar BarEnum (0..*)
 				foobar string (0..1)
-			}
-			enum BarEnum
-			{
-				abc,
-				bde,
+				condition Foo_Bar:
+					if Party -> foo = True
+					then
+						if Party -> bar = BarEnum -> abc
+							then Party -> foobar exists
+						else Party -> foobar is absent
+			enum BarEnum:
+				abc
+				bde
 				cer
-			}
-			data rule Foo_Bar
-				when Party -> foo = True
-				then
-					if Party -> bar = BarEnum.abc
-						then Party -> foobar exists
-					else Party -> foobar is absent
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -296,7 +250,7 @@ class RosettaParsingTest {
 					required choice foo, bar
 			type Color:
 				 blue boolean (0..1)
-			
+
 		'''.parseRosettaWithNoErrors	
 	}
 	
@@ -468,12 +422,11 @@ class RosettaParsingTest {
 			class Foo
 			{
 				foo BarEnum (0..1)
-					[synonym FpML set to BarEnum.a when "FooSyn" exists]
+					[synonym FpML set to BarEnum -> a when "FooSyn" exists]
 			}
 			
-			enum BarEnum {
-				a, b
-			}
+			enum BarEnum:
+				a b
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -483,12 +436,11 @@ class RosettaParsingTest {
 			class Foo
 			{
 				foo BarEnum (0..1)
-					[synonym FpML value "FooSyn" default to BarEnum.a]
+					[synonym FpML value "FooSyn" default to BarEnum -> a]
 			}
 			
-			enum BarEnum {
-				a, b
-			}
+			enum BarEnum:
+				a b
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -497,11 +449,10 @@ class RosettaParsingTest {
 		'''
 			type Foo:
 				foo boolean (0..1)
-					[synonym FpML value "FooSyn" set when "relative/path/to/some/enum" = BarEnum.a]
+					[synonym FpML value "FooSyn" set when "relative/path/to/some/enum" = BarEnum -> a]
 			
-			enum BarEnum {
-				a, b
-			}
+			enum BarEnum :
+				a b
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -510,7 +461,7 @@ class RosettaParsingTest {
 		'''
 			type Foo:
 				foo boolean (0..1)
-					[synonym FpML value "FooSyn" set when "../relative/path/to/some/value" exists]
+				[synonym FpML value "FooSyn" set when "../relative/path/to/some/value" exists]
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -519,7 +470,7 @@ class RosettaParsingTest {
 		'''
 			type Foo:
 				foo boolean (0..1)
-					[synonym FpML value "FooSyn" set when "../relative/path/to/some/value" is absent]
+				[synonym FpML value "FooSyn" set when "../relative/path/to/some/value" is absent]
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -530,13 +481,11 @@ class RosettaParsingTest {
 				foo string (0..1)
 					[synonym FpML
 							set to "1" when "../relative/path/to/string" = "Foo",
-							set to "2" when "../relative/path/to/enum" = BarEnum.a,
+							set to "2" when "../relative/path/to/enum" = BarEnum -> a,
 							set to "3" when "../relative/path/to/string" is absent,
 							set to "4"]
-			
-			enum BarEnum {
-				a, b
-			}
+
+			enum BarEnum: a b
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -570,7 +519,7 @@ class RosettaParsingTest {
 			
 			type Bar:
 				bar string (1..1)
-			
+
 		'''.parseRosettaWithNoErrors
 	}
 	

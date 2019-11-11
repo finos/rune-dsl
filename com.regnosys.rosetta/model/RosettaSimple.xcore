@@ -11,14 +11,14 @@ import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExpression
-import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
-import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.WithCardinality
+import org.eclipse.emf.common.util.BasicEList
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
 
@@ -40,7 +40,7 @@ abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
 }
 
 
-class Attribute extends RosettaFeature, Definable, Annotated, RosettaCallable, AssignPathRoot, WithCardinality {
+class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallable, AssignPathRoot, WithCardinality {
 	contains RosettaSynonym[] synonyms
 }
 
@@ -102,7 +102,7 @@ class Operation extends Definable {
 class Segment {
 	
 	Integer index
-	refers RosettaFeature attribute
+	refers Attribute attribute
 	contains Segment next opposite prev
 	container Segment prev opposite next
 	

@@ -44,7 +44,7 @@ class RosettaTypeCompatibility {
 	}
 
 	def dispatch boolean isUseableAs(REnumType t0, REnumType t1) {
-		t0.enumeration === t1.enumeration
+		t0.enumeration === t1.enumeration || t0.enumeration.allSuperEnumerations.contains(t1.enumeration)
 	}
 
 }

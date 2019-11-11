@@ -22,12 +22,10 @@ class ExternalHashcodeGeneratorTest {
 	@Test
 	def void shouldGenerateExternalHashMethod() {
 		val code = '''
-			enum Enum {
-				val1
-			}
-			
+			enum Enum: one
+
 			type RosettaType:
-			
+
 			type PlainOldRosettaObject:
 				basicTypE string (1..1)
 				basicTypeList string (1..*)
@@ -73,9 +71,7 @@ class ExternalHashcodeGeneratorTest {
 	@Test
 	def void shouldNotGenerateForEnums() {
 		val code = '''
-			enum Enum {
-				foo
-			}
+			enum Enum: foo
 		'''.generateCode
 		
 		code.compileToClasses

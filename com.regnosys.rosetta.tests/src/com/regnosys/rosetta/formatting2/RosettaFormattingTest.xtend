@@ -176,123 +176,74 @@ class RosettaFormattingTest {
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			enum DatesReferenceEnum <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
-			{
-				tradeDate,
-				effectiveDate,
-				firstRegularPeriodStartDate,
-				lastRegularPeriodEndDate,
-				cashSettlementPaymentDate <"FpML business validation rule ird-46 specifies that, in the context of the OptionalEarlyTermination, cashSettlement/cashSettlementValuationDate/dateRelativeTo/@href must equal cashSettlement/cashSettlementPaymentDate/@id.">,
-				calculationPeriodDates <"FpML business validation rule ird-59 specifies that if resetDates exists in resetDates/calculationPeriodDatesReference, the @href attribute is equal to the @id attribute of calculationPeriodDates in the same swapStream.">,
-				paymentDates,
-				resetDates,
-				fixingDates,
+			enum DatesReferenceEnum: <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
+				tradeDate
+				effectiveDate
+				firstRegularPeriodStartDate
+				lastRegularPeriodEndDate
+				cashSettlementPaymentDate <"">
+				calculationPeriodDates <"FpML business validation rule ird-59 specifies that if resetDates exists in resetDates/calculationPeriodDatesReference, the @href attribute is equal to the @id attribute of calculationPeriodDates in the same swapStream.">
+				paymentDates
+				resetDates
+				fixingDates
 				valuationDates
-			}
-			
 		'''
 		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model" version "test" enum DatesReferenceEnum <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
-			{
-				tradeDate,
-				effectiveDate,firstRegularPeriodStartDate,lastRegularPeriodEndDate,cashSettlementPaymentDate <"FpML business validation rule ird-46 specifies that, in the context of the OptionalEarlyTermination, cashSettlement/cashSettlementValuationDate/dateRelativeTo/@href must equal cashSettlement/cashSettlementPaymentDate/@id.">,
-				calculationPeriodDates <"FpML business validation rule ird-59 specifies that if resetDates exists in resetDates/calculationPeriodDatesReference, the @href attribute is equal to the @id attribute of calculationPeriodDates in the same swapStream.">,
-				paymentDates,resetDates,fixingDates,valuationDates
-			}
-				
+			namespace "com.regnosys.rosetta.model" version "test" enum DatesReferenceEnum: <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
+				tradeDate
+				effectiveDate firstRegularPeriodStartDate lastRegularPeriodEndDate cashSettlementPaymentDate <"">
+				calculationPeriodDates <"FpML business validation rule ird-59 specifies that if resetDates exists in resetDates/calculationPeriodDatesReference, the @href attribute is equal to the @id attribute of calculationPeriodDates in the same swapStream.">
+				paymentDates resetDates fixingDates valuationDates
 		'''
 		assertEquals(expectedResult, format(unFormatted))
 	}
 
 	@Test
 	def void formatDayOfWeekEnum() {
-		'''namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum <"A day of the seven-day week."> [synonym FpML value "DayOfWeekEnum"]{MON <"Monday">[synonym FpML value "MON"],TUE <"Tuesday">[synonym FpML value "TUE"],WED <"Wednesday">[synonym FpML value "WED"],THU <"Thursday">[synonym FpML value "THU"],FRI <"Friday">[synonym FpML value "FRI"],SAT <"Saturday">[synonym FpML value "SAT"],SUN <"Sunday">[synonym FpML value "SUN"]}''' ->
-			'''
-				namespace "com.regnosys.rosetta.model"
-				version "test"
+		'''namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum: <"A day of the seven-day week."> [synonym FpML value "DayOfWeekEnum"] MON <"Monday">[synonym FpML value "MON"] TUE <"Tuesday">[synonym FpML value "TUE"] WED <"Wednesday">[synonym FpML value "WED"]THU <"Thursday">[synonym FpML value "THU"]FRI <"Friday">[synonym FpML value "FRI"]SAT <"Saturday">[synonym FpML value "SAT"]SUN <"Sunday">[synonym FpML value "SUN"]
+		''' -> '''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
 
-				enum DayOfWeekEnum <"A day of the seven-day week.">
-					[synonym FpML value "DayOfWeekEnum"]
-				{
-					MON <"Monday">
-						[synonym FpML value "MON"],
-					TUE <"Tuesday">
-						[synonym FpML value "TUE"],
-					WED <"Wednesday">
-						[synonym FpML value "WED"],
-					THU <"Thursday">
-						[synonym FpML value "THU"],
-					FRI <"Friday">
-						[synonym FpML value "FRI"],
-					SAT <"Saturday">
-						[synonym FpML value "SAT"],
-					SUN <"Sunday">
-						[synonym FpML value "SUN"]
-				}
-
+			enum DayOfWeekEnum: <"A day of the seven-day week.">
+				[synonym FpML value "DayOfWeekEnum"]
+				MON <"Monday">
+					[synonym FpML value "MON"]
+				TUE <"Tuesday">
+					[synonym FpML value "TUE"]
+				WED <"Wednesday">
+					[synonym FpML value "WED"]
+				THU <"Thursday">
+					[synonym FpML value "THU"]
+				FRI <"Friday">
+					[synonym FpML value "FRI"]
+				SAT <"Saturday">
+					[synonym FpML value "SAT"]
+				SUN <"Sunday">
+					[synonym FpML value "SUN"]
 			'''
 	}
 
 	@Test
 	def void formatSpreadScheduleTypeEnum() {
-		val expectedResult = '''
+		'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			enum SpreadScheduleTypeEnum: <"The enumerated values to specify a long or short spread value."> 	[synonym FpML value "spreadScheduleTypeScheme"]
+				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
+			[synonym FpML value "Long"] Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
+					[synonym FpML value "Short"]
+		'''->'''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value.">
+			enum SpreadScheduleTypeEnum: <"The enumerated values to specify a long or short spread value.">
 				[synonym FpML value "spreadScheduleTypeScheme"]
-			{
 				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
-					[synonym FpML value "Long"],
+					[synonym FpML value "Long"]
 				Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
 					[synonym FpML value "Short"]
-			}
-			
-		'''
-		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model"
-			version "test"
-			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value."> 	[synonym FpML value "spreadScheduleTypeScheme"]
-			{
-				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
-			[synonym FpML value "Long"], Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
-					[synonym FpML value "Short"]
-			}
-			
-		'''
-		assertEquals(expectedResult, format(unFormatted))
-	}
-
-	@Test
-	def void formatDataRule() {
-		val expectedResult = '''
-			namespace "com.regnosys.rosetta.model"
-			version "test"
-			
-			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value.">
-				[synonym FpML value "spreadScheduleTypeScheme"]
-			{
-				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
-					[synonym FpML value "Long"],
-				Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
-					[synonym FpML value "Short"]
-			}
-			
-		'''
-		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model" 
-			version "test"
-			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value."> 	
-				[synonym FpML value "spreadScheduleTypeScheme"]
-			{
-				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
-			[synonym FpML value "Long"],
-			Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
-					[synonym FpML value "Short"]
-			}
-			
-		'''
-		assertEquals(expectedResult, format(unFormatted))
+			'''
 	}
 
 	@Test

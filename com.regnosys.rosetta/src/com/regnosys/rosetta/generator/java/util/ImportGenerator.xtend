@@ -14,10 +14,8 @@ import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.BlueprintValidate
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaClass
@@ -25,6 +23,7 @@ import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaDataRule
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
@@ -37,6 +36,8 @@ import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.validation.TypedBPNode
 import java.util.Comparator
 import java.util.List
@@ -45,8 +46,6 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class ImportGenerator {
 
@@ -124,6 +123,9 @@ class ImportGenerator {
 			}
 			RosettaMetaType:{
 				imports.add('''«packages.metaField.packageName».*''')
+			}
+			RosettaEnumValue:{
+				imports.add((feature.eContainer as RosettaEnumeration).fullName);
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported expression type: " + feature.class.simpleName)
@@ -341,19 +343,6 @@ class ImportGenerator {
 		}
 	}
 
-	def void addOutBuilder(RosettaExpression expr) {
-		switch (expr) {
-			RosettaFeatureCall: {
-				if (!(expr.feature.type instanceof RosettaBasicType || expr.feature.type instanceof RosettaBuiltinType))
-					imports.add(expr.feature.type.fullName + "." + expr.feature.type.name + "Builder")
-				addOutBuilder(expr.receiver)
-			}
-			RosettaCallableCall: {
-				val callable = expr.callable as RosettaClass;
-				imports.add(callable.fullName + "." + callable.name + "Builder")
-			}
-		}
-	}
 
 	def addNode(TypedBPNode typed) {
 		imports.add('''«packages.libBlueprint.packageName».runner.nodes.Node''')

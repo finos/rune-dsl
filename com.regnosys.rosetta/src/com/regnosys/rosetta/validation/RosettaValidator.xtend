@@ -68,6 +68,8 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
+import com.regnosys.rosetta.rosetta.WithCardinality
 
 /**
  * This class contains custom validation rules. 
@@ -201,7 +203,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def void checkTypeExpectation(EObject owner) {
 		if(!owner.eResource.errors.filter(XtextSyntaxDiagnostic).empty)
 			return;
-		owner.eClass.EAllReferences.filter[ROSETTA_EXPRESSION.isSuperTypeOf(EReferenceType)].filter[owner.eIsSet(it)].
+		owner.eClass.EAllReferences.filter[ROSETTA_EXPRESSION.isSuperTypeOf(it.EReferenceType)].filter[owner.eIsSet(it)].
 			forEach [ ref |
 				val referenceValue = owner.eGet(ref)
 				if (ref.isMany) {
@@ -240,15 +242,18 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		val groupByExp = featureCallGroupBy.groupBy
 		if (groupByExp !== null) {
 			val featureCall = featureCallGroupBy.call
-			switch (featureCall) {
-				RosettaFeatureCall: {
-					val parentType = featureCall.feature.type
+			if (featureCall instanceof RosettaFeatureCall) {
+				val feature = featureCall.feature
+				if (feature instanceof RosettaTypedFeature) {
+					val parentType = feature.type
 					switch (parentType) {
-						RosettaClass, Data: {
+						RosettaClass,
+						Data: {
 							// must have single cardinality in group by function
 							var gbe = groupByExp
 							while (gbe !== null) {
-								if (gbe.attribute.card.isIsMany) {
+								if (gbe.attribute instanceof WithCardinality &&
+									(gbe.attribute as WithCardinality).card.isIsMany) {
 									error('''attribute «gbe.attribute.name» of «(gbe.attribute.eContainer as RosettaClass).name» has multiple cardinality. Group by expressions must be single''',
 										featureCallGroupBy, ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, CARDINALITY_ERROR)
 									return
@@ -257,8 +262,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 							}
 						}
 						default: {
-							error('''Parent of group by «featureCall.feature.type.name» by must be a class''',
-								featureCallGroupBy, ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, INVALID_TYPE)
+							error('''Parent of group by «feature.type.name» by must be a type''', featureCallGroupBy,
+								ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, INVALID_TYPE)
 						}
 					}
 				}

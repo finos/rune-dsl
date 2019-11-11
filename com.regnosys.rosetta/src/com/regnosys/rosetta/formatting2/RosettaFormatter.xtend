@@ -314,17 +314,22 @@ class RosettaFormatter extends AbstractFormatter2 {
 	}
 	
 	def dispatch void format(RosettaEnumeration ele, extension IFormattableDocument document) {
-		ele.regionFor.keyword(rosettaEnumerationAccess.enumKeyword_0).prepend(NEW_ROOT_ELEMENT)
-		indentedBraces(ele, document)
-		formatChild(ele.synonyms, document)
-		formatChild(ele.references, document)
-		formatChild(ele.enumValues, document)
+		ele.regionFor.keyword(enumerationAccess.enumKeyword_0).prepend(NEW_ROOT_ELEMENT)
+		val eleEnd = ele.nextHiddenRegion
+		set(
+			ele.regionFor.keyword(enumerationAccess.enumKeyword_0).nextHiddenRegion,
+			eleEnd,
+			INDENT
+		)
+		ele.synonyms.forEach[formatAttributeSynonym(document)]
+		ele.enumValues.forEach[ format ]
 	}
 
 	def dispatch void format(RosettaEnumValue rosettaEnumValue, extension IFormattableDocument document) {
-		rosettaEnumValue.prepend[newLine].append[noSpace]
-		formatChild(rosettaEnumValue.enumSynonyms, document)
-		formatChild(rosettaEnumValue.references, document)
+		rosettaEnumValue.prepend(NEW_LINE)
+		rosettaEnumValue.enumSynonyms.forEach[
+			format
+		]
 	}
 
 	def dispatch void format(RosettaEnumSynonym rosettaEnumSynonym, extension IFormattableDocument document) {

@@ -11,7 +11,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
-import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaHeader
 import com.regnosys.rosetta.rosetta.RosettaMarketPractice
@@ -22,22 +21,23 @@ import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 import com.regnosys.rosetta.rosetta.RosettaStereotype
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 import org.eclipse.xtext.ide.editor.syntaxcoloring.DefaultSemanticHighlightingCalculator
 import org.eclipse.xtext.ide.editor.syntaxcoloring.IHighlightedPositionAcceptor
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.util.CancelIndicator
-import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.SimplePackage
-import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 
 class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculator implements RosettaHighlightingStyles {
 
 	override protected highlightElement(EObject object, IHighlightedPositionAcceptor acceptor,
 		CancelIndicator cancelIndicator) {
-		if (object instanceof RosettaFeature) {
+		if (object instanceof RosettaTypedFeature) {
 			switch (object.type) {
 				RosettaClass, Data:
 					highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_TYPED__TYPE, CLASS_ID)

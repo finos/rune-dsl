@@ -41,11 +41,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testLowerCaseEnumeration() {
 		val model =
 		'''
-			enum quoteRejectReasonEnum <"">
-				{
-					UnknownSymbol,
-					Other
-				}
+			enum quoteRejectReasonEnum: <"">
+				UnknownSymbol
+				Other
 		'''.parseRosettaWithNoErrors
 		model.assertWarning(ROSETTA_ENUMERATION, INVALID_CASE,
             "Enumeration name should start with a capital")
@@ -262,18 +260,38 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void testTypeErrorAssignment_04() {
+		val model =
+		'''
+			namespace "test"
+			version "test"
+
+			enum Enumerate : X Y Z
+
+			type Type:
+				other Enumerate (0..1)
+
+			func Funcy:
+				inputs: in0 Type (0..1)
+				output: out string (0..1)
+				alias Ali : in0 -> other = Enumerate -> X
+		'''.parseRosetta
+		model.assertNoErrors
+	}
+
+	@Test
 	def void testCardinalityErrorAssignment_01() {
 		val model =
 		'''
 			type WithMeta:
 				[metadata key]
-			
+
 			type OtherType:
 				attrSingle WithMeta (0..1)
 				[metadata reference]
 				attrMulti WithMeta (0..*)
 				[metadata reference]
-				
+
 			func asKeyUsage:
 				inputs: withMeta WithMeta(0..*)
 				output: out OtherType (0..1)
@@ -282,7 +300,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(OPERATION, null, "Expecting single cardinality as value. Use 'only-element' to assign only first value.")
 	}
-	
+
 	@Test
 	def void testDuplicateAttribute() {
 		val model = '''
@@ -298,9 +316,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testDuplicateEnumLiteral() {
 		val model = '''
-			enum Foo {
-				BAR, BAZ, BAR
-			}
+			enum Foo:
+				BAR BAZ BAR
 		'''.parseRosetta
 		model.assertError(ROSETTA_ENUM_VALUE, DUPLICATE_ENUM_VALUE, 'Duplicate enum value')
 	}
@@ -312,9 +329,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Foo:
 			
-			enum Foo {
-				BAR
-			}
+			enum Foo: BAR
 		'''.parseRosetta
 		model.assertError(ROSETTA_TYPE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
 	}
@@ -338,9 +353,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			class Foo {
 			}
 			
-			enum Bar {
+			enum Bar:
 				Entry
-			}
 			
 			data rule Bar
 				when Foo exists
@@ -365,9 +379,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testDuplicateWorkflowRule_EnumName() {
 		val model = '''
-			enum Foo {
-				Entry
-			}
+			enum Foo: Entry
 			
 			type Bar:
 			
@@ -416,15 +428,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				attribute2 string (0..1)
 				attribute3 string (0..1)
 			
-				condition Foo_oneOfRule: one-of 
+				condition Foo_oneOfRule: one-of
 				condition Foo_choiceRule:
 					required choice
 						attribute1, attribute2
 		'''.parseRosetta
 		model.assertError(DATA, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE, 'Type Foo has both choice condition and one-of condition.')
 	}
-	
-	
+
+
  	@Test
 	def checkMappingMultipleSetToWithoutWhenCases() {
 		val model = '''
@@ -466,13 +478,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def checkMappingSetToEnumTypeCheck() {
 		val model = '''
-			enum Foo {
-				ONE;
-			}
+			enum Foo: ONE
 			
-			enum Bar {
-				BAR;
-			}
+
+			enum Bar: BAR
 			
 			type Quote:
 				attr Foo (1..1)

@@ -18,6 +18,8 @@ import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 
 class CardinalityProvider {
 	
@@ -29,6 +31,7 @@ class CardinalityProvider {
 					if (obj.receiver.isMulti) true else obj.feature.isMulti
 				}
 			}
+			RosettaEnumValue:false
 			WithCardinality: if(obj.card === null) false else obj.card.isIsMany
 			RosettaCallableCall: if(obj.toOne) false else obj.callable.isMulti
 			RosettaCallableWithArgsCall: obj.callable.isMulti
@@ -40,11 +43,12 @@ class CardinalityProvider {
 			RosettaAlias: obj.expression.isMulti
 			ListLiteral: true
 			RosettaLiteral,
+			RosettaTypedFeature,
+			RosettaFeature,
 			RosettaSynonymValueBase,
 			RosettaRootElement,
-			RosettaEnumValue,
 			RosettaEnumValueReference: false
-			default: {println(obj?.eClass?.name)false }
+			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }
 		}
 	}
 	

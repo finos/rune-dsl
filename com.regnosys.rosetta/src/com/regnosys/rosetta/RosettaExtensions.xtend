@@ -112,7 +112,7 @@ class RosettaExtensions {
 			if(callable instanceof RosettaAlias) {
 				callable.expression.collectRootCalls(visitor)
 			} 
-			else if(callable instanceof RosettaClass || callable instanceof Data) {
+			else if(callable instanceof RosettaClass || callable instanceof Data|| callable instanceof RosettaEnumeration) {
 				visitor.apply(callable)
 			}
 			else {
@@ -130,6 +130,9 @@ class RosettaExtensions {
 			visitor.apply(expr)
 		}
 		else if(expr instanceof Data) {
+			visitor.apply(expr)
+		}
+		else if(expr instanceof RosettaEnumeration) {
 			visitor.apply(expr)
 		}
 		else {
@@ -166,9 +169,12 @@ class RosettaExtensions {
 		else if(expr instanceof RosettaGroupByFeatureCall) {
 			expr.call.collectLeafTypes(visitor)
 		}
+		else if(expr instanceof RosettaTyped) {
+			visitor.apply(expr.type)
+		}
 		else if(expr instanceof RosettaFeatureCall) {
-			// go down to get the feature type
-			visitor.apply(expr.feature.type)
+			if (expr.feature instanceof RosettaTyped)
+				visitor.apply((expr.feature as RosettaTyped).type)
 		}
 		else if(expr instanceof RosettaExistsExpression) {
 			expr.argument.collectLeafTypes(visitor)
@@ -182,9 +188,6 @@ class RosettaExtensions {
 		}
 		else if(expr instanceof RosettaEnumValueReference) {
 			visitor.apply(expr.enumeration)
-		}
-		else if(expr instanceof RosettaTyped) {
-			visitor.apply(expr.type)
 		}
 		else {
 			throw new IllegalArgumentException("Failed to collect leaf type: " + expr)
