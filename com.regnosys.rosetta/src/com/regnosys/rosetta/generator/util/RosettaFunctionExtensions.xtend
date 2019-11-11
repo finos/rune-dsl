@@ -79,6 +79,10 @@ class RosettaFunctionExtensions {
 		getInputs(func).join(', ')[name]
 	}
 
+	dispatch def boolean needsBuilder(Void ele) {
+		false
+	}
+	
 	dispatch def boolean needsBuilder(RosettaTyped ele) {
 		needsBuilder(ele.type)
 	}
