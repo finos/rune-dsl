@@ -43,7 +43,7 @@ class RosettaEnumHelperTest {
             {
                 one displayName "uno" <"Some description"> [synonym FpML value "oneSynonym"],
                 two <"Some other description"> [synonym FpML value "twoSynonym"],
-                three displayName "tria" <"Some description"> [synonym FpML value "threeSynonym"],                
+                three displayName "tria" <"Some description"> [synonym FpML value "threeSynonym"],
                 four  displayName "tessera" <"Some description"> [synonym FpML value "fourSynonym"]
             }
         '''.generateCode

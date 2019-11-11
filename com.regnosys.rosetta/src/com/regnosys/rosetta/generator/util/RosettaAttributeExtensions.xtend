@@ -22,7 +22,6 @@ import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
-import com.regnosys.rosetta.rosetta.RosettaSynonymValue
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -30,6 +29,7 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Set
+import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 
 class RosettaAttributeExtensions {
 
@@ -285,8 +285,8 @@ class RosettaAttributeExtensions {
 		
 	}
 	
-	def static metaSynValue(RosettaSynonymValue value, String meta) {
-		val path = if (value.path===null) value.name else value.path+"."+value.name
+	def static metaSynValue(RosettaSynonymValueBase value, String meta) {
+		val path = if (value.path===null) value.name else value.path+"->"+value.name
 		val name = meta
 		return new ExpandedSynonymValue(name, path, value.maps, true)
 	}

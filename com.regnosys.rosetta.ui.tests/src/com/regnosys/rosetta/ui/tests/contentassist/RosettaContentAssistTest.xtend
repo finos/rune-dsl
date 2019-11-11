@@ -125,7 +125,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 		'''
 			type Quote:
 				action ActionEnum (1..1)
-			}
+			
 			enum ActionEnum
 			{
 				new,

@@ -9,6 +9,7 @@ import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -23,12 +24,10 @@ class RosettaParsingTest {
 			synonym source FpML
 			synonym source FIX
 			
-			class PartyIdentifier <"The set of [partyId, PartyIdSource] associated with a party.">
-			{
-				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">;
-					[synonym FIX value PartyID tag 448]
-					[synonym FpML value partyId]
-			}
+			type PartyIdentifier: <"The set of [partyId, PartyIdSource] associated with a party.">
+				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">
+					[synonym FIX value "PartyID" tag 448]
+					[synonym FpML value "partyId"]
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -53,15 +52,13 @@ class RosettaParsingTest {
 	@Test
 	def void testClassWithEnumReference() {
 	'''
-			class PartyIdentifier <"Bla">
-			{
-				partyId string (1..1) <"Bla">;
-					[synonym FIX value PartyID tag 448]
-					[synonym FpML value partyId]
-				partyIdSource PartyIdSourceEnum (1..1);
-					[synonym FIX value PartyIDSource tag 447]
-					[synonym FpML value PartyIdScheme]
-			}
+			type PartyIdentifier: <"Bla">
+				partyId string (1..1) <"Bla">
+					[synonym FIX value "PartyID" tag 448]
+					[synonym FpML value "partyId"]
+				partyIdSource PartyIdSourceEnum (1..1)
+					[synonym FIX value "PartyIDSource" tag 447]
+					[synonym FpML value "PartyIdScheme"]
 			enum PartyIdSourceEnum
 			{
 				LEI <"The Legal Entity Identifier">,
@@ -71,19 +68,19 @@ class RosettaParsingTest {
 		'''.parseRosettaWithNoErrors
 	}
 
-	@Test
+	@Test @Disabled // TODO regulatoryReference not supported abstract not supported
 	def void testClassExtendAbstractClass() {
 	'''
 			abstract class Product
 				[synonym  FIX value Instrument componentID 1003]
 				[regulatoryReference ESMA MiFIR RTS_22 article "3(2)(b)" provision "Bla"]
 			{
-				productTaxonomy string (1..*) <"Bla">;
+				productTaxonomy string (1..*) <"Bla">
 					[regulatoryReference ESMA MiFIR RTS_22 article "3(2)(b)" provision "Bla"]	
 			}
 			class StandardizedProduct extends Product <"Bla">
 			{
-				productIdentifier string (1..*);
+				productIdentifier string (1..*)
 					[regulatoryReference ESMA MiFIR RTS_22 article "3(2)(a)" provision "Bla"]
 			}
 		'''.parseRosettaWithNoErrors
@@ -92,46 +89,40 @@ class RosettaParsingTest {
 	@Test
 	def void testStandards() {
 	'''
-			class BasicTypes <"">
-			{
-				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">;
-					[synonym FIX value PartyID tag 448]
-					[synonym FpML value partyId]
-					[synonym ISO_20022 value partyId]
-			}
+			type BasicTypes: <"">
+				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">
+					[synonym FIX value "PartyID" tag 448]
+					[synonym FpML value "partyId"]
+					[synonym ISO_20022 value "partyId"]
 		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
 	def void testSynonymRefs() {
 	'''
-			class BasicTypes <"">
-			{
-				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">;
-					[synonym FIX value PartyID tag 448]
-					[synonym FIX value PartyID componentID 448]
-					[synonym FIX value PartyID."value"]
-			}
+			type BasicTypes: <"">
+				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">
+					[synonym FIX value "PartyID" tag 448]
+					[synonym FIX value "PartyID" componentID 448]
+					[synonym FIX value "PartyID.value"]
 		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
 	def void testBasicTypes() {
 	'''
-			class Standards <"">
-			{
-				value1 int (0..1) <"">; 
-				value3 number (0..1) <"">; 
-				value5 boolean (0..1) <"">; 
-				value6 date (0..1) <"">; 
-				value7 dateTime (0..1) <"">; 
-				value8 time (0..1) <"">;
-				value9 string (0..1) <"">;
-				value10 zonedDateTime (0..1) <"">;
-				value11 productType (0..1) <"">;
-				value12 eventType (0..1) <"">;
-				value13 calculation (0..1) <"">;
-			}
+			type Standards: <"">
+				value1 int (0..1) <""> 
+				value3 number (0..1) <""> 
+				value5 boolean (0..1) <""> 
+				value6 date (0..1) <""> 
+				value7 dateTime (0..1) <""> 
+				value8 time (0..1) <"">
+				value9 string (0..1) <"">
+				value10 zonedDateTime (0..1) <"">
+				value11 productType (0..1) <"">
+				value12 eventType (0..1) <"">
+				value13 calculation (0..1) <"">
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -142,7 +133,7 @@ class RosettaParsingTest {
 				[regulatoryReference ESMA MiFIR RTS_22 section "3(2)(b)" provision "Bla"]
 				[regulatoryReference ESMA MiFIR RTS_22 article "3(2)(b)" provision "Bla"]
 			{
-				productTaxonomy string (1..*);
+				productTaxonomy string (1..*)
 					[regulatoryReference ESMA MiFIR RTS_22 article "3(2)(b)" provision "bla"]	
 			}
 		'''.parseRosettaWithNoErrors
@@ -167,12 +158,12 @@ class RosettaParsingTest {
 	'''
 			class PartyIdentifier <"The set of [partyId, PartyIdSource] associated with a party.">
 			{
-				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">;
-					[synonym FIX value PartyID tag 448]
-					[synonym FpML value partyId]
-				partyIdSource PartyIdSourceEnum (1..1) <"The reference source for the partyId, e.g. LEI, BIC.">;
-					[synonym FIX value PartyIDSource tag 447]
-					[synonym FpML value PartyIdScheme]
+				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">
+					[synonym FIX value "PartyID" tag 448]
+					[synonym FpML value "partyId"]
+				partyIdSource PartyIdSourceEnum (1..1) <"The reference source for the partyId, e.g. LEI, BIC.">
+					[synonym FIX value "PartyIDSource" tag 447]
+					[synonym FpML value "PartyIdScheme"]
 			}
 			enum PartyIdSourceEnum <"The enumeration values associated with party identifier sources.">
 			{
@@ -210,14 +201,12 @@ class RosettaParsingTest {
 	@Test
 	def void testMultipleOrNoAttributeSynonym() {
 	'''
-			class TradeIdentifier <"The trade identifier, along with the party that assigned it.">
-				[synonym FpML value partyTradeIdentifier]
-			{
-				IdentifyingParty string (1..1) <"The party that assigns the trade identifier">;
-				tradeId string (1..1) <"In FIX, the unique ID assigned to the trade entity once it is received or matched by the exchange or central counterparty.">;
-					[synonym FIX value TradeID tag 1003]
-					[synonym FIX value SecondaryTradeID tag 1040]
-			}
+			type TradeIdentifier: <"The trade identifier, along with the party that assigned it.">
+				[synonym FpML value "partyTradeIdentifier"]
+				IdentifyingParty string (1..1) <"The party that assigns the trade identifier">
+				tradeId string (1..1) <"In FIX, the unique ID assigned to the trade entity once it is received or matched by the exchange or central counterparty.">
+					[synonym FIX value "TradeID" tag 1003]
+					[synonym FIX value "SecondaryTradeID" tag 1040]
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -226,7 +215,7 @@ class RosettaParsingTest {
 	'''
 			class ExecutionVenue stereotype entityReferenceData, preExecutionActivity <"The trading venue.">
 			{
-				countryOfCompetentAuthority string (1..*) <"The country which regulates the trading venue. This information is required as part of MiFID II.">;
+				countryOfCompetentAuthority string (1..*) <"The country which regulates the trading venue. This information is required as part of MiFID II.">
 			} 
 		'''.parseRosettaWithNoErrors
 	}
@@ -236,7 +225,7 @@ class RosettaParsingTest {
 	'''
 			class RegulatoryReportQuoteCancel stereotype preExecutionActivity  <"The regulatory reporting base structure for the quote cancel.">
 			{
-				regulatoryInformation string (1..1) <"The regulatory information that is common among regulators.">;
+				regulatoryInformation string (1..1) <"The regulatory information that is common among regulators.">
 			}
 		'''.parseRosettaWithNoErrors
 	}
@@ -246,12 +235,12 @@ class RosettaParsingTest {
 	'''
 			class Party
 			{
-				foo boolean (1..1);
-				bar string (0..*);
+				foo boolean (1..1)
+				bar string (0..*)
 			}
 			class PartyIdentifier
 			{
-				partyId string (0..1);
+				partyId string (0..1)
 			}
 			data rule Foo_Bar
 				[regulatoryReference ESMA MiFIR RTS_22 article "3(2)" provision "Bla"]
@@ -267,9 +256,9 @@ class RosettaParsingTest {
 	'''
 			class Party
 			{
-				foo boolean (1..1);
-				bar BarEnum (0..*);
-				foobar string (0..1);
+				foo boolean (1..1)
+				bar BarEnum (0..*)
+				foobar string (0..1)
 			}
 			enum BarEnum
 			{
@@ -289,38 +278,25 @@ class RosettaParsingTest {
 	@Test
 	def void testAttributeWithReferenceAnchorAndScheme() {
 	'''
-			metaType reference string
-			metaType scheme string
-			metaType anchor string
-			
-			class Foo
-			{
-				foo string (1..1) reference, anchor, scheme;
-					[synonym FpML value foo meta href, id, fooScheme]
-			}
+			type Foo:
+				foo string (1..1)
+					[metadata reference]
+					[metadata scheme]
+					[synonym FpML value "foo" meta href, id, fooScheme]
 		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
 	def void testChoiceRule() {
 	'''
-			class Foo
-			{
-				foo Color (1..*);
-				bar string (0..*);
-			}
+			type Foo:
+				foo Color (1..*)
+				bar string (0..*)
+				condition foo_bar:
+					required choice foo, bar
+			type Color:
+				 blue boolean (0..1)
 			
-			class Color
-			{
-				 blue boolean (0..1);
-			}
-			
-			choice rule foo_bar
-				[regulatoryReference ESMA EMIR section "bla" provision "bla"]
-				[marketPractice ISDA write-up "bla" recommendation "bla"]
-				for Foo
-				required choice between foo
-					and bar
 		'''.parseRosettaWithNoErrors	
 	}
 	
@@ -329,12 +305,12 @@ class RosettaParsingTest {
 	'''
 			class Foo
 			{
-				quoteId string (1..1);
+				quoteId string (1..1)
 			}
 			
 			class Bar
 			{
-				quoteId string (1..1);
+				quoteId string (1..1)
 			}
 			
 			workflow rule FooBar
@@ -350,7 +326,7 @@ class RosettaParsingTest {
 	'''
 			class Base
 			{
-				quoteId string (1..1);
+				quoteId string (1..1)
 			}
 			
 			class Foo extends Base
@@ -373,12 +349,12 @@ class RosettaParsingTest {
 	'''
 			class Base
 			{
-				quote Quote (1..1);
+				quote Quote (1..1)
 			}
 			
 			class Quote
 			{
-				quoteId string (1..1);
+				quoteId string (1..1)
 			}
 			
 			class Foo extends Base
@@ -437,22 +413,18 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymsWithPathExpression() {
 		'''
-			class Foo 
-			{
-				foo int (0..1);
-					[synonym FpML value foo path "fooPath1"]
-			}
+			type Foo :
+				foo int (0..1)
+					[synonym FpML value "foo" path "fooPath1"]
 		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
 	def void synonymsWithHint() {
 		'''
-			class Foo 
-			{
-				foo int (0..1);
+			type Foo :
+				foo int (0..1)
 					[synonym FpML hint myHint]
-			}
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -462,7 +434,7 @@ class RosettaParsingTest {
 		'''
 			class Foo 
 			{
-				foo int (0..1);
+				foo int (0..1)
 					[synonym FpML hint myHint*]
 			}
 		'''.parseRosetta
@@ -473,7 +445,7 @@ class RosettaParsingTest {
 		'''
 			class Foo
 			{
-				foo boolean (0..1);
+				foo boolean (0..1)
 					[synonym FpML set to True when "FooSyn" exists]
 			}
 		'''.parseRosettaWithNoErrors
@@ -484,7 +456,7 @@ class RosettaParsingTest {
 		'''
 			class Foo
 			{
-				foo string (0..1);
+				foo string (0..1)
 					[synonym FpML set to "A" when "FooSyn" exists]
 			}
 		'''.parseRosettaWithNoErrors
@@ -495,7 +467,7 @@ class RosettaParsingTest {
 		'''
 			class Foo
 			{
-				foo BarEnum (0..1);
+				foo BarEnum (0..1)
 					[synonym FpML set to BarEnum.a when "FooSyn" exists]
 			}
 			
@@ -510,8 +482,8 @@ class RosettaParsingTest {
 		'''
 			class Foo
 			{
-				foo BarEnum (0..1);
-					[synonym FpML value FooSyn default to BarEnum.a]
+				foo BarEnum (0..1)
+					[synonym FpML value "FooSyn" default to BarEnum.a]
 			}
 			
 			enum BarEnum {
@@ -523,11 +495,9 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingSetWhenEqualsCondition() {
 		'''
-			class Foo
-			{
-				foo boolean (0..1);
-					[synonym FpML value FooSyn set when "relative/path/to/some/enum" = BarEnum.a]
-			}
+			type Foo:
+				foo boolean (0..1)
+					[synonym FpML value "FooSyn" set when "relative/path/to/some/enum" = BarEnum.a]
 			
 			enum BarEnum {
 				a, b
@@ -538,37 +508,31 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingSetWhenExistsCondition() {
 		'''
-			class Foo
-			{
-				foo boolean (0..1);
-					[synonym FpML value FooSyn set when "../relative/path/to/some/value" exists]
-			}
+			type Foo:
+				foo boolean (0..1)
+					[synonym FpML value "FooSyn" set when "../relative/path/to/some/value" exists]
 		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
 	def void testSynonymMappingSetWhenIsAbsentCondition() {
 		'''
-			class Foo
-			{
-				foo boolean (0..1);
-					[synonym FpML value FooSyn set when "../relative/path/to/some/value" is absent]
-			}
+			type Foo:
+				foo boolean (0..1)
+					[synonym FpML value "FooSyn" set when "../relative/path/to/some/value" is absent]
 		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
 	def void testSynonymMappingMultipleSetToWhenConditions() {
 		'''
-			class Foo
-			{
-				foo string (0..1);
+			type Foo:
+				foo string (0..1)
 					[synonym FpML
 							set to "1" when "../relative/path/to/string" = "Foo",
 							set to "2" when "../relative/path/to/enum" = BarEnum.a,
 							set to "3" when "../relative/path/to/string" is absent,
 							set to "4"]
-			}
 			
 			enum BarEnum {
 				a, b
@@ -579,45 +543,39 @@ class RosettaParsingTest {
 	@Test
 	def void testClassSynonym() {
 	'''
-			class Foo
-				[synonym FpML value FooSyn]
-			{
-				bar boolean (1..1);
-			}
+			type Foo:
+				[synonym FpML value "FooSyn"]
+				bar boolean (1..1)
 			
 		'''.parseRosettaWithNoErrors
 	}
 
-	@Test
+	@Test @Disabled //FIXME support "and Foo_Bar apply" ?
 	def void testIsProduct() {
 	'''
 			isProduct FooBar
-				[synonym Bank_A value Foo_Bar]
-				[synonym Venue_B value BarFoo]
+				[synonym Bank_A value "Foo_Bar"]
+				[synonym Venue_B value "BarFoo"]
 				Foo -> foo exists
 					and ( Foo -> bar is absent
 						or Foo -> foo <> Foo -> foo  )
 				and Foo_Bar apply
 				
-			class Foo
-			{
-				foo string (1..1);
-				bar Bar (0..1);
-			}
-			class Bar
-			{
-				bar string (1..1);
-			}
+			type Foo:
+				foo string (1..1)
+				bar Bar (0..1)
+				condition Foo_Bar:
+					if foo exists
+						then Foo is absent
 			
-			data rule Foo_Bar
-				when Foo -> foo exists
-				then Foo is absent
+			type Bar:
+				bar string (1..1)
 			
-		'''.parseRosettaWithNoErrors	
+		'''.parseRosettaWithNoErrors
 	}
 	
 	
-	@Test
+	@Test @Disabled //FIXME referencing  'data rule' not supported
 	def void testIsEvent() {
 	'''
 			isEvent FooBar
@@ -630,12 +588,12 @@ class RosettaParsingTest {
 				
 			class Foo
 			{
-				foo string (1..1);
-				bar Bar (0..1);
+				foo string (1..1)
+				bar Bar (0..1)
 			}
 			class Bar
 			{
-				bar string (1..1);
+				bar string (1..1)
 			}
 			
 			data rule Foo_Bar
@@ -647,10 +605,8 @@ class RosettaParsingTest {
 	@Test
 	def void externalSynonymWithMapperShouldParseWithNoErrors() {
 	'''
-			class Foo
-			{
-				foo string (0..1);
-			}
+			type Foo:
+				foo string (0..1)
 			
 			synonym source TEST_Base
 			
@@ -658,7 +614,7 @@ class RosettaParsingTest {
 				
 				Foo:
 					+ foo
-						[value bar path "baz" mapper BarToFooMapper]
+						[value "bar" path "baz" mapper BarToFooMapper]
 			}
 		'''.parseRosettaWithNoErrors
 	}
@@ -668,10 +624,9 @@ class RosettaParsingTest {
 	'''
 			metaType scheme string
 			
-			class Foo
-			{
-				foo string (0..1) scheme;
-			}
+			type Foo:
+				foo string (0..1)
+				[metadata scheme]
 			
 			synonym source TEST_Base
 			
@@ -679,7 +634,7 @@ class RosettaParsingTest {
 				
 				Foo:
 					+ foo
-						[value bar path "baz" meta barScheme]
+						[value "bar" path "baz" meta barScheme]
 			}
 		'''.parseRosettaWithNoErrors
 	}
