@@ -26,18 +26,15 @@ class RosettaFormattingTest {
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			class Test <"Some definition">
-			{
-				field1 string (1..1) <"Field 1">;
-				field2 string (1..1) <"Field 2">;
-			}
-			
+			type Test: <"Some definition">
+				field1 string (1..1) <"Field 1">
+				field2 string (1..1) <"Field 2">
 		'''
 
 		val unFormatted = '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
-			class Test <"Some definition"> { 	field1 string (1..1) <"Field 1">; field2 string (1..1) <"Field 2">; }			}		
+					type Test: <"Some definition"> field1 string (1..1) <"Field 1"> field2 string (1..1) <"Field 2">
 		'''
 
 		assertEquals(expectedResult, format(unFormatted))
@@ -49,18 +46,13 @@ class RosettaFormattingTest {
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			class CalculationPeriod stereotype contractualProduct, entityReferenceData <"xxx xxx.">
-				[synonym FpML value CalculationPeriod]
-			{
-			}
-			
+			type CalculationPeriod: <"xxx xxx.">
+				[synonym FpML value "CalculationPeriod"]
 		'''
 
 		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model" version "test" class CalculationPeriod stereotype contractualProduct,entityReferenceData <"xxx xxx."> 
-			 [synonym FpML value CalculationPeriod]
-			{
-			}
+			namespace "com.regnosys.rosetta.model" version "test" type CalculationPeriod: <"xxx xxx.">
+			 [synonym FpML value "CalculationPeriod"]
 		'''
 
 		assertEquals(expectedResult, format(unFormatted))
@@ -72,54 +64,110 @@ class RosettaFormattingTest {
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			class CalculationPeriod stereotype contractualProduct <"xxx xxx.">
-				[synonym FpML value CalculationPeriod]
-			{
-				field1 string (1..1) <"Some Field">;
-					[synonym FpML value CalculationPeriod]
-			}
+			type CalculationPeriod: <"xxx xxx.">
+				[synonym FpML value "CalculationPeriod"]
+				// sinleline comment
+				field1 string (1..1) <"Some Field">
+					[synonym FpML value "CalculationPeriod"]
 			
 		'''
 
 		val unFormatted = '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
-			class CalculationPeriod stereotype contractualProduct <"xxx xxx."> [synonym FpML value CalculationPeriod]
-			{
-								field1 string (1..1) <"Some Field">;[synonym FpML value CalculationPeriod]
-				
-			}
-			
+			type CalculationPeriod : <"xxx xxx."> [synonym FpML value "CalculationPeriod"]
+					// sinleline comment
+								field1 string (1..1) <"Some Field">[synonym FpML value "CalculationPeriod"]
+
 		'''
 
 		assertEquals(expectedResult, format(unFormatted))
 	}
 
 	@Test
-	def void classWithProductReferenceDataIsFormattedWithClassAndAttributes() {
-		val expectedResult = '''
+	def void conditionOnType() {
+		'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			type CalculationPeriod : <"xxx xxx.">  [  metadata   scheme  ] [synonym FpML value "CalculationPeriod"]
+								// sinleline comment
+						field3 string (1..1) <"Some Field">  [  metadata   scheme  ]
+						// sinleline comment
+						[synonym FpML value "CalculationPeriod"] 					field1 string (1..1) <"Some Field">[synonym FpML value "CalculationPeriod"] condition: one-of condition Foo: field1
+			condition Foo12: 	optional 		choice field1 , field3
+			// sinleline comment
+						condition Foo2:
+			optional
+			choice field1 , field3  condition Foo4:
+			required
+			choice field1 , field3
+				condition:
+				one-of
+		''' -> '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			class Product stereotype productReferenceData <"Product Def.">
-				[regulatoryReference ESMA MiFIR article "Article 1" provision "Some provision"]
-			{
-				field1 string (1..1) <"Some Field">;
-					[regulatoryReference ESMA MiFIR article "Article 2" provision "Another provision"]
-				field2 string (1..1) <"Some Field">;
-			}
-			
+			type CalculationPeriod: <"xxx xxx.">
+				[metadata scheme]
+				[synonym FpML value "CalculationPeriod"]
+				// sinleline comment
+				field3 string (1..1) <"Some Field">
+					[metadata scheme]
+					// sinleline comment
+					[synonym FpML value "CalculationPeriod"]
+				field1 string (1..1) <"Some Field">
+					[synonym FpML value "CalculationPeriod"]
+				condition: one-of
+				condition Foo: field1
+				condition Foo12: optional choice field1, field3
+			// sinleline comment
+				condition Foo2:
+					optional choice field1, field3
+				condition Foo4:
+					required choice field1, field3
+				condition:
+					one-of
 		'''
-		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model"
+	}
+
+	@Test
+	def void conditionOnFunc() {
+		'''
+			namespace "test"
 			version "test"
-			class Product stereotype productReferenceData <"Product Def."> [regulatoryReference ESMA MiFIR article "Article 1" provision "Some provision"]  {
-			field1 string (1..1) <"Some Field">;
-			[regulatoryReference ESMA MiFIR article "Article 2" provision "Another provision"] field2 string (1..1) <"Some Field">;
-			
-			}
+			type Type: foo string (1..1) func Execute2:[ metadata  scheme ] inputs:		product string (1..1) <"">[synonym FpML value "CalculationPeriod"] 		quantity string (1..1) 	output:
+					execution Type (1..1) <""> condition Foo: product assign-output execution -> foo:
+					"sdf"assign-output execution:
+					execution
+			assign-output execution:
+			execution
+			post-condition:
+			execution -> foo is absent
+		''' -> '''
+			namespace "test"
+			version "test"
+
+			type Type:
+				foo string (1..1)
+
+			func Execute2:
+				[metadata scheme]
+				inputs:
+					product string (1..1) <"">
+						[synonym FpML value "CalculationPeriod"]
+					quantity string (1..1)
+				output:
+					execution Type (1..1) <"">
+				condition Foo: product
+				assign-output execution -> foo:
+					"sdf"
+				assign-output execution:
+					execution
+				assign-output execution:
+					execution
+				post-condition:
+					execution -> foo is absent
 		'''
-		assertEquals(expectedResult, format(unFormatted))
 	}
 
 	@Test
@@ -128,126 +176,75 @@ class RosettaFormattingTest {
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
-			enum DatesReferenceEnum <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
-			{
-				tradeDate,
-				effectiveDate,
-				firstRegularPeriodStartDate,
-				lastRegularPeriodEndDate,
-				cashSettlementPaymentDate <"FpML business validation rule ird-46 specifies that, in the context of the OptionalEarlyTermination, cashSettlement/cashSettlementValuationDate/dateRelativeTo/@href must equal cashSettlement/cashSettlementPaymentDate/@id.">,
-				calculationPeriodDates <"FpML business validation rule ird-59 specifies that if resetDates exists in resetDates/calculationPeriodDatesReference, the @href attribute is equal to the @id attribute of calculationPeriodDates in the same swapStream.">,
-				paymentDates,
-				resetDates,
-				fixingDates,
+			enum DatesReferenceEnum: <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
+				tradeDate
+				effectiveDate
+				firstRegularPeriodStartDate
+				lastRegularPeriodEndDate
+				cashSettlementPaymentDate <"">
+				calculationPeriodDates <"FpML business validation rule ird-59 specifies that if resetDates exists in resetDates/calculationPeriodDatesReference, the @href attribute is equal to the @id attribute of calculationPeriodDates in the same swapStream.">
+				paymentDates
+				resetDates
+				fixingDates
 				valuationDates
-			}
-			
 		'''
 		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model" version "test" enum DatesReferenceEnum <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
-			{
-				tradeDate,
-				effectiveDate,firstRegularPeriodStartDate,lastRegularPeriodEndDate,cashSettlementPaymentDate <"FpML business validation rule ird-46 specifies that, in the context of the OptionalEarlyTermination, cashSettlement/cashSettlementValuationDate/dateRelativeTo/@href must equal cashSettlement/cashSettlementPaymentDate/@id.">,
-				calculationPeriodDates <"FpML business validation rule ird-59 specifies that if resetDates exists in resetDates/calculationPeriodDatesReference, the @href attribute is equal to the @id attribute of calculationPeriodDates in the same swapStream.">,
-				paymentDates,resetDates,fixingDates,valuationDates
-			}
-				
+			namespace "com.regnosys.rosetta.model" version "test" enum DatesReferenceEnum: <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
+				tradeDate
+				effectiveDate firstRegularPeriodStartDate lastRegularPeriodEndDate cashSettlementPaymentDate <"">
+				calculationPeriodDates <"FpML business validation rule ird-59 specifies that if resetDates exists in resetDates/calculationPeriodDatesReference, the @href attribute is equal to the @id attribute of calculationPeriodDates in the same swapStream.">
+				paymentDates resetDates fixingDates valuationDates
 		'''
 		assertEquals(expectedResult, format(unFormatted))
 	}
 
 	@Test
 	def void formatDayOfWeekEnum() {
-		val expectedResult = '''
+		'''namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum: <"A day of the seven-day week."> [synonym FpML value "DayOfWeekEnum"] MON <"Monday">[synonym FpML value "MON"] TUE <"Tuesday">[synonym FpML value "TUE"] WED <"Wednesday">[synonym FpML value "WED"]THU <"Thursday">[synonym FpML value "THU"]FRI <"Friday">[synonym FpML value "FRI"]SAT <"Saturday">[synonym FpML value "SAT"]SUN <"Sunday">[synonym FpML value "SUN"]
+		''' -> '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
-			
-			enum DayOfWeekEnum <"A day of the seven-day week.">
-				[synonym FpML value DayOfWeekEnum]
-			{
+
+			enum DayOfWeekEnum: <"A day of the seven-day week.">
+				[synonym FpML value "DayOfWeekEnum"]
 				MON <"Monday">
-					[synonym FpML value "MON"],
+					[synonym FpML value "MON"]
 				TUE <"Tuesday">
-					[synonym FpML value "TUE"],
+					[synonym FpML value "TUE"]
 				WED <"Wednesday">
-					[synonym FpML value "WED"],
+					[synonym FpML value "WED"]
 				THU <"Thursday">
-					[synonym FpML value "THU"],
+					[synonym FpML value "THU"]
 				FRI <"Friday">
-					[synonym FpML value "FRI"],
+					[synonym FpML value "FRI"]
 				SAT <"Saturday">
-					[synonym FpML value "SAT"],
+					[synonym FpML value "SAT"]
 				SUN <"Sunday">
 					[synonym FpML value "SUN"]
-			}
-			
-		'''
-		val unFormatted = '''namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum <"A day of the seven-day week."> [synonym FpML value DayOfWeekEnum]{MON <"Monday">[synonym FpML value "MON"],TUE <"Tuesday">[synonym FpML value "TUE"],WED <"Wednesday">[synonym FpML value "WED"],THU <"Thursday">[synonym FpML value "THU"],FRI <"Friday">[synonym FpML value "FRI"],SAT <"Saturday">[synonym FpML value "SAT"],SUN <"Sunday">[synonym FpML value "SUN"]}'''
-		assertEquals(expectedResult, format(unFormatted))
-	}
-	
-	@Test
-	def void formatSpreadScheduleTypeEnum() {
-		val expectedResult = '''
-			namespace "com.regnosys.rosetta.model"
-			version "test"
-			
-			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value.">
-				[synonym FpML value spreadScheduleTypeScheme]
-			{
-				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
-					[synonym FpML value "Long"],
-				Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
-					[synonym FpML value "Short"]
-			}
-			
-		'''
-		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model"
-			version "test"
-			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value."> 	[synonym FpML value spreadScheduleTypeScheme]
-			{
-				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
-			[synonym FpML value "Long"], Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
-					[synonym FpML value "Short"]
-			}
-			
-		'''
-		assertEquals(expectedResult, format(unFormatted))
-	}
-	
-	@Test
-	def void formatDataRule() {
-		val expectedResult = '''
-			namespace "com.regnosys.rosetta.model"
-			version "test"
-			
-			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value.">
-				[synonym FpML value spreadScheduleTypeScheme]
-			{
-				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
-					[synonym FpML value "Long"],
-				Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
-					[synonym FpML value "Short"]
-			}
-			
-		'''
-		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model" 
-			version "test"
-			enum SpreadScheduleTypeEnum <"The enumerated values to specify a long or short spread value."> 	
-				[synonym FpML value spreadScheduleTypeScheme]
-			{
-				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
-			[synonym FpML value "Long"],
-			Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
-					[synonym FpML value "Short"]
-			}
-			
-		'''
-		assertEquals(expectedResult, format(unFormatted))
+			'''
 	}
 
+	@Test
+	def void formatSpreadScheduleTypeEnum() {
+		'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			enum SpreadScheduleTypeEnum: <"The enumerated values to specify a long or short spread value."> 	[synonym FpML value "spreadScheduleTypeScheme"]
+				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
+			[synonym FpML value "Long"] Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
+					[synonym FpML value "Short"]
+		'''->'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			
+			enum SpreadScheduleTypeEnum: <"The enumerated values to specify a long or short spread value.">
+				[synonym FpML value "spreadScheduleTypeScheme"]
+				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
+					[synonym FpML value "Long"]
+				Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
+					[synonym FpML value "Short"]
+			'''
+	}
 
 	@Test
 	def void formatExternalSynomym() {
@@ -261,15 +258,15 @@ class RosettaFormattingTest {
 				
 				
 				Contract:
-				+ account	[value my_account]
-				[value my_account_2]
+				+ account	[value "my_account"]
+				[value "my_account_2"]
 				
-				+ party [value my_party]
+				+ party [value "my_party"]
 				
 				
 				Event:
 					+ account
-					[value event_account]
+					[value "event_account"]
 					
 					
 					
@@ -285,22 +282,124 @@ class RosettaFormattingTest {
 			{
 				Contract:
 					+ account
-						[value my_account]
-						[value my_account_2]
+						[value "my_account"]
+						[value "my_account_2"]
 					+ party
-						[value my_party]
+						[value "my_party"]
 			
 				Event:
 					+ account
-						[value event_account]
+						[value "event_account"]
 			}
 			
 		'''
 		assertEquals(expectedResult, format(unFormatted))
 	}
-	
+
+	@Test
+	def void formatAttributeSynomym() {
+		'''
+			namespace "test"
+			version "test"
+			synonym source SynSource
+
+			type AllocationOutcome:
+				allocatedTrade AllocationOutcome (1..*)
+											[synonym SynSource value "originalTrade"]
+				originalTrade string (1..1)<"">
+					[synonym SynSource value "allocatedTrade"]
+
+				condition AllocationOutcome_executionClosed: <"The allocation outcome must result in execution state of 'Allocated' for an execution.">
+					if AllocationOutcome -> allocatedTrade  exists
+					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+				condition AllocationOutcome_contractClosed: <"The allocation outcome must result in a contract state of 'Allocated' for a contract.">
+					if AllocationOutcome -> allocatedTrade  exists
+					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+				condition AllocationOutcome_contractClosed:
+					one-of
+		''' -> '''
+			namespace "test"
+			version "test"
+			synonym source SynSource
+
+			type AllocationOutcome:
+				allocatedTrade AllocationOutcome (1..*)
+					[synonym SynSource value "originalTrade"]
+				originalTrade string (1..1)<"">
+					[synonym SynSource value "allocatedTrade"]
+
+				condition AllocationOutcome_executionClosed: <"The allocation outcome must result in execution state of 'Allocated' for an execution.">
+					if AllocationOutcome -> allocatedTrade  exists
+					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+				condition AllocationOutcome_contractClosed: <"The allocation outcome must result in a contract state of 'Allocated' for a contract.">
+					if AllocationOutcome -> allocatedTrade  exists
+					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+				condition AllocationOutcome_contractClosed:
+					one-of
+		'''
+	}
+
+	@Test
+	def void formatIsEvent() {
+		'''
+			namespace "test"
+			version "test"
+
+			type Type:
+				other Type (0..1)
+
+			isEvent TypeEvent
+			Type -> other -> other only exists
+					and Type -> other -> other is absent
+			 and Type -> other -> other  is absent
+			 	and Type -> other -> other is absent
+		''' -> '''
+			namespace "test"
+			version "test"
+
+			type Type:
+				other Type (0..1)
+
+			isEvent TypeEvent
+				Type -> other -> other only exists
+				and Type -> other -> other is absent
+				and Type -> other -> other  is absent
+				and Type -> other -> other is absent
+		'''
+	}
+
+	@Test
+	def void formatIsProduct() {
+		'''
+			namespace "test"
+						version "test"
+
+						type Type:
+							other Type (0..1)
+						isProduct TypeProduct
+			Type -> other -> other only exists
+					and Type -> other -> other is absent
+			 and Type -> other -> other  is absent
+			 	and Type -> other -> other is absent
+		''' -> '''
+			namespace "test"
+			version "test"
+
+			type Type:
+				other Type (0..1)
+			isProduct TypeProduct
+				Type -> other -> other only exists
+				and Type -> other -> other is absent
+				and Type -> other -> other  is absent
+				and Type -> other -> other is absent
+		'''
+	}
+
 	def String format(String unFormatted) {
 		unFormatted.parse.serialize(SaveOptions.newBuilder.format().getOptions())
 	}
 
+	def ->(CharSequence unformated, CharSequence expectation) {
+		assertEquals(expectation.toString, format(unformated.toString))
+	}
 }

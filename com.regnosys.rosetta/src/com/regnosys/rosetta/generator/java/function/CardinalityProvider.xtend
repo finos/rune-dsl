@@ -11,12 +11,15 @@ import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 
 class CardinalityProvider {
 	
@@ -28,6 +31,7 @@ class CardinalityProvider {
 					if (obj.receiver.isMulti) true else obj.feature.isMulti
 				}
 			}
+			RosettaEnumValue:false
 			WithCardinality: if(obj.card === null) false else obj.card.isIsMany
 			RosettaCallableCall: if(obj.toOne) false else obj.callable.isMulti
 			RosettaCallableWithArgsCall: obj.callable.isMulti
@@ -39,15 +43,24 @@ class CardinalityProvider {
 			RosettaAlias: obj.expression.isMulti
 			ListLiteral: true
 			RosettaLiteral,
+			RosettaTypedFeature,
+			RosettaFeature,
+			RosettaSynonymValueBase,
 			RosettaRootElement,
-			RosettaEnumValue,
 			RosettaEnumValueReference: false
-			default: {println(obj?.eClass?.name)false }
+			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }
 		}
 	}
 	
 	def boolean expectedCardinalityMany(Operation op) {
-		val assignTarget = if(op.path === null) op.assignRoot else op.pathAsSegmentList.last.attribute
-		return assignTarget.isMulti
+		return if (op.path === null)
+			op.assignRoot.isMulti
+		else {
+			val lastSegment = op.pathAsSegmentList.last
+			if (lastSegment.index !== null) {
+				false
+			} else
+				lastSegment.attribute.isMulti
+		}
 	}
 }

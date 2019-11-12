@@ -69,15 +69,12 @@ class RosettaObjectBoilerPlateGeneratorTest {
 	@Test
 	def void shouldGenerateHashCodeForEnumsUsingClassName() {
 		val code = '''
-			enum TestEnum 
-			{
+			enum TestEnum :
 				TestEnumValue
-			}
 			
-			class ThatHasEnums {
-				testEnum TestEnum (1..1);
-				testEnums TestEnum (1..*);
-			}
+			type ThatHasEnums:
+				testEnum TestEnum (1..1)
+				testEnums TestEnum (1..*)
 		'''.generateCode
 		
 		val thatHasEnumsClass = code.get(javaPackages.model.packageName + '.ThatHasEnums')

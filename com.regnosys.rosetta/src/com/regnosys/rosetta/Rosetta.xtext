@@ -49,6 +49,12 @@ Attribute:
 	RosettaNamed RosettaTyped card=RosettaCardinality Definable? (Annotations|Synonyms)*
 ;
 
+Enumeration returns RosettaEnumeration:
+	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|ValidID])? ':' RosettaDefinable
+		(synonyms += RosettaSynonym)*
+		enumValues += RosettaEnumValue*
+;
+
 Function:
 	'func' 
 	(
@@ -102,10 +108,10 @@ Operation:
 ;
 
 Segment:
-	'->' attribute = [RosettaFeature|ValidID] ('['index = INT']')?(next = Segment)?;
+	FEATURE_CALL_SEPARATOR attribute = [Attribute|ValidID] ('['index = INT']')?(next = Segment)?;
 
 EnumValueReference returns RosettaEnumValueReference:
-	enumeration=[RosettaEnumeration|ValidID] '->' value=[RosettaEnumValue|ValidID]
+	enumeration=[RosettaEnumeration|ValidID] FEATURE_CALL_SEPARATOR value=[RosettaEnumValue|ValidID]
 ;
 
 EmptyLiteral:
@@ -117,11 +123,11 @@ ListLiteral:
 
 // old stuff
 RosettaRootElement:
-	RosettaClass | RosettaEnumeration |
+	RosettaClass | Enumeration |
 	RosettaDataRule | RosettaWorkflowRule | RosettaChoiceRule | 
 	RosettaAlias | RosettaProduct |
 	RosettaOrganisation | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | RosettaStereotypeValue |
-	RosettaEvent | RosettaEnumStyle |
+	RosettaEvent |
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaBlueprint | RosettaQualifiedType | RosettaCalculationType  | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaBlueprintReport
@@ -137,7 +143,7 @@ fragment RosettaDefinable:
 ;
 
 fragment RosettaNamed:
-	name = (ValidID | 'type' | 'enum')
+	name = ValidID
 ;
 
 fragment RosettaTyped:
@@ -146,11 +152,10 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'e' | 'E' | 'one' | 'maps' | 'source' | 'style' | 'basicType' | 'version' | 'condition' | 'key' | 'value')
-;
-
-ValidHint: 
-       ValidID'*'?
+	(ID | 'key' // used in Lib: annotations.rosetta
+		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
+		| 'one' // TODO used in CDM model and can be removed after RosettaClass rule is deleted
+	)
 ;
 
 
@@ -172,7 +177,7 @@ RosettaRecordType:
 	'}'
 ;
 
-RosettaRecordFeature returns RosettaFeature: 
+RosettaRecordFeature returns RosettaTypedFeature:
 	RosettaNamed type=[RosettaBuiltinType|ValidID]
 ;
 
@@ -190,7 +195,7 @@ RosettaQualifiedType:
 	'}'
 ;
 
-RosettaQualifiedTypeFeature returns RosettaFeature: 
+RosettaQualifiedTypeFeature returns RosettaTypedFeature:
 	RosettaNamed type=[RosettaBuiltinType|ValidID]
 ;
 
@@ -200,7 +205,7 @@ RosettaCalculationType:
 	'}'
 ;
 
-RosettaCalculationTypeFeature returns RosettaFeature: 
+RosettaCalculationTypeFeature returns RosettaTypedFeature:
 	RosettaNamed type=[RosettaBuiltinType|ValidID]
 ;
 
@@ -237,30 +242,18 @@ RosettaStereotypeValue:
 
 RosettaRegularAttribute:
 	RosettaNamed RosettaTyped card=RosettaCardinality (metaTypes += [RosettaMetaType])? (',' metaTypes += [RosettaMetaType])* RosettaDefinable ';'?
-		(synonyms += RosettaSynonym)*
-		(references += RosettaRegulatoryReference)*
-		(marketPractice += RosettaMarketPractice)*
-;
-
-RosettaEnumeration:
-	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|ValidID])? RosettaDefinable 
-		(synonyms += RosettaSynonym)*
-		(references += RosettaRegulatoryReference)*
-	'{' (enumValues += RosettaEnumValue',')* enumValues += RosettaEnumValue '}'
+	(synonyms += RosettaSynonym)*
+	(references += RosettaRegulatoryReference)*
+	(marketPractice += RosettaMarketPractice)*
 ;
 
 RosettaEnumValue:
-	RosettaNamed ('displayName' display=STRING)? (style=RosettaEnumStyle)? RosettaDefinable
-		(enumSynonyms += RosettaEnumSynonym)*
-		(references += RosettaRegulatoryReference)*
+	RosettaNamed ('displayName' display=STRING)? RosettaDefinable
+	(enumSynonyms += RosettaEnumSynonym)*
 ;
 
 RosettaCardinality:
 	'(' (inf=INT'..' sup=INT | inf=INT'..' unbounded?='*') ')'
-;
-
-RosettaEnumStyle:
-	'style' RosettaNamed
 ;
 
 
@@ -276,8 +269,8 @@ RosettaClassSynonym:
 	 ']'
 ;
 
-RosettaClassSynonymValue:
-	RosettaNamed (refType=RosettaSynonymRef value=INT)? 
+RosettaClassSynonymValue returns RosettaSynonymValueBase:
+	name = STRING (refType=RosettaSynonymRef value=INT)?
 	('path' path = STRING)? 
 ;
 
@@ -289,27 +282,26 @@ RosettaSynonym:
 
 RosettaSynonymBody:
 	( 'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? 
-		| 'hint' (hints+=ValidHint ',')* hints+=ValidHint
+		| 'hint' (hints+=SynonymID ',')* hints+=SynonymID
 		| mappingLogic=RosettaMappingSetTo )
-	('meta' (metaValues += ValidID ',')* metaValues += ValidID)?
+	('meta' (metaValues += SynonymID ',')* metaValues += SynonymID)?
 	('mapper' mapper=ValidID)?
 	
 ;
 
-RosettaSynonymValue:
-	RosettaNamed (valueExtension=RosettaSynonymEnumeration)? (refType=RosettaSynonymRef value=INT)? 
-	('path'  path = STRING)? 
+RosettaSynonymValue returns RosettaSynonymValueBase :
+	name = STRING (refType=RosettaSynonymRef value=INT)?
+	('path' path = STRING)? 
 	('maps' maps=INT)?
 ;
-
-RosettaMetaSynonymValue:
-	RosettaNamed (refType=RosettaSynonymRef value=INT)? 
+RosettaMetaSynonymValue  returns RosettaSynonymValueBase :
+	name = SynonymID (refType=RosettaSynonymRef value=INT)?
 	('path' path = STRING)? 
 	('maps' maps=INT)?
 ;
 
-RosettaSynonymEnumeration:
-	value = '.' enumValue=STRING
+SynonymID:
+	ID
 ;
 
 RosettaEnumSynonym:
@@ -373,7 +365,7 @@ RosettaMapTestExpression returns RosettaExpression:
 ;
 
 RosettaMapPrimaryExpression returns RosettaExpression:
-	RosettaEnumValueReference
+	EnumValueReference
 	| RosettaStringLiteral
 	| RosettaBooleanLiteral
 	| RosettaIntLiteral
@@ -402,7 +394,7 @@ RosettaRegulatoryRegime:
 ;
 
 RosettaMandate:
-	('corpus'|'mandate') (corpusType=ID)? (STRING)? RosettaNamed RosettaDefinable
+	('corpus'|'mandate') (corpusType=ID)? (STRING)? RosettaNamed RosettaDefinable // FIXME what is "(STRING)?" for?
 ;
 
 RosettaSegment:
@@ -437,7 +429,7 @@ RosettaTestExpression returns RosettaExpression:
 		| {RosettaAbsentExpression.argument=current} ('is' 'absent')
 		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaFeatureCall
 		| {RosettaCountOperation.left=current} 'count' operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaFeatureCall
-		| {RosettaWhenPresentExpression.left=current} ('when' 'present') operator=('=') right=RosettaPrimaryExpression 
+		| {RosettaWhenPresentExpression.left=current} ('when' 'present') operator=('=') right=RosettaFeatureCall
 	)?
 ;
 
@@ -451,16 +443,15 @@ RosettaGroupByFeatureCall returns RosettaExpression:
 
 RosettaGroupByExpression:
 	// TODO change to Attribute after migration
-	attribute = [RosettaFeature|ValidID] ('->' right = RosettaGroupByExpression)?
+	attribute = [RosettaTypedFeature|ValidID] (FEATURE_CALL_SEPARATOR right = RosettaGroupByExpression)?
 ;
 
 RosettaFeatureCall returns RosettaExpression:
-	RosettaPrimaryExpression ({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID])*
+	RosettaPrimaryExpression ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID])*
 ;
 
 RosettaPrimaryExpression returns RosettaExpression:
 	RosettaCallableCall
-	| RosettaEnumValueReference
 	| RosettaLiteral
 	| '(' RosettaExpression ')'
 ;
@@ -472,10 +463,6 @@ RosettaCallableCall:
 RosettaConditionalExpression returns RosettaExpression:
 	RosettaExpression // Blueprint stuff
 	| {RosettaConditionalExpression} 'if' if=RosettaExpression 'then' ifthen=RosettaConditionalExpression 'else' elsethen=RosettaConditionalExpression
-;
-
-RosettaEnumValueReference:
-	enumeration=[RosettaEnumeration|ValidID] '.' value=[RosettaEnumValue|ValidID]
 ;
 
 RosettaLiteral:
@@ -510,7 +497,12 @@ BigDecimal:
 Integer:
 	'-'? INT
 ;
-
+/*
+ * = '->'
+ */
+terminal FEATURE_CALL_SEPARATOR:
+	'->'
+;
 /**********************************************************************
  * Data Rule
  */
@@ -535,7 +527,7 @@ RosettaWorkflowRule:
 	('when' when = RosettaExpression)?
 	root = RosettaTreeNode
 	('and' data = RosettaExpression)?
-	('commonId' ( commonIdentifier = [RosettaFeature|ValidID] | 'path' commonIdPath = RosettaClassAttributeCall ) )?
+	('commonId' ( commonIdentifier = [RosettaTypedFeature|ValidID] | 'path' commonIdPath = RosettaClassAttributeCall ) )?
 ;
 
 RosettaTreeNode:
@@ -547,7 +539,7 @@ RosettaTreeNode:
 ;
 
 RosettaClassAttributeCall returns RosettaExpression:
-	RosettaClassReference ({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID])*
+	RosettaClassReference ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID])*
 ;
 
 RosettaClassReference returns RosettaExpression:
@@ -679,7 +671,7 @@ RosettaCalcMultiplicative returns RosettaExpression:
 
 RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
-	( =>({RosettaFeatureCall.receiver=current} '->') (=>feature=[RosettaFeature|ValidID])? toOne ?= 'only-element'?)*
+	( =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])? toOne ?= 'only-element'?)*
 ;
 
 RosettaCalcPrimary returns RosettaExpression:
@@ -687,7 +679,6 @@ RosettaCalcPrimary returns RosettaExpression:
 	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|ValidID] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' toOne ?= 'only-element'?
 	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
 	| RosettaCallableCall
-	| RosettaEnumValueReference
 	| RosettaLiteral
 	| RosettaParenthesisCalcExpression
 ;

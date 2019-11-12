@@ -91,19 +91,16 @@ class RosettaObjectBuilderPatternGeneratorTest {
 	@Test
 	def void shouldGenerateObjectUsingBuilderOfBuildersPattern() {
 		val code = '''
-			enum TestEnum {
+			enum TestEnum:
 				testEnumValueOne
-			}
 			
-			class One {
-				oneField string (1..1);
-			}
+			type One:
+				oneField string (1..1)
 			
-			class Test {
-				multipleEnums TestEnum (1..*);
-				multipleOnes One (1..*);
-				singleOne One (1..1);
-			}
+			type Test:
+				multipleEnums TestEnum (1..*)
+				multipleOnes One (1..*)
+				singleOne One (1..1)
 		'''.generateCode
 
 		val testClassCode = code.get(javaPackages.model.packageName + '.Test')

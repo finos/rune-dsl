@@ -25,9 +25,7 @@ class RosettaCalculationGenerationTest {
 				periodEnum PeriodEnum (1..1)
 				period number (1..1)
 			
-			enum PeriodEnum {
-				MONTH
-			}
+			enum PeriodEnum:MONTH
 			
 			func DayFraction :
 				inputs: in2 Period( 1..1 )
@@ -305,11 +303,11 @@ class RosettaCalculationGenerationTest {
 			private FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder resHolder, FuncIn funIn) {
 				@SuppressWarnings("unused") FoncOut res = resHolder.build();
 				resHolder
-					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get())
 				;
 				res = resHolder.build();
 				resHolder
-					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get())
 				;
 				return resHolder;
 			}
@@ -399,11 +397,11 @@ class RosettaCalculationGenerationTest {
 			private FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder outHolder, FuncIn funcIn) {
 				@SuppressWarnings("unused") FuncOut out = outHolder.build();
 				outHolder
-					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
+					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get())
 				;
 				out = outHolder.build();
 				outHolder
-					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
+					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get())
 				;
 				return outHolder;
 			}
@@ -491,19 +489,22 @@ class RosettaCalculationGenerationTest {
 						outHolder
 							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setExternalReference(
 									MapperS.of(withMeta).get().getMeta().getGlobalKey()
-								).build());
+								).build()
+							)
 						;
 						out = outHolder.build();
 						outHolder
 							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setExternalReference(
 									MapperS.of(withMeta).get().getMeta().getGlobalKey()
-								).build(), 1);
+								).build()
+							, 1)
 						;
 						out = outHolder.build();
 						outHolder
 							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setExternalReference(
 									MapperS.of(withMeta).get().getMeta().getGlobalKey()
-								).build());
+								).build()
+							)
 						;
 						return outHolder;
 					}
@@ -513,6 +514,90 @@ class RosettaCalculationGenerationTest {
 					public static final class asKeyUsageDefault extends asKeyUsage {
 						@Override
 						protected  OtherType.OtherTypeBuilder doEvaluate(WithMeta withMeta) {
+							return OtherType.builder();
+						}
+					}
+				}
+			'''
+		)
+	}
+	@Test
+	def void testAsKeyGenerationMultiValue() {
+		'''
+		type WithMeta:
+			[metadata key]
+		
+		type OtherType:
+			attrSingle WithMeta (0..1)
+			[metadata reference]
+			attrMulti WithMeta (0..*)
+			[metadata reference]
+			
+		func asKeyUsage:
+			inputs: withMeta WithMeta(0..*)
+			output: out OtherType (0..1)
+			assign-output out -> attrMulti:
+				withMeta as-key
+			assign-output out -> attrSingle:
+				withMeta only-element as-key
+		'''.assertToGeneratedCalculation(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.MapperC;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.OtherType;
+				import com.rosetta.test.model.WithMeta;
+				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
+				import java.util.List;
+				import java.util.stream.Collectors;
+				
+				
+				@ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
+				public abstract class asKeyUsage implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param withMeta 
+					* @return out 
+					*/
+					public OtherType evaluate(List<WithMeta> withMeta) {
+						
+						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
+						OtherType out = assignOutput(outHolder, withMeta).build();
+						
+						objectValidator.validateAndFailOnErorr(OtherType.class, out);
+						return out;
+					}
+					
+					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder outHolder, List<WithMeta> withMeta) {
+						@SuppressWarnings("unused") OtherType out = outHolder.build();
+						outHolder
+							.addAttrMulti(MapperC.of(withMeta)
+							.getItems().map(
+									(item) -> ReferenceWithMetaWithMeta.builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
+								).collect(Collectors.toList())
+							)
+						;
+						out = outHolder.build();
+						outHolder
+							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setExternalReference(
+									MapperC.of(withMeta).get().getMeta().getGlobalKey()
+								).build()
+							)
+						;
+						return outHolder;
+					}
+				
+					protected abstract OtherType.OtherTypeBuilder doEvaluate(List<WithMeta> withMeta);
+					
+					public static final class asKeyUsageDefault extends asKeyUsage {
+						@Override
+						protected  OtherType.OtherTypeBuilder doEvaluate(List<WithMeta> withMeta) {
 							return OtherType.builder();
 						}
 					}
@@ -602,11 +687,9 @@ class RosettaCalculationGenerationTest {
 				output: out string (1..1)
 			
 			
-			enum Math
-			{
-				INCR,
+			enum Math:
+				INCR
 				DECR
-			}
 			
 			func MathFunc:
 				inputs:

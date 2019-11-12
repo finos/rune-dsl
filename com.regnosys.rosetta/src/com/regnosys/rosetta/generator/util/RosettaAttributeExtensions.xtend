@@ -5,7 +5,6 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.generator.object.ExpandedSynonymValue
-import com.regnosys.rosetta.rosetta.RosettaAttributeBase
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
@@ -22,22 +21,23 @@ import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
-import com.regnosys.rosetta.rosetta.RosettaSynonymValue
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Set
+import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 
 class RosettaAttributeExtensions {
 
-	static def boolean cardinalityIsSingleValue(RosettaAttributeBase attribute) {
+	static def boolean cardinalityIsSingleValue(RosettaRegularAttribute attribute) {
 		return (attribute as RosettaRegularAttribute).card.sup === 1
 	}
 	
-	static def boolean cardinalityIsListValue(RosettaAttributeBase attribute) {
+	static def boolean cardinalityIsListValue(RosettaRegularAttribute attribute) {
 		attribute.cardinalityIsSingleValue != true
 	}
 	
@@ -285,8 +285,8 @@ class RosettaAttributeExtensions {
 		
 	}
 	
-	def static metaSynValue(RosettaSynonymValue value, String meta) {
-		val path = if (value.path===null) value.name else value.path+"."+value.name
+	def static metaSynValue(RosettaSynonymValueBase value, String meta) {
+		val path = if (value.path===null) value.name else value.path+"->"+value.name
 		val name = meta
 		return new ExpandedSynonymValue(name, path, value.maps, true)
 	}
@@ -321,15 +321,15 @@ class RosettaAttributeExtensions {
 		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null)
 	}
 
-	private def static boolean isCalculation(RosettaFeature a) {
+	private def static boolean isCalculation(RosettaTypedFeature a) {
 		return a.type instanceof RosettaCalculationType
 	}
 
-	private def static boolean isEnumeration(RosettaFeature a) {
+	private def static boolean isEnumeration(RosettaTypedFeature a) {
 		return a.type instanceof RosettaEnumeration
 	}
 
-	private def static boolean isQualified(RosettaFeature a) {
+	private def static boolean isQualified(RosettaTypedFeature a) {
 		return a.type instanceof RosettaQualifiedType
 	}
 	

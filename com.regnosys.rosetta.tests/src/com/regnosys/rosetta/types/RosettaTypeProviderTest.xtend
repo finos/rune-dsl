@@ -53,12 +53,11 @@ class RosettaTypeProviderTest {
 				bar Bar (0..*);
 			}
 			
-			enum Bar {
-				X,Y
-			}
+			enum Bar:
+				X Y
 			
 			data rule DataRule 
-				when Foo->bar contains Bar.X and Foo->bar contains Bar.Y
+				when Foo->bar contains Bar->X and Foo->bar contains Bar->Y
 				then Foo->bar exists
 		'''.parseRosettaWithNoErrors.elements.filter(RosettaDataRule).head
 
@@ -92,9 +91,8 @@ class RosettaTypeProviderTest {
 	@Test
 	def testAliasStackOverflow() {
 		val rule = '''
-			class Foo {
-				bar string (0..*);
-			}
+			type Foo:
+				bar string (0..*)
 			
 			
 			alias A <"...">
@@ -104,16 +102,32 @@ class RosettaTypeProviderTest {
 
 		assertEquals('Can not compute type for A because of recursive call.', rule.RType.name)
 	}
+	
+	@Test
+	def void testEnumCompatibility() {
+		'''
+			namespace "test"
+			version "test"
+			
+			enum Enumerate: X Y Z
+			enum EnumerateExtended extends Enumerate: A  B  C
+			
+			type Prodtype:
+				attr Enumerate (0..1)
+				attrEx EnumerateExtended (0..1)
+			
+			isProduct Prod 
+				Prodtype -> attrEx = Enumerate -> X
+		'''.parseRosettaWithNoErrors
+	}
 
 	@Test
 	def testBinaryExpressionCommonType() {
 		val aliases = '''
-			class Foo {
-				iBar int (0..*);
-				nBar number (0..*);
-				nBuz number (0..*);
-			}
-			
+			type Foo:
+				iBar int (0..*)
+				nBar number (0..*)
+				nBuz number (0..*)
 			
 			isEvent AllNumber 
 				(Foo -> nBar or Foo -> nBuz) = 4.0

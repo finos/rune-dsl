@@ -40,9 +40,6 @@ class ModelObjectBoilerPlate {
 		«d.wrap.boilerPlate»
 	'''
 
-	def calculationResultBoilerPlate(String ownerName, List<? extends RosettaFeature> features) {
-		features.wrapCalculationResult(ownerName).boilerPlate
-	}
 
 	def builderBoilerPlate(RosettaClass c) {
 		val wrap = c.wrap
@@ -234,13 +231,6 @@ class ModelObjectBoilerPlate {
 			data.hasSuperType,
 			true
 		);
-	}
-
-	private def TypeData wrapCalculationResult(List<? extends RosettaFeature> features, String typeName) {
-		return new TypeData(typeName, features.map [
-			new ExpandedAttribute(null, getNameOrDefault, type, typeName, 0, 1, list, Collections.emptyList, null,
-				false, it == RosettaEnumeration, false, Collections.emptyList)
-		], false, false);
 	}
 	
 	private def processMethod(extension TypeData it) '''
