@@ -148,7 +148,7 @@ class JavaNames {
 		@Inject Injector injector
 
 		def create(RosettaModel model) {
-			create(new RosettaJavaPackages(model.header.namespace))
+			create(new RosettaJavaPackages(model.name))
 		}
 		
 		def create(RosettaJavaPackages packages) {

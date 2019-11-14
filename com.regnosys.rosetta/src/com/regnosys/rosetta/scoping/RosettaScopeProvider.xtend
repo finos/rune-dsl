@@ -9,6 +9,7 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
+import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
@@ -19,6 +20,7 @@ import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -28,10 +30,12 @@ import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RFeatureCallType
 import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
@@ -39,14 +43,11 @@ import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.FilteringScope
+import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider
 import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.utils.RosettaConfigExtension
-import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.types.REnumType
 
 /**
  * This class contains custom scoping description.
@@ -54,7 +55,7 @@ import com.regnosys.rosetta.types.REnumType
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
  * on how and when to use it.
  */
-class RosettaScopeProvider extends AbstractRosettaScopeProvider {
+class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaExtensions
@@ -268,6 +269,19 @@ class RosettaScopeProvider extends AbstractRosettaScopeProvider {
 			}
 		}
 		defaultScope(context, reference)
+	}
+	
+	override protected getImplicitImports(boolean ignoreCase) {
+		#[createImportedNamespaceResolver("com.rosetta.model.*", ignoreCase)]
+	}
+	
+	override protected internalGetImportedNamespaceResolvers(EObject context, boolean ignoreCase) {
+		return if (context instanceof RosettaModel) {
+			return #[
+				doCreateImportNormalizer(getQualifiedNameConverter.toQualifiedName(context.name), true, ignoreCase)
+			]
+		} else
+			emptyList
 	}
 	
 	private def IScope defaultScope(EObject object, EReference reference) {

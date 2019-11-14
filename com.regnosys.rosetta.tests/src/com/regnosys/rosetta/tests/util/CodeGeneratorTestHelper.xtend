@@ -27,8 +27,8 @@ class CodeGeneratorTestHelper {
 		val eResource = model.parseRosettaWithNoErrors.eResource;
 		
 		eResource.contents.filter(RosettaModel).forEach[
-			val packages = new RosettaJavaPackages(header.namespace)
-			val version = header.version
+			val packages = new RosettaJavaPackages(name)
+			val version = version
 			generator.generate(packages, fsa, elements, version)	
 		]
 		

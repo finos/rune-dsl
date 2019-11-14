@@ -1,17 +1,24 @@
+
 grammar com.regnosys.rosetta.Rosetta with org.eclipse.xtext.common.Terminals
 import "http://www.rosetta-model.com/Rosetta"
 import "http://www.rosetta-model.com/RosettaSimple"
 
 RosettaModel:
-	header=RosettaHeader
+	'namespace' name=(QualifiedName | STRING)
+	('version' version=STRING)?
+	
+	imports += Import*
+	
 	(configurations += RosettaQualifiableConfiguration)* // TODO think about having only RootElements or only configurations
 	(elements += (RosettaRootElement | RootElement))*
 ;
 
-RosettaHeader:
-	'namespace' namespace=STRING
-	'version' version=STRING
+QualifiedName:
+	ValidID ('.' ValidID)*
 ;
+
+Import:
+	'import' importedNamespace=QualifiedName;
 
 RootElement:
 	 Annotation | Data | Function;
@@ -275,7 +282,7 @@ RosettaClassSynonymValue returns RosettaSynonymValueBase:
 ;
 
 RosettaSynonym:
-	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*
+	'[' 'synonym' sources+=[RosettaSynonymSource|ValidID] (',' sources += [RosettaSynonymSource])*
 	body=RosettaSynonymBody
 	']'
 ;

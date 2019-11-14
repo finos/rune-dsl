@@ -14,6 +14,7 @@ class ModelHelper {
 
 	public static val commonEnums = '''
 		«getVersionInfo»
+		
 		basicType string
 		basicType int
 		basicType number

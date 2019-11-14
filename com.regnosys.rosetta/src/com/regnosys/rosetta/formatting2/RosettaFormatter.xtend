@@ -25,7 +25,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalSynonym
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaHeader
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
@@ -72,14 +71,11 @@ class RosettaFormatter extends AbstractFormatter2 {
 	@Inject extension RosettaGrammarAccess
 	
 	def dispatch void format(RosettaModel rosettaModel, extension IFormattableDocument document) {
-		rosettaModel.header.format
+		rosettaModel.regionFor.keyword('version').prepend[newLine]
+		rosettaModel.append[setNewLines(1,1,2)]
 		formatChild(rosettaModel.elements, document)
 	}
 
-	def dispatch void format(RosettaHeader rosettaHeader, extension IFormattableDocument document) {
-		rosettaHeader.regionFor.keyword('version').prepend[newLine]
-		rosettaHeader.append[setNewLines(1,1,2)]
-	}
 
 	def dispatch void format(RosettaClass rosettaClass, extension IFormattableDocument document) {
 		indentedBraces(rosettaClass, document)
