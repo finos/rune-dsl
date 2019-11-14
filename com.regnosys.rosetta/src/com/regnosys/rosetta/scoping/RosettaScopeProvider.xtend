@@ -7,7 +7,6 @@ import com.google.common.base.Predicate
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
@@ -48,6 +47,8 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
+import org.eclipse.xtext.naming.QualifiedName
 
 /**
  * This class contains custom scoping description.
@@ -108,18 +109,19 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						val feature = receiver.feature
 						switch(feature) {
 							RosettaRegularAttribute:  {
-								val metas = feature.metaTypes;
+								val metas = feature.metaTypes
 								if (metas !== null && !metas.isEmpty) {
 									val metaScope = Scopes.scopeFor(metas)
-									allPosibilities.addAll(metaScope.allElements);
+									allPosibilities.addAll(metaScope.allElements)
 								}
 							}
 							Attribute: {
 								val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
+								// TODO check that we can use QualifiedName here 
 								if (metas !== null && !metas.isEmpty) {
 									allPosibilities.addAll(configs.findMetaTypes(feature).filter[
-										metas.contains(it.name.toString)
-									]);
+										metas.contains(it.name.lastSegment.toString)
+									].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)])
 								}
 							}
 						}
@@ -233,14 +235,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					} else if(parent instanceof RosettaClass)
 						return Scopes.scopeFor(parent.allAttributes)
 				}
-			case ROSETTA_ENUM_VALUE_REFERENCE__ENUMERATION: {
-				if (context instanceof RosettaEnumValueReference
-					|| context instanceof FunctionDispatch
-					|| context instanceof RosettaBinaryOperation) {
-					return defaultScope(context, reference)
-				}
-				return IScope.NULLSCOPE
-			}
 			case ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF: {
 				if (context instanceof RosettaExternalRegularAttribute) {
 					val classRef = (context.eContainer as RosettaExternalClass).classRef

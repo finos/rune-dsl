@@ -20,7 +20,6 @@ class RosettaCalculationGenerationTest {
 	@Test
 	def void testSimpleTransDep() {
 		val genereated = '''
-			namespace test
 			type Period:
 				frequency int (1..1)
 				periodEnum PeriodEnum (1..1)
@@ -675,7 +674,6 @@ class RosettaCalculationGenerationTest {
 	@Test
 	def void shouldResolveExternalFunctionDependenciesWhenEnumCalculation() {
 		val generated = '''
-			namespace test
 			type MathInput:
 				mathInput string (1..1)
 				math Math (1..1)

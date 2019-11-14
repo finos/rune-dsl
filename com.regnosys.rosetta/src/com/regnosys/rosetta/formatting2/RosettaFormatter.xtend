@@ -72,7 +72,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 	
 	def dispatch void format(RosettaModel rosettaModel, extension IFormattableDocument document) {
 		rosettaModel.regionFor.keyword('version').prepend[newLine]
-		rosettaModel.append[setNewLines(1,1,2)]
 		formatChild(rosettaModel.elements, document)
 	}
 
