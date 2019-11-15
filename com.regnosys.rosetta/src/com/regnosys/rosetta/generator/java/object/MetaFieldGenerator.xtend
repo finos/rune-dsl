@@ -22,7 +22,7 @@ class MetaFieldGenerator {
 	
 	def generate(IFileSystemAccess2 fsa, Iterable<RosettaMetaType> metaTypes, Iterable<RosettaRootElement> allClasses, Iterable<String> namespaces) {
 		
-		val namespaceToMetas = Multimaps.index(metaTypes, [name]).asMap
+		val namespaceToMetas = Multimaps.index(metaTypes, [namespace]).asMap
 		val libMetas = namespaceToMetas.getOrDefault(LIB_NAMESPACE, Collections.emptyList)
 		for (namespace:namespaces) {
 			val rosettaMetas = namespaceToMetas.getOrDefault(namespace, libMetas)
