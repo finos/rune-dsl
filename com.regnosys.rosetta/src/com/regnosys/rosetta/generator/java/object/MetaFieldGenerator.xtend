@@ -15,15 +15,15 @@ import static extension com.regnosys.rosetta.generator.java.util.JavaClassTransl
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
 
 class MetaFieldGenerator {
 	
-	val static LIB_NAMESPACE = 'com.rosetta.model'
 	
 	def generate(IFileSystemAccess2 fsa, Iterable<RosettaMetaType> metaTypes, Iterable<RosettaRootElement> allClasses, Iterable<String> namespaces) {
 		
 		val namespaceToMetas = Multimaps.index(metaTypes, [namespace]).asMap
-		val libMetas = namespaceToMetas.getOrDefault(LIB_NAMESPACE, Collections.emptyList)
+		val libMetas = namespaceToMetas.getOrDefault(RosettaScopeProvider.LIB_NAMESPACE, Collections.emptyList)
 		for (namespace:namespaces) {
 			val rosettaMetas = namespaceToMetas.getOrDefault(namespace, libMetas)
 			val packages = new RosettaJavaPackages(namespace)

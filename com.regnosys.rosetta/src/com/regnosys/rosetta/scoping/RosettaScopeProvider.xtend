@@ -57,7 +57,9 @@ import org.eclipse.xtext.naming.QualifiedName
  * on how and when to use it.
  */
 class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
-
+	
+	public val static LIB_NAMESPACE = 'com.rosetta.model'
+	
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaConfigExtension configs
@@ -266,14 +268,16 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	}
 	
 	override protected getImplicitImports(boolean ignoreCase) {
-		#[createImportedNamespaceResolver("com.rosetta.model.*", ignoreCase)]
+		#[createImportedNamespaceResolver(LIB_NAMESPACE + ".*", ignoreCase)]
 	}
 	
 	override protected internalGetImportedNamespaceResolvers(EObject context, boolean ignoreCase) {
 		return if (context instanceof RosettaModel) {
-			return #[
+			val imports = super.internalGetImportedNamespaceResolvers(context, ignoreCase)
+			imports.add(
 				doCreateImportNormalizer(getQualifiedNameConverter.toQualifiedName(context.name), true, ignoreCase)
-			]
+			)
+			return imports
 		} else
 			emptyList
 	}
