@@ -94,6 +94,7 @@ class SynonymGeneratorTest {
 	@Test
 	def void shouldGenerateRosettaSynonymsWithMetaId() {
 		val code = '''
+			namespace «rootPackage.name»
 			type Test:
 				[metadata key]
 				[synonym FpML meta id]

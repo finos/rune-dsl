@@ -85,6 +85,10 @@ public class RosettaJavaPackages {
 			{
 				subPackage = "." + this.name ;
 			}
+			if(ctx.getModel() == null) {
+				// Faked attributes
+				return JavaType.create(name() + '.' + typeName);
+			}
 			return JavaType.create(ctx.getModel().getName() + subPackage + '.' + typeName);
 		}
 

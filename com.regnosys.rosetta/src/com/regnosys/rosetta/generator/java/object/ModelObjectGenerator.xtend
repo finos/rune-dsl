@@ -121,18 +121,18 @@ class ModelObjectGenerator {
 			import com.rosetta.model.lib.meta.ReferenceWithMeta;
 			import com.rosetta.model.lib.meta.FieldWithMeta;
 		«ENDIF»
-		import «packages.defaultLibValidation.name».RosettaClass;
+		import «packages.defaultLibAnnotations.name».RosettaClass;
 		import com.rosetta.model.lib.path.RosettaPath;
 		import com.rosetta.model.lib.process.*;
 
 		«IF c.hasQualifiedAttribute»
-			import «packages.defaultLibValidation.name».RosettaQualified;
+			import «packages.defaultLibAnnotations.name».RosettaQualified;
 		«ENDIF»
 		«IF c.hasStereotypes»
-			import «packages.defaultLibValidation.name».RosettaStereotype;
+			import «packages.defaultLibAnnotations.name».RosettaStereotype;
 		«ENDIF»
 		«IF c.hasAnySynonyms»
-			import «packages.defaultLibValidation.name».RosettaSynonym;
+			import «packages.defaultLibAnnotations.name».RosettaSynonym;
 		«ENDIF»
 		«IF c.globalKeyRecursive»
 			import «packages.model.metaField.name».MetaFields;
@@ -144,7 +144,7 @@ class ModelObjectGenerator {
 			import «packages.defaultLib.name».RosettaKeyValueBuilder;
 		«ENDIF»
 		«IF c.isRoot»
-			import «packages.defaultLibValidation.name».RosettaRoot;
+			import «packages.defaultLibAnnotations.name».RosettaRoot;
 		«ENDIF»
 		import «packages.defaultLib.name».qualify.Qualified;
 		import com.rosetta.util.ListEquals;
