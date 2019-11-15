@@ -6,22 +6,19 @@ import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.GlobalKey
+import com.rosetta.model.lib.GlobalKeyBuilder
 import com.rosetta.model.lib.RosettaKeyValue
+import com.rosetta.model.lib.RosettaKeyValueBuilder
+import com.rosetta.model.lib.qualify.Qualified
 import com.rosetta.util.ListEquals
-import java.util.Collections
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.rosetta.model.lib.qualify.Qualified
-import com.rosetta.model.lib.GlobalKeyBuilder
-import com.rosetta.model.lib.RosettaKeyValueBuilder
-import com.regnosys.rosetta.rosetta.simple.Data
 
 class ModelObjectBoilerPlate {
 
@@ -132,7 +129,7 @@ class ModelObjectBoilerPlate {
 			} else
 				'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
 
-		return '''«names.packages.metaField.javaType(metaType)»'''
+		return '''«JavaType.create(names.packages.model.metaField.child(metaType).name)»'''
 	}
 
 	private def StringConcatenationClient boilerPlate(TypeData c) {

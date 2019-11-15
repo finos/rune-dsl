@@ -87,7 +87,7 @@ class JavaNames {
 	def JavaType toJavaType(RosettaCallableWithArgs func) {
 		switch (func) {
 			Function:
-				packages.functions.javaType(func.name)
+				packages.model.functions.javaType(func)
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + func?.class?.name)
 		}
@@ -98,14 +98,14 @@ class JavaNames {
 			RosettaBasicType:
 				createForBasicType(type.name)
 			RosettaClass case type.name == RosettaAttributeExtensions.METAFIELDSCLASSNAME: {
-				packages.metaField.javaType(type.name)
+				packages.model.metaField.javaType(type)
 			}
 			RosettaClass,
 			Data,
-			RosettaEnumeration: packages.model.javaType(type.name)
-			RosettaRecordType: JavaType.create(JavaClassTranslator.toJavaFullType(type.name))?:JavaType.create(packages.libRecords.packageName + '.' +type.name.toFirstUpper)
+			RosettaEnumeration: packages.model.javaType(type)
+			RosettaRecordType: JavaType.create(JavaClassTranslator.toJavaFullType(type.name))?:JavaType.create(packages.defaultLibRecords.name + '.' +type.name.toFirstUpper)
 			RosettaExternalFunction:
-						packages.libFunctions.javaType(type.name.toFirstUpper)
+						packages.defaultLibFunctions.javaType(type)
 			RosettaCalculationType,
 			RosettaQualifiedType: JavaType.create('java.lang.String')
 			default:
@@ -147,8 +147,8 @@ class JavaNames {
 	static class Factory {
 		@Inject Injector injector
 
-		def create(RosettaModel model) {
-			create(new RosettaJavaPackages(model.name))
+		def create(RosettaModel model) { 
+			create(new RosettaJavaPackages(model))
 		}
 		
 		def create(RosettaJavaPackages packages) {

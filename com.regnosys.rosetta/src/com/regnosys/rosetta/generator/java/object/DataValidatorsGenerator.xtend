@@ -33,16 +33,16 @@ class DataValidatorsGenerator {
 	@Inject extension ImportManagerExtension
 
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version) {
-		fsa.generateFile(names.packages.classValidation.directoryName + '/' + data.name + 'Validator.java',
+		fsa.generateFile(names.packages.model.typeValidation.directoryName + '/' + data.name + 'Validator.java',
 			generatClass(names, data, version))
-		fsa.generateFile(names.packages.existsValidation.directoryName + '/' + onlyExistsValidatorName(data) + '.java',
+		fsa.generateFile(names.packages.model.existsValidation.directoryName + '/' + onlyExistsValidatorName(data) + '.java',
 			generateOnlyExistsValidator(names, data, version))
 	}
 
 	private def generatClass(JavaNames names, Data d, String version) {
 		val classBody = tracImports(d.classBody(names, version, d.getExpandedAttributes(false)))
 		'''
-			package «names.packages.classValidation.packageName»;
+			package «names.packages.model.typeValidation.name»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -58,7 +58,7 @@ class DataValidatorsGenerator {
 	private def generateOnlyExistsValidator(JavaNames names, Data d, String version) {
 		val classBody = tracImports(d.onlyExistsClassBody(names, version))
 		'''
-			package «names.packages.existsValidation.packageName»;
+			package «names.packages.model.existsValidation.name»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;

@@ -430,7 +430,7 @@ class ModelObjectBuilderGenerator {
 				} else {
 					'''FieldWithMeta«attribute.typeName.toFirstUpper».FieldWithMeta«attribute.typeName.toFirstUpper»Builder'''
 				}
-			'''«names.packages.metaField.javaType(buildername)»'''
+			'''«JavaType.create(names.packages.model.metaField.child(buildername).name)»'''
 		} else {
 			'''«attribute.toBuilderTypeUnderlying(names)»'''
 		}

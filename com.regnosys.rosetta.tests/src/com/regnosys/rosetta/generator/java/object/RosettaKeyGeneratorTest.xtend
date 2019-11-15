@@ -28,7 +28,7 @@ class RosettaKeyGeneratorTest {
 		'''.generateCode
 
 		val classess = code.compileToClasses
-		val withRosettaKey = classess.get(javaPackages.model.packageName + '.WithRosettaKey')
+		val withRosettaKey = classess.get(rootPackage.name + '.WithRosettaKey')
 
 		assertThat(withRosettaKey.declaredFields.map[name], hasItem('meta'))
 		assertThat(withRosettaKey.declaredFields.map[name], hasItem('rosettaKeyValue'))
@@ -43,7 +43,7 @@ class RosettaKeyGeneratorTest {
 		'''.generateCode
 
 		val classess = code.compileToClasses
-		val withRosettaKey = classess.get(javaPackages.model.packageName + '.WithRosettaKey')
+		val withRosettaKey = classess.get(rootPackage.name + '.WithRosettaKey')
 
 		assertThat(withRosettaKey.methods.exists[name.equals('getMeta')], is(true))
 		assertThat(withRosettaKey.methods.exists[name.equals('getRosettaKeyValue')], is(false))
@@ -58,7 +58,7 @@ class RosettaKeyGeneratorTest {
 		'''.generateCode
 
 		val classess = code.compileToClasses
-		val withoutRosettaKeys = classess.get(javaPackages.model.packageName + '.WithoutRosettaKeys')
+		val withoutRosettaKeys = classess.get(rootPackage.name + '.WithoutRosettaKeys')
 
 		assertThat(withoutRosettaKeys.fields.map[name], not(hasItem('metaFields')))
 
@@ -74,7 +74,7 @@ class RosettaKeyGeneratorTest {
 		'''.generateCode
 
 		val classess = code.compileToClasses
-		val withRosettaKeyValue = classess.get(javaPackages.model.packageName + '.WithRosettaKeyValue')
+		val withRosettaKeyValue = classess.get(rootPackage.name + '.WithRosettaKeyValue')
 
 		assertThat(withRosettaKeyValue.methods.exists[name.equals('getRosettaKey')], is(false))
 		assertThat(withRosettaKeyValue.methods.exists[name.equals('getRosettaKeyValue')], is(true))
@@ -89,7 +89,7 @@ class RosettaKeyGeneratorTest {
 		'''.generateCode
 
 		val classess = code.compileToClasses
-		val withRosettaKeys = classess.get(javaPackages.model.packageName + '.WithRosettaKeys')
+		val withRosettaKeys = classess.get(rootPackage.name + '.WithRosettaKeys')
 
 		assertThat(withRosettaKeys.methods.exists[name.equals('getMeta')], is(true))
 		assertThat(withRosettaKeys.methods.exists[name.equals('getRosettaKeyValue')], is(true))

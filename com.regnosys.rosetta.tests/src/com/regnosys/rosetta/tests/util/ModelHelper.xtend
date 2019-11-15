@@ -1,11 +1,11 @@
 package com.regnosys.rosetta.tests.util
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.rosetta.RosettaModel
+import org.eclipse.emf.common.util.URI
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import org.eclipse.emf.common.util.URI
 
 class ModelHelper {
 
@@ -85,8 +85,10 @@ class ModelHelper {
 		'''
 	}
 	
-	def javaPackages() {
-		return new RosettaJavaPackages("com.rosetta.test.model")
+	val rootpack = new RootPackage("com.rosetta.test.model")
+
+	final def RootPackage rootPackage() {
+		return rootpack
 	}
 
 	def parseRosetta(CharSequence model) {

@@ -196,7 +196,7 @@ class ExpressionGenerator {
 				'''«MapperS».of(«callable.name.toFirstLower».evaluate(«args(expr, params)»))'''
 			}
 			RosettaExternalFunction:
-				'''«MapperS».of(new «new RosettaJavaPackages(null).libFunctions.javaType(callable.name)»().execute(«args(expr, params)»))'''
+				'''«MapperS».of(new «new RosettaJavaPackages().defaultLibFunctions.javaType(callable)»().execute(«args(expr, params)»))'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable with args type of " + expr.eClass.name)
 		}
@@ -592,9 +592,10 @@ class ExpressionGenerator {
 	}
 	
 	def JavaType metaClass(Attribute attribute) {
-		val pack = attribute.javaNames?.packages?.metaField
-		if (attribute.annotations.exists[a|a.annotation?.name=="metadata" && a.attribute?.name=="reference"]) pack?.javaType("ReferenceWithMeta"+attribute.type.name.toFirstUpper)
-		else pack?.javaType("FieldWithMeta"+attribute.type.name.toFirstUpper)
+		val metaPackage = attribute.javaNames.packages.model.metaField
+		val name = if (attribute.annotations.exists[a|a.annotation?.name=="metadata" && a.attribute?.name=="reference"])  "ReferenceWithMeta"+attribute.type.name.toFirstUpper
+		else "FieldWithMeta"+attribute.type.name.toFirstUpper
+		return JavaType.create(metaPackage.child(name).name)
 	}
 	
 	def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, boolean isLast) {

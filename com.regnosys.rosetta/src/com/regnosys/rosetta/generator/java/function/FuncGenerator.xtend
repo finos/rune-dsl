@@ -52,7 +52,7 @@ class FuncGenerator {
 	@Inject  CardinalityProvider cardinality
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
-		val fileName = javaNames.packages.functions.directoryName + '/' + func.name + '.java'
+		val fileName = javaNames.packages.model.functions.directoryName + '/' + func.name + '.java'
 
 		
 		val dependencies = collectFunctionDependencies(func)
@@ -63,7 +63,7 @@ class FuncGenerator {
 				tracImports(func.classBody(func.name, dependencies, javaNames, version, false))
 			}
 		val content = '''
-			package «javaNames.packages.functions.packageName»;
+			package «javaNames.packages.model.functions.name»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -237,8 +237,8 @@ class FuncGenerator {
 	private def StringConcatenationClient assignValue(Operation op, JavaNames names) {
 		if(op.assignAsKey) {
 			val valueType =  typeProvider.getRType(namedAssignTarget(op))
-			val pack = names?.packages?.metaField
-			val metaCalss = pack?.javaType("ReferenceWithMeta"+valueType.name.toFirstUpper)
+			val pack = names?.packages?.model.metaField
+			val metaCalss = JavaType.create(pack?.child("ReferenceWithMeta"+valueType.name.toFirstUpper).name)
 			if (cardinality.isMulti(op.expression)) {
 				/*
 				.addParty(

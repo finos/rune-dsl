@@ -2,148 +2,185 @@ package com.regnosys.rosetta.generator.java;
 
 import java.util.Optional;
 
+import org.eclipse.xtext.EcoreUtil2;
+
 import com.regnosys.rosetta.generator.java.util.JavaType;
+import com.regnosys.rosetta.rosetta.RosettaModel;
+import com.regnosys.rosetta.rosetta.RosettaNamed;
+import com.regnosys.rosetta.rosetta.RosettaRootElement;
 
 public class RosettaJavaPackages {
 
-	private static final String LIB_NAMESPACE = "com.rosetta.model.lib";
-	private static final String BLUEPRINT_NAMESPACE = "com.regnosys.rosetta";
-	private static final String DEFAULT_NAMESPACE = "com.rosetta.model";
-	
-	private final String namespace;
-	
-	public RosettaJavaPackages(String namespace) {
-		this.namespace = Optional.ofNullable(namespace).orElse(DEFAULT_NAMESPACE);
-	}
-	
-	public Package lib() {
-		return new Package(LIB_NAMESPACE);
-	}
-	
-	public Package validation() {
-		return new Package(LIB_NAMESPACE, "validation");
+	private static final Package DEFAULT_NAMESPACE = new Package("com.rosetta.model");
+	private static final Package BLUEPRINT_NAMESPACE = new Package("com.regnosys.rosetta");
+	private RootPackage root;
+
+	public RosettaJavaPackages(RosettaModel model) {
+		this.root = new RootPackage(model);
 	}
 
-	public Package qualify() {
-		return new Package(LIB_NAMESPACE, "qualify");
-	}
-	
-	public Package metaLib() {
-		return new Package(LIB_NAMESPACE, "meta");
-	}
-	
-	public Package metaField() {
-		return new Package(namespace, "metafields");
-	}
-	
-	public Package annotations() {
-		return new Package(LIB_NAMESPACE, "annotations");
-	}
-	
-	public Package libFunctions() {
-		return new Package(LIB_NAMESPACE, "functions");
-	}
-	
-	public Package libRecords() {
-		return new Package(LIB_NAMESPACE, "records");
-	}
-	
-	public Package libBlueprint() {
-		return new Package(BLUEPRINT_NAMESPACE, "blueprints");
-	}
-	
-	public Package model() {
-		return new Package(namespace);
-	}
-	
-	public Package meta() {
-		return new Package(namespace, "meta");
+	public RosettaJavaPackages() {
 	}
 
-	public Package calculation() {
-		return new Package(namespace, "calculation");
-	}
-	
-	public Package functions() {
-		return new Package(namespace, "functions");
+	private Package defaultNamespace() {
+		return DEFAULT_NAMESPACE;
 	}
 
-	public Package binding() {
-		return new Package(namespace, "binding");
+	public RootPackage model() {
+		return this.root;
 	}
 
-	public Package bindingUtil() {
-		return new Package(namespace, "binding.util");
+	public Package blueprintLib() {
+		return BLUEPRINT_NAMESPACE.child("blueprints");
 	}
 
-	public Package classValidation() {
-		return new Package(namespace, "validation");
-	}
-	
-	public Package choiceRule() {
-		return new Package(namespace, "validation.choicerule");
+	public Package defaultLib() {
+		return defaultNamespace().child("lib");
 	}
 
-	public Package dataRule() {
-		return new Package(namespace, "validation.datarule");
-	}
-	
-	public Package existsValidation() {
-		return new Package(namespace, "validation.exists");
-	}
-	
-	public Package blueprint() {
-		return new Package(namespace, "blueprint");
+	public Package defaultLibAnnotations() {
+		return defaultLib().child("annotations");
 	}
 
-	public Package qualifyEvent() {
-		return new Package(namespace, "qualify.event");
+	public Package defaultLibFunctions() {
+		return defaultLib().child("functions");
 	}
-	
-	public Package qualifyProduct() {
-		return new Package(namespace, "qualify.product");
+
+	public Package defaultLibRecords() {
+		return defaultLib().child("records");
 	}
-	
-	public Package ingestion() {
-		return new Package(namespace, "ingestion");
+
+	public Package defaultLibValidation() {
+		return defaultLib().child("validation");
 	}
-	
-	public Package ingestionChild() {
-		return new Package(namespace, "ingestion");
+
+	public Package defaultLibQualify() {
+		return defaultLib().child("qualify");
 	}
-	
-	public Package processor() {
-		return new Package(namespace, "processor");
+
+	public Package defaultLibMeta() {
+		return defaultLib().child("meta");
 	}
-	
+
 	public static class Package {
-		private String nameSpace;
+		private Package parent;
 		private String name;
 
-		Package(String nameSpace) {
-			this.nameSpace = nameSpace;
-			this.name = null;
-		}
-		
-		Package(String nameSpace, String name) {
-			this.nameSpace = nameSpace;
+		Package(String name) {
 			this.name = name;
 		}
-		
-		public Package child(String child) {
-			return new Package(this.packageName(), child);
-		}
-		
-		public JavaType javaType(String typeName) {
-			return JavaType.create(this.packageName() + '.' + typeName);
+
+		private Package(Package parent, String name) {
+			this.parent = parent;
+			this.name = name;
 		}
 
-		public String packageName() {
-			return nameSpace + Optional.ofNullable(name).map(n -> "." + n).orElse("");
+		public Package child(String child) {
+			return new Package(this, child);
+		}
+
+		public JavaType javaType(RosettaRootElement ctx, String typeName) {
+			String subPackage = "";
+			if(!(this instanceof RootPackage))
+			{
+				subPackage = "." + this.name ;
+			}
+			return JavaType.create(ctx.getModel().getName() + subPackage + '.' + typeName);
+		}
+
+		public JavaType javaType(RosettaNamed namedType) {
+			RosettaRootElement rootElement = EcoreUtil2.getContainerOfType(namedType, RosettaRootElement.class);
+			return javaType(rootElement, namedType.getName());
+		}
+
+		public String name() {
+			if (parent != null) {
+				return parent.name() + "." + name;
+			}
+			return name;
 		}
 
 		public String directoryName() {
-			return packageName().replace('.', '/');
+			return name().replace('.', '/');
+		}
+		@Override
+		public String toString() {
+			return name();
+		}
+	}
+
+	public static class RootPackage extends Package {
+
+		public RootPackage(RosettaModel model) {
+			super(model.getName());
+		}
+
+		public RootPackage(String namespace) {
+			super(namespace);
+		}
+
+		public Package metaField() {
+			return new Package(this, "metafields");
+		}
+
+		public Package meta() {
+			return new Package(this, "meta");
+		}
+
+		public Package calculation() {
+			return new Package(this, "calculation");
+		}
+
+		public Package functions() {
+			return new Package(this, "functions");
+		}
+
+		public Package binding() {
+			return new Package(this, "binding");
+		}
+
+		public Package bindingUtil() {
+			return binding().child("util");
+		}
+
+		public Package typeValidation() {
+			return new Package(this, "validation");
+		}
+
+		public Package choiceRule() {
+			return typeValidation().child("choicerule");
+		}
+
+		public Package dataRule() {
+			return typeValidation().child("datarule");
+		}
+
+		public Package existsValidation() {
+			return typeValidation().child("exists");
+		}
+
+		public Package blueprint() {
+			return new Package(this, "blueprint");
+		}
+
+		public Package qualifyEvent() {
+			return new Package(this, "qualify.event");
+		}
+
+		public Package qualifyProduct() {
+			return new Package(this, "qualify.product");
+		}
+
+		public Package ingestion() {
+			return new Package(this, "ingestion");
+		}
+
+		public Package ingestionChild() {
+			return new Package(this, "ingestion");
+		}
+
+		public Package processor() {
+			return new Package(this, "processor");
 		}
 	}
 }

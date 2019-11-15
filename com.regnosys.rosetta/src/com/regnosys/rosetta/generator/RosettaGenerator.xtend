@@ -104,8 +104,8 @@ class RosettaGenerator extends AbstractGenerator {
 				dataRuleGenerator.generate(javaNames, fsa, elements, version)
 				metaGenerator.generate(packages, fsa, elements, version)
 				blueprintGenerator.generate(packages, fsa, elements, version)
-				qualifyEventsGenerator.generate(packages, fsa, elements, packages.qualifyEvent, RosettaEvent, version)
-				qualifyProductsGenerator.generate(packages, fsa, elements, packages.qualifyProduct, RosettaProduct, version)
+				qualifyEventsGenerator.generate(packages, fsa, elements, packages.model.qualifyEvent, RosettaEvent, version)
+				qualifyProductsGenerator.generate(packages, fsa, elements, packages.model.qualifyProduct, RosettaProduct, version)
 				
 				// Invoke externally defined code generators
 				externalGenerators.forEach[generator |

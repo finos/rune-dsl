@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.types.RQualifiedType
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -24,7 +25,6 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaImportSet
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.utils.RosettaConfigExtension
 
 class ModelObjectGenerator {
 	
@@ -38,9 +38,9 @@ class ModelObjectGenerator {
 		elements.filter(RosettaClass).forEach [ RosettaClass clazz |
 			fsa.generateFile(javaNames.packages.model.directoryName + '/' + clazz.name + '.java', generateRosettaClass(javaNames, clazz, version))
 			// TODO think about skipping the validation if lazz.attributes == 0 and provide an EmptyValidator
-			fsa.generateFile(javaNames.packages.classValidation.directoryName + '/' + clazz.name + 'Validator.java', validatorImpl(javaNames.packages, clazz))
+			fsa.generateFile(javaNames.packages.model.typeValidation.directoryName + '/' + clazz.name + 'Validator.java', validatorImpl(javaNames.packages, clazz))
 			
-			fsa.generateFile(javaNames.packages.existsValidation.directoryName + '/' + onlyExistsValidatorName(clazz) + '.java', onlyExistsValidator(javaNames.packages, clazz))
+			fsa.generateFile(javaNames.packages.model.existsValidation.directoryName + '/' + onlyExistsValidatorName(clazz) + '.java', onlyExistsValidator(javaNames.packages, clazz))
 		]
 	}
 
@@ -68,7 +68,7 @@ class ModelObjectGenerator {
 		
 		val clazz = tracImports(classBody(javaNames,c,version))
 		'''
-			package «javaNames.packages.model.packageName»;
+			package «javaNames.packages.model.name»;
 			
 			«FOR imp : clazz.imports»
 				import «imp»;
@@ -111,42 +111,42 @@ class ModelObjectGenerator {
 	}
 	private  def imports(RosettaJavaPackages packages, RosettaClass c) '''
 		«IF !c.hasSuperType »
-			import «packages.lib.packageName».RosettaModelObject;
+			import «packages.defaultLib.name».RosettaModelObject;
 		«ENDIF»
-		import «packages.lib.packageName».RosettaModelObjectBuilder;
-		import «packages.lib.packageName».meta.RosettaMetaData;
-		import «packages.model.packageName».meta.«c.name»Meta;
+		import «packages.defaultLib.name».RosettaModelObjectBuilder;
+		import «packages.defaultLib.name».meta.RosettaMetaData;
+		import «packages.model.name».meta.«c.name»Meta;
 		«IF c.allSuperTypes.map[expandedAttributes].flatten.exists[hasMetas]»
-			import «packages.metaField.packageName».*;
+			import «packages.model.metaField.name».*;
 			import com.rosetta.model.lib.meta.ReferenceWithMeta;
 			import com.rosetta.model.lib.meta.FieldWithMeta;
 		«ENDIF»
-		import «packages.annotations.packageName».RosettaClass;
+		import «packages.defaultLibValidation.name».RosettaClass;
 		import com.rosetta.model.lib.path.RosettaPath;
 		import com.rosetta.model.lib.process.*;
 
 		«IF c.hasQualifiedAttribute»
-			import «packages.annotations.packageName».RosettaQualified;
+			import «packages.defaultLibValidation.name».RosettaQualified;
 		«ENDIF»
 		«IF c.hasStereotypes»
-			import «packages.annotations.packageName».RosettaStereotype;
+			import «packages.defaultLibValidation.name».RosettaStereotype;
 		«ENDIF»
 		«IF c.hasAnySynonyms»
-			import «packages.annotations.packageName».RosettaSynonym;
+			import «packages.defaultLibValidation.name».RosettaSynonym;
 		«ENDIF»
 		«IF c.globalKeyRecursive»
-			import «packages.metaField.packageName».MetaFields;
-			import «packages.lib.packageName».GlobalKey;
-			import «packages.lib.packageName».GlobalKeyBuilder;
+			import «packages.model.metaField.name».MetaFields;
+			import «packages.defaultLib.name».GlobalKey;
+			import «packages.defaultLib.name».GlobalKeyBuilder;
 		«ENDIF»
 		«IF c.rosettaKeyValue»
-			import «packages.lib.packageName».RosettaKeyValue;
-			import «packages.lib.packageName».RosettaKeyValueBuilder;
+			import «packages.defaultLib.name».RosettaKeyValue;
+			import «packages.defaultLib.name».RosettaKeyValueBuilder;
 		«ENDIF»
 		«IF c.isRoot»
-			import «packages.annotations.packageName».RosettaRoot;
+			import «packages.defaultLibValidation.name».RosettaRoot;
 		«ENDIF»
-		import «packages.lib.packageName».qualify.Qualified;
+		import «packages.defaultLib.name».qualify.Qualified;
 		import com.rosetta.util.ListEquals;
 		
 		«FOR toImport : c.toJavaImportSet(packages)»
@@ -230,21 +230,11 @@ class ModelObjectGenerator {
 	'''
 	
 	private def StringConcatenationClient toJavaType(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isMultiple) '''«List»<«attribute.toJavaTypeSingle(names)»>''' 
-		else attribute.toJavaTypeSingle(names);
+		if (attribute.isMultiple) '''«List»<«DataGenerator.toJavaTypeSingle(attribute, names)»>''' 
+		else DataGenerator.toJavaTypeSingle(attribute, names)
 	}
 
-	private def StringConcatenationClient toJavaTypeSingle(ExpandedAttribute attribute, JavaNames names) {
-		if (!attribute.hasMetas)
-			names.toJavaQualifiedType(attribute.type)
-		else if (attribute.refIndex >= 0) {
-			if (attribute.isRosettaClassOrData)
-				'''«names.packages.metaField.javaType('ReferenceWithMeta'+attribute.typeName.toFirstUpper)»'''
-			else
-				'''«names.packages.metaField.javaType('BasicReferenceWithMeta'+attribute.typeName.toFirstUpper)»'''
-		} else
-			'''«names.packages.metaField.javaType('FieldWithMeta'+attribute.typeName.toFirstUpper)»'''
-	}
+	
 	
 	private def contributeSynonyms(List<ExpandedSynonym> synonyms) '''		
 		«FOR synonym : synonyms »
@@ -297,26 +287,26 @@ class ModelObjectGenerator {
 	}
 
 	private def validatorImpl(RosettaJavaPackages packages, RosettaClass c) '''
-		package «packages.classValidation.packageName»;
+		package «packages.model.typeValidation.name»;
 		
-		import static «packages.validation.packageName».ValidatorHelper.checkCardinality;
+		import static «packages.defaultLibValidation.name».ValidatorHelper.checkCardinality;
 		import static java.util.Collections.emptyList;
 		import static java.util.stream.Collectors.joining;
 		import static java.util.Optional.ofNullable;
 		import static com.google.common.base.Strings.isNullOrEmpty;
-		import static «packages.validation.packageName».ValidationResult.failure;
-		import static «packages.validation.packageName».ValidationResult.success;
+		import static «packages.defaultLibValidation.name».ValidationResult.failure;
+		import static «packages.defaultLibValidation.name».ValidationResult.success;
 		
 
-		import «packages.model.packageName».«c.name»;
+		import «packages.model.name».«c.name»;
 		
 		import com.google.common.collect.Lists;
-		import «packages.validation.packageName».ComparisonResult;
-		import «packages.validation.packageName».ValidationResult;
-		import «packages.validation.packageName».ValidationResult.ValidationType;
-		import «packages.validation.packageName».Validator;
-		import «packages.lib.packageName».path.RosettaPath;
-		import «packages.lib.packageName».RosettaModelObjectBuilder;
+		import «packages.defaultLibValidation.name».ComparisonResult;
+		import «packages.defaultLibValidation.name».ValidationResult;
+		import «packages.defaultLibValidation.name».ValidationResult.ValidationType;
+		import «packages.defaultLibValidation.name».Validator;
+		import «packages.defaultLib.name».path.RosettaPath;
+		import «packages.defaultLib.name».RosettaModelObjectBuilder;
 		
 		
 		public class «c.name»Validator implements Validator<«c.name»> {
@@ -380,16 +370,16 @@ class ModelObjectGenerator {
 	}
 	
 	private def onlyExistsValidator(RosettaJavaPackages packages, RosettaClass c) '''
-		package «packages.existsValidation.packageName»;
+		package «packages.model.existsValidation.name»;
 		
-		import «packages.validation.packageName».ExistenceChecker;
-		import «packages.validation.packageName».ValidationResult;
-		import «packages.validation.packageName».ValidationResult.ValidationType;
-		import «packages.validation.packageName».ValidatorWithArg;
-		import «packages.lib.packageName».path.RosettaPath;
-		import «packages.lib.packageName».RosettaModelObjectBuilder;
+		import «packages.defaultLibValidation.name».ExistenceChecker;
+		import «packages.defaultLibValidation.name».ValidationResult;
+		import «packages.defaultLibValidation.name».ValidationResult.ValidationType;
+		import «packages.defaultLibValidation.name».ValidatorWithArg;
+		import «packages.defaultLib.name».path.RosettaPath;
+		import «packages.defaultLib.name».RosettaModelObjectBuilder;
 		
-		import «packages.model.packageName».«c.name»;
+		import «packages.model.name».«c.name»;
 		
 		import com.google.common.collect.ImmutableMap;
 		
@@ -397,8 +387,8 @@ class ModelObjectGenerator {
 		import java.util.Set;
 		import java.util.stream.Collectors;
 		
-		import static «packages.validation.packageName».ValidationResult.failure;
-		import static «packages.validation.packageName».ValidationResult.success;
+		import static «packages.defaultLibValidation.name».ValidationResult.failure;
+		import static «packages.defaultLibValidation.name».ValidationResult.success;
 		
 		public class «onlyExistsValidatorName(c)» implements ValidatorWithArg<«c.name», String> {
 		

@@ -5,12 +5,14 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RQualifiedType
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaClass
 import com.rosetta.model.lib.annotations.RosettaQualified
@@ -26,7 +28,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.utils.RosettaConfigExtension
 
 class DataGenerator {
 	@Inject extension RosettaExtensions
@@ -52,7 +53,7 @@ class DataGenerator {
 	private def generateRosettaClass(JavaNames javaNames, Data d, String version) {
 		val classBody = tracImports(d.classBody(javaNames, version))
 		'''
-			package «javaNames.packages.model.packageName»;
+			package «javaNames.packages.model.name»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -78,7 +79,7 @@ class DataGenerator {
 			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«d.qualifiedClass».class)
 		«ENDIF»
 		«contributeClassSynonyms(d.synonyms)»
-		public class «d.name» extends «IF d.hasSuperType»«d.superType?.name»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
+		public class «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType)»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
 			«d.rosettaClass(names)»
 
 			«d.staticBuilderMethod»
@@ -125,10 +126,10 @@ class DataGenerator {
 		«FOR attribute : expandedAttributes»
 			private final «attribute.toJavaType(names)» «attribute.name»;
 		«ENDFOR»
-		«val metaType = names.packages.meta.javaType(c.name+'Meta')»
+		«val metaType = names.packages.model.meta.javaType(c, c.name+'Meta')»
 		private static «metaType» metaData = new «metaType»();
 
-		«c.name»(«c.builderName» builder) {
+		protected «c.name»(«c.builderName» builder) {
 			«IF c.hasSuperType»
 				super(builder);
 			«ENDIF»
@@ -170,16 +171,16 @@ class DataGenerator {
 		else attribute.toJavaTypeSingle(names);
 	}
 
-	private def StringConcatenationClient toJavaTypeSingle(ExpandedAttribute attribute, JavaNames names) {
+	static def StringConcatenationClient toJavaTypeSingle(ExpandedAttribute attribute, JavaNames names) {
 		if (!attribute.hasMetas)
 			names.toJavaQualifiedType(attribute.type)
 		else if (attribute.refIndex >= 0) {
 			if (attribute.isRosettaClassOrData)
-				'''«names.packages.metaField.javaType('ReferenceWithMeta'+attribute.typeName.toFirstUpper)»'''
+				'''«JavaType.create(names.packages.model.metaField.child('ReferenceWithMeta'+attribute.typeName.toFirstUpper).name)»'''
 			else
-				'''«names.packages.metaField.javaType('BasicReferenceWithMeta'+attribute.typeName.toFirstUpper)»'''
+				'''«JavaType.create(names.packages.model.metaField.child('BasicReferenceWithMeta'+attribute.typeName.toFirstUpper).name)»'''
 		} else
-			'''«names.packages.metaField.javaType('FieldWithMeta'+attribute.typeName.toFirstUpper)»'''
+			'''«JavaType.create(names.packages.model.metaField.child('FieldWithMeta'+attribute.typeName.toFirstUpper).name)»'''
 	}
 	
 	private def StringConcatenationClient contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''		

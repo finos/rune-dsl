@@ -30,12 +30,12 @@ class RosettaObjectBoilerPlateGeneratorTest {
 		val classes = code.compileToClasses
 	
 		
-		val thisTestClass = classes.get(javaPackages.model.packageName + '.Test')
+		val thisTestClass = classes.get(rootPackage.name + '.Test')
 		val thisTestBuilder = thisTestClass.getMethod('builder').invoke(null)
 		thisTestBuilder.class.getMethod('setTestField', String).invoke(thisTestBuilder, 'test-value'); 
 		val thisTest = thisTestBuilder.class.getMethod('build').invoke(thisTestBuilder);
 		
-		val thatTestClass = classes.get(javaPackages.model.packageName + '.Test')
+		val thatTestClass = classes.get(rootPackage.name + '.Test')
 		val thatTestBuilder = thatTestClass.getMethod('builder').invoke(null)
 		thatTestBuilder.class.getMethod('setTestField', String).invoke(thatTestBuilder, 'test-value'); 
 		val thatTest = thatTestBuilder.class.getMethod('build').invoke(thatTestBuilder);
@@ -54,11 +54,11 @@ class RosettaObjectBoilerPlateGeneratorTest {
 	
 		val classes = code.compileToClasses
 	
-		val thisTestClass = classes.get(javaPackages.model.packageName + '.Test')
+		val thisTestClass = classes.get(rootPackage.name + '.Test')
 		val thisTestBuilder = thisTestClass.getMethod('builder').invoke(null)
 		thisTestBuilder.class.getMethod('setTestField', String).invoke(thisTestBuilder, 'test-value'); 
 		
-		val thatTestClass = classes.get(javaPackages.model.packageName + '.Test')
+		val thatTestClass = classes.get(rootPackage.name + '.Test')
 		val thatTestBuilder = thatTestClass.getMethod('builder').invoke(null)
 		thatTestBuilder.class.getMethod('setTestField', String).invoke(thatTestBuilder, 'test-value'); 
 		
@@ -77,7 +77,7 @@ class RosettaObjectBoilerPlateGeneratorTest {
 				testEnums TestEnum (1..*)
 		'''.generateCode
 		
-		val thatHasEnumsClass = code.get(javaPackages.model.packageName + '.ThatHasEnums')
+		val thatHasEnumsClass = code.get(rootPackage.name + '.ThatHasEnums')
 				
 		val singleHashCodeContribution = '_result = 31 * _result + (testEnum != null ? testEnum.getClass().getName().hashCode() : 0);'
 		val multipleHashCodeContribution = '_result = 31 * _result + (testEnums != null ? testEnums.stream().map(Object::getClass).map(Class::getName).mapToInt(String::hashCode).sum() : 0);'

@@ -41,7 +41,7 @@ class ChoiceRuleGeneratorTest {
 			'field2', 'field two value'),
 			of())
 	
-		val testChoiceRuleClass = classes.get(javaPackages.choiceRule.packageName + ".Test1ChoiceRule")
+		val testChoiceRuleClass = classes.get(rootPackage.choiceRule.name + ".Test1ChoiceRule")
 		
 		val testChoiceRule = testChoiceRuleClass.newInstance;
 		
@@ -64,7 +64,7 @@ class ChoiceRuleGeneratorTest {
 			'field2', 'field two value'),
 			of())
 	
-		val testChoiceRuleClass = classes.get(javaPackages.choiceRule.packageName + ".Test2ChoiceRule")
+		val testChoiceRuleClass = classes.get(rootPackage.choiceRule.name + ".Test2ChoiceRule")
 		val testChoiceRule = testChoiceRuleClass.newInstance;
 		
 		val validationResult = testChoiceRuleClass.getMethod("validate", RosettaPath ,testInstance.class)
