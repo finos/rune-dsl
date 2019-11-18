@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
@@ -14,12 +13,15 @@ import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
@@ -61,8 +63,6 @@ import org.eclipse.xtext.util.Wrapper
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaEnumValue
 
 class ExpressionGenerator {
 	
@@ -196,7 +196,7 @@ class ExpressionGenerator {
 				'''«MapperS».of(«callable.name.toFirstLower».evaluate(«args(expr, params)»))'''
 			}
 			RosettaExternalFunction:
-				'''«MapperS».of(new «new RosettaJavaPackages().defaultLibFunctions.javaType(callable)»().execute(«args(expr, params)»))'''
+				'''«MapperS».of(new «factory.create(callable.model).toJavaType(callable as RosettaCallableWithArgs)»().execute(«args(expr, params)»))'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable with args type of " + expr.eClass.name)
 		}
@@ -565,25 +565,17 @@ class ExpressionGenerator {
 	}
 	
 	private def JavaType toJavaType(RosettaType rosType) {
-		val model = EcoreUtil2.getContainerOfType(rosType, RosettaModel)
-		if (model !== null)
-			factory.create(model).toJavaType(rosType)
-		else
-			JavaType.create(rosType.name.toJavaType)
+		val model = rosType.model
+		if(model === null)
+			throw new IllegalArgumentException('''Can not create type reference. «rosType.eClass?.name» «rosType.name» is not attached to a «RosettaModel.simpleName»''')
+		factory.create(model).toJavaType(rosType)
 	}
 	
 	private def javaNames(Attribute attr) {
 		val model = EcoreUtil2.getContainerOfType(attr, RosettaModel)
-		if (model !== null)
-			factory.create(model)
-	}
-	
-	private def JavaType toJavaType(Data ele) {
-		val model = EcoreUtil2.getContainerOfType(ele, RosettaModel)
-		if (model !== null)
-			factory.create(model).toJavaType(ele)
-		else
-			JavaType.create(ele.name.toJavaType)
+		if(model === null)
+			throw new IllegalArgumentException('''Can not create type reference. «attr.eClass?.name» «attr.name» is not attached to a «RosettaModel.simpleName»''')
+		factory.create(model)
 	}
 	
 	def metaClass(RosettaRegularAttribute attribute) {
@@ -592,10 +584,10 @@ class ExpressionGenerator {
 	}
 	
 	def JavaType metaClass(Attribute attribute) {
-		val metaPackage = attribute.javaNames.packages.model.metaField
+		val names = attribute.javaNames
 		val name = if (attribute.annotations.exists[a|a.annotation?.name=="metadata" && a.attribute?.name=="reference"])  "ReferenceWithMeta"+attribute.type.name.toFirstUpper
 		else "FieldWithMeta"+attribute.type.name.toFirstUpper
-		return JavaType.create(metaPackage.child(name).name)
+		return names.toMetaType(attribute, name)
 	}
 	
 	def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, boolean isLast) {

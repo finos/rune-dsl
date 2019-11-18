@@ -72,7 +72,7 @@ class DataValidatorsGenerator {
 	}
 
 	def private StringConcatenationClient classBody(Data c, JavaNames names, String version, List<ExpandedAttribute> attributes) '''
-		public class «c.name»Validator implements «Validator»<«names.toJavaQualifiedType(c)»> {
+		public class «c.name»Validator implements «Validator»<«names.toJavaType(c)»> {
 		
 			@Override
 			public «ValidationResult»<«c.name»> validate(«RosettaPath» path, «c.name» o) {
@@ -109,7 +109,7 @@ class DataValidatorsGenerator {
 	'''
 
 	def private StringConcatenationClient onlyExistsClassBody(Data c, JavaNames names, String version) '''
-		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaQualifiedType(c)», String> {
+		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaType(c)», String> {
 		
 			@Override
 			public «ValidationResult»<«c.name»> validate(«RosettaPath» path, «c.name» o, String field) {

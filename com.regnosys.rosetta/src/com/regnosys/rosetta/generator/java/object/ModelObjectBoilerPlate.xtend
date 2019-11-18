@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaMetaType
@@ -27,18 +26,18 @@ class ModelObjectBoilerPlate {
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
 
-	def boilerPlate(RosettaClass c) '''
-		«c.wrap.processMethod»
+	def StringConcatenationClient boilerPlate(RosettaClass c, JavaNames names) '''
+		«c.wrap.processMethod(names)»
 		«c.wrap.boilerPlate»
 	'''
 	
-	def StringConcatenationClient boilerPlate(Data d) '''
-		«d.wrap.processMethod»
+	def StringConcatenationClient boilerPlate(Data d, JavaNames names) '''
+		«d.wrap.processMethod(names)»
 		«d.wrap.boilerPlate»
 	'''
 
 
-	def builderBoilerPlate(RosettaClass c) {
+	def StringConcatenationClient builderBoilerPlate(RosettaClass c) {
 		val wrap = c.wrap
 		val attrs = wrap.attributes.filter[name != 'eventEffect'].toList
 		'''
@@ -96,29 +95,11 @@ class ModelObjectBoilerPlate {
 		if (interfaces.empty) '''''' else '''implements «interfaces.join(', ')» '''
 	}
 	
-	@Deprecated
-	def toType(ExpandedAttribute attribute) {
-		if (attribute.isMultiple) '''List<«attribute.toTypeSingle»>''' 
-		else attribute.toTypeSingle;
-	}
 	
 	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.isMultiple) '''List<«attribute.toTypeSingle(names)»>''' 
 		else attribute.toTypeSingle(names);
 	}
-	
-	@Deprecated
-	def toTypeSingle(ExpandedAttribute attribute) {
-		if (!attribute.hasMetas) attribute.typeName.toJavaType
-		else if (attribute.refIndex >= 0) {
-			if (attribute.isRosettaClassOrData)
-				'''ReferenceWithMeta«attribute.typeName.toFirstUpper»'''
-			else
-				'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''
-		} else
-			'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
-	}
-	
 	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names) {
 		if(!attribute.hasMetas) return '''«names.toJavaType(attribute.type)»'''
 		val metaType = if (attribute.refIndex >= 0) {
@@ -129,7 +110,7 @@ class ModelObjectBoilerPlate {
 			} else
 				'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
 
-		return '''«JavaType.create(names.packages.model.metaField.child(metaType).name)»'''
+		return '''«names.toMetaType(attribute,metaType)»'''
 	}
 
 	private def StringConcatenationClient boilerPlate(TypeData c) {
@@ -203,7 +184,7 @@ class ModelObjectBoilerPlate {
 
 	private def StringConcatenationClient contributeToEquals(ExpandedAttribute a) '''
 	«IF a.cardinalityIsListValue»
-		if (!«JavaType.create(ListEquals.name)».listEquals(«a.name», _that.«a.name»)) return false;
+		if (!«ListEquals».listEquals(«a.name», _that.«a.name»)) return false;
 	«ELSE»
 		if («a.name» != null ? !«a.name».equals(_that.«a.name») : _that.«a.name» != null) return false;
 	«ENDIF»
@@ -230,7 +211,7 @@ class ModelObjectBoilerPlate {
 		);
 	}
 	
-	private def processMethod(extension TypeData it) '''
+	private def processMethod(extension TypeData it,  JavaNames names) '''
 		@Override
 		public void process(RosettaPath path, Processor processor) {
 			«IF hasSuperType»
@@ -239,14 +220,14 @@ class ModelObjectBoilerPlate {
 			
 			«FOR a : attributes.filter[!(isRosettaClassOrData || hasMetas)]»
 				«IF a.multiple»
-					«a.name».stream().forEach(a->processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle».class, a, this«a.metaFlags»));
+					«a.name».stream().forEach(a->processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, a, this«a.metaFlags»));
 				«ELSE»
-					processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle».class, «a.name», this«a.metaFlags»);
+					processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, «a.name», this«a.metaFlags»);
 				«ENDIF»
 			«ENDFOR»
 			
 			«FOR a : attributes.filter[isRosettaClassOrData || hasMetas]»
-				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle».class, «a.name»«a.metaFlags»);
+				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
 			«ENDFOR»
 		}
 		
@@ -254,7 +235,7 @@ class ModelObjectBoilerPlate {
 	
 	private def getMetaFlags(ExpandedAttribute attribute) {
 		val result = new StringBuilder()
-		if (attribute.type instanceof RosettaMetaType) {
+		if (attribute.type.isMetaType) {
 			result.append(", AttributeMeta.IS_META")
 		}
 		result.toString

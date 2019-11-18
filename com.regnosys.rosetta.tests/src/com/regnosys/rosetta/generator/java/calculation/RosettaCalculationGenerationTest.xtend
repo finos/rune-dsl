@@ -194,9 +194,9 @@ class RosettaCalculationGenerationTest {
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.Mapper;
 			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.Max;
+			import com.rosetta.model.lib.functions.Min;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import com.rosetta.test.model.functions.Max;
-			import com.rosetta.test.model.functions.Min;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)

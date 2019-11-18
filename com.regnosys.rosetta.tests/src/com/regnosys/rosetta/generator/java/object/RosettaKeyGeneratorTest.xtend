@@ -22,9 +22,10 @@ class RosettaKeyGeneratorTest {
 	@Test
 	def void shouldGenerateRosettaKeyFieldAndGetterWhenSet() {
 		val code = '''
-			class WithRosettaKey key rosettaKeyValue {
-				foo string (1..1);
-			}
+			type WithRosettaKey:
+				[metadata key]
+				[partialKey]
+				foo string (1..1)
 		'''.generateCode
 
 		val classess = code.compileToClasses
@@ -37,9 +38,9 @@ class RosettaKeyGeneratorTest {
 	@Test
 	def void shouldGenerateRosettaKeyValueFieldAndGetterWhenSet() {
 		val code = '''
-			class WithRosettaKey key {
-				foo string (1..1);
-			}
+			type WithRosettaKey:
+				[metadata key]
+				foo string (1..1)
 		'''.generateCode
 
 		val classess = code.compileToClasses
@@ -52,9 +53,8 @@ class RosettaKeyGeneratorTest {
 	@Test
 	def void shouldNotGenerateFieldsAndGetterWhenNotDefined() {
 		val code = '''
-			class WithoutRosettaKeys {
-				foo string (1..1);
-			}
+			type WithoutRosettaKeys:
+				foo string (1..1)
 		'''.generateCode
 
 		val classess = code.compileToClasses
@@ -68,9 +68,9 @@ class RosettaKeyGeneratorTest {
 	@Test
 	def void shouldGenerateGetterWhenRosettaKeyValueDefined() {
 		val code = '''
-			class WithRosettaKeyValue rosettaKeyValue {
-				foo string (1..1);
-			}
+			type WithRosettaKeyValue:
+				[partialKey]
+				foo string (1..1)
 		'''.generateCode
 
 		val classess = code.compileToClasses
@@ -83,9 +83,10 @@ class RosettaKeyGeneratorTest {
 	@Test
 	def void shouldGenerateGettersWhenRosettaKeyAndRosettaKeyValueDefined() {
 		val code = '''
-			class WithRosettaKeys key rosettaKeyValue {
-				foo string (1..1);
-			}
+			type WithRosettaKeys:
+				[metadata key]
+				[partialKey]
+				foo string (1..1)
 		'''.generateCode
 
 		val classess = code.compileToClasses

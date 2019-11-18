@@ -3,6 +3,10 @@ package com.regnosys.rosetta.generator.java.util
 import com.google.inject.Inject
 import com.google.inject.Injector
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.Package
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.object.ExpandedAttribute
+import com.regnosys.rosetta.generator.object.ExpandedType
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
@@ -11,15 +15,14 @@ import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
+import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
@@ -27,97 +30,66 @@ import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RFeatureCallType
 import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.types.RosettaTypeProvider
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.naming.QualifiedName
+import org.eclipse.xtext.EcoreUtil2
 
 class JavaNames {
 
 	@Accessors(PUBLIC_GETTER)
 	RosettaJavaPackages packages
 
-	@Inject RosettaTypeProvider typeProvider
-
-	def StringConcatenationClient toJavaQualifiedType(RosettaCallableWithArgs ele) {
-		switch (ele) {
-			RosettaType:
-				toJavaQualifiedType(ele as RosettaType)
-			Function: '''«ele.toJavaType()»'''
-			default: '''«ele.name»'''
-		}
-	}
-
-	def StringConcatenationClient toJavaQualifiedType(AssignPathRoot ele) {
-		switch(ele) {
-			Attribute: toJavaQualifiedType(ele.type)
-			ShortcutDeclaration: '''«toJavaType(typeProvider.getRType(ele.expression))»'''
-		}
-	}
-
-	def StringConcatenationClient toJavaQualifiedType(String typeName) {
-		return '''«JavaType.create(JavaClassTranslator.toJavaFullType(typeName)?:"missing builtin type " + typeName)»'''
-	}
-
-	def StringConcatenationClient toJavaQualifiedType(RosettaType type) {
-		switch (type) {
-			RosettaBasicType:
-				toJavaQualifiedType(type.name)
-			RosettaClass,
-			Data,
-			RosettaQualifiedType,
-			RosettaEnumeration: '''«toJavaType(type)»'''
-			RosettaRecordType: '''«toJavaType(type as RosettaType)»'''
-			RosettaExternalFunction: '''«toJavaType(type as RosettaType)»'''
-			RosettaCalculationType: '''«toJavaType(type as RosettaType)»'''
-			default:
-				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
-		}
-	}
-
-	def StringConcatenationClient toJavaQualifiedType(Attribute attribute) {
+	def StringConcatenationClient toListOrSingleJavaType(Attribute attribute) {
 		if (attribute.card.isIsMany) {
-			'''«List»<«attribute.type.toJavaQualifiedType()»>'''
-		}
-		else
-		'''«attribute.type.toJavaQualifiedType()»'''
+			'''«List»<«attribute.type.toJavaType()»>'''
+		} else
+			'''«attribute.type.toJavaType()»'''
 	}
-	
+
+	def JavaType toJavaType(ExpandedType type) {
+		if (type.name == RosettaAttributeExtensions.METAFIELDSCLASSNAME) {
+			return createJavaType(packages.model.metaField, type.name)
+		}
+		if (type.builtInType) {
+			return createForBasicType(type.name)
+		}
+		createJavaType(new RootPackage(type.model), type.name)
+	}
+
 	def JavaType toJavaType(RosettaCallableWithArgs func) {
 		switch (func) {
 			Function:
-				packages.model.functions.javaType(func)
+				createJavaType(modelRootPackage(func).functions, func.name)
+			RosettaExternalFunction:
+				createJavaType(packages.defaultLibFunctions, func.name)
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + func?.class?.name)
 		}
 	}
-	
+
 	def JavaType toJavaType(RosettaType type) {
 		switch (type) {
 			RosettaBasicType:
 				createForBasicType(type.name)
-			RosettaClass case type.name == RosettaAttributeExtensions.METAFIELDSCLASSNAME: {
-				packages.model.metaField.javaType(type)
-			}
 			RosettaClass,
 			Data,
-			RosettaEnumeration: packages.model.javaType(type)
-			RosettaRecordType: JavaType.create(JavaClassTranslator.toJavaFullType(type.name))?:JavaType.create(packages.defaultLibRecords.name + '.' +type.name.toFirstUpper)
+			RosettaEnumeration:
+				createJavaType(modelRootPackage(type), type.name)
+			RosettaRecordType:
+				JavaType.create(JavaClassTranslator.toJavaFullType(type.name)) ?:
+					JavaType.create(packages.defaultLibRecords.name + '.' + type.name.toFirstUpper)
 			RosettaExternalFunction:
-						packages.defaultLibFunctions.javaType(type)
+				createJavaType(packages.defaultLibFunctions, type.name)
 			RosettaCalculationType,
-			RosettaQualifiedType: JavaType.create('java.lang.String')
+			RosettaQualifiedType:
+				JavaType.create('java.lang.String')
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
 		}
 	}
-		
-	private def JavaType createForBasicType(String typeName) {
-		return  JavaType.create(JavaClassTranslator.toJavaFullType(typeName)?:"missing builtin type " + typeName)
-	}
 
-	def  JavaType toJavaType(RType rType) {
+	def JavaType toJavaType(RType rType) {
 		switch (rType) {
 			RBuiltinType:
 				rType.name.createForBasicType
@@ -135,27 +107,53 @@ class JavaNames {
 				JavaType.create(rType.name)
 		}
 	}
-	
-	def QualifiedName toTargetClassName(RosettaCallableWithArgs ele) {
-		return QualifiedName.create(ele.name)
+
+	def createJavaType(Package pack, String typeName) {
+		JavaType.create(pack.child(typeName).name())
 	}
-	
-	def QualifiedName toTargetClassName(FunctionDispatch ele) {
-		return QualifiedName.create(ele.name).append(ele.value.value.name)
+
+	def toMetaType(Attribute ctx, String name) {
+		createJavaType(modelRootPackage(ctx).metaField, name)
+	}
+
+	def toMetaType(ExpandedAttribute type, String name) {
+		if(type.type.isBuiltInType)
+			return createJavaType(packages.model.metaField, name)
+		createJavaType(new RootPackage(type.type.model).metaField, name)
+	}
+
+	def private RootPackage modelRootPackage(RosettaNamed namedType) {
+		val rootElement = EcoreUtil2.getContainerOfType(namedType, RosettaRootElement)
+		val model = rootElement.model
+		if (model === null)
+			// Faked attributes
+			throw new IllegalArgumentException('''Can not compute package name for «namedType.eClass.name» «namedType.name». Element is not attached to a RosettaModel.''')
+		return new RootPackage(model)
+	}
+
+	private def JavaType createForBasicType(String typeName) {
+		return JavaType.create(JavaClassTranslator.toJavaFullType(typeName) ?: 
+		"missing builtin type " + typeName
+		)
 	}
 
 	static class Factory {
 		@Inject Injector injector
 
-		def create(RosettaModel model) { 
+		def create(RosettaModel model) {
 			create(new RosettaJavaPackages(model))
 		}
-		
-		def create(RosettaJavaPackages packages) {
+
+		private def create(RosettaJavaPackages packages) {
 			val result = new JavaNames
 			injector.injectMembers(result)
 			result.packages = packages
 			return result
 		}
 	}
+
+	def voidType() {
+		JavaType.create('void')
+	}
+
 }

@@ -105,7 +105,7 @@ class ModelObjectGenerator {
 			
 				«c.builderClass(javaNames)»
 			
-				«c.boilerPlate»
+				«c.boilerPlate(javaNames)»
 			}
 		'''
 	}
@@ -354,15 +354,15 @@ class ModelObjectGenerator {
 	'''
 	
 	private def regularAndMaterialisedAttributes(extension RosettaClass it) {
-		Iterables.concat(regularAttributes, materialiseAttributes)
+		Iterables.concat(regularAttributes.expandedAttributesForList, materialiseAttributes)
 	}
 	
-	private def checkCardinalitySingle(RosettaRegularAttribute attr)'''
-		checkCardinality("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.card.inf», «attr.card.sup»)
+	private def checkCardinalitySingle(ExpandedAttribute attr)'''
+		checkCardinality("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)
 	'''
 	
-	private def checkCardinalityList(RosettaRegularAttribute attr)'''
-		checkCardinality("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.card.inf», «attr.card.sup»)
+	private def checkCardinalityList(ExpandedAttribute attr)'''
+		checkCardinality("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
 	'''
 	
 	static def onlyExistsValidatorName(RosettaType c) {

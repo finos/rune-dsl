@@ -72,7 +72,7 @@ class ModelMetaGenerator {
 	}
 	
 	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version) {
-		val dataClass = javaNames.toJavaQualifiedType(c)
+		val dataClass = javaNames.toJavaType(c)
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)

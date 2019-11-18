@@ -70,7 +70,7 @@ abstract class RosettaFeatureOwner extends RosettaDefinable {
 	contains RosettaTypedFeature[] features
 }
 
-abstract class RosettaType extends RosettaNamed {
+abstract class RosettaType extends RosettaRootElement, RosettaNamed {
 }
 
 

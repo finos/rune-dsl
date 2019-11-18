@@ -3,13 +3,13 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.meta.RosettaMetaData
@@ -21,7 +21,6 @@ import java.util.Optional
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class ModelObjectBuilderGenerator {
 	
@@ -260,7 +259,7 @@ class ModelObjectBuilderGenerator {
 				«ELSE»
 					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int index) {
 						if («attribute.name»==null) {
-							this.«attribute.name» = new «JavaType.create(ArrayList.name)»<>();
+							this.«attribute.name» = new «ArrayList»<>();
 						}
 						return getIndex(«attribute.name», index, ()->new «attribute.toBuilderTypeSingle(names)»());
 					}
@@ -430,7 +429,7 @@ class ModelObjectBuilderGenerator {
 				} else {
 					'''FieldWithMeta«attribute.typeName.toFirstUpper».FieldWithMeta«attribute.typeName.toFirstUpper»Builder'''
 				}
-			'''«JavaType.create(names.packages.model.metaField.child(buildername).name)»'''
+			'''«names.toMetaType(attribute, buildername)»'''
 		} else {
 			'''«attribute.toBuilderTypeUnderlying(names)»'''
 		}
@@ -438,7 +437,7 @@ class ModelObjectBuilderGenerator {
 	
 	private def StringConcatenationClient toBuilderTypeUnderlying(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.isRosettaClassOrData) '''«attribute.typeName».«attribute.typeName»Builder'''
-		else '''«names.toJavaQualifiedType(attribute.type)»'''
+		else '''«names.toJavaType(attribute.type)»'''
 	}
 	
 		

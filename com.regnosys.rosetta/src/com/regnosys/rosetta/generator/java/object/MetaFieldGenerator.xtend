@@ -17,6 +17,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaFullType
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.generator.object.ExpandedType
 
 class MetaFieldGenerator {
 	
@@ -40,7 +41,7 @@ class MetaFieldGenerator {
 			val refs = nsc.value.flatMap[expandedAttributes].filter[hasMetas && metas.exists[name=="reference"]].map[type].toSet
 			
 			for (ref:refs) {
-				if (ref.isClassOrData)
+				if (ref.isType)
 					fsa.generateFile('''«packages.model.metaField.directoryName»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(packages, ref))
 				else
 					fsa.generateFile('''«packages.model.metaField.directoryName»/BasicReferenceWithMeta«ref.name.toFirstUpper».java''', basicReferenceWithMeta(packages, ref))
@@ -237,7 +238,7 @@ class MetaFieldGenerator {
 	'''
 	}
 	
-	def fieldWithMeta(RosettaJavaPackages packages, RosettaType type) '''		
+	def fieldWithMeta(RosettaJavaPackages packages, ExpandedType type) '''		
 		package «packages.model.metaField.name»;
 		
 		import static java.util.Optional.ofNullable;
@@ -264,7 +265,7 @@ class MetaFieldGenerator {
 			}
 			
 			private FieldWithMeta«type.name.toFirstUpper»(FieldWithMeta«type.name.toFirstUpper»Builder builder) {
-				«IF type.isClassOrData»
+				«IF type.isType»
 					value = ofNullable(builder.getValue()).map(v->v.build()).orElse(null);
 				«ELSE»
 					value = builder.getValue();
@@ -294,7 +295,7 @@ class MetaFieldGenerator {
 			@Override
 			protected void process(RosettaPath path, Processor processor) {
 				processRosetta(path.newSubPath("meta"), processor, MetaFields.class, meta, AttributeMeta.IS_META);
-				«IF type.isClassOrData»
+				«IF type.isType»
 					processRosetta(path.newSubPath("value"), processor, «type.name.toJavaType».class, value);
 				«ELSE»
 					processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
@@ -331,7 +332,7 @@ class MetaFieldGenerator {
 			}
 			
 			public static class FieldWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder{
-				«IF type.isClassOrData»
+				«IF type.isType»
 					private «type.name».«type.name»Builder  value;
 				«ELSE»
 					private «type.name.toJavaType»  value;
@@ -345,7 +346,7 @@ class MetaFieldGenerator {
 					return metaData;
 				}
 				
-				«IF type.isClassOrData»
+				«IF type.isType»
 					public «type.name».«type.name»Builder  getValue() {
 				«ELSE»
 					public «type.name.toJavaType» getValue() {
@@ -361,7 +362,7 @@ class MetaFieldGenerator {
 					return meta=ofNullable(meta).orElseGet(MetaFields::builder);
 				}
 				
-				«IF type.isClassOrData»
+				«IF type.isType»
 					public FieldWithMeta«type.name.toFirstUpper»Builder setValueBuilder(«type.name».«type.name»Builder value) {
 						this.value = value;
 						return this;
@@ -405,7 +406,7 @@ class MetaFieldGenerator {
 				@Override
 				public void process(RosettaPath path, BuilderProcessor processor) {
 					processRosetta(path.newSubPath("meta"), processor, MetaFields.class, meta, AttributeMeta.IS_META);
-					«IF type.isClassOrData»
+					«IF type.isType»
 						processRosetta(path.newSubPath("value"), processor, «type.name.toJavaType».class, value);
 					«ELSE»
 						processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
@@ -448,7 +449,7 @@ class MetaFieldGenerator {
 		return type instanceof Data || type instanceof RosettaClass
 	}
 	
-	def referenceWithMeta(RosettaJavaPackages packages, RosettaType type) '''
+	def referenceWithMeta(RosettaJavaPackages packages, ExpandedType type) '''
 		package «packages.model.metaField.name»;
 		
 		import static java.util.Optional.ofNullable;
@@ -613,7 +614,7 @@ class MetaFieldGenerator {
 		}
 	'''
 	
-	def basicReferenceWithMeta(RosettaJavaPackages packages,RosettaType type) '''
+	def basicReferenceWithMeta(RosettaJavaPackages packages, ExpandedType type) '''
 	package «packages.model.metaField.name»;
 		
 	import static java.util.Optional.ofNullable;

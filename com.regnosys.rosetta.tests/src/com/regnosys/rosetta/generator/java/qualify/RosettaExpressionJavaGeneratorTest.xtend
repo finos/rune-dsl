@@ -25,6 +25,7 @@ import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
+import com.regnosys.rosetta.rosetta.RosettaModel
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -300,6 +301,9 @@ class RosettaExpressionJavaGeneratorTest {
 	
 	private def RosettaClass createRosettaClass(String className) {
 		val mockRosettaClass = mock(RosettaClass)
+		val model = mock(RosettaModel)
+		when(model.name).thenReturn('com.rosetta.test')
+		when(mockRosettaClass.model).thenReturn(model)
 		when(mockRosettaClass.name).thenReturn(className)
 		return mockRosettaClass
 	}

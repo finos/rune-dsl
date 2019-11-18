@@ -1,47 +1,16 @@
 package com.regnosys.rosetta.generator.object
 
-import org.eclipse.xtend.lib.annotations.Data
-import java.util.List
-import com.regnosys.rosetta.rosetta.RosettaSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaMapping
-import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import java.util.Collections
-import com.regnosys.rosetta.rosetta.RosettaFactory
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaSynonymSource
+import java.util.List
+import org.eclipse.xtend.lib.annotations.Data
 
 @Data
 final class ExpandedAttribute {
 	
-	def static RosettaClass referenceType(String genType) {
-		val res = RosettaFactory.eINSTANCE.createRosettaClass()
-		res.setName("ReferenceWithMeta"+genType.toFirstUpper)
-		res.definition = genType
-		return res
-	}
-	
-	def static RosettaClass basicReferenceType(String genType) {
-		val res = RosettaFactory.eINSTANCE.createRosettaClass()
-		res.setName("BasicReferenceWithMeta"+genType.toFirstUpper)
-		res.definition = genType
-		return res
-	}
-	
-	def static RosettaClass metadType(String genType) {
-		val res = RosettaFactory.eINSTANCE.createRosettaClass()
-		res.setName("FieldWithMeta"+genType.toFirstUpper)
-		res.definition = genType
-		return res
-	}
-	final static RosettaClass META_TYPE = {
-		val res = RosettaFactory.eINSTANCE.createRosettaClass()
-		res.setName("MetaFields")
-		return res
-	}
-	
-	RosettaType enclosingType
 	String name
-	RosettaType type
+	ExpandedType type
 	String typeName
 	int inf
 	int sup
@@ -53,43 +22,8 @@ final class ExpandedAttribute {
 	boolean isQualified
 	List<ExpandedAttribute> metas;
 	
-	static def ExpandedAttribute referenceTo(ExpandedAttribute att) {
-		if (att.getType instanceof RosettaClass || att.getType instanceof com.regnosys.rosetta.rosetta.simple.Data)
-			new ExpandedAttribute(att.enclosingType, att.getName(), referenceType(att.type.name), 
-				"referenceWithMeta" + att.type.name.toFirstUpper, att.getInf(), att.getSup(), att.isUnbound, 
-				Collections.emptyList(), null, false, false, false, Collections.emptyList())
-		else {
-			new ExpandedAttribute(att.enclosingType, att.getName(), basicReferenceType(att.type.name), 
-				"basicReferenceWithMeta" + att.type.name.toFirstUpper, att.getInf(), att.getSup(), att.isUnbound, 
-				Collections.emptyList(), null, false, false, false, Collections.emptyList())
-		}
-	}
 	
-	static def ExpandedAttribute refField() {
-		new ExpandedAttribute(referenceType(""),"externalReference", null, "string", 1, 1, false, Collections.emptyList(), null, false, false, false, Collections.emptyList())
-	}
-	
-	static def ExpandedAttribute metadField(ExpandedAttribute att) {
-		new ExpandedAttribute(att.enclosingType, att.getName(), metadType(att.type.name), "fieldWithMeta", att.getInf(), att.getSup(), att.isUnbound, Collections.emptyList(), null, false, false, false, Collections.emptyList())
-	}
-	static def ExpandedAttribute metadFieldValue(ExpandedAttribute att) {
-		new ExpandedAttribute(att.enclosingType, "value", att.type, att.type.getName, 1, 1, false, Collections.emptyList(), null, false, false, false, Collections.emptyList())
-	}
-	static def ExpandedAttribute metaDataField(ExpandedAttribute att) {
-		var name = att.name;
-		if (name=="id") {
-			name="externalKey"//the id meta attribute is implemented as externalkey
-		}
-		new ExpandedAttribute(att.enclosingType, name, att.getType, "string", 1, 1, false, Collections.emptyList(), null, false, false, false, Collections.emptyList())
-	}
-	static def ExpandedAttribute metaAtt() {
-		new ExpandedAttribute(null, "meta", META_TYPE, "meta", 1, 1, false, Collections.emptyList(), null, false, false, false, Collections.emptyList())
-	}
-	static def ExpandedAttribute externalKeyAtt() {
-		new ExpandedAttribute(null, "externalKey", null, "string", 1, 1, false, Collections.emptyList(), null, false, false, false, Collections.emptyList())
-	}
-	
-	def RosettaType getType() {
+	def ExpandedType getType() {
 		return type
 	}	
 		
@@ -117,17 +51,32 @@ final class ExpandedAttribute {
 	}
 	
 	def isRosettaClassOrData() {
-		getType() instanceof RosettaClass || getType() instanceof com.regnosys.rosetta.rosetta.simple.Data 
+		getType.isType
 	}
 	
 	def builtInType() {
-		!(type instanceof RosettaClass || type instanceof RosettaEnumeration|| type instanceof com.regnosys.rosetta.rosetta.simple.Data)
+		getType.isBuiltInType
 	}
 	
 	def shouldCopy() {
 		!#['rosettaKey', 'rosettaKeyValue'].contains(name)
 	}
 	
+}
+
+@Data
+final class ExpandedType {
+	RosettaModel model
+	String name
+
+	boolean type // type is instance of  Data
+	boolean enumeration // type is instance of  Enumeration
+	boolean metaType // type is instance of  RosettaMetaType
+
+	def isBuiltInType() {
+		!(type || enumeration)
+	}
+
 }
 
 @Data

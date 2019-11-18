@@ -5,6 +5,7 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.generator.object.ExpandedSynonymValue
+import com.regnosys.rosetta.generator.object.ExpandedType
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
@@ -15,12 +16,14 @@ import com.regnosys.rosetta.rosetta.RosettaExternalClass
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonym
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
-import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
+import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
+import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -29,7 +32,6 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Set
-import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 
 class RosettaAttributeExtensions {
 
@@ -52,7 +54,7 @@ class RosettaAttributeExtensions {
 	dispatch static def List<ExpandedAttribute> getExpandedAttributes(RosettaClass rosettaClass) {
 		Iterables.concat(
 			rosettaClass.regularAttributes.expandedAttributesForList,
-			rosettaClass.materialiseAttributes.expandedAttributesForList
+			rosettaClass.materialiseAttributes
 		).toList.sortBy[ExpandedAttribute a|a.name]
 	}
 	
@@ -70,9 +72,8 @@ class RosettaAttributeExtensions {
 		val rosExt = new RosettaExtensions // Can't inject as used in rosetta translate and daml directly
 		if(rosExt.hasKeyedAnnotation(data)){
 			res.add(new ExpandedAttribute(
-				data,
 				'meta',
-				provideMetaFeildsType,
+				provideMetaFeildsType(data),
 				METAFIELDSCLASSNAME,
 				0,
 				1,
@@ -87,9 +88,8 @@ class RosettaAttributeExtensions {
 		}
 		if(rosExt.hasPartialKeyAnnotation(data)) {
 			res.add(new ExpandedAttribute(
-				data,
 				'rosettaKeyValue',
-				provideStringType,
+				provideStringType(data),
 				'string',
 				1,
 				1,
@@ -109,48 +109,54 @@ class RosettaAttributeExtensions {
 		classes.flatMap[expandedAttributes].toList.sortBy[name]
 	}
 	public static val METAFIELDSCLASSNAME = 'MetaFields'
-	private static def provideMetaFeildsType() {
-		val metaFields = RosettaFactory.eINSTANCE.createRosettaClass
-		metaFields.name = METAFIELDSCLASSNAME
-		return metaFields
-	}
-	private static def provideStringType() {
-		val stringType = RosettaFactory.eINSTANCE.createRosettaBasicType
-		stringType.name = 'string'
-		return stringType
+
+	private static def ExpandedType provideMetaFeildsType(RosettaRootElement ctx) {
+		return new ExpandedType(ctx.model, METAFIELDSCLASSNAME, true, false, false)
 	}
 
-	private static def provideOptionalCardinality() {
-		val single = RosettaFactory.eINSTANCE.createRosettaCardinality
-		single.inf = 0
-		single.sup = 1
-		return single
-	}
-
-	private static def provideSingleCardinality() {
-		val single = RosettaFactory.eINSTANCE.createRosettaCardinality
-		single.inf = 1
-		single.sup = 1
-		return single
+	private static def ExpandedType provideStringType(RosettaRootElement ctx) {
+		return new ExpandedType(ctx.model, 'string', false, false, false)
 	}
 	
-	static def List<RosettaRegularAttribute> materialiseAttributes(RosettaClass rosettaClass) {
-
-		val metaFields = RosettaFactory.eINSTANCE.createRosettaRegularAttribute
-		metaFields.name = 'meta'
-		metaFields.type = provideMetaFeildsType
-		metaFields.card = provideOptionalCardinality
-		
-		val rosettaKeyValue = RosettaFactory.eINSTANCE.createRosettaRegularAttribute
-		rosettaKeyValue.name = 'rosettaKeyValue'
-		rosettaKeyValue.type = provideStringType
-		rosettaKeyValue.card = provideSingleCardinality
-				
+	static def List<ExpandedAttribute> materialiseAttributes(RosettaClass rosettaClass) {
 		val materialisedAttributes = newLinkedList
-		
-		if(rosettaClass.rosettaKeyValue) materialisedAttributes.add(rosettaKeyValue)
-		if(rosettaClass.globalKey) materialisedAttributes.add(metaFields)
-		
+
+		if (rosettaClass.rosettaKeyValue) {
+			val rosettaKeyValueType = provideMetaFeildsType(rosettaClass)
+			val rosettaKeyValue = new ExpandedAttribute(
+				'rosettaKeyValue',
+				rosettaKeyValueType,
+				rosettaKeyValueType.name,
+				1,
+				1,
+				false,
+				#[],
+				'',
+				false,
+				false,
+				false,
+				#[]
+			)
+			materialisedAttributes.add(rosettaKeyValue)
+		}
+		if (rosettaClass.globalKey) {
+			val metaFieldsType = provideMetaFeildsType(rosettaClass)
+			val metaFields = new ExpandedAttribute(
+				'meta',
+				metaFieldsType,
+				metaFieldsType.name,
+				0,
+				1,
+				false,
+				#[],
+				'',
+				false,
+				false,
+				false,
+				#[]
+			)
+			materialisedAttributes.add(metaFields)
+		}
 		return materialisedAttributes
 	}
 	
@@ -159,7 +165,7 @@ class RosettaAttributeExtensions {
 	}
 	
 	def static ExpandedAttribute expandedEnumAttribute(RosettaEnumValue value) {
-		new ExpandedAttribute((value.eContainer as RosettaType), value.name, null, null, 0,0, false, value.enumSynonyms.map[toExpandedSynonym], 
+		new ExpandedAttribute(value.name, null, null, 0,0, false, value.enumSynonyms.map[toExpandedSynonym], 
 			value.definition, false, true, false, Collections.emptyList
 		)
 	}
@@ -179,13 +185,13 @@ class RosettaAttributeExtensions {
 			return false
 	}	
 	
-	 private static def List<ExpandedAttribute> getExpandedAttributesForList(List<RosettaRegularAttribute> attributes) {
+	static def List<ExpandedAttribute> getExpandedAttributesForList(List<RosettaRegularAttribute> attributes) {
 		val List<ExpandedAttribute> attribs = newArrayList
 		for (attr : attributes) {
 			val List<ExpandedAttribute> metas = newArrayList
 			for (var i = 0; i < attr.metaTypes.size; i++) {
 				val meta = Iterables.get(attr.metaTypes, i)
-				metas.add(new ExpandedAttribute((attr.eContainer as RosettaType),meta.name, meta.type, meta.type.name, 0, 1,	false, 
+				metas.add(new ExpandedAttribute(meta.name, meta.type.toExpandedType, meta.type.name, 0, 1,	false, 
 					attr.toRosettaExpandedSynonym(i), attr.definition, false, false, false, Collections.emptyList
 				))
 			}
@@ -216,9 +222,8 @@ class RosettaAttributeExtensions {
 
 	static def toExpandedAttribute(RosettaRegularAttribute attr, List<ExpandedAttribute> metas) {
 		new ExpandedAttribute(
-			(attr.eContainer as RosettaType),
 			attr.name,
-			attr.type,
+			attr.type.toExpandedType,
 			attr.type.name,
 			attr.card.inf,
 			attr.card.sup,
@@ -237,9 +242,8 @@ class RosettaAttributeExtensions {
 			val annoAttr = annoRef?.attribute
 			if(annoAttr!==null) {
 				metas.add(new ExpandedAttribute(
-					(attr.eContainer as RosettaType),
 					annoAttr.name,
-					annoAttr.type,
+					annoAttr.type.toExpandedType,
 					annoAttr.type?.name,
 					0,
 					1,
@@ -254,9 +258,8 @@ class RosettaAttributeExtensions {
 			}
 		]
 		new ExpandedAttribute(
-			(attr.eContainer as RosettaType),
 			attr.name,
-			attr.type,
+			attr.type.toExpandedType,
 			attr.type.name,
 			attr.card.inf,
 			attr.card.sup,
@@ -268,6 +271,10 @@ class RosettaAttributeExtensions {
 			attr.qualified,
 			metas
 		)
+	}
+	
+	static def ExpandedType toExpandedType(RosettaType type) {
+		return new ExpandedType(type.model, type.name,type instanceof Data || type instanceof RosettaClass, type instanceof RosettaEnumeration, type instanceof RosettaMetaType)
 	}
 	
 	static def toRosettaExpandedSynonyms(List<RosettaSynonym> synonyms, int meta) {

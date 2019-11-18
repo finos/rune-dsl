@@ -1,13 +1,6 @@
 package com.regnosys.rosetta.generator.java;
 
-import java.util.Optional;
-
-import org.eclipse.xtext.EcoreUtil2;
-
-import com.regnosys.rosetta.generator.java.util.JavaType;
 import com.regnosys.rosetta.rosetta.RosettaModel;
-import com.regnosys.rosetta.rosetta.RosettaNamed;
-import com.regnosys.rosetta.rosetta.RosettaRootElement;
 
 public class RosettaJavaPackages {
 
@@ -16,6 +9,8 @@ public class RosettaJavaPackages {
 	private RootPackage root;
 
 	public RosettaJavaPackages(RosettaModel model) {
+		if(model == null)
+			throw new IllegalArgumentException("Model can not be null");
 		this.root = new RootPackage(model);
 	}
 
@@ -79,24 +74,6 @@ public class RosettaJavaPackages {
 			return new Package(this, child);
 		}
 
-		public JavaType javaType(RosettaRootElement ctx, String typeName) {
-			String subPackage = "";
-			if(!(this instanceof RootPackage))
-			{
-				subPackage = "." + this.name ;
-			}
-			if(ctx.getModel() == null) {
-				// Faked attributes
-				return JavaType.create(name() + '.' + typeName);
-			}
-			return JavaType.create(ctx.getModel().getName() + subPackage + '.' + typeName);
-		}
-
-		public JavaType javaType(RosettaNamed namedType) {
-			RosettaRootElement rootElement = EcoreUtil2.getContainerOfType(namedType, RosettaRootElement.class);
-			return javaType(rootElement, namedType.getName());
-		}
-
 		public String name() {
 			if (parent != null) {
 				return parent.name() + "." + name;
@@ -107,6 +84,7 @@ public class RosettaJavaPackages {
 		public String directoryName() {
 			return name().replace('.', '/');
 		}
+
 		@Override
 		public String toString() {
 			return name();

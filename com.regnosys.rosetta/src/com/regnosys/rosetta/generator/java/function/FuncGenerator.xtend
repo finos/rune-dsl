@@ -21,6 +21,7 @@ import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RBuiltinType
@@ -33,11 +34,12 @@ import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.math.BigDecimalExtensions
 import com.rosetta.model.lib.validation.ModelObjectValidator
 import java.util.Map
+import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
+import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import java.util.stream.Collectors
 
 class FuncGenerator {
 
@@ -107,7 +109,7 @@ class FuncGenerator {
 					//
 				«ENDIF»
 				«FOR dep : dependencies»
-					@«Inject» protected «dep.toJavaQualifiedType» «dep.name.toFirstLower»;
+					@«Inject» protected «dep.toJavaType» «dep.name.toFirstLower»;
 				«ENDFOR»
 			
 				/**
@@ -168,7 +170,7 @@ class FuncGenerator {
 				public static final class «className»Default extends «className» {
 					@Override
 					protected  «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
-						return «IF outNeedsBuilder»«getOutput(func).toJavaQualifiedType».builder()«ELSE»null«ENDIF»;
+						return «IF outNeedsBuilder»«getOutput(func).toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
 					}
 				}
 			}
@@ -184,7 +186,7 @@ class FuncGenerator {
 		«emptyJavadocWithVersion(version)»
 		public class «className» {
 			«FOR dep : dependencies»
-				@«Inject» protected «dep.toJavaQualifiedType» «dep.name.toFirstLower»;
+				@«Inject» protected «dep.toJavaType» «dep.name.toFirstLower»;
 			«ENDFOR»
 			
 			«FOR enumFunc : dispatchingFuncs»
@@ -212,6 +214,10 @@ class FuncGenerator {
 	}
 	
 	
+	private def QualifiedName toTargetClassName(FunctionDispatch ele) {
+		return QualifiedName.create(ele.name).append(ele.value.value.name)
+	}
+	
 	private def StringConcatenationClient assign(Operation op, Map<ShortcutDeclaration, Boolean> outs,
 		JavaNames names) {
 		val pathAsList = op.pathAsSegmentList
@@ -236,9 +242,9 @@ class FuncGenerator {
 	
 	private def StringConcatenationClient assignValue(Operation op, JavaNames names) {
 		if(op.assignAsKey) {
-			val valueType =  typeProvider.getRType(namedAssignTarget(op))
-			val pack = names?.packages?.model.metaField
-			val metaCalss = JavaType.create(pack?.child("ReferenceWithMeta"+valueType.name.toFirstUpper).name)
+			val valueType = typeProvider.getRType(namedAssignTarget(op))
+			val metaCalss = names.createJavaType(names.packages.model.metaField,
+				"ReferenceWithMeta" + valueType.name.toFirstUpper)
 			if (cardinality.isMulti(op.expression)) {
 				/*
 				.addParty(
@@ -325,7 +331,7 @@ class FuncGenerator {
 	private def JavaType outputTypeOrVoid(Function function, extension JavaNames names) {
 		val out = getOutput(function)
 		if (out === null) {
-			JavaType.create('void')
+			names.voidType()
 		} else {
 			out.type.toJavaType()
 		}
@@ -336,7 +342,7 @@ class FuncGenerator {
 	}
 
 	private def StringConcatenationClient inputsAsParameters(extension Function function, extension JavaNames names) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.toJavaQualifiedType()» «input.name»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.toListOrSingleJavaType()» «input.name»«ENDFOR»'''
 	}
 
 	def private StringConcatenationClient shortcutJavaType(JavaNames names, ShortcutDeclaration feature) {
