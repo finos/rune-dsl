@@ -382,11 +382,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				]
 			} else if (valuesByName.size == 1 && model.eResource.URI.isPlatformResource) {
 				val EObject toCheck = valuesByName.get(0)
-				val sameNamed = resources.getExportedObjects(toCheck.eClass(), toCheck.fullyQualifiedName, false).filter [
+				val qName = toCheck.fullyQualifiedName
+				val sameNamed = resources.getExportedObjects(toCheck.eClass(), qName, false).filter [
 					isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
 				].map[EObjectURI]
 				if (sameNamed.size > 1) {
-					error('''Duplicate element named '«name»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
+					error('''Duplicate element named '«qName»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
 						toCheck, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
 				}
 			}
@@ -468,10 +469,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 	}
 
-	def boolean typesEqual(RType type, RType type2) {
-		return type == type2
-	}
-
 	@Check
 	def checkFunctionCall(RosettaCallableWithArgsCall element) {
 		val callerSize = element.args.size
@@ -501,7 +498,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 
 	@Check
-	def checkNodeTypeGraph(RosettaBlueprint bp) {
+	def void checkNodeTypeGraph(RosettaBlueprint bp) {
 		try {
 			buildTypeGraph(bp.nodes, bp.output)
 		} catch (BlueprintUnresolvedTypeException e) {
