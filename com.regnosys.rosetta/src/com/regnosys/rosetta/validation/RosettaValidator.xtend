@@ -24,15 +24,20 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaMapPath
+import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
+import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -68,8 +73,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.WithCardinality
 
 /**
  * This class contains custom validation rules. 
@@ -666,6 +669,21 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				val mostUsed = types.keySet.sortBy[types.get(it).size].reverseView
 				error('''All collection elements must have the same type. Types used: «mostUsed.join(', ')»''', ele, null)
 			}
+		}
+	}
+	
+	@Check
+	def checkSynonyMapPath(RosettaMapPathValue ele) {
+		if(!ele.path.nullOrEmpty) {
+			if (ele.path.contains("."))
+				error('''Dot is not allowed in paths. Use '->' to separate path segments.''', ele, ROSETTA_MAP_PATH_VALUE__PATH)
+		}
+	}
+	@Check
+	def checkSynonyValuePath(RosettaSynonymValueBase ele) {
+		if (!ele.path.nullOrEmpty) {
+			if (ele.path.contains("."))
+				error('''Dot is not allowed in paths. Use '->' to separate path segments.''', ele, ROSETTA_SYNONYM_VALUE_BASE__PATH)
 		}
 	}
 	

@@ -499,7 +499,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Quote:
 				attr Foo (1..1)
-					[synonym FpML value "foo" set when "foo.bar" exists]
+					[synonym FpML value "foo" set when "foo->bar" exists]
 		'''.parseRosetta
 		model.assertNoErrors
 	}
@@ -675,5 +675,27 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(OPERATION, null,
 			"'as-key' can only be used when assigning an attribute. Example: \"assign-output out -> attribute: value as-key\"")
+	}
+	
+	@Test
+	def checkSynonymPathSyntax_01() {
+		val model = '''
+			type TypeToUse:
+				attr string (0..1)
+				[synonym FpML value "adjustedDate" path "relative.date" meta id]
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYNONYM_VALUE_BASE, null,
+			"Dot is not allowed in paths. Use '->' to separate path segments.")
+	}
+
+	@Test
+	def checkSynonymPathSyntax_02() {
+		val model = '''
+			type TypeToUse:
+				attr string (0..1)
+				[synonym FpML set to "Custom" when "Pty.Src" = "D"]
+		'''.parseRosetta
+		model.assertError(ROSETTA_MAP_PATH_VALUE, null,
+			"Dot is not allowed in paths. Use '->' to separate path segments.")
 	}
 }
