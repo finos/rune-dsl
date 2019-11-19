@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.object
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource
+import com.regnosys.rosetta.rosetta.RosettaType
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
 
@@ -10,12 +11,18 @@ import org.eclipse.xtend.lib.annotations.Data
 final class ExpandedAttribute {
 	
 	String name
+	String enclosingType
 	ExpandedType type
-	String typeName
+	
+	RosettaType rosettaType // used in translator only
+	
+
 	int inf
 	int sup
 	boolean isUnbound
+
 	List<ExpandedSynonym> synonyms
+
 	String definition
 	boolean hasCalculation
 	boolean isEnum
@@ -26,10 +33,7 @@ final class ExpandedAttribute {
 	def ExpandedType getType() {
 		return type
 	}	
-		
- 	def String getTypeName() {	
-		return typeName
-	}
+	
 	
 	def isMultiple() {
 		return unbound || inf>1 || sup!=1;//sup of 0 is counted as multiple

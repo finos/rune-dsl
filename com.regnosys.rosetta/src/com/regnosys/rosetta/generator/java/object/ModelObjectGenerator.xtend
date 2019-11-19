@@ -170,7 +170,7 @@ class ModelObjectGenerator {
 		if(!allExpandedAttributes.stream.anyMatch[qualified])
 			return null
 		
-		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].typeName
+		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].type.name
 		var qualifiedRootClassName = switch qualifiedClassType { 
 			case RQualifiedType.PRODUCT_TYPE.qualifiedType: c.findProductRootName
 			case RQualifiedType.EVENT_TYPE.qualifiedType: c.findEventRootName

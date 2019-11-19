@@ -423,11 +423,11 @@ class ModelObjectBuilderGenerator {
 		if (attribute.hasMetas) {
 			val buildername = if (attribute.refIndex >= 0) {
 					if (attribute.isRosettaClassOrData)
-						'''ReferenceWithMeta«attribute.typeName.toFirstUpper».ReferenceWithMeta«attribute.typeName.toFirstUpper»Builder'''
+						'''ReferenceWithMeta«attribute.type.name.toFirstUpper».ReferenceWithMeta«attribute.type.name.toFirstUpper»Builder'''
 					else
-						'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper».BasicReferenceWithMeta«attribute.typeName.toFirstUpper»Builder'''
+						'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper».BasicReferenceWithMeta«attribute.type.name.toFirstUpper»Builder'''
 				} else {
-					'''FieldWithMeta«attribute.typeName.toFirstUpper».FieldWithMeta«attribute.typeName.toFirstUpper»Builder'''
+					'''FieldWithMeta«attribute.type.name.toFirstUpper».FieldWithMeta«attribute.type.name.toFirstUpper»Builder'''
 				}
 			'''«names.toMetaType(attribute, buildername)»'''
 		} else {
@@ -436,7 +436,7 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	private def StringConcatenationClient toBuilderTypeUnderlying(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isRosettaClassOrData) '''«attribute.typeName».«attribute.typeName»Builder'''
+		if (attribute.isRosettaClassOrData) '''«attribute.type.name».«attribute.type.name»Builder'''
 		else '''«names.toJavaType(attribute.type)»'''
 	}
 	

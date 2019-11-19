@@ -104,11 +104,11 @@ class ModelObjectBoilerPlate {
 		if(!attribute.hasMetas) return '''«names.toJavaType(attribute.type)»'''
 		val metaType = if (attribute.refIndex >= 0) {
 				if (attribute.isRosettaClassOrData)
-					'''ReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+					'''ReferenceWithMeta«attribute.type.name.toFirstUpper»'''
 				else
-					'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper»'''
+					'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper»'''
 			} else
-				'''FieldWithMeta«attribute.typeName.toFirstUpper»'''
+				'''FieldWithMeta«attribute.type.name.toFirstUpper»'''
 
 		return '''«names.toMetaType(attribute,metaType)»'''
 	}

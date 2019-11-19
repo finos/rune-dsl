@@ -9,14 +9,15 @@ public class RosettaJavaPackages {
 	private RootPackage root;
 
 	public RosettaJavaPackages(RosettaModel model) {
-		if(model == null)
-			throw new IllegalArgumentException("Model can not be null");
-		this.root = new RootPackage(model);
+		this(new RootPackage(model));
 	}
 
-	public RosettaJavaPackages() {
+	protected RosettaJavaPackages() {
 	}
-
+	
+	protected RosettaJavaPackages(RootPackage root) {
+		this.root = root;
+	}
 	private Package defaultNamespace() {
 		return DEFAULT_NAMESPACE;
 	}
@@ -65,7 +66,7 @@ public class RosettaJavaPackages {
 			this.name = name;
 		}
 
-		private Package(Package parent, String name) {
+		public Package(Package parent, String name) {
 			this.parent = parent;
 			this.name = name;
 		}
@@ -109,20 +110,8 @@ public class RosettaJavaPackages {
 			return new Package(this, "meta");
 		}
 
-		public Package calculation() {
-			return new Package(this, "calculation");
-		}
-
 		public Package functions() {
 			return new Package(this, "functions");
-		}
-
-		public Package binding() {
-			return new Package(this, "binding");
-		}
-
-		public Package bindingUtil() {
-			return binding().child("util");
 		}
 
 		public Package typeValidation() {
@@ -151,18 +140,6 @@ public class RosettaJavaPackages {
 
 		public Package qualifyProduct() {
 			return new Package(this, "qualify.product");
-		}
-
-		public Package ingestion() {
-			return new Package(this, "ingestion");
-		}
-
-		public Package ingestionChild() {
-			return new Package(this, "ingestion");
-		}
-
-		public Package processor() {
-			return new Package(this, "processor");
 		}
 	}
 }

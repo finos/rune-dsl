@@ -26,13 +26,12 @@ class MetaFieldGenerator {
 		
 		val namespaceToMetas = Multimaps.index(metaTypes, [namespace]).asMap
 		val libMetas = namespaceToMetas.getOrDefault(RosettaScopeProvider.LIB_NAMESPACE, Collections.emptyList)
-		for (namespace:namespaces) {
+		for (namespace: namespaces) {
 			val rosettaMetas = namespaceToMetas.getOrDefault(namespace, libMetas)
 			val packages = new RootPackage(namespace)
 			fsa.generateFile('''«packages.metaField.directoryName»/MetaFields.java''',
 				metaFields(packages, rosettaMetas))
 		}
-			
 
 		//find all the reference types
 		val namespaceClasses =   Multimaps.index(allClasses, [c|c.namespace]).asMap

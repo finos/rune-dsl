@@ -73,8 +73,9 @@ class RosettaAttributeExtensions {
 		if(rosExt.hasKeyedAnnotation(data)){
 			res.add(new ExpandedAttribute(
 				'meta',
+				data.name,
 				provideMetaFeildsType(data),
-				METAFIELDSCLASSNAME,
+				null,
 				0,
 				1,
 				false,
@@ -89,8 +90,9 @@ class RosettaAttributeExtensions {
 		if(rosExt.hasPartialKeyAnnotation(data)) {
 			res.add(new ExpandedAttribute(
 				'rosettaKeyValue',
+				data.name,
 				provideStringType(data),
-				'string',
+				null,
 				1,
 				1,
 				false,
@@ -114,7 +116,8 @@ class RosettaAttributeExtensions {
 		return new ExpandedType(ctx.model, METAFIELDSCLASSNAME, true, false, false)
 	}
 
-	private static def ExpandedType provideStringType(RosettaRootElement ctx) {
+	// used in translate project
+	static private def ExpandedType provideStringType(RosettaRootElement ctx) {
 		return new ExpandedType(ctx.model, 'string', false, false, false)
 	}
 	
@@ -125,8 +128,9 @@ class RosettaAttributeExtensions {
 			val rosettaKeyValueType = provideMetaFeildsType(rosettaClass)
 			val rosettaKeyValue = new ExpandedAttribute(
 				'rosettaKeyValue',
+				rosettaClass.name,
 				rosettaKeyValueType,
-				rosettaKeyValueType.name,
+				null,
 				1,
 				1,
 				false,
@@ -143,8 +147,9 @@ class RosettaAttributeExtensions {
 			val metaFieldsType = provideMetaFeildsType(rosettaClass)
 			val metaFields = new ExpandedAttribute(
 				'meta',
+				rosettaClass.name,
 				metaFieldsType,
-				metaFieldsType.name,
+				null,
 				0,
 				1,
 				false,
@@ -165,7 +170,7 @@ class RosettaAttributeExtensions {
 	}
 	
 	def static ExpandedAttribute expandedEnumAttribute(RosettaEnumValue value) {
-		new ExpandedAttribute(value.name, null, null, 0,0, false, value.enumSynonyms.map[toExpandedSynonym], 
+		new ExpandedAttribute(value.name,value.enumeration.name, null, null, 0,0, false, value.enumSynonyms.map[toExpandedSynonym], 
 			value.definition, false, true, false, Collections.emptyList
 		)
 	}
@@ -191,7 +196,7 @@ class RosettaAttributeExtensions {
 			val List<ExpandedAttribute> metas = newArrayList
 			for (var i = 0; i < attr.metaTypes.size; i++) {
 				val meta = Iterables.get(attr.metaTypes, i)
-				metas.add(new ExpandedAttribute(meta.name, meta.type.toExpandedType, meta.type.name, 0, 1,	false, 
+				metas.add(new ExpandedAttribute(meta.name,(attr.eContainer as RosettaType).name, meta.type.toExpandedType, meta.type, 0, 1,	false, 
 					attr.toRosettaExpandedSynonym(i), attr.definition, false, false, false, Collections.emptyList
 				))
 			}
@@ -223,8 +228,9 @@ class RosettaAttributeExtensions {
 	static def toExpandedAttribute(RosettaRegularAttribute attr, List<ExpandedAttribute> metas) {
 		new ExpandedAttribute(
 			attr.name,
+			(attr.eContainer as RosettaType).getName(),
 			attr.type.toExpandedType,
-			attr.type.name,
+			attr.type,
 			attr.card.inf,
 			attr.card.sup,
 			attr.card.unbounded,
@@ -243,8 +249,9 @@ class RosettaAttributeExtensions {
 			if(annoAttr!==null) {
 				metas.add(new ExpandedAttribute(
 					annoAttr.name,
+					annoRef.annotation.name,
 					annoAttr.type.toExpandedType,
-					annoAttr.type?.name,
+					annoAttr.type,
 					0,
 					1,
 					false,
@@ -259,8 +266,9 @@ class RosettaAttributeExtensions {
 		]
 		new ExpandedAttribute(
 			attr.name,
+			(attr.eContainer as RosettaType).name,
 			attr.type.toExpandedType,
-			attr.type.name,
+			attr.type,
 			attr.card.inf,
 			attr.card.sup,
 			attr.card.unbounded,
