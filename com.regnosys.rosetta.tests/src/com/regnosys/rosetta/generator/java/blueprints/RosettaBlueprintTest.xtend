@@ -704,7 +704,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#Blueprint1";
+						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
 					}
 					
 					
@@ -760,7 +760,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#Blueprint1";
+						return "__synthetic1.rosetta#com.rosetta.test.model.com.rosetta.test.model.Blueprint1";
 					}
 					
 					
@@ -890,7 +890,7 @@ class RosettaBlueprintTest {
 				
 				@Override
 				public String getURI() {
-					return "__synthetic1.rosetta#Blueprint1";
+					return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
 				}
 				
 				
@@ -970,7 +970,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#Blueprint1";
+						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
 					}
 					
 					
@@ -1065,7 +1065,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#Blueprint1";
+						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
 					}
 					
 					
@@ -1153,7 +1153,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#Blueprint1";
+						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
 					}
 					
 					
@@ -1230,7 +1230,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#Blueprint1";
+						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
 					}
 					
 					
@@ -1440,7 +1440,7 @@ class RosettaBlueprintTest {
 			
 			@Override
 			public String getURI() {
-				return "__synthetic1.rosetta#SimpleBlueprint";
+				return "__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint";
 			}
 			
 			
@@ -1563,7 +1563,7 @@ class RosettaBlueprintTest {
 				
 				@Override
 				public String getURI() {
-					return "__synthetic1.rosetta#WorthyAvenger";
+					return "__synthetic1.rosetta#com.rosetta.test.model.WorthyAvenger";
 				}
 				
 				
@@ -1654,7 +1654,7 @@ class RosettaBlueprintTest {
 				
 				@Override
 				public String getURI() {
-					return "__synthetic1.rosetta#IsFixedFloat";
+					return "__synthetic1.rosetta#com.rosetta.test.model.IsFixedFloat";
 				}
 				
 				
@@ -1761,7 +1761,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#SimpleBlueprint";
+						return "__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint";
 					}
 					
 					
@@ -1834,7 +1834,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#SimpleBlueprint";
+						return "__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint";
 					}
 					
 					
@@ -1995,7 +1995,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#Blueprint1";
+						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
 					}
 					
 					
@@ -2088,7 +2088,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#Blueprint1";
+						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
 					}
 					
 					

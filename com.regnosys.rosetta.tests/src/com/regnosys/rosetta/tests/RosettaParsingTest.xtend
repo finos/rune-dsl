@@ -591,9 +591,6 @@ class RosettaParsingTest {
 	@Test
 	def void listAccessTest() {
 	'''
-			namespace "com.rosetta.model"
-			version "test"
-			
 			type DataFoo: <"A sample data">
 				stringAttribute string (1..1)
 				intAttribute int (1..1)

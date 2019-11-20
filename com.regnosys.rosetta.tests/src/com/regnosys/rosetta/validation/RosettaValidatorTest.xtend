@@ -221,9 +221,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testTypeErrorAssignment_02() {
 		val model =
 		'''
-			namespace "test"
-			version "test"
-			
 			type Foo:
 				id boolean (1..1)
 			
@@ -261,9 +258,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testTypeErrorAssignment_04() {
 		val model =
 		'''
-			namespace "test"
-			version "test"
-
 			enum Enumerate : X Y Z
 
 			type Type:
@@ -554,7 +548,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar:
 				bar Foo (0..1)
 			isProduct FooBar
-				Bar -> bar -> foo
+				Bar -> bar -> foo = ""
 		'''.parseRosetta
 		model.assertError(ROSETTA_PRODUCT, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE, 
 			"isProduct expressions should always start from the 'Foo' class. But found 'Bar'.")

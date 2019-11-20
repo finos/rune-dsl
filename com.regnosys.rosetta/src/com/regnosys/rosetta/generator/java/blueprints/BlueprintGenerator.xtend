@@ -59,12 +59,12 @@ class BlueprintGenerator {
 	 */
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaBlueprintReport).forEach [ report |
-			fsa.generateFile(packages.blueprint.directoryName + '/' + report.name + 'Report.java',
+			fsa.generateFile(packages.model.blueprint.directoryName + '/' + report.name + 'Report.java',
 				generateBlueprint(packages, report.nodes, null, report.name, 'Report', report.URI, version))
 		]
 		
 		elements.filter(RosettaBlueprint).forEach [ bp |
-			fsa.generateFile(packages.blueprint.directoryName + '/' + bp.name + 'Rule.java',
+			fsa.generateFile(packages.model.blueprint.directoryName + '/' + bp.name + 'Rule.java',
 				generateBlueprint(packages, bp.nodes, bp.output, bp.name, 'Rule', bp.URI, version))
 		]
 	}
@@ -83,7 +83,7 @@ class BlueprintGenerator {
 		val body = tracImports(nodes.buildBody(typed, imports))
 		
 		return '''
-			package «packageName.blueprint.packageName»;
+			package «packageName.model.blueprint.name»;
 			
 			«FOR imp : body.imports»
 				import «imp»;
@@ -452,7 +452,7 @@ class BlueprintGenerator {
 	
 	def fullname(RosettaType type, RosettaJavaPackages packageName) {
 		if (type instanceof RosettaClass || type instanceof com.regnosys.rosetta.rosetta.simple.Data)
-			'''«packageName.model.packageName».«type.name»'''.toString
+			'''«packageName.model.name».«type.name»'''.toString
 		else 
 			type.name.toJavaFullType
 	}

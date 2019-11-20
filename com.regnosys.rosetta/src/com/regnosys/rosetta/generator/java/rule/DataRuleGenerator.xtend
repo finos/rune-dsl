@@ -38,14 +38,14 @@ class DataRuleGenerator {
 	
 	def generate(JavaNames names, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaDataRule).forEach [
-			fsa.generateFile('''«names.packages.dataRule.directoryName»/«dataRuleClassName(name)».java''', toJava(names, version))
+			fsa.generateFile('''«names.packages.model.dataRule.directoryName»/«dataRuleClassName(name)».java''', toJava(names, version))
 		]
 	}
 	
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, Condition ele, String version) {
 		val classBody = tracImports(ele.dataRuleClassBody(data, names, version))
 		val content = '''
-			package «names.packages.dataRule.packageName»;
+			package «names.packages.model.dataRule.name»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -57,7 +57,7 @@ class DataRuleGenerator {
 			
 			«classBody.toString»
 		'''
-		fsa.generateFile('''«names.packages.dataRule.directoryName»/«dataRuleClassName(ele, data)».java''', content)
+		fsa.generateFile('''«names.packages.model.dataRule.directoryName»/«dataRuleClassName(ele, data)».java''', content)
 	}
 
 	def static String dataRuleClassName(String dataRuleName) {
@@ -158,7 +158,7 @@ class DataRuleGenerator {
 		val imports = new ImportGenerator(packages)
 		imports.addRule(rule)
 	return '''
-		package «packages.dataRule.packageName»;
+		package «packages.model.dataRule.name»;
 		
 		«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
 		import «importClass»;

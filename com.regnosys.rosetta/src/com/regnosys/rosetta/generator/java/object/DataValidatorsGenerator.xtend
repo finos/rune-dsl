@@ -33,16 +33,16 @@ class DataValidatorsGenerator {
 	@Inject extension ImportManagerExtension
 
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version) {
-		fsa.generateFile(names.packages.classValidation.directoryName + '/' + data.name + 'Validator.java',
+		fsa.generateFile(names.packages.model.typeValidation.directoryName + '/' + data.name + 'Validator.java',
 			generatClass(names, data, version))
-		fsa.generateFile(names.packages.existsValidation.directoryName + '/' + onlyExistsValidatorName(data) + '.java',
+		fsa.generateFile(names.packages.model.existsValidation.directoryName + '/' + onlyExistsValidatorName(data) + '.java',
 			generateOnlyExistsValidator(names, data, version))
 	}
 
 	private def generatClass(JavaNames names, Data d, String version) {
 		val classBody = tracImports(d.classBody(names, version, d.getExpandedAttributes(false)))
 		'''
-			package «names.packages.classValidation.packageName»;
+			package «names.packages.model.typeValidation.name»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -58,7 +58,7 @@ class DataValidatorsGenerator {
 	private def generateOnlyExistsValidator(JavaNames names, Data d, String version) {
 		val classBody = tracImports(d.onlyExistsClassBody(names, version))
 		'''
-			package «names.packages.existsValidation.packageName»;
+			package «names.packages.model.existsValidation.name»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -72,7 +72,7 @@ class DataValidatorsGenerator {
 	}
 
 	def private StringConcatenationClient classBody(Data c, JavaNames names, String version, List<ExpandedAttribute> attributes) '''
-		public class «c.name»Validator implements «Validator»<«names.toJavaQualifiedType(c)»> {
+		public class «c.name»Validator implements «Validator»<«names.toJavaType(c)»> {
 		
 			@Override
 			public «ValidationResult»<«c.name»> validate(«RosettaPath» path, «c.name» o) {
@@ -109,7 +109,7 @@ class DataValidatorsGenerator {
 	'''
 
 	def private StringConcatenationClient onlyExistsClassBody(Data c, JavaNames names, String version) '''
-		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaQualifiedType(c)», String> {
+		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaType(c)», String> {
 		
 			@Override
 			public «ValidationResult»<«c.name»> validate(«RosettaPath» path, «c.name» o, String field) {

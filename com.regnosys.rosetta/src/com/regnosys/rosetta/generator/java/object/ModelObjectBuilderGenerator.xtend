@@ -3,13 +3,13 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.meta.RosettaMetaData
@@ -21,7 +21,6 @@ import java.util.Optional
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class ModelObjectBuilderGenerator {
 	
@@ -260,7 +259,7 @@ class ModelObjectBuilderGenerator {
 				«ELSE»
 					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int index) {
 						if («attribute.name»==null) {
-							this.«attribute.name» = new «JavaType.create(ArrayList.name)»<>();
+							this.«attribute.name» = new «ArrayList»<>();
 						}
 						return getIndex(«attribute.name», index, ()->new «attribute.toBuilderTypeSingle(names)»());
 					}
@@ -424,21 +423,21 @@ class ModelObjectBuilderGenerator {
 		if (attribute.hasMetas) {
 			val buildername = if (attribute.refIndex >= 0) {
 					if (attribute.isRosettaClassOrData)
-						'''ReferenceWithMeta«attribute.typeName.toFirstUpper».ReferenceWithMeta«attribute.typeName.toFirstUpper»Builder'''
+						'''ReferenceWithMeta«attribute.type.name.toFirstUpper».ReferenceWithMeta«attribute.type.name.toFirstUpper»Builder'''
 					else
-						'''BasicReferenceWithMeta«attribute.typeName.toFirstUpper».BasicReferenceWithMeta«attribute.typeName.toFirstUpper»Builder'''
+						'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper».BasicReferenceWithMeta«attribute.type.name.toFirstUpper»Builder'''
 				} else {
-					'''FieldWithMeta«attribute.typeName.toFirstUpper».FieldWithMeta«attribute.typeName.toFirstUpper»Builder'''
+					'''FieldWithMeta«attribute.type.name.toFirstUpper».FieldWithMeta«attribute.type.name.toFirstUpper»Builder'''
 				}
-			'''«names.packages.metaField.javaType(buildername)»'''
+			'''«names.toMetaType(attribute, buildername)»'''
 		} else {
 			'''«attribute.toBuilderTypeUnderlying(names)»'''
 		}
 	}
 	
 	private def StringConcatenationClient toBuilderTypeUnderlying(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isRosettaClassOrData) '''«attribute.typeName».«attribute.typeName»Builder'''
-		else '''«names.toJavaQualifiedType(attribute.type)»'''
+		if (attribute.isRosettaClassOrData) '''«attribute.type.name».«attribute.type.name»Builder'''
+		else '''«names.toJavaType(attribute.type)»'''
 	}
 	
 		

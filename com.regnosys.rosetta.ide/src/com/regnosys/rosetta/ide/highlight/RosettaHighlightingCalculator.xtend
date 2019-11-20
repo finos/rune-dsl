@@ -11,7 +11,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
-import com.regnosys.rosetta.rosetta.RosettaHeader
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMarketPractice
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
@@ -92,10 +91,6 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 			}
 			RosettaStereotype: {
 				highlightFeatureForAllChildren(acceptor, object, ROSETTA_STEREOTYPE__VALUES, STEREOTYPE_ID)
-			}
-			RosettaHeader: {
-				highlightFeature(acceptor, object, ROSETTA_HEADER__NAMESPACE, SOURCE_ID)
-				highlightFeature(acceptor, object, ROSETTA_HEADER__VERSION, SOURCE_ID)
 			}
 			RosettaChoiceRule: {
 				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, RULE_ID)

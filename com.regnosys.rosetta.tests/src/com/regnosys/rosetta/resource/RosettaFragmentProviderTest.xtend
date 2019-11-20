@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.rosetta.simple.Data
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -22,18 +23,20 @@ class RosettaFragmentProviderTest {
 	@Test
 	def testURIFragments() {
 		val clazz = '''
-			class Foo {
-				foo Foo (1..1);
-			}
-		'''.parse.elements.filter(RosettaClass).head
+			namespace test
+			version "1.2.3"
+			
+			type Foo:
+				foo Foo (1..1)
+		'''.parse.elements.filter(Data).head
 		val resourceSet = clazz.eResource.resourceSet
 		val classURI = EcoreUtil.getURI(clazz)
-		assertEquals('Foo', classURI.fragment)
+		assertEquals('test.Foo', classURI.fragment)
 		assertEquals(clazz, resourceSet.getEObject(classURI, false))
 		
-		val attribute = clazz.regularAttributes.head
+		val attribute = clazz.attributes.head
 		val attributeURI = EcoreUtil.getURI(attribute)
-		assertEquals('Foo.foo', attributeURI.fragment)
+		assertEquals('test.Foo.foo', attributeURI.fragment)
 		assertEquals(attribute, resourceSet.getEObject(attributeURI, false))
 	}
 }

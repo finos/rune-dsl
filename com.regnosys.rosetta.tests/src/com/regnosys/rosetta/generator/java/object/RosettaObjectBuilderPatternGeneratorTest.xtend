@@ -49,7 +49,7 @@ class RosettaObjectBuilderPatternGeneratorTest {
 
 		val classes = genereated.compileToClasses
 
-		val classD = classes.get(javaPackages.model.packageName + ".D")
+		val classD = classes.get(rootPackage.name + ".D")
 		val classDBuilderInstance = classD.getMethod("builder").invoke(null);
 
 		classDBuilderInstance.class.getMethod('setAa', String).invoke(classDBuilderInstance, 'fieldA');
@@ -73,7 +73,7 @@ class RosettaObjectBuilderPatternGeneratorTest {
 
 		val classes = code.compileToClasses
 
-		val classTester = classes.get(javaPackages.model.packageName + ".Tester")
+		val classTester = classes.get(rootPackage.name + ".Tester")
 		val classTesterBuilderInstance = classTester.getMethod("builder").invoke(null);
 
 		classTesterBuilderInstance.class.getMethod('addItems', String).invoke(classTesterBuilderInstance, 'item1');
@@ -103,7 +103,7 @@ class RosettaObjectBuilderPatternGeneratorTest {
 				singleOne One (1..1)
 		'''.generateCode
 
-		val testClassCode = code.get(javaPackages.model.packageName + '.Test')
+		val testClassCode = code.get(rootPackage.name + '.Test')
 
 		// Base Case
 		assertThat(testClassCode,
@@ -140,7 +140,7 @@ class RosettaObjectBuilderPatternGeneratorTest {
 
 		val classes = code.compileToClasses
 
-		val testClass = classes.get(javaPackages.model.packageName + '.Test')
+		val testClass = classes.get(rootPackage.name + '.Test')
 		val testBuilderInstance = testClass.getMethod('builder').invoke(null)
 
 		testBuilderInstance.class.getMethod('setStringField', String).invoke(testBuilderInstance, 'test-value'); 
@@ -174,7 +174,7 @@ class RosettaObjectBuilderPatternGeneratorTest {
 		
 		val classes = code.compileToClasses
 		
-		val rosettaObjectClass = classes.get(javaPackages.model.packageName + '.RosettaObject')
+		val rosettaObjectClass = classes.get(rootPackage.name + '.RosettaObject')
 		val rosettaObjctBuilder = rosettaObjectClass.getMethod('builder').invoke(null)
 		
 		// Create RosettaObject instance for Parent
@@ -186,7 +186,7 @@ class RosettaObjectBuilderPatternGeneratorTest {
 		val rosettaObjectChild= rosettaObjctBuilder.class.getMethod('build').invoke(rosettaObjctBuilder)
 		
 		// Build Child object
-		val childClass = classes.get(javaPackages.model.packageName + '.Child')
+		val childClass = classes.get(rootPackage.name + '.Child')
 		val childBuilder = childClass.getMethod('builder').invoke(null)
 		childBuilder.class.getMethod('setChildField', rosettaObjectClass).invoke(childBuilder, rosettaObjectChild)
 		childBuilder.class.getMethod('addParentField', rosettaObjectClass).invoke(childBuilder, rosettaObjectParent)

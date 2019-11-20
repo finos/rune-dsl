@@ -81,7 +81,7 @@ class RosettaExpressionsTest {
 				Test -> one - Test -> two = 42
 		'''.generateCode
 		
-		val qualifier = code.get(javaPackages.qualifyProduct.packageName + ".IsTestQualifier")
+		val qualifier = code.get(rootPackage.qualifyProduct.name + ".IsTestQualifier")
 		assertThat(qualifier, containsString("MapperMaths.<BigDecimal, Date, Date>subtract"))
 	}
 	

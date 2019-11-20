@@ -234,9 +234,10 @@ class RosettaTypeProvider {
 					case 'zonedDateTime':
 						RBuiltinType.ZONED_DATE_TIME
 					default:
-						new RErrorType(
-							'No such built-in type: ' + expression.name + " '" +
-								NodeModelUtils.findActualNodeFor(expression)?.text + "'")
+						if(expression.name !== null)
+							new RErrorType(
+								'No such built-in type: ' + expression.name + " '" +
+									NodeModelUtils.findActualNodeFor(expression)?.text + "'")
 				}
 			}
 			RosettaParenthesisCalcExpression:

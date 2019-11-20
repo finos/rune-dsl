@@ -11,6 +11,7 @@ import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RQualifiedType
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaClass
 import com.rosetta.model.lib.annotations.RosettaQualified
@@ -26,7 +27,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.utils.RosettaConfigExtension
 
 class DataGenerator {
 	@Inject extension RosettaExtensions
@@ -52,7 +52,7 @@ class DataGenerator {
 	private def generateRosettaClass(JavaNames javaNames, Data d, String version) {
 		val classBody = tracImports(d.classBody(javaNames, version))
 		'''
-			package «javaNames.packages.model.packageName»;
+			package «javaNames.packages.model.name»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -78,14 +78,14 @@ class DataGenerator {
 			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«d.qualifiedClass».class)
 		«ENDIF»
 		«contributeClassSynonyms(d.synonyms)»
-		public class «d.name» extends «IF d.hasSuperType»«d.superType?.name»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
+		public class «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType)»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
 			«d.rosettaClass(names)»
 
 			«d.staticBuilderMethod»
 
 			«d.builderClass(names)»
 
-			«d.boilerPlate»
+			«d.boilerPlate(names)»
 		}
 	'''
 	
@@ -106,7 +106,7 @@ class DataGenerator {
 		if(!allExpandedAttributes.stream.anyMatch[qualified])
 			return null
 		
-		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].typeName
+		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].type.name
 		var qualifiedRootClassName = switch qualifiedClassType { 
 			case RQualifiedType.PRODUCT_TYPE.qualifiedType: c.findProductRootName
 			case RQualifiedType.EVENT_TYPE.qualifiedType: c.findEventRootName
@@ -125,10 +125,10 @@ class DataGenerator {
 		«FOR attribute : expandedAttributes»
 			private final «attribute.toJavaType(names)» «attribute.name»;
 		«ENDFOR»
-		«val metaType = names.packages.meta.javaType(c.name+'Meta')»
+		«val metaType = names.createJavaType(names.packages.model.meta, c.name+'Meta')»
 		private static «metaType» metaData = new «metaType»();
 
-		«c.name»(«c.builderName» builder) {
+		protected «c.name»(«c.builderName» builder) {
 			«IF c.hasSuperType»
 				super(builder);
 			«ENDIF»
@@ -167,19 +167,20 @@ class DataGenerator {
 	
 	private def StringConcatenationClient toJavaType(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.isMultiple) '''«List»<«attribute.toJavaTypeSingle(names)»>''' 
-		else attribute.toJavaTypeSingle(names);
+		else attribute.toJavaTypeSingle(names)
 	}
 
-	private def StringConcatenationClient toJavaTypeSingle(ExpandedAttribute attribute, JavaNames names) {
+	static def StringConcatenationClient toJavaTypeSingle(ExpandedAttribute attribute, JavaNames names) {
 		if (!attribute.hasMetas)
-			names.toJavaQualifiedType(attribute.type)
-		else if (attribute.refIndex >= 0) {
-			if (attribute.isRosettaClassOrData)
-				'''«names.packages.metaField.javaType('ReferenceWithMeta'+attribute.typeName.toFirstUpper)»'''
-			else
-				'''«names.packages.metaField.javaType('BasicReferenceWithMeta'+attribute.typeName.toFirstUpper)»'''
-		} else
-			'''«names.packages.metaField.javaType('FieldWithMeta'+attribute.typeName.toFirstUpper)»'''
+			return '''«names.toJavaType(attribute.type)»'''
+		val name = if (attribute.refIndex >= 0) {
+				if (attribute.isRosettaClassOrData)
+					'''ReferenceWithMeta«attribute.type.name.toFirstUpper»'''
+				else
+					'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper»'''
+			} else
+				'''FieldWithMeta«attribute.type.name.toFirstUpper»'''
+		return '''«names.toMetaType(attribute, name)»'''
 	}
 	
 	private def StringConcatenationClient contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''		

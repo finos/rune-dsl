@@ -205,7 +205,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def void checkTypeExpectation(EObject owner) {
 		if(!owner.eResource.errors.filter(XtextSyntaxDiagnostic).empty)
 			return;
-		owner.eClass.EAllReferences.filter[ROSETTA_EXPRESSION.isSuperTypeOf(it.EReferenceType)].filter[owner.eIsSet(it)].
+		owner.eClass.EAllReferences.filter[ROSETTA_EXPRESSION.isSuperTypeOf(it.EReferenceType)].filter[
+			owner.eIsSet(it)
+		].
 			forEach [ ref |
 				val referenceValue = owner.eGet(ref)
 				if (ref.isMany) {
@@ -560,7 +562,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				enumsUsed.put(enumRef.enumeration, enumRef.value.name -> it)
 			}
 		]
-		val structured = enumsUsed.keys.map[it -> enumsUsed.get(it)]
+		val structured = enumsUsed.keys.map[it -> enumsUsed.get(it)].filter[it === null || value === null]
+		if(structured.nullOrEmpty)
+			return
 		val mostUsedEnum = structured.max[$0.value.size <=> $1.value.size].key
 		val toImplement = mostUsedEnum.allEnumValues.map[name].toSet
 		enumsUsed.get(mostUsedEnum).forEach[
