@@ -46,7 +46,7 @@ class RosettaObjectGeneratorTest {
 				items string (0..*)
 		'''.compileJava8
 
-		val classTester = classes.get(javaPackages.model.packageName + ".Tester")
+		val classTester = classes.get(rootPackage.name + ".Tester")
 		val classTesterBuilderInstance = classTester.getMethod("builder").invoke(null)
 
 		classTesterBuilderInstance.class.getMethod('addItems', String).invoke(classTesterBuilderInstance, 'item1')
@@ -69,7 +69,7 @@ class RosettaObjectGeneratorTest {
 				list string (0..*)
 		'''.compileJava8
 
-		assertEquals(String, classes.get(javaPackages.model.packageName + ".Tester").getMethod('getOne').returnType)
+		assertEquals(String, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 	}
 
 	@Test
@@ -82,7 +82,7 @@ class RosettaObjectGeneratorTest {
 		//code.writeClasses("intTest")
 		val classes = code.compileToClasses
 
-		assertEquals(Integer, classes.get(javaPackages.model.packageName + ".Tester").getMethod('getOne').returnType)
+		assertEquals(Integer, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 
 	}
 
@@ -94,7 +94,7 @@ class RosettaObjectGeneratorTest {
 				list number (0..*)
 		'''.compileJava8
 
-		assertEquals(BigDecimal, classes.get(javaPackages.model.packageName + ".Tester").getMethod('getOne').returnType)
+		assertEquals(BigDecimal, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 
 	}
 
@@ -106,7 +106,7 @@ class RosettaObjectGeneratorTest {
 				list boolean (0..*)
 		'''.compileJava8
 
-		assertEquals(Boolean, classes.get(javaPackages.model.packageName + ".Tester").getMethod('getOne').returnType)
+		assertEquals(Boolean, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 
 	}
 
@@ -117,7 +117,7 @@ class RosettaObjectGeneratorTest {
 				one date (0..1)
 				list date (0..*)
 		'''.compileJava8
-		assertEquals(Date, classes.get(javaPackages.model.packageName + ".Tester").getMethod('getOne').returnType)
+		assertEquals(Date, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 	}
 
 	@Test
@@ -129,9 +129,9 @@ class RosettaObjectGeneratorTest {
 				zoned zonedDateTime (0..1)
 		'''.compileJava8
 		assertEquals(LocalDateTime,
-			classes.get(javaPackages.model.packageName + ".Tester").getMethod('getOne').returnType)
+			classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 		assertEquals(ZonedDateTime,
-			classes.get(javaPackages.model.packageName + ".Tester").getMethod('getZoned').returnType)
+			classes.get(rootPackage.name + ".Tester").getMethod('getZoned').returnType)
 	}
 
 	@Test
@@ -141,7 +141,7 @@ class RosettaObjectGeneratorTest {
 				one time (0..1)
 				list time (0..*)
 		'''.compileJava8
-		assertEquals(LocalTime, classes.get(javaPackages.model.packageName + ".Tester").getMethod('getOne').returnType)
+		assertEquals(LocalTime, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 	}
 
 
@@ -151,7 +151,7 @@ class RosettaObjectGeneratorTest {
 			type TestObject: <"">
 				fieldOne string (0..1) <"">
 		'''.compileJava8
-		val generatedClass = classes.get(javaPackages.model.packageName + ".TestObject")
+		val generatedClass = classes.get(rootPackage.name + ".TestObject")
 		val builderInstance = generatedClass.getMethod("builder").invoke(null)
 		var inst = builderInstance.invoke("prune")
 		inst = builderInstance.invoke("build")
@@ -172,7 +172,7 @@ class RosettaObjectGeneratorTest {
 		'''.generateCode
 		//code.writeClasses("objectTest")
 		val classes = code.compileToClasses
-		val generatedClass = classes.get(javaPackages.model.packageName + ".TestObject")
+		val generatedClass = classes.get(rootPackage.name + ".TestObject")
 
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
@@ -198,7 +198,7 @@ class RosettaObjectGeneratorTest {
 		'''.generateCode
 		//code.writeClasses("objectTest")
 		val classes = code.compileToClasses
-		val generatedClass = classes.get(javaPackages.model.packageName + ".TestObject")
+		val generatedClass = classes.get(rootPackage.name + ".TestObject")
 
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
@@ -224,7 +224,7 @@ class RosettaObjectGeneratorTest {
 		'''.generateCode
 		//code.writeClasses("BasicReferenceTest")
 		val classes = code.compileToClasses
-		val generatedClass = classes.get(javaPackages.model.packageName + ".TestObject")
+		val generatedClass = classes.get(rootPackage.name + ".TestObject")
 
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
@@ -252,7 +252,7 @@ class RosettaObjectGeneratorTest {
 		//code.writeClasses("shouldCreateFieldWithReferenceTypeWhenAttributeIsReference")
 		val generatedClass = code.compileToClasses
 
-		val testClass = generatedClass.get(javaPackages.model.packageName + '.TestObject')
+		val testClass = generatedClass.get(rootPackage.name + '.TestObject')
 
 		val getter = testClass.getMethod("getFieldOne")
 		assertThat(getter, CoreMatchers.notNullValue())
@@ -269,7 +269,7 @@ class RosettaObjectGeneratorTest {
 		'''.generateCode
 		//code.writeClasses("SchemeFieldWithSynonym")
 		val generatedClass = code.compileToClasses
-		val testClass = generatedClass.get(javaPackages.model.packageName + '.TestObject')
+		val testClass = generatedClass.get(rootPackage.name + '.TestObject')
 		val getter = testClass.getMethod("getOne")
 
 		assertThat(getter.annotations.filter[RosettaSynonym.isAssignableFrom(class)].size, is(1))
@@ -287,7 +287,7 @@ class RosettaObjectGeneratorTest {
 		'''.generateCode
 
 		val classes = code.compileToClasses
-		val WithRosettaKeyValue = classes.get(javaPackages.model.packageName + '.WithRosettaKeyValue')
+		val WithRosettaKeyValue = classes.get(rootPackage.name + '.WithRosettaKeyValue')
 
 		assertThat(WithRosettaKeyValue.interfaces.exists[name.equals('com.rosetta.model.lib.GlobalKey')], is(false))
 		assertThat(WithRosettaKeyValue.interfaces.exists[name.equals('com.rosetta.model.lib.RosettaKeyValue')],
@@ -305,7 +305,7 @@ class RosettaObjectGeneratorTest {
 		//code.writeClasses("shouldImplementRosettaKeyAndRosettaKeyValueWhenDefined")
 
 		val classes = code.compileToClasses
-		val withRosettaKeys = classes.get(javaPackages.model.packageName + '.WithRosettaKeys')
+		val withRosettaKeys = classes.get(rootPackage.name + '.WithRosettaKeys')
 
 		assertThat(withRosettaKeys.interfaces.exists[name.equals('com.rosetta.model.lib.GlobalKey')], is(true))
 		assertThat(withRosettaKeys.interfaces.exists[name.equals('com.rosetta.model.lib.RosettaKeyValue')], is(true))
@@ -319,7 +319,7 @@ class RosettaObjectGeneratorTest {
 		'''.generateCode
 
 		val classes = code.compileToClasses
-		val testClass = classes.get(javaPackages.model.packageName + '.AttributeRosettaKeyTest')
+		val testClass = classes.get(rootPackage.name + '.AttributeRosettaKeyTest')
 		val withoutRosettaKey = testClass.getMethod("getWithoutRosettaKey").annotations.exists [
 			annotationType.name.contains('RosettaKey')
 		]
@@ -340,7 +340,7 @@ class RosettaObjectGeneratorTest {
 		//code.writeClasses("shouldGenerateRosettaKeyAttributeAsString")
 
 		val classes = code.compileToClasses
-		val testClass = classes.get(javaPackages.model.packageName + '.AttributeRosettaKeyTest')
+		val testClass = classes.get(rootPackage.name + '.AttributeRosettaKeyTest')
 		val rosettaKeymethod = testClass.getMethod("getWithRosettaKey")
 		val returnType = rosettaKeymethod.returnType
 
@@ -364,9 +364,9 @@ class RosettaObjectGeneratorTest {
 			type D:
 				s string (1..*)
 		'''.generateCode
-		// val classList = code.get(javaPackages.model.packageName + '.Rosetta')
+		// val classList = code.get(javaPackages.name + '.Rosetta')
 		// println(classList)
-		val rosetta = code.compileToClasses.get(javaPackages.model.packageName + '.Rosetta')
+		val rosetta = code.compileToClasses.get(rootPackage.name + '.Rosetta')
 
 		val rosettaClassList = rosetta.getMethod("classes").invoke(null) as List<Class<? extends RosettaModelObject>>
 
@@ -436,7 +436,7 @@ class RosettaObjectGeneratorTest {
 				b productType (0..1)
 		'''.generateCode
 		val classes = code.compileToClasses
-		val testClass = classes.get(javaPackages.model.packageName + '.Bar')
+		val testClass = classes.get(rootPackage.name + '.Bar')
 		val annotation = testClass.getAnnotation(RosettaQualified)
 
 		assertNotNull(annotation)
@@ -456,7 +456,7 @@ class RosettaObjectGeneratorTest {
 				b eventType (0..1)
 		'''.generateCode
 		val classes = code.compileToClasses
-		val testClass = classes.get(javaPackages.model.packageName + '.Bar')
+		val testClass = classes.get(rootPackage.name + '.Bar')
 		val annotation = testClass.getAnnotation(RosettaQualified)
 
 		assertNotNull(annotation)
@@ -471,7 +471,7 @@ class RosettaObjectGeneratorTest {
 				bar calculation (0..1)
 		'''.generateCode
 		val classes = code.compileToClasses
-		val testClass = classes.get(javaPackages.model.packageName + '.Foo')
+		val testClass = classes.get(rootPackage.name + '.Foo')
 
 		assertEquals(String, testClass.getMethod("getBar").returnType)
 	}
@@ -487,7 +487,7 @@ class RosettaObjectGeneratorTest {
 
 		val classes = code.compileToClasses
 
-		val subclassInstance = classes.get(javaPackages.model.packageName + '.Bar')
+		val subclassInstance = classes.get(rootPackage.name + '.Bar')
 
 		// set the super class attribute
 		val builderInstance = subclassInstance.getMethod("builder").invoke(null)
@@ -527,7 +527,7 @@ class RosettaObjectGeneratorTest {
 
 		val classes = code.compileToClasses
 
-		val fooClass = classes.get(javaPackages.model.packageName + '.Foo')
+		val fooClass = classes.get(rootPackage.name + '.Foo')
 
 		// set the super class attribute
 		val fooBuilder = fooClass.getMethod("builder").invoke(null)

@@ -47,7 +47,7 @@ class ModelMetaGenerator {
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaClass).forEach [ RosettaClass rosettaClass |
 			val className = '''«rosettaClass.name»Meta'''
-			fsa.generateFile('''«packages.meta.directoryName»/«className».java''',
+			fsa.generateFile('''«packages.model.meta.directoryName»/«className».java''',
 				metaClass(packages, className, rosettaClass, elements, version))
 		]
 	}
@@ -57,7 +57,7 @@ class ModelMetaGenerator {
 		
 		val classBody = tracImports(data.metaClassBody(names, className, version))
 		val javaFileContents = '''
-			package «names.packages.meta.packageName»;
+			package «names.packages.model.meta.name»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -68,11 +68,11 @@ class ModelMetaGenerator {
 			
 			«classBody.toString»
 		'''
-		fsa.generateFile('''«names.packages.meta.directoryName»/«className».java''', javaFileContents)
+		fsa.generateFile('''«names.packages.model.meta.directoryName»/«className».java''', javaFileContents)
 	}
 	
 	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version) {
-		val dataClass = javaNames.toJavaQualifiedType(c)
+		val dataClass = javaNames.toJavaType(c)
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -82,7 +82,7 @@ class ModelMetaGenerator {
 				public «List»<«Validator»<? super «dataClass»>> dataRules() {
 					return «Arrays».asList(
 						«FOR r : conditionRules(c, c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
-							new «javaNames.packages.dataRule.packageName».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
+							new «javaNames.packages.model.dataRule.name».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
 						«ENDFOR»
 					);
 				}
@@ -91,7 +91,7 @@ class ModelMetaGenerator {
 				public «List»<«Validator»<? super «dataClass»>> choiceRuleValidators() {
 					return Arrays.asList(
 						«FOR r : conditionRules(c, c.conditions)[isChoiceRuleCondition] SEPARATOR ','»
-							new «javaNames.packages.choiceRule.packageName».«ChoiceRuleGenerator.choiceRuleClassName(r.ruleName)»()
+							new «javaNames.packages.model.choiceRule.name».«ChoiceRuleGenerator.choiceRuleClassName(r.ruleName)»()
 						«ENDFOR»
 					);
 				}
@@ -107,12 +107,12 @@ class ModelMetaGenerator {
 				
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
-					return new «javaNames.packages.classValidation.packageName».«dataClass»Validator();
+					return new «javaNames.packages.model.typeValidation.name».«dataClass»Validator();
 				}
 				
 				@Override
 				public «ValidatorWithArg»<? super «dataClass», String> onlyExistsValidator() {
-					return new «javaNames.packages.existsValidation.packageName».«ModelObjectGenerator.onlyExistsValidatorName(c)»();
+					return new «javaNames.packages.model.existsValidation.name».«ModelObjectGenerator.onlyExistsValidatorName(c)»();
 				}
 			}
 		'''
@@ -124,7 +124,7 @@ class ModelMetaGenerator {
 		imports.addMeta(c)
 
 		'''
-			package «packages.meta.packageName»;
+			package «packages.model.meta.name»;
 			
 			«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
 				import «importClass»;
@@ -142,7 +142,7 @@ class ModelMetaGenerator {
 				public List<Validator<? super «c.name»>> dataRules() {
 					return Arrays.asList(
 						«FOR r : dataRules(elements, c) SEPARATOR ','»
-							new «packages.dataRule.packageName».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
+							new «packages.model.dataRule.name».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
 						«ENDFOR»
 					);
 				}
@@ -151,10 +151,10 @@ class ModelMetaGenerator {
 				public List<Validator<? super «c.name»>> choiceRuleValidators() {
 					return Arrays.asList(
 						«IF c.oneOf»
-							new «packages.choiceRule.packageName».«ChoiceRuleGenerator.oneOfRuleClassName(c.name)»()
+							new «packages.model.choiceRule.name».«ChoiceRuleGenerator.oneOfRuleClassName(c.name)»()
 						«ENDIF»
 						«FOR r : choiceRules(elements, c) SEPARATOR ','»
-							new «packages.choiceRule.packageName».«ChoiceRuleGenerator.choiceRuleClassName(r.ruleName)»()
+							new «packages.model.choiceRule.name».«ChoiceRuleGenerator.choiceRuleClassName(r.ruleName)»()
 						«ENDFOR»
 					);
 				}
@@ -170,12 +170,12 @@ class ModelMetaGenerator {
 				
 				@Override
 				public Validator<? super «c.name»> validator() {
-					return new «packages.classValidation.packageName».«c.name»Validator();
+					return new «packages.model.typeValidation.name».«c.name»Validator();
 				}
 				
 				@Override
 				public ValidatorWithArg<? super «c.name», String> onlyExistsValidator() {
-					return new «packages.existsValidation.packageName».«ModelObjectGenerator.onlyExistsValidatorName(c)»();
+					return new «packages.model.existsValidation.name».«ModelObjectGenerator.onlyExistsValidatorName(c)»();
 				}
 			}
 		'''
@@ -253,9 +253,9 @@ class ModelMetaGenerator {
 				
 		// TODO create public constant with list of qualifiable classes / packages
 		allQualifyFns.addAll(
-			getQualifyFunctionsForRosettaClass(RosettaEvent, packages.qualifyEvent.packageName, elements))
+			getQualifyFunctionsForRosettaClass(RosettaEvent, packages.model.qualifyEvent.name, elements))
 		allQualifyFns.addAll(
-			getQualifyFunctionsForRosettaClass(RosettaProduct, packages.qualifyProduct.packageName, elements))
+			getQualifyFunctionsForRosettaClass(RosettaProduct, packages.model.qualifyProduct.name, elements))
 		return allQualifyFns.filter[superClasses.contains(it.className)].toList
 	}
 

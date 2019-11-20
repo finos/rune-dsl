@@ -72,7 +72,7 @@ class QualifyFunctionGenerator<T extends RosettaQualifiable> {
 		val definition = RosettaGrammarUtil.grammarQualifiable(qualifiableClass)
 		
 		'''
-		package «javaPackage.packageName»;
+		package «javaPackage.name»;
 		
 		«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
 		import «importClass»;

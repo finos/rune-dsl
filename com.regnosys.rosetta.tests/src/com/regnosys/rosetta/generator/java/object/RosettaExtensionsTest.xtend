@@ -26,6 +26,8 @@ class RosettaExtensionsTest {
 	@Test
 	def testSuperClasses() {
 		val classes = '''
+			namespace test
+			
 			type Foo extends Bar:
 			type Bar extends Baz:
 			type Baz:
@@ -38,6 +40,8 @@ class RosettaExtensionsTest {
 	@Test
 	def testSuperClassesWithCycle() {
 		val classes = '''
+			namespace test
+			
 			type Foo extends Bar:
 			type Bar extends Baz:
 			type Baz extends Foo:
@@ -50,6 +54,9 @@ class RosettaExtensionsTest {
 	@Test 
 	def testEnumValue() {
 		val model = '''
+			namespace test
+			version "1.2.3"
+			
 			enum Foo:
 				foo0 foo1
 			
@@ -72,6 +79,9 @@ class RosettaExtensionsTest {
 	@Test
 	def testRootCallsCollector() {
 		val model = '''
+			namespace test
+			version "1.2.3"
+			
 			type Foo:
 				attr string (1..1)
 			
