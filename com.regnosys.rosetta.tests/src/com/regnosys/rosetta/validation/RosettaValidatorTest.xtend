@@ -4,7 +4,6 @@
 package com.regnosys.rosetta.validation
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.Condition
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

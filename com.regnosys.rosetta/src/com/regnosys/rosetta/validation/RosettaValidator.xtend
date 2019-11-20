@@ -24,7 +24,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaMapPath
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -672,18 +671,34 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Check
 	def checkSynonyMapPath(RosettaMapPathValue ele) {
 		if(!ele.path.nullOrEmpty) {
-			if (ele.path.contains("."))
-				error('''Dot is not allowed in paths. Use '->' to separate path segments.''', ele, ROSETTA_MAP_PATH_VALUE__PATH)
+			val invalidChar = checkPathChars(ele.path)
+			if (invalidChar !== null)
+				error('''Character '«invalidChar»' is not allowed in paths. Use '->' to separate path segments.''', ele, ROSETTA_MAP_PATH_VALUE__PATH)
 		}
 	}
 	@Check
 	def checkSynonyValuePath(RosettaSynonymValueBase ele) {
 		if (!ele.path.nullOrEmpty) {
-			if (ele.path.contains("."))
-				error('''Dot is not allowed in paths. Use '->' to separate path segments.''', ele, ROSETTA_SYNONYM_VALUE_BASE__PATH)
+			val invalidChar = checkPathChars(ele.path)
+			if (invalidChar !== null)
+				error('''Character '«invalidChar»' is not allowed in paths. Use '->' to separate path segments.''', ele, ROSETTA_SYNONYM_VALUE_BASE__PATH)
 		}
 	}
 	
+	private def Character checkPathChars(String str) {
+		val segments = str.split('->')
+		for (segment : segments) {
+			if (segment.length > 0) {
+				if (!Character.isJavaIdentifierStart(segment.charAt(0))) {
+					return segment.charAt(0)
+				}
+				val notValid = segment.toCharArray.findFirst[it|!Character.isJavaIdentifierPart(it)]
+				if (notValid !== null) {
+					return notValid
+				}
+			}
+		}
+	}
 	/*
 	@Inject TargetURIConverter converter
 	@Inject IResourceDescriptionsProvider index
