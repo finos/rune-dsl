@@ -683,7 +683,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				[synonym FpML value "adjustedDate" path "relative.date" meta id]
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYNONYM_VALUE_BASE, null,
-			"Dot is not allowed in paths. Use '->' to separate path segments.")
+			"Character '.' is not allowed in paths. Use '->' to separate path segments.")
 	}
 
 	@Test
@@ -691,9 +691,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		val model = '''
 			type TypeToUse:
 				attr string (0..1)
-				[synonym FpML set to "Custom" when "Pty.Src" = "D"]
+				[synonym FpML set to "Custom" when "Pty+Src" = "D"]
 		'''.parseRosetta
 		model.assertError(ROSETTA_MAP_PATH_VALUE, null,
-			"Dot is not allowed in paths. Use '->' to separate path segments.")
+			"Character '+' is not allowed in paths. Use '->' to separate path segments.")
 	}
 }
