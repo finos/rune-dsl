@@ -673,7 +673,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if(!ele.path.nullOrEmpty) {
 			val invalidChar = checkPathChars(ele.path)
 			if (invalidChar !== null)
-				error('''Character '«invalidChar»' is not allowed in paths. Use '->' to separate path segments.''', ele, ROSETTA_MAP_PATH_VALUE__PATH)
+				error('''Character '«invalidChar.key»' is not allowed «IF invalidChar.value»as first symbol in a path segment.«ELSE»in paths. Use '->' to separate path segments.«ENDIF»''', ele, ROSETTA_MAP_PATH_VALUE__PATH)
 		}
 	}
 	@Check
@@ -681,20 +681,20 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (!ele.path.nullOrEmpty) {
 			val invalidChar = checkPathChars(ele.path)
 			if (invalidChar !== null)
-				error('''Character '«invalidChar»' is not allowed in paths. Use '->' to separate path segments.''', ele, ROSETTA_SYNONYM_VALUE_BASE__PATH)
+				error('''Character '«invalidChar.key»' is not allowed «IF invalidChar.value»as first symbol in a path segment.«ELSE»in paths. Use '->' to separate path segments.«ENDIF»''', ele, ROSETTA_SYNONYM_VALUE_BASE__PATH)
 		}
 	}
 	
-	private def Character checkPathChars(String str) {
+	private def Pair<Character,Boolean> checkPathChars(String str) {
 		val segments = str.split('->')
 		for (segment : segments) {
 			if (segment.length > 0) {
 				if (!Character.isJavaIdentifierStart(segment.charAt(0))) {
-					return segment.charAt(0)
+					return segment.charAt(0) -> true
 				}
 				val notValid = segment.toCharArray.findFirst[it|!Character.isJavaIdentifierPart(it)]
 				if (notValid !== null) {
-					return notValid
+					return notValid -> false
 				}
 			}
 		}
