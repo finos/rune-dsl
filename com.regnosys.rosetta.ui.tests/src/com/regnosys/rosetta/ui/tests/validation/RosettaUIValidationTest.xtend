@@ -8,8 +8,8 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 
 @ExtendWith(InjectionExtension)
@@ -51,8 +51,8 @@ class RosettaUIValidationTest extends AbstractProjectAwareTest {
 			type Quote:
 		'''.createRosettaFile("otherfile.rosetta")
 
-		cl1.assertError(DATA, DUPLICATE_ELEMENT_NAME, "Duplicate element named 'Quote' in otherfile.rosetta")
-		cl2.assertError(DATA, DUPLICATE_ELEMENT_NAME, "Duplicate element named 'Quote' in test.rosetta")
+		cl1.assertError(DATA, DUPLICATE_ELEMENT_NAME, "Duplicate element named 'test.Quote' in otherfile.rosetta")
+		cl2.assertError(DATA, DUPLICATE_ELEMENT_NAME, "Duplicate element named 'test.Quote' in test.rosetta")
 	}
 
 }
