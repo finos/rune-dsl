@@ -169,7 +169,10 @@ class TestExtensions {
 		builder
 	}
 
-	def String[] + (String model, Object otherModel){
-		#[model, otherModel?.toString?:"<null>"]
+	/**
+	 * Adds additional resource into the scope
+	 */
+	def String[] +(String model, Object otherModel) {
+		#[model, otherModel?.toString ?: "<null>"]
 	}
 }
