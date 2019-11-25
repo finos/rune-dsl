@@ -22,100 +22,105 @@ import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.simple.Data;
-import com.rosetta.model.lib.RosettaModelObject;	
+import com.rosetta.model.lib.RosettaModelObject;
 
- public class ModelLoaderImpl implements ModelLoader {	
+public class ModelLoaderImpl implements ModelLoader {
 
-     private final List<RosettaModel> rosettaModels;	
-	private XtextResourceSet resourceSet;	
+	private final List<RosettaModel> rosettaModels;
+	protected XtextResourceSet resourceSet;
 
- 	public ModelLoaderImpl(Collection<String> resourceLocations) {	
-    	rosettaModels = loadRosettaModels(resourceLocations.stream().map(Resources::getResource));	
-    }	
+	public ModelLoaderImpl(Collection<String> resourceLocations) {
+		rosettaModels = loadRosettaModels(resourceLocations.stream().map(Resources::getResource));
+	}
 
-     public ModelLoaderImpl(URL... urls) {	
-    	rosettaModels = loadRosettaModels(Arrays.stream(urls));	
-    }	
+	public ModelLoaderImpl(URL... urls) {
+		rosettaModels = loadRosettaModels(Arrays.stream(urls));
+	}
 
-     public void addRosource(InputStream resourceStream) {	
+	public void addRosource(InputStream resourceStream) {
 
-     }	
+	}
 
+	protected List<RosettaModel> loadRosettaModels(Stream<URL> res) {
+		RosettaStandaloneSetup.doSetup();
+		resourceSet = new XtextResourceSet();
+		return res.map(ModelLoaderImpl::url)
+				.map(f -> getResource(resourceSet, f))
+				.filter(Objects::nonNull)
+				.map(Resource::getContents)
+				.flatMap(Collection::stream)
+				.map(r -> (RosettaModel) r)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
 
-     private List<RosettaModel> loadRosettaModels(Stream<URL> res) {	
-        RosettaStandaloneSetup.doSetup();	
-        resourceSet = new XtextResourceSet();	
-        return res	
-                .map(ModelLoaderImpl::url)	
-                .map(f -> getResource(resourceSet, f)).filter(Objects::nonNull)	
-                .map(Resource::getContents).flatMap(Collection::stream)	
-                .map(r -> (RosettaModel) r)	
-                .filter(Objects::nonNull)	
-                .collect(Collectors.toList());	
-    }	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.regnosys.rosetta.transgest.ModelLoader#rosettaClass(java.lang.Class)
+	 */
+	@Override
+	public RosettaType rosettaClass(Class<? extends RosettaModelObject> rootObject) {
+		return rosettaModels.stream()
+				.map(RosettaModel::getElements)
+				.flatMap(Collection::stream)
+				.filter(c -> c instanceof RosettaClass || c instanceof Data)
+				.map(c -> (RosettaType) c)
+				.filter(c -> c.getName().equals(rootObject.getSimpleName()))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException(rootObject.getSimpleName() + " not found in Rosetta Model"));
+	}
 
-     /* (non-Javadoc)	
-	 * @see com.regnosys.rosetta.transgest.ModelLoader#rosettaClass(java.lang.Class)	
-	 */	
-    @Override	
-	public RosettaType rosettaClass(Class<? extends RosettaModelObject> rootObject) {	
-        return rosettaModels.stream()	
-                .map(RosettaModel::getElements).flatMap(Collection::stream)	
-                .filter(c -> c instanceof RosettaClass || c instanceof Data)	
-                .map(c -> (RosettaType) c)	
-                .filter(c -> c.getName().equals(rootObject.getSimpleName()))	
-                .findFirst().orElseThrow(() -> new IllegalArgumentException(rootObject.getSimpleName() + " not found in Rosetta Model"));	
-    }	
+	@Override
+	public RosettaType rosettaClass(String className) {
+		return rosettaModels.stream().map(RosettaModel::getElements)
+				.flatMap(Collection::stream)
+				.filter(c -> c instanceof RosettaClass || c instanceof Data)
+				.map(c -> (RosettaType) c)
+				.filter(c -> c.getName().equals(className))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException(className + " not found in Rosetta Model"));
+	}
 
-     @Override	
-	public RosettaType rosettaClass(String className) {	
-        return rosettaModels.stream()	
-                .map(RosettaModel::getElements).flatMap(Collection::stream)	
-                .filter(c -> c instanceof RosettaClass || c instanceof Data)	
-                .map(c -> (RosettaType) c)	
-                .filter(c -> c.getName().equals(className))	
-                .findFirst().orElseThrow(() -> new IllegalArgumentException(className + " not found in Rosetta Model"));	
-    }	
+	@Override
+	public <T extends RosettaRootElement> List<T> rosettaElements(Class<T> clazz) {
+		return rosettaModels.stream()
+				.map(RosettaModel::getElements)
+				.flatMap(Collection::stream)
+				.filter(c -> clazz.isInstance(c))
+				.map(c -> clazz.cast(c))
+				.collect(Collectors.toList());
+	}
 
+	private static String url(URL c) {
+		try {
+			String asciiString = c.toURI().toURL().toURI().toASCIIString();
+			return asciiString;
+		} catch (MalformedURLException | URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-   	@Override	
-  	public <T extends RosettaRootElement> List<T> rosettaElements(Class<T> clazz) {	
-      	return rosettaModels.stream()	
-                .map(RosettaModel::getElements).flatMap(Collection::stream)	
-                .filter(c -> clazz.isInstance(c) )	
-                .map(c -> clazz.cast(c))	
-                .collect(Collectors.toList());	
-  	}	
+	protected static Resource getResource(XtextResourceSet resourceSet, String f) {
+		try {
+			return resourceSet.getResource(URI.createURI(f, true), true);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-     private static String url(URL c) {	
-        try {	
-            String asciiString = c.toURI().toURL().toURI().toASCIIString();	
-			return asciiString;	
-        } catch (MalformedURLException | URISyntaxException e) {	
-            throw new RuntimeException(e);	
-        }	
-    }	
+	@Override
+	public List<RosettaModel> models() {
+		return rosettaModels;
+	}
 
-     private static Resource getResource(XtextResourceSet resourceSet, String f) {	
-        try {	
-            return resourceSet.getResource(URI.createURI(f, true), true);	
-        } catch (Exception e) {	
-            throw new RuntimeException(e);	
-        }	
-    }	
+	@Override
+	public XtextResourceSet getResourceSet() {
+		return resourceSet;
+	}
 
- 	@Override	
-	public List<RosettaModel> models() {	
-		return rosettaModels;	
-	}	
-
- 	@Override	
-    public XtextResourceSet getResourceSet() {	
-		return resourceSet;	
-	}	
-
- 	@Override	
-	public void addModel(RosettaModel model) {	
-		rosettaModels.add(model);	
-	}	
+	@Override
+	public void addModel(RosettaModel model) {
+		rosettaModels.add(model);
+	}
 }
