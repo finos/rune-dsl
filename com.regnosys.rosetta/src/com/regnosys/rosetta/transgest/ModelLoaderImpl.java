@@ -27,13 +27,18 @@ import com.rosetta.model.lib.RosettaModelObject;
 public class ModelLoaderImpl implements ModelLoader {
 
 	private final List<RosettaModel> rosettaModels;
-	protected XtextResourceSet resourceSet;
+	private XtextResourceSet resourceSet;
 
 	public ModelLoaderImpl(Collection<String> resourceLocations) {
-		rosettaModels = loadRosettaModels(resourceLocations.stream().map(Resources::getResource));
+		this(true, resourceLocations.stream().map(Resources::getResource).toArray(i->new URL[i]));
 	}
 
 	public ModelLoaderImpl(URL... urls) {
+		this(true, urls);
+	}
+	
+	public ModelLoaderImpl(boolean runSetup, URL... urls) {
+		if (runSetup) RosettaStandaloneSetup.doSetup();
 		rosettaModels = loadRosettaModels(Arrays.stream(urls));
 	}
 
@@ -41,8 +46,7 @@ public class ModelLoaderImpl implements ModelLoader {
 
 	}
 
-	protected List<RosettaModel> loadRosettaModels(Stream<URL> res) {
-		RosettaStandaloneSetup.doSetup();
+	private List<RosettaModel> loadRosettaModels(Stream<URL> res) {
 		resourceSet = new XtextResourceSet();
 		return res.map(ModelLoaderImpl::url)
 				.map(f -> getResource(resourceSet, f))
@@ -101,7 +105,7 @@ public class ModelLoaderImpl implements ModelLoader {
 		}
 	}
 
-	protected static Resource getResource(XtextResourceSet resourceSet, String f) {
+	private static Resource getResource(XtextResourceSet resourceSet, String f) {
 		try {
 			return resourceSet.getResource(URI.createURI(f, true), true);
 		} catch (Exception e) {
