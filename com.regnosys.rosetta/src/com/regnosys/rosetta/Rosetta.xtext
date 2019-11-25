@@ -1,20 +1,30 @@
+
 grammar com.regnosys.rosetta.Rosetta with org.eclipse.xtext.common.Terminals
 import "http://www.rosetta-model.com/Rosetta"
 import "http://www.rosetta-model.com/RosettaSimple"
 
 RosettaModel:
-	header=RosettaHeader
+	'namespace' name=(QualifiedName | STRING)
+	('version' version=STRING)?
+	
+	imports += Import*
+	
 	(configurations += RosettaQualifiableConfiguration)* // TODO think about having only RootElements or only configurations
 	(elements += (RosettaRootElement | RootElement))*
 ;
 
-RosettaHeader:
-	'namespace' namespace=STRING
-	'version' version=STRING
+QualifiedName:
+	ValidID ('.' ValidID)*
 ;
 
+Import:
+	'import' importedNamespace=QualifiedNameWithWildcard;
+
+QualifiedNameWithWildcard:
+	QualifiedName '.*'?;
+
 RootElement:
-	 Annotation | Data | Function;
+	Annotation | Data | Function;
 
 fragment Definable:
 	'<'definition=STRING'>';
@@ -39,7 +49,7 @@ AnnotationRef:
 ;
 
 Data:
-	('type' | oldStyle ?= 'data') RosettaNamed ('extends' superType = [Data|ValidID])? ':' Definable?
+	('type' | oldStyle ?= 'data') RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' Definable?
 	(Annotations| ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
@@ -50,7 +60,7 @@ Attribute:
 ;
 
 Enumeration returns RosettaEnumeration:
-	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|ValidID])? ':' RosettaDefinable
+	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable
 		(synonyms += RosettaSynonym)*
 		enumValues += RosettaEnumValue*
 ;
@@ -111,7 +121,7 @@ Segment:
 	FEATURE_CALL_SEPARATOR attribute = [Attribute|ValidID] ('['index = INT']')?(next = Segment)?;
 
 EnumValueReference returns RosettaEnumValueReference:
-	enumeration=[RosettaEnumeration|ValidID] FEATURE_CALL_SEPARATOR value=[RosettaEnumValue|ValidID]
+	enumeration=[RosettaEnumeration|QualifiedName] FEATURE_CALL_SEPARATOR value=[RosettaEnumValue|ValidID]
 ;
 
 EmptyLiteral:
@@ -147,7 +157,7 @@ fragment RosettaNamed:
 ;
 
 fragment RosettaTyped:
-	type=[RosettaType|ValidID]
+	type=[RosettaType|QualifiedName]
 ;
 
 
@@ -233,7 +243,7 @@ RosettaMetaType:
 ;
 
 RosettaStereotype:
-	(values += [RosettaStereotypeValue|ValidID] ',')* values += [RosettaStereotypeValue|ValidID]
+	(values += [RosettaStereotypeValue|QualifiedName] ',')* values += [RosettaStereotypeValue|QualifiedName]
 ;
 
 RosettaStereotypeValue:
@@ -275,7 +285,7 @@ RosettaClassSynonymValue returns RosettaSynonymValueBase:
 ;
 
 RosettaSynonym:
-	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*
+	'[' 'synonym' sources+=[RosettaSynonymSource|QualifiedName] (',' sources += [RosettaSynonymSource])*
 	body=RosettaSynonymBody
 	']'
 ;
@@ -285,7 +295,7 @@ RosettaSynonymBody:
 		| 'hint' (hints+=SynonymID ',')* hints+=SynonymID
 		| mappingLogic=RosettaMappingSetTo )
 	('meta' (metaValues += SynonymID ',')* metaValues += SynonymID)?
-	('mapper' mapper=ValidID)?
+	('mapper' mapper=QualifiedName)?
 	
 ;
 
@@ -457,7 +467,7 @@ RosettaPrimaryExpression returns RosettaExpression:
 ;
 
 RosettaCallableCall: 
-	callable=[RosettaCallable|ValidID]
+	callable=[RosettaCallable|QualifiedName]
 ;
 
 RosettaConditionalExpression returns RosettaExpression:
@@ -531,7 +541,7 @@ RosettaWorkflowRule:
 ;
 
 RosettaTreeNode:
-	parent = [RosettaType|ValidID]
+	parent = [RosettaType|QualifiedName]
 	( 
 		(not?='not' 'precedes' | 'precedes')
 		(children+=RosettaTreeNode | '(' children+=RosettaTreeNode ( ('and' | 'or') children+=RosettaTreeNode)* ')' )
@@ -544,7 +554,7 @@ RosettaClassAttributeCall returns RosettaExpression:
 
 RosettaClassReference returns RosettaExpression:
 	{RosettaCallableCall}
-	callable=[Data|ValidID]
+	callable=[Data|QualifiedName]
 ;
 
 
@@ -559,7 +569,7 @@ RosettaChoiceRule:
 	'choice' 'rule' RosettaNamed RosettaDefinable
  	(references += RosettaRegulatoryReference)*
  	(marketPractice += RosettaMarketPractice)*
- 	'for' scope=[RosettaClass|ValidID]
+ 	'for' scope=[RosettaClass|QualifiedName]
  	qualifier=('optional' | 'required') 'choice' 'between' thisOne=[RosettaRegularAttribute|ValidID]
  	('and' thatOnes += [RosettaRegularAttribute|ValidID])* 
 ;
@@ -676,7 +686,7 @@ RosettaCalcAttributeCall returns RosettaExpression:
 
 RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConditionalExpression
-	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|ValidID] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' toOne ?= 'only-element'?
+	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|QualifiedName] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' toOne ?= 'only-element'?
 	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
 	| RosettaCallableCall
 	| RosettaLiteral
@@ -703,7 +713,7 @@ RosettaExternalSynonymSource:
 ;
 
 RosettaExternalClass:
-	classRef=[RosettaType|ValidID] ':'
+	classRef=[RosettaType|QualifiedName] ':'
 		(regularAttributes += RosettaExternalRegularAttribute)*
 ;
 

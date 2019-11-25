@@ -28,7 +28,7 @@ class RosettaEnumHelperTest {
             	two <"Some other description"> [synonym FpML value "twoSynonym"]
         '''.generateCode
 
-        val testEnumCode = code.get(javaPackages.model.packageName + ".TestEnum")
+        val testEnumCode = code.get(rootPackage.name + ".TestEnum")
         assertThat(testEnumCode, containsString('''RosettaSynonym(value = "oneSynonym", source = "FpML")'''))
 
         code.compileToClasses
@@ -44,7 +44,7 @@ class RosettaEnumHelperTest {
                 four  displayName "tessera" <"Some description"> [synonym FpML value "fourSynonym"]
         '''.generateCode
 
-        val testEnumCode = code.get(javaPackages.model.packageName + ".TestEnumWithDisplay")
+        val testEnumCode = code.get(rootPackage.name + ".TestEnumWithDisplay")
         assertThat(testEnumCode,
             allOf(containsString('''TestEnumWithDisplay()'''),
                 containsString('''TestEnumWithDisplay(String displayName)'''),

@@ -63,43 +63,43 @@ class ImportGenerator {
 
 	def addBlueprintImports() {
 		imports.addAll(
-		'''«packages.libBlueprint.packageName».Blueprint''',
-		'''«packages.libBlueprint.packageName».BlueprintInstance''',
-		'''«packages.libBlueprint.packageName».BlueprintBuilder''',
-		'''«packages.libBlueprint.packageName».runner.actions.rosetta.RosettaActionFactory''')
-		staticImports.add('''«packages.libBlueprint.packageName».BlueprintBuilder''')
+		'''«packages.blueprintLib.name».Blueprint''',
+		'''«packages.blueprintLib.name».BlueprintInstance''',
+		'''«packages.blueprintLib.name».BlueprintBuilder''',
+		'''«packages.blueprintLib.name».runner.actions.rosetta.RosettaActionFactory''')
+		staticImports.add('''«packages.blueprintLib.name».BlueprintBuilder''')
 	}
 
 	def addSourceAndSink() {
 		imports.addAll(
-		'''«packages.libBlueprint.packageName».runner.nodes.SinkNode''',
-		'''«packages.libBlueprint.packageName».runner.nodes.SourceNode''')
+		'''«packages.blueprintLib.name».runner.nodes.SinkNode''',
+		'''«packages.blueprintLib.name».runner.nodes.SourceNode''')
 	}
 
 	def addSimpleMerger(BlueprintMerge merge, Iterable<RegdOutputField> outRefs) {
 		val extraImport2 = outRefs.map[it.attrib.type].map[fullName()].filter[isImportable]
 		imports.addAll(extraImport2)
-		imports.add('''«packages.model.packageName».«merge.output.name»''')
+		imports.add('''«packages.model.name».«merge.output.name»''')
 		imports.addAll('java.util.function.BiConsumer',
-			'java.util.Map', '''«packages.libBlueprint.packageName».runner.actions.Merger''', '''«packages.libBlueprint.packageName».runner.data.RosettaIdentifier''', '''«packages.libBlueprint.packageName».runner.data.StringIdentifier''', '''«packages.libBlueprint.packageName».runner.data.DataIdentifier''', '''java.util.function.Function''', '''«packages.lib.packageName».functions.Converter''',
+			'java.util.Map', '''«packages.blueprintLib.name».runner.actions.Merger''', '''«packages.blueprintLib.name».runner.data.RosettaIdentifier''', '''«packages.blueprintLib.name».runner.data.StringIdentifier''', '''«packages.blueprintLib.name».runner.data.DataIdentifier''', '''java.util.function.Function''', '''«packages.defaultLib.name».functions.Converter''',
 			'java.util.HashMap')
 	}
 	
 	def addIfThen(BlueprintOneOf oneOf) {
 		imports.addAll(
-		'''«packages.libBlueprint.packageName».BlueprintIfThen''')
+		'''«packages.blueprintLib.name».BlueprintIfThen''')
 	}
 
 	def addSingleMapping(BlueprintExtract extract) {
-		imports.add('''«packages.lib.packageName».functions.MapperS''')
-		imports.add('''«packages.libBlueprint.packageName».runner.data.StringIdentifier''')
-		staticImports.add('''«packages.lib.packageName».validation.ValidatorHelper''')
+		imports.add('''«packages.defaultLib.name».functions.MapperS''')
+		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
+		staticImports.add('''«packages.defaultLib.name».validation.ValidatorHelper''')
 		addExpression(extract.call)
 	}
 
 	def addMappingImport() {
-		imports.add('''«packages.lib.packageName».functions.MapperS''')
-		imports.add('''«packages.libBlueprint.packageName».runner.data.StringIdentifier''')
+		imports.add('''«packages.defaultLib.name».functions.MapperS''')
+		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
 	}
 
 	def void addFeatureCall(RosettaFeatureCall call) {
@@ -110,7 +110,7 @@ class ImportGenerator {
 				imports.add((feature.eContainer as RosettaClass).fullName)
 
 				if (feature.metaTypes !== null && !feature.metaTypes.isEmpty) {
-					imports.add('''«packages.lib.packageName».meta.FieldWithMeta''')
+					imports.add('''«packages.defaultLib.name».meta.FieldWithMeta''')
 				}
 			}
 			Attribute: {
@@ -122,7 +122,7 @@ class ImportGenerator {
 //				}
 			}
 			RosettaMetaType:{
-				imports.add('''«packages.metaField.packageName».*''')
+				imports.add('''«packages.model.metaField.name».*''')
 			}
 			RosettaEnumValue:{
 				imports.add((feature.eContainer as RosettaEnumeration).fullName);
@@ -160,15 +160,15 @@ class ImportGenerator {
 	}
 
 	def void addExpression(RosettaExpression expression) {
-		imports.add('''«packages.lib.packageName».functions.MapperS''')
-		imports.add('''«packages.lib.packageName».functions.MapperTree''')
+		imports.add('''«packages.defaultLib.name».functions.MapperS''')
+		imports.add('''«packages.defaultLib.name».functions.MapperTree''')
 		switch (expression) {
 			RosettaCallableCall: {
 				add(expression.callable)
 			}
 			RosettaGroupByFeatureCall: {
-				staticImports.add(packages.validation.packageName + ".ValidatorHelper")
-				staticImports.add(packages.validation.packageName + ".MapperTreeValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.call)
 				if (expression.groupBy !== null) addExpression(expression.groupBy)
 			}
@@ -176,16 +176,16 @@ class ImportGenerator {
 				addFeatureCall(expression)
 			}
 			RosettaExistsExpression: {
-				staticImports.add(packages.validation.packageName + ".ValidatorHelper")
-				staticImports.add(packages.validation.packageName + ".MapperTreeValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.argument)
 			}
 			RosettaBinaryOperation: {
-				staticImports.add(packages.validation.packageName + ".ValidatorHelper")
-				staticImports.add(packages.validation.packageName + ".MapperTreeValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 
 				if (#['+', '-'].contains(expression.operator)) {
-					imports.add(packages.libFunctions.packageName + ".MapperMaths")
+					imports.add(packages.defaultLibFunctions.name + ".MapperMaths")
 					imports.add("java.math.BigDecimal")
 				}
 
@@ -193,14 +193,14 @@ class ImportGenerator {
 				addExpression(expression.right)
 			}
 			RosettaCountOperation: {
-				staticImports.add(packages.validation.packageName + ".ValidatorHelper")
-				staticImports.add(packages.validation.packageName + ".MapperTreeValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.left)
 				addExpression(expression.right)
 			}
 			RosettaWhenPresentExpression: {
-				staticImports.add(packages.validation.packageName + ".ValidatorHelper")
-				staticImports.add(packages.validation.packageName + ".MapperTreeValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.left)
 				addExpression(expression.right)
 			}
@@ -210,8 +210,8 @@ class ImportGenerator {
 			RosettaLiteral: {
 			}
 			RosettaAbsentExpression: {
-				staticImports.add(packages.validation.packageName + ".ValidatorHelper")
-				staticImports.add(packages.validation.packageName + ".MapperTreeValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.argument);
 			}
 			RosettaEnumValueReference: {
@@ -223,8 +223,8 @@ class ImportGenerator {
 				addExpression(expression.elsethen)
 			}
 			RosettaContainsExpression: {
-				staticImports.add(packages.validation.packageName + ".ValidatorHelper")
-				staticImports.add(packages.validation.packageName + ".MapperTreeValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
+				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.contained)
 				addExpression(expression.container)
 			}
@@ -239,9 +239,9 @@ class ImportGenerator {
 
 	def fullName(RosettaType type) {
 		if (type instanceof RosettaClass || type instanceof Data)
-			'''«packages.model.packageName».«type.name»'''.toString
+			'''«packages.model.name».«type.name»'''.toString
 		else if (type instanceof RosettaEnumeration) {
-			'''«packages.model.packageName».«type.name»'''.toString
+			'''«packages.model.name».«type.name»'''.toString
 		} else {
 			val simple = type.name.toJavaFullType
 			if (simple === null) {
@@ -264,7 +264,7 @@ class ImportGenerator {
 
 	def fullName(EClass type) {
 		if (type instanceof RosettaClass || type instanceof RosettaClass)
-			'''«packages.model.packageName».«type.name»'''.toString
+			'''«packages.model.name».«type.name»'''.toString
 		else
 			type.name.toJavaFullType
 	}
@@ -276,30 +276,30 @@ class ImportGenerator {
 	def addRule(RosettaDataRule rule) {
 		addExpression(rule.when)
 		addExpression(rule.then)
-		imports.addAll(packages.annotations.packageName + ".RosettaDataRule",
-			packages.validation.packageName + ".ValidationResult", packages.validation.packageName + ".Validator",
-			packages.lib.packageName + ".functions.MapperS", packages.lib.packageName + ".validation.ComparisonResult",
-			packages.lib.packageName + ".meta.FieldWithMeta", packages.lib.packageName + ".path.RosettaPath",
-			packages.lib.packageName + ".RosettaModelObjectBuilder")
+		imports.addAll(packages.defaultLibAnnotations.name + ".RosettaDataRule",
+			packages.defaultLibValidation.name + ".ValidationResult", packages.defaultLibValidation.name + ".Validator",
+			packages.defaultLib.name + ".functions.MapperS", packages.defaultLib.name + ".validation.ComparisonResult",
+			packages.defaultLib.name + ".meta.FieldWithMeta", packages.defaultLib.name + ".path.RosettaPath",
+			packages.defaultLib.name + ".RosettaModelObjectBuilder")
 	}
 
 	def addFilter(BlueprintFilter filter) {
 		if (filter.filter!==null) {
 			addExpression(filter.filter);
-			imports.add('''«packages.lib.packageName».functions.MapperS''')
-			imports.add(packages.libBlueprint.packageName + ".runner.actions.Filter")
+			imports.add('''«packages.defaultLib.name».functions.MapperS''')
+			imports.add(packages.blueprintLib.name + ".runner.actions.Filter")
 		}
 		if (filter.filterBP!==null) {
-			imports.add(packages.libBlueprint.packageName + ".runner.actions.FilterByRule")
+			imports.add(packages.blueprintLib.name + ".runner.actions.FilterByRule")
 		}
 	}
 	
 	def addReduce(BlueprintReduce reduce) {
 		if (reduce.expression!==null) {
 			addExpression(reduce.expression);
-			imports.add('''«packages.lib.packageName».functions.MapperS''')
+			imports.add('''«packages.defaultLib.name».functions.MapperS''')
 		}
-		imports.add(packages.libBlueprint.packageName + ".runner.actions.ReduceBy")
+		imports.add(packages.blueprintLib.name + ".runner.actions.ReduceBy")
 	}
 
 	def addGrouper(BlueprintGroup group) {
@@ -309,11 +309,11 @@ class ImportGenerator {
 	def addQualifyClass(RosettaExpression expr, List<RosettaDataRule> andDataRules, List<RosettaDataRule> orDataRules,
 		RosettaType rClass) {
 		imports.addAll("com.rosetta.model.lib.annotations.RosettaQualifiable", "java.util.function.Function",
-			rClass.fullName, packages.dataRule.packageName + ".*")
-		imports.add('''«packages.qualify.packageName».QualifyResult''')
-		imports.add('''«packages.lib.packageName».functions.MapperS''')
-		imports.add(packages.lib.packageName + ".validation.ComparisonResult")
-		imports.add(packages.lib.packageName + ".meta.FieldWithMeta")
+			rClass.fullName, packages.model.dataRule.name + ".*")
+		imports.add('''«packages.defaultLibQualify.name».QualifyResult''')
+		imports.add('''«packages.defaultLib.name».functions.MapperS''')
+		imports.add(packages.defaultLib.name + ".validation.ComparisonResult")
+		imports.add(packages.defaultLib.name + ".meta.FieldWithMeta")
 		addExpression(expr)
 		for (andDataRule : andDataRules) {
 			addRule(andDataRule)
@@ -321,7 +321,7 @@ class ImportGenerator {
 		for (orDataRule : orDataRules) {
 			addRule(orDataRule)
 		}
-		staticImports.add(packages.validation.packageName + ".ValidatorHelper")
+		staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 	}
 
 	def addMeta(RosettaClass class1) {
@@ -333,11 +333,11 @@ class ImportGenerator {
 			"com.google.common.collect.ImmutableMultimap",
 			"java.util.List",
 			"java.util.function.Function",
-			packages.lib.packageName + ".validation.Validator",
-			packages.lib.packageName + ".validation.ValidatorWithArg",
-			packages.lib.packageName + ".qualify.QualifyResult"
+			packages.defaultLib.name + ".validation.Validator",
+			packages.defaultLib.name + ".validation.ValidatorWithArg",
+			packages.defaultLib.name + ".qualify.QualifyResult"
 		)
-		imports.add(packages.model.packageName + "." + class1.name)
+		imports.add(packages.model.name + "." + class1.name)
 		for (attrib : class1.regularAttributes) {
 			imports.add(attrib.type.fullName)
 		}
@@ -345,12 +345,12 @@ class ImportGenerator {
 
 
 	def addNode(TypedBPNode typed) {
-		imports.add('''«packages.libBlueprint.packageName».runner.nodes.Node''')
+		imports.add('''«packages.blueprintLib.name».runner.nodes.Node''')
 		addTypes(typed)
 	}
 
 	def addSource(BlueprintSource source, TypedBPNode typed) {
-		imports.add('''«packages.libBlueprint.packageName».runner.nodes.SourceNode''')
+		imports.add('''«packages.blueprintLib.name».runner.nodes.SourceNode''')
 		addTypes(typed)
 	}
 

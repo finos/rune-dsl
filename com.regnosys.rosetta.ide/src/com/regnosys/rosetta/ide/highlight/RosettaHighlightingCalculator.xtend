@@ -12,7 +12,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaHeader
 import com.regnosys.rosetta.rosetta.RosettaMarketPractice
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
@@ -77,9 +76,6 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 			//highlightFeatureForAllChildren(acceptor, object, RosettaPackage.Literals.ROSETTA_SYNONYM_BASE__META_VALUES, META_ID)
 		} else if (object instanceof RosettaStereotype) {
 			highlightFeatureForAllChildren(acceptor, object, RosettaPackage.Literals.ROSETTA_STEREOTYPE__VALUES, STEREOTYPE_ID)
-		} else if (object instanceof RosettaHeader) {
-			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_HEADER__NAMESPACE, SOURCE_ID)
-			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_HEADER__VERSION, SOURCE_ID)
 		} else if (object instanceof RosettaChoiceRule) {
 			highlightFeature(acceptor, object, RosettaPackage.Literals.ROSETTA_NAMED__NAME, RULE_ID)
 		} else if (object instanceof RosettaWorkflowRule) {

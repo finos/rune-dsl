@@ -76,7 +76,7 @@ class ExpressionGeneratorWithBuilder {
 	}
 
 	def dispatch StringConcatenationClient toJava(RosettaEnumValueReference ele, Context ctx) {
-		'''«ctx.names.toJavaQualifiedType(ele.enumeration)».«ele.value.convertValues»'''
+		'''«ctx.names.toJavaType(ele.enumeration)».«ele.value.convertValues»'''
 	}
 
 	def dispatch StringConcatenationClient toJava(RosettaRegularAttribute ele, Context ctx) {
@@ -108,11 +108,11 @@ class ExpressionGeneratorWithBuilder {
 	}
 
 	def dispatch StringConcatenationClient toJava(RosettaExternalFunction ele, Context ctx) {
-		'''new «ctx.names.toJavaQualifiedType(ele as RosettaType)»()'''
+		'''new «ctx.names.toJavaType(ele as RosettaType)»()'''
 	}
 
 	def dispatch StringConcatenationClient toJava(RosettaRecordType ele, Context ctx) {
-		'''new «ctx.names.toJavaQualifiedType(ele as RosettaType)»()'''
+		'''new «ctx.names.toJavaType(ele as RosettaType)»()'''
 	}
 
 	def dispatch StringConcatenationClient toJava(RosettaLiteral ele, Context ctx) {
@@ -211,20 +211,6 @@ class ExpressionGeneratorWithBuilder {
 		 '''«IF funcExt.needsBuilder(feature)»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»'''
 	}
 
-//
-//	private dispatch def metaClass(RosettaRegularAttribute attribute) {
-//		if (attribute.metaTypes.exists[m|m.name == "reference"])
-//			"ReferenceWithMeta" + attribute.type.name.toJavaType.toFirstUpper
-//		else
-//			"FieldWithMeta" + attribute.type.name.toJavaType.toFirstUpper
-//	}
-//
-//	private dispatch def metaClass(Attribute attribute) {
-//		if (attribute.annotations.exists[a|a.annotation?.name == "metadata" && a.attribute?.name == "reference"])
-//			"ReferenceWithMeta" + attribute.type.name.toJavaType.toFirstUpper
-//		else
-//			"FieldWithMeta" + attribute.type.name.toJavaType.toFirstUpper
-//	}
 	private def StringConcatenationClient toBigDecimal(StringConcatenationClient sequence) {
 		'''«BigDecimalExtensions».valueOf(«sequence»)'''
 	}

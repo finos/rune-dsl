@@ -8,6 +8,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 
@@ -19,9 +20,9 @@ class RosettaUIValidationTest extends AbstractProjectAwareTest {
 	@Test
 	def rootClassesMayNotShareSameClassTypeAttributes() {
 		val model = '''
-			class Quote
-			{
-			}
+			namespace test
+			
+			class Quote {}
 			
 			root class OtherRoot
 			{
@@ -30,28 +31,28 @@ class RosettaUIValidationTest extends AbstractProjectAwareTest {
 			
 			root class Root
 			{
-				attr Quote (1..1); // <-- ERROR here:  Attribute with Type Quote is already used in OtherRoot.clazzAttr
+				attr Quote (1..1); // <-- ERROR here:  Attribute with Type Quote is already used in test.OtherRoot.clazzAttr
 			}
 		'''.createRosettaTestFile
 
-		model.assertError(ROSETTA_REGULAR_ATTRIBUTE, null, "Attribute with Type Quote is already used in OtherRoot.clazzAttr")
+		model.assertError(ROSETTA_REGULAR_ATTRIBUTE, null, "Attribute with Type Quote is already used in test.OtherRoot.clazzAttr")
 	}
 
 	@Test
 	def rootUniqueTypeName() {
 		val cl1 = '''
-			class Quote
-			{
-			}
+			namespace test
+			
+			type Quote:
 		'''.createRosettaTestFile
 		val cl2 = '''
-			class Quote
-			{
-			}
+			namespace test
+			
+			type Quote:
 		'''.createRosettaFile("otherfile.rosetta")
 
-		cl1.assertError(ROSETTA_CLASS, DUPLICATE_ELEMENT_NAME, "Duplicate element named 'Quote' in otherfile.rosetta")
-		cl2.assertError(ROSETTA_CLASS, DUPLICATE_ELEMENT_NAME, "Duplicate element named 'Quote' in test.rosetta")
+		cl1.assertError(DATA, DUPLICATE_ELEMENT_NAME, "Duplicate element named 'Quote' in otherfile.rosetta")
+		cl2.assertError(DATA, DUPLICATE_ELEMENT_NAME, "Duplicate element named 'Quote' in test.rosetta")
 	}
 
 }

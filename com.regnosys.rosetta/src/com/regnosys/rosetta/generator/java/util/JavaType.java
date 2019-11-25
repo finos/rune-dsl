@@ -27,7 +27,7 @@ public class JavaType {
 		this.simpleName = simpleName;
 	}
 
-	public static JavaType create(String qName) {
+	static JavaType create(String qName) {
 		return new JavaType(qName);
 	}
 

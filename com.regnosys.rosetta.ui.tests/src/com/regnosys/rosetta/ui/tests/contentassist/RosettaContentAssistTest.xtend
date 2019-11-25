@@ -64,6 +64,8 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	@Test
 	def void testSynonymSource() {
 		'''
+			namespace "test"
+			
 			synonym source FIX
 			synonym source FpML
 			
@@ -103,6 +105,8 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	@Test
 	def void testProductExpressionEnumLiteral() {
 		'''
+			namespace "test"
+			
 			type Quote:
 				action ActionEnum (1..1)
 			enum ActionEnum:
@@ -118,6 +122,8 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	@Test
 	def void testProductExpressionEnumLiteral2() {
 		'''
+			namespace "test"
+			
 			type Quote:
 				action ActionEnum (1..1)
 
@@ -134,6 +140,8 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	@Test
 	def void testAssignOutputEnumLiteral() {
 		'''
+			namespace "test"
+			
 			type Quote:
 				action ActionEnum (1..1)
 
@@ -159,6 +167,9 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	@Test
 	def void testIsProduct() {
 		'''
+			
+			namespace "test"
+			
 			isProduct root EconomicTerms;
 
 			type EconomicTerms:
@@ -171,6 +182,8 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 				<|>
 		''' >= #['EconomicTerms', '"Value"', "(", "<", "[", "empty", "False", "True"]
 		'''
+			namespace "test"
+			
 			isProduct root EconomicTerms;
 			
 			type EconomicTerms:
@@ -189,6 +202,8 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	@Test
 	def void testIsEvent() {
 		'''
+			namespace "test"
+			
 			isEvent root Event;
 			
 			type Event:
@@ -211,6 +226,8 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 		''' >= #['Event', 'EventAlias', '"Value"', "(", "<", "[", "empty", "False", "True"] 
 		
 		'''
+			namespace "test"
+			
 			isEvent root Event;
 			
 			type Event:

@@ -73,7 +73,7 @@ class RosettaGenerator extends AbstractGenerator {
 		if (!ignoredFiles.contains(resource.URI.segments.last)) {	
 			// generate for each model object
 			resource.contents.filter(RosettaModel).forEach [
-				val version = header.version
+				val version = version
 				val javaNames = factory.create(it)
 				val packages = javaNames.packages
 				
@@ -104,8 +104,8 @@ class RosettaGenerator extends AbstractGenerator {
 				dataRuleGenerator.generate(javaNames, fsa, elements, version)
 				metaGenerator.generate(packages, fsa, elements, version)
 				blueprintGenerator.generate(packages, fsa, elements, version)
-				qualifyEventsGenerator.generate(packages, fsa, elements, packages.qualifyEvent, RosettaEvent, version)
-				qualifyProductsGenerator.generate(packages, fsa, elements, packages.qualifyProduct, RosettaProduct, version)
+				qualifyEventsGenerator.generate(packages, fsa, elements, packages.model.qualifyEvent, RosettaEvent, version)
+				qualifyProductsGenerator.generate(packages, fsa, elements, packages.model.qualifyProduct, RosettaProduct, version)
 				
 				// Invoke externally defined code generators
 				externalGenerators.forEach[generator |
@@ -118,7 +118,7 @@ class RosettaGenerator extends AbstractGenerator {
 			val allElements = models.flatMap[elements].toList
 
 			val classes = resource.contents.filter(RosettaModel).head.elements.filter[it instanceof RosettaClass || it instanceof Data]
-			metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), classes, models.map[header].filterNull.map[namespace].toSet)
+			metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), classes, models.map[name].filterNull.toSet)
 		}}
 		catch (Exception e) {
 			LOGGER.warn("Unexpected calling standard generate for rosetta -"+e.message+" - see debug logging for more")

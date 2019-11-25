@@ -37,17 +37,17 @@ class ChoiceRuleGenerator {
 
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaChoiceRule).forEach [
-			fsa.generateFile('''«packages.choiceRule.directoryName»/«choiceRuleClassName(name)».java''', toChoiceRuleJava(packages, version))
+			fsa.generateFile('''«packages.model.choiceRule.directoryName»/«choiceRuleClassName(name)».java''', toChoiceRuleJava(packages, version))
 		]
 		elements.filter(RosettaClass).filter[oneOf].forEach [
-			fsa.generateFile('''«packages.choiceRule.directoryName»/«oneOfRuleClassName(it.name)».java''', toOneOfRuleJava(packages, version))
+			fsa.generateFile('''«packages.model.choiceRule.directoryName»/«oneOfRuleClassName(it.name)».java''', toOneOfRuleJava(packages, version))
 		]
 	}
 	
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, Condition cond, String version) {
 		val classBody = tracImports(cond.toChoiceRuleJava(data, names, version))
 		val fileContent = '''
-			package «names.packages.choiceRule.packageName»;
+			package «names.packages.model.choiceRule.name»;
 			
 			«FOR imp : classBody.imports»
 				import «imp»;
@@ -59,7 +59,7 @@ class ChoiceRuleGenerator {
 			
 			«classBody.toString»
 		'''
-		fsa.generateFile('''«names.packages.choiceRule.directoryName»/«choiceRuleClassName(cond.conditionName(data))».java''', fileContent)
+		fsa.generateFile('''«names.packages.model.choiceRule.directoryName»/«choiceRuleClassName(cond.conditionName(data))».java''', fileContent)
 	}
 	
 	private def StringConcatenationClient toChoiceRuleJava(Condition rule, Data data, JavaNames names, String version) {
@@ -141,21 +141,21 @@ class ChoiceRuleGenerator {
 	}
 
 	private def toJava(RosettaJavaPackages packages, String className, String ruleName, String qualifier, String clazz, List<String> attributes, String version) '''
-		package «packages.choiceRule.packageName»;
+		package «packages.model.choiceRule.name»;
 		
-		import «packages.model.packageName».«clazz»;
-		import «packages.validation.packageName».ValidationResult.ChoiceRuleValidationMethod;
-		import «packages.validation.packageName».ValidationResult;
-		import «packages.validation.packageName».Validator;
+		import «packages.model.name».«clazz»;
+		import «packages.defaultLibValidation.name».ValidationResult.ChoiceRuleValidationMethod;
+		import «packages.defaultLibValidation.name».ValidationResult;
+		import «packages.defaultLibValidation.name».Validator;
 		import java.util.Arrays;
 		import java.util.List;
 		import java.util.LinkedList;
 		
-		import «packages.lib.packageName».RosettaModelObjectBuilder;
-		import «packages.annotations.packageName».RosettaChoiceRule;
-		import «packages.lib.packageName».path.RosettaPath;
+		import «packages.defaultLib.name».RosettaModelObjectBuilder;
+		import «packages.defaultLibAnnotations.name».RosettaChoiceRule;
+		import «packages.defaultLib.name».path.RosettaPath;
 					
-		import static «packages.validation.packageName».ExistenceChecker.isSet;
+		import static «packages.defaultLibValidation.name».ExistenceChecker.isSet;
 		
 		«emptyJavadocWithVersion(version)»
 		@RosettaChoiceRule("«ruleName»")

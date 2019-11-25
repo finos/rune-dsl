@@ -31,10 +31,10 @@ class EnumGenerator {
 	}
 
 	private def toJava(RosettaEnumeration e, RosettaJavaPackages packages, String version) '''
-		package «packages.model.packageName»;
+		package «packages.model.name»;
 		
 		«IF e.anyValueHasSynonym»
-		import «packages.annotations.packageName».RosettaSynonym;
+		import «packages.defaultLibAnnotations.name».RosettaSynonym;
 		«ENDIF»
 		
 		«javadocWithVersion(e.definition, version)»

@@ -7,14 +7,15 @@ package com.regnosys.rosetta.rosetta
 import java.util.stream.Collectors
 
 class RosettaModel {
-	contains RosettaHeader header
-	contains RosettaQualifiableConfiguration[] configurations 
+	String name
+	String version = "0.0.0"
+	contains Import[] imports
+	contains RosettaQualifiableConfiguration[] configurations opposite model 
 	contains RosettaRootElement[] elements opposite model
 }
 
-class RosettaHeader {
-	String namespace
-	String version
+class Import {
+	String importedNamespace
 }
 /**
  * New model
@@ -69,7 +70,7 @@ abstract class RosettaFeatureOwner extends RosettaDefinable {
 	contains RosettaTypedFeature[] features
 }
 
-abstract class RosettaType extends RosettaNamed {
+abstract class RosettaType extends RosettaRootElement, RosettaNamed {
 }
 
 
@@ -421,8 +422,10 @@ class RosettaQualifiable extends RosettaRootElement, RosettaNamed, RosettaDefina
 
 class RosettaQualifiableConfiguration {
 	RosettaQualifiableType qType
+	refers RosettaModel model opposite configurations
 	/* TODO Change type to Data after migration is finished */
 	refers RosettaType rosettaClass
+	
 }
 
 enum RosettaQualifiableType {

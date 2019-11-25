@@ -21,14 +21,13 @@ class CodeGeneratorTestHelper {
 
 	@Inject extension RosettaGenerator
 	@Inject extension ModelHelper
-
 	def generateCode(CharSequence model, RosettaInternalGenerator generator) {
 		val fsa = new RegisteringFileSystemAccess()
 		val eResource = model.parseRosettaWithNoErrors.eResource;
 		
 		eResource.contents.filter(RosettaModel).forEach[
-			val packages = new RosettaJavaPackages(header.namespace)
-			val version = header.version
+			val packages = new RosettaJavaPackages(it)
+			val version = version
 			generator.generate(packages, fsa, elements, version)	
 		]
 		
@@ -69,7 +68,7 @@ class CodeGeneratorTestHelper {
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, String className, Map<String, Object> itemsToSet,
 		Map<String, List<?>> itemsToAddToList) {
-		val rosettaClassBuilderInstance = classes.get(javaPackages.model.packageName + '.' + className).getMethod(
+		val rosettaClassBuilderInstance = classes.get(rootPackage.name + '.' + className).getMethod(
 			"builder").invoke(null);
 		itemsToSet.forEach [ name, value |
 			rosettaClassBuilderInstance.class.getMethod('set' + name.toFirstUpper, value.class).invoke(
@@ -85,7 +84,7 @@ class CodeGeneratorTestHelper {
 	}
 
 	def createCalculationInstance(Map<String, Class<?>> classes, String className) {
-		val fqn = javaPackages.functions.packageName + '.' + className
+		val fqn = rootPackage.functions.name + '.' + className
 		val foundClazz = classes.get(fqn)
 		if(foundClazz === null)
 			throw new IllegalStateException('''No generated class '«fqn»' found''')
