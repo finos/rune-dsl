@@ -32,7 +32,9 @@ import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -68,8 +70,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.WithCardinality
 
 /**
  * This class contains custom validation rules. 
@@ -475,24 +475,29 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def checkFunctionCall(RosettaCallableWithArgsCall element) {
 		val callerSize = element.args.size
 		val callable = element.callable
-
+		
+		var implicitFirstArgument = implicitFirstArgument(element)
 		val callableSize = switch callable {
 			RosettaExternalFunction: callable.parameters.size
-			Function: callable.inputs.size
+			Function: {
+				callable.inputs.size
+			}
 			default: 0
 		}
-		if (callerSize !== callableSize) {
+		if ((callerSize !== callableSize && implicitFirstArgument === null) || (implicitFirstArgument !== null && callerSize + 1 !== callableSize)) {
 			error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
 				ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
 		} else {
 			if (callable instanceof Function) {
+				val skipFirstParam = if(implicitFirstArgument === null) 0 else 1
 				element.args.indexed.forEach [ indexed |
 					val callerArg = indexed.value
-					val param = callable.inputs.get(indexed.key)
-					checkType(param.type.RType, callerArg, element, ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, indexed.key)
+					val callerIdx = indexed.key
+					val param = callable.inputs.get(callerIdx + skipFirstParam)
+					checkType(param.type.RType, callerArg, element, ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, callerIdx)
 					if(!param.card.isMany && cardinality.isMulti(callerArg)) {
 						error('''Expecting single cardinality for parameter '«param.name»'.''', element,
-							ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, indexed.key)
+							ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, callerIdx)
 					}
 				]
 			}

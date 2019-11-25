@@ -193,7 +193,8 @@ class ExpressionGenerator {
 		return switch (callable) {
 			Function: {
 				funcExt.getOutput(callable).card.isMany
-				'''«MapperS».of(«callable.name.toFirstLower».evaluate(«args(expr, params)»))'''
+				val implicitArg = funcExt.implicitFirstArgument(expr)
+				'''«MapperS».of(«callable.name.toFirstLower».evaluate(«IF implicitArg !== null»«implicitArg.name.toFirstLower»«ENDIF»«args(expr, params)»))'''
 			}
 			RosettaExternalFunction:
 				'''«MapperS».of(new «factory.create(callable.model).toJavaType(callable as RosettaCallableWithArgs)»().execute(«args(expr, params)»))'''
@@ -422,7 +423,7 @@ class ExpressionGenerator {
 	/**
 	 * Inspect expression and return alias expression if present.  Currently, nested aliases are not supported.
 	 */
-	protected def getAliasExpressionIfPresent(RosettaExpression expr) {
+	private def getAliasExpressionIfPresent(RosettaExpression expr) {
 		if (expr instanceof RosettaCallableCall) {
 			val callable = expr.callable
 			if(callable instanceof RosettaAlias) {
@@ -435,10 +436,9 @@ class ExpressionGenerator {
 	/**
 	 * Collects all expressions down the tree, and checks that they're all either FeatureCalls or CallableCalls
 	 */
-	protected def boolean containsFeatureCallOrCallableCall(RosettaExpression expr) {
+	private def boolean containsFeatureCallOrCallableCall(RosettaExpression expr) {
 		val exprs = newHashSet
-		val extensions = new RosettaExtensions
-		extensions.collectExpressions(expr, [exprs.add(it)])
+		collectExpressions(expr, [exprs.add(it)])
 
 		return !exprs.empty && exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall || it instanceof RosettaFeatureCall || it instanceof RosettaCallableCall]
 	}
@@ -446,11 +446,10 @@ class ExpressionGenerator {
 	/**
 	 * Search leaf node objects to determine whether this is a comparison of matching objects types
 	 */
-	protected def isComparableTypes(RosettaBinaryOperation binaryExpr) {
+	private def isComparableTypes(RosettaBinaryOperation binaryExpr) {
 		// get list of the object type at each leaf node
 		val rosettaTypes = newHashSet
-		val extensions = new RosettaExtensions
-		extensions.collectLeafTypes(binaryExpr, [rosettaTypes.add(it)])
+		collectLeafTypes(binaryExpr, [rosettaTypes.add(it)])
 		
 		// check whether they're all the same type
 		val type = rosettaTypes.stream.findAny

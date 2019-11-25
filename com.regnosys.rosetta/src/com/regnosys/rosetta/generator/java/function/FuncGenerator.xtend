@@ -283,7 +283,7 @@ class FuncGenerator {
 				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
 			}
 		}
-		'''«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)'''
+		'''«MapperS».of(«expressionGenerator.javaCode(operation.expression, new ParamMap)»)'''
 	}
 	
 	private def boolean useIdx(Operation operation) {
