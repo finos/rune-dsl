@@ -265,7 +265,7 @@ class RosettaObjectGeneratorTest {
 			type TestObject: <"">
 				one string (0..1)
 					[metadata scheme]
-					[synonym FpML value "oneSyn" meta oneScheme]
+					[synonym FpML value "oneSyn" meta "oneScheme"]
 		'''.generateCode
 		//code.writeClasses("SchemeFieldWithSynonym")
 		val generatedClass = code.compileToClasses

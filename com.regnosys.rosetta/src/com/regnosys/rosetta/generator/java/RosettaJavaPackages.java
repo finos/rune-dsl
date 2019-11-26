@@ -61,6 +61,7 @@ public class RosettaJavaPackages {
 	public static class Package {
 		private Package parent;
 		private String name;
+		private String qName;
 
 		Package(String name) {
 			this.name = name;
@@ -76,10 +77,18 @@ public class RosettaJavaPackages {
 		}
 
 		public String name() {
-			if (parent != null) {
-				return parent.name() + "." + name;
+			if (this.qName == null) {
+				if (this.parent != null) {
+					this.qName = this.parent.name() + "." + name;
+				} else {
+					this.qName = name;
+				}
 			}
-			return name;
+			return this.qName;
+		}
+
+		public String getSimpleName() {
+			return this.name;
 		}
 
 		public String directoryName() {
