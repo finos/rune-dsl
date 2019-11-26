@@ -275,6 +275,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 
 	@Check
 	def checkAttributeNamesAreUnique(Data clazz) {
+		if (clazz.superType == clazz) {
+			error('''Type must not extend itself.''', clazz, DATA__SUPER_TYPE)
+		}
 		val name2attr = HashMultimap.create
 		clazz.allAttributes.forEach [
 			name2attr.put(name, it)
@@ -664,11 +667,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkListLiteral(ListLiteral ele) {
-		if (EcoreUtil2.getContainerOfType(ele, Condition) === null) {
-			warning('''Creating a collection of elements is only supported inside a conditional expression.''', ele,
-				null)
-			return
-		}
 		if (ele.elements.size > 1) {
 			val types = ele.elements.map[RType].filterNull.groupBy[name]
 			if (types.size > 1) {

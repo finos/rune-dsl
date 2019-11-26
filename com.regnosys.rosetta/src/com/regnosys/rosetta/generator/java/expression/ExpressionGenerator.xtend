@@ -308,7 +308,10 @@ class ExpressionGenerator {
 			default:
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.eClass.name)
 		}
-		return '''«javaCode(call.receiver, params, false)»«right»'''
+		if(call.toOne)
+			return '''«MapperS».of(«javaCode(call.receiver, params, false)»«right».get())'''
+		else
+			return '''«javaCode(call.receiver, params, false)»«right»'''
 	}
 	
 	def private RosettaType containerType(RosettaFeature feature) {

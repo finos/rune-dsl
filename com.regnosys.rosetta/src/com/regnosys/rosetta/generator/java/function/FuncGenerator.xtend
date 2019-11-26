@@ -227,7 +227,7 @@ class FuncGenerator {
 			«IF needsBuilder(op.assignRoot)»
 				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)»
 			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)».get()«ENDIF»'''
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
 		else {
 			'''
 				«op.assignTarget(outs, names)»
@@ -280,10 +280,12 @@ class FuncGenerator {
 			val valType = typeProvider.getRType(operation.expression)
 			if (rType === RBuiltinType.NUMBER && valType !== RBuiltinType.NUMBER) {
 				/// case: number = 1
-				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
+				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)).get()'''
 			}
 		}
-		'''«MapperS».of(«expressionGenerator.javaCode(operation.expression, new ParamMap)»)'''
+		'''«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»).get()'''
+		
+//		'''«expressionGenerator.javaCode(operation.expression, new ParamMap)».get()'''
 	}
 	
 	private def boolean useIdx(Operation operation) {
