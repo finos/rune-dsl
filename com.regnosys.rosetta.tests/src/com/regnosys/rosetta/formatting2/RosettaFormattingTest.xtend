@@ -394,6 +394,38 @@ class RosettaFormattingTest {
 				and Type -> other -> other is absent
 		'''
 	}
+	
+	@Test
+	def void formatListLiteral() {
+		'''
+			namespace "test"
+						version "test"
+			type Type:
+							other Type (0..*)
+			func Foo:
+				inputs: in1 Type (1..1)
+				output: out Type (1..1)
+				assign-output out -> other: [   
+				in1
+				,in1
+				,in1,
+				in1
+				]
+		''' -> '''
+			namespace "test"
+			version "test"
+			
+			type Type:
+				other Type (0..*)
+			
+			func Foo:
+				inputs: in1 Type (1..1)
+				output: out Type (1..1)
+				assign-output out -> other: [in1, in1, in1,
+				in1]
+
+		'''
+	}
 
 	def String format(String unFormatted) {
 		unFormatted.parse.serialize(SaveOptions.newBuilder.format().getOptions())

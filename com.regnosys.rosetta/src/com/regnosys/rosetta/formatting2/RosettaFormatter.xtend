@@ -53,6 +53,7 @@ import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaDefinable
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -428,6 +429,15 @@ class RosettaFormatter extends AbstractFormatter2 {
 
 	def dispatch void format(RosettaExternalSynonym externalSynonym, extension IFormattableDocument document) {
 		externalSynonym.prepend[newLine].surround[indent]
+	}
+	
+	def dispatch void format(ListLiteral ele, extension IFormattableDocument document) {
+		interior(
+			ele.regionFor.keyword('[').append(NO_SPACE_PRESERVE_NEW_LINE),
+			ele.regionFor.keyword(']').prepend(NO_SPACE_PRESERVE_NEW_LINE),
+			INDENT
+		)
+		ele.regionFor.keywords(',').forEach[prepend(NO_SPACE).append(ONE_SPACE_PRESERVE_NEWLINE)]
 	}
 
 	def void indentedBraces(EObject eObject, extension IFormattableDocument document) {
