@@ -449,7 +449,7 @@ class RosettaParsingTest {
 		'''
 			type Foo:
 				foo boolean (0..1)
-					[synonym FpML value "FooSyn" set when "relative/path/to/some/enum" = BarEnum -> a]
+					[synonym FpML value "FooSyn" set when "path->to->string" = BarEnum -> a]
 			
 			enum BarEnum :
 				a b
@@ -461,7 +461,7 @@ class RosettaParsingTest {
 		'''
 			type Foo:
 				foo boolean (0..1)
-				[synonym FpML value "FooSyn" set when "../relative/path/to/some/value" exists]
+				[synonym FpML value "FooSyn" set when "path->to->string" exists]
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -470,7 +470,7 @@ class RosettaParsingTest {
 		'''
 			type Foo:
 				foo boolean (0..1)
-				[synonym FpML value "FooSyn" set when "../relative/path/to/some/value" is absent]
+				[synonym FpML value "FooSyn" set when "path->to->string" is absent]
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -480,9 +480,9 @@ class RosettaParsingTest {
 			type Foo:
 				foo string (0..1)
 					[synonym FpML
-							set to "1" when "../relative/path/to/string" = "Foo",
-							set to "2" when "../relative/path/to/enum" = BarEnum -> a,
-							set to "3" when "../relative/path/to/string" is absent,
+							set to "1" when "path->to->string" = "Foo",
+							set to "2" when "path->to->enum" = BarEnum -> a,
+							set to "3" when "path->to->string" is absent,
 							set to "4"]
 
 			enum BarEnum: a b

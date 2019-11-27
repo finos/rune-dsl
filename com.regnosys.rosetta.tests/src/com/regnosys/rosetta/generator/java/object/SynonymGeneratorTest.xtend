@@ -80,13 +80,13 @@ class SynonymGeneratorTest {
 		val code = '''
 			type Test :
 				attr string (1..1)
-					[synonym FpML, DTCC value "testSynonym" path "synonym->path->1"]
+					[synonym FpML, DTCC value "testSynonym" path "synonym->path->s"]
 		'''.generateCode
 		
 		val testClass = code.get(rootPackage.name + '.Test')
 		
-		val expectedFpML = '@RosettaSynonym(value="testSynonym", source="FpML", path="synonym->path->1")'
-		val expectedDTCC = '@RosettaSynonym(value="testSynonym", source="DTCC", path="synonym->path->1")'
+		val expectedFpML = '@RosettaSynonym(value="testSynonym", source="FpML", path="synonym->path->s")'
+		val expectedDTCC = '@RosettaSynonym(value="testSynonym", source="DTCC", path="synonym->path->s")'
 			
 		assertThat(testClass, allOf(containsString(expectedFpML), containsString(expectedDTCC)))
 	}
