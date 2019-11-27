@@ -24,15 +24,19 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
+import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
+import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -68,8 +72,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.WithCardinality
 
 /**
  * This class contains custom validation rules. 
@@ -381,11 +383,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				]
 			} else if (valuesByName.size == 1 && model.eResource.URI.isPlatformResource) {
 				val EObject toCheck = valuesByName.get(0)
-				val sameNamed = resources.getExportedObjects(toCheck.eClass(), toCheck.fullyQualifiedName, false).filter [
+				val qName = toCheck.fullyQualifiedName
+				val sameNamed = resources.getExportedObjects(toCheck.eClass(), qName, false).filter [
 					isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
 				].map[EObjectURI]
 				if (sameNamed.size > 1) {
-					error('''Duplicate element named '«name»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
+					error('''Duplicate element named '«qName»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
 						toCheck, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
 				}
 			}
@@ -467,10 +470,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 	}
 
-	def boolean typesEqual(RType type, RType type2) {
-		return type == type2
-	}
-
 	@Check
 	def checkFunctionCall(RosettaCallableWithArgsCall element) {
 		val callerSize = element.args.size
@@ -500,7 +499,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 
 	@Check
-	def checkNodeTypeGraph(RosettaBlueprint bp) {
+	def void checkNodeTypeGraph(RosettaBlueprint bp) {
 		try {
 			buildTypeGraph(bp.nodes, bp.output)
 		} catch (BlueprintUnresolvedTypeException e) {
@@ -673,6 +672,37 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 	}
 	
+	@Check
+	def checkSynonyMapPath(RosettaMapPathValue ele) {
+		if(!ele.path.nullOrEmpty) {
+			val invalidChar = checkPathChars(ele.path)
+			if (invalidChar !== null)
+				error('''Character '«invalidChar.key»' is not allowed «IF invalidChar.value»as first symbol in a path segment.«ELSE»in paths. Use '->' to separate path segments.«ENDIF»''', ele, ROSETTA_MAP_PATH_VALUE__PATH)
+		}
+	}
+	@Check
+	def checkSynonyValuePath(RosettaSynonymValueBase ele) {
+		if (!ele.path.nullOrEmpty) {
+			val invalidChar = checkPathChars(ele.path)
+			if (invalidChar !== null)
+				error('''Character '«invalidChar.key»' is not allowed «IF invalidChar.value»as first symbol in a path segment.«ELSE»in paths. Use '->' to separate path segments.«ENDIF»''', ele, ROSETTA_SYNONYM_VALUE_BASE__PATH)
+		}
+	}
+	
+	private def Pair<Character,Boolean> checkPathChars(String str) {
+		val segments = str.split('->')
+		for (segment : segments) {
+			if (segment.length > 0) {
+				if (!Character.isJavaIdentifierStart(segment.charAt(0))) {
+					return segment.charAt(0) -> true
+				}
+				val notValid = segment.toCharArray.findFirst[it|!Character.isJavaIdentifierPart(it)]
+				if (notValid !== null) {
+					return notValid -> false
+				}
+			}
+		}
+	}
 	/*
 	@Inject TargetURIConverter converter
 	@Inject IResourceDescriptionsProvider index
