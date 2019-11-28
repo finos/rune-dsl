@@ -119,7 +119,13 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def void checkFeatureCallFeature(RosettaFeatureCall fCall) {
 		if (fCall.feature === null) {
 			error("Attribute is missing after '->'", fCall, ROSETTA_FEATURE_CALL__FEATURE)
+			return
 		}
+		if (fCall.isToOne && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
+			!cardinality.isMulti(fCall.feature)) {
+			error("'only-element' can not be used for single cardinality features.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
+		}
+
 	}
 
 	@Check
