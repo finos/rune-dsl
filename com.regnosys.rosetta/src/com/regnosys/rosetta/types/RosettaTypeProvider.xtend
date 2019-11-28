@@ -151,15 +151,7 @@ class RosettaTypeProvider {
 				expression.operator.resultType(leftType, rightType)
 			}
 			RosettaCountOperation: {
-				val leftType = expression.left.safeRType(cycleTracker)
-				if (leftType instanceof RErrorType) {
-					return leftType
-				}
-				val rightType = expression.right.safeRType(cycleTracker)
-				if (rightType instanceof RErrorType) {
-					return rightType
-				}
-				expression.operator.resultType(RBuiltinType.INT, rightType)
+				RBuiltinType.NUMBER
 			}
 			RosettaWhenPresentExpression: {
 				val leftType = expression.left.safeRType(cycleTracker)

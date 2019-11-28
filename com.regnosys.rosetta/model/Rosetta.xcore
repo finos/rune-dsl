@@ -511,9 +511,7 @@ class RosettaFeatureCall extends RosettaExpression {
 }
 
 class RosettaCountOperation extends RosettaExpression {
-	contains RosettaExpression left
-	String operator
-	contains RosettaExpression right
+	contains RosettaExpression argument
 }
 
 class RosettaConditionalExpression extends RosettaExpression {

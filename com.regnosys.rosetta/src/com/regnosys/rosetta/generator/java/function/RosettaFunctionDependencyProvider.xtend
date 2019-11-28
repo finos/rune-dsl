@@ -60,8 +60,7 @@ class RosettaFunctionDependencyProvider {
 				functionDependencies(object.contained) + functionDependencies(object.container)
 			}
 			RosettaCountOperation:{
-				functionDependencies(object.left)+
-				functionDependencies(object.right)
+				functionDependencies(object.argument)
 			}
 			RosettaExternalFunction,
 			RosettaEnumValueReference,

@@ -436,7 +436,7 @@ class RosettaBlueprintTypeResolver {
 	}
 	
 	def dispatch RosettaType getInput(RosettaCountOperation expr) {
-		return getInput(expr.left);
+		return getInput(expr.argument);
 	}
 
 	def dispatch RosettaType getInput(RosettaBinaryOperation expr) {

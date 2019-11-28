@@ -319,7 +319,7 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient countExpr(RosettaCountOperation expr, RosettaExpression test, ParamMap params) {
-		toComparisonOp('''«MapperS».of(«expr.left.javaCode(params)».resultCount())''',  expr.operator, expr.right.javaCode(params))
+		'''«MapperS».of(«expr.argument.javaCode(params)».resultCount())'''
 	}
 	
 	def StringConcatenationClient whenPresentExpr(RosettaWhenPresentExpression expr, RosettaExpression left, ParamMap params) {
@@ -329,7 +329,12 @@ class ExpressionGenerator {
 	def StringConcatenationClient binaryExpr(RosettaBinaryOperation expr, RosettaExpression test, ParamMap params) {
 		val left = getAliasExpressionIfPresent(expr.left)
 		val right = getAliasExpressionIfPresent(expr.right)
-
+		val leftRtype = typeProvider.getRType(expr.left)
+		val rightRtype = typeProvider.getRType(expr.right)
+		val resultType = operators.resultType(expr.operator, leftRtype,rightRtype)
+		val leftType = '''«leftRtype.name.toJavaType»'''
+		val rightType = '''«rightRtype.name.toJavaType»'''
+		
 		switch expr.operator {
 			case ("and"): {
 				if (containsFeatureCallOrCallableCall(left)) {
@@ -358,36 +363,16 @@ class ExpressionGenerator {
 				}
 			}
 			case ("+"): {
-				val leftRtype = typeProvider.getRType(expr.left)
-				val rightRtype = typeProvider.getRType(expr.right)
-				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
-				val leftType = '''«leftRtype.name.toJavaType»'''
-				val rightType = '''«rightRtype.name.toJavaType»'''
-				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>add(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>add(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			case ("-"): {
-				val leftRtype = typeProvider.getRType(expr.left)
-				val rightRtype = typeProvider.getRType(expr.right)
-				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
-				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
-				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
-				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>subtract(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>subtract(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			case ("*"): {
-				val leftRtype = typeProvider.getRType(expr.left)
-				val rightRtype = typeProvider.getRType(expr.right)
-				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
-				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
-				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
-				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>multiply(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>multiply(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			case ("/"): {
-				val leftRtype = typeProvider.getRType(expr.left)
-				val rightRtype = typeProvider.getRType(expr.right)
-				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
-				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
-				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
-				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>divide(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>divide(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			default: {
 				// FIXME isProduct isEvent stuff in QualifyFunctionGenerator. Should be removed after alias migration
@@ -682,7 +667,7 @@ class ExpressionGenerator {
 				'''«expr.stringValue»'''
 			}
 			RosettaCountOperation : {
-				'''«toNodeLabel(expr.left)» count = «toNodeLabel(expr.right)»'''
+				'''«toNodeLabel(expr.argument)» count'''
 			}
 
 			default :

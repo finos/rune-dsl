@@ -42,6 +42,8 @@ import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
+import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 
 class ExpressionGeneratorWithBuilder {
 
@@ -56,7 +58,6 @@ class ExpressionGeneratorWithBuilder {
 	}
 
 	dispatch def StringConcatenationClient toJava(RosettaFeatureCall ele, Context ctx) {
-		// if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
 		val feature = ele.feature
 		val StringConcatenationClient right = if (feature instanceof RosettaRegularAttribute)
 				feature.attributeAccess(ctx)
@@ -64,7 +65,7 @@ class ExpressionGeneratorWithBuilder {
 				feature.attributeAccess(ctx)
 			else
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.class.simpleName)
-		'''«ele.receiver.toJava(ctx)».«right»(«IF cardinalityProvider.isMulti(feature)»0«ENDIF»)'''
+		'''«ele.receiver.toJava(ctx)».«right»()«IF ele.toOne».get(0)«ENDIF»'''
 	}
 
 	def dispatch StringConcatenationClient toJava(Function ele, Context ctx) {
@@ -207,8 +208,16 @@ class ExpressionGeneratorWithBuilder {
 		'''«importMethod(ExpressionOperators, 'notExists')»(«toJava(ele.argument, ctx)»)'''
 	}
 	
+	def dispatch StringConcatenationClient toJava(RosettaCountOperation ele, Context ctx) {
+		'''«importMethod(ExpressionOperators, 'count')»(«toJava(ele.argument, ctx)»)'''
+	}
+	
+	def dispatch StringConcatenationClient toJava(RosettaContainsExpression ele, Context ctx) {
+		'''«importMethod(ExpressionOperators, 'contains')»(«toJava(ele.container, ctx)», «toJava(ele.contained, ctx)»)'''
+	}
+	
 	private def StringConcatenationClient attributeAccess(RosettaFeature feature, Context ctx) {
-		 '''«IF funcExt.needsBuilder(feature)»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»'''
+		 '''«IF funcExt.needsBuilder(feature) && !cardinalityProvider.isMulti(feature)»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»'''
 	}
 
 	private def StringConcatenationClient toBigDecimal(StringConcatenationClient sequence) {

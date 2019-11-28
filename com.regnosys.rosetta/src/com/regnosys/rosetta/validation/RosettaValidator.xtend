@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
 import com.regnosys.rosetta.rosetta.RosettaClass
+import com.regnosys.rosetta.rosetta.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -61,7 +62,6 @@ import java.util.List
 import java.util.Stack
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
@@ -689,6 +689,14 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			val invalidChar = checkPathChars(ele.path)
 			if (invalidChar !== null)
 				error('''Character '«invalidChar.key»' is not allowed «IF invalidChar.value»as first symbol in a path segment.«ELSE»in paths. Use '->' to separate path segments.«ENDIF»''', ele, ROSETTA_SYNONYM_VALUE_BASE__PATH)
+		}
+	}
+	
+	@Check
+	def checkCountOpArgument(RosettaCountOperation ele) {
+		if (ele.argument !== null && !ele.argument.eIsProxy) {
+			if (!cardinality.isMulti(ele.argument))
+				error('''Count operation multiple cardinality argument.''', ele, ROSETTA_COUNT_OPERATION__ARGUMENT)
 		}
 	}
 	

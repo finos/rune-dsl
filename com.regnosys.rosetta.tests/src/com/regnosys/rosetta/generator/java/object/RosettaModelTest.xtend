@@ -10,16 +10,16 @@ import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -215,9 +215,7 @@ class RosettaModelTest{
 		val isEventExpr = isEvents.get(0).expression
 		assertTrue(isEventExpr instanceof RosettaExistsExpression)
 		val argument = (isEventExpr as RosettaExistsExpression).argument
-		assertTrue(argument instanceof RosettaGroupByFeatureCall)
-		val call = (argument as RosettaGroupByFeatureCall).call
-		assertTrue(call instanceof RosettaCallableCall)
-		assertEquals("IRS", (call as RosettaCallableCall).callable.name)
+		assertTrue(argument instanceof RosettaCallableCall)
+		assertEquals("IRS", (argument as RosettaCallableCall).callable.name)
 	}
 }

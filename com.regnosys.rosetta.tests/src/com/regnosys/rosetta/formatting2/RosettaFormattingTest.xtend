@@ -421,9 +421,10 @@ class RosettaFormattingTest {
 			func Foo:
 				inputs: in1 Type (1..1)
 				output: out Type (1..1)
-				assign-output out -> other: [in1, in1, in1,
-				in1]
-
+				assign-output out -> other: [
+						in1, in1, in1,
+						in1
+				]
 		'''
 	}
 

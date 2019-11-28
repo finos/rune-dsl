@@ -428,15 +428,18 @@ RosettaBooleanOperation returns RosettaExpression:
 ;
 
 RosettaTestExpression returns RosettaExpression:
-	RosettaAdditiveExpression
+	RosettaCountOperation
 	(
-		{RosettaBinaryOperation.left=current} operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaAdditiveExpression
+		{RosettaBinaryOperation.left=current} operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaCountOperation
 		| {RosettaExistsExpression.argument=current} (only?='only')? (single?='single' | multiple?='multiple')? ('exists')
-		| {RosettaAbsentExpression.argument=current} ('is' 'absent')
+		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
 		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaFeatureCall
-		| {RosettaCountOperation.left=current} 'count' operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaFeatureCall
-		| {RosettaWhenPresentExpression.left=current} ('when' 'present') operator=('=') right=RosettaFeatureCall
+		| {RosettaWhenPresentExpression.left=current} 'when' 'present' operator=('=') right=RosettaFeatureCall
 	)?
+;
+
+RosettaCountOperation returns RosettaExpression:
+	RosettaAdditiveExpression ( {RosettaCountOperation.argument=current} 'count')?
 ;
 
 RosettaAdditiveExpression returns RosettaExpression:
@@ -458,6 +461,7 @@ RosettaFeatureCall returns RosettaExpression:
 
 RosettaPrimaryExpression returns RosettaExpression:
 	RosettaCallableCall
+
 	| RosettaLiteral
 	| '(' RosettaExpression ')'
 ;
@@ -653,7 +657,6 @@ RosettaCalcExists returns RosettaExpression:
 		->(
 		  {RosettaExistsExpression.argument=current} only?='only'? (single?='single' | multiple?='multiple')? 'exists'
 		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
-		| {RosettaCountOperation.left=current} 'count' operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaCalcAttributeCall
 		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaCalcAttributeCall
 		)
 	)?
@@ -672,7 +675,11 @@ RosettaCalcAdditive returns RosettaExpression:
 ;
 
 RosettaCalcMultiplicative returns RosettaExpression:
-	RosettaCalcAttributeCall ( =>({RosettaBinaryOperation.left=current} operator=('*'|'/')) right=RosettaCalcAttributeCall)*
+	RosettaCalcCountOperation ( =>({RosettaBinaryOperation.left=current} operator=('*'|'/')) right=RosettaCalcCountOperation)*
+;
+
+RosettaCalcCountOperation returns RosettaExpression:
+	RosettaCalcAttributeCall (=> ({RosettaCountOperation.argument=current} 'count'))?
 ;
 
 RosettaCalcAttributeCall returns RosettaExpression:
