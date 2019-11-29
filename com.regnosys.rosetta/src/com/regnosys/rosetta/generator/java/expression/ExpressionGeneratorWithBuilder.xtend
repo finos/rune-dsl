@@ -164,7 +164,7 @@ class ExpressionGeneratorWithBuilder {
 			'''«Date».of(«toJava(ele.left, ctx)», «toJava(ele.right, ctx)»)'''
 		} else {
 			switch (ele.operator) {
-				case "=": '''«Objects».equals(«toJava(ele.left, ctx)», «toJava(ele.right, ctx)»)'''
+				case "=": '''«Objects».equal(«toJava(ele.left, ctx)», «toJava(ele.right, ctx)»)'''
 				case "and": '''(«toJava(ele.left, ctx)») && («toJava(ele.right, ctx)»)'''
 				case "or": '''(«toJava(ele.left, ctx)») || («toJava(ele.right, ctx)»)'''
 				default: '''(«toJava(ele.left, ctx)» «ele.operator» «toJava(ele.right, ctx)»)'''

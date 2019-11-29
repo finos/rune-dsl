@@ -16,17 +16,13 @@ class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 	@Inject ExternalGenerators externalGeneratorsProvider
 
 	public final static String SRC_GEN_JAVA_OUTPUT = IFileSystemAccess.DEFAULT_OUTPUT
+	public final static String SRC_TEST_GEN_JAVA_OUTPUT = "SRC_TEST_GEN_JAVA_OUTPUT"
 	public final static String SRC_MAIN_JAVA_OUTPUT = "SRC_MAIN_JAVA_OUTPUT"
 	public final static String SRC_GEN_DAML_OUTPUT = "SRC_GEN_DAML_OUTPUT"
 
 	override Set<OutputConfiguration> getOutputConfigurations() {
-
-		
-
 		val result = new HashSet(getOutConfigMap.values())
-
 		externalGeneratorsProvider.map[outputConfiguration].map[inflate].forEach[result.add(it)]
-
 		return result
 	}
 	
@@ -50,6 +46,16 @@ class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 		srcMainJava.setCleanUpDerivedResources(false)
 		srcMainJava.setSetDerivedProperty(false)
 		srcMainJava.setKeepLocalHistory(false)
+		
+		var srcTestJava = new OutputConfiguration(SRC_TEST_GEN_JAVA_OUTPUT)
+		srcTestJava.setOutputDirectory("./src/test/generated/java")
+		srcTestJava.setDescription("Java Tests Output Folder")
+		srcTestJava.setOverrideExistingResources(true)
+		srcTestJava.setCanClearOutputDirectory(true)
+		srcTestJava.setCreateOutputDirectory(true)
+		srcTestJava.setCleanUpDerivedResources(true)
+		srcTestJava.setSetDerivedProperty(true)
+		srcTestJava.setKeepLocalHistory(false)
 
 		var srcGenDaml = new OutputConfiguration(SRC_GEN_DAML_OUTPUT)
 		srcGenDaml.setOutputDirectory("./src/generated/daml")
@@ -65,6 +71,7 @@ class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 		result.put(SRC_GEN_JAVA_OUTPUT, srcGenJava)
 		result.put(SRC_MAIN_JAVA_OUTPUT, srcMainJava)
 		result.put(SRC_GEN_DAML_OUTPUT, srcGenDaml)
+		result.put(SRC_TEST_GEN_JAVA_OUTPUT, srcTestJava)
 		result
 	}
 

@@ -20,9 +20,7 @@ import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEvent
-import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -31,6 +29,7 @@ import com.rosetta.util.DemandableLock
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtend.lib.annotations.Delegate
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
@@ -41,7 +40,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
 class RosettaGenerator extends AbstractGenerator {
-	static Logger LOGGER = Logger.getLogger(RosettaGenerator) =>[level = Level.DEBUG]
+	static Logger LOGGER = Logger.getLogger(RosettaGenerator) => [level = Level.DEBUG]
 
 	@Inject ModelObjectGenerator modelObjectGenerator
 	@Inject EnumGenerator enumGenerator
@@ -53,78 +52,81 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject QualifyFunctionGenerator<RosettaProduct> qualifyProductsGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
-	
+
 	@Inject DataGenerator dataGenerator
 	@Inject DataValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
 	@Inject FuncGenerator funcGenerator
-	
+
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta'}
-	
+
 	val lock = new DemandableLock;
 
-	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-		LOGGER.debug("Starting the main generate method for "+resource.URI.toString)  
+	override void doGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
+		LOGGER.debug("Starting the main generate method for " + resource.URI.toString)
+		val fsa = new TestFolderAwareFsa(resource, fsa2)
 		try {
 			lock.getWriteLock(true);
-		if (!ignoredFiles.contains(resource.URI.segments.last)) {	
-			// generate for each model object
-			resource.contents.filter(RosettaModel).forEach [
-				val version = version
-				val javaNames = factory.create(it)
-				val packages = javaNames.packages
-				
-				elements.forEach [
-					switch(it) {
-						Data: {
-							dataGenerator.generate(javaNames, fsa, it, version)
-							metaGenerator.generate(javaNames, fsa, it, version)
-							validatorsGenerator.generate(javaNames, fsa, it, version)
-							it.conditions.forEach [ cond |
-								if (cond.isChoiceRuleCondition) {
-									choiceRuleGenerator.generate(javaNames, fsa, it, cond, version)
-								} else {
-									dataRuleGenerator.generate(javaNames, fsa, it, cond, version)
-								}
-							]
+			if (!ignoredFiles.contains(resource.URI.segments.last)) {
+				// generate for each model object
+				resource.contents.filter(RosettaModel).forEach [
+					val version = version
+					val javaNames = factory.create(it)
+					val packages = javaNames.packages
+
+					elements.forEach [
+						if (context.cancelIndicator.canceled) {
+							return // throw exception instead
 						}
-						Function:{
-							if(!isDispatchingFunction){
-								funcGenerator.generate(javaNames, fsa, it, version)
+						switch (it) {
+							Data: {
+								dataGenerator.generate(javaNames, fsa, it, version)
+								metaGenerator.generate(javaNames, fsa, it, version)
+								validatorsGenerator.generate(javaNames, fsa, it, version)
+								it.conditions.forEach [ cond |
+									if (cond.isChoiceRuleCondition) {
+										choiceRuleGenerator.generate(javaNames, fsa, it, cond, version)
+									} else {
+										dataRuleGenerator.generate(javaNames, fsa, it, cond, version)
+									}
+								]
+							}
+							Function: {
+								if (!isDispatchingFunction) {
+									funcGenerator.generate(javaNames, fsa, it, version)
+								}
 							}
 						}
-					}
-				]
-				modelObjectGenerator.generate(javaNames, fsa, elements, version)
-				enumGenerator.generate(packages, fsa, elements, version)
-				choiceRuleGenerator.generate(packages, fsa, elements, version)
-				dataRuleGenerator.generate(javaNames, fsa, elements, version)
-				metaGenerator.generate(packages, fsa, elements, version)
-				blueprintGenerator.generate(packages, fsa, elements, version)
-				qualifyEventsGenerator.generate(packages, fsa, elements, packages.model.qualifyEvent, RosettaEvent, version)
-				qualifyProductsGenerator.generate(packages, fsa, elements, packages.model.qualifyProduct, RosettaProduct, version)
-				
-				// Invoke externally defined code generators
-				externalGenerators.forEach[generator |
-					generator.generate(packages, elements, version,[map|
-						map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]],resource, lock)
-				]
-			]
-			
-			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
-			val allElements = models.flatMap[elements].toList
+					]
+					modelObjectGenerator.generate(javaNames, fsa, elements, version)
+					enumGenerator.generate(packages, fsa, elements, version)
+					choiceRuleGenerator.generate(packages, fsa, elements, version)
+					dataRuleGenerator.generate(javaNames, fsa, elements, version)
+					metaGenerator.generate(packages, fsa, elements, version)
+					blueprintGenerator.generate(packages, fsa, elements, version)
+					qualifyEventsGenerator.generate(packages, fsa, elements, packages.model.qualifyEvent, RosettaEvent,
+						version)
+					qualifyProductsGenerator.generate(packages, fsa, elements, packages.model.qualifyProduct,
+						RosettaProduct, version)
 
-			val classes = resource.contents.filter(RosettaModel).head.elements.filter[it instanceof RosettaClass || it instanceof Data]
-			metaFieldGenerator.generate(fsa, allElements.filter(RosettaMetaType), classes, models.map[name].filterNull.toSet)
-		}}
-		catch (Exception e) {
-			LOGGER.warn("Unexpected calling standard generate for rosetta -"+e.message+" - see debug logging for more")
+					// Invoke externally defined code generators
+					externalGenerators.forEach [ generator |
+						generator.generate(packages, elements, version, [ map |
+							map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]
+						], resource, lock)
+					]
+				]
+
+				metaFieldGenerator.generate(resource, fsa, context)
+			}
+		} catch (Exception e) {
+			LOGGER.warn(
+				"Unexpected calling standard generate for rosetta -" + e.message + " - see debug logging for more")
 			LOGGER.info("Unexpected calling standard generate for rosetta", e);
-		}
-		finally {
+		} finally {
 			LOGGER.debug("ending the main generate method")
 			lock.releaseWriteLock
 		}
@@ -133,18 +135,43 @@ class RosettaGenerator extends AbstractGenerator {
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		try {
 			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
-			
-			
-			externalGenerators.forEach[generator |
-					generator.afterGenerate(models,[map|
-						map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]],resource, lock)
-				]
-		
+
+			externalGenerators.forEach [ generator |
+				generator.afterGenerate(models, [ map |
+					map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]
+				], resource, lock)
+			]
+
 		} catch (Exception e) {
-			LOGGER.warn("Unexpected calling after generate for rosetta -"+e.message+" - see debug logging for more")
+			LOGGER.warn("Unexpected calling after generate for rosetta -" + e.message + " - see debug logging for more")
 			LOGGER.debug("Unexpected calling after generate for rosetta", e);
 		}
 
 	}
+}
 
+class TestFolderAwareFsa implements IFileSystemAccess2 {
+	@Delegate IFileSystemAccess2 originalFsa
+	boolean testRes
+
+	new(Resource resource, IFileSystemAccess2 originalFsa) {
+		this.originalFsa = originalFsa
+		this.testRes = isTestResource(resource)
+	}
+
+	def boolean isTestResource(Resource resource) {
+		if (resource.URI !== null) {
+			// hardcode the folder for now
+			return resource.getURI().toString.contains('/src/test/resources/')
+		}
+		false
+	}
+
+	override void generateFile(String fileName, CharSequence contents) {
+		if (testRes) {
+			originalFsa.generateFile(fileName, RosettaOutputConfigurationProvider.SRC_TEST_GEN_JAVA_OUTPUT, contents)
+		} else {
+			originalFsa.generateFile(fileName, contents)
+		}
+	}
 }
