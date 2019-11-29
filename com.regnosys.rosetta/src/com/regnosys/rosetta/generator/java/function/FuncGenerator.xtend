@@ -40,6 +40,8 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.types.RAnnotateType
 
 class FuncGenerator {
 
@@ -227,7 +229,7 @@ class FuncGenerator {
 			«IF needsBuilder(op.assignRoot)»
 				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)»
 			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)».get()«ENDIF»'''
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
 		else {
 			'''
 				«op.assignTarget(outs, names)»
@@ -275,15 +277,23 @@ class FuncGenerator {
 	}
 	
 	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx) {
-		if(operation.path === null && operation.assignRoot instanceof Attribute ) {
+		val valType = typeProvider.getRType(operation.expression)
+		if (operation.path === null && operation.assignRoot instanceof Attribute) {
 			val assignRootType = typeProvider.getRType((operation.assignRoot as Attribute ).type)
-			val valType = typeProvider.getRType(operation.expression)
 			if (assignRootType === RBuiltinType.NUMBER && valType !== RBuiltinType.NUMBER) {
-				/// case: number = 1
+				// / case: number = 1
 				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
 			}
 		}
-		'''«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)'''
+		'''«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»«IF valType.hasMeta()».getValue()«ENDIF»).get()'''
+	}
+	
+	def boolean hasMeta(RType type) {
+		if(type instanceof RAnnotateType) {
+			type.hasMeta
+		}
+		
+		false
 	}
 	
 	private def boolean useIdx(Operation operation) {

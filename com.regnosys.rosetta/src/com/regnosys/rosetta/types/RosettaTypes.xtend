@@ -8,12 +8,24 @@ import org.eclipse.xtend.lib.annotations.Data
 
 interface RType {
 	def String getName()
+	def boolean hasMeta() { false }
+}
+
+abstract class RAnnotateType implements RType {
+	boolean meta = false
+
+	def void setWithMeta(boolean meta) {
+		this.meta = meta
+	}
+
+	override hasMeta() {
+		this.meta
+	}
 }
 
 @Data
 class RFeatureCallType implements RType {
 	val RType featureType
-
 	override getName() {
 		'''featureCall(«featureType?.name»)'''
 	}
@@ -28,7 +40,7 @@ class RClassType implements RType {
 	}
 }
 @Data
-class RDataType implements RType {
+class RDataType extends RAnnotateType {
 	com.regnosys.rosetta.rosetta.simple.Data data
 
 	override getName() {
@@ -37,7 +49,7 @@ class RDataType implements RType {
 }
 
 @Data
-class REnumType implements RType {
+class REnumType extends RAnnotateType {
 	RosettaEnumeration enumeration
 
 	override getName() {
@@ -45,8 +57,9 @@ class REnumType implements RType {
 	}
 }
 
+
 @Data
-class RRecordType implements RType {
+class RRecordType extends RAnnotateType {
 	RosettaFeatureOwner record
 
 	override getName() {
@@ -56,7 +69,7 @@ class RRecordType implements RType {
 }
 
 @Data
-class RBuiltinType implements RType {
+class RBuiltinType extends RAnnotateType {
 	public static val ANY = new RBuiltinType('any')
 	public static val BOOLEAN = new RBuiltinType('boolean')
 	public static val STRING = new RBuiltinType('string')
@@ -74,6 +87,8 @@ class RBuiltinType implements RType {
 	
 	val String name
 }
+
+
 
 @Data
 class RQualifiedType extends RBuiltinType {
