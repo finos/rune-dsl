@@ -7,6 +7,10 @@ class RosettaTypeCompatibility {
 
 	@Inject extension RosettaExtensions
 
+	def dispatch boolean isUseableAs(Void t0, Void t1) {
+		true
+	}
+	
 	def dispatch boolean isUseableAs(RClassType t0, RClassType t1) {
 		t0.clazz.allSuperTypes.contains(t1.clazz)
 	}

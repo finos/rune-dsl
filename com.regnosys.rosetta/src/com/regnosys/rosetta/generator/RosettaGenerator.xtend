@@ -162,7 +162,7 @@ class TestFolderAwareFsa implements IFileSystemAccess2 {
 	def boolean isTestResource(Resource resource) {
 		if (resource.URI !== null) {
 			// hardcode the folder for now
-			return resource.getURI().toString.contains('/src/test/resources/')
+			return resource.getURI().toString.contains('rosetta-cdm/src/test/resources/')
 		}
 		false
 	}
