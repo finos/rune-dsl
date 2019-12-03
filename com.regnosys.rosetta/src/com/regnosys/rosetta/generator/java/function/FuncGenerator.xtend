@@ -285,7 +285,7 @@ class FuncGenerator {
 				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
 			}
 		}
-		'''«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»«IF valType.hasMeta()».getValue()«ENDIF»).get()'''
+		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)».get()'''
 	}
 	
 	def boolean hasMeta(RType type) {

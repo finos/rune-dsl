@@ -10,6 +10,7 @@ import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
@@ -41,16 +42,17 @@ class CardinalityProvider {
 			Function: if(obj.output === null) false else obj.output.isMulti
 			ShortcutDeclaration: obj.expression.isMulti
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
-			RosettaBinaryOperation: obj.left.isMulti || obj.right.multi // check this
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
 			RosettaAlias: obj.expression.isMulti
 			ListLiteral: true
 			RosettaLiteral,
+			RosettaBinaryOperation, // check '+' operator
 			RosettaTypedFeature,
 			RosettaFeature,
 			RosettaSynonymValueBase,
 			RosettaCountOperation,
 			RosettaAbsentExpression,
+			RosettaExistsExpression,
 			RosettaContainsExpression,
 			RosettaRootElement,
 			RosettaEnumValueReference: false

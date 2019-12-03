@@ -12,6 +12,9 @@ import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
@@ -42,8 +45,7 @@ import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
-import com.regnosys.rosetta.rosetta.RosettaCountOperation
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 
 class ExpressionGeneratorWithBuilder {
 
@@ -63,6 +65,8 @@ class ExpressionGeneratorWithBuilder {
 				feature.attributeAccess(ctx)
 			else if (feature instanceof Attribute)
 				feature.attributeAccess(ctx)
+			else if (feature instanceof RosettaEnumValue)
+				return '''«ctx.names.toJavaType(ele.receiver as RosettaEnumeration)».«feature.convertValues»'''
 			else
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.class.simpleName)
 		'''«ele.receiver.toJava(ctx)».«right»()«IF ele.toOne».get(0)«ENDIF»'''

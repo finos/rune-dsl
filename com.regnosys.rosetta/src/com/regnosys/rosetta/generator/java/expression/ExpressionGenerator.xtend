@@ -155,7 +155,7 @@ class ExpressionGenerator {
 		}
 	}
 	/**
-	 * feature call is a call to get an attribute of an object e.g. Quote->amount
+	 * group by only occurs in alias expression and should be deprecated
 	 */
 	private def StringConcatenationClient groupByFeatureCall(RosettaGroupByFeatureCall groupByCall, ParamMap params, boolean isLast, boolean autoValue) {
 		val call = groupByCall.call
@@ -179,7 +179,7 @@ class ExpressionGenerator {
 					default: 
 						throw new UnsupportedOperationException("Unsupported expression type of "+feature.class.simpleName)
 				}
-				'''«javaCode(call.receiver, params, false)»«right»'''
+				'''«MapperC».of(«javaCode(call.receiver, params, false)»«right».getMulti())'''
 			}
 			default: {
 				javaCode(groupByCall.call, params)
@@ -359,7 +359,7 @@ class ExpressionGenerator {
 				}
 				else {
 					// ComparisonResult
-					'''«left.javaCode(params)».or(«right.javaCode(params)»)'''
+					'''«left.javaCode(params)».or(«right.javaCode(params)»)''' 
 				}
 			}
 			case ("+"): {
