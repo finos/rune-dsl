@@ -10,12 +10,21 @@ class ImportingStringConcatination extends StringConcatenation {
 	@Accessors(PUBLIC_GETTER)
 	Set<String> imports = newHashSet
 	Set<String> staticImports = newHashSet
+	Set<String> reservedSimpleNames = newHashSet
+	
 
+	def addReservedSimpleName(String reservedSimpleName) {
+		reservedSimpleNames.add(reservedSimpleName)
+	}
+	
 	def dispatch protected String getStringRepresentation(Object object) {
 		super.getStringRepresentation(object)
 	}
 
 	def dispatch protected String getStringRepresentation(Class<?> object) {
+		if(reservedSimpleNames.contains(object.simpleName)) {
+			return object.name
+		}
 		addImport(object.name, object.isEnum && object.isMemberClass)
 		return object.simpleName
 	}
@@ -30,6 +39,9 @@ class ImportingStringConcatination extends StringConcatenation {
 			staticImports.add(object.name)
 			return ''
 		} else {
+			if(reservedSimpleNames.contains(object.simpleName)) {
+				return object.name
+			}
 			addImport(object.name, false)
 			return object.simpleName
 		}
@@ -73,4 +85,6 @@ class ImportingStringConcatination extends StringConcatenation {
 	def getStaticImports() {
 		staticImports.sortBy[it]
 	}
+	
+	
 }

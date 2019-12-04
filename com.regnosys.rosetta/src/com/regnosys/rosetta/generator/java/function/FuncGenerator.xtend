@@ -62,9 +62,9 @@ class FuncGenerator {
 		val dependencies = collectFunctionDependencies(func)
 
 		val classBody = if (func.handleAsEnumFunction) {
-				tracImports(func.dispatchClassBody(func.name, dependencies, javaNames, version))
+				tracImports(func.dispatchClassBody(func.name, dependencies, javaNames, version), func.name)
 			} else {
-				tracImports(func.classBody(func.name, dependencies, javaNames, version, false))
+				tracImports(func.classBody(func.name, dependencies, javaNames, version, false), func.name)
 			}
 		val content = '''
 			package «javaNames.packages.model.functions.name»;
