@@ -144,8 +144,11 @@ class RosettaExpressionsTest {
 					[metadata scheme]
 				two int (1..1)
 			
-			isProduct TestQualifier
-				Test -> one -> scheme = "scheme"
+			func TestQualifier:
+				inputs: test Test(1..1)
+				output: is_product boolean (1..1)
+				assign-output is_product:
+					test -> one -> scheme = "scheme"
 		'''.generateCode
 
 		code.compileToClasses
@@ -164,8 +167,11 @@ class RosettaExpressionsTest {
 					[metadata scheme]
 				two int (1..1)
 			
-			isProduct TestQualifier
-				(Test -> one group by two) -> one = "scheme"
+			func TestQualifier:
+				inputs: test Test(1..1)
+				output: is_product boolean (1..1)
+				assign-output is_product:
+					[(test -> one group by two) -> one] = "scheme"
 		'''.generateCode
 
 		code.compileToClasses
@@ -184,8 +190,11 @@ class RosettaExpressionsTest {
 					[metadata scheme]
 				two int (1..1)
 			
-			isProduct TestQualifier
-				Test -> one -> one = "scheme"
+			func TestQualifier:
+				inputs: test Test(1..1)
+				output: is_product boolean (1..1)
+				assign-output is_product:
+					test -> one -> one = "scheme"
 		'''.generateCode
 
 		code.compileToClasses

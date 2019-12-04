@@ -12,16 +12,18 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
+import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.xtext.EcoreUtil2
 
 class RosettaFunctionExtensions {
 
 	@Inject RosettaTypeProvider typeProvider
-
+	@Inject RosettaConfigExtension confExtensions
 	/** 
 	 * 
 	 * spec functions do not have operation hence, do not provide an implementation
@@ -130,5 +132,19 @@ class RosettaFunctionExtensions {
 				}
 			}
 		}
+	}
+	
+	
+	def boolean isQualifierFunctionFor(Function function, Data type) {
+		function.isQualifierFunction && getInputs(function).get(0).type == type
+	}
+	
+	def boolean isQualifierFunction(Function function) {
+		val inputs = getInputs(function)
+		!inputs.nullOrEmpty 
+		&& inputs.size == 1 
+		&& RBuiltinType.BOOLEAN.name == getOutput(function)?.type?.name
+		&& inputs.get(0).type !== null && !inputs.get(0).type.eIsProxy
+		&& confExtensions.isRootEventOrProduct(inputs.get(0).type)
 	}
 }

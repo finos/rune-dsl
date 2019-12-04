@@ -51,9 +51,9 @@ class RosettaCalculationGenerationTest {
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.Mapper;
+				import com.rosetta.model.lib.functions.MapperMaths;
 				import com.rosetta.model.lib.functions.MapperS;
 				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.math.BigDecimalExtensions;
 				import com.rosetta.test.model.Period;
 				import com.rosetta.test.model.PeriodEnum;
 				import java.math.BigDecimal;
@@ -93,7 +93,7 @@ class RosettaCalculationGenerationTest {
 						}
 						
 						private BigDecimal assignOutput(BigDecimal outHolder, PeriodEnum in1, Period in2) {
-							outHolder = MapperS.of(BigDecimalExtensions.multiply(BigDecimalExtensions.valueOf(i(in1, in2).get()), BigDecimalExtensions.valueOf(30.0))).get();
+							outHolder = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(BigDecimal.valueOf(30.0))).get();
 							return outHolder;
 						}
 					
@@ -133,6 +133,7 @@ class RosettaCalculationGenerationTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.Mapper;
+			import com.rosetta.model.lib.functions.MapperMaths;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			
@@ -153,7 +154,7 @@ class RosettaCalculationGenerationTest {
 				}
 				
 				private Integer assignOutput(Integer outHolder, Integer one) {
-					outHolder = MapperS.of((oneA(one).get() + oneA(one).get())).get();
+					outHolder = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(oneA(one).get()), MapperS.of(oneA(one).get())).get();
 					return outHolder;
 				}
 			
@@ -193,6 +194,7 @@ class RosettaCalculationGenerationTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.Mapper;
+			import com.rosetta.model.lib.functions.MapperMaths;
 			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.Max;
 			import com.rosetta.model.lib.functions.Min;
@@ -216,7 +218,7 @@ class RosettaCalculationGenerationTest {
 				}
 				
 				private Integer assignOutput(Integer resHolder, Integer arg1, Integer arg2) {
-					resHolder = MapperS.of((a1(arg1, arg2).get() + (a2(arg1, arg2).get() * 215))).get();
+					resHolder = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(a1(arg1, arg2).get()), MapperMaths.<Integer, Integer, Integer>multiply(MapperS.of(a2(arg1, arg2).get()), MapperS.of(Integer.valueOf(215)))).get();
 					return resHolder;
 				}
 			
@@ -759,7 +761,7 @@ class RosettaCalculationGenerationTest {
 					}
 					
 					private String assignOutput(String arg1Holder, Math in1, MathInput in2) {
-						arg1Holder = MapperS.of(addOne.evaluate(in2.getMathInput())).get();
+						arg1Holder = MapperS.of(addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", MathInput::getMathInput).get())).get();
 						return arg1Holder;
 					}
 				
@@ -794,7 +796,7 @@ class RosettaCalculationGenerationTest {
 					}
 					
 					private String assignOutput(String arg1Holder, Math in1, MathInput in2) {
-						arg1Holder = MapperS.of(subOne.evaluate(in2.getMathInput())).get();
+						arg1Holder = MapperS.of(subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", MathInput::getMathInput).get())).get();
 						return arg1Holder;
 					}
 				
