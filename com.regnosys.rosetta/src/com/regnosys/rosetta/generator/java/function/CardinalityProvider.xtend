@@ -13,6 +13,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRootElement
@@ -35,6 +36,7 @@ class CardinalityProvider {
 					if (obj.receiver.isMulti) true else obj.feature.isMulti
 				}
 			}
+			
 			RosettaEnumValue:false
 			WithCardinality: if(obj.card === null) false else obj.card.isIsMany
 			RosettaCallableCall: if(obj.toOne) false else obj.callable.isMulti
@@ -44,6 +46,7 @@ class CardinalityProvider {
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
 			RosettaAlias: obj.expression.isMulti
+			RosettaGroupByFeatureCall,
 			ListLiteral: true
 			RosettaLiteral,
 			RosettaBinaryOperation, // check '+' operator

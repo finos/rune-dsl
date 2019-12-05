@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
@@ -38,6 +39,7 @@ public class MapperGroupByC<T,G> implements MapperGroupByBuilder<T,G> {
 	private Stream<MapperItem<T, ?>> getItems(boolean errors) {
 		return groupByItems.entrySet().stream()
 				.filter(e->errors == e.getKey().isError())
+				.sorted( (e1, e2) -> Objects.toString(e1.getKey(), " ").compareTo(Objects.toString(e2.getKey(), " ")) )
 				.map(e->e.getValue())
 				.flatMap(m->m.getItems().filter(i->i.isError()==errors));
 	}
