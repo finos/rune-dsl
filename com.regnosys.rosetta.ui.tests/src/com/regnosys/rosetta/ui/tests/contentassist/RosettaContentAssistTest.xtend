@@ -245,5 +245,15 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 				Event and <|>
 		''' >= #['Event', 'EventAlias', '"Value"', "(", "[", "empty", "False", "True"]  
 	}
-	
+
+	@Test
+	def void testImport() {
+		'''
+			namespace my.ns
+			
+			import <|>
+		'''
+		+
+		'''namespace my.other.ns''' >= #["my.other.ns.*"] 
+	}
 }
