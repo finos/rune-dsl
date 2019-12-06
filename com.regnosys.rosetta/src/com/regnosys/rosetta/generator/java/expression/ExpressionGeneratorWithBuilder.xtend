@@ -62,14 +62,14 @@ class ExpressionGeneratorWithBuilder {
 	dispatch def StringConcatenationClient toJava(RosettaFeatureCall ele, Context ctx) {
 		val feature = ele.feature
 		val StringConcatenationClient right = if (feature instanceof RosettaRegularAttribute)
-				feature.attributeAccess(ctx)
+				feature.attributeAccess(ele.toOne, ctx)
 			else if (feature instanceof Attribute)
-				feature.attributeAccess(ctx)
+				feature.attributeAccess(ele.toOne,ctx)
 			else if (feature instanceof RosettaEnumValue)
 				return '''«ctx.names.toJavaType(ele.receiver as RosettaEnumeration)».«feature.convertValues»'''
 			else
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.class.simpleName)
-		'''«ele.receiver.toJava(ctx)».«right»()«IF ele.toOne».get(0)«ENDIF»'''
+		'''«ele.receiver.toJava(ctx)».«right»'''
 	}
 
 	def dispatch StringConcatenationClient toJava(Function ele, Context ctx) {
@@ -220,8 +220,12 @@ class ExpressionGeneratorWithBuilder {
 		'''«importMethod(ExpressionOperators, 'contains')»(«toJava(ele.container, ctx)», «toJava(ele.contained, ctx)»)'''
 	}
 	
-	private def StringConcatenationClient attributeAccess(RosettaFeature feature, Context ctx) {
-		 '''«IF funcExt.needsBuilder(feature) && !cardinalityProvider.isMulti(feature)»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»'''
+	private def StringConcatenationClient attributeAccess(RosettaFeature feature, boolean toOne, Context ctx) {
+		if(cardinalityProvider.isMulti(feature)) {
+			'''«IF funcExt.needsBuilder(feature) && toOne»getOrCreate«feature.name.toFirstUpper»(0)«ELSE»get«feature.name.toFirstUpper»()«ENDIF»'''
+		}
+		else
+			'''«IF funcExt.needsBuilder(feature)»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»()'''
 	}
 
 	private def StringConcatenationClient toBigDecimal(StringConcatenationClient sequence) {
