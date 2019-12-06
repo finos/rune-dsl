@@ -26,6 +26,7 @@ import java.util.LinkedHashSet
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class RosettaExtensions {
 	
@@ -161,6 +162,9 @@ class RosettaExtensions {
 			}
 			else if(callable instanceof Data) {
 				visitor.apply(callable)
+			}
+			else if(callable instanceof Attribute) {
+				visitor.apply(callable.type)
 			}
 			else {
 				throw new IllegalArgumentException("Failed to collect leaf type: " + callable)
