@@ -120,11 +120,7 @@ class ChoiceRuleGenerator {
 	def static String choiceRuleClassName(String choiceRuleName) {
 		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, choiceRuleName)
 		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
-		if (camel.endsWith('Choice'))
-			return camel +'Rule'
-		if (camel.endsWith('ChoiceRule'))
-			return camel
-		return camel + 'ChoiceRule'
+		return camel
 	}
 
 	private def toOneOfRuleJava(RosettaClass clazz, RosettaJavaPackages packages, String version) {

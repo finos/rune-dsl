@@ -9,7 +9,7 @@ import com.rosetta.model.lib.path.RosettaPath
 class DataRuleHelper {
 	
 	@Inject extension ModelHelper
-
+	
 	def runDataRule(Map<String, Class<?>> classes, Object instance, String dataRuleName) {
 		val dataRuleClass = classes.get(rootPackage.dataRule.name + '.' + DataRuleGenerator.dataRuleClassName(dataRuleName))
 		return dataRuleClass.getMethod("validate", #[RosettaPath, instance.class]).invoke(dataRuleClass.newInstance, null, instance)

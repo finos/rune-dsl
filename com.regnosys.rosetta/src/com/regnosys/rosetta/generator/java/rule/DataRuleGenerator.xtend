@@ -65,13 +65,7 @@ class DataRuleGenerator {
 	def static String dataRuleClassName(String dataRuleName) {
 		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, dataRuleName)
 		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
-		if (camel.endsWith('Data'))
-			return camel +'Rule'
-		if (camel.endsWith('DataRule'))
-			return camel
-		if (camel.endsWith('Rule'))
-			return camel.substring(0, camel.lastIndexOf('Rule')) + 'DataRule'
-		return camel + 'DataRule'
+		return camel
 	}
 	
 	

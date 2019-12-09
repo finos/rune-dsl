@@ -23,13 +23,13 @@ class ChoiceRuleGeneratorTest {
 	@Inject extension ModelHelper
 	
 	@Test
-	def void choiceRuleJavaClassName() {		
-		assertEquals('TestChoiceRule', ChoiceRuleGenerator.choiceRuleClassName('Test'))
+	def void choiceRuleJavaClassName() {
+		assertEquals('Test', ChoiceRuleGenerator.choiceRuleClassName('Test'))
 		assertEquals('TestChoiceRule', ChoiceRuleGenerator.choiceRuleClassName('Test_choiceRule'))
 		assertEquals('TestChoiceRule', ChoiceRuleGenerator.choiceRuleClassName('Test_choice_rule'))
 		assertEquals('TestChoiceRule', ChoiceRuleGenerator.choiceRuleClassName('TestChoiceRule'))
 		assertEquals('TestChoiceRule', ChoiceRuleGenerator.choiceRuleClassName('Test_ChoiceRule'))
-		assertEquals('TestChoiceRule', ChoiceRuleGenerator.choiceRuleClassName('Test_choice'))
+		assertEquals('TestChoice', ChoiceRuleGenerator.choiceRuleClassName('Test_choice'))
 	}
 	
 	@Test
