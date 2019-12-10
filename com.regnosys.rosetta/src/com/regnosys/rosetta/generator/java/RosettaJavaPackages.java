@@ -1,10 +1,11 @@
 package com.regnosys.rosetta.generator.java;
 
 import com.regnosys.rosetta.rosetta.RosettaModel;
+import com.regnosys.rosetta.scoping.RosettaScopeProvider;
 
 public class RosettaJavaPackages {
 
-	private static final Package DEFAULT_NAMESPACE = new Package("com.rosetta.model");
+	public static final Package DEFAULT_NAMESPACE = new Package(RosettaScopeProvider.LIB_NAMESPACE);
 	private static final Package BLUEPRINT_NAMESPACE = new Package("com.regnosys.rosetta");
 	private RootPackage root;
 
