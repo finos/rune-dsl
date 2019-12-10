@@ -568,7 +568,7 @@ class MetaFieldGenerator {
 					return externalReference;
 				}
 				
-				public Class<I> getValueType() {
+				public Class<«type.name.toJavaType»> getValueType() {
 					return «type.name.toJavaType».class;
 				}
 				
@@ -738,7 +738,7 @@ class MetaFieldGenerator {
 				return externalReference;
 			}
 			
-			public Class<I> getValueType() {
+			public Class<«type.name.toJavaType»> getValueType() {
 				return «type.name.toJavaType».class;
 			}
 			
