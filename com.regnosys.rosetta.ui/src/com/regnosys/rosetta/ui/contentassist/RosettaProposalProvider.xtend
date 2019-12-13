@@ -11,9 +11,11 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaEvent
+import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
@@ -26,9 +28,11 @@ import org.eclipse.xtext.Assignment
 import org.eclipse.xtext.CrossReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.Keyword
+import org.eclipse.xtext.RuleCall
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.EObjectDescription
 import org.eclipse.xtext.resource.IEObjectDescription
+import org.eclipse.xtext.resource.IResourceDescriptions
 import org.eclipse.xtext.ui.editor.contentassist.ConfigurableCompletionProposal
 import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext
 import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor
@@ -49,6 +53,7 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 	
 	@Inject IQualifiedNameProvider qNames
 	@Inject RosettaGrammarAccess grammar
+	@Inject IResourceDescriptions resDescr
 	
 	val filterKeywords = Suppliers.memoize [
 		#[
@@ -129,4 +134,25 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 		}
 	}
 
+	override void complete_QualifiedNameWithWildcard(EObject model, RuleCall ruleCall, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+		val rosettaModel = EcoreUtil2.getContainerOfType(model, RosettaModel)
+		val Predicate<IEObjectDescription> filter = if (rosettaModel !== null) {
+				[ IEObjectDescription descr |
+					val name = descr.name.toString
+					RosettaScopeProvider.LIB_NAMESPACE != name && name != rosettaModel.name &&
+						!rosettaModel.imports.exists[import|name == import.importedNamespace]
+				]
+			} else
+				Predicates.alwaysTrue()
+		resDescr.getExportedObjectsByType(ROSETTA_MODEL).filter(filter).forEach [
+			if (acceptor.canAcceptMoreProposals) {
+				var displayString = qualifiedNameConverter.toString(it.getQualifiedName())
+				val text = it.name + '.*'
+				var image = getImage(it)
+				val proposal = createCompletionProposal(text, displayString, image, context)
+				acceptor.accept(proposal)
+			}
+		]
+	}
+	
 }

@@ -4,17 +4,19 @@
 package com.regnosys.rosetta.ui
 
 import com.regnosys.rosetta.ide.highlight.RosettaHighlightingCalculator
+import com.regnosys.rosetta.ui.autoedit.RosettaAutoEditStrategyProvider
 import com.regnosys.rosetta.ui.highlight.RosettaHighlightingConfiguration
 import com.regnosys.rosetta.ui.hover.RosettaHoverProvider
+import com.regnosys.rosetta.ui.hyperlinking.RosettaHyperlinkHelper
 import com.regnosys.rosetta.ui.validation.RosettaUIValidator
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator
 import org.eclipse.xtext.service.SingletonBinding
 import org.eclipse.xtext.ui.editor.autoedit.AbstractEditStrategyProvider
 import org.eclipse.xtext.ui.editor.hover.IEObjectHoverProvider
+import org.eclipse.xtext.ui.editor.hyperlinking.IHyperlinkHelper
 import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfiguration
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
-import com.regnosys.rosetta.ui.autoedit.RosettaAutoEditStrategyProvider
 
 /**
  * Use this class to register components to be used within the Eclipse IDE.
@@ -40,5 +42,9 @@ class RosettaUiModule extends AbstractRosettaUiModule {
 	}
 	override Class<? extends AbstractEditStrategyProvider> bindAbstractEditStrategyProvider() {
 		return RosettaAutoEditStrategyProvider
+	}
+	
+	def Class<? extends IHyperlinkHelper> bindIHyperlinkHelper() {
+		return RosettaHyperlinkHelper
 	}
 }
