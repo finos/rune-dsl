@@ -12,6 +12,7 @@ class RosettaModel {
 	contains Import[] imports
 	contains RosettaQualifiableConfiguration[] configurations opposite model 
 	contains RosettaRootElement[] elements opposite model
+	
 }
 
 class Import {

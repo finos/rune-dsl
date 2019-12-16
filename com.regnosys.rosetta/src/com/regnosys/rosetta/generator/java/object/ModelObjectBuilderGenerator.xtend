@@ -340,7 +340,10 @@ class ModelObjectBuilderGenerator {
 					}
 					
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.type.name» «attribute.name») {
-						return add«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
+						if («attribute.name» != null) {
+							return add«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
+						}
+						return this;
 					}
 					«ENDIF»
 				«ENDIF»
@@ -351,7 +354,9 @@ class ModelObjectBuilderGenerator {
 				}
 			«ELSE»
 				«IF isSuper || clazz.globalKey && attribute.name === 'globalKey'»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name») {
-					this.«attribute.name» = «attribute.toBuilder»;
+					if («attribute.name» != null) {
+						this.«attribute.name» = «attribute.toBuilder»;
+					}
 					return this;
 				}
 				«IF attribute.isRosettaClassOrData»
