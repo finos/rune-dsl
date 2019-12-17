@@ -10,3 +10,7 @@ annotation metadata:
      reference string (0..1)
 
 annotation calculation: <"Marks a function as fully implemented calculation.">
+
+annotation qualification: <"Annotation that describes a func that is used for event and product Qualification">
+     product boolean (0..1)
+     event boolean (0..1)
