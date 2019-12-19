@@ -10,3 +10,5 @@ annotation metadata:
      reference string (0..1)
 
 annotation calculation: <"Marks a function as fully implemented calculation.">
+
+annotation rootType: <"Mark a type as a root of the rosetta model">
