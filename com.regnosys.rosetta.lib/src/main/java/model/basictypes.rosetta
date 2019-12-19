@@ -32,12 +32,6 @@ recordType zonedDateTime
 	timezone string
 }
 
-recordType dateRange 
-{
-	startDate date
-	endDate date
-}
-
 qualifiedType productType {}
 qualifiedType eventType {}
 
