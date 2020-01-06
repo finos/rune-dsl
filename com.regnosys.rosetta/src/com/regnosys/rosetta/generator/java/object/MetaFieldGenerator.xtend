@@ -598,6 +598,10 @@ class MetaFieldGenerator {
 					return externalReference;
 				}
 				
+				public Class<«type.name.toJavaType»> getValueType() {
+					return «type.name.toJavaType».class;
+				}
+				
 				public ReferenceWithMeta«type.name.toFirstUpper»Builder setValue(«type.name» value) {
 					this.value = ofNullable(value).map(t->t.toBuilder()).orElse(null);
 					return this;
@@ -651,7 +655,7 @@ class MetaFieldGenerator {
 	import com.rosetta.model.lib.process.*;
 	import com.rosetta.model.lib.path.RosettaPath;
 	import com.rosetta.model.lib.meta.ReferenceWithMeta;
-	import com.rosetta.model.lib.meta.ReferenceWithMetaBuilder;
+	import com.rosetta.model.lib.meta.BasicReferenceWithMetaBuilder;
 	import com.rosetta.model.lib.RosettaModelObject;
 	import com.rosetta.model.lib.RosettaModelObjectBuilder;
 	import com.rosetta.model.lib.meta.RosettaMetaData;
@@ -740,7 +744,7 @@ class MetaFieldGenerator {
 			'}';
 		}
 		
-		public static class BasicReferenceWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder implements ReferenceWithMetaBuilder<«type.name.toJavaType»>{
+		public static class BasicReferenceWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder implements BasicReferenceWithMetaBuilder<«type.name.toJavaType»>{
 			private «type.name.toJavaType» value;
 			private String globalReference;
 			private String externalReference;
@@ -762,6 +766,10 @@ class MetaFieldGenerator {
 			
 			public String getExternalReference() {
 				return externalReference;
+			}
+			
+			public Class<«type.name.toJavaType»> getValueType() {
+				return «type.name.toJavaType».class;
 			}
 			
 			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder setValue(«type.name.toJavaType» value) {

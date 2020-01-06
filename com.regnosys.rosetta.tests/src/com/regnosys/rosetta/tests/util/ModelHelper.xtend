@@ -30,12 +30,6 @@ class ModelHelper {
 		library function Adjust() date
 		library function Within() boolean
 		
-		recordType dateRange 
-		{
-			startDate date
-			endDate date
-		}
-		
 		qualifiedType productType
 		qualifiedType eventType
 		
