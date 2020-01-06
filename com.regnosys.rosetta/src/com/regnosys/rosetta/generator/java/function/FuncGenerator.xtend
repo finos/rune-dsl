@@ -40,6 +40,9 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.types.RAnnotateType
+import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 
 class FuncGenerator {
 
@@ -56,13 +59,12 @@ class FuncGenerator {
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = javaNames.packages.model.functions.directoryName + '/' + func.name + '.java'
 
-		
 		val dependencies = collectFunctionDependencies(func)
 
 		val classBody = if (func.handleAsEnumFunction) {
-				tracImports(func.dispatchClassBody(func.name, dependencies, javaNames, version))
+				tracImports(func.dispatchClassBody(func.name, dependencies, javaNames, version), func.name)
 			} else {
-				tracImports(func.classBody(func.name, dependencies, javaNames, version, false))
+				tracImports(func.classBody(func.name, dependencies, javaNames, version, false), func.name)
 			}
 		val content = '''
 			package «javaNames.packages.model.functions.name»;
@@ -92,13 +94,15 @@ class FuncGenerator {
 	private def StringConcatenationClient classBody(Function func, String className,
 		Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version, boolean isStatic) {
 //		val isAbstract = func.hasCalculationAnnotation
-		val outputName = getOutput(func)?.name
+		val output = getOutput(func)
+		val inputs = getInputs(func)
+		val outputName = output?.name
 		val outputType = func.outputTypeOrVoid(names)
 		val aliasOut = func.shortcuts.toMap([it], [exprHelper.usesOutputParameter(it.expression)])
-		val outNeedsBuilder = needsBuilder(getOutput(func))
+		val outNeedsBuilder = needsBuilder(output)
 		'''
 			@«ImplementedBy»(«className».«className»Default.class)
-			public «IF isStatic»static «ENDIF»abstract class «className» implements «RosettaFunction» {
+			public «IF isStatic»static «ENDIF»abstract class «className» implements «RosettaFunction»«IF func.isQualifierFunction()», «IQualifyFunctionExtension»<«inputs.head.toListOrSingleJavaType»>«ENDIF» {
 				«IF outNeedsBuilder»
 				
 				@«Inject» protected «ModelObjectValidator» objectValidator;
@@ -113,11 +117,11 @@ class FuncGenerator {
 				«ENDFOR»
 			
 				/**
-				«FOR input : getInputs(func)»
+				«FOR input : inputs»
 					* @param «input.name» «input.definition»
 				«ENDFOR»
-				«IF getOutput(func) !== null»
-					* @return «outputName» «getOutput(func).definition»
+				«IF output !== null»
+					* @return «outputName» «output.definition»
 				«ENDIF»
 				*/
 				public «outputType» evaluate(«func.inputsAsParameters(names)») {
@@ -129,8 +133,8 @@ class FuncGenerator {
 						«ENDFOR»
 					«ENDIF»
 					
-					«getOutput(func).toBuilderType(names)» «outputName»Holder = doEvaluate(«func.inputsAsArguments(names)»);
-					«outputType» «outputName» = assignOutput(«outputName»Holder«IF !getInputs(func).empty», «ENDIF»«func.inputsAsArguments(names)»)«IF outNeedsBuilder».build()«ENDIF»;
+					«output.toBuilderType(names)» «outputName»Holder = doEvaluate(«func.inputsAsArguments(names)»);
+					«outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»)«IF outNeedsBuilder».build()«ENDIF»;
 					
 					«IF !func.postConditions.empty»
 						// post-conditions
@@ -145,7 +149,7 @@ class FuncGenerator {
 					return «outputName»;
 				}
 				
-				private «getOutput(func).toBuilderType(names)» assignOutput(«getOutput(func).toBuilderType(names)» «outputName»Holder«IF !getInputs(func).empty», «ENDIF»«func.inputsAsParameters(names)») {
+				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
 					«FOR indexed : func.operations.indexed»
 						«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType» «ENDIF»«outputName» = «outputName»Holder.build();«ENDIF»
 						«indexed.value.assign(aliasOut, names)»;
@@ -153,12 +157,12 @@ class FuncGenerator {
 					return «outputName»Holder;
 				}
 
-				protected abstract «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
+				protected abstract «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
 				
 				«FOR alias : func.shortcuts»
 					
 					«IF aliasOut.get(alias)»
-						protected «names.shortcutJavaType(alias)» «alias.name»(«getOutput(func).toBuilderType(names)» «outputName», «IF !getInputs(func).empty»«func.inputsAsParameters(names)»«ENDIF») {
+						protected «names.shortcutJavaType(alias)» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
 							return «expressionWithBuilder.toJava(alias.expression, Context.create(names))»;
 						}
 					«ELSE»
@@ -169,14 +173,13 @@ class FuncGenerator {
 				«ENDFOR»
 				public static final class «className»Default extends «className» {
 					@Override
-					protected  «getOutput(func).toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
-						return «IF outNeedsBuilder»«getOutput(func).toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
+					protected  «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
+						return «IF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
 					}
 				}
 			}
 		'''
 	}
-
 	
 	def private StringConcatenationClient dispatchClassBody(Function function,String className, Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version) {
 		val dispatchingFuncs = function.dispatchingFunctions.sortBy[name].toList
@@ -227,7 +230,7 @@ class FuncGenerator {
 			«IF needsBuilder(op.assignRoot)»
 				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)»
 			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)».get()«ENDIF»'''
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
 		else {
 			'''
 				«op.assignTarget(outs, names)»
@@ -275,15 +278,23 @@ class FuncGenerator {
 	}
 	
 	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx) {
-		if(operation.path === null && operation.assignRoot instanceof Attribute ) {
-			val rType = typeProvider.getRType((operation.assignRoot as Attribute ).type)
-			val valType = typeProvider.getRType(operation.expression)
-			if (rType === RBuiltinType.NUMBER && valType !== RBuiltinType.NUMBER) {
-				/// case: number = 1
+		val valType = typeProvider.getRType(operation.expression)
+		if (operation.path === null && operation.assignRoot instanceof Attribute) {
+			val assignRootType = typeProvider.getRType((operation.assignRoot as Attribute ).type)
+			if (assignRootType === RBuiltinType.NUMBER && valType !== RBuiltinType.NUMBER) {
+				// / case: number = 1
 				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
 			}
 		}
-		'''«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»)'''
+		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)».get()'''
+	}
+	
+	def boolean hasMeta(RType type) {
+		if(type instanceof RAnnotateType) {
+			type.hasMeta
+		}
+		
+		false
 	}
 	
 	private def boolean useIdx(Operation operation) {

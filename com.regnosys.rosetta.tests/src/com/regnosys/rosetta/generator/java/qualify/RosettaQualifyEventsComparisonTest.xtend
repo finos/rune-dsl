@@ -31,113 +31,212 @@ class RosettaQualifyEventsComparisonTest {
 	@BeforeEach
 	def void setUp() {
 		val code = '''
-			class Foo {
-				bar Bar (0..*);
-				bar2 Bar (0..*);
-				baz Baz (0..1);
-			}
+			isProduct root Foo;
 			
-			class Bar {
-				before number (0..1);
-				after number (0..1);
-			}
+			type NumberList:
+				numbers number (1..*)
 			
-			class Baz {
-				bazValue number (0..1);
-				other number (0..1);
-			}
+			type Foo:
+				bar Bar (0..*)
+				bar2 Bar (0..*)
+				baz Baz (0..1)
 			
-			isEvent FeatureCallEqualToLiteral
-				Foo -> bar -> before = 5
-			isEvent FeatureCallNotEqualToLiteral
-				Foo -> bar -> before <> 5
+			type Bar:
+				before number (0..1)
+				after number (0..1)
 			
-			isEvent FeatureCallEqualToFeatureCall
-				Foo -> bar -> before = Foo -> bar -> after
-			isEvent FeatureCallListEqualToFeatureCall
-				Foo -> bar -> before = Foo -> baz -> other
-			isEvent FeatureCallNotEqualToFeatureCall
-				Foo -> bar -> before <> Foo -> bar -> after
-			isEvent FeatureCallListNotEqualToFeatureCall
-				Foo -> bar -> before <> Foo -> baz -> other
-			isEvent FeatureCallsEqualToLiteralOr
-				Foo -> bar -> before = 5 or Foo -> baz -> other = 5
+			type Baz:
+				bazValue number (0..1)
+				other number (0..1)
 			
-			isEvent FeatureCallsEqualToLiteralAnd
-				Foo -> bar -> before = 5 and Foo -> bar -> after = 5
+			func FeatureCallEqualToLiteral:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before = 5
+			
+			func FeatureCallNotEqualToLiteral:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before <> 5
+			
+			func FeatureCallEqualToFeatureCall:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before = foo -> bar -> after
+			
+			func FeatureCallListEqualToFeatureCall:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before = foo -> baz -> other
+			func FeatureCallNotEqualToFeatureCall:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before <> foo -> bar -> after
+			
+			func FeatureCallListNotEqualToFeatureCall:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before <> foo -> baz -> other
+			
+			func FeatureCallsEqualToLiteralOr:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before = 5 or foo -> baz -> other = 5
+			
+			func FeatureCallsEqualToLiteralAnd:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before = 5 and foo -> bar -> after = 5
+						
+«««			TODO tests compilation only, add unit test
+			func MultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				alias values : [foo -> bar -> before, foo -> baz -> other]
+				assign-output is_event:
+					values contains foo -> bar -> after
+					or values contains foo -> baz -> bazValue
+«««			TODO tests compilation only, add unit test
+			func MultipleAndFeatureCallsEqualToMultipleOrFeatureCalls:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+				//	(foo -> bar -> before and foo -> baz -> other) = (foo -> bar -> after and foo -> baz -> bazValue)
+				[foo -> bar -> before,  foo -> baz -> other] = [foo -> bar -> after, foo -> baz -> bazValue]
+«««			TODO tests compilation only, add unit test
+			func FeatureCallComparisonOr:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					(foo -> bar -> before = foo -> baz -> other) or (foo -> bar -> after = foo -> baz -> bazValue)
+«««			TODO tests compilation only, add unit test
+			func FeatureCallComparisonAnd:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					(foo -> bar -> before = foo -> baz -> other) and (foo -> bar -> after = foo -> baz -> bazValue)
+«««			TODO tests compilation only, add unit test
+			func MultipleOrFeatureCallEqualToLiteral:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					//		(foo -> bar -> before or foo -> bar -> after or foo -> baz -> other) = 5.0
+					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] contains 5.0
+«««			TODO tests compilation only, add unit test
+			func MultipleAndFeatureCallEqualToLiteral:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					// (foo -> bar -> before and foo -> bar -> after and foo -> baz -> other) = 5.0
+					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] = 5.0
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOrFeatureCallsEqualToMultipleOrFeatureCalls
-				( Foo -> bar -> before or Foo -> baz -> other ) = ( Foo -> bar -> after or Foo -> baz -> bazValue )
-«««			TODO tests compilation only, add unit test
-			isEvent MultipleAndFeatureCallsEqualToMultipleOrFeatureCalls
-				( Foo -> bar -> before and Foo -> baz -> other ) = ( Foo -> bar -> after and Foo -> baz -> bazValue )
-«««			TODO tests compilation only, add unit test
-			isEvent FeatureCallComparisonOr
-				( Foo -> bar -> before = Foo -> baz -> other ) or ( Foo -> bar -> after = Foo -> baz -> bazValue )
-«««			TODO tests compilation only, add unit test
-			isEvent FeatureCallComparisonAnd
-				( Foo -> bar -> before = Foo -> baz -> other ) and ( Foo -> bar -> after = Foo -> baz -> bazValue )
-«««			TODO tests compilation only, add unit test
-			isEvent MultipleOrFeatureCallEqualToLiteral
-				( Foo -> bar -> before or Foo -> bar -> after or Foo -> baz -> other) = 5.0
-«««			TODO tests compilation only, add unit test
-			isEvent MultipleAndFeatureCallEqualToLiteral
-				( Foo -> bar -> before and Foo -> bar -> after and Foo -> baz -> other) = 5.0
+			func AliasFeatureCallEqualToLiteral:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					AliasBefore(foo) -> numbers = 5
 			
 «««			TODO tests compilation only, add unit test
-			isEvent AliasFeatureCallEqualToLiteral
-				aliasBefore = 5
+			func AliasFeatureCallEqualToFeatureCall:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					AliasBefore(foo) = AliasAfter(foo)
+					
+«««			TODO tests compilation only, add unit test
+			func AliasFeatureCallsEqualToLiteralOr:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					AliasBefore(foo) -> numbers = 5 or  AliasOther(foo) -> numbers = 5
+				
 			
 «««			TODO tests compilation only, add unit test
-			isEvent AliasFeatureCallEqualToFeatureCall
-				aliasBefore = aliasAfter
-«««			TODO tests compilation only, add unit test
-			isEvent AliasFeatureCallsEqualToLiteralOr
-				aliasBefore = 5 or aliasOther = 5
+			func AliasFeatureCallsEqualToLiteralAnd:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					AliasBefore(foo) -> numbers = 5 and AliasOther(foo) -> numbers = 5
 			
 «««			TODO tests compilation only, add unit test
-			isEvent AliasFeatureCallsEqualToLiteralAnd
-				aliasBefore = 5 and aliasOther = 5
+			func AliasMultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					(AliasBefore(foo) -> numbers exists
+					or AliasOther(foo) -> numbers exists) = 
+					(AliasAfter(foo) -> numbers contains foo -> baz -> bazValue)
 			
 «««			TODO tests compilation only, add unit test
-			isEvent AliasMultipleOrFeatureCallsEqualToMultipleOrFeatureCalls
-				( aliasBefore or aliasOther ) = ( aliasAfter or Foo -> baz -> bazValue )
-«««			TODO tests compilation only, add unit test
-			isEvent AliasMultipleOrs
-				aliasBeforeOrAfterOrOther = 5.0
+			func AliasMultipleOrs:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					AliasBeforeOrAfterOrOther(foo) -> numbers contains 5.0
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleGreaterThanComparisonsWithOrAnd
-				Foo -> bar -> before > 5 or ( Foo -> baz -> other > 10 and Foo -> bar -> after > 15 ) or Foo -> baz -> bazValue > 20
+			func MultipleGreaterThanComparisonsWithOrAnd:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before > 5 or ( foo -> baz -> other > 10 and foo -> bar -> after > 15 ) or foo -> baz -> bazValue > 20
 			
-			isEvent FeatureCallGreatherThan
-				Foo -> bar -> before > Foo -> bar2 -> before
+			func FeatureCallGreatherThan:
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before > foo -> bar2 -> before
 			
-«««			Group By
-			
-			isEvent GroupByFeatureCallGreaterThan
-				(Foo -> bar group by after) -> before  > (Foo -> bar2 group by after) -> before 
-			
-			isEvent GroupByFeatureCallGreaterThanAlias
-				aliasBeforeGroupByAfter > (Foo -> bar2 group by after) -> before
+«««			Group By Deprecate it
+			//isEvent GroupByFeatureCallGreaterThan
+			//	(Foo -> bar group by after) -> before  > (Foo -> bar2 group by after) -> before 
+			//
+			//isEvent GroupByFeatureCallGreaterThanAlias
+			//	aliasBeforeGroupByAfter > (Foo -> bar2 group by after) -> before
 			
 «««			Aliases
 			
-			alias aliasBefore
-				Foo -> bar -> before
+			func AliasBefore:
+				inputs: foo Foo(1..1)
+				output: result NumberList (1..1)
+				assign-output result -> numbers : foo -> bar -> before
 			
-			alias aliasAfter
-				Foo -> bar -> after
+			func AliasAfter:
+				inputs: foo Foo(1..1)
+				output: result NumberList (1..1)
+				assign-output result -> numbers : foo -> bar -> after
 			
-			alias aliasOther
-				Foo -> baz -> other
+			func AliasOther:
+				inputs: foo Foo(1..1)
+				output: result NumberList (1..1)
+				assign-output result -> numbers : foo -> baz -> other
 			
-			alias aliasBeforeOrAfterOrOther
-				Foo -> bar -> before or Foo -> bar -> after or Foo -> baz -> other
 			
-			alias aliasBeforeGroupByAfter
-				( Foo -> bar group by after ) -> before
+			func AliasBeforeOrAfterOrOther:
+				inputs: foo Foo(1..1)
+				output: result NumberList (1..1)
+				assign-output result -> numbers : [
+					foo -> bar -> before,
+					foo -> bar -> after,
+					foo -> baz -> other
+				]
+			
+			func AliasBeforeGroupByAfter:
+				inputs: foo Foo(1..1)
+				output: result NumberList (1..1)
+				assign-output result -> numbers: [
+						(foo -> bar group by after) -> before
+				]
+
 			'''.generateCode
 		//code.writeClasses("QualifyEventsComparisonTest")
 		classes = code.compileToClasses

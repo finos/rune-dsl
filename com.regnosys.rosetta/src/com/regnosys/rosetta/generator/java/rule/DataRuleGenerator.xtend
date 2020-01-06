@@ -4,7 +4,9 @@ import com.google.common.base.CaseFormat
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
+import com.regnosys.rosetta.generator.java.function.RosettaFunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
@@ -16,6 +18,7 @@ import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ComparisonResult
@@ -28,13 +31,12 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
-import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
-import com.regnosys.rosetta.rosetta.simple.Data
 
 class DataRuleGenerator {
 	@Inject ExpressionGenerator expressionHandler
 	@Inject extension RosettaExtensions
 	@Inject extension ImportManagerExtension
+	@Inject RosettaFunctionDependencyProvider funcDependencies
 	
 	def generate(JavaNames names, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaDataRule).forEach [
@@ -108,6 +110,7 @@ class DataRuleGenerator {
 		
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION))
 		val ruleName = rule.conditionName(data)
+		val funcDeps = funcDependencies.functionDependencies(#[ruleWhen , ruleThen])
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«com.rosetta.model.lib.annotations.RosettaDataRule»("«ruleName»")
@@ -115,6 +118,10 @@ class DataRuleGenerator {
 				
 				private static final String NAME = "«ruleName»";
 				private static final String DEFINITION = «definition»;
+				
+				«FOR dep : funcDeps»
+					@«Inject» protected «javaName.toJavaType(dep)» «dep.name.toFirstLower»;
+				«ENDFOR»
 				
 				@Override
 				public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» path, «rosettaClass.name» «rosettaClass.name.toFirstLower») {

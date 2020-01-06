@@ -12,6 +12,7 @@ import org.eclipse.xtext.resource.IResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.RosettaType
 
 class RosettaConfigExtension {
 
@@ -84,7 +85,6 @@ class RosettaConfigExtension {
 		return index.getResourceDescriptions(ctx.eResource.resourceSet).getExportedObjectsByType(ROSETTA_META_TYPE).
 			filter [
 				isProjectLocal(ctx.eResource.URI, it.EObjectURI)
-
 			]
 	}
 	
@@ -102,6 +102,10 @@ class RosettaConfigExtension {
 			if (!eObj.eIsProxy && type === (eObj as RosettaQualifiableConfiguration).QType)
 				(eObj as RosettaQualifiableConfiguration).rosettaClass?.name
 		].filterNull.head
+	}
+	
+	def isRootEventOrProduct(RosettaType type) {
+		type.name !== null && (type.name == findEventRootName(type) || type.name == findProductRootName(type))
 	}
 
 }

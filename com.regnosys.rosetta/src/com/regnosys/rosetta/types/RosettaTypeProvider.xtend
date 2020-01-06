@@ -19,7 +19,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
@@ -45,6 +44,8 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
+import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.RosettaExtensions
 
 class RosettaTypeProvider {
 
@@ -52,7 +53,8 @@ class RosettaTypeProvider {
 	@Inject IQualifiedNameProvider qNames
 	@Inject IDValueConverter idConverter
 	@Inject RosettaTypeCompatibility compatibility
-
+	@Inject RosettaExtensions extensions
+	
 	def RType getRType(EObject expression) {
 		expression.safeRType(newHashMap)
 	}
@@ -65,6 +67,9 @@ class RosettaTypeProvider {
 			} else {
 				return computed
 			}
+		}
+		if (expression === null || expression.eIsProxy) {
+			return null
 		}
 		switch expression {
 			RosettaCallableCall:
@@ -110,19 +115,29 @@ class RosettaTypeProvider {
 			}
 			RosettaFeatureCall: {
 				val feature = expression.feature
+				if(feature === null || feature.eIsProxy) {
+					return null
+				}
 				switch (feature) {
 					RosettaTypedFeature: {
-						if (feature.isTypeInferred) {
-							feature.safeRType(cycleTracker).wrapInFeatureCallType(expression)
-						} else {
-							val type = feature?.type
-							type.safeRType(cycleTracker).wrapInFeatureCallType(expression)
+						val featureType = if (feature.isTypeInferred) {
+								feature.safeRType(cycleTracker).wrapInFeatureCallType(expression)
+							} else {
+								val type = feature?.type
+								type.safeRType(cycleTracker).wrapInFeatureCallType(expression)
+							}
+						if (feature instanceof Annotated) {
+							if (featureType instanceof RAnnotateType) {
+								(featureType as RAnnotateType).withMeta = extensions.
+									hasMetaReferenceAnnotations(feature)
+							}
 						}
+						featureType
 					}
 					RosettaEnumValue:
 						feature.type.safeRType(cycleTracker)
 					default:
-						RBuiltinType.MISSING
+						RBuiltinType.ANY
 				}
 			}
 			RosettaRecordType:
@@ -142,7 +157,7 @@ class RosettaTypeProvider {
 				var leftType = left.safeRType(cycleTracker)
 				if (leftType instanceof RErrorType) {
 					return leftType
-				}
+					}
 				val right = expression.right
 				var rightType = right.safeRType(cycleTracker)
 				if (rightType instanceof RErrorType) {
@@ -151,15 +166,7 @@ class RosettaTypeProvider {
 				expression.operator.resultType(leftType, rightType)
 			}
 			RosettaCountOperation: {
-				val leftType = expression.left.safeRType(cycleTracker)
-				if (leftType instanceof RErrorType) {
-					return leftType
-				}
-				val rightType = expression.right.safeRType(cycleTracker)
-				if (rightType instanceof RErrorType) {
-					return rightType
-				}
-				expression.operator.resultType(RBuiltinType.INT, rightType)
+				RBuiltinType.NUMBER
 			}
 			RosettaWhenPresentExpression: {
 				val leftType = expression.left.safeRType(cycleTracker)

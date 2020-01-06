@@ -12,6 +12,9 @@ import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
@@ -42,6 +45,7 @@ import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 
 class ExpressionGeneratorWithBuilder {
 
@@ -56,15 +60,16 @@ class ExpressionGeneratorWithBuilder {
 	}
 
 	dispatch def StringConcatenationClient toJava(RosettaFeatureCall ele, Context ctx) {
-		// if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
 		val feature = ele.feature
 		val StringConcatenationClient right = if (feature instanceof RosettaRegularAttribute)
-				feature.attributeAccess(ctx)
+				feature.attributeAccess(ele.toOne, ctx)
 			else if (feature instanceof Attribute)
-				feature.attributeAccess(ctx)
+				feature.attributeAccess(ele.toOne,ctx)
+			else if (feature instanceof RosettaEnumValue)
+				return '''«ctx.names.toJavaType(ele.receiver as RosettaEnumeration)».«feature.convertValues»'''
 			else
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.class.simpleName)
-		'''«ele.receiver.toJava(ctx)».«right»(«IF cardinalityProvider.isMulti(feature)»0«ENDIF»)'''
+		'''«ele.receiver.toJava(ctx)».«right»'''
 	}
 
 	def dispatch StringConcatenationClient toJava(Function ele, Context ctx) {
@@ -163,7 +168,7 @@ class ExpressionGeneratorWithBuilder {
 			'''«Date».of(«toJava(ele.left, ctx)», «toJava(ele.right, ctx)»)'''
 		} else {
 			switch (ele.operator) {
-				case "=": '''«Objects».equals(«toJava(ele.left, ctx)», «toJava(ele.right, ctx)»)'''
+				case "=": '''«Objects».equal(«toJava(ele.left, ctx)», «toJava(ele.right, ctx)»)'''
 				case "and": '''(«toJava(ele.left, ctx)») && («toJava(ele.right, ctx)»)'''
 				case "or": '''(«toJava(ele.left, ctx)») || («toJava(ele.right, ctx)»)'''
 				default: '''(«toJava(ele.left, ctx)» «ele.operator» «toJava(ele.right, ctx)»)'''
@@ -207,8 +212,20 @@ class ExpressionGeneratorWithBuilder {
 		'''«importMethod(ExpressionOperators, 'notExists')»(«toJava(ele.argument, ctx)»)'''
 	}
 	
-	private def StringConcatenationClient attributeAccess(RosettaFeature feature, Context ctx) {
-		 '''«IF funcExt.needsBuilder(feature)»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»'''
+	def dispatch StringConcatenationClient toJava(RosettaCountOperation ele, Context ctx) {
+		'''«importMethod(ExpressionOperators, 'count')»(«toJava(ele.argument, ctx)»)'''
+	}
+	
+	def dispatch StringConcatenationClient toJava(RosettaContainsExpression ele, Context ctx) {
+		'''«importMethod(ExpressionOperators, 'contains')»(«toJava(ele.container, ctx)», «toJava(ele.contained, ctx)»)'''
+	}
+	
+	private def StringConcatenationClient attributeAccess(RosettaFeature feature, boolean toOne, Context ctx) {
+		if(cardinalityProvider.isMulti(feature)) {
+			'''«IF funcExt.needsBuilder(feature) && toOne»getOrCreate«feature.name.toFirstUpper»(0)«ELSE»get«feature.name.toFirstUpper»()«ENDIF»'''
+		}
+		else
+			'''«IF funcExt.needsBuilder(feature)»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»()'''
 	}
 
 	private def StringConcatenationClient toBigDecimal(StringConcatenationClient sequence) {

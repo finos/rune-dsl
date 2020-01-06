@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.generator.util
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
@@ -11,16 +12,18 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
+import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.xtext.EcoreUtil2
 
 class RosettaFunctionExtensions {
-	
+
 	@Inject RosettaTypeProvider typeProvider
-	
+	@Inject RosettaConfigExtension confExtensions
 	/** 
 	 * 
 	 * spec functions do not have operation hence, do not provide an implementation
@@ -82,7 +85,7 @@ class RosettaFunctionExtensions {
 	dispatch def boolean needsBuilder(Void ele) {
 		false
 	}
-	
+
 	dispatch def boolean needsBuilder(RosettaTyped ele) {
 		needsBuilder(ele.type)
 	}
@@ -114,8 +117,34 @@ class RosettaFunctionExtensions {
 			default: false
 		}
 	}
-	
+
 	def boolean isOutput(Attribute attr) {
 		attr.eContainingFeature === SimplePackage.Literals.FUNCTION__OUTPUT
+	}
+
+	def implicitFirstArgument(RosettaCallableWithArgsCall element) {
+		val dataContainer = EcoreUtil2.getContainerOfType(element, Data)
+		val callable = element.callable
+		if (callable instanceof Function) {
+			if (dataContainer !== null) {
+				if (callable.inputs.head !== null && callable.inputs.head.type == dataContainer) {
+					return dataContainer
+				}
+			}
+		}
+	}
+	
+	
+	def boolean isQualifierFunctionFor(Function function, Data type) {
+		function.isQualifierFunction && getInputs(function).get(0).type == type
+	}
+	
+	def boolean isQualifierFunction(Function function) {
+		val inputs = getInputs(function)
+		!inputs.nullOrEmpty 
+		&& inputs.size == 1 
+		&& RBuiltinType.BOOLEAN.name == getOutput(function)?.type?.name
+		&& inputs.get(0).type !== null && !inputs.get(0).type.eIsProxy
+		&& confExtensions.isRootEventOrProduct(inputs.get(0).type)
 	}
 }

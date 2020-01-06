@@ -683,7 +683,6 @@ class RosettaBlueprintTest {
 				import com.rosetta.test.model.Input;
 				import com.rosetta.test.model.Input2;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
 				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 				
 				/**
@@ -949,7 +948,6 @@ class RosettaBlueprintTest {
 				import com.rosetta.test.model.Input;
 				import java.math.BigDecimal;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
 				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 				
 				/**
@@ -1044,7 +1042,6 @@ class RosettaBlueprintTest {
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Input;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
 				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 				
 				/**
@@ -1132,7 +1129,6 @@ class RosettaBlueprintTest {
 				import com.rosetta.test.model.Input1;
 				import com.rosetta.test.model.Input2;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
 				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 				
 				/**
@@ -1661,7 +1657,7 @@ class RosettaBlueprintTest {
 				@Override
 				public BlueprintInstance<Foo, Boolean, INKEY, INKEY> blueprint() { 
 					return 
-						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->fixed count = 12", new StringIdentifier("->fixed count = 12"), foo -> areEqual(MapperS.of(MapperS.of(foo).<String>mapC("getFixed", Foo::getFixed).resultCount()), MapperS.of(Integer.valueOf(12)))))
+						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->fixed count=12", new StringIdentifier("->fixed count=12"), foo -> areEqual(MapperS.of(MapperS.of(foo).<String>mapC("getFixed", Foo::getFixed).resultCount()), MapperS.of(Integer.valueOf(12)))))
 						.toBlueprint(getURI(), getName());
 				}
 			}

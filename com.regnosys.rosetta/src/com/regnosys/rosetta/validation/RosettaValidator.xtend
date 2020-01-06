@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
 import com.regnosys.rosetta.rosetta.RosettaClass
+import com.regnosys.rosetta.rosetta.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -61,7 +62,6 @@ import java.util.List
 import java.util.Stack
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
@@ -119,7 +119,13 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def void checkFeatureCallFeature(RosettaFeatureCall fCall) {
 		if (fCall.feature === null) {
 			error("Attribute is missing after '->'", fCall, ROSETTA_FEATURE_CALL__FEATURE)
+			return
 		}
+		if (fCall.isToOne && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
+			!cardinality.isMulti(fCall.feature)) {
+			error("'only-element' can not be used for single cardinality features.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
+		}
+
 	}
 
 	@Check
@@ -277,6 +283,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 
 	@Check
 	def checkAttributeNamesAreUnique(Data clazz) {
+		if (clazz.superType == clazz) {
+			error('''Type must not extend itself.''', clazz, DATA__SUPER_TYPE)
+		}
 		val name2attr = HashMultimap.create
 		clazz.allAttributes.forEach [
 			name2attr.put(name, it)
@@ -474,24 +483,29 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def checkFunctionCall(RosettaCallableWithArgsCall element) {
 		val callerSize = element.args.size
 		val callable = element.callable
-
+		
+		var implicitFirstArgument = implicitFirstArgument(element)
 		val callableSize = switch callable {
 			RosettaExternalFunction: callable.parameters.size
-			Function: callable.inputs.size
+			Function: {
+				callable.inputs.size
+			}
 			default: 0
 		}
-		if (callerSize !== callableSize) {
+		if ((callerSize !== callableSize && implicitFirstArgument === null) || (implicitFirstArgument !== null && callerSize + 1 !== callableSize)) {
 			error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
 				ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
 		} else {
 			if (callable instanceof Function) {
+				val skipFirstParam = if(implicitFirstArgument === null) 0 else 1
 				element.args.indexed.forEach [ indexed |
 					val callerArg = indexed.value
-					val param = callable.inputs.get(indexed.key)
-					checkType(param.type.RType, callerArg, element, ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, indexed.key)
+					val callerIdx = indexed.key
+					val param = callable.inputs.get(callerIdx + skipFirstParam)
+					checkType(param.type.RType, callerArg, element, ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, callerIdx)
 					if(!param.card.isMany && cardinality.isMulti(callerArg)) {
 						error('''Expecting single cardinality for parameter '«param.name»'.''', element,
-							ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, indexed.key)
+							ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, callerIdx)
 					}
 				]
 			}
@@ -658,11 +672,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkListLiteral(ListLiteral ele) {
-		if (EcoreUtil2.getContainerOfType(ele, Condition) === null) {
-			warning('''Creating a collection of elements is only supported inside a conditional expression.''', ele,
-				null)
-			return
-		}
 		if (ele.elements.size > 1) {
 			val types = ele.elements.map[RType].filterNull.groupBy[name]
 			if (types.size > 1) {
@@ -686,6 +695,14 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			val invalidChar = checkPathChars(ele.path)
 			if (invalidChar !== null)
 				error('''Character '«invalidChar.key»' is not allowed «IF invalidChar.value»as first symbol in a path segment.«ELSE»in paths. Use '->' to separate path segments.«ENDIF»''', ele, ROSETTA_SYNONYM_VALUE_BASE__PATH)
+		}
+	}
+	
+	@Check
+	def checkCountOpArgument(RosettaCountOperation ele) {
+		if (ele.argument !== null && !ele.argument.eIsProxy) {
+			if (!cardinality.isMulti(ele.argument))
+				error('''Count operation multiple cardinality argument.''', ele, ROSETTA_COUNT_OPERATION__ARGUMENT)
 		}
 	}
 	

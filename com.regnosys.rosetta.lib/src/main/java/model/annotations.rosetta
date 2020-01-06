@@ -12,3 +12,7 @@ annotation metadata:
 annotation calculation: <"Marks a function as fully implemented calculation.">
 
 annotation rootType: <"Mark a type as a root of the rosetta model">
+
+annotation qualification: <"Annotation that describes a func that is used for event and product Qualification">
+     product boolean (0..1)
+     event boolean (0..1)

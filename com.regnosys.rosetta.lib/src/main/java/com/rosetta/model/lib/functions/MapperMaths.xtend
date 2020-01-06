@@ -57,17 +57,17 @@ class MapperMaths {
 	}
 	
 	private static def dispatch String operator_plus(String a, String b) {
-		return a+b
+		return a + b
 	}
 	
 	private static def dispatch Integer operator_plus(Integer a, Integer b) {
-		return a.intValue+b.intValue;
+		return a.intValue + b.intValue;
 	}
 	
 	private static def dispatch BigDecimal operator_plus(Number a, Number b) {
 		val bigA = toBigD(a);
 		val bigB = toBigD(b);
-		return bigA+bigB;
+		return bigA + bigB;
 	}
 	
 	// Minus
@@ -88,13 +88,13 @@ class MapperMaths {
 	}
 	
 	private static def dispatch Integer operator_minus(Integer a, Integer b) {
-		return a.intValue-b.intValue;
+		return a.intValue - b.intValue;
 	}
 	
 	private static def dispatch BigDecimal operator_minus(Number a, Number b) {
 		val bigA = toBigD(a);
 		val bigB = toBigD(b);
-		return bigA-bigB;
+		return bigA - bigB;
 	}
 
 	private static def dispatch Object *(Object a, Object b) {
@@ -114,39 +114,41 @@ class MapperMaths {
 	}
 	
 	private static def dispatch Integer * (Integer a, Integer b) {
-		return a.intValue-b.intValue;
+		return a.intValue * b.intValue;
 	}
 	
 	private static def dispatch BigDecimal * (Number a, Number b) {
 		val bigA = toBigD(a);
 		val bigB = toBigD(b);
-		return bigA-bigB;
+		return bigA * bigB;
 	}
 	
 	private static def dispatch Object /(Object a, Object b) {
-		throw new RuntimeException('''Cant multiply two random («a.class.simpleName», «b.class.simpleName») together''')
+		throw new RuntimeException('''Cant divide two random («a.class.simpleName», «b.class.simpleName»)''')
 	}
 	
 	private static def dispatch BigDecimal /(LocalDate d1, LocalDate d2) {
-		throw new RuntimeException('''Cant multiply date and date''')
+		throw new RuntimeException('''Cant divide date and date''')
 	}
 	
 	private static def dispatch LocalDateTime /(LocalDate d, LocalTime t) {
-		throw new RuntimeException('''Cant multiply time and date''')
+		throw new RuntimeException('''Cant divide time and date''')
 	}
 	
 	private static def dispatch String / (String a, String b) {
-		throw new RuntimeException('''Cant multiply two strings together''')
+		throw new RuntimeException('''Cant divide two strings''')
 	}
 	
-	private static def dispatch Integer / (Integer a, Integer b) {
-		return a.intValue-b.intValue;
+	private static def dispatch BigDecimal / (Integer a, Integer b) {
+		val bigA = toBigD(a);
+		val bigB = toBigD(b);
+		return bigA / bigB;
 	}
 	
 	private static def dispatch BigDecimal / (Number a, Number b) {
 		val bigA = toBigD(a);
 		val bigB = toBigD(b);
-		return bigA-bigB;
+		return bigA / bigB;
 	}
 	
 	def static BigDecimal toBigD(Number n) {

@@ -155,7 +155,7 @@ class ExpressionGenerator {
 		}
 	}
 	/**
-	 * feature call is a call to get an attribute of an object e.g. Quote->amount
+	 * group by only occurs in alias expression and should be deprecated
 	 */
 	private def StringConcatenationClient groupByFeatureCall(RosettaGroupByFeatureCall groupByCall, ParamMap params, boolean isLast, boolean autoValue) {
 		val call = groupByCall.call
@@ -179,7 +179,7 @@ class ExpressionGenerator {
 					default: 
 						throw new UnsupportedOperationException("Unsupported expression type of "+feature.class.simpleName)
 				}
-				'''«javaCode(call.receiver, params, false)»«right»'''
+				'''«MapperC».of(«javaCode(call.receiver, params, false)»«right».getMulti())'''
 			}
 			default: {
 				javaCode(groupByCall.call, params)
@@ -193,7 +193,8 @@ class ExpressionGenerator {
 		return switch (callable) {
 			Function: {
 				funcExt.getOutput(callable).card.isMany
-				'''«MapperS».of(«callable.name.toFirstLower».evaluate(«args(expr, params)»))'''
+				val implicitArg = funcExt.implicitFirstArgument(expr)
+				'''«MapperS».of(«callable.name.toFirstLower».evaluate(«IF implicitArg !== null»«implicitArg.name.toFirstLower»«ENDIF»«args(expr, params)»))'''
 			}
 			RosettaExternalFunction:
 				'''«MapperS».of(new «factory.create(callable.model).toJavaType(callable as RosettaCallableWithArgs)»().execute(«args(expr, params)»))'''
@@ -307,7 +308,10 @@ class ExpressionGenerator {
 			default:
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.eClass.name)
 		}
-		return '''«javaCode(call.receiver, params, false)»«right»'''
+		if(call.toOne)
+			return '''«MapperS».of(«javaCode(call.receiver, params, false)»«right».get())'''
+		else
+			return '''«javaCode(call.receiver, params, false)»«right»'''
 	}
 	
 	def private RosettaType containerType(RosettaFeature feature) {
@@ -315,7 +319,7 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient countExpr(RosettaCountOperation expr, RosettaExpression test, ParamMap params) {
-		toComparisonOp('''«MapperS».of(«expr.left.javaCode(params)».resultCount())''',  expr.operator, expr.right.javaCode(params))
+		'''«MapperS».of(«expr.argument.javaCode(params)».resultCount())'''
 	}
 	
 	def StringConcatenationClient whenPresentExpr(RosettaWhenPresentExpression expr, RosettaExpression left, ParamMap params) {
@@ -325,7 +329,12 @@ class ExpressionGenerator {
 	def StringConcatenationClient binaryExpr(RosettaBinaryOperation expr, RosettaExpression test, ParamMap params) {
 		val left = getAliasExpressionIfPresent(expr.left)
 		val right = getAliasExpressionIfPresent(expr.right)
-
+		val leftRtype = typeProvider.getRType(expr.left)
+		val rightRtype = typeProvider.getRType(expr.right)
+		val resultType = operators.resultType(expr.operator, leftRtype,rightRtype)
+		val leftType = '''«leftRtype.name.toJavaType»'''
+		val rightType = '''«rightRtype.name.toJavaType»'''
+		
 		switch expr.operator {
 			case ("and"): {
 				if (containsFeatureCallOrCallableCall(left)) {
@@ -350,40 +359,20 @@ class ExpressionGenerator {
 				}
 				else {
 					// ComparisonResult
-					'''«left.javaCode(params)».or(«right.javaCode(params)»)'''
+					'''«left.javaCode(params)».or(«right.javaCode(params)»)''' 
 				}
 			}
 			case ("+"): {
-				val leftRtype = typeProvider.getRType(expr.left)
-				val rightRtype = typeProvider.getRType(expr.right)
-				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
-				val leftType = '''«leftRtype.name.toJavaType»'''
-				val rightType = '''«rightRtype.name.toJavaType»'''
-				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>add(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>add(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			case ("-"): {
-				val leftRtype = typeProvider.getRType(expr.left)
-				val rightRtype = typeProvider.getRType(expr.right)
-				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
-				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
-				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
-				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>subtract(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>subtract(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			case ("*"): {
-				val leftRtype = typeProvider.getRType(expr.left)
-				val rightRtype = typeProvider.getRType(expr.right)
-				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
-				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
-				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
-				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>multiply(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>multiply(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			case ("/"): {
-				val leftRtype = typeProvider.getRType(expr.left)
-				val rightRtype = typeProvider.getRType(expr.right)
-				val commontype = operators.resultType(expr.operator, leftRtype,rightRtype)
-				val leftType = '''«typeProvider.getRType(expr.left).name.toJavaType»'''
-				val rightType = '''«typeProvider.getRType(expr.right).name.toJavaType»'''
-				'''«MapperMaths».<«commontype.name.toJavaType», «leftType», «rightType»>divide(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>divide(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			default: {
 				// FIXME isProduct isEvent stuff in QualifyFunctionGenerator. Should be removed after alias migration
@@ -422,7 +411,7 @@ class ExpressionGenerator {
 	/**
 	 * Inspect expression and return alias expression if present.  Currently, nested aliases are not supported.
 	 */
-	protected def getAliasExpressionIfPresent(RosettaExpression expr) {
+	private def getAliasExpressionIfPresent(RosettaExpression expr) {
 		if (expr instanceof RosettaCallableCall) {
 			val callable = expr.callable
 			if(callable instanceof RosettaAlias) {
@@ -435,10 +424,9 @@ class ExpressionGenerator {
 	/**
 	 * Collects all expressions down the tree, and checks that they're all either FeatureCalls or CallableCalls
 	 */
-	protected def boolean containsFeatureCallOrCallableCall(RosettaExpression expr) {
+	private def boolean containsFeatureCallOrCallableCall(RosettaExpression expr) {
 		val exprs = newHashSet
-		val extensions = new RosettaExtensions
-		extensions.collectExpressions(expr, [exprs.add(it)])
+		collectExpressions(expr, [exprs.add(it)])
 
 		return !exprs.empty && exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall || it instanceof RosettaFeatureCall || it instanceof RosettaCallableCall]
 	}
@@ -446,11 +434,10 @@ class ExpressionGenerator {
 	/**
 	 * Search leaf node objects to determine whether this is a comparison of matching objects types
 	 */
-	protected def isComparableTypes(RosettaBinaryOperation binaryExpr) {
+	private def isComparableTypes(RosettaBinaryOperation binaryExpr) {
 		// get list of the object type at each leaf node
 		val rosettaTypes = newHashSet
-		val extensions = new RosettaExtensions
-		extensions.collectLeafTypes(binaryExpr, [rosettaTypes.add(it)])
+		collectLeafTypes(binaryExpr, [rosettaTypes.add(it)])
 		
 		// check whether they're all the same type
 		val type = rosettaTypes.stream.findAny
@@ -680,7 +667,7 @@ class ExpressionGenerator {
 				'''«expr.stringValue»'''
 			}
 			RosettaCountOperation : {
-				'''«toNodeLabel(expr.left)» count = «toNodeLabel(expr.right)»'''
+				'''«toNodeLabel(expr.argument)» count'''
 			}
 
 			default :

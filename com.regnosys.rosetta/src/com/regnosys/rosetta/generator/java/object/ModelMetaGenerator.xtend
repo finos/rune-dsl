@@ -26,23 +26,28 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.annotations.RosettaMeta
 import com.rosetta.model.lib.meta.RosettaMetaData
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory
 import com.rosetta.model.lib.qualify.QualifyResult
 import com.rosetta.model.lib.validation.Validator
 import com.rosetta.model.lib.validation.ValidatorWithArg
 import java.util.Arrays
 import java.util.List
-import java.util.function.Function
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
+import com.regnosys.rosetta.utils.RosettaConfigExtension
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 
 class ModelMetaGenerator {
 
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaExtensions
+	@Inject RosettaConfigExtension confExt
+	@Inject RosettaFunctionExtensions funcExt
 	
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaClass).forEach [ RosettaClass rosettaClass |
@@ -73,6 +78,7 @@ class ModelMetaGenerator {
 	
 	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version) {
 		val dataClass = javaNames.toJavaType(c)
+		val qualifierFuncs = qualifyFuncs(c, javaNames)
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -97,13 +103,24 @@ class ModelMetaGenerator {
 				}
 
 				@Override
-				public «List»<«Function»<? super «dataClass», «QualifyResult»>> getQualifyFunctions() {
+				public «List»<«java.util.function.Function»<? super «dataClass», «QualifyResult»>> getQualifyFunctions() {
 					return Arrays.asList(
 						«FOR qf : qualifyFunctions(javaNames.packages, c.model.elements, c) SEPARATOR ','»
 							new «qf.javaPackage».«qf.functionName»()
 						«ENDFOR»
 					);
 				}
+				«IF !qualifierFuncs.nullOrEmpty»
+				
+				@Override
+				public «List»<«java.util.function.Function»<? super «dataClass», «QualifyResult»>> getQualifyFunctions(«QualifyFunctionFactory» factory) {
+					return Arrays.asList(
+						«FOR qf : qualifierFuncs SEPARATOR ','»
+							factory.create(«javaNames.toJavaType(qf)».class)
+						«ENDFOR»
+					);
+				}
+				«ENDIF»
 				
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
@@ -116,6 +133,13 @@ class ModelMetaGenerator {
 				}
 			}
 		'''
+	}
+	
+	private def List<Function> qualifyFuncs(Data type, JavaNames names) {
+		if(!confExt.isRootEventOrProduct(type)) {
+			return emptyList
+		}
+		type.model.elements.filter(Function).filter[funcExt.isQualifierFunctionFor(it,type)].toList
 	}
 	
 	private def metaClass(RosettaJavaPackages packages, String className, RosettaClass c,
@@ -242,6 +266,7 @@ class ModelMetaGenerator {
 		String ruleName;
 	}
 
+	
 	private def List<QualifyFunction> qualifyFunctions(RosettaJavaPackages packages, List<RosettaRootElement> elements,
 		RosettaCallable thisClass) {
 		val allQualifyFns = Sets.newLinkedHashSet

@@ -195,8 +195,7 @@ class ImportGenerator {
 			RosettaCountOperation: {
 				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
-				addExpression(expression.left)
-				addExpression(expression.right)
+				addExpression(expression.argument)
 			}
 			RosettaWhenPresentExpression: {
 				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")

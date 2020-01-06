@@ -12,8 +12,9 @@ class ImportManagerExtension {
 		JavaType.create(clazz.name + '.*')
 	}
 
-	def ImportingStringConcatination tracImports(StringConcatenationClient scc) {
+	def ImportingStringConcatination tracImports(StringConcatenationClient scc, String... reservedSimpleNames) {
 		val isc = new ImportingStringConcatination()
+		reservedSimpleNames.forEach[isc.addReservedSimpleName(it)]
 		isc.append(scc)
 		isc
 	}

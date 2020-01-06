@@ -16,6 +16,9 @@ import org.eclipse.xtext.xbase.testing.JavaSource
 import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import org.eclipse.xtext.generator.IGeneratorContext
+import org.eclipse.xtext.generator.GeneratorContext
+import org.eclipse.xtext.util.CancelIndicator
 
 class CodeGeneratorTestHelper {
 
@@ -39,9 +42,12 @@ class CodeGeneratorTestHelper {
 	def generateCode(CharSequence model) {
 		val fsa = new RegisteringFileSystemAccess()
 		val eResource = model.parseRosettaWithNoErrors.eResource;
-		eResource.beforeGenerate(fsa, null)
-		eResource.doGenerate(fsa, null)
-		eResource.afterGenerate(fsa, null)
+		val ctx = new GeneratorContext()=> [
+			cancelIndicator =  CancelIndicator.NullImpl
+		]
+		eResource.beforeGenerate(fsa, ctx)
+		eResource.doGenerate(fsa, ctx)
+		eResource.afterGenerate(fsa, ctx)
 
 		val generatedCode = newHashMap
 		fsa.generatedFiles.forEach [

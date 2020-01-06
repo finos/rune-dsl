@@ -7,10 +7,14 @@ class RosettaTypeCompatibility {
 
 	@Inject extension RosettaExtensions
 
+	def dispatch boolean isUseableAs(Void t0, Void t1) {
+		true
+	}
+	
 	def dispatch boolean isUseableAs(RClassType t0, RClassType t1) {
 		t0.clazz.allSuperTypes.contains(t1.clazz)
 	}
-	
+
 	def dispatch boolean isUseableAs(RDataType t0, RDataType t1) {
 		t0.data.allSuperTypes.contains(t1.data)
 	}
@@ -20,21 +24,21 @@ class RosettaTypeCompatibility {
 	}
 
 	def dispatch boolean isUseableAs(RRecordType t0, RRecordType t1) {
-		t0.name  == t1.name
+		t0.name == t1.name
 	}
-	
+
 	def dispatch boolean isUseableAs(RType t0, RType t1) {
 		t0.class === t1.class
 	}
-	
+
 	def dispatch boolean isUseableAs(RBuiltinType t0, RBuiltinType t1) {
 		t0.name == t1.name
 	}
-	
+
 	def dispatch boolean isUseableAs(RUnionType t0, RType t1) {
 		t0.from.isUseableAs(t1) || t0.to.isUseableAs(t1)
 	}
-	
+
 	def dispatch boolean isUseableAs(RType t0, RUnionType t1) {
 		t1.from.isUseableAs(t0) || t1.to.isUseableAs(t0)
 	}

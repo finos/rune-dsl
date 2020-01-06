@@ -3,8 +3,10 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.common.collect.Multimaps
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.object.ExpandedType
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
@@ -12,34 +14,60 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import java.util.Collection
 import java.util.Collections
+import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl
+import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
+import org.eclipse.xtext.generator.IGeneratorContext
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaFullType
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.generator.object.ExpandedType
 
 class MetaFieldGenerator {
 	
 	
-	def generate(IFileSystemAccess2 fsa, Iterable<RosettaMetaType> metaTypes, Iterable<RosettaRootElement> allClasses, Iterable<String> namespaces) {
-		
-		val namespaceToMetas = Multimaps.index(metaTypes, [namespace]).asMap
-		val libMetas = namespaceToMetas.getOrDefault(RosettaScopeProvider.LIB_NAMESPACE, Collections.emptyList)
-		for (namespace: namespaces) {
-			val rosettaMetas = namespaceToMetas.getOrDefault(namespace, libMetas)
-			val packages = new RootPackage(namespace)
-			fsa.generateFile('''«packages.metaField.directoryName»/MetaFields.java''',
-				metaFields(packages, rosettaMetas))
+	def void generate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext ctx) {
+		// moved from RosettaGenerator
+		val model = resource.contents.filter(RosettaModel).head
+		if(model.name.nullOrEmpty){
+			return
 		}
-
+		
+		if (resource.resourceSet.adapterFactories.filter(MarkerAdapterFactory).findFirst[namespace == model.name] === null) {
+			try {
+				val allModels = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
+				val Iterable<RosettaMetaType> allMetaTypes = allModels.flatMap[elements].filter(RosettaMetaType)
+				val namespaceToMetas = Multimaps.index(allMetaTypes, [namespace]).asMap
+				val libMetas = namespaceToMetas.getOrDefault(RosettaScopeProvider.LIB_NAMESPACE, Collections.emptyList)
+				val rosettaMetas = namespaceToMetas.getOrDefault(model.name, libMetas)
+				val packages = new RootPackage(model.name)
+				fsa.generateFile('''«packages.metaField.directoryName»/MetaFields.java''',
+					metaFields(packages, rosettaMetas))
+			} finally {
+				resource.resourceSet.adapterFactories.add(new MarkerAdapterFactory(model.name))
+			}
+		}
+		
+		val modelClasses = model.elements.filter [
+			it instanceof RosettaClass || it instanceof Data
+		]
+		if (modelClasses.empty) {
+			return
+		}
+		
 		//find all the reference types
-		val namespaceClasses =   Multimaps.index(allClasses, [c|c.namespace]).asMap
-		for (nsc:namespaceClasses.entrySet) {
+		val namespaceClasses = Multimaps.index(modelClasses, [c|c.namespace]).asMap
+		for (nsc: namespaceClasses.entrySet) {
+			if (ctx.cancelIndicator.canceled) {
+				return
+			}
 			val packages = new RosettaJavaPackages(nsc.value.head.model);
 			val refs = nsc.value.flatMap[expandedAttributes].filter[hasMetas && metas.exists[name=="reference"]].map[type].toSet
 			
 			for (ref:refs) {
+				if (ctx.cancelIndicator.canceled) {
+					return
+				}
 				if (ref.isType)
 					fsa.generateFile('''«packages.model.metaField.directoryName»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(packages, ref))
 				else
@@ -48,12 +76,14 @@ class MetaFieldGenerator {
 			//find all the metaed types
 			val metas =  nsc.value.flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference"]].map[type].toSet
 			for (meta:metas) {
+				if (ctx.cancelIndicator.canceled) {
+					return
+				}
 				fsa.generateFile('''«packages.model.metaField.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(packages, meta))
 			}
 		}
-
 	}
-	
+
 	def metaFields(RootPackage packages, Collection<RosettaMetaType> utypes) {
 		val stringType = RosettaFactoryImpl.eINSTANCE.createRosettaBasicType
 		stringType.name="string"
@@ -782,5 +812,19 @@ class MetaFieldGenerator {
 	
 	def namespace(RosettaRootElement rc) {
 		return rc.model.name
+	}
+	
+	/** generate once per resource marker */
+	static class MarkerAdapterFactory extends AdapterFactoryImpl {
+
+		final String namespace
+
+		new(String namespace) {
+			this.namespace = namespace
+		}
+
+		def getNamespace() {
+			namespace
+		}
 	}
 }
