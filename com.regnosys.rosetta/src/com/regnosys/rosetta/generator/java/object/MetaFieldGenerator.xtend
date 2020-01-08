@@ -25,28 +25,30 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 
 class MetaFieldGenerator {
 	
-	
+	 
 	def void generate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext ctx) {
 		// moved from RosettaGenerator
 		val model = resource.contents.filter(RosettaModel).head
-		if(model.name.nullOrEmpty){
+		if((model?.name).nullOrEmpty){
 			return
 		}
 		
-		if (resource.resourceSet.adapterFactories.filter(MarkerAdapterFactory).findFirst[namespace == model.name] === null) {
-			try {
+		
+// TODO - This code is intended to only generate MetaFields.java once per name space. This however causes an issue when running with the incremental builder that deletes the file as a clean up and never re-generates it.
+//		if (resource.resourceSet.adapterFactories.filter(MarkerAdapterFactory).findFirst[namespace == model.name] === null) {
+//			try {
 				val allModels = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 				val Iterable<RosettaMetaType> allMetaTypes = allModels.flatMap[elements].filter(RosettaMetaType)
 				val namespaceToMetas = Multimaps.index(allMetaTypes, [namespace]).asMap
 				val libMetas = namespaceToMetas.getOrDefault(RosettaScopeProvider.LIB_NAMESPACE, Collections.emptyList)
 				val rosettaMetas = namespaceToMetas.getOrDefault(model.name, libMetas)
-				val packages = new RootPackage(model.name)
-				fsa.generateFile('''«packages.metaField.directoryName»/MetaFields.java''',
-					metaFields(packages, rosettaMetas))
-			} finally {
-				resource.resourceSet.adapterFactories.add(new MarkerAdapterFactory(model.name))
-			}
-		}
+				val namespacePackage = new RootPackage(model.name)
+				fsa.generateFile('''«namespacePackage.metaField.directoryName»/MetaFields.java''',
+					metaFields(namespacePackage, rosettaMetas))
+//			} finally {
+//				resource.resourceSet.adapterFactories.add(new MarkerAdapterFactory(model.name))
+//			}
+//		}
 		
 		val modelClasses = model.elements.filter [
 			it instanceof RosettaClass || it instanceof Data
