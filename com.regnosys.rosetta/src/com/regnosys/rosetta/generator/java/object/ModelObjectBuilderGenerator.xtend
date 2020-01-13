@@ -57,7 +57,7 @@ class ModelObjectBuilderGenerator {
 			«c.expandedAttributes.builderGetters(names)»
 		
 			«c.setters(names)»
-			«IF c.name=="ContractualProduct" || c.name=="WorkflowEvent"»
+			«IF c.name=="ContractualProduct" || c.name=="BusinessEvent"»
 				«qualificationSetter(c)»
 			«ENDIF»
 		
@@ -107,7 +107,7 @@ class ModelObjectBuilderGenerator {
 			««««ContractualProduct and event are the only objects that get qualified
 			««««This could if necessary be replaced with code that finds all the quualifiaction rules
 			««««and the qualification result fields and finds there common roots (current CP and EV)	
-			«IF c.name=="ContractualProduct" || c.name=="WorkflowEvent"»
+			«IF c.name=="ContractualProduct" || c.name=="BusinessEvent"»
 				«qualificationSetter(c)»
 			«ENDIF»
 			
@@ -144,7 +144,7 @@ class ModelObjectBuilderGenerator {
 		val implementsS = c.implementsClause[String s | '''«s.builderName»<«c.builderName»>''']
 		
 		
-		if (c.name=="ContractualProduct" || c.name=="WorkflowEvent") {
+		if (c.name=="ContractualProduct" || c.name=="BusinessEvent") {
 			if (implementsS.length>0) '''«implementsS», Qualified'''
 			else "implements Qualified"
 		}
