@@ -136,7 +136,7 @@ class ExpressionGenerator {
 				'''«MapperS».of(«expr.enumeration.toJavaType».«expr.value.convertValues»)'''
 			}
 			RosettaConditionalExpression : {
-				'''«importMethod(ValidatorHelper,"doIf")»(«expr.^if.javaCode(params)»,«expr.ifthen.javaCode(params)»«IF expr.elsethen !== null»,«expr.elsethen.javaCode(params)»«ENDIF»)'''
+				'''«importMethod(ValidatorHelper,"doIf")»(«expr.^if.javaCode(params)», ()->«expr.ifthen.javaCode(params)»«IF expr.elsethen !== null», ()->«expr.elsethen.javaCode(params)»«ENDIF»)'''
 			}
 			RosettaContainsExpression : {
 				'''«importMethod(ValidatorHelper,"contains")»(«expr.container.javaCode(params)», «expr.contained.javaCode(params)»)'''

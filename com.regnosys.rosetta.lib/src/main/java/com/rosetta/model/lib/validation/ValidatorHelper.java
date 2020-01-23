@@ -6,11 +6,11 @@ import java.util.ListIterator;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.functions.Mapper;
-import com.rosetta.model.lib.functions.MapperBuilder;
 import com.rosetta.model.lib.functions.MapperC;
 import com.rosetta.model.lib.functions.MapperS;
 import com.rosetta.model.lib.meta.RosettaMetaData;
@@ -83,35 +83,59 @@ public class ValidatorHelper {
 		return result;
 	}
 	
-	public static <T> Mapper<T> doIf(Mapper<Boolean> test, Mapper<T> ifthen, Mapper<T> elsethen) {
+	public static <T, A extends Mapper<T>> A doIf(Mapper<Boolean> test, Supplier<A> ifthen, Supplier<A> elsethen) {
 		boolean testResult = test.getMulti().stream().allMatch(b->b.booleanValue());
-		if (testResult) return ifthen;
-		else return elsethen;
+		if (testResult) return ifthen.get();
+		else return elsethen.get();
 	}
-	public static <T> Mapper<T> doIf(Mapper<Boolean> test, Mapper<T> ifthen) {
+	public static <T, A extends Mapper<T>> A doIf(Mapper<Boolean> test, Supplier<A> ifthen) {
 		boolean testResult = test.getMulti().stream().allMatch(b->b.booleanValue());
-		if (testResult) return ifthen;
-		else return MapperS.of(null);
+		if (testResult) return ifthen.get();
+		else return null;
 	}
+		
+//	public static <T, A extends Mapper<T>> A doIf(Mapper<Boolean> test, Supplier<A> ifthen, Supplier<A> elsethen) {
+//		boolean testResult = test.getMulti().stream().allMatch(b->b.booleanValue());
+//		if (testResult) return ifthen.get();
+//		else return elsethen.get();
+//	}
+//	public static <T, A extends Mapper<T>> Mapper<T> doIf(Mapper<Boolean> test, Supplier<A> ifthen) {
+//		boolean testResult = test.getMulti().stream().allMatch(b->b.booleanValue());
+//		if (testResult) return ifthen.get();
+//		else {
+//			return MapperS.of(null);
+//		}
+//	}
 	
-	public static ComparisonResult doIf(ComparisonResult test, ComparisonResult ifthen, ComparisonResult elsethen) {
-		if (test.get()) return ifthen;
-		else return elsethen;
-	}
-	public static ComparisonResult doIf(ComparisonResult test, ComparisonResult ifthen) {
-		if (test.get()) return ifthen;
-		else return ComparisonResult.success();
-	}
-
-	public static <T> Mapper<T> doIf(ComparisonResult test, Mapper<T> ifthen, Mapper<T> elsethen) {	
-		if (test.get()) return ifthen;
-		else return elsethen;
-	}
-	
-	public static <T> Mapper<T> doIf(ComparisonResult test, Mapper<T> ifthen) {	
-		if (test.get()) return ifthen;
-		else return MapperS.of(null);
-	}
+//	public static <T> Mapper<T> doIf(Mapper<Boolean> test, Mapper<T> ifthen, Mapper<T> elsethen) {
+//		boolean testResult = test.getMulti().stream().allMatch(b->b.booleanValue());
+//		if (testResult) return ifthen;
+//		else return elsethen;
+//	}
+//	public static <T> Mapper<T> doIf(Mapper<Boolean> test, Mapper<T> ifthen) {
+//		boolean testResult = test.getMulti().stream().allMatch(b->b.booleanValue());
+//		if (testResult) return ifthen;
+//		else return MapperS.of(null);
+//	}
+//	
+//	public static ComparisonResult doIf(ComparisonResult test, ComparisonResult ifthen, ComparisonResult elsethen) {
+//		if (test.get()) return ifthen;
+//		else return elsethen;
+//	}
+//	public static ComparisonResult doIf(ComparisonResult test, ComparisonResult ifthen) {
+//		if (test.get()) return ifthen;
+//		else return ComparisonResult.success();
+//	}
+//
+//	public static <T> Mapper<T> doIf(ComparisonResult test, Mapper<T> ifthen, Mapper<T> elsethen) {	
+//		if (test.get()) return ifthen;
+//		else return elsethen;
+//	}
+//	
+//	public static <T> Mapper<T> doIf(ComparisonResult test, Mapper<T> ifthen) {	
+//		if (test.get()) return ifthen;
+//		else return MapperS.of(null);
+//	}
 	
 	public static <T> ComparisonResult doWhenPresent(Mapper<T> whenPresent, ComparisonResult compare) {
 		if(exists(whenPresent, false).get())
