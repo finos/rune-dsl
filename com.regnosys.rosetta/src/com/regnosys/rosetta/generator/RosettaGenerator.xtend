@@ -33,6 +33,7 @@ import org.eclipse.xtend.lib.annotations.Delegate
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import java.util.concurrent.CancellationException
 
 /**
  * Generates code from your model files on save.
@@ -122,6 +123,8 @@ class RosettaGenerator extends AbstractGenerator {
 
 				metaFieldGenerator.generate(resource, fsa, context)
 			}
+		} catch (CancellationException e) {
+			LOGGER.trace("Code generation cancelled, this is expected")
 		} catch (Exception e) {
 			LOGGER.warn(
 				"Unexpected calling standard generate for rosetta -" + e.message + " - see debug logging for more")
