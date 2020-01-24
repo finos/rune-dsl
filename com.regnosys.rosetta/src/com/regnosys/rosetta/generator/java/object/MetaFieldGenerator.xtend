@@ -11,9 +11,7 @@ import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import java.util.Collection
-import java.util.Collections
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -40,11 +38,12 @@ class MetaFieldGenerator {
 				val allModels = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 				val Iterable<RosettaMetaType> allMetaTypes = allModels.flatMap[elements].filter(RosettaMetaType)
 				val namespaceToMetas = Multimaps.index(allMetaTypes, [namespace]).asMap
-				val libMetas = namespaceToMetas.getOrDefault(RosettaScopeProvider.LIB_NAMESPACE, Collections.emptyList)
-				val rosettaMetas = namespaceToMetas.getOrDefault(model.name, libMetas)
-				val namespacePackage = new RootPackage(model.name)
-				fsa.generateFile('''«namespacePackage.metaField.directoryName»/MetaFields.java''',
-					metaFields(namespacePackage, rosettaMetas))
+				for (nsm : namespaceToMetas.entrySet) {
+					val ns = nsm.key
+					fsa.generateFile('''«ns.replace('.','/')»/metafields/MetaFields.java''',
+					metaFields(new RootPackage(ns), nsm.value))
+				}
+				
 //			} finally {
 //				resource.resourceSet.adapterFactories.add(new MarkerAdapterFactory(model.name))
 //			}
@@ -63,17 +62,19 @@ class MetaFieldGenerator {
 			if (ctx.cancelIndicator.canceled) {
 				return
 			}
-			val packages = new RosettaJavaPackages(nsc.value.head.model);
 			val refs = nsc.value.flatMap[expandedAttributes].filter[hasMetas && metas.exists[name=="reference"]].map[type].toSet
 			
 			for (ref:refs) {
+				val targetModel = ref.model
+				val targetPackage = new RosettaJavaPackages(targetModel)
+				
 				if (ctx.cancelIndicator.canceled) {
 					return
 				}
 				if (ref.isType)
-					fsa.generateFile('''«packages.model.metaField.directoryName»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(packages, ref))
+					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(targetPackage, ref))
 				else
-					fsa.generateFile('''«packages.model.metaField.directoryName»/BasicReferenceWithMeta«ref.name.toFirstUpper».java''', basicReferenceWithMeta(packages, ref))
+					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/BasicReferenceWithMeta«ref.name.toFirstUpper».java''', basicReferenceWithMeta(targetPackage, ref))
 			}
 			//find all the metaed types
 			val metas =  nsc.value.flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference"]].map[type].toSet
@@ -81,7 +82,10 @@ class MetaFieldGenerator {
 				if (ctx.cancelIndicator.canceled) {
 					return
 				}
-				fsa.generateFile('''«packages.model.metaField.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(packages, meta))
+				val targetModel = meta.model
+				val targetPackage = new RosettaJavaPackages(targetModel)
+				
+				fsa.generateFile('''«targetPackage.model.metaField.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(targetPackage, meta))
 			}
 		}
 	}
@@ -110,6 +114,7 @@ class MetaFieldGenerator {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
+		import com.rosetta.model.metafields.MetaFields;
 		
 		public class MetaFields extends RosettaModelObject implements com.rosetta.model.lib.meta.MetaFieldsI{
 			«FOR type:filteredTypes»
@@ -280,6 +285,7 @@ class MetaFieldGenerator {
 		import «packages.model.name».*;
 		import «packages.defaultLib.name».RosettaModelObject;
 		import «packages.defaultLib.name».RosettaModelObjectBuilder;
+		import com.rosetta.model.metafields.MetaFields;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.records.Date;
@@ -492,6 +498,7 @@ class MetaFieldGenerator {
 		import «packages.model.name».*;
 		import «packages.defaultLib.name».RosettaModelObject;
 		import «packages.defaultLib.name».RosettaModelObjectBuilder;
+		import com.rosetta.model.metafields.MetaFields;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		
@@ -660,6 +667,7 @@ class MetaFieldGenerator {
 	import com.rosetta.model.lib.meta.BasicReferenceWithMetaBuilder;
 	import com.rosetta.model.lib.RosettaModelObject;
 	import com.rosetta.model.lib.RosettaModelObjectBuilder;
+	import com.rosetta.model.metafields.MetaFields;
 	import com.rosetta.model.lib.meta.RosettaMetaData;
 	import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 	import com.rosetta.model.lib.records.Date;

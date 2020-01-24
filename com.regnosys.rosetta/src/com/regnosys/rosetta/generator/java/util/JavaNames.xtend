@@ -49,7 +49,7 @@ class JavaNames {
 
 	def JavaType toJavaType(ExpandedType type) {
 		if (type.name == RosettaAttributeExtensions.METAFIELDSCLASSNAME) {
-			return createJavaType(packages.model.metaField, type.name)
+			return createJavaType(packages.defaultNamespace.child("metafields"), type.name)
 		}
 		if (type.builtInType) {
 			return createForBasicType(type.name)
@@ -118,7 +118,7 @@ class JavaNames {
 
 	def toMetaType(ExpandedAttribute type, String name) {
 		if(type.type.isBuiltInType)
-			return createJavaType(packages.model.metaField, name)
+			return createJavaType(new RootPackage(type.type.model).metaField, name)
 		createJavaType(new RootPackage(type.type.model).metaField, name)
 	}
 

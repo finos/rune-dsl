@@ -19,7 +19,7 @@ public class RosettaJavaPackages {
 	protected RosettaJavaPackages(RootPackage root) {
 		this.root = root;
 	}
-	private Package defaultNamespace() {
+	public Package defaultNamespace() {
 		return DEFAULT_NAMESPACE;
 	}
 

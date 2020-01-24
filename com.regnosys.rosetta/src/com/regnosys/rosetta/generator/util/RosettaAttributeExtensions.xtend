@@ -32,6 +32,8 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Set
+import com.regnosys.rosetta.rosetta.RosettaFactory
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
 
 class RosettaAttributeExtensions {
 
@@ -113,7 +115,9 @@ class RosettaAttributeExtensions {
 	public static val METAFIELDSCLASSNAME = 'MetaFields'
 
 	private static def ExpandedType provideMetaFeildsType(RosettaRootElement ctx) {
-		return new ExpandedType(ctx.model, METAFIELDSCLASSNAME, true, false, false)
+		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
+		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE
+		return new ExpandedType(rosModel, METAFIELDSCLASSNAME, true, false, false)
 	}
 
 	// used in translate project
