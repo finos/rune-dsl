@@ -497,7 +497,6 @@ class MetaFieldGenerator {
 		import «packages.model.name».*;
 		import «packages.defaultLib.name».RosettaModelObject;
 		import «packages.defaultLib.name».RosettaModelObjectBuilder;
-		import com.rosetta.model.metafields.MetaFields;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		
