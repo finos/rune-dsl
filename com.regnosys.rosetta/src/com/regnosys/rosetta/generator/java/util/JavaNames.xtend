@@ -113,12 +113,14 @@ class JavaNames {
 	}
 
 	def toMetaType(Attribute ctx, String name) {
+		if(ctx.type instanceof RosettaBasicType)
+			return createJavaType(new RootPackage(packages.defaultNamespace.name).metaField, name)
 		createJavaType(modelRootPackage(ctx).metaField, name)
 	}
 
 	def toMetaType(ExpandedAttribute type, String name) {
 		if(type.type.isBuiltInType)
-			return createJavaType(new RootPackage(type.type.model).metaField, name)
+			return createJavaType(new RootPackage(packages.defaultNamespace.name).metaField, name)
 		createJavaType(new RootPackage(type.type.model).metaField, name)
 	}
 
