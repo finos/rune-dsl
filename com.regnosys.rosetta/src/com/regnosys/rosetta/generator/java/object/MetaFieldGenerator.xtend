@@ -114,7 +114,6 @@ class MetaFieldGenerator {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-		import com.rosetta.model.metafields.MetaFields;
 		
 		public class MetaFields extends RosettaModelObject implements com.rosetta.model.lib.meta.MetaFieldsI{
 			«FOR type:filteredTypes»
@@ -665,11 +664,12 @@ class MetaFieldGenerator {
 	import com.rosetta.model.lib.meta.BasicReferenceWithMetaBuilder;
 	import com.rosetta.model.lib.RosettaModelObject;
 	import com.rosetta.model.lib.RosettaModelObjectBuilder;
-	import com.rosetta.model.metafields.MetaFields;
+	// 3. import com.rosetta.model.metafields.MetaFields;
 	import com.rosetta.model.lib.meta.RosettaMetaData;
 	import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 	import com.rosetta.model.lib.records.Date;
 	import java.math.BigDecimal;
+	
 	
 	public class BasicReferenceWithMeta«type.name.toFirstUpper» extends RosettaModelObject implements ReferenceWithMeta<«type.name.toJavaType»>{
 		private final String globalReference;
