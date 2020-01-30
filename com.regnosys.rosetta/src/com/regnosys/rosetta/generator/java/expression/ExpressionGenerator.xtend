@@ -572,8 +572,10 @@ class ExpressionGenerator {
 	
 	def JavaType metaClass(Attribute attribute) {
 		val names = attribute.javaNames
-		val name = if (attribute.annotations.exists[a|a.annotation?.name=="metadata" && a.attribute?.name=="reference"])  "ReferenceWithMeta"+attribute.type.name.toFirstUpper
-		else "FieldWithMeta"+attribute.type.name.toFirstUpper
+		val name = if (attribute.annotations.exists[a|a.annotation?.name=="metadata" && a.attribute?.name=="reference"])  
+						"ReferenceWithMeta"+attribute.type.name.toFirstUpper
+				   else 
+				   		"FieldWithMeta"+attribute.type.name.toFirstUpper
 		return names.toMetaType(attribute, name)
 	}
 	
