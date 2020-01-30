@@ -49,7 +49,7 @@ class JavaNames {
 
 	def JavaType toJavaType(ExpandedType type) {
 		if (type.name == RosettaAttributeExtensions.METAFIELDSCLASSNAME) {
-			return createJavaType(packages.defaultNamespace.child("metafields"), type.name)
+			return createJavaType(packages.model.metaField, type.name)
 		}
 		if (type.builtInType) {
 			return createForBasicType(type.name)
@@ -128,9 +128,10 @@ class JavaNames {
 
 	def toMetaType(ExpandedAttribute type, String name) {
 		if(type.type.isBuiltInType) {
-			// built-in types are defined in the default root package (org.isda.cdm)
-			var pkg = new RootPackage(packages.defaultNamespace.name).metaField
-			return createJavaType(pkg, name)
+			// built-in meta types are defined in metafield package
+			//var pkg = new RootPackage(packages.defaultNamespace.name).metaField
+			//return createJavaType(pkg, name)
+			return createJavaType(packages.model.metaField, name)
 		}
 		var parentPKG = new RootPackage(type.type.model)
 		var metaParent = parentPKG.child(type.type.name).name()

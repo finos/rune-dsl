@@ -134,7 +134,7 @@ class ModelObjectGenerator {
 			import «packages.defaultLibAnnotations.name».RosettaSynonym;
 		«ENDIF»
 		«IF c.globalKeyRecursive»
-			import «packages.defaultNamespace.name».metafields.MetaFields;
+			import «packages.model.metaField.name».MetaFields;
 			import «packages.defaultLib.name».GlobalKey;
 			import «packages.defaultLib.name».GlobalKeyBuilder;
 		«ENDIF»
