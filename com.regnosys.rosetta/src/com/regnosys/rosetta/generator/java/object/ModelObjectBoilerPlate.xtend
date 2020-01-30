@@ -5,7 +5,6 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.GlobalKeyBuilder
@@ -16,7 +15,6 @@ import com.rosetta.util.ListEquals
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class ModelObjectBoilerPlate {
