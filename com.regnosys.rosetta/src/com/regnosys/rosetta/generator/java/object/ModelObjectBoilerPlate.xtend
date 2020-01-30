@@ -75,7 +75,7 @@ class ModelObjectBoilerPlate {
 			interfaces.add('''«GlobalKeyBuilder»<«d.name»Builder>''')
 		if (d.hasPartialKeyAnnotation)
 			interfaces.add('''«RosettaKeyValueBuilder»<«d.name»Builder>''')
-		if (d.name == "ContractualProduct" || d.name == "WorkflowEvent") {
+		if (d.name == "ContractualProduct" || d.name == "BusinessEvent") {
 			interfaces.add('''«Qualified»''')
 		}
 		if(interfaces.empty) null else ''' implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
