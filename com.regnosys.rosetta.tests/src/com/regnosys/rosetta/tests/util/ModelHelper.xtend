@@ -30,6 +30,10 @@ class ModelHelper {
 		library function Adjust() date
 		library function Within() boolean
 		
+		metaType reference string
+		metaType scheme string
+		metaType id string
+		
 		qualifiedType productType
 		qualifiedType eventType
 		
