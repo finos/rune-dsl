@@ -31,7 +31,6 @@ class ModelHelper {
 		library function Within() boolean
 		
 		metaType reference string
-		metaType scheme string
 		metaType id string
 		
 		qualifiedType productType
