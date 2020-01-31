@@ -12,6 +12,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
+import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -31,6 +32,23 @@ class RosettaEnumHelperTest {
         val testEnumCode = code.get(rootPackage.name + ".TestEnum")
         assertThat(testEnumCode, containsString('''RosettaSynonym(value = "oneSynonym", source = "FpML")'''))
 
+        code.compileToClasses
+    }
+    
+    @Test
+    @Disabled
+    def void shouldGenerateBasicReferenceForEnum() {
+        val code = '''
+            enum TestEnum:
+            	one 
+            	two 
+            	
+            type TestObj: 
+            	attr TestEnum (1..1) 
+            	[metadata reference]
+        '''.generateCode
+
+        val testEnumCode = code.get(rootPackage.name + ".TestEnum")
         code.compileToClasses
     }
 
