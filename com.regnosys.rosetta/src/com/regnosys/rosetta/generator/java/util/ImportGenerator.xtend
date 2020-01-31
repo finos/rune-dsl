@@ -124,6 +124,7 @@ class ImportGenerator {
 			}
 			RosettaMetaType:{
 				imports.add('''«packages.model.metaField.name».*''')
+				imports.add('''«packages.basicMetafields.name».*''')
 			}
 			RosettaEnumValue:{
 				imports.add((feature.eContainer as RosettaEnumeration).fullName);
