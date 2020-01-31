@@ -58,6 +58,10 @@ public class RosettaJavaPackages {
 	public Package defaultLibMeta() {
 		return defaultLib().child("meta");
 	}
+	
+	public Package basicMetafields() {
+		return defaultNamespace().child("metafields");
+	}
 
 	public static class Package {
 		private Package parent;
