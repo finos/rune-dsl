@@ -196,15 +196,15 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						inputsAndOutputs.add(function.output)
 					return Scopes.scopeFor(inputsAndOutputs)
 				} else {
-					val funcContainer = EcoreUtil2.getContainerOfType(context, Function)
-					if(funcContainer !== null) {
+					val container = EcoreUtil2.getContainerOfType(context, Function)
+					if(container !== null) {
 						return filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
 							descr | descr.EClass !== ROSETTA_CLASS && descr.EClass !== DATA
 						])
 					}
 					
 				}
-				return defaultScope(context, reference)
+				return getParentScope(context, reference, defaultScope(context, reference))
 			}
 			case ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE: {
 				return filteredScope(defaultScope(context, reference), [EClass !== FUNCTION_DISPATCH])

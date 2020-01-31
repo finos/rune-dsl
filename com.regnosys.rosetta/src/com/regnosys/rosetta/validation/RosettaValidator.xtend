@@ -341,8 +341,11 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if(!choiceRule.isChoiceRuleCondition) {
 			return
 		}
+		if(choiceRule.constraint !== null && choiceRule.constraint.attributes.size == 1) {
+			error('''At least two attributes must be passed to a choice rule.''', choiceRule.constraint, CONSTRAINT__ATTRIBUTES)
+			return
+		}
 		val name2attr = ArrayListMultimap.create
-		
 		choiceRule.constraint.attributes.forEach [
 			name2attr.put(name, it)
 		]
