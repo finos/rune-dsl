@@ -878,5 +878,67 @@ class RosettaCalculationGenerationTest {
 			'''
 		)
 	}
+	
+	@Test
+	def void testBlah() {
+		val code = '''
+			func Foo:
+				inputs:
+					foo int (0..1)
+				output: 
+					result boolean (1..1)
+					
+				assign-output result: 
+					if foo exists
+					then False
+					else True
+		'''.generateCode
+		//println(code)
+		code.compileToClasses
+	}
 
+	@Test
+	def void testBlah2() {
+		val code = '''
+			func Bar:
+				inputs:
+					bar number (0..1)
+				output: 
+					result number (1..1)
+			
+			func Foo:
+				inputs:
+					foo number (0..1)
+				output: 
+					result number (1..1)
+				
+				assign-output result: 
+					if foo exists
+					then Bar( foo )
+					else 0.0
+		'''.generateCode
+		//println(code)
+		code.compileToClasses
+	}
+	
+	@Test
+	def void testBlah3() {
+		val code = '''
+			type Bar:
+				baz number (1..1)
+			
+			func Foo:
+				inputs:
+					bar Bar (0..1)
+				output: 
+					result number (1..1)
+				
+				assign-output result: 
+					if bar exists
+					then 30.0
+					else bar -> baz
+		'''.generateCode
+		println(code)
+		code.compileToClasses
+	}
 }
