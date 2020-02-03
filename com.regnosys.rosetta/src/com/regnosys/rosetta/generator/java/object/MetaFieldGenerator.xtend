@@ -284,7 +284,9 @@ class MetaFieldGenerator {
 		import com.rosetta.model.lib.process.*;
 		import com.rosetta.model.lib.path.RosettaPath;
 		import com.rosetta.model.lib.meta.FieldWithMeta;
+		«IF !type.isBuiltInType»
 		import «packages.model.name».*;
+		«ENDIF»
 		import «packages.defaultLib.name».RosettaModelObject;
 		import «packages.defaultLib.name».RosettaModelObjectBuilder;
 		import «packages.basicMetafields.name».MetaFields;
