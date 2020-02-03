@@ -268,6 +268,12 @@ class ExpressionGenerator {
 				call.expression.javaCode(params)
 			}
 			Attribute : {
+				// Data Attributes can only be called from their conditions
+				// The current container (Data) is stored in Params, but we need also look for superTypes
+				// so we could also do: (call.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
+				if(call.eContainer instanceof Data)
+				'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(call, false, true)»'''
+				else
 				'''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)'''
 			}
 			ShortcutDeclaration : {

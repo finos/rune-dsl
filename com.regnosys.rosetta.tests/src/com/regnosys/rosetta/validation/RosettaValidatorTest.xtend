@@ -690,4 +690,20 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(ROSETTA_MAP_PATH_VALUE, null,
 			"Character '+' is not allowed in paths. Use '->' to separate path segments.")
 	}
+
+	@Test
+	def checkChoiceConditionAttributes() {
+		val model = '''
+			type Bar:
+				attribute1 string (0..1)
+				attribute2 string (0..1)
+				attribute3 string (0..1)
+			
+				condition:
+					required choice
+					attribute1
+		'''.parseRosetta
+		model.assertError(CONSTRAINT, null,
+			"At least two attributes must be passed to a choice rule.")
+	}
 }
