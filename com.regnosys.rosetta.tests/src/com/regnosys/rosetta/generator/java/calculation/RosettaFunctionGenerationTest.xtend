@@ -6,12 +6,14 @@ import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaFunctionGenerationTest {
 
 	@Inject extension FuncGeneratorHelper
+	@Inject extension CodeGeneratorTestHelper
 
 	@Test
 	def void testSimpleFunctionGeneration() {
@@ -63,4 +65,164 @@ class RosettaFunctionGenerationTest {
 		)
 	}
 
+	
+	@Test
+	def void shouldGenerateFuncWithAssignOutputDoIfBooleanLiterals() {
+		val code = '''
+			func Foo:
+				inputs:
+					foo int (0..1)
+				output: 
+					result boolean (1..1)
+					
+				assign-output result: 
+					if foo exists
+					then False
+					else True
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFuncWithAssignOutputDoIfBooleanLiteralsAndNoElse() {
+		val code = '''
+			func Foo:
+				inputs:
+					foo int (0..1)
+				output: 
+					result boolean (1..1)
+					
+				assign-output result: 
+					if foo exists
+					then False
+		'''.generateCode
+		code.compileToClasses
+	}
+
+	@Test
+	def void shouldGenerateFuncWithAssignOutputDoIfFuncCall() {
+		val code = '''
+			func Bar:
+				inputs:
+					bar number (0..1)
+				output: 
+					result number (1..1)
+			
+			func Foo:
+				inputs:
+					foo number (0..1)
+				output: 
+					result number (1..1)
+				
+				assign-output result: 
+					if foo exists
+					then Bar( foo )
+					else 0.0
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFuncWithAssignOutputDoIfFuncCallAndElseBoolean() {
+		val code = '''
+			func Bar:
+				inputs:
+					bar number (0..1)
+				output: 
+					result boolean (1..1)
+			
+			func Foo:
+				inputs:
+					foo number (0..1)
+				output: 
+					result boolean (1..1)
+				
+				assign-output result: 
+					if foo exists
+					then Bar( foo )
+					else True
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFuncWithAssignOutputDoIfFuncCallAndNoElse() {
+		val code = '''
+			func Bar:
+				inputs:
+					bar number (0..1)
+				output: 
+					result boolean (1..1)
+			
+			func Foo:
+				inputs:
+					foo number (0..1)
+				output: 
+					result boolean (1..1)
+				
+				assign-output result: 
+					if foo exists
+					then Bar( foo )
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFuncWithAssignOutputDoIfBigDecimalAndFeatureCall() {
+		val code = '''
+			type Bar:
+				baz number (1..1)
+			
+			func Foo:
+				inputs:
+					bar Bar (0..1)
+				output: 
+					result number (1..1)
+				
+				assign-output result: 
+					if bar exists
+					then 30.0
+					else bar -> baz
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFuncWithAssignOutputDoIfComparisonResultAndElseBoolean() {
+		val code = '''
+			type Bar:
+				baz number (1..1)
+			
+			func Foo:
+				inputs:
+					bar Bar (0..1)
+				output: 
+					result boolean (1..1)
+				
+				assign-output result: 
+					if bar -> baz exists
+					then bar -> baz > 5
+					else True
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFuncWithAssignOutputDoIfComparisonResultAndNoElse() {
+		val code = '''
+			type Bar:
+				baz number (1..1)
+			
+			func Foo:
+				inputs:
+					bar Bar (0..1)
+				output: 
+					result boolean (1..1)
+				
+				assign-output result: 
+					if bar -> baz exists
+					then bar -> baz > 5
+		'''.generateCode
+		code.compileToClasses
+	}
 }
