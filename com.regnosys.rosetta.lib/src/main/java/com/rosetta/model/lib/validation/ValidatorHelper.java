@@ -83,8 +83,11 @@ public class ValidatorHelper {
 		return result;
 	}
 	
+	/**
+	 * DoIf implementation for Mappers
+	 */
 	public static <T, A extends Mapper<T>> A doIf(Mapper<Boolean> test, Supplier<A> ifthen, Supplier<A> elsethen) {
-		boolean testResult = test.getMulti().stream().allMatch(b->b.booleanValue());
+		boolean testResult = test.getMulti().stream().allMatch(Boolean::booleanValue);
 		if (testResult) return ifthen.get();
 		else return elsethen.get();
 	}
@@ -93,23 +96,26 @@ public class ValidatorHelper {
 		return doIf(test, ifthen, () -> (A) MapperS.of((T) null));
 	}
 	
+	
+	/**
+	 * DoIf implementation for ComparisonResult.
+	 s*/
 	public static ComparisonResult resultDoIf(Mapper<Boolean> test, Supplier<Mapper<Boolean>> ifthen, Supplier<Mapper<Boolean>> elsethen) {
-		boolean testResult = test.getMulti().stream().allMatch(b->b.booleanValue());
-		if (testResult) 
+		boolean testResult = test.getMulti().stream().allMatch(Boolean::booleanValue);
+		if (testResult) {
 			return toComparisonResult(ifthen.get());
-		else 
+		} else {
 			return toComparisonResult(elsethen.get());
+		}
 	}
 	public static ComparisonResult resultDoIf(Mapper<Boolean> test, Supplier<Mapper<Boolean>> ifthen) {
 		return resultDoIf(test, ifthen, () -> ComparisonResult.success());
 	}
-	
 	private static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
 		if (mapper instanceof ComparisonResult) {
 			return (ComparisonResult) mapper;
 		} else {
-			return mapper.getMulti().stream().allMatch(Boolean::booleanValue) ?
-					ComparisonResult.success() : ComparisonResult.failure("");
+			return mapper.getMulti().stream().allMatch(Boolean::booleanValue) ? ComparisonResult.success() : ComparisonResult.failure("");
 		}
 	}
 	
