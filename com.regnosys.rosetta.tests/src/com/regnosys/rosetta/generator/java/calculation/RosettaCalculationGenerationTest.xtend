@@ -878,5 +878,4 @@ class RosettaCalculationGenerationTest {
 			'''
 		)
 	}
-
 }

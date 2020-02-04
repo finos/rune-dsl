@@ -27,6 +27,11 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaBuiltinType
+import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 
 class RosettaExtensions {
 	
@@ -156,7 +161,10 @@ class RosettaExtensions {
 			val callable = expr.callable
 			if(callable instanceof RosettaAlias) {
 				callable.expression.collectLeafTypes(visitor)
-			} 
+			}
+			else if (callable instanceof ShortcutDeclaration) {
+				callable.expression.collectLeafTypes(visitor)
+			}
 			else if(callable instanceof RosettaClass) {
 				visitor.apply(callable)
 			}
@@ -165,11 +173,21 @@ class RosettaExtensions {
 			}
 			else if(callable instanceof Attribute) {
 				visitor.apply(callable.type)
-			}
+			} 
 			else {
 				throw new IllegalArgumentException("Failed to collect leaf type: " + callable)
 			}
 		}
+		else if(expr instanceof RosettaCallableWithArgsCall) {
+			val callableWithArgs = expr.callable
+			if(callableWithArgs instanceof Function) {
+				visitor.apply(callableWithArgs.output.type)
+			} 
+			else {
+				throw new IllegalArgumentException("Failed to collect leaf type: " + callableWithArgs)
+			}
+		}
+		
 		else if(expr instanceof RosettaGroupByFeatureCall) {
 			expr.call.collectLeafTypes(visitor)
 		}
@@ -192,6 +210,12 @@ class RosettaExtensions {
 		}
 		else if(expr instanceof RosettaEnumValueReference) {
 			visitor.apply(expr.enumeration)
+		}
+		else if (expr instanceof RosettaParenthesisCalcExpression) {
+			expr.expression.collectLeafTypes(visitor)
+		}
+		else if (expr instanceof RosettaConditionalExpression) {
+			expr.ifthen.collectLeafTypes(visitor)
 		}
 		else {
 			throw new IllegalArgumentException("Failed to collect leaf type: " + expr)
