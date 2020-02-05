@@ -868,7 +868,6 @@ class RosettaBlueprintTest {
 			import com.rosetta.model.lib.functions.MapperTree;
 			import com.rosetta.test.model.Input;
 			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			/**
@@ -1415,7 +1414,6 @@ class RosettaBlueprintTest {
 		import com.rosetta.model.lib.functions.MapperTree;
 		import com.rosetta.test.model.Input;
 		import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-		import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
 		import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 		
 		/**
@@ -1538,7 +1536,6 @@ class RosettaBlueprintTest {
 			import com.rosetta.test.model.Avengers;
 			import com.rosetta.test.model.Hero;
 			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			/**
@@ -1629,7 +1626,6 @@ class RosettaBlueprintTest {
 			import com.rosetta.model.lib.functions.MapperTree;
 			import com.rosetta.test.model.Foo;
 			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.*;
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			/**

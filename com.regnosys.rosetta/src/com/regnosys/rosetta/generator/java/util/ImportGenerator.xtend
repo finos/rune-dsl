@@ -168,7 +168,6 @@ class ImportGenerator {
 			}
 			RosettaGroupByFeatureCall: {
 				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
-				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.call)
 				if (expression.groupBy !== null) addExpression(expression.groupBy)
 			}
@@ -177,13 +176,11 @@ class ImportGenerator {
 			}
 			RosettaExistsExpression: {
 				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
-				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.argument)
 			}
 			RosettaBinaryOperation: {
 				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
-				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
-
+				
 				if (#['+', '-'].contains(expression.operator)) {
 					imports.add(packages.defaultLibFunctions.name + ".MapperMaths")
 					imports.add("java.math.BigDecimal")
@@ -194,12 +191,10 @@ class ImportGenerator {
 			}
 			RosettaCountOperation: {
 				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
-				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.argument)
 			}
 			RosettaWhenPresentExpression: {
 				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
-				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.left)
 				addExpression(expression.right)
 			}
@@ -210,7 +205,6 @@ class ImportGenerator {
 			}
 			RosettaAbsentExpression: {
 				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
-				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.argument);
 			}
 			RosettaEnumValueReference: {
@@ -223,7 +217,6 @@ class ImportGenerator {
 			}
 			RosettaContainsExpression: {
 				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
-				staticImports.add(packages.defaultLibValidation.name + ".MapperTreeValidatorHelper")
 				addExpression(expression.contained)
 				addExpression(expression.container)
 			}
