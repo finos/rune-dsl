@@ -227,7 +227,7 @@ class RosettaFunctionGenerationTest {
 	}
 	
 	@Test
-	def void blah() {
+	def void shouldGenerateFuncWithNestedBooleanExpressionCondition() {
 		val code = '''
 			type Money:
 				amount number (1..1)
@@ -244,7 +244,6 @@ class RosettaFunctionGenerationTest {
 				condition:
 					( m1 -> currency and m2 -> currency ) = currency
 		'''.generateCode
-		println(code)
 		code.compileToClasses
 	}
 	
