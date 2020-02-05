@@ -141,6 +141,8 @@ public class ValidatorHelper {
 		}
 	}
 	
+	// doWhenPresent
+	
 	public static <T> ComparisonResult doWhenPresent(Mapper<T> whenPresent, ComparisonResult compare) {
 		if(exists(whenPresent, false).get())
 			return compare;
