@@ -52,7 +52,6 @@ import com.rosetta.model.lib.functions.MapperMaths
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.MapperTree
 import com.rosetta.model.lib.meta.FieldWithMeta
-import com.rosetta.model.lib.validation.MapperTreeValidatorHelper
 import com.rosetta.model.lib.validation.ValidatorHelper
 import java.math.BigDecimal
 import java.util.HashMap
@@ -219,7 +218,7 @@ class ExpressionGenerator {
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
-				'''«importWildCard(if(evalulatesToMapper(binary.left)) MapperTreeValidatorHelper else ValidatorHelper)»«doExistsExpr(exists, arg.javaCode(params))»'''
+				'''«importWildCard(ValidatorHelper)»«doExistsExpr(exists, arg.javaCode(params))»'''
 			else 
 				//if the argument is a binary expression then the exists needs to be pushed down into it
 				binary.binaryExpr(exists, params)
@@ -251,7 +250,7 @@ class ExpressionGenerator {
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
-				'''«MapperTreeValidatorHelper».notExists(«binary.binaryExpr(notSet, params)»)'''
+				'''«ValidatorHelper».notExists(«binary.binaryExpr(notSet, params)»)'''
 			else
 				//if the arg is binary then the operator needs to be pushed down
 				binary.binaryExpr(notSet, params)
