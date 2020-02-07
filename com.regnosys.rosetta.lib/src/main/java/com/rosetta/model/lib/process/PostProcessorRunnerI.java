@@ -10,7 +10,7 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder;
  * them on a given RosettaModelObjectBuilder
  *
  */
-public interface PostProcessorRunner {
+public interface PostProcessorRunnerI {
 	
 	<T extends RosettaModelObject> RosettaModelObjectBuilder postProcess(Class<T> rosettaType, RosettaModelObjectBuilder instance);
 
