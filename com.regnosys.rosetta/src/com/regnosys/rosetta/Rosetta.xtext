@@ -755,7 +755,7 @@ RosettaRegulatoryMandate:
  * */
 RosettaBlueprintReport:
 	'report' regulatoryMandate=RosettaRegulatoryMandate
-	'in' ('real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5')
+	'in' ('real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5'|'ASATP')
 	'when'
 	eligibilityRules+=[RosettaBlueprint] ( 'and' eligibilityRules+=[RosettaBlueprint])*
 	('using' 'standard' reportingStandard=[RosettaMandate])?
