@@ -592,6 +592,13 @@ class MetaFieldGenerator {
 					return value;
 				}
 				
+				public «type.name».«type.name»Builder getOrCreateValue() {
+					if (value == null) {
+						value = «type.name».builder();
+					}
+					return value;
+				}
+				
 				public String getGlobalReference() {
 					return globalReference;
 				}
