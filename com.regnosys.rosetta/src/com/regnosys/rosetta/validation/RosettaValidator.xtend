@@ -72,6 +72,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 
 /**
  * This class contains custom validation rules. 
@@ -449,7 +450,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				error('''Set to without when case must be ordered last.''', element, ROSETTA_MAPPING__INSTANCES)
 			}
 		}
-		val attribute = element.eContainer.eContainer.eContainer as RosettaTyped
+		var attribute = if (element.eContainer.eContainer.eContainer instanceof RosettaExternalRegularAttribute) {
+			(element.eContainer.eContainer.eContainer as RosettaExternalRegularAttribute).attributeRef as RosettaTyped
+		} else {
+			 element.eContainer.eContainer.eContainer as RosettaTyped
+		} 
+		
 		val type = attribute.getType
 		if (type instanceof Data && !element.instances.filter[^set !== null].empty) {
 			error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
