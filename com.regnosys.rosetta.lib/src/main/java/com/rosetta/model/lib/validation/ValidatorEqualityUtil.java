@@ -14,7 +14,7 @@ import com.rosetta.model.lib.functions.MapperC;
 import com.rosetta.model.lib.functions.MapperGroupBy;
 import com.rosetta.model.lib.functions.MapperS;
 
-public class EqualityValidatorHelper {
+class ValidatorEqualityUtil {
 
 	/**
 	 * Checks whether given mappers are both groupBy functions, if not handles as ungrouped mappers.
@@ -96,9 +96,10 @@ public class EqualityValidatorHelper {
 	 * @param o2
 	 * @return result of equality comparison, with error messages if failure
 	 */
+	@SuppressWarnings("unchecked")
 	static <T, U> ComparisonResult areEqual(Mapper<T> o1, Mapper<U> o2) {
 		if(o1.getClass().equals(o2.getClass())) {
-			return areEqualSame(o1, o2);
+			return areEqualSame(o1, (Mapper<T>)o2);
 		}
 		else if(o1 instanceof MapperS) {
 			return areEqualDifferent((MapperC<U>)o2, (MapperS<T>)o1);
@@ -108,12 +109,12 @@ public class EqualityValidatorHelper {
 		}
 	}
 	
-	private static <T, U> ComparisonResult areEqualSame(Mapper<T> o1, Mapper<U> o2) {
+	private static <T> ComparisonResult areEqualSame(Mapper<T> o1, Mapper<T> o2) {
 		List<T> multi1 = o1.getMulti();
-		List<U> multi2 = o2.getMulti();
+		List<T> multi2 = o2.getMulti();
 		
 		ListIterator<T> e1 = multi1.listIterator();
-		ListIterator<U> e2 = multi2.listIterator();
+		ListIterator<T> e2 = multi2.listIterator();
 		
 		if (multi1.isEmpty() || multi2.isEmpty())
 			return ComparisonResult.failureEmptyOperand(formatEqualsComparisonResultError(o1) + " cannot be compared to " + formatEqualsComparisonResultError(o2));
@@ -121,7 +122,7 @@ public class EqualityValidatorHelper {
 		
 		while (e1.hasNext() && e2.hasNext()) {
 			T b1 = e1.next();
-			U b2 = e2.next();
+			T b2 = e2.next();
 			if (b1 instanceof Number && b2 instanceof Number) {
 				@SuppressWarnings({ "unchecked", "rawtypes" })
 				int compRes = CompareHelper.compare((Comparable) b1, (Comparable) b2);
@@ -169,15 +170,16 @@ public class EqualityValidatorHelper {
 	 * @param o2
 	 * @return result of equality comparison, with error messages if failure
 	 */
-	static <T> ComparisonResult notEqual(Mapper<T> o1, Mapper<T> o2) {
+	@SuppressWarnings("unchecked")
+	static <T, U> ComparisonResult notEqual(Mapper<T> o1, Mapper<U> o2) {
 		if(o1.getClass().equals(o2.getClass())) {
-			return notEqualSame(o1, o2);
+			return notEqualSame(o1, (Mapper<T>)o2);
 		}
 		else if(o1 instanceof MapperS) {
-			return notEqualDifferent((MapperC<T>)o2, (MapperS<T>)o1);
+			return notEqualDifferent((MapperC<U>)o2, (MapperS<T>)o1);
 		}
 		else {
-			return notEqualDifferent((MapperC<T>)o1, (MapperS<T>)o2);
+			return notEqualDifferent((MapperC<T>)o1, (MapperS<U>)o2);
 		}
 	}	
 	
@@ -210,9 +212,9 @@ public class EqualityValidatorHelper {
 		return ComparisonResult.failure(formatEqualsComparisonResultError(o1) + " does equal " + formatEqualsComparisonResultError(o2));
 	}
 	
-	private static <T> ComparisonResult notEqualDifferent(MapperC<T> o1, MapperS<T> o2) {
+	private static <T, U> ComparisonResult notEqualDifferent(MapperC<T> o1, MapperS<U> o2) {
 		List<T> multi1 = o1.getMulti();
-		T b2 = o2.get();
+		U b2 = o2.get();
 
 		if (multi1.isEmpty())
 			return ComparisonResult.successEmptyOperand(formatEqualsComparisonResultError(o1) + " cannot be compared to " + formatEqualsComparisonResultError(o2));

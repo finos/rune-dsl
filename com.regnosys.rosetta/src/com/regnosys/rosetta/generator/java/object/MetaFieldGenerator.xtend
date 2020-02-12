@@ -601,6 +601,13 @@ class MetaFieldGenerator {
 					return value;
 				}
 				
+				public «type.name».«type.name»Builder getOrCreateValue() {
+					if (value == null) {
+						value = «type.name».builder();
+					}
+					return value;
+				}
+				
 				public String getGlobalReference() {
 					return globalReference;
 				}
@@ -639,7 +646,8 @@ class MetaFieldGenerator {
 				
 				@Override
 				public ReferenceWithMeta«type.name.toFirstUpper»Builder prune() {
-					if (value!=null && !value.hasData()) value = null;
+					if (value != null) value = value.prune();
+					if (value != null && !value.hasData()) value = null;
 					return this;
 				}
 				

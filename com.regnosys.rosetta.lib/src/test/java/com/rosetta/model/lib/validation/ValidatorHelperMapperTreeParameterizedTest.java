@@ -1,9 +1,9 @@
 package com.rosetta.model.lib.validation;
 
-import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.areEqual;
-import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.exists;
-import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.greaterThan;
-import static com.rosetta.model.lib.validation.MapperTreeValidatorHelper.notEqual;
+import static com.rosetta.model.lib.validation.ValidatorHelper.areEqual;
+import static com.rosetta.model.lib.validation.ValidatorHelper.exists;
+import static com.rosetta.model.lib.validation.ValidatorHelper.greaterThan;
+import static com.rosetta.model.lib.validation.ValidatorHelper.notEqual;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -20,7 +20,7 @@ import com.rosetta.model.lib.functions.MapperS;
 import com.rosetta.model.lib.functions.MapperTree;
 
 
-public class MapperTreeValidatorHelperParameterizedTest {
+public class ValidatorHelperMapperTreeParameterizedTest {
 
 	private static final Function<Foo, ComparisonResult> GREATER_THAN_WITH_OR = (foo) -> 
 			greaterThan(MapperTree.or(

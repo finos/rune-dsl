@@ -52,7 +52,6 @@ import com.rosetta.model.lib.functions.MapperMaths
 import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.MapperTree
 import com.rosetta.model.lib.meta.FieldWithMeta
-import com.rosetta.model.lib.validation.MapperTreeValidatorHelper
 import com.rosetta.model.lib.validation.ValidatorHelper
 import java.math.BigDecimal
 import java.util.HashMap
@@ -136,7 +135,7 @@ class ExpressionGenerator {
 				'''«MapperS».of(«expr.enumeration.toJavaType».«expr.value.convertValues»)'''
 			}
 			RosettaConditionalExpression : {
-				'''«importMethod(ValidatorHelper,"doIf")»(«expr.^if.javaCode(params)»,«expr.ifthen.javaCode(params)»«IF expr.elsethen !== null»,«expr.elsethen.javaCode(params)»«ENDIF»)'''
+				'''«importMethod(ValidatorHelper, expr.doIfName)»(«expr.^if.javaCode(params)», ()->«expr.ifthen.javaCode(params)»«IF expr.elsethen !== null», ()->«expr.elsethen.javaCode(params)»«ENDIF»)'''
 			}
 			RosettaContainsExpression : {
 				'''«importMethod(ValidatorHelper,"contains")»(«expr.container.javaCode(params)», «expr.contained.javaCode(params)»)'''
@@ -154,6 +153,12 @@ class ExpressionGenerator {
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
 		}
 	}
+	
+	private def String doIfName(RosettaConditionalExpression expr) {
+		if (expr.ifthen.evalulatesToMapper) "doIf"
+		else "resultDoIf"
+	}
+	
 	/**
 	 * group by only occurs in alias expression and should be deprecated
 	 */
@@ -213,7 +218,7 @@ class ExpressionGenerator {
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
-				'''«importWildCard(if(containsFeatureCallOrCallableCall(binary.left)) MapperTreeValidatorHelper else ValidatorHelper)»«doExistsExpr(exists, arg.javaCode(params))»'''
+				'''«importWildCard(ValidatorHelper)»«doExistsExpr(exists, arg.javaCode(params))»'''
 			else 
 				//if the argument is a binary expression then the exists needs to be pushed down into it
 				binary.binaryExpr(exists, params)
@@ -245,7 +250,7 @@ class ExpressionGenerator {
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
-				'''«MapperTreeValidatorHelper».notExists(«binary.binaryExpr(notSet, params)»)'''
+				'''«ValidatorHelper».notExists(«binary.binaryExpr(notSet, params)»)'''
 			else
 				//if the arg is binary then the operator needs to be pushed down
 				binary.binaryExpr(notSet, params)
@@ -343,7 +348,7 @@ class ExpressionGenerator {
 		
 		switch expr.operator {
 			case ("and"): {
-				if (containsFeatureCallOrCallableCall(left)) {
+				if (evalulatesToMapper(left)) {
 					// Mappers
 					if(isComparableTypes(expr))
 						'''«MapperTree».and(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
@@ -356,7 +361,7 @@ class ExpressionGenerator {
 				}	
 			}
 			case ("or"): {
-				if (containsFeatureCallOrCallableCall(left)) {
+				if (evalulatesToMapper(left)) {
 					// Mappers
 					if(isComparableTypes(expr))
 						'''«MapperTree».or(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
@@ -428,13 +433,14 @@ class ExpressionGenerator {
 	}
 	
 	/**
-	 * Collects all expressions down the tree, and checks that they're all either FeatureCalls or CallableCalls
+	 * Collects all expressions down the tree, and checks that they're all either FeatureCalls or CallableCalls (or anything that resolves to a Mapper)
 	 */
-	private def boolean containsFeatureCallOrCallableCall(RosettaExpression expr) {
+	private def boolean evalulatesToMapper(RosettaExpression expr) {
 		val exprs = newHashSet
 		collectExpressions(expr, [exprs.add(it)])
 
-		return !exprs.empty && exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall || it instanceof RosettaFeatureCall || it instanceof RosettaCallableCall]
+		return !exprs.empty && 
+			exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall || it instanceof RosettaFeatureCall || it instanceof RosettaCallableCall || it instanceof RosettaFeatureCall || it instanceof RosettaCallableWithArgsCall || it instanceof RosettaLiteral]
 	}
 	
 	/**

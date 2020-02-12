@@ -87,6 +87,45 @@ class DataRuleGeneratorTest {
 	}
 	
 	@Test
+	def void dataRuleWithDoIfAndFunction() {
+		val code = '''
+				func Foo:
+					inputs:
+						price number (0..1)
+					output:
+						something number (1..1)
+				
+				type Quote:
+					price number (0..1)
+					
+					condition:
+						if price exists
+						then Foo( price ) = 5.0
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
+	def void dataRuleWithDoIfAndFunctionAndElse() {
+		val code = '''
+				func Foo:
+					inputs:
+						price number (0..1)
+					output:
+						something number (1..1)
+				
+				type Quote:
+					price number (0..1)
+					
+					condition:
+						if price exists
+						then Foo( price ) = 5.0
+						else True
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
 	def void dataRuleCoinHead() {
 		val code = '''
 			type Coin:

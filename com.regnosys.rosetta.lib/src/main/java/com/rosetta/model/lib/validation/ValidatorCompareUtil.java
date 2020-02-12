@@ -12,7 +12,7 @@ import com.rosetta.model.lib.functions.Mapper;
 import com.rosetta.model.lib.functions.MapperGroupBy;
 import com.rosetta.model.lib.functions.MapperS;
 
-public class CompareValidatorHelper {
+class ValidatorCompareUtil {
 	
 	/**
 	 * Checks whether given mappers are both groupBy functions, if not handles as ungrouped mappers.
