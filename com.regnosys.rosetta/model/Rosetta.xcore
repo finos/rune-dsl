@@ -644,6 +644,7 @@ class BlueprintNodeExp {
 
 abstract class BlueprintNode {
 	String name
+	String identifier	
 	refers RosettaType input
 	refers RosettaType output
 	refers RosettaType inputKey
@@ -691,15 +692,18 @@ class BlueprintFilter extends BlueprintNode {
 	contains BlueprintRef filterBP
 }
 
+class BlueprintFormat extends BlueprintNode {
+	String formatString
+	refers RosettaBasicType formatType
+}
+
 class BlueprintExtract extends BlueprintNode {
 	contains RosettaExpression call
-	String identifier
 	boolean multiple
 }
 
 class BlueprintReturn extends BlueprintNode {
 	contains RosettaExpression expression
-	String identifier
 }
 
 class BlueprintGroup extends BlueprintNode {
@@ -712,6 +716,5 @@ class BlueprintDataJoin extends BlueprintNode {
 }
 
 class BlueprintLookup extends BlueprintNode {
-	String identifier	
 }
 

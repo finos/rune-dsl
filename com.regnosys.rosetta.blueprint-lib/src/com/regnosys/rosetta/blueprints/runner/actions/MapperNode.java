@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class MapperNode<I,O, K extends Comparable<K>> extends NamedNode implements ProcessorNode<I, O, K> {
+public class MapperNode<I, O, K extends Comparable<K>> extends NamedNode implements ProcessorNode<I, O, K> {
 
 	private final Function<I, O> mapFunction;
 	private final DataIdentifier identifier;

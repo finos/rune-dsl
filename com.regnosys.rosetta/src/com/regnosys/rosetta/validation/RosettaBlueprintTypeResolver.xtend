@@ -46,6 +46,7 @@ import org.eclipse.emf.ecore.EStructuralFeature
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.BlueprintFormat
 
 class RosettaBlueprintTypeResolver {
 	
@@ -135,6 +136,11 @@ class RosettaBlueprintTypeResolver {
 					result.input.type = getInput(node.filter)
 				}
 			}
+			BlueprintFormat: {
+				result.input.type = node.input
+				result.output.type = node.output
+				result.output.genericName = 'String'
+			}
 			BlueprintGroup: {
 				result.input.type = getInput(node.key as RosettaFeatureCall)
 				result.outputKey.type = getOutput(node.key as RosettaFeatureCall)
@@ -188,7 +194,7 @@ class RosettaBlueprintTypeResolver {
 			BlueprintMerge: {
 				tNode.outputKey = tNode.inputKey
 			}
-			BlueprintExtract, BlueprintReturn: {
+			BlueprintExtract, BlueprintReturn, BlueprintFormat: {
 				// extract doesn't change the key
 				tNode.outputKey = tNode.inputKey
 			}

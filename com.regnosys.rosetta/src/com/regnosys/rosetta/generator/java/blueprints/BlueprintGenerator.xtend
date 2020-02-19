@@ -10,6 +10,7 @@ import com.regnosys.rosetta.rosetta.BlueprintCustomNode
 import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
+import com.regnosys.rosetta.rosetta.BlueprintFormat
 import com.regnosys.rosetta.rosetta.BlueprintGroup
 import com.regnosys.rosetta.rosetta.BlueprintLookup
 import com.regnosys.rosetta.rosetta.BlueprintMerge
@@ -207,6 +208,8 @@ class BlueprintGenerator {
 	 * write out an individual graph node
 	 */
 	def StringConcatenationClient buildNode(BlueprintNode node, TypedBPNode typedNode, Context context) {
+		val nodeName = if (node.identifier !== null) node.identifier else if (node.name !== null) node.name
+		
 		switch (node) {
 			BlueprintMerge: {
 				context.addMerger(node, typedNode)
@@ -218,11 +221,8 @@ class BlueprintGenerator {
 				context.imports.addSingleMapping(node)
 				
 				val cond = node.call
-				val nodeName = if (node.identifier !== null) node.identifier 
-								else if (node.name !== null) node.name
-								else cond.toNodeLabel
-				
-				val id = '''new StringIdentifier("«nodeName»")'''
+
+				val id = '''new StringIdentifier("«if (nodeName !== null) nodeName else cond.toNodeLabel »")'''
 				if (!node.multiple)
 				'''actionFactory.<«typedNode.input.getEither», «
 					typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaSingleMapper("«node.URI»", "«(cond).toNodeLabel
@@ -237,17 +237,13 @@ class BlueprintGenerator {
 				context.imports.addMappingImport()
 				
 				val expr = node.expression 
-				val nodeName = if (node.identifier !== null) node.identifier 
-								else if (node.name !== null) node.name
-								else expr.toNodeLabel
 				
-				val id = '''new StringIdentifier("«nodeName»")'''
+				val id = '''new StringIdentifier("«if (nodeName !== null) nodeName else expr.toNodeLabel »")'''
 				'''actionFactory.<«typedNode.input.getEither», «typedNode.output.getEither», «typedNode.inputKey.getEither»> newRosettaReturn("«node.URI»", "«expr.toNodeLabel»",  «id»,  () -> «expr.javaCode(new ParamMap())»)'''
 			}
 			BlueprintLookup: {
 				context.imports.addTypes(typedNode)
 				context.imports.addMappingImport()
-				val nodeName = if (node.identifier !== null) node.identifier else node.name
 				//val lookupLamda = '''«typedNode.input.type.name.toFirstLower» -> lookup«node.name»(«typedNode.input.type.name.toFirstLower»)'''
 				val id = '''new StringIdentifier("Lookup «nodeName»")'''
 				'''actionFactory.<«typedNode.input.getEither», «
@@ -288,8 +284,7 @@ class BlueprintGenerator {
 					«typedNode.input.either.toFirstLower» -> «node.expression.javaCode(new ParamMap(typedNode.input.type))».get())'''
 				}
 				else {
-					'''new ReduceBy<«typedNode.input.either», Integer, «typedNode.inputKey.either»>("«node.URI»", "«node.expression.toNodeLabel»
-					", ReduceBy.Action.«node.action.toUpperCase»)'''
+					'''new ReduceBy<«typedNode.input.either», Integer, «typedNode.inputKey.either»>("«node.URI»", "«nodeName»", ReduceBy.Action.«node.action.toUpperCase»)'''
 				}
 			}
 			BlueprintDataJoin: {
@@ -310,11 +305,23 @@ class BlueprintGenerator {
 				context.addCustom(node, typedNode)
 				'''«node.toFunctionName»()'''
 			}
+			BlueprintFormat : {
+				context.imports.addFormat()
+				
+				switch node.formatType.name {
+					case 'string':
+						'''new Format.StringFormat<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«nodeName»", "«node.formatString»")'''
+					case 'int',
+					case 'number':
+						'''new Format.NumberFormat<«typedNode.inputKey.either»>("«node.URI»", "«nodeName»", "«node.formatString»")'''
+				}
+			}
 			BlueprintGroup : {
 				context.imports.addGrouper(node);
 				'''actionFactory.<«typedNode.input.either», «typedNode.inputKey.either», «typedNode.outputKey.either
 				»>newRosettaGrouper("«node.URI»", "group by «node.key.toNodeLabel»", «typedNode.input.type.name.toFirstLower» -> «node.key.javaCode(new ParamMap(typedNode.input.type))»)'''
 			}
+			
 			default: {
 				throw new UnsupportedOperationException("Can't generate code for node of type "+node.class)
 			}

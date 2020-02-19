@@ -791,8 +791,9 @@ BlueprintNode:
 		BlueprintCustomNode |
 		BlueprintLookup |
 		BlueprintReduce |
-		BlueprintOneOf
-	)
+		BlueprintOneOf |
+		BlueprintFormat
+	) ('as' identifier=STRING)?
 ;
 
 
@@ -806,6 +807,10 @@ BlueprintValidate :
 
 BlueprintFilter :
 	'filter' 'when' (filter = RosettaBooleanOperation | 'rule' filterBP = BlueprintRef)
+;
+
+BlueprintFormat :
+	'format' formatType=[RosettaBasicType] formatString = STRING
 ;
 
 // RENAME THIS TO BlueprintOr
@@ -822,11 +827,11 @@ BlueprintRef:
 ;
 
 BlueprintExtract:
-	'extract' (multiple?='multiple')? call=RosettaConditionalExpression ('as' identifier=STRING)?
+	'extract' (multiple?='multiple')? call=RosettaConditionalExpression
 ;
 
 BlueprintReturn:
-	'return' expression = RosettaExpression ('as' identifier=STRING)?
+	'return' expression = RosettaExpression
 ;
 
 BlueprintGroup:
@@ -838,7 +843,7 @@ BlueprintDataJoin:
 ;
 
 BlueprintLookup:
-	'lookup' name=ID output=[RosettaType] ('as' identifier=STRING)?
+	'lookup' name=ID output=[RosettaType]
 ;
 
 // Stuff we dont need (yet)
