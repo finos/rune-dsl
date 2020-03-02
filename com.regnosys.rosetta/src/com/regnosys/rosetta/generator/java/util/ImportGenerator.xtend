@@ -46,6 +46,7 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 
 class ImportGenerator {
 
@@ -123,6 +124,7 @@ class ImportGenerator {
 			}
 			RosettaMetaType:{
 				imports.add('''«packages.model.metaField.name».*''')
+				imports.add('''«packages.basicMetafields.name».*''')
 			}
 			RosettaEnumValue:{
 				imports.add((feature.eContainer as RosettaEnumeration).fullName);
@@ -230,10 +232,12 @@ class ImportGenerator {
 	}
 
 	def fullName(RosettaType type) {
-		if (type instanceof RosettaClass || type instanceof Data)
-			'''«packages.model.name».«type.name»'''.toString
-		else if (type instanceof RosettaEnumeration) {
-			'''«packages.model.name».«type.name»'''.toString
+		if (type instanceof RosettaClass || type instanceof Data) {
+			val targetPackage = new RootPackage(type.model.name)
+			'''«targetPackage.name».«type.name»'''.toString
+		} else if (type instanceof RosettaEnumeration) {
+			val targetPackage = new RootPackage(type.model.name)
+			'''«targetPackage.name».«type.name»'''.toString
 		} else {
 			val simple = type.name.toJavaFullType
 			if (simple === null) {
@@ -244,7 +248,7 @@ class ImportGenerator {
 	}
 
 	def isImportable(String typeName) {
-		!typeName.toString.startsWith('java.lang')
+		!typeName.startsWith('java.lang')
 	}
 
 	def addTypes(TypedBPNode node) {

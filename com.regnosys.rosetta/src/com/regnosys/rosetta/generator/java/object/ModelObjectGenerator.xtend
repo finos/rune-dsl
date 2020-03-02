@@ -11,7 +11,6 @@ import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -135,7 +134,7 @@ class ModelObjectGenerator {
 			import «packages.defaultLibAnnotations.name».RosettaSynonym;
 		«ENDIF»
 		«IF c.globalKeyRecursive»
-			import «packages.model.metaField.name».MetaFields;
+			import «packages.basicMetafields.name».MetaFields;
 			import «packages.defaultLib.name».GlobalKey;
 			import «packages.defaultLib.name».GlobalKeyBuilder;
 		«ENDIF»

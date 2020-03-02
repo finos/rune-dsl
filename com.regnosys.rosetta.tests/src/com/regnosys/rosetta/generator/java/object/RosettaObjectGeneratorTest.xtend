@@ -11,7 +11,6 @@ import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaQualified
 import com.rosetta.model.lib.annotations.RosettaSynonym
 import com.rosetta.model.lib.records.Date
-import java.lang.reflect.Modifier
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -30,6 +29,7 @@ import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -216,15 +216,19 @@ class RosettaObjectGeneratorTest {
 	
 	@Test
 	def void shouldGenerateBasicReferenceField() {
+		val namespace = 'test.ns.basicref'
 		val code = '''
-
-
+			namespace "«namespace»"
+			
+			// import basic types
+			import com.rosetta.test.model.*
+			
 			type TestObject: <"">
 				fieldOne date (0..1) [metadata reference]
 		'''.generateCode
 		//code.writeClasses("BasicReferenceTest")
 		val classes = code.compileToClasses
-		val generatedClass = classes.get(rootPackage.name + ".TestObject")
+		val generatedClass = classes.get(new RootPackage('''«namespace»''').name + ".TestObject")
 
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
@@ -259,6 +263,29 @@ class RosettaObjectGeneratorTest {
 		assertThat(getter.returnType.name, is('com.rosetta.test.model.metafields.ReferenceWithMetaComplexObject'))
 	}
 
+	@Test
+    def void shouldGenerateTypeWithMetaFieldImport() {
+    	val namespace = 'test.ns.metafield'
+        val code = '''
+            namespace "«namespace»"
+            version "test"
+            
+            // import basic types
+            import com.rosetta.test.model.*
+            
+            type Foo:
+                [metadata key]
+                
+                attr string (0..1)
+        '''.generateCode
+//        code.writeClasses("TypeWithMetaFieldImport")
+        val classes = code.compileToClasses
+		val generatedClass = classes.get(new RootPackage('''«namespace»''').name + ".Foo")
+
+		val schemeMethod = generatedClass.getMethod("getAttr")
+		assertThat(schemeMethod, CoreMatchers.notNullValue())
+	}
+    
 	@Test
 	def void shouldGenerateSchemeFieldWithSynonym() {
 		val code = '''

@@ -19,7 +19,7 @@ public class RosettaJavaPackages {
 	protected RosettaJavaPackages(RootPackage root) {
 		this.root = root;
 	}
-	private Package defaultNamespace() {
+	public Package defaultNamespace() {
 		return DEFAULT_NAMESPACE;
 	}
 
@@ -57,6 +57,10 @@ public class RosettaJavaPackages {
 
 	public Package defaultLibMeta() {
 		return defaultLib().child("meta");
+	}
+	
+	public Package basicMetafields() {
+		return defaultNamespace().child("metafields");
 	}
 
 	public static class Package {
