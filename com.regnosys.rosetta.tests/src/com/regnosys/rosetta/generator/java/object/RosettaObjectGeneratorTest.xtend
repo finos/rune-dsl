@@ -265,8 +265,9 @@ class RosettaObjectGeneratorTest {
 
 	@Test
     def void shouldGenerateTypeWithMetaFieldImport() {
+    	val namespace = 'test.ns.metafield'
         val code = '''
-            namespace "test.ns.metafield"
+            namespace "«namespace»"
             version "test"
             
             // import basic types
@@ -277,11 +278,13 @@ class RosettaObjectGeneratorTest {
                 
                 attr string (0..1)
         '''.generateCode
-        
+//        code.writeClasses("TypeWithMetaFieldImport")
         val classes = code.compileToClasses
-        //TODO: add insert
-//	      assertThat(value, is("fieldOne"))
-    }
+		val generatedClass = classes.get(new RootPackage('''«namespace»''').name + ".Foo")
+
+		val schemeMethod = generatedClass.getMethod("getAttr")
+		assertThat(schemeMethod, CoreMatchers.notNullValue())
+	}
     
 	@Test
 	def void shouldGenerateSchemeFieldWithSynonym() {
