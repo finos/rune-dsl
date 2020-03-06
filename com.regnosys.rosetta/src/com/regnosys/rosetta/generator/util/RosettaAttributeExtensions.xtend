@@ -34,6 +34,7 @@ import java.util.List
 import java.util.Set
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import com.regnosys.rosetta.rosetta.RosettaSynonymSource
 
 class RosettaAttributeExtensions {
 
@@ -219,7 +220,7 @@ class RosettaAttributeExtensions {
 		.toList
 	}
 	
-	private static def toRosettaExpandedSynonym(Attribute attr, int index) {
+	static def toRosettaExpandedSynonym(Attribute attr, int index) {
 		attr.synonyms.filter[body.metaValues.size > index].map[
 			s|new ExpandedSynonym(s.sources, s.body.values?.map[metaSynValue(s.body.metaValues.get(index))
 				//new ExpandedSynonymValue(s.metaValues.get(index), path+"."+value, maps, true)
@@ -228,6 +229,17 @@ class RosettaAttributeExtensions {
 		.filter[!values.isEmpty]
 		.toList
 	}
+
+	static def toRosettaExpandedSynonym(List<RosettaSynonymSource> sources, List<RosettaExternalSynonym> externalSynonyms, int index) {		
+		externalSynonyms.filter[body.metaValues.size > index].map[
+			s|new ExpandedSynonym(sources, s.body.values?.map[metaSynValue(s.body.metaValues.get(index))
+				//new ExpandedSynonymValue(s.metaValues.get(index), path+"."+value, maps, true)
+			].toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, s.body.mapper)
+		]
+		.filter[!values.isEmpty]
+		.toList
+	}
+
 
 	static def toExpandedAttribute(RosettaRegularAttribute attr, List<ExpandedAttribute> metas) {
 		new ExpandedAttribute(
