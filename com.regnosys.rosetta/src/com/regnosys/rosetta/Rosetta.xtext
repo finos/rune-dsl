@@ -710,18 +710,18 @@ RosettaParenthesisCalcExpression:
 
 RosettaExternalSynonymSource:
 	'synonym' 'source' RosettaNamed ('extends' superSynonym=[RosettaSynonymSource]) '{'
-	    (externalClasses += RosettaExternalClass)*
-	    ('enums' (externalEnums += RosettaExternalEnum)*)?
+	    (externalRefs+= (RosettaExternalClass))*
+	    ('enums' (externalRefs+= (RosettaExternalEnum))*)?
 	'}'
 ;
 
 RosettaExternalClass:
-	classRef=[RosettaType|QualifiedName] ':'
+	typeRef=[Data] ':'
 		(regularAttributes += RosettaExternalRegularAttribute)*
 ;
 
 RosettaExternalEnum:
-	enumRef = [RosettaEnumeration] ':'
+	typeRef = [RosettaEnumeration] ':'
 		(regularValues += RosettaExternalEnumValue)*
 ;
 
@@ -732,7 +732,7 @@ RosettaExternalRegularAttribute:
 
 RosettaExternalEnumValue: 
 	('+'|'-') enumRef=[RosettaEnumValue]
-		externalEnumSynonyms += RosettaEnumSynonym*
+		externalEnumSynonyms += RosettaExternalEnumSynonym*
 ;
 
 RosettaExternalSynonym:
@@ -740,6 +740,13 @@ RosettaExternalSynonym:
 	body=RosettaSynonymBody
 	']'
 ;
+
+RosettaExternalEnumSynonym returns RosettaEnumSynonym:
+	'['
+	'value' synonymValue=STRING ('definition' definition=STRING)?
+	']'
+;
+
 
 /*****************************************
  * Reporting support
