@@ -98,7 +98,6 @@ public class ValidatorHelper {
 			@SuppressWarnings("unchecked")
 			RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
 			ValidatorWithArg<? super T, String> onlyExistsValidator = meta.onlyExistsValidator();
-			// TODO: fix onlyExists to work with meta fields
 			if (onlyExistsValidator != null) {
 				ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(path, parent, field);
 				// Translate validationResult into comparisonResult
