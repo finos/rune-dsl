@@ -98,9 +98,13 @@ public class ValidatorHelper {
 			@SuppressWarnings("unchecked")
 			RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
 			ValidatorWithArg<? super T, String> onlyExistsValidator = meta.onlyExistsValidator();
-			ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(path, parent, field);
-			// Translate validationResult into comparisonResult
-			result = result.and(validationResult.isSuccess() ? ComparisonResult.success() : ComparisonResult.failure(validationResult.getFailureReason().orElse("")));
+			if (onlyExistsValidator != null) {
+				ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(path, parent, field);
+				// Translate validationResult into comparisonResult
+				result = result.and(validationResult.isSuccess() ? ComparisonResult.success() : ComparisonResult.failure(validationResult.getFailureReason().orElse("")));
+			} else {
+				result = result.and(ComparisonResult.success());
+			}
 		}
 		return result;
 	}
