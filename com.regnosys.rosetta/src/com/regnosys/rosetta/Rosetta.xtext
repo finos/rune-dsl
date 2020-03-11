@@ -726,12 +726,12 @@ RosettaExternalEnum:
 ;
 
 RosettaExternalRegularAttribute:
-	('+'|'-') attributeRef=[RosettaFeature|ValidID]
+	operator=('+'|'-') attributeRef=[RosettaFeature|ValidID]
 		externalSynonyms += RosettaExternalSynonym*
 ;
 
 RosettaExternalEnumValue: 
-	('+'|'-') enumRef=[RosettaEnumValue]
+	operator=('+'|'-') enumRef=[RosettaEnumValue]
 		externalEnumSynonyms += RosettaExternalEnumSynonym*
 ;
 
