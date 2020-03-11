@@ -49,6 +49,9 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import org.eclipse.xtext.naming.QualifiedName
+import com.regnosys.rosetta.rosetta.RosettaExternalEnum
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 
 /**
  * This class contains custom scoping description.
@@ -239,11 +242,19 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 			case ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF: {
 				if (context instanceof RosettaExternalRegularAttribute) {
-					val classRef = (context.eContainer as RosettaExternalClass).classRef
+					val classRef = (context.eContainer as RosettaExternalClass).typeRef
 					if(classRef instanceof Data)
 						return Scopes.scopeFor(classRef.allAttributes)
 					else if(classRef instanceof RosettaClass)
 						return Scopes.scopeFor(classRef.allAttributes)
+				}
+				return IScope.NULLSCOPE
+			}			
+			case ROSETTA_EXTERNAL_ENUM_VALUE__ENUM_REF: {
+				if (context instanceof RosettaExternalEnumValue) {
+					val enumRef = (context.eContainer as RosettaExternalEnum).typeRef
+					if(enumRef instanceof RosettaEnumeration)
+						return Scopes.scopeFor(enumRef.allEnumValues)
 				}
 				return IScope.NULLSCOPE
 			}
