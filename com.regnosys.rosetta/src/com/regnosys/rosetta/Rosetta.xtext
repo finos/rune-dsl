@@ -4,7 +4,8 @@ import "http://www.rosetta-model.com/Rosetta"
 import "http://www.rosetta-model.com/RosettaSimple"
 
 RosettaModel:
-	'namespace' name=(QualifiedName | STRING)
+	'namespace' name=(QualifiedName | STRING)  Definable?
+	
 	('version' version=STRING)?
 	
 	imports += Import*
