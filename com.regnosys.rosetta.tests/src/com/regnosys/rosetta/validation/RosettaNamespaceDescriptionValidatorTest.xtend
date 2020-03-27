@@ -12,9 +12,6 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
-import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaNamespaceDescriptionValidatorTest implements RosettaIssueCodes {
