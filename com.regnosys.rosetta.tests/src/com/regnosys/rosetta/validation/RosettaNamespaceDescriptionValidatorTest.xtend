@@ -23,7 +23,7 @@ class RosettaNamespaceDescriptionValidatorTest implements RosettaIssueCodes {
 	def void testNamespaceDescription() {
 		val model =
 		'''
-			namespace cdm.base.test <"some description">
+			namespace cdm.base.test : <"some description">
 			version "test"
 			
 			enum TestEnum:
