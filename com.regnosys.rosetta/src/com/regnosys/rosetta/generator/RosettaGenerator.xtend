@@ -63,7 +63,7 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
 	@Inject FuncGenerator funcGenerator
-	
+
 	@Inject ModelNamespaceUtil modelNamespaceUtil
 
 	// For files that are
@@ -77,13 +77,9 @@ class RosettaGenerator extends AbstractGenerator {
 		try {
 			lock.getWriteLock(true);
 			if (!ignoredFiles.contains(resource.URI.segments.last)) {
-				
-				var rosettaModelList = resource.contents.filter(RosettaModel)
-				var cdmVersion  = rosettaModelList.get(0).version // pick version from the first model
-				var namespaceDescriptionMap = modelNamespaceUtil.generateNamespaceDescriptionMap(rosettaModelList.toList).asMap
-				
+
 				// generate for each model object
-				rosettaModelList.forEach [
+				resource.contents.filter(RosettaModel).forEach [
 					val version = version
 					val javaNames = factory.create(it)
 					val packages = javaNames.packages
@@ -131,10 +127,8 @@ class RosettaGenerator extends AbstractGenerator {
 					]
 				]
 
-				
 				val javaNames = factory.create(resource.contents.filter(RosettaModel).head)
 				metaFieldGenerator.generate(javaNames.packages, resource, fsa, context)
-				javaPackageInfoGenerator.generatePackageInfoClasses(fsa, namespaceDescriptionMap, cdmVersion)
 			}
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected")
@@ -151,6 +145,10 @@ class RosettaGenerator extends AbstractGenerator {
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		try {
 			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
+
+			var modelVersion = models.get(0).version // pick version from the first model
+			var namespaceDescriptionMap = modelNamespaceUtil.generateNamespaceDescriptionMap(models).asMap
+			javaPackageInfoGenerator.generatePackageInfoClasses(fsa, namespaceDescriptionMap, modelVersion)
 
 			externalGenerators.forEach [ generator |
 				generator.afterGenerate(models, [ map |

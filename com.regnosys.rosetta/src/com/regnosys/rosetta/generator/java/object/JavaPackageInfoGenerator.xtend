@@ -23,7 +23,6 @@ class JavaPackageInfoGenerator {
 			*	<p>
 			*	«ENDFOR»
 			*
-			*	@author ISDA CDM
 			*	@version «version»
 			*
 			*/
