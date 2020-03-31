@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.util
 import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
-import com.regnosys.rosetta.validation.RosettaIssueCodes
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
