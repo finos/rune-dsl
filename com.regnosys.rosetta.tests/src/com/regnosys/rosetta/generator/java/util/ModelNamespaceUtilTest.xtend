@@ -20,7 +20,7 @@ class ModelNamespaceUtilTest implements RosettaIssueCodes {
 	
 	
 	@Test
-	def void testNamespaceDescriptionMap() {
+	def void testMultipleDescriptionForSameNamespace() {
 		
 		val resource1 = 
 		'''
@@ -66,5 +66,66 @@ class ModelNamespaceUtilTest implements RosettaIssueCodes {
 		val descriptionList2 = namespaceMap.get("cdm.another.namesapce")
 		assertEquals(1, descriptionList2.size)
 		assertEquals("another description", descriptionList2.get(0))
+	}
+	
+	@Test
+	def void testMixOfDescriptionAndNoDescription() {
+		
+		val resource1 = 
+		'''
+			namespace cdm.test : <"description for enum">
+			version "test"
+			
+			enum Enum: A B
+			type Foo:
+				attr Enum (0..1)			
+		'''
+		
+		val resource2 =
+		'''
+			namespace cdm.another.namesapce
+			version "test"
+			
+			type Bazzinga:
+				attr string (0..1)
+			
+		'''
+		
+		val model1 = modelHelper.parseRosetta(resource1)
+		val model2 = modelHelper.parseRosetta(resource2)
+				
+		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1, model2), "0.0.1").asMap		
+		assertEquals(2, namespaceMap.size)
+		
+		val descriptionList1 = namespaceMap.get("cdm.test")
+		assertEquals(1, descriptionList1.size)
+		
+		
+		val descriptionList2 = namespaceMap.get("cdm.another.namesapce")
+		assertEquals(1, descriptionList2.size)
+		assertEquals(null, descriptionList2.get(0))
+	}
+	
+	@Test
+	def void testNoDescription() {
+		
+		val resource1 =
+		'''
+			namespace cdm.another.namesapce
+			version "test"
+			
+			type Bazzinga:
+				attr string (0..1)
+			
+		'''
+		
+		val model1 = modelHelper.parseRosetta(resource1)
+				
+		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1), "0.0.1").asMap		
+		assertEquals(1, namespaceMap.size)
+		
+		val descriptionList1 = namespaceMap.get("cdm.another.namesapce")
+		assertEquals(1, descriptionList1.size)
+		assertEquals(null, descriptionList1.get(0))
 	}
 }
