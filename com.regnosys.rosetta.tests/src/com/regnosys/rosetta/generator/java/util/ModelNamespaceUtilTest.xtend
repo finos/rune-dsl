@@ -18,7 +18,7 @@ class ModelNamespaceUtilTest {
 	@Inject extension ModelNamespaceUtil modelNamespaceUtil
 	
 	@Test
-	def void testMultipleDescriptionForSameNamespace() {
+	def void testMultipleDescriptionsForSameNamespace() {
 		
 		val resource1 = 
 		'''
@@ -54,7 +54,7 @@ class ModelNamespaceUtilTest {
 		val model2 = modelHelper.parseRosetta(resource2)
 		val model3 = modelHelper.parseRosetta(resource3)
 				
-		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1, model2, model3), "0.0.1").asMap		
+		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1, model2, model3)).asMap		
 		assertEquals(2, namespaceMap.size)
 		
 		val namespace1Map = namespaceMap.get("cdm.test")
@@ -67,7 +67,7 @@ class ModelNamespaceUtilTest {
 	}
 	
 	@Test
-	def void testMixOfDescriptionAndNoDescription() {
+	def void testMixOfDescriptionAndNonDescriptionNamespace() {
 		
 		val resource1 = 
 		'''
@@ -92,7 +92,7 @@ class ModelNamespaceUtilTest {
 		val model1 = modelHelper.parseRosetta(resource1)
 		val model2 = modelHelper.parseRosetta(resource2)
 				
-		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1, model2), "0.0.1").asMap		
+		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1, model2)).asMap		
 		assertEquals(2, namespaceMap.size)
 		
 		val namespace1Map = namespaceMap.get("cdm.test")
@@ -119,7 +119,7 @@ class ModelNamespaceUtilTest {
 		
 		val model = modelHelper.parseRosetta(resource1)
 				
-		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model), "0.0.1").asMap		
+		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model)).asMap		
 		assertEquals(1, namespaceMap.size)
 		
 		val namespace1Map = namespaceMap.get("cdm.another.namesapce")

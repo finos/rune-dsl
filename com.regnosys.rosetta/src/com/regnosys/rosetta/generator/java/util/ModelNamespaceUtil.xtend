@@ -1,16 +1,16 @@
 package com.regnosys.rosetta.generator.java.util
 
-import com.google.common.collect.LinkedListMultimap
+import com.google.common.collect.LinkedHashMultimap
 import com.regnosys.rosetta.rosetta.RosettaModel
 import java.util.List
 
 class ModelNamespaceUtil {
 	
-	def generateNamespaceDescriptionMap(List<RosettaModel> elements, String version) {
+	def generateNamespaceDescriptionMap(List<RosettaModel> elements) {
 		
-		val namespaceToDescription = LinkedListMultimap.<String, String>create
+		val namespaceToDescription = LinkedHashMultimap.<String, String>create
 		
-		elements.forEach[RosettaModel model |
+		elements.filter[definition !== null].forEach[RosettaModel model |
 				namespaceToDescription.put(model.name, model.definition)
 		]
 		
