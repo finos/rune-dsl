@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class ModelNamespaceUtilTest implements RosettaIssueCodes {
+class ModelNamespaceUtilTest {
 	
 	@Inject extension ModelHelper modelHelper
 	@Inject extension ModelNamespaceUtil modelNamespaceUtil
