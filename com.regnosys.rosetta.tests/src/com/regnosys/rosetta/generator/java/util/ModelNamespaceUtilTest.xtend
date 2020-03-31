@@ -97,6 +97,7 @@ class ModelNamespaceUtilTest {
 		
 		val namespace1Map = namespaceMap.get("cdm.test")
 		assertEquals(1, namespace1Map.size)
+		assertEquals("description for enum", namespace1Map.get(0))
 				
 		val namespace2Map = namespaceMap.get("cdm.another.namesapce")
 		assertEquals(1, namespace2Map.size)
