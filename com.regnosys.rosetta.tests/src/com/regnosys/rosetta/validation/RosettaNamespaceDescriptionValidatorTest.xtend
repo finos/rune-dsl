@@ -14,7 +14,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaNamespaceDescriptionValidatorTest implements RosettaIssueCodes {
+class RosettaNamespaceDescriptionValidatorTest {
 
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
