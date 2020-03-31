@@ -17,7 +17,6 @@ class ModelNamespaceUtilTest {
 	@Inject extension ModelHelper modelHelper
 	@Inject extension ModelNamespaceUtil modelNamespaceUtil
 	
-	
 	@Test
 	def void testMultipleDescriptionForSameNamespace() {
 		
@@ -58,13 +57,13 @@ class ModelNamespaceUtilTest {
 		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1, model2, model3), "0.0.1").asMap		
 		assertEquals(2, namespaceMap.size)
 		
-		val descriptionList1 = namespaceMap.get("cdm.test")
-		assertEquals(2, descriptionList1.size)
+		val namespace1Map = namespaceMap.get("cdm.test")
+		assertEquals(2, namespace1Map.size)
 		
 		
-		val descriptionList2 = namespaceMap.get("cdm.another.namesapce")
-		assertEquals(1, descriptionList2.size)
-		assertEquals("another description", descriptionList2.get(0))
+		val namespace2Map = namespaceMap.get("cdm.another.namesapce")
+		assertEquals(1, namespace2Map.size)
+		assertEquals("another description", namespace2Map.get(0))
 	}
 	
 	@Test
@@ -96,13 +95,12 @@ class ModelNamespaceUtilTest {
 		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1, model2), "0.0.1").asMap		
 		assertEquals(2, namespaceMap.size)
 		
-		val descriptionList1 = namespaceMap.get("cdm.test")
-		assertEquals(1, descriptionList1.size)
-		
-		
-		val descriptionList2 = namespaceMap.get("cdm.another.namesapce")
-		assertEquals(1, descriptionList2.size)
-		assertEquals(null, descriptionList2.get(0))
+		val namespace1Map = namespaceMap.get("cdm.test")
+		assertEquals(1, namespace1Map.size)
+				
+		val namespace2Map = namespaceMap.get("cdm.another.namesapce")
+		assertEquals(1, namespace2Map.size)
+		assertEquals(null, namespace2Map.get(0))
 	}
 	
 	@Test
@@ -118,13 +116,13 @@ class ModelNamespaceUtilTest {
 			
 		'''
 		
-		val model1 = modelHelper.parseRosetta(resource1)
+		val model = modelHelper.parseRosetta(resource1)
 				
-		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1), "0.0.1").asMap		
+		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model), "0.0.1").asMap		
 		assertEquals(1, namespaceMap.size)
 		
-		val descriptionList1 = namespaceMap.get("cdm.another.namesapce")
-		assertEquals(1, descriptionList1.size)
-		assertEquals(null, descriptionList1.get(0))
+		val namespace1Map = namespaceMap.get("cdm.another.namesapce")
+		assertEquals(1, namespace1Map.size)
+		assertEquals(null, namespace1Map.get(0))
 	}
 }
