@@ -146,9 +146,8 @@ class RosettaGenerator extends AbstractGenerator {
 		try {
 			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 
-			var modelVersion = models.get(0).version // pick version from the first model
 			var namespaceDescriptionMap = modelNamespaceUtil.generateNamespaceDescriptionMap(models).asMap
-			javaPackageInfoGenerator.generatePackageInfoClasses(fsa, namespaceDescriptionMap, modelVersion)
+			javaPackageInfoGenerator.generatePackageInfoClasses(fsa, namespaceDescriptionMap)
 
 			externalGenerators.forEach [ generator |
 				generator.afterGenerate(models, [ map |
