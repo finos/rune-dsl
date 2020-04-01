@@ -93,15 +93,11 @@ class ModelNamespaceUtilTest {
 		val model2 = modelHelper.parseRosetta(resource2)
 				
 		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1, model2)).asMap		
-		assertEquals(2, namespaceMap.size)
+		assertEquals(1, namespaceMap.size)
 		
 		val namespace1Map = namespaceMap.get("cdm.test")
 		assertEquals(1, namespace1Map.size)
 		assertEquals("description for enum", namespace1Map.get(0))
-				
-		val namespace2Map = namespaceMap.get("cdm.another.namesapce")
-		assertEquals(1, namespace2Map.size)
-		assertEquals(null, namespace2Map.get(0))
 	}
 	
 	@Test
@@ -120,10 +116,6 @@ class ModelNamespaceUtilTest {
 		val model = modelHelper.parseRosetta(resource1)
 				
 		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model)).asMap		
-		assertEquals(1, namespaceMap.size)
-		
-		val namespace1Map = namespaceMap.get("cdm.another.namesapce")
-		assertEquals(1, namespace1Map.size)
-		assertEquals(null, namespace1Map.get(0))
+		assertEquals(0, namespaceMap.size)
 	}
 }
