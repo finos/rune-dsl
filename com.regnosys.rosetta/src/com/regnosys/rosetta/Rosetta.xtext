@@ -4,7 +4,8 @@ import "http://www.rosetta-model.com/Rosetta"
 import "http://www.rosetta-model.com/RosettaSimple"
 
 RosettaModel:
-	'namespace' name=(QualifiedName | STRING)
+	'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)?
+	
 	('version' version=STRING)?
 	
 	imports += Import*
@@ -60,7 +61,7 @@ Attribute:
 ;
 
 Enumeration returns RosettaEnumeration:
-	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable
+	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable?
 		(synonyms += RosettaSynonym)*
 		enumValues += RosettaEnumValue*
 ;
@@ -149,7 +150,7 @@ RosettaRootElement:
  * Common rules 
  */
 fragment RosettaDefinable:
-	('<' definition=STRING '>')?
+	('<' definition=STRING '>')
 ;
 
 fragment RosettaNamed:
@@ -196,7 +197,7 @@ RosettaParameter:
 ;
 
 RosettaLibraryFunction returns RosettaExternalFunction:
-	'library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable RosettaTyped
+	'library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable? RosettaTyped
 ;
 
 RosettaQualifiedType:
@@ -229,7 +230,7 @@ RosettaClass:
 	(globalKey ?= 'key')?
 	(rosettaKeyValue ?= 'rosettaKeyValue')?
 	(oneOf ?= 'one' 'of')?
-	RosettaDefinable
+	RosettaDefinable?
 		(synonyms += RosettaClassSynonym)*
 		(references += RosettaRegulatoryReference)*
 		(marketPractice += RosettaMarketPractice)*
@@ -251,14 +252,14 @@ RosettaStereotypeValue:
 ;
 
 RosettaRegularAttribute:
-	RosettaNamed RosettaTyped card=RosettaCardinality (metaTypes += [RosettaMetaType])? (',' metaTypes += [RosettaMetaType])* RosettaDefinable ';'?
+	RosettaNamed RosettaTyped card=RosettaCardinality (metaTypes += [RosettaMetaType])? (',' metaTypes += [RosettaMetaType])* RosettaDefinable? ';'?
 	(synonyms += RosettaSynonym)*
 	(references += RosettaRegulatoryReference)*
 	(marketPractice += RosettaMarketPractice)*
 ;
 
 RosettaEnumValue:
-	RosettaNamed ('displayName' display=STRING)? RosettaDefinable
+	RosettaNamed ('displayName' display=STRING)? RosettaDefinable?
 	(enumSynonyms += RosettaEnumSynonym)*
 ;
 
@@ -396,11 +397,11 @@ RosettaSegmentRef:
 
 // TODO - refactor these to have the correct names.
 RosettaRegulatoryRegime:
-	('body'|'regulatoryRegime') (bodyType=ID)? RosettaNamed RosettaDefinable
+	('body'|'regulatoryRegime') (bodyType=ID)? RosettaNamed RosettaDefinable?
 ;
 
 RosettaMandate:
-	('corpus'|'mandate') (corpusType=ID)? (STRING)? RosettaNamed RosettaDefinable // FIXME what is "(STRING)?" for?
+	('corpus'|'mandate') (corpusType=ID)? (STRING)? RosettaNamed RosettaDefinable? // FIXME what is "(STRING)?" for?
 ;
 
 RosettaSegment:
@@ -518,7 +519,7 @@ terminal FEATURE_CALL_SEPARATOR:
  */
  
 RosettaDataRule:
-	'data' 'rule' RosettaNamed RosettaDefinable
+	'data' 'rule' RosettaNamed RosettaDefinable?
 	(references += RosettaRegulatoryReference)*
 	(marketPractice += RosettaMarketPractice)*
 	'when' when=RosettaExpression
@@ -532,7 +533,7 @@ RosettaDataRule:
  */
  
 RosettaWorkflowRule:
-	'workflow' 'rule' RosettaNamed RosettaDefinable
+	'workflow' 'rule' RosettaNamed RosettaDefinable?
 	(marketPractice += RosettaMarketPractice)*
 	('when' when = RosettaExpression)?
 	root = RosettaTreeNode
@@ -566,7 +567,7 @@ RosettaClassReference returns RosettaExpression:
  */
  
 RosettaChoiceRule:
-	'choice' 'rule' RosettaNamed RosettaDefinable
+	'choice' 'rule' RosettaNamed RosettaDefinable?
  	(references += RosettaRegulatoryReference)*
  	(marketPractice += RosettaMarketPractice)*
  	'for' scope=[RosettaClass|QualifiedName]
@@ -581,7 +582,7 @@ RosettaChoiceRule:
  */
  
 RosettaAlias:
-	'alias' RosettaNamed RosettaDefinable
+	'alias' RosettaNamed RosettaDefinable?
  	expression = RosettaAliasExpression
 ;
 
@@ -600,7 +601,7 @@ RosettaAliasExpression returns RosettaExpression:
  */
  
 RosettaProduct:
-	'isProduct' RosettaNamed RosettaDefinable
+	'isProduct' RosettaNamed RosettaDefinable?
  	(synonyms += RosettaSynonym)*
 	expression = RosettaExpression
 	(('and' andDataRules+=[RosettaDataRule] (',' andDataRules += [RosettaDataRule])*) 
@@ -614,7 +615,7 @@ RosettaProduct:
  */
  
 RosettaEvent:
-	'isEvent' RosettaNamed RosettaDefinable
+	'isEvent' RosettaNamed RosettaDefinable?
  	(synonyms += RosettaSynonym)*
  	expression = RosettaExpression
  	(('and' andDataRules+=[RosettaDataRule] (',' andDataRules += [RosettaDataRule])*) 
@@ -772,7 +773,7 @@ RosettaBlueprintReport:
 
 
 RosettaBlueprint:
- 	('reporting'|'eligibility') 'rule' RosettaNamed RosettaDefinable
+ 	('reporting'|'eligibility') 'rule' RosettaNamed RosettaDefinable?
 	(references += RosettaRegulatoryReference)*
 	(marketPractice += RosettaMarketPractice)*
 	(nodes = BlueprintNodeExp)?

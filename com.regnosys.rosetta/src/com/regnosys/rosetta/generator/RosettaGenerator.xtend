@@ -34,6 +34,8 @@ import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import java.util.concurrent.CancellationException
+import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
+import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 
 /**
  * Generates code from your model files on save.
@@ -53,6 +55,7 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject QualifyFunctionGenerator<RosettaProduct> qualifyProductsGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
+	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
 
 	@Inject DataGenerator dataGenerator
 	@Inject DataValidatorsGenerator validatorsGenerator
@@ -60,6 +63,8 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
 	@Inject FuncGenerator funcGenerator
+
+	@Inject ModelNamespaceUtil modelNamespaceUtil
 
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta'}
@@ -72,6 +77,7 @@ class RosettaGenerator extends AbstractGenerator {
 		try {
 			lock.getWriteLock(true);
 			if (!ignoredFiles.contains(resource.URI.segments.last)) {
+
 				// generate for each model object
 				resource.contents.filter(RosettaModel).forEach [
 					val version = version
@@ -121,7 +127,6 @@ class RosettaGenerator extends AbstractGenerator {
 					]
 				]
 
-				
 				val javaNames = factory.create(resource.contents.filter(RosettaModel).head)
 				metaFieldGenerator.generate(javaNames.packages, resource, fsa, context)
 			}
@@ -140,6 +145,9 @@ class RosettaGenerator extends AbstractGenerator {
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		try {
 			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
+
+			var namespaceDescriptionMap = modelNamespaceUtil.generateNamespaceDescriptionMap(models).asMap
+			javaPackageInfoGenerator.generatePackageInfoClasses(fsa, namespaceDescriptionMap)
 
 			externalGenerators.forEach [ generator |
 				generator.afterGenerate(models, [ map |

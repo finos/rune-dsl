@@ -6,7 +6,7 @@ package com.regnosys.rosetta.rosetta
 
 import java.util.stream.Collectors
 
-class RosettaModel {
+class RosettaModel extends RosettaDefinable {
 	String name
 	String version = "0.0.0"
 	contains Import[] imports
