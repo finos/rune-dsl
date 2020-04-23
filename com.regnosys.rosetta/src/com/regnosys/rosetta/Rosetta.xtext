@@ -32,6 +32,7 @@ fragment Definable:
 
 Annotation:
 	'annotation' RosettaNamed ':' Definable?
+	('[' 'prefix' prefix = ValidID ']')?
 	attributes += Attribute*
 ;
 
@@ -615,7 +616,7 @@ RosettaProduct:
  */
  
 RosettaEvent:
-	'isEvent' RosettaNamed RosettaDefinable?
+	'isBusinessEvent' RosettaNamed RosettaDefinable?
  	(synonyms += RosettaSynonym)*
  	expression = RosettaExpression
  	(('and' andDataRules+=[RosettaDataRule] (',' andDataRules += [RosettaDataRule])*) 
@@ -631,7 +632,7 @@ RosettaQualifiableConfiguration:
 ;
 
 enum RosettaQualifiableType :
-	Event = "isEvent"| Product = "isProduct"
+	Event = "isBusinessEvent"| Product = "isProduct"
 ;
 
 

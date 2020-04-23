@@ -93,6 +93,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject ExpressionHelper exprHelper
 	@Inject CardinalityProvider cardinality
 	@Inject RosettaGrammarAccess grammar
+	@Inject RosettaConfigExtension confExtensions
 	
 	@Check
 	def void deprecatedInfo(RosettaClass classe) {
@@ -713,6 +714,37 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			if (!cardinality.isMulti(ele.argument))
 				error('''Count operation multiple cardinality argument.''', ele, ROSETTA_COUNT_OPERATION__ARGUMENT)
 		}
+	}
+	
+	@Check
+	def checkFunctionPrefix(Function ele) {
+		ele.annotations.forEach[a|
+			val prefix = a.annotation.prefix
+			if (prefix !== null && !ele.name.startsWith(prefix)) {
+				warning("Function name " + ele.name + " must have prefix " + prefix, ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			}
+		]
+	}
+	
+	@Check
+	def checkQualificationFunction(Function ele) {
+		ele.annotations.filter["qualification" == it.annotation.name].forEach[
+			val inputs = getInputs(ele)
+			if (inputs.nullOrEmpty || inputs.size !== 1) {
+				error('''Qualification functions must have exactly 1 input.''', ele, FUNCTION__INPUTS)
+				return
+			}
+			val inputType = inputs.get(0).type
+			if (inputType === null || inputType.eIsProxy) {
+				error('''Invalid input type for qualification function.''', ele, FUNCTION__INPUTS)
+			} else if (!confExtensions.isRootEventOrProduct(inputType)) {
+				warning('''Input type does not match qualification root type.''', ele, FUNCTION__INPUTS)
+			}
+			
+			if (RBuiltinType.BOOLEAN.name != getOutput(ele)?.type?.name) {
+		 		error('''Qualification functions must output a boolean.''', ele, FUNCTION__OUTPUT)
+			}
+		]
 	}
 	
 	private def Pair<Character,Boolean> checkPathChars(String str) {

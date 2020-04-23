@@ -171,12 +171,20 @@ class FuncGenerator {
 						}
 					«ENDIF»
 				«ENDFOR»
+				
 				public static final class «className»Default extends «className» {
 					@Override
 					protected  «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
 						return «IF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
 					}
 				}
+				
+				«IF func.isQualifierFunction()»
+				@Override
+				public String getNamePrefix() {
+					return "«func.annotations.map[annotation].filter["qualification" == name].head.prefix»";
+				}
+				«ENDIF»
 			}
 		'''
 	}
