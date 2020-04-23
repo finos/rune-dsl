@@ -33,10 +33,10 @@ class ModelMetaGeneratorTest {
 				b string (0..1);
 			}
 			
-			isEvent AExists
+			isBusinessEvent AExists
 				Foo -> a exists
 			
-			isEvent AEqualsSomeValue
+			isBusinessEvent AEqualsSomeValue
 				Foo -> a = "someValue"
 		'''.generateCode
 		//code.writeClasses("shouldGenerateGetQualiifyFunctions")

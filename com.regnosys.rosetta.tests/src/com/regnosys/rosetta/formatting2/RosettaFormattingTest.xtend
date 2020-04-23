@@ -348,7 +348,7 @@ class RosettaFormattingTest {
 			type Type:
 				other Type (0..1)
 
-			isEvent TypeEvent
+			isBusinessEvent TypeEvent
 			Type -> other -> other only exists
 					and Type -> other -> other is absent
 			 and Type -> other -> other  is absent
@@ -360,7 +360,7 @@ class RosettaFormattingTest {
 			type Type:
 				other Type (0..1)
 
-			isEvent TypeEvent
+			isBusinessEvent TypeEvent
 				Type -> other -> other only exists
 				and Type -> other -> other is absent
 				and Type -> other -> other  is absent

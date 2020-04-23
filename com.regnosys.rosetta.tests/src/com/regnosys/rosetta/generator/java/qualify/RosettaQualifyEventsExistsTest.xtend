@@ -47,70 +47,70 @@ class RosettaQualifyEventsExistsTest {
 				other number (0..1);
 			}
 			
-			isEvent Exists
+			isBusinessEvent Exists
 				Foo -> bar -> before exists
 			
-			isEvent SingleExists
+			isBusinessEvent SingleExists
 				Foo -> bar -> before single exists
 			
-			isEvent MultipleExists
+			isBusinessEvent MultipleExists
 				Foo -> bar -> before multiple exists
 			
-			isEvent OnlyExists
+			isBusinessEvent OnlyExists
 				Foo -> bar -> before only exists
 			
-			isEvent OnlySingleExists
+			isBusinessEvent OnlySingleExists
 				Foo -> bar -> before only single exists
 			
-			isEvent OnlyMultipleExists
+			isBusinessEvent OnlyMultipleExists
 				Foo -> bar -> before only multiple exists
 
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleSeparateOr_NoAliases_Exists
+			isBusinessEvent MultipleSeparateOr_NoAliases_Exists
 				Foo -> bar -> before exists or Foo -> bar -> after exists
 
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOr_NoAliases_Exists
+			isBusinessEvent MultipleOr_NoAliases_Exists
 				( Foo -> bar -> before or Foo -> bar -> after or Foo -> baz -> other ) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOrBranchNode_NoAliases_Exists
+			isBusinessEvent MultipleOrBranchNode_NoAliases_Exists
 				( Foo -> bar or Foo -> baz ) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleAnd_NoAliases_Exists
+			isBusinessEvent MultipleAnd_NoAliases_Exists
 				( Foo -> bar -> before and Foo -> bar -> after and Foo -> baz -> other ) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOrAnd_NoAliases_Exists
+			isBusinessEvent MultipleOrAnd_NoAliases_Exists
 				Foo -> bar -> before exists or ( Foo -> bar -> after and Foo -> baz -> other ) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOrAnd_NoAliases_Exists2
+			isBusinessEvent MultipleOrAnd_NoAliases_Exists2
 				(Foo -> bar -> before and Foo -> bar -> after) exists or Foo -> baz -> other exists or Foo -> baz -> bazValue exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOrAnd_NoAliases_Exists3
+			isBusinessEvent MultipleOrAnd_NoAliases_Exists3
 				(Foo -> bar -> before or Foo -> bar -> after) exists or (Foo -> baz -> other and Foo -> baz -> bazValue) exists
 
 «««			TODO tests compilation only, add unit test
-			isEvent AliasExists
+			isBusinessEvent AliasExists
 				aliasBefore exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOr_SomeAliases_Exists
+			isBusinessEvent MultipleOr_SomeAliases_Exists
 				( Foo -> bar -> before or Foo -> bar -> after or aliasOther ) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOr_AllAliases_Exists
+			isBusinessEvent MultipleOr_AllAliases_Exists
 				( aliasBefore or aliasAfter or aliasOther ) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOr_SingleAlias_Exists
+			isBusinessEvent MultipleOr_SingleAlias_Exists
 				aliasBeforeOrAfterOrOther exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleExistsWithOrAnd
+			isBusinessEvent MultipleExistsWithOrAnd
 				Foo -> bar -> before exists or ( Foo -> baz -> other exists and Foo -> bar -> after exists ) or Foo -> baz -> bazValue exists
 			
 			alias aliasBefore

@@ -49,151 +49,174 @@ class RosettaQualifyEventsComparisonTest {
 				bazValue number (0..1)
 				other number (0..1)
 			
-			func FeatureCallEqualToLiteral:
+			func QualifyFeatureCallEqualToLiteral:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					foo -> bar -> before = 5
 			
-			func FeatureCallNotEqualToLiteral:
+			func QualifyFeatureCallNotEqualToLiteral:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					foo -> bar -> before <> 5
 			
-			func FeatureCallEqualToFeatureCall:
+			func QualifyFeatureCallEqualToFeatureCall:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					foo -> bar -> before = foo -> bar -> after
 			
-			func FeatureCallListEqualToFeatureCall:
+			func QualifyFeatureCallListEqualToFeatureCall:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					foo -> bar -> before = foo -> baz -> other
-			func FeatureCallNotEqualToFeatureCall:
+
+			func QualifyFeatureCallNotEqualToFeatureCall:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					foo -> bar -> before <> foo -> bar -> after
 			
-			func FeatureCallListNotEqualToFeatureCall:
+			func QualifyFeatureCallListNotEqualToFeatureCall:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					foo -> bar -> before <> foo -> baz -> other
 			
-			func FeatureCallsEqualToLiteralOr:
+			func QualifyFeatureCallsEqualToLiteralOr:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					foo -> bar -> before = 5 or foo -> baz -> other = 5
 			
-			func FeatureCallsEqualToLiteralAnd:
+			func QualifyFeatureCallsEqualToLiteralAnd:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					foo -> bar -> before = 5 and foo -> bar -> after = 5
 						
 «««			TODO tests compilation only, add unit test
-			func MultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
+			func QualifyMultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
+				output: is_product boolean (1..1)
 				alias values : [foo -> bar -> before, foo -> baz -> other]
-				assign-output is_event:
+				assign-output is_product:
 					values contains foo -> bar -> after
 					or values contains foo -> baz -> bazValue
 «««			TODO tests compilation only, add unit test
-			func MultipleAndFeatureCallsEqualToMultipleOrFeatureCalls:
+			func QualifyMultipleAndFeatureCallsEqualToMultipleOrFeatureCalls:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 				//	(foo -> bar -> before and foo -> baz -> other) = (foo -> bar -> after and foo -> baz -> bazValue)
 				[foo -> bar -> before,  foo -> baz -> other] = [foo -> bar -> after, foo -> baz -> bazValue]
 «««			TODO tests compilation only, add unit test
-			func FeatureCallComparisonOr:
+			func QualifyFeatureCallComparisonOr:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					(foo -> bar -> before = foo -> baz -> other) or (foo -> bar -> after = foo -> baz -> bazValue)
 «««			TODO tests compilation only, add unit test
-			func FeatureCallComparisonAnd:
+			func QualifyFeatureCallComparisonAnd:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					(foo -> bar -> before = foo -> baz -> other) and (foo -> bar -> after = foo -> baz -> bazValue)
 «««			TODO tests compilation only, add unit test
-			func MultipleOrFeatureCallEqualToLiteral:
+			func QualifyMultipleOrFeatureCallEqualToLiteral:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					//		(foo -> bar -> before or foo -> bar -> after or foo -> baz -> other) = 5.0
 					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] contains 5.0
 «««			TODO tests compilation only, add unit test
-			func MultipleAndFeatureCallEqualToLiteral:
+			func QualifyMultipleAndFeatureCallEqualToLiteral:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					// (foo -> bar -> before and foo -> bar -> after and foo -> baz -> other) = 5.0
 					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] = 5.0
 			
 «««			TODO tests compilation only, add unit test
-			func AliasFeatureCallEqualToLiteral:
+			func QualifyAliasFeatureCallEqualToLiteral:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					AliasBefore(foo) -> numbers = 5
 			
 «««			TODO tests compilation only, add unit test
-			func AliasFeatureCallEqualToFeatureCall:
+			func QualifyAliasFeatureCallEqualToFeatureCall:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					AliasBefore(foo) = AliasAfter(foo)
 					
 «««			TODO tests compilation only, add unit test
-			func AliasFeatureCallsEqualToLiteralOr:
+			func QualifyAliasFeatureCallsEqualToLiteralOr:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					AliasBefore(foo) -> numbers = 5 or  AliasOther(foo) -> numbers = 5
 				
 			
 «««			TODO tests compilation only, add unit test
-			func AliasFeatureCallsEqualToLiteralAnd:
+			func QualifyAliasFeatureCallsEqualToLiteralAnd:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					AliasBefore(foo) -> numbers = 5 and AliasOther(foo) -> numbers = 5
 			
 «««			TODO tests compilation only, add unit test
-			func AliasMultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
+			func QualifyAliasMultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					(AliasBefore(foo) -> numbers exists
 					or AliasOther(foo) -> numbers exists) = 
 					(AliasAfter(foo) -> numbers contains foo -> baz -> bazValue)
 			
 «««			TODO tests compilation only, add unit test
-			func AliasMultipleOrs:
+			func QualifyAliasMultipleOrs:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					AliasBeforeOrAfterOrOther(foo) -> numbers contains 5.0
 			
 «««			TODO tests compilation only, add unit test
-			func MultipleGreaterThanComparisonsWithOrAnd:
+			func QualifyMultipleGreaterThanComparisonsWithOrAnd:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					foo -> bar -> before > 5 or ( foo -> baz -> other > 10 and foo -> bar -> after > 15 ) or foo -> baz -> bazValue > 20
 			
-			func FeatureCallGreatherThan:
+			func QualifyFeatureCallGreatherThan:
+				[qualification Product]
 				inputs: foo Foo(1..1)
-				output: is_event boolean (1..1)
-				assign-output is_event:
+				output: is_product boolean (1..1)
+				assign-output is_product:
 					foo -> bar -> before > foo -> bar2 -> before
 			
 «««			Group By Deprecate it

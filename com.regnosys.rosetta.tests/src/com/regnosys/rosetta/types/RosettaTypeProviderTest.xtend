@@ -129,10 +129,10 @@ class RosettaTypeProviderTest {
 				nBar number (0..*)
 				nBuz number (0..*)
 			
-			isEvent AllNumber 
+			isBusinessEvent AllNumber 
 				(Foo -> nBar or Foo -> nBuz) = 4.0
 				
-			isEvent MixedNumber 
+			isBusinessEvent MixedNumber 
 				(Foo -> nBar or Foo -> iBar) = 4.0
 		'''.parseRosettaWithNoErrors.elements.filter(RosettaQualifiable)
 		val alNumber = aliases.filter[name == "AllNumber"].head
