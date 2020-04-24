@@ -53,7 +53,7 @@ class RosettaGrammarUtil {
 	
 	private static def toQualifiableName(RosettaQualifiable qualifiableClass) {
 		if(qualifiableClass instanceof RosettaEvent) {
-			return 'isEvent'
+			return 'isBusinessEvent'
 		}
 		else if (qualifiableClass instanceof RosettaProduct) {
 			return 'isProduct'

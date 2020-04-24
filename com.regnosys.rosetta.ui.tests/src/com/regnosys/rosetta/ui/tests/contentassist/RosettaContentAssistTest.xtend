@@ -204,7 +204,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 		'''
 			namespace "test"
 			
-			isEvent root Event;
+			isBusinessEvent root Event;
 			
 			type Event:
 			
@@ -221,14 +221,14 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			alias ProductAlias 
 				EconomicTerms -> ecoTermsAttr
 			
-			isEvent test
+			isBusinessEvent test
 				<|>
 		''' >= #['Event', 'EventAlias', '"Value"', "(", "<", "[", "empty", "False", "True"] 
 		
 		'''
 			namespace "test"
 			
-			isEvent root Event;
+			isBusinessEvent root Event;
 			
 			type Event:
 			
@@ -241,7 +241,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			alias EventAlias 
 				Event -> eventAttr
 			
-			isEvent test
+			isBusinessEvent test
 				Event and <|>
 		''' >= #['Event', 'EventAlias', '"Value"', "(", "[", "empty", "False", "True"]  
 	}
