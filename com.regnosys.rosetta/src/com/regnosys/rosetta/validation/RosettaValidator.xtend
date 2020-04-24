@@ -424,7 +424,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def checkUniqueRootClassForRosettaQualifiable(RosettaQualifiable ele) {
 		val usedClasses = collectRootCalls(ele)
 
-		val qualifiableType = switch (ele) { RosettaProduct: 'isProduct' RosettaEvent: 'isBusinessEvent' default: 'unknown Qualifiable' }
+		val qualifiableType = switch (ele) { RosettaProduct: 'isProduct' RosettaEvent: 'isEvent' default: 'unknown Qualifiable' }
 		if (usedClasses.size > 1) {
 			error('''«qualifiableType» "«ele.name»" has multiple class references «usedClasses.join(', ',[name])». isProduct expressions should always start from the same class''',
 				ele, ROSETTA_NAMED__NAME, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE)
@@ -738,6 +738,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			if (inputType === null || inputType.eIsProxy) {
 				error('''Invalid input type for qualification function.''', ele, FUNCTION__INPUTS)
 			} else if (!confExtensions.isRootEventOrProduct(inputType)) {
+				//val blah = confExtensions.isRootEventOrProduct(inputType)
+				println("****0 " + confExtensions.findProductRootName(inputType))
+				println("****1 " + confExtensions.findEventRootName(inputType))
 				warning('''Input type does not match qualification root type.''', ele, FUNCTION__INPUTS)
 			}
 			

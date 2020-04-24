@@ -405,7 +405,7 @@ class RosettaObjectGeneratorTest {
 		// only fields "a" and "b" should be included in the rosettaKeyValue hash
 		val code = '''
 			isProduct root Foo;
-			isBusinessEvent root Foo;
+			isEvent root Foo;
 			
 			
 			type Foo :
@@ -474,7 +474,7 @@ class RosettaObjectGeneratorTest {
 	@Test
 	def shouldGenerateRosettaQualifiedAnnotationForEventType() {
 		val code = '''
-			isBusinessEvent root Foo;
+			isEvent root Foo;
 			
 			type Foo:
 				a string (0..1)

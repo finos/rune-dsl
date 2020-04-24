@@ -64,7 +64,7 @@ class RosettaQualifyEventsDataRuleTest {
 			when Foo -> baz exists
 			then Foo -> baz -> other > 0
 			
-			isBusinessEvent ExprAndDataRulesOrDataRules
+			isEvent ExprAndDataRulesOrDataRules
 				Foo -> baz -> other when present = 10
 				and Foo -> bar -> before exists
 				and Foo -> bar -> after exists

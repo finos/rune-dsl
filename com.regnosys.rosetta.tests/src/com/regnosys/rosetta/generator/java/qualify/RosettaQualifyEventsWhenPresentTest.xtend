@@ -44,7 +44,7 @@ class RosettaQualifyEventsWhenPresentTest {
 				other number (0..1);
 			}
 			
-			isBusinessEvent WhenPresentExpr
+			isEvent WhenPresentExpr
 				Foo -> baz -> bazValue when present = 15
 			'''.generateCode
 		//println(code)

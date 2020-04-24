@@ -203,7 +203,7 @@ class RosettaModelTest{
 				interestLeg string (0..*);
 			}
 			
-			isBusinessEvent Foo
+			isEvent Foo
 				IRS exists
 		'''
 		

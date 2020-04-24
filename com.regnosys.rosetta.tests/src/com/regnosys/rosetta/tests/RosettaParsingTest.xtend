@@ -527,7 +527,7 @@ class RosettaParsingTest {
 	@Test @Disabled //FIXME referencing  'data rule' not supported
 	def void testIsEvent() {
 	'''
-			isBusinessEvent FooBar
+			isEvent FooBar
 				[synonym Bank_A value Foo_Bar]
 				[synonym Venue_B value BarFoo]
 				Foo -> foo exists

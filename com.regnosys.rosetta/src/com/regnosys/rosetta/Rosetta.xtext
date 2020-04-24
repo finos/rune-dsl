@@ -616,7 +616,7 @@ RosettaProduct:
  */
  
 RosettaEvent:
-	'isBusinessEvent' RosettaNamed RosettaDefinable?
+	'isEvent' RosettaNamed RosettaDefinable?
  	(synonyms += RosettaSynonym)*
  	expression = RosettaExpression
  	(('and' andDataRules+=[RosettaDataRule] (',' andDataRules += [RosettaDataRule])*) 
@@ -632,7 +632,7 @@ RosettaQualifiableConfiguration:
 ;
 
 enum RosettaQualifiableType :
-	Event = "isBusinessEvent"| Product = "isProduct"
+	Event = "isEvent"| Product = "isProduct"
 ;
 
 
