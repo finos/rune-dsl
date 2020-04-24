@@ -720,8 +720,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def checkFunctionPrefix(Function ele) {
 		ele.annotations.forEach[a|
 			val prefix = a.annotation.prefix
-			if (prefix !== null && !ele.name.startsWith(prefix)) {
-				warning("Function name " + ele.name + " must have prefix " + prefix, ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			if (prefix !== null && !ele.name.startsWith(prefix + "_")) {
+				warning("Function name " + ele.name + " must have prefix " + prefix + " followed by an underscore.", ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
 			}
 		]
 	}
