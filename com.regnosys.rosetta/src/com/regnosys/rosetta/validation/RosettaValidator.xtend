@@ -727,27 +727,38 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
-	def checkQualificationFunction(Function ele) {
-		ele.annotations.filter["qualification" == it.annotation.name].forEach[
-			val inputs = getInputs(ele)
-			if (inputs.nullOrEmpty || inputs.size !== 1) {
-				error('''Qualification functions must have exactly 1 input.''', ele, FUNCTION__INPUTS)
-				return
-			}
-			val inputType = inputs.get(0).type
-			if (inputType === null || inputType.eIsProxy) {
-				error('''Invalid input type for qualification function.''', ele, FUNCTION__INPUTS)
-			} else if (!confExtensions.isRootEventOrProduct(inputType)) {
-				//val blah = confExtensions.isRootEventOrProduct(inputType)
-				println("****0 " + confExtensions.findProductRootName(inputType))
-				println("****1 " + confExtensions.findEventRootName(inputType))
-				warning('''Input type does not match qualification root type.''', ele, FUNCTION__INPUTS)
-			}
-			
-			if (RBuiltinType.BOOLEAN.name != getOutput(ele)?.type?.name) {
-		 		error('''Qualification functions must output a boolean.''', ele, FUNCTION__OUTPUT)
-			}
-		]
+	def checkQualificationAnnotation(Annotated ele) {
+		val annotations = ele.annotations.filter["qualification" == it.annotation.name]
+		if (annotations.empty) {
+			return
+		}
+		if (!(ele instanceof Function)) {
+			error('''Qualification annotation only allowed on a function.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		
+		val func = ele as Function
+		
+		if (annotations.size > 1) {
+			error('''Only 1 qualification annotation allowed.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		
+		val inputs = getInputs(func)
+		if (inputs.nullOrEmpty || inputs.size !== 1) {
+			error('''Qualification functions must have exactly 1 input.''', func, FUNCTION__INPUTS)
+			return
+		}
+		val inputType = inputs.get(0).type
+		if (inputType === null || inputType.eIsProxy) {
+			error('''Invalid input type for qualification function.''', func, FUNCTION__INPUTS)
+		} else if (!confExtensions.isRootEventOrProduct(inputType)) {
+			warning('''Input type does not match qualification root type.''', func, FUNCTION__INPUTS)
+		}
+		
+		if (RBuiltinType.BOOLEAN.name != getOutput(func)?.type?.name) {
+	 		error('''Qualification functions must output a boolean.''', func, FUNCTION__OUTPUT)
+		}
 	}
 	
 	private def Pair<Character,Boolean> checkPathChars(String str) {
