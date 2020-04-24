@@ -24,9 +24,12 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.types.RAnnotateType
 import com.regnosys.rosetta.types.RBuiltinType
+import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
+import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.Mapper
 import com.rosetta.model.lib.functions.MapperBuilder
 import com.rosetta.model.lib.functions.MapperS
@@ -40,9 +43,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.types.RAnnotateType
-import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 
 class FuncGenerator {
 
@@ -181,7 +181,7 @@ class FuncGenerator {
 				
 				@Override
 				public String getNamePrefix() {
-					return "«func.annotations.map[annotation].filter["qualification" == name].head.prefix»";
+					return "«getQualifierAnnotations(func).head.annotation.prefix»";
 				}
 				«ENDIF»
 			}

@@ -5,6 +5,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -138,6 +139,10 @@ class RosettaFunctionExtensions {
 	}
 	
 	def boolean isQualifierFunction(Function function) {
-		function.annotations.map[annotation].map[name].contains("qualification")
+		!getQualifierAnnotations(function).empty
+	}
+	
+	def getQualifierAnnotations(Annotated element) {
+		element.annotations.filter["qualification" == it.annotation.name].toList
 	}
 }

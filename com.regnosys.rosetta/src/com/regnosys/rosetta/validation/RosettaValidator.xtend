@@ -22,6 +22,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
@@ -72,7 +73,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 
 /**
  * This class contains custom validation rules. 
@@ -728,7 +728,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkQualificationAnnotation(Annotated ele) {
-		val annotations = ele.annotations.filter["qualification" == it.annotation.name]
+		val annotations = getQualifierAnnotations(ele)
 		if (annotations.empty) {
 			return
 		}
