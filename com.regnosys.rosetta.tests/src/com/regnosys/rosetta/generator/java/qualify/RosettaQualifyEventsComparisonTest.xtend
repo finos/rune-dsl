@@ -49,56 +49,56 @@ class RosettaQualifyEventsComparisonTest {
 				bazValue number (0..1)
 				other number (0..1)
 			
-			func QualifyFeatureCallEqualToLiteral:
+			func Qualify_FeatureCallEqualToLiteral:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
 				assign-output is_product:
 					foo -> bar -> before = 5
 			
-			func QualifyFeatureCallNotEqualToLiteral:
+			func Qualify_FeatureCallNotEqualToLiteral:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
 				assign-output is_product:
 					foo -> bar -> before <> 5
 			
-			func QualifyFeatureCallEqualToFeatureCall:
+			func Qualify_FeatureCallEqualToFeatureCall:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
 				assign-output is_product:
 					foo -> bar -> before = foo -> bar -> after
 			
-			func QualifyFeatureCallListEqualToFeatureCall:
+			func Qualify_FeatureCallListEqualToFeatureCall:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
 				assign-output is_product:
 					foo -> bar -> before = foo -> baz -> other
 
-			func QualifyFeatureCallNotEqualToFeatureCall:
+			func Qualify_FeatureCallNotEqualToFeatureCall:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
 				assign-output is_product:
 					foo -> bar -> before <> foo -> bar -> after
 			
-			func QualifyFeatureCallListNotEqualToFeatureCall:
+			func Qualify_FeatureCallListNotEqualToFeatureCall:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
 				assign-output is_product:
 					foo -> bar -> before <> foo -> baz -> other
 			
-			func QualifyFeatureCallsEqualToLiteralOr:
+			func Qualify_FeatureCallsEqualToLiteralOr:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
 				assign-output is_product:
 					foo -> bar -> before = 5 or foo -> baz -> other = 5
 			
-			func QualifyFeatureCallsEqualToLiteralAnd:
+			func Qualify_FeatureCallsEqualToLiteralAnd:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -106,7 +106,7 @@ class RosettaQualifyEventsComparisonTest {
 					foo -> bar -> before = 5 and foo -> bar -> after = 5
 						
 «««			TODO tests compilation only, add unit test
-			func QualifyMultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
+			func Qualify_MultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -115,7 +115,7 @@ class RosettaQualifyEventsComparisonTest {
 					values contains foo -> bar -> after
 					or values contains foo -> baz -> bazValue
 «««			TODO tests compilation only, add unit test
-			func QualifyMultipleAndFeatureCallsEqualToMultipleOrFeatureCalls:
+			func Qualify_MultipleAndFeatureCallsEqualToMultipleOrFeatureCalls:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -123,21 +123,21 @@ class RosettaQualifyEventsComparisonTest {
 				//	(foo -> bar -> before and foo -> baz -> other) = (foo -> bar -> after and foo -> baz -> bazValue)
 				[foo -> bar -> before,  foo -> baz -> other] = [foo -> bar -> after, foo -> baz -> bazValue]
 «««			TODO tests compilation only, add unit test
-			func QualifyFeatureCallComparisonOr:
+			func Qualify_FeatureCallComparisonOr:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
 				assign-output is_product:
 					(foo -> bar -> before = foo -> baz -> other) or (foo -> bar -> after = foo -> baz -> bazValue)
 «««			TODO tests compilation only, add unit test
-			func QualifyFeatureCallComparisonAnd:
+			func Qualify_FeatureCallComparisonAnd:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
 				assign-output is_product:
 					(foo -> bar -> before = foo -> baz -> other) and (foo -> bar -> after = foo -> baz -> bazValue)
 «««			TODO tests compilation only, add unit test
-			func QualifyMultipleOrFeatureCallEqualToLiteral:
+			func Qualify_MultipleOrFeatureCallEqualToLiteral:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -145,7 +145,7 @@ class RosettaQualifyEventsComparisonTest {
 					//		(foo -> bar -> before or foo -> bar -> after or foo -> baz -> other) = 5.0
 					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] contains 5.0
 «««			TODO tests compilation only, add unit test
-			func QualifyMultipleAndFeatureCallEqualToLiteral:
+			func Qualify_MultipleAndFeatureCallEqualToLiteral:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -154,7 +154,7 @@ class RosettaQualifyEventsComparisonTest {
 					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] = 5.0
 			
 «««			TODO tests compilation only, add unit test
-			func QualifyAliasFeatureCallEqualToLiteral:
+			func Qualify_AliasFeatureCallEqualToLiteral:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -162,7 +162,7 @@ class RosettaQualifyEventsComparisonTest {
 					AliasBefore(foo) -> numbers = 5
 			
 «««			TODO tests compilation only, add unit test
-			func QualifyAliasFeatureCallEqualToFeatureCall:
+			func Qualify_AliasFeatureCallEqualToFeatureCall:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -170,7 +170,7 @@ class RosettaQualifyEventsComparisonTest {
 					AliasBefore(foo) = AliasAfter(foo)
 					
 «««			TODO tests compilation only, add unit test
-			func QualifyAliasFeatureCallsEqualToLiteralOr:
+			func Qualify_AliasFeatureCallsEqualToLiteralOr:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -179,7 +179,7 @@ class RosettaQualifyEventsComparisonTest {
 				
 			
 «««			TODO tests compilation only, add unit test
-			func QualifyAliasFeatureCallsEqualToLiteralAnd:
+			func Qualify_AliasFeatureCallsEqualToLiteralAnd:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -187,7 +187,7 @@ class RosettaQualifyEventsComparisonTest {
 					AliasBefore(foo) -> numbers = 5 and AliasOther(foo) -> numbers = 5
 			
 «««			TODO tests compilation only, add unit test
-			func QualifyAliasMultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
+			func Qualify_AliasMultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -197,7 +197,7 @@ class RosettaQualifyEventsComparisonTest {
 					(AliasAfter(foo) -> numbers contains foo -> baz -> bazValue)
 			
 «««			TODO tests compilation only, add unit test
-			func QualifyAliasMultipleOrs:
+			func Qualify_AliasMultipleOrs:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
@@ -205,14 +205,14 @@ class RosettaQualifyEventsComparisonTest {
 					AliasBeforeOrAfterOrOther(foo) -> numbers contains 5.0
 			
 «««			TODO tests compilation only, add unit test
-			func QualifyMultipleGreaterThanComparisonsWithOrAnd:
+			func Qualify_MultipleGreaterThanComparisonsWithOrAnd:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
 				assign-output is_product:
 					foo -> bar -> before > 5 or ( foo -> baz -> other > 10 and foo -> bar -> after > 15 ) or foo -> baz -> bazValue > 20
 			
-			func QualifyFeatureCallGreatherThan:
+			func Qualify_FeatureCallGreatherThan:
 				[qualification Product]
 				inputs: foo Foo(1..1)
 				output: is_product boolean (1..1)
