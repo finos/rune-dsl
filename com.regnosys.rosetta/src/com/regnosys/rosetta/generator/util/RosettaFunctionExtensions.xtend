@@ -145,4 +145,8 @@ class RosettaFunctionExtensions {
 	def getQualifierAnnotations(Annotated element) {
 		element.annotations.filter["qualification" == it.annotation.name].toList
 	}
+	
+	def getCreationAnnotations(Annotated element) {
+		element.annotations.filter["creation" == it.annotation.name].toList
+	}
 }

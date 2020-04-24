@@ -40,6 +40,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -139,7 +140,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 
 	@Check
 	def void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
-		if (!Character.isLowerCase(attribute.name.charAt(0))) {
+		val annotationAttribute = attribute.eContainer instanceof Annotation
+		if (!annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
 			warning("Attribute name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -727,6 +729,22 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
+	def checkCreationAnnotation(Annotated ele) {
+		val annotations = getCreationAnnotations(ele)
+		if (annotations.empty) {
+			return
+		}
+		if (!(ele instanceof Function)) {
+			error('''Creation annotation only allowed on a function.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		if (annotations.size > 1) {
+			error('''Only 1 creation annotation allowed.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+	}
+	
+	@Check
 	def checkQualificationAnnotation(Annotated ele) {
 		val annotations = getQualifierAnnotations(ele)
 		if (annotations.empty) {
@@ -756,7 +774,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			warning('''Input type does not match qualification root type.''', func, FUNCTION__INPUTS)
 		}
 		
-		if (RBuiltinType.BOOLEAN.name != getOutput(func)?.type?.name) {
+		if (RBuiltinType.BOOLEAN.name != func.output?.type?.name) {
 	 		error('''Qualification functions must output a boolean.''', func, FUNCTION__OUTPUT)
 		}
 	}
