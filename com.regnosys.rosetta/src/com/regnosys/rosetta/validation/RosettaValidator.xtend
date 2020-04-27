@@ -723,7 +723,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		ele.annotations.forEach[a|
 			val prefix = a.annotation.prefix
 			if (prefix !== null && !ele.name.startsWith(prefix + "_")) {
-				warning("Function name " + ele.name + " must have prefix " + prefix + " followed by an underscore.", ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+				warning('''Function name «ele.name» must have prefix '«prefix»' followed by an underscore.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
 			}
 		]
 	}
@@ -741,6 +741,25 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (annotations.size > 1) {
 			error('''Only 1 creation annotation allowed.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
 			return
+		}
+		
+		val func = ele as Function
+		
+		val annotationType = annotations.head.attribute.type
+		val funcOutputType = func.output.type
+		
+		if (annotationType instanceof Data && funcOutputType instanceof Data) {
+			val annotationDataType = annotationType as Data
+			val funcOutputDataType = func.output.type as Data
+			val funcOutputSuperTypeNames = funcOutputDataType.superType.allSuperTypes.map[name].toSet
+			val annotationAttributeTypeNames = annotationDataType.attributes.map[type].map[name].toList
+			
+			if (annotationDataType.name !== funcOutputDataType.name
+				&& !funcOutputSuperTypeNames.contains(annotationDataType.name) // annotation type is a super type of output type
+				&& !annotationAttributeTypeNames.contains(funcOutputDataType.name) // annotation type is a parent of the output type (with a one-of condition)
+			) {
+				warning('''Invalid output type for creation annotation.  The output type must match the type specified in the annotation '«annotationDataType.name»' (or extend the annotation type, or be a sub-type as part of a one-of condition).''', func, FUNCTION__OUTPUT)
+			}
 		}
 	}
 	
