@@ -20,4 +20,5 @@ public interface RosettaIssueCodes {
 	static final String MISSING_ENUM_VALUE = PREFIX + "MissingEnumValue";
 	static final String MISSING_BLUEPRINT_REGREF=PREFIX +"missingRegRef";
 	static final String CARDINALITY_ERROR=PREFIX +"cardinalityError";
+	static final String INVALID_ELEMENT_NAME=PREFIX +"invalidElementName";
 }

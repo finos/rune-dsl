@@ -32,6 +32,7 @@ fragment Definable:
 
 Annotation:
 	'annotation' RosettaNamed ':' Definable?
+	('[' 'prefix' prefix = ValidID ']')?
 	attributes += Attribute*
 ;
 

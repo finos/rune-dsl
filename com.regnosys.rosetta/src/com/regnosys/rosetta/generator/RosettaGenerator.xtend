@@ -12,6 +12,7 @@ import com.regnosys.rosetta.generator.java.enums.EnumGenerator
 import com.regnosys.rosetta.generator.java.function.FuncGenerator
 import com.regnosys.rosetta.generator.java.object.DataGenerator
 import com.regnosys.rosetta.generator.java.object.DataValidatorsGenerator
+import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
@@ -19,6 +20,7 @@ import com.regnosys.rosetta.generator.java.qualify.QualifyFunctionGenerator
 import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -26,6 +28,7 @@ import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.rosetta.util.DemandableLock
+import java.util.concurrent.CancellationException
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.resource.Resource
@@ -33,9 +36,6 @@ import org.eclipse.xtend.lib.annotations.Delegate
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import java.util.concurrent.CancellationException
-import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
-import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 
 /**
  * Generates code from your model files on save.
@@ -77,6 +77,8 @@ class RosettaGenerator extends AbstractGenerator {
 		try {
 			lock.getWriteLock(true);
 			if (!ignoredFiles.contains(resource.URI.segments.last)) {
+				// all models
+				val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toSet
 
 				// generate for each model object
 				resource.contents.filter(RosettaModel).forEach [
@@ -91,7 +93,7 @@ class RosettaGenerator extends AbstractGenerator {
 						switch (it) {
 							Data: {
 								dataGenerator.generate(javaNames, fsa, it, version)
-								metaGenerator.generate(javaNames, fsa, it, version)
+								metaGenerator.generate(javaNames, fsa, it, version, models)
 								validatorsGenerator.generate(javaNames, fsa, it, version)
 								it.conditions.forEach [ cond |
 									if (cond.isChoiceRuleCondition) {
