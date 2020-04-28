@@ -117,7 +117,6 @@ class RosettaClass extends RosettaRootElement, RosettaFeatureOwner, RosettaType,
 	boolean root
 	boolean oneOf
 	boolean globalKey
-	boolean rosettaKeyValue
 	
 	refers RosettaClass superType
 	contains RosettaStereotype stereotype
