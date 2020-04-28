@@ -14,85 +14,37 @@ import static org.hamcrest.MatcherAssert.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaKeyGeneratorTest {
+class GlobalKeyGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 
 	@Test
-	def void shouldGenerateRosettaKeyFieldAndGetterWhenSet() {
+	def void shouldGenerateGlobalKeyFieldAndGetterWhenSet() {
 		val code = '''
-			type WithRosettaKey:
-				[metadata key]
-				[partialKey]
-				foo string (1..1)
-		'''.generateCode
-
-		val classess = code.compileToClasses
-		val withRosettaKey = classess.get(rootPackage.name + '.WithRosettaKey')
-
-		assertThat(withRosettaKey.declaredFields.map[name], hasItem('meta'))
-		assertThat(withRosettaKey.declaredFields.map[name], hasItem('rosettaKeyValue'))
-	}
-
-	@Test
-	def void shouldGenerateRosettaKeyValueFieldAndGetterWhenSet() {
-		val code = '''
-			type WithRosettaKey:
+			type WithGlobalKey:
 				[metadata key]
 				foo string (1..1)
 		'''.generateCode
 
 		val classess = code.compileToClasses
-		val withRosettaKey = classess.get(rootPackage.name + '.WithRosettaKey')
+		val withGlobalKey = classess.get(rootPackage.name + '.WithGlobalKey')
 
-		assertThat(withRosettaKey.methods.exists[name.equals('getMeta')], is(true))
-		assertThat(withRosettaKey.methods.exists[name.equals('getRosettaKeyValue')], is(false))
+		assertThat(withGlobalKey.declaredFields.map[name], hasItem('meta'))
 	}
 
 	@Test
 	def void shouldNotGenerateFieldsAndGetterWhenNotDefined() {
 		val code = '''
-			type WithoutRosettaKeys:
+			type WithoutGlobalKeys:
 				foo string (1..1)
 		'''.generateCode
 
 		val classess = code.compileToClasses
-		val withoutRosettaKeys = classess.get(rootPackage.name + '.WithoutRosettaKeys')
+		val withoutGlobalKeys = classess.get(rootPackage.name + '.WithoutGlobalKeys')
 
-		assertThat(withoutRosettaKeys.fields.map[name], not(hasItem('metaFields')))
+		assertThat(withoutGlobalKeys.fields.map[name], not(hasItem('metaFields')))
 
-		assertThat(withoutRosettaKeys.methods.exists[name.equals('meta')], is(false))
-	}
-	
-	@Test
-	def void shouldGenerateGetterWhenRosettaKeyValueDefined() {
-		val code = '''
-			type WithRosettaKeyValue:
-				[partialKey]
-				foo string (1..1)
-		'''.generateCode
-
-		val classess = code.compileToClasses
-		val withRosettaKeyValue = classess.get(rootPackage.name + '.WithRosettaKeyValue')
-
-		assertThat(withRosettaKeyValue.methods.exists[name.equals('getRosettaKey')], is(false))
-		assertThat(withRosettaKeyValue.methods.exists[name.equals('getRosettaKeyValue')], is(true))
-	}
-
-	@Test
-	def void shouldGenerateGettersWhenRosettaKeyAndRosettaKeyValueDefined() {
-		val code = '''
-			type WithRosettaKeys:
-				[metadata key]
-				[partialKey]
-				foo string (1..1)
-		'''.generateCode
-
-		val classess = code.compileToClasses
-		val withRosettaKeys = classess.get(rootPackage.name + '.WithRosettaKeys')
-
-		assertThat(withRosettaKeys.methods.exists[name.equals('getMeta')], is(true))
-		assertThat(withRosettaKeys.methods.exists[name.equals('getRosettaKeyValue')], is(true))
+		assertThat(withoutGlobalKeys.methods.exists[name.equals('meta')], is(false))
 	}
 }

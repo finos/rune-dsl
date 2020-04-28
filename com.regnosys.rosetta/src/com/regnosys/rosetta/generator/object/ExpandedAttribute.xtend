@@ -61,11 +61,6 @@ final class ExpandedAttribute {
 	def builtInType() {
 		getType.isBuiltInType
 	}
-	
-	def shouldCopy() {
-		!#['rosettaKey', 'rosettaKeyValue'].contains(name)
-	}
-	
 }
 
 @Data

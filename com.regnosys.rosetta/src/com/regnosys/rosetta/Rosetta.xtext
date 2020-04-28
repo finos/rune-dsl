@@ -229,7 +229,6 @@ RosettaClass:
 	(abstract?='abstract' | root?='root')? 'class' RosettaNamed ('extends' superType=[RosettaClass|ValidID])?
 	('stereotype' stereotype = RosettaStereotype)? 
 	(globalKey ?= 'key')?
-	(rosettaKeyValue ?= 'rosettaKeyValue')?
 	(oneOf ?= 'one' 'of')?
 	RosettaDefinable?
 		(synonyms += RosettaClassSynonym)*
