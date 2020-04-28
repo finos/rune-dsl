@@ -58,13 +58,13 @@ class ExternalHashcodeGeneratorTest {
 	}
 	
 	@Test
-	def void shouldHandleRosettaKeys() {
+	def void shouldHandleGlobalKeys() {
 		val code = '''
-			type WithRosettaKey:
+			type WithGlobalKey:
 				[metadata key]
 				foo string (1..1)
 		'''.generateCode
-		code.writeClasses("ShouldHandleRosettaKeys")		
+		code.writeClasses("ShouldHandleGlobalKeys")		
 		code.compileToClasses
 	}
 	

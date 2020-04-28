@@ -8,8 +8,6 @@ import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.GlobalKeyBuilder
-import com.rosetta.model.lib.RosettaKeyValue
-import com.rosetta.model.lib.RosettaKeyValueBuilder
 import com.rosetta.model.lib.qualify.Qualified
 import com.rosetta.util.ListEquals
 import java.util.List
@@ -64,8 +62,6 @@ class ModelObjectBoilerPlate {
 		val interfaces = newHashSet
 		if(d.hasKeyedAnnotation)
 			interfaces.add(GlobalKey)
-		if(d.hasPartialKeyAnnotation)
-			interfaces.add(RosettaKeyValue)
 		if (interfaces.empty) null else '''implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
 	}
 	
@@ -73,8 +69,6 @@ class ModelObjectBoilerPlate {
 		val interfaces = <StringConcatenationClient>newArrayList
 		if (d.hasKeyedAnnotation)
 			interfaces.add('''«GlobalKeyBuilder»<«d.name»Builder>''')
-		if (d.hasPartialKeyAnnotation)
-			interfaces.add('''«RosettaKeyValueBuilder»<«d.name»Builder>''')
 		if (d.name == "ContractualProduct" || d.name == "BusinessEvent") {
 			interfaces.add('''«Qualified»''')
 		}
@@ -87,9 +81,6 @@ class ModelObjectBoilerPlate {
 		if(globalKey)
 			interfaces.add(nameFunc.apply('GlobalKey'))
 			
-		if(rosettaKeyValue)
-			interfaces.add(nameFunc.apply('RosettaKeyValue'))
-		
 		if (interfaces.empty) '''''' else '''implements «interfaces.join(', ')» '''
 	}
 	
@@ -196,16 +187,14 @@ class ModelObjectBoilerPlate {
 		return new TypeData(
 			rosettaClass.name,
 			rosettaClass.expandedAttributes,
-			rosettaClass.superType !== null,
-			true
+			rosettaClass.superType !== null
 		);
 	}
 	private def TypeData wrap(Data data) {
 		return new TypeData(
 			data.name,
 			data.expandedAttributes,
-			data.hasSuperType,
-			true
+			data.hasSuperType
 		);
 	}
 	
@@ -238,17 +227,11 @@ class ModelObjectBoilerPlate {
 		}
 		result.toString
 	}
-	// the eventEffect attribute should not contribute to the rosettaKeyValueHashCode. 
-	// TODO: Have generic way of excluding attributes from the hash
-	static def boolean isIncludedInRosettaKeyValueHashCode(ExpandedAttribute a) {
-		return !( a.hasCalculation || a.isQualified || a.name == 'eventEffect' || a.name == 'globalKey')
-	}
-
+	
 	@org.eclipse.xtend.lib.annotations.Data
 	static class TypeData {
 		val String name
 		val List<ExpandedAttribute> attributes
 		val boolean hasSuperType
-		val boolean generateRosettaKeyValueHashCode
 	}
 }

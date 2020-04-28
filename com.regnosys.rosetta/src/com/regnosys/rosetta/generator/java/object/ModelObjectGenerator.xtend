@@ -138,10 +138,6 @@ class ModelObjectGenerator {
 			import «packages.defaultLib.name».GlobalKey;
 			import «packages.defaultLib.name».GlobalKeyBuilder;
 		«ENDIF»
-		«IF c.rosettaKeyValue»
-			import «packages.defaultLib.name».RosettaKeyValue;
-			import «packages.defaultLib.name».RosettaKeyValueBuilder;
-		«ENDIF»
 		«IF c.isRoot»
 			import «packages.defaultLibAnnotations.name».RosettaRoot;
 		«ENDIF»

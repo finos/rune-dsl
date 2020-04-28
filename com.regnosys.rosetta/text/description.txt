@@ -62,8 +62,8 @@ Package rosetta <http://www.rosetta-model.com/Rosetta>
     Attribute abstract : EBoolean
     Attribute root : EBoolean
     Attribute oneOf : EBoolean
-    Attribute rosettaKey : EBoolean
-    Attribute rosettaKeyValue : EBoolean
+    Attribute globalKey : EBoolean
+    Attribute globalKeyValue : EBoolean
     Reference superType : RosettaClass
     Reference calculations : RosettaCalculationHook
     Reference stereotype : RosettaStereotype
@@ -80,7 +80,7 @@ Package rosetta <http://www.rosetta-model.com/Rosetta>
     Reference card : RosettaCardinality
     Reference marketPractice : RosettaMarketPractice<<0..*>>
     Reference outmappings : RosettaOutMapping<<0..*>>
-    Attribute rosettaKey : EBoolean
+    Attribute globalKey : EBoolean
 
   Class RosettaRegularAttribute -> RosettaAttributeBase
     Reference synonyms : RosettaSynonym<<0..*>>

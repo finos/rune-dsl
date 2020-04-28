@@ -90,23 +90,6 @@ class RosettaAttributeExtensions {
 				emptyList
 			))
 		}
-		if(rosExt.hasPartialKeyAnnotation(data)) {
-			res.add(new ExpandedAttribute(
-				'rosettaKeyValue',
-				data.name,
-				provideStringType(data),
-				null,
-				1,
-				1,
-				false,
-				emptyList,
-				"",
-				false,
-				false,
-				false,
-				emptyList
-			))
-		}
 		return res
 	}
 	
@@ -129,25 +112,6 @@ class RosettaAttributeExtensions {
 	static def List<ExpandedAttribute> materialiseAttributes(RosettaClass rosettaClass) {
 		val materialisedAttributes = newLinkedList
 
-		if (rosettaClass.rosettaKeyValue) {
-			val rosettaKeyValueType = provideMetaFeildsType(rosettaClass)
-			val rosettaKeyValue = new ExpandedAttribute(
-				'rosettaKeyValue',
-				rosettaClass.name,
-				rosettaKeyValueType,
-				null,
-				1,
-				1,
-				false,
-				#[],
-				'',
-				false,
-				false,
-				false,
-				#[]
-			)
-			materialisedAttributes.add(rosettaKeyValue)
-		}
 		if (rosettaClass.globalKey) {
 			val metaFieldsType = provideMetaFeildsType(rosettaClass)
 			val metaFields = new ExpandedAttribute(
