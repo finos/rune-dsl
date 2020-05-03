@@ -1,123 +1,108 @@
 Rosetta Modelling Artefacts
 ===========================
 
-**The Rosetta syntax can express five types of modelling artefacts**:
+**The Rosetta syntax can express five types of model definitions**:
 
-* Data Representation
+* Data
 * Mapping (or *synonym*)
-* Data Integrity
+* Data Integrity (or *condition*)
 * Object Qualification
 * Function
 
-This documentation details the purpose and features of each of those modelling artefacts and highlights the relationships that exists among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those artefacts.
+This documentation details the purpose and features of each of those model definition types and highlights the relationships that exists among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those artefacts.
 
-Data Representation Artefacts
------------------------------
+Data Definition
+---------------
 
-**Rosetta provides five data representation components** to build data artefacts in the model:
+**Rosetta provides four data definition components** to build data artefacts in the model, grouped into two pairs:
 
-* Class
-* Attribute
-* Enumeration
-* Enumeration Value
-* Alias
+* Type and Attribute
+* Enumeration and Enumeration Value
 
-Class and Attribute
+Type and Attribute
 ^^^^^^^^^^^^^^^^^^^
 
 Purpose
 """""""
 
-A *class* describes an *entity* (or *object*) in the model as a set of attributes and an associated definition. *Attributes* specify the granular elements composing the entity in terms of their type, cardinality and each with an associated definition.
+A *type* describes an *entity* (also sometimes referred to as an *object* or a *class*) in the model and is defined by a plain-text description and a set of *attributes*. Attributes specify the granular elements composing the entity.
 
 Syntax
 """"""
 
-The class content is delineated by curly brackets ``{`` ``}``.
+The definition of a *type* starts with the keyword ``type``, followed by the type name. A colon ``:`` punctuation introduces the rest of the definition.
 
-A Rosetta attribute can be specified either as a basic type, a class or an enumeration. The set of **basic types** available in Rosetta are:
+The first component of the definition is a plain-text description of the type. Descriptions in Rosetta use quotation marks ``"`` ``"`` (to mark a string) in between angle brackets ``<`` ``>``. Descriptions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
+
+Then the definition of the type lists its component attributes, each in terms of its own type, cardinality and associated description. Attributes can in turn be specified either as a basic type, a type or an enumeration. The set of *basic types* available in Rosetta are:
 
 * Text - ``string``
-* Number - ``int`` ``number``
+* Number - ``int`` (for integer) and ``number`` (for float)
 * Logic - ``boolean``
-* Date and Time - ``date`` ``time`` ``zonedDateTime``
-
-In addition, Rosetta provides for some special types called 'qualified types', which are specific to its application in the financial domain:
-
-* Calculation - ``calculation``
-* Product and event qualification - ``productType`` ``eventType``
-
-Those special types are designed to flag attributes which result from the execution of some logic, such that model implementations can identify where to stamp the execution output in the model.
-
-The Rosetta convention is that class names use the PascalCase (starting with a capital letter, also referred to as the upper `CamelCase <https://en.wikipedia.org/wiki/Camel_case>`_), while attribute names use the camelCase (starting with a lower case letter, also referred to as the lower camelCase). Class names need to be unique across the model, including with respect to rule names. All those requirements are controlled by the Rosetta grammar.
-
-A plain-text definition of each modelling artefact is added in Rosetta as a string using ``"`` ``"`` in between angle brackets: ``<`` ``>``.
+* Date and Time - ``date``, ``time`` and ``zonedDateTime``
 
 .. code-block:: Java
 
- class ContractualProduct <"A class to specify the contractual products' economic terms, alongside their product identification and product taxonomy. The contractual product class is meant to be used across the pre-execution, execution and (as part of the Contract) post-execution lifecycle contexts.">
- {
-  productIdentification ProductIdentification (0..1) <"The product identification value(s) that might be associated with a contractual product. The CDM provides the ability to associate several product identification methods with a product.">;
-  productTaxonomy ProductTaxonomy (0..*) <"The product taxonomy value(s) associated with a contractual product.">;
-  economicTerms EconomicTerms (1..1) <"The economic terms associated with a contractual product, i.e. the set of features that are price-forming.">;
- }
+ type PeriodBound: <"The period bound is defined as a period and whether the bound is inclusive.">
+   period Period (1..1) <"The period to be used as the bound, e.g. 5Y.">
+   inclusive boolean (1..1) <"Whether the period bound is inclusive, e.g. for a lower bound, false would indicate greater than, whereas true would indicate greater than or equal to.">
 
-Definitions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
+ type Period: <"A class to define recurring periods or time offsets.">
+   periodMultiplier int (1..1) <"A time period multiplier, e.g. 1, 2 or 3 etc. A negative value can be used when specifying an offset relative to another date, e.g. -2 days.">
+   period PeriodEnum (1..1) <"A time period, e.g. a day, week, month or year of the stream. If the periodMultiplier value is 0 (zero) then period must contain the value D (day).">
+
+.. note:: The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword and therefore the start of a new definition marks the end of the previous one.
+
+The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase <https://en.wikipedia.org/wiki/Camel_case>`_), while attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase). Type names need to be unique across the model, including with respect to rule names. All those requirements are controlled by the Rosetta grammar.
+
+The Rosetta DSL provides for some special types called 'qualified types', which are specific to its application in the financial domain:
+
+* Calculation - ``calculation``
+* Product and event qualification - ``productType`` and ``eventType``
+
+Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model.
 
 Cardinality
 """""""""""
 
-Cardinality is a model integrity mechanism to control how many of each attribute can a class contain. The Rosetta syntax borrows from XML and specifies cardinality as a lower and upper bound in between ``(`` ``..`` ``)`` braces, as shown in the ``ContractualProduct`` example above.
+Cardinality is a model integrity mechanism to control how many of each attribute can a type contain. The Rosetta syntax borrows from XML and specifies cardinality as a lower and upper bound in between ``(`` ``..`` ``)`` braces.
 
-The lower and upper bounds can both be any number. A 0 lower bound means attribute is optional. A ``*`` upper bound means an unbounded attribute. ``(1..1)`` represents that there must be one and only one attribute of this type in that class.
+The lower and upper bounds can both be any integer number. A 0 lower bound means attribute is optional. A ``*`` upper bound means an unbounded attribute. ``(1..1)`` represents that there must be one and only one attribute of this type. When the upper bound is greater than 1, the attribute will be considered as a list (to be handled as such in any generated code).
 
 Time
 """"
 
 For time zone adjustments, a time zone qualifier can be specified alongside a time in one of two ways:
 
-* Through the ``zonedDateTime`` type, which needs to be expressed either as `UTC <https://en.wikipedia.org/wiki/Coordinated_Universal_Time>`_ or as an offset to UTC, as specified by the ISO 8601 standard.
-* Through the ``BusinessCenterTime`` class, where time is specified alongside a business center.  This is used to specify a time dimension in relation to a future event, e.g. the earliest or latest exercise time of an option.
+* Through the ``zonedDateTime`` basic type, which needs to be expressed either as `UTC <https://en.wikipedia.org/wiki/Coordinated_Universal_Time>`_ or as an offset to UTC, as specified by the ISO 8601 standard.
+* Through the ``BusinessCenterTime`` type, where time is specified alongside a business center.  This is used to specify a time dimension in relation to a future event: e.g. the earliest or latest exercise time of an option.
 
-While there has been discussion as to whether Rosetta should support dates which are specified as an offset to UTC with the ``Z`` suffix, no positive conclusion has been reached. The main reason is that all dates which need a business date context can already specify an associated business center.
+While there has been discussion as to whether the Rosetta DSL should support dates which are specified as an offset to UTC with the ``Z`` suffix, no positive conclusion has been reached. The main reason is that all dates which need a business date context can already specify an associated business center.
 
-Abstract Class
-""""""""""""""
+Inheritance
+"""""""""""
 
-Rosetta supports the concept of **abstract class**, which cannot be instantiated as part of the generated executable code and is meant to be extended by other classes.  An example of such is the ``IdentifiedProduct`` class, which is the baseline for products which terms are abstracted through reference data and can be extended by the respective variations of such products, as illustrated by the ``Loan`` class.
-
-**Note**: For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet it to highlight some of those features.
+The Rosetta DSL supports an **inheritance** mechanism, when a type inherits its definition and behaviour (and therefore all of its attributes) from another type and adds its own set of attributes on top. Inheritance is supported by the ``extends`` keyword next to the type name.
 
 .. code-block:: Java
 
- abstract class IdentifiedProduct
- {
-  productIdentifier ProductIdentifier (1..1);
- }
+ type Offset extends Period:
+	  dayType DayTypeEnum (0..1)
 
- class Loan extends IdentifiedProduct
- {
-  borrower LegalEntity (0..*);
-  lien string (0..1) scheme;
-  facilityType string (0..1) scheme;
-  creditAgreementDate date (0..1);
-  tranche string (0..1) scheme;
- }
+.. note:: For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet it to highlight some of those features.
+
 
 Meta-Type and Reference
 """""""""""""""""""""""
 
-Rosetta allows to associate a set of qualifiers to an attribute:
+The Rosetta DSL allows to associate a set of qualifiers to an attribute:
 
 * The ``scheme`` meta-type specifies a mechanism to control the set of values that an attribute can take. The relevant scheme reference can be specified as meta-information in the attribute synonyms, so that no originating information is disregarded.
-
 * The ``reference`` meta-type replicates the cross-referencing mechanism used in XML to provide data integrity within the context of an instance document - in particular with ``href`` (for *hyper-text reference*) as used in the FpML standard. The cross-reference value can be specified as meta-information in the attribute synonyms.
 
-**Note**: Synonyms are a mechanism in Rosetta to map the model components to physical data representations and is detailed in the *Synonym* section of this documentation.
+To make objects internally referenceabale (beyond external cross-references provided by an instance document), Rosetta also allows to associate a unique identifier to instances of a type, by  adding a ``key`` qualifier to the type name. The ``key`` corresponds to a hash code to be generated by the model implementation. The implementation provided as part of the Rosetta DSL is the de-facto Java hash function. It is a *deep hash* that uses the complete set of attribute values that compose the type and its attributes, recursively.
 
-To make objects internally referenceabale (beyond external cross-references provided by an instance document), Rosetta also allows to associate a unique identifier to instances of a class, by  adding a ``key`` qualifier to the class name. The ``key`` corresponds to a hash code to be generated by the model implementation. The implementation provided as part of the Rosetta DSL is the de-facto Java hash function. It is a *deep hash* that uses the complete set of attribute values that compose the class and its children, recursively.
-
-The below ``Party`` and ``Identifier`` classes provide a good illustration as to how **meta-types** and **references** are implemented.
+The below ``Party`` and ``Identifier`` classes provide an illustration as to how **meta-types** and **references** are implemented.
 
 .. code-block:: Java
 
@@ -137,7 +122,11 @@ The below ``Party`` and ``Identifier`` classes provide a good illustration as to
   assignedIdentifier AssignedIdentifier (1..*);
  }
 
-The ``key`` qualifier is associated to the ``Party`` class, while the ``reference`` qualifier is associated to the ``issuerReference`` attribute, of type ``Party``, in the ``Identifier`` class. The ``issuerReference`` can be provided as an external cross-reference, for which the value ``issuer`` is specified in the synonym source using ``href`` as the ``meta`` qualifier. The ``issuer`` attribute has an associated ``scheme``, which ``issuerIdScheme`` value is specified in the synonym source using the ``meta`` qualifier.
+.. note:: Synonyms are a mechanism in the Rosetta DSL to map model components to physical data representations and are detailed in the *Synonym* section of this documentation.
+
+A ``key`` qualifier is associated to the ``Party`` type, which means it is referenceable. In the ``Identifier`` class, the ``reference`` qualifier, which is associated to the ``issuerReference`` attribute of type ``Party``, indicates that this attribute can be provided as a reference (via its associated key) instead of a deep copy.
+
+The ``issuerReference`` can also be provided as an external cross-reference in the synonym source, using ``href`` as the ``meta`` qualifier. The ``issuer`` attribute has an associated ``scheme``, which ``issuerIdScheme`` value is specified in the synonym source using the ``meta`` qualifier.
 
 The below JSON extract illustrates an implementation of these meta-types in the context of a *transaction event*, which identifies the parties to the transactions as well as the *issuer* of the event (i.e. who submits the transaction message).
 
@@ -191,7 +180,7 @@ There are two parties to the event, associated with ``externalKey`` identifiers 
 
 Thanks to the ``reference`` qualifier, the ``issuerReference`` attribute can simply reference the event issuer party as "Party 2" rather than duplicating its components. The cross-reference is sourced from the original FpML document using the implemented ``href`` synonym. The internal ``globalReference`` points to the ``globalKey`` hash while the ``externalReference`` points to the "party2" ``externalKey``, as sourced from the original FpML document. Also note that the ``issuerReference`` itself has an associated ``globalKey`` meta-data by default since its ``Identifier`` class has a ``key`` qualifier.
 
-**Note**: This example is not part of the Rosetta DSL but corresponds to the default JSON implementation of the model. The relevance of either maintaining or shredding external references (such as "party2"), once cross-reference has been established, is up to implementors of the model.
+.. note:: This example is not part of the Rosetta DSL but corresponds to the default JSON implementation of the model. The relevance of either maintaining or shredding external references (such as "party2"), once cross-reference has been established, is up to implementors of the model.
 
 ``rosettaKeyValue`` is a variation of ``key``, which associated hash function doesn't include any of the meta-type qualifiers associated with the attributes. Some of those qualifiers are automatically generated by algorithm (typically, the anchors and references associated with XML documents) and would result in differences between two instance documents, even if those documents would have the same actual values.
 
