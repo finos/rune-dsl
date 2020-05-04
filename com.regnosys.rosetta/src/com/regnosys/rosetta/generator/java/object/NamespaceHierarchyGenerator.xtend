@@ -10,6 +10,8 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 class NamespaceHierarchyGenerator {
 
 	val String CDM_NAMESPACE_ROOT = "cdm"
+	@Deprecated
+	// this is a special case and needs to be removed when all the namespaces have been migrated.
 	val String ORG_ISDA_CDM_NAMESPACE_ROOT = "org.isda.cdm"
 	
 	def generateNamespacePackageHierarchy(IFileSystemAccess2 fsa, 
