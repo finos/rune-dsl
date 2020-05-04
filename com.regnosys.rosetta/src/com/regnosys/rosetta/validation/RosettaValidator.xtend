@@ -22,6 +22,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
@@ -39,6 +40,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -72,7 +74,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 
 /**
  * This class contains custom validation rules. 
@@ -93,6 +94,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject ExpressionHelper exprHelper
 	@Inject CardinalityProvider cardinality
 	@Inject RosettaGrammarAccess grammar
+	@Inject RosettaConfigExtension confExtensions
 	
 	@Check
 	def void deprecatedInfo(RosettaClass classe) {
@@ -138,7 +140,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 
 	@Check
 	def void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
-		if (!Character.isLowerCase(attribute.name.charAt(0))) {
+		val annotationAttribute = attribute.eContainer instanceof Annotation
+		if (!annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
 			warning("Attribute name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -712,6 +715,86 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (ele.argument !== null && !ele.argument.eIsProxy) {
 			if (!cardinality.isMulti(ele.argument))
 				error('''Count operation multiple cardinality argument.''', ele, ROSETTA_COUNT_OPERATION__ARGUMENT)
+		}
+	}
+	
+	@Check
+	def checkFunctionPrefix(Function ele) {
+		ele.annotations.forEach[a|
+			val prefix = a.annotation.prefix
+			if (prefix !== null && !ele.name.startsWith(prefix + "_")) {
+				warning('''Function name «ele.name» must have prefix '«prefix»' followed by an underscore.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			}
+		]
+	}
+	
+	@Check
+	def checkCreationAnnotation(Annotated ele) {
+		val annotations = getCreationAnnotations(ele)
+		if (annotations.empty) {
+			return
+		}
+		if (!(ele instanceof Function)) {
+			error('''Creation annotation only allowed on a function.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		if (annotations.size > 1) {
+			error('''Only 1 creation annotation allowed.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		
+		val func = ele as Function
+		
+		val annotationType = annotations.head.attribute.type
+		val funcOutputType = func.output.type
+		
+		if (annotationType instanceof Data && funcOutputType instanceof Data) {
+			val annotationDataType = annotationType as Data
+			val funcOutputDataType = func.output.type as Data
+			val funcOutputSuperTypeNames = funcOutputDataType.superType.allSuperTypes.map[name].toSet
+			val annotationAttributeTypeNames = annotationDataType.attributes.map[type].map[name].toList
+			
+			if (annotationDataType.name !== funcOutputDataType.name
+				&& !funcOutputSuperTypeNames.contains(annotationDataType.name) // annotation type is a super type of output type
+				&& !annotationAttributeTypeNames.contains(funcOutputDataType.name) // annotation type is a parent of the output type (with a one-of condition)
+			) {
+				warning('''Invalid output type for creation annotation.  The output type must match the type specified in the annotation '«annotationDataType.name»' (or extend the annotation type, or be a sub-type as part of a one-of condition).''', func, FUNCTION__OUTPUT)
+			}
+		}
+	}
+	
+	@Check
+	def checkQualificationAnnotation(Annotated ele) {
+		val annotations = getQualifierAnnotations(ele)
+		if (annotations.empty) {
+			return
+		}
+		if (!(ele instanceof Function)) {
+			error('''Qualification annotation only allowed on a function.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		
+		val func = ele as Function
+		
+		if (annotations.size > 1) {
+			error('''Only 1 qualification annotation allowed.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		
+		val inputs = getInputs(func)
+		if (inputs.nullOrEmpty || inputs.size !== 1) {
+			error('''Qualification functions must have exactly 1 input.''', func, FUNCTION__INPUTS)
+			return
+		}
+		val inputType = inputs.get(0).type
+		if (inputType === null || inputType.eIsProxy) {
+			error('''Invalid input type for qualification function.''', func, FUNCTION__INPUTS)
+		} else if (!confExtensions.isRootEventOrProduct(inputType)) {
+			warning('''Input type does not match qualification root type.''', func, FUNCTION__INPUTS)
+		}
+		
+		if (RBuiltinType.BOOLEAN.name != func.output?.type?.name) {
+	 		error('''Qualification functions must output a boolean.''', func, FUNCTION__OUTPUT)
 		}
 	}
 	

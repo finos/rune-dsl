@@ -10,6 +10,7 @@ import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaChoiceRule
@@ -18,12 +19,15 @@ import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.rosetta.model.lib.annotations.RosettaMeta
 import com.rosetta.model.lib.meta.RosettaMetaData
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory
@@ -32,15 +36,13 @@ import com.rosetta.model.lib.validation.Validator
 import com.rosetta.model.lib.validation.ValidatorWithArg
 import java.util.Arrays
 import java.util.List
+import java.util.Set
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
-import com.regnosys.rosetta.utils.RosettaConfigExtension
-import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 
 class ModelMetaGenerator {
 
@@ -57,10 +59,10 @@ class ModelMetaGenerator {
 		]
 	}
 	
-	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version) {
+	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version, Set<RosettaModel> models) {
 		val className = '''«data.name»Meta'''
 		
-		val classBody = tracImports(data.metaClassBody(names, className, version))
+		val classBody = tracImports(data.metaClassBody(names, className, version, models))
 		val javaFileContents = '''
 			package «names.packages.model.meta.name»;
 			
@@ -76,9 +78,9 @@ class ModelMetaGenerator {
 		fsa.generateFile('''«names.packages.model.meta.directoryName»/«className».java''', javaFileContents)
 	}
 	
-	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version) {
+	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version, Set<RosettaModel> models) {
 		val dataClass = javaNames.toJavaType(c)
-		val qualifierFuncs = qualifyFuncs(c, javaNames)
+		val qualifierFuncs = qualifyFuncs(c, javaNames, models)
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -135,11 +137,12 @@ class ModelMetaGenerator {
 		'''
 	}
 	
-	private def List<Function> qualifyFuncs(Data type, JavaNames names) {
+	private def Set<Function> qualifyFuncs(Data type, JavaNames names, Set<RosettaModel> models) {
 		if(!confExt.isRootEventOrProduct(type)) {
-			return emptyList
+			return emptySet
 		}
-		type.model.elements.filter(Function).filter[funcExt.isQualifierFunctionFor(it,type)].toList
+		val funcs = models.flatMap[elements].filter(Function).toSet
+		return funcs.filter[funcExt.isQualifierFunctionFor(it,type)].toSet
 	}
 	
 	private def metaClass(RosettaJavaPackages packages, String className, RosettaClass c,

@@ -34,7 +34,9 @@ public interface QualifyFunctionFactory {
 					if (!functionExtension.evaluate(t)) {
 						result = ComparisonResult.failure(funcName + " returned false.");
 					}
-					return QualifyResult.builder().setName(funcName).setExpressionResult(funcName, result).build();
+					String prefix = functionExtension.getNamePrefix() + "_";
+					String qualifiedName = funcName.replaceFirst(prefix, "");
+					return QualifyResult.builder().setName(qualifiedName).setExpressionResult(funcName, result).build();
 				}
 			};
 		}

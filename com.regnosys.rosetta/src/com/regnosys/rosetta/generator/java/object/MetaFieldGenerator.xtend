@@ -92,14 +92,14 @@ class MetaFieldGenerator {
 	def metaFields(RosettaJavaPackages packages, Collection<RosettaMetaType> utypes) {
 		val stringType = RosettaFactoryImpl.eINSTANCE.createRosettaBasicType
 		stringType.name="string"
-		val rosettaKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
-		rosettaKeyType.setName("globalKey")
-		rosettaKeyType.type = stringType;
+		val globalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
+		globalKeyType.setName("globalKey")
+		globalKeyType.type = stringType;
 		val externalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
 		externalKeyType.setName("externalKey")
 		externalKeyType.type = stringType;
 		val filteredTypes = utypes.filter[t|t.name != "id" && t.name != "reference"].toSet;
-		filteredTypes.add(rosettaKeyType)
+		filteredTypes.add(globalKeyType)
 		filteredTypes.add(externalKeyType)
 		
 	'''
