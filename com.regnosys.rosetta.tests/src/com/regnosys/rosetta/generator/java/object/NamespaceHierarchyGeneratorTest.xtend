@@ -11,6 +11,9 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
+import org.eclipse.xtext.generator.IFileSystemAccess2
+import static org.mockito.Mockito.mock
+import static org.mockito.Mockito.when
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -29,7 +32,8 @@ class NamespaceHierarchyGeneratorTest {
 		namespaceUriMap.put("org.isda.cdm", #["model-cdm-event.rosetta", "model-cdm-function.rosetta"])
 		
 		
-		val root = namespaceHierarchyGenerator.generateNamespacePackageHierarchy(null, namespaceDescriptionMap, namespaceUriMap)
+		var fsa = mock(IFileSystemAccess2)
+		val root = namespaceHierarchyGenerator.generateNamespacePackageHierarchy(fsa, namespaceDescriptionMap, namespaceUriMap)
 		assertNotNull(root, "not null")
 		assertThat(root, containsString("this is datetime description"))
 	}
