@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import java.util.HashMap
+import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
@@ -11,9 +12,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
-import org.eclipse.xtext.generator.IFileSystemAccess2
 import static org.mockito.Mockito.mock
-import static org.mockito.Mockito.when
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
