@@ -28,7 +28,6 @@ class NamespaceHierarchyGenerator {
 			[«buildModelJson(isda)», «buildModelJson(cdm)»]
 			
 		'''
-		println(result)
 		fsa.generateFile('''/namespace-hierarchy.json''', result)
 		return result
 	}
