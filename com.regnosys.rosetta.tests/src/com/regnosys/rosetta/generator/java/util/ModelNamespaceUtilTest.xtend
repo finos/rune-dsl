@@ -54,7 +54,7 @@ class ModelNamespaceUtilTest {
 		val model2 = modelHelper.parseRosetta(resource2)
 		val model3 = modelHelper.parseRosetta(resource3)
 				
-		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1, model2, model3)).asMap		
+		val namespaceMap = modelNamespaceUtil.namespaceToDescriptionMap(newArrayList(model1, model2, model3)).asMap		
 		assertEquals(2, namespaceMap.size)
 		
 		val namespace1Map = namespaceMap.get("cdm.test")
@@ -92,7 +92,7 @@ class ModelNamespaceUtilTest {
 		val model1 = modelHelper.parseRosetta(resource1)
 		val model2 = modelHelper.parseRosetta(resource2)
 				
-		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model1, model2)).asMap		
+		val namespaceMap = modelNamespaceUtil.namespaceToDescriptionMap(newArrayList(model1, model2)).asMap		
 		assertEquals(1, namespaceMap.size)
 		
 		val namespace1Map = namespaceMap.get("cdm.test")
@@ -114,8 +114,27 @@ class ModelNamespaceUtilTest {
 		'''
 		
 		val model = modelHelper.parseRosetta(resource1)
-				
-		val namespaceMap = modelNamespaceUtil.generateNamespaceDescriptionMap(newArrayList(model)).asMap		
+					
+		val namespaceMap = modelNamespaceUtil.namespaceToDescriptionMap(newArrayList(model)).asMap		
 		assertEquals(0, namespaceMap.size)
 	}
+	
+	@Test
+	def void testNamespaceToModelUriMap() {
+		val resource1 =
+		'''
+			namespace cdm.another.namesapce
+			version "test"
+			
+			type Bazzinga:
+				attr string (0..1)
+			
+		'''
+		
+		val model = modelHelper.parseRosetta(resource1)
+				
+		val namespaceMap = modelNamespaceUtil.namespaceToModelUriMap(newArrayList(model)).asMap		
+		assertEquals(1, namespaceMap.size)
+	}
+
 }
