@@ -9,7 +9,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 class NamespaceHierarchyGenerator {
 
-	val String CDM_NAMESPACE_ROOT = "cdm"
 	@Deprecated
 	// this is a special case and needs to be removed when all the namespaces have been migrated.
 	val String ORG_ISDA_CDM_NAMESPACE_ROOT = "org.isda.cdm"
@@ -17,19 +16,19 @@ class NamespaceHierarchyGenerator {
 	def generateNamespacePackageHierarchy(IFileSystemAccess2 fsa, 
 		Map<String, Collection<String>> modelDescriptionMap, Map<String, Collection<String>> modelUriMap) {
 
-		val cdm = new ModelGroup(CDM_NAMESPACE_ROOT, "")
+		val cdm = new ModelGroup(null, "")
 		modelUriMap.keySet
 			.filter[it != ORG_ISDA_CDM_NAMESPACE_ROOT]
-			.forEach[ namespace| buildNamespaceModelTree(cdm, AtomicInteger.newInstance, namespace, modelDescriptionMap, modelUriMap)]
+			.forEach[namespace | buildNamespaceModelTree(cdm, AtomicInteger.newInstance, namespace, modelDescriptionMap, modelUriMap)]
 		
 		val isda = new ModelGroup(ORG_ISDA_CDM_NAMESPACE_ROOT, "")
 		buildNamespaceModelTree(isda, AtomicInteger.newInstance, ORG_ISDA_CDM_NAMESPACE_ROOT, modelDescriptionMap, modelUriMap)
 
 		var result = '''
-			[ «buildModelJson(isda)», «buildModelJson(cdm)»]
+			[«buildModelJson(isda)», «buildModelJson(cdm)»]
 			
 		'''
-		
+		println(result)
 		fsa.generateFile('''/namespace-hierarchy.json''', result)
 		return result
 	}
@@ -39,6 +38,11 @@ class NamespaceHierarchyGenerator {
 		val String[] namespaceSplit = namespace.split("\\.")
 		var subNamespaceLength = namespaceSplit.subList(namespaceIndex.get, namespaceSplit.length).length
 
+
+		if(node.name === null) {
+			node.name = namespaceSplit.get(namespaceIndex.get)
+		}
+		
 		if (subNamespaceLength <= 1 || namespace == ORG_ISDA_CDM_NAMESPACE_ROOT) {
 			// add files
 			var children = createFileChildrenNodes(namespace, modelDescriptionMap, modelUriMap)
