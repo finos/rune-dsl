@@ -34,7 +34,9 @@ The definition of a *type* starts with the keyword ``type``, followed by the typ
 
 The first component of the definition is a plain-text description of the type. Descriptions in Rosetta use quotation marks ``"`` ``"`` (to mark a string) in between angle brackets ``<`` ``>``. Descriptions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
 
-Then the definition of the type lists its component attributes, each in terms of its own type, cardinality and associated description. Attributes can in turn be specified either as a basic type, a type or an enumeration. The set of *basic types* available in Rosetta are:
+Then the definition of the type lists its component attributes, each in terms of its own type, cardinality and associated description. Attributes can in turn be specified either as a basic type, a type or an enumeration.
+
+The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
 
 * Text - ``string``
 * Number - ``int`` (for integer) and ``number`` (for float)
@@ -687,7 +689,7 @@ Function Specification
 Purpose
 """""""
 
-**Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. The function's inputs and/or output are specified through their *types* (or *enumerations*) in the data model. A function specification amounts to standardising the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process. Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the model.
+**Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function's inputs and/or output through their *types* (or *enumerations*) in the data model. This amounts to specifying the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process. Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the model.
 
 **The Rosetta DSL offers a restricted set of language features designed to be unambiguous and understandable** by domain experts who are not software engineers, while minimising unintentional behaviour. The Rosetta DSL is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations.
 
@@ -696,72 +698,43 @@ To build the complete processing logic, model implementors are meant to extend t
 Syntax
 """"""
 
-The function specification syntax specifies:
+The syntax of a function specification starts with the keyword ``func`` followed by the function name. A colon ``:`` punctuation introduces the rest of the definition.
 
-* name, inputs and output (mandatory)
-* description
-* conditions
-* output construction
+The Rosetta DSL convention for a function name is to use a PascalCase (upper CamelCase) word.
 
-Each line of the model snippet below is defined as follows:
+The rest of the function specification supports the following components:
 
-.. code-block:: Haskell
-  :linenos:
+* inputs and output attributes (the latter is mandatory)
+* condition statements (pre- and post-)
+* output construction statements
 
-  func Add: <"A function that adds two numbers together.">
-    inputs:
-      input1 number (1..1)
-      input2 number (1..1)
-    output:
-      result number (1..1)
-    assign-output: result
-      input1 + input2
+To better communicate the intent and use of functions, Rosetta supports multiple plain-text descriptions in functions. Descriptions can be provided for the function itself, for each input and output, and for each statement block. Look for definition occurences in the snippets below.
 
-#. `func Add:` tells us we are looking at a function called `Add`. The text following the semi-colon defines the function in written prose, which is typically taken verbatim from ISDA Documentation where available.
-#. `inputs:` tells us the following section lists the data inputs required by the function.
-#. `input1 number (1..1)` tells us the first input is called `input1`, it is a `number`, and we expect exactly one `number`. The `(1..1)` notation is commonly used in `data modelling`_ and mirrors the syntax used when defining data types.
-#. `input2 number (1..1)` tells us there is a second input is called (unimaginatively) `input2` and is also exactly one `number`.
-#. `output:` mirrors that of line 2 and tells us the following line will relate to defining the function output.
-#. `result number (1..1)` tells us the function output is called `result`, it is a number, and we expect exactly one.
-#. `assign-output: result` tells us the following lines instruct the function to assign a value to the output, which is called `result`.
-#. `input1 + input2` tells us the `result` should be assigned the result of this logical expression.
+Inputs and Output
+"""""""""""""""""
 
-Name, Inputs and Output
-"""""""""""""""""""""""
+Inputs and output are a function's equivalent of a type's attributes. As in a ``type``, each ``func`` attribute is defined by a name, data type (as either a ``type``, ``enum`` or ``basicType``) and cardinality.
 
-At minimum, a function specifies a name and an output attribute. An attribute is defined by a name, data type and cardinality, in exactly the same way as an attribute in a ``class``.
-
-A function is declared using the ``func`` keyword and the Rosetta convention for a function name is to use one upper CamelCase word.
-
-.. code-block:: Haskell
-
- func GetBusinessDate:
-    output:
-      businessDate date (1..1)
-
-Most functions, however, require inputs, which are also expressed as attributes. The below describes a function called ``Execute``, which defines four inputs and the output. 
-
-.. code-block:: Haskell
-
- func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
-    inputs:
-      product Product (1..1) <"The product underlying the financial transaction.">
-      quantity ExecutionQuantity (1..1) <"The amount of product being transacted.">
-      partyA Party (1..1) <"Party to the transaction.">
-      partyB Party (1..1) <"Party to the transaction.">
-    output:
-      execution Event (1..1) <"The execution transaction represented as an Event model object.">
-
-Definitions
-"""""""""""
-
-To better communicate the intention and use of functions, Rosetta supports multiple definitions in functions. Definitions can be specified after the function name, at the end of each attribute and on each statement block. Look at for definition occurences in the snippets below.
+At minimum, a function must specify its output attribute, using the ``output`` keyword also followed by a colon ``:``.
 
 .. code-block:: Haskell
 
  func GetBusinessDate: <"Provides the business date from the underlying system implementation.">
     output:
       businessDate date (1..1) <"The provided business date.">
+
+Most functions, however, also require inputs, which are also expressed as attributes, using the ``inputs`` keyword. ``inputs`` is plural whereas ``output`` is singular, because a function may only return one type of output but may take several types of inputs.
+
+.. code-block:: Haskell
+
+ func ResolveTimeZoneFromTimeType: <"Function to resolve a TimeType into a TimeZone based on a determination method.">
+    inputs:
+       timeType TimeTypeEnum (1..1)
+       determinationMethod DeterminationMethodEnum (1..1)
+    output:
+       time TimeZone (1..1)
+
+.. note:: The function syntax has been intentionally modelled onto the type syntax, for instance regarding the use of attributes, to provide a consistent expression of model definitions.
 
 Conditions
 """"""""""
@@ -770,22 +743,30 @@ Function inputs and the output can be constrained for validation purposes. The `
 
 .. code-block:: Haskell
 
- func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
+ func EquityPriceObservation: <"Function specification for the observation of an equity price, based on the attributes of the 'EquityValuation' class.">
     inputs:
-      product Product (1..1) <"The product underlying the financial transaction.">
-      quantity ExecutionQuantity (1..1) <"The amount of product being transacted.">
-      partyA Party (1..1) <"Party to the transaction.">
-      partyB Party (1..1) <"Party to the transaction.">
+       equity Equity (1..1)
+       valuationDate AdjustableOrRelativeDate (1..1)
+       valuationTime BusinessCenterTime (0..1)
+       timeType TimeTypeEnum (0..1)
+       determinationMethod DeterminationMethodEnum (1..1)
     output:
-      executionEvent Event (1..1) <"The execution transaction represented as an Event model object.">
-    condition: <"Parties are not the same.">
-      partyA <> partyB
-    post-condition: <"The execution event is the first is any post trade processes and so should not have any lineage information.">
-      executionEvent -> lineage is absent
-    post-condition: <"The input product was used to create the execution.">
-      executionEvent -> primitive -> execution = NewExecutionPrimitive( product, quantity, partyA, partyB )
+       observation ObservationPrimitive (1..1)
+    
+    condition: <"Optional choice between directly passing a time or a timeType, which has to be resolved into a time based on the determination method.">
+       if valuationTime exists then timeType is absent
+       else if timeType exists then valuationTime is absent
+          else False
+    
+    post-condition: <"The date and time must be properly resolved as attributes on the output.">
+       observation -> date = ResolveAdjustableDate(valuationDate)
+       and if valuationTime exists then observation -> time = TimeZoneFromBusinessCenterTime(valuationTime)
+          else observation -> time = ResolveTimeZoneFromTimeType(timeType, determinationMethod)
+    
+    post-condition: <"The number recorded in the observation must match the number fetched from the source.">
+       observation -> observation = EquitySpot(equity, observation -> date, observation -> time)
 
-The ``condition`` and ``post-condition`` perform a validation step in the same way as ``data rule`` for a `class`. This extends this key Rosetta modelling component to functions and not just data. As such, the same syntax for logical statements used for ``data rule`` is re-used here.
+The ``condition`` and ``post-condition`` perform a validation step in the same way as ``condition`` for a ``type``. This extends this key Rosetta modelling component to functions and not just data. As such, the same syntax for logical statements used for ``data rule`` is re-used here.
 
 Constructing the Output
 """""""""""""""""""""""
@@ -874,3 +855,26 @@ In the below example an ``executionPrimitive`` alias is created and is used in b
       executionEvent -> lineage is absent
     post-condition:
       executionPrimitive -> after -> execution -> executionQuantity = quantity
+
+Each line of the model snippet below is defined as follows:
+
+.. code-block:: Haskell
+  :linenos:
+
+  func Add: <"A function that adds two numbers together.">
+    inputs:
+      input1 number (1..1)
+      input2 number (1..1)
+    output:
+      result number (1..1)
+    assign-output: result
+      input1 + input2
+
+#. `func Add:` tells us we are looking at a function called `Add`. The text following the semi-colon defines the function in written prose, which is typically taken verbatim from ISDA Documentation where available.
+#. `inputs:` tells us the following section lists the data inputs required by the function.
+#. `input1 number (1..1)` tells us the first input is called `input1`, it is a `number`, and we expect exactly one `number`. The `(1..1)` notation is commonly used in `data modelling`_ and mirrors the syntax used when defining data types.
+#. `input2 number (1..1)` tells us there is a second input is called (unimaginatively) `input2` and is also exactly one `number`.
+#. `output:` mirrors that of line 2 and tells us the following line will relate to defining the function output.
+#. `result number (1..1)` tells us the function output is called `result`, it is a number, and we expect exactly one.
+#. `assign-output: result` tells us the following lines instruct the function to assign a value to the output, which is called `result`.
+#. `input1 + input2` tells us the `result` should be assigned the result of this logical expression.
