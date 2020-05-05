@@ -19,6 +19,7 @@ class NamespaceHierarchyGenerator {
 		val cdm = new ModelGroup(null, "")
 		modelUriMap.keySet
 			.filter[it != ORG_ISDA_CDM_NAMESPACE_ROOT]
+			.sort
 			.forEach[namespace | buildNamespaceModelTree(cdm, AtomicInteger.newInstance, namespace, modelDescriptionMap, modelUriMap)]
 		
 		val isda = new ModelGroup(ORG_ISDA_CDM_NAMESPACE_ROOT, "")
