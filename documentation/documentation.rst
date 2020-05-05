@@ -1,7 +1,7 @@
 Rosetta Modelling Artefacts
 ===========================
 
-**The Rosetta syntax can express five types of model definitions**:
+**The Rosetta syntax can express five types of model components**:
 
 * Data
 * Mapping (or *synonym*)
@@ -9,12 +9,12 @@ Rosetta Modelling Artefacts
 * Object Qualification
 * Function
 
-This documentation details the purpose and features of each of those model definition types and highlights the relationships that exists among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those artefacts.
+This documentation details the purpose and features of each type of model component and highlights the relationships that exists among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those artefacts.
 
-Data Definition
----------------
+Data Component
+--------------
 
-**Rosetta provides four data definition components** to build data artefacts in the model, grouped into two pairs:
+**Rosetta provides four data definition components** that are used to model data, grouped into two pairs:
 
 * Type and Attribute
 * Enumeration and Enumeration Value
@@ -299,7 +299,7 @@ The below snippet presents an example of such alias and its use as part of an ev
   and Event -> eventDate = Event -> primitive -> inception -> after -> contract -> tradeDate -> date
   and Event -> effectiveDate = novatedContractEffectiveDate
 
-Mapping Artefacts
+Mapping Component
 -----------------
 
 Synonym
@@ -417,8 +417,8 @@ The mapping logic associated with the below ``action`` attribute provides a good
   (...)
  }
 
-Data Integrity Artefacts
--------------------------
+Data Integrity Component
+------------------------
 
 **There are two components to enforce data integrity** in the model in Rosetta:
 
@@ -582,7 +582,7 @@ This feature is illustrated in the ``BondOptionStrike`` class.
   price OptionStrike (0..1);
  }
 
-Object Qualification Artefacts
+Object Qualification Component
 ------------------------------
 
 The Rosetta syntax has been developed to meet the requirement of a composable model for financial products and lifecycle events, while qualifying those products and events from their relevant modelling components. There are slight variations in the implementation across those two use cases.
@@ -667,32 +667,39 @@ The ``Increase`` illustrates how the syntax qualifies this event by requiring th
    and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> notionalAmount -> amount
    and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> optionPayout -> quantity -> notionalAmount -> amount
 
-Function Artefacts
+Function Component
 ------------------
 
-**All function artefacts in Rosetta have been unified** under a single construct called *Function*. Functions allow the domain model to represent not just data but also calculations and processes.
+**In programming languages, a function is a fixed set of logical instructions returning an output** which can be parameterised by a set of inputs (also known as *arguments*). A function is *invoked* by specifying a set of values for the inputs and running the instructions accordingly. In the Rosetta DSL, this type of component has been unified under a single *function* construct.
 
-Functions
-^^^^^^^^^
+Functions are a fundamental building block to construct and automate industry processes, because the same set of instructions can be executed as many times as required by varying the inputs to generate a different, yet deterministic, result.
+
+Just like a spreadsheet allows users to define and make use of functions to construct complex logic, the Rosetta DSL allows to model complex processes from reusable function components. Typically, complex industry processes are defined by combining simpler sub-processes, where one process's ouput can feed into another process's input. Each of those processes and sub-processes are represented by a function. Functions can invoke other functions, so they can represent processes made up of sub-processes, sub-sub-processes, and so on.
+
+Reusing small, modular processes has the following benefits:
+
+* **Consistency**. When a sub-process changes, all processes that use the sub-process benefit from that single change.
+* **Flexibility**. A model can represent any process by reusing existing sub-processes. There is no need to define each process explicitly, instead, we pick and choose from a set of pre-existing building blocks.
+
+Function Specification
+^^^^^^^^^^^^^^^^^^^^^^
 
 Purpose
 """""""
 
-In programming languages, a function is a block of code which runs when it is called (a.k.a. *invoked*). Data can be passed as inputs into a function, which performs a set of actions based on that data and returns an output. Functions are then combined as building blocks into processes.
+**Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. The function's inputs and/or output are specified through their *types* (or *enumerations*) in the data model. A function specification amounts to standardising the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process. Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the model.
 
-The primary goal of *Functions* in Rosetta is to standardise computations and processes to reduce friction between technology solutions and increase interoperability. For example, the processing of transaction lifecycle events is a key component of the processes used across the financial domain and can be modelled using functions in Rosetta.
+The Rosetta DSL offers a restricted set of language features designed to minimise unintentional behaviour, while being unambiguous and understandable by domain experts who are not software engineers. The Rosetta DSL is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations.
+
+To build the complete processing logic, model implementors are meant to extend the code generated from the Rosetta DSL, which is expressed in a fully featured programming language. For instance in Java, a function specification generates an *interface* that needs to be extended to be executable.
 
 Syntax
 """"""
 
-Rosetta's function syntax offers a restricted set of language features to minimise unintential behaviour of the code logic. It is also designed to be unambiguous and understandable by domain experts who are not software engineers.
-
-Rosetta is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations. If such features are needed, the implementor is meant to extend the code generated from Rosetta that is expressed in a fully featured programming language, like Java.
-
-The function syntax specifies:
+The function specification syntax specifies:
 
 * name, inputs and output (mandatory)
-* definitions
+* description
 * conditions
 * output construction
 
