@@ -689,9 +689,9 @@ Purpose
 
 **Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. The function's inputs and/or output are specified through their *types* (or *enumerations*) in the data model. A function specification amounts to standardising the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process. Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the model.
 
-The Rosetta DSL offers a restricted set of language features designed to minimise unintentional behaviour, while being unambiguous and understandable by domain experts who are not software engineers. The Rosetta DSL is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations.
+**The Rosetta DSL offers a restricted set of language features designed to be unambiguous and understandable** by domain experts who are not software engineers, while minimising unintentional behaviour. The Rosetta DSL is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations.
 
-To build the complete processing logic, model implementors are meant to extend the code generated from the Rosetta DSL, which is expressed in a fully featured programming language. For instance in Java, a function specification generates an *interface* that needs to be extended to be executable.
+To build the complete processing logic, model implementors are meant to extend the code generated from the Rosetta DSL, once expressed in a fully featured programming language. For instance in Java, a function specification generates an *interface* that needs to be extended to be executable.
 
 Syntax
 """"""
@@ -702,6 +702,29 @@ The function specification syntax specifies:
 * description
 * conditions
 * output construction
+
+Each line of the model snippet below is defined as follows:
+
+.. code-block:: Haskell
+  :linenos:
+
+  func Add: <"A function that adds two numbers together.">
+    inputs:
+      input1 number (1..1)
+      input2 number (1..1)
+    output:
+      result number (1..1)
+    assign-output: result
+      input1 + input2
+
+#. `func Add:` tells us we are looking at a function called `Add`. The text following the semi-colon defines the function in written prose, which is typically taken verbatim from ISDA Documentation where available.
+#. `inputs:` tells us the following section lists the data inputs required by the function.
+#. `input1 number (1..1)` tells us the first input is called `input1`, it is a `number`, and we expect exactly one `number`. The `(1..1)` notation is commonly used in `data modelling`_ and mirrors the syntax used when defining data types.
+#. `input2 number (1..1)` tells us there is a second input is called (unimaginatively) `input2` and is also exactly one `number`.
+#. `output:` mirrors that of line 2 and tells us the following line will relate to defining the function output.
+#. `result number (1..1)` tells us the function output is called `result`, it is a number, and we expect exactly one.
+#. `assign-output: result` tells us the following lines instruct the function to assign a value to the output, which is called `result`.
+#. `input1 + input2` tells us the `result` should be assigned the result of this logical expression.
 
 Name, Inputs and Output
 """""""""""""""""""""""
