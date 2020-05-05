@@ -146,8 +146,10 @@ class RosettaGenerator extends AbstractGenerator {
 		}
 	}
 
-	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
+	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		try {
+			val fsa = new TestFolderAwareFsa(resource, fsa2)
+		
 			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 
 			var namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
