@@ -9,26 +9,24 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 class NamespaceHierarchyGenerator {
 
-	@Deprecated
-	// this is a special case and needs to be removed when all the namespaces have been migrated.
-	val String ORG_ISDA_CDM_NAMESPACE_ROOT = "org.isda.cdm"
-	
 	def generateNamespacePackageHierarchy(IFileSystemAccess2 fsa, 
-		Map<String, Collection<String>> modelDescriptionMap, Map<String, Collection<String>> modelUriMap) {
+		Map<String, Collection<String>> namespaceToDescriptionMap, Map<String, Collection<String>> namespaceToModelUriMap) {
 
-		val cdm = new ModelGroup(null, "")
-		modelUriMap.keySet
-			.filter[it != ORG_ISDA_CDM_NAMESPACE_ROOT]
-			.sort
-			.forEach[namespace | buildNamespaceModelTree(cdm, AtomicInteger.newInstance, namespace, modelDescriptionMap, modelUriMap)]
-		
-		val isda = new ModelGroup(ORG_ISDA_CDM_NAMESPACE_ROOT, "")
-		buildNamespaceModelTree(isda, AtomicInteger.newInstance, ORG_ISDA_CDM_NAMESPACE_ROOT, modelDescriptionMap, modelUriMap)
+		var distinctRoots = namespaceToModelUriMap.keySet.map[it.substring(0, it.indexOf("."))].toSet
 
 		var result = '''
-			[«buildModelJson(isda)», «buildModelJson(cdm)»]
+			[«FOR root: distinctRoots SEPARATOR ',' »
 			
+				«val rootModel = new ModelGroup(root)»
+				«namespaceToModelUriMap.keySet
+					.filter[it.startsWith(root)]
+					.sort
+					.forEach[namespace | buildNamespaceModelTree(rootModel, AtomicInteger.newInstance, namespace, namespaceToDescriptionMap, namespaceToModelUriMap)]»
+				«buildModelJson(rootModel)»
+			
+			«ENDFOR»]			
 		'''
+
 		fsa.generateFile('''/namespace-hierarchy.json''', result)
 		return result
 	}
@@ -43,7 +41,7 @@ class NamespaceHierarchyGenerator {
 			node.name = namespaceSplit.get(namespaceIndex.get)
 		}
 		
-		if (subNamespaceLength <= 1 || namespace == ORG_ISDA_CDM_NAMESPACE_ROOT) {
+		if (subNamespaceLength <= 1) {
 			// add files
 			var children = createFileChildrenNodes(namespace, modelDescriptionMap, modelUriMap)
 			node.children.addAll(children)
@@ -123,11 +121,16 @@ class NamespaceHierarchyGenerator {
 		protected var uri = null
 		protected val List<ModelGroup> children
 
+		new(String name) {
+			this(name, null)
+		}
+		
 		new(String name, String description) {
 			this.name = name
 			this.description = description
 			this.children = newArrayList
-		}
+		}		
+		
 	}
 
 }
