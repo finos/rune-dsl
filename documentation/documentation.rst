@@ -674,14 +674,14 @@ Function Component
 
 **In programming languages, a function is a fixed set of logical instructions returning an output** which can be parameterised by a set of inputs (also known as *arguments*). A function is *invoked* by specifying a set of values for the inputs and running the instructions accordingly. In the Rosetta DSL, this type of component has been unified under a single *function* construct.
 
-Functions are a fundamental building block to construct and automate industry processes, because the same set of instructions can be executed as many times as required by varying the inputs to generate a different, yet deterministic, result.
+Functions are a fundamental building block to automate processes, because the same set of instructions can be executed as many times as required by varying the inputs to generate a different, yet deterministic, result.
 
-Just like a spreadsheet allows users to define and make use of functions to construct complex logic, the Rosetta DSL allows to model complex processes from reusable function components. Typically, complex industry processes are defined by combining simpler sub-processes, where one process's ouput can feed into another process's input. Each of those processes and sub-processes are represented by a function. Functions can invoke other functions, so they can represent processes made up of sub-processes, sub-sub-processes, and so on.
+Just like a spreadsheet allows users to define and make use of functions to construct complex logic, the Rosetta DSL allows to model complex processes from reusable function components. Typically, complex processes are defined by combining simpler sub-processes, where one process's ouput can feed as input into another process. Each of those processes and sub-processes are represented by a function. Functions can invoke other functions, so they can represent processes made up of sub-processes, sub-sub-processes, and so on.
 
 Reusing small, modular processes has the following benefits:
 
 * **Consistency**. When a sub-process changes, all processes that use the sub-process benefit from that single change.
-* **Flexibility**. A model can represent any process by reusing existing sub-processes. There is no need to define each process explicitly, instead, we pick and choose from a set of pre-existing building blocks.
+* **Flexibility**. A model can represent any process by reusing existing sub-processes. There is no need to define each process explicitly: instead, we pick and choose from a set of pre-existing building blocks.
 
 Function Specification
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -704,11 +704,17 @@ The Rosetta DSL convention for a function name is to use a PascalCase (upper Cam
 
 The rest of the function specification supports the following components:
 
+* plain-text decriptions
 * inputs and output attributes (the latter is mandatory)
-* condition statements (pre- and post-)
+* condition statements on inputs and output
 * output construction statements
 
-To better communicate the intent and use of functions, Rosetta supports multiple plain-text descriptions in functions. Descriptions can be provided for the function itself, for each input and output, and for each statement block. Look for definition occurences in the snippets below.
+Descriptions
+""""""""""""
+
+The role of a function must be clear for implementors of the model to build applications that provide such functionality. To better communicate the intent and use of functions, Rosetta supports multiple plain-text descriptions in functions. Descriptions can be provided for the function itself, for any input and output and for any statement block.
+
+Look for occurences of text descriptions in the snippets below.
 
 Inputs and Output
 """""""""""""""""
@@ -734,12 +740,17 @@ Most functions, however, also require inputs, which are also expressed as attrib
     output:
        time TimeZone (1..1)
 
-.. note:: The function syntax has been intentionally modelled onto the type syntax, for instance regarding the use of attributes, to provide a consistent expression of model definitions.
-
 Conditions
 """"""""""
 
-Function inputs and the output can be constrained for validation purposes. The ``condition`` keyword is used when constraining the inputs only and the ``post-condition`` keyword is used when constraining the output. The condition itself is expressed as a logical statement that evaluates to true or false (a.k.a. a *boolean* expression).
+A function's inputs and output can be constrained using *conditions*. Each condition is expressed as a logical statement that evaluates to true or false (a.k.a. a *boolean* expression) and can represent:
+
+* a pre-condition, applicable to inputs only and evaluated prior to executing the function, using the ``condition`` keyword
+* a post-condition, applicable to inputs and output and evaluated after executing the function (once the output is known), using the ``post-condition`` keyword
+
+Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the "contract" that this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
+
+The language features available to express condition statements in functions are exactly the same as those available to express data validation logic, as detailed in the `data integrity`_ section.
 
 .. code-block:: Haskell
 
@@ -766,67 +777,56 @@ Function inputs and the output can be constrained for validation purposes. The `
     post-condition: <"The number recorded in the observation must match the number fetched from the source.">
        observation -> observation = EquitySpot(equity, observation -> date, observation -> time)
 
-The ``condition`` and ``post-condition`` perform a validation step in the same way as ``condition`` for a ``type``. This extends this key Rosetta modelling component to functions and not just data. As such, the same syntax for logical statements used for ``data rule`` is re-used here.
+.. note:: The function syntax intentionally mimics the type syntax regarding the use of attributes (inputs and output), conditions and descriptions, to provide consistency in the expression of model definitions.
 
-Constructing the Output
-"""""""""""""""""""""""
+Output Construction
+"""""""""""""""""""
 
-The final ``post-condition`` statement in the above invokes another function called ``NewExecutionPrimitive``. The ``post-condition`` asserts that the value returned from ``NewExecutionPrimitive`` is equal to the value that was stamped onto the path: ``executionEvent -> primitive -> execution`` by the implementor.
+In the ``EquityPriceObservation`` example above, the ``post-condition`` statements assert whether the observation's date and value are correctly populated (according to the output of other, sub-functions), but delegates the construction of that output to implementors of the function.
 
-This means implementors must evaluate the ``NewExecutionPrimitive`` function and assign its output to the correct model element when implemeting this function. Subsequently the post-condition logic will be evaluated, invoking the same ``NewExecutionPrimitive`` function a second time. 
+In practice, implementors of the function are expected to re-use those sub-functions (``ResolveAdjustableDate`` and ``EquitySpot``) to construct the output. The drawback is that those sub-functions are likely to be executed twice: once to build the output and once to run the validation.
 
-For efficiency, the function syntax in Rosetta provides support to directly assign values to the output attribute, which avoids the need to evaluate the ``NewExecutionPrimitive`` function twice, as in the example below.
+For efficiency, the function syntax in the Rosetta DSL allows to directly build the output by assigning its values. Function implementors do not have to build those values themselves, because the function already provides them by default, so the corresponding post-conditions are redundant and can be removed.
+
+The example above could be rewritten as follows:
 
 .. code-block:: Haskell
 
- func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
+ func EquityPriceObservation:
     inputs:
-      product Product (1..1) <"The product underlying the financial transaction.">
-      quantity ExecutionQuantity (1..1) <"The amount of product being transacted.">
-      partyA Party (1..1) <"Party to the transaction.">
-      partyB Party (1..1) <"Party to the transaction.">
+       equity Equity (1..1)
+       valuationDate AdjustableOrRelativeDate (1..1)
+       valuationTime BusinessCenterTime (0..1)
+       timeType TimeTypeEnum (0..1)
+       determinationMethod DeterminationMethodEnum (1..1)
     output:
-      executionEvent Event (1..1) <"The execution transaction represented as an Event model object.">
-    condition: <"Parties are not the same.">
-      partyA <> partyB
-    post-condition: <"The execution event is the first is any post trade processes and so should not have any lineage information.">
-      executionEvent -> lineage is absent
-    assign-output executionEvent -> primitive -> execution: <"The input product was used to create the execution.">
-       NewExecutionPrimitive( product, quantity, partyA, partyB )
+       observation ObservationPrimitive (1..1)
+    
+    condition:
+       if valuationTime exists then timeType is absent
+       else if timeType exists then valuationTime is absent
+          else False
+    
+    assign-output observation -> date:
+       ResolveAdjustableDate(valuationDate)
+    
+    assign-output observation -> time:
+       if valuationTime exists then TimeZoneFromBusinessCenterTime(valuationTime)
+       else ResolveTimeZoneFromTimeType(timeType, determinationMethod)
+    
+    assign-output observation -> observation:
+       EquitySpot(equity, observation -> date, observation -> time)
 
-This example demonstrates, in the context of lifecycle events, why a data representation of those events, although necessary, is not sufficient to direct the implementation of the associated processes - hence the need to define functions. The role of a function must be clear for implementors of the model to build applications that provide such functionality, so **precise descriptions** in either the function definition, input, output, pre- or post-conditions are crucial.
+Full or Partial Functions
+"""""""""""""""""""""""""
 
-Full and Partial Functions
-""""""""""""""""""""""""""
+The creation of valid output objects can be fully or partially done in a function or completely left to the implementor.
 
-The creation of valid output objects can be fully or partially done in a function or completely left to the implementor. The output object (and thus the function) is thought to be fully defined if all validation constraints on the output obejct can be satisfied. 
+The output object, and thus the function, is fully defined when all validation constraints on the output object can be satisfied just from running the function specification.
 
-All functions require the output object to be fully valid when invoked as part of an implementation and will otherwise throw an exception.
+When the output object's validation constraints are only partially satisfied, the function is partially implemented. In this case, implementors will need to extend the generated code and assign the remaining values on the output object.
 
-Fully Defined Functions: Calculations
-"""""""""""""""""""""""""""""""""""""
-
-The output object and thus the function is fully defined when all validation constraints on the object have been satisfied. In this case, the generated code (in Java or equivalent) is directly usable in an implementation.
-
-To mark a function as fully defined, make use of the ``calculation`` annotation per the below to pass enough information to the code generators to create concrete functions.
-
-.. code-block:: Haskell
-
- func FixedAmount: <"...">
-  [calculation]
-  inputs:
-    interestRatePayout InterestRatePayout (1..1)
-    date date (1..1)
-  output:
-    amount number (1..1)
-  ...
-
-Partially Defined Functions
-"""""""""""""""""""""""""""
-
-When the output object's validation constraints are only partially satisfied, the function is partially implemented. In this case, implementors will need to extend the generated code and provide the remaining parts of the output object.
-
-The output object still needs to be valid, so implementor must assign the remaining values on the output object.
+The output object will be systematically validated when invoking a function, so all functions require the output object to be fully valid as part of an implementation.
 
 Aliases
 """""""
@@ -855,6 +855,27 @@ In the below example an ``executionPrimitive`` alias is created and is used in b
       executionEvent -> lineage is absent
     post-condition:
       executionPrimitive -> after -> execution -> executionQuantity = quantity
+
+Special Function Cases
+^^^^^^^^^^^^^^^^^^^^^^
+
+Fully Defined Functions: Calculations
+"""""""""""""""""""""""""""""""""""""
+
+The output object and thus the function is fully defined when all validation constraints on the object have been satisfied. In this case, the generated code (in Java or equivalent) is directly usable in an implementation.
+
+To mark a function as fully defined, make use of the ``calculation`` annotation per the below to pass enough information to the code generators to create concrete functions.
+
+.. code-block:: Haskell
+
+ func FixedAmount: <"...">
+  [calculation]
+  inputs:
+    interestRatePayout InterestRatePayout (1..1)
+    date date (1..1)
+  output:
+    amount number (1..1)
+  ...
 
 Each line of the model snippet below is defined as follows:
 
