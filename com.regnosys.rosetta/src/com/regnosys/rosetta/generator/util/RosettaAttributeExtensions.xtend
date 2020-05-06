@@ -226,7 +226,7 @@ class RosettaAttributeExtensions {
 		val metas = <ExpandedAttribute>newArrayList
 		attr.annotations.forEach [ annoRef, i |
 			val annoAttr = annoRef?.attribute
-			if(annoAttr!==null) {
+			if(annoAttr !== null && annoAttr.type !== null) {
 				metas.add(new ExpandedAttribute(
 					annoAttr.name,
 					annoRef.annotation.name,
