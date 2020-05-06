@@ -36,6 +36,7 @@ import org.eclipse.xtend.lib.annotations.Delegate
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
 
 /**
  * Generates code from your model files on save.
@@ -56,6 +57,7 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
+	@Inject NamespaceHierarchyGenerator namespaceHierarchyGenerator
 
 	@Inject DataGenerator dataGenerator
 	@Inject DataValidatorsGenerator validatorsGenerator
@@ -144,12 +146,17 @@ class RosettaGenerator extends AbstractGenerator {
 		}
 	}
 
-	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
+	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		try {
+			val fsa = new TestFolderAwareFsa(resource, fsa2)
+		
 			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 
-			var namespaceDescriptionMap = modelNamespaceUtil.generateNamespaceDescriptionMap(models).asMap
+			var namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
+			var namespaceUrilMap = modelNamespaceUtil.namespaceToModelUriMap(models).asMap
+			
 			javaPackageInfoGenerator.generatePackageInfoClasses(fsa, namespaceDescriptionMap)
+			namespaceHierarchyGenerator.generateNamespacePackageHierarchy(fsa, namespaceDescriptionMap, namespaceUrilMap)
 
 			externalGenerators.forEach [ generator |
 				generator.afterGenerate(models, [ map |
