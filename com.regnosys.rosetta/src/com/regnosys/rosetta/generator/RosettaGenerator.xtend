@@ -80,7 +80,10 @@ class RosettaGenerator extends AbstractGenerator {
 			lock.getWriteLock(true);
 			if (!ignoredFiles.contains(resource.URI.segments.last)) {
 				// all models
-				val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toSet
+				val models = if (resource.resourceSet?.resources === null) {
+					LOGGER.warn("No resource set found for " + resource.URI.toString)
+					newHashSet
+				} else resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toSet
 
 				// generate for each model object
 				resource.contents.filter(RosettaModel).forEach [
