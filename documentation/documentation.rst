@@ -4,7 +4,7 @@ Rosetta Modelling Artefacts
 **The Rosetta syntax can express five types of model components**:
 
 * Data
-* Data Integrity (or *condition*)
+* Data Validation (or *condition*)
 * Function
 * Annotation
 * Mapping (or *synonym*)
@@ -301,102 +301,49 @@ The below snippet presents an example of such alias and its use as part of an ev
   and Event -> eventDate = Event -> primitive -> inception -> after -> contract -> tradeDate -> date
   and Event -> effectiveDate = novatedContractEffectiveDate
 
-Data Integrity Component
-------------------------
+Data Validation Component
+-------------------------
 
-**There are two components to enforce data integrity** in the model in Rosetta:
-
-* Data Rule
-* Choice Rule
-
-Data Rule
+Condition
 ^^^^^^^^^
 
 Purpose
 """""""
 
-Data rules are the primary channel to enforce data validation in Rosetta.
+**Data integrity is supported by data validation components that are expressed as condition statements** in the Rosetta DSL. 
 
-While such validation rules are generally specified for existing data standards like FpML alongside the standard documentation, the logic needs to be evaluated and transcribed into code by the relevant teams. More often than not, it results in such logic not being consistently enforced.
-
-As an example, the ``FpML_ird_57`` data rule implements the **FpML ird validation rule #57**, which states that if the calculation period frequency is expressed in units of month or year, then the roll convention cannot be a week day. With Rosetta, this legible view is provided alongside a programmatic implementation thanks to automatic code generation.
-
-.. code-block:: Java
-
- class Frequency key
- {
-  periodMultiplier int (1..1);
-  period PeriodExtendedEnum (1..1);
- }
-
- class CalculationPeriodFrequency extends Frequency
- {
-  rollConvention RollConventionEnum (1..1);
- }
-
- data rule FpML_ird_57 <"FpML validation rule ird-57 - Context: CalculationPeriodFrequency. [period eq ('M', 'Y')] not(rollConvention = ('NONE', 'SFE', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT','SUN')).">
-  when CalculationPeriodFrequency -> period = PeriodExtendedEnum.M or CalculationPeriodFrequency -> period = PeriodExtendedEnum.Y
-  then CalculationPeriodFrequency -> rollConvention <> RollConventionEnum.NONE
-   or CalculationPeriodFrequency -> rollConvention <> RollConventionEnum.SFE
-   or CalculationPeriodFrequency -> rollConvention <> RollConventionEnum.MON
-   or CalculationPeriodFrequency -> rollConvention <> RollConventionEnum.TUE
-   or CalculationPeriodFrequency -> rollConvention <> RollConventionEnum.WED
-   or CalculationPeriodFrequency -> rollConvention <> RollConventionEnum.THU
-   or CalculationPeriodFrequency -> rollConvention <> RollConventionEnum.FRI
-   or CalculationPeriodFrequency -> rollConvention <> RollConventionEnum.SAT
-   or CalculationPeriodFrequency -> rollConvention <> RollConventionEnum.SUN
+*Conditions* are boolean logic statements that are associated to the data type that they apply to. They are meant to be executed whenever the corresponding object is created to verify that it is valid.
 
 Syntax
 """"""
 
-Data rules apply to classes and associated attributes.
+Condition statements are included in the definition of the type that they are meant to validate and are usually appended after the definition of the type's attributes.
 
-Their name needs to be unique across the model, and the naming convention often used is in the form of ``<className>_<attributeName>`` where attributeName refers to the attribute to which the rule applies. If the data rule applies to several attributes, it is appropriate to have a naming in the form of ``<className>_<attributeName1>_<attributeName2>``.
+The definition of a condition starts with the ``condition`` keyword, followed by the name of the condition and a colon ``:`` punctuation. The condition's name must be unique in teh context of the type that it applies to. The rest of the condition definition comprises:
 
-Variations from this naming convention are needed, as in the case of the data rules that implement FpML data validation rules, the ``FpML_rule_#`` convention has been used.
+* a plain-text description (optional)
+* a boolean logic statement that applies to the the type's attributes
 
-The main data rule syntax is in the form of ``when <Rosetta expression> then <Rosetta expression>``.
+.. code-block:: Haskell
 
-Grammar rules for Boolean logic such as ``exists``, ``is absent``, ``contains``, ``count`` as well as ``and``, ``or``, ``when``, ``else`` and ``then`` statements are all usable as part of such data rules, as illustrated in the below relevant examples.
-:
+ type ActualPrice:
+    currency string (0..1)
+       [metadata scheme]
+    amount number (1..1)
+    priceExpression PriceExpressionEnum (1..1)
+    
+    condition Currency: <"The currency attribute associated with the ActualPrice should not be specified when the price is expressed as percentage of notional.">
+       if priceExpression = PriceExpressionEnum -> PercentageOfNotional
+       then currency is absent
 
-* ``CalculationPeriodDates_firstCompoundingPeriodEndDate`` combines three Boolean assertions:
+.. code-block:: Haskell
 
-.. code-block:: Java
-
- data rule CalculationPeriodDates_firstCompoundingPeriodEndDate
-  when InterestRatePayout -> compoundingMethod is absent
-   or InterestRatePayout -> compoundingMethod = CompoundingMethodEnum.None
-   then InterestRatePayout -> calculationPeriodDates -> firstCompoundingPeriodEndDate is absent
-
-* ``CalculationPeriod_calculationPeriodNumberOfDays`` involves an operator:
-
-.. code-block:: Java
-
- data rule CalculationPeriod_calculationPeriodNumberOfDays
-  when PaymentCalculationPeriod -> calculationPeriod -> calculationPeriodNumberOfDays exists
-  then PaymentCalculationPeriod -> calculationPeriod -> calculationPeriodNumberOfDays >= 0
-
-* ``Obligations_physicalSettlementMatrix`` uses parentheses for the purpose of supporting nested assertions:
-
-.. code-block:: Java
-
- data rule Obligations_physicalSettlementMatrix
-  when ( Contract -> documentation -> contractualMatrix -> matrixType <> MatrixTypeEnum.CreditDerivativesPhysicalSettlementMatrix
-   or Contract -> documentation -> contractualMatrix -> matrixType is absent )
-   and Contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> obligations exists
-  then ( Contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> obligations -> notSubordinated
-   and Contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> obligations -> notSovereignLender
-   and Contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> obligations -> notDomesticLaw
-   and Contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> obligations -> notDomesticIssuance
-  ) exists
-  and (
-   Contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> obligations -> fullFaithAndCreditObLiability
-   or Contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> obligations -> generalFundObligationLiability
-   or Contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> obligations -> revenueObligationLiability
-  ) exists
-
-**Note**: Usage of ``when`` instead of ``if`` statement in ``data rule`` artefacts is not consistent with other logical modelling artefacts in Rosetta, but will be normalised as part of future work on the DSL.
+ type ConstituentWeight:
+    openUnits number (0..1)
+    basketPercentage number (0..1)
+    condition BasketPercentage: <"FpML specifies basketPercentage as a RestrictedPercentage type, meaning that the value needs to be comprised between 0 and 1.">
+       if basketPercentage exists
+       then basketPercentage >= 0.0 and basketPercentage <= 1.0
 
 Choice Rule
 ^^^^^^^^^^^
@@ -547,7 +494,7 @@ A function's inputs and output can be constrained using *conditions*. Each condi
 
 Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the "contract" that this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
-The language features available to express condition statements in functions are exactly the same as those available to express data validation logic, as detailed in the `data integrity`_ section.
+The language features available to express condition statements in functions are exactly the same as those available to express data integrity statements in data types, as detailed in the `Data Validation Section`_.
 
 .. code-block:: Haskell
 
@@ -574,7 +521,7 @@ The language features available to express condition statements in functions are
     post-condition: <"The number recorded in the observation must match the number fetched from the source.">
        observation -> observation = EquitySpot(equity, observation -> date, observation -> time)
 
-.. note:: The function syntax intentionally mimics the type syntax regarding the use of attributes (inputs and output), conditions and descriptions, to provide consistency in the expression of model definitions.
+.. note:: The function syntax intentionally mimics the type syntax in the Rosetta DSL regarding the use of descriptions, attributes (inputs and output) and conditions, to provide consistency in the expression of model definitions.
 
 Output Construction
 """""""""""""""""""
@@ -672,7 +619,7 @@ To mark a function as fully defined, make use of the ``calculation`` annotation 
 Creation Function
 ^^^^^^^^^^^^^^^^^
 
-To be completed...
+*Coming soon...*
 
 Qualification Function
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -740,6 +687,11 @@ The ``Increase`` illustrates how the syntax qualifies this event by requiring th
    and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> fxLinkedNotional -> initialValue
    and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> notionalAmount -> amount
    and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> optionPayout -> quantity -> notionalAmount -> amount
+
+Annotation Component
+--------------------
+
+*Coming soon...*
 
 Mapping Component
 -----------------
@@ -858,3 +810,5 @@ The mapping logic associated with the below ``action`` attribute provides a good
     set to ActionEnum.Correct when "isCorrection" = True]
   (...)
  }
+
+.. _Data Validation Section: https://docs.rosetta-technology.io/dsl/documentation.html#data-validation-component
