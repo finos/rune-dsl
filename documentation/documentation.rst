@@ -4,10 +4,10 @@ Rosetta Modelling Artefacts
 **The Rosetta syntax can express five types of model components**:
 
 * Data
-* Mapping (or *synonym*)
 * Data Integrity (or *condition*)
-* Object Qualification
 * Function
+* Annotation
+* Mapping (or *synonym*)
 
 This documentation details the purpose and features of each type of model component and highlights the relationships that exists among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those artefacts.
 
@@ -301,124 +301,6 @@ The below snippet presents an example of such alias and its use as part of an ev
   and Event -> eventDate = Event -> primitive -> inception -> after -> contract -> tradeDate -> date
   and Event -> effectiveDate = novatedContractEffectiveDate
 
-Mapping Component
------------------
-
-Synonym
-^^^^^^^
-
-Purpose
-"""""""
-
-*Synonym* is the baseline building block to map the model in Rosetta to alternative data representations, whether those are open standards or proprietary. Synonyms can be complemented by relevant mapping logic when the relationship is not a one-to-one or is conditional.
-
-Synonyms are associated at the attribute level for a class, or at the enumeration value level for an enumeration. Mappings are typically implemented by traversing the model tree down, so knowledge of the context of an attribute (i.e. the class in which it is used) determines what it should map to. Knowledge about the upper-level class would be lost if synonyms were implemented at the class level.
-
-There is no limit to the number of synonyms that can be associated with each of those artefacts, and there can even be several synonyms for a given data source (e.g. in the case of a conditional mapping).
-
-Syntax
-""""""
-
-The baseline synonym syntax has two components:
-
-* **source**, which possible values are controlled by a special ``synonym source`` type of enumeration
-* **value**, which is of type ``identifier``
-
-Example:
-
-.. code-block:: Java
-
- [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value averagingInOut]
-
-A further set of attributes can be associated with a synonym, to address specific use cases:
-
-* **path** to allow mapping when data is nested in different ways between the respective models. The ``Payout`` class is a good illustration of such cases:
-
-.. code-block:: Java
-
- class Payout
- {
-  interestRatePayout InterestRatePayout (0..*);
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream path "trade.swap" ]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream path "swap"]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value generalTerms path "trade.creditDefaultSwap", feeLeg path "trade.creditDefaultSwap" set when "trade.creditDefaultSwap.feeLeg.periodicPayment" exists]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value generalTerms path "creditDefaultSwap", feeLeg path "creditDefaultSwap" set when "creditDefaultSwap.feeLeg.periodicPayment" exists]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value feeLeg, generalTerms]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value capFloorStream path "trade.capFloor"]
-   [synonym FpML_5_10, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value fra path "trade" mapper FRAIRPSplitter]
-   [synonym CME_SubmissionIRS_1_0 value fra mapper FRAIRPSplitter]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value interestLeg path "trade.returnSwap", interestLeg path "trade.equitySwapTransactionSupplement"]
-  (...)
- }
-
-* **tag** or a **componentID** to properly reflect the FIX standard, which uses those two artefacts. There are only limited examples of such at present, as a result of the scope focus on post-execution use cases hence the limited reference to the FIX standard.
-
-.. code-block:: Java
-
- class Strike
- {
-  strikeRate number (1..1);
-   [synonym FIX_5_0_SP2 value StrikePrice tag 202]
-  buyer PayerReceiverEnum (0..1);
-  seller PayerReceiverEnum (0..1);
- }
-
-* **definition** to provide a more explicit reference to the FIX enumeration values which are specified through a single digit or letter positioned as a prefix to the associated definition.
-
-.. code-block:: Java
-
- enum InformationProviderEnum
- {
-  (...)
-  Bloomberg
-   [synonym FIX_5_0_SP2 value "0" definition "0 = Bloomberg"],
-  (...)
-  Other
-   [synonym FIX_5_0_SP2 value "99" definition "99 = Other"],
-  (...)
-  Telerate
-   [synonym FIX_5_0_SP2 value "2" definition "2 = Telerate"]
- }
-
-In contrast to other data artefacts, the synonym value associated with enumeration values is of type ``string`` to facilitate integration with executable code. The alternative approach consisting in specifying the value as a compatible identifier alongside with a display name has been disregarded because it has been deemed not appropriate to create a 'code-friendly' value for the respective synonyms.  A ``string`` type removes such need.
-
-Mapping Logic
-^^^^^^^^^^^^^
-
-Purpose
-"""""""
-
-There are cases where the mapping between existing standards and protocols and their relation to the model is not one-to-one or is conditional. Synonyms have been complemented with a syntax to express mapping logic that provides a balance between flexibility and legibility.
-
-Syntax
-""""""
-
-The mapping logic differs from the data rule and choice rule syntax in that its syntax is not expressed as a stand-alone block with a qualifier prefix such as ``rule``. The mapping rule is positioned as an extension to the synonym expression, and each of the mapping expressions is prefixed with the ``set`` qualifier, followed by the name of the Rosetta attribute to which the synonym is being mapped to. Several mapping expressions can be associated with a given synonym.
-
-The mapping syntax is composed of two (optional) expressions:
-
-* **mapping value** prefixed with ``to``, to map a specific value that is distinct from the one originating from the source document
-* **conditional expression** prefixed with ``when``, to associate conditional logic to the mapping expression
-
-The mapping logic associated with the below ``action`` attribute provides a good illustration of such logic.
-
-.. code-block:: Java
-
- class Event
- {
-  (...)
-  action ActionEnum (1..1) <"Specifies whether the event is a new, a correction or a cancellation.">;
-   [synonym Rosetta_Workbench
-    set to ActionEnum.New when "isCorrection" = False,
-    set to ActionEnum.Correct when "isCorrection" = True,
-    set to ActionEnum.Cancel when "isRetraction" = True]
-   [synonym FpML_5_10
-    set to ActionEnum.New when "isCorrection" = False,
-    set to ActionEnum.Correct when "isCorrection" = True]
-  (...)
- }
-
 Data Integrity Component
 ------------------------
 
@@ -584,91 +466,6 @@ This feature is illustrated in the ``BondOptionStrike`` class.
   price OptionStrike (0..1);
  }
 
-Object Qualification Component
-------------------------------
-
-The Rosetta syntax has been developed to meet the requirement of a composable model for financial products and lifecycle events, while qualifying those products and events from their relevant modelling components. There are slight variations in the implementation across those two use cases.
-
-Product Qualification
-^^^^^^^^^^^^^^^^^^^^^
-
-Purpose
-"""""""
-
-A product is qualified based on the modelling components of its economic terms, which are being tested through a set of assertions. The qualification leverages the ``alias`` syntax presented earlier in this documentation.
-
-Syntax
-""""""
-
-The product qualification syntax works as follows: ``isProduct <name> <Rosetta expression>``.
-
-The product name needs to be unique across the product and event qualifications, the classes and the aliases, and validation logic is in place to enforce this. The naming convention is to have one upper CamelCased word, that uses ``_`` for space to append more granular qualifications.
-
-.. code-block:: Java
-
- isProduct InterestRate_InflationSwap_Basis_YearOn_Year
-  [synonym ISDA_Taxonomy_v1 value InterestRate_IRSwap_Inflation]
-  EconomicTerms -> payout -> interestRatePayout -> interestRate -> floatingRate count = 1
-  and EconomicTerms -> payout -> interestRatePayout -> interestRate -> inflationRate count = 1
-  and EconomicTerms -> payout -> interestRatePayout -> interestRate -> fixedRate is absent
-  and EconomicTerms -> payout -> interestRatePayout -> crossCurrencyTerms -> principalExchanges is absent
-  and EconomicTerms -> payout -> optionPayout is absent
-  and EconomicTerms -> payout -> interestRatePayout -> paymentDates -> paymentFrequency -> periodMultiplier = 1
-  and EconomicTerms -> payout -> interestRatePayout -> paymentDates -> paymentFrequency -> period = PeriodExtendedEnum.Y
-
-Event Qualification
-^^^^^^^^^^^^^^^^^^^
-
-Purpose
-"""""""
-
-Similar to the product qualification syntax, an event is qualified based on its underlying components which are being tested through a set of assertions.
-
-Syntax
-""""""
-
-The event qualification syntax is similar to the product and the alias but it is also possible to associate a set of data rules to it.
-
-The event name needs to be unique across the product and event qualifications, the classes and the aliases, and validation logic is in place to enforce this.  The naming convention is to have one upper CamelCased word.
-
-The ``Increase`` illustrates how the syntax qualifies this event by requiring that five conditions be met:
-
-* When specified, the value associated with the ``intent`` attribute of the ``Event`` class must be ``Increase``
-* The ``QuantityChange`` primitive must exist, possibly alongside the ``Transfer`` one
-* The quantity/notional in the before state must be lesser than in the after state. This latter argument makes use of the ``quantityBeforeQuantityChange`` and ``quantityAfterQuantityChange`` aliases
-* The ``changedQuantity`` attribute must be absent (note that a later syntax enhancement will aim at confirming that this attribute corresponds to the difference between the before and after quantity/notional)
-* The ``closedState`` attribute must be absent
-
-.. code-block:: Java
-
- isEvent Increase
-  Event -> intent when present = IntentEnum.Increase
-  and ( Event -> primitive -> quantityChange only exists
-   or ( Event -> primitive -> quantityChange and Event -> primitive -> transfer -> cashTransfer ) exists )
-  and quantityBeforeQuantityChange < quantityAfterQuantityChange
-  and changedQuantity > 0.0
-  and Event -> primitive -> quantityChange -> after -> contract -> closedState is absent
-
-  alias quantityBeforeQuantityChange
-   Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> quantity -> amount
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalAmount -> amount
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> initialValue
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> step -> stepValue
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepParameters -> notionalStepAmount
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> fxLinkedNotional -> initialValue
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> notionalAmount -> amount
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> optionPayout -> quantity -> notionalAmount -> amount
-
-  alias quantityAfterQuantityChange
-   Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> quantity -> amount
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalAmount -> amount
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> initialValue
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> step -> stepValue
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepParameters -> notionalStepAmount
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> fxLinkedNotional -> initialValue
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> notionalAmount -> amount
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> optionPayout -> quantity -> notionalAmount -> amount
-
 Function Component
 ------------------
 
@@ -822,7 +619,7 @@ Full or Partial Functions
 
 The creation of valid output objects can be fully or partially done in a function or completely left to the implementor.
 
-The output object, and thus the function, is fully defined when all validation constraints on the output object can be satisfied just from running the function specification.
+The output object, and thus the function, is fully defined when all validation constraints on the output object have been satisfied. In this case, the generated code is directly usable in an implementation.
 
 When the output object's validation constraints are only partially satisfied, the function is partially implemented. In this case, implementors will need to extend the generated code and assign the remaining values on the output object.
 
@@ -856,13 +653,8 @@ In the below example an ``executionPrimitive`` alias is created and is used in b
     post-condition:
       executionPrimitive -> after -> execution -> executionQuantity = quantity
 
-Special Function Cases
-^^^^^^^^^^^^^^^^^^^^^^
-
-Fully Defined Functions: Calculations
-"""""""""""""""""""""""""""""""""""""
-
-The output object and thus the function is fully defined when all validation constraints on the object have been satisfied. In this case, the generated code (in Java or equivalent) is directly usable in an implementation.
+Calculation Function
+^^^^^^^^^^^^^^^^^^^^
 
 To mark a function as fully defined, make use of the ``calculation`` annotation per the below to pass enough information to the code generators to create concrete functions.
 
@@ -877,25 +669,192 @@ To mark a function as fully defined, make use of the ``calculation`` annotation 
     amount number (1..1)
   ...
 
-Each line of the model snippet below is defined as follows:
+Creation Function
+^^^^^^^^^^^^^^^^^
 
-.. code-block:: Haskell
-  :linenos:
+To be completed...
 
-  func Add: <"A function that adds two numbers together.">
-    inputs:
-      input1 number (1..1)
-      input2 number (1..1)
-    output:
-      result number (1..1)
-    assign-output: result
-      input1 + input2
+Qualification Function
+^^^^^^^^^^^^^^^^^^^^^^
 
-#. `func Add:` tells us we are looking at a function called `Add`. The text following the semi-colon defines the function in written prose, which is typically taken verbatim from ISDA Documentation where available.
-#. `inputs:` tells us the following section lists the data inputs required by the function.
-#. `input1 number (1..1)` tells us the first input is called `input1`, it is a `number`, and we expect exactly one `number`. The `(1..1)` notation is commonly used in `data modelling`_ and mirrors the syntax used when defining data types.
-#. `input2 number (1..1)` tells us there is a second input is called (unimaginatively) `input2` and is also exactly one `number`.
-#. `output:` mirrors that of line 2 and tells us the following line will relate to defining the function output.
-#. `result number (1..1)` tells us the function output is called `result`, it is a number, and we expect exactly one.
-#. `assign-output: result` tells us the following lines instruct the function to assign a value to the output, which is called `result`.
-#. `input1 + input2` tells us the `result` should be assigned the result of this logical expression.
+Purpose
+"""""""
+
+The Rosetta syntax has been developed to meet the requirement of a composable model for financial products and lifecycle events, while being able to qualify those products and events from their relevant modelling components according to a given taxonomy.
+
+Qualification functions associate a taxonomic name (as a string) to an object, by evaluating a combination of assertions that are able to uniquely characterise that object according to the taxonomy.
+
+Syntax
+""""""
+
+The qualification name needs to be unique across product and event qualifications, types and aliases, and validation logic is in place to enforce this.
+
+The naming convention is to have one PascalCase (upper CamelCased) word, using ``_`` for space to append more granular qualifications.
+
+.. code-block:: Java
+
+ isProduct InterestRate_InflationSwap_Basis_YearOn_Year
+  [synonym ISDA_Taxonomy_v1 value InterestRate_IRSwap_Inflation]
+  EconomicTerms -> payout -> interestRatePayout -> interestRate -> floatingRate count = 1
+  and EconomicTerms -> payout -> interestRatePayout -> interestRate -> inflationRate count = 1
+  and EconomicTerms -> payout -> interestRatePayout -> interestRate -> fixedRate is absent
+  and EconomicTerms -> payout -> interestRatePayout -> crossCurrencyTerms -> principalExchanges is absent
+  and EconomicTerms -> payout -> optionPayout is absent
+  and EconomicTerms -> payout -> interestRatePayout -> paymentDates -> paymentFrequency -> periodMultiplier = 1
+  and EconomicTerms -> payout -> interestRatePayout -> paymentDates -> paymentFrequency -> period = PeriodExtendedEnum.Y
+
+The ``Increase`` illustrates how the syntax qualifies this event by requiring that five conditions be met:
+
+* When specified, the value associated with the ``intent`` attribute of the ``Event`` class must be ``Increase``
+* The ``QuantityChange`` primitive must exist, possibly alongside the ``Transfer`` one
+* The quantity/notional in the before state must be lesser than in the after state. This latter argument makes use of the ``quantityBeforeQuantityChange`` and ``quantityAfterQuantityChange`` aliases
+* The ``changedQuantity`` attribute must be absent (note that a later syntax enhancement will aim at confirming that this attribute corresponds to the difference between the before and after quantity/notional)
+* The ``closedState`` attribute must be absent
+
+.. code-block:: Java
+
+ isEvent Increase
+  Event -> intent when present = IntentEnum.Increase
+  and ( Event -> primitive -> quantityChange only exists
+   or ( Event -> primitive -> quantityChange and Event -> primitive -> transfer -> cashTransfer ) exists )
+  and quantityBeforeQuantityChange < quantityAfterQuantityChange
+  and changedQuantity > 0.0
+  and Event -> primitive -> quantityChange -> after -> contract -> closedState is absent
+
+  alias quantityBeforeQuantityChange
+   Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> quantity -> amount
+   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalAmount -> amount
+   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> initialValue
+   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> step -> stepValue
+   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepParameters -> notionalStepAmount
+   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> fxLinkedNotional -> initialValue
+   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> notionalAmount -> amount
+   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> optionPayout -> quantity -> notionalAmount -> amount
+
+  alias quantityAfterQuantityChange
+   Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> quantity -> amount
+   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalAmount -> amount
+   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> initialValue
+   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> step -> stepValue
+   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepParameters -> notionalStepAmount
+   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> fxLinkedNotional -> initialValue
+   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> notionalAmount -> amount
+   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> optionPayout -> quantity -> notionalAmount -> amount
+
+Mapping Component
+-----------------
+
+Synonym
+^^^^^^^
+
+Purpose
+"""""""
+
+*Synonym* is the baseline building block to map the model in Rosetta to alternative data representations, whether those are open standards or proprietary. Synonyms can be complemented by relevant mapping logic when the relationship is not a one-to-one or is conditional.
+
+Synonyms are associated at the attribute level for a class, or at the enumeration value level for an enumeration. Mappings are typically implemented by traversing the model tree down, so knowledge of the context of an attribute (i.e. the class in which it is used) determines what it should map to. Knowledge about the upper-level class would be lost if synonyms were implemented at the class level.
+
+There is no limit to the number of synonyms that can be associated with each of those artefacts, and there can even be several synonyms for a given data source (e.g. in the case of a conditional mapping).
+
+Syntax
+""""""
+
+The baseline synonym syntax has two components:
+
+* **source**, which possible values are controlled by a special ``synonym source`` type of enumeration
+* **value**, which is of type ``identifier``
+
+Example:
+
+.. code-block:: Java
+
+ [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value averagingInOut]
+
+A further set of attributes can be associated with a synonym, to address specific use cases:
+
+* **path** to allow mapping when data is nested in different ways between the respective models. The ``Payout`` class is a good illustration of such cases:
+
+.. code-block:: Java
+
+ class Payout
+ {
+  interestRatePayout InterestRatePayout (0..*);
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream path "trade.swap" ]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream path "swap"]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value generalTerms path "trade.creditDefaultSwap", feeLeg path "trade.creditDefaultSwap" set when "trade.creditDefaultSwap.feeLeg.periodicPayment" exists]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value generalTerms path "creditDefaultSwap", feeLeg path "creditDefaultSwap" set when "creditDefaultSwap.feeLeg.periodicPayment" exists]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value feeLeg, generalTerms]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value capFloorStream path "trade.capFloor"]
+   [synonym FpML_5_10, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value fra path "trade" mapper FRAIRPSplitter]
+   [synonym CME_SubmissionIRS_1_0 value fra mapper FRAIRPSplitter]
+   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value interestLeg path "trade.returnSwap", interestLeg path "trade.equitySwapTransactionSupplement"]
+  (...)
+ }
+
+* **tag** or a **componentID** to properly reflect the FIX standard, which uses those two artefacts. There are only limited examples of such at present, as a result of the scope focus on post-execution use cases hence the limited reference to the FIX standard.
+
+.. code-block:: Java
+
+ class Strike
+ {
+  strikeRate number (1..1);
+   [synonym FIX_5_0_SP2 value StrikePrice tag 202]
+  buyer PayerReceiverEnum (0..1);
+  seller PayerReceiverEnum (0..1);
+ }
+
+* **definition** to provide a more explicit reference to the FIX enumeration values which are specified through a single digit or letter positioned as a prefix to the associated definition.
+
+.. code-block:: Java
+
+ enum InformationProviderEnum
+ {
+  (...)
+  Bloomberg
+   [synonym FIX_5_0_SP2 value "0" definition "0 = Bloomberg"],
+  (...)
+  Other
+   [synonym FIX_5_0_SP2 value "99" definition "99 = Other"],
+  (...)
+  Telerate
+   [synonym FIX_5_0_SP2 value "2" definition "2 = Telerate"]
+ }
+
+In contrast to other data artefacts, the synonym value associated with enumeration values is of type ``string`` to facilitate integration with executable code. The alternative approach consisting in specifying the value as a compatible identifier alongside with a display name has been disregarded because it has been deemed not appropriate to create a 'code-friendly' value for the respective synonyms.  A ``string`` type removes such need.
+
+Mapping Logic
+^^^^^^^^^^^^^
+
+Purpose
+"""""""
+
+There are cases where the mapping between existing standards and protocols and their relation to the model is not one-to-one or is conditional. Synonyms have been complemented with a syntax to express mapping logic that provides a balance between flexibility and legibility.
+
+Syntax
+""""""
+
+The mapping logic differs from the data rule and choice rule syntax in that its syntax is not expressed as a stand-alone block with a qualifier prefix such as ``rule``. The mapping rule is positioned as an extension to the synonym expression, and each of the mapping expressions is prefixed with the ``set`` qualifier, followed by the name of the Rosetta attribute to which the synonym is being mapped to. Several mapping expressions can be associated with a given synonym.
+
+The mapping syntax is composed of two (optional) expressions:
+
+* **mapping value** prefixed with ``to``, to map a specific value that is distinct from the one originating from the source document
+* **conditional expression** prefixed with ``when``, to associate conditional logic to the mapping expression
+
+The mapping logic associated with the below ``action`` attribute provides a good illustration of such logic.
+
+.. code-block:: Java
+
+ class Event
+ {
+  (...)
+  action ActionEnum (1..1) <"Specifies whether the event is a new, a correction or a cancellation.">;
+   [synonym Rosetta_Workbench
+    set to ActionEnum.New when "isCorrection" = False,
+    set to ActionEnum.Correct when "isCorrection" = True,
+    set to ActionEnum.Cancel when "isRetraction" = True]
+   [synonym FpML_5_10
+    set to ActionEnum.New when "isCorrection" = False,
+    set to ActionEnum.Correct when "isCorrection" = True]
+  (...)
+ }
