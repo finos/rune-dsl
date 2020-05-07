@@ -34,16 +34,14 @@ The definition of a *type* starts with the keyword ``type``, followed by the typ
 
 The first component of the definition is a plain-text description of the type. Descriptions in Rosetta use quotation marks ``"`` ``"`` (to mark a string) in between angle brackets ``<`` ``>``. Descriptions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
 
-Then the definition of the type lists its component attributes, each in terms of its own type, cardinality and associated description. Attributes can in turn be specified either as a basic type, a type or an enumeration.
+Then the definition of the type lists its component attributes. Each attribute is defined by four components, syntactically ordered as:
 
-The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
+* name
+* type
+* cardinality: see `Cardinality Section`_
+* description
 
-* Text - ``string``
-* Number - ``int`` (for integer) and ``number`` (for float)
-* Logic - ``boolean``
-* Date and Time - ``date``, ``time`` and ``zonedDateTime``
-
-.. code-block:: Java
+.. code-block:: Haskell
 
  type PeriodBound: <"The period bound is defined as a period and whether the bound is inclusive.">
    period Period (1..1) <"The period to be used as the bound, e.g. 5Y.">
@@ -53,7 +51,14 @@ The set of basic types available in the Rosetta DSL are controlled at the langua
    periodMultiplier int (1..1) <"A time period multiplier, e.g. 1, 2 or 3 etc. A negative value can be used when specifying an offset relative to another date, e.g. -2 days.">
    period PeriodEnum (1..1) <"A time period, e.g. a day, week, month or year of the stream. If the periodMultiplier value is 0 (zero) then period must contain the value D (day).">
 
-.. note:: The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword and therefore the start of a new definition marks the end of the previous one.
+.. note:: The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as ``type``, so the start of a new definition marks the end of the previous one.
+
+Each attribute can be specified either as a basic type, a type or an enumeration. The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
+
+* Text - ``string``
+* Number - ``int`` (for integer) and ``number`` (for float)
+* Logic - ``boolean``
+* Date and Time - ``date``, ``time`` and ``zonedDateTime``
 
 The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase <https://en.wikipedia.org/wiki/Camel_case>`_), while attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase). Type names need to be unique across the model, including with respect to rule names. All those requirements are controlled by the Rosetta grammar.
 
@@ -63,13 +68,6 @@ The Rosetta DSL provides for some special types called 'qualified types', which 
 * Product and event qualification - ``productType`` and ``eventType``
 
 Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model.
-
-Cardinality
-"""""""""""
-
-Cardinality is a model integrity mechanism to control how many of each attribute can a type contain. The Rosetta syntax borrows from XML and specifies cardinality as a lower and upper bound in between ``(`` ``..`` ``)`` braces.
-
-The lower and upper bounds can both be any integer number. A 0 lower bound means attribute is optional. A ``*`` upper bound means an unbounded attribute. ``(1..1)`` represents that there must be one and only one attribute of this type. When the upper bound is greater than 1, the attribute will be considered as a list (to be handled as such in any generated code).
 
 Time
 """"
@@ -304,25 +302,49 @@ The below snippet presents an example of such alias and its use as part of an ev
 Data Validation Component
 -------------------------
 
-Condition
-^^^^^^^^^
+**Data integrity is supported by validation components that are associated to each data type** in the Rosetta DSL. There are two types of validation components:
+
+* Cardinality
+* Condition Statement
+
+The validation components associated to a data type generate executable code when executed on objects of that type. Implementors of the model can use the code generated from these validation components to build diagnostic tools that can scan objects and report on which validation rules were statisfied or broken. Typically, the validation code should be executed as soon as any object is created, to verify its validity from the point of creation. 
+
+Cardinality
+^^^^^^^^^^^
+
+Cardinality is a data integrity mechanism to control how many of each attribute an object of a given type can contain. The Rosetta DSL borrows from XML and specifies cardinality as a lower and upper bound in between ``(`` ``..`` ``)`` braces.
+
+.. code-block:: Haskell
+
+ type Address:
+   street string (1..*)
+   city string (1..1)
+   state string (0..1)
+   country string (1..1)
+     [metadata scheme]
+   postalCode string (1..1)
+
+The lower and upper bounds can both be any integer number. A 0 lower bound means attribute is optional. A ``*`` upper bound means an unbounded attribute. ``(1..1)`` represents that there must be one and only one attribute of this type. When the upper bound is greater than 1, the attribute will be considered as a list, to be handled as such in any generated code.
+
+A separate validation rule is generated for each attribute's cardinality constraint, so that any cardinality breach can be associated back to the specific attribute and not just to the object overall.
+
+Condition Statement
+^^^^^^^^^^^^^^^^^^^
 
 Purpose
 """""""
 
-**Data integrity is supported by data validation components that are expressed as condition statements** in the Rosetta DSL. 
-
-*Conditions* are boolean logic statements and are associated to the data type that they apply to. Those condition statements generate executable code that evaluates to True or False. This code is meant to be executed whenever an object of that type is created, to verify that it is valid.
+*Conditions* are logic statements that apply to attributes of an object and evaluate to True or False.
 
 Syntax
 """"""
 
-Condition statements are included in the definition of the type that they are meant to validate and are usually appended after the definition of the type's attributes.
+Condition statements are included in the definition of the type that they are associated to and are usually appended after the definition of the type's attributes.
 
-The definition of a condition starts with the ``condition`` keyword, followed by the name of the condition and a colon ``:`` punctuation. The condition's name must be unique in the context of the type that it applies to. The rest of the condition definition comprises:
+The definition of a condition starts with the ``condition`` keyword, followed by the name of the condition and a colon ``:`` punctuation. The condition's name must be unique in the context of the type that it applies to (but needs not be unique across all data types of a given model). The rest of the condition definition comprises:
 
 * a plain-text description (optional)
-* a boolean logic statement that applies to the the type's attributes
+* a logic expression that applies to the the type's attributes
 
 The language features that are available in the Rosetta DSL to express validation conditions emulate the basic boolean logic available in usual programming languages:
 
@@ -356,26 +378,7 @@ The language features that are available in the Rosetta DSL to express validatio
 Special Syntax
 ^^^^^^^^^^^^^^
 
-Some specific language feature have been introduced in the Rosetta DSL, to handle use-cases where the basic logic components would create unecessarily verbose, and therefore less readable, expressions. Those use-cases were deemed frequent enough to justify developing a specific syntax for them.
-
-Only
-""""
-
-* ``only exists``
-
-.. code-block:: Haskell
-
- type PriceNotation:
-    price Price (1..1)
-    assetIdentifier AssetIdentifier (0..1)
- 
-    condition CurrencyAssetIdentifier:
-       if price -> fixedInterestRate exists
-       then assetIdentifier -> currency only exists
- 
-    condition RateOptionAssetIdentifier:
-       if price -> floatingInterestRate exists
-       then assetIdentifier -> rateOption only exists
+Some specific language feature have been introduced in the Rosetta DSL, to handle validation cases where the basic boolean logic components would create unecessarily verbose, and therefore less readable, expressions. Those use-cases were deemed frequent enough to justify developing a specific syntax for them.
 
 Choice
 """"""
@@ -443,6 +446,29 @@ This feature is illustrated in the ``BondOptionStrike`` class.
   referenceSwapCurve ReferenceSwapCurve (0..1);
   price OptionStrike (0..1);
  }
+
+Only Exists
+"""""""""""
+
+The ``only exists`` component is an adaptation of the simple ``exists`` syntax, that verifies that the attribute exists but also that no other attribute of the type does.
+
+.. code-block:: Haskell
+
+ type PriceNotation:
+    price Price (1..1)
+    assetIdentifier AssetIdentifier (0..1)
+ 
+    condition CurrencyAssetIdentifier:
+       if price -> fixedInterestRate exists
+       then assetIdentifier -> currency only exists
+ 
+    condition RateOptionAssetIdentifier:
+       if price -> floatingInterestRate exists
+       then assetIdentifier -> rateOption only exists
+
+This syntax drastically reduces the condition expression, which would otherwise require a combination of ``exists`` and ``is absent`` (applied to all other attributes). It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for ``is absent``.
+
+.. note:: This condition is typically applied to attribues of objects whose type implements a ``one-of`` condition. In this case, the ``only`` qualifier is redundant with the ``one-of`` condition because only one of the attributes can exist. However, ``only`` makes the condition expression more explicit, and also robust to potential lifting of the ``one-of`` condition.
 
 Function Component
 ------------------
@@ -525,7 +551,7 @@ A function's inputs and output can be constrained using *conditions*. Each condi
 
 Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the "contract" that this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
-The language features available to express condition statements in functions are exactly the same as those available to express data integrity statements in data types, as detailed in the `Data Validation Section`_.
+The language features available to express condition statements in functions are exactly the same as those available to express condition statements in data types, as detailed in the `Condition Statement Section`_.
 
 .. code-block:: Haskell
 
@@ -842,4 +868,5 @@ The mapping logic associated with the below ``action`` attribute provides a good
   (...)
  }
 
-.. _Data Validation Section: https://docs.rosetta-technology.io/dsl/documentation.html#data-validation-component
+.. _Cardinality Section: https://docs.rosetta-technology.io/dsl/documentation.html#cardinality
+.. _Condition Statement Section: https://docs.rosetta-technology.io/dsl/documentation.html#condition-statement
