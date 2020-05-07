@@ -51,7 +51,7 @@ Then the definition of the type lists its component attributes. Each attribute i
    periodMultiplier int (1..1) <"A time period multiplier, e.g. 1, 2 or 3 etc. A negative value can be used when specifying an offset relative to another date, e.g. -2 days.">
    period PeriodEnum (1..1) <"A time period, e.g. a day, week, month or year of the stream. If the periodMultiplier value is 0 (zero) then period must contain the value D (day).">
 
-.. note:: The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as ``type``, so the start of a new definition marks the end of the previous one. For readability more generally, the Rosetta DSL looks to eliminate all the delimiters that are often used in traditional programming languages (such as curly braces ``{`` ``}`` or semi-colon ";").
+.. note:: The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as ``type``, so the start of a new definition marks the end of the previous one. For readability more generally, the Rosetta DSL looks to eliminate all the delimiters that are often used in traditional programming languages (such as curly braces ``{`` ``}`` or semi-colon ``;``).
 
 Each attribute can be specified either as a basic type, a type or an enumeration. The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
 
@@ -261,43 +261,6 @@ In order to handle the integration of FpML scheme values such as the *dayCountFr
   _30E_360_ISDA displayName "30E/360.ISDA"
   _30_360 displayName "30/360"
  }
-
-Alias
-^^^^^
-
-Purpose
-"""""""
-
-An alias is an indirection for an entire Rosetta expression. Aliases have been introduced in the Rosetta syntax because:
-
-* Model tree expressions can be cumbersome, which may contradict the primary goals of clarity and legibility.
-* The same model tree expressions are often reused across multiple modelling artefacts such as data rule, event and product qualification or function.
-
-Syntax
-""""""
-
-The alias syntax is straightforward: ``alias <name> <Rosetta expression>``.
-
-The alias name needs to be unique across the product and event qualifications, the classes and the aliases, and validation logic is in place to enforce this.  The naming convention is to have one camelCased word, instead of a composite name as for the Rosetta rules, with implied meaning.
-
-The below snippet presents an example of such alias and its use as part of an event qualification.
-
-.. code-block:: Java
-
- alias novatedContractEffectiveDate
-  Event -> primitive -> inception -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> calculationPeriodDates -> effectiveDate -> date
-  or Event -> primitive -> inception -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> calculationPeriodDates -> effectiveDate -> adjustableDate -> adjustedDate
-  or Event -> primitive -> inception -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> calculationPeriodDates -> effectiveDate -> adjustableDate -> unadjustedDate
-
- isEvent Novation
-  Event -> intent when present = IntentEnum.Novation
-  and Event -> primitive -> quantityChange exists
-  and Event -> primitive -> inception exists
-  and quantityAfterQuantityChange = 0.0
-  and Event -> primitive -> quantityChange -> after -> contract -> closedState -> state = ClosedStateEnum.Novated
-  and Event -> primitive -> inception -> after -> contract -> contractIdentifier <> Event -> primitive -> quantityChange -> before -> contract -> contractIdentifier
-  and Event -> eventDate = Event -> primitive -> inception -> after -> contract -> tradeDate -> date
-  and Event -> effectiveDate = novatedContractEffectiveDate
 
 Data Validation Component
 -------------------------
@@ -745,6 +708,35 @@ The ``Increase`` illustrates how the syntax qualifies this event by requiring th
    and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> fxLinkedNotional -> initialValue
    and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> notionalAmount -> amount
    and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> optionPayout -> quantity -> notionalAmount -> amount
+
+Utility Function
+^^^^^^^^^^^^^^^^
+
+(previously was: *alias*)
+
+Purpose
+"""""""
+
+An alias is an indirection for an entire Rosetta expression. Aliases have been introduced in the Rosetta syntax because:
+
+* Model tree expressions can be cumbersome, which may contradict the primary goals of clarity and legibility.
+* The same model tree expressions are often reused across multiple modelling artefacts such as data rule, event and product qualification or function.
+
+Syntax
+""""""
+
+The alias syntax is straightforward: ``alias <name> <Rosetta expression>``.
+
+The alias name needs to be unique across the product and event qualifications, the classes and the aliases, and validation logic is in place to enforce this.  The naming convention is to have one camelCased word, instead of a composite name as for the Rosetta rules, with implied meaning.
+
+The below snippet presents an example of such alias and its use as part of an event qualification.
+
+.. code-block:: Haskell
+
+ func PaymentDate:
+    inputs: economicTerms EconomicTerms(1..1)
+    output: result date(0..1)
+    assign-output result: economicTerms -> payout -> interestRatePayout only-element -> paymentDate -> adjustedDate
 
 Annotation Component
 --------------------
