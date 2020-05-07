@@ -51,7 +51,7 @@ Then the definition of the type lists its component attributes. Each attribute i
    periodMultiplier int (1..1) <"A time period multiplier, e.g. 1, 2 or 3 etc. A negative value can be used when specifying an offset relative to another date, e.g. -2 days.">
    period PeriodEnum (1..1) <"A time period, e.g. a day, week, month or year of the stream. If the periodMultiplier value is 0 (zero) then period must contain the value D (day).">
 
-.. note:: The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as ``type``, so the start of a new definition marks the end of the previous one.
+.. note:: The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as ``type``, so the start of a new definition marks the end of the previous one. For readability more generally, the Rosetta DSL looks to eliminate all the delimiters that are often used in traditional programming languages (such as curly braces ``{`` ``}`` or semi-colon ";").
 
 Each attribute can be specified either as a basic type, a type or an enumeration. The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
 
@@ -84,10 +84,10 @@ Inheritance
 
 The Rosetta DSL supports an **inheritance** mechanism, when a type inherits its definition and behaviour (and therefore all of its attributes) from another type and adds its own set of attributes on top. Inheritance is supported by the ``extends`` keyword next to the type name.
 
-.. code-block:: Java
+.. code-block:: Haskell
 
  type Offset extends Period:
-	  dayType DayTypeEnum (0..1)
+    dayType DayTypeEnum (0..1)
 
 .. note:: For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet it to highlight some of those features.
 
@@ -694,7 +694,7 @@ Syntax
 
 The qualification name needs to be unique across product and event qualifications, types and aliases, and validation logic is in place to enforce this.
 
-The naming convention is to have one PascalCase (upper CamelCased) word, using ``_`` for space to append more granular qualifications.
+The naming convention is to have one PascalCase (upper CamelCase) word, using ``_`` for space to append more granular qualifications.
 
 .. code-block:: Java
 
