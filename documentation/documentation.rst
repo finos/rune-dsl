@@ -312,17 +312,23 @@ Purpose
 
 **Data integrity is supported by data validation components that are expressed as condition statements** in the Rosetta DSL. 
 
-*Conditions* are boolean logic statements that are associated to the data type that they apply to. They are meant to be executed whenever the corresponding object is created to verify that it is valid.
+*Conditions* are boolean logic statements and are associated to the data type that they apply to. Those condition statements generate executable code that evaluates to True or False. This code is meant to be executed whenever an object of that type is created, to verify that it is valid.
 
 Syntax
 """"""
 
 Condition statements are included in the definition of the type that they are meant to validate and are usually appended after the definition of the type's attributes.
 
-The definition of a condition starts with the ``condition`` keyword, followed by the name of the condition and a colon ``:`` punctuation. The condition's name must be unique in teh context of the type that it applies to. The rest of the condition definition comprises:
+The definition of a condition starts with the ``condition`` keyword, followed by the name of the condition and a colon ``:`` punctuation. The condition's name must be unique in the context of the type that it applies to. The rest of the condition definition comprises:
 
 * a plain-text description (optional)
 * a boolean logic statement that applies to the the type's attributes
+
+The language features that are available in the Rosetta DSL to express validation conditions emulate the typical boolean logic available in other coding languages:
+
+* conditional statements: ``if``, ``then``, ``else``
+* boolean statements: ``and``, ``or``
+* list statements: ``exists``, ``is absent``, ``contains``, ``count``
 
 .. code-block:: Haskell
 
@@ -344,6 +350,8 @@ The definition of a condition starts with the ``condition`` keyword, followed by
     condition BasketPercentage: <"FpML specifies basketPercentage as a RestrictedPercentage type, meaning that the value needs to be comprised between 0 and 1.">
        if basketPercentage exists
        then basketPercentage >= 0.0 and basketPercentage <= 1.0
+
+.. note:: Conditions are included in the definition of the data type that they are associated to, so they are "aware" of the context of that data type. This is why attributes of that data type can be directly used to express the validation logic, without the need to refer to the type itself.
 
 Choice Rule
 ^^^^^^^^^^^
