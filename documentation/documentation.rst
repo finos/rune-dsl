@@ -324,7 +324,7 @@ The definition of a condition starts with the ``condition`` keyword, followed by
 * a plain-text description (optional)
 * a boolean logic statement that applies to the the type's attributes
 
-The language features that are available in the Rosetta DSL to express validation conditions emulate the typical boolean logic available in other coding languages:
+The language features that are available in the Rosetta DSL to express validation conditions emulate the basic boolean logic available in usual programming languages:
 
 * conditional statements: ``if``, ``then``, ``else``
 * boolean statements: ``and``, ``or``
@@ -353,18 +353,37 @@ The language features that are available in the Rosetta DSL to express validatio
 
 .. note:: Conditions are included in the definition of the data type that they are associated to, so they are "aware" of the context of that data type. This is why attributes of that data type can be directly used to express the validation logic, without the need to refer to the type itself.
 
-Choice Rule
-^^^^^^^^^^^
+Special Syntax
+^^^^^^^^^^^^^^
 
-Purpose
-"""""""
+Some specific language feature have been introduced in the Rosetta DSL, to handle use-cases where the basic logic components would create unecessarily verbose, and therefore less readable, expressions. Those use-cases were deemed frequent enough to justify developing a specific syntax for them.
+
+Only
+""""
+
+* ``only exists``
+
+.. code-block:: Haskell
+
+ type PriceNotation:
+    price Price (1..1)
+    assetIdentifier AssetIdentifier (0..1)
+ 
+    condition CurrencyAssetIdentifier:
+       if price -> fixedInterestRate exists
+       then assetIdentifier -> currency only exists
+ 
+    condition RateOptionAssetIdentifier:
+       if price -> floatingInterestRate exists
+       then assetIdentifier -> rateOption only exists
+
+Choice
+""""""
 
 Choice rules define a choice constraint between the set of attributes of a class. They are meant as a simple and robust construct to translate the XML *xsd:choicesyntax* as part of any model created using Rosetta, although their usage is not limited to those XML use cases.
 
-Syntax
-""""""
-
-Choice rules only apply within the context of a class, and the naming convention is ``<className>_choice``, e.g. ``ExerciseOutcome_choice``. If multiple choice rules exist in relation to a class, the naming convention is to suffix the 'choice' term with a number, e.g. ``ExerciseOutcome_choice1`` and ``ExerciseOutcome_choice2``.
+* ``required choice``
+* ``optional choice``
 
 .. code-block:: Java
 
@@ -406,10 +425,14 @@ While most of the choice rules have two attributes, there is no limit to the num
 
 Members of a choice rule need to have their lower cardinality set to 0, something which is enforced by a validation rule.
 
-One of Syntax as Complement to Choice Rule
-""""""""""""""""""""""""""""""""""""""""""""
+One-of
+""""""
+
+(as complement to choice rule)
 
 In the case where all the attributes of a given class are subject to a required choice logic that results in one and only one of them being present in any instance of that class, Rosetta allows to associate a ``one of`` qualifier to the class. This by-passes the need to implement the corresponding choice rule.
+
+* ``one-of``
 
 This feature is illustrated in the ``BondOptionStrike`` class.
 
