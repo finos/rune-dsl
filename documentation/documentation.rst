@@ -351,6 +351,7 @@ The language features that are available in the Rosetta DSL to express validatio
 * conditional statements: ``if``, ``then``, ``else``
 * boolean statements: ``and``, ``or``
 * list statements: ``exists``, ``is absent``, ``contains``, ``count``
+* comparison operators: ``=``, ``<>``, ``<``, ``<=``, ``>=``, ``>``
 
 .. code-block:: Haskell
 
