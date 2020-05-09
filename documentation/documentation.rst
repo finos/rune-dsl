@@ -60,7 +60,7 @@ Each attribute can be specified either as a basic type, a type or an enumeration
 * Logic - ``boolean``
 * Date and Time - ``date``, ``time`` and ``zonedDateTime``
 
-The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase <https://en.wikipedia.org/wiki/Camel_case>`_), while attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase). Type names need to be unique across the model, including with respect to rule names. All those requirements are controlled by the Rosetta grammar.
+The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase <https://en.wikipedia.org/wiki/Camel_case>`_), while attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase). Type names need to be unique across the model. All those requirements are controlled by the Rosetta grammar.
 
 The Rosetta DSL provides for some special types called 'qualified types', which are specific to its application in the financial domain:
 
@@ -124,7 +124,7 @@ The below ``Party`` and ``Identifier`` classes provide an illustration as to how
 
 .. note:: Synonyms are a mechanism in the Rosetta DSL to map model components to physical data representations and are detailed in the *Synonym* section of this documentation.
 
-A ``key`` qualifier is associated to the ``Party`` type, which means it is referenceable. In the ``Identifier`` class, the ``reference`` qualifier, which is associated to the ``issuerReference`` attribute of type ``Party``, indicates that this attribute can be provided as a reference (via its associated key) instead of a deep copy.
+A ``key`` qualifier is associated to the ``Party`` type, which means it is referenceable. In the ``Identifier`` class, the ``reference`` qualifier, which is associated to the ``issuerReference`` attribute of type ``Party``, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy.
 
 The ``issuerReference`` can also be provided as an external cross-reference in the synonym source, using ``href`` as the ``meta`` qualifier. The ``issuer`` attribute has an associated ``scheme``, which ``issuerIdScheme`` value is specified in the synonym source using the ``meta`` qualifier.
 
@@ -270,7 +270,7 @@ Data Validation Component
 * Cardinality
 * Condition Statement
 
-The validation components associated to a data type generate executable code when executed on objects of that type. Implementors of the model can use the code generated from these validation components to build diagnostic tools that can scan objects and report on which validation rules were statisfied or broken. Typically, the validation code should be executed as soon as any object is created, to verify its validity from the point of creation. 
+The validation components associated to a data type generate executable code designed to be executed on objects of that type. Implementors of the model can use the code generated from these validation components to build diagnostic tools that can scan objects and report on which validation rules were statisfied or broken. Typically, the validation code is included as part of any process that creates an object, to verify its validity from the point of creation. 
 
 Cardinality
 ^^^^^^^^^^^
@@ -297,7 +297,7 @@ Condition Statement
 Purpose
 """""""
 
-*Conditions* are logic statements that apply to attributes of an object and evaluate to True or False.
+*Conditions* are logic statements associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False.
 
 Syntax
 """"""
@@ -465,7 +465,7 @@ Syntax
 
 The syntax of a function specification starts with the keyword ``func`` followed by the function name. A colon ``:`` punctuation introduces the rest of the definition.
 
-The Rosetta DSL convention for a function name is to use a PascalCase (upper CamelCase) word.
+The Rosetta DSL convention for a function name is to use a PascalCase (upper `CamelCase`_) word. The function name needs to be unique across all types of functions in a model and validation logic is in place to enforce this.
 
 The rest of the function specification supports the following components:
 
@@ -727,7 +727,7 @@ Syntax
 
 The alias syntax is straightforward: ``alias <name> <Rosetta expression>``.
 
-The alias name needs to be unique across the product and event qualifications, the classes and the aliases, and validation logic is in place to enforce this.  The naming convention is to have one camelCased word, instead of a composite name as for the Rosetta rules, with implied meaning.
+The naming convention is to have one camelCased word, instead of a composite name as for the Rosetta rules, with implied meaning.
 
 The below snippet presents an example of such alias and its use as part of an event qualification.
 
