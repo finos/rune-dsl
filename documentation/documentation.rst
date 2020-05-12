@@ -30,7 +30,7 @@ A *type* describes an *entity* (also sometimes referred to as an *object* or a *
 Syntax
 """"""
 
-The definition of a *type* starts with the keyword ``type``, followed by the type name. A colon ``:`` punctuation introduces the rest of the definition.
+The definition of a type starts with the keyword ``type``, followed by the type name. A colon ``:`` punctuation introduces the rest of the definition.
 
 The first component of the definition is a plain-text description of the type. Descriptions in Rosetta use quotation marks ``"`` ``"`` (to mark a string) in between angle brackets ``<`` ``>``. Descriptions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
 
@@ -60,14 +60,7 @@ Each attribute can be specified either as a basic type, a type or an enumeration
 * Logic - ``boolean``
 * Date and Time - ``date``, ``time`` and ``zonedDateTime``
 
-The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase <https://en.wikipedia.org/wiki/Camel_case>`_), while attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase). Type names need to be unique across the model. All those requirements are controlled by the Rosetta grammar.
-
-The Rosetta DSL provides for some special types called 'qualified types', which are specific to its application in the financial domain:
-
-* Calculation - ``calculation``
-* Product and event qualification - ``productType`` and ``eventType``
-
-Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model.
+The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase`_), while attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase). Type names need to be unique across the model. All those requirements are controlled by the Rosetta DSL grammar.
 
 Time
 """"
@@ -105,9 +98,7 @@ This mimics the *scheme* concept, whose values may be specified as part of an ex
 Syntax
 """"""
 
-Enumerations are very simple modelling containers, which are defined in the same way as other model components. The definition of an enumeration starts with the ``enum`` keyword, followed by the enumeration name. A ``:`` punctuation introduces the rest of the definition, which contains a plain-text description of the enumeration and the list of enumeration values.
-
-Similar to a type, an enumeration is delineated by brackets ``{`` ``}``.
+Enumerations are very simple modelling containers, which are defined in the same way as other model components. The definition of an enumeration starts with the ``enum`` keyword, followed by the enumeration name. A colon ``:`` punctuation introduces the rest of the definition, which contains a plain-text description of the enumeration and the list of enumeration values.
 
 .. code-block:: Haskell
 
@@ -117,9 +108,13 @@ Similar to a type, an enumeration is delineated by brackets ``{`` ``}``.
    M <"Month">
    Y <"Year">
 
+Enumeration names must be unique across a model. The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase).
+
 Enumeration values have a restricted syntax to facilitate their integration with executable code: they cannot start with a numerical digit, and the only special character that can be associated with them is the underscore ``_``.
 
-In order to handle the integration of FpML scheme values such as the *dayCountFractionScheme* which has values with special characters like ``ACT/365.FIXED`` or ``30/360``, the Rosetta syntax allows to associate a **displayName** synonym. For those enumeration values, special characters are replaced with ``_`` and the ``displayName`` entry corresponds to the actual value. Examples of such are ``ACT_365_FIXED`` and ``_30_360``, with the associated display names of ``ACT/365.FIXED`` and ``30/360``, respectively.
+In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a **display name** to any enumeration value. For those enumeration values, special characters are replaced with ``_`` while the ``displayName`` entry corresponds to the actual value.
+
+An example is the day count fraction scheme for interest rate calculation, which includes values such as ``ACT/365.FIXED`` and ``30/360``. These are associated as ``displayName`` to the ``ACT_365_FIXED`` and ``_30_360`` enumeration values, respectively.
 
 .. code-block:: Haskell
 
@@ -158,19 +153,11 @@ Examples of annotations and their usage for different purposes are illustrated b
 Syntax
 """"""
 
-Annotation are defined in the same way as other model components. The definition of an annotation starts with the ``annotation`` keyword, followed by the annotation name. A ``:`` punctuation introduces the rest of the definition, starting with a plain-text description of the annotation.
+Annotation are defined in the same way as other model components. The definition of an annotation starts with the ``annotation`` keyword, followed by the annotation name. A colon ``:`` punctuation introduces the rest of the definition, starting with a plain-text description of the annotation.
 
-It is posible to associate attributes to an annotation, as follows:
+Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase.
 
-.. code-block:: Haskell
-
- annotation metadata:
-   id string (0..1)
-   key string (0..1)
-   scheme string (0..1)
-   reference string (0..1)
-
-Some annotations do not require any further attribute, for instance:
+It is posible to associate attributes to an annotation, even though some annotations may not require any further attribute. For instance:
 
 .. code-block:: Haskell
 
@@ -182,7 +169,17 @@ Meta-Data and Reference
 Purpose
 """""""
 
-The ``metadata`` annotation shown above allows to associate a set of meta-data qualifiers to types and attributes. Each of the ``metadata`` annotation attributes corresponds to a qualifier.
+The ``metadata`` annotation allows to associate a set of meta-data qualifiers to types and attributes.
+
+.. code-block:: Haskell
+
+ annotation metadata:
+   id string (0..1)
+   key string (0..1)
+   scheme string (0..1)
+   reference string (0..1)
+
+Each attributes of the ``metadata`` annotation corresponds to a qualifier:
 
 * The ``scheme`` meta-data qualifier specifies a mechanism to control the set of values that an attribute can take. The relevant scheme reference may be specified as meta-information in the attribute's data source, so that no originating information is disregarded.
 * The ``reference`` meta-data qualifier replicates the cross-referencing mechanism used in XML to provide data integrity within the context of an instance document - in particular with ``href`` (for *hyper-text reference*) as used in the FpML standard. The cross-reference value may be specified as meta-information in the attribute's data source.
@@ -190,10 +187,12 @@ The ``metadata`` annotation shown above allows to associate a set of meta-data q
 
 The ``key`` corresponds to a hash code to be generated by the model implementation. The implementation provided in the Rosetta DSL is the de-facto Java hash function. It is a *deep hash* that uses the complete set of attribute values that compose the type and its attributes, recursively.
 
+.. note:: Some annotations, such as this metadata qualification, may be provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
+
 Syntax
 """"""
 
-Once an annotation is defined in a model, its name and chosen attribute are used in between square brackets ``[`` ``]`` to annotate model components. The below ``Party`` and ``Identifier`` types illustrate how meta-data annotations and their relevant attributes can be used in a model.
+Once an annotation is defined, its name and chosen attribute, if any, are used in between square brackets ``[`` ``]`` to annotate model components. The below ``Party`` and ``Identifier`` types illustrate how meta-data annotations and their relevant attributes can be used in a model:
 
 .. code-block:: Haskell
 
@@ -221,7 +220,7 @@ Partial Key
 
 Meta-data keys that are generated by a hashing algorithm from an object's attribute values often find a practical use by implementors for reconciling and matching data, where equality between hash values is considered a proxy for a data match.
 
-In some cases, it is necessary to remove some of an object's attribute values from the hashing algorithm, when those values are not required in the reconciliation but risk adding noise in the hash that could generate false negatives. This is typically the case for meta-data qualifiers associated to attribute values (such as meta-data keys), which may themselves be automatically generated by an algorithm. These may result in differences between two documents, even if those documents would have the same actual values.
+In some cases, it is necessary to remove some of an object's attribute values from the hashing algorithm, when those values are not required in the reconciliation but risk adding noise in the hash that could generate false negatives. This is typically the case for meta-data qualifiers associated to attribute values (such as meta-data keys), which may themselves be automatically generated by an algorithm. These may result in differences between two objects, even if those documents would have the same actual objects.
 
 An implementation of such partial key used to be provided as a feature of the Rosetta DSL (with a ``partialKey`` annotation).  It has now been de-commissioned, until further evaluation of its usage emerges that may lead to a redesign of this feature.
 
@@ -229,7 +228,19 @@ An implementation of such partial key used to be provided as a feature of the Ro
 Qualified Types
 ^^^^^^^^^^^^^^^
 
-The ``calculation`` qualified type represents the outcome of a calculation in the model and is specified instead of the type for the attribute. An attribute with the ``calculation`` type is meant to be associated to a function annotated with the ``calculation`` keyword, as described in the `Calculation Function Section`_. The type is implied by the function output.
+The Rosetta DSL provides for some special types called *qualified types*, which are specific to its application in the financial domain:
+
+* Calculation - ``calculation``
+* Object qualification - ``productType`` ``eventType``
+
+Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model.
+
+.. note:: This qualified type feature in the Rosetta DSL is under evaluation and may be replaced by a mechanism that is purely based on annotations in the future.
+
+Calculation
+"""""""""""
+
+The ``calculation`` qualified type, when specified instead of the type for the attribute, represents the outcome of a calculation in the model. An attribute with the ``calculation`` type is meant to be associated to a function annotated with the ``calculation`` keyword, as described in the `Calculation Function Section`_. The type is implied by the function output.
 
 An example usage is the conversion from clean price to dirty price for a bond, as part of a ``CleanPrice`` type:
 
@@ -239,6 +250,11 @@ An example usage is the conversion from clean price to dirty price for a bond, a
    cleanPrice number (1..1)
    accruals number (0..1)
    dirtyPrice calculation (0..1)
+
+Object qualification
+""""""""""""""""""""
+
+Similarly, ``productType`` and ``eventType`` represent the outcome of a model logic to infer the type of financial product or event for an instance of the model. Attributes of these types are associated to the object qualification logic described in the `Qualification Function Section`_ of the documentation.
 
 
 Data Validation Component
@@ -291,7 +307,7 @@ The definition of a condition starts with the ``condition`` keyword, followed by
 **The Rosetta DSL offers a restricted set of language features designed to be unambiguous and understandable** by domain experts who are not software engineers, while minimising unintentional behaviour. The Rosetta DSL is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations. The language features that are available in the Rosetta DSL to express validation conditions emulate the basic boolean logic available in usual programming languages:
 
 * conditional statements: ``if``, ``then``, ``else``
-* boolean statements: ``and``, ``or``
+* boolean operators: ``and``, ``or``
 * list statements: ``exists``, ``is absent``, ``contains``, ``count``
 * comparison operators: ``=``, ``<>``, ``<``, ``<=``, ``>=``, ``>``
 
@@ -326,69 +342,57 @@ Some specific language feature have been introduced in the Rosetta DSL, to handl
 Choice
 """"""
 
-Choice rules define a choice constraint between the set of attributes of a class. They are meant as a simple and robust construct to translate the XML *xsd:choicesyntax* as part of any model created using Rosetta, although their usage is not limited to those XML use cases.
+Choice rules define a choice constraint between the set of attributes of a type in the Rosetta DSL. They allow a simple and robust construct to translate the XML *xsd:choicesyntax*, although their usage is not limited to those XML use cases.
 
-* ``required choice``
-* ``optional choice``
+The choice constraint can be either:
 
-.. code-block:: Java
+* **optional**, represented by the ``optional choice`` syntax, when at most one of the attributes needs to be present, or
+* **required**, represented by the ``required choice`` syntax, when exactly one of the attributes needs to be present
 
- class ExerciseOutcome
- {
-  contract Contract (1..1);
-  physicalExercise PhysicalExercise (0..1);
-  cashExercise Cashflow (0..1);
- }
+.. code-block:: Haskell
 
- choice rule ExerciseOutcome_choice <"A option exercise results in either a physical or a cash exercise.">
-  for ExerciseOutcome required choice between
-  physicalExercise and cashExercise
+ type NaturalPerson: <"A class to represent the attributes that are specific to a natural person.">
+   [metadata key]
+ 
+   honorific string (0..1) <"An honorific title, such as Mr., Ms., Dr. etc.">
+   firstName string (1..1) <"The natural person's first name. It is optional in FpML.">
+   middleName string (0..*)
+   initial string (0..*)
+   surname string (1..1) <"The natural person's surname.">
+   suffix string (0..1) <"Name suffix, such as Jr., III, etc.">
+   dateOfBirth date (0..1) <"The natural person's date of birth.">
+   
+   condition Choice: <"Choice rule to represent an FpML choice construct.">
+     optional choice middleName, initial
 
-The choice constraint can either be **required** (implying that exactly one of the attributes needs to be present) or **optional** (implying that at most one of the attributes needs to be present).
+.. code-block:: Haskell
 
-While most of the choice rules have two attributes, there is no limit to the number of attributes associated with it, within the limit of the number of attributes associated with the class at stake. ``OptionCashSettlement_choice`` is a good illustration of this.
+ type AdjustableOrRelativeDate:
+   [metadata key]
+   
+   adjustableDate AdjustableDate (0..1)
+   relativeDate AdjustedRelativeDateOffset (0..1)
+   
+   condition Choice:
+     required choice adjustableDate, relativeDate
 
-.. code-block:: Java
+While most of the choice rules have two attributes, there is no limit to the number of attributes associated with it, within the limit of the number of attributes associated with the type.
 
- class OptionCashSettlement
- {
-  cashSettlementValuationTime BusinessCenterTime (0..1);
-  cashSettlementValuationDate RelativeDateOffset (0..1);
-  cashSettlementPaymentDate CashSettlementPaymentDate (0..1);
-  cashPriceMethod CashPriceMethod (0..1);
-  cashPriceAlternateMethod CashPriceMethod (0..1);
-  parYieldCurveAdjustedMethod YieldCurveMethod (0..1);
-  zeroCouponYieldAdjustedMethod YieldCurveMethod (0..1);
-  parYieldCurveUnadjustedMethod YieldCurveMethod (0..1);
-  crossCurrencyMethod CrossCurrencyMethod (0..1);
-  collateralizedCashPriceMethod YieldCurveMethod (0..1);
- }
+.. note:: Members of a choice rule need to have their lower cardinality set to 0, something which is enforced by a validation rule.
 
- choice rule OptionCashSettlement_choice
-  for OptionCashSettlement optional choice between
-  cashPriceMethod and cashPriceAlternateMethod and parYieldCurveAdjustedMethod and zeroCouponYieldAdjustedMethod
-  and parYieldCurveUnadjustedMethod and crossCurrencyMethod and collateralizedCashPriceMethod
+One-of (as complement to choice rule)
+"""""""""""""""""""""""""""""""""""""
 
-Members of a choice rule need to have their lower cardinality set to 0, something which is enforced by a validation rule.
+In the case where all the attributes of a given type are subject to a required choice logic that results in one and only one of them being present in any instance of that type, the Rosetta DSL allows to associate a ``one-of`` condition to the type, as short-hand to by-pass the implementation of the corresponding choice rule.
 
-One-of
-""""""
-
-(as complement to choice rule)
-
-In the case where all the attributes of a given class are subject to a required choice logic that results in one and only one of them being present in any instance of that class, Rosetta allows to associate a ``one of`` qualifier to the class. This by-passes the need to implement the corresponding choice rule.
-
-* ``one-of``
-
-This feature is illustrated in the ``BondOptionStrike`` class.
+This feature is illustrated below:
 
 .. code-block:: Java
 
- class BondOptionStrike one of
- {
-  referenceSwapCurve ReferenceSwapCurve (0..1);
-  price OptionStrike (0..1);
- }
+ type PeriodRange:
+   lowerBound PeriodBound (0..1)
+   upperBound PeriodBound (0..1)
+   condition: one-of
 
 Only Exists
 """""""""""
@@ -409,7 +413,7 @@ The ``only exists`` component is an adaptation of the simple ``exists`` syntax, 
        if price -> floatingInterestRate exists
        then assetIdentifier -> rateOption only exists
 
-This syntax drastically reduces the condition expression, which would otherwise require a combination of ``exists`` and ``is absent`` (applied to all other attributes). It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for ``is absent``.
+This syntax drastically reduces the condition expression, which would otherwise require to combine one ``exists`` with multiple ``is absent`` (applied to all other attributes). It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for ``is absent``.
 
 .. note:: This condition is typically applied to attribues of objects whose type implements a ``one-of`` condition. In this case, the ``only`` qualifier is redundant with the ``one-of`` condition because only one of the attributes can exist. However, ``only`` makes the condition expression more explicit, and also robust to potential lifting of the ``one-of`` condition.
 
@@ -435,7 +439,7 @@ Purpose
 
 **Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function's inputs and/or output through their *types* (or *enumerations*) in the data model. This amounts to specifying the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process. Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the model.
 
-As mentionned in the `Condition Statement Section`_, the Rosetta DSL is not a *Turing-complete* language. To build the complete processing logic, model implementors are meant to extend the code generated from the Rosetta DSL, once expressed in a fully featured programming language. For instance in Java, a function specification generates an *interface* that needs to be extended to be executable.
+To build the complete processing logic, model implementors are meant to extend the code generated from the Rosetta DSL (which only provide a limited set of language features), once that code is expressed in a fully featured programming language. For instance in Java, a function specification generates an *interface* that needs to be extended to be executable.
 
 Syntax
 """"""
@@ -924,9 +928,12 @@ The mapping logic associated with the below ``action`` attribute provides a good
   (...)
  }
 
+
 .. _Cardinality Section: https://docs.rosetta-technology.io/dsl/documentation.html#cardinality
 .. _Condition Statement Section: https://docs.rosetta-technology.io/dsl/documentation.html#condition-statement
 .. _Meta-Data and Reference Section: https://docs.rosetta-technology.io/dsl/documentation.html#meta-data-and-reference
 .. _Synonym Section: https://docs.rosetta-technology.io/dsl/documentation.html#synonym
 .. _Calculation Function Section: https://docs.rosetta-technology.io/dsl/documentation.html#calculation-function
+.. _Qualification Function Section: https://docs.rosetta-technology.io/dsl/documentation.html#qualification-function
 .. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
+.. _CamelCase: https://en.wikipedia.org/wiki/Camel_case
