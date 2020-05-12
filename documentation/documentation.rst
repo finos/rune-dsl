@@ -82,7 +82,7 @@ While there has been discussion as to whether the Rosetta DSL should support dat
 Inheritance
 """""""""""
 
-The Rosetta DSL supports an **inheritance** mechanism, when a type inherits its definition and behaviour (and therefore all of its attributes) from another type and adds its own set of attributes on top. Inheritance is supported by the ``extends`` keyword next to the type name.
+**The Rosetta DSL supports an inheritance mechanism**, when a type inherits its definition and behaviour (and therefore all of its attributes) from another type and adds its own set of attributes on top. Inheritance is supported by the ``extends`` keyword next to the type name.
 
 .. code-block:: Haskell
 
@@ -91,25 +91,6 @@ The Rosetta DSL supports an **inheritance** mechanism, when a type inherits its 
 
 .. note:: For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet it to highlight some of those features.
 
-Qualified Types
-"""""""""""""""
-
-The ``calculation`` qualified type represents the outcome of a calculation in the model and is specified instead of the type for the attribute. An attribute with the ``calculation`` type is meant to be associated to a function annotated with the calculation keyword, as described in the *Function Artefacts* section. The type is implied by the function output.
-
-An example usage is the conversion from clean price to dirty price for a bond, as part of the ``CleanPrice`` class:
-
-.. code-block:: Java
-
- class CleanPrice
- {
-  cleanPrice number (1..1);
-  accruals number (0..1);
-  dirtyPrice calculation (0..1);
- }
-
-Similarly, ``productType`` and ``eventType`` represent the outcome of a model logic to infer the type of financial product or event for an instance of the model. Attributes of these types are associated respectively to the ``isProduct`` and ``isEvent`` qualification logic described in the *Object Qualification* section of the documentation.
-
-Further review is required to assess the use cases and appropriateness of the implementation of these qualified types in the Rosetta DSL.
 
 Enumeration and Enumeration Value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -161,7 +142,40 @@ In order to handle the integration of FpML scheme values such as the *dayCountFr
 Annotation Component
 --------------------
 
-(*More coming soon...*)
+Annotation Definition
+^^^^^^^^^^^^^^^^^^^^^
+
+Purpose
+"""""""
+
+Annotations allow to associate meta-information to model components, which can serve a number of purposes:
+
+* purely syntactic, to provide additional guidance when navigating model components
+* to add constraints to a model that may be enforced by syntax validation
+* to modify the actual behaviour of a model in generated code
+
+Examples of annotations and their usage for different purposes are illustrated below.
+
+Syntax
+""""""
+
+Annotation are defined in the same way as other model components. The definition of an annotation starts with the ``annotation`` keyword, followed by the annotation name. A ``:`` punctuation introduces the rest of the definition, starting with a plain-text description of the annotation.
+
+It is posible to associate attributes to an annotation, as follows:
+
+.. code-block:: Haskell
+
+ annotation metadata:
+   id string (0..1)
+   key string (0..1)
+   scheme string (0..1)
+   reference string (0..1)
+
+Some annotations do not require any further attribute, for instance:
+
+.. code-block:: Haskell
+
+ annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
 
 Meta-Data and Reference
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -169,17 +183,18 @@ Meta-Data and Reference
 Purpose
 """""""
 
-Some specific annotations in the Rosetta DSL allow to associate a set of meta-data qualifiers to an attribute.
+The ``metadata`` annotation shown above allows to associate a set of meta-data qualifiers to types and attributes. Each of the ``metadata`` annotation attributes corresponds to a qualifier.
 
-* The ``scheme`` meta-data specifies a mechanism to control the set of values that an attribute can take. The relevant scheme reference can be specified as meta-information in the attribute synonyms, so that no originating information is disregarded.
-* The ``reference`` meta-type replicates the cross-referencing mechanism used in XML to provide data integrity within the context of an instance document - in particular with ``href`` (for *hyper-text reference*) as used in the FpML standard. The cross-reference value can be specified as meta-information in the attribute synonyms.
+* The ``scheme`` meta-data qualifier specifies a mechanism to control the set of values that an attribute can take. The relevant scheme reference may be specified as meta-information in the attribute's data source, so that no originating information is disregarded.
+* The ``reference`` meta-data qualifier replicates the cross-referencing mechanism used in XML to provide data integrity within the context of an instance document - in particular with ``href`` (for *hyper-text reference*) as used in the FpML standard. The cross-reference value may be specified as meta-information in the attribute's data source.
+* The ``key`` meta-data qualifier must be added to the type that is being referenced, so that a unique identifier can be associated to objects of that type and make them internally referenceabale .
 
-To make objects internally referenceabale (beyond external cross-references provided by an instance document), Rosetta allows to associate a unique identifier to instances of a type, by adding a ``key`` qualifier to the type name. The ``key`` corresponds to a hash code to be generated by the model implementation. The implementation provided in the Rosetta DSL is the de-facto Java hash function. It is a *deep hash* that uses the complete set of attribute values that compose the type and its attributes, recursively.
+The ``key`` corresponds to a hash code to be generated by the model implementation. The implementation provided in the Rosetta DSL is the de-facto Java hash function. It is a *deep hash* that uses the complete set of attribute values that compose the type and its attributes, recursively.
 
 Syntax
 """"""
 
-The below ``Party`` and ``Identifier`` classes provide an illustration as to how **meta-types** and **references** are implemented.
+Once an annotation is defined in a model, it can be used in between square brackets ``[`` ``]`` to annotate model components. The below ``Party`` and ``Identifier`` types illustrate how meta-data annotations and their relevant attributes can be implemented in a model.
 
 .. code-block:: Haskell
 
@@ -200,16 +215,31 @@ The below ``Party`` and ``Identifier`` classes provide an illustration as to how
      [metadata scheme]
    assignedIdentifier AssignedIdentifier (1..*)
 
-A ``key`` qualifier is associated to the ``Party`` type, which means it is referenceable. In the ``Identifier`` class, the ``reference`` qualifier, which is associated to the ``issuerReference`` attribute of type ``Party``, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the `Synonym Section`_ of the documentation.
+A ``key`` qualifier is associated to the ``Party`` type, which means it is referenceable. In the ``Identifier`` type, the ``reference`` qualifier, which is associated to the ``issuerReference`` attribute of type ``Party``, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the `Synonym Section`_ of the documentation.
 
 Partial Key
 """""""""""
 
 Meta-data keys that are generated by a hashing algorithm from an object's attribute values often find a practical use by implementors for reconciling and matching data, where equality between hash values is considered a proxy for a data match.
 
-In some cases, it is necessary to remove some of an object's attribute values from the hashing algorithm, when those values are not required in the reconciliation but risk adding noise in the hash that could generate false negatives. This is typically the case for meta-data qualifiers associated to attribute values (such as meta-data keys), which may themselves be automatically generated by an algorithm. These would result in differences between two documents, even if those documents would have the same actual values.
+In some cases, it is necessary to remove some of an object's attribute values from the hashing algorithm, when those values are not required in the reconciliation but risk adding noise in the hash that could generate false negatives. This is typically the case for meta-data qualifiers associated to attribute values (such as meta-data keys), which may themselves be automatically generated by an algorithm. These may result in differences between two documents, even if those documents would have the same actual values.
 
 An implementation of such partial key used to be provided as a feature of the Rosetta DSL (with a ``partialKey`` annotation).  It has now been de-commissioned, until further evaluation of its usage emerges that may lead to a redesign of this feature.
+
+
+Qualified Types
+^^^^^^^^^^^^^^^
+
+The ``calculation`` qualified type represents the outcome of a calculation in the model and is specified instead of the type for the attribute. An attribute with the ``calculation`` type is meant to be associated to a function annotated with the ``calculation`` keyword, as described in the `Calculation Function Section`_. The type is implied by the function output.
+
+An example usage is the conversion from clean price to dirty price for a bond, as part of a ``CleanPrice`` type:
+
+.. code-block:: Haskell
+
+ type CleanPrice:
+   cleanPrice number (1..1)
+   accruals number (0..1)
+   dirtyPrice calculation (0..1)
 
 
 Data Validation Component
@@ -899,3 +929,4 @@ The mapping logic associated with the below ``action`` attribute provides a good
 .. _Condition Statement Section: https://docs.rosetta-technology.io/dsl/documentation.html#condition-statement
 .. _Meta-Data and Reference Section: https://docs.rosetta-technology.io/dsl/documentation.html#meta-data-and-reference
 .. _Synonym Section: https://docs.rosetta-technology.io/dsl/documentation.html#synonym
+.. Calculation Function Section: https://docs.rosetta-technology.io/dsl/documentation.html#calculation-function
