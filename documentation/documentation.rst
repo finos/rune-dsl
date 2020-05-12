@@ -74,7 +74,7 @@ Time
 
 For time zone adjustments, a time zone qualifier can be specified alongside a time in one of two ways:
 
-* Through the ``zonedDateTime`` basic type, which needs to be expressed either as `UTC <https://en.wikipedia.org/wiki/Coordinated_Universal_Time>`_ or as an offset to UTC, as specified by the ISO 8601 standard.
+* Through the ``zonedDateTime`` basic type, which needs to be expressed either as `UTC`_ or as an offset to UTC, as specified by the ISO 8601 standard.
 * Through the ``BusinessCenterTime`` type, where time is specified alongside a business center.  This is used to specify a time dimension in relation to a future event: e.g. the earliest or latest exercise time of an option.
 
 While there has been discussion as to whether the Rosetta DSL should support dates which are specified as an offset to UTC with the ``Z`` suffix, no positive conclusion has been reached. The main reason is that all dates which need a business date context can already specify an associated business center.
@@ -105,38 +105,37 @@ This mimics the *scheme* concept, whose values may be specified as part of an ex
 Syntax
 """"""
 
-Enumerations are very simple modelling containers. Similar to a class, an enumeration is delineated by brackets ``{`` ``}``.
+Enumerations are very simple modelling containers, which are defined in the same way as other model components. The definition of an enumeration starts with the ``enum`` keyword, followed by the enumeration name. A ``:`` punctuation introduces the rest of the definition, which contains a plain-text description of the enumeration and the list of enumeration values.
 
-.. code-block:: Java
+Similar to a type, an enumeration is delineated by brackets ``{`` ``}``.
 
- enum MarketDisruptionEnum
- {
-  ModifiedPostponement,
-  Omission,
-  Postponement
- }
+.. code-block:: Haskell
+
+ enum PeriodEnum: <"The enumerated values to specify the period, e.g. day, week.">
+   D <"Day">
+   W <"Week">
+   M <"Month">
+   Y <"Year">
 
 Enumeration values have a restricted syntax to facilitate their integration with executable code: they cannot start with a numerical digit, and the only special character that can be associated with them is the underscore ``_``.
 
 In order to handle the integration of FpML scheme values such as the *dayCountFractionScheme* which has values with special characters like ``ACT/365.FIXED`` or ``30/360``, the Rosetta syntax allows to associate a **displayName** synonym. For those enumeration values, special characters are replaced with ``_`` and the ``displayName`` entry corresponds to the actual value. Examples of such are ``ACT_365_FIXED`` and ``_30_360``, with the associated display names of ``ACT/365.FIXED`` and ``30/360``, respectively.
 
-.. code-block:: Java
+.. code-block:: Haskell
 
- enum DayCountFractionEnum
- {
-  ACT_360 displayName "ACT/360"
-  ACT_365L displayName "ACT/365L"
-  ACT_365_FIXED displayName "ACT/365.FIXED"
-  ACT_ACT_AFB displayName "ACT/ACT.AFB"
-  ACT_ACT_ICMA displayName "ACT/ACT.ICMA"
-  ACT_ACT_ISDA displayName "ACT/ACT.ISDA"
-  ACT_ACT_ISMA displayName "ACT/ACT.ISMA"
-  BUS_252 displayName "BUS/252"
-  _1_1 displayName "1/1"
-  _30E_360 displayName "30E/360"
-  _30E_360_ISDA displayName "30E/360.ISDA"
-  _30_360 displayName "30/360"
- }
+ enum DayCountFractionEnum:
+   ACT_360 displayName "ACT/360"
+   ACT_365L displayName "ACT/365L"
+   ACT_365_FIXED displayName "ACT/365.FIXED"
+   ACT_ACT_AFB displayName "ACT/ACT.AFB"
+   ACT_ACT_ICMA displayName "ACT/ACT.ICMA"
+   ACT_ACT_ISDA displayName "ACT/ACT.ISDA"
+   ACT_ACT_ISMA displayName "ACT/ACT.ISMA"
+   BUS_252 displayName "BUS/252"
+   _1_1 displayName "1/1"
+   _30E_360 displayName "30E/360"
+   _30E_360_ISDA displayName "30E/360.ISDA"
+   _30_360 displayName "30/360"
 
 
 Annotation Component
@@ -929,4 +928,5 @@ The mapping logic associated with the below ``action`` attribute provides a good
 .. _Condition Statement Section: https://docs.rosetta-technology.io/dsl/documentation.html#condition-statement
 .. _Meta-Data and Reference Section: https://docs.rosetta-technology.io/dsl/documentation.html#meta-data-and-reference
 .. _Synonym Section: https://docs.rosetta-technology.io/dsl/documentation.html#synonym
-.. Calculation Function Section: https://docs.rosetta-technology.io/dsl/documentation.html#calculation-function
+.. _Calculation Function Section: https://docs.rosetta-technology.io/dsl/documentation.html#calculation-function
+.. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
