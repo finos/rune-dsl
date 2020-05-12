@@ -235,14 +235,10 @@ The Rosetta DSL provides for some special types called *qualified types*, which 
 
 Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model.
 
-.. note:: This qualified type feature in the Rosetta DSL is under evaluation and may be replaced by a mechanism that is purely based on annotations in the future.
-
 Calculation
 """""""""""
 
-The ``calculation`` qualified type, when specified instead of the type for the attribute, represents the outcome of a calculation in the model. An attribute with the ``calculation`` type is meant to be associated to a function annotated with the ``calculation`` keyword, as described in the `Calculation Function Section`_. The type is implied by the function output.
-
-An example usage is the conversion from clean price to dirty price for a bond, as part of a ``CleanPrice`` type:
+The ``calculation`` qualified type, when specified instead of the type for the attribute, represents the outcome of a calculation in the model. An example usage is the conversion from clean price to dirty price for a bond.
 
 .. code-block:: Haskell
 
@@ -251,10 +247,25 @@ An example usage is the conversion from clean price to dirty price for a bond, a
    accruals number (0..1)
    dirtyPrice calculation (0..1)
 
+An attribute with the ``calculation`` type is meant to be associated to a function tagged with the ``calculation`` annotation. The type is implied by the function output.
+
+.. code-block:: Haskell
+
+ annotation calculation: <"Marks a function as fully implemented calculation.">
+
 Object qualification
 """"""""""""""""""""
 
-Similarly, ``productType`` and ``eventType`` represent the outcome of a model logic to infer the type of financial product or event for an instance of the model. Attributes of these types are associated to the object qualification logic described in the `Qualification Function Section`_ of the documentation.
+Similarly, ``productType`` and ``eventType`` represent the outcome of a model logic to infer the type of financial product or event for an instance of the model. Attributes of these types are associated to an object qualification logic provided by a function tagged with the ``qualification`` annotation.
+
+.. code-block:: Haskell
+
+ annotation qualification: <"Annotation that describes a func that is used for event and product Qualification">
+   [prefix Qualify]
+   Product boolean (0..1)
+   BusinessEvent boolean (0..1)
+
+.. note:: The qualified type feature in the Rosetta DSL is under evaluation and may be replaced by a mechanism that is purely based on these annotations in the future.
 
 
 Data Validation Component
@@ -437,9 +448,9 @@ Function Specification
 Purpose
 """""""
 
-**Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function's inputs and/or output through their *types* (or *enumerations*) in the data model. This amounts to specifying the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process. Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the model.
+**Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function's inputs and/or output through their *types* (or *enumerations*) in the data model. This amounts to specifying the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process.
 
-To build the complete processing logic, model implementors are meant to extend the code generated from the Rosetta DSL (which only provide a limited set of language features), once that code is expressed in a fully featured programming language. For instance in Java, a function specification generates an *interface* that needs to be extended to be executable.
+Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the model.
 
 Syntax
 """"""
@@ -489,14 +500,14 @@ Most functions, however, also require inputs, which are also expressed as attrib
 Conditions
 """"""""""
 
-A function's inputs and output can be constrained using *conditions*. Each condition is expressed as a logical statement that evaluates to True or False, using the same language features as those available to express condition statements in data types, as detailed in the `Condition Statement Section`_. 
+A function's inputs and output can be constrained using *conditions*. Each condition is expressed as a logical statement that evaluates to True or False, using the same language features as those available to express condition statements in data types and detailed in the `Condition Statement Section`_. 
 
-Condition statements in a function can represent:
+Condition statements in a function can represent either:
 
-* a pre-condition, applicable to inputs only and evaluated prior to executing the function, using the ``condition`` keyword
-* a post-condition, applicable to inputs and output and evaluated after executing the function (once the output is known), using the ``post-condition`` keyword
+* a **pre-condition**, using the ``condition`` keyword, applicable to inputs only and evaluated prior to executing the function, or
+* a **post-condition**, using the ``post-condition`` keyword, applicable to inputs and output and evaluated after executing the function (once the output is known)
 
-Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the "contract" that this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
+Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the constraints that impementors of this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
 .. code-block:: Haskell
 
@@ -524,6 +535,18 @@ Conditions are an essential feature of the definition of a function. By constrai
        observation -> observation = EquitySpot(equity, observation -> date, observation -> time)
 
 .. note:: The function syntax intentionally mimics the type syntax in the Rosetta DSL regarding the use of descriptions, attributes (inputs and output) and conditions, to provide consistency in the expression of model definitions.
+
+Full or Partial Functions
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The creation of valid output objects can be fully or partially specified in a function, or completely left to the implementor.
+
+* The function is **fully defined** when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the generated code is directly usable in an implementation.
+* The function is **partially defined** when the output object's validation constraints are only partially satisfied. In this case, implementors will need to extend the generated code and assign the remaining values on the output object.
+
+The Rosetta DSL only provides a limited set of language features. To build the complete processing logic for a *partially defined* function, model implementors are meant to extend the code generated from the Rosetta DSL once it is expressed in a fully featured programming language. For instance in Java, a function specification generates an *interface* that needs to be extended to be executable.
+
+The output object will be systematically validated when invoking a function, so all functions require the output object to be fully valid as part of any model implementation.
 
 Output Construction
 """""""""""""""""""
@@ -563,161 +586,53 @@ The example above could be rewritten as follows:
     assign-output observation -> observation:
        EquitySpot(equity, observation -> date, observation -> time)
 
-Full or Partial Functions
-"""""""""""""""""""""""""
+Fully Defined Functions
+"""""""""""""""""""""""
 
-The creation of valid output objects can be fully or partially done in a function or completely left to the implementor.
+There are a number of cases of fully defined functions that are supported by the Rosetta DSL. Those functions are typically associated to an annotation, which directs the code generators to create concrete functions.
 
-The output object, and thus the function, is fully defined when all validation constraints on the output object have been satisfied. In this case, the generated code is directly usable in an implementation.
-
-When the output object's validation constraints are only partially satisfied, the function is partially implemented. In this case, implementors will need to extend the generated code and assign the remaining values on the output object.
-
-The output object will be systematically validated when invoking a function, so all functions require the output object to be fully valid as part of an implementation.
-
-Aliases
-"""""""
-
-The function syntax supports defining 'aliases' that are only available in the context of the function. Aliases work like temporary variable assignments used in programming languages. Aliases in a function context behave in the same way as the root level ``alias`` construct described earlier in this document (the syntax currently differs but will be brought into alignment soon).
-
-In the below example an ``executionPrimitive`` alias is created and is used in both the ``assign-output`` and final ``post-condition`` statements.
-
-.. code-block:: Haskell
- 
- func Execute: <"Specifies the execution event should be created from at least 4 inputs: the product, the quantity and two parties.">
-    inputs:
-      product Product (1..1) <"The product underlying the financial transaction.">
-      quantity ExecutionQuantity (1..1) <"The amount of product being transacted.">
-      partyA Party (1..1) <"Party to the transaction.">
-      partyB Party (1..1) <"Party to the transaction.">
-    output:
-      executionEvent Event (1..1) <"The execution transaction represented as an Event model object.">
-    alias executionPrimitive: <"The primitive event that holds details of the execution.">
-      executionEvent -> primitive -> execution
-    condition: <"Parties are not the same.">
-      partyA <> partyB
-    assign-output executionPrimitive: <"The input product was used to create the execution.">
-       NewExecutionPrimitive( product, quantity, partyA, partyB )
-    post-condition: <"The execution event is the first is any post trade processes and so should not have any lineage information.">
-      executionEvent -> lineage is absent
-    post-condition:
-      executionPrimitive -> after -> execution -> executionQuantity = quantity
-
-Calculation Function
-^^^^^^^^^^^^^^^^^^^^
-
-To mark a function as fully defined, make use of the ``calculation`` annotation per the below to pass enough information to the code generators to create concrete functions.
-
-.. code-block:: Haskell
-
- func FixedAmount: <"...">
-  [calculation]
-  inputs:
-    interestRatePayout InterestRatePayout (1..1)
-    date date (1..1)
-  output:
-    amount number (1..1)
-  ...
-
-Creation Function
-^^^^^^^^^^^^^^^^^
-
-*Coming soon...*
-
-Qualification Function
-^^^^^^^^^^^^^^^^^^^^^^
-
-Purpose
-"""""""
-
-The Rosetta syntax has been developed to meet the requirement of a composable model for financial products and lifecycle events, while being able to qualify those products and events from their relevant modelling components according to a given taxonomy.
-
-Qualification functions associate a taxonomic name (as a string) to an object, by evaluating a combination of assertions that are able to uniquely characterise that object according to the taxonomy.
-
-Syntax
-""""""
-
-The qualification name needs to be unique across product and event qualifications, types and aliases, and validation logic is in place to enforce this.
-
-The naming convention is to have one PascalCase (upper CamelCase) word, using ``_`` for space to append more granular qualifications.
-
-.. code-block:: Java
-
- isProduct InterestRate_InflationSwap_Basis_YearOn_Year
-  [synonym ISDA_Taxonomy_v1 value InterestRate_IRSwap_Inflation]
-  EconomicTerms -> payout -> interestRatePayout -> interestRate -> floatingRate count = 1
-  and EconomicTerms -> payout -> interestRatePayout -> interestRate -> inflationRate count = 1
-  and EconomicTerms -> payout -> interestRatePayout -> interestRate -> fixedRate is absent
-  and EconomicTerms -> payout -> interestRatePayout -> crossCurrencyTerms -> principalExchanges is absent
-  and EconomicTerms -> payout -> optionPayout is absent
-  and EconomicTerms -> payout -> interestRatePayout -> paymentDates -> paymentFrequency -> periodMultiplier = 1
-  and EconomicTerms -> payout -> interestRatePayout -> paymentDates -> paymentFrequency -> period = PeriodExtendedEnum.Y
-
-The ``Increase`` illustrates how the syntax qualifies this event by requiring that five conditions be met:
-
-* When specified, the value associated with the ``intent`` attribute of the ``Event`` class must be ``Increase``
-* The ``QuantityChange`` primitive must exist, possibly alongside the ``Transfer`` one
-* The quantity/notional in the before state must be lesser than in the after state. This latter argument makes use of the ``quantityBeforeQuantityChange`` and ``quantityAfterQuantityChange`` aliases
-* The ``changedQuantity`` attribute must be absent (note that a later syntax enhancement will aim at confirming that this attribute corresponds to the difference between the before and after quantity/notional)
-* The ``closedState`` attribute must be absent
-
-.. code-block:: Java
-
- isEvent Increase
-  Event -> intent when present = IntentEnum.Increase
-  and ( Event -> primitive -> quantityChange only exists
-   or ( Event -> primitive -> quantityChange and Event -> primitive -> transfer -> cashTransfer ) exists )
-  and quantityBeforeQuantityChange < quantityAfterQuantityChange
-  and changedQuantity > 0.0
-  and Event -> primitive -> quantityChange -> after -> contract -> closedState is absent
-
-  alias quantityBeforeQuantityChange
-   Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> quantity -> amount
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalAmount -> amount
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> initialValue
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> step -> stepValue
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepParameters -> notionalStepAmount
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> fxLinkedNotional -> initialValue
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> notionalAmount -> amount
-   and Event -> primitive -> quantityChange -> before -> contract -> contractualProduct -> economicTerms -> payout -> optionPayout -> quantity -> notionalAmount -> amount
-
-  alias quantityAfterQuantityChange
-   Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> quantity -> amount
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalAmount -> amount
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> initialValue
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepSchedule -> step -> stepValue
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> notionalSchedule -> notionalStepParameters -> notionalStepAmount
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> quantity -> fxLinkedNotional -> initialValue
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> creditDefaultPayout -> protectionTerms -> notionalAmount -> amount
-   and Event -> primitive -> quantityChange -> after -> contract -> contractualProduct -> economicTerms -> payout -> optionPayout -> quantity -> notionalAmount -> amount
-
-Utility Function
-^^^^^^^^^^^^^^^^
-
-(previously was: *alias*)
-
-Purpose
-"""""""
-
-An alias is an indirection for an entire Rosetta expression. Aliases have been introduced in the Rosetta syntax because:
-
-* Model tree expressions can be cumbersome, which may contradict the primary goals of clarity and legibility.
-* The same model tree expressions are often reused across multiple modelling artefacts such as data rule, event and product qualification or function.
-
-Syntax
-""""""
-
-The alias syntax is straightforward: ``alias <name> <Rosetta expression>``.
-
-The naming convention is to have one camelCased word, instead of a composite name as for the Rosetta rules, with implied meaning.
-
-The below snippet presents an example of such alias and its use as part of an event qualification.
+* **Calculation** functions use the ``calculation`` annotation. They must end with an ``assign-output`` statement that fully defines the calculation result (often, but not exclusively, of type ``number``).
+* **Object qualification** functions use the ``qualification`` annotation. They are each associated to a qualification name and return a boolean that evaluates to True when the input satisfies all the criteria to be identified according to the associated qualification.
+* **Utility** functions are functions which are designed to provide a compact syntax for operations that need to be frequently invoked in the model - for instance, model indirections when the corresponding model tree expression may be too long or cumbersome:
 
 .. code-block:: Haskell
 
  func PaymentDate:
-    inputs: economicTerms EconomicTerms(1..1)
-    output: result date(0..1)
-    assign-output result: economicTerms -> payout -> interestRatePayout only-element -> paymentDate -> adjustedDate
+   inputs: economicTerms EconomicTerms (1..1)
+   output: result date (0..1)
+   assign-output result: economicTerms -> payout -> interestRatePayout only-element -> paymentDate -> adjustedDate
+
+which could be invoked as part of multiple other functions that use the ``EconomicTerms`` object by simply stating:
+
+.. code-block:: Haskell
+
+ PaymentDate( EconomicTerms )
+
+Aliases
+"""""""
+
+The function syntax supports the definition of *aliases* that are only available in the context of the function. Aliases work like temporary variable assignments used in programming languages and are particularly useful in fully defined functions.
+
+The below example builds an interest rate calculation using *aliases* to define the *calculation amount*, *rate* and *day count fraction* as temporary variables, and finally assigns the *fixed amount* output as the product of those three variables.
+
+.. code-block:: Haskell
+ 
+ func FixedAmount:
+   [calculation]
+   inputs:
+     interestRatePayout InterestRatePayout (1..1)
+     fixedRate FixedInterestRate (1..1)
+     quantity NonNegativeQuantity (1..1)
+     date date (1..1)
+   output:
+     fixedAmount number (1..1)
+   
+   alias calculationAmount: quantity -> amount
+   alias fixedRateAmount: fixedRate -> rate
+   alias dayCountFraction: DayCountFraction(interestRatePayout, interestRatePayout -> dayCountFraction, date)
+   
+   assign-output fixedAmount:
+     calculationAmount * fixedRateAmount * dayCountFraction
 
 
 Mapping Component
