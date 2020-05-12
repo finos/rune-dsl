@@ -646,78 +646,116 @@ Synonym
 Purpose
 """""""
 
-*Synonym* is the baseline building block to map the model in Rosetta to alternative data representations, whether those are open standards or proprietary. Synonyms can be complemented by relevant mapping logic when the relationship is not a one-to-one or is conditional.
+*Synonym* is the baseline building block to map a model expressed in the Rosetta DSL to alternative data representations, whether those are open standards or proprietary. Synonyms can be complemented by relevant mapping logic when the relationship is not a one-to-one or is conditional.
 
-Synonyms are specified at the attribute level for a type. Synonyms can also be associated to enumerations and are specified at the enumeration value level. Mappings are typically implemented by traversing the model tree down, so knowledge of the context of an attribute (i.e. the class in which it is used) determines what it should map to. Knowledge about the upper-level class would be lost if synonyms were implemented at the class level.
+Synonyms are specified at the attribute level for a data type. Synonyms can also be associated to enumerations and are specified at the enumeration value level. Mappings are typically implemented by traversing the model tree down, so knowledge of the context of an attribute (i.e. the type in which it is used) determines what it should map to. Knowledge about the upper-level type would be lost if synonyms were implemented at the class level.
 
-There is no limit to the number of synonyms that can be associated with each of those artefacts, and there can even be several synonyms for a given data source (e.g. in the case of a conditional mapping).
+There is no limit to the number of synonyms that can be associated to any attribute, and there can even be several synonyms for a given data source (e.g. in the case of a conditional mapping).
 
 Syntax
 """"""
 
-The baseline synonym syntax has two components:
+Synonyms are introduced by the ``synonym`` keyword and are specified for each attribute in between square brackets ``[`` ``]``, same as an annotation. The baseline synonym syntax has two components:
 
 * **source**, which possible values are controlled by a special ``synonym source`` type of enumeration
-* **value**, which is of type ``identifier``
+* **value**, which is a ``string`` that identifies the name of the attribute as it is found in the source
 
-Example:
+For example for a data type:
 
-.. code-block:: Java
+.. code-block:: Haskell
 
- [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value averagingInOut]
+ type FxRate: <"A class describing the rate of a currency conversion: pair of currency, quotation mode and exchange rate.">
+ 
+   quotedCurrencyPair QuotedCurrencyPair (1..1) <"Defines the two currencies for an FX trade and the quotation relationship between the two currencies.">
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "quotedCurrencyPair"]
+   rate number (0..1) <"The rate of exchange between the two currencies of the leg of a deal. Must be specified with a quote basis.">
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "rate"]
+
+Or an enumeration:
+
+.. code-block:: Haskell
+
+ enum NaturalPersonRoleEnum: <"The enumerated values for the natural person's role.">
+ 
+   Broker <"The person who arranged with a client to execute the trade.">
+     [synonym FpML_5_10 , CME_SubmissionIRS_1_0 , CME_ClearedConfirm_1_17 value "Broker"]
+   Buyer <"Acquirer of the legal title to the financial instrument.">
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "Buyer"]
+   DecisionMaker <"The party or person with legal responsibility for authorization of the execution of the transaction.">
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "DecisionMaker"]
+   ExecutionWithinFirm <"Person within the firm who is responsible for execution of the transaction.">
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "ExecutionWithinFirm"]
+   InvestmentDecisionMaker <"Person who is responsible for making the investment decision.">
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "InvestmentDecisionMaker"]
+   Seller <"Seller of the legal title to the financial instrument.">
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "Seller"]
+   Trader <"The person who executed the trade.">
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "Trader"]
+
+.. note:: The synonym value is of type ``string`` to facilitate integration with executable code. The alternative approach consisting in specifying the value as a compatible identifier alongside with a display name has been disregarded because it has been deemed not appropriate to create a "code-friendly" value for the respective synonyms.
 
 A further set of attributes can be associated with a synonym, to address specific use cases:
 
-* **path** to allow mapping when data is nested in different ways between the respective models. The ``Payout`` class is a good illustration of such cases:
+* **path** to allow mapping when data is nested in different ways between the respective models.
+* **hint** (*to be complete*)
 
-.. code-block:: Java
+The ``Price`` type provides a good illustration of such cases:
 
- class Payout
- {
-  interestRatePayout InterestRatePayout (0..*);
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream path "trade.swap" ]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream path "swap"]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value swapStream]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value generalTerms path "trade.creditDefaultSwap", feeLeg path "trade.creditDefaultSwap" set when "trade.creditDefaultSwap.feeLeg.periodicPayment" exists]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value generalTerms path "creditDefaultSwap", feeLeg path "creditDefaultSwap" set when "creditDefaultSwap.feeLeg.periodicPayment" exists]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value feeLeg, generalTerms]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value capFloorStream path "trade.capFloor"]
-   [synonym FpML_5_10, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value fra path "trade" mapper FRAIRPSplitter]
-   [synonym CME_SubmissionIRS_1_0 value fra mapper FRAIRPSplitter]
-   [synonym FpML_5_10, CME_SubmissionIRS_1_0, DTCC_11_0, DTCC_9_0, CME_ClearedConfirm_1_17 value interestLeg path "trade.returnSwap", interestLeg path "trade.equitySwapTransactionSupplement"]
-  (...)
- }
+.. code-block:: Haskell
 
-* **tag** or a **componentID** to properly reflect the FIX standard, which uses those two artefacts. There are only limited examples of such at present, as a result of the scope focus on post-execution use cases hence the limited reference to the FIX standard.
+ type Price: <"Generic description of the price concept applicable across product types, which can be expressed in a number of ways other than simply cash price">
+ 
+   cashPrice CashPrice (0..1) <"Price specified in cash terms, e.g. for securities proceeds or fee payment in a contractual product.">
+     [synonym FpML_5_10 value "initialPrice" path "rateOfReturn", "underlyer"]
+     [synonym FpML_5_10 hint "paymentAmount"]
+     [synonym FpML_5_10 hint "fixedAmount"]
+   exchangeRate ExchangeRate (0..1) <"Price specified as an exchange rate between two currencies.">
+     [synonym FpML_5_10 value "exchangeRate"]
+   fixedInterestRate FixedInterestRate (0..1) <"Price specified as a fixed interest rate.">
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "fixedRateSchedule" path "calculationPeriodAmount->calculation"]
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "fixedAmountCalculation"]
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "fixedRateSchedule"]
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 hint "fixedRate"]
+   floatingInterestRate FloatingInterestRate (0..1) <"Price specified as a spread on top of a floating interest rate."
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "floatingRateCalculation" path "calculationPeriodAmount->calculation"]
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "floatingRateCalculation" path "interestCalculation"]
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "floatingRateCalculation"]
+     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "floatingAmountCalculation"]
 
-.. code-block:: Java
+* **tag** or a **componentID** to properly reflect the FIX standard, which uses those two components. There are only limited examples of such at present, as a result of the scope focus on post-execution use cases hence the limited reference to the FIX standard.
 
- class Strike
- {
-  strikeRate number (1..1);
-   [synonym FIX_5_0_SP2 value StrikePrice tag 202]
-  buyer PayerReceiverEnum (0..1);
-  seller PayerReceiverEnum (0..1);
- }
+.. code-block:: Haskell
+
+ type InformationSource: <"A class defining the source for a piece of information (e.g. a rate fix or an FX fixing). The attribute names have been adjusted from FpML to address the fact that the information is not limited to rates.">
+   sourceProvider InformationProviderEnum (1..1)  <"An information source for obtaining a market data point. For example Bloomberg, Reuters, Telerate, etc.">
+     [synonym FIX_5_0_SP2 value "RateSource" tag 1446]
+   sourcePage string (0..1) <"A specific page for the source for obtaining a market data point. In FpML, this is specified as a scheme, rateSourcePageScheme, for which no coding Scheme or URI is specified.">
+   sourcePageHeading string (0..1) <"The heading for the source on a given source page.">
 
 * **definition** to provide a more explicit reference to the FIX enumeration values which are specified through a single digit or letter positioned as a prefix to the associated definition.
 
-.. code-block:: Java
+.. code-block:: Haskell
 
- enum InformationProviderEnum
- {
-  (...)
-  Bloomberg
-   [synonym FIX_5_0_SP2 value "0" definition "0 = Bloomberg"],
-  (...)
-  Other
-   [synonym FIX_5_0_SP2 value "99" definition "99 = Other"],
-  (...)
-  Telerate
-   [synonym FIX_5_0_SP2 value "2" definition "2 = Telerate"]
- }
-
-In contrast to other data artefacts, the synonym value associated with enumeration values is of type ``string`` to facilitate integration with executable code. The alternative approach consisting in specifying the value as a compatible identifier alongside with a display name has been disregarded because it has been deemed not appropriate to create a 'code-friendly' value for the respective synonyms.  A ``string`` type removes such need.
+ enum InformationProviderEnum:
+   AssocBanksSingapore
+   BankOfCanada
+   BankOfEngland
+   BankOfJapan
+   Bloomberg
+     [synonym FIX_5_0_SP2 value "0" definition "0 = Bloomberg"]
+   EuroCentralBank
+   FHLBSF
+   FederalReserve
+   ISDA
+   Other
+     [synonym FIX_5_0_SP2 value "99" definition "99 = Other"]
+   ReserveBankAustralia
+   ReserveBankNewZealand
+   Reuters
+     [synonym FIX_5_0_SP2 value "1" definition "1 = Reuters"]
+   SAFEX
+   Telerate
+     [synonym FIX_5_0_SP2 value "2" definition "2 = Telerate"]
 
 Meta-Data
 """""""""
@@ -748,12 +786,13 @@ To be able to specify an attribute as a reference from an existing source, the s
  type Party:
    [metadata key]
    [synonym FpML_5_10 value "Party" meta "id"]
- partyId string (1..*) 
-   [metadata scheme]
- name string (0..1)
-   [metadata scheme]
- person NaturalPerson (0..*)
- account Account (0..1)
+   
+   partyId string (1..*)
+     [metadata scheme]
+   name string (0..1)
+     [metadata scheme]
+   person NaturalPerson (0..*)
+   account Account (0..1)
  
 The below JSON extract illustrates an implementation of these meta-data in the context of a *transaction event*, which identifies the parties to the transactions as well as the *issuer* of the event (i.e. who submits the transaction message).
 
@@ -827,30 +866,24 @@ The mapping syntax is composed of two (optional) expressions:
 * **mapping value** prefixed with ``to``, to map a specific value that is distinct from the one originating from the source document
 * **conditional expression** prefixed with ``when``, to associate conditional logic to the mapping expression
 
-The mapping logic associated with the below ``action`` attribute provides a good illustration of such logic.
+The mapping logic associated with the party role example below provides a good illustration of such logic:
 
-.. code-block:: Java
+.. code-block:: Haskell
 
- class Event
- {
-  (...)
-  action ActionEnum (1..1) <"Specifies whether the event is a new, a correction or a cancellation.">;
-   [synonym Rosetta_Workbench
-    set to ActionEnum.New when "isCorrection" = False,
-    set to ActionEnum.Correct when "isCorrection" = True,
-    set to ActionEnum.Cancel when "isRetraction" = True]
-   [synonym FpML_5_10
-    set to ActionEnum.New when "isCorrection" = False,
-    set to ActionEnum.Correct when "isCorrection" = True]
-  (...)
- }
-
+ type PartyRole:
+ 
+   partyReference Party (1..1)
+   role PartyRoleEnum (1..1)
+     [synonym FpML_5_10 set to PartyRoleEnum -> DeterminingParty when path = "trade->determiningParty"]
+     [synonym FpML_5_10 set to PartyRoleEnum -> BarrierDeterminationAgent when path = "trade->barrierDeterminationAgent"]
+     [synonym FpML_5_10 set to PartyRoleEnum -> HedgingParty when path = "trade->hedgingParty"]
+     [synonym FpML_5_10 set to PartyRoleEnum -> ArrangingBroker when path = "trade->brokerPartyReference"]
+     [synonym FpML_5_10, CME_ClearedConfirm_1_17 value "role" path "tradeHeader->partyTradeInformation->relatedParty"]
+   ownershipPartyReference Party (0..1)
 
 .. _Cardinality Section: https://docs.rosetta-technology.io/dsl/documentation.html#cardinality
 .. _Condition Statement Section: https://docs.rosetta-technology.io/dsl/documentation.html#condition-statement
 .. _Meta-Data and Reference Section: https://docs.rosetta-technology.io/dsl/documentation.html#meta-data-and-reference
 .. _Synonym Section: https://docs.rosetta-technology.io/dsl/documentation.html#synonym
-.. _Calculation Function Section: https://docs.rosetta-technology.io/dsl/documentation.html#calculation-function
-.. _Qualification Function Section: https://docs.rosetta-technology.io/dsl/documentation.html#qualification-function
 .. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
 .. _CamelCase: https://en.wikipedia.org/wiki/Camel_case
