@@ -309,7 +309,7 @@ The definition of a condition starts with the ``condition`` keyword, followed by
 * a plain-text description (optional)
 * a logic expression that applies to the the type's attributes
 
-The language features that are available in the Rosetta DSL to express validation conditions emulate the basic boolean logic available in usual programming languages:
+**The Rosetta DSL offers a restricted set of language features designed to be unambiguous and understandable** by domain experts who are not software engineers, while minimising unintentional behaviour. The Rosetta DSL is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations. The language features that are available in the Rosetta DSL to express validation conditions emulate the basic boolean logic available in usual programming languages:
 
 * conditional statements: ``if``, ``then``, ``else``
 * boolean statements: ``and``, ``or``
@@ -456,9 +456,7 @@ Purpose
 
 **Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function's inputs and/or output through their *types* (or *enumerations*) in the data model. This amounts to specifying the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process. Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the model.
 
-**The Rosetta DSL offers a restricted set of language features designed to be unambiguous and understandable** by domain experts who are not software engineers, while minimising unintentional behaviour. The Rosetta DSL is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations.
-
-To build the complete processing logic, model implementors are meant to extend the code generated from the Rosetta DSL, once expressed in a fully featured programming language. For instance in Java, a function specification generates an *interface* that needs to be extended to be executable.
+As mentionned in the `Condition Statement Section`_, the Rosetta DSL is not a *Turing-complete* language. To build the complete processing logic, model implementors are meant to extend the code generated from the Rosetta DSL, once expressed in a fully featured programming language. For instance in Java, a function specification generates an *interface* that needs to be extended to be executable.
 
 Syntax
 """"""
@@ -508,14 +506,14 @@ Most functions, however, also require inputs, which are also expressed as attrib
 Conditions
 """"""""""
 
-A function's inputs and output can be constrained using *conditions*. Each condition is expressed as a logical statement that evaluates to true or false (a.k.a. a *boolean* expression) and can represent:
+A function's inputs and output can be constrained using *conditions*. Each condition is expressed as a logical statement that evaluates to True or False, using the same language features as those available to express condition statements in data types, as detailed in the `Condition Statement Section`_. 
+
+Condition statements in a function can represent:
 
 * a pre-condition, applicable to inputs only and evaluated prior to executing the function, using the ``condition`` keyword
 * a post-condition, applicable to inputs and output and evaluated after executing the function (once the output is known), using the ``post-condition`` keyword
 
 Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the "contract" that this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
-
-The language features available to express condition statements in functions are exactly the same as those available to express condition statements in data types, as detailed in the `Condition Statement Section`_.
 
 .. code-block:: Haskell
 
