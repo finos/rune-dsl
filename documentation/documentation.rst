@@ -227,8 +227,8 @@ In some cases, it is necessary to remove some of an object's attribute values fr
 An implementation of such partial key used to be provided as a feature of the Rosetta DSL (with a ``partialKey`` annotation).  It has now been de-commissioned, until further evaluation of its usage emerges that may lead to a redesign of this feature.
 
 
-Qualified Types
-^^^^^^^^^^^^^^^
+Qualified Type
+^^^^^^^^^^^^^^
 
 The Rosetta DSL provides for some special types called *qualified types*, which are specific to its application in the financial domain:
 
@@ -255,7 +255,7 @@ An attribute with the ``calculation`` type is meant to be associated to a functi
 
  annotation calculation: <"Marks a function as fully implemented calculation.">
 
-Object qualification
+Object Qualification
 """"""""""""""""""""
 
 Similarly, ``productType`` and ``eventType`` represent the outcome of a model logic to infer the type of financial product or event for an instance of the model. Attributes of these types are associated to an object qualification logic provided by a function tagged with the ``qualification`` annotation.
@@ -591,7 +591,7 @@ The example above could be rewritten as follows:
 Fully Defined Functions
 """""""""""""""""""""""
 
-There are a number of cases of fully defined functions that are supported by the Rosetta DSL. Those functions are typically associated to an annotation, which directs the code generators to create concrete functions.
+There are a number of cases of fully defined functions that are supported by the Rosetta DSL. Those functions are typically associated to an annotation as described in the `Qualified Type Section`_, which directs the code generators to create concrete functions.
 
 * **Calculation** functions use the ``calculation`` annotation. They must end with an ``assign-output`` statement that fully defines the calculation result (often, but not exclusively, of type ``number``).
 * **Object qualification** functions use the ``qualification`` annotation. They are each associated to a qualification name and return a boolean that evaluates to True when the input satisfies all the criteria to be identified according to that qualification.
@@ -646,7 +646,7 @@ Synonym
 Purpose
 """""""
 
-*Synonym* is the baseline building block to map a model expressed in the Rosetta DSL to alternative data representations, whether those are open standards or proprietary. Synonyms can be complemented by relevant mapping logic when the relationship is not a one-to-one or is conditional.
+*Synonym* is the baseline building block to map a model expressed in the Rosetta DSL to alternative data representations, whether those are open standards or proprietary. Synonyms can be complemented by mapping logic when the relationship is not a one-to-one or is conditional.
 
 Synonyms are specified at the attribute level for a data type. Synonyms can also be associated to enumerations and are specified at the enumeration value level. Mappings are typically implemented by traversing the model tree down, so knowledge of the context of an attribute (i.e. the type in which it is used) determines what it should map to. Knowledge about the upper-level type would be lost if synonyms were implemented at the class level.
 
@@ -848,8 +848,8 @@ Thanks to the ``reference`` qualifier, the ``issuerReference`` attribute can sim
 
 .. note:: This example is not part of the Rosetta DSL but corresponds to the default JSON implementation of the model. The choice of either maintaining or shredding external references (such as "party2"), once cross-reference has been established using the source document, is up to implementors of the model.
 
-Mapping Logic
-^^^^^^^^^^^^^
+Mapping Rule
+^^^^^^^^^^^^
 
 Purpose
 """""""
@@ -859,12 +859,12 @@ There are cases where the mapping between existing standards and protocols and t
 Syntax
 """"""
 
-The mapping logic differs from the data rule and choice rule syntax in that its syntax is not expressed as a stand-alone block with a qualifier prefix such as ``rule``. The mapping rule is positioned as an extension to the synonym expression, and each of the mapping expressions is prefixed with the ``set`` qualifier, followed by the name of the Rosetta attribute to which the synonym is being mapped to. Several mapping expressions can be associated with a given synonym.
+The mapping rule syntax differs from the normal Rosetta DSL syntax in that it is not expressed as a stand-alone block with a qualifier prefix such as ``condition``. Instead, the mapping rule is positioned as an extension of the synonym syntax. Several mapping rule expressions can be associated with a given synonym.
 
-The mapping syntax is composed of two (optional) expressions:
+A mapping rule is composed of two (optional) expressions:
 
-* **mapping value** prefixed with ``to``, to map a specific value that is distinct from the one originating from the source document
-* **conditional expression** prefixed with ``when``, to associate conditional logic to the mapping expression
+* **mapping value** prefixed with ``set to``, which specifies the value that the attribute should be set to when the conditional expression is true
+* **conditional expression** prefixed with ``when``, to associate conditional logic to the mapping value
 
 The mapping logic associated with the party role example below provides a good illustration of such logic:
 
@@ -885,5 +885,6 @@ The mapping logic associated with the party role example below provides a good i
 .. _Condition Statement Section: https://docs.rosetta-technology.io/dsl/documentation.html#condition-statement
 .. _Meta-Data and Reference Section: https://docs.rosetta-technology.io/dsl/documentation.html#meta-data-and-reference
 .. _Synonym Section: https://docs.rosetta-technology.io/dsl/documentation.html#synonym
-.. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
+.. _Qualified Type Section: https://docs.rosetta-technology.io/dsl/documentation.html#qualified-type
 .. _CamelCase: https://en.wikipedia.org/wiki/Camel_case
+.. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
