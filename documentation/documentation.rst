@@ -235,7 +235,7 @@ The Rosetta DSL provides for some special types called *qualified types*, which 
 * Calculation - ``calculation``
 * Object qualification - ``productType`` ``eventType``
 
-Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model.
+Those special types are designed to flag attributes which result from running some function logic (as detailed in the `Function Definition Section`_), such that model implementations can identify where to stamp the output in the model.
 
 Calculation
 """""""""""
@@ -258,7 +258,18 @@ An attribute with the ``calculation`` type is meant to be associated to a functi
 Object Qualification
 """"""""""""""""""""
 
-Similarly, ``productType`` and ``eventType`` represent the outcome of a model logic to infer the type of financial product or event for an instance of the model. Attributes of these types are associated to an object qualification logic provided by a function tagged with the ``qualification`` annotation.
+Similarly, ``productType`` and ``eventType`` represent the outcome of qualification logic to infer the type of an object (financial product or event) in the model. See the ``productQualifier`` attribute, alongside other identifier attributes in the ``ProductIdentification`` type:
+
+.. code-block:: Haskell
+
+ type ProductIdentification: <" A class to combine the CDM product qualifier with other product qualifiers, such as the FpML ones. While the CDM product qualifier is derived by the CDM from the product payout features, the other product identification elements are assigned by some external sources and correspond to values specified by other data representation protocols.">
+   productQualifier productType (0..1) <"The CDM product qualifier, which corresponds to the outcome of the isProduct qualification logic. This value is derived by the CDM from the product payout features.">
+   primaryAssetdata AssetClassEnum (0..1)
+   secondaryAssetdata AssetClassEnum (0..*)
+   productType string (0..*)
+   productId string (0..*) 
+	 
+Attributes of these types are meant to be associated to an object qualification function tagged with the ``qualification`` annotation. The annotation has an attribute that specifies which type of object (``Product`` or ``BusinessEvent``) is being qualified.
 
 .. code-block:: Haskell
 
@@ -267,7 +278,7 @@ Similarly, ``productType`` and ``eventType`` represent the outcome of a model lo
    Product boolean (0..1)
    BusinessEvent boolean (0..1)
 
-.. note:: The qualified type feature in the Rosetta DSL is under evaluation and may be replaced by a mechanism that is purely based on these annotations in the future.
+.. note:: The qualified type feature in the Rosetta DSL is under evaluation and may be replaced by a mechanism that is purely based on these function annotations in the future.
 
 
 Data Validation Component
@@ -538,10 +549,10 @@ Conditions are an essential feature of the definition of a function. By constrai
 
 .. note:: The function syntax intentionally mimics the type syntax in the Rosetta DSL regarding the use of descriptions, attributes (inputs and output) and conditions, to provide consistency in the expression of model definitions.
 
-Full or Partial Functions
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Function Definition
+^^^^^^^^^^^^^^^^^^^
 
-The creation of valid output objects can be fully or partially specified in a function, or completely left to the implementor.
+**The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function's API. The creation of valid output objects can be fully or partially defined as part of a function specification, or completely left to the implementor.
 
 * A function is **fully defined** when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the generated code is directly usable in an implementation.
 * A function is **partially defined** when the output object's validation constraints are only partially satisfied. In this case, implementors will need to extend the generated code and assign the remaining values on the output object.
@@ -588,10 +599,10 @@ The example above could be rewritten as follows:
     assign-output observation -> observation:
        EquitySpot(equity, observation -> date, observation -> time)
 
-Fully Defined Functions
-"""""""""""""""""""""""
+Fully Defined Function
+""""""""""""""""""""""
 
-There are a number of cases of fully defined functions that are supported by the Rosetta DSL. Those functions are typically associated to an annotation as described in the `Qualified Type Section`_, which directs the code generators to create concrete functions.
+**The Rosetta DSL supports a number of fully defined function cases**. Those functions are typically associated to an annotation as described in the `Qualified Type Section`_, which directs the code generators to create concrete functions.
 
 * **Calculation** functions use the ``calculation`` annotation. They must end with an ``assign-output`` statement that fully defines the calculation result (often, but not exclusively, of type ``number``).
 * **Object qualification** functions use the ``qualification`` annotation. They are each associated to a qualification name and return a boolean that evaluates to True when the input satisfies all the criteria to be identified according to that qualification.
@@ -757,8 +768,8 @@ The ``Price`` type provides a good illustration of such cases:
    Telerate
      [synonym FIX_5_0_SP2 value "2" definition "2 = Telerate"]
 
-Meta-Data
-"""""""""
+Meta-Data Mapping
+"""""""""""""""""
 
 When meta-data are associated to an attribute, as decribed in the `Meta-Data and Reference Section`_, additional synonym syntax allows to specify how to retrieve the corresponding meta-data from the source. This is illusrated by the usage of the ``meta`` synonym syntax in the example below:
 
@@ -886,5 +897,6 @@ The mapping logic associated with the party role example below provides a good i
 .. _Meta-Data and Reference Section: https://docs.rosetta-technology.io/dsl/documentation.html#meta-data-and-reference
 .. _Synonym Section: https://docs.rosetta-technology.io/dsl/documentation.html#synonym
 .. _Qualified Type Section: https://docs.rosetta-technology.io/dsl/documentation.html#qualified-type
+.. _Function Definition Section: https://docs.rosetta-technology.io/dsl/documentation.html#function-definition
 .. _CamelCase: https://en.wikipedia.org/wiki/Camel_case
 .. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
