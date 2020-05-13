@@ -455,6 +455,18 @@ Reusing small, modular processes has the following benefits:
 * **Consistency**. When a sub-process changes, all processes that use the sub-process benefit from that single change.
 * **Flexibility**. A model can represent any process by reusing existing sub-processes. There is no need to define each process explicitly: instead, we pick and choose from a set of pre-existing building blocks.
 
+Where widely adopted industry processes already exist, they should be reused and not redefined. Some examples include:
+
+* Mathematical functions. Functions such as sum, absolute, and average are widely understood, so do not need to be redefined in the model.
+* Reference data. The process of looking-up through reference data is usually provided by existing industry utilities and a model should look to re-use it but not re-implement it.
+* Quantitative finance. Many quantitative finance solutions, some open-source, already defines granular processes such as:
+
+  * computing a coupon schedule from a set of parameters
+  * adjusting dates given a holiday calendar
+
+This concept of combining and reusing small components is also consistent with a modular component approach to modelling.
+
+
 Function Specification
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -463,7 +475,7 @@ Purpose
 
 **Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function's inputs and/or output through their *types* (or *enumerations*) in the data model. This amounts to specifying the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process.
 
-Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the model.
+Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the domain model.
 
 Syntax
 """"""
