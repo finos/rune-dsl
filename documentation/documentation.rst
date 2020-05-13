@@ -9,7 +9,7 @@ Rosetta Modelling Components
 * Function
 * Mapping (or *synonym*)
 
-This documentation details the purpose and features of each type of model component and highlights the relationships that exists among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those features.
+This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those features.
 
 Data Component
 --------------
@@ -82,7 +82,7 @@ Inheritance
  type Offset extends Period:
     dayType DayTypeEnum (0..1)
 
-.. note:: For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet it to highlight some of those features.
+.. note:: For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet is to highlight some of those features.
 
 
 Enumeration and Enumeration Value
@@ -108,7 +108,7 @@ Enumerations are very simple modelling containers, which are defined in the same
    M <"Month">
    Y <"Year">
 
-Enumeration names must be unique across a model. The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase).
+Enumeration names must be unique across a model. The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase).  In addition the enumeration name should end with the suffix Enum.
 
 Enumeration values have a restricted syntax to facilitate their integration with executable code: they cannot start with a numerical digit, and the only special character that can be associated with them is the underscore ``_``.
 
@@ -153,11 +153,11 @@ Examples of annotations and their usage for different purposes are illustrated b
 Syntax
 """"""
 
-Annotation are defined in the same way as other model components. The definition of an annotation starts with the ``annotation`` keyword, followed by the annotation name. A colon ``:`` punctuation introduces the rest of the definition, starting with a plain-text description of the annotation.
+Annotations are defined in the same way as other model components. The definition of an annotation starts with the ``annotation`` keyword, followed by the annotation name. A colon ``:`` punctuation introduces the rest of the definition, starting with a plain-text description of the annotation.
 
 Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase.
 
-It is posible to associate attributes to an annotation, even though some annotations may not require any further attribute. For instance:
+It is possible to associate attributes to an annotation (see ``metadata`` example), even though some annotations may not require any further attribute. For instance:
 
 .. code-block:: Haskell
 
@@ -181,7 +181,7 @@ The ``metadata`` annotation allows to associate a set of meta-data qualifiers to
    scheme string (0..1)
    reference string (0..1)
 
-Each attributes of the ``metadata`` annotation corresponds to a qualifier:
+Each attribute of the ``metadata`` annotation corresponds to a qualifier:
 
 * The ``scheme`` meta-data qualifier specifies a mechanism to control the set of values that an attribute can take. The relevant scheme reference may be specified as meta-information in the attribute's data source, so that no originating information is disregarded.
 * The ``reference`` meta-data qualifier replicates the cross-referencing mechanism used in XML to provide data integrity within the context of an instance document - in particular with ``href`` (for *hyper-text reference*) as used in the FpML standard. The cross-reference value may be specified as meta-information in the attribute's data source.
@@ -289,7 +289,7 @@ Data Validation Component
 * Cardinality
 * Condition Statement
 
-The validation components associated to a data type generate executable code designed to be executed on objects of that type. Implementors of the model can use the code generated from these validation components to build diagnostic tools that can scan objects and report on which validation rules were statisfied or broken. Typically, the validation code is included as part of any process that creates an object, to verify its validity from the point of creation. 
+The validation components associated to a data type generate executable code designed to be executed on objects of that type. Implementors of the model can use the code generated from these validation components to build diagnostic tools that can scan objects and report on which validation rules were satisfied or broken. Typically, the validation code is included as part of any process that creates an object, to verify its validity from the point of creation. 
 
 Cardinality
 ^^^^^^^^^^^
@@ -323,7 +323,7 @@ Syntax
 
 Condition statements are included in the definition of the type that they are associated to and are usually appended after the definition of the type's attributes.
 
-The definition of a condition starts with the ``condition`` keyword, followed by the name of the condition and a colon ``:`` punctuation. The condition's name must be unique in the context of the type that it applies to (but needs not be unique across all data types of a given model). The rest of the condition definition comprises:
+The definition of a condition starts with the ``condition`` keyword, followed by the name of the condition and a colon ``:`` punctuation. The condition's name must be unique in the context of the type that it applies to (but does not need to be unique across all data types of a given model). The rest of the condition definition comprises:
 
 * a plain-text description (optional)
 * a logic expression that applies to the the type's attributes
@@ -361,7 +361,7 @@ The definition of a condition starts with the ``condition`` keyword, followed by
 Special Syntax
 ^^^^^^^^^^^^^^
 
-Some specific language feature have been introduced in the Rosetta DSL, to handle validation cases where the basic boolean logic components would create unecessarily verbose, and therefore less readable, expressions. Those use-cases were deemed frequent enough to justify developing a specific syntax for them.
+Some specific language features have been introduced in the Rosetta DSL, to handle validation cases where the basic boolean logic components would create unecessarily verbose, and therefore less readable, expressions. Those use-cases were deemed frequent enough to justify developing a specific syntax for them.
 
 Choice
 """"""
@@ -448,7 +448,7 @@ Function Component
 
 Functions are a fundamental building block to automate processes, because the same set of instructions can be executed as many times as required by varying the inputs to generate a different, yet deterministic, result.
 
-Just like a spreadsheet allows users to define and make use of functions to construct complex logic, the Rosetta DSL allows to model complex processes from reusable function components. Typically, complex processes are defined by combining simpler sub-processes, where one process's ouput can feed as input into another process. Each of those processes and sub-processes are represented by a function. Functions can invoke other functions, so they can represent processes made up of sub-processes, sub-sub-processes, and so on.
+Just like a spreadsheet allows users to define and make use of functions to construct complex logic, the Rosetta DSL allows to model complex processes from reusable function components. Typically, complex processes are defined by combining simpler sub-processes, where one process's output can feed as input into another process. Each of those processes and sub-processes are represented by a function. Functions can invoke other functions, so they can represent processes made up of sub-processes, sub-sub-processes, and so on.
 
 Reusing small, modular processes has the following benefits:
 
@@ -614,7 +614,7 @@ Object Qualification Function
 
 Object qualification functions evaluate a combination of assertions that uniquely characterise an input object according to a chosen classification. Each function is associated to a qualification name (a ``string`` from that classification) and returns a boolean. This boolean evaluates to True when the input satisfies all the criteria to be identified according to that qualification name.
 
-Object qualification functions are associated to a ``qualification`` annotation that specifies the type of object being qualified. The function name start with the ``Qualify`` prefix, followed by an underscore ``_``. The naming convention is to have an upper `CamelCase`_ (PascalCase) word, using ``_`` to append granular qualifications names where the classification may use other types of separators (like space or colon ``:``).
+Object qualification functions are associated to a ``qualification`` annotation that specifies the type of object being qualified. The function name start with the ``Qualify`` prefix, followed by an underscore ``_``. The naming convention is to have an upper `CamelCase`_ (PascalCase) word, using ``_`` to append granular qualification names where the classification may use other types of separators (like space or colon ``:``).
 
 Syntax validation logic based on the ``qualification`` annotation is in place to enforce this.
 
@@ -732,7 +732,7 @@ Or an enumeration:
    Trader <"The person who executed the trade.">
      [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "Trader"]
 
-.. note:: The synonym value is of type ``string`` to facilitate integration with executable code. The alternative approach consisting in specifying the value as a compatible identifier alongside a display name has been disregarded because it has been deemed not appropriate to create a "code-friendly" value for the respective synonyms.
+.. note:: The synonym value is of type ``string`` to facilitate integration with executable code. The alternative approach consisting of specifying the value as a compatible identifier alongside a display name has been disregarded because it has been deemed not appropriate to create a "code-friendly" value for the respective synonyms.
 
 A further set of attributes can be associated with a synonym, to address specific use cases:
 
@@ -800,7 +800,7 @@ The ``Price`` type provides a good illustration of such cases:
 Meta-Data Mapping
 """""""""""""""""
 
-When meta-data are associated to an attribute, as decribed in the `Meta-Data and Reference Section`_, additional synonym syntax allows to specify how to retrieve the corresponding meta-data from the source. This is illusrated by the usage of the ``meta`` synonym syntax in the example below:
+When meta-data are associated to an attribute, as decribed in the `Meta-Data and Reference Section`_, additional synonym syntax allows to specify how to retrieve the corresponding meta-data from the source. This is illustrated by the usage of the ``meta`` synonym syntax in the example below:
 
 .. code-block:: Haskell
 
