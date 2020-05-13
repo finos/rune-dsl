@@ -84,7 +84,10 @@ class NamespaceHierarchyGenerator {
 		'''
 	}
     protected def String formatName(String name) {
-    		return name.indexOf(".rosetta") > 1 ? name.substring(0, name.indexOf(".rosetta")) : name;
+    	if(name.indexOf(".rosetta") > -1) {
+	    	 return name.substring(0, name.indexOf(".rosetta"))	
+    	} 
+    	name;
     }
     
 	protected def List<ModelGroup> createFileChildrenNodes(String namespace,
