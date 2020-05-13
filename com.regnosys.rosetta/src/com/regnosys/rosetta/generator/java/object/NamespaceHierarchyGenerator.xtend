@@ -70,7 +70,7 @@ class NamespaceHierarchyGenerator {
 	protected def String buildModelJson(ModelGroup node) {
 		'''
 			{
-				"name": "«node.name»",
+				"name": "«formatName(node.name)»",
 				"description": "«node.description»"«IF node.uri !== null»,
 				"uri": "«node.uri»"«ENDIF»«IF node.children.length > 0», 
 					"children": [
@@ -83,7 +83,13 @@ class NamespaceHierarchyGenerator {
 			}
 		'''
 	}
-
+    protected def String formatName(String name) {
+    	if(name.indexOf(".rosetta") > -1) {
+	    	 return name.substring(0, name.indexOf(".rosetta"))	
+    	} 
+    	name;
+    }
+    
 	protected def List<ModelGroup> createFileChildrenNodes(String namespace,
 		Map<String, Collection<String>> modelDescriptionMap, Map<String, Collection<String>> modelUriMap) {
 		val listOfFiles = modelUriMap.getOrDefault(namespace, Collections.EMPTY_LIST)
@@ -116,7 +122,7 @@ class NamespaceHierarchyGenerator {
 	}
 
 	static class ModelGroup {
-		protected var name = null;
+		protected var String name = null;
 		protected var description = null
 		protected var uri = null
 		protected val List<ModelGroup> children
