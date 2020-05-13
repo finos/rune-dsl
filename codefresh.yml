@@ -26,7 +26,7 @@ steps:
     no_cache: true
     no_cf_cache: true
     fail_fast: false
-    image: r.cfcr.io/regnosysops/regnosys/mvn-docker-build:java-8
+    image: regnosys-docker-registry.jfrog.io/regnosys/mvn-docker-build:java-8
     commands:
       - mvn -s /settings.xml org.eclipse.tycho:tycho-versions-plugin:1.0.0:set-version -DnewVersion=${{RELEASE_NAME}} -Dtycho.mode=maven
       - /xvfb.sh && mvn -s /settings.xml clean deploy -T 1C
