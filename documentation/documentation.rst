@@ -615,7 +615,7 @@ The example above could be rewritten as follows:
 
 * Object qualification
 * Calculation
-* Utility function
+* Short-hand function
 
 Those functions are typically associated to an annotation, as described in the `Qualified Type Section`_, to instruct code generators to create concrete functions.
 
@@ -670,10 +670,10 @@ The function syntax supports the definition of *aliases* that are only available
 
 The above example builds an interest rate calculation using aliases to define the *calculation amount*, *rate* and *day count fraction* as temporary variables, and finally assigns the *fixed amount* output as the product of those three variables.
 
-Utility Function
-""""""""""""""""
+Short-Hand Function
+"""""""""""""""""""
 
-Utility functions are functions which are designed to provide a compact syntax for operations that need to be frequently invoked in the model - for instance, model indirections when the corresponding model tree expression may be too long or cumbersome:
+Short-hand functions are functions which are designed to provide a compact syntax for operations that need to be frequently invoked in the model - for instance, model indirections when the corresponding model expression may be deemed too long or cumbersome:
 
 .. code-block:: Haskell
 
