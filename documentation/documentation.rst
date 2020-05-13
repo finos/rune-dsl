@@ -732,7 +732,7 @@ Or an enumeration:
    Trader <"The person who executed the trade.">
      [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "Trader"]
 
-.. note:: The synonym value is of type ``string`` to facilitate integration with executable code. The alternative approach consisting in specifying the value as a compatible identifier alongside with a display name has been disregarded because it has been deemed not appropriate to create a "code-friendly" value for the respective synonyms.
+.. note:: The synonym value is of type ``string`` to facilitate integration with executable code. The alternative approach consisting in specifying the value as a compatible identifier alongside a display name has been disregarded because it has been deemed not appropriate to create a "code-friendly" value for the respective synonyms.
 
 A further set of attributes can be associated with a synonym, to address specific use cases:
 
