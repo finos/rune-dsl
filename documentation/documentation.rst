@@ -249,7 +249,7 @@ The ``calculation`` qualified type, when specified instead of the type for the a
    accruals number (0..1)
    dirtyPrice calculation (0..1)
 
-An attribute with the ``calculation`` type is meant to be associated to a function tagged with the ``calculation`` annotation. The type is implied by the function output.
+An attribute with the ``calculation`` type is meant to be associated to a function tagged with the ``calculation`` annotation. The attribute's type is implied by the function output.
 
 .. code-block:: Haskell
 
