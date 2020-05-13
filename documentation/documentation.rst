@@ -1,5 +1,5 @@
-Rosetta Modelling Artefacts
-===========================
+Rosetta Modelling Components
+============================
 
 **The Rosetta syntax can express five types of model components**:
 
@@ -9,7 +9,7 @@ Rosetta Modelling Artefacts
 * Function
 * Mapping (or *synonym*)
 
-This documentation details the purpose and features of each type of model component and highlights the relationships that exists among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those artefacts.
+This documentation details the purpose and features of each type of model component and highlights the relationships that exists among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those features.
 
 Data Component
 --------------
