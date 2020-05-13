@@ -235,7 +235,7 @@ The Rosetta DSL provides for some special types called *qualified types*, which 
 * Calculation - ``calculation``
 * Object qualification - ``productType`` ``eventType``
 
-Those special types are designed to flag attributes which result from running some function logic (as detailed in the `Function Definition Section`_), such that model implementations can identify where to stamp the output in the model.
+Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model. The logic is being captured by specific types of functions that are detailed in the `Function Definition Section`_.
 
 Calculation
 """""""""""
@@ -269,7 +269,7 @@ Similarly, ``productType`` and ``eventType`` represent the outcome of qualificat
    productType string (0..*)
    productId string (0..*) 
 	 
-Attributes of these types are meant to be associated to an object qualification function tagged with the ``qualification`` annotation. The annotation has an attribute that specifies which type of object (``Product`` or ``BusinessEvent``) is being qualified.
+Attributes of these types are meant to be associated to an object qualification function tagged with the ``qualification`` annotation. The annotation has an attribute to specify which type of object (like ``Product`` or ``BusinessEvent``) is being qualified.
 
 .. code-block:: Haskell
 
@@ -537,7 +537,7 @@ Conditions are an essential feature of the definition of a function. By constrai
     condition: <"Optional choice between directly passing a time or a timeType, which has to be resolved into a time based on the determination method.">
        if valuationTime exists then timeType is absent
        else if timeType exists then valuationTime is absent
-          else False
+       else False
     
     post-condition: <"The date and time must be properly resolved as attributes on the output.">
        observation -> date = ResolveAdjustableDate(valuationDate)
@@ -587,7 +587,7 @@ The example above could be rewritten as follows:
     condition:
        if valuationTime exists then timeType is absent
        else if timeType exists then valuationTime is absent
-          else False
+       else False
     
     assign-output observation -> date:
        ResolveAdjustableDate(valuationDate)
@@ -599,34 +599,38 @@ The example above could be rewritten as follows:
     assign-output observation -> observation:
        EquitySpot(equity, observation -> date, observation -> time)
 
-Fully Defined Function
-""""""""""""""""""""""
+**The Rosetta DSL also supports a number of fully defined function cases**, where the output is being built up to a valid state:
 
-**The Rosetta DSL supports a number of fully defined function cases**. Those functions are typically associated to an annotation as described in the `Qualified Type Section`_, which directs the code generators to create concrete functions.
+* Object qualification
+* Calculation
+* Utility function
 
-* **Calculation** functions use the ``calculation`` annotation. They must end with an ``assign-output`` statement that fully defines the calculation result (often, but not exclusively, of type ``number``).
-* **Object qualification** functions use the ``qualification`` annotation. They are each associated to a qualification name and return a boolean that evaluates to True when the input satisfies all the criteria to be identified according to that qualification.
-* **Utility** functions are functions which are designed to provide a compact syntax for operations that need to be frequently invoked in the model - for instance, model indirections when the corresponding model tree expression may be too long or cumbersome:
+Those functions are typically associated to an annotation, as described in the `Qualified Type Section`_, to instruct code generators to create concrete functions.
+
+Object Qualification Function
+"""""""""""""""""""""""""""""
+
+**The Rosetta DSL supports the qualification of financial objects from their underlying components** according to a given classification taxonomy, in order to support a composable model for those objects (e.g. financial products, legal agreements or their associated lifecycle events).
+
+Object qualification functions evaluate a combination of assertions that uniquely characterise an input object according to a chosen classification. Each function is associated to a qualification name (a ``string`` from that classification) and returns a boolean. This boolean evaluates to True when the input satisfies all the criteria to be identified according to that qualification name.
+
+Object qualification functions are associated to a ``qualification`` annotation that specifies the type of object being qualified. The function name start with the ``Qualify`` prefix, followed by an underscore ``_``. The naming convention is to have an upper `CamelCase`_ (PascalCase) word, using ``_`` to append granular qualifications names where the classification may use other types of separators (like space or colon ``:``).
+
+Syntax validation logic based on the ``qualification`` annotation is in place to enforce this.
 
 .. code-block:: Haskell
 
- func PaymentDate:
+ func Qualify_InterestRate_IRSwap_FixedFloat_PlainVanilla: <"This product qualification doesn't represent the exact terms of the ISDA Taxonomomy V2.0 for the plain vanilla swaps, as some of those cannot be represented as part of the CDM syntax (e.g. the qualification that there is no provision for early termination which uses an off-market valuation), while some other are deemed missing in the ISDA taxonomy and have been added as part of the CDM (absence of cross-currency settlement provision, absence of fixed rate and notional step schedule, absence of stub). ">
+   [qualification Product]
    inputs: economicTerms EconomicTerms (1..1)
-   output: result date (0..1)
-   assign-output result: economicTerms -> payout -> interestRatePayout only-element -> paymentDate -> adjustedDate
+   output: is_product boolean (1..1)
 
-which could be invoked as part of multiple other functions that use the ``EconomicTerms`` object by simply stating:
+Calculation Function
+""""""""""""""""""""
 
-.. code-block:: Haskell
+Calculation functions define a calculation output that is often, though not exclusively, of type ``number``. They must end with an ``assign-output`` statement that fully defines the calculation result.
 
- PaymentDate( EconomicTerms )
-
-Aliases
-"""""""
-
-The function syntax supports the definition of *aliases* that are only available in the context of the function. Aliases work like temporary variable assignments used in programming languages and are particularly useful in fully defined functions.
-
-The below example builds an interest rate calculation using aliases to define the *calculation amount*, *rate* and *day count fraction* as temporary variables, and finally assigns the *fixed amount* output as the product of those three variables.
+Calculation functions are associated to the ``calculation`` annotation.
 
 .. code-block:: Haskell
  
@@ -646,6 +650,31 @@ The below example builds an interest rate calculation using aliases to define th
    
    assign-output fixedAmount:
      calculationAmount * fixedRateAmount * dayCountFraction
+
+Alias
+"""""
+
+The function syntax supports the definition of *aliases* that are only available in the context of the function. Aliases work like temporary variable assignments used in programming languages and are particularly useful in fully defined functions.
+
+The above example builds an interest rate calculation using aliases to define the *calculation amount*, *rate* and *day count fraction* as temporary variables, and finally assigns the *fixed amount* output as the product of those three variables.
+
+Utility Function
+""""""""""""""""
+
+Utility functions are functions which are designed to provide a compact syntax for operations that need to be frequently invoked in the model - for instance, model indirections when the corresponding model tree expression may be too long or cumbersome:
+
+.. code-block:: Haskell
+
+ func PaymentDate:
+   inputs: economicTerms EconomicTerms (1..1)
+   output: result date (0..1)
+   assign-output result: economicTerms -> payout -> interestRatePayout only-element -> paymentDate -> adjustedDate
+
+which could be invoked as part of multiple other functions that use the ``EconomicTerms`` object by simply stating:
+
+.. code-block:: Haskell
+
+ PaymentDate( EconomicTerms )
 
 
 Mapping Component
