@@ -98,9 +98,9 @@ class NamespaceHierarchyGenerator {
 			listOfFiles.forEach [ file |
 				var name = switch file {
 					// old file name to remain, but new should change
-					case !file.startsWith("model") && file.endsWith("-enum.rosetta"): "Enum"
-					case !file.startsWith("model") && file.endsWith("-type.rosetta"): "Type"
-					case !file.startsWith("model") && file.endsWith("-func.rosetta"): "Function"
+					case !file.startsWith("model") && file.endsWith("-enum.rosetta"): "enumeration"
+					case !file.startsWith("model") && file.endsWith("-type.rosetta"): "data type"
+					case !file.startsWith("model") && file.endsWith("-func.rosetta"): "function"
 					default: file
 				}
 				val descriptions = modelDescriptionMap.getOrDefault(namespace, Collections.EMPTY_LIST)
