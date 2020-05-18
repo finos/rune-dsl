@@ -1,6 +1,8 @@
 namespace "com.rosetta.model"
 version "${project.version}"
 
+basicType string
+
 annotation metadata:
      id string (0..1)
      key string (0..1) <"Represents a key.">
