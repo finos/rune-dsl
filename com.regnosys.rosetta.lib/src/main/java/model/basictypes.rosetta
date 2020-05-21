@@ -32,5 +32,3 @@ qualifiedType productType {}
 qualifiedType eventType {}
 
 calculationType calculation {}
-
-
