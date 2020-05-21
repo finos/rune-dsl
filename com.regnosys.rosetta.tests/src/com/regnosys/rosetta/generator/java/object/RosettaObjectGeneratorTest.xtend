@@ -11,7 +11,7 @@ import com.rosetta.model.lib.annotations.RosettaQualified
 import com.rosetta.model.lib.annotations.RosettaSynonym
 import com.rosetta.model.lib.records.Date
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.List
@@ -121,11 +121,11 @@ class RosettaObjectGeneratorTest {
 	def void generateDateTimeBasicType() {
 		val classes = '''
 			type Tester:
-				one dateTime (0..1)
-				list dateTime (0..*)
+				one date (0..1)
+				list date (0..*)
 				zoned zonedDateTime (0..1)
 		'''.compileJava8
-		assertEquals(LocalDateTime,
+		assertEquals(Date,
 			classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 		assertEquals(ZonedDateTime,
 			classes.get(rootPackage.name + ".Tester").getMethod('getZoned').returnType)

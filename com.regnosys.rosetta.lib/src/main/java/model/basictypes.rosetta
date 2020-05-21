@@ -1,4 +1,4 @@
-namespace "com.rosetta.model"
+namespace com.rosetta.model
 version "${project.version}"
 
 basicType string
@@ -32,3 +32,5 @@ qualifiedType productType {}
 qualifiedType eventType {}
 
 calculationType calculation {}
+
+
