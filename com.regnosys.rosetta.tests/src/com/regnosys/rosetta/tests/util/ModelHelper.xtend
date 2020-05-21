@@ -14,6 +14,8 @@ class ModelHelper {
 
 	public static val commonTestTypes = '''
 		«getVersionInfo»
+		
+		metaType scheme string
 			
 		body Authority ESMA
 		body Authority CFTC

@@ -17,5 +17,3 @@ annotation qualification: <"Annotation that describes a func that is used for ev
 	BusinessEvent boolean (0..1)
 
 annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
-
-
