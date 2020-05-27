@@ -6,6 +6,7 @@ import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -47,4 +48,69 @@ class GlobalKeyGeneratorTest {
 
 		assertThat(withoutGlobalKeys.methods.exists[name.equals('meta')], is(false))
 	}
+	
+	// TODO fails when the metaType is moved to annotations.rosetta or basictypes.rosetta (and removed from the code here).
+	@Test
+	def void shouldGenerateGlobalReferenceField() {
+		val code = '''
+			metaType reference string
+			
+			type Foo:
+				[metadata key]
+				bar string (1..1)
+			
+			type Baz:
+				foo Foo (1..1)
+					[metadata reference]
+				
+				condition:
+					Baz -> foo -> reference exists
+		'''.generateCode
+
+		val classes = code.compileToClasses
+
+		val foo = classes.get(rootPackage.name + '.Foo')
+		assertThat(foo.declaredFields.map[name], hasItem('bar'))
+		assertThat(foo.declaredFields.map[name], hasItem('meta'))
+		
+		val baz = classes.get(rootPackage.name + '.Baz')
+		assertThat(baz.declaredFields.map[name], hasItem('foo'))
+		val fooMethod = baz.getMethod("getFoo")
+		val returnType = fooMethod.returnType
+		assertThat(returnType.simpleName, is('ReferenceWithMetaFoo'))
+	}
+	
+	// TODO the path containing a reference should work - the path is the same apart from it starts at the attribute rather than the type level).
+	// TODO fails when the metaType is moved to annotations.rosetta or basictypes.rosetta (and removed from the code here).
+	@Test
+	@Disabled 
+	def void shouldGenerateGlobalReferenceField2() {
+		val code = '''
+			metaType reference string
+			
+			type Foo:
+				[metadata key]
+				bar string (1..1)
+			
+			type Baz:
+				foo Foo (1..1)
+					[metadata reference]
+				
+				condition:
+					foo -> reference exists
+		'''.generateCode
+
+		val classes = code.compileToClasses
+
+		val foo = classes.get(rootPackage.name + '.Foo')
+		assertThat(foo.declaredFields.map[name], hasItem('bar'))
+		assertThat(foo.declaredFields.map[name], hasItem('meta'))
+		
+		val baz = classes.get(rootPackage.name + '.Baz')
+		assertThat(baz.declaredFields.map[name], hasItem('foo'))
+		val fooMethod = baz.getMethod("getFoo")
+		val returnType = fooMethod.returnType
+		assertThat(returnType.simpleName, is('ReferenceWithMetaFoo'))
+	}
+	
 }
