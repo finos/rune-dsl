@@ -12,32 +12,11 @@ class ModelHelper {
 	@Inject extension ParseHelper<RosettaModel>
 	@Inject extension ValidationTestHelper 
 
-	public static val commonEnums = '''
+	public static val commonTestTypes = '''
 		«getVersionInfo»
 		
-		basicType string
-		basicType int
-		basicType number
-		basicType boolean
-		basicType time
-		basicType dateTime
-		basicType date
-		basicType zonedDateTime
-		
-		library function DateRanges() date
-		library function Min(x number, y number) number
-		library function Max(x number, y number) number
-		library function Adjust() date
-		library function Within() boolean
-		
-		metaType reference string
-		metaType id string
-		
-		qualifiedType productType
-		qualifiedType eventType
-		
-		calculationType calculation
-		
+		metaType scheme string
+			
 		body Authority ESMA
 		body Authority CFTC
 		
@@ -90,11 +69,11 @@ class ModelHelper {
 
 	def parseRosetta(CharSequence model) {
 		var m = model;
-		if (model.subSequence(0,9)!="namespace") {
+		if (model.subSequence(0,9) != "namespace") {
 			m = versionInfo + "\n" + m
 		}
-		val resourceSet = parse(commonEnums).eResource.resourceSet
-		resourceSet.getResource(URI.createURI('classpath:/model/annotations.rosetta'), true)
+		val resourceSet = testResourceSet()
+		
 		val parsed = m.parse(resourceSet)
 		return parsed;
 	}
@@ -110,9 +89,18 @@ class ModelHelper {
 		for (model : models) {
 			m += "\n" + model
 		}
-		val resourceSet = parse(commonEnums).eResource.resourceSet
+		val resourceSet = testResourceSet()
+		
 		val parsed = m.parse(resourceSet)
 		parsed.assertNoErrors
 		return parsed;
+	}
+	
+	def testResourceSet() {
+		val resourceSet = parse(com.regnosys.rosetta.tests.util.ModelHelper.commonTestTypes).eResource.resourceSet
+		resourceSet.getResource(URI.createURI('classpath:/model/basictypes.rosetta'), true)
+		resourceSet.getResource(URI.createURI('classpath:/model/annotations.rosetta'), true)
+	
+		return resourceSet;
 	}
 }
