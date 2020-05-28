@@ -32,11 +32,11 @@ import java.util.concurrent.CancellationException
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtend.lib.annotations.Delegate
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
+import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 
 /**
  * Generates code from your model files on save.
@@ -65,6 +65,9 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
 	@Inject FuncGenerator funcGenerator
+	
+	@Inject 
+	ResourceAwareFSAFactory fsaFactory;
 
 	@Inject ModelNamespaceUtil modelNamespaceUtil
 
@@ -75,7 +78,7 @@ class RosettaGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		LOGGER.debug("Starting the main generate method for " + resource.URI.toString)
-		val fsa = new TestFolderAwareFsa(resource, fsa2)
+		val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, false)
 		try {
 			lock.getWriteLock(true);
 			if (!ignoredFiles.contains(resource.URI.segments.last)) {
@@ -151,7 +154,7 @@ class RosettaGenerator extends AbstractGenerator {
 
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		try {
-			val fsa = new TestFolderAwareFsa(resource, fsa2)
+			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
 		
 			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 
@@ -172,31 +175,5 @@ class RosettaGenerator extends AbstractGenerator {
 			LOGGER.debug("Unexpected calling after generate for rosetta", e);
 		}
 
-	}
-}
-
-class TestFolderAwareFsa implements IFileSystemAccess2 {
-	@Delegate IFileSystemAccess2 originalFsa
-	boolean testRes
-
-	new(Resource resource, IFileSystemAccess2 originalFsa) {
-		this.originalFsa = originalFsa
-		this.testRes = isTestResource(resource)
-	}
-
-	def boolean isTestResource(Resource resource) {
-		if (resource.URI !== null) {
-			// hardcode the folder for now
-			return resource.getURI().toString.contains('rosetta-cdm/src/test/resources/')
-		}
-		false
-	}
-
-	override void generateFile(String fileName, CharSequence contents) {
-		if (testRes) {
-			originalFsa.generateFile(fileName, RosettaOutputConfigurationProvider.SRC_TEST_GEN_JAVA_OUTPUT, contents)
-		} else {
-			originalFsa.generateFile(fileName, contents)
-		}
 	}
 }
