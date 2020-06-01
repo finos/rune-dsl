@@ -153,7 +153,9 @@ class RosettaGenerator extends AbstractGenerator {
 		try {
 			val fsa = new TestFolderAwareFsa(resource, fsa2)
 		
-			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
+			val models = resource.resourceSet.resources.flatMap[contents]
+						.filter[!fsa.isTestResource(it.eResource)]
+						.filter(RosettaModel).toList
 
 			var namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
 			var namespaceUrilMap = modelNamespaceUtil.namespaceToModelUriMap(models).asMap
@@ -187,7 +189,7 @@ class TestFolderAwareFsa implements IFileSystemAccess2 {
 	def boolean isTestResource(Resource resource) {
 		if (resource.URI !== null) {
 			// hardcode the folder for now
-			return resource.getURI().toString.contains('rosetta-cdm/src/test/resources/')
+			return resource.getURI().toString.contains('src/test/resources/')
 		}
 		false
 	}
