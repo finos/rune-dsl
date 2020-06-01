@@ -247,4 +247,51 @@ class RosettaFunctionGenerationTest {
 		code.compileToClasses
 	}
 	
+		@Test
+	def void shouldGenerateFuncWithKeyReferenceFromAnotherNamespace() {
+
+		val code = #[
+		'''
+			namespace "com.rosetta.test.model.party"
+			version "test"
+
+			type Party:
+				[metadata key]
+				id number (1..1)
+				name string (1..1)
+		''',
+		'''
+			namespace "com.rosetta.test.model.agreement"
+			version "test"
+			
+			import com.rosetta.test.model.party.*
+
+			type Agreement:
+				id number (1..1)
+				party Party (1..1)
+					[metadata reference]
+		'''
+		,
+		'''
+			namespace "com.rosetta.test.model.func"
+			version "test"
+
+			import com.rosetta.test.model.party.*
+			import com.rosetta.test.model.agreement.*
+
+			func Create_Agreement:
+			 	inputs:
+			 		party Party (1..1)
+					id number (1..1)
+				output:
+					agreement Agreement (1..1)
+					
+				assign-output agreement -> id: id
+				assign-output agreement -> party: party as-key
+
+		'''
+		].generateCode
+		code.compileToClasses
+	}
+	
 }

@@ -12,6 +12,7 @@ class ModelHelper {
 	@Inject extension ParseHelper<RosettaModel>
 	@Inject extension ValidationTestHelper 
 
+
 	public static val commonTestTypes = '''
 		«getVersionInfo»
 		
@@ -78,9 +79,22 @@ class ModelHelper {
 		return parsed;
 	}
 
+	def parseRosetta(CharSequence... models) {
+		val resourceSet = testResourceSet()
+		return models
+			.map[if (it.subSequence(0,9) != "namespace") versionInfo + "\n" + it else it]
+			.map[it.parse(resourceSet)]
+	}
+	
 	def parseRosettaWithNoErrors(CharSequence model) {
 		val parsed = parseRosetta(model)
 		parsed.assertNoErrors
+		return parsed;
+	}
+
+	def parseRosettaWithNoErrors(CharSequence... models) {
+		val parsed = parseRosetta(models)
+		parsed.forEach[assertNoErrors]
 		return parsed;
 	}
 
