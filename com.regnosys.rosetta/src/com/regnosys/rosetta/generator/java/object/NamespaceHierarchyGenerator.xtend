@@ -11,8 +11,7 @@ class NamespaceHierarchyGenerator {
 
 	def generateNamespacePackageHierarchy(IFileSystemAccess2 fsa, 
 		Map<String, Collection<String>> namespaceToDescriptionMap, Map<String, Collection<String>> namespaceToModelUriMap) {
-
-		var distinctRoots = namespaceToModelUriMap.keySet.map[it.substring(0, it.indexOf("."))].toSet
+		var distinctRoots = namespaceToModelUriMap.keySet.map[it.substring(0, indexOrLength(it, "."))].toSet
 
 		var result = '''
 			[«FOR root: distinctRoots SEPARATOR ',' »
@@ -27,8 +26,18 @@ class NamespaceHierarchyGenerator {
 			«ENDFOR»]			
 		'''
 
-		fsa.generateFile('''/namespace-hierarchy.json''', result)
+		fsa.generateFile('''namespace-hierarchy.json''', result)
 		return result
+	}
+	
+	def int indexOrLength(String toSearch, char find) {
+		val index = toSearch.indexOf(find)
+		if (index===-1) {
+			toSearch.length
+		}
+		else {
+			index
+		}
 	}
 
 	protected def ModelGroup buildNamespaceModelTree(ModelGroup node, AtomicInteger namespaceIndex, String namespace,
