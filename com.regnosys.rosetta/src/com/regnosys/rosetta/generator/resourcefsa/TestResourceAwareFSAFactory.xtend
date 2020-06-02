@@ -9,30 +9,31 @@ class TestResourceAwareFSAFactory implements ResourceAwareFSAFactory {
 	override IFileSystemAccess2 resourceAwareFSA(Resource resource, IFileSystemAccess2 fsa, boolean wholeProject) {
 		return new TestFolderAwareFsa(resource, fsa, wholeProject)
 	}
-	
+
 	static class TestFolderAwareFsa implements IFileSystemAccess2 {
-	@Delegate IFileSystemAccess2 originalFsa
-	boolean testRes
+		@Delegate IFileSystemAccess2 originalFsa
+		boolean testRes
 
-	new(Resource resource, IFileSystemAccess2 originalFsa, boolean wholeProject) {
-		this.originalFsa = originalFsa
-		this.testRes = !wholeProject && isTestResource(resource)
-	}
-
-	def boolean isTestResource(Resource resource) {
-		if (resource.URI !== null) {
-			// hardcode the folder for now
-			return resource.getURI().toString.contains('rosetta-cdm/src/test/resources/')
+		new(Resource resource, IFileSystemAccess2 originalFsa, boolean wholeProject) {
+			this.originalFsa = originalFsa
+			this.testRes = !wholeProject && isTestResource(resource)
 		}
-		false
-	}
 
-	override void generateFile(String fileName, CharSequence contents) {
-		if (testRes) {
-			originalFsa.generateFile(fileName, RosettaOutputConfigurationProvider.SRC_TEST_GEN_JAVA_OUTPUT, contents)
-		} else {
-			originalFsa.generateFile(fileName, contents)
+		def boolean isTestResource(Resource resource) {
+			if (resource.URI !== null) {
+				// hardcode the folder for now
+				return resource.getURI().toString.contains('src/test/resources/')
+			}
+			false
+		}
+
+		override void generateFile(String fileName, CharSequence contents) {
+			if (testRes) {
+				originalFsa.generateFile(fileName, RosettaOutputConfigurationProvider.SRC_TEST_GEN_JAVA_OUTPUT,
+					contents)
+			} else {
+				originalFsa.generateFile(fileName, contents)
+			}
 		}
 	}
-}
 }

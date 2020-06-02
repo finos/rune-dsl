@@ -37,6 +37,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
+import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory.TestFolderAwareFsa
 
 /**
  * Generates code from your model files on save.
@@ -65,8 +66,8 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
 	@Inject FuncGenerator funcGenerator
-	
-	@Inject 
+
+	@Inject
 	ResourceAwareFSAFactory fsaFactory;
 
 	@Inject ModelNamespaceUtil modelNamespaceUtil
@@ -154,12 +155,13 @@ class RosettaGenerator extends AbstractGenerator {
 
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		try {
-			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
-		
-			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
+			val TestFolderAwareFsa fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true) as TestFolderAwareFsa
+			val models = resource.resourceSet.resources.flatMap[contents]
+						.filter[!fsa.isTestResource(it.eResource)]
+						.filter(RosettaModel).toList
 
-			var namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
-			var namespaceUrilMap = modelNamespaceUtil.namespaceToModelUriMap(models).asMap
+			val namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
+			val namespaceUrilMap = modelNamespaceUtil.namespaceToModelUriMap(models).asMap
 			
 			javaPackageInfoGenerator.generatePackageInfoClasses(fsa, namespaceDescriptionMap)
 			namespaceHierarchyGenerator.generateNamespacePackageHierarchy(fsa, namespaceDescriptionMap, namespaceUrilMap)
