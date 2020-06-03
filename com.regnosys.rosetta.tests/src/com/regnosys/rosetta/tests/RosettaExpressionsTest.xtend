@@ -117,7 +117,6 @@ class RosettaExpressionsTest {
 	@Test
 	def void shoudCodeGenerateAndCompileAccessingMetaSimple() {
 		val code = '''
-			metaType scheme string
 			type Test:
 				one string (1..1)
 					[metadata scheme]
@@ -132,8 +131,6 @@ class RosettaExpressionsTest {
 	@Test
 	def void shoudCodeGenerateAndCompileAccessingMeta() {
 		val code = '''
-			metaType scheme string
-			
 			type Test:
 				one Foo (1..1)
 					[metadata scheme]
@@ -157,8 +154,6 @@ class RosettaExpressionsTest {
 	@Test
 	def void shoudCodeGenerateAndCompileAccessingMetaWithGroup() {
 		val code = '''
-			metaType scheme string
-			
 			type Test:
 				one Foo (1..*)
 					[metadata scheme]

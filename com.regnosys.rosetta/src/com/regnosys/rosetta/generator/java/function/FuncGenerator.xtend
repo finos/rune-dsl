@@ -55,6 +55,7 @@ class FuncGenerator {
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
 	@Inject  CardinalityProvider cardinality
+	@Inject JavaNames.Factory factory 
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = javaNames.packages.model.functions.directoryName + '/' + func.name + '.java'
@@ -250,11 +251,20 @@ class FuncGenerator {
 		}
 	}
 	
+	private def JavaType referenceWithMetaJavaType(Operation op, JavaNames names) {
+			if (op.path === null) {
+				val valueRType = typeProvider.getRType(op.assignRoot)
+			 	names.createJavaType(names.packages.model.metaField, "ReferenceWithMeta" + valueRType.name.toFirstUpper)
+			} else {
+				val attr = op.pathAsSegmentList.last.attribute
+				val valueRType = typeProvider.getRType(attr)
+			 	names.createJavaType(factory.create(attr.type.model).packages.model.metaField, "ReferenceWithMeta" + valueRType.name.toFirstUpper)
+			}
+	}
+	
 	private def StringConcatenationClient assignValue(Operation op, JavaNames names) {
 		if(op.assignAsKey) {
-			val valueType = typeProvider.getRType(namedAssignTarget(op))
-			val metaCalss = names.createJavaType(names.packages.model.metaField,
-				"ReferenceWithMeta" + valueType.name.toFirstUpper)
+			val metaClass = referenceWithMetaJavaType(op, names)
 			if (cardinality.isMulti(op.expression)) {
 				/*
 				.addParty(
@@ -267,13 +277,13 @@ class FuncGenerator {
 				'''
 				«expressionGenerator.javaCode(op.expression, new ParamMap)»
 				.getItems().map(
-						(item) -> «metaCalss».builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
+						(item) -> «metaClass».builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
 					).collect(«Collectors».toList())
 				'''
 			} else {
 				//  ReferenceWithMetaEvent.builder().setExternalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()
 				'''
-				«metaCalss».builder().setExternalReference(
+				«metaClass».builder().setExternalReference(
 						«expressionGenerator.javaCode(op.expression, new ParamMap)».get().getMeta().getGlobalKey()
 					).build()
 				'''

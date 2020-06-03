@@ -16,11 +16,18 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.IFragmentProvider
 import org.eclipse.xtext.resource.IResourceDescription
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy
+import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
+import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
+	
 	override Class<? extends IFragmentProvider> bindIFragmentProvider() {
 		RosettaFragmentProvider
+	}
+	
+	def Class<? extends ResourceAwareFSAFactory> bindResourceAwareFSAFactory() {
+		TestResourceAwareFSAFactory
 	}
 	
 	def Class<? extends DefaultResourceDescriptionStrategy> bindDefaultResourceDescriptionStrategy() {
