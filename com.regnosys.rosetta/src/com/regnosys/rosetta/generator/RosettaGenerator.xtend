@@ -156,10 +156,14 @@ class RosettaGenerator extends AbstractGenerator {
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		try {
 			val TestFolderAwareFsa fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true) as TestFolderAwareFsa
-			val models = resource.resourceSet.resources.flatMap[contents]
-						.filter[!fsa.isTestResource(it.eResource)]
-						.filter(RosettaModel).toList
-
+			
+			val models = if (resource.resourceSet?.resources === null) {
+							LOGGER.warn("No resource set found for " + resource.URI.toString)
+							newArrayList
+						} else resource.resourceSet.resources.flatMap[contents]
+								.filter[!fsa.isTestResource(it.eResource)]
+								.filter(RosettaModel).toList
+			
 			val namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
 			val namespaceUrilMap = modelNamespaceUtil.namespaceToModelUriMap(models).asMap
 			
