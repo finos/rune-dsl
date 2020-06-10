@@ -38,6 +38,8 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory.TestFolderAwareFsa
+import org.eclipse.emf.ecore.resource.ResourceSet
+import java.util.Map
 
 /**
  * Generates code from your model files on save.
@@ -75,11 +77,12 @@ class RosettaGenerator extends AbstractGenerator {
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta'}
 
-	val lock = new DemandableLock;
+	val Map<ResourceSet, DemandableLock> locks = newHashMap
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		LOGGER.debug("Starting the main generate method for " + resource.URI.toString)
 		val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, false)
+		val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 		try {
 			lock.getWriteLock(true);
 			if (!ignoredFiles.contains(resource.URI.segments.last)) {
@@ -155,6 +158,7 @@ class RosettaGenerator extends AbstractGenerator {
 
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		try {
+			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
 			val models = resource.resourceSet.resources.flatMap[contents]
 						.filter[!TestFolderAwareFsa.isTestResource(it.eResource)]
