@@ -19,7 +19,7 @@ class TestResourceAwareFSAFactory implements ResourceAwareFSAFactory {
 			this.testRes = !wholeProject && isTestResource(resource)
 		}
 
-		def boolean isTestResource(Resource resource) {
+		def static boolean isTestResource(Resource resource) {
 			if (resource.URI !== null) {
 				// hardcode the folder for now
 				return resource.getURI().toString.contains('src/test/resources/')
