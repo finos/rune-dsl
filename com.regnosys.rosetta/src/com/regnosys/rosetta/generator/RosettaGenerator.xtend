@@ -141,8 +141,10 @@ class RosettaGenerator extends AbstractGenerator {
 					]
 				]
 
-				val javaNames = factory.create(resource.contents.filter(RosettaModel).head)
-				metaFieldGenerator.generate(javaNames.packages, resource, fsa, context)
+				if (!resource.contents.filter(RosettaModel).isEmpty) {
+					val javaNames = factory.create(resource.contents.filter(RosettaModel).head)
+					metaFieldGenerator.generate(javaNames.packages, resource, fsa, context)
+				}
 			}
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected")
