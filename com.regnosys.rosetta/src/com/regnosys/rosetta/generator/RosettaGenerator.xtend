@@ -158,7 +158,7 @@ class RosettaGenerator extends AbstractGenerator {
 
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		try {
-		    val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
+			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
 			val models = if (resource.resourceSet?.resources === null) {
 							LOGGER.warn("No resource set found for " + resource.URI.toString)
