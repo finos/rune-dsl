@@ -162,9 +162,12 @@ class RosettaGenerator extends AbstractGenerator {
 		try {
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
-			val models = resource.resourceSet.resources.flatMap[contents]
-						.filter[!TestFolderAwareFsa.isTestResource(it.eResource)]
-						.filter(RosettaModel).toList
+			val models = if (resource.resourceSet?.resources === null) {
+							LOGGER.warn("No resource set found for " + resource.URI.toString)
+							newArrayList
+						} else resource.resourceSet.resources.flatMap[contents]
+								.filter[!TestFolderAwareFsa.isTestResource(it.eResource)]
+								.filter(RosettaModel).toList
 
 			val namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
 			val namespaceUrilMap = modelNamespaceUtil.namespaceToModelUriMap(models).asMap
