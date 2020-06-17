@@ -43,6 +43,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import java.util.Optional
 
 class FuncGenerator {
 
@@ -281,10 +282,13 @@ class FuncGenerator {
 					).collect(«Collectors».toList())
 				'''
 			} else {
-				//  ReferenceWithMetaEvent.builder().setExternalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()
+				//  ReferenceWithMetaEvent.builder().setGlobalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()
 				'''
-				«metaClass».builder().setExternalReference(
-						«expressionGenerator.javaCode(op.expression, new ParamMap)».get().getMeta().getGlobalKey()
+				«metaClass».builder().setGlobalReference(
+						«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
+							.map(r -> r.getMeta())
+							.map(m -> m.getGlobalKey())
+							.orElse(null)
 					).build()
 				'''
 			}
