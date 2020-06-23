@@ -11,7 +11,7 @@ class NamespaceHierarchyGenerator {
 
 	def generateNamespacePackageHierarchy(IFileSystemAccess2 fsa, 
 		Map<String, Collection<String>> namespaceToDescriptionMap, Map<String, Collection<String>> namespaceToModelUriMap) {
-		var distinctRoots = namespaceToModelUriMap.keySet.map[it.substring(0, indexOrLength(it, "."))].toSet
+		var distinctRoots = namespaceToModelUriMap.keySet.map[it.substring(0, indexOrLength(it, "."))].toSet.sort
 
 		var result = '''
 			[«FOR root: distinctRoots SEPARATOR ',' »
@@ -118,8 +118,8 @@ class NamespaceHierarchyGenerator {
 				files.add(fileNode)
 			]
 		}
-
-		files
+		
+		files.sortBy[formatName(it.name)]
 	}
 
 	protected def String extractNamespaceDescription(String[] namespaceSplit, AtomicInteger namespaceIndex,
