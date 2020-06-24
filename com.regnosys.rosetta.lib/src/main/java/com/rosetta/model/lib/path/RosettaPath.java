@@ -244,6 +244,10 @@ public class RosettaPath {
             return index;
         }
 
+        public Map<String, String> getMetas() {
+            return attrs;
+        }
+        
         private String asPathString() {
             String idSection = !attrs.isEmpty() ? attrs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(",", "[", "]")) : "";
             String indexSection = index.isPresent() ? format("(%s)", index.getAsInt()) : "";
