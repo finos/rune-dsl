@@ -3,6 +3,8 @@ package com.rosetta.model.lib.path;
 import static com.google.common.collect.ImmutableMap.of;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -188,5 +190,29 @@ public class RosettaPathTest {
     	RosettaPath p1 = RosettaPath.valueOf("p.q.r.s.t.u.v.w.x.y.z");
     	RosettaPath p2 = RosettaPath.valueOf("v.w.*.y.z");
     	assertThat(p1.endsWith(p2), is(true));
+    }
+    
+    @Test
+    void shouldMatchEquivalentPaths() {
+    	RosettaPath path1 = RosettaPath.valueOf("root.a.b.c")
+        		.newSubPath(Element.create("d", OptionalInt.of(0), of())) // index of 0 is equivalent to empty index
+        		.newSubPath(Element.create("e", OptionalInt.of(2), of()));
+    	RosettaPath path2 = RosettaPath.valueOf("root.a.b.c")
+        		.newSubPath(Element.create("d", OptionalInt.empty(), of()))
+        		.newSubPath(Element.create("e", OptionalInt.of(2), of()));
+        assertEquals(path1, path2);
+        assertEquals(path1.hashCode(), path2.hashCode());
+    }
+    
+    @Test
+    void shouldNotMatchDifferentPaths() {
+    	RosettaPath path1 = RosettaPath.valueOf("root.a.b.c")
+        		.newSubPath(Element.create("d", OptionalInt.of(1), of())) // index of 1 is NOT equivalent to empty index
+        		.newSubPath(Element.create("e", OptionalInt.of(2), of()));
+    	RosettaPath path2 = RosettaPath.valueOf("root.a.b.c")
+        		.newSubPath(Element.create("d", OptionalInt.empty(), of()))
+        		.newSubPath(Element.create("e", OptionalInt.of(2), of()));
+        assertNotEquals(path1, path2);
+        assertNotEquals(path1.hashCode(), path2.hashCode());
     }
 }
