@@ -2,7 +2,8 @@ package com.rosetta.model.lib;
 
 import com.rosetta.model.lib.meta.MetaFieldsI;
 
-public interface GlobalKeyBuilder extends GlobalKey {
+//TODO remove this useless generic
+public interface GlobalKeyBuilder<T> extends GlobalKey {
 
     MetaFieldsI.MetaFieldsBuilderI getMeta();
 
