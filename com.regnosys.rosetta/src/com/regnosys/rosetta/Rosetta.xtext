@@ -58,7 +58,7 @@ Data:
 ;
 
 Attribute:
-	RosettaNamed RosettaTyped card=RosettaCardinality Definable? (Annotations|Synonyms)*
+	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable? (Annotations|Synonyms)*
 ;
 
 Enumeration returns RosettaEnumeration:

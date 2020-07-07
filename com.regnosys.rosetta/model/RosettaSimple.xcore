@@ -42,6 +42,7 @@ abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
 
 
 class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallable, AssignPathRoot, WithCardinality {
+	boolean override
 	contains RosettaSynonym[] synonyms
 }
 
