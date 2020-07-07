@@ -297,39 +297,17 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		for (name : clazz.attributes.map[name]) {
 			val attrByName = name2attr.get(name)
 			if (attrByName.size > 1) {
-				val fromClazzes = attrByName.filter[eContainer == clazz]
 				val fromSuperClasses = attrByName.filter[eContainer != clazz]
-				if (fromClazzes.size==1 && fromClazzes.get(0).override) {
-					val fromClazz = fromClazzes.get(0)
-					//if this class has explicitly overridden with a subclass then that is ok
-					if (!(fromClazz.type instanceof Data)) {
-						error('''Overriding attribute '«name»' must be of a type that overrides its parent attribute type but it is a simple type ''', 
-							fromClazz, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
-					}
-					else {
-						fromSuperClasses.filter[!(fromClazz.type as Data).isChildOf(it.type)].forEach[
-							error('''Overriding attribute '«name»' must have a type that overrides its parent attribute type of «it.type.name»''', 
-								fromClazz, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
-						]
-					}
-				}
-				else {
-					val messageExtension = if (fromSuperClasses.empty)
-							''
-						else
-							' (overrides ' + fromSuperClasses.map[(eContainer as RosettaNamed).name].join(', ') + ')'
-					attrByName.filter[eContainer == clazz].forEach [
-						error('''Duplicate attribute '«name»'«messageExtension»''', it, ROSETTA_NAMED__NAME,
-							DUPLICATE_ATTRIBUTE)
-					]
-				
-				}
+				val messageExtension = if (fromSuperClasses.empty)
+						''
+					else
+						' (overrides ' + fromSuperClasses.map[(eContainer as RosettaNamed).name].join(', ') + ')'
+				attrByName.filter[eContainer == clazz].forEach [
+					error('''Duplicate attribute '«name»'«messageExtension»''', it, ROSETTA_NAMED__NAME,
+						DUPLICATE_ATTRIBUTE)
+				]
 			}
 		}
-	}
-	
-	private def isChildOf(Data child, RosettaType parent) {
-		return child.allSuperTypes.contains(parent)
 	}
 
 	@Check

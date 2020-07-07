@@ -68,7 +68,7 @@ class ModelObjectBoilerPlate {
 	def StringConcatenationClient implementsClauseBuilder(extension Data d) {
 		val interfaces = <StringConcatenationClient>newArrayList
 		if (d.hasKeyedAnnotation)
-			interfaces.add('''«GlobalKeyBuilder»''')
+			interfaces.add('''«GlobalKeyBuilder»<«d.name»Builder>''')
 		if (d.name == "ContractualProduct" || d.name == "BusinessEvent") {
 			interfaces.add('''«Qualified»''')
 		}
@@ -131,7 +131,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		public int hashCode() {
 			int _result = «c.contribtueSuperHashCode»;
-			«FOR field : attributes.filter[!overriding]»
+			«FOR field : attributes»
 				«field.contributeHashCode»
 			«ENDFOR»
 			return _result;
@@ -143,7 +143,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		public String toString() {
 			return "«classNameFunc.apply(c.name)» {" +
-				«FOR attribute : c.attributes.filter[!overriding].map[name] SEPARATOR ' ", " +'»
+				«FOR attribute : c.attributes.map[name] SEPARATOR ' ", " +'»
 					"«attribute»=" + this.«attribute» +
 				«ENDFOR»
 			'}'«IF c.hasSuperType» + " " + super.toString()«ENDIF»;
@@ -163,7 +163,7 @@ class ModelObjectBoilerPlate {
 		
 			«IF !attributes.empty»«classNameFunc.apply(c.name)» _that = («classNameFunc.apply(c.name)») o;«ENDIF»
 		
-			«FOR field : attributes.filter[!overriding]»
+			«FOR field : attributes»
 				«field.contributeToEquals»
 			«ENDFOR»
 			return true;
@@ -213,7 +213,7 @@ class ModelObjectBoilerPlate {
 				«ENDIF»
 			«ENDFOR»
 			
-			«FOR a : attributes.filter[!overriding].filter[isRosettaClassOrData || hasMetas]»
+			«FOR a : attributes.filter[isRosettaClassOrData || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
 			«ENDFOR»
 		}

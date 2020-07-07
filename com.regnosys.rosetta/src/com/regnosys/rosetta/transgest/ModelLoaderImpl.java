@@ -24,8 +24,6 @@ import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.rosetta.model.lib.RosettaModelObject;
 
-import static com.regnosys.rosetta.generator.util.Util.fullname;
-
 public class ModelLoaderImpl implements ModelLoader {
 
 	private final List<RosettaModel> rosettaModels;
@@ -72,9 +70,9 @@ public class ModelLoaderImpl implements ModelLoader {
 				.flatMap(Collection::stream)
 				.filter(c -> c instanceof RosettaClass || c instanceof Data)
 				.map(c -> (RosettaType) c)
-				.filter(c -> fullname(c).toString().equals(rootObject.getName()))
+				.filter(c -> c.getName().equals(rootObject.getSimpleName()))
 				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException(rootObject.getName() + " not found in Rosetta Model"));
+				.orElseThrow(() -> new IllegalArgumentException(rootObject.getSimpleName() + " not found in Rosetta Model"));
 	}
 
 	@Override

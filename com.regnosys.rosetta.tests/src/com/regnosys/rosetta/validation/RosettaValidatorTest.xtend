@@ -304,40 +304,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, 'Duplicate attribute')
 	}
-	
-	@Test
-	def void testDuplicateAttributeWithOverride() {
-		val model = '''
-			type A1 :
-				i int (1..1)
-			
-			
-			type A2 extends A1 :
-				j int (1..1)
-			
-			
-			
-			type Foo:
-				f A1 (1..1)
-			
-			type Bar extends Foo:
-				override f A2 (1..1)
-		'''.parseRosetta
-		model.assertNoErrors
-	}
-	
-	@Test
-	def void testDuplicateAttributeWithOverrideBadTypes() {
-		val model = '''
-			type
-			type Foo:
-				i int (1..1)
-			
-			type Bar extends Foo:
-				override i string (1..1)
-		'''.parseRosetta
-		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, 'Overriding attribute')
-	}
 
 	@Test
 	def void testDuplicateEnumLiteral() {
