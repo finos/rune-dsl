@@ -16,7 +16,7 @@ final class ExpandedAttribute {
 	
 	RosettaType rosettaType // used in translator only
 	
-	boolean overriding
+
 	int inf
 	int sup
 	boolean isUnbound

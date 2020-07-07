@@ -78,7 +78,7 @@ class DataGenerator {
 			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«d.qualifiedClass».class)
 		«ENDIF»
 		«contributeClassSynonyms(d.synonyms)»
-		public class «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
+		public class «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType)»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
 			«d.rosettaClass(names)»
 
 			«d.staticBuilderMethod»
@@ -120,7 +120,7 @@ class DataGenerator {
 	}
 	
 	private def StringConcatenationClient rosettaClass(Data c, JavaNames names) {
-		val expandedAttributes = c.expandedAttributes.filter[!it.overriding]
+		val expandedAttributes = c.expandedAttributes
 		'''
 		«FOR attribute : expandedAttributes»
 			private final «attribute.toJavaType(names)» «attribute.name»;
@@ -140,7 +140,7 @@ class DataGenerator {
 		«FOR attribute : expandedAttributes»
 			«javadoc(attribute.definition)»
 			«contributeSynonyms(attribute.synonyms)»
-			public «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
+			public final «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
 				return «attribute.name»;
 			}
 			

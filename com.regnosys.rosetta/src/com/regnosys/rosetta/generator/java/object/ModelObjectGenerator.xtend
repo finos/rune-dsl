@@ -24,7 +24,6 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaImportSet
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import static extension com.regnosys.rosetta.generator.util.Util.*
 
 class ModelObjectGenerator {
 	
@@ -98,11 +97,11 @@ class ModelObjectGenerator {
 				@RosettaStereotype("«stereotype»")
 			«ENDFOR»
 			«contributeClassSynonyms(c.synonyms)»
-			public «IF c.isAbstract »abstract «ENDIF»class «c.name» extends «IF c.hasSuperType »«c.superType.fullname»«ELSE»RosettaModelObject«ENDIF» «c.implementsClause»{
+			public «IF c.isAbstract »abstract «ENDIF»class «c.name» extends «IF c.hasSuperType »«c.superType.name»«ELSE»RosettaModelObject«ENDIF» «c.implementsClause»{
 				«c.rosettaClass(javaNames)»
 			
 				«c.staticBuilderMethod»
-				
+			
 				«c.builderClass(javaNames)»
 			
 				«c.boilerPlate(javaNames)»
@@ -197,7 +196,7 @@ class ModelObjectGenerator {
 		«FOR attribute : c.expandedAttributes»
 			«javadoc(attribute.definition)»
 			«contributeSynonyms(attribute.synonyms)»
-			public «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
+			public final «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
 				return «attribute.name»;
 			}
 			
@@ -211,7 +210,7 @@ class ModelObjectGenerator {
 		«IF !c.isAbstract»
 			public «c.builderName» toBuilder() {
 				«c.name»Builder builder = new «c.name»Builder();
-				«FOR attribute : c.getAllSuperTypes.map[expandedAttributes].flatten.distinctBy[name]»
+				«FOR attribute : c.getAllSuperTypes.map[expandedAttributes].flatten»
 					«IF attribute.cardinalityIsListValue»
 						ofNullable(get«attribute.name.toFirstUpper»()).ifPresent(«attribute.name» -> «attribute.name».forEach(builder::add«attribute.name.toFirstUpper»));
 					«ELSE»

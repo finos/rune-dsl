@@ -79,7 +79,6 @@ class RosettaAttributeExtensions {
 				data.name,
 				provideMetaFeildsType(data),
 				null,
-				false,
 				0,
 				1,
 				false,
@@ -120,7 +119,6 @@ class RosettaAttributeExtensions {
 				rosettaClass.name,
 				metaFieldsType,
 				null,
-				false,
 				0,
 				1,
 				false,
@@ -141,7 +139,7 @@ class RosettaAttributeExtensions {
 	}
 	
 	def static ExpandedAttribute expandedEnumAttribute(RosettaEnumValue value) {
-		new ExpandedAttribute(value.name,value.enumeration.name, null, null, false, 0,0, false, value.enumSynonyms.map[toExpandedSynonym], 
+		new ExpandedAttribute(value.name,value.enumeration.name, null, null, 0,0, false, value.enumSynonyms.map[toExpandedSynonym], 
 			value.definition, false, true, false, Collections.emptyList
 		)
 	}
@@ -167,7 +165,7 @@ class RosettaAttributeExtensions {
 			val List<ExpandedAttribute> metas = newArrayList
 			for (var i = 0; i < attr.metaTypes.size; i++) {
 				val meta = Iterables.get(attr.metaTypes, i)
-				metas.add(new ExpandedAttribute(meta.name,(attr.eContainer as RosettaType).name, meta.type.toExpandedType, meta.type, false, 0, 1,	false, 
+				metas.add(new ExpandedAttribute(meta.name,(attr.eContainer as RosettaType).name, meta.type.toExpandedType, meta.type, 0, 1,	false, 
 					attr.toRosettaExpandedSynonym(i), attr.definition, false, false, false, Collections.emptyList
 				))
 			}
@@ -213,7 +211,6 @@ class RosettaAttributeExtensions {
 			(attr.eContainer as RosettaType).getName(),
 			attr.type.toExpandedType,
 			attr.type,
-			false,
 			attr.card.inf,
 			attr.card.sup,
 			attr.card.unbounded,
@@ -235,7 +232,6 @@ class RosettaAttributeExtensions {
 					annoRef.annotation.name,
 					annoAttr.type.toExpandedType,
 					annoAttr.type,
-					annoAttr.override,
 					0,
 					1,
 					false,
@@ -253,7 +249,6 @@ class RosettaAttributeExtensions {
 			(attr.eContainer as RosettaType).name,
 			attr.type.toExpandedType,
 			attr.type,
-			attr.override,
 			attr.card.inf,
 			attr.card.sup,
 			attr.card.unbounded,
