@@ -261,7 +261,7 @@ class RosettaQualifyEventsComparisonTest {
 				]
 
 			'''.generateCode
-		//code.writeClasses("QualifyEventsComparisonTest")
+		code.writeClasses("QualifyEventsComparisonTest")
 		classes = code.compileToClasses
 	}
 	
