@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.util
 import java.util.function.Function
 import java.util.Iterator
 import java.util.NoSuchElementException
+import com.regnosys.rosetta.rosetta.RosettaType
 
 class Util {
 	static def <T> Iterable<T> distinct(Iterable<T> parentIterable) {
@@ -58,4 +59,7 @@ class Util {
 			}
 		}
 	}
+	
+	def static String fullname(RosettaType clazz) '''«clazz.model.name».«clazz.name»'''
+	def static String packageName(RosettaType clazz)  {clazz.model.name}
 }
