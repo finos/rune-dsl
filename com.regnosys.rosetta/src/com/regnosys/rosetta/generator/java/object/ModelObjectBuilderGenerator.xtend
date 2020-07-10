@@ -47,7 +47,7 @@ class ModelObjectBuilderGenerator {
 	def StringConcatenationClient builderClass(Data c, JavaNames names) '''
 		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderNameFull»«ELSE»«RosettaModelObjectBuilder»«ENDIF»«implementsClauseBuilder(c)»{
 		
-			«FOR attribute : c.expandedAttributes»
+			«FOR attribute : c.expandedAttributes.filter[!it.overriding]»
 				protected «attribute.toBuilderType(names)» «attribute.name»;
 			«ENDFOR»
 		
@@ -59,7 +59,7 @@ class ModelObjectBuilderGenerator {
 				return metaData;
 			} 
 		
-			«c.expandedAttributes.builderGetters(names)»
+			«c.expandedAttributes.filter[!it.overriding].builderGetters(names)»
 		
 			«c.setters(names)»
 			«IF c.name=="ContractualProduct" || c.name=="BusinessEvent"»
@@ -83,9 +83,9 @@ class ModelObjectBuilderGenerator {
 				return this;
 			}
 			
-			«c.expandedAttributes.hasData(c.hasSuperType)»
+			«c.expandedAttributes.filter[!it.overriding].hasData(c.hasSuperType)»
 			
-			«c.expandedAttributes.process(c.hasSuperType, names)»
+			«c.expandedAttributes.filter[!it.overriding].process(c.hasSuperType, names)»
 		
 			«c.builderBoilerPlate»
 		}
@@ -219,7 +219,7 @@ class ModelObjectBuilderGenerator {
 		result.toString()
 	}
 
-	private def StringConcatenationClient process(List<ExpandedAttribute> attributes, boolean hasSuperType, JavaNames names) '''
+	private def StringConcatenationClient process(Iterable<ExpandedAttribute> attributes, boolean hasSuperType, JavaNames names) '''
 		@Override
 		public void process(RosettaPath path, BuilderProcessor processor) {
 			«IF hasSuperType»
@@ -245,7 +245,7 @@ class ModelObjectBuilderGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient builderGetters(List<ExpandedAttribute> attributes, JavaNames names) '''
+	private def StringConcatenationClient builderGetters(Iterable<ExpandedAttribute> attributes, JavaNames names) '''
 		«FOR attribute : attributes»
 			
 			public «attribute.toBuilderType(names)» get«attribute.name.toFirstUpper»() {
@@ -407,7 +407,7 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	
-	private def hasData(List<ExpandedAttribute> attributes, boolean hasSuperType) '''
+	private def hasData(Iterable<ExpandedAttribute> attributes, boolean hasSuperType) '''
 		@Override
 		public boolean hasData() {
 			«IF hasSuperType»if (super.hasData()) return true;«ENDIF»
