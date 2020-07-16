@@ -1,5 +1,6 @@
 package com.rosetta.model.lib;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
@@ -76,7 +77,9 @@ public abstract class RosettaModelObjectBuilder {
 		processor.processRosetta(path, clazz, children, this, metas);
 		if (children!=null)  {
 			int index=0;
-			for (Iterator<? extends RosettaModelObjectBuilder> iterator = children.iterator(); iterator.hasNext();) {
+			// Iterate through a copy of children to prevent a fail-fast ConcurrentModificationException if a mapping processor modifies the children.
+			List<? extends RosettaModelObjectBuilder> copy = new ArrayList<>(children);
+			for (Iterator<? extends RosettaModelObjectBuilder> iterator = copy.iterator(); iterator.hasNext();) {
 				RosettaModelObjectBuilder child = iterator.next();
 				if (child!=null) {
 					RosettaPath indexedPath = path.withIndex(index);
