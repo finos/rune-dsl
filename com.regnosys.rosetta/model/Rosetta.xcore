@@ -558,6 +558,7 @@ class RosettaExternalRef {
 }
 
 class RosettaExternalClass extends RosettaExternalRef {
+	contains RosettaExternalSynonym[] externalSynonyms
 	contains RosettaExternalRegularAttribute[] regularAttributes
 }
 

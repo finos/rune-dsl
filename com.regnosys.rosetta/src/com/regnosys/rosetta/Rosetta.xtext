@@ -718,6 +718,7 @@ RosettaExternalSynonymSource:
 
 RosettaExternalClass:
 	typeRef=[Data] ':'
+		(externalSynonyms += RosettaExternalSynonym)*
 		(regularAttributes += RosettaExternalRegularAttribute)*
 ;
 
