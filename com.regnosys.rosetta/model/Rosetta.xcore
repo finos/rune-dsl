@@ -558,7 +558,7 @@ class RosettaExternalRef {
 }
 
 class RosettaExternalClass extends RosettaExternalRef {
-	contains RosettaExternalSynonym[] externalSynonyms
+	contains RosettaExternalClassSynonym[] externalClassSynonyms
 	contains RosettaExternalRegularAttribute[] regularAttributes
 }
 
@@ -576,6 +576,10 @@ class RosettaExternalEnumValue {
 	String operator
 	refers RosettaEnumValue enumRef
 	contains RosettaEnumSynonym[] externalEnumSynonyms
+}
+
+class RosettaExternalClassSynonym {
+	contains RosettaSynonymBody body
 }
 
 class RosettaExternalSynonym {

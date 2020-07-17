@@ -718,7 +718,7 @@ RosettaExternalSynonymSource:
 
 RosettaExternalClass:
 	typeRef=[Data] ':'
-		(externalSynonyms += RosettaExternalSynonym)*
+		(externalClassSynonyms += RosettaExternalClassSynonym)*
 		(regularAttributes += RosettaExternalRegularAttribute)*
 ;
 
@@ -735,6 +735,12 @@ RosettaExternalRegularAttribute:
 RosettaExternalEnumValue: 
 	operator=('+'|'-') enumRef=[RosettaEnumValue]
 		externalEnumSynonyms += RosettaExternalEnumSynonym*
+;
+
+RosettaExternalClassSynonym:
+	'['
+	body=RosettaSynonymBody
+	']'
 ;
 
 RosettaExternalSynonym:
