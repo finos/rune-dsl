@@ -739,7 +739,8 @@ RosettaExternalEnumValue:
 
 RosettaExternalClassSynonym:
 	'['
-	body=RosettaSynonymBody
+	('value' value=RosettaClassSynonymValue)?
+	'meta' metaValue = RosettaMetaSynonymValue
 	']'
 ;
 
