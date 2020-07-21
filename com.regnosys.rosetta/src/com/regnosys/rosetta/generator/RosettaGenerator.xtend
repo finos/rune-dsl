@@ -78,6 +78,11 @@ class RosettaGenerator extends AbstractGenerator {
 	val ignoredFiles = #{'model-no-code-gen.rosetta'}
 
 	val Map<ResourceSet, DemandableLock> locks = newHashMap
+	
+	override void beforeGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
+		LOGGER.debug("Starting the main generate method for " + resource.URI.toString)
+		fsaFactory.beforeGenerate(resource)
+	}
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		LOGGER.debug("Starting the main generate method for " + resource.URI.toString)
@@ -180,7 +185,7 @@ class RosettaGenerator extends AbstractGenerator {
 					map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]
 				], resource, lock)
 			]
-
+			fsaFactory.afterGenerate(resource)
 		} catch (Exception e) {
 			LOGGER.warn("Unexpected calling after generate for rosetta -" + e.message + " - see debug logging for more")
 			LOGGER.debug("Unexpected calling after generate for rosetta", e);

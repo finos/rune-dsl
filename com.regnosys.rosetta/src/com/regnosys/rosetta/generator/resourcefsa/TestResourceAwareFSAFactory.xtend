@@ -9,7 +9,6 @@ class TestResourceAwareFSAFactory implements ResourceAwareFSAFactory {
 	override IFileSystemAccess2 resourceAwareFSA(Resource resource, IFileSystemAccess2 fsa, boolean wholeProject) {
 		return new TestFolderAwareFsa(resource, fsa, wholeProject)
 	}
-
 	static class TestFolderAwareFsa implements IFileSystemAccess2 {
 		@Delegate IFileSystemAccess2 originalFsa
 		boolean testRes
@@ -36,4 +35,11 @@ class TestResourceAwareFSAFactory implements ResourceAwareFSAFactory {
 			}
 		}
 	}
+	
+	override afterGenerate(Resource resource) {
+	}
+	
+	override beforeGenerate(Resource resource) {
+	}
+	
 }
