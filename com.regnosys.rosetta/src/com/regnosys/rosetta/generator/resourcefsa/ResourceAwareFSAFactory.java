@@ -12,5 +12,9 @@ public interface ResourceAwareFSAFactory {
 	 * @return
 	 */
 	IFileSystemAccess2 resourceAwareFSA(Resource resource, IFileSystemAccess2 fsa, boolean wholeModel);
+	
+	void beforeGenerate(Resource resource);
+	
+	void afterGenerate(Resource resource);
 
 }
