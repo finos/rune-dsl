@@ -22,6 +22,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension com.regnosys.rosetta.generator.util.Util.*
+import java.util.stream.Collectors
 
 class ModelObjectBuilderGenerator {
 	
@@ -77,7 +78,7 @@ class ModelObjectBuilderGenerator {
 					«IF !attribute.isMultiple && (attribute.isRosettaClassOrData || attribute.hasMetas)»
 						if («attribute.name»!=null && !«attribute.name».prune().hasData()) «attribute.name» = null;
 					«ELSEIF attribute.isMultiple && attribute.isRosettaClassOrData || attribute.hasMetas»
-						if («attribute.name»!=null) «attribute.name» = «attribute.name».stream().filter(b->b!=null).map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
+						if («attribute.name»!=null) «attribute.name» = «attribute.name».stream().filter(b->b!=null).map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
 				return this;
@@ -320,7 +321,7 @@ class ModelObjectBuilderGenerator {
 				this.«attribute.name».set(_idx, «attribute.toBuilder»);
 				return this;
 			}
-			«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«List.name»<«attribute.toTypeSingle(names)»> «attribute.name»s) {
+			«IF !attribute.overriding»«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«List.name»<«attribute.toTypeSingle(names)»> «attribute.name»s) {
 				if(this.«attribute.name» == null){
 					this.«attribute.name» = new «ArrayList»<>();
 				}
@@ -328,7 +329,7 @@ class ModelObjectBuilderGenerator {
 					this.«attribute.name».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
 				}
 				return this;
-			}
+			}«ENDIF»
 			«IF attribute.isRosettaClassOrData»
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle(names)» «attribute.name») {
 					if(this.«attribute.name» == null){

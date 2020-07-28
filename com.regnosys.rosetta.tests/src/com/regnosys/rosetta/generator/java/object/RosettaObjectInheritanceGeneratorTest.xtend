@@ -88,6 +88,7 @@ class RosettaObjectInheritanceGeneratorTest {
 		assertEquals(classTop2.superclass, classTop1)
 		assertEquals(classB.superclass, classA)
 	}
+
 	
 	@Test
 	def void shouldGenerateJavaClassWithOverridenAttributesAcrossNamespaces() {
@@ -114,12 +115,11 @@ class RosettaObjectInheritanceGeneratorTest {
 			'''
 			).reverse.generateCode
 			//This test only works if the order of the "files" is the opposite from that provided (hence the reverse)
-		.writeClasses("shouldGenerateJavaClassWithOverridenAttributesAcrossNamespaces")
+		//.writeClasses("shouldGenerateJavaClassWithOverridenAttributesAcrossNamespaces")
 
 
 		val classes = generated.compileToClasses
 		val extendingTop = classes.get("extending.Top")
 		assertThrows(NoSuchFieldException, [|extendingTop.getDeclaredField("aField")]);
 	}
-
 }
