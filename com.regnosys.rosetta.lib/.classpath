@@ -11,19 +11,13 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="model/basictypes.rosetta" kind="src" output="target/classes" path="src/main/java">
+	<classpathentry excluding="model/*.rosetta" kind="src" output="target/classes" path="src/main/java">
 		<attributes>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="model/basictypes.rosetta" kind="src" output="target/classes" path="xtend-gen">
-		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry excluding="model/basictypes.rosetta" kind="src" output="target/classes" path="src/main/xtend-gen">
+	<classpathentry excluding="model/*.rosetta" kind="src" output="target/classes" path="xtend-gen">
 		<attributes>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
