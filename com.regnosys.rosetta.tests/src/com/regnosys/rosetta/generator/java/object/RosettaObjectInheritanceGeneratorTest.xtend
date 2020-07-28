@@ -122,38 +122,4 @@ class RosettaObjectInheritanceGeneratorTest {
 		val extendingTop = classes.get("extending.Top")
 		assertThrows(NoSuchFieldException, [|extendingTop.getDeclaredField("aField")]);
 	}
-
-	@Test
-	def void shouldGenerateJavaClassWithOverridenListAttributesAcrossNamespaces() {
-		val generated = newArrayList(
-			
-			'''
-			namespace "extending"
-			
-			import original.*
-			
-			type A extends original.A:
-				bb string (0..1)
-			
-			type Top extends original.Top:
-				override aField A (0..*)
-		''',
-		'''
-			namespace "original"
-			type A:
-				aa string (0..1)
-			
-			type Top:
-				aField A (0..*)
-			'''
-			).reverse.generateCode
-			//This test only works if the order of the "files" is the opposite from that provided (hence the reverse)
-		//.writeClasses("shouldGenerateJavaClassWithOverridenListAttributesAcrossNamespaces")
-
-
-		val classes = generated.compileToClasses
-		val extendingTop = classes.get("extending.Top")
-		assertThrows(NoSuchFieldException, [|extendingTop.getDeclaredField("aField")]);
-	}
-	
 }
