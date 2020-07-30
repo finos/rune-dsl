@@ -47,6 +47,20 @@ class ImportingStringConcatination extends StringConcatenation {
 		}
 	}
 	
+	def dispatch protected String getStringRepresentation(MetaType object) {
+		if(object.simpleName == '*') {
+			staticImports.add(object.name)
+			return ''
+		} else {
+			if(reservedSimpleNames.contains(object.metaFieldSimpleName)) {
+				return object.metaFieldName
+			}
+			addImport(object.name, false)
+			addImport(object.metaFieldName, false)
+			return object.metaFieldSimpleName
+		}
+	}
+	
 	def private addStaticImport(Method method) {
 		val qName = method.declaringClass.name
 		

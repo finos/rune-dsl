@@ -33,6 +33,25 @@ class RosettaEnumHelperTest {
 
         code.compileToClasses
     }
+    
+    @Test
+    def void shouldGenerateBasicReferenceForEnum() {
+        val code = '''
+        	namespace "com.rosetta.test.model"
+        	version "test"
+        	
+        	enum TestEnum:
+        		one 
+        		two 
+        	
+        	type TestObj: 
+        		attr TestEnum (1..1) 
+        '''.generateCode
+
+		code.writeClasses("BasicReferenceForEnum")
+        val testEnumCode = code.get(rootPackage.name + ".TestEnum")
+        code.compileToClasses
+    }
 
     @Test
     def void shouldGenerateAllDisplayNameAndConstructors() {

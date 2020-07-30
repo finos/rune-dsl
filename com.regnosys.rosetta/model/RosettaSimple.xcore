@@ -23,6 +23,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
 
 class Annotation extends RootElement, RosettaCallable {
+	String prefix
 	contains Attribute[] attributes
 }
 
@@ -41,6 +42,7 @@ abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
 
 
 class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallable, AssignPathRoot, WithCardinality {
+	boolean override
 	contains RosettaSynonym[] synonyms
 }
 

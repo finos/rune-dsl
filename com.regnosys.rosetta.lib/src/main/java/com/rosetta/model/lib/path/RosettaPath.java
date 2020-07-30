@@ -244,6 +244,10 @@ public class RosettaPath {
             return index;
         }
 
+        public Map<String, String> getMetas() {
+            return attrs;
+        }
+        
         private String asPathString() {
             String idSection = !attrs.isEmpty() ? attrs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(",", "[", "]")) : "";
             String indexSection = index.isPresent() ? format("(%s)", index.getAsInt()) : "";
@@ -269,7 +273,7 @@ public class RosettaPath {
 
             if (uri != null ? !uri.equals(element.uri) : element.uri != null) return false;
             if (path != null ? !path.equals(element.path) : element.path != null) return false;
-            if (index != null ? !index.equals(element.index) : element.index != null) return false;
+            if (index != null ? index.orElse(0) != element.index.orElse(0) : element.index != null) return false;
             return attrs != null ? attrs.equals(element.attrs) : element.attrs == null;
         }
 
@@ -277,7 +281,7 @@ public class RosettaPath {
         public int hashCode() {
             int result = uri != null ? uri.hashCode() : 0;
             result = 31 * result + (path != null ? path.hashCode() : 0);
-            result = 31 * result + (index != null ? index.hashCode() : 0);
+            result = 31 * result + (index != null ? Integer.hashCode(index.orElse(0)) : 0);
             result = 31 * result + (attrs != null ? attrs.hashCode() : 0);
             return result;
         }

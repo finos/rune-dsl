@@ -20,9 +20,11 @@ public class MapperC<T> implements MapperBuilder<T> {
 	@SafeVarargs
 	public static <T> MapperBuilder<T> of(MapperBuilder<T>... ts) {
 		List<MapperItem<T, ?>> items = new ArrayList<>();
-		for (MapperBuilder<T> ele : ts) {
-			if (ele != null) {
-				ele.getItems().forEach(item -> items.add(item));
+		if (ts != null) {
+			for (MapperBuilder<T> ele : ts) {
+				if (ele != null) {
+					ele.getItems().forEach(item -> items.add(item));
+				}
 			}
 		}
 		return new MapperC<T>(items);
@@ -30,11 +32,13 @@ public class MapperC<T> implements MapperBuilder<T> {
 
 	public static <T> MapperBuilder<T> of(List<T> ts) {
 		List<MapperItem<T, ?>> items = new ArrayList<>();
-		for (T ele : ts) {
-			if (ele == null) {
-				items.add(new MapperItem<>(ele, MapperPath.builder().addNull(), true, Optional.empty()));
+		if (ts != null) {
+			for (T ele : ts) {
+				if (ele == null) {
+					items.add(new MapperItem<>(ele, MapperPath.builder().addNull(), true, Optional.empty()));
+				}
+				items.add(new MapperItem<>(ele, MapperPath.builder().addRoot(ele.getClass()), false, Optional.empty()));
 			}
-			items.add(new MapperItem<>(ele, MapperPath.builder().addRoot(ele.getClass()), false, Optional.empty()));
 		}
 		return new MapperC<T>(items);
 	}

@@ -6,7 +6,7 @@ package com.regnosys.rosetta.rosetta
 
 import java.util.stream.Collectors
 
-class RosettaModel {
+class RosettaModel extends RosettaDefinable {
 	String name
 	String version = "0.0.0"
 	contains Import[] imports
@@ -117,7 +117,6 @@ class RosettaClass extends RosettaRootElement, RosettaFeatureOwner, RosettaType,
 	boolean root
 	boolean oneOf
 	boolean globalKey
-	boolean rosettaKeyValue
 	
 	refers RosettaClass superType
 	contains RosettaStereotype stereotype
@@ -542,29 +541,46 @@ class RosettaCallableWithArgsCall extends RosettaExpression {
  *****************************************/
 
 class RosettaExternalSynonymSource extends RosettaSynonymSource {
-	contains RosettaExternalClass[] externalClasses
-	contains RosettaExternalEnum[] externalEnums
+	contains RosettaExternalRef[] externalRefs
 	refers RosettaSynonymSource superSynonym
+	
+	op RosettaExternalClass[] getExternalClasses() {
+		externalRefs.filter(RosettaExternalClass).toEList
+	}
+	
+	op RosettaExternalEnum[] getExternalEnums() {
+		externalRefs.filter(RosettaExternalEnum).toEList
+	}
 }
 
-class RosettaExternalClass {
-	refers RosettaType classRef
+class RosettaExternalRef {
+	refers RosettaType typeRef
+}
+
+class RosettaExternalClass extends RosettaExternalRef {
+	contains RosettaExternalClassSynonym[] externalClassSynonyms
 	contains RosettaExternalRegularAttribute[] regularAttributes
 }
 
-class RosettaExternalEnum {
-	refers RosettaEnumeration enumRef
+class RosettaExternalEnum extends RosettaExternalRef {
 	contains RosettaExternalEnumValue[] regularValues
 }
 
 class RosettaExternalRegularAttribute {
+	String operator
 	refers RosettaFeature attributeRef
 	contains RosettaExternalSynonym[] externalSynonyms
 }
 
 class RosettaExternalEnumValue {
+	String operator
 	refers RosettaEnumValue enumRef
 	contains RosettaEnumSynonym[] externalEnumSynonyms
+}
+
+class RosettaExternalClassSynonym extends RosettaSynonymBase {
+	contains RosettaSynonymValueBase value
+	contains RosettaSynonymValueBase metaValue
 }
 
 class RosettaExternalSynonym {

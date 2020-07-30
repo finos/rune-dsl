@@ -49,7 +49,7 @@ class JavaNames {
 
 	def JavaType toJavaType(ExpandedType type) {
 		if (type.name == RosettaAttributeExtensions.METAFIELDSCLASSNAME) {
-			return createJavaType(packages.model.metaField, type.name)
+			return createJavaType(packages.basicMetafields, type.name)
 		}
 		if (type.builtInType) {
 			return createForBasicType(type.name)
@@ -111,15 +111,37 @@ class JavaNames {
 	def createJavaType(Package pack, String typeName) {
 		JavaType.create(pack.child(typeName).name())
 	}
+	
+	def createMetaType(String parent, String meta) {
+		MetaType.create(parent, meta)
+	}
 
 	def toMetaType(Attribute ctx, String name) {
-		createJavaType(modelRootPackage(ctx).metaField, name)
+		var model = ctx.type.eContainer
+		if (model instanceof RosettaModel) {
+			var pkg = new RootPackage(model.name).metaField
+			return createJavaType(pkg, name)
+		}
+		
+		if(model instanceof RosettaBasicType) {
+			// built-in meta types are defined in metafield package
+			return createJavaType(packages.basicMetafields, name)
+		}
+//		var pkg = modelRootPackage(ctx).metaField 
+//		createJavaType(pkg, name)
 	}
 
 	def toMetaType(ExpandedAttribute type, String name) {
-		if(type.type.isBuiltInType)
-			return createJavaType(packages.model.metaField, name)
-		createJavaType(new RootPackage(type.type.model).metaField, name)
+		if(type.type.isBuiltInType) {
+			// built-in meta types are defined in metafield package
+			return createJavaType(packages.basicMetafields, name)
+		}
+		var parentPKG = new RootPackage(type.type.model)
+		var metaParent = parentPKG.child(type.type.name).name()
+		
+		var metaPKG = parentPKG.metaField
+		var meta = metaPKG.child(name).name()		
+		createMetaType(metaParent, meta)
 	}
 
 	def private RootPackage modelRootPackage(RosettaNamed namedType) {
@@ -133,7 +155,7 @@ class JavaNames {
 
 	private def JavaType createForBasicType(String typeName) {
 		return JavaType.create(JavaClassTranslator.toJavaFullType(typeName) ?: 
-		"missing builtin type " + typeName
+		"missing built-in type " + typeName
 		)
 	}
 

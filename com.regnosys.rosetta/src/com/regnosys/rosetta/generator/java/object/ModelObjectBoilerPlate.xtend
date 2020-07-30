@@ -5,18 +5,14 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.GlobalKeyBuilder
-import com.rosetta.model.lib.RosettaKeyValue
-import com.rosetta.model.lib.RosettaKeyValueBuilder
 import com.rosetta.model.lib.qualify.Qualified
 import com.rosetta.util.ListEquals
 import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class ModelObjectBoilerPlate {
@@ -66,17 +62,13 @@ class ModelObjectBoilerPlate {
 		val interfaces = newHashSet
 		if(d.hasKeyedAnnotation)
 			interfaces.add(GlobalKey)
-		if(d.hasPartialKeyAnnotation)
-			interfaces.add(RosettaKeyValue)
 		if (interfaces.empty) null else '''implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
 	}
 	
 	def StringConcatenationClient implementsClauseBuilder(extension Data d) {
 		val interfaces = <StringConcatenationClient>newArrayList
 		if (d.hasKeyedAnnotation)
-			interfaces.add('''«GlobalKeyBuilder»<«d.name»Builder>''')
-		if (d.hasPartialKeyAnnotation)
-			interfaces.add('''«RosettaKeyValueBuilder»<«d.name»Builder>''')
+			interfaces.add('''«GlobalKeyBuilder»''')
 		if (d.name == "ContractualProduct" || d.name == "BusinessEvent") {
 			interfaces.add('''«Qualified»''')
 		}
@@ -89,9 +81,6 @@ class ModelObjectBoilerPlate {
 		if(globalKey)
 			interfaces.add(nameFunc.apply('GlobalKey'))
 			
-		if(rosettaKeyValue)
-			interfaces.add(nameFunc.apply('RosettaKeyValue'))
-		
 		if (interfaces.empty) '''''' else '''implements «interfaces.join(', ')» '''
 	}
 	
@@ -142,7 +131,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		public int hashCode() {
 			int _result = «c.contribtueSuperHashCode»;
-			«FOR field : attributes»
+			«FOR field : attributes.filter[!overriding]»
 				«field.contributeHashCode»
 			«ENDFOR»
 			return _result;
@@ -154,7 +143,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		public String toString() {
 			return "«classNameFunc.apply(c.name)» {" +
-				«FOR attribute : c.attributes.map[name] SEPARATOR ' ", " +'»
+				«FOR attribute : c.attributes.filter[!overriding].map[name] SEPARATOR ' ", " +'»
 					"«attribute»=" + this.«attribute» +
 				«ENDFOR»
 			'}'«IF c.hasSuperType» + " " + super.toString()«ENDIF»;
@@ -174,7 +163,7 @@ class ModelObjectBoilerPlate {
 		
 			«IF !attributes.empty»«classNameFunc.apply(c.name)» _that = («classNameFunc.apply(c.name)») o;«ENDIF»
 		
-			«FOR field : attributes»
+			«FOR field : attributes.filter[!overriding]»
 				«field.contributeToEquals»
 			«ENDFOR»
 			return true;
@@ -198,16 +187,14 @@ class ModelObjectBoilerPlate {
 		return new TypeData(
 			rosettaClass.name,
 			rosettaClass.expandedAttributes,
-			rosettaClass.superType !== null,
-			true
+			rosettaClass.superType !== null
 		);
 	}
 	private def TypeData wrap(Data data) {
 		return new TypeData(
 			data.name,
 			data.expandedAttributes,
-			data.hasSuperType,
-			true
+			data.hasSuperType
 		);
 	}
 	
@@ -226,7 +213,7 @@ class ModelObjectBoilerPlate {
 				«ENDIF»
 			«ENDFOR»
 			
-			«FOR a : attributes.filter[isRosettaClassOrData || hasMetas]»
+			«FOR a : attributes.filter[!overriding].filter[isRosettaClassOrData || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
 			«ENDFOR»
 		}
@@ -240,17 +227,11 @@ class ModelObjectBoilerPlate {
 		}
 		result.toString
 	}
-	// the eventEffect attribute should not contribute to the rosettaKeyValueHashCode. 
-	// TODO: Have generic way of excluding attributes from the hash
-	static def boolean isIncludedInRosettaKeyValueHashCode(ExpandedAttribute a) {
-		return !( a.hasCalculation || a.isQualified || a.name == 'eventEffect' || a.name == 'globalKey')
-	}
-
+	
 	@org.eclipse.xtend.lib.annotations.Data
 	static class TypeData {
 		val String name
 		val List<ExpandedAttribute> attributes
 		val boolean hasSuperType
-		val boolean generateRosettaKeyValueHashCode
 	}
 }

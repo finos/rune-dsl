@@ -12,6 +12,7 @@ import com.regnosys.rosetta.generator.java.enums.EnumGenerator
 import com.regnosys.rosetta.generator.java.function.FuncGenerator
 import com.regnosys.rosetta.generator.java.object.DataGenerator
 import com.regnosys.rosetta.generator.java.object.DataValidatorsGenerator
+import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
@@ -19,6 +20,7 @@ import com.regnosys.rosetta.generator.java.qualify.QualifyFunctionGenerator
 import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -26,14 +28,18 @@ import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.rosetta.util.DemandableLock
+import java.util.concurrent.CancellationException
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtend.lib.annotations.Delegate
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import java.util.concurrent.CancellationException
+import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
+import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
+import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory.TestFolderAwareFsa
+import org.eclipse.emf.ecore.resource.ResourceSet
+import java.util.Map
 
 /**
  * Generates code from your model files on save.
@@ -53,6 +59,8 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject QualifyFunctionGenerator<RosettaProduct> qualifyProductsGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
+	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
+	@Inject NamespaceHierarchyGenerator namespaceHierarchyGenerator
 
 	@Inject DataGenerator dataGenerator
 	@Inject DataValidatorsGenerator validatorsGenerator
@@ -61,17 +69,34 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject JavaNames.Factory factory
 	@Inject FuncGenerator funcGenerator
 
+	@Inject
+	ResourceAwareFSAFactory fsaFactory;
+
+	@Inject ModelNamespaceUtil modelNamespaceUtil
+
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta'}
 
-	val lock = new DemandableLock;
+	val Map<ResourceSet, DemandableLock> locks = newHashMap
+	
+	override void beforeGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
+		LOGGER.debug("Starting the main generate method for " + resource.URI.toString)
+		fsaFactory.beforeGenerate(resource)
+	}
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		LOGGER.debug("Starting the main generate method for " + resource.URI.toString)
-		val fsa = new TestFolderAwareFsa(resource, fsa2)
+		val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, false)
+		val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 		try {
 			lock.getWriteLock(true);
 			if (!ignoredFiles.contains(resource.URI.segments.last)) {
+				// all models
+				val models = if (resource.resourceSet?.resources === null) {
+					LOGGER.warn("No resource set found for " + resource.URI.toString)
+					newHashSet
+				} else resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toSet
+
 				// generate for each model object
 				resource.contents.filter(RosettaModel).forEach [
 					val version = version
@@ -85,7 +110,7 @@ class RosettaGenerator extends AbstractGenerator {
 						switch (it) {
 							Data: {
 								dataGenerator.generate(javaNames, fsa, it, version)
-								metaGenerator.generate(javaNames, fsa, it, version)
+								metaGenerator.generate(javaNames, fsa, it, version, models)
 								validatorsGenerator.generate(javaNames, fsa, it, version)
 								it.conditions.forEach [ cond |
 									if (cond.isChoiceRuleCondition) {
@@ -121,7 +146,10 @@ class RosettaGenerator extends AbstractGenerator {
 					]
 				]
 
-				metaFieldGenerator.generate(resource, fsa, context)
+				if (!resource.contents.filter(RosettaModel).isEmpty) {
+					val javaNames = factory.create(resource.contents.filter(RosettaModel).head)
+					metaFieldGenerator.generate(javaNames.packages, resource, fsa, context)
+				}
 			}
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected")
@@ -135,46 +163,33 @@ class RosettaGenerator extends AbstractGenerator {
 		}
 	}
 
-	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
+	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		try {
-			val models = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
+			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
+			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
+			val models = if (resource.resourceSet?.resources === null) {
+							LOGGER.warn("No resource set found for " + resource.URI.toString)
+							newArrayList
+						} else resource.resourceSet.resources.flatMap[contents]
+								.filter[!TestFolderAwareFsa.isTestResource(it.eResource)]
+								.filter(RosettaModel).toList
+
+			val namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
+			val namespaceUrilMap = modelNamespaceUtil.namespaceToModelUriMap(models).asMap
+			
+			javaPackageInfoGenerator.generatePackageInfoClasses(fsa, namespaceDescriptionMap)
+			namespaceHierarchyGenerator.generateNamespacePackageHierarchy(fsa, namespaceDescriptionMap, namespaceUrilMap)
 
 			externalGenerators.forEach [ generator |
 				generator.afterGenerate(models, [ map |
 					map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]
 				], resource, lock)
 			]
-
+			fsaFactory.afterGenerate(resource)
 		} catch (Exception e) {
 			LOGGER.warn("Unexpected calling after generate for rosetta -" + e.message + " - see debug logging for more")
 			LOGGER.debug("Unexpected calling after generate for rosetta", e);
 		}
 
-	}
-}
-
-class TestFolderAwareFsa implements IFileSystemAccess2 {
-	@Delegate IFileSystemAccess2 originalFsa
-	boolean testRes
-
-	new(Resource resource, IFileSystemAccess2 originalFsa) {
-		this.originalFsa = originalFsa
-		this.testRes = isTestResource(resource)
-	}
-
-	def boolean isTestResource(Resource resource) {
-		if (resource.URI !== null) {
-			// hardcode the folder for now
-			return resource.getURI().toString.contains('rosetta-cdm/src/test/resources/')
-		}
-		false
-	}
-
-	override void generateFile(String fileName, CharSequence contents) {
-		if (testRes) {
-			originalFsa.generateFile(fileName, RosettaOutputConfigurationProvider.SRC_TEST_GEN_JAVA_OUTPUT, contents)
-		} else {
-			originalFsa.generateFile(fileName, contents)
-		}
 	}
 }

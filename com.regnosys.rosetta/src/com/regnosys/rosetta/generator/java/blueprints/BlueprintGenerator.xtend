@@ -81,8 +81,8 @@ class BlueprintGenerator {
 		val typed = buildTypeGraph(nodes, output)
 		val typeArgs = bindArgs(typed)
 		imports.addTypes(typed)
-		val body = tracImports(nodes.buildBody(typed, imports))
-		
+		val StringConcatenationClient scc = nodes.buildBody(typed, imports)
+		val body = tracImports(scc)
 		return '''
 			package «packageName.model.blueprint.name»;
 			

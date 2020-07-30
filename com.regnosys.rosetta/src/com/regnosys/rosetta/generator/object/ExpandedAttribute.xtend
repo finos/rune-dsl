@@ -16,7 +16,7 @@ final class ExpandedAttribute {
 	
 	RosettaType rosettaType // used in translator only
 	
-
+	boolean overriding
 	int inf
 	int sup
 	boolean isUnbound
@@ -61,11 +61,6 @@ final class ExpandedAttribute {
 	def builtInType() {
 		getType.isBuiltInType
 	}
-	
-	def shouldCopy() {
-		!#['rosettaKey', 'rosettaKeyValue'].contains(name)
-	}
-	
 }
 
 @Data

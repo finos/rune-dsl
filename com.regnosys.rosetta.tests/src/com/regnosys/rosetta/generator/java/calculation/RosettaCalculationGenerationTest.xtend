@@ -466,6 +466,7 @@ class RosettaCalculationGenerationTest {
 				import com.rosetta.test.model.OtherType;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
+				import java.util.Optional;
 				
 				
 				@ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
@@ -489,22 +490,31 @@ class RosettaCalculationGenerationTest {
 					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder outHolder, WithMeta withMeta) {
 						@SuppressWarnings("unused") OtherType out = outHolder.build();
 						outHolder
-							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setExternalReference(
-									MapperS.of(withMeta).get().getMeta().getGlobalKey()
+							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setGlobalReference(
+									Optional.ofNullable(MapperS.of(withMeta).get())
+										.map(r -> r.getMeta())
+										.map(m -> m.getGlobalKey())
+										.orElse(null)
 								).build()
 							)
 						;
 						out = outHolder.build();
 						outHolder
-							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setExternalReference(
-									MapperS.of(withMeta).get().getMeta().getGlobalKey()
+							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setGlobalReference(
+									Optional.ofNullable(MapperS.of(withMeta).get())
+										.map(r -> r.getMeta())
+										.map(m -> m.getGlobalKey())
+										.orElse(null)
 								).build()
 							, 1)
 						;
 						out = outHolder.build();
 						outHolder
-							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setExternalReference(
-									MapperS.of(withMeta).get().getMeta().getGlobalKey()
+							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setGlobalReference(
+									Optional.ofNullable(MapperS.of(withMeta).get())
+										.map(r -> r.getMeta())
+										.map(m -> m.getGlobalKey())
+										.orElse(null)
 								).build()
 							)
 						;
@@ -555,6 +565,7 @@ class RosettaCalculationGenerationTest {
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
 				import java.util.List;
+				import java.util.Optional;
 				import java.util.stream.Collectors;
 				
 				
@@ -587,8 +598,11 @@ class RosettaCalculationGenerationTest {
 						;
 						out = outHolder.build();
 						outHolder
-							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setExternalReference(
-									MapperC.of(withMeta).get().getMeta().getGlobalKey()
+							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setGlobalReference(
+									Optional.ofNullable(MapperC.of(withMeta).get())
+										.map(r -> r.getMeta())
+										.map(m -> m.getGlobalKey())
+										.orElse(null)
 								).build()
 							)
 						;

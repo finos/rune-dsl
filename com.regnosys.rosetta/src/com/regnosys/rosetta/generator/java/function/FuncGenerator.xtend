@@ -24,9 +24,12 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.types.RAnnotateType
 import com.regnosys.rosetta.types.RBuiltinType
+import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
+import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.Mapper
 import com.rosetta.model.lib.functions.MapperBuilder
 import com.rosetta.model.lib.functions.MapperS
@@ -40,9 +43,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.types.RAnnotateType
-import com.rosetta.model.lib.functions.IQualifyFunctionExtension
+import java.util.Optional
 
 class FuncGenerator {
 
@@ -55,6 +56,7 @@ class FuncGenerator {
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
 	@Inject  CardinalityProvider cardinality
+	@Inject JavaNames.Factory factory 
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = javaNames.packages.model.functions.directoryName + '/' + func.name + '.java'
@@ -177,6 +179,13 @@ class FuncGenerator {
 						return «IF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
 					}
 				}
+				«IF func.isQualifierFunction()»
+				
+				@Override
+				public String getNamePrefix() {
+					return "«getQualifierAnnotations(func).head.annotation.prefix»";
+				}
+				«ENDIF»
 			}
 		'''
 	}
@@ -243,11 +252,20 @@ class FuncGenerator {
 		}
 	}
 	
+	private def JavaType referenceWithMetaJavaType(Operation op, JavaNames names) {
+			if (op.path === null) {
+				val valueRType = typeProvider.getRType(op.assignRoot)
+			 	names.createJavaType(names.packages.model.metaField, "ReferenceWithMeta" + valueRType.name.toFirstUpper)
+			} else {
+				val attr = op.pathAsSegmentList.last.attribute
+				val valueRType = typeProvider.getRType(attr)
+			 	names.createJavaType(factory.create(attr.type.model).packages.model.metaField, "ReferenceWithMeta" + valueRType.name.toFirstUpper)
+			}
+	}
+	
 	private def StringConcatenationClient assignValue(Operation op, JavaNames names) {
 		if(op.assignAsKey) {
-			val valueType = typeProvider.getRType(namedAssignTarget(op))
-			val metaCalss = names.createJavaType(names.packages.model.metaField,
-				"ReferenceWithMeta" + valueType.name.toFirstUpper)
+			val metaClass = referenceWithMetaJavaType(op, names)
 			if (cardinality.isMulti(op.expression)) {
 				/*
 				.addParty(
@@ -260,14 +278,17 @@ class FuncGenerator {
 				'''
 				«expressionGenerator.javaCode(op.expression, new ParamMap)»
 				.getItems().map(
-						(item) -> «metaCalss».builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
+						(item) -> «metaClass».builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
 					).collect(«Collectors».toList())
 				'''
 			} else {
-				//  ReferenceWithMetaEvent.builder().setExternalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()
+				//  ReferenceWithMetaEvent.builder().setGlobalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()
 				'''
-				«metaCalss».builder().setExternalReference(
-						«expressionGenerator.javaCode(op.expression, new ParamMap)».get().getMeta().getGlobalKey()
+				«metaClass».builder().setGlobalReference(
+						«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
+							.map(r -> r.getMeta())
+							.map(m -> m.getGlobalKey())
+							.orElse(null)
 					).build()
 				'''
 			}

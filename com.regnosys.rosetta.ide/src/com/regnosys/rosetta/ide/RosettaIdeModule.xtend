@@ -5,6 +5,8 @@ package com.regnosys.rosetta.ide
 
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import org.eclipse.xtext.generator.IContextualOutputConfigurationProvider
+import org.eclipse.xtext.documentation.IEObjectDocumentationProvider
+import com.regnosys.rosetta.ide.hover.RosettaDocumentationProvider
 
 /**
  * Use this class to register ide components.
@@ -15,4 +17,8 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 		return RosettaOutputConfigurationProvider
 	}
 	
+	
+	def Class<? extends IEObjectDocumentationProvider> bindIEObjectDocumentationProvider() {
+		return RosettaDocumentationProvider
+	}
 }

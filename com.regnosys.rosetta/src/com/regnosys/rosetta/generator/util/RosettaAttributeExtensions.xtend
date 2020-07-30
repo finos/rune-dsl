@@ -32,6 +32,10 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Set
+import com.regnosys.rosetta.rosetta.RosettaFactory
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import com.regnosys.rosetta.rosetta.RosettaSynonymSource
+import com.regnosys.rosetta.rosetta.RosettaExternalClassSynonym
 
 class RosettaAttributeExtensions {
 
@@ -76,24 +80,8 @@ class RosettaAttributeExtensions {
 				data.name,
 				provideMetaFeildsType(data),
 				null,
+				false,
 				0,
-				1,
-				false,
-				emptyList,
-				"",
-				false,
-				false,
-				false,
-				emptyList
-			))
-		}
-		if(rosExt.hasPartialKeyAnnotation(data)) {
-			res.add(new ExpandedAttribute(
-				'rosettaKeyValue',
-				data.name,
-				provideStringType(data),
-				null,
-				1,
 				1,
 				false,
 				emptyList,
@@ -113,7 +101,9 @@ class RosettaAttributeExtensions {
 	public static val METAFIELDSCLASSNAME = 'MetaFields'
 
 	private static def ExpandedType provideMetaFeildsType(RosettaRootElement ctx) {
-		return new ExpandedType(ctx.model, METAFIELDSCLASSNAME, true, false, false)
+		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
+		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE
+		return new ExpandedType(rosModel, METAFIELDSCLASSNAME, true, false, false)
 	}
 
 	// used in translate project
@@ -124,25 +114,6 @@ class RosettaAttributeExtensions {
 	static def List<ExpandedAttribute> materialiseAttributes(RosettaClass rosettaClass) {
 		val materialisedAttributes = newLinkedList
 
-		if (rosettaClass.rosettaKeyValue) {
-			val rosettaKeyValueType = provideMetaFeildsType(rosettaClass)
-			val rosettaKeyValue = new ExpandedAttribute(
-				'rosettaKeyValue',
-				rosettaClass.name,
-				rosettaKeyValueType,
-				null,
-				1,
-				1,
-				false,
-				#[],
-				'',
-				false,
-				false,
-				false,
-				#[]
-			)
-			materialisedAttributes.add(rosettaKeyValue)
-		}
 		if (rosettaClass.globalKey) {
 			val metaFieldsType = provideMetaFeildsType(rosettaClass)
 			val metaFields = new ExpandedAttribute(
@@ -150,6 +121,7 @@ class RosettaAttributeExtensions {
 				rosettaClass.name,
 				metaFieldsType,
 				null,
+				false,
 				0,
 				1,
 				false,
@@ -170,7 +142,7 @@ class RosettaAttributeExtensions {
 	}
 	
 	def static ExpandedAttribute expandedEnumAttribute(RosettaEnumValue value) {
-		new ExpandedAttribute(value.name,value.enumeration.name, null, null, 0,0, false, value.enumSynonyms.map[toExpandedSynonym], 
+		new ExpandedAttribute(value.name,value.enumeration.name, null, null, false, 0,0, false, value.enumSynonyms.map[toExpandedSynonym], 
 			value.definition, false, true, false, Collections.emptyList
 		)
 	}
@@ -196,7 +168,7 @@ class RosettaAttributeExtensions {
 			val List<ExpandedAttribute> metas = newArrayList
 			for (var i = 0; i < attr.metaTypes.size; i++) {
 				val meta = Iterables.get(attr.metaTypes, i)
-				metas.add(new ExpandedAttribute(meta.name,(attr.eContainer as RosettaType).name, meta.type.toExpandedType, meta.type, 0, 1,	false, 
+				metas.add(new ExpandedAttribute(meta.name,(attr.eContainer as RosettaType).name, meta.type.toExpandedType, meta.type, false, 0, 1,	false, 
 					attr.toRosettaExpandedSynonym(i), attr.definition, false, false, false, Collections.emptyList
 				))
 			}
@@ -215,7 +187,7 @@ class RosettaAttributeExtensions {
 		.toList
 	}
 	
-	private static def toRosettaExpandedSynonym(Attribute attr, int index) {
+	static def toRosettaExpandedSynonym(Attribute attr, int index) {
 		attr.synonyms.filter[body.metaValues.size > index].map[
 			s|new ExpandedSynonym(s.sources, s.body.values?.map[metaSynValue(s.body.metaValues.get(index))
 				//new ExpandedSynonymValue(s.metaValues.get(index), path+"."+value, maps, true)
@@ -225,12 +197,24 @@ class RosettaAttributeExtensions {
 		.toList
 	}
 
+	static def toRosettaExpandedSynonym(List<RosettaSynonymSource> sources, List<RosettaExternalSynonym> externalSynonyms, int index) {		
+		externalSynonyms.filter[body.metaValues.size > index].map[
+			s|new ExpandedSynonym(sources, s.body.values?.map[metaSynValue(s.body.metaValues.get(index))
+				//new ExpandedSynonymValue(s.metaValues.get(index), path+"."+value, maps, true)
+			].toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, s.body.mapper)
+		]
+		.filter[!values.isEmpty]
+		.toList
+	}
+
+
 	static def toExpandedAttribute(RosettaRegularAttribute attr, List<ExpandedAttribute> metas) {
 		new ExpandedAttribute(
 			attr.name,
 			(attr.eContainer as RosettaType).getName(),
 			attr.type.toExpandedType,
 			attr.type,
+			false,
 			attr.card.inf,
 			attr.card.sup,
 			attr.card.unbounded,
@@ -246,12 +230,13 @@ class RosettaAttributeExtensions {
 		val metas = <ExpandedAttribute>newArrayList
 		attr.annotations.forEach [ annoRef, i |
 			val annoAttr = annoRef?.attribute
-			if(annoAttr!==null) {
+			if(annoAttr !== null && annoAttr.type !== null) {
 				metas.add(new ExpandedAttribute(
 					annoAttr.name,
 					annoRef.annotation.name,
 					annoAttr.type.toExpandedType,
 					annoAttr.type,
+					annoAttr.override,
 					0,
 					1,
 					false,
@@ -269,6 +254,7 @@ class RosettaAttributeExtensions {
 			(attr.eContainer as RosettaType).name,
 			attr.type.toExpandedType,
 			attr.type,
+			attr.override,
 			attr.card.inf,
 			attr.card.sup,
 			attr.card.unbounded,
@@ -328,6 +314,12 @@ class RosettaAttributeExtensions {
 		}
 		
 		new ExpandedSynonym(sources, syn.body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], syn.body.hints, syn.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], syn.body.mappingLogic, syn.body.mapper)
+	}
+	
+	static dispatch def toRosettaExpandedSynonym(RosettaExternalClassSynonym syn) {
+		val synVals = if (syn.value===null) Collections.emptyList else newArrayList(new ExpandedSynonymValue(syn.value.name, syn.value.path, syn.value.maps, false))
+		val synMetaVals = if (syn.metaValue!==null) newArrayList(new ExpandedSynonymValue(syn.metaValue.name, syn.metaValue.path, syn.metaValue.maps, true)) else Collections.emptyList
+		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null)	
 	}
 	
 	static dispatch def toRosettaExpandedSynonym(RosettaClassSynonym syn) {

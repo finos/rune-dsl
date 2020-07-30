@@ -11,7 +11,6 @@ import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -25,6 +24,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaImportSet
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import static extension com.regnosys.rosetta.generator.util.Util.*
 
 class ModelObjectGenerator {
 	
@@ -98,11 +98,11 @@ class ModelObjectGenerator {
 				@RosettaStereotype("«stereotype»")
 			«ENDFOR»
 			«contributeClassSynonyms(c.synonyms)»
-			public «IF c.isAbstract »abstract «ENDIF»class «c.name» extends «IF c.hasSuperType »«c.superType.name»«ELSE»RosettaModelObject«ENDIF» «c.implementsClause»{
+			public «IF c.isAbstract »abstract «ENDIF»class «c.name» extends «IF c.hasSuperType »«c.superType.fullname»«ELSE»RosettaModelObject«ENDIF» «c.implementsClause»{
 				«c.rosettaClass(javaNames)»
 			
 				«c.staticBuilderMethod»
-			
+				
 				«c.builderClass(javaNames)»
 			
 				«c.boilerPlate(javaNames)»
@@ -135,13 +135,9 @@ class ModelObjectGenerator {
 			import «packages.defaultLibAnnotations.name».RosettaSynonym;
 		«ENDIF»
 		«IF c.globalKeyRecursive»
-			import «packages.model.metaField.name».MetaFields;
+			import «packages.basicMetafields.name».MetaFields;
 			import «packages.defaultLib.name».GlobalKey;
 			import «packages.defaultLib.name».GlobalKeyBuilder;
-		«ENDIF»
-		«IF c.rosettaKeyValue»
-			import «packages.defaultLib.name».RosettaKeyValue;
-			import «packages.defaultLib.name».RosettaKeyValueBuilder;
 		«ENDIF»
 		«IF c.isRoot»
 			import «packages.defaultLibAnnotations.name».RosettaRoot;
@@ -201,7 +197,7 @@ class ModelObjectGenerator {
 		«FOR attribute : c.expandedAttributes»
 			«javadoc(attribute.definition)»
 			«contributeSynonyms(attribute.synonyms)»
-			public final «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
+			public «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
 				return «attribute.name»;
 			}
 			
@@ -215,7 +211,7 @@ class ModelObjectGenerator {
 		«IF !c.isAbstract»
 			public «c.builderName» toBuilder() {
 				«c.name»Builder builder = new «c.name»Builder();
-				«FOR attribute : c.getAllSuperTypes.map[expandedAttributes].flatten»
+				«FOR attribute : c.getAllSuperTypes.map[expandedAttributes].flatten.distinctBy[name]»
 					«IF attribute.cardinalityIsListValue»
 						ofNullable(get«attribute.name.toFirstUpper»()).ifPresent(«attribute.name» -> «attribute.name».forEach(builder::add«attribute.name.toFirstUpper»));
 					«ELSE»

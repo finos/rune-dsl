@@ -54,6 +54,8 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import com.regnosys.rosetta.rosetta.RosettaExternalEnum
+import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -412,6 +414,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 		extension IFormattableDocument document) {
 		indentedBraces(externalSynonymSource, document)
 		formatChild(externalSynonymSource.externalClasses, document)
+		formatChild(externalSynonymSource.externalEnums, document)
 	}
 
 	def dispatch void format(RosettaExternalClass externalClass, extension IFormattableDocument document) {
@@ -420,12 +423,27 @@ class RosettaFormatter extends AbstractFormatter2 {
 		formatChild(externalClass.regularAttributes, document)
 	}
 
+	def dispatch void format(RosettaExternalEnum externalEnum, extension IFormattableDocument document) {
+		externalEnum.regionFor.keyword(':').prepend[noSpace]
+		externalEnum.prepend[lowPriority; setNewLines(2)]
+		formatChild(externalEnum.regularValues, document)
+	}
+
 	def dispatch void format(RosettaExternalRegularAttribute externalRegularAttribute,
 		extension IFormattableDocument document) {
 		externalRegularAttribute.regionFor.keyword('+').append[oneSpace].prepend[newLine]
 		externalRegularAttribute.surround[indent]
 		formatChild(externalRegularAttribute.externalSynonyms, document)
 	}
+	
+	def dispatch void format(RosettaExternalEnumValue externalEnumValue,
+		extension IFormattableDocument document) {
+		externalEnumValue.regionFor.keyword('+').append[oneSpace].prepend[newLine]
+		externalEnumValue.surround[indent]
+		formatChild(externalEnumValue.externalEnumSynonyms, document)
+	}
+	
+	
 
 	def dispatch void format(RosettaExternalSynonym externalSynonym, extension IFormattableDocument document) {
 		externalSynonym.prepend[newLine].surround[indent]

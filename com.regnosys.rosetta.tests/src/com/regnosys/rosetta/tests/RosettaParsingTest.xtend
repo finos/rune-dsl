@@ -114,8 +114,6 @@ class RosettaParsingTest {
 				value3 number (0..1) <"">
 				value5 boolean (0..1) <"">
 				value6 date (0..1) <"">
-				value7 dateTime (0..1) <"">
-				value8 time (0..1) <"">
 				value9 string (0..1) <"">
 				value10 zonedDateTime (0..1) <"">
 				value11 productType (0..1) <"">

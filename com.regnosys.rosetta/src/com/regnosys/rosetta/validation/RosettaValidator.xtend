@@ -22,6 +22,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
@@ -39,6 +40,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -92,6 +94,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject ExpressionHelper exprHelper
 	@Inject CardinalityProvider cardinality
 	@Inject RosettaGrammarAccess grammar
+	@Inject RosettaConfigExtension confExtensions
 	
 	@Check
 	def void deprecatedInfo(RosettaClass classe) {
@@ -137,7 +140,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 
 	@Check
 	def void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
-		if (!Character.isLowerCase(attribute.name.charAt(0))) {
+		val annotationAttribute = attribute.eContainer instanceof Annotation
+		if (!annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
 			warning("Attribute name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -282,10 +286,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 
 	@Check
-	def checkAttributeNamesAreUnique(Data clazz) {
-		if (clazz.superType == clazz) {
-			error('''Type must not extend itself.''', clazz, DATA__SUPER_TYPE)
-		}
+	def checkAttributes(Data clazz) {
 		val name2attr = HashMultimap.create
 		clazz.allAttributes.forEach [
 			name2attr.put(name, it)
@@ -293,17 +294,61 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		for (name : clazz.attributes.map[name]) {
 			val attrByName = name2attr.get(name)
 			if (attrByName.size > 1) {
-				val fromSuperClasses = attrByName.filter[eContainer != clazz]
-				val messageExtension = if (fromSuperClasses.empty)
-						''
-					else
-						' (overrides ' + fromSuperClasses.map[(eContainer as RosettaNamed).name].join(', ') + ')'
-				attrByName.filter[eContainer == clazz].forEach [
-					error('''Duplicate attribute '«name»'«messageExtension»''', it, ROSETTA_NAMED__NAME,
-						DUPLICATE_ATTRIBUTE)
-				]
+				val attrFromClazzes = attrByName.filter[eContainer == clazz]
+				val attrFromSuperClasses = attrByName.filter[eContainer != clazz]
+				
+				attrFromClazzes.checkNonOverridingAttributeNamesAreUnique(attrFromSuperClasses, name)				
+				attrFromClazzes.checkOverridingTypeAttributeMustHaveSameTypeAsParent(attrFromSuperClasses, name)
+				attrFromClazzes.checkOverridingAttributeCardinalityMatchSuper(attrFromSuperClasses, name)
 			}
 		}
+	}
+	
+	protected def void checkOverridingTypeAttributeMustHaveSameTypeAsParent(Iterable<Attribute> attrFromClazzes,
+		Iterable<Attribute> attrFromSuperClasses, String name) {
+		attrFromClazzes.filter[override].forEach [ childAttr |
+			attrFromSuperClasses.forEach [ parentAttr |
+				if ((childAttr.type instanceof Data && !(childAttr.type as Data).isChildOf(parentAttr.type)) ||
+					!(childAttr.type instanceof Data && childAttr.type !== parentAttr.type )) {
+					error('''Overriding attribute '«name»' must have a type that overrides its parent attribute type of «parentAttr.type.name»''',
+						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
+				}
+
+			]
+		]
+	}
+	
+	
+	protected def void checkNonOverridingAttributeNamesAreUnique( Iterable<Attribute> attrFromClazzes, Iterable<Attribute> attrFromSuperClasses, String name) {
+		val messageExtension = if (attrFromSuperClasses.empty) '' else ' (extends ' + attrFromSuperClasses.attributeTypeNames + ')'
+		
+		attrFromClazzes.filter[!override].forEach [
+			error('''Duplicate attribute '«name»'«messageExtension»''', it, ROSETTA_NAMED__NAME,
+				DUPLICATE_ATTRIBUTE)
+		]
+	}
+	
+	protected def void checkOverridingAttributeCardinalityMatchSuper(Iterable<Attribute> attrFromClazzes, Iterable<Attribute> attrFromSuperClasses, String name) {
+		attrFromClazzes.filter[override].forEach [ childAttr |
+			attrFromSuperClasses.forEach [ parentAttr |
+				if (childAttr.card.inf !== parentAttr.card.inf || childAttr.card.sup !== parentAttr.card.sup || childAttr.card.isMany !== parentAttr.card.isMany) {
+					error('''Overriding attribute '«name»' with cardinality («childAttr.cardinality») must match the cardinality of the attribute it overrides («parentAttr.cardinality»)''',
+						childAttr, ROSETTA_NAMED__NAME, CARDINALITY_ERROR)
+				}
+			]
+		]
+	}
+	
+	protected def cardinality(Attribute attr)
+		'''«attr.card.inf»..«IF attr.card.isMany»*«ELSE»«attr.card.sup»«ENDIF»'''
+	
+	
+	private def attributeTypeNames(Iterable<Attribute> attrs) {
+		return attrs.map[(eContainer as RosettaNamed).name].join(', ')
+	}
+	
+	private def isChildOf(Data child, RosettaType parent) {
+		return child.allSuperTypes.contains(parent)
 	}
 
 	@Check
@@ -449,7 +494,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				error('''Set to without when case must be ordered last.''', element, ROSETTA_MAPPING__INSTANCES)
 			}
 		}
-		val attribute = element.eContainer.eContainer.eContainer as RosettaTyped
+		var attribute = if (element.eContainer.eContainer.eContainer instanceof RosettaExternalRegularAttribute) {
+			(element.eContainer.eContainer.eContainer as RosettaExternalRegularAttribute).attributeRef as RosettaTyped
+		} else {
+			 element.eContainer.eContainer.eContainer as RosettaTyped
+		} 
+		
 		val type = attribute.getType
 		if (type instanceof Data && !element.instances.filter[^set !== null].empty) {
 			error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
@@ -706,6 +756,86 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (ele.argument !== null && !ele.argument.eIsProxy) {
 			if (!cardinality.isMulti(ele.argument))
 				error('''Count operation multiple cardinality argument.''', ele, ROSETTA_COUNT_OPERATION__ARGUMENT)
+		}
+	}
+	
+	@Check
+	def checkFunctionPrefix(Function ele) {
+		ele.annotations.forEach[a|
+			val prefix = a.annotation.prefix
+			if (prefix !== null && !ele.name.startsWith(prefix + "_")) {
+				warning('''Function name «ele.name» must have prefix '«prefix»' followed by an underscore.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			}
+		]
+	}
+	
+	@Check
+	def checkCreationAnnotation(Annotated ele) {
+		val annotations = getCreationAnnotations(ele)
+		if (annotations.empty) {
+			return
+		}
+		if (!(ele instanceof Function)) {
+			error('''Creation annotation only allowed on a function.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		if (annotations.size > 1) {
+			error('''Only 1 creation annotation allowed.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		
+		val func = ele as Function
+		
+		val annotationType = annotations.head.attribute.type
+		val funcOutputType = func.output.type
+		
+		if (annotationType instanceof Data && funcOutputType instanceof Data) {
+			val annotationDataType = annotationType as Data
+			val funcOutputDataType = func.output.type as Data
+			val funcOutputSuperTypeNames = funcOutputDataType.superType.allSuperTypes.map[name].toSet
+			val annotationAttributeTypeNames = annotationDataType.attributes.map[type].map[name].toList
+			
+			if (annotationDataType.name !== funcOutputDataType.name
+				&& !funcOutputSuperTypeNames.contains(annotationDataType.name) // annotation type is a super type of output type
+				&& !annotationAttributeTypeNames.contains(funcOutputDataType.name) // annotation type is a parent of the output type (with a one-of condition)
+			) {
+				warning('''Invalid output type for creation annotation.  The output type must match the type specified in the annotation '«annotationDataType.name»' (or extend the annotation type, or be a sub-type as part of a one-of condition).''', func, FUNCTION__OUTPUT)
+			}
+		}
+	}
+	
+	@Check
+	def checkQualificationAnnotation(Annotated ele) {
+		val annotations = getQualifierAnnotations(ele)
+		if (annotations.empty) {
+			return
+		}
+		if (!(ele instanceof Function)) {
+			error('''Qualification annotation only allowed on a function.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		
+		val func = ele as Function
+		
+		if (annotations.size > 1) {
+			error('''Only 1 qualification annotation allowed.''', ROSETTA_NAMED__NAME, INVALID_ELEMENT_NAME)
+			return
+		}
+		
+		val inputs = getInputs(func)
+		if (inputs.nullOrEmpty || inputs.size !== 1) {
+			error('''Qualification functions must have exactly 1 input.''', func, FUNCTION__INPUTS)
+			return
+		}
+		val inputType = inputs.get(0).type
+		if (inputType === null || inputType.eIsProxy) {
+			error('''Invalid input type for qualification function.''', func, FUNCTION__INPUTS)
+		} else if (!confExtensions.isRootEventOrProduct(inputType)) {
+			warning('''Input type does not match qualification root type.''', func, FUNCTION__INPUTS)
+		}
+		
+		if (RBuiltinType.BOOLEAN.name != func.output?.type?.name) {
+	 		error('''Qualification functions must output a boolean.''', func, FUNCTION__OUTPUT)
 		}
 	}
 	

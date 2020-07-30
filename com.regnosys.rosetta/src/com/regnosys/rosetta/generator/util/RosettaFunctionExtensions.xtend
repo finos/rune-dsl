@@ -5,6 +5,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -12,18 +13,16 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
-import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
-import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.xtext.EcoreUtil2
 
 class RosettaFunctionExtensions {
 
 	@Inject RosettaTypeProvider typeProvider
-	@Inject RosettaConfigExtension confExtensions
+	
 	/** 
 	 * 
 	 * spec functions do not have operation hence, do not provide an implementation
@@ -140,11 +139,14 @@ class RosettaFunctionExtensions {
 	}
 	
 	def boolean isQualifierFunction(Function function) {
-		val inputs = getInputs(function)
-		!inputs.nullOrEmpty 
-		&& inputs.size == 1 
-		&& RBuiltinType.BOOLEAN.name == getOutput(function)?.type?.name
-		&& inputs.get(0).type !== null && !inputs.get(0).type.eIsProxy
-		&& confExtensions.isRootEventOrProduct(inputs.get(0).type)
+		!getQualifierAnnotations(function).empty
+	}
+	
+	def getQualifierAnnotations(Annotated element) {
+		element.annotations.filter["qualification" == it.annotation.name].toList
+	}
+	
+	def getCreationAnnotations(Annotated element) {
+		element.annotations.filter["creation" == it.annotation.name].toList
 	}
 }

@@ -1,4 +1,4 @@
-namespace "com.rosetta.model"
+namespace com.rosetta.model
 version "${project.version}"
 
 basicType string
@@ -13,10 +13,6 @@ library function Max(x number, y number) number
 library function Adjust() date
 library function Within() boolean
 library function IsLeapYear(year number) boolean
-
-metaType reference string
-metaType scheme string
-metaType id string
 
 recordType date
 {

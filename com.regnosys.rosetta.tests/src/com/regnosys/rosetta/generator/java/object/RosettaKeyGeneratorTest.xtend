@@ -6,6 +6,7 @@ import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -14,85 +15,102 @@ import static org.hamcrest.MatcherAssert.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaKeyGeneratorTest {
+class GlobalKeyGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 
 	@Test
-	def void shouldGenerateRosettaKeyFieldAndGetterWhenSet() {
+	def void shouldGenerateGlobalKeyFieldAndGetterWhenSet() {
 		val code = '''
-			type WithRosettaKey:
-				[metadata key]
-				[partialKey]
-				foo string (1..1)
-		'''.generateCode
-
-		val classess = code.compileToClasses
-		val withRosettaKey = classess.get(rootPackage.name + '.WithRosettaKey')
-
-		assertThat(withRosettaKey.declaredFields.map[name], hasItem('meta'))
-		assertThat(withRosettaKey.declaredFields.map[name], hasItem('rosettaKeyValue'))
-	}
-
-	@Test
-	def void shouldGenerateRosettaKeyValueFieldAndGetterWhenSet() {
-		val code = '''
-			type WithRosettaKey:
+			type WithGlobalKey:
 				[metadata key]
 				foo string (1..1)
 		'''.generateCode
 
 		val classess = code.compileToClasses
-		val withRosettaKey = classess.get(rootPackage.name + '.WithRosettaKey')
+		val withGlobalKey = classess.get(rootPackage.name + '.WithGlobalKey')
 
-		assertThat(withRosettaKey.methods.exists[name.equals('getMeta')], is(true))
-		assertThat(withRosettaKey.methods.exists[name.equals('getRosettaKeyValue')], is(false))
+		assertThat(withGlobalKey.declaredFields.map[name], hasItem('meta'))
 	}
 
 	@Test
 	def void shouldNotGenerateFieldsAndGetterWhenNotDefined() {
 		val code = '''
-			type WithoutRosettaKeys:
+			type WithoutGlobalKeys:
 				foo string (1..1)
 		'''.generateCode
 
 		val classess = code.compileToClasses
-		val withoutRosettaKeys = classess.get(rootPackage.name + '.WithoutRosettaKeys')
+		val withoutGlobalKeys = classess.get(rootPackage.name + '.WithoutGlobalKeys')
 
-		assertThat(withoutRosettaKeys.fields.map[name], not(hasItem('metaFields')))
+		assertThat(withoutGlobalKeys.fields.map[name], not(hasItem('metaFields')))
 
-		assertThat(withoutRosettaKeys.methods.exists[name.equals('meta')], is(false))
+		assertThat(withoutGlobalKeys.methods.exists[name.equals('meta')], is(false))
 	}
 	
+	// TODO fails when the metaType is moved to annotations.rosetta or basictypes.rosetta (and removed from the code here).
 	@Test
-	def void shouldGenerateGetterWhenRosettaKeyValueDefined() {
+	def void shouldGenerateGlobalReferenceField() {
 		val code = '''
-			type WithRosettaKeyValue:
-				[partialKey]
-				foo string (1..1)
-		'''.generateCode
-
-		val classess = code.compileToClasses
-		val withRosettaKeyValue = classess.get(rootPackage.name + '.WithRosettaKeyValue')
-
-		assertThat(withRosettaKeyValue.methods.exists[name.equals('getRosettaKey')], is(false))
-		assertThat(withRosettaKeyValue.methods.exists[name.equals('getRosettaKeyValue')], is(true))
-	}
-
-	@Test
-	def void shouldGenerateGettersWhenRosettaKeyAndRosettaKeyValueDefined() {
-		val code = '''
-			type WithRosettaKeys:
+			metaType reference string
+			
+			type Foo:
 				[metadata key]
-				[partialKey]
-				foo string (1..1)
+				bar string (1..1)
+			
+			type Baz:
+				foo Foo (1..1)
+					[metadata reference]
+				
+				condition:
+					Baz -> foo -> reference exists
 		'''.generateCode
 
-		val classess = code.compileToClasses
-		val withRosettaKeys = classess.get(rootPackage.name + '.WithRosettaKeys')
+		val classes = code.compileToClasses
 
-		assertThat(withRosettaKeys.methods.exists[name.equals('getMeta')], is(true))
-		assertThat(withRosettaKeys.methods.exists[name.equals('getRosettaKeyValue')], is(true))
+		val foo = classes.get(rootPackage.name + '.Foo')
+		assertThat(foo.declaredFields.map[name], hasItem('bar'))
+		assertThat(foo.declaredFields.map[name], hasItem('meta'))
+		
+		val baz = classes.get(rootPackage.name + '.Baz')
+		assertThat(baz.declaredFields.map[name], hasItem('foo'))
+		val fooMethod = baz.getMethod("getFoo")
+		val returnType = fooMethod.returnType
+		assertThat(returnType.simpleName, is('ReferenceWithMetaFoo'))
 	}
+	
+	// TODO the path containing a reference should work - the path is the same apart from it starts at the attribute rather than the type level).
+	// TODO fails when the metaType is moved to annotations.rosetta or basictypes.rosetta (and removed from the code here).
+	@Test
+	@Disabled 
+	def void shouldGenerateGlobalReferenceField2() {
+		val code = '''
+			metaType reference string
+			
+			type Foo:
+				[metadata key]
+				bar string (1..1)
+			
+			type Baz:
+				foo Foo (1..1)
+					[metadata reference]
+				
+				condition:
+					foo -> reference exists
+		'''.generateCode
+
+		val classes = code.compileToClasses
+
+		val foo = classes.get(rootPackage.name + '.Foo')
+		assertThat(foo.declaredFields.map[name], hasItem('bar'))
+		assertThat(foo.declaredFields.map[name], hasItem('meta'))
+		
+		val baz = classes.get(rootPackage.name + '.Baz')
+		assertThat(baz.declaredFields.map[name], hasItem('foo'))
+		val fooMethod = baz.getMethod("getFoo")
+		val returnType = fooMethod.returnType
+		assertThat(returnType.simpleName, is('ReferenceWithMetaFoo'))
+	}
+	
 }

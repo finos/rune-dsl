@@ -35,6 +35,7 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.util.CancelIndicator
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.rosetta.RosettaExternalRef
 
 class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculator implements RosettaHighlightingStyles {
 
@@ -107,8 +108,8 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 			RosettaAlias: {
 				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, ALIASES_ID)
 			}
-			RosettaExternalClass: {
-				highlightFeature(acceptor, object, ROSETTA_EXTERNAL_CLASS__CLASS_REF, CLASS_ID)
+			RosettaExternalRef: {
+				highlightFeature(acceptor, object, ROSETTA_EXTERNAL_REF__TYPE_REF, CLASS_ID)
 			}
 			RosettaExternalSynonymSource: {
 				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, SOURCE_ID)
