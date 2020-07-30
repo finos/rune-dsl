@@ -122,4 +122,79 @@ class RosettaObjectInheritanceGeneratorTest {
 		val extendingTop = classes.get("extending.Top")
 		assertThrows(NoSuchFieldException, [|extendingTop.getDeclaredField("aField")]);
 	}
+
+	@Test
+	def void shouldGenerateJavaClassWithOverridenListAttributesAcrossNamespaces() {
+		val generated = newArrayList(
+			
+			'''
+			namespace "extending"
+			
+			import original.*
+			
+			type A extends original.A:
+				bb string (0..1)
+			
+			type Top extends original.Top:
+				override aField A (0..*)
+		''',
+		'''
+			namespace "original"
+			type A:
+				aa string (0..1)
+			
+			type Top:
+				aField A (0..*)
+			'''
+			).reverse.generateCode
+			//This test only works if the order of the "files" is the opposite from that provided (hence the reverse)
+		//.writeClasses("shouldGenerateJavaClassWithOverridenListAttributesAcrossNamespaces")
+
+
+		val classes = generated.compileToClasses
+		val extendingTop = classes.get("extending.Top")
+		assertThrows(NoSuchFieldException, [|extendingTop.getDeclaredField("aField")]);
+	}
+	
+	@Test
+	def void shouldGenerateJavaClassWithConditionsListAttributesAcrossNamespaces() {
+		val generated = newArrayList(
+			'''
+			namespace "extending"
+			
+			import original.*
+			
+			type A extends original.A:
+				override b B (0..1)
+			
+			type B extends original.B:
+				override c C (0..1)
+			
+			type C extends original.C:
+				cField2 string (0..1)
+				cField3 B (0..1)
+			
+				 condition cField3Exists: cField3 -> c exists
+						
+		''',
+		'''
+			namespace "original"
+			type A:
+				b B (0..1)
+				
+			type B:
+				c C (0..1)
+			
+			type C:
+				cField1 string (0..*)
+			'''
+			).reverse.generateCode
+			//This test only works if the order of the "files" is the opposite from that provided (hence the reverse)
+		.writeClasses("shouldGenerateJavaClassWithConditionsListAttributesAcrossNamespaces")
+
+
+		generated.compileToClasses
+
+	}
+	
 }
