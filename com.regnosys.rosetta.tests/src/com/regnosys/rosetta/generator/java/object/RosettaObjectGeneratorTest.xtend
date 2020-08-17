@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.generator.java.object
 
+import com.google.common.collect.ImmutableList
 import com.google.common.collect.Lists
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
@@ -11,7 +12,6 @@ import com.rosetta.model.lib.annotations.RosettaQualified
 import com.rosetta.model.lib.annotations.RosettaSynonym
 import com.rosetta.model.lib.records.Date
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.List
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
+import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
@@ -496,5 +497,31 @@ class RosettaObjectGeneratorTest {
 		val foo2 = fooBuilder2.invoke("build") as RosettaModelObject
 
 		assertThat(foo2.invoke("getGlobalKey"), nullValue())
+	}
+	
+	
+	@Test
+	def void shouldPruneListUnchanged() {
+		var bar = createObjectWithListThenPruneAndReturnList(ImmutableList.of('a', 'b'))
+		assertNotNull(bar)
+		assertEquals(bar.size, 2)
+	}
+	
+	@Test
+	def void shouldPruneEmptyListToNull() {
+		var bar = createObjectWithListThenPruneAndReturnList(ImmutableList.of())
+		assertNull(bar)
+	}
+	
+	private def createObjectWithListThenPruneAndReturnList(List<String> list) {
+		val classes = '''
+			type Foo: 
+				bar string (0..*) 
+		'''.compileJava8
+		
+		var fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of(), of('bar', list)))
+		var prunedInstance = fooInstance.toBuilder.prune
+		prunedInstance.invoke("getBar") as List<String>
+		
 	}
 }

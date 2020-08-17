@@ -78,7 +78,7 @@ class ModelObjectBuilderGenerator {
 					«IF !attribute.isMultiple && (attribute.isRosettaClassOrData || attribute.hasMetas)»
 						if («attribute.name»!=null && !«attribute.name».prune().hasData()) «attribute.name» = null;
 					«ELSEIF attribute.isMultiple && attribute.isRosettaClassOrData || attribute.hasMetas»
-						if («attribute.name»!=null) «attribute.name» = «attribute.name».stream().filter(b->b!=null).map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
+						«attribute.name» = «Optional».ofNullable(«attribute.name»).map(l->l.stream().filter(b->b!=null).map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList())).filter(b->!b.isEmpty()).orElse(null);
 					«ENDIF»
 				«ENDFOR»
 				return this;
