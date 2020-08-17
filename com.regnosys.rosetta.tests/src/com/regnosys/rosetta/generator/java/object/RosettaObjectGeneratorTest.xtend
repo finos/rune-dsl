@@ -23,10 +23,12 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
+import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
+import com.google.common.collect.ImmutableList
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -496,5 +498,31 @@ class RosettaObjectGeneratorTest {
 		val foo2 = fooBuilder2.invoke("build") as RosettaModelObject
 
 		assertThat(foo2.invoke("getGlobalKey"), nullValue())
+	}
+	
+	
+	@Test
+	def void shouldPruneListUnchanged() {
+		var bar = createObjectWithListThenPruneAndReturnList(ImmutableList.of('a', 'b'))
+		assertNotNull(bar)
+		assertEquals(bar.size, 2)
+	}
+	
+	@Test
+	def void shouldPruneEmptyListToNull() {
+		var bar = createObjectWithListThenPruneAndReturnList(ImmutableList.of())
+		assertNull(bar)
+	}
+	
+	private def createObjectWithListThenPruneAndReturnList(List<String> list) {
+		val classes = '''
+			type Foo: 
+				bar string (0..*) 
+		'''.compileJava8
+		
+		var fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of(), of('bar', list)))
+		var prunedInstance = fooInstance.toBuilder.prune
+		prunedInstance.invoke("getBar") as List<String>
+		
 	}
 }
