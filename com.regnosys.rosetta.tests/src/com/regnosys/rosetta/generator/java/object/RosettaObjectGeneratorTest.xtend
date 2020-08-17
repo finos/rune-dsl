@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.generator.java.object
 
+import com.google.common.collect.ImmutableList
 import com.google.common.collect.Lists
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
@@ -11,7 +12,6 @@ import com.rosetta.model.lib.annotations.RosettaQualified
 import com.rosetta.model.lib.annotations.RosettaSynonym
 import com.rosetta.model.lib.records.Date
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.List
@@ -28,7 +28,6 @@ import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
-import com.google.common.collect.ImmutableList
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
