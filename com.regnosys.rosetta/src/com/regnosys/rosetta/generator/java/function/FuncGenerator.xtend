@@ -10,6 +10,7 @@ import com.regnosys.rosetta.generator.java.expression.ExpressionGeneratorWithBui
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
+import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
@@ -37,13 +38,13 @@ import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.math.BigDecimalExtensions
 import com.rosetta.model.lib.validation.ModelObjectValidator
 import java.util.Map
+import java.util.Optional
 import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import java.util.Optional
 
 class FuncGenerator {
 
@@ -120,10 +121,10 @@ class FuncGenerator {
 			
 				/**
 				«FOR input : inputs»
-					* @param «input.name» «input.definition»
+					* @param «input.name» «ModelGeneratorUtil.escape(input.definition)»
 				«ENDFOR»
 				«IF output !== null»
-					* @return «outputName» «output.definition»
+					* @return «outputName» «ModelGeneratorUtil.escape(output.definition)»
 				«ENDIF»
 				*/
 				public «outputType» evaluate(«func.inputsAsParameters(names)») {
