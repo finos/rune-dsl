@@ -29,4 +29,7 @@ class ModelGeneratorUtil {
 		 * @version «version»
 		 */
 	'''
+	
+	static def escape(String definition) 
+	'''«IF definition !==null && !definition.isEmpty»«HtmlEscapers.htmlEscaper().escape(definition)»«ENDIF»'''
 }
