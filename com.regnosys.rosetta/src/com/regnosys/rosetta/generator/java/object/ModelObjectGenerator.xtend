@@ -115,6 +115,7 @@ class ModelObjectGenerator {
 		«ENDIF»
 		import «packages.defaultLib.name».RosettaModelObjectBuilder;
 		import «packages.defaultLib.name».meta.RosettaMetaData;
+		import «packages.defaultLib.name».merge.BuilderMerger;
 		import «packages.model.name».meta.«c.name»Meta;
 		«IF c.allSuperTypes.map[expandedAttributes].flatten.exists[hasMetas]»
 			import «packages.model.metaField.name».*;
