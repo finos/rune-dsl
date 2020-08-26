@@ -18,11 +18,11 @@ import java.util.ArrayList
 import java.util.Collection
 import java.util.List
 import java.util.Optional
+import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension com.regnosys.rosetta.generator.util.Util.*
-import java.util.stream.Collectors
 
 class ModelObjectBuilderGenerator {
 	
@@ -88,6 +88,8 @@ class ModelObjectBuilderGenerator {
 			
 			«c.expandedAttributes.filter[!it.overriding].process(c.hasSuperType, names)»
 		
+			«c.expandedAttributes.filter[!it.overriding].merge(c, c.hasSuperType, names)»
+
 			«c.builderBoilerPlate»
 		}
 	'''
@@ -141,6 +143,8 @@ class ModelObjectBuilderGenerator {
 			«c.expandedAttributes.hasData(c.superType!==null)»
 			
 			«c.expandedAttributes.process(c.superType!==null, javaNames)»
+			
+			«c.expandedAttributes.merge(c, c.superType!==null, javaNames)»
 		
 			«c.builderBoilerPlate»
 		}
@@ -234,6 +238,26 @@ class ModelObjectBuilderGenerator {
 			«FOR a : attributes.filter[isRosettaClassOrData || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»);
 			«ENDFOR»
+		}
+	'''
+	
+	private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RosettaType type, boolean hasSuperType, JavaNames names) '''
+		«val builderName = type.builderName»
+		@Override
+		public «builderName» merge(RosettaModelObjectBuilder b1, RosettaModelObjectBuilder b2, BuilderMerger merger) {
+			«builderName» m1 = («builderName») b1;
+			«builderName» m2 = («builderName») b2;
+			«FOR a : attributes.filter[(isRosettaClassOrData || hasMetas) && !multiple]»
+				«val attributeName = a.name.toFirstUpper»
+				if (merger.mergeRosetta(m1.get«attributeName»(), m2.get«attributeName»(), this::set«attributeName»Builder)) {
+					«a.name».merge(m1.get«attributeName»(), m2.get«attributeName»(), merger);
+				}
+			«ENDFOR»
+			«FOR a : attributes.filter[!isRosettaClassOrData && !hasMetas && !multiple]»
+				«val attributeName = a.name.toFirstUpper»
+				merger.mergeBasic(m1.get«attributeName»(), m2.get«attributeName»(), this::set«attributeName»);
+			«ENDFOR»
+			return this;
 		}
 	'''
 	
@@ -375,24 +399,24 @@ class ModelObjectBuilderGenerator {
 				}
 				return this;
 			}
-			«IF attribute.isRosettaClassOrData»
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Builder(«attribute.toBuilderType(names)» «attribute.name») {
-					this.«attribute.name» = «attribute.name»;
-					return this;
-				}
-				«IF !attribute.metas.empty»
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
-					return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
-				}
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«names.toJavaType(attribute.type)» «attribute.name») {
-					return set«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
-				}
-				«ENDIF»
-			«ELSE»
-				«IF !attribute.metas.empty»
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
-					return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValue(«attribute.name»).build());
-				}
+			
+			«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Builder(«attribute.toBuilderType(names)» «attribute.name») {
+				this.«attribute.name» = «attribute.name»;
+				return this;
+			}
+			
+			«IF !attribute.metas.empty»
+				«IF attribute.isRosettaClassOrData»
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
+						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
+					}
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«names.toJavaType(attribute.type)» «attribute.name») {
+						return set«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
+					}
+				«ELSE»
+					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
+						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValue(«attribute.name»).build());
+					}
 				«ENDIF»
 			«ENDIF»
 		«ENDIF»

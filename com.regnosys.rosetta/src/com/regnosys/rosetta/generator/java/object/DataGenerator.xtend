@@ -59,6 +59,8 @@ class DataGenerator {
 			«ENDFOR»
 «««			TODO fix imports below. See com.regnosys.rosetta.generator.java.object.ModelObjectBuilderGenerator.process(List<ExpandedAttribute>, boolean)
 
+			import com.rosetta.model.lib.RosettaModelObjectBuilder;
+			import com.rosetta.model.lib.merge.BuilderMerger;
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.process.BuilderProcessor;
 			import com.rosetta.model.lib.process.Processor;
