@@ -75,7 +75,7 @@ class DataGenerator {
 		«javadocWithVersion(d.definition, version)»
 		@«RosettaClass»
 		«IF d.hasQualifiedAttribute»
-			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«d.qualifiedClass».class)
+			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.qualifiedClass).simpleName».class)
 		«ENDIF»
 		«contributeClassSynonyms(d.synonyms)»
 		public class «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
@@ -113,7 +113,7 @@ class DataGenerator {
 			default: throw new IllegalArgumentException("Unknown qualifiedType " + qualifiedClassType)
 		}
 		
-		if(qualifiedRootClassName === null || qualifiedRootClassName.length == 0)
+		if(qualifiedRootClassName === null)
 			throw new IllegalArgumentException("QualifiedType " + qualifiedClassType + " must have qualifiable root class")
 			
 		return qualifiedRootClassName

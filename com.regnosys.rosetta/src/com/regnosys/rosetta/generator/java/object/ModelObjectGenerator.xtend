@@ -92,7 +92,7 @@ class ModelObjectGenerator {
 			«ENDIF»
 			@RosettaClass
 			«IF c.hasQualifiedAttribute»
-				@RosettaQualified(attribute="«c.qualifiedAttribute»",qualifiedClass=«c.qualifiedClass».class)
+				@RosettaQualified(attribute="«c.qualifiedAttribute»",qualifiedClass=«javaNames.toJavaType(c.qualifiedClass).simpleName».class)
 			«ENDIF»
 			«FOR stereotype : c.stereotype?.values?.map[it?.name]?:emptyList»
 				@RosettaStereotype("«stereotype»")
@@ -173,7 +173,7 @@ class ModelObjectGenerator {
 			default: throw new IllegalArgumentException("Unknown qualifiedType " + qualifiedClassType)
 		}
 		
-		if(qualifiedRootClassName === null || qualifiedRootClassName.length == 0)
+		if(qualifiedRootClassName === null)
 			throw new IllegalArgumentException("QualifiedType " + qualifiedClassType + " must have qualifiable root class")
 			
 		return qualifiedRootClassName
