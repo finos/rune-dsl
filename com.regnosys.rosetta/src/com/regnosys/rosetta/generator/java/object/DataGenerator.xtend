@@ -62,6 +62,9 @@ class DataGenerator {
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.process.BuilderProcessor;
 			import com.rosetta.model.lib.process.Processor;
+			
+			//TODO: should be inferred instead of hard-codded
+			import cdm.product.template.*;
 
 			«FOR imp : classBody.staticImports»
 				import static «imp»;
