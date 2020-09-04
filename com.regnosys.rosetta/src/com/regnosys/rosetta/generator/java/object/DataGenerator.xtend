@@ -75,7 +75,7 @@ class DataGenerator {
 		«javadocWithVersion(d.definition, version)»
 		@«RosettaClass»
 		«IF d.hasQualifiedAttribute»
-			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.qualifiedClass).simpleName».class)
+			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.getQualifiedClass).name».class)
 		«ENDIF»
 		«contributeClassSynonyms(d.synonyms)»
 		public class «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
@@ -100,6 +100,10 @@ class DataGenerator {
 	def private getQualifiedAttribute(Data c) {
 		c.allSuperTypes.flatMap[expandedAttributes].findFirst[qualified]?.name
 	}
+	
+//	private def StringConcatenationClient getQualifiedClass(Data d, JavaNames names) {
+//		'''«names.createJavaType(new RootPackage(d.qualifiedClass.model.name), d.qualifiedClass.name).name»'''		
+//	}
 	
 	def private getQualifiedClass(Data c) {
 		val allExpandedAttributes = c.allSuperTypes.flatMap[expandedAttributes].toList
