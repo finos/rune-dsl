@@ -53,7 +53,7 @@ class RosettaConfigExtension {
 
 	def boolean isEventRootClass(IEObjectDescription eObjDesc, EObject ctx) {
 		if (eObjDesc.EClass == ROSETTA_CLASS || eObjDesc.EClass == DATA) {
-			return ctx.findEventRootName == eObjDesc.name.toString
+			return ctx.findEventRootName?.name == eObjDesc.name.toString
 		}
 		false
 	}
