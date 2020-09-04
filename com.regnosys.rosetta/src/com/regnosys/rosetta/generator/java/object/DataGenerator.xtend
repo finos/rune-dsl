@@ -101,10 +101,6 @@ class DataGenerator {
 		c.allSuperTypes.flatMap[expandedAttributes].findFirst[qualified]?.name
 	}
 	
-//	private def StringConcatenationClient getQualifiedClass(Data d, JavaNames names) {
-//		'''«names.createJavaType(new RootPackage(d.qualifiedClass.model.name), d.qualifiedClass.name).name»'''		
-//	}
-	
 	def private getQualifiedClass(Data c) {
 		val allExpandedAttributes = c.allSuperTypes.flatMap[expandedAttributes].toList
 		if(!allExpandedAttributes.stream.anyMatch[qualified])
