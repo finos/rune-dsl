@@ -60,7 +60,7 @@ class RosettaConfigExtension {
 
 	def boolean isProductRootClass(IEObjectDescription eObjDesc, EObject ctx) {
 		if (eObjDesc.EClass == ROSETTA_CLASS || eObjDesc.EClass == DATA) {
-			return ctx.findProductRootName == eObjDesc.name.toString
+			return ctx.findProductRootName?.name == eObjDesc.name.toString
 		}
 		false
 	}
@@ -105,7 +105,7 @@ class RosettaConfigExtension {
 	}
 	
 	def isRootEventOrProduct(RosettaType type) {
-		type.name !== null && (type.name == findEventRootName(type) || type.name == findProductRootName(type))
+		type.name !== null && (type == findEventRootName(type) || type == findProductRootName(type))
 	}
 
 }

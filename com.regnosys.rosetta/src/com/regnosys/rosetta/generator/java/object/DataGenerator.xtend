@@ -107,16 +107,16 @@ class DataGenerator {
 			return null
 		
 		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].type.name
-		var qualifiedRootClassName = switch qualifiedClassType { 
+		var qualifiedRootClassType = switch qualifiedClassType { 
 			case RQualifiedType.PRODUCT_TYPE.qualifiedType: c.findProductRootName
 			case RQualifiedType.EVENT_TYPE.qualifiedType: c.findEventRootName
 			default: throw new IllegalArgumentException("Unknown qualifiedType " + qualifiedClassType)
 		}
 		
-		if(qualifiedRootClassName === null)
+		if(qualifiedRootClassType === null)
 			throw new IllegalArgumentException("QualifiedType " + qualifiedClassType + " must have qualifiable root class")
 			
-		return qualifiedRootClassName
+		return qualifiedRootClassType
 	}
 	
 	private def StringConcatenationClient rosettaClass(Data c, JavaNames names) {

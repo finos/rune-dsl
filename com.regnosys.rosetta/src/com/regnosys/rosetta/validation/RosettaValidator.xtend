@@ -475,8 +475,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (usedClasses.size == 1) {
 			val allowedClass = switch (ele) { RosettaProduct: findProductRootName(ele) RosettaEvent: findEventRootName(
 				ele) default: null }
-			if (allowedClass !== null && usedClasses.head.name != allowedClass) {
-				error('''«qualifiableType» expressions should always start from the '«allowedClass»' class. But found '«usedClasses.head.name»'.''',
+			if (allowedClass !== null && usedClasses.head.name != allowedClass.name) {
+				error('''«qualifiableType» expressions should always start from the '«allowedClass.name»' class. But found '«usedClasses.head.name»'.''',
 					ele, ROSETTA_NAMED__NAME, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE)
 			}
 		}
