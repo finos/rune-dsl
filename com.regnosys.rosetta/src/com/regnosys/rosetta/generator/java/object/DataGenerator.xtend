@@ -75,7 +75,7 @@ class DataGenerator {
 		«javadocWithVersion(d.definition, version)»
 		@«RosettaClass»
 		«IF d.hasQualifiedAttribute»
-			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«d.qualifiedClass».class)
+			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.getQualifiedClass).name».class)
 		«ENDIF»
 		«contributeClassSynonyms(d.synonyms)»
 		public class «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
@@ -107,16 +107,16 @@ class DataGenerator {
 			return null
 		
 		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].type.name
-		var qualifiedRootClassName = switch qualifiedClassType { 
+		var qualifiedRootClassType = switch qualifiedClassType { 
 			case RQualifiedType.PRODUCT_TYPE.qualifiedType: c.findProductRootName
 			case RQualifiedType.EVENT_TYPE.qualifiedType: c.findEventRootName
 			default: throw new IllegalArgumentException("Unknown qualifiedType " + qualifiedClassType)
 		}
 		
-		if(qualifiedRootClassName === null || qualifiedRootClassName.length == 0)
+		if(qualifiedRootClassType === null)
 			throw new IllegalArgumentException("QualifiedType " + qualifiedClassType + " must have qualifiable root class")
 			
-		return qualifiedRootClassName
+		return qualifiedRootClassType
 	}
 	
 	private def StringConcatenationClient rosettaClass(Data c, JavaNames names) {

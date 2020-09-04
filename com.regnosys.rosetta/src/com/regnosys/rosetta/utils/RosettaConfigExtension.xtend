@@ -27,7 +27,7 @@ class RosettaConfigExtension {
 					eObjDesc.EObjectOrProxy
 				}
 			if (!eObjOrProxy.eIsProxy) {
-				return isEventAlias(eObjOrProxy as RosettaAlias, findEventRootName(ctx))
+				return isEventAlias(eObjOrProxy as RosettaAlias, findEventRootName(ctx)?.name)
 			} else {
 				return true // TODO RosettaQualifiableType.EVENT.getName == eObjDesc.getUserData(COMMON_ROOT_TYPE)
 			}
@@ -43,7 +43,7 @@ class RosettaConfigExtension {
 					eObjDesc.EObjectOrProxy
 				}
 			if (!eObjOrProxy.eIsProxy) {
-				return isProductAlias(eObjOrProxy as RosettaAlias, findProductRootName(ctx))
+				return isProductAlias(eObjOrProxy as RosettaAlias, findProductRootName(ctx)?.name)
 			} else {
 				return true // TODO RosettaQualifiableType.EVENT.getName == eObjDesc.getUserData(COMMON_ROOT_TYPE)
 			}
@@ -53,14 +53,14 @@ class RosettaConfigExtension {
 
 	def boolean isEventRootClass(IEObjectDescription eObjDesc, EObject ctx) {
 		if (eObjDesc.EClass == ROSETTA_CLASS || eObjDesc.EClass == DATA) {
-			return ctx.findEventRootName == eObjDesc.name.toString
+			return ctx.findEventRootName?.name == eObjDesc.name.toString
 		}
 		false
 	}
 
 	def boolean isProductRootClass(IEObjectDescription eObjDesc, EObject ctx) {
 		if (eObjDesc.EClass == ROSETTA_CLASS || eObjDesc.EClass == DATA) {
-			return ctx.findProductRootName == eObjDesc.name.toString
+			return ctx.findProductRootName?.name == eObjDesc.name.toString
 		}
 		false
 	}
@@ -100,12 +100,12 @@ class RosettaConfigExtension {
 			ROSETTA_QUALIFIABLE_CONFIGURATION).filter[isProjectLocal(ctx.eResource.URI, it.EObjectURI)].map [
 			val eObj = if(it.EObjectOrProxy.eIsProxy) EcoreUtil.resolve(it.EObjectOrProxy, ctx) else it.EObjectOrProxy
 			if (!eObj.eIsProxy && type === (eObj as RosettaQualifiableConfiguration).QType)
-				(eObj as RosettaQualifiableConfiguration).rosettaClass?.name
+				(eObj as RosettaQualifiableConfiguration).rosettaClass
 		].filterNull.head
 	}
 	
 	def isRootEventOrProduct(RosettaType type) {
-		type.name !== null && (type.name == findEventRootName(type) || type.name == findProductRootName(type))
+		type.name !== null && (type == findEventRootName(type) || type == findProductRootName(type))
 	}
 
 }
