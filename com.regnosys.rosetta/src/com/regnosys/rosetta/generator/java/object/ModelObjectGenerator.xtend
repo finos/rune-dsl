@@ -92,7 +92,7 @@ class ModelObjectGenerator {
 			«ENDIF»
 			@RosettaClass
 			«IF c.hasQualifiedAttribute»
-				@RosettaQualified(attribute="«c.qualifiedAttribute»",qualifiedClass=«javaNames.toJavaType(c.qualifiedClass).simpleName».class)
+				@RosettaQualified(attribute="«c.qualifiedAttribute»",qualifiedClass=«javaNames.toJavaType(c.qualifiedClass).name».class)
 			«ENDIF»
 			«FOR stereotype : c.stereotype?.values?.map[it?.name]?:emptyList»
 				@RosettaStereotype("«stereotype»")
