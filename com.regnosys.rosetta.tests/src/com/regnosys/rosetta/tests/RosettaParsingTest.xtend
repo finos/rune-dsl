@@ -595,7 +595,7 @@ class RosettaParsingTest {
 				
 				Foo:
 					+ foo
-						[value "bar" path "baz" pattern "([0-9])*.*" "/$1"]
+						[value "bar" path "baz" pattern "([0-9])*.*" "$1"]
 			}
 		'''.parseRosettaWithNoErrors
 	}

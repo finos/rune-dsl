@@ -619,7 +619,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	def checkPatternNull(RosettaSynonymBody body) {
 		if (body.patternMatch!==null) {
-			error("pattern cannot be applied to date/time types", body, ROSETTA_SYNONYM_BODY__PATTERN_MATCH)
+			error("Pattern cannot be applied to date/time types", body, ROSETTA_SYNONYM_BODY__PATTERN_MATCH)
 		}
 	}
 	
