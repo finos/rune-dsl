@@ -170,7 +170,7 @@ class RosettaParsingTest {
 				UnknownSymbol
 					[synonym FIX value "1" definition "foo"]
 				ExchangeClosed
-					[synonym FpML value "exchangeClosed" definition "foo"]
+					[synonym FpML value "exchangeClosed" definition "foo" pattern "" ""]
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -562,6 +562,57 @@ class RosettaParsingTest {
 				Foo:
 					+ foo
 						[value "bar" path "baz" mapper "BarToFooMapper"]
+			}
+		'''.parseRosettaWithNoErrors
+	}
+	
+	@Test
+	def void externalSynonymWithFormatShouldParseWithNoErrors() {
+	'''
+			type Foo:
+				foo date (0..1)
+			
+			synonym source TEST_Base
+			
+			synonym source TEST extends TEST_Base {
+				
+				Foo:
+					+ foo
+						[value "bar" path "baz" format "MM/dd/yy"]
+			}
+		'''.parseRosettaWithNoErrors
+	}
+	
+	@Test
+	def void externalSynonymWithPattenshouldParseWithNoErrors() {
+	 '''
+			type Foo:
+				foo int (0..1)
+			
+			synonym source TEST_Base
+			
+			synonym source TEST extends TEST_Base {
+				
+				Foo:
+					+ foo
+						[value "bar" path "baz" pattern "([0-9])*.*" "/$1"]
+			}
+		'''.parseRosettaWithNoErrors
+	}
+	
+	@Test
+	def void externalEnumSynonymWithPattenshouldParseWithNoErrors() {
+	'''
+			enum Foo:
+				FOO
+			
+			synonym source TEST_Base
+			
+			synonym source TEST extends TEST_Base {
+			enums	
+				Foo:
+					+ FOO
+						[value "bar" pattern "([0-9])*.*" "/$1"]
 			}
 		'''.parseRosettaWithNoErrors
 	}

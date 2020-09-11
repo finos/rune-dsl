@@ -296,6 +296,8 @@ RosettaSynonymBody:
 		| 'hint' (hints+=STRING ',')* hints+=STRING
 		| mappingLogic=RosettaMappingSetTo )
 	('meta' (metaValues += STRING ',')* metaValues += STRING)?
+	('format' format=STRING)?
+	('pattern' patternMatch=STRING patternReplace=STRING)?
 	('mapper' mapper=STRING)?
 	
 ;
@@ -317,7 +319,10 @@ RosettaEnumSynonym:
 	 * is because it needs to accommodate integer values for FIX while there is no Tag nor ComponentID
 	 * an optional definition field has also been added, while the synonymValue is of type STRING to accommodate peculiar values
 	 */
-	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*  'value' synonymValue=STRING ('definition' definition=STRING)? ']'
+	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*  
+		'value' synonymValue=STRING ('definition' definition=STRING)?  
+		('pattern' patternMatch=STRING patternReplace=STRING)? 
+	']'
 ;
 
 enum RosettaSynonymRef:
@@ -753,6 +758,7 @@ RosettaExternalSynonym:
 RosettaExternalEnumSynonym returns RosettaEnumSynonym:
 	'['
 	'value' synonymValue=STRING ('definition' definition=STRING)?
+	('pattern' patternMatch=STRING patternReplace=STRING)?
 	']'
 ;
 
