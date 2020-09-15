@@ -247,7 +247,7 @@ class RosettaFunctionGenerationTest {
 		code.compileToClasses
 	}
 	
-		@Test
+	@Test
 	def void shouldGenerateFuncWithKeyReferenceFromAnotherNamespace() {
 
 		val code = #[
@@ -292,6 +292,50 @@ class RosettaFunctionGenerationTest {
 		'''
 		].generateCode
 		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithAssignemtnAsReference() {
+
+		#[
+		'''
+			namespace "com.rosetta.test.model.party"
+			version "test"
+
+			type Party:
+				id number (1..1)
+				name MyData (1..1)
+			
+			type MyData:
+				val string (1..1)
+		''',
+		'''
+			namespace "com.rosetta.test.model.agreement"
+			version "test"
+			
+			import com.rosetta.test.model.party.*
+
+			type Agreement:
+				id number (1..1)
+				party Party (1..1)
+				
+				condition AgreementValid:
+					if get_Party_Id() exists
+						then id is absent
+
+			func get_Party_Id:
+			 	inputs:
+			 		agreement Agreement (1..1)
+				output:
+					result MyData (1..1)
+					
+				assign-output result : agreement -> party -> name
+				
+
+		'''
+		].generateCode
+		//.writeClasses("shouldGenerateFunctionWithAssignemtnAsReference")
+		.compileToClasses
 	}
 	
 }

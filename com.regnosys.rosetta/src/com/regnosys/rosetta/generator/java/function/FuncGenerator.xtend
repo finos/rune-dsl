@@ -238,7 +238,7 @@ class FuncGenerator {
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)»
+				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)».get();
 			«ELSE»
 				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
 		else {
