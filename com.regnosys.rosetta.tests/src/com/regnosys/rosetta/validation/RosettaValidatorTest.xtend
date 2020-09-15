@@ -818,7 +818,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				Foo:
 					+ foo
-						[value "bar" path "baz" dateformat "MM/dd/yy"]
+						[value "bar" path "baz" dateFormat "MM/dd/yy"]
 			}
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYNONYM_BODY, null,
@@ -837,7 +837,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				Foo:
 					+ foo
-						[value "bar" path "baz" dateformat "MMB/dd/yy"]
+						[value "bar" path "baz" dateFormat "MMB/dd/yy"]
 			}
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYNONYM_BODY, null,
@@ -849,7 +849,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	val model='''
 			type Foo:
 				foo int (0..1)
-				[synonym TEST_Base value "bar" path "baz" dateformat "MM/dd/yy"]
+				[synonym TEST_Base value "bar" path "baz" dateFormat "MM/dd/yy"]
 			synonym source TEST_Base
 
 		'''.parseRosetta
