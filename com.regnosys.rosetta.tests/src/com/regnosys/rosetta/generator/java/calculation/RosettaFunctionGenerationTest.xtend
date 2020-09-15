@@ -338,4 +338,32 @@ class RosettaFunctionGenerationTest {
 		.compileToClasses
 	}
 	
+	@Test
+	def void shouldGenerateFunctionWithConditionalAssignment() {
+		#[
+		'''
+			namespace "com.rosetta.test.model.agreement"
+					version "test"
+			
+			type Foo:
+				bar1 Bar (0..1)
+				bar2 Bar (0..1)
+				
+			type Bar:
+				id number (1..1)
+			
+			func ExtractBar: <"Extracts a bar">
+				inputs: foo Foo (1..1)
+				output: bar Bar (1..1)
+				alias primitive: event -> primitives  only-element
+				assign-output contractState:
+					if foo -> bar1 exists then foo -> bar1
+					else if foo -> bar2 exists then foo -> bar2
+		'''
+		].generateCode
+		.writeClasses("shouldGenerateFunctionWithConditionalAssignment")
+		.compileToClasses
+	}
+		
+	
 }
