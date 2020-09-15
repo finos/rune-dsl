@@ -296,7 +296,7 @@ RosettaSynonymBody:
 		| 'hint' (hints+=STRING ',')* hints+=STRING
 		| mappingLogic=RosettaMappingSetTo )
 	('meta' (metaValues += STRING ',')* metaValues += STRING)?
-	('format' format=STRING)?
+	('dateFormat' format=STRING)?
 	('pattern' patternMatch=STRING patternReplace=STRING)?
 	('mapper' mapper=STRING)?
 	
