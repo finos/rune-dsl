@@ -578,7 +578,7 @@ class RosettaParsingTest {
 				
 				Foo:
 					+ foo
-						[value "bar" path "baz" format "MM/dd/yy"]
+						[value "bar" path "baz" dateFormat "MM/dd/yy"]
 			}
 		'''.parseRosettaWithNoErrors
 	}
