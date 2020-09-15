@@ -155,7 +155,7 @@ class FuncGenerator {
 				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
 					«FOR indexed : func.operations.indexed»
 						«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType» «ENDIF»«outputName» = «outputName»Holder.build();«ENDIF»
-						«indexed.value.assign(aliasOut, names)»;
+						«indexed.value.assign(aliasOut, names, output)»;
 					«ENDFOR»
 					return «outputName»Holder;
 				}
@@ -166,7 +166,7 @@ class FuncGenerator {
 					
 					«IF aliasOut.get(alias)»
 						protected «names.shortcutJavaType(alias)» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
-							return «expressionWithBuilder.toJava(alias.expression, Context.create(names))»;
+							return «expressionWithBuilder.toJava(alias.expression, Context.create(names))».get();
 						}
 					«ELSE»
 						protected «IF needsBuilder(alias)»«MapperBuilder»«ELSE»«Mapper»«ENDIF»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
@@ -232,13 +232,13 @@ class FuncGenerator {
 	}
 	
 	private def StringConcatenationClient assign(Operation op, Map<ShortcutDeclaration, Boolean> outs,
-		JavaNames names) {
+		JavaNames names, Attribute type) {
 		val pathAsList = op.pathAsSegmentList
 		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)».get();
+				«op.assignTarget(outs, names)» = ((MapperS<«type.toBuilderType(names)»>)(«expressionWithBuilder.toJava(op.expression, ctx)»)).get();
 			«ELSE»
 				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
 		else {

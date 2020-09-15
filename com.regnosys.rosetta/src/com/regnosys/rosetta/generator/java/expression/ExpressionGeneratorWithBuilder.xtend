@@ -106,7 +106,7 @@ class ExpressionGeneratorWithBuilder {
 				if (returnVal !== null) {
 					val toBuilder = if(funcExt.needsBuilder(returnVal)) '.toBuilder()' else ''
 					val StringConcatenationClient result = 
-					'''«toJava(ele.callable, ctx)».evaluate(«ctx.setInFunctionCall = true»«FOR arg : ele.args SEPARATOR ','»«toJava(arg, ctx)»«ENDFOR»«ctx.setInFunctionCall = false»)«toBuilder»'''
+					'''«toJava(ele.callable, ctx)».evaluate(«ctx.setInFunctionCall = true»«FOR arg : ele.args SEPARATOR ', '»«toJava(arg, ctx)».get()«ENDFOR»«ctx.setInFunctionCall = false»)«toBuilder»'''
 					return result
 				}
 			}
@@ -190,9 +190,9 @@ class ExpressionGeneratorWithBuilder {
 			}
 			ShortcutDeclaration: {
 				if(funcExt.needsBuilder(callee) && !ctx.inFunctionCall)
-				'''«callee.name»(«funcExt.inputsAsArgs(callee)»)«IF expr.toOne».get(0)«ENDIF».get().toBuilder()'''
+				'''«callee.name»(«funcExt.inputsAsArgs(callee)»)«IF expr.toOne».get(0)«ENDIF».map("toBuilder", _m-> _m.toBuilder())'''
 				else
-				'''«callee.name»(«funcExt.inputsAsArgs(callee)»)«IF expr.toOne».get(0)«ENDIF».get()'''
+				'''«callee.name»(«funcExt.inputsAsArgs(callee)»)«IF expr.toOne».get(0)«ENDIF»'''
 			}
 			RosettaNamed: {
 				'''«callee.name»«IF expr.toOne».get(0)«ENDIF»'''
@@ -203,7 +203,7 @@ class ExpressionGeneratorWithBuilder {
 	}
 
 	def dispatch StringConcatenationClient toJava(RosettaConditionalExpression ele, Context ctx) {
-		'''«toJava(ele.^if, ctx)» ? «toJava(ele.ifthen, ctx)» : «IF ele.elsethen !== null»«toJava(ele.elsethen, ctx)»«ELSE»null«ENDIF»'''
+		'''«toJava(ele.^if, ctx)» ? «toJava(ele.ifthen, ctx)» : «IF ele.elsethen !== null»«toJava(ele.elsethen, ctx)»«ELSE»MapperS.ofNull()«ENDIF»'''
 	}
 	
 	def dispatch StringConcatenationClient toJava(RosettaExistsExpression ele, Context ctx) {
@@ -224,10 +224,10 @@ class ExpressionGeneratorWithBuilder {
 	
 	private def StringConcatenationClient attributeAccess(RosettaFeature feature, boolean toOne, Context ctx) {
 		if(cardinalityProvider.isMulti(feature)) {
-			'''map("get«feature.name.toFirstUpper»", _m-> _m.«IF funcExt.needsBuilder(feature) && toOne»getOrCreateA«feature.name.toFirstUpper»(0)«ELSE»get«feature.name.toFirstUpper»())«ENDIF»'''
+			'''map("get«feature.name.toFirstUpper»", _m-> _m.«IF funcExt.needsBuilder(feature) && toOne»get«feature.name.toFirstUpper»().get(0)«ELSE»get«feature.name.toFirstUpper»()«ENDIF»)'''
 		}
 		else
-			'''map("get«feature.name.toFirstUpper»", _m-> _m.«IF funcExt.needsBuilder(feature)»getOrCreate«ELSE»get«ENDIF»«feature.name.toFirstUpper»())'''
+			'''map("get«feature.name.toFirstUpper»", _m-> _m.get«feature.name.toFirstUpper»())'''
 	}
 
 	private def StringConcatenationClient toBigDecimal(StringConcatenationClient sequence) {
