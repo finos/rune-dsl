@@ -367,6 +367,37 @@ class RosettaFunctionGenerationTest {
 		//.writeClasses("shouldGenerateFunctionWithConditionalAssignment")
 		.compileToClasses
 	}
+	
+	@Test
+	def void shouldGenerateFunctionWithCreationLHSUsingAlias() {
+		val code = #[
+		'''
+			namespace "com.rosetta.test.model.agreement"
+					version "test"
+			
+			type Top:
+				foo Foo (1..1)
+			
+			type Foo:
+				bar1 Bar (0..1)
+				bar2 Bar (0..1)
+				
+			type Bar:
+				id number (1..1)
+			
+			func ExtractBar: <"Extracts a bar">
+				inputs: top Top (1..1)
+				output: topOut Top (1..1)
+				alias fooAlias : topOut -> foo
+				assign-output fooAlias -> bar1:
+					top -> foo -> bar1
+				assign-output topOut -> foo -> bar2:
+					top -> foo -> bar2
+		'''
+		].generateCode
+		//.writeClasses("shouldGenerateFunctionWithCreationLHS")
+		code.compileToClasses
+	}
 		
 	
 }
