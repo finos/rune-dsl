@@ -247,7 +247,7 @@ class RosettaFunctionGenerationTest {
 		code.compileToClasses
 	}
 	
-		@Test
+	@Test
 	def void shouldGenerateFuncWithKeyReferenceFromAnotherNamespace() {
 
 		val code = #[
@@ -293,5 +293,111 @@ class RosettaFunctionGenerationTest {
 		].generateCode
 		code.compileToClasses
 	}
+	
+	@Test
+	def void shouldGenerateFunctionWithAssignemtnAsReference() {
+
+		#[
+		'''
+			namespace "com.rosetta.test.model.party"
+			version "test"
+
+			type Party:
+				id number (1..1)
+				name MyData (1..1)
+			
+			type MyData:
+				val string (1..1)
+		''',
+		'''
+			namespace "com.rosetta.test.model.agreement"
+			version "test"
+			
+			import com.rosetta.test.model.party.*
+
+			type Agreement:
+				id number (1..1)
+				party Party (1..1)
+				
+				condition AgreementValid:
+					if get_Party_Id() exists
+						then id is absent
+
+			func get_Party_Id:
+			 	inputs:
+			 		agreement Agreement (1..1)
+				output:
+					result MyData (1..1)
+					
+				assign-output result : agreement -> party -> name
+				
+
+		'''
+		].generateCode
+		//.writeClasses("shouldGenerateFunctionWithAssignemtnAsReference")
+		.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithConditionalAssignment() {
+		#[
+		'''
+			namespace "com.rosetta.test.model.agreement"
+					version "test"
+			
+			type Top:
+				foo Foo (1..*)
+			
+			type Foo:
+				bar1 Bar (0..1)
+				bar2 Bar (0..1)
+				
+			type Bar:
+				id number (1..1)
+			
+			func ExtractBar: <"Extracts a bar">
+				inputs: top Top (1..1)
+				output: bar Bar (1..1)
+				alias foo: top -> foo  only-element
+				assign-output bar:
+					if foo -> bar1 exists then foo -> bar1
+					//else if foo -> bar2 exists then foo -> bar2
+		'''
+		].generateCode
+		//.writeClasses("shouldGenerateFunctionWithConditionalAssignment")
+		.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithCreationLHSUsingAlias() {
+		val code = #[
+		'''
+			namespace "com.rosetta.test.model.agreement"
+					version "test"
+			
+			type Top:
+				foo Foo (1..1)
+			
+			type Foo:
+				bar1 Bar (0..1)
+				bar2 Bar (0..1)
+				
+			type Bar:
+				id number (1..1)
+			
+			func ExtractBar: <"Extracts a bar">
+				inputs: top Top (1..1)
+				output: topOut Top (1..1)
+				alias fooAlias : topOut -> foo
+				assign-output fooAlias -> bar1:
+					top -> foo -> bar1
+				assign-output topOut -> foo -> bar2:
+					top -> foo -> bar2
+		'''
+		].generateCode
+		//.writeClasses("shouldGenerateFunctionWithCreationLHS")
+		code.compileToClasses
+	}
+		
 	
 }

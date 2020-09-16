@@ -296,9 +296,13 @@ class RosettaCalculationGenerationTest {
 			public FoncOut evaluate(FuncIn funIn) {
 				
 				FoncOut.FoncOutBuilder resHolder = doEvaluate(funIn);
-				FoncOut res = assignOutput(resHolder, funIn).build();
+				FoncOut res = null;
+				FoncOut.FoncOutBuilder resBuilder = assignOutput(resHolder, funIn);
+				if (resBuilder!=null) {
+					res = resBuilder.build();
+				}
 				
-				objectValidator.validateAndFailOnErorr(FoncOut.class, res);
+				if (res!=null) objectValidator.validateAndFailOnErorr(FoncOut.class, res);
 				return res;
 			}
 			
@@ -390,9 +394,13 @@ class RosettaCalculationGenerationTest {
 			public FuncOut evaluate(FuncIn funcIn) {
 				
 				FuncOut.FuncOutBuilder outHolder = doEvaluate(funcIn);
-				FuncOut out = assignOutput(outHolder, funcIn).build();
+				FuncOut out = null;
+				FuncOut.FuncOutBuilder outBuilder = assignOutput(outHolder, funcIn);
+				if (outBuilder!=null) {
+					out = outBuilder.build();
+				}
 				
-				objectValidator.validateAndFailOnErorr(FuncOut.class, out);
+				if (out!=null) objectValidator.validateAndFailOnErorr(FuncOut.class, out);
 				return out;
 			}
 			
@@ -481,9 +489,13 @@ class RosettaCalculationGenerationTest {
 					public OtherType evaluate(WithMeta withMeta) {
 						
 						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
-						OtherType out = assignOutput(outHolder, withMeta).build();
+						OtherType out = null;
+						OtherType.OtherTypeBuilder outBuilder = assignOutput(outHolder, withMeta);
+						if (outBuilder!=null) {
+							out = outBuilder.build();
+						}
 						
-						objectValidator.validateAndFailOnErorr(OtherType.class, out);
+						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
 						return out;
 					}
 					
@@ -581,9 +593,13 @@ class RosettaCalculationGenerationTest {
 					public OtherType evaluate(List<WithMeta> withMeta) {
 						
 						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
-						OtherType out = assignOutput(outHolder, withMeta).build();
+						OtherType out = null;
+						OtherType.OtherTypeBuilder outBuilder = assignOutput(outHolder, withMeta);
+						if (outBuilder!=null) {
+							out = outBuilder.build();
+						}
 						
-						objectValidator.validateAndFailOnErorr(OtherType.class, out);
+						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
 						return out;
 					}
 					

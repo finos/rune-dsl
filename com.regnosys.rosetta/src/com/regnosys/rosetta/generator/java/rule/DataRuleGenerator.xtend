@@ -31,6 +31,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
+import com.rosetta.model.lib.validation.ModelObjectValidator
 
 class DataRuleGenerator {
 	@Inject ExpressionGenerator expressionHandler
@@ -145,11 +146,21 @@ class DataRuleGenerator {
 				}
 				
 				private ComparisonResult ruleIsApplicable(«rosettaClass.name» «rosettaClass.name.toFirstLower») {
-					return «IF ruleWhen !== null»«expressionHandler.javaCode(ruleWhen, new ParamMap(rosettaClass))»«ELSE»«ComparisonResult».success()«ENDIF»;
+					try {
+						return «IF ruleWhen !== null»«expressionHandler.javaCode(ruleWhen, new ParamMap(rosettaClass))»«ELSE»«ComparisonResult».success()«ENDIF»;
+					}
+					catch («ModelObjectValidator».ModelObjectValidationException ex) {
+						return ComparisonResult.failure(ex.getErrors());
+					}
 				}
 				
 				private ComparisonResult evaluateThenExpression(«rosettaClass.name» «rosettaClass.name.toFirstLower») {
-					return «expressionHandler.javaCode(ruleThen, new ParamMap(rosettaClass))»;
+					try {
+						return «expressionHandler.javaCode(ruleThen, new ParamMap(rosettaClass))»;
+					}
+					catch («ModelObjectValidator».ModelObjectValidationException ex) {
+						return ComparisonResult.failure(ex.getErrors());
+					}
 				}
 			}
 		'''
@@ -204,11 +215,21 @@ class DataRuleGenerator {
 			}
 			
 			private ComparisonResult ruleIsApplicable(«rosettaClass.name» «rosettaClass.name.toFirstLower») {
-				return «expressionHandler.javaCode(rule.when, new ParamMap(rosettaClass))»;
+				try {
+					return «expressionHandler.javaCode(rule.when, new ParamMap(rosettaClass))»;
+				}
+				catch (ModelObjectValidator.ModelObjectValidationException ex) {
+					return ComparisonResult.failure(ex.getErrors());
+				}
 			}
 			
 			private ComparisonResult evaluateThenExpression(«rosettaClass.name» «rosettaClass.name.toFirstLower») {
-				return «expressionHandler.javaCode(rule.then, new ParamMap(rosettaClass))»;
+				try {
+					return «expressionHandler.javaCode(rule.then, new ParamMap(rosettaClass))»;
+				}
+				catch (ModelObjectValidator.ModelObjectValidationException ex) {
+					return ComparisonResult.failure(ex.getErrors());
+				}
 			}
 		}
 	'''
