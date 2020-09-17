@@ -43,7 +43,7 @@ class RosettaFunctionGenerationTest {
 				public String evaluate(String name, String name2) {
 					
 					String resultHolder = doEvaluate(name, name2);
-					String result = assignOutput(resultHolder, name, name2);
+					final String result = assignOutput(resultHolder, name, name2);
 					
 					return result;
 				}
