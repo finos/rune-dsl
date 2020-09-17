@@ -87,7 +87,7 @@ class RosettaCalculationGenerationTest {
 						public BigDecimal evaluate(PeriodEnum in1, Period in2) {
 							
 							BigDecimal outHolder = doEvaluate(in1, in2);
-							BigDecimal out = assignOutput(outHolder, in1, in2);
+							final BigDecimal out = assignOutput(outHolder, in1, in2);
 							
 							return out;
 						}
@@ -148,7 +148,7 @@ class RosettaCalculationGenerationTest {
 				public Integer evaluate(Integer one) {
 					
 					Integer outHolder = doEvaluate(one);
-					Integer out = assignOutput(outHolder, one);
+					final Integer out = assignOutput(outHolder, one);
 					
 					return out;
 				}
@@ -212,7 +212,7 @@ class RosettaCalculationGenerationTest {
 				public Integer evaluate(Integer arg1, Integer arg2) {
 					
 					Integer resHolder = doEvaluate(arg1, arg2);
-					Integer res = assignOutput(resHolder, arg1, arg2);
+					final Integer res = assignOutput(resHolder, arg1, arg2);
 					
 					return res;
 				}
@@ -296,11 +296,8 @@ class RosettaCalculationGenerationTest {
 			public FoncOut evaluate(FuncIn funIn) {
 				
 				FoncOut.FoncOutBuilder resHolder = doEvaluate(funIn);
-				FoncOut res = null;
 				FoncOut.FoncOutBuilder resBuilder = assignOutput(resHolder, funIn);
-				if (resBuilder!=null) {
-					res = resBuilder.build();
-				}
+				final FoncOut res = resBuilder==null? null:resBuilder.build();
 				
 				if (res!=null) objectValidator.validateAndFailOnErorr(FoncOut.class, res);
 				return res;
@@ -394,11 +391,8 @@ class RosettaCalculationGenerationTest {
 			public FuncOut evaluate(FuncIn funcIn) {
 				
 				FuncOut.FuncOutBuilder outHolder = doEvaluate(funcIn);
-				FuncOut out = null;
 				FuncOut.FuncOutBuilder outBuilder = assignOutput(outHolder, funcIn);
-				if (outBuilder!=null) {
-					out = outBuilder.build();
-				}
+				final FuncOut out = outBuilder==null? null:outBuilder.build();
 				
 				if (out!=null) objectValidator.validateAndFailOnErorr(FuncOut.class, out);
 				return out;
@@ -489,11 +483,8 @@ class RosettaCalculationGenerationTest {
 					public OtherType evaluate(WithMeta withMeta) {
 						
 						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
-						OtherType out = null;
 						OtherType.OtherTypeBuilder outBuilder = assignOutput(outHolder, withMeta);
-						if (outBuilder!=null) {
-							out = outBuilder.build();
-						}
+						final OtherType out = outBuilder==null? null:outBuilder.build();
 						
 						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
 						return out;
@@ -593,11 +584,8 @@ class RosettaCalculationGenerationTest {
 					public OtherType evaluate(List<WithMeta> withMeta) {
 						
 						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
-						OtherType out = null;
 						OtherType.OtherTypeBuilder outBuilder = assignOutput(outHolder, withMeta);
-						if (outBuilder!=null) {
-							out = outBuilder.build();
-						}
+						final OtherType out = outBuilder==null? null:outBuilder.build();
 						
 						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
 						return out;
@@ -675,7 +663,7 @@ class RosettaCalculationGenerationTest {
 				public Integer evaluate() {
 					
 					Integer resHolder = doEvaluate();
-					Integer res = assignOutput(resHolder);
+					final Integer res = assignOutput(resHolder);
 					
 					return res;
 				}
@@ -785,7 +773,7 @@ class RosettaCalculationGenerationTest {
 					public String evaluate(Math in1, MathInput in2) {
 						
 						String arg1Holder = doEvaluate(in1, in2);
-						String arg1 = assignOutput(arg1Holder, in1, in2);
+						final String arg1 = assignOutput(arg1Holder, in1, in2);
 						
 						return arg1;
 					}
@@ -820,7 +808,7 @@ class RosettaCalculationGenerationTest {
 					public String evaluate(Math in1, MathInput in2) {
 						
 						String arg1Holder = doEvaluate(in1, in2);
-						String arg1 = assignOutput(arg1Holder, in1, in2);
+						final String arg1 = assignOutput(arg1Holder, in1, in2);
 						
 						return arg1;
 					}
@@ -882,7 +870,7 @@ class RosettaCalculationGenerationTest {
 				public Integer evaluate(Integer arg1) {
 					
 					Integer resHolder = doEvaluate(arg1);
-					Integer res = assignOutput(resHolder, arg1);
+					final Integer res = assignOutput(resHolder, arg1);
 					
 					return res;
 				}

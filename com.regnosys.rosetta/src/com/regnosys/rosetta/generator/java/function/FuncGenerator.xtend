@@ -142,13 +142,10 @@ class FuncGenerator {
 					
 					«output.toBuilderType(names)» «outputName»Holder = doEvaluate(«func.inputsAsArguments(names)»);
 					«IF outNeedsBuilder»
-						«outputType» «outputName» = null;
 						«outputType».«outputType»Builder «outputName»Builder = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
-						if («outputName»Builder!=null) {
-							«outputName» = «outputName»Builder.build();
-						}
+						final «outputType» «outputName» = «outputName»Builder==null? null:«outputName»Builder.build();
 					«ELSE»
-						«outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
+						final «outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
 					«ENDIF»	
 					
 					«IF !func.postConditions.empty»
