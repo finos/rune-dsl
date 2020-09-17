@@ -106,7 +106,7 @@ class ExpressionGeneratorWithBuilder {
 				if (returnVal !== null) {
 					val toBuilder = if(funcExt.needsBuilder(returnVal)) '.toBuilder()' else ''
 					val StringConcatenationClient result = 
-					'''«toJava(ele.callable, ctx)».evaluate(«ctx.setInFunctionCall = true»«FOR arg : ele.args SEPARATOR ', '»«toJava(arg, ctx)».get()«ENDFOR»«ctx.setInFunctionCall = false»)«toBuilder»'''
+					'''«MapperS».of(«toJava(ele.callable, ctx)».evaluate(«ctx.setInFunctionCall = true»«FOR arg : ele.args SEPARATOR ', '»«toJava(arg, ctx)».get()«ENDFOR»«ctx.setInFunctionCall = false»)«toBuilder»)'''
 					return result
 				}
 			}
