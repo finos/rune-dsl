@@ -289,12 +289,14 @@ class MetaFieldGenerator {
 		«ENDIF»
 		import «packages.defaultLib.name».RosettaModelObject;
 		import «packages.defaultLib.name».RosettaModelObjectBuilder;
+		import «packages.defaultLib.name».GlobalKey;
+		import «packages.defaultLib.name».GlobalKeyBuilder;
 		import «packages.basicMetafields.name».MetaFields;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.records.Date;
 		
-		public class FieldWithMeta«type.name.toFirstUpper» extends RosettaModelObject implements FieldWithMeta<«type.name.toJavaType»>{
+		public class FieldWithMeta«type.name.toFirstUpper» extends RosettaModelObject implements FieldWithMeta<«type.name.toJavaType»>, GlobalKey {
 			private final «type.name.toJavaType» value;
 			private final MetaFields meta;
 			private static BasicRosettaMetaData<FieldWithMeta«type.name.toFirstUpper»> metaData = new BasicRosettaMetaData<>();
@@ -371,7 +373,7 @@ class MetaFieldGenerator {
 				'}';
 			}
 			
-			public static class FieldWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder{
+			public static class FieldWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder implements GlobalKeyBuilder {
 				«IF type.isType»
 					private «type.name».«type.name»Builder  value;
 				«ELSE»
