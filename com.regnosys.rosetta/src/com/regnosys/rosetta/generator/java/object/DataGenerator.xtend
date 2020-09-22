@@ -62,6 +62,7 @@ class DataGenerator {
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.process.BuilderProcessor;
 			import com.rosetta.model.lib.process.Processor;
+			import com.rosetta.model.lib.process.AttributeMeta;
 
 			«FOR imp : classBody.staticImports»
 				import static «imp»;
