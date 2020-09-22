@@ -83,7 +83,7 @@ class MetaFieldGenerator {
 				if(meta.isBuiltInType) {
 					fsa.generateFile('''«targetPackage.basicMetafields.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(targetPackage, meta))
 				} else {
-					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(targetPackage, meta))					
+					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(targetPackage, meta))
 				}
 			}
 		}
@@ -272,7 +272,7 @@ class MetaFieldGenerator {
 	'''
 	}
 	
-	def fieldWithMeta(RosettaJavaPackages packages, ExpandedType type) '''		
+	def fieldWithMeta(RosettaJavaPackages packages, ExpandedType type) '''
 		«IF type.isBuiltInType»
 		package «packages.basicMetafields.name»;
 		«ELSE»
@@ -284,6 +284,7 @@ class MetaFieldGenerator {
 		import com.rosetta.model.lib.process.*;
 		import com.rosetta.model.lib.path.RosettaPath;
 		import com.rosetta.model.lib.meta.FieldWithMeta;
+		import com.rosetta.model.lib.meta.FieldWithMetaBuilder;
 		«IF !type.isBuiltInType»
 		import «packages.model.name».*;
 		«ENDIF»
@@ -373,7 +374,7 @@ class MetaFieldGenerator {
 				'}';
 			}
 			
-			public static class FieldWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder implements GlobalKeyBuilder {
+			public static class FieldWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder implements FieldWithMetaBuilder<«type.name.toJavaType»>, GlobalKeyBuilder {
 				«IF type.isType»
 					private «type.name».«type.name»Builder  value;
 				«ELSE»

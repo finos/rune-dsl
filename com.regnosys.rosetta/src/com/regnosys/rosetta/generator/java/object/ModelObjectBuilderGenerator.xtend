@@ -18,11 +18,11 @@ import java.util.ArrayList
 import java.util.Collection
 import java.util.List
 import java.util.Optional
+import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension com.regnosys.rosetta.generator.util.Util.*
-import java.util.stream.Collectors
 
 class ModelObjectBuilderGenerator {
 	
@@ -86,9 +86,7 @@ class ModelObjectBuilderGenerator {
 			
 			«c.expandedAttributes.filter[!it.overriding].hasData(c.hasSuperType)»
 			
-			«c.expandedAttributes.filter[!it.overriding].process(c.hasSuperType, names)»
-		
-			«c.builderBoilerPlate»
+			«c.builderBoilerPlate(names)»
 		}
 	'''
 	
@@ -140,9 +138,7 @@ class ModelObjectBuilderGenerator {
 			
 			«c.expandedAttributes.hasData(c.superType!==null)»
 			
-			«c.expandedAttributes.process(c.superType!==null, javaNames)»
-		
-			«c.builderBoilerPlate»
+			«c.builderBoilerPlate(javaNames)»
 		}
 	'''
 	
@@ -219,23 +215,6 @@ class ModelObjectBuilderGenerator {
 		}
 		result.toString()
 	}
-
-	private def StringConcatenationClient process(Iterable<ExpandedAttribute> attributes, boolean hasSuperType, JavaNames names) '''
-		@Override
-		public void process(RosettaPath path, BuilderProcessor processor) {
-			«IF hasSuperType»
-				super.process(path, processor);
-			«ENDIF»
-
-			«FOR a : attributes.filter[!(isRosettaClassOrData || hasMetas)]»
-				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, «a.name», this);
-			«ENDFOR»
-			
-			«FOR a : attributes.filter[isRosettaClassOrData || hasMetas]»
-				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»);
-			«ENDFOR»
-		}
-	'''
 	
 	private def Collection<RosettaRegularAttribute> children(RosettaType c) {
 		if (c instanceof RosettaClass) {
