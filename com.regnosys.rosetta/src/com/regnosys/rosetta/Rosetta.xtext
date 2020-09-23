@@ -63,6 +63,7 @@ Attribute:
 
 Enumeration returns RosettaEnumeration:
 	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable?
+		Annotations?
 		(synonyms += RosettaSynonym)*
 		enumValues += RosettaEnumValue*
 ;
@@ -167,6 +168,7 @@ ValidID:
 	(ID | 'key' // used in Lib: annotations.rosetta
 		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
 		| 'one' // TODO used in CDM model and can be removed after RosettaClass rule is deleted
+		| 'workflow' //used in the namespace
 	)
 ;
 
