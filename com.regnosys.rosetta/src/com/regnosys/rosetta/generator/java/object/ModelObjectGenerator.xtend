@@ -2,41 +2,28 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.Iterables
-import com.google.inject.Inject
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
-import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.types.RQualifiedType
-import com.regnosys.rosetta.utils.RosettaConfigExtension
 import java.util.List
-import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
-import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaImportSet
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import static extension com.regnosys.rosetta.generator.util.Util.*
 
 class ModelObjectGenerator {
 	
-	@Inject extension RosettaExtensions
-	@Inject extension ModelObjectBoilerPlate
-	@Inject extension RosettaConfigExtension
-	@Inject extension ModelObjectBuilderGenerator
-	@Inject extension ImportManagerExtension
+//	@Inject extension RosettaExtensions
+//	@Inject extension ModelObjectBoilerPlate
+//	@Inject extension RosettaConfigExtension
+//	@Inject extension ModelObjectBuilderGenerator
+//	@Inject extension ImportManagerExtension
 
 	def generate(JavaNames javaNames, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaClass).forEach [ RosettaClass clazz |
-			fsa.generateFile(javaNames.packages.model.directoryName + '/' + clazz.name + '.java', generateRosettaClass(javaNames, clazz, version))
+//			fsa.generateFile(javaNames.packages.model.directoryName + '/' + clazz.name + '.java', generateRosettaClass(javaNames, clazz, version))
 			// TODO think about skipping the validation if lazz.attributes == 0 and provide an EmptyValidator
 			fsa.generateFile(javaNames.packages.model.typeValidation.directoryName + '/' + clazz.name + 'Validator.java', validatorImpl(javaNames.packages, clazz))
 			
@@ -44,243 +31,244 @@ class ModelObjectGenerator {
 		]
 	}
 
-	private def static hasSuperType(RosettaClass c) {
-		c.superType !== null
-	}
-		
-	private def static hasStereotypes(RosettaClass c) {
-		c?.stereotype !== null
-	}
+//	private def static hasSuperType(RosettaClass c) {
+//		c.superType !== null
+//	}
+//
+//	private def static hasStereotypes(RosettaClass c) {
+//		c?.stereotype !== null
+//	}
+//
+//	private def hasAnySynonyms(RosettaClass c) {
+//		(c.synonyms !== null && !c.synonyms.empty) || (c.expandedAttributes.map[synonyms].flatten.size > 0)
+//	}
+//
+//	private def static hasSynonymPath(RosettaSynonymBase p) {
+//		return hasSynonymPath(p.toRosettaExpandedSynonym)
+//	}
 	
-	private def hasAnySynonyms(RosettaClass c) {
-		(c.synonyms !== null && !c.synonyms.empty) || (c.expandedAttributes.map[synonyms].flatten.size > 0)
-	}
-	
-	private def static hasSynonymPath(RosettaSynonymBase p) {
-		return hasSynonymPath(p.toRosettaExpandedSynonym)
-	}
-	
-	private def static hasSynonymPath(ExpandedSynonym synonym) {
-		synonym !== null && synonym.values.exists[path!==null]
-	}
+//	private def static hasSynonymPath(ExpandedSynonym synonym) {
+//		synonym !== null && synonym.values.exists[path!==null]
+//	}
 
-	private def  generateRosettaClass(JavaNames javaNames, RosettaClass c, String version) {
-		
-		val clazz = tracImports(classBody(javaNames,c,version))
-		'''
-			package «javaNames.packages.model.name»;
-			
-			«FOR imp : clazz.imports»
-				import «imp»;
-			«ENDFOR»
+//	private def  generateRosettaClass(JavaNames javaNames, RosettaClass c, String version) {
+//
+//		val clazz = tracImports(classBody(javaNames,c,version))
+//		'''
+//			package «javaNames.packages.model.name»;
+//
+//			«FOR imp : clazz.imports»
+//				import «imp»;
+//			«ENDFOR»
+//
+//			«FOR imp : clazz.staticImports»
+//				import static «imp»;
+//			«ENDFOR»
+//
+//			«imports(javaNames.packages, c)»
+//
+//			«clazz.toString»
+//		'''
+//	}
 
-			«FOR imp : clazz.staticImports»
-				import static «imp»;
-			«ENDFOR»
-			
-			«imports(javaNames.packages, c)»
-			
-			«clazz.toString»
-		'''
-	}
-	
-	private def StringConcatenationClient classBody(JavaNames javaNames, RosettaClass c, String version) {
-		'''
-			«javadocWithVersion(c.definition, version)»
-			«IF c.isRoot»
-				@RosettaRoot
-			«ENDIF»
-			@RosettaClass
-			«IF c.hasQualifiedAttribute»
-				@RosettaQualified(attribute="«c.qualifiedAttribute»",qualifiedClass=«javaNames.toJavaType(c.qualifiedClass).name».class)
-			«ENDIF»
-			«FOR stereotype : c.stereotype?.values?.map[it?.name]?:emptyList»
-				@RosettaStereotype("«stereotype»")
-			«ENDFOR»
-			«contributeClassSynonyms(c.synonyms)»
-			public «IF c.isAbstract »abstract «ENDIF»class «c.name» extends «IF c.hasSuperType »«c.superType.fullname»«ELSE»RosettaModelObject«ENDIF» «c.implementsClause»{
-				«c.rosettaClass(javaNames)»
-			
-				«c.staticBuilderMethod»
-				
-				«c.builderClass(javaNames)»
-			
-				«c.boilerPlate(javaNames)»
-			}
-		'''
-	}
-	private  def imports(RosettaJavaPackages packages, RosettaClass c) '''
-		«IF !c.hasSuperType »
-			import «packages.defaultLib.name».RosettaModelObject;
-		«ENDIF»
-		import «packages.defaultLib.name».RosettaModelObjectBuilder;
-		import «packages.defaultLib.name».meta.RosettaMetaData;
-		import «packages.model.name».meta.«c.name»Meta;
-		«IF c.allSuperTypes.map[expandedAttributes].flatten.exists[hasMetas]»
-			import «packages.model.metaField.name».*;
-			import com.rosetta.model.lib.meta.ReferenceWithMeta;
-			import com.rosetta.model.lib.meta.FieldWithMeta;
-		«ENDIF»
-		import «packages.defaultLibAnnotations.name».RosettaClass;
-		import com.rosetta.model.lib.path.RosettaPath;
-		import com.rosetta.model.lib.process.*;
-
-		«IF c.hasQualifiedAttribute»
-			import «packages.defaultLibAnnotations.name».RosettaQualified;
-		«ENDIF»
-		«IF c.hasStereotypes»
-			import «packages.defaultLibAnnotations.name».RosettaStereotype;
-		«ENDIF»
-		«IF c.hasAnySynonyms»
-			import «packages.defaultLibAnnotations.name».RosettaSynonym;
-		«ENDIF»
-		«IF c.globalKeyRecursive»
-			import «packages.basicMetafields.name».MetaFields;
-			import «packages.defaultLib.name».GlobalKey;
-			import «packages.defaultLib.name».GlobalKeyBuilder;
-		«ENDIF»
-		«IF c.isRoot»
-			import «packages.defaultLibAnnotations.name».RosettaRoot;
-		«ENDIF»
-		import «packages.defaultLib.name».qualify.Qualified;
-		import com.rosetta.util.ListEquals;
-		
-		«FOR toImport : c.toJavaImportSet(packages)»
-			import «toImport»;
-		«ENDFOR»	'''
+//	private def StringConcatenationClient classBody(JavaNames javaNames, RosettaClass c, String version) {
+//		'''
+//			«javadocWithVersion(c.definition, version)»
+//			«IF c.isRoot»
+//				@RosettaRoot
+//			«ENDIF»
+//			@RosettaClass
+//			«IF c.hasQualifiedAttribute»
+//				@RosettaQualified(attribute="«c.qualifiedAttribute»",qualifiedClass=«javaNames.toJavaType(c.qualifiedClass).name».class)
+//			«ENDIF»
+//			«FOR stereotype : c.stereotype?.values?.map[it?.name]?:emptyList»
+//				@RosettaStereotype("«stereotype»")
+//			«ENDFOR»
+//			«contributeClassSynonyms(c.synonyms)»
+//			public «IF c.isAbstract »abstract «ENDIF»class «c.name» extends «IF c.hasSuperType »«c.superType.fullname»«ELSE»RosettaModelObject«ENDIF» «c.implementsClause»{
+//				«c.rosettaClass(javaNames)»
+//
+//				«c.staticBuilderMethod»
+//
+//				«c.builderClass(javaNames)»
+//
+//				«c.boilerPlate(javaNames)»
+//			}
+//		'''
+//	}
+//	private  def imports(RosettaJavaPackages packages, RosettaClass c) '''
+//		«IF !c.hasSuperType »
+//			import «packages.defaultLib.name».RosettaModelObject;
+//		«ENDIF»
+//		import «packages.defaultLib.name».RosettaModelObjectBuilder;
+//		import «packages.defaultLib.name».meta.RosettaMetaData;
+//		import com.rosetta.model.lib.merge.BuilderMerger;
+//		import «packages.model.name».meta.«c.name»Meta;
+//		«IF c.allSuperTypes.map[expandedAttributes].flatten.exists[hasMetas]»
+//			import «packages.model.metaField.name».*;
+//			import com.rosetta.model.lib.meta.ReferenceWithMeta;
+//			import com.rosetta.model.lib.meta.FieldWithMeta;
+//		«ENDIF»
+//		import «packages.defaultLibAnnotations.name».RosettaClass;
+//		import com.rosetta.model.lib.path.RosettaPath;
+//		import com.rosetta.model.lib.process.*;
+//
+//		«IF c.hasQualifiedAttribute»
+//			import «packages.defaultLibAnnotations.name».RosettaQualified;
+//		«ENDIF»
+//		«IF c.hasStereotypes»
+//			import «packages.defaultLibAnnotations.name».RosettaStereotype;
+//		«ENDIF»
+//		«IF c.hasAnySynonyms»
+//			import «packages.defaultLibAnnotations.name».RosettaSynonym;
+//		«ENDIF»
+//		«IF c.globalKeyRecursive»
+//			import «packages.basicMetafields.name».MetaFields;
+//			import «packages.defaultLib.name».GlobalKey;
+//			import «packages.defaultLib.name».GlobalKeyBuilder;
+//		«ENDIF»
+//		«IF c.isRoot»
+//			import «packages.defaultLibAnnotations.name».RosettaRoot;
+//		«ENDIF»
+//		import «packages.defaultLib.name».qualify.Qualified;
+//		import com.rosetta.util.ListEquals;
+//
+//		«FOR toImport : c.toJavaImportSet(packages)»
+//			import «toImport»;
+//		«ENDFOR»	'''
 	
 	def boolean globalKeyRecursive(RosettaClass class1) {
 		return class1.globalKey || (class1.superType !== null && class1.superType.globalKeyRecursive)
 	}
 
-	def private hasQualifiedAttribute(RosettaClass c) {
-		c.qualifiedAttribute !== null && c.qualifiedClass !== null
-	}
+//	def private hasQualifiedAttribute(RosettaClass c) {
+//		c.qualifiedAttribute !== null && c.qualifiedClass !== null
+//	}
 	
-	def private getQualifiedAttribute(RosettaClass c) {
-		c.allSuperTypes.expandedAttributes.findFirst[qualified]?.name
-	}
+//	def private getQualifiedAttribute(RosettaClass c) {
+//		c.allSuperTypes.expandedAttributes.findFirst[qualified]?.name
+//	}
 	
-	def private getQualifiedClass(RosettaClass c) {
-		val allExpandedAttributes = c.allSuperTypes.expandedAttributes
-		if(!allExpandedAttributes.stream.anyMatch[qualified])
-			return null
-		
-		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].type.name
-		var qualifiedRootClassType = switch qualifiedClassType { 
-			case RQualifiedType.PRODUCT_TYPE.qualifiedType: c.findProductRootName
-			case RQualifiedType.EVENT_TYPE.qualifiedType: c.findEventRootName
-			default: throw new IllegalArgumentException("Unknown qualifiedType " + qualifiedClassType)
-		}
-		
-		if(qualifiedRootClassType === null)
-			throw new IllegalArgumentException("QualifiedType " + qualifiedClassType + " must have qualifiable root class")
-			
-		return qualifiedRootClassType
-	}
+//	def private getQualifiedClass(RosettaClass c) {
+//		val allExpandedAttributes = c.allSuperTypes.expandedAttributes
+//		if(!allExpandedAttributes.stream.anyMatch[qualified])
+//			return null
+//
+//		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].type.name
+//		var qualifiedRootClassType = switch qualifiedClassType {
+//			case RQualifiedType.PRODUCT_TYPE.qualifiedType: c.findProductRootName
+//			case RQualifiedType.EVENT_TYPE.qualifiedType: c.findEventRootName
+//			default: throw new IllegalArgumentException("Unknown qualifiedType " + qualifiedClassType)
+//		}
+//
+//		if(qualifiedRootClassType === null)
+//			throw new IllegalArgumentException("QualifiedType " + qualifiedClassType + " must have qualifiable root class")
+//
+//		return qualifiedRootClassType
+//	}
 
-	private def StringConcatenationClient rosettaClass(RosettaClass c, JavaNames names) '''
-		«FOR attribute : c.expandedAttributes»
-			private final «attribute.toJavaType(names)» «attribute.name»;
-		«ENDFOR»
-		private static «c.name»Meta metaData = new «c.name»Meta();
+//	private def StringConcatenationClient rosettaClass(RosettaClass c, JavaNames names) '''
+//		«FOR attribute : c.expandedAttributes»
+//			private final «attribute.toJavaType(names)» «attribute.name»;
+//		«ENDFOR»
+//		private static «c.name»Meta metaData = new «c.name»Meta();
+//
+//		«c.name»(«c.builderName» builder) {
+//			«IF hasSuperType(c)»
+//				super(builder);
+//			«ENDIF»
+//			«FOR attribute : c.expandedAttributes»
+//				this.«attribute.name» = «attribute.attributeFromBuilder»;
+//			«ENDFOR»
+//		}
+//
+//		«FOR attribute : c.expandedAttributes»
+//			«javadoc(attribute.definition)»
+//			«contributeSynonyms(attribute.synonyms)»
+//			public «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
+//				return «attribute.name»;
+//			}
+//
+//		«ENDFOR»
+//
+//		@Override
+//		public RosettaMetaData<? extends «c.name»> metaData() {
+//			return metaData;
+//		}
+//
+//		«IF !c.isAbstract»
+//			public «c.builderName» toBuilder() {
+//				«c.name»Builder builder = new «c.name»Builder();
+//				«FOR attribute : c.getAllSuperTypes.map[expandedAttributes].flatten.distinctBy[name]»
+//					«IF attribute.cardinalityIsListValue»
+//						ofNullable(get«attribute.name.toFirstUpper»()).ifPresent(«attribute.name» -> «attribute.name».forEach(builder::add«attribute.name.toFirstUpper»));
+//					«ELSE»
+//						ofNullable(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
+//					«ENDIF»
+//				«ENDFOR»
+//				return builder;
+//			}
+//		«ELSE»
+//			public abstract «c.builderName» toBuilder();
+//		«ENDIF»
+//	'''
 
-		«c.name»(«c.builderName» builder) {
-			«IF hasSuperType(c)»
-				super(builder);
-			«ENDIF»
-			«FOR attribute : c.expandedAttributes»
-				this.«attribute.name» = «attribute.attributeFromBuilder»;
-			«ENDFOR»
-		}
+//	private def StringConcatenationClient toJavaType(ExpandedAttribute attribute, JavaNames names) {
+//		if (attribute.isMultiple) '''«List»<«DataGenerator.toJavaTypeSingle(attribute, names)»>'''
+//		else DataGenerator.toJavaTypeSingle(attribute, names)
+//	}
 
-		«FOR attribute : c.expandedAttributes»
-			«javadoc(attribute.definition)»
-			«contributeSynonyms(attribute.synonyms)»
-			public «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
-				return «attribute.name»;
-			}
-			
-		«ENDFOR»
-		
-		@Override
-		public RosettaMetaData<? extends «c.name»> metaData() {
-			return metaData;
-		} 
 
-		«IF !c.isAbstract»
-			public «c.builderName» toBuilder() {
-				«c.name»Builder builder = new «c.name»Builder();
-				«FOR attribute : c.getAllSuperTypes.map[expandedAttributes].flatten.distinctBy[name]»
-					«IF attribute.cardinalityIsListValue»
-						ofNullable(get«attribute.name.toFirstUpper»()).ifPresent(«attribute.name» -> «attribute.name».forEach(builder::add«attribute.name.toFirstUpper»));
-					«ELSE»
-						ofNullable(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
-					«ENDIF»
-				«ENDFOR»
-				return builder;
-			}
-		«ELSE»
-			public abstract «c.builderName» toBuilder();
-		«ENDIF»
-	'''
-	
-	private def StringConcatenationClient toJavaType(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isMultiple) '''«List»<«DataGenerator.toJavaTypeSingle(attribute, names)»>''' 
-		else DataGenerator.toJavaTypeSingle(attribute, names)
-	}
 
-	
-	
-	private def contributeSynonyms(List<ExpandedSynonym> synonyms) '''		
-		«FOR synonym : synonyms »
-					«val maps = if (synonym.values.exists[v|v.maps>1]) ''', maps=«synonym.values.map[maps].join(",")»''' else ''»
-					«FOR source : synonym.sources»
-						«IF !synonym.hasSynonymPath»
-							@RosettaSynonym(value="«synonym.values.map[name].join(",")»", source="«source.getName»"«maps»)
-						«ELSE»
-							«FOR value : synonym.values»
-								@RosettaSynonym(value="«value.name»", source="«source.getName»", path="«value.path»"«maps»)
-							«ENDFOR»
-						«ENDIF»
-					«ENDFOR»
-				«ENDFOR»
-	'''
-	
-	private def contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''		
-		«FOR synonym : synonyms.filter[value!==null] »
-			«val path = if (hasSynonymPath(synonym)) ''', path="«synonym.value.path»" ''' else ''»
-			«val maps = if (synonym.value.maps > 0) ''', maps=«synonym.value.maps»''' else ''»
-			
-			«FOR source : synonym.sources»
-				@RosettaSynonym(value="«synonym.value.name»", source="«source.getName»"«path»«maps»)
-			«ENDFOR»
-		«ENDFOR»
-	'''
+//	private def contributeSynonyms(List<ExpandedSynonym> synonyms) '''
+//		«FOR synonym : synonyms »
+//					«val maps = if (synonym.values.exists[v|v.maps>1]) ''', maps=«synonym.values.map[maps].join(",")»''' else ''»
+//					«FOR source : synonym.sources»
+//						«IF !synonym.hasSynonymPath»
+//							@RosettaSynonym(value="«synonym.values.map[name].join(",")»", source="«source.getName»"«maps»)
+//						«ELSE»
+//							«FOR value : synonym.values»
+//								@RosettaSynonym(value="«value.name»", source="«source.getName»", path="«value.path»"«maps»)
+//							«ENDFOR»
+//						«ENDIF»
+//					«ENDFOR»
+//				«ENDFOR»
+//	'''
 
-	private def staticBuilderMethod(RosettaClass c) '''
-		«IF !c.isAbstract»
-			public static «builderName(c)» builder() {
-				return new «builderName(c)»();
-			}
-		«ENDIF»
-	'''
+//	private def contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''
+//		«FOR synonym : synonyms.filter[value!==null] »
+//			«val path = if (hasSynonymPath(synonym)) ''', path="«synonym.value.path»" ''' else ''»
+//			«val maps = if (synonym.value.maps > 0) ''', maps=«synonym.value.maps»''' else ''»
+//
+//			«FOR source : synonym.sources»
+//				@RosettaSynonym(value="«synonym.value.name»", source="«source.getName»"«path»«maps»)
+//			«ENDFOR»
+//		«ENDFOR»
+//	'''
 
-	private def attributeFromBuilder(ExpandedAttribute attribute) {
-		if(attribute.isRosettaClassOrData || attribute.hasMetas) {
-			'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
-		} else {
-			'''builder.get«attribute.name.toFirstUpper»()'''
-		} 
-	}
-	
-	private def buildRosettaObject(ExpandedAttribute attribute) {		
-		if(attribute.cardinalityIsListValue) {
-			'''list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(Collectors.toList())'''
-		} else {
-			'''f->f.build()'''
-		}
-	}
+//	private def staticBuilderMethod(RosettaClass c) '''
+//		«IF !c.isAbstract»
+//			public static «builderName(c)» builder() {
+//				return new «builderName(c)»();
+//			}
+//		«ENDIF»
+//	'''
+//
+//	private def attributeFromBuilder(ExpandedAttribute attribute) {
+//		if(attribute.isRosettaClassOrData || attribute.hasMetas) {
+//			'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
+//		} else {
+//			'''builder.get«attribute.name.toFirstUpper»()'''
+//		}
+//	}
+
+//	private def buildRosettaObject(ExpandedAttribute attribute) {
+//		if(attribute.cardinalityIsListValue) {
+//			'''list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(Collectors.toList())'''
+//		} else {
+//			'''f->f.build()'''
+//		}
+//	}
 
 	private def validatorImpl(RosettaJavaPackages packages, RosettaClass c) '''
 		package «packages.model.typeValidation.name»;

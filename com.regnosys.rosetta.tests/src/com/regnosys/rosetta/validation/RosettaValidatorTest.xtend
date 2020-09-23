@@ -61,24 +61,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testLowerCaseDataRule() {
-		val model = 
-		'''
-			data rule quote <"">
-				when Foo exists
-				then Bar exists
-					
-			class Foo{
-			}
-			
-			class Bar{
-			}
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_DATA_RULE, INVALID_CASE,
-			"Rule name should start with a capital")
-	}
-	
-	@Test
 	def void testLowerCaseProductQualifier() {
 		val model = 
 		'''
@@ -421,35 +403,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			enum Foo: BAR
 		'''.parseRosetta
 		model.assertError(ROSETTA_TYPE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
-	}
-	
-	@Test
-	def void testDuplicateDataRule_ClassName() {
-		val model = '''
-			class Foo {
-			}
-			
-			data rule Foo
-				when Foo exists
-				then Foo must exist
-		'''.parseRosetta
-		model.assertError(ROSETTA_DATA_RULE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
-	}
-	
-	@Test
-	def void testDuplicateDataRule_EnumName() {
-		val model = '''
-			class Foo {
-			}
-			
-			enum Bar:
-				Entry
-			
-			data rule Bar
-				when Foo exists
-				then Foo must exist
-		'''.parseRosetta
-		model.assertError(ROSETTA_DATA_RULE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
 	}
 	
 	@Test

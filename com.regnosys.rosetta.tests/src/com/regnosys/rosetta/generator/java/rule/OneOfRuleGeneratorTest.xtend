@@ -34,10 +34,11 @@ class OneOfRuleGeneratorTest {
 	@BeforeEach
 	def void setUp() {
 		classes = '''
-			class Foo one of {
-				attr1 string (0..1);
-				attr2 string (0..1);
-			}
+			type Foo:
+				attr1 string (0..1)
+				attr2 string (0..1)
+				
+				condition: one-of
 		'''
 		.generateCode
 		.compileToClasses
@@ -95,7 +96,7 @@ class OneOfRuleGeneratorTest {
 		
 		val oneOfRule = choiceRules.get(0) as Validator<?>
 		
-		assertThat(oneOfRule.class.simpleName, is(className + 'OneOfRule'))
+		assertThat(oneOfRule.class.simpleName, is(className + 'OneOf0'))
 		
 		return oneOfRule
 	}

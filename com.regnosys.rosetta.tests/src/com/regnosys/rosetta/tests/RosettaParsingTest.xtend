@@ -187,27 +187,6 @@ class RosettaParsingTest {
 	}
 	
 	@Test
-	def void testDataRule() {
-	'''
-			class Party
-			{
-				foo boolean (1..1)
-				bar string (0..*)
-			}
-			class PartyIdentifier
-			{
-				partyId string (0..1)
-			}
-			data rule Foo_Bar
-				[regulatoryReference ESMA MiFIR RTS_22 article "3(2)" provision "Bla"]
-				[marketPractice ISDA write-up "bla" recommendation "bla"]
-				when Party -> foo = True
-					and Party -> bar is absent
-				then PartyIdentifier -> partyId exists
-		'''.parseRosettaWithNoErrors
-	}
-	
-	@Test
 	def void testDataRuleWithChoice() {
 	'''
 			type Party:
@@ -521,34 +500,6 @@ class RosettaParsingTest {
 		'''.parseRosettaWithNoErrors
 	}
 	
-	
-	@Test @Disabled //FIXME referencing  'data rule' not supported
-	def void testIsEvent() {
-	'''
-			isEvent FooBar
-				[synonym Bank_A value Foo_Bar]
-				[synonym Venue_B value BarFoo]
-				Foo -> foo exists
-					and ( Foo -> bar is absent
-						or Foo -> foo <> Foo -> foo )
-				and Foo_Bar apply
-				
-			class Foo
-			{
-				foo string (1..1)
-				bar Bar (0..1)
-			}
-			class Bar
-			{
-				bar string (1..1)
-			}
-			
-			data rule Foo_Bar
-				when Foo -> foo exists
-				then Foo is absent
-			
-		'''.parseRosettaWithNoErrors	
-	}
 	@Test
 	def void externalSynonymWithMapperShouldParseWithNoErrors() {
 	'''

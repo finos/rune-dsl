@@ -33,42 +33,39 @@ class RosettaQualifyEventsDataRuleTest {
 	@BeforeEach
 	def void setUp() {
 		val code = '''
-			class Foo {
-				bar Bar (0..*);
-				baz Baz (0..1);
-			}
+			type Foo:
+				bar Bar (0..*)
+				baz Baz (0..1)
+				
+				condition FeatureCallComparisonDecreasing:
+					if bar exists
+					then bar -> before > bar -> after
+				
+				condition BarFeatureCallGreaterThanLiteralZero:
+					if bar exists 
+					then bar -> after > 0
+							
+				condition BazFeatureCallGreaterThanLiteralFive:
+					if baz exists 
+					then baz -> other > 5
+							
+				condition BazFeatureCallGreaterThanLiteralZero:
+					if baz exists 
+					then baz -> other > 0
 			
-			class Bar {
-				before number (0..1);
-				after number (0..1);
-			}
+			type Bar:
+				before number (0..1)
+				after number (0..1)
 			
-			class Baz {
-				bazValue number (0..1);
-				other number (0..1);
-			}
+			type Baz:
+				bazValue number (0..1)
+				other number (0..1)
 			
-			data rule FeatureCallComparisonDecreasing
-			when Foo -> bar exists
-			then Foo -> bar -> before > Foo -> bar -> after
-			
-			data rule BarFeatureCallGreaterThanLiteralZero
-			when Foo -> bar exists
-			then Foo -> bar -> after > 0
-			
-			data rule BazFeatureCallGreaterThanLiteralFive
-			when Foo -> baz exists
-			then Foo -> baz -> other > 5
-			
-			data rule BazFeatureCallGreaterThanLiteralZero
-			when Foo -> baz exists
-			then Foo -> baz -> other > 0
-			
+«««			 TODO: convert to func
 			isEvent ExprAndDataRulesOrDataRules
 				Foo -> baz -> other when present = 10
 				and Foo -> bar -> before exists
 				and Foo -> bar -> after exists
-				and FeatureCallComparisonDecreasing, BarFeatureCallGreaterThanLiteralZero or BazFeatureCallGreaterThanLiteralFive, BazFeatureCallGreaterThanLiteralZero apply
 			'''.generateCode
 //		println(code)
 		classes = code.compileToClasses
@@ -84,23 +81,23 @@ class RosettaQualifyEventsDataRuleTest {
 		// Assert DataRules
 
 		// FeatureCallComparisonDecreasing (success)
-		assertDataRule(fooInstance, 'FeatureCallComparisonDecreasing', true, "when Foo -> bar exists\nthen Foo -> bar -> before > Foo -> bar -> after")		
+		assertCondition(fooInstance, 'FooFeatureCallComparisonDecreasing', true, "if bar exists then bar -> before > bar -> after")		
 		
 		// BarFeatureCallGreaterThanLiteralZero (success)
-		assertDataRule(fooInstance, 'BarFeatureCallGreaterThanLiteralZero', true, "when Foo -> bar exists\nthen Foo -> bar -> after > 0")		
+		assertCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero', true, "if bar exists then bar -> after > 0")		
 		
 		// BazFeatureCallGreaterThanLiteralZero (success)
-		assertDataRule(fooInstance, 'BazFeatureCallGreaterThanLiteralZero', true, "when Foo -> baz exists\nthen Foo -> baz -> other > 0")
+		assertCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero', true, "if baz exists then baz -> other > 0")
 		
 		// BazFeatureCallGreaterThanLiteralFive (success)
-		assertDataRule(fooInstance, 'BazFeatureCallGreaterThanLiteralFive', true, "when Foo -> baz exists\nthen Foo -> baz -> other > 5")	
+		assertCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive', true, "if baz exists then baz -> other > 5")	
 		
 		// Assert Event
 		
 		val results = createUtilAndGetAllResults(fooInstance)
 		val result = getQualifyResult(results, "ExprAndDataRulesOrDataRules")
 		assertTrue(result.success, 'Unexpected success result')
-		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(5))
+		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
 
 	@Test
@@ -112,23 +109,23 @@ class RosettaQualifyEventsDataRuleTest {
 		// Assert DataRules
 		
 		// FeatureCallComparisonDecreasing (success)
-		assertDataRule(fooInstance, 'FeatureCallComparisonDecreasing', true, "when Foo -> bar exists\nthen Foo -> bar -> before > Foo -> bar -> after")		
+		assertCondition(fooInstance, 'FooFeatureCallComparisonDecreasing', true, "if bar exists then bar -> before > bar -> after")		
 		
 		// BarFeatureCallGreaterThanLiteralZero (fail)
-		assertDataRule(fooInstance, 'BarFeatureCallGreaterThanLiteralZero', false, "when Foo -> bar exists\nthen Foo -> bar -> after > 0")		
+		assertCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero', false, "if bar exists then bar -> after > 0")		
 		
 		// BazFeatureCallGreaterThanLiteralZero (success)
-		assertDataRule(fooInstance, 'BazFeatureCallGreaterThanLiteralZero', true, "when Foo -> baz exists\nthen Foo -> baz -> other > 0")
+		assertCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero', true, "if baz exists then baz -> other > 0")
 				
 		// BazFeatureCallGreaterThanLiteralFive (success)
-		assertDataRule(fooInstance, 'BazFeatureCallGreaterThanLiteralFive', true, "when Foo -> baz exists\nthen Foo -> baz -> other > 5")	
+		assertCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive', true, "if baz exists then baz -> other > 5")	
 						
 		// Assert Event
 		
 		val results = createUtilAndGetAllResults(fooInstance)
 		val result = getQualifyResult(results, "ExprAndDataRulesOrDataRules")
 		assertTrue(result.success, 'Expected success result')
-		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(5))
+		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
 	
 	@Test
@@ -140,27 +137,27 @@ class RosettaQualifyEventsDataRuleTest {
 		// Assert DataRules
 
 		// FeatureCallComparisonDecreasing (fail)
-		val dataRuleBarDescreasing = ValidationResult.cast(classes.runDataRule(fooInstance, 'FeatureCallComparisonDecreasing'))
+		val dataRuleBarDescreasing = ValidationResult.cast(classes.runCondition(fooInstance, 'FooFeatureCallComparisonDecreasing'))
 		assertFalse(dataRuleBarDescreasing.success)
-		assertThat(dataRuleBarDescreasing.definition, is("when Foo -> bar exists\nthen Foo -> bar -> before > Foo -> bar -> after"))
+		assertThat(dataRuleBarDescreasing.definition, is("if bar exists then bar -> before > bar -> after"))
 		assertThat(dataRuleBarDescreasing.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getBefore] values [-10] are not > than all elements of paths [Foo->getBar[0]->getAfter] values [0]"))
 
 		// BarFeatureCallGreaterThanLiteralZero (fail)
-		val dataRuleBarGreaterThanZero = ValidationResult.cast(classes.runDataRule(fooInstance, 'BarFeatureCallGreaterThanLiteralZero'))
+		val dataRuleBarGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero'))
 		assertFalse(dataRuleBarGreaterThanZero.success)
-		assertThat(dataRuleBarGreaterThanZero.getDefinition(), is("when Foo -> bar exists\nthen Foo -> bar -> after > 0"))
+		assertThat(dataRuleBarGreaterThanZero.getDefinition(), is("if bar exists then bar -> after > 0"))
 		assertThat(dataRuleBarGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getAfter] values [0] are not > than all elements of paths [Integer] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralZero (fail)
-		val dataRuleBazGreaterThanZero = ValidationResult.cast(classes.runDataRule(fooInstance, 'BazFeatureCallGreaterThanLiteralZero'))
+		val dataRuleBazGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero'))
 		assertFalse(dataRuleBazGreaterThanZero.success)
-		assertThat(dataRuleBazGreaterThanZero.definition, is("when Foo -> baz exists\nthen Foo -> baz -> other > 0"))
+		assertThat(dataRuleBazGreaterThanZero.definition, is("if baz exists then baz -> other > 0"))
 		assertThat(dataRuleBazGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralFive (fail)
-		val dataRuleBazGreaterThanFive = ValidationResult.cast(classes.runDataRule(fooInstance, 'BazFeatureCallGreaterThanLiteralFive'))
+		val dataRuleBazGreaterThanFive = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive'))
 		assertFalse(dataRuleBazGreaterThanFive.success)
-		assertThat(dataRuleBazGreaterThanFive.definition, is("when Foo -> baz exists\nthen Foo -> baz -> other > 5"))
+		assertThat(dataRuleBazGreaterThanFive.definition, is("if baz exists then baz -> other > 5"))
 		assertThat(dataRuleBazGreaterThanFive.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [5]"))
 		
 		// Assert Event
@@ -168,13 +165,13 @@ class RosettaQualifyEventsDataRuleTest {
 		val results = createUtilAndGetAllResults(fooInstance)
 		val result = getQualifyResult(results, "ExprAndDataRulesOrDataRules")
 		assertFalse(result.success, 'Unexpected success result')
-		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(5))
+		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
 
 	// Util methods
 		
-	def assertDataRule(RosettaModelObject model, String dataRuleName, boolean expectedSuccess, String expectedDefinition) {
-		val dataRuleResult = ValidationResult.cast(classes.runDataRule(model, dataRuleName))
+	def assertCondition(RosettaModelObject model, String dataRuleName, boolean expectedSuccess, String expectedDefinition) {
+		val dataRuleResult = ValidationResult.cast(classes.runCondition(model, dataRuleName))
 		assertThat(dataRuleResult.success, is(expectedSuccess))	
 		assertThat(dataRuleResult.definition, is(expectedDefinition))
 	}
