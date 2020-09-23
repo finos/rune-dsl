@@ -803,5 +803,91 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(CONSTRAINT, null,
 			"At least two attributes must be passed to a choice rule.")
 	}
+	
+	
+	
+	@Test
+	def void externalSynonymWithFormatShouldOnlyOnDate() {
+	val model='''
+			type Foo:
+				foo int (0..1)
+			
+			synonym source TEST_Base
+			
+			synonym source TEST extends TEST_Base {
+				
+				Foo:
+					+ foo
+						[value "bar" path "baz" dateFormat "MM/dd/yy"]
+			}
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYNONYM_BODY, null,
+			"Format can only be applied to date/time types")
+	}
+	
+	@Test
+	def void externalSynonymWithFormatValid() {
+	val model='''
+			type Foo:
+				foo time (0..1)
+			
+			synonym source TEST_Base
+			
+			synonym source TEST extends TEST_Base {
+				
+				Foo:
+					+ foo
+						[value "bar" path "baz" dateFormat "MMB/dd/yy"]
+			}
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYNONYM_BODY, null,
+			"Format must be a valid date/time format - Unknown pattern letter: B")
+	}
+	
+	@Test
+	def void internalSynonymWithFormatShouldOnlyBeOnDate() {
+	val model='''
+			type Foo:
+				foo int (0..1)
+				[synonym TEST_Base value "bar" path "baz" dateFormat "MM/dd/yy"]
+			synonym source TEST_Base
+
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYNONYM_BODY, null,
+			"Format can only be applied to date/time types")
+	}
+	
+	@Test
+	def void internalSynonymWithPatternShouldBeValid() {
+	val model='''
+			type Foo:
+				foo int (0..1)
+				[synonym TEST_Base value "bar" path "baz" pattern "([A-Z)" "$1"]
+			synonym source TEST_Base
+
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYNONYM_BODY, null,
+			"Pattern to match must be a valid regular expression")
+	}
+	
+	@Test
+	def void enumSynonymWithPatternShouldBeValid() {
+	val model='''
+			enum Enumerate : X Y Z
+			
+			synonym source TEST_Base
+			synonym source TEST extends TEST_Base {
+				
+				enums
+				
+				Enumerate:
+					+ x
+						[value "bar" pattern "([A-Z)" "$1"]
+			}
+
+		'''.parseRosetta
+		model.assertError(ROSETTA_ENUM_SYNONYM, null,
+			"Pattern to match must be a valid regular expression")
+	}
 
 }

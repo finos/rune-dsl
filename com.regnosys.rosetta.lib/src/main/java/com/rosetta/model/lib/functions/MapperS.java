@@ -17,6 +17,10 @@ public class MapperS<T> implements MapperBuilder<T> {
 	public MapperS(MapperItem<T,?> item) {
 		this.item = item;
 	}
+	
+	public static <T> MapperS<T> ofNull() {
+		return new MapperS<>(new MapperItem<>(null, MapperPath.builder().addNull(), true, Optional.empty()));
+	}
 
 	public static <T> MapperBuilder<T> of(T t) {
 		if (t==null) {

@@ -615,10 +615,13 @@ class ExpressionGenerator {
 		'''"get«attribute.name.toFirstUpper»", «(attribute.eContainer as RosettaClass).toJavaType»::get«attribute.name.toFirstUpper»'''
 
 	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute) {
-		if(attribute.eContainer instanceof Data)
-		'''"get«attribute.name.toFirstUpper»", «(attribute.eContainer as Data).toJavaType»::get«attribute.name.toFirstUpper»'''
+		if(attribute.eContainer instanceof Data) 
+			'''"get«attribute.name.toFirstUpper»", «attribute.attributeTypeVariableName» -> «IF attribute.override»(«attribute.type.toJavaType») «ENDIF»«attribute.attributeTypeVariableName».get«attribute.name.toFirstUpper»()'''
 	}
 
+	private def attributeTypeVariableName(Attribute attribute) 
+		'''_«(attribute.eContainer as Data).toJavaType.simpleName.toFirstLower»'''
+	
 	/**
 	 * The id for a parameter - either a Class name or a positional index
 	 */

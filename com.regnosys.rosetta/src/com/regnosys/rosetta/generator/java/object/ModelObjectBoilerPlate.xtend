@@ -33,20 +33,22 @@ class ModelObjectBoilerPlate {
 	'''
 
 
-	def StringConcatenationClient builderBoilerPlate(RosettaClass c) {
+	def StringConcatenationClient builderBoilerPlate(RosettaClass c, JavaNames names) {
 		val wrap = c.wrap
 		val attrs = wrap.attributes.filter[name != 'eventEffect'].toList
 		'''
+			«wrap.builderProcessMethod(names)»
 			«wrap.contributeEquals(attrs, toBuilder)»
 			«wrap.contributeHashCode(attrs)»
 			«wrap.contributeToString(toBuilder)»
 		'''
 	}
 
-	def StringConcatenationClient builderBoilerPlate(Data c) {
+	def StringConcatenationClient builderBoilerPlate(Data c, JavaNames names) {
 		val wrap = c.wrap
 		val attrs = wrap.attributes.filter[name != 'eventEffect'].toList
 		'''
+			«wrap.builderProcessMethod(names)»
 			«wrap.contributeEquals(attrs, toBuilder)»
 			«wrap.contributeHashCode(attrs)»
 			«wrap.contributeToString(toBuilder)»
@@ -220,10 +222,31 @@ class ModelObjectBoilerPlate {
 		
 	'''
 	
-	private def getMetaFlags(ExpandedAttribute attribute) {
+	private def builderProcessMethod(extension TypeData it,  JavaNames names) '''
+		@Override
+		public void process(RosettaPath path, BuilderProcessor processor) {
+			«IF hasSuperType»
+				super.process(path, processor);
+			«ENDIF»
+			
+			«FOR a : attributes.filter[!overriding].filter[!(isRosettaClassOrData || hasMetas)]»
+				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, «a.name», this«a.metaFlags»);
+			«ENDFOR»
+			
+			«FOR a : attributes.filter[!overriding].filter[isRosettaClassOrData || hasMetas]»
+				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
+			«ENDFOR»
+		}
+		
+	'''
+
+    private def getMetaFlags(ExpandedAttribute attribute) {
 		val result = new StringBuilder()
 		if (attribute.type.isMetaType) {
 			result.append(", AttributeMeta.IS_META")
+		}
+		if (attribute.metas.map[name].contains("id")) {
+			result.append(", AttributeMeta.IS_GLOBAL_KEY_FIELD")
 		}
 		result.toString
 	}

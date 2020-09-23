@@ -274,6 +274,7 @@ class ImportGenerator {
 		addExpression(rule.then)
 		imports.addAll(packages.defaultLibAnnotations.name + ".RosettaDataRule",
 			packages.defaultLibValidation.name + ".ValidationResult", packages.defaultLibValidation.name + ".Validator",
+			packages.defaultLibValidation.name + ".ModelObjectValidator",
 			packages.defaultLib.name + ".functions.MapperS", packages.defaultLib.name + ".validation.ComparisonResult",
 			packages.defaultLib.name + ".meta.FieldWithMeta", packages.defaultLib.name + ".path.RosettaPath",
 			packages.defaultLib.name + ".RosettaModelObjectBuilder")

@@ -86,6 +86,9 @@ final class ExpandedSynonym {
 	List<ExpandedSynonymValue> metaValues
 	RosettaMapping mappingLogic
 	String mapperName
+	String format
+	String patternMatcher
+	String patternReplace
 }
 
 @Data

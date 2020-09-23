@@ -74,6 +74,11 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.RosettaSynonymBody
+import java.time.format.DateTimeFormatter
+import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
+import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 
 /**
  * This class contains custom validation rules. 
@@ -475,8 +480,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (usedClasses.size == 1) {
 			val allowedClass = switch (ele) { RosettaProduct: findProductRootName(ele) RosettaEvent: findEventRootName(
 				ele) default: null }
-			if (allowedClass !== null && usedClasses.head.name != allowedClass) {
-				error('''«qualifiableType» expressions should always start from the '«allowedClass»' class. But found '«usedClasses.head.name»'.''',
+			if (allowedClass !== null && usedClasses.head.name != allowedClass.name) {
+				error('''«qualifiableType» expressions should always start from the '«allowedClass.name»' class. But found '«usedClasses.head.name»'.''',
 					ele, ROSETTA_NAMED__NAME, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE)
 			}
 		}
@@ -561,6 +566,85 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 							ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, callerIdx)
 					}
 				]
+			}
+		}
+	}
+	
+	@Check
+	def void checkPatternAndFormat(RosettaExternalRegularAttribute attribute) {
+		if (!isDateTime(attribute.attributeRef.RType)){
+			for(s:attribute.externalSynonyms) {
+				checkFormatNull(s.body)
+				checkPatternValid(s.body)
+			}
+		}
+		else {
+			for(s:attribute.externalSynonyms) {
+				checkFormatValid(s.body)
+				checkPatternNull(s.body)
+			}
+		}
+	}
+	@Check
+	def void checkPatternAndFormat(Attribute attribute) {
+		if (!isDateTime(attribute.RType)){
+			for(s:attribute.synonyms) {
+				checkFormatNull(s.body)
+				checkPatternValid(s.body)
+			}
+		}
+		else {
+			for(s:attribute.synonyms) {
+				checkFormatValid(s.body)
+				checkPatternNull(s.body)
+			}
+		}
+	}
+	
+	def checkFormatNull(RosettaSynonymBody body) {
+		if (body.format!==null) {
+			error("Format can only be applied to date/time types", body, ROSETTA_SYNONYM_BODY__FORMAT)
+		}
+	}
+	
+	def checkFormatValid(RosettaSynonymBody body) {
+		if (body.format!==null){
+			try {
+				DateTimeFormatter.ofPattern(body.format)
+			} catch (IllegalArgumentException e) {
+				error("Format must be a valid date/time format - "+e.message, body, ROSETTA_SYNONYM_BODY__FORMAT)
+			}
+		}
+	}
+	
+	def checkPatternNull(RosettaSynonymBody body) {
+		if (body.patternMatch!==null) {
+			error("Pattern cannot be applied to date/time types", body, ROSETTA_SYNONYM_BODY__PATTERN_MATCH)
+		}
+	}
+	
+	def checkPatternValid(RosettaSynonymBody body) {
+		if (body.patternMatch!==null) {
+			try {
+				Pattern.compile(body.patternMatch)
+			} catch (PatternSyntaxException e) {
+				error("Pattern to match must be a valid regular expression - "+e.message, body, ROSETTA_SYNONYM_BODY__PATTERN_MATCH)
+			}
+		}
+	}
+	
+	
+	private def isDateTime(RType rType) {
+		#["date", "time", "zonedDateTime"].contains(rType.name)
+	}
+	
+	@Check
+	def void checkPatternOnEnum(RosettaEnumSynonym synonym) {
+		if (synonym.patternMatch!==null) {
+			try {
+				Pattern.compile(synonym.patternMatch)
+			} catch (PatternSyntaxException e) {
+				error("Pattern to match must be a valid regular expression - "+e.message, synonym, ROSETTA_ENUM_SYNONYM__PATTERN_MATCH)
 			}
 		}
 	}
@@ -853,6 +937,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		}
 	}
+	
+	
+	
+	
 	/*
 	@Inject TargetURIConverter converter
 	@Inject IResourceDescriptionsProvider index
