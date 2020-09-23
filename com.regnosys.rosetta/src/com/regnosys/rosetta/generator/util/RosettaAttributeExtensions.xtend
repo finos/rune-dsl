@@ -148,7 +148,9 @@ class RosettaAttributeExtensions {
 	}
 	
 	def static ExpandedSynonym toExpandedSynonym(RosettaEnumSynonym syn) {
-		new ExpandedSynonym(syn.sources, Collections.singletonList(new ExpandedSynonymValue(syn.synonymValue, null, 0, false)), newArrayList, Collections.emptyList, null, null)
+		new ExpandedSynonym(syn.sources, Collections.singletonList(new ExpandedSynonymValue(syn.synonymValue, null, 0, false)), newArrayList, Collections.emptyList, null, null,
+			null, syn.patternMatch, syn.patternReplace
+		)
 	}
 
 	static def boolean isList(ExpandedAttribute a) {
@@ -181,7 +183,8 @@ class RosettaAttributeExtensions {
 		attr.synonyms.filter[body.metaValues.size > index].map[
 			s|new ExpandedSynonym(s.sources, s.body.values?.map[metaSynValue(s.body.metaValues.get(index))
 				//new ExpandedSynonymValue(s.metaValues.get(index), path+"."+value, maps, true)
-			].toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, s.body.mapper)
+			].toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, 
+				s.body.mapper, s.body.format, s.body.patternMatch, s.body.patternReplace)
 		]
 		.filter[!values.isEmpty]
 		.toList
@@ -191,7 +194,8 @@ class RosettaAttributeExtensions {
 		attr.synonyms.filter[body.metaValues.size > index].map[
 			s|new ExpandedSynonym(s.sources, s.body.values?.map[metaSynValue(s.body.metaValues.get(index))
 				//new ExpandedSynonymValue(s.metaValues.get(index), path+"."+value, maps, true)
-			].toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, s.body.mapper)
+			].toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, 
+				s.body.mapper, s.body.format, s.body.patternMatch, s.body.patternReplace)
 		]
 		.filter[!values.isEmpty]
 		.toList
@@ -201,7 +205,8 @@ class RosettaAttributeExtensions {
 		externalSynonyms.filter[body.metaValues.size > index].map[
 			s|new ExpandedSynonym(sources, s.body.values?.map[metaSynValue(s.body.metaValues.get(index))
 				//new ExpandedSynonymValue(s.metaValues.get(index), path+"."+value, maps, true)
-			].toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, s.body.mapper)
+			].toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, 
+				s.body.mapper, s.body.format, s.body.patternMatch, s.body.patternReplace)
 		]
 		.filter[!values.isEmpty]
 		.toList
@@ -274,12 +279,14 @@ class RosettaAttributeExtensions {
 	static def toRosettaExpandedSynonyms(List<RosettaSynonym> synonyms, int meta) {
 		if (meta<0) {
 			synonyms.map[new ExpandedSynonym(sources, body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], body.hints, 
-				body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], body.mappingLogic, body.mapper
+				body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], body.mappingLogic, 
+				body.mapper, body.format, body.patternMatch, body.patternReplace
 			)]
 		} else {
 			synonyms.filter[body.metaValues.size>meta]
 			.map[s|new ExpandedSynonym(s.sources, s.body.values?.map[metaSynValue(s.body.metaValues.get(meta))], s.body.hints, 
-				s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, s.body.mapper
+				s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, 
+				s.body.mapper, s.body.format, s.body.patternMatch, s.body.patternReplace
 			)]
 			.toList
 		}
@@ -297,7 +304,8 @@ class RosettaAttributeExtensions {
 	
 	static dispatch def toRosettaExpandedSynonym(RosettaSynonym syn) {
 		new ExpandedSynonym(syn.sources, syn.body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], 
-			syn.body.hints, syn.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], syn.body.mappingLogic, syn.body.mapper
+			syn.body.hints, syn.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], syn.body.mappingLogic, 
+			syn.body.mapper, syn.body.format, syn.body.patternMatch, syn.body.patternReplace
 		)
 	}
 	
@@ -313,19 +321,22 @@ class RosettaAttributeExtensions {
 			sources.add(superSynonym)
 		}
 		
-		new ExpandedSynonym(sources, syn.body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], syn.body.hints, syn.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], syn.body.mappingLogic, syn.body.mapper)
+		new ExpandedSynonym(sources, syn.body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], syn.body.hints, 
+			syn.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], syn.body.mappingLogic, syn.body.mapper,
+			syn.body.format, syn.body.patternMatch, syn.body.patternReplace
+		)
 	}
 	
 	static dispatch def toRosettaExpandedSynonym(RosettaExternalClassSynonym syn) {
 		val synVals = if (syn.value===null) Collections.emptyList else newArrayList(new ExpandedSynonymValue(syn.value.name, syn.value.path, syn.value.maps, false))
 		val synMetaVals = if (syn.metaValue!==null) newArrayList(new ExpandedSynonymValue(syn.metaValue.name, syn.metaValue.path, syn.metaValue.maps, true)) else Collections.emptyList
-		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null)	
+		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null, null, null, null)	
 	}
 	
 	static dispatch def toRosettaExpandedSynonym(RosettaClassSynonym syn) {
 		val synVals = if (syn.value===null) Collections.emptyList else newArrayList(new ExpandedSynonymValue(syn.value.name, syn.value.path, syn.value.maps, false))
 		val synMetaVals = if (syn.metaValue!==null) newArrayList(new ExpandedSynonymValue(syn.metaValue.name, syn.metaValue.path, syn.metaValue.maps, true)) else Collections.emptyList
-		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null)
+		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null, null, null, null)
 	}
 
 	private def static boolean isCalculation(RosettaTypedFeature a) {

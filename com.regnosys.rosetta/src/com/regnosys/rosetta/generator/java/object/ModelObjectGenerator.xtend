@@ -92,7 +92,7 @@ class ModelObjectGenerator {
 			«ENDIF»
 			@RosettaClass
 			«IF c.hasQualifiedAttribute»
-				@RosettaQualified(attribute="«c.qualifiedAttribute»",qualifiedClass=«c.qualifiedClass».class)
+				@RosettaQualified(attribute="«c.qualifiedAttribute»",qualifiedClass=«javaNames.toJavaType(c.qualifiedClass).name».class)
 			«ENDIF»
 			«FOR stereotype : c.stereotype?.values?.map[it?.name]?:emptyList»
 				@RosettaStereotype("«stereotype»")
@@ -168,16 +168,16 @@ class ModelObjectGenerator {
 			return null
 		
 		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].type.name
-		var qualifiedRootClassName = switch qualifiedClassType { 
+		var qualifiedRootClassType = switch qualifiedClassType { 
 			case RQualifiedType.PRODUCT_TYPE.qualifiedType: c.findProductRootName
 			case RQualifiedType.EVENT_TYPE.qualifiedType: c.findEventRootName
 			default: throw new IllegalArgumentException("Unknown qualifiedType " + qualifiedClassType)
 		}
 		
-		if(qualifiedRootClassName === null || qualifiedRootClassName.length == 0)
+		if(qualifiedRootClassType === null)
 			throw new IllegalArgumentException("QualifiedType " + qualifiedClassType + " must have qualifiable root class")
 			
-		return qualifiedRootClassName
+		return qualifiedRootClassType
 	}
 
 	private def StringConcatenationClient rosettaClass(RosettaClass c, JavaNames names) '''

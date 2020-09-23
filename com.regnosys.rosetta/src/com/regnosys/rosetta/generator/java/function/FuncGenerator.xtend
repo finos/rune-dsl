@@ -45,6 +45,10 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.RosettaCallable
 
 class FuncGenerator {
 
@@ -137,7 +141,12 @@ class FuncGenerator {
 					«ENDIF»
 					
 					«output.toBuilderType(names)» «outputName»Holder = doEvaluate(«func.inputsAsArguments(names)»);
-					«outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»)«IF outNeedsBuilder».build()«ENDIF»;
+					«IF outNeedsBuilder»
+						«outputType».«outputType»Builder «outputName»Builder = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
+						final «outputType» «outputName» = «outputName»Builder==null? null:«outputName»Builder.build();
+					«ELSE»
+						final «outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
+					«ENDIF»	
 					
 					«IF !func.postConditions.empty»
 						// post-conditions
@@ -147,7 +156,7 @@ class FuncGenerator {
 						«ENDFOR»
 					«ENDIF»
 					«IF outNeedsBuilder»
-					objectValidator.validateAndFailOnErorr(«outputType».class, «outputName»);
+					if («outputName»!=null) objectValidator.validateAndFailOnErorr(«outputType».class, «outputName»);
 					«ENDIF»
 					return «outputName»;
 				}
@@ -155,7 +164,7 @@ class FuncGenerator {
 				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
 					«FOR indexed : func.operations.indexed»
 						«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType» «ENDIF»«outputName» = «outputName»Holder.build();«ENDIF»
-						«indexed.value.assign(aliasOut, names)»;
+						«indexed.value.assign(aliasOut, names, output)»;
 					«ENDFOR»
 					return «outputName»Holder;
 				}
@@ -166,7 +175,7 @@ class FuncGenerator {
 					
 					«IF aliasOut.get(alias)»
 						protected «names.shortcutJavaType(alias)» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
-							return «expressionWithBuilder.toJava(alias.expression, Context.create(names))»;
+							return «expressionWithBuilder.toJava(alias.expression, Context.create(names))».get();
 						}
 					«ELSE»
 						protected «IF needsBuilder(alias)»«MapperBuilder»«ELSE»«Mapper»«ENDIF»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
@@ -232,13 +241,13 @@ class FuncGenerator {
 	}
 	
 	private def StringConcatenationClient assign(Operation op, Map<ShortcutDeclaration, Boolean> outs,
-		JavaNames names) {
+		JavaNames names, Attribute type) {
 		val pathAsList = op.pathAsSegmentList
 		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = «expressionWithBuilder.toJava(op.expression, ctx)»
+				«op.assignTarget(outs, names)» = ((MapperS<«type.toBuilderType(names)»>)(«expressionWithBuilder.toJava(op.expression, ctx)»)).get();
 			«ELSE»
 				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
 		else {
@@ -349,10 +358,37 @@ class FuncGenerator {
 		val root = operation.assignRoot
 		switch (root) {
 			Attribute: '''«root.name»Holder'''
-			ShortcutDeclaration: '''«root.name»(«IF outs.get(root)»«getOutput(operation.function)?.name»Holder«IF !getInputs(operation.function).empty», «ENDIF»«ENDIF»«inputsAsArguments(operation.function, names)»)'''
+			ShortcutDeclaration: unfoldLHSShortcut(root)
 		}
 	}
-
+	
+	private def StringConcatenationClient unfoldLHSShortcut(ShortcutDeclaration shortcut) {
+		println(shortcut)
+		'''«lhsExpand(shortcut.expression)»'''
+	}
+	
+	private def dispatch StringConcatenationClient lhsExpand(RosettaExpression f) {
+		throw new IllegalStateException("No implementation for lhsExpand for "+f.class)
+	}
+	
+	private def dispatch StringConcatenationClient lhsExpand(RosettaFeatureCall f) 
+	'''«lhsExpand(f.receiver)».«f.feature.lhsFeature»'''
+	private def dispatch StringConcatenationClient lhsExpand(RosettaCallableCall f) 
+	'''«f.callable.lhsExpand»'''
+	
+	private def dispatch StringConcatenationClient lhsFeature(RosettaFeature f){
+		throw new IllegalStateException("No implementation for lhsFeature for "+f.class)
+	}
+	private def dispatch StringConcatenationClient lhsFeature(Attribute f){
+		if (f.many) '''getOrCreate«f.name.toFirstUpper»(0)'''
+		else '''getOrCreate«f.name.toFirstUpper»()'''
+	}
+	
+	private def dispatch StringConcatenationClient lhsExpand(RosettaCallable c) {
+		throw new IllegalStateException("No implementation for lhsExpand for "+c.class)
+	}
+	private def dispatch StringConcatenationClient lhsExpand(Attribute c) '''«c.name»Holder'''
+	
 	private def StringConcatenationClient contributeCondition(Condition condition) {
 		'''
 			assert

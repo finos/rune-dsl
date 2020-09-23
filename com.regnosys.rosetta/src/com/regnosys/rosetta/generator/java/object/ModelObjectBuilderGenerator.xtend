@@ -85,12 +85,10 @@ class ModelObjectBuilderGenerator {
 			}
 			
 			«c.expandedAttributes.filter[!it.overriding].hasData(c.hasSuperType)»
-			
-			«c.expandedAttributes.filter[!it.overriding].process(c.hasSuperType, names)»
-		
+
 			«c.expandedAttributes.filter[!it.overriding].merge(c, c.hasSuperType, names)»
 
-			«c.builderBoilerPlate»
+			«c.builderBoilerPlate(names)»
 		}
 	'''
 	
@@ -141,12 +139,10 @@ class ModelObjectBuilderGenerator {
 			}
 			
 			«c.expandedAttributes.hasData(c.superType!==null)»
-			
-			«c.expandedAttributes.process(c.superType!==null, javaNames)»
-			
+
 			«c.expandedAttributes.merge(c, c.superType!==null, javaNames)»
-		
-			«c.builderBoilerPlate»
+
+			«c.builderBoilerPlate(javaNames)»
 		}
 	'''
 	
@@ -224,24 +220,7 @@ class ModelObjectBuilderGenerator {
 		result.toString()
 	}
 
-	private def StringConcatenationClient process(Iterable<ExpandedAttribute> attributes, boolean hasSuperType, JavaNames names) '''
-		@Override
-		public void process(RosettaPath path, BuilderProcessor processor) {
-			«IF hasSuperType»
-				super.process(path, processor);
-			«ENDIF»
-
-			«FOR a : attributes.filter[!(isRosettaClassOrData || hasMetas)]»
-				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, «a.name», this);
-			«ENDFOR»
-			
-			«FOR a : attributes.filter[isRosettaClassOrData || hasMetas]»
-				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»);
-			«ENDFOR»
-		}
-	'''
-	
-	private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RosettaType type, boolean hasSuperType, JavaNames names) '''
+    private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RosettaType type, boolean hasSuperType, JavaNames names) '''
 		«val builderName = type.builderName»
 		@Override
 		public «builderName» merge(RosettaModelObjectBuilder b1, RosettaModelObjectBuilder b2, BuilderMerger merger) {
@@ -260,7 +239,7 @@ class ModelObjectBuilderGenerator {
 			return this;
 		}
 	'''
-	
+
 	private def Collection<RosettaRegularAttribute> children(RosettaType c) {
 		if (c instanceof RosettaClass) {
 			c.regularAttributes
@@ -399,12 +378,12 @@ class ModelObjectBuilderGenerator {
 				}
 				return this;
 			}
-			
+
 			«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Builder(«attribute.toBuilderType(names)» «attribute.name») {
 				this.«attribute.name» = «attribute.name»;
 				return this;
 			}
-			
+
 			«IF !attribute.metas.empty»
 				«IF attribute.isRosettaClassOrData»
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
