@@ -119,7 +119,7 @@ class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature {
 class RosettaStereotypeValue extends RosettaRootElement, RosettaNamed {
 }
 
-class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable, Annotated {
+class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable {
 	refers RosettaEnumeration superType
 	contains RosettaSynonym[] synonyms
 	contains RosettaEnumValue[] enumValues opposite enumeration

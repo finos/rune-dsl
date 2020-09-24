@@ -63,7 +63,6 @@ Attribute:
 
 Enumeration returns RosettaEnumeration:
 	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable?
-		Annotations?
 		(synonyms += RosettaSynonym)*
 		enumValues += RosettaEnumValue*
 ;
