@@ -1,13 +1,14 @@
 Rosetta Modelling Components
 ============================
 
-**The Rosetta syntax can express five types of model components**:
+**The Rosetta syntax can express six types of model components**:
 
 * Data
 * Annotation
 * Data Validation (or *condition*)
 * Function
 * Mapping (or *synonym*)
+* Reporting
 
 This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those features.
 
@@ -412,7 +413,7 @@ In the case where all the attributes of a given type are subject to a required c
 
 This feature is illustrated below:
 
-.. code-block:: Java
+.. code-block:: Haskell
 
  type PeriodRange:
    lowerBound PeriodBound (0..1)
@@ -935,6 +936,166 @@ The mapping logic associated with the party role example below provides a good i
      [synonym FpML_5_10 set to PartyRoleEnum -> ArrangingBroker when path = "trade->brokerPartyReference"]
      [synonym FpML_5_10, CME_ClearedConfirm_1_17 value "role" path "tradeHeader->partyTradeInformation->relatedParty"]
    ownershipPartyReference Party (0..1)
+
+
+Reporting Component
+-------------------
+
+
+Motivation
+^^^^^^^^^^
+
+**One of the applications of the Rosetta DSL is to facilitate the process of complying with, and supervising, financial regulation** – in particular, the large body of data reporting obligations that industry participants are subject to.
+
+The current industry processes to implement those rules are costly and inefficient. They involve translating pages of legal language, in which the rules are originally written, into business requirements which firms then have to code into their systems to support the regulatory data collection. This leads to a duplication of effort across a large number of industry participants and to inconsistencies in how each individual firm applies the rules, in turn generating data of poor quality and comparability for regulators.
+
+By contrast, a domain-model for the business process or activity being regulated provides standardised, unambiguous definitions for business data at the source. In turn, these business data can be used as the basis for the reporting process, such that regulatory data become unambiguous views of the business data. 
+
+The Rosetta DSL allows to express those reporting rules as functional components in the same language as the model for the business domain itself. Using code generators, those functional rules are then distributed as executable code, for all industry participants to use consistently in their compliance systems.
+
+
+Regulatory Hierarchy
+^^^^^^^^^^^^^^^^^^^^
+
+Purpose
+"""""""
+
+One of the first challenges of expressing regulatory rules for the financial domain is to organise the content of the regulatory framework that mandates these rules. The financial industry is a global, highly regulated industry, where a single line of business or activity may operate across multiple jurisdictions and regulatory regimes. The applicable regulations can span thousands of pages of legal text with intricate cross-references.
+
+To organise such regulatory content within a model, the Rosetta DSL supports a number of key concepts that allow to refer to specific documents, their content and who owns them as direct model components.
+
+Syntax
+""""""
+
+There are 3 syntax components to define the hierarchy of regulatory content:
+
+#. Body
+#. Corpus
+#. Segment
+
+A body refers to an entity that is the author, publisher or owner of a regulatory document. Examples of bodies include regulatory authorities or trade associations.
+
+The syntax to define a body is: ``body`` <Name> <Type> <Description>. Some examples of bodies, with their corresponding types, are given below.
+ 
+A corpus refers to a document set that contains rule specifications. Rules can be specified according to different levels of detail, including laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations).
+
+The syntax to define a corpus is: ``corpus`` <Type> <Alias> <Name> <Description>. While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known.
+
+Some examples of corpuses, with their corresponding types, are given below. In those cases, the aliases refer to the official numbering of document by the relevant authority.
+
+Corpuses are typically large sets of documents which can contain many rule specifications. The Rosetta DSL provides the concept of segment to allow to refer to a specific section in a given document.
+
+The syntax to define a segment is: ``segment`` <Type>. Below are some examples of segment types, as are often found in regulatory texts.
+
+Once a segment type is defined, it can be associated to an identifier (i.e some free text representing either the segment number or name) and combined with other segment types to point to a specific section in a document. For instance:
+ 
+
+Report Definition
+^^^^^^^^^^^^^^^^^
+
+Purpose
+"""""""
+
+A report consists of an inter-connected set of regulatory obligations, which a regulated entity must implement to produce data as required by the relevant regulator.
+
+Generically, the Rosetta DSL allows to specify any report using 3 types of rules:
+
+- timing – when to report,
+- eligibility – whether to report, and
+- field – what to report.
+
+A report is associated to an authoritative body and to the corpus(es) in which those rules are specified. Usually but not necessarily, the authority that mandates the rules also supervises their application and collects the data. Timing, eligibility and field rules translate into obligations of “timing, completeness and accuracy” of reporting, as often referred to by supervisors.
+
+Syntax
+""""""
+
+A report is specified using the following syntax:
+
+  ``report`` <Authority> <Corpus1> <Corpus2> <...> ``in`` <TimingRule>
+  
+  ``when`` <EligibilityRule1> ``and`` <EligibilityRule2> ``and`` <...>
+  
+  ``with fields`` <FieldRule1> <FieldRule2> <...>
+
+An example is given below.
+
+To ensure a model’s regulatory framework integrity, the authority, corpus and all the rules referred to in a report definition must exist as model components in the model’s regulatory hierarchy. A report simply assembles all those existing components into a *recipe*, which firms can directly implement to comply with the reporting obligation and provide the data as required.
+
+The next section describes how to define reporting rules as model components.
+
+Rule Definition
+^^^^^^^^^^^^^^^
+
+Purpose
+"""""""
+
+The Rosetta DSL applies a functional approach to the process of regulatory reporting. A regulatory rule is a functional model component (``F``) that processes an input (``X``) through a set of logical instructions and returns an output (``Y``), such that ``Y = F( X )``. A function ``F`` can sometimes also be referred to as a *projection*. Using this terminology, the reported data (``Y``) are viewed as projections of the business data (``X``).
+
+For field rules, the output ``Y`` consists of the data point to be reported. For eligibility rules, this output is a Boolean that returns True when the input is eligible for reporting.
+
+To provide transparency and auditability to the reporting process, the Rosetta DSL supports the development of reporting rules in both human-readable and machine-executable form.
+
+- The functional expression of the reporting rules is designed to be readable by professionals with domain knowledge (e.g. regulatory analysts). It consists of a limited set of logical instructions, supported by the compact Rosetta DSL syntax.
+- The machine-executable form is derived from this functional expression of the reporting logic using the Rosetta DSL code generators, which directly translate it into executable code.
+- In addition, the functional expression is explicitly tied to regulatory references, using the regulatory hierarchy concepts of body, corpus and segment to point to specific text provisions that support the reporting logic. This mechanism, coupled with the automatic generation of executable code, ensures that a reporting process that uses that code is fully auditable back to any applicable text.
+
+Syntax
+""""""
+
+The syntax of reporting field rules is as follows:
+
+  ``reporting rule`` <Name>
+  
+  [``regulatoryReference`` <Body> <Corpus> <Segment1> <Segment2> <...> ``provision`` <”ProvisionText”>]
+  
+  <FunctionalExpression>
+
+For eligibility rules, the syntax is the same but starts with the keyword ``eligibility rule``.
+
+The functional expression of reporting rules uses the same syntax components that are already available to express logical statements in other modelling components, such as the condition statements that support data validation.
+
+Functional expressions are composable, so a rule can also call another rule. When multiple rules may need to be applied for a single field or eligibility criteria, those rules can be specified in brackets separated by a comma. An example is given below for the *Nexus* eligibility rule under the Singapore reporting regime, where ``BookedInSingapore`` and ``TradedInSingapore`` are themselves eligibility rules.
+
+In addition to those existing functional features, the Rosetta DSL provides other syntax components that are specifically designed for reporting applications. Those components are:
+
+- ``extract`` <Expression>
+
+When defining a reporting rule, the `extract` keyword defines a value to be reported, or to be used as input into a subsequent statement or another rule. The full expressional syntax of the Rosetta DSL can be used in the expression that defines the value to be extracted, including conditional statement such as ``if`` / ``else`` / ``or`` / ``exists``.
+
+An example is given below, that uses a mix of Boolean statements.
+
+The extracted value may be coming from a data attribute in the model, as above, or may be directly specified as a value, such as a ``string`` in the below example.
+
+- <ExtractionExpression1> ``then`` <ExtractionExpression2>
+
+Extraction statements can be chained using the keyword `then`, which means that extraction continues from the previously extracted point.
+
+The syntax provides type safety when chaining rules, whereby the output type of the preceding rule must be equal to the input type of the following rule. In the below example, extraction starts from the ``Contract`` type, which corresponds to the output of the preceding ``ContractForEvent`` rule.
+
+- ``as`` <FieldName>
+
+Once a value has been extracted, the syntax allows to make it into a reportable field under the required field name using the ``as`` keyword, as in the below example.
+
+The field name is an arbitrary ``string`` and should be aligned with the name of the reportable field as per the regulation. This field name will be used as column name when displaying computed reports, but is otherwise not functionally usable. To re-use the functional output of a reporting rule, the name of the rule (here: ``RateSpecification``) should be used instead.
+
+- ``filter when`` <FunctionalExpression>
+
+The ``filter when`` keyword is used in cases where a particular data attribute must be selected while multiple exist. The effect will be to filter the data only on those paths where the condition defined by the functional expression is satisfied.
+
+The functional expression can be either a direct Boolean expression, or the output of another rule, in which case the syntax is: ``filter when rule`` <RuleName>, as in the below example.
+
+And the filtering rule is defined as:
+
+- ``extract multiple`` <Expression>
+
+When extracting a type with a multiple cardinality, the `multiple` keyword must be applied. This is typically used before a filter step where we extract multiple values and then filter it down to a single value, as in the below example.
+
+- ``maxBy`` / ``minBy``
+
+The syntax supports selecting values by their natural ordering (ascending numbers, ascending alphabet) using the ``maxBy`` and ``minBy`` keywords.
+
+In the below example, we first apply a filter and extract a ``fixedInterestRate`` attribute. There could be multiple attribute values, so we select the highest one and then report it as the “Price” field.
+
 
 .. _Cardinality Section: https://docs.rosetta-technology.io/dsl/documentation.html#cardinality
 .. _Condition Statement Section: https://docs.rosetta-technology.io/dsl/documentation.html#condition-statement
