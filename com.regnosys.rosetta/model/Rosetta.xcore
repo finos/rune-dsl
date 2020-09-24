@@ -5,6 +5,7 @@
 package com.regnosys.rosetta.rosetta
 
 import java.util.stream.Collectors
+import com.regnosys.rosetta.rosetta.simple.Annotated
 
 class RosettaModel extends RosettaDefinable {
 	String name
@@ -118,7 +119,7 @@ class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature {
 class RosettaStereotypeValue extends RosettaRootElement, RosettaNamed {
 }
 
-class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable {
+class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable, Annotated {
 	refers RosettaEnumeration superType
 	contains RosettaSynonym[] synonyms
 	contains RosettaEnumValue[] enumValues opposite enumeration

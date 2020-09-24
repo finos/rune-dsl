@@ -63,6 +63,7 @@ Attribute:
 
 Enumeration returns RosettaEnumeration:
 	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable?
+		Annotations?
 		(synonyms += RosettaSynonym)*
 		enumValues += RosettaEnumValue*
 ;
@@ -136,7 +137,7 @@ ListLiteral:
 // old stuff
 RosettaRootElement:
 	Enumeration |
-	RosettaWorkflowRule | 
+	RosettaWorkflowRule |
 	RosettaAlias | RosettaProduct |
 	RosettaOrganisation | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | RosettaStereotypeValue |
 	RosettaEvent |
@@ -166,6 +167,7 @@ fragment RosettaTyped:
 ValidID:
 	(ID | 'key' // used in Lib: annotations.rosetta
 		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
+		| 'workflow' //used in the namespace
 	)
 ;
 

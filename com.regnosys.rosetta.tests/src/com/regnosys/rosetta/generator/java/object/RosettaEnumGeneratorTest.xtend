@@ -96,4 +96,16 @@ class RosettaEnumHelperTest {
         assertThat(EnumHelper.formatEnumName("AggregateClient"), is("AGGREGATE_CLIENT"))
         assertThat(EnumHelper.formatEnumName("Currency1PerCurrency2"), is("CURRENCY_1_PER_CURRENCY_2"))
     }
+    
+    @Test
+    def void shouldAllowDeprectedAnnotationForEnum() {
+        val code = '''
+            enum TestEnumDeprecated:
+            	[deprecated]
+            	one 
+            	two 
+        '''.generateCode
+
+        code.compileToClasses
+    }
 }
