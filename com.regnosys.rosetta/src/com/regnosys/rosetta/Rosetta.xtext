@@ -51,7 +51,7 @@ AnnotationRef:
 ;
 
 Data:
-	('type' | oldStyle ?= 'data') RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' Definable?
+	'type' RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' Definable?
 	(Annotations| ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
@@ -135,8 +135,8 @@ ListLiteral:
 
 // old stuff
 RosettaRootElement:
-	RosettaClass | Enumeration |
-	RosettaDataRule | RosettaWorkflowRule | RosettaChoiceRule | 
+	Enumeration |
+	RosettaWorkflowRule | 
 	RosettaAlias | RosettaProduct |
 	RosettaOrganisation | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | RosettaStereotypeValue |
 	RosettaEvent |
@@ -166,7 +166,6 @@ fragment RosettaTyped:
 ValidID:
 	(ID | 'key' // used in Lib: annotations.rosetta
 		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
-		| 'one' // TODO used in CDM model and can be removed after RosettaClass rule is deleted
 	)
 ;
 
@@ -225,37 +224,12 @@ RosettaCalculationTypeFeature returns RosettaTypedFeature:
  * Data model 
  */ 
 
-RosettaClass:
-	(abstract?='abstract' | root?='root')? 'class' RosettaNamed ('extends' superType=[RosettaClass|ValidID])?
-	('stereotype' stereotype = RosettaStereotype)? 
-	(globalKey ?= 'key')?
-	(oneOf ?= 'one' 'of')?
-	RosettaDefinable?
-		(synonyms += RosettaClassSynonym)*
-		(references += RosettaRegulatoryReference)*
-		(marketPractice += RosettaMarketPractice)*
-	'{'
-		(features += RosettaRegularAttribute)* 
-	'}'
-;
-
 RosettaMetaType:
 	'metaType' RosettaNamed RosettaTyped
 ;
 
-RosettaStereotype:
-	(values += [RosettaStereotypeValue|QualifiedName] ',')* values += [RosettaStereotypeValue|QualifiedName]
-;
-
 RosettaStereotypeValue:
 	'stereotype' RosettaNamed
-;
-
-RosettaRegularAttribute:
-	RosettaNamed RosettaTyped card=RosettaCardinality (metaTypes += [RosettaMetaType])? (',' metaTypes += [RosettaMetaType])* RosettaDefinable? ';'?
-	(synonyms += RosettaSynonym)*
-	(references += RosettaRegulatoryReference)*
-	(marketPractice += RosettaMarketPractice)*
 ;
 
 RosettaEnumValue:
@@ -519,18 +493,6 @@ Integer:
 terminal FEATURE_CALL_SEPARATOR:
 	'->'
 ;
-/**********************************************************************
- * Data Rule
- */
- 
-RosettaDataRule:
-	'data' 'rule' RosettaNamed RosettaDefinable?
-	(references += RosettaRegulatoryReference)*
-	(marketPractice += RosettaMarketPractice)*
-	'when' when=RosettaExpression
-	('then' then=RosettaConditionalExpression)?
-;
-
 
 
 /**********************************************************************
@@ -564,24 +526,6 @@ RosettaClassReference returns RosettaExpression:
 ;
 
 
-
-
-
-/**********************************************************************
- *  Choice rule
- */
- 
-RosettaChoiceRule:
-	'choice' 'rule' RosettaNamed RosettaDefinable?
- 	(references += RosettaRegulatoryReference)*
- 	(marketPractice += RosettaMarketPractice)*
- 	'for' scope=[RosettaClass|QualifiedName]
- 	qualifier=('optional' | 'required') 'choice' 'between' thisOne=[RosettaRegularAttribute|ValidID]
- 	('and' thatOnes += [RosettaRegularAttribute|ValidID])* 
-;
-
-
-
 /**********************************************************************
  * Alias
  */
@@ -609,8 +553,6 @@ RosettaProduct:
 	'isProduct' RosettaNamed RosettaDefinable?
  	(synonyms += RosettaSynonym)*
 	expression = RosettaExpression
-	(('and' andDataRules+=[RosettaDataRule] (',' andDataRules += [RosettaDataRule])*) 
- 		(('or' orDataRules += [RosettaDataRule]) (',' orDataRules += [RosettaDataRule])*)? 'apply')?
 ;
 
 
@@ -623,8 +565,6 @@ RosettaEvent:
 	'isEvent' RosettaNamed RosettaDefinable?
  	(synonyms += RosettaSynonym)*
  	expression = RosettaExpression
- 	(('and' andDataRules+=[RosettaDataRule] (',' andDataRules += [RosettaDataRule])*) 
- 		(('or' orDataRules += [RosettaDataRule]) (',' orDataRules += [RosettaDataRule])*)? 'apply')?
 ;
 
 

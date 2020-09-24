@@ -4,20 +4,15 @@ import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaChoiceRule
-import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExternalClass
+import com.regnosys.rosetta.rosetta.RosettaExternalRef
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMarketPractice
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
-import com.regnosys.rosetta.rosetta.RosettaStereotype
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
@@ -35,7 +30,6 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.util.CancelIndicator
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.RosettaExternalRef
 
 class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculator implements RosettaHighlightingStyles {
 
@@ -44,7 +38,6 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 		switch (object) {
 			RosettaTypedFeature: {
 				switch (object.type) {
-					RosettaClass,
 					Data:
 						highlightFeature(acceptor, object, ROSETTA_TYPED__TYPE, CLASS_ID)
 					RosettaEnumeration:
@@ -57,13 +50,6 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 					RosettaCalculationType:
 						highlightFeature(acceptor, object, ROSETTA_TYPED__TYPE, BASICTYPE_ID)
 				}
-				if (object instanceof RosettaRegularAttribute) {
-					highlightFeatureForAllChildren(acceptor, object, ROSETTA_REGULAR_ATTRIBUTE__META_TYPES, META_ID)
-				}
-			}
-			RosettaClass: {
-				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, CLASS_ID)
-				highlightFeature(acceptor, object, ROSETTA_CLASS__SUPER_TYPE, CLASS_ID)
 			}
 			Data: {
 				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, CLASS_ID)
@@ -90,16 +76,7 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 			// TODO this works for RosettaSynonym but not RosettaMetaSynonym
 			// highlightFeatureForAllChildren(acceptor, object, ROSETTA_SYNONYM_BASE__META_VALUES, META_ID)
 			}
-			RosettaStereotype: {
-				highlightFeatureForAllChildren(acceptor, object, ROSETTA_STEREOTYPE__VALUES, STEREOTYPE_ID)
-			}
-			RosettaChoiceRule: {
-				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, RULE_ID)
-			}
 			RosettaWorkflowRule: {
-				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, RULE_ID)
-			}
-			RosettaDataRule: {
 				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, RULE_ID)
 			}
 			RosettaCallableCall case object.callable instanceof RosettaAlias: {

@@ -548,26 +548,25 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	
 	@Test
 	def checkOperationTypes() {
-	val model = '''
-			class Clazz {
-				test boolean (0..1);
-			}
-			data rule DataRule
-				when 
-					Clazz -> test = True 
-					or False <> False
-					or 1 > 0
-					or 1 < 0
-					or 1 >= 0
-					or 1 <= 0
-					or 1 <> 0
-					or 1 = 0
-				then 1.1 = .0
-					and 0.2 <> 0.1
-					and 0.2 > 0.1
-					and 0.2 < 0.1
-					and 0.2 <= 0.1
-					and 0.2 >= 0.1
+		val model = '''
+			type Clazz:
+				test boolean (0..1)
+			
+				condition DataRule:
+					if test = True 
+						or False <> False
+						or 1 > 0
+						or 1 < 0
+						or 1 >= 0
+						or 1 <= 0
+						or 1 <> 0
+						or 1 = 0
+					then 1.1 = .0
+						and 0.2 <> 0.1
+						and 0.2 > 0.1
+						and 0.2 < 0.1
+						and 0.2 <= 0.1
+						and 0.2 >= 0.1
 		'''.parseRosetta
 		model.assertNoErrors
 	}

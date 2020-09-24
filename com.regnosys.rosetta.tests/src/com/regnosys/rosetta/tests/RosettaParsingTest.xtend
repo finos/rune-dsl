@@ -32,24 +32,6 @@ class RosettaParsingTest {
 	}
 	
 	@Test
-	def void testRootClass() {
-	'''
-			root class Foo
-			{
-			}
-		'''.parseRosettaWithNoErrors
-	}
-	
-	@Test
-	def void testOneOfClass() {
-	'''
-			class Foo stereotype executionActivity one of <"bla">
-			{
-			}
-		'''.parseRosettaWithNoErrors
-	}
-	
-	@Test
 	def void testClassWithEnumReference() {
 	'''
 			type PartyIdentifier: <"Bla">
@@ -59,28 +41,11 @@ class RosettaParsingTest {
 				partyIdSource PartyIdSourceEnum (1..1)
 					[synonym FIX value "PartyIDSource" tag 447]
 					[synonym FpML value "PartyIdScheme"]
+			
 			enum PartyIdSourceEnum:
 				LEI <"The Legal Entity Identifier">
 				BIC <"The Bank Identifier Code">
 				MIC
-		'''.parseRosettaWithNoErrors
-	}
-
-	@Test @Disabled // TODO regulatoryReference not supported abstract not supported
-	def void testClassExtendAbstractClass() {
-	'''
-			abstract class Product
-				[synonym  FIX value Instrument componentID 1003]
-				[regulatoryReference ESMA MiFIR RTS_22 article "3(2)(b)" provision "Bla"]
-			{
-				productTaxonomy string (1..*) <"Bla">
-					[regulatoryReference ESMA MiFIR RTS_22 article "3(2)(b)" provision "Bla"]	
-			}
-			class StandardizedProduct extends Product <"Bla">
-			{
-				productIdentifier string (1..*)
-					[regulatoryReference ESMA MiFIR RTS_22 article "3(2)(a)" provision "Bla"]
-			}
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -119,19 +84,6 @@ class RosettaParsingTest {
 				value11 productType (0..1) <"">
 				value12 eventType (0..1) <"">
 				value13 calculation (0..1) <"">
-		'''.parseRosettaWithNoErrors
-	}
-	
-	@Test
-	def void testClassAttributesRegReferences() {
-	'''
-			class Product stereotype preExecutionActivity
-				[regulatoryReference ESMA MiFIR RTS_22 section "3(2)(b)" provision "Bla"]
-				[regulatoryReference ESMA MiFIR RTS_22 article "3(2)(b)" provision "Bla"]
-			{
-				productTaxonomy string (1..*)
-					[regulatoryReference ESMA MiFIR RTS_22 article "3(2)(b)" provision "bla"]	
-			}
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -234,15 +186,11 @@ class RosettaParsingTest {
 	@Test
 	def void testWokflowRuleWithCommonId() {
 	'''
-			class Foo
-			{
+			type Foo:
 				quoteId string (1..1)
-			}
 			
-			class Bar
-			{
+			type Bar:
 				quoteId string (1..1)
-			}
 			
 			workflow rule FooBar
 				[marketPractice ISDA write-up "bla" recommendation "bla"]
@@ -255,18 +203,14 @@ class RosettaParsingTest {
 	@Test
 	def void testWokflowRuleWithCommonPathId() {
 	'''
-			class Base
-			{
+			type Base:
 				quoteId string (1..1)
-			}
 			
-			class Foo extends Base
-			{
-			}
+			type Foo extends Base:
+				a string (1..1)
 			
-			class Bar extends Base
-			{
-			}
+			type Bar extends Base:
+				b string (1..1)
 			
 			workflow rule FooBar
 				when Foo exists
@@ -278,23 +222,17 @@ class RosettaParsingTest {
 	@Test
 	def void testWokflowRuleWithCommonPathIdAndClassType() {
 	'''
-			class Base
-			{
+			type Base:
 				quote Quote (1..1)
-			}
 			
-			class Quote
-			{
+			type Quote:
 				quoteId string (1..1)
-			}
 			
-			class Foo extends Base
-			{
-			}
+			type Foo extends Base:
+				a string (1..1)
 			
-			class Bar extends Base
-			{
-			}
+			type Bar extends Base:
+				b string (1..1)
 			
 			workflow rule FooBar
 				when Foo exists
@@ -304,47 +242,51 @@ class RosettaParsingTest {
 	}
 	
 	@Test
-	def void testAttributeWithMetaReference() {
+	def void testAttributeWithMetadataReferenceAnnotation() {
 		'''
 			metaType reference string
 			
-			class Foo {
-				foo string (1..1) reference;
-			}
+			type Foo:
+				foo string (1..1)
+					[metadata reference]
+			
 		'''.parseRosettaWithNoErrors	
 	}
 	
 	@Test
-	def void testAttributeWithAnchor() {
+	def void testAttributeWithMetadataIdAnnotation() {
 	'''
-			metaType anchor string
+			metaType id string
 
-			class Foo {
-				foo string (1..1) anchor;
-			}
+			type Foo:
+				foo string (1..1)
+					[metadata id]
+			
 		'''.parseRosettaWithNoErrors	
 	}
 	
 	@Test
-	def void testAttributeWithScheme() {
+	def void testAttributeWithMetadataSchemeAnnotation() {
 	'''
 			metaType scheme string
 			metaType reference string
 
-			class Foo {
-				foo string (1..1) scheme;
-			}
+			type Foo:
+				foo string (1..1) 
+					[metadata scheme]
 			
-			class Bar {
-				bar string (1..1) reference, scheme;
-			}
+			type Bar:
+				bar string (1..1)
+					[metadata scheme]
+					[metadata reference]
+			
 		'''.parseRosettaWithNoErrors	
 	}
 	
 	@Test
 	def void testSynonymsWithPathExpression() {
 		'''
-			type Foo :
+			type Foo:
 				foo int (0..1)
 					[synonym FpML value "foo" path "fooPath1"]
 		'''.parseRosettaWithNoErrors
@@ -353,54 +295,37 @@ class RosettaParsingTest {
 	@Test
 	def void synonymsWithHint() {
 		'''
-			type Foo :
+			type Foo:
 				foo int (0..1)
 					[synonym FpML hint "myHint"]
 		'''.parseRosettaWithNoErrors
 	}
-	
-
-	/*@Test
-	def void synonymsWithHintWithWildcard() {
-		'''
-			class Foo 
-			{
-				foo int (0..1)
-					[synonym FpML hint myHint*]
-			}
-		'''.parseRosetta
-	}*/
 		
 	@Test
 	def void testSynonymMappingSetToBoolean() {
 		'''
-			class Foo
-			{
+			type Foo:
 				foo boolean (0..1)
 					[synonym FpML set to True when "FooSyn" exists]
-			}
 		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
 	def void testSynonymMappingSetToString() {
 		'''
-			class Foo
-			{
+			type Foo:
 				foo string (0..1)
 					[synonym FpML set to "A" when "FooSyn" exists]
-			}
+			
 		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
 	def void testSynonymMappingSetToEnum() {
 		'''
-			class Foo
-			{
+			type Foo:
 				foo BarEnum (0..1)
 					[synonym FpML set to BarEnum -> a when "FooSyn" exists]
-			}
 			
 			enum BarEnum:
 				a b
@@ -410,11 +335,9 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingDefaultToEnum() {
 		'''
-			class Foo
-			{
+			type Foo:
 				foo BarEnum (0..1)
 					[synonym FpML value "FooSyn" default to BarEnum -> a]
-			}
 			
 			enum BarEnum:
 				a b
@@ -428,7 +351,7 @@ class RosettaParsingTest {
 				foo boolean (0..1)
 					[synonym FpML value "FooSyn" set when "path->to->string" = BarEnum -> a]
 			
-			enum BarEnum :
+			enum BarEnum:
 				a b
 		'''.parseRosettaWithNoErrors
 	}

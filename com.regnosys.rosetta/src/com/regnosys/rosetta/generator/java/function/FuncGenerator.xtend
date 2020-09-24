@@ -13,11 +13,14 @@ import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
+import com.regnosys.rosetta.rosetta.RosettaCallable
+import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -45,10 +48,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.regnosys.rosetta.rosetta.RosettaExpression
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaCallable
 
 class FuncGenerator {
 
@@ -341,7 +340,6 @@ class FuncGenerator {
 	private def boolean isReference(RosettaNamed ele) {
 		switch(ele) {
 			Annotated: hasMetaReferenceAnnotations(ele)
-			RosettaRegularAttribute: !ele.metaTypes.empty
 			default:false
 		}
 	}
@@ -427,7 +425,6 @@ class FuncGenerator {
 
 	private def isMany(RosettaFeature feature) {
 		switch (feature) {
-			RosettaRegularAttribute: feature.card.isMany
 			Attribute: feature.card.isMany
 			default: throw new IllegalStateException('Unsupported type passed ' + feature?.eClass?.name)
 		}

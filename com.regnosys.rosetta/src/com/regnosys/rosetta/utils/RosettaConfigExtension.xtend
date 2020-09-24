@@ -52,14 +52,14 @@ class RosettaConfigExtension {
 	}
 
 	def boolean isEventRootClass(IEObjectDescription eObjDesc, EObject ctx) {
-		if (eObjDesc.EClass == ROSETTA_CLASS || eObjDesc.EClass == DATA) {
+		if (eObjDesc.EClass == DATA) {
 			return ctx.findEventRootName?.name == eObjDesc.name.toString
 		}
 		false
 	}
 
 	def boolean isProductRootClass(IEObjectDescription eObjDesc, EObject ctx) {
-		if (eObjDesc.EClass == ROSETTA_CLASS || eObjDesc.EClass == DATA) {
+		if (eObjDesc.EClass == DATA) {
 			return ctx.findProductRootName?.name == eObjDesc.name.toString
 		}
 		false
