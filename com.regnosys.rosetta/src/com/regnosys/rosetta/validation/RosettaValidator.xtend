@@ -733,7 +733,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 		val segments = ele.path?.asSegmentList(ele.path)
 		val attr =  segments?.last?.attribute
-		if(attr instanceof Attribute && !(attr as Attribute).hasReferenceAnnotation) {
+		if(!attr.hasReferenceAnnotation) {
 			error(''''«grammar.operationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
 		}
 	}

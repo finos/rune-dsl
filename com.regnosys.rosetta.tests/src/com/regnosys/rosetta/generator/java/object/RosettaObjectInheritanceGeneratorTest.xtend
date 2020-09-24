@@ -148,7 +148,7 @@ class RosettaObjectInheritanceGeneratorTest {
 			'''
 			).reverse.generateCode
 			//This test only works if the order of the "files" is the opposite from that provided (hence the reverse)
-		.writeClasses("shouldGenerateJavaClassWithConditionsListAttributesAcrossNamespaces")
+			//.writeClasses("shouldGenerateJavaClassWithConditionsListAttributesAcrossNamespaces")
 
 
 		generated.compileToClasses

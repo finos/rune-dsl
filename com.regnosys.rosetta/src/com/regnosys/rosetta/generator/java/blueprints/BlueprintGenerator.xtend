@@ -228,7 +228,7 @@ class BlueprintGenerator {
 				else
 				'''actionFactory.<«typedNode.input.getEither», «
 									typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaMultipleMapper("«node.URI»", "«(cond).toNodeLabel
-														»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type as RosettaType))»)'''
+														»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type))»)'''
 			}
 			BlueprintReturn: {
 				context.imports.addTypes(typedNode)

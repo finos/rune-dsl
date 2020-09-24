@@ -45,7 +45,6 @@ import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.rosetta.model.lib.annotations.RosettaChoiceRule
-import com.rosetta.model.lib.annotations.RosettaStereotype
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.formatting2.AbstractFormatter2

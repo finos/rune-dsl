@@ -94,7 +94,7 @@ class OneOfRuleGeneratorTest {
 		
 		assertThat(choiceRules.size, is(1))
 		
-		val oneOfRule = choiceRules.get(0) as Validator<?>
+		val oneOfRule = choiceRules.get(0)
 		
 		assertThat(oneOfRule.class.simpleName, is(className + 'OneOf0'))
 		

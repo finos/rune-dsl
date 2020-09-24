@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.rule
 import com.google.common.base.CaseFormat
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -111,64 +110,5 @@ class ChoiceRuleGenerator {
 	def static String oneOfRuleName(String className) {
 		return className + '_oneOf'
 	}
-
-	private def toJava(RosettaJavaPackages packages, String className, String ruleName, String qualifier, String clazz, List<String> attributes, String version) '''
-		package «packages.model.choiceRule.name»;
-		
-		import «packages.model.name».«clazz»;
-		import «packages.defaultLibValidation.name».ValidationResult.ChoiceRuleValidationMethod;
-		import «packages.defaultLibValidation.name».ValidationResult;
-		import «packages.defaultLibValidation.name».Validator;
-		import java.util.Arrays;
-		import java.util.List;
-		import java.util.LinkedList;
-		
-		import «packages.defaultLib.name».RosettaModelObjectBuilder;
-		import «packages.defaultLibAnnotations.name».RosettaChoiceRule;
-		import «packages.defaultLib.name».path.RosettaPath;
-					
-		import static «packages.defaultLibValidation.name».ExistenceChecker.isSet;
-		
-		«emptyJavadocWithVersion(version)»
-		@RosettaChoiceRule("«ruleName»")
-		public class «className» implements Validator<«clazz»> {
-			
-			private static final String NAME = "«ruleName»";
-			
-		    @Override
-		    public ValidationResult<«clazz»> validate(RosettaPath path, «clazz» object) {
-				List<String> choiceFieldNames = Arrays.asList(«attributes.join('"', '", "', '"', [it])»);
-				List<String> populatedFieldNames = new LinkedList<>();
-				«FOR a : attributes»
-					if (isSet(object.get« a.toFirstUpper »())) populatedFieldNames.add("«a»");
-				«ENDFOR»
-				
-				ChoiceRuleValidationMethod validationMethod = ChoiceRuleValidationMethod.«qualifier.toUpperCase»;
-				
-				if (validationMethod.check(populatedFieldNames.size())) {
-					return ValidationResult.success(NAME, ValidationResult.ValidationType.CHOICE_RULE, "«clazz»", path, "");
-				}
-				return new ValidationResult.ChoiceRuleFailure<«clazz»>(NAME, "«clazz»", choiceFieldNames, path, populatedFieldNames, validationMethod);
-		    }
-		    
-		    @Override
-		    public ValidationResult<«clazz»> validate(RosettaPath path, RosettaModelObjectBuilder builder) {
-		    	«clazz».«clazz»Builder object = («clazz».«clazz»Builder) builder;
-				List<String> choiceFieldNames = Arrays.asList(«attributes.join('"', '", "', '"', [it])»);
-				List<String> populatedFieldNames = new LinkedList<>();
-				«FOR a : attributes»
-					if (isSet(object.get« a.toFirstUpper »())) populatedFieldNames.add("«a»");
-				«ENDFOR»
-				
-				ChoiceRuleValidationMethod validationMethod = ChoiceRuleValidationMethod.«qualifier.toUpperCase»;
-				
-				if (validationMethod.check(populatedFieldNames.size())) {
-					return ValidationResult.success(NAME, ValidationResult.ValidationType.CHOICE_RULE, "«clazz»", path, "");
-				}
-				return new ValidationResult.ChoiceRuleFailure<«clazz»>(NAME, "«clazz»", choiceFieldNames, path, populatedFieldNames, validationMethod);
-		    }
-		}
-	'''
-	
 }
 

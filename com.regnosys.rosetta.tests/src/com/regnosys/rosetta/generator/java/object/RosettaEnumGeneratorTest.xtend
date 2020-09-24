@@ -48,8 +48,8 @@ class RosettaEnumHelperTest {
         		attr TestEnum (1..1) 
         '''.generateCode
 
-		code.writeClasses("BasicReferenceForEnum")
-        val testEnumCode = code.get(rootPackage.name + ".TestEnum")
+		//code.writeClasses("BasicReferenceForEnum")
+        //val testEnumCode = code.get(rootPackage.name + ".TestEnum")
         code.compileToClasses
     }
 

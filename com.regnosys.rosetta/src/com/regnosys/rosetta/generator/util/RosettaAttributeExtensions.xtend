@@ -84,6 +84,7 @@ class RosettaAttributeExtensions {
 	}
 
 	// used in translate project
+	@SuppressWarnings("unused")
 	static private def ExpandedType provideStringType(RosettaRootElement ctx) {
 		return new ExpandedType(ctx.model, 'string', false, false, false)
 	}
