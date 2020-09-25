@@ -791,6 +791,37 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
+	def checkMetadataAnnotation(Annotated ele) {
+		val metadatas = ele.metadataAnnotations
+		metadatas.forEach[
+			switch(it.attribute?.name) {
+				case "key":
+					if (!(ele instanceof Data)) {
+						error('''[metadata key] annotation only allowed on a type.''', it, ANNOTATION_REF__ATTRIBUTE)
+					} 
+				case "id":
+					if (!(ele instanceof Attribute)) {
+						error('''[metadata id] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
+					}
+				case "reference":
+					if (!(ele instanceof Attribute)) {
+						error('''[metadata reference] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
+					}
+				case "scheme":
+					if (!(ele instanceof Attribute)) {
+						error('''[metadata scheme] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
+					}
+				case "template":
+					if (!(ele instanceof Data)) {
+						error('''[metadata template] annotation only allowed on a type.''', it, ANNOTATION_REF__ATTRIBUTE)
+					} else if (!metadatas.map[attribute?.name].contains("key")) {
+						error('''Types with [metadata template] annotation must also specify the [metadata key] annotation.''', it, ANNOTATION_REF__ATTRIBUTE)
+					}
+				}
+		]
+	}
+	
+	@Check
 	def checkCreationAnnotation(Annotated ele) {
 		val annotations = getCreationAnnotations(ele)
 		if (annotations.empty) {

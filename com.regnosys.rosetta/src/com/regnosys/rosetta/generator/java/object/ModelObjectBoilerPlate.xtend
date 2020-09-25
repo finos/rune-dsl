@@ -205,7 +205,7 @@ class ModelObjectBoilerPlate {
 		if (attribute.type.isMetaType) {
 			result.append(", AttributeMeta.IS_META")
 		}
-		if (attribute.metas.map[name].contains("id")) {
+		if (attribute.hasIdAnnotation) {
 			result.append(", AttributeMeta.IS_GLOBAL_KEY_FIELD")
 		}
 		result.toString
