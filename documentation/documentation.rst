@@ -975,20 +975,47 @@ There are 3 syntax components to define the hierarchy of regulatory content:
 
 A body refers to an entity that is the author, publisher or owner of a regulatory document. Examples of bodies include regulatory authorities or trade associations.
 
-The syntax to define a body is: ``body`` <Name> <Type> <Description>. Some examples of bodies, with their corresponding types, are given below.
+The syntax to define a body is: ``body`` <Type> <Name> <Description>. Some examples of bodies, with their corresponding types, are given below.
+
+.. code-block:: Haskell
+
+ body Organisation ISDA
+   <"Since 1985, the International Swaps and Derivatives Association has worked to make the global derivatives markets safer and more efficient">
  
+ body Authority MAS
+   <"The Monetary Authority of Singapore (MAS) is Singapore’s central bank and integrated financial regulator. MAS also works with the financial industry to develop Singapore as a dynamic international financial centre.">
+
 A corpus refers to a document set that contains rule specifications. Rules can be specified according to different levels of detail, including laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations).
 
 The syntax to define a corpus is: ``corpus`` <Type> <Alias> <Name> <Description>. While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known.
 
 Some examples of corpuses, with their corresponding types, are given below. In those cases, the aliases refer to the official numbering of document by the relevant authority.
 
+.. code-block:: Haskell
+
+ corpus Regulation "600/2014" MiFIR 
+   <"Regulation (EU) No 600/2014 of the European Parliament and of the Council of 15 May 2014 on markets in financial instruments and amending Regulation (EU) No 648/2012 Text with EEA relevance">
+ 
+ corpus Act "289" SFA
+   <"The Securities And Futures Act relates to the regulation of activities and institutions in the securities and derivatives industry, including leveraged foreign exchange trading, of financial benchmarks and of clearing facilities, and for matters connected therewith.">
+
 Corpuses are typically large sets of documents which can contain many rule specifications. The Rosetta DSL provides the concept of segment to allow to refer to a specific section in a given document.
 
 The syntax to define a segment is: ``segment`` <Type>. Below are some examples of segment types, as are often found in regulatory texts.
 
+.. code-block:: Haskell
+
+ segment article
+ segment whereas
+ segment annex
+ segment table
+
 Once a segment type is defined, it can be associated to an identifier (i.e some free text representing either the segment number or name) and combined with other segment types to point to a specific section in a document. For instance:
- 
+
+.. code-block:: Haskell
+
+ article "26" paragraph "2"
+
 
 Report Definition
 ^^^^^^^^^^^^^^^^^
@@ -1018,6 +1045,17 @@ A report is specified using the following syntax:
   ``with fields`` <FieldRule1> <FieldRule2> <...>
 
 An example is given below.
+
+.. code-block:: Haskell
+
+ report MAS SFA MAS_2013 in T+2
+   when ReportableProduct and NexusCompliant
+   with fields 
+     UniqueTransactionIdentifier
+     UniqueProductIdentifier
+     PriorUniqueTransactionIdentifier
+     Counterparty1
+     Counterparty2
 
 To ensure a model’s regulatory framework integrity, the authority, corpus and all the rules referred to in a report definition must exist as model components in the model’s regulatory hierarchy. A report simply assembles all those existing components into a *recipe*, which firms can directly implement to comply with the reporting obligation and provide the data as required.
 
@@ -1056,6 +1094,16 @@ The functional expression of reporting rules uses the same syntax components tha
 
 Functional expressions are composable, so a rule can also call another rule. When multiple rules may need to be applied for a single field or eligibility criteria, those rules can be specified in brackets separated by a comma. An example is given below for the *Nexus* eligibility rule under the Singapore reporting regime, where ``BookedInSingapore`` and ``TradedInSingapore`` are themselves eligibility rules.
 
+.. code-block:: Haskell
+
+ eligibility rule NexusCompliant
+   [regulatoryReference MAS SFA MAS_2013 part "1 " section "Citation and commencement"
+   provision "In these Regulations, unless the context otherwise requires; Booked in Singapore, Traded in Singapore"]
+   (
+     BookedInSingapore,
+     TradedInSingapore
+   )
+
 In addition to those existing functional features, the Rosetta DSL provides other syntax components that are specifically designed for reporting applications. Those components are:
 
 - ``extract`` <Expression>
@@ -1064,7 +1112,20 @@ When defining a reporting rule, the `extract` keyword defines a value to be repo
 
 An example is given below, that uses a mix of Boolean statements.
 
+.. code-block:: Haskell
+
+ reporting rule IsFixedFloat
+   extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> fixedRate count = 1
+   and Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> floatingRate count = 1
+
 The extracted value may be coming from a data attribute in the model, as above, or may be directly specified as a value, such as a ``string`` in the below example.
+
+.. code-block:: Haskell
+
+ extract if WorkflowStep -> businessEvent -> primitives -> execution exists
+   or WorkflowStep -> businessEvent -> primitives -> contractFormation exists
+   or WorkflowStep -> businessEvent -> primitives -> quantityChange exists
+     then "NEWT"
 
 - <ExtractionExpression1> ``then`` <ExtractionExpression2>
 
@@ -1072,9 +1133,28 @@ Extraction statements can be chained using the keyword `then`, which means that 
 
 The syntax provides type safety when chaining rules, whereby the output type of the preceding rule must be equal to the input type of the following rule. In the below example, extraction starts from the ``Contract`` type, which corresponds to the output of the preceding ``ContractForEvent`` rule.
 
+.. code-block:: Haskell
+
+ reporting rule MaturityDate <"Date of maturity of the financial instrument. Field only applies to debt instruments with defined maturity">
+   ContractForEvent then extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> terminationDate -> adjustableDate -> unadjustedDate
+ 
+ reporting rule ContractForEvent
+   extract if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> contract only exists
+     then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> contract
+     else if WorkflowStep -> businessEvent -> primitives -> quantityChange -> after -> contract  exists
+       then WorkflowStep -> businessEvent -> primitives -> quantityChange -> after -> contract
+       else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> contract
+     as "Contract"
+
 - ``as`` <FieldName>
 
 Once a value has been extracted, the syntax allows to make it into a reportable field under the required field name using the ``as`` keyword, as in the below example.
+
+.. code-block:: Haskell
+
+ reporting rule RateSpecification
+   extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification
+   as "Rate Specification"
 
 The field name is an arbitrary ``string`` and should be aligned with the name of the reportable field as per the regulation. This field name will be used as column name when displaying computed reports, but is otherwise not functionally usable. To re-use the functional output of a reporting rule, the name of the rule (here: ``RateSpecification``) should be used instead.
 
@@ -1082,19 +1162,52 @@ The field name is an arbitrary ``string`` and should be aligned with the name of
 
 The ``filter when`` keyword is used in cases where a particular data attribute must be selected while multiple exist. The effect will be to filter the data only on those paths where the condition defined by the functional expression is satisfied.
 
+.. code-block:: Haskell
+
+ reporting rule ReportingParty <"Identifier of reporting entity">
+   ContractForEvent then extract Contract -> partyContractInformation then
+   filter when PartyContractInformation -> relatedParty -> role = PartyRoleEnum -> ReportingParty then
+   extract PartyContractInformation -> partyReference
+
 The functional expression can be either a direct Boolean expression, or the output of another rule, in which case the syntax is: ``filter when rule`` <RuleName>, as in the below example.
 
+.. code-block:: Haskell
+
+ reporting rule FixedFloatRateLeg1 <"Fixed Float Price">
+   filter when rule IsInterestRatePayout then
+   ContractForEvent then extract Contract -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate as "II.1.9 Rate leg 1"
+
 And the filtering rule is defined as:
+
+.. code-block:: Haskell
+
+ reporting rule IsInterestRatePayout
+   ContractForEvent then
+   extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only exists
 
 - ``extract multiple`` <Expression>
 
 When extracting a type with a multiple cardinality, the `multiple` keyword must be applied. This is typically used before a filter step where we extract multiple values and then filter it down to a single value, as in the below example.
+
+.. code-block:: Haskell
+
+ reporting rule ReportingTimestamp <"Reporting timestamp">
+   extract multiple WorkflowStep -> timestamp then
+   filter when EventTimestamp -> qualification = EventTimestampQualificationEnum -> eventCreationDateTime then
+   extract EventTimestamp -> dateTime as "I.5 Reporting Timestamp"
 
 - ``maxBy`` / ``minBy``
 
 The syntax supports selecting values by their natural ordering (ascending numbers, ascending alphabet) using the ``maxBy`` and ``minBy`` keywords.
 
 In the below example, we first apply a filter and extract a ``fixedInterestRate`` attribute. There could be multiple attribute values, so we select the highest one and then report it as the “Price” field.
+
+.. code-block:: Haskell
+
+ filter when rule IsFixedFloat then
+   extract Contract -> tradableProduct -> priceNotation -> price -> fixedInterestRate then
+   maxBy FixedInterestRate -> rate then
+   extract FixedInterestRate -> rate as "Price"
 
 
 .. _Cardinality Section: https://docs.rosetta-technology.io/dsl/documentation.html#cardinality
