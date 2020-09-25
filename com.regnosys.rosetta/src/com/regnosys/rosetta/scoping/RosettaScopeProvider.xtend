@@ -7,16 +7,16 @@ import com.google.common.base.Predicate
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.RosettaChoiceRule
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
+import com.regnosys.rosetta.rosetta.RosettaExternalEnum
+import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -27,7 +27,6 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RFeatureCallType
@@ -38,7 +37,9 @@ import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.resource.IEObjectDescription
+import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.FilteringScope
@@ -47,11 +48,6 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
-import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.rosetta.RosettaExternalEnum
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 
 /**
  * This class contains custom scoping description.
@@ -113,13 +109,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					if (receiver instanceof RosettaFeatureCall) {
 						val feature = receiver.feature
 						switch(feature) {
-							RosettaRegularAttribute:  {
-								val metas = feature.metaTypes
-								if (metas !== null && !metas.isEmpty) {
-									val metaScope = Scopes.scopeFor(metas)
-									allPosibilities.addAll(metaScope.allElements)
-								}
-							}
 							Attribute: {
 								val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
 								// TODO check that we can use QualifiedName here 
@@ -185,10 +174,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						val allClasses = parent.allSuperTypes
 						val scope = Scopes.scopeFor(allClasses)
 						return scope
-					}else if(parent instanceof RosettaClass) {
-						val allClasses = parent.allSuperTypes
-						val scope = Scopes.scopeFor(allClasses)
-						return scope
 					}
 				} else if (context instanceof Operation) {
 					val function = context.function
@@ -202,7 +187,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					val container = EcoreUtil2.getContainerOfType(context, Function)
 					if(container !== null) {
 						return filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
-							descr | descr.EClass !== ROSETTA_CLASS && descr.EClass !== DATA
+							descr | descr.EClass !== DATA
 						])
 					}
 					
@@ -218,34 +203,17 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				return IScope.NULLSCOPE
 			}
-			case ROSETTA_CHOICE_RULE__THIS_ONE: {
-				if (context instanceof RosettaChoiceRule) {
-					val choiceScope = context.scope
-					return Scopes.scopeFor(choiceScope.allAttributes)
-				}
-				return IScope.NULLSCOPE
-			}
-			case ROSETTA_CHOICE_RULE__THAT_ONES: {
-				if (context instanceof RosettaChoiceRule) {
-					val choiceScope = context.scope
-					return Scopes.scopeFor(choiceScope.allAttributes)
-				}
-				return IScope.NULLSCOPE
-			}
 			case ROSETTA_WORKFLOW_RULE__COMMON_IDENTIFIER:
 				if (context instanceof RosettaWorkflowRule) {
 					val parent = context.root?.parent
 					if (parent instanceof Data) {
 						return Scopes.scopeFor(parent.allAttributes)
-					} else if(parent instanceof RosettaClass)
-						return Scopes.scopeFor(parent.allAttributes)
+					}
 				}
 			case ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF: {
 				if (context instanceof RosettaExternalRegularAttribute) {
 					val classRef = (context.eContainer as RosettaExternalClass).typeRef
 					if(classRef instanceof Data)
-						return Scopes.scopeFor(classRef.allAttributes)
-					else if(classRef instanceof RosettaClass)
 						return Scopes.scopeFor(classRef.allAttributes)
 				}
 				return IScope.NULLSCOPE
@@ -340,8 +308,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 
 	private def IScope createFeatureScope(RType receiverType) {
 		switch receiverType {
-			RClassType:
-				Scopes.scopeFor(receiverType.clazz.allAttributes)
 			RDataType:
 				Scopes.scopeFor(receiverType.data.allAttributes)
 			REnumType:

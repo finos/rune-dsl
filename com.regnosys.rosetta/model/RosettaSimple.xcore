@@ -50,7 +50,6 @@ abstract class Definable extends RosettaDefinable {}
 
 
 class Data extends RosettaType, RootElement, RosettaCallable {
-	boolean oldStyle
 	refers Data superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes

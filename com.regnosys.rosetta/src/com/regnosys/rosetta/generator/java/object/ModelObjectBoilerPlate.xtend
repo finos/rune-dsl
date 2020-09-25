@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.GlobalKeyBuilder
@@ -22,27 +21,10 @@ class ModelObjectBoilerPlate {
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
 
-	def StringConcatenationClient boilerPlate(RosettaClass c, JavaNames names) '''
-		«c.wrap.processMethod(names)»
-		«c.wrap.boilerPlate»
-	'''
-	
 	def StringConcatenationClient boilerPlate(Data d, JavaNames names) '''
 		«d.wrap.processMethod(names)»
 		«d.wrap.boilerPlate»
 	'''
-
-
-	def StringConcatenationClient builderBoilerPlate(RosettaClass c, JavaNames names) {
-		val wrap = c.wrap
-		val attrs = wrap.attributes.filter[name != 'eventEffect'].toList
-		'''
-			«wrap.builderProcessMethod(names)»
-			«wrap.contributeEquals(attrs, toBuilder)»
-			«wrap.contributeHashCode(attrs)»
-			«wrap.contributeToString(toBuilder)»
-		'''
-	}
 
 	def StringConcatenationClient builderBoilerPlate(Data c, JavaNames names) {
 		val wrap = c.wrap
@@ -54,12 +36,7 @@ class ModelObjectBoilerPlate {
 			«wrap.contributeToString(toBuilder)»
 		'''
 	}
-		
-
-	def implementsClause(RosettaClass c) {
-		implementsClause(c)[String s|s]
-	}
-
+	
 	def StringConcatenationClient implementsClause(extension Data d) {
 		val interfaces = newHashSet
 		if(d.hasKeyedAnnotation)
@@ -76,16 +53,6 @@ class ModelObjectBoilerPlate {
 		}
 		if(interfaces.empty) null else ''' implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
 	}
-	
-	def implementsClause(extension RosettaClass it, (String)=>String nameFunc) {
-		val interfaces = newHashSet
-		
-		if(globalKey)
-			interfaces.add(nameFunc.apply('GlobalKey'))
-			
-		if (interfaces.empty) '''''' else '''implements «interfaces.join(', ')» '''
-	}
-	
 	
 	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.isMultiple) '''List<«attribute.toTypeSingle(names)»>''' 
@@ -185,13 +152,6 @@ class ModelObjectBoilerPlate {
 		if(c.hasSuperType) 'super.hashCode()' else '0'
 	}
 
-	private def TypeData wrap(RosettaClass rosettaClass) {
-		return new TypeData(
-			rosettaClass.name,
-			rosettaClass.expandedAttributes,
-			rosettaClass.superType !== null
-		);
-	}
 	private def TypeData wrap(Data data) {
 		return new TypeData(
 			data.name,

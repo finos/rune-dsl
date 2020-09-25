@@ -64,7 +64,7 @@ class ExternalHashcodeGeneratorTest {
 				[metadata key]
 				foo string (1..1)
 		'''.generateCode
-		code.writeClasses("ShouldHandleGlobalKeys")		
+		//code.writeClasses("ShouldHandleGlobalKeys")		
 		code.compileToClasses
 	}
 	

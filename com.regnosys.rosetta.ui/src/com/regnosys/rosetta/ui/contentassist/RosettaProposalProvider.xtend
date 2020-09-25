@@ -6,7 +6,6 @@ package com.regnosys.rosetta.ui.contentassist
 import com.google.common.base.Function
 import com.google.common.base.Predicate
 import com.google.common.base.Predicates
-import com.google.common.base.Suppliers
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
@@ -24,7 +23,6 @@ import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.jface.text.contentassist.ICompletionProposal
-import org.eclipse.xtext.Assignment
 import org.eclipse.xtext.CrossReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.Keyword
@@ -55,24 +53,6 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 	@Inject RosettaGrammarAccess grammar
 	@Inject IResourceDescriptions resDescr
 	
-	val filterKeywords = Suppliers.memoize [
-		#[
-			grammar.rosettaClassAccess.classKeyword_1,
-			grammar.rosettaDataRuleAccess.ruleKeyword_1,
-			grammar.rosettaDataRuleAccess.dataKeyword_0,
-			grammar.dataAccess.oldStyleDataKeyword_0_1_0,
-			grammar.rosettaChoiceRuleAccess.choiceKeyword_0
-		]
-	]
-	
-	
-	override completeKeyword(Keyword keyword, ContentAssistContext contentAssistContext, ICompletionProposalAcceptor acceptor) {
-		if (filterKeywords.get().contains(keyword))
-			return
-		else
-			super.completeKeyword(keyword, contentAssistContext, acceptor)
-	}
-	
 	override protected lookupCrossReference(
 		EObject model,
 		EReference reference,
@@ -101,13 +81,6 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 			]
 		}
 		super.lookupCrossReference(model, reference, acceptor, filter, proposalFactory)
-	}
-	
-	override void completeRosettaEvent_AndDataRules(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
-		lookupCrossReference(((assignment.getTerminal() as CrossReference)), context, acceptor, [eObjDesc | eObjDesc.EClass == ROSETTA_DATA_RULE]) 
-	}
-	override void completeRosettaEvent_OrDataRules(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
-		lookupCrossReference(((assignment.getTerminal() as CrossReference)), context, acceptor, [eObjDesc | eObjDesc.EClass == ROSETTA_DATA_RULE]) 
 	}
 	
 	override protected void lookupCrossReference(CrossReference crossReference,

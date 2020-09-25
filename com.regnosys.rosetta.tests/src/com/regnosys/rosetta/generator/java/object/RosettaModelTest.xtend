@@ -6,7 +6,6 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
@@ -14,7 +13,6 @@ import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -25,112 +23,6 @@ import static org.junit.jupiter.api.Assertions.*
 class RosettaModelTest{
 
 	@Inject extension ModelHelper modelHelper
-	
-	@Test @Disabled //FIXME missing regulatoryReference for type
-	def void testClass() {
-		val model =
-		'''
-			type PartyIdentifier: <"The set of [partyId, PartyIdSource] associated with a party.">
-				[synonym FpML value "Foo"]
-				partyId string (1..1) <"The identifier associated with a party.">
-					[synonym FpML value "Foo" tag 24 path "pathToFoo1"]
-					[synonym FpML value "Bar.value"]
-					[regulatoryReference ESMA MiFIR article "1" provision "To be clarified"]
-		'''.parseRosettaWithNoErrors
-		
-		val class = model.elements.get(0) as RosettaClass
-		assertEquals("PartyIdentifier", class.name)
-		assertEquals("The set of [partyId, PartyIdSource] associated with a party.", class.definition)
-		
-		val synonym = class.synonyms.get(0)
-		assertEquals("Foo", synonym.value.name)
-		assertEquals("FpML", synonym.sources.head.getName())
-		
-		val attributes = class.regularAttributes.get(0)
-		assertEquals("partyId", attributes.name)
-		assertEquals("string", attributes.type.name)
-		assertEquals(1, attributes.card.inf)
-		assertEquals(1, attributes.card.sup)
-		assertFalse(attributes.card.unbounded)
-		assertEquals("The identifier associated with a party.", attributes.definition)
-
-		val synonym1 = attributes.synonyms.get(0)
-		val value1 = synonym1.body.values.get(0)
-		assertEquals("Foo", value1.getName())
-		assertEquals("FpML", synonym1.sources.head.getName())
-		assertEquals("tag", value1.refType.getName())
-		assertEquals(24, value1.value)
-		assertEquals(value1.path, "pathToFoo1");
-		
-		val synonym2 = attributes.synonyms.get(1)
-		val value2 = synonym2.body.values.get(0)
-		assertEquals("Bar.value", value2.getName())
-		assertEquals("FpML", synonym2.sources.head.getName())
-		
-		val references = attributes.references.get(0)
-		assertEquals("ESMA", references.regRegime.name)
-		assertEquals("MiFIR", references.mandates.get(0).name)
-		assertEquals("article", references.segments.get(0).segment.name)
-		assertEquals("1", references.segments.get(0).segmentRef)
-		assertEquals("To be clarified", references.provision)
-	}
-		
-	@Test @Disabled //FIXME missing regulatoryReference for type
-	def void testClassInheritance() {
-		val model =
-		'''
-			class ExecutionVenue extends Party
-				[synonym FIX value Foo componentID 24]
-				[regulatoryReference ESMA EMIR section "2" provision "ISIN is required"]
-			{
-				countryOfCompetentAuthority Country (1..*);
-			}
-			
-			class Party
-			{
-			}
-			
-			class Country
-			{
-			}
-		'''.parseRosettaWithNoErrors
-		
-		val class = model.elements.get(0) as RosettaClass
-		assertEquals("Party", class.superType.name)
-		
-		val synonyms = class.synonyms.get(0)
-		assertEquals("FIX", synonyms.sources.head.getName())
-		assertEquals("Foo", synonyms.value.getName())
-		assertEquals("componentID", synonyms.value.refType.getName())
-		assertEquals(24, synonyms.value.value)
-		
-		val references = class.references.get(0)
-		assertEquals("ESMA", references.regRegime.name)
-		assertEquals("EMIR", references.mandates.get(0).name)
-		assertEquals("section", references.segments.get(0).segment.name)
-		assertEquals("2", references.segments.get(0).segmentRef)
-		assertEquals("ISIN is required", references.provision)
-	}
-	
-	@Test
-	def void testClassStereotype() {
-		val model =
-		'''
-			class TransactingParty stereotype entityReferenceData, preExecutionActivity <"The qualification of the party.">
-			{
-				partyRole string (1..1) <"The role associated with the party">;
-			}
-		'''.parseRosettaWithNoErrors
-		
-		val class = model.elements.get(0) as RosettaClass
-		assertEquals("TransactingParty", class.name)
-		val stereotype = class.stereotype
-		assertEquals(2, stereotype.values.size, "Incorrect size " + stereotype.values.size)
-		val value1 = stereotype.values.get(0)
-		assertEquals("entityReferenceData", value1.name)
-		val value2 = stereotype.values.get(1)
-		assertEquals("preExecutionActivity", value2.name)
-	}
 	
 	@Test
 	def void testEnumeration() {
@@ -198,10 +90,9 @@ class RosettaModelTest{
 		
 		val resource2 =
 		'''
-			class Swap {
-				inflationLeg string (0..*);
-				interestLeg string (0..*);
-			}
+			type Swap:
+				inflationLeg string (0..*)
+				interestLeg string (0..*)
 			
 			isEvent Foo
 				IRS exists

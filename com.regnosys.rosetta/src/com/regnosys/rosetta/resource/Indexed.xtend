@@ -12,11 +12,9 @@ import org.eclipse.xtext.resource.IEObjectDescription
 class Indexed {
 	
 	public static val ATTRIBUTE_OUT = new IndexedAttributeOut
-	public static val CLASS_ROOT = new IndexedRootClass
 	
 	public static val INDEXED_FEATURES = #[
-		Indexed.ATTRIBUTE_OUT,
-		CLASS_ROOT
+		Indexed.ATTRIBUTE_OUT
 	]
 
 	@Inject RosettaQualifiedNameProvider qNames

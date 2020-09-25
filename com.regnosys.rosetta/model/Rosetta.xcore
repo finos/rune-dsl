@@ -112,38 +112,8 @@ class RosettaCalculationType extends RosettaRootElement, RosettaFeatureOwner, Ro
 /**********************************************************************
  * Data model
  */
-
-class RosettaClass extends RosettaRootElement, RosettaFeatureOwner, RosettaType, RosettaCallable {
-	boolean ^abstract
-	boolean root
-	boolean oneOf
-	boolean globalKey
-	
-	refers RosettaClass superType
-	contains RosettaStereotype stereotype
-	contains RosettaClassSynonym[] synonyms
-	contains RosettaRegulatoryReference[] references
-	contains RosettaMarketPractice[] marketPractice
-	
-	op RosettaRegularAttribute[] getRegularAttributes() {
-		features.filter(RosettaRegularAttribute).toEList
-	}
-}
-
 class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature {
 	
-}
-
-class RosettaRegularAttribute extends RosettaTypedFeature, RosettaDefinable, WithCardinality {
-	contains RosettaRegulatoryReference[] references
-	contains RosettaMarketPractice[] marketPractice
-	contains RosettaSynonym[] synonyms
-	refers RosettaMetaType[] metaTypes
-}
-
-
-class RosettaStereotype {
-	refers RosettaStereotypeValue[] values
 }
 
 class RosettaStereotypeValue extends RosettaRootElement, RosettaNamed {
@@ -332,19 +302,6 @@ class RosettaParenthesisCalcExpression extends RosettaExpression{
 
 
 /**********************************************************************
- * Data rule
- */
-
-class RosettaDataRule extends RosettaRootElement, RosettaNamed, RosettaDefinable {
-	contains RosettaRegulatoryReference[] references
-	contains RosettaMarketPractice[] marketPractice
-	contains RosettaExpression when
-	contains RosettaExpression then
-}
-
-
-
-/**********************************************************************
  * Workflow rule
  */
 
@@ -396,19 +353,6 @@ class RosettaMapPathValue extends RosettaExpression {
 }
 
 /**********************************************************************
- * Choice rule
- */
-
-class RosettaChoiceRule extends RosettaRootElement, RosettaNamed, RosettaDefinable {
-	contains RosettaRegulatoryReference[] references
-	contains RosettaMarketPractice[] marketPractice
-	refers RosettaClass scope
-	String qualifier
-	refers RosettaRegularAttribute thisOne
-	refers RosettaRegularAttribute[] thatOnes
-}
-
-/**********************************************************************
  * Alias
  */
 
@@ -422,8 +366,6 @@ class RosettaAlias extends RosettaRootElement, RosettaDefinable, RosettaCallable
  
 class RosettaQualifiable extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	contains RosettaExpression expression
-	refers RosettaDataRule[] andDataRules	
-	refers RosettaDataRule[] orDataRules
 }
 
 class RosettaQualifiableConfiguration {
@@ -457,15 +399,6 @@ class RosettaEvent extends RosettaQualifiable {
 /**********************************************************************
  * Calculations
  */
- 
- /*
-  * class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaFeatureOwner, RosettaCallableWithArgs, RosettaBuiltinType{
-	contains RosettaParameter[] parameters
-	boolean library
-}
-  */
- 
-
 
 class RosettaWhenClause {
 	contains RosettaExpression when
