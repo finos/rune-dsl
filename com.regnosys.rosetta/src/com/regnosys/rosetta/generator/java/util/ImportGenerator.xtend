@@ -110,7 +110,6 @@ class ImportGenerator {
 //				}
 			}
 			RosettaMetaType:{
-				imports.add('''«packages.model.metaField.name».*''')
 				imports.add('''«packages.basicMetafields.name».*''')
 			}
 			RosettaEnumValue:{
