@@ -36,12 +36,12 @@ class ChoiceRuleGeneratorTest {
 	def void failedRequiredChoiceRuleValidation() {
 		val classes = createTestClassAndRule()
 			
-		val testInstance = classes.createInstanceUsingBuilder('TestClass',of(
+		val testInstance = classes.createInstanceUsingBuilder('Test',of(
 			'field1', 'field one value',
 			'field2', 'field two value'),
 			of())
 	
-		val testChoiceRuleClass = classes.get(rootPackage.choiceRule.name + ".Test1ChoiceRule")
+		val testChoiceRuleClass = classes.get(rootPackage.choiceRule.name + ".TestRequiredChoice")
 		
 		val testChoiceRule = testChoiceRuleClass.newInstance;
 		
@@ -59,12 +59,13 @@ class ChoiceRuleGeneratorTest {
 	def void failedOptionalChoiceRuleValidation() {
 		val classes = createTestClassAndRule()
 			
-		val testInstance = classes.createInstanceUsingBuilder('TestClass',of(
+		val testInstance = classes.createInstanceUsingBuilder('Test',of(
 			'field1', 'field one value',
 			'field2', 'field two value'),
 			of())
-	
-		val testChoiceRuleClass = classes.get(rootPackage.choiceRule.name + ".Test2ChoiceRule")
+		
+		println(classes)
+		val testChoiceRuleClass = classes.get(rootPackage.choiceRule.name + ".TestOptionalChoice")
 		val testChoiceRule = testChoiceRuleClass.newInstance;
 		
 		val validationResult = testChoiceRuleClass.getMethod("validate", RosettaPath ,testInstance.class)
@@ -79,16 +80,15 @@ class ChoiceRuleGeneratorTest {
 	
 	protected def Map<String, Class<?>> createTestClassAndRule() {
 		return '''
-			class TestClass {
-				field1 string (0..1);
-				field2 string (0..1);
-			}
+			type Test:
+				field1 string (0..1)
+				field2 string (0..1)
 			
-			choice rule Test1_ChoiceRule 
-				for TestClass required choice between field1 and field2
+				condition RequiredChoice:
+					required choice field1, field2
 			
-			choice rule Test2_ChoiceRule 
-				for TestClass optional choice between field1 and field2
+				condition OptionalChoice:
+					optional choice field1, field2
 			
 		'''
 		.generateCode

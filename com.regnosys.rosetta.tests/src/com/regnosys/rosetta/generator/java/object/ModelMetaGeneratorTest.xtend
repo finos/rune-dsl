@@ -23,15 +23,11 @@ class ModelMetaGeneratorTest {
 	@Test
 	def void shouldGenerateGetQualiifyFunctions() {
 		val code = '''
-			class Foo
-			{
-				a string (0..1);
-			}
+			type Foo:
+				a string (0..1)
 			
-			class Bar extends Foo
-			{
-				b string (0..1);
-			}
+			type Bar extends Foo:
+				b string (0..1)
 			
 			isEvent AExists
 				Foo -> a exists

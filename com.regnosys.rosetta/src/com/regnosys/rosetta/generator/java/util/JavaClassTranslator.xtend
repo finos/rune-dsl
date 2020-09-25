@@ -1,13 +1,8 @@
 package com.regnosys.rosetta.generator.java.util
 
 import com.google.common.base.Splitter
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.rosetta.RosettaClass
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.types.RCalculationType
 import com.regnosys.rosetta.types.RQualifiedType
-
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.cardinalityIsListValue
 
 class JavaClassTranslator {
 				
@@ -47,55 +42,5 @@ class JavaClassTranslator {
 		} else {
 			return Splitter.on('.').splitToList(basicType).last
 		}
-	}
-
-	static def getPackages(RosettaRegularAttribute attribute, RosettaJavaPackages packages) {
-		val imports = newLinkedList();
-		val basicType = toJavaFullType(attribute.type.name);
-		
-		if (basicType !== null && !basicType.startsWith('java.lang')) {
-			imports.add(basicType)
-		}
-
-		if (attribute.cardinalityIsListValue) {
-			imports.add('java.util.List')
-			imports.add('java.util.ArrayList')
-			imports.add('java.util.stream.Collectors')
-			imports.add('java.util.Objects')
-		}
-		
-		if(attribute.type instanceof RosettaClass && (attribute.cardinalityIsListValue || !attribute.metaTypes.empty)) {
-			imports.add('java.util.stream.Collectors')	
-		}
-		
-		if(attribute.type instanceof RosettaClass) {
-			imports.add('static java.util.Optional.ofNullable')
-		}
-		return imports
-	}
-
-	static def boolean hasAttr(RosettaClass rosettaClass) {
-		return rosettaClass !== null && (!rosettaClass.regularAttributes.isEmpty || hasAttr(rosettaClass.superType))
-	}
-	
-	static def toJavaImportSet(RosettaClass rosettaClass, RosettaJavaPackages javaPacks) {
-		val imports = rosettaClass
-			.allSuperClasses
-			.map[regularAttributes.map[getPackages(javaPacks)].flatten.filter[it !== null]]
-			.flatten.toSet
-		if (rosettaClass.hasAttr) {
-			imports.add('static java.util.Optional.ofNullable')
-		}
-		return imports;
-	}
-	
-	static def allSuperClasses(RosettaClass rosettaClass) {
-		val allClasses = newArrayList
-		var current = rosettaClass
-		while (current !== null) {
-			allClasses.add(current)
-			current = current.superType
-		}
-		return allClasses
 	}
 }

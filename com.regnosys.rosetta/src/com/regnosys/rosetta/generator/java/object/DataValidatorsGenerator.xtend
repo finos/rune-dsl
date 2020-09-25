@@ -7,6 +7,7 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
+import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.path.RosettaPath
@@ -23,8 +24,6 @@ import java.util.Set
 import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
-
-import static com.regnosys.rosetta.generator.java.object.ModelObjectGenerator.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
@@ -107,6 +106,10 @@ class DataValidatorsGenerator {
 		
 		}
 	'''
+
+	static def onlyExistsValidatorName(RosettaType c) {
+		return c.name + 'OnlyExistsValidator'
+	}
 
 	def private StringConcatenationClient onlyExistsClassBody(Data c, JavaNames names, String version) '''
 		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaType(c)», String> {

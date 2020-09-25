@@ -12,12 +12,9 @@ import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaChoiceRule
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
-import com.regnosys.rosetta.rosetta.RosettaDataRule
+import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaEvent
@@ -32,6 +29,7 @@ import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
+import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -60,8 +58,11 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
+import java.time.format.DateTimeFormatter
 import java.util.List
 import java.util.Stack
+import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -74,11 +75,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.RosettaSynonymBody
-import java.time.format.DateTimeFormatter
-import java.util.regex.Pattern
-import java.util.regex.PatternSyntaxException
-import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 
 /**
  * This class contains custom validation rules. 
@@ -100,21 +96,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject CardinalityProvider cardinality
 	@Inject RosettaGrammarAccess grammar
 	@Inject RosettaConfigExtension confExtensions
-	
-	@Check
-	def void deprecatedInfo(RosettaClass classe) {
-		info('''Class is deprecated use data instead''', ROSETTA_NAMED__NAME)
-	}
-	
-	@Check
-	def void deprecatedInfo(RosettaChoiceRule classe) {
-		info('''ChoiceRule is deprecated use data instead''', ROSETTA_NAMED__NAME)
-	}
-	
-	@Check
-	def void deprecatedInfo(RosettaDataRule classe) {
-		info('''DataRule is deprecated use data instead''', ROSETTA_NAMED__NAME)
-	}
 	
 	@Check
 	def void checkClassNameStartsWithCapital(Data classe) {
@@ -148,20 +129,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		val annotationAttribute = attribute.eContainer instanceof Annotation
 		if (!annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
 			warning("Attribute name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
-		}
-	}
-
-	@Check
-	def void checkDataRuleThen(RosettaDataRule rule) {
-		if (rule.then === null) {
-			error('''Add missing 'then' expression.''', rule, ROSETTA_NAMED__NAME)
-		}
-	}
-
-	@Check
-	def void checkDataRuleNameStartsWithUpperCase(RosettaDataRule rule) {
-		if (!Character.isUpperCase(rule.name.charAt(0))) {
-			warning("Data rule name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
 
@@ -266,14 +233,13 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				if (feature instanceof RosettaTypedFeature) {
 					val parentType = feature.type
 					switch (parentType) {
-						RosettaClass,
 						Data: {
 							// must have single cardinality in group by function
 							var gbe = groupByExp
 							while (gbe !== null) {
 								if (gbe.attribute instanceof WithCardinality &&
 									(gbe.attribute as WithCardinality).card.isIsMany) {
-									error('''attribute «gbe.attribute.name» of «(gbe.attribute.eContainer as RosettaClass).name» has multiple cardinality. Group by expressions must be single''',
+									error('''attribute «gbe.attribute.name» of «(gbe.attribute.eContainer as Data).name» has multiple cardinality. Group by expressions must be single''',
 										featureCallGroupBy, ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, CARDINALITY_ERROR)
 									return
 								}
@@ -371,22 +337,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 
 	@Check
-	def checkChoiceRuleAttributesAreUnique(RosettaChoiceRule choiceRule) {
-		val name2attr = ArrayListMultimap.create
-		choiceRule.thatOnes.forEach [
-			name2attr.put(name, it)
-		]
-		for (value : choiceRule.thatOnes) {
-			val attributeByName = name2attr.get(value.name)
-			if (attributeByName.size > 1) {
-				error('''Duplicate attribute '«value.name»'«»''', ROSETTA_NAMED__NAME, DUPLICATE_CHOICE_RULE_ATTRIBUTE)
-			}
-			if (value.name == choiceRule.thisOne.name) {
-				error('''Duplicate attribute '«value.name»'«»''', ROSETTA_NAMED__NAME, DUPLICATE_CHOICE_RULE_ATTRIBUTE)
-			}
-		}
-	}
-	@Check
 	def checkChoiceRuleAttributesAreUnique(Condition choiceRule) {
 		if(!choiceRule.isChoiceRuleCondition) {
 			return
@@ -456,18 +406,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		}
 	}
-
-	@Check
-	def checkForMulipleClassReferencesDefinedForDataRule(RosettaDataRule model) {
-		val classRefs = newLinkedHashSet
-		model.when.eAllContents.filter(RosettaCallableCall).forEach[collectRootCalls[classRefs.add(it)]]
-		model.then.eAllContents.filter(RosettaCallableCall).forEach[collectRootCalls[classRefs.add(it)]]
-		if (classRefs.size > 1) {
-			warning('''Data rule "«model.name»" has multiple class references «classRefs.join(', ')[name]». Data rules when/then should always start from the same class''',
-				model, ROSETTA_NAMED__NAME, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_DATA_RULE)
-		}
-	}
-
+	
 	@Check
 	def checkUniqueRootClassForRosettaQualifiable(RosettaQualifiable ele) {
 		val usedClasses = collectRootCalls(ele)
@@ -670,8 +609,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkData(Data ele) {
-		if (ele.oldStyle)
-			error('''Wrong keyword 'data' use 'type' instead.''', DATA__OLD_STYLE)
 		val choiceRules = ele.conditions.filter[isChoiceRuleCondition].groupBy[it.constraint.oneOf]
 		val onOfs = choiceRules.get(Boolean.TRUE)
 		if (!onOfs.nullOrEmpty) {
@@ -796,7 +733,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 		val segments = ele.path?.asSegmentList(ele.path)
 		val attr =  segments?.last?.attribute
-		if(attr instanceof Attribute && !(attr as Attribute).hasReferenceAnnotation) {
+		if(!attr.hasReferenceAnnotation) {
 			error(''''«grammar.operationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
 		}
 	}

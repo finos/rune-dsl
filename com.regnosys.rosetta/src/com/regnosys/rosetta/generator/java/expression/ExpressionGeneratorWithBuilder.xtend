@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
@@ -26,7 +27,6 @@ import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRecordType
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
@@ -37,6 +37,7 @@ import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.functions.ExpressionOperators
+import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.math.BigDecimalExtensions
 import com.rosetta.model.lib.records.Date
 import java.util.Arrays
@@ -45,8 +46,6 @@ import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.rosetta.model.lib.functions.MapperS
 
 class ExpressionGeneratorWithBuilder {
 
@@ -62,9 +61,7 @@ class ExpressionGeneratorWithBuilder {
 
 	dispatch def StringConcatenationClient toJava(RosettaFeatureCall ele, Context ctx) {
 		val feature = ele.feature
-		val StringConcatenationClient right = if (feature instanceof RosettaRegularAttribute)
-				feature.attributeAccess(ele.toOne, ctx)
-			else if (feature instanceof Attribute)
+		val StringConcatenationClient right = if (feature instanceof Attribute)
 				feature.attributeAccess(ele.toOne,ctx)
 			else if (feature instanceof RosettaEnumValue)
 				return '''«ctx.names.toJavaType(ele.receiver as RosettaEnumeration)».«feature.convertValues»'''
@@ -84,14 +81,6 @@ class ExpressionGeneratorWithBuilder {
 
 	def dispatch StringConcatenationClient toJava(RosettaEnumValueReference ele, Context ctx) {
 		'''«ctx.names.toJavaType(ele.enumeration)».«ele.value.convertValues»'''
-	}
-
-	def dispatch StringConcatenationClient toJava(RosettaRegularAttribute ele, Context ctx) {
-		if (ele.metaTypes === null || ele.metaTypes.isEmpty)
-			'''get«ele.name.toFirstUpper»()'''
-		else {
-			'''get«ele.name.toFirstUpper»().getValue()'''
-		}
 	}
 
 	def dispatch StringConcatenationClient toJava(RosettaFeature ele, Context ctx) {

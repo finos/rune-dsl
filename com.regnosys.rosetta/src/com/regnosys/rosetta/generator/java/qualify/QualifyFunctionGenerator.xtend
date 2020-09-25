@@ -7,12 +7,10 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
-import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -45,7 +43,7 @@ class QualifyFunctionGenerator<T extends RosettaQualifiable> {
 		val rosettaClasses = <RosettaType>newHashSet
 		val extensions = new RosettaExtensions
 		element.eAllContents.filter(RosettaCallableCall).forEach[
-				extensions.collectRootCalls(it, [if(it instanceof RosettaClass || it instanceof Data) rosettaClasses.add(it as RosettaType)])
+				extensions.collectRootCalls(it, [if(it instanceof Data) rosettaClasses.add(it as RosettaType)])
 		]
 		
 		if (rosettaClasses.size > 1) {
@@ -67,7 +65,7 @@ class QualifyFunctionGenerator<T extends RosettaQualifiable> {
 		val rosettaClass = getRosettaClass(qualifiableClass)
 		
 		val imports = new ImportGenerator(packages) 
-		imports.addQualifyClass(qualifiableClass.expression, qualifiableClass.andDataRules, qualifiableClass.andDataRules, rosettaClass)
+		imports.addQualifyClass(qualifiableClass.expression, rosettaClass)
 		
 		val definition = RosettaGrammarUtil.grammarQualifiable(qualifiableClass)
 		
@@ -98,12 +96,6 @@ class QualifyFunctionGenerator<T extends RosettaQualifiable> {
 						.setName("«qualifiableClass.name»")
 						.setDefinition(QUALIFY_DEFINITION)
 						.setExpressionResult(EXPR_DEFINITION, exprResult)
-						«FOR dataRule : qualifiableClass.andDataRules»
-						.addAndDataRuleResult(new «DataRuleGenerator.dataRuleClassName(dataRule.name)»().validate(null, «rosettaClass.name.toFirstLower»))
-						«ENDFOR»
-						«FOR dataRule : qualifiableClass.orDataRules»
-						.addOrDataRuleResult(new «DataRuleGenerator.dataRuleClassName(dataRule.name)»().validate(null, «rosettaClass.name.toFirstLower»))
-						«ENDFOR»
 						.build();
 			}
 		}

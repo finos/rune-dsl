@@ -61,24 +61,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testLowerCaseDataRule() {
-		val model = 
-		'''
-			data rule quote <"">
-				when Foo exists
-				then Bar exists
-					
-			class Foo{
-			}
-			
-			class Bar{
-			}
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_DATA_RULE, INVALID_CASE,
-			"Rule name should start with a capital")
-	}
-	
-	@Test
 	def void testLowerCaseProductQualifier() {
 		val model = 
 		'''
@@ -424,35 +406,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testDuplicateDataRule_ClassName() {
-		val model = '''
-			class Foo {
-			}
-			
-			data rule Foo
-				when Foo exists
-				then Foo must exist
-		'''.parseRosetta
-		model.assertError(ROSETTA_DATA_RULE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
-	}
-	
-	@Test
-	def void testDuplicateDataRule_EnumName() {
-		val model = '''
-			class Foo {
-			}
-			
-			enum Bar:
-				Entry
-			
-			data rule Bar
-				when Foo exists
-				then Foo must exist
-		'''.parseRosetta
-		model.assertError(ROSETTA_DATA_RULE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
-	}
-	
-	@Test
 	def void testDuplicateWorkflowRule_ClassName() {
 		val model = '''
 			type Foo:
@@ -595,26 +548,25 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	
 	@Test
 	def checkOperationTypes() {
-	val model = '''
-			class Clazz {
-				test boolean (0..1);
-			}
-			data rule DataRule
-				when 
-					Clazz -> test = True 
-					or False <> False
-					or 1 > 0
-					or 1 < 0
-					or 1 >= 0
-					or 1 <= 0
-					or 1 <> 0
-					or 1 = 0
-				then 1.1 = .0
-					and 0.2 <> 0.1
-					and 0.2 > 0.1
-					and 0.2 < 0.1
-					and 0.2 <= 0.1
-					and 0.2 >= 0.1
+		val model = '''
+			type Clazz:
+				test boolean (0..1)
+			
+				condition DataRule:
+					if test = True 
+						or False <> False
+						or 1 > 0
+						or 1 < 0
+						or 1 >= 0
+						or 1 <= 0
+						or 1 <> 0
+						or 1 = 0
+					then 1.1 = .0
+						and 0.2 <> 0.1
+						and 0.2 > 0.1
+						and 0.2 < 0.1
+						and 0.2 <= 0.1
+						and 0.2 >= 0.1
 		'''.parseRosetta
 		model.assertNoErrors
 	}

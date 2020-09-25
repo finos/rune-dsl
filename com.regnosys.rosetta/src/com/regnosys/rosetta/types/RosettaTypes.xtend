@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.types
 
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaNamed
@@ -31,14 +30,6 @@ class RFeatureCallType implements RType {
 	}
 }
 
-@Data
-class RClassType implements RType {
-	RosettaClass clazz
-
-	override getName() {
-		clazz.name
-	}
-}
 @Data
 class RDataType extends RAnnotateType {
 	com.regnosys.rosetta.rosetta.simple.Data data
