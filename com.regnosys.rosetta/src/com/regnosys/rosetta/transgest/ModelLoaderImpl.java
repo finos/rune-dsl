@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.transgest;
 
+import static com.regnosys.rosetta.generator.util.Util.fullname;
+
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -17,14 +19,11 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 
 import com.google.common.io.Resources;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
-import com.regnosys.rosetta.rosetta.RosettaClass;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.rosetta.model.lib.RosettaModelObject;
-
-import static com.regnosys.rosetta.generator.util.Util.fullname;
 
 public class ModelLoaderImpl implements ModelLoader {
 
@@ -70,7 +69,7 @@ public class ModelLoaderImpl implements ModelLoader {
 		return rosettaModels.stream()
 				.map(RosettaModel::getElements)
 				.flatMap(Collection::stream)
-				.filter(c -> c instanceof RosettaClass || c instanceof Data)
+				.filter(c -> c instanceof Data)
 				.map(c -> (RosettaType) c)
 				.filter(c -> fullname(c).toString().equals(rootObject.getName()))
 				.findFirst()
@@ -81,7 +80,7 @@ public class ModelLoaderImpl implements ModelLoader {
 	public RosettaType rosettaClass(String className) {
 		return rosettaModels.stream().map(RosettaModel::getElements)
 				.flatMap(Collection::stream)
-				.filter(c -> c instanceof RosettaClass || c instanceof Data)
+				.filter(c -> c instanceof Data)
 				.map(c -> (RosettaType) c)
 				.filter(c -> c.getName().equals(className))
 				.findFirst()

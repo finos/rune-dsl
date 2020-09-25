@@ -47,7 +47,6 @@ class RosettaOperators {
 			rightToCheck = right.featureType
 		}
 		if ((  leftToCheck instanceof RRecordType
-			|| leftToCheck instanceof RClassType
 			|| leftToCheck instanceof RDataType
 		) && leftToCheck == rightToCheck) {
 			if (EQUALITY_OPS.contains(op))

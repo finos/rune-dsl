@@ -32,19 +32,16 @@ class RosettaQualifyProductsTest {
 	@BeforeEach
 	def void setUp() {
 		val code = '''
-			class Foo {
-				bar Bar (0..*);
-				corge number (0..1);
-			}
+			type Foo:
+				bar Bar (0..*)
+				corge number (0..1)
 			
-			class Bar {
-				baz Baz (0..1);
-				qux number (0..1);
-			}
+			type Bar:
+				baz Baz (0..1)
+				qux number (0..1)
 
-			class Baz {
-				quux number (0..1);
-			}
+			type Baz:
+				quux number (0..1)
 
 			isProduct BranchNodeCountComparisonToLiteral
 				aliasBaz count = 2

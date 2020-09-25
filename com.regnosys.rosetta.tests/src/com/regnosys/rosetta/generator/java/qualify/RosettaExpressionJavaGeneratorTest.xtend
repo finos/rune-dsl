@@ -7,13 +7,15 @@ import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCardinality
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import org.eclipse.emf.common.util.ECollections
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -25,7 +27,6 @@ import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
-import com.regnosys.rosetta.rosetta.RosettaModel
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -37,7 +38,7 @@ class RosettaExpressionJavaGeneratorTest {
 	 */
 	@Test
 	def void shouldGenerateGreaterThanExpression() {
-		val lhsMockClass = createRosettaClass("Foo")
+		val lhsMockClass = createData("Foo")
 		val lhsFeatureCall = createFeatureCall(lhsMockClass, "attr1")
 		
 		val rhsIntLiteral = createIntLiteral(5)
@@ -48,7 +49,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)))'))
+			is('greaterThan(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)))'))
 	}
 
 	/**
@@ -56,7 +57,7 @@ class RosettaExpressionJavaGeneratorTest {
 	 */
 	@Test
 	def void shouldGenerateGreaterThanExpressionsWithOr1() {
-		val mockClass = createRosettaClass("Foo")
+		val mockClass = createData("Foo")
 		
 		val lhsFeatureCall = createFeatureCall(mockClass, "attr1")
 		val lhsComparisonOp = createBinaryOperation(">", lhsFeatureCall, createIntLiteral(5))
@@ -70,7 +71,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5))).or(greaterThan(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2), MapperS.of(Integer.valueOf(5))))'))
+			is('greaterThan(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5))).or(greaterThan(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()), MapperS.of(Integer.valueOf(5))))'))
 	}
 
 	/**
@@ -78,7 +79,7 @@ class RosettaExpressionJavaGeneratorTest {
 	 */
 	@Test
 	def void shouldGenerateGreaterThanExpressionsWithOr2() {
-		val mockClass = createRosettaClass("Foo")
+		val mockClass = createData("Foo")
 		
 		val lhsFeatureCall = createFeatureCall(mockClass, "attr1")
 		val rhsFeatureCall = createFeatureCall(mockClass, "attr2")
@@ -91,7 +92,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2))), MapperTree.of(MapperS.of(Integer.valueOf(5))))'))
+			is('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))), MapperTree.of(MapperS.of(Integer.valueOf(5))))'))
 	}
 	
 	/**
@@ -99,7 +100,7 @@ class RosettaExpressionJavaGeneratorTest {
 	 */
 	@Test
 	def void shouldGenerateGreaterThanExpressionsWithOrAnd() {
-		val mockClass = createRosettaClass("Foo")
+		val mockClass = createData("Foo")
 		
 		val featureCall1 = createFeatureCall(mockClass, "attr1")
 		val featureCall2 = createFeatureCall(mockClass, "attr2")
@@ -115,7 +116,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(mockClass))
 		
 		assertNotNull(generatedFunction)
-		assertEquals('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1)), MapperTree.or(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr3", Foo::getAttr3))), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr4", Foo::getAttr4)))), MapperTree.of(MapperS.of(Integer.valueOf(5))))',formatGeneratedFunction('''«generatedFunction»'''))
+		assertEquals('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", _foo -> _foo.getAttr1())), MapperTree.or(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", _foo -> _foo.getAttr2())), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr3", _foo -> _foo.getAttr3()))), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr4", _foo -> _foo.getAttr4())))), MapperTree.of(MapperS.of(Integer.valueOf(5))))',formatGeneratedFunction('''«generatedFunction»'''))
 	}
 	
 	/**
@@ -123,7 +124,7 @@ class RosettaExpressionJavaGeneratorTest {
 	 */
 	@Test
 	def void shouldGenerateGreaterThanExpressionsWithAnd() {
-		val mockClass = createRosettaClass("Foo")
+		val mockClass = createData("Foo")
 		
 		val featureCall1 = createFeatureCall(mockClass, "attr1")
 		val featureCall2 = createFeatureCall(mockClass, "attr2")
@@ -139,7 +140,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2))), MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr3", Foo::getAttr3)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr4", Foo::getAttr4))))'))
+			is('greaterThan(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))), MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr3\", _foo -> _foo.getAttr3())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr4\", _foo -> _foo.getAttr4()))))'))
 	}
 	
 	/**
@@ -147,7 +148,7 @@ class RosettaExpressionJavaGeneratorTest {
 	 */
 	@Test
 	def void shouldGenerateExistsExpression() {
-		val lhsMockClass = createRosettaClass("Foo")
+		val lhsMockClass = createData("Foo")
 		val lhsFeatureCall = createFeatureCall(lhsMockClass, "attr")
 		val lhsExistsOp = createExistsExpression(lhsFeatureCall)
 		
@@ -155,7 +156,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('exists(MapperS.of(foo).<Foo>map("getAttr", Foo::getAttr), false)'))
+			is('exists(MapperS.of(foo).<Foo>map(\"getAttr\", _foo -> _foo.getAttr()), false)'))
 	}
 
 	/**
@@ -163,7 +164,7 @@ class RosettaExpressionJavaGeneratorTest {
 	 */
 	@Test
 	def void shouldGenerateExistsExpressionsWithOr1() {
-		val mockClass = createRosettaClass("Foo")
+		val mockClass = createData("Foo")
 		
 		val lhsFeatureCall = createFeatureCall(mockClass, "attr1")
 		val lhsExistsOp = createExistsExpression(lhsFeatureCall)
@@ -177,7 +178,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('exists(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), false).or(exists(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2), false))'))
+			is('exists(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), false).or(exists(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()), false))'))
 	}
 	
 	/**
@@ -185,7 +186,7 @@ class RosettaExpressionJavaGeneratorTest {
 	 */
 	@Test
 	def void shouldGenerateExistsExpressionsWithOr2() {
-		val mockClass = createRosettaClass("Foo")
+		val mockClass = createData("Foo")
 		
 		val lhsFeatureCall = createFeatureCall(mockClass, "attr1")
 		val rhsFeatureCall = createFeatureCall(mockClass, "attr2")
@@ -198,14 +199,14 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('exists(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1)), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2))), false)'))
+			is('exists(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))), false)'))
 	}
 
 	// ( Foo -> attr1 = Foo -> attr2 ) or ( Foo -> attr1 = Foo -> attr2 )
 	
 	@Test
 	def void shouldGenerateEqualityExprWithOr() {
-		val mockClass = createRosettaClass("Foo")
+		val mockClass = createData("Foo")
 		
 		val featureCall1 = createFeatureCall(mockClass, "attr1")
 		val featureCall2 = createFeatureCall(mockClass, "attr2")
@@ -223,12 +224,12 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('areEqual(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2)).or(areEqual(MapperS.of(foo).<Foo>map("getAttr3", Foo::getAttr3), MapperS.of(foo).<Foo>map("getAttr4", Foo::getAttr4)))'))
+			is('areEqual(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2())).or(areEqual(MapperS.of(foo).<Foo>map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).<Foo>map(\"getAttr4\", _foo -> _foo.getAttr4())))'))
 	}
 	
 	@Test
 	def void shouldGenerateEnumValueRef() {
-		val mockClass = createRosettaClass("Foo")
+		val mockClass = createData("Foo")
 		
 		val featureCall1 = createFeatureCall(mockClass, "attr1")
 		val featureCall2 = createFeatureCall(mockClass, "attr2")
@@ -246,7 +247,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('areEqual(MapperS.of(foo).<Foo>map("getAttr1", Foo::getAttr1), MapperS.of(foo).<Foo>map("getAttr2", Foo::getAttr2)).or(areEqual(MapperS.of(foo).<Foo>map("getAttr3", Foo::getAttr3), MapperS.of(foo).<Foo>map("getAttr4", Foo::getAttr4)))'))
+			is('areEqual(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2())).or(areEqual(MapperS.of(foo).<Foo>map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).<Foo>map(\"getAttr4\", _foo -> _foo.getAttr4())))'))
 	}
 	
 	private def String formatGeneratedFunction(StringConcatenationClient generatedFunction) {
@@ -274,18 +275,19 @@ class RosettaExpressionJavaGeneratorTest {
 		return mockBinaryOperation
 	}
 	
-	private def RosettaFeatureCall createFeatureCall(RosettaClass rosettaClass, String attributeName) {
+	private def RosettaFeatureCall createFeatureCall(Data rosettaClass, String attributeName) {
 		val mockCallableCall = mock(RosettaCallableCall)
 		when(mockCallableCall.callable).thenReturn(rosettaClass)
 
 		val mockCardinality = mock(RosettaCardinality)
 		when(mockCardinality.sup).thenReturn(1)
 		
-		val mockAttribute = mock(RosettaRegularAttribute)
+		val mockAttribute = mock(Attribute)
 		when(mockAttribute.name).thenReturn(attributeName)
 		when(mockAttribute.card).thenReturn(mockCardinality)
 		when(mockAttribute.eContainer).thenReturn(rosettaClass)
 		when(mockAttribute.type).thenReturn(rosettaClass)
+		when(mockAttribute.annotations).thenReturn(ECollections.emptyEList)
 		
 		val mockFeatureCall = mock(RosettaFeatureCall)
 		when(mockFeatureCall.feature).thenReturn(mockAttribute)
@@ -299,12 +301,13 @@ class RosettaExpressionJavaGeneratorTest {
 		return mockIntLiteral
 	}
 	
-	private def RosettaClass createRosettaClass(String className) {
-		val mockRosettaClass = mock(RosettaClass)
+	private def Data createData(String className) {
+		val mockData = mock(Data)
 		val model = mock(RosettaModel)
 		when(model.name).thenReturn('com.rosetta.test')
-		when(mockRosettaClass.model).thenReturn(model)
-		when(mockRosettaClass.name).thenReturn(className)
-		return mockRosettaClass
+		when(mockData.model).thenReturn(model)
+		when(mockData.name).thenReturn(className)
+		when(mockData.annotations).thenReturn(ECollections.emptyEList)
+		return mockData
 	}
 }

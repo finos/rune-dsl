@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.common.collect.Multimaps
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.object.ExpandedType
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRootElement
@@ -45,7 +44,7 @@ class MetaFieldGenerator {
 //		}
 		
 		val modelClasses = model.elements.filter [
-			it instanceof RosettaClass || it instanceof Data
+			it instanceof Data
 		]
 		if (modelClasses.empty) {
 			return
@@ -489,7 +488,7 @@ class MetaFieldGenerator {
 	'''
 	
 	def boolean isClassOrData(RosettaType type) {
-		return type instanceof Data || type instanceof RosettaClass
+		return type instanceof Data
 	}
 	
 	def referenceWithMeta(RosettaJavaPackages packages, ExpandedType type) '''

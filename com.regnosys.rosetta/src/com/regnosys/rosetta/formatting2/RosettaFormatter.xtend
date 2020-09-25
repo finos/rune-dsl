@@ -7,12 +7,10 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaChoiceRule
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.RosettaDataRule
+import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -20,6 +18,8 @@ import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
+import com.regnosys.rosetta.rosetta.RosettaExternalEnum
+import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonym
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
@@ -28,9 +28,8 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
+import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
-import com.regnosys.rosetta.rosetta.RosettaStereotype
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
@@ -41,9 +40,11 @@ import com.regnosys.rosetta.rosetta.simple.Constraint
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Definable
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.services.RosettaGrammarAccess
+import com.rosetta.model.lib.annotations.RosettaChoiceRule
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.formatting2.AbstractFormatter2
@@ -51,11 +52,6 @@ import org.eclipse.xtext.formatting2.IFormattableDocument
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatter
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-import com.regnosys.rosetta.rosetta.RosettaProduct
-import com.regnosys.rosetta.rosetta.RosettaDefinable
-import com.regnosys.rosetta.rosetta.simple.ListLiteral
-import com.regnosys.rosetta.rosetta.RosettaExternalEnum
-import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -79,16 +75,8 @@ class RosettaFormatter extends AbstractFormatter2 {
 	}
 
 
-	def dispatch void format(RosettaClass rosettaClass, extension IFormattableDocument document) {
-		indentedBraces(rosettaClass, document)
-		rosettaClass.getStereotype.format;
-		formatChild(rosettaClass.synonyms, document)
-		formatChild(rosettaClass.references, document)
-		formatChild(rosettaClass.regularAttributes, document)
-	}
-	
 	def dispatch void format(Data ele, extension IFormattableDocument document) {
-		ele.regionFor.keyword(dataAccess.typeKeyword_0_0).append(ONE_SPACE).prepend(NEW_ROOT_ELEMENT)
+		ele.regionFor.keyword(dataAccess.typeKeyword_0).append(ONE_SPACE).prepend(NEW_ROOT_ELEMENT)
 		ele.regionFor.keyword(dataAccess.extendsKeyword_2_0).append(ONE_SPACE)
 		ele.regionFor.keyword(':').prepend(NO_SPACE).append(ONE_SPACE)
 		ele.formatDefinition(document)
@@ -262,23 +250,11 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.expression.format
 	}
 	
-	def dispatch void format(RosettaRegularAttribute rosettaAttribute, extension IFormattableDocument document) {
-		rosettaAttribute.prepend[newLine].append[newLine]
-		formatChild(rosettaAttribute.synonyms, document)
-		formatChild(rosettaAttribute.references, document)
-	}
-	
 	def dispatch void format(RosettaEvent ele, extension IFormattableDocument document) {
 		ele.interior(INDENT)
 		ele.regionFor.assignment(rosettaNamedAccess.nameAssignment).append(ONE_SPACE_PRESERVE_NEWLINE)
 		ele.formatDefinition(document)
 		ele.expression.format
-		ele.andDataRules.forEach [
-			format
-		]
-		ele.orDataRules.forEach [
-			format
-		]
 	}
 	
 	def dispatch void format(RosettaProduct ele, extension IFormattableDocument document) {
@@ -286,16 +262,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.regionFor.assignment(rosettaNamedAccess.nameAssignment).append(ONE_SPACE_PRESERVE_NEWLINE)
 		ele.formatDefinition(document)
 		ele.expression.format
-		ele.andDataRules.forEach [
-			format
-		]
-		ele.orDataRules.forEach [
-			format
-		]
-	}
-
-	def dispatch void format(RosettaStereotype rosettaStereotype, extension IFormattableDocument document) {
-		appendWithOneSpace(rosettaStereotype, document)
 	}
 
 	def dispatch void format(RosettaRegulatoryReference rosettaRegulatoryReference,
@@ -332,10 +298,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 
 	def dispatch void format(RosettaEnumSynonym rosettaEnumSynonym, extension IFormattableDocument document) {
 		rosettaEnumSynonym.prepend[newLine].surround[indent]
-	}
-
-	def dispatch void format(RosettaDataRule it, extension IFormattableDocument document) {
-		indentedBraces(document)
 	}
 
 	def dispatch void format(RosettaContainsExpression ele, extension IFormattableDocument document) {

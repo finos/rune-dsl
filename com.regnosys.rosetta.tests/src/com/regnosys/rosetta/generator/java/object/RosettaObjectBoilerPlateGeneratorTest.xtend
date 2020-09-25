@@ -22,9 +22,8 @@ class RosettaObjectBoilerPlateGeneratorTest {
 	@Test
 	def void shouldGenerateObjectWithBoilerPlate() {
 		val code = '''
-			class Test {
-				testField string (1..1);
-			}
+			type Test:
+				testField string (1..1)
 		'''.generateCode
 	
 		val classes = code.compileToClasses
@@ -47,9 +46,8 @@ class RosettaObjectBoilerPlateGeneratorTest {
 	@Test
 	def void shouldGenerateObjectBuilderWithBoilerPlate() {
 		val code = '''
-			class Test {
-				testField string (1..1);
-			}
+			type Test:
+				testField string (1..1)
 		'''.generateCode
 	
 		val classes = code.compileToClasses

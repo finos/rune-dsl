@@ -131,6 +131,7 @@ class DataRuleGeneratorTest {
 			type Coin:
 				head boolean (0..1)
 				tail boolean (0..1)
+				
 				condition CoinHeadRule:
 					if head = True
 					then tail = False
@@ -141,7 +142,7 @@ class DataRuleGeneratorTest {
 		val classes = code.compileToClasses
 		val coinInstance = classes.createInstanceUsingBuilder('Coin', of('head', true, 'tail', true), of())
 
-		val validationResult = classes.runDataRule(coinInstance, 'CoinCoinHeadRule')
+		val validationResult = classes.runCondition(coinInstance, 'CoinCoinHeadRule')
 		assertFalse(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if head = True then tail = False"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Coin->getTail] [true] does not equal [Boolean] [false]"))
@@ -153,6 +154,7 @@ class DataRuleGeneratorTest {
 			type Coin:
 				head boolean (0..1)
 				tail boolean (0..1)
+				
 				condition CoinTailRule:
 					if tail = True
 					then head = False
@@ -162,21 +164,21 @@ class DataRuleGeneratorTest {
 
 		val coinInstance = classes.createInstanceUsingBuilder('Coin', of('head', false, 'tail', true), of())
 
-		val validationResult = classes.runDataRule(coinInstance, 'CoinCoinTailRule')
+		val validationResult = classes.runCondition(coinInstance, 'CoinCoinTailRule')
 		assertTrue(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if tail = True then head = False"))
 	}
 @Test
 	def void dataRuleCoinEdge() {
 		val code = '''
-			class Coin {
-				head boolean (0..1);
-				tail boolean (0..1);
-			}
-			data rule CoinEdgeRule
-				when Coin -> tail = False
-				then Coin -> head = False
+			type Coin:
+				head boolean (0..1)
+				tail boolean (0..1)
 				
+				condition EdgeRule:
+					if tail = False
+					then head = False
+			
 		'''.generateCode
 		//code.printDataRule('CoinEdgeRule')
 
@@ -184,9 +186,9 @@ class DataRuleGeneratorTest {
 
 		val coinInstance = classes.createInstanceUsingBuilder('Coin', of('head', false, 'tail', false), of())
 
-		val validationResult = classes.runDataRule(coinInstance, 'CoinEdgeRule')
+		val validationResult = classes.runCondition(coinInstance, 'CoinEdgeRule')
 		assertTrue(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("when Coin -> tail = False\nthen Coin -> head = False"))
+		assertThat(validationResult.definition, is("if tail = False then head = False"))
 	}
 
 	
@@ -195,6 +197,7 @@ class DataRuleGeneratorTest {
 		val code = '''
 			type CondTest:
 				multiAttr number (0..*)
+				
 				condition:
 					multiAttr count >= 0
 		'''.generateCode
@@ -234,9 +237,9 @@ class DataRuleGeneratorTest {
 		// foo
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance)))
 				
-		val validationResult = classes.runDataRule(fooInstance, 'ListDataRule')
+		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertTrue(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("when Foo -> bar -> baz exists\nthen Foo -> bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 	}
 	
 	@Test
@@ -250,9 +253,9 @@ class DataRuleGeneratorTest {
 		// foo
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance)))
 				
-		val validationResult = classes.runDataRule(fooInstance, 'ListDataRule')
+		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("when Foo -> bar -> baz exists\nthen Foo -> bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue] [2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
@@ -271,9 +274,9 @@ class DataRuleGeneratorTest {
 		// foo
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance1, barInstance2)))
 				
-		val validationResult = classes.runDataRule(fooInstance, 'ListDataRule')
+		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertTrue(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("when Foo -> bar -> baz exists\nthen Foo -> bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 	}
 	
 	@Test
@@ -288,9 +291,9 @@ class DataRuleGeneratorTest {
 		// foo
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance)))
 			
-		val validationResult = classes.runDataRule(fooInstance, 'ListDataRule')
+		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("when Foo -> bar -> baz exists\nthen Foo -> bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[0]->getBaz[1]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
@@ -307,29 +310,27 @@ class DataRuleGeneratorTest {
 		// foo
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance1, barInstance2)))
 			
-		val validationResult = classes.runDataRule(fooInstance, 'ListDataRule')
+		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("when Foo -> bar -> baz exists\nthen Foo -> bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[1]->getBaz[0]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
 	def Map<String, Class<?>> createListClassAndDataRule() {
 		val code = '''
-			class Foo {
-				bar Bar (0..*);
-			}
+			type Foo:
+				bar Bar (0..*)
+				
+				condition ListDataRule:
+					if bar -> baz exists
+					then bar -> baz -> bazValue = 1.0
 			
-			class Bar {
-				baz Baz (0..*);
-			}
+			type Bar:
+				baz Baz (0..*)
 			
-			class Baz {
-				bazValue number (0..1);
-			}
+			type Baz:
+				bazValue number (0..1)
 			
-			data rule ListDataRule
-				when Foo -> bar -> baz exists
-				then Foo -> bar -> baz -> bazValue = 1.0
 		'''.generateCode
 		//.writeClasses("ListAndDataRule")
 		return code.compileToClasses

@@ -34,20 +34,7 @@ class RosettaGrammarUtil {
 	
 	def static String grammarQualifiable(RosettaQualifiable q) {
 		
-		val andDataRules = q.andDataRules.map[it.name]
-		val orDataRules = q.orDataRules.map[it.name]
-		
 		val grammar = new StringBuilder(toQualifiableName(q)).append(' ').append(q.name).append(' <').append(q.definition).append('>\n').append(grammarText(q.expression));
-		if(!andDataRules.empty || !orDataRules.empty) {
-			grammar.append('\nand ')
-			if(!andDataRules.empty) {
-				grammar.append(andDataRules.join(', '))
-			} 
-			if(!orDataRules.empty) {
-				grammar.append(' or ').append(orDataRules.join(', '))
-			}
-			grammar.append(' apply')
-		}
 		return grammar.toString
 	}
 	
