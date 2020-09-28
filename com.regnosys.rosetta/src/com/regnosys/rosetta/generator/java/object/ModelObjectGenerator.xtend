@@ -83,9 +83,9 @@ class ModelObjectGenerator {
 			«d.rosettaClass(names)»
 
 			«d.staticBuilderMethod»
-
+		
 			«d.builderClass(names)»
-
+		
 			«d.boilerPlate(names)»
 		}
 	'''
