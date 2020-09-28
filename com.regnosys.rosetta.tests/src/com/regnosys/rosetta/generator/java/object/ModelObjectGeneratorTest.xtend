@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaObjectGeneratorTest {
+class ModelObjectGeneratorTest {
 
 	@Inject extension ReflectExtensions
 	@Inject extension ModelHelper

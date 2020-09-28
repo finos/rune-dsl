@@ -114,7 +114,7 @@ class ModelMetaGenerator {
 				
 				@Override
 				public «ValidatorWithArg»<? super «dataClass», String> onlyExistsValidator() {
-					return new «javaNames.packages.model.existsValidation.name».«DataValidatorsGenerator.onlyExistsValidatorName(c)»();
+					return new «javaNames.packages.model.existsValidation.name».«ValidatorsGenerator.onlyExistsValidatorName(c)»();
 				}
 			}
 		'''

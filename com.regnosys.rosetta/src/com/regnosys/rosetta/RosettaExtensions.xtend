@@ -250,6 +250,10 @@ class RosettaExtensions {
 		metaAnnotations.exists[attribute?.name == "key"]
 	}
 	
+	def hasTemplateAnnotation(Annotated it) {
+		metaAnnotations.exists[attribute?.name == "template"]
+	}
+	
 	def boolean hasMetaReferenceAnnotations(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "reference" || attribute?.name == "scheme" || attribute?.name == "id"]
 	}

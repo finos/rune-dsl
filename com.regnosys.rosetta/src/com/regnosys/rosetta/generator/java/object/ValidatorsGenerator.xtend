@@ -27,7 +27,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
-class DataValidatorsGenerator {
+class ValidatorsGenerator {
 
 	@Inject extension ImportManagerExtension
 

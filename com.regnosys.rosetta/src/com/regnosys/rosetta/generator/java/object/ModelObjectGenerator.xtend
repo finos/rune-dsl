@@ -28,7 +28,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
-class DataGenerator {
+class ModelObjectGenerator {
 	@Inject extension RosettaExtensions
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension ModelObjectBuilderGenerator
@@ -79,7 +79,7 @@ class DataGenerator {
 			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.getQualifiedClass).name».class)
 		«ENDIF»
 		«contributeClassSynonyms(d.synonyms)»
-		public class «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause»{
+		public class «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause» {
 			«d.rosettaClass(names)»
 
 			«d.staticBuilderMethod»

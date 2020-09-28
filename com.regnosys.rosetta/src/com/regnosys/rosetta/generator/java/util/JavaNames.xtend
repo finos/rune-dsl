@@ -46,7 +46,7 @@ class JavaNames {
 	}
 
 	def JavaType toJavaType(ExpandedType type) {
-		if (type.name == RosettaAttributeExtensions.METAFIELDSCLASSNAME) {
+		if (type.name == RosettaAttributeExtensions.METAFIELDS_CLASS_NAME || type.name == RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME) {
 			return createJavaType(packages.basicMetafields, type.name)
 		}
 		if (type.builtInType) {

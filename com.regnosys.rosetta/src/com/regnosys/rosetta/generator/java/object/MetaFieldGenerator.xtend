@@ -18,6 +18,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaFullType
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.rosetta.RosettaNamed
 
 class MetaFieldGenerator {
 	
@@ -38,6 +39,8 @@ class MetaFieldGenerator {
 				fsa.generateFile('''«packages.basicMetafields.directoryName»/MetaFields.java''',
 				metaFields(packages, allMetaTypes))
 				
+				fsa.generateFile('''«packages.basicMetafields.directoryName»/MetaAndTemplateFields.java''',
+				templateFields(packages, allMetaTypes))
 //			} finally {
 //				resource.resourceSet.adapterFactories.add(new MarkerAdapterFactory(model.name))
 //			}
@@ -88,7 +91,7 @@ class MetaFieldGenerator {
 		}
 	}
 
-	def metaFields(RosettaJavaPackages packages, Collection<RosettaMetaType> utypes) {
+	def getMetaFieldTypes(Collection<RosettaMetaType> utypes) {
 		val stringType = RosettaFactoryImpl.eINSTANCE.createRosettaBasicType
 		stringType.name="string"
 		val globalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
@@ -97,9 +100,14 @@ class MetaFieldGenerator {
 		val externalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
 		externalKeyType.setName("externalKey")
 		externalKeyType.type = stringType;
-		val filteredTypes = utypes.filter[t|t.name != "id" && t.name != "reference"].toSet;
+		val filteredTypes = utypes.filter[t|t.name != "key" && t.name != "id" && t.name != "reference"].toSet;
 		filteredTypes.add(globalKeyType)
 		filteredTypes.add(externalKeyType)
+		return filteredTypes
+	}
+
+	def metaFields(RosettaJavaPackages packages, Collection<RosettaMetaType> utypes) {
+		val filteredTypes = utypes.metaFieldTypes
 		
 	'''
 		package «packages.basicMetafields.name»;
@@ -124,14 +132,14 @@ class MetaFieldGenerator {
 				return metaData;
 			}
 			
-			private MetaFields(MetaFieldsBuilder builder) {
+			MetaFields(MetaFieldsBuilder builder) {
 				«FOR type:filteredTypes»
-					«type.name.toFirstLower» = builder.get«type.name.toFirstUpper»();
+					«type.name.toFirstLower» = builder.«type.getter»;
 				«ENDFOR»
 			}
 			
 			«FOR type:filteredTypes»
-				public «type.type.name.toJavaFullType» get«type.name.toFirstUpper»() {
+				public «type.type.name.toJavaFullType» «type.getter» {
 					return «type.name.toFirstLower»;
 				}
 			«ENDFOR»
@@ -139,7 +147,7 @@ class MetaFieldGenerator {
 			public MetaFieldsBuilder toBuilder() {
 				MetaFieldsBuilder builder = new MetaFieldsBuilder();
 				«FOR type:filteredTypes»
-					ofNullable(get«type.name.toFirstUpper»()).ifPresent(builder::set«type.name.toFirstUpper»);
+					ofNullable(«type.getter»).ifPresent(builder::set«type.name.toFirstUpper»);
 				«ENDFOR»
 				return builder;
 			}
@@ -174,10 +182,9 @@ class MetaFieldGenerator {
 			@Override
 			public String toString() {
 				return "MetaFields {" +
-				«FOR type:filteredTypes»
-						"«type.name.toFirstLower»=" + this.«type.name.toFirstLower» + ", " +
-				«ENDFOR»
-				'}';
+						«FOR type:filteredTypes SEPARATOR ' + ", " +'»
+								"«type.name.toFirstLower»=" + this.«type.name.toFirstLower»
+						«ENDFOR» + "}";
 			}
 			
 			public static class MetaFieldsBuilder extends RosettaModelObjectBuilder implements com.rosetta.model.lib.meta.MetaFieldsI.MetaFieldsBuilderI{
@@ -191,7 +198,7 @@ class MetaFieldGenerator {
 				}
 				
 				«FOR type:filteredTypes»
-					public «type.type.name.toJavaFullType» get«type.name.toFirstUpper»() {
+					public «type.type.name.toJavaFullType» «type.getter» {
 						return «type.name.toFirstLower»;
 					}
 				«ENDFOR»
@@ -254,10 +261,9 @@ class MetaFieldGenerator {
 				@Override
 				public String toString() {
 					return "MetaFieldsBuilder {" +
-					«FOR type:filteredTypes»
-							"«type.name.toFirstLower»=" + this.«type.name.toFirstLower» + ", " +
-					«ENDFOR»
-					'}';
+							«FOR type:filteredTypes SEPARATOR ' + ", " +'»
+									"«type.name.toFirstLower»=" + this.«type.name.toFirstLower»
+							«ENDFOR» + "}";
 				}
 			}
 			
@@ -266,6 +272,165 @@ class MetaFieldGenerator {
 				«FOR type:filteredTypes»
 					processor.processBasic(path.newSubPath("«type.name.toFirstLower»"), «type.type.name.toJavaType».class, «type.name.toFirstLower», this, AttributeMeta.IS_META);
 				«ENDFOR»
+			}
+		}
+	'''
+	}
+	
+	def templateFields(RosettaJavaPackages packages, Collection<RosettaMetaType> utypes) {
+		val superTypes = utypes.metaFieldTypes
+		val stringType = RosettaFactoryImpl.eINSTANCE.createRosettaBasicType
+		stringType.name="string"
+		val templateGlobalReferenceType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
+		templateGlobalReferenceType.setName("templateGlobalReference")
+		templateGlobalReferenceType.type = stringType;
+		
+		
+	'''
+		package «packages.basicMetafields.name»;
+
+		import com.rosetta.model.lib.meta.TemplateFields;
+		import com.rosetta.model.lib.path.RosettaPath;
+		import com.rosetta.model.lib.process.AttributeMeta;
+		import com.rosetta.model.lib.process.BuilderProcessor;
+		import com.rosetta.model.lib.process.Processor;
+		
+		import java.util.Objects;
+		
+		import static java.util.Optional.ofNullable;
+		
+		public class MetaAndTemplateFields extends MetaFields implements TemplateFields {
+		
+			private final java.lang.String templateGlobalReference;
+		
+			private MetaAndTemplateFields(MetaAndTemplateFieldsBuilder builder) {
+				super(builder);
+				templateGlobalReference = builder.getTemplateGlobalReference();
+			}
+		
+			public java.lang.String getTemplateGlobalReference() {
+				return templateGlobalReference;
+			}
+		
+			public MetaAndTemplateFieldsBuilder toBuilder() {
+				MetaAndTemplateFieldsBuilder builder = new MetaAndTemplateFieldsBuilder();
+				«FOR superType : superTypes»
+					ofNullable(get«superType.name.toFirstUpper»()).ifPresent(builder::set«superType.name.toFirstUpper»);
+				«ENDFOR»
+				ofNullable(getTemplateGlobalReference()).ifPresent(builder::setTemplateGlobalReference);
+				return builder;
+			}
+		
+			public static MetaAndTemplateFieldsBuilder builder() {
+				return new MetaAndTemplateFieldsBuilder();
+			}
+		
+			@Override
+			public int hashCode() {
+				final int prime = 31;
+				int _result = super.hashCode();
+				_result = prime * _result + ((templateGlobalReference == null) ? 0 : templateGlobalReference.hashCode());
+				return _result;
+			}
+		
+			@Override
+			public boolean equals(Object o) {
+				if (this == o)
+					return true;
+				if (o == null || getClass() != o.getClass())
+					return false;
+				if (!super.equals(o))
+					return false;
+				
+				MetaAndTemplateFields other = (MetaAndTemplateFields) o;
+				
+				if (!Objects.equals(templateGlobalReference, other.templateGlobalReference)) 
+					return false;
+				return true;
+			}
+		
+			@Override
+			public String toString() {
+				return "MetaAndTemplateFields {" +
+						«FOR superType : superTypes»
+								"«superType.name.toFirstLower»=" + this.«superType.getter» + ", " +
+						«ENDFOR»
+						"templateGlobalReference=" + this.templateGlobalReference + "}";
+			}
+		
+			public static class MetaAndTemplateFieldsBuilder extends MetaFieldsBuilder implements TemplateFieldsBuilder {
+				
+				private String templateGlobalReference;
+		
+				public String getTemplateGlobalReference() {
+					return templateGlobalReference;
+				}
+		
+				public MetaAndTemplateFieldsBuilder setTemplateGlobalReference(String templateGlobalReference) {
+					this.templateGlobalReference = templateGlobalReference;
+					return this;
+				}
+		
+				public MetaAndTemplateFields build() {
+					return new MetaAndTemplateFields(this);
+				}
+		
+				@Override
+				public MetaAndTemplateFieldsBuilder prune() {
+					return this;
+				}
+		
+				@Override
+				public boolean hasData() {
+					if (super.hasData()) return true;
+					if (getTemplateGlobalReference()!=null) return true;
+					return false;
+				}
+		
+				@Override
+				public void process(RosettaPath path, BuilderProcessor processor) {
+					super.process(path, processor);
+					processor.processBasic(path.newSubPath("templateGlobalReference"), String.class, templateGlobalReference, this, AttributeMeta.IS_META);
+				}
+		
+				@Override
+				public int hashCode() {
+					final int prime = 31;
+					int _result = super.hashCode();
+					_result = prime * _result + ((templateGlobalReference == null) ? 0 : templateGlobalReference.hashCode());
+					return _result;
+				}
+		
+				@Override
+				public boolean equals(Object o) {
+					if (this == o)
+						return true;
+					if (o == null || getClass() != o.getClass())
+						return false;
+					if (!super.equals(o))
+						return false;
+					
+					MetaAndTemplateFieldsBuilder other = (MetaAndTemplateFieldsBuilder) o;
+					
+					if (!Objects.equals(templateGlobalReference, other.templateGlobalReference)) 
+						return false;
+					return true;
+				}
+		
+				@Override
+				public String toString() {
+					return "MetaAndTemplateFieldsBuilder {" +
+							«FOR superType : superTypes»
+									"«superType.name.toFirstLower»=" + this.«superType.getter» + ", " +
+							«ENDFOR»
+							"templateGlobalReference=" + this.templateGlobalReference + "}";
+				}
+			}
+		
+			@Override
+			public void process(RosettaPath path, Processor processor) {
+				super.process(path, processor);
+				processor.processBasic(path.newSubPath("templateGlobalReference"), String.class, templateGlobalReference, this, AttributeMeta.IS_META);
 			}
 		}
 	'''
@@ -834,6 +999,10 @@ class MetaFieldGenerator {
 	
 	def namespace(RosettaRootElement rc) {
 		return rc.model.name
+	}
+	
+	def getter(RosettaNamed type) {
+		'''get«type.name.toFirstUpper»()'''
 	}
 	
 	/** generate once per resource marker */

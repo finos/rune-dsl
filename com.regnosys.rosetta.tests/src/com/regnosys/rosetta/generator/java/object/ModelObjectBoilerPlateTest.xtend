@@ -14,7 +14,7 @@ import static org.hamcrest.MatcherAssert.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaObjectBoilerPlateGeneratorTest {
+class ModelObjectBoilerPlateTest {
 	
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper

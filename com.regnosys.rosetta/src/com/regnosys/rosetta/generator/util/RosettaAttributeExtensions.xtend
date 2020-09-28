@@ -53,12 +53,12 @@ class RosettaAttributeExtensions {
 	
 	private static def List<ExpandedAttribute> additionalAttributes(Data data) {
 		val res = newArrayList
-		val rosExt = new RosettaExtensions // Can't inject as used in rosetta translate and daml directly
+		val rosExt = new RosettaExtensions // Can't inject as used in rosetta-translate and daml directly
 		if(rosExt.hasKeyedAnnotation(data)){
 			res.add(new ExpandedAttribute(
 				'meta',
 				data.name,
-				provideMetaFeildsType(data),
+				provideMetaFieldsType(data),
 				null,
 				false,
 				0,
@@ -75,12 +75,15 @@ class RosettaAttributeExtensions {
 		return res
 	}
 	
-	public static val METAFIELDSCLASSNAME = 'MetaFields'
-
-	private static def ExpandedType provideMetaFeildsType(RosettaRootElement ctx) {
+	public static val METAFIELDS_CLASS_NAME = 'MetaFields'
+	public static val META_AND_TEMPLATE_FIELDS_CLASS_NAME = 'MetaAndTemplateFields'
+	
+	private static def ExpandedType provideMetaFieldsType(Data data) {
 		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
 		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE
-		return new ExpandedType(rosModel, METAFIELDSCLASSNAME, true, false, false)
+		val rosExt = new RosettaExtensions // Can't inject as used in rosetta-translate and daml directly
+		val name = if (rosExt.hasTemplateAnnotation(data)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
+		return new ExpandedType(rosModel, name, true, false, false)
 	}
 
 	// used in translate project
