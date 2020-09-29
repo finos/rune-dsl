@@ -7,14 +7,14 @@ package com.rosetta.model.lib.meta;
  * 
  * TemplateFields extends MetaFields to provide methods to get and set a global reference to the template's global key.
  */
-public interface TemplateFields extends MetaFieldsI {
+public interface TemplateFields {
 
 	/**
 	 * Gets the template global reference, which corresponds to the template's global key.
 	 */
 	String getTemplateGlobalReference();
 
-	public interface TemplateFieldsBuilder extends TemplateFields, MetaFieldsBuilderI {
+	interface TemplateFieldsBuilder extends TemplateFields {
 		
 		/**
 		 * Sets the template global reference, which corresponds to the template's global key.

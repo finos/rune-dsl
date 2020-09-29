@@ -18,7 +18,7 @@ public interface Templatable {
 	TemplateFields getMeta();
 
 
-	public interface TemplatableBuilder {
+	interface TemplatableBuilder {
 	
 		/**
 		 * Get TemplateFieldsBuilder, which contains a global reference to the template.

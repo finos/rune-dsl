@@ -1,7 +1,8 @@
 package com.rosetta.model.lib;
 
-import com.rosetta.model.lib.meta.MetaFieldsI;
+import com.rosetta.model.lib.meta.GlobalKeyFields;
 
 public interface GlobalKey {
-	MetaFieldsI getMeta();
+	
+	GlobalKeyFields getMeta();
 }
