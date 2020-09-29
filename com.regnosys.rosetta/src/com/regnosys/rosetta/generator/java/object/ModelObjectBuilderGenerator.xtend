@@ -38,7 +38,7 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	def StringConcatenationClient builderClass(Data c, JavaNames names) '''
-		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderNameFull»«ELSE»«RosettaModelObjectBuilder»«ENDIF»«implementsClauseBuilder(c)»{
+		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderNameFull»«ELSE»«RosettaModelObjectBuilder»«ENDIF»«implementsClauseBuilder(c)» {
 		
 			«FOR attribute : c.expandedAttributes.filter[!it.overriding]»
 				protected «attribute.toBuilderType(names)» «attribute.name»;

@@ -10,8 +10,6 @@ import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
 import com.regnosys.rosetta.generator.java.function.FuncGenerator
-import com.regnosys.rosetta.generator.java.object.DataGenerator
-import com.regnosys.rosetta.generator.java.object.DataValidatorsGenerator
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
@@ -39,6 +37,8 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
+import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 
 /**
  * Generates code from your model files on save.
@@ -60,8 +60,8 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
 	@Inject NamespaceHierarchyGenerator namespaceHierarchyGenerator
 
-	@Inject DataGenerator dataGenerator
-	@Inject DataValidatorsGenerator validatorsGenerator
+	@Inject ModelObjectGenerator dataGenerator
+	@Inject ValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory

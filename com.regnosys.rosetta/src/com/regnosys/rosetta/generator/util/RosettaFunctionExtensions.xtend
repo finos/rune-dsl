@@ -138,6 +138,10 @@ class RosettaFunctionExtensions {
 		!getQualifierAnnotations(function).empty
 	}
 	
+	def getMetadataAnnotations(Annotated element) {
+		element.annotations.filter["metadata" == it.annotation.name].toList
+	}
+	
 	def getQualifierAnnotations(Annotated element) {
 		element.annotations.filter["qualification" == it.annotation.name].toList
 	}

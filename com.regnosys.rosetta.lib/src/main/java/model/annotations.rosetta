@@ -1,12 +1,13 @@
 namespace com.rosetta.model
 version "${project.version}"
 
-annotation metadata:
-     id string (0..1)
-     key string (0..1) <"Represents a key.">
-     scheme string (0..1)
-     reference string (0..1)
-
+annotation metadata: <"Defines metadata that can be specified on types, attributes and enums.">
+	id string (0..1) <"Specifies that an attribute has a key so it can be referenced elsewhere in the model.">
+	key string (0..1) <"Specifies that a type has a key so it can be referenced elsewhere in the model.">
+	reference string (0..1) <"Specifies that an attribute can be specified with a reference that corresponds to a value with a key elsewhere in the model.">
+	scheme string (0..1) <"Specifies that an attribute can have a scheme assoicated with the value.">
+	template string (0..1) <"Specifies that a type can have a template.">
+     
 annotation calculation: <"Marks a function as fully implemented calculation.">
 
 annotation rootType: <"Mark a type as a root of the rosetta model">

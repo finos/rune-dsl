@@ -7,6 +7,8 @@ import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.GlobalKeyBuilder
+import com.rosetta.model.lib.Templatable
+import com.rosetta.model.lib.Templatable.TemplatableBuilder
 import com.rosetta.model.lib.qualify.Qualified
 import com.rosetta.util.ListEquals
 import java.util.List
@@ -22,42 +24,46 @@ class ModelObjectBoilerPlate {
 	val identity = [String s|s]
 
 	def StringConcatenationClient boilerPlate(Data d, JavaNames names) '''
-		«d.wrap.processMethod(names)»
-		«d.wrap.boilerPlate»
+		«d.processMethod(names)»
+		«d.boilerPlate»
 	'''
 
 	def StringConcatenationClient builderBoilerPlate(Data c, JavaNames names) {
-		val wrap = c.wrap
-		val attrs = wrap.attributes.filter[name != 'eventEffect'].toList
+		val attrs = c.expandedAttributes.filter[name != 'eventEffect'].toList
 		'''
-			«wrap.builderProcessMethod(names)»
-			«wrap.contributeEquals(attrs, toBuilder)»
-			«wrap.contributeHashCode(attrs)»
-			«wrap.contributeToString(toBuilder)»
+			«c.builderProcessMethod(names)»
+			«c.contributeEquals(attrs, toBuilder)»
+			«c.contributeHashCode(attrs)»
+			«c.contributeToString(toBuilder)»
 		'''
 	}
 	
-	def StringConcatenationClient implementsClause(extension Data d) {
+	def StringConcatenationClient implementsClause(Data d) {
 		val interfaces = newHashSet
 		if(d.hasKeyedAnnotation)
 			interfaces.add(GlobalKey)
-		if (interfaces.empty) null else '''implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
+		if(d.hasTemplateAnnotation)
+			interfaces.add(Templatable)
+		if (interfaces.empty) null else '''implements «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
 	
-	def StringConcatenationClient implementsClauseBuilder(extension Data d) {
+	def StringConcatenationClient implementsClauseBuilder(Data d) {
 		val interfaces = <StringConcatenationClient>newArrayList
 		if (d.hasKeyedAnnotation)
 			interfaces.add('''«GlobalKeyBuilder»''')
+		if(d.hasTemplateAnnotation)
+			interfaces.add('''«TemplatableBuilder»''')
 		if (d.name == "ContractualProduct" || d.name == "BusinessEvent") {
 			interfaces.add('''«Qualified»''')
 		}
-		if(interfaces.empty) null else ''' implements «FOR i : interfaces SEPARATOR ','»«i»«ENDFOR»'''
+		if(interfaces.empty) null else ''' implements «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
 	
 	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.isMultiple) '''List<«attribute.toTypeSingle(names)»>''' 
 		else attribute.toTypeSingle(names);
 	}
+	
 	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names) {
 		if(!attribute.hasMetas) return '''«names.toJavaType(attribute.type)»'''
 		val metaType = if (attribute.refIndex >= 0) {
@@ -71,8 +77,8 @@ class ModelObjectBoilerPlate {
 		return '''«names.toMetaType(attribute,metaType)»'''
 	}
 
-	private def StringConcatenationClient boilerPlate(TypeData c) {
-		val attributesNoEventEffect = c.attributes.filter[name != 'eventEffect'].toList
+	private def StringConcatenationClient boilerPlate(Data c) {
+		val attributesNoEventEffect = c.expandedAttributes.filter[name != 'eventEffect'].toList
 		'''
 			«c.contributeEquals(attributesNoEventEffect, identity)»
 			«c.contributeHashCode(attributesNoEventEffect)»
@@ -80,7 +86,7 @@ class ModelObjectBoilerPlate {
 		'''
 	} 
 
-	private def contributeHashCode(extension ExpandedAttribute it) {
+	private def contributeHashCode(ExpandedAttribute it) {
 		'''
 			«IF enum»
 				«IF list»
@@ -96,7 +102,7 @@ class ModelObjectBoilerPlate {
 
 	// the eventEffect attribute should not contribute to the hashcode. The EventEffect must first take the hash from Event, 
 	// but once stamped onto EventEffect, this will change the hash for Event. 
-	private def contributeHashCode(TypeData c, List<ExpandedAttribute> attributes) '''
+	private def contributeHashCode(Data c, List<ExpandedAttribute> attributes) '''
 		@Override
 		public int hashCode() {
 			int _result = «c.contribtueSuperHashCode»;
@@ -108,11 +114,11 @@ class ModelObjectBoilerPlate {
 		
 	'''
 
-	private def contributeToString(TypeData c, (String)=>String classNameFunc) '''
+	private def contributeToString(Data c, (String)=>String classNameFunc) '''
 		@Override
 		public String toString() {
 			return "«classNameFunc.apply(c.name)» {" +
-				«FOR attribute : c.attributes.filter[!overriding].map[name] SEPARATOR ' ", " +'»
+				«FOR attribute : c.expandedAttributes.filter[!overriding].map[name] SEPARATOR ' ", " +'»
 					"«attribute»=" + this.«attribute» +
 				«ENDFOR»
 			'}'«IF c.hasSuperType» + " " + super.toString()«ENDIF»;
@@ -121,7 +127,7 @@ class ModelObjectBoilerPlate {
 
 	// the eventEffect attribute should not contribute to the hashcode. The EventEffect must first take the hash from Event, 
 	// but once stamped onto EventEffect, this will change the hash for Event. TODO: Have generic way of excluding attributes from the hash
-	private def StringConcatenationClient contributeEquals(TypeData c, List<ExpandedAttribute> attributes, (String)=>String classNameFunc) '''
+	private def StringConcatenationClient contributeEquals(Data c, List<ExpandedAttribute> attributes, (String)=>String classNameFunc) '''
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
@@ -148,26 +154,18 @@ class ModelObjectBoilerPlate {
 	«ENDIF»
 	'''
 
-	private def contribtueSuperHashCode(TypeData c) {
+	private def contribtueSuperHashCode(Data c) {
 		if(c.hasSuperType) 'super.hashCode()' else '0'
 	}
 
-	private def TypeData wrap(Data data) {
-		return new TypeData(
-			data.name,
-			data.expandedAttributes,
-			data.hasSuperType
-		);
-	}
-	
-	private def processMethod(extension TypeData it,  JavaNames names) '''
+	private def processMethod(Data c, JavaNames names) '''
 		@Override
 		public void process(RosettaPath path, Processor processor) {
-			«IF hasSuperType»
+			«IF c.hasSuperType»
 				super.process(path, processor);
 			«ENDIF»
 			
-			«FOR a : attributes.filter[!(isRosettaClassOrData || hasMetas)]»
+			«FOR a : c.expandedAttributes.filter[!(isRosettaClassOrData || hasMetas)]»
 				«IF a.multiple»
 					«a.name».stream().forEach(a->processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, a, this«a.metaFlags»));
 				«ELSE»
@@ -175,25 +173,25 @@ class ModelObjectBoilerPlate {
 				«ENDIF»
 			«ENDFOR»
 			
-			«FOR a : attributes.filter[!overriding].filter[isRosettaClassOrData || hasMetas]»
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[isRosettaClassOrData || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
 			«ENDFOR»
 		}
 		
 	'''
 	
-	private def builderProcessMethod(extension TypeData it,  JavaNames names) '''
+	private def builderProcessMethod(Data c, JavaNames names) '''
 		@Override
 		public void process(RosettaPath path, BuilderProcessor processor) {
-			«IF hasSuperType»
+			«IF c.hasSuperType»
 				super.process(path, processor);
 			«ENDIF»
 			
-			«FOR a : attributes.filter[!overriding].filter[!(isRosettaClassOrData || hasMetas)]»
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isRosettaClassOrData || hasMetas)]»
 				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, «a.name», this«a.metaFlags»);
 			«ENDFOR»
 			
-			«FOR a : attributes.filter[!overriding].filter[isRosettaClassOrData || hasMetas]»
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[isRosettaClassOrData || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
 			«ENDFOR»
 		}
@@ -205,16 +203,9 @@ class ModelObjectBoilerPlate {
 		if (attribute.type.isMetaType) {
 			result.append(", AttributeMeta.IS_META")
 		}
-		if (attribute.metas.map[name].contains("id")) {
+		if (attribute.hasIdAnnotation) {
 			result.append(", AttributeMeta.IS_GLOBAL_KEY_FIELD")
 		}
 		result.toString
-	}
-	
-	@org.eclipse.xtend.lib.annotations.Data
-	static class TypeData {
-		val String name
-		val List<ExpandedAttribute> attributes
-		val boolean hasSuperType
 	}
 }
