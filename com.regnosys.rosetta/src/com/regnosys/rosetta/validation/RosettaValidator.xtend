@@ -808,8 +808,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 						error('''[metadata reference] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
 					}
 				case "scheme":
-					if (!(ele instanceof Attribute)) {
-						error('''[metadata scheme] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
+					if (!(ele instanceof Attribute || ele instanceof Data)) {
+						error('''[metadata scheme] annotation only allowed on an attribute or a type.''', it, ANNOTATION_REF__ATTRIBUTE)
 					}
 				case "template":
 					if (!(ele instanceof Data)) {
