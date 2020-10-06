@@ -438,28 +438,39 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				error('''Set to without when case must be ordered last.''', element, ROSETTA_MAPPING__INSTANCES)
 			}
 		}
-		var attribute = if (element.eContainer.eContainer.eContainer instanceof RosettaExternalRegularAttribute) {
-			(element.eContainer.eContainer.eContainer as RosettaExternalRegularAttribute).attributeRef as RosettaTyped
-		} else {
-			 element.eContainer.eContainer.eContainer as RosettaTyped
-		} 
 		
-		val type = attribute.getType
-		if (type instanceof Data && !element.instances.filter[^set !== null].empty) {
-			error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
-		} else if (type instanceof RosettaEnumeration) {
-			for (inst : element.instances.filter[^set !== null]) {
-				if (!(inst.set instanceof RosettaEnumValueReference)) {
-					error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
-				} else {
-					val setEnum = inst.set as RosettaEnumValueReference
-					if (type.name != setEnum.enumeration.name) {
-						error('''Set to constant type does not match type of field.''', element,
-							ROSETTA_MAPPING__INSTANCES)
+		val type = element.containerType
+		
+		if (type !== null) {
+			if (type instanceof Data && !element.instances.filter[^set !== null].empty) {
+				error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
+			} else if (type instanceof RosettaEnumeration) {
+				for (inst : element.instances.filter[^set !== null]) {
+					if (!(inst.set instanceof RosettaEnumValueReference)) {
+						error('''Set to constant type does not match type of field.''', element, ROSETTA_MAPPING__INSTANCES)
+					} else {
+						val setEnum = inst.set as RosettaEnumValueReference
+						if (type.name != setEnum.enumeration.name) {
+							error('''Set to constant type does not match type of field.''', element,
+								ROSETTA_MAPPING__INSTANCES)
+						}
 					}
 				}
 			}
 		}
+	}
+	
+	def RosettaType getContainerType(RosettaMapping element) {
+		val container = element.eContainer.eContainer.eContainer
+		if (container instanceof RosettaExternalRegularAttribute) {
+			val attributeRef = container.attributeRef
+			if (attributeRef instanceof RosettaTyped)
+				return attributeRef.type
+		} else if (container instanceof RosettaTyped) {
+			 return container.type
+		}
+		
+		return null
 	}
 
 	@Check
