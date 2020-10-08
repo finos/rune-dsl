@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaCalculationGenerationTest {
+class CalculationFuncGeneratorTest {
 
 	@Inject extension FuncGeneratorHelper
 	@Inject extension CodeGeneratorTestHelper

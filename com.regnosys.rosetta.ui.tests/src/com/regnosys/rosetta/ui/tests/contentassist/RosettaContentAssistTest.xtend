@@ -200,53 +200,6 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	}
 
 	@Test
-	def void testIsEvent() {
-		'''
-			namespace "test"
-			
-			isEvent root Event;
-			
-			type Event:
-			
-			type Quote:
-				attr String (1..1)
-
-			isProduct root EconomicTerms {
-				ecoTermsAttr String (1..1);
-			}
-			
-			alias EventAlias 
-				Event -> eventAttr
-			
-			alias ProductAlias 
-				EconomicTerms -> ecoTermsAttr
-			
-			isEvent test
-				<|>
-		''' >= #['Event', 'EventAlias', '"Value"', "(", "<", "[", "empty", "False", "True"] 
-		
-		'''
-			namespace "test"
-			
-			isEvent root Event;
-			
-			type Event:
-			
-			type Quote:
-				attr String (1..1)
-			
-			type Event:
-				eventAttr String (1..1)
-			
-			alias EventAlias 
-				Event -> eventAttr
-			
-			isEvent test
-				Event and <|>
-		''' >= #['Event', 'EventAlias', '"Value"', "(", "[", "empty", "False", "True"]  
-	}
-
-	@Test
 	def void testImport() {
 		'''
 			namespace my.ns

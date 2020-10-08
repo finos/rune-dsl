@@ -21,25 +21,18 @@ class RosettaObjectInheritanceGeneratorTest {
 	@Test
 	def void shouldGenerateJavaClassWithMultipleParents() {
 		val genereated = '''
-			class A
-			{
-				aa string (0..1);
-			}
+			type A:
+				aa string (0..1)
 			
-			class B extends A
-			{
-				bb string (0..1);
-			}
+			type B extends A:
+				bb string (0..1)
 			
-			class C extends B
-			{
-				cc string (0..1);
-			}
+			type C extends B:
+				cc string (0..1)
 			
-			class D extends C
-			{
-				dd string (0..1);
-			}
+			type D extends C:
+				dd string (0..1)
+
 		'''.generateCode
 
 		val classes = genereated.compileToClasses
@@ -53,43 +46,7 @@ class RosettaObjectInheritanceGeneratorTest {
 		assertEquals(classC.superclass, classB)
 		assertEquals(classB.superclass, classA)
 	}
-	
-	@Test
-	def void shouldGenerateJavaClassWithOverridenAttributes() {
-		val genereated = '''
-			class A
-			{
-				aa string (0..1);
-			}
-			
-			class B extends A
-			{
-				bb string (0..1);
-			}
-			
-			class Top1
-			{
-				field A (0..1);
-			}
-			
-			class Top2 extends Top1
-			{
-				field B (0..1);
-			}
-		'''.generateCode
 
-		val classes = genereated.compileToClasses
-
-		val classA = classes.get(rootPackage.name + ".A")
-		val classB = classes.get(rootPackage.name + ".B")
-		val classTop1 = classes.get(rootPackage.name + ".Top1")
-		val classTop2 = classes.get(rootPackage.name + ".Top2")
-
-		assertEquals(classTop2.superclass, classTop1)
-		assertEquals(classB.superclass, classA)
-	}
-
-	
 	@Test
 	def void shouldGenerateJavaClassWithOverridenAttributesAcrossNamespaces() {
 		val generated = newArrayList(
@@ -107,6 +64,7 @@ class RosettaObjectInheritanceGeneratorTest {
 		''',
 		'''
 			namespace "original"
+
 			type A:
 				aa string (0..1)
 			
@@ -190,7 +148,7 @@ class RosettaObjectInheritanceGeneratorTest {
 			'''
 			).reverse.generateCode
 			//This test only works if the order of the "files" is the opposite from that provided (hence the reverse)
-		//.writeClasses("shouldGenerateJavaClassWithConditionsListAttributesAcrossNamespaces")
+			//.writeClasses("shouldGenerateJavaClassWithConditionsListAttributesAcrossNamespaces")
 
 
 		generated.compileToClasses

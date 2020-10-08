@@ -12,6 +12,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
+import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -49,7 +50,7 @@ class RosettaEnumHelperTest {
         '''.generateCode
 
 		//code.writeClasses("BasicReferenceForEnum")
-        val testEnumCode = code.get(rootPackage.name + ".TestEnum")
+        //val testEnumCode = code.get(rootPackage.name + ".TestEnum")
         code.compileToClasses
     }
 
@@ -95,5 +96,18 @@ class RosettaEnumHelperTest {
         assertThat(EnumHelper.formatEnumName("ALUMINIUM_ALLOY_LME_15_MONTH"), is("ALUMINIUM_ALLOY_LME_15_MONTH"))
         assertThat(EnumHelper.formatEnumName("AggregateClient"), is("AGGREGATE_CLIENT"))
         assertThat(EnumHelper.formatEnumName("Currency1PerCurrency2"), is("CURRENCY_1_PER_CURRENCY_2"))
+    }
+
+    @Test
+    @Disabled
+    def void shouldAllowDeprectedAnnotationForEnum() {
+        val code = '''
+            enum TestEnumDeprecated:
+            	[deprecated]
+            	one
+            	two
+        '''.generateCode
+
+        code.compileToClasses
     }
 }

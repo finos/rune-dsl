@@ -22,7 +22,6 @@ import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
@@ -31,11 +30,11 @@ import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -45,7 +44,6 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.Data
 
 class RosettaBlueprintTypeResolver {
 	
@@ -453,9 +451,6 @@ class RosettaBlueprintTypeResolver {
 
 	def dispatch RosettaType getInput(RosettaCallable callable) {
 		switch (callable) {
-			RosettaClass: {
-				return callable as RosettaClass
-			}
 			Data: {
 				return callable
 			}
@@ -531,9 +526,6 @@ class RosettaBlueprintTypeResolver {
 	def dispatch RosettaType getOutput(RosettaFeatureCall call) {
 		val feature = call.feature
 		switch (feature) {
-			RosettaRegularAttribute: {
-				return feature.type
-			}
 			Attribute: {
 				return feature.type
 			}
@@ -609,11 +601,6 @@ class RosettaBlueprintTypeResolver {
 		}
 		else if (type2.genericName!==null) {
 			return type2.genericName==type1.either
-		}
-		else if (type2.type instanceof RosettaClass && type1.type instanceof RosettaClass) {
-			val class2 = type2.type as RosettaClass
-			val class1 = type1.type as RosettaClass
-			return class1.allSuperTypes.contains(class2);
 		}
 		else if (type2.type instanceof Data && type1.type instanceof Data) {
 			val class2 = type2.type as Data

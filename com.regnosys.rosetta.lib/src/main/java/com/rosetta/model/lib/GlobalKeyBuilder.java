@@ -1,12 +1,10 @@
 package com.rosetta.model.lib;
 
-import com.rosetta.model.lib.meta.MetaFieldsI;
+import com.rosetta.model.lib.meta.GlobalKeyFields.GlobalKeyFieldsBuilder;
 
-//TODO remove this useless generic - but it will create a backwards incompatibility so I will
-//remove all the usages as a preliminary step
-public interface GlobalKeyBuilder extends GlobalKey {
+public interface GlobalKeyBuilder {
 
-    MetaFieldsI.MetaFieldsBuilderI getMeta();
+    GlobalKeyFieldsBuilder getMeta();
 
-	MetaFieldsI.MetaFieldsBuilderI getOrCreateMeta();
+	GlobalKeyFieldsBuilder getOrCreateMeta();
 }

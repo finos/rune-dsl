@@ -10,17 +10,17 @@ import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
 import com.regnosys.rosetta.generator.java.function.FuncGenerator
-import com.regnosys.rosetta.generator.java.object.DataGenerator
-import com.regnosys.rosetta.generator.java.object.DataValidatorsGenerator
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
-import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
+import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
 import com.regnosys.rosetta.generator.java.qualify.QualifyFunctionGenerator
 import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
+import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
+import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory.TestFolderAwareFsa
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -28,18 +28,17 @@ import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.rosetta.util.DemandableLock
+import java.util.Map
 import java.util.concurrent.CancellationException
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
-import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
-import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory.TestFolderAwareFsa
-import org.eclipse.emf.ecore.resource.ResourceSet
-import java.util.Map
+import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
+import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 
 /**
  * Generates code from your model files on save.
@@ -49,7 +48,6 @@ import java.util.Map
 class RosettaGenerator extends AbstractGenerator {
 	static Logger LOGGER = Logger.getLogger(RosettaGenerator) => [level = Level.DEBUG]
 
-	@Inject ModelObjectGenerator modelObjectGenerator
 	@Inject EnumGenerator enumGenerator
 	@Inject ModelMetaGenerator metaGenerator
 	@Inject ChoiceRuleGenerator choiceRuleGenerator
@@ -62,8 +60,8 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
 	@Inject NamespaceHierarchyGenerator namespaceHierarchyGenerator
 
-	@Inject DataGenerator dataGenerator
-	@Inject DataValidatorsGenerator validatorsGenerator
+	@Inject ModelObjectGenerator dataGenerator
+	@Inject ValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
@@ -127,11 +125,7 @@ class RosettaGenerator extends AbstractGenerator {
 							}
 						}
 					]
-					modelObjectGenerator.generate(javaNames, fsa, elements, version)
 					enumGenerator.generate(packages, fsa, elements, version)
-					choiceRuleGenerator.generate(packages, fsa, elements, version)
-					dataRuleGenerator.generate(javaNames, fsa, elements, version)
-					metaGenerator.generate(packages, fsa, elements, version)
 					blueprintGenerator.generate(packages, fsa, elements, version)
 					qualifyEventsGenerator.generate(packages, fsa, elements, packages.model.qualifyEvent, RosettaEvent,
 						version)

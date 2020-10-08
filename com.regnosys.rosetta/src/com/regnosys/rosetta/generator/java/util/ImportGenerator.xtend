@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.util
 
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator.AttributePath
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator.RegdOutputField
 import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 import com.regnosys.rosetta.rosetta.BlueprintExtract
@@ -18,11 +18,9 @@ import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
-import com.regnosys.rosetta.rosetta.RosettaDataRule
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -33,20 +31,17 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.validation.TypedBPNode
 import java.util.Comparator
-import java.util.List
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 
 class ImportGenerator {
 
@@ -106,14 +101,6 @@ class ImportGenerator {
 	def void addFeatureCall(RosettaFeatureCall call) {
 		val feature = call.feature
 		switch (feature) {
-			RosettaRegularAttribute: {
-				imports.add(feature.type.fullName);
-				imports.add((feature.eContainer as RosettaClass).fullName)
-
-				if (feature.metaTypes !== null && !feature.metaTypes.isEmpty) {
-					imports.add('''«packages.defaultLib.name».meta.FieldWithMeta''')
-				}
-			}
 			Attribute: {
 				imports.add(feature.type.fullName);
 				imports.add((feature.eContainer as RosettaType).fullName)
@@ -123,7 +110,6 @@ class ImportGenerator {
 //				}
 			}
 			RosettaMetaType:{
-				imports.add('''«packages.model.metaField.name».*''')
 				imports.add('''«packages.basicMetafields.name».*''')
 			}
 			RosettaEnumValue:{
@@ -141,10 +127,6 @@ class ImportGenerator {
 				addExpression(call.expression)
 			}
 		}
-	}
-
-	def dispatch add(RosettaClass call) {
-		imports.add(call.fullName)
 	}
 
 	def dispatch add(Object call) {
@@ -227,12 +209,8 @@ class ImportGenerator {
 		}
 	}
 
-	def toFullNames(AttributePath path) {
-		path.path.map[eContainer as RosettaClass].map[fullName()].filter[isImportable]
-	}
-
 	def fullName(RosettaType type) {
-		if (type instanceof RosettaClass || type instanceof Data) {
+		if (type instanceof Data) {
 			val targetPackage = new RootPackage(type.model.name)
 			'''«targetPackage.name».«type.name»'''.toString
 		} else if (type instanceof RosettaEnumeration) {
@@ -259,7 +237,7 @@ class ImportGenerator {
 	}
 
 	def fullName(EClass type) {
-		if (type instanceof RosettaClass || type instanceof RosettaClass)
+		if (type instanceof Data)
 			'''«packages.model.name».«type.name»'''.toString
 		else
 			type.name.toJavaFullType
@@ -267,17 +245,6 @@ class ImportGenerator {
 
 	def addValidate(BlueprintValidate validate) {
 		imports.add(validate.input.fullName)
-	}
-
-	def addRule(RosettaDataRule rule) {
-		addExpression(rule.when)
-		addExpression(rule.then)
-		imports.addAll(packages.defaultLibAnnotations.name + ".RosettaDataRule",
-			packages.defaultLibValidation.name + ".ValidationResult", packages.defaultLibValidation.name + ".Validator",
-			packages.defaultLibValidation.name + ".ModelObjectValidator",
-			packages.defaultLib.name + ".functions.MapperS", packages.defaultLib.name + ".validation.ComparisonResult",
-			packages.defaultLib.name + ".meta.FieldWithMeta", packages.defaultLib.name + ".path.RosettaPath",
-			packages.defaultLib.name + ".RosettaModelObjectBuilder")
 	}
 
 	def addFilter(BlueprintFilter filter) {
@@ -303,7 +270,7 @@ class ImportGenerator {
 		addFeatureCall(group.key as RosettaFeatureCall)
 	}
 
-	def addQualifyClass(RosettaExpression expr, List<RosettaDataRule> andDataRules, List<RosettaDataRule> orDataRules,
+	def addQualifyClass(RosettaExpression expr,
 		RosettaType rClass) {
 		imports.addAll("com.rosetta.model.lib.annotations.RosettaQualifiable", "java.util.function.Function",
 			rClass.fullName, packages.model.dataRule.name + ".*")
@@ -312,34 +279,8 @@ class ImportGenerator {
 		imports.add(packages.defaultLib.name + ".validation.ComparisonResult")
 		imports.add(packages.defaultLib.name + ".meta.FieldWithMeta")
 		addExpression(expr)
-		for (andDataRule : andDataRules) {
-			addRule(andDataRule)
-		}
-		for (orDataRule : orDataRules) {
-			addRule(orDataRule)
-		}
 		staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 	}
-
-	def addMeta(RosettaClass class1) {
-		imports.addAll(
-			"com.rosetta.model.lib.annotations.RosettaMeta",
-			"com.rosetta.model.lib.meta.RosettaMetaData",
-			"java.util.Arrays",
-			"com.google.common.collect.Multimap",
-			"com.google.common.collect.ImmutableMultimap",
-			"java.util.List",
-			"java.util.function.Function",
-			packages.defaultLib.name + ".validation.Validator",
-			packages.defaultLib.name + ".validation.ValidatorWithArg",
-			packages.defaultLib.name + ".qualify.QualifyResult"
-		)
-		imports.add(packages.model.name + "." + class1.name)
-		for (attrib : class1.regularAttributes) {
-			imports.add(attrib.type.fullName)
-		}
-	}
-
 
 	def addNode(TypedBPNode typed) {
 		imports.add('''«packages.blueprintLib.name».runner.nodes.Node''')

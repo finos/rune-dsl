@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaObjectBuilderPatternGeneratorTest {
+class ModelObjectBuilderGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
@@ -25,26 +25,19 @@ class RosettaObjectBuilderPatternGeneratorTest {
 	@Test
 	def void shouldGenerateJavaBuilderThatExtendsParentBuilders() {
 		val genereated = '''
-			class A
-			{
-				aa string (0..1);
-			}
+			type A:
+				aa string (0..1)
 			
-			class B extends A
-			{
-				bb string (0..1);
-			}
+			type B extends A:
+				bb string (0..1)
 			
-			class C extends B
-			{
-				cc string (0..1);
-			}
+			type C extends B:
+				cc string (0..1)
 			
-			class D extends C
-			{
-				dd string (0..1);
-				dd2 string (0..1);
-			}
+			type D extends C:
+				dd string (0..1)
+				dd2 string (0..1)
+			
 		'''.generateCode
 
 		val classes = genereated.compileToClasses
@@ -65,10 +58,9 @@ class RosettaObjectBuilderPatternGeneratorTest {
 	@Test
 	def void useBuilderAddMultipleTimes() {
 		val code = '''
-			class Tester
-			{
-				items string (0..*);
-			}
+			type Tester:
+				items string (0..*)
+			
 		'''.generateCode
 
 		val classes = code.compileToClasses
@@ -101,6 +93,7 @@ class RosettaObjectBuilderPatternGeneratorTest {
 				multipleEnums TestEnum (1..*)
 				multipleOnes One (1..*)
 				singleOne One (1..1)
+			
 		'''.generateCode
 
 		val testClassCode = code.get(rootPackage.name + '.Test')
@@ -127,15 +120,14 @@ class RosettaObjectBuilderPatternGeneratorTest {
 	@Test
 	def void shouldGenerateObjectWhenSomeValuesAreNull() {
 		val code = '''		
-			class One {
-				oneField string (1..1);
-			}
+			type One:
+				oneField string (1..1)
 			
-			class Test {
-				rosettaObjectListField One (1..*);
-				rosettaObjectField One (1..1);
-				stringField string (1..1);
-			}
+			type Test:
+				rosettaObjectListField One (1..*)
+				rosettaObjectField One (1..1)
+				stringField string (1..1)
+			
 		'''.generateCode
 
 		val classes = code.compileToClasses
@@ -157,19 +149,17 @@ class RosettaObjectBuilderPatternGeneratorTest {
 	@Test
 	def void shouldGenerateObjectWithMethodToReturnItsStateAsBuilder() {
 		val code = '''
-			class RosettaObject {
-				rosettaField string (1..1);
-			}
+			type RosettaObject:
+				rosettaField string (1..1)
 			
-			class Parent {
-				parentField RosettaObject (1..*);
-				anotherParentField RosettaObject (1..1);
-			}
+			type Parent:
+				parentField RosettaObject (1..*)
+				anotherParentField RosettaObject (1..1)
 			
-			class Child extends Parent {
-				childField RosettaObject (1..1);
-				anotherChildField RosettaObject (1..*);
-			}
+			type Child extends Parent:
+				childField RosettaObject (1..1)
+				anotherChildField RosettaObject (1..*)
+			
 		'''.generateCode
 		
 		val classes = code.compileToClasses

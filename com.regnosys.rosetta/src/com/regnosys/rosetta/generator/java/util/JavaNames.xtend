@@ -11,7 +11,6 @@ import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -24,7 +23,6 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RBuiltinType
-import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RFeatureCallType
@@ -48,7 +46,7 @@ class JavaNames {
 	}
 
 	def JavaType toJavaType(ExpandedType type) {
-		if (type.name == RosettaAttributeExtensions.METAFIELDSCLASSNAME) {
+		if (type.name == RosettaAttributeExtensions.METAFIELDS_CLASS_NAME || type.name == RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME) {
 			return createJavaType(packages.basicMetafields, type.name)
 		}
 		if (type.builtInType) {
@@ -72,7 +70,6 @@ class JavaNames {
 		switch (type) {
 			RosettaBasicType:
 				createForBasicType(type.name)
-			RosettaClass,
 			Data,
 			RosettaEnumeration:
 				createJavaType(modelRootPackage(type), type.name)
@@ -95,8 +92,6 @@ class JavaNames {
 				rType.name.createForBasicType
 			REnumType:
 				rType.enumeration.toJavaType
-			RClassType:
-				rType.clazz.toJavaType
 			RDataType:
 				rType.data.toJavaType
 			RFeatureCallType:

@@ -10,7 +10,7 @@ import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaFunctionGenerationTest {
+class FuncGeneratorTest {
 
 	@Inject extension FuncGeneratorHelper
 	@Inject extension CodeGeneratorTestHelper

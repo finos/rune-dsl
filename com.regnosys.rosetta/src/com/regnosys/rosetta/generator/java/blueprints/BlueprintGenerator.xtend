@@ -23,15 +23,13 @@ import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.BlueprintValidate
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.UnimplementedNode
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.validation.BindableType
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver
 import com.regnosys.rosetta.validation.TypedBPNode
@@ -230,7 +228,7 @@ class BlueprintGenerator {
 				else
 				'''actionFactory.<«typedNode.input.getEither», «
 									typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaMultipleMapper("«node.URI»", "«(cond).toNodeLabel
-														»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type as RosettaType))»)'''
+														»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type))»)'''
 			}
 			BlueprintReturn: {
 				context.imports.addTypes(typedNode)
@@ -412,19 +410,11 @@ class BlueprintGenerator {
 			«FOR outputRef: outputRefs»
 ««« TODO - add this in when things break			result.put(new RosettaIdentifier("«outputRef.ref.refId»"), (builder, input) -> builder.set«outputRef.attrib.name.toFirstUpper»(Converter.convert(«outputRef.attrib.type.name.toJavaType».class, input)));
 			«ENDFOR»
-			«FOR field : (merge.output).getAttributes»
+			«FOR field : (merge.output as com.regnosys.rosetta.rosetta.simple.Data).attributes»
 			result.put(new StringIdentifier("«field.name»"), (builder, input) -> builder.set«field.name.toFirstUpper»(Converter.convert(«(field as RosettaTyped).type .name.toJavaType».class, input)));
 			«ENDFOR»
 			return result;
 		}''' 
-	}
-	
-	dispatch def  List<? extends RosettaNamed> getAttributes(RosettaClass type) {
-		return type.regularAttributes
-	}
-	
-	dispatch def List<? extends RosettaNamed> getAttributes(com.regnosys.rosetta.rosetta.simple.Data type) {
-		return type.attributes
 	}
 	
 	def getSource(String source, TypedBPNode node, Context context)
@@ -451,7 +441,7 @@ class BlueprintGenerator {
 	}
 	
 	def fullname(RosettaType type, RosettaJavaPackages packageName) {
-		if (type instanceof RosettaClass || type instanceof com.regnosys.rosetta.rosetta.simple.Data)
+		if (type instanceof com.regnosys.rosetta.rosetta.simple.Data)
 			'''«packageName.model.name».«type.name»'''.toString
 		else 
 			type.name.toJavaFullType
@@ -459,12 +449,12 @@ class BlueprintGenerator {
 
 	
 	@Data static class AttributePath {
-		List<RosettaRegularAttribute> path
+		List<Attribute> path
 		RosettaRegulatoryReference ref
 	}
 	
 	@Data static class RegdOutputField {
-		RosettaRegularAttribute attrib
+		Attribute attrib
 		RosettaRegulatoryReference ref
 	}
 	

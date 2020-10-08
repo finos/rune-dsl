@@ -5,57 +5,43 @@ import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaClass
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import java.util.Collection
 import java.util.LinkedHashSet
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
-import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaBuiltinType
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 
 class RosettaExtensions {
 	
-	def Set<RosettaClass> getAllSuperTypes(RosettaClass clazz) {
-		doGetSuperTypes(clazz, newLinkedHashSet)
-	}
 	def Set<Data> getAllSuperTypes(Data clazz) {
 		doGetSuperTypes(clazz, newLinkedHashSet)
 	}
 	
-	private def Set<RosettaClass> doGetSuperTypes(RosettaClass clazz, Set<RosettaClass> seenClasses) {
-		if(clazz !== null && seenClasses.add(clazz)) 
-			doGetSuperTypes(clazz.superType, seenClasses)
-		return seenClasses
-	}
 	
 	private def Set<Data> doGetSuperTypes(Data clazz, Set<Data> seenClasses) {
 		if(clazz !== null && seenClasses.add(clazz)) 
 			doGetSuperTypes(clazz.superType, seenClasses)
 		return seenClasses
-	}
-
-	def getAllAttributes(RosettaClass clazz) {
-		clazz.allSuperTypes.map[regularAttributes].flatten	
 	}
 
 	def getAllAttributes(Data clazz) {
@@ -97,7 +83,7 @@ class RosettaExtensions {
 	def private LinkedHashSet<RosettaType> doCollectRootCalls(EObject obj) {
 		val classes = newLinkedHashSet
 		obj.eAllContents.filter(RosettaCallableCall).forEach [
-			collectRootCalls(it, [if((it instanceof RosettaClass || it instanceof Data) && !it.eIsProxy) classes.add(it as RosettaType)])
+			collectRootCalls(it, [if(it instanceof Data && !it.eIsProxy) classes.add(it as RosettaType)])
 		]
 		return classes
 	}
@@ -118,7 +104,7 @@ class RosettaExtensions {
 			if(callable instanceof RosettaAlias) {
 				callable.expression.collectRootCalls(visitor)
 			} 
-			else if(callable instanceof RosettaClass || callable instanceof Data|| callable instanceof RosettaEnumeration) {
+			else if(callable instanceof Data|| callable instanceof RosettaEnumeration) {
 				visitor.apply(callable)
 			}
 			else {
@@ -131,9 +117,6 @@ class RosettaExtensions {
 		else if(expr instanceof RosettaFeatureCall) {
 			// go up to the receiver
 			expr.receiver.collectRootCalls(visitor)
-		}
-		else if(expr instanceof RosettaClass) {
-			visitor.apply(expr)
 		}
 		else if(expr instanceof Data) {
 			visitor.apply(expr)
@@ -164,9 +147,6 @@ class RosettaExtensions {
 			}
 			else if (callable instanceof ShortcutDeclaration) {
 				callable.expression.collectLeafTypes(visitor)
-			}
-			else if(callable instanceof RosettaClass) {
-				visitor.apply(callable)
 			}
 			else if(callable instanceof Data) {
 				visitor.apply(callable)
@@ -268,6 +248,10 @@ class RosettaExtensions {
 	
 	def hasKeyedAnnotation(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "key"]
+	}
+	
+	def hasTemplateAnnotation(Annotated it) {
+		metaAnnotations.exists[attribute?.name == "template"]
 	}
 	
 	def boolean hasMetaReferenceAnnotations(Annotated it) {

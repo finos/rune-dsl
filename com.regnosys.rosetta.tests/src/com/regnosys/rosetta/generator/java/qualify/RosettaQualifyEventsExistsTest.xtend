@@ -32,20 +32,17 @@ class RosettaQualifyEventsExistsTest {
 	@BeforeEach
 	def void setUp() {
 		val code = '''
-			class Foo {
-				bar Bar (0..*);
-				baz Baz (0..1);
-			}
+			type Foo:
+				bar Bar (0..*)
+				baz Baz (0..1)
 			
-			class Bar {
-				before number (0..1);
-				after number (0..1);
-			}
+			type Bar:
+				before number (0..1)
+				after number (0..1)
 			
-			class Baz {
-				bazValue number (0..1);
-				other number (0..1);
-			}
+			type Baz:
+				bazValue number (0..1)
+				other number (0..1)
 			
 			isEvent Exists
 				Foo -> bar -> before exists

@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.util
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Annotated
@@ -13,7 +12,6 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
-import com.regnosys.rosetta.types.RClassType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -103,7 +101,6 @@ class RosettaFunctionExtensions {
 
 	dispatch def boolean needsBuilder(RosettaType type) {
 		switch (type) {
-			RosettaClass,
 			Data: true
 			default: false
 		}
@@ -111,7 +108,6 @@ class RosettaFunctionExtensions {
 
 	dispatch def boolean needsBuilder(RType type) {
 		switch (type) {
-			RClassType,
 			RDataType: true
 			default: false
 		}
@@ -140,6 +136,10 @@ class RosettaFunctionExtensions {
 	
 	def boolean isQualifierFunction(Function function) {
 		!getQualifierAnnotations(function).empty
+	}
+	
+	def getMetadataAnnotations(Annotated element) {
+		element.annotations.filter["metadata" == it.annotation.name].toList
 	}
 	
 	def getQualifierAnnotations(Annotated element) {

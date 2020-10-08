@@ -54,6 +54,11 @@ final class ExpandedAttribute {
 		!metas.empty
 	}
 	
+	def hasIdAnnotation() {
+		metas.map[name].contains("id")
+	}
+	
+	
 	def isRosettaClassOrData() {
 		getType.isType
 	}

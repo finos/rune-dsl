@@ -50,13 +50,8 @@ class RosettaBlueprintTest {
 			with fields
 				BarField
 			
-			class Foo {
-				
-			}
-			
-			class Bar {
-				field string (1..1);
-			}
+			type Bar:
+				field string (1..1)
 			
 			eligibility rule FooRule
 				return "true"
@@ -92,14 +87,12 @@ class RosettaBlueprintTest {
 				merge output Output 
 				output Output
 			
-			class Input {
-				traderef string (1..1) ;
-			}
+			type Input:
+				traderef string (1..1)
 			
-			class Output {
-				transactionReferenceNumber string (1..1) ;
+			type Output:
+				transactionReferenceNumber string (1..1)
 				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-			}
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
 		// writeOutClasses(blueprint, "genSimpleMerge");
@@ -172,18 +165,15 @@ class RosettaBlueprintTest {
 				merge output Output 
 				output Output
 			}
-						
-			class Input {
-				traderef string (1..1);
-						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-					
-			}
 			
-			class Output {
-				transactionReferenceNumber string (1..1);
+			type Input:
+				traderef string (1..1)
+						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
+			
+			type Output:
+				transactionReferenceNumber string (1..1)
 				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-				
-			}
+			
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
@@ -271,27 +261,22 @@ class RosettaBlueprintTest {
 			{
 				SimpleMapping input Input
 			}
-						
-			class Input {
-				child Child (1..1);
-			}
 			
-			class Child {
-				traderef string (1..1);
+			type Input:
+				child Child (1..1)
+			
+			type Child:
+				traderef string (1..1)
 						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
 						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #29" provision "" reportedField]
-			
-				tradeid int (1..1);
+				tradeid int (1..1)
 						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #30" provision ""]
 						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #31" provision "" reportedField]
-			}
 			
-			
-			class Output {
-				transactionReferenceNumber string (1..1);
+			type Output:
+				transactionReferenceNumber string (1..1)
 				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-				
-			}
+			
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.NotSoSimpleBlueprint")
@@ -367,23 +352,19 @@ class RosettaBlueprintTest {
 			{
 				SimpleMapping input Input
 			}
-						
-			class Input {
-				childA Child (1..1);
-				childB Child (1..1);
-			}
 			
-			class Child {
-				traderef string (1..1);
-						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-			}
+			type Input:
+				childA Child (1..1)
+				childB Child (1..1)
 			
+			type Child:
+				traderef string (1..1)
+					[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
 			
-			class Output {
-				transactionReferenceNumber string (1..1);
+			type Output:
+				transactionReferenceNumber string (1..1)
 				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-				
-			}
+			
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.NotSoSimpleBlueprint")
@@ -453,19 +434,17 @@ class RosettaBlueprintTest {
 				SimpleMapping input Input then
 				merge output Output 
 			}
-						
-			class Input {
-				traderefs string (1..*);
-						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-					
-			}
 			
-			class Output {
-				transactionId string (1..1);
+			type Input:
+				traderefs string (1..*)
+						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
+			
+			type Output:
+				transactionId string (1..1)
 				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-				transactionNumber number (1..1);
+				transactionNumber number (1..1)
 				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #29" provision "" reportedField]
-			}
+			
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
@@ -554,20 +533,17 @@ class RosettaBlueprintTest {
 				merge output Output
 			}
 						
-			class Input {
-				traderef string (1..1);
+			type Input:
+				traderef string (1..1)
 						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-					
-			}
-			 class Input2 extends Input {
-			 	fist string(1..1);
-			}
 			
-			class Output {
-				transactionReferenceNumber string (1..1);
+			type Input2 extends Input:
+			 	first string (1..1)
+			
+			type Output:
+				transactionReferenceNumber string (1..1)
 				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-				
-			}
+			
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
@@ -647,14 +623,11 @@ class RosettaBlueprintTest {
 	@Test
 	def void validPath() {
 		val blueprint = '''
-						
-			class Input {
-				input2 Input2 (1..1);
-			}
+			type Input:
+				input2 Input2 (1..1)
 			
-			class Input2 {
-				colour string (1..1);
-			}
+			type Input2:
+				colour string (1..1)
 			
 			reporting rule Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
@@ -668,7 +641,6 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.test.model.Input;
 				import com.rosetta.test.model.Input2;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
@@ -710,7 +682,7 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Input, String, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.2/@nodes/@node", "->input2->colour", new StringIdentifier("->input2->colour"), input -> MapperS.of(input).<Input2>map("getInput2", Input::getInput2).<String>map("getColour", Input2::getColour)))
+							startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.2/@nodes/@node", "->input2->colour", new StringIdentifier("->input2->colour"), input -> MapperS.of(input).<Input2>map("getInput2", _input -> _input.getInput2()).<String>map("getColour", _input2 -> _input2.getColour())))
 							.toBlueprint(getURI(), getName());
 					}
 				}
@@ -725,10 +697,8 @@ class RosettaBlueprintTest {
 	@Disabled
 	def void multipleExtract() {
 		val blueprint = '''
-						
-			class Input {
-				input2 int (1..*);
-			}
+			type Input:
+				input2 int (1..*)
 			
 			blueprint Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
@@ -781,14 +751,11 @@ class RosettaBlueprintTest {
 	@Disabled
 	def void invalidPath() {
 		'''
-						
-			class Input {
-				input2 Input2 (1..1);
-			}
+			type Input:
+				input2 Input2 (1..1)
 			
-			class Input2 {
-				colour string (1..1);
-			}
+			type Input2:
+				colour string (1..1)
 			
 			reporting rule Blueprint1
 				extract Input->input2->name
@@ -803,13 +770,12 @@ class RosettaBlueprintTest {
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				( extract Input->traderef , extract Input2->colour)
 						
-			class Input {
-				traderef string (1..1);
-			}
+			type Input:
+				traderef string (1..1)
 			
-			class Input2 {
-				colour string (1..1);
-			}
+			type Input2:
+				colour string (1..1)
+			
 		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
 			"Input type of Input2 is not assignable from type Input of previous node ")
 	}
@@ -821,13 +787,12 @@ class RosettaBlueprintTest {
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				( extract Input->traderef , extract Input2->colour)
 						
-			class Input {
-				traderef string (1..1);
-			}
+			type Input:
+				traderef string (1..1)
 			
-			class Input2 extends Input{//Rosetta extension isn't polymorphic
-				colour string (1..1);
-			}
+			type Input2 extends Input: // Rosetta extension isn't polymorphic
+				colour string (1..1)
+			
 		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
 			"Input type of Input2 is not assignable from type Input of previous node ")
 	}
@@ -839,10 +804,9 @@ class RosettaBlueprintTest {
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(filter when Input->traderef="3" then extract Input->traderef , extract Input->colour)
 						
-			class Input {
-				traderef string (1..1);
-				colour string (1..1);
-			}
+			type Input:
+				traderef string (1..1)
+				colour string (1..1)
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
@@ -853,7 +817,6 @@ class RosettaBlueprintTest {
 			package com.rosetta.test.model.blueprint;
 			
 			import com.rosetta.model.lib.functions.MapperS;
-			import com.rosetta.test.model.Input;
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
@@ -896,9 +859,9 @@ class RosettaBlueprintTest {
 				public BlueprintInstance<Input, String, INKEY, INKEY> blueprint() { 
 					return 
 						startsWith(actionFactory, BlueprintBuilder.<Input, String, INKEY, INKEY>and(actionFactory,
-							startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->traderef=\"3\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", Input::getTraderef), MapperS.of("3")).get()))
-							.then(actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@next/@node", "->traderef", new StringIdentifier("->traderef"), input -> MapperS.of(input).<String>map("getTraderef", Input::getTraderef))),
-							startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->colour", new StringIdentifier("->colour"), input -> MapperS.of(input).<String>map("getColour", Input::getColour)))
+							startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->traderef=\"3\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("3")).get()))
+							.then(actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@next/@node", "->traderef", new StringIdentifier("->traderef"), input -> MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()))),
+							startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->colour", new StringIdentifier("->colour"), input -> MapperS.of(input).<String>map("getColour", _input -> _input.getColour())))
 							)
 						)
 						.toBlueprint(getURI(), getName());
@@ -918,10 +881,9 @@ class RosettaBlueprintTest {
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(extract Input->a , extract Input->b)
 						
-			class Input {
-				a int (1..1);
-				b number (1..1);
-			}
+			type Input:
+				a int (1..1)
+				b number (1..1)
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
@@ -932,7 +894,6 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.test.model.Input;
 				import java.math.BigDecimal;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
@@ -975,8 +936,8 @@ class RosettaBlueprintTest {
 					public BlueprintInstance<Input, Number, INKEY, INKEY> blueprint() { 
 						return 
 							startsWith(actionFactory, BlueprintBuilder.<Input, Number, INKEY, INKEY>and(actionFactory,
-								startsWith(actionFactory, actionFactory.<Input, Integer, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->a", new StringIdentifier("->a"), input -> MapperS.of(input).<Integer>map("getA", Input::getA))),
-								startsWith(actionFactory, actionFactory.<Input, BigDecimal, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->b", new StringIdentifier("->b"), input -> MapperS.of(input).<BigDecimal>map("getB", Input::getB)))
+								startsWith(actionFactory, actionFactory.<Input, Integer, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->a", new StringIdentifier("->a"), input -> MapperS.of(input).<Integer>map("getA", _input -> _input.getA()))),
+								startsWith(actionFactory, actionFactory.<Input, BigDecimal, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->b", new StringIdentifier("->b"), input -> MapperS.of(input).<BigDecimal>map("getB", _input -> _input.getB())))
 								)
 							)
 							.toBlueprint(getURI(), getName());
@@ -1000,20 +961,18 @@ class RosettaBlueprintTest {
 					extract Input -> bar
 				)
 			
-			class Input {
-				foo Foo (1..1);
-				bar Bar (1..1);
-			}
-						
-			class Foo {
-				traderef string (1..1);
-				colour string (1..1);
-			}
+			type Input:
+				foo Foo (1..1)
+				bar Bar (1..1)
 			
-			class Bar {
-				traderef string (1..1);
-				colour string (1..1);
-			}
+			type Foo:
+				traderef string (1..1)
+				colour string (1..1)
+			
+			type Bar:
+				traderef string (1..1)
+				colour string (1..1)
+			
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
@@ -1026,7 +985,6 @@ class RosettaBlueprintTest {
 				import com.rosetta.model.lib.functions.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Input;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1069,8 +1027,8 @@ class RosettaBlueprintTest {
 					public BlueprintInstance<Input, Object, INKEY, INKEY> blueprint() { 
 						return 
 							startsWith(actionFactory, BlueprintBuilder.<Input, Object, INKEY, INKEY>and(actionFactory,
-								startsWith(actionFactory, actionFactory.<Input, Foo, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->foo", new StringIdentifier("->foo"), input -> MapperS.of(input).<Foo>map("getFoo", Input::getFoo))),
-								startsWith(actionFactory, actionFactory.<Input, Bar, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->bar", new StringIdentifier("->bar"), input -> MapperS.of(input).<Bar>map("getBar", Input::getBar)))
+								startsWith(actionFactory, actionFactory.<Input, Foo, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->foo", new StringIdentifier("->foo"), input -> MapperS.of(input).<Foo>map("getFoo", _input -> _input.getFoo()))),
+								startsWith(actionFactory, actionFactory.<Input, Bar, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->bar", new StringIdentifier("->bar"), input -> MapperS.of(input).<Bar>map("getBar", _input -> _input.getBar())))
 								)
 							)
 							.toBlueprint(getURI(), getName());
@@ -1095,14 +1053,12 @@ class RosettaBlueprintTest {
 				) then
 				extract Input2->traderef
 						
-			class Input1 {
-				i1 Input2 (1..1);
-				i2 Input2 (1..1);
-			}
+			type Input1:
+				i1 Input2 (1..1)
+				i2 Input2 (1..1)
 			
-			class Input2 {
-				traderef string (1..1);
-			}
+			type Input2:
+				traderef string (1..1)
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
@@ -1113,7 +1069,6 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.test.model.Input1;
 				import com.rosetta.test.model.Input2;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
@@ -1156,11 +1111,11 @@ class RosettaBlueprintTest {
 					public BlueprintInstance<Input1, String, INKEY, INKEY> blueprint() { 
 						return 
 							startsWith(actionFactory, BlueprintBuilder.<Input1, Input2, INKEY, INKEY>and(actionFactory,
-								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->i1", new StringIdentifier("->i1"), input1 -> MapperS.of(input1).<Input2>map("getI1", Input1::getI1))),
-								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->i2", new StringIdentifier("->i2"), input1 -> MapperS.of(input1).<Input2>map("getI2", Input1::getI2)))
+								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->i1", new StringIdentifier("->i1"), input1 -> MapperS.of(input1).<Input2>map("getI1", _input1 -> _input1.getI1()))),
+								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->i2", new StringIdentifier("->i2"), input1 -> MapperS.of(input1).<Input2>map("getI2", _input1 -> _input1.getI2())))
 								)
 							)
-							.then(actionFactory.<Input2, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->traderef", new StringIdentifier("->traderef"), input2 -> MapperS.of(input2).<String>map("getTraderef", Input2::getTraderef)))
+							.then(actionFactory.<Input2, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->traderef", new StringIdentifier("->traderef"), input2 -> MapperS.of(input2).<String>map("getTraderef", _input2 -> _input2.getTraderef())))
 							.toBlueprint(getURI(), getName());
 					}
 				}
@@ -1181,23 +1136,19 @@ class RosettaBlueprintTest {
 				then Blueprint2
 			
 			reporting rule Blueprint2
-			[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				merge output Output
 						
-			class Input {
-				traderef string (1..1);
-						
-				input2 Input2 (1..1);
-			}
+			type Input:
+				traderef string (1..1)
+				input2 Input2 (1..1)
 			
-			class Input2 {
-				colour string (1..1);
-			}
+			type Input2:
+				colour string (1..1)
 			
-			class Output {
-				transactionReferenceNumber string (1..1);
-				colour string (1..1);
-			}
+			type Output:
+				transactionReferenceNumber string (1..1)
+				colour string (1..1)
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
@@ -1261,9 +1212,8 @@ class RosettaBlueprintTest {
 				ingest to Input
 			}
 						
-			class Input {
-				traderef string (1..1) ;
-			}
+			type Input:
+				traderef string (1..1)
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
 		// writeOutClasses(blueprint, "ingest");
@@ -1318,9 +1268,9 @@ class RosettaBlueprintTest {
 				validate as Input
 			}
 									
-			class Input {
-				traderef string (1..1) ;
-			}
+			type Input:
+				traderef string (1..1)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
 		// writeOutClasses(blueprint, "validate");
@@ -1364,13 +1314,11 @@ class RosettaBlueprintTest {
 	@Test
 	def void ruleRef() {
 		'''
-			class Foo {
-				bar Bar (1..1);
-			}
+			type Foo:
+				bar Bar (1..1)
 			
-			class Bar {
-				val string (1..1);
-			}
+			type Bar:
+				val string (1..1)
 			
 			reporting rule Rule1
 				Rule2 then
@@ -1388,10 +1336,10 @@ class RosettaBlueprintTest {
 			reporting rule SimpleBlueprint 
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				filter when Input->traderef="Hello"
-									
-			class Input {
-				traderef string (1..1) ;
-			}
+			
+			type Input:
+				traderef string (1..1)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "filter");
@@ -1400,7 +1348,6 @@ class RosettaBlueprintTest {
 		package com.rosetta.test.model.blueprint;
 		
 		import com.rosetta.model.lib.functions.MapperS;
-		import com.rosetta.test.model.Input;
 		import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 		// manual imports
 		import com.regnosys.rosetta.blueprints.Blueprint;
@@ -1441,7 +1388,7 @@ class RosettaBlueprintTest {
 			@Override
 			public BlueprintInstance<Input, Input, INKEY, INKEY> blueprint() { 
 				return 
-					startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->traderef=\"Hello\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", Input::getTraderef), MapperS.of("Hello")).get()))
+					startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->traderef=\"Hello\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello")).get()))
 					.toBlueprint(getURI(), getName());
 			}
 		}
@@ -1457,9 +1404,9 @@ class RosettaBlueprintTest {
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				filter when Input->traderef exists
 									
-			class Input {
-				traderef string (1..1) ;
-			}
+			type Input:
+				traderef string (1..1)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "filter2");
@@ -1478,10 +1425,10 @@ class RosettaBlueprintTest {
 				filter when rule TestRule then extract Input->traderef
 			
 			
-			class Input {
-				traderef string (1..1);
-				flag boolean (1..1);
-			}
+			type Input:
+				traderef string (1..1)
+				flag boolean (1..1)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.FilterRuleRule")
 		// writeOutClasses(blueprint, "filterWhenRule");
@@ -1503,13 +1450,12 @@ class RosettaBlueprintTest {
 				extract Avengers -> heros then 
 				lookup CanWieldMjolnir boolean
 			
-			class Avengers {
-				heros Hero (0..*);
-			}
+			type Avengers:
+				heros Hero (0..*)
 			
-			class Hero {
-				name string (1..1);
-			}
+			type Hero:
+				name string (1..1)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.WorthyAvengerRule")
 		blueprint.compileToClasses
@@ -1518,7 +1464,6 @@ class RosettaBlueprintTest {
 			package com.rosetta.test.model.blueprint;
 			
 			import com.rosetta.model.lib.functions.MapperS;
-			import com.rosetta.test.model.Avengers;
 			import com.rosetta.test.model.Hero;
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			// manual imports
@@ -1564,9 +1509,9 @@ class RosettaBlueprintTest {
 				public BlueprintInstance<Avengers, String, INKEY, INKEY> blueprint() { 
 					return 
 						startsWith(actionFactory, new FilterByRule<Avengers, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "CanWieldMjolnir", new CanWieldMjolnirRule<INKEY>(actionFactory).blueprint()))
-						.then(actionFactory.<Avengers, Hero, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->heros", new StringIdentifier("->heros"), avengers -> MapperS.of(avengers).<Hero>mapC("getHeros", Avengers::getHeros)))
-						.then(new Filter<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@node", "->name<>\"Thor\"", hero -> notEqual(MapperS.of(hero).<String>map("getName", Hero::getName), MapperS.of("Thor")).get()))
-						.then(actionFactory.<Hero, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@next/@node", "->name", new StringIdentifier("->name"), hero -> MapperS.of(hero).<String>map("getName", Hero::getName)))
+						.then(actionFactory.<Avengers, Hero, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->heros", new StringIdentifier("->heros"), avengers -> MapperS.of(avengers).<Hero>mapC("getHeros", _avengers -> _avengers.getHeros())))
+						.then(new Filter<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@node", "->name<>\"Thor\"", hero -> notEqual(MapperS.of(hero).<String>map("getName", _hero -> _hero.getName()), MapperS.of("Thor")).get()))
+						.then(actionFactory.<Hero, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@next/@node", "->name", new StringIdentifier("->name"), hero -> MapperS.of(hero).<String>map("getName", _hero -> _hero.getName())))
 						.toBlueprint(getURI(), getName());
 				}
 			}
@@ -1585,10 +1530,10 @@ class RosettaBlueprintTest {
 				filter when rule TestRule then extract Input->traderef
 			
 			
-			class Input {
-				traderef string (1..1);
-				flag number (1..1);
-			}
+			type Input:
+				traderef string (1..1)
+				flag number (1..1)
+			
 		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
 			"output type of node BigDecimal does not match required type of Boolean")
 
@@ -1600,10 +1545,10 @@ class RosettaBlueprintTest {
 			reporting rule IsFixedFloat
 			extract Foo->fixed count = 12
 			
-			class Foo {
-				fixed string (0..*);
-				floating string (0..*);
-			}
+			type Foo:
+				fixed string (0..*)
+				floating string (0..*)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.IsFixedFloatRule")
 		// writeOutClasses(blueprint, "filterWhenCount");
@@ -1612,7 +1557,6 @@ class RosettaBlueprintTest {
 			package com.rosetta.test.model.blueprint;
 			
 			import com.rosetta.model.lib.functions.MapperS;
-			import com.rosetta.test.model.Foo;
 			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
@@ -1653,7 +1597,7 @@ class RosettaBlueprintTest {
 				@Override
 				public BlueprintInstance<Foo, Boolean, INKEY, INKEY> blueprint() { 
 					return 
-						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->fixed count=12", new StringIdentifier("->fixed count=12"), foo -> areEqual(MapperS.of(MapperS.of(foo).<String>mapC("getFixed", Foo::getFixed).resultCount()), MapperS.of(Integer.valueOf(12)))))
+						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->fixed count=12", new StringIdentifier("->fixed count=12"), foo -> areEqual(MapperS.of(MapperS.of(foo).<String>mapC("getFixed", _foo -> _foo.getFixed()).resultCount()), MapperS.of(Integer.valueOf(12)))))
 						.toBlueprint(getURI(), getName());
 				}
 			}
@@ -1673,12 +1617,12 @@ class RosettaBlueprintTest {
 				)
 					
 			
-			class Foo {
-				fixed string (0..*);
-				floating string (0..*);
-				sinking string (1..1);
-				swimming string (1..1);
-			}
+			type Foo:
+				fixed string (0..*)
+				floating string (0..*)
+				sinking string (1..1)
+				swimming string (1..1)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.FixedFloatRule")
 		// writeOutClasses(blueprint, "blueprintOneOf");
@@ -1693,10 +1637,10 @@ class RosettaBlueprintTest {
 			reporting rule IsFixedFloat
 			maxBy Foo->order
 			
-			class Foo {
-				fixed string (0..*);
-				order int (0..*);
-			}
+			type Foo:
+				fixed string (0..*)
+				order int (0..*)
+			
 		'''.generateCode
 		// writeOutClasses(blueprint, "maxBy");
 		blueprint.compileToClasses
@@ -1709,9 +1653,9 @@ class RosettaBlueprintTest {
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				groupby Input->traderef
 									
-			class Input {
-				traderef string (1..1) ;
-			}
+			type Input:
+				traderef string (1..1)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "group");
@@ -1722,7 +1666,6 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.test.model.Input;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1760,7 +1703,7 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Input, Input, INKEY, String> blueprint() { 
 						return 
-							startsWith(actionFactory, actionFactory.<Input, INKEY, String>newRosettaGrouper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "group by ->traderef", input -> MapperS.of(input).<String>map("getTraderef", Input::getTraderef)))
+							startsWith(actionFactory, actionFactory.<Input, INKEY, String>newRosettaGrouper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "group by ->traderef", input -> MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef())))
 							.toBlueprint(getURI(), getName());
 					}
 				}
@@ -1777,13 +1720,12 @@ class RosettaBlueprintTest {
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				join key Input2->keyVal foreignKey Input1->foreign
 									
-			class Input1 {
-				foreign string (1..*);
-			}
+			type Input1:
+				foreign string (1..*)
 			
-			class Input2 {
-				keyVal string (1..1);
-			}
+			type Input2:
+				keyVal string (1..1)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "join");
@@ -1793,8 +1735,6 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.test.model.Input1;
-				import com.rosetta.test.model.Input2;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1833,8 +1773,8 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Object, Input2, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(actionFactory, actionFactory.<Input2, Input1, INKEY, String>newRosettaDataJoin("__synthetic1.rosetta#//@elements.0/@nodes/@node", "joinInput2", input2 -> MapperS.of(input2).<String>map("getKeyVal", Input2::getKeyVal),
-									input1 -> MapperS.of(input1).<String>mapC("getForeign", Input1::getForeign),
+							startsWith(actionFactory, actionFactory.<Input2, Input1, INKEY, String>newRosettaDataJoin("__synthetic1.rosetta#//@elements.0/@nodes/@node", "joinInput2", input2 -> MapperS.of(input2).<String>map("getKeyVal", _input2 -> _input2.getKeyVal()),
+									input1 -> MapperS.of(input1).<String>mapC("getForeign", _input1 -> _input1.getForeign()),
 									Input2.class, Input1.class))
 							.toBlueprint(getURI(), getName());
 					}
@@ -1861,15 +1801,13 @@ class RosettaBlueprintTest {
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				extract Top->input
 			
-									
-			class Input {
-				foreign string (1..*);
-				keyVal string (1..1);
-			}
+			type Input:
+				foreign string (1..*)
+				keyVal string (1..1)
 			
-			class Top {
-				input Input (1..1);
-			}
+			type Top:
+				input Input (1..1)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "selfJoin");
@@ -1944,12 +1882,12 @@ class RosettaBlueprintTest {
 				arg4 number : is Input->val4
 			}			
 						
-			class Input {
-				val1 int (1..1);
-				val2 int (1..1);
-				val3 number (1..1);
-				val4 number (1..1);
-			}
+			type Input:
+				val1 int (1..1)
+				val2 int (1..1)
+				val3 number (1..1)
+				val4 number (1..1)
+			
 			
 			blueprint Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
@@ -2038,12 +1976,12 @@ class RosettaBlueprintTest {
 				arg4 time : is Input->val4
 			}			
 						
-			class Input {
-				val1 int (1..1);
-				val2 int (1..1);
-				val3 date (1..1);
-				val4 time (1..1);
-			}
+			type Input:
+				val1 int (1..1)
+				val2 int (1..1)
+				val3 date (1..1)
+				val4 time (1..1)
+			
 			
 			reporting rule Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
@@ -2126,9 +2064,9 @@ class RosettaBlueprintTest {
 				calculate calc quantity string : "1" args a1 int : is Input->val1
 			}
 			
-			class Input {
-				val1 int (1..1);
-			}
+			type Input:
+				val1 int (1..1)
+			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1")
 		// writeOutClasses(blueprint, "calculationInline");

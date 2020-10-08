@@ -4,18 +4,14 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
-import com.regnosys.rosetta.rosetta.RosettaClass
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
-import com.regnosys.rosetta.rosetta.RosettaRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.meta.RosettaMetaData
 import com.rosetta.util.BreadthFirstSearch
 import java.util.ArrayList
-import java.util.Collection
 import java.util.List
 import java.util.Optional
 import java.util.stream.Collectors
@@ -40,13 +36,9 @@ class ModelObjectBuilderGenerator {
 	def builderName(String typeName) {
 		return typeName + 'Builder';
 	}
-	
-	def builderSuperClass(RosettaClass clazz) {
-		Optional.ofNullable(clazz.superType).map[builderName].orElse('RosettaModelObjectBuilder')
-	}
-	
+
 	def StringConcatenationClient builderClass(Data c, JavaNames names) '''
-		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderNameFull»«ELSE»«RosettaModelObjectBuilder»«ENDIF»«implementsClauseBuilder(c)»{
+		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderNameFull»«ELSE»«RosettaModelObjectBuilder»«ENDIF»«implementsClauseBuilder(c)» {
 		
 			«FOR attribute : c.expandedAttributes.filter[!it.overriding]»
 				protected «attribute.toBuilderType(names)» «attribute.name»;
@@ -91,86 +83,7 @@ class ModelObjectBuilderGenerator {
 			«c.builderBoilerPlate(names)»
 		}
 	'''
-	
-	def StringConcatenationClient builderClass(RosettaClass c, JavaNames javaNames) '''
-		public static «c.abstractModifier» class «builderName(c)» extends «c.builderSuperClass» «builderImplements(c)»{
-		
-			«FOR attribute : c.expandedAttributes»
-				protected «attribute.toBuilderType(javaNames)» «attribute.name»;
-			«ENDFOR»
-		
-			public «builderName(c)»() {
-			}
-					
-			@Override
-			public RosettaMetaData<? extends «c.name»> metaData() {
-				return metaData;
-			} 
-		
-			«c.expandedAttributes.builderGetters(javaNames)»
-		
-			«c.setters(javaNames)»
-			««««ContractualProduct and event are the only objects that get qualified
-			««««This could if necessary be replaced with code that finds all the quualifiaction rules
-			««««and the qualification result fields and finds there common roots (current CP and EV)	
-			«IF c.name=="ContractualProduct" || c.name=="BusinessEvent"»
-				«qualificationSetter(c)»
-			«ENDIF»
-			
-			«IF !c.isAbstract»
-				public «c.name» build() {
-					return new «c.name»(this);
-				}
-			«ELSE»
-				public abstract «c.name» build();
-			«ENDIF»
-		
-			@Override
-			public «builderName(c)» prune() {
-				«IF c.superType!==null»super.prune();«ENDIF»
-				«FOR attribute : c.expandedAttributes»
-					«IF !attribute.isMultiple && (attribute.isRosettaClassOrData || attribute.hasMetas)»
-						if («attribute.name»!=null && !«attribute.name».prune().hasData()) «attribute.name» = null;
-					«ELSEIF attribute.isMultiple && attribute.isRosettaClassOrData || attribute.hasMetas»
-						if («attribute.name»!=null) «attribute.name» = «attribute.name».stream().filter(b->b!=null).map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-					«ENDIF»
-				«ENDFOR»
-				return this;
-			}
-			
-			«c.expandedAttributes.hasData(c.superType!==null)»
 
-			«c.expandedAttributes.merge(c, c.superType!==null, javaNames)»
-
-			«c.builderBoilerPlate(javaNames)»
-		}
-	'''
-	
-	private def builderImplements(RosettaClass c) {
-		val implementsS = c.implementsClause[String s | '''«s.builderName»''']
-		
-		
-		if (c.name=="ContractualProduct" || c.name=="BusinessEvent") {
-			if (implementsS.length>0) '''«implementsS», Qualified'''
-			else "implements Qualified"
-		}
-		else {
-			implementsS
-		}
-	}
-	
-	private def qualificationSetter(RosettaClass clazz) {
-		val startAtt = RosettaFactoryImpl.eINSTANCE.createRosettaRegularAttribute
-		startAtt.type = clazz
-		val path = BreadthFirstSearch.search(startAtt, [att|att.getType.children], [att|att.type instanceof RosettaQualifiedType])
-		if (path!==null) {
-			'''
-			public void setQualification(String qualification) {
-				this«path.toSetter»
-			}
-			'''
-		}
-	}
 	private def qualificationSetter(Data clazz) {
 		val attr =  BreadthFirstSearch.search(null as Attribute, [ att |
 			if (att === null)
@@ -189,22 +102,6 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	private def String pathToSetter(List<Attribute> path) {
-		val result = new StringBuilder
-		for (var i=1;i<path.size-1;i++) {
-			val att = path.get(i);
-			result.append('''.getOrCreate«att.name.toFirstUpper»(«IF att.card.isIsMany»0«ENDIF»)''')
-		}
-		val last = path.last
-		if (last.card.isIsMany) {
-			result.append(".add"+last.name.toFirstUpper+"(qualification);")
-		}
-		else {
-			result.append(".set"+last.name.toFirstUpper+"(qualification);")
-		}
-		result.toString()
-	}
-	
-	private def String toSetter(List<RosettaRegularAttribute> path) {
 		val result = new StringBuilder
 		for (var i=1;i<path.size-1;i++) {
 			val att = path.get(i);
@@ -240,15 +137,6 @@ class ModelObjectBuilderGenerator {
 		}
 	'''
 
-	private def Collection<RosettaRegularAttribute> children(RosettaType c) {
-		if (c instanceof RosettaClass) {
-			c.regularAttributes
-		}
-		else {
-			emptyList
-		}
-	}
-	
 	private def StringConcatenationClient builderGetters(Iterable<ExpandedAttribute> attributes, JavaNames names) '''
 		«FOR attribute : attributes»
 			
@@ -277,17 +165,7 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 		«ENDFOR»
 	'''
-	
-		
-	private def StringConcatenationClient setters(RosettaClass c, JavaNames names) {
-		val attributesProcessed = newArrayList
-		'''
-		«FOR current : c.allSuperTypes»
-		«c.setters(attributesProcessed, current, current != c, names)»
-		«ENDFOR»
-		'''
-	}
-		
+
 	private def StringConcatenationClient setters(Data c, JavaNames names) {
 		val attributesProcessed = newArrayList
 		'''
@@ -390,7 +268,10 @@ class ModelObjectBuilderGenerator {
 						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
 					}
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«names.toJavaType(attribute.type)» «attribute.name») {
-						return set«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
+                        if («attribute.name» != null) {
+                            return set«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
+                        }
+                        return this;
 					}
 				«ELSE»
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
@@ -404,7 +285,6 @@ class ModelObjectBuilderGenerator {
 	
 	def boolean globalKey(RosettaType type) {
 		switch (type) {
-			RosettaClass: type.isGlobalKey
 			Data: type.hasKeyedAnnotation
 			default: false
 		}
@@ -432,12 +312,7 @@ class ModelObjectBuilderGenerator {
 		}
 	'''
 
-	
-	private def abstractModifier(RosettaClass clazz) '''
-		«IF clazz.isAbstract»abstract«ENDIF»
-	'''
-	
-	
+
 	private def StringConcatenationClient toBuilderType(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.isMultiple) '''List<«attribute.toBuilderTypeSingle(names)»>'''
 		else '''«attribute.toBuilderTypeSingle(names)»'''
