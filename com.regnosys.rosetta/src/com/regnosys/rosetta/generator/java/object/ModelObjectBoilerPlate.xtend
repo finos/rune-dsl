@@ -15,6 +15,7 @@ import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import java.util.Objects
 
 class ModelObjectBoilerPlate {
 
@@ -150,7 +151,7 @@ class ModelObjectBoilerPlate {
 	«IF a.cardinalityIsListValue»
 		if (!«ListEquals».listEquals(«a.name», _that.«a.name»)) return false;
 	«ELSE»
-		if («a.name» != null ? !«a.name».equals(_that.«a.name») : _that.«a.name» != null) return false;
+		if (!«Objects».equals(«a.name.toFirstLower», _that.«a.name.toFirstLower»)) return false;
 	«ENDIF»
 	'''
 

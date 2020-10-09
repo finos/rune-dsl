@@ -123,11 +123,10 @@ class ModelObjectBuilderGenerator {
 		public «builderName» merge(RosettaModelObjectBuilder b1, RosettaModelObjectBuilder b2, BuilderMerger merger) {
 			«builderName» m1 = («builderName») b1;
 			«builderName» m2 = («builderName») b2;
+			
 			«FOR a : attributes.filter[(isRosettaClassOrData || hasMetas) && !multiple]»
 				«val attributeName = a.name.toFirstUpper»
-				if (merger.mergeRosetta(m1.get«attributeName»(), m2.get«attributeName»(), this::set«attributeName»Builder)) {
-					«a.name».merge(m1.get«attributeName»(), m2.get«attributeName»(), merger);
-				}
+				merger.mergeRosetta(m1.get«attributeName»(), m2.get«attributeName»(), this::getOrCreate«a.name.toFirstUpper», this::set«attributeName»Builder);
 			«ENDFOR»
 			«FOR a : attributes.filter[!isRosettaClassOrData && !hasMetas && !multiple]»
 				«val attributeName = a.name.toFirstUpper»
@@ -158,7 +157,7 @@ class ModelObjectBuilderGenerator {
 						if («attribute.name»==null) {
 							this.«attribute.name» = new «ArrayList»<>();
 						}
-						return getIndex(«attribute.name», _index, ()->new «attribute.toBuilderTypeSingle(names)»());
+						return getIndex(«attribute.name», _index, «attribute.toBuilderTypeSingle(names)»::new);
 					}
 					
 				«ENDIF»
@@ -198,7 +197,7 @@ class ModelObjectBuilderGenerator {
 				if(this.«attribute.name» == null){
 					this.«attribute.name» = new «ArrayList.name»<>();
 				}
-				getIndex(this.«attribute.name», _idx, () -> «attribute.toBuilder»);
+				getIndex(this.«attribute.name», _idx, «attribute.toBuilder»::new);
 				this.«attribute.name».set(_idx, «attribute.toBuilder»);
 				return this;
 			}
