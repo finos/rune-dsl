@@ -35,7 +35,7 @@ The modelling components available in the Rosetta DSL syntax are detailed in the
 * create new model from scratch
 * edit or extend existing models
 
-The syntax is used in particular to express the *Common Domain Model* (or CDM), which provides a blueprint for the lifecycle events and processes of transactions in financial markets. The CDM is designed to be shared in open source across all financial industry participants, hence the name *common*. The CDM is hosted separately from the Rosetta DSL in its own `repository <https://github.com/REGnosys/rosetta-cdm>`_.
+The syntax is used in particular to express the *Common Domain Model* (or CDM), which provides a blueprint for the lifecycle events and processes of transactions in financial markets. The CDM is designed to be shared in open source across all financial industry participants, hence the name *common*. The CDM is hosted separately from the Rosetta DSL in its own `repository <https://github.com/REGnosys/rosetta-cdm>`_, which is currently private. For access to CDM, see the section on `The ISDA CDM`_.
 
 Code Generators
 ^^^^^^^^^^^^^^^
@@ -47,7 +47,7 @@ Only default code generators are provided as part of the Rosetta DSL repository.
 The ISDA CDM
 ^^^^^^^^^^^^
 
-The `ISDA Common Domain Model <https://docs.rosetta-technology.io/cdm/index.html>`_ is the first live application of the Rosetta DSL, to the derivative's transaction lifecycle. It is openly accessible through the `CDM Portal <https://portal.cdm.rosetta-technology.io>`_, subject to the ISDA CDM licence.
+The `ISDA Common Domain Model <https://docs.rosetta-technology.io/cdm/index.html>`_ is the first live application of the Rosetta DSL, to the derivative's transaction lifecycle. It is openly accessible through `Rosetta Core <https://ui.rosetta-technology.io>`_ or the `CDM Portal <https://portal.cdm.rosetta-technology.io>`_, subject to the ISDA CDM licence.
 
 For more details, please consult the `ISDA CDM documentation <https://docs.rosetta-technology.io/cdm/index.html>`_ or contact ISDA directly at marketinfrastructureandtechnology@isda.org
 
