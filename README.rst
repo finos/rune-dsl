@@ -35,7 +35,7 @@ The modelling components available in the Rosetta DSL syntax are detailed in the
 * create new model from scratch
 * edit or extend existing models
 
-The syntax is used in particular to express the *Common Domain Model* (or CDM), which provides a blueprint for the lifecycle events and processes of transactions in financial markets. The CDM is designed to be shared in open source across all financial industry participants, hence the name *common*. The CDM is hosted separately from the Rosetta DSL in its own `repository <https://github.com/REGnosys/rosetta-cdm>`_, which is currently private. For access to CDM, see the `The ISDA CDM`_ section 
+The syntax is used in particular to express the *Common Domain Model* (or CDM), which provides a blueprint for the lifecycle events and processes of transactions in financial markets. The CDM is designed to be shared in open source across all financial industry participants, hence the name *common*. The CDM is hosted separately from the Rosetta DSL in its own `repository <https://github.com/REGnosys/rosetta-cdm>`_, which is currently private. For access to CDM, see the section on `The ISDA CDM`_.
 
 Code Generators
 ^^^^^^^^^^^^^^^
