@@ -157,7 +157,7 @@ class ModelObjectBuilderGenerator {
 						if («attribute.name»==null) {
 							this.«attribute.name» = new «ArrayList»<>();
 						}
-						return getIndex(«attribute.name», _index, «attribute.toBuilderTypeSingle(names)»::new);
+						return getIndex(«attribute.name», _index, ()->new «attribute.toBuilderTypeSingle(names)»());
 					}
 					
 				«ENDIF»
@@ -197,7 +197,7 @@ class ModelObjectBuilderGenerator {
 				if(this.«attribute.name» == null){
 					this.«attribute.name» = new «ArrayList.name»<>();
 				}
-				getIndex(this.«attribute.name», _idx, «attribute.toBuilder»::new);
+				getIndex(this.«attribute.name», _idx, () -> «attribute.toBuilder»);
 				this.«attribute.name».set(_idx, «attribute.toBuilder»);
 				return this;
 			}
@@ -267,10 +267,10 @@ class ModelObjectBuilderGenerator {
 						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
 					}
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«names.toJavaType(attribute.type)» «attribute.name») {
-                        if («attribute.name» != null) {
-                            return set«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
-                        }
-                        return this;
+						if («attribute.name» != null) {
+							return set«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
+						}
+						return this;
 					}
 				«ELSE»
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
@@ -310,7 +310,6 @@ class ModelObjectBuilderGenerator {
 			return false;
 		}
 	'''
-
 
 	private def StringConcatenationClient toBuilderType(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.isMultiple) '''List<«attribute.toBuilderTypeSingle(names)»>'''
