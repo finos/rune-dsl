@@ -177,7 +177,7 @@ class ModelObjectGenerator {
 		if (!attribute.hasMetas)
 			return '''«names.toJavaType(attribute.type)»'''
 		val name = if (attribute.refIndex >= 0) {
-				if (attribute.isRosettaClassOrData)
+				if (attribute.isRosettaType)
 					'''ReferenceWithMeta«attribute.type.name.toFirstUpper»'''
 				else
 					'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper»'''
@@ -220,7 +220,7 @@ class ModelObjectGenerator {
 	'''
 
 	private def StringConcatenationClient attributeFromBuilder(ExpandedAttribute attribute) {
-		if(attribute.isRosettaClassOrData || attribute.hasMetas) {
+		if(attribute.isRosettaType || attribute.hasMetas) {
 			'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
 		} else {
 			'''builder.get«attribute.name.toFirstUpper»()'''

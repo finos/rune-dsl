@@ -59,7 +59,7 @@ final class ExpandedAttribute {
 	}
 	
 	
-	def isRosettaClassOrData() {
+	def isRosettaType() {
 		getType.isType
 	}
 	

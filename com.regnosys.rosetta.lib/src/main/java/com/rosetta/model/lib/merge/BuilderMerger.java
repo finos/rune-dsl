@@ -14,4 +14,6 @@ public interface BuilderMerger {
 	<B extends RosettaModelObjectBuilder> void mergeRosetta(List<B> left, List<B> right, Function<Integer, B> getOrCreate, Consumer<B> add);
 	
 	<T> void mergeBasic(T left, T right, Consumer<T> setter);
+	
+	<T> void mergeBasic(List<T> left, List<T> right, Consumer<T> add);
 }
