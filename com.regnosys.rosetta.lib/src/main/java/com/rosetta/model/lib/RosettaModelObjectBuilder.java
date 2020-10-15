@@ -91,5 +91,5 @@ public abstract class RosettaModelObjectBuilder {
 		}
 	}
 	
-	public abstract RosettaModelObjectBuilder merge(RosettaModelObjectBuilder b1, RosettaModelObjectBuilder b2, BuilderMerger merger);
+	public abstract RosettaModelObjectBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger);
 }

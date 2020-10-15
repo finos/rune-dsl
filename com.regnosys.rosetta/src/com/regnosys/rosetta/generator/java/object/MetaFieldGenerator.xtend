@@ -270,12 +270,11 @@ class MetaFieldGenerator {
 				}
 
 				@Override
-				public «name»Builder merge(RosettaModelObjectBuilder b1, RosettaModelObjectBuilder b2, BuilderMerger merger) {
-					«name»Builder m1 = («name»Builder) b1;
-					«name»Builder m2 = («name»Builder) b2;
+				public «name»Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+					«name»Builder o = («name»Builder) other;
 					
 					«FOR type : metaFieldTypes»
-						merger.mergeBasic(m1.get«type.name.toFirstUpper»(), m2.get«type.name.toFirstUpper»(), this::set«type.name.toFirstUpper»);
+						merger.mergeBasic(get«type.name.toFirstUpper»(), o.get«type.name.toFirstUpper»(), this::set«type.name.toFirstUpper»);
 					«ENDFOR»
 					return this;
 				}
@@ -528,15 +527,14 @@ class MetaFieldGenerator {
 				}
 				
 				@Override
-				public FieldWithMeta«type.name.toFirstUpper»Builder merge(RosettaModelObjectBuilder b1, RosettaModelObjectBuilder b2, BuilderMerger merger) {
-					FieldWithMeta«type.name.toFirstUpper»Builder m1 = (FieldWithMeta«type.name.toFirstUpper»Builder) b1;
-					FieldWithMeta«type.name.toFirstUpper»Builder m2 = (FieldWithMeta«type.name.toFirstUpper»Builder) b2;
+				public FieldWithMeta«type.name.toFirstUpper»Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+					FieldWithMeta«type.name.toFirstUpper»Builder o = (FieldWithMeta«type.name.toFirstUpper»Builder) other;
 					
-					merger.mergeRosetta(m1.getMeta(), m2.getMeta(), this::getOrCreateMeta, this::setMetaBuilder);
+					merger.mergeRosetta(getMeta(), o.getMeta(), this::setMetaBuilder);
 					«IF type.isType»
-						merger.mergeRosetta(m1.getValue(), m2.getValue(), this::getOrCreateValue, this::setValueBuilder);
+						merger.mergeRosetta(getValue(), o.getValue(), this::setValueBuilder);
 					«ELSE»
-						merger.mergeBasic(m1.getValue(), m2.getValue(), this::setValue);
+						merger.mergeBasic(getValue(), o.getValue(), this::setValue);
 					«ENDIF»
 					return this;
 				}
@@ -762,13 +760,12 @@ class MetaFieldGenerator {
 				}
 
 				@Override
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder merge(RosettaModelObjectBuilder b1, RosettaModelObjectBuilder b2, BuilderMerger merger) {
-					ReferenceWithMeta«type.name.toFirstUpper»Builder m1 = (ReferenceWithMeta«type.name.toFirstUpper»Builder) b1;
-					ReferenceWithMeta«type.name.toFirstUpper»Builder m2 = (ReferenceWithMeta«type.name.toFirstUpper»Builder) b2;
+				public ReferenceWithMeta«type.name.toFirstUpper»Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+					ReferenceWithMeta«type.name.toFirstUpper»Builder o = (ReferenceWithMeta«type.name.toFirstUpper»Builder) other;
 					
-					merger.mergeRosetta(m1.getValue(), m2.getValue(), this::getOrCreateValue, this::setValueBuilder);
-					merger.mergeBasic(m1.getGlobalReference(), m2.getGlobalReference(), this::setGlobalReference);
-					merger.mergeBasic(m1.getExternalReference(), m2.getExternalReference(), this::setExternalReference);
+					merger.mergeRosetta(getValue(), o.getValue(), this::setValueBuilder);
+					merger.mergeBasic(getGlobalReference(), o.getGlobalReference(), this::setGlobalReference);
+					merger.mergeBasic(getExternalReference(), o.getExternalReference(), this::setExternalReference);
 					return this;
 				}
 				
@@ -974,13 +971,12 @@ class MetaFieldGenerator {
 			}
 
 			@Override
-			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder merge(RosettaModelObjectBuilder b1, RosettaModelObjectBuilder b2, BuilderMerger merger) {
-				BasicReferenceWithMeta«type.name.toFirstUpper»Builder m1 = (BasicReferenceWithMeta«type.name.toFirstUpper»Builder) b1;
-				BasicReferenceWithMeta«type.name.toFirstUpper»Builder m2 = (BasicReferenceWithMeta«type.name.toFirstUpper»Builder) b2;
+			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+				BasicReferenceWithMeta«type.name.toFirstUpper»Builder o = (BasicReferenceWithMeta«type.name.toFirstUpper»Builder) other;
 				
-				merger.mergeBasic(m1.getValue(), m2.getValue(), this::setValue);
-				merger.mergeBasic(m1.getGlobalReference(), m2.getGlobalReference(), this::setGlobalReference);
-				merger.mergeBasic(m1.getExternalReference(), m2.getExternalReference(), this::setExternalReference);
+				merger.mergeBasic(getValue(), o.getValue(), this::setValue);
+				merger.mergeBasic(getGlobalReference(), o.getGlobalReference(), this::setGlobalReference);
+				merger.mergeBasic(getExternalReference(), o.getExternalReference(), this::setExternalReference);
 				return this;
 			}
 			

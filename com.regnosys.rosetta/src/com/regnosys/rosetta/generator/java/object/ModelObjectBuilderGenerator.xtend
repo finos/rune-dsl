@@ -19,6 +19,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension com.regnosys.rosetta.generator.util.Util.*
+import java.util.function.Consumer
 
 class ModelObjectBuilderGenerator {
 	
@@ -120,29 +121,28 @@ class ModelObjectBuilderGenerator {
     private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RosettaType type, boolean hasSuperType, JavaNames names) '''
 		«val builderName = type.builderName»
 		@Override
-		public «builderName» merge(RosettaModelObjectBuilder b1, RosettaModelObjectBuilder b2, BuilderMerger merger) {
+		public «builderName» merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
 			«IF hasSuperType»
-				super.merge(b1, b2, merger);
+				super.merge(other, merger);
 				
 			«ENDIF»
-			«builderName» m1 = («builderName») b1;
-			«builderName» m2 = («builderName») b2;
+			«builderName» o = («builderName») other;
 			
 			«FOR a : attributes.filter[isRosettaType || hasMetas]»
 				«val attributeName = a.name.toFirstUpper»
 				«IF a.multiple»
-					merger.mergeRosetta(m1.get«attributeName»(), m2.get«attributeName»(), this::getOrCreate«attributeName», this::add«attributeName»Builder);
+					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::getOrCreate«attributeName», this::add«attributeName»Builder);
 				«ELSE»
-					merger.mergeRosetta(m1.get«attributeName»(), m2.get«attributeName»(), this::getOrCreate«attributeName», this::set«attributeName»Builder);
+					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::set«attributeName»Builder);
 				«ENDIF»
 			«ENDFOR»
 			
 			«FOR a : attributes.filter[!isRosettaType && !hasMetas]»
 				«val attributeName = a.name.toFirstUpper»
 				«IF a.multiple»
-					merger.mergeBasic(m1.get«attributeName»(), m2.get«attributeName»(), (java.util.function.Consumer<«names.toJavaType(a.type)»>) this::add«attributeName»);
+					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), («Consumer»<«names.toJavaType(a.type)»>) this::add«attributeName»);
 				«ELSE»
-					merger.mergeBasic(m1.get«attributeName»(), m2.get«attributeName»(), this::set«attributeName»);
+					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), this::set«attributeName»Builder);
 				«ENDIF»
 			«ENDFOR»
 			return this;
