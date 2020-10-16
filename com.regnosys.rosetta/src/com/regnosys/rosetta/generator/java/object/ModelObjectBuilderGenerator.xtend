@@ -68,9 +68,9 @@ class ModelObjectBuilderGenerator {
 			public «builderName(c)» prune() {
 				«IF c.hasSuperType»super.prune();«ENDIF»
 				«FOR attribute : c.expandedAttributes»
-					«IF !attribute.isMultiple && (attribute.isRosettaType || attribute.hasMetas)»
+					«IF !attribute.isMultiple && (attribute.isDataType || attribute.hasMetas)»
 						if («attribute.name»!=null && !«attribute.name».prune().hasData()) «attribute.name» = null;
-					«ELSEIF attribute.isMultiple && attribute.isRosettaType || attribute.hasMetas»
+					«ELSEIF attribute.isMultiple && attribute.isDataType || attribute.hasMetas»
 						«attribute.name» = «Optional».ofNullable(«attribute.name»).map(l->l.stream().filter(b->b!=null).map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList())).filter(b->!b.isEmpty()).orElse(null);
 					«ENDIF»
 				«ENDFOR»
@@ -128,7 +128,7 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 			«builderName» o = («builderName») other;
 			
-			«FOR a : attributes.filter[isRosettaType || hasMetas]»
+			«FOR a : attributes.filter[isDataType || hasMetas]»
 				«val attributeName = a.name.toFirstUpper»
 				«IF a.multiple»
 					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::getOrCreate«attributeName», this::add«attributeName»Builder);
@@ -137,7 +137,7 @@ class ModelObjectBuilderGenerator {
 				«ENDIF»
 			«ENDFOR»
 			
-			«FOR a : attributes.filter[!isRosettaType && !hasMetas]»
+			«FOR a : attributes.filter[!isDataType && !hasMetas]»
 				«val attributeName = a.name.toFirstUpper»
 				«IF a.multiple»
 					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), («Consumer»<«names.toJavaType(a.type)»>) this::add«attributeName»);
@@ -155,7 +155,7 @@ class ModelObjectBuilderGenerator {
 				return «attribute.name»;
 			}
 			
-			«IF attribute.isRosettaType || attribute.hasMetas»
+			«IF attribute.isDataType || attribute.hasMetas»
 				«IF !attribute.cardinalityIsListValue»
 					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»() {
 						if («attribute.name»!=null) {
@@ -226,7 +226,7 @@ class ModelObjectBuilderGenerator {
 			}
 			
 			«ENDIF»
-			«IF attribute.isRosettaType || !attribute.metas.empty»
+			«IF attribute.isDataType || !attribute.metas.empty»
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle(names)» «attribute.name») {
 					if(this.«attribute.name» == null){
 						this.«attribute.name» = new «ArrayList»<>();
@@ -236,7 +236,7 @@ class ModelObjectBuilderGenerator {
 				}
 				
 			«ENDIF»
-			«IF attribute.isRosettaType && !attribute.metas.empty»
+			«IF attribute.isDataType && !attribute.metas.empty»
 				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
 					return add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
 				}
@@ -279,7 +279,7 @@ class ModelObjectBuilderGenerator {
 			}
 
 			«IF !attribute.metas.empty»
-				«IF attribute.isRosettaType»
+				«IF attribute.isDataType»
 					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
 						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
 					}
@@ -316,12 +316,12 @@ class ModelObjectBuilderGenerator {
 			«IF hasSuperType»if (super.hasData()) return true;«ENDIF»
 			«FOR attribute:attributes»    
 				«IF attribute.cardinalityIsListValue»
-					«IF attribute.isRosettaType»
+					«IF attribute.isDataType»
 						if (get«attribute.name.toFirstUpper»()!=null && get«attribute.name.toFirstUpper»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 					«ELSE»
 						if (get«attribute.name.toFirstUpper»()!=null && !get«attribute.name.toFirstUpper»().isEmpty()) return true;
 					«ENDIF»
-				«ELSEIF attribute.isRosettaType»
+				«ELSEIF attribute.isDataType»
 					if (get«attribute.name.toFirstUpper»()!=null && get«attribute.name.toFirstUpper»().hasData()) return true;
 				«ELSE»
 					if (get«attribute.name.toFirstUpper»()!=null) return true;
@@ -339,7 +339,7 @@ class ModelObjectBuilderGenerator {
 	private def StringConcatenationClient toBuilderTypeSingle(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.hasMetas) {
 			val buildername = if (attribute.refIndex >= 0) {
-					if (attribute.isRosettaType)
+					if (attribute.isDataType)
 						'''ReferenceWithMeta«attribute.type.name.toFirstUpper».ReferenceWithMeta«attribute.type.name.toFirstUpper»Builder'''
 					else
 						'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper».BasicReferenceWithMeta«attribute.type.name.toFirstUpper»Builder'''
@@ -353,7 +353,7 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	private def StringConcatenationClient toBuilderTypeUnderlying(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isRosettaType) '''«attribute.type.name».«attribute.type.name»Builder'''
+		if (attribute.isDataType) '''«attribute.type.name».«attribute.type.name»Builder'''
 		else '''«names.toJavaType(attribute.type)»'''
 	}
 	
@@ -366,6 +366,6 @@ class ModelObjectBuilderGenerator {
 		}
 	}
 	private def needsBuilder(ExpandedAttribute attribute){
-		attribute.isRosettaType || attribute.hasMetas
+		attribute.isDataType || attribute.hasMetas
 	}
 }

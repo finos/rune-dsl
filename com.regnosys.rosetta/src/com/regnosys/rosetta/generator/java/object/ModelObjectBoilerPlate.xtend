@@ -68,7 +68,7 @@ class ModelObjectBoilerPlate {
 	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names) {
 		if(!attribute.hasMetas) return '''«names.toJavaType(attribute.type)»'''
 		val metaType = if (attribute.refIndex >= 0) {
-				if (attribute.isRosettaType)
+				if (attribute.isDataType)
 					'''ReferenceWithMeta«attribute.type.name.toFirstUpper»'''
 				else
 					'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper»'''
@@ -166,7 +166,7 @@ class ModelObjectBoilerPlate {
 				super.process(path, processor);
 			«ENDIF»
 			
-			«FOR a : c.expandedAttributes.filter[!(isRosettaType || hasMetas)]»
+			«FOR a : c.expandedAttributes.filter[!(isDataType || hasMetas)]»
 				«IF a.multiple»
 					«a.name».stream().forEach(a->processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, a, this«a.metaFlags»));
 				«ELSE»
@@ -174,7 +174,7 @@ class ModelObjectBoilerPlate {
 				«ENDIF»
 			«ENDFOR»
 			
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[isRosettaType || hasMetas]»
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
 			«ENDFOR»
 		}
@@ -188,11 +188,11 @@ class ModelObjectBoilerPlate {
 				super.process(path, processor);
 			«ENDIF»
 			
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isRosettaType || hasMetas)]»
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
 				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, «a.name», this«a.metaFlags»);
 			«ENDFOR»
 			
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[isRosettaType || hasMetas]»
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
 			«ENDFOR»
 		}
