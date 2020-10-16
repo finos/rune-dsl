@@ -26,15 +26,16 @@ public abstract class RosettaModelObject {
 		return c.stream();
 	}
 	
-	protected <R extends RosettaModelObject> void processRosetta(RosettaPath path, Processor processor, Class<R> clazz, RosettaModelObject child, AttributeMeta... metas) {
+	protected <R extends RosettaModelObject> void processRosetta(RosettaPath path, Processor processor, Class<R> clazz, R child, AttributeMeta... metas) {
 		processor.processRosetta(path, clazz, child, this, metas);
 		if (child!=null) child.process(path, processor);
 	}
-	protected <R extends RosettaModelObject> void processRosetta(RosettaPath path, Processor processor, Class<R> clazz, List<? extends RosettaModelObject> children, AttributeMeta... metas) {
+	
+	protected <R extends RosettaModelObject> void processRosetta(RosettaPath path, Processor processor, Class<R> clazz, List<R> children, AttributeMeta... metas) {
 		if (children!=null)  {
 			int index=0;
-			for (Iterator<? extends RosettaModelObject> iterator = children.iterator(); iterator.hasNext();) {
-				RosettaModelObject child = iterator.next();
+			for (Iterator<R> iterator = children.iterator(); iterator.hasNext();) {
+				R child = iterator.next();
 				if (child!=null) {
 					RosettaPath indexedPath = path.withIndex(index);
 					processor.processRosetta(path, clazz, child, this, metas);
