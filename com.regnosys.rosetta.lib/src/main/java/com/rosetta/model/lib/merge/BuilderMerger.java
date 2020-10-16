@@ -8,6 +8,8 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder;
 
 public interface BuilderMerger {
 	
+	<B extends RosettaModelObjectBuilder> B merge(B left, B right);
+	
 	<B extends RosettaModelObjectBuilder> void mergeRosetta(B left, B right, Consumer<B> setter);
 
 	<B extends RosettaModelObjectBuilder> void mergeRosetta(List<B> left, List<B> right, Function<Integer, B> getOrCreate, Consumer<B> add);
