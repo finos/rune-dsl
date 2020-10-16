@@ -26,7 +26,7 @@ public abstract class RosettaModelObjectBuilder {
 	 * will get reduced to 
 	 * A {b=null}
 	 */
-	public abstract RosettaModelObjectBuilder prune();
+	public abstract <B extends RosettaModelObjectBuilder> B prune();
 	
 	/**
 	 * @return true if any of the primitive fields on this builder are set or if and of the builder attributes have data
@@ -91,5 +91,5 @@ public abstract class RosettaModelObjectBuilder {
 		}
 	}
 	
-	public abstract RosettaModelObjectBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger);
+	public abstract <B extends RosettaModelObjectBuilder> B merge(B other, BuilderMerger merger);
 }
