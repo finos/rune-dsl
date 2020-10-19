@@ -5,10 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 
-import com.rosetta.model.lib.merge.BuilderMerger;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
+import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 
 /**

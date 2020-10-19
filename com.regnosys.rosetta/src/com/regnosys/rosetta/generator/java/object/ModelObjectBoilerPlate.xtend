@@ -202,10 +202,10 @@ class ModelObjectBoilerPlate {
     private def getMetaFlags(ExpandedAttribute attribute) {
 		val result = new StringBuilder()
 		if (attribute.type.isMetaType) {
-			result.append(", AttributeMeta.IS_META")
+			result.append(", AttributeMeta.META")
 		}
 		if (attribute.hasIdAnnotation) {
-			result.append(", AttributeMeta.IS_GLOBAL_KEY_FIELD")
+			result.append(", AttributeMeta.GLOBAL_KEY_FIELD")
 		}
 		result.toString
 	}
