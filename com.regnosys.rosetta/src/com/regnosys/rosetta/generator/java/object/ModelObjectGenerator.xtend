@@ -34,32 +34,34 @@ class ModelObjectGenerator {
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaConfigExtension
-	
+
 	def generate(JavaNames javaNames, IFileSystemAccess2 fsa, Data data, String version) {
 		fsa.generateFile(javaNames.packages.model.directoryName + '/' + data.name + '.java',
 			generateRosettaClass(javaNames, data, version))
 	}
 
-	
+
 	private def hasSynonymPath(ExpandedSynonym synonym) {
 		synonym !== null && synonym.values.exists[path!==null]
 	}
-	
+
 	private def hasSynonymPath(RosettaSynonymBase p) {
 		return hasSynonymPath(p.toRosettaExpandedSynonym)
 	}
-	
+
 	private def generateRosettaClass(JavaNames javaNames, Data d, String version) {
 		val classBody = tracImports(d.classBody(javaNames, version))
 		'''
 			package «javaNames.packages.model.name»;
-			
+
 			«FOR imp : classBody.imports»
 				import «imp»;
 			«ENDFOR»
 «««			TODO fix imports below. See com.regnosys.rosetta.generator.java.object.ModelObjectBuilderGenerator.process(List<ExpandedAttribute>, boolean)
 
+			import com.rosetta.model.lib.RosettaModelObjectBuilder;
 			import com.rosetta.model.lib.path.RosettaPath;
+			import com.rosetta.model.lib.process.BuilderMerger;
 			import com.rosetta.model.lib.process.BuilderProcessor;
 			import com.rosetta.model.lib.process.Processor;
 			import com.rosetta.model.lib.process.AttributeMeta;
@@ -67,7 +69,7 @@ class ModelObjectGenerator {
 			«FOR imp : classBody.staticImports»
 				import static «imp»;
 			«ENDFOR»
-			
+
 			«classBody.toString»
 		'''
 	}
@@ -83,13 +85,13 @@ class ModelObjectGenerator {
 			«d.rosettaClass(names)»
 
 			«d.staticBuilderMethod»
-		
+
 			«d.builderClass(names)»
-		
+
 			«d.boilerPlate(names)»
 		}
 	'''
-	
+
 	def boolean globalKeyRecursive(Data class1) {
 		return class1.globalKey || (class1.superType !== null && class1.superType.globalKeyRecursive)
 	}
@@ -97,29 +99,29 @@ class ModelObjectGenerator {
 	def private hasQualifiedAttribute(Data c) {
 		c.qualifiedAttribute !== null && c.qualifiedClass !== null
 	}
-	
+
 	def private getQualifiedAttribute(Data c) {
 		c.allSuperTypes.flatMap[expandedAttributes].findFirst[qualified]?.name
 	}
-	
+
 	def private getQualifiedClass(Data c) {
 		val allExpandedAttributes = c.allSuperTypes.flatMap[expandedAttributes].toList
 		if(!allExpandedAttributes.stream.anyMatch[qualified])
 			return null
-		
+
 		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].type.name
-		var qualifiedRootClassType = switch qualifiedClassType { 
+		var qualifiedRootClassType = switch qualifiedClassType {
 			case RQualifiedType.PRODUCT_TYPE.qualifiedType: c.findProductRootName
 			case RQualifiedType.EVENT_TYPE.qualifiedType: c.findEventRootName
 			default: throw new IllegalArgumentException("Unknown qualifiedType " + qualifiedClassType)
 		}
-		
+
 		if(qualifiedRootClassType === null)
 			throw new IllegalArgumentException("QualifiedType " + qualifiedClassType + " must have qualifiable root class")
-			
+
 		return qualifiedRootClassType
 	}
-	
+
 	private def StringConcatenationClient rosettaClass(Data c, JavaNames names) {
 		val expandedAttributes = c.expandedAttributes.filter[!it.overriding]
 		'''
@@ -165,9 +167,9 @@ class ModelObjectGenerator {
 		}
 		'''
 	}
-	
+
 	private def StringConcatenationClient toJavaType(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isMultiple) '''«List»<«attribute.toJavaTypeSingle(names)»>''' 
+		if (attribute.isMultiple) '''«List»<«attribute.toJavaTypeSingle(names)»>'''
 		else attribute.toJavaTypeSingle(names)
 	}
 
@@ -175,7 +177,7 @@ class ModelObjectGenerator {
 		if (!attribute.hasMetas)
 			return '''«names.toJavaType(attribute.type)»'''
 		val name = if (attribute.refIndex >= 0) {
-				if (attribute.isRosettaClassOrData)
+				if (attribute.isDataType)
 					'''ReferenceWithMeta«attribute.type.name.toFirstUpper»'''
 				else
 					'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper»'''
@@ -183,8 +185,8 @@ class ModelObjectGenerator {
 				'''FieldWithMeta«attribute.type.name.toFirstUpper»'''
 		return '''«names.toMetaType(attribute, name)»'''
 	}
-	
-	private def StringConcatenationClient contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''		
+
+	private def StringConcatenationClient contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''
 		«FOR synonym : synonyms.filter[value!==null] »
 			«val path = if (hasSynonymPath(synonym)) ''', path="«synonym.value.path»" ''' else ''»
 			«val maps = if (synonym.value.maps > 0) ''', maps=«synonym.value.maps»''' else ''»
@@ -194,8 +196,8 @@ class ModelObjectGenerator {
 			«ENDFOR»
 		«ENDFOR»
 	'''
-	
-	private def StringConcatenationClient contributeSynonyms(List<ExpandedSynonym> synonyms) '''		
+
+	private def StringConcatenationClient contributeSynonyms(List<ExpandedSynonym> synonyms) '''
 		«FOR synonym : synonyms »
 			«val maps = if (synonym.values.exists[v|v.maps>1]) ''', maps=«synonym.values.map[maps].join(",")»''' else ''»
 			«FOR source : synonym.sources»
@@ -209,7 +211,7 @@ class ModelObjectGenerator {
 			«ENDFOR»
 		«ENDFOR»
 	'''
-	
+
 
 	private def staticBuilderMethod(Data c) '''
 		public static «builderName(c)» builder() {
@@ -218,13 +220,13 @@ class ModelObjectGenerator {
 	'''
 
 	private def StringConcatenationClient attributeFromBuilder(ExpandedAttribute attribute) {
-		if(attribute.isRosettaClassOrData || attribute.hasMetas) {
+		if(attribute.isDataType || attribute.hasMetas) {
 			'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
 		} else {
 			'''builder.get«attribute.name.toFirstUpper»()'''
-		} 
+		}
 	}
-	
+
 	private def StringConcatenationClient buildRosettaObject(ExpandedAttribute attribute) {
 		if(attribute.cardinalityIsListValue) {
 			'''list -> list.stream().filter(«Objects»::nonNull).map(f->f.build()).filter(«Objects»::nonNull).collect(«Collectors».toList())'''
@@ -232,5 +234,5 @@ class ModelObjectGenerator {
 			'''f->f.build()'''
 		}
 	}
-	
+
 }

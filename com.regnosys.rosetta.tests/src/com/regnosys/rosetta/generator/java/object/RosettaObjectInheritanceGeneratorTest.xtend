@@ -32,7 +32,7 @@ class RosettaObjectInheritanceGeneratorTest {
 			
 			type D extends C:
 				dd string (0..1)
-			
+
 		'''.generateCode
 
 		val classes = genereated.compileToClasses
@@ -46,7 +46,7 @@ class RosettaObjectInheritanceGeneratorTest {
 		assertEquals(classC.superclass, classB)
 		assertEquals(classB.superclass, classA)
 	}
-	
+
 	@Test
 	def void shouldGenerateJavaClassWithOverridenAttributesAcrossNamespaces() {
 		val generated = newArrayList(
@@ -64,7 +64,7 @@ class RosettaObjectInheritanceGeneratorTest {
 		''',
 		'''
 			namespace "original"
-			
+
 			type A:
 				aa string (0..1)
 			

@@ -26,7 +26,7 @@ public interface Processor {
      * @param parent the RosettaModelObject which contains this object as an attribute
      * @param metas Flags indicating meta information about the attribute
 	 */
-	<R extends RosettaModelObject> void processRosetta(RosettaPath path, Class<? extends R> rosettaType, 
+	<R extends RosettaModelObject> void processRosetta(RosettaPath path, Class<R> rosettaType, 
     		R instance, RosettaModelObject parent, AttributeMeta... metas);
     
 	/**

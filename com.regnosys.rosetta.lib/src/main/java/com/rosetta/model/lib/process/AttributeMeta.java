@@ -8,10 +8,18 @@ public enum AttributeMeta {
 	/**
 	 * Is this field defined as a meta field
 	 */
-	IS_META,
+	META,
+	/**
+	 * Is this external key, e.g. with "metadata key" annotation on a type
+	 */
+	EXTERNAL_KEY,
+	/**
+	 * Is this global key, e.g. with "metadata key" annotation on a type
+	 */
+	GLOBAL_KEY,
 	/**
 	 * Is this field defined as a global key, e.g. with "metadata id" annotation
 	 */
-	IS_GLOBAL_KEY_FIELD;
+	GLOBAL_KEY_FIELD;
 
 }

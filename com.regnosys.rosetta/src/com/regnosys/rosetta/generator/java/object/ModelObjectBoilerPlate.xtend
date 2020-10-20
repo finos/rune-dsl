@@ -15,6 +15,7 @@ import java.util.List
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import java.util.Objects
 
 class ModelObjectBoilerPlate {
 
@@ -67,7 +68,7 @@ class ModelObjectBoilerPlate {
 	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names) {
 		if(!attribute.hasMetas) return '''«names.toJavaType(attribute.type)»'''
 		val metaType = if (attribute.refIndex >= 0) {
-				if (attribute.isRosettaClassOrData)
+				if (attribute.isDataType)
 					'''ReferenceWithMeta«attribute.type.name.toFirstUpper»'''
 				else
 					'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper»'''
@@ -150,7 +151,7 @@ class ModelObjectBoilerPlate {
 	«IF a.cardinalityIsListValue»
 		if (!«ListEquals».listEquals(«a.name», _that.«a.name»)) return false;
 	«ELSE»
-		if («a.name» != null ? !«a.name».equals(_that.«a.name») : _that.«a.name» != null) return false;
+		if (!«Objects».equals(«a.name.toFirstLower», _that.«a.name.toFirstLower»)) return false;
 	«ENDIF»
 	'''
 
@@ -165,7 +166,7 @@ class ModelObjectBoilerPlate {
 				super.process(path, processor);
 			«ENDIF»
 			
-			«FOR a : c.expandedAttributes.filter[!(isRosettaClassOrData || hasMetas)]»
+			«FOR a : c.expandedAttributes.filter[!(isDataType || hasMetas)]»
 				«IF a.multiple»
 					«a.name».stream().forEach(a->processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, a, this«a.metaFlags»));
 				«ELSE»
@@ -173,7 +174,7 @@ class ModelObjectBoilerPlate {
 				«ENDIF»
 			«ENDFOR»
 			
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[isRosettaClassOrData || hasMetas]»
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
 			«ENDFOR»
 		}
@@ -187,11 +188,11 @@ class ModelObjectBoilerPlate {
 				super.process(path, processor);
 			«ENDIF»
 			
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isRosettaClassOrData || hasMetas)]»
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
 				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, «a.name», this«a.metaFlags»);
 			«ENDFOR»
 			
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[isRosettaClassOrData || hasMetas]»
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
 			«ENDFOR»
 		}
@@ -201,10 +202,10 @@ class ModelObjectBoilerPlate {
     private def getMetaFlags(ExpandedAttribute attribute) {
 		val result = new StringBuilder()
 		if (attribute.type.isMetaType) {
-			result.append(", AttributeMeta.IS_META")
+			result.append(", AttributeMeta.META")
 		}
 		if (attribute.hasIdAnnotation) {
-			result.append(", AttributeMeta.IS_GLOBAL_KEY_FIELD")
+			result.append(", AttributeMeta.GLOBAL_KEY_FIELD")
 		}
 		result.toString
 	}
