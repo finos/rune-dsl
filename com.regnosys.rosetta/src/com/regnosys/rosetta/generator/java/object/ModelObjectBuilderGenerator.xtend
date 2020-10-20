@@ -131,7 +131,7 @@ class ModelObjectBuilderGenerator {
 			«FOR a : attributes.filter[isDataType || hasMetas]»
 				«val attributeName = a.name.toFirstUpper»
 				«IF a.multiple»
-					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::getOrCreate«attributeName», this::add«attributeName»Builder);
+					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::getOrCreate«attributeName»);
 				«ELSE»
 					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::set«attributeName»Builder);
 				«ENDIF»
