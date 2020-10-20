@@ -7,12 +7,12 @@ import java.util.function.Function;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 
 /**
- * Defines o1 processor that merges two RosettaModelObjectBuilder instances into o1 single instance.
+ * Defines a processor that merges two RosettaModelObjectBuilder instances into o1 single instance.
  * 
  * Implementations of this interface are designed to be used with the RosettaModelObjectBuilder merge method to 
- * perform visitor pattern processing on the object tree, updating the underlying object.
+ * perform visitor pattern processing on the object, updating the underlying object as it traverses the tree.
  * 
- * Typically used to merge or un-merge an object with "template".
+ * Typically used to merge or un-merge an object with a "template".
  * 
  * @see com.rosetta.model.lib.RosettaModelObjectBuilder
  */
