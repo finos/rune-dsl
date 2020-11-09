@@ -54,12 +54,21 @@ Then the definition of the type lists its component attributes. Each attribute i
 
 .. note:: The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as ``type``, so the start of a new definition marks the end of the previous one. For readability more generally, the Rosetta DSL looks to eliminate all the delimiters that are often used in traditional programming languages (such as curly braces ``{`` ``}`` or semi-colon ``;``).
 
-Each attribute can be specified either as a basic type, a type or an enumeration. The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
+Each attribute can be specified either as a basic type, record type, data type or enumeration type. The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
 
 * Text - ``string``
 * Number - ``int`` (for integer) and ``number`` (for float)
 * Logic - ``boolean``
-* Date and Time - ``date``, ``time`` and ``zonedDateTime``
+* Time - ``time``
+
+The set of record types available in the Rosetta DSL are controlled at the language level by the ``recordType`` definition as below:
+
+* Date and Time - ``date`` and ``zonedDateTime``
+
+Record types are distinct from data types in the following ways:
+
+* Record types are pure data definitions and do not allow specification of validation logic in ``conditions``.
+* Record types are handled specially in the code-generators as so form part of the Rosetta DSL, rather than any Rosetta base domain model. 
 
 The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase`_), while attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase). Type names need to be unique across the model. All those requirements are controlled by the Rosetta DSL grammar.
 
