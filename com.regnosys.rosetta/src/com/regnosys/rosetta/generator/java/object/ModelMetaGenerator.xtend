@@ -26,6 +26,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import java.util.Collections
 
 class ModelMetaGenerator {
 
@@ -78,17 +79,19 @@ class ModelMetaGenerator {
 						«ENDFOR»
 					);
 				}
-				«IF !qualifierFuncs.nullOrEmpty»
 				
 				@Override
 				public «List»<«java.util.function.Function»<? super «dataClass», «QualifyResult»>> getQualifyFunctions(«QualifyFunctionFactory» factory) {
+					«IF !qualifierFuncs.nullOrEmpty»
 					return Arrays.asList(
 						«FOR qf : qualifierFuncs SEPARATOR ','»
 							factory.create(«javaNames.toJavaType(qf)».class)
 						«ENDFOR»
 					);
+					«ELSE»
+					return «Collections».emptyList();
+					«ENDIF»
 				}
-				«ENDIF»
 				
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
