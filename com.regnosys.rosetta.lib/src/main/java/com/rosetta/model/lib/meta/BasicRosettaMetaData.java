@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
 import com.rosetta.model.lib.qualify.QualifyResult;
 import com.rosetta.model.lib.validation.Validator;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
@@ -20,12 +21,12 @@ public class BasicRosettaMetaData<T extends RosettaModelObject> implements Roset
 	public List<Validator<? super T>> choiceRuleValidators() {
 		return Collections.emptyList();
 	}
-
+	
 	@Override
-	public List<Function<? super T, QualifyResult>> getQualifyFunctions() {
+	public List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
 		return Collections.emptyList();
 	}
-
+	
 	@Override
 	public Validator<T> validator() {
 		return null;
@@ -35,5 +36,4 @@ public class BasicRosettaMetaData<T extends RosettaModelObject> implements Roset
 	public ValidatorWithArg<T, String> onlyExistsValidator() {
 		return null;
 	}
-
 }

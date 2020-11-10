@@ -135,11 +135,8 @@ ListLiteral:
 
 // old stuff
 RosettaRootElement:
-	Enumeration |
-	RosettaWorkflowRule |
-	RosettaAlias | RosettaProduct |
+	Enumeration | RosettaWorkflowRule | RosettaAlias | 
 	RosettaOrganisation | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | RosettaStereotypeValue |
-	RosettaEvent |
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaBlueprint | RosettaQualifiedType | RosettaCalculationType  | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaBlueprintReport
@@ -542,30 +539,6 @@ RosettaAliasExpression returns RosettaExpression:
 		({RosettaBinaryOperation.left=current} operator='and' right=RosettaAliasExpression)
 		| ({RosettaBinaryOperation.left=current} operator='or' right=RosettaAliasExpression)
 	)?
-;
-
-
-
-/**********************************************************************
- * Product
- */
- 
-RosettaProduct:
-	'isProduct' RosettaNamed RosettaDefinable?
- 	(synonyms += RosettaSynonym)*
-	expression = RosettaExpression
-;
-
-
-
-/**********************************************************************
- * Event
- */
- 
-RosettaEvent:
-	'isEvent' RosettaNamed RosettaDefinable?
- 	(synonyms += RosettaSynonym)*
- 	expression = RosettaExpression
 ;
 
 

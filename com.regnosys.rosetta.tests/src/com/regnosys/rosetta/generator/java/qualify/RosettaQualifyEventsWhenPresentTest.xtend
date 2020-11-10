@@ -29,6 +29,8 @@ class RosettaQualifyEventsWhenPresentTest {
 	@BeforeEach
 	def void setUp() {
 		val code = '''
+			isEvent root Foo;
+			
 			type Foo:
 				bar Bar (0..*)
 				baz Baz (0..1)
@@ -41,8 +43,12 @@ class RosettaQualifyEventsWhenPresentTest {
 				bazValue number (0..1)
 				other number (0..1)
 			
-			isEvent WhenPresentExpr
-				Foo -> baz -> bazValue when present = 15
+			func Qualify_WhenPresentEvent:
+				[qualification BusinessEvent]
+				inputs: foo Foo(1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					(foo -> baz -> bazValue is absent or foo -> baz -> bazValue = 15)
 			'''.generateCode
 		//println(code)
 		classes = code.compileToClasses
@@ -55,7 +61,7 @@ class RosettaQualifyEventsWhenPresentTest {
 
 		// Assert Event
 		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "WhenPresentExpr")
+		val result = getQualifyResult(results, "WhenPresentEvent")
 		assertTrue(result.success, 'Unexpected success result')
 		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
@@ -67,7 +73,7 @@ class RosettaQualifyEventsWhenPresentTest {
 
 		// Assert Event
 		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "WhenPresentExpr")
+		val result = getQualifyResult(results, "WhenPresentEvent")
 		assertFalse(result.success)
 		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
@@ -79,7 +85,7 @@ class RosettaQualifyEventsWhenPresentTest {
 
 		// Assert Event
 		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "WhenPresentExpr")
+		val result = getQualifyResult(results, "WhenPresentEvent")
 		assertTrue(result.success, 'Unexpected success result')
 		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}

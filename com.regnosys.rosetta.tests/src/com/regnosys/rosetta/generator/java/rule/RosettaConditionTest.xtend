@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.qualify
+package com.regnosys.rosetta.generator.java.rule
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
@@ -22,11 +22,10 @@ import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaQualifyEventsDataRuleTest {
+class RosettaConditionTest {
 	
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension DataRuleHelper
-	@Inject extension QualifyTestHelper
 	
 	Map<String, Class<?>> classes
 	
@@ -60,12 +59,6 @@ class RosettaQualifyEventsDataRuleTest {
 			type Baz:
 				bazValue number (0..1)
 				other number (0..1)
-			
-«««			 TODO: convert to func
-			isEvent ExprAndDataRulesOrDataRules
-				Foo -> baz -> other when present = 10
-				and Foo -> bar -> before exists
-				and Foo -> bar -> after exists
 			'''.generateCode
 //		println(code)
 		classes = code.compileToClasses
@@ -91,13 +84,6 @@ class RosettaQualifyEventsDataRuleTest {
 		
 		// BazFeatureCallGreaterThanLiteralFive (success)
 		assertCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive', true, "if baz exists then baz -> other > 5")	
-		
-		// Assert Event
-		
-		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "ExprAndDataRulesOrDataRules")
-		assertTrue(result.success, 'Unexpected success result')
-		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
 
 	@Test
@@ -119,13 +105,6 @@ class RosettaQualifyEventsDataRuleTest {
 				
 		// BazFeatureCallGreaterThanLiteralFive (success)
 		assertCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive', true, "if baz exists then baz -> other > 5")	
-						
-		// Assert Event
-		
-		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "ExprAndDataRulesOrDataRules")
-		assertTrue(result.success, 'Expected success result')
-		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
 	
 	@Test
@@ -159,13 +138,6 @@ class RosettaQualifyEventsDataRuleTest {
 		assertFalse(dataRuleBazGreaterThanFive.success)
 		assertThat(dataRuleBazGreaterThanFive.definition, is("if baz exists then baz -> other > 5"))
 		assertThat(dataRuleBazGreaterThanFive.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [5]"))
-		
-		// Assert Event
-		
-		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "ExprAndDataRulesOrDataRules")
-		assertFalse(result.success, 'Unexpected success result')
-		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
 
 	// Util methods

@@ -32,6 +32,8 @@ class RosettaQualifyEventsExistsTest {
 	@BeforeEach
 	def void setUp() {
 		val code = '''
+			isEvent root Foo;
+			
 			type Foo:
 				bar Bar (0..*)
 				baz Baz (0..1)
@@ -44,83 +46,112 @@ class RosettaQualifyEventsExistsTest {
 				bazValue number (0..1)
 				other number (0..1)
 			
-			isEvent Exists
-				Foo -> bar -> before exists
 			
-			isEvent SingleExists
-				Foo -> bar -> before single exists
+			func Qualify_Exists:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before exists
 			
-			isEvent MultipleExists
-				Foo -> bar -> before multiple exists
+			func Qualify_SingleExists:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before single exists
 			
-			isEvent OnlyExists
-				Foo -> bar -> before only exists
+«««			func Qualify_MultipleExists:
+«««				[qualification BusinessEvent]
+«««				inputs: foo Foo (1..1)
+«««				output: is_event boolean (1..1)
+«««				assign-output is_event:
+«««					foo -> bar -> before multiple exists
 			
-			isEvent OnlySingleExists
-				Foo -> bar -> before only single exists
+			func Qualify_OnlyExists:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before only exists
 			
-			isEvent OnlyMultipleExists
-				Foo -> bar -> before only multiple exists
+			func Qualify_OnlySingleExists:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before only single exists
+			
+«««			func Qualify_OnlyMultipleExists:
+«««				[qualification BusinessEvent]
+«««				inputs: foo Foo (1..1)
+«««				output: is_event boolean (1..1)
+«««				assign-output is_event:
+«««					foo -> bar -> before only mulitple exists
 
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleSeparateOr_NoAliases_Exists
-				Foo -> bar -> before exists or Foo -> bar -> after exists
+			func Qualify_MultipleSeparateOr_NoAliases_Exists:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before exists or foo -> bar -> after exists
 
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOr_NoAliases_Exists
-				( Foo -> bar -> before or Foo -> bar -> after or Foo -> baz -> other ) exists
+			func Qualify_MultipleOr_NoAliases_Exists:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					( foo -> bar -> before or foo -> bar -> after or foo -> baz -> other ) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOrBranchNode_NoAliases_Exists
-				( Foo -> bar or Foo -> baz ) exists
+			func Qualify_MultipleOrBranchNode_NoAliases_Exists:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					( foo -> bar or foo -> baz ) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleAnd_NoAliases_Exists
-				( Foo -> bar -> before and Foo -> bar -> after and Foo -> baz -> other ) exists
+			func Qualify_MultipleAnd_NoAliases_Exists:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					( foo -> bar -> before and foo -> bar -> after and foo -> baz -> other ) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOrAnd_NoAliases_Exists
-				Foo -> bar -> before exists or ( Foo -> bar -> after and Foo -> baz -> other ) exists
+			func Qualify_MultipleOrAnd_NoAliases_Exists:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before exists or ( foo -> bar -> after and foo -> baz -> other ) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOrAnd_NoAliases_Exists2
-				(Foo -> bar -> before and Foo -> bar -> after) exists or Foo -> baz -> other exists or Foo -> baz -> bazValue exists
+			func Qualify_MultipleOrAnd_NoAliases_Exists2:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					(foo -> bar -> before and foo -> bar -> after) exists or foo -> baz -> other exists or foo -> baz -> bazValue exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOrAnd_NoAliases_Exists3
-				(Foo -> bar -> before or Foo -> bar -> after) exists or (Foo -> baz -> other and Foo -> baz -> bazValue) exists
-
-«««			TODO tests compilation only, add unit test
-			isEvent AliasExists
-				aliasBefore exists
+			func Qualify_MultipleOrAnd_NoAliases_Exists3:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					(foo -> bar -> before or foo -> bar -> after) exists or (foo -> baz -> other and foo -> baz -> bazValue) exists
 			
 «««			TODO tests compilation only, add unit test
-			isEvent MultipleOr_SomeAliases_Exists
-				( Foo -> bar -> before or Foo -> bar -> after or aliasOther ) exists
-			
-«««			TODO tests compilation only, add unit test
-			isEvent MultipleOr_AllAliases_Exists
-				( aliasBefore or aliasAfter or aliasOther ) exists
-			
-«««			TODO tests compilation only, add unit test
-			isEvent MultipleOr_SingleAlias_Exists
-				aliasBeforeOrAfterOrOther exists
-			
-«««			TODO tests compilation only, add unit test
-			isEvent MultipleExistsWithOrAnd
-				Foo -> bar -> before exists or ( Foo -> baz -> other exists and Foo -> bar -> after exists ) or Foo -> baz -> bazValue exists
-			
-			alias aliasBefore
-				Foo -> bar -> before
-			
-			alias aliasAfter
-				Foo -> bar -> after
-			
-			alias aliasOther
-				Foo -> baz -> other
-			
-			alias aliasBeforeOrAfterOrOther
-				Foo -> bar -> before or Foo -> bar -> after or Foo -> baz -> other
+			func Qualify_MultipleExistsWithOrAnd:
+				[qualification BusinessEvent]
+				inputs: foo Foo (1..1)
+				output: is_event boolean (1..1)
+				assign-output is_event:
+					foo -> bar -> before exists or ( foo -> baz -> other exists and foo -> bar -> after exists ) or foo -> baz -> bazValue exists
 			'''.generateCode
 		//println(code)
 		classes = code.compileToClasses
@@ -135,22 +166,8 @@ class RosettaQualifyEventsExistsTest {
 		val results = createUtilAndGetAllResults(fooInstance)
 		assertEvent(results, "Exists", true, 1)
 		assertEvent(results, "SingleExists", true, 1)
-		assertEvent(results, "MultipleExists", false, 1)
 	}
 
-	@Test
-	def listWith2Elements_multipleExists_should_qualify() {
-		val barInstance1 = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(15)), of())
-		val barInstance2 = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(14)), of())
-		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance1, barInstance2))))
-
-		// Assert Event
-		val results = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results, "Exists", true, 1)
-		assertEvent(results, "SingleExists", false, 1)
-		assertEvent(results, "MultipleExists", true, 1)
-	}
-	
 	@Test
 	def listWith1Element_onlySingleExists_should_qualify() {
 		val barInstance = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(15)), of())
@@ -160,7 +177,6 @@ class RosettaQualifyEventsExistsTest {
 		val results = createUtilAndGetAllResults(fooInstance)
 		assertEvent(results, "OnlyExists", true, 1)
 		assertEvent(results, "OnlySingleExists", true, 1)
-		assertEvent(results, "OnlyMultipleExists", false, 1)
 	}
  
 	@Test
@@ -172,90 +188,9 @@ class RosettaQualifyEventsExistsTest {
 		val results = createUtilAndGetAllResults(fooInstance)
 		val result = getQualifyResult(results, "OnlySingleExists")
 		assertFalse(result.success, 'Expected onlySingleExists to fail because many fields are set on parent object')
-		assertThat('Error messages do not match', result.toString, is("QualifyResult.OnlySingleExists FAILURE [Result.Expression FAILURE Error: {[before] is not the only field set. Other set fields: [after]}]"))
-	}
-
-	@Test
-	def listWith2Elements_onlyMultipleExists_should_qualify() {
-		val barInstance1 = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(15)), of())
-		val barInstance2 = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(14)), of())
-		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance1, barInstance2))))
-
-		// Assert Event
-		val results = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results, "OnlyExists", true, 1)
-		assertEvent(results, "OnlySingleExists", false, 1)
-		assertEvent(results, "OnlyMultipleExists", true, 1)
-	}
-
-	@Test
-	def listWith2Elements_manyFieldsSetOnParentObject_onlyMultipleExists_should_not_qualify() {
-		val barInstance1 = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(15), 'after', BigDecimal.valueOf(10)), of())
-		val barInstance2 = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(14), 'after', BigDecimal.valueOf(10)), of())
-		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance1, barInstance2))))
-
-		// Assert Event
-		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "OnlyMultipleExists")
-		assertFalse(result.success, 'Expected onlyMultipleExists to fail because many fields are set on parent object')
-		assertThat('Error messages do not match', result.toString, is("QualifyResult.OnlyMultipleExists FAILURE [Result.Expression FAILURE Error: {[before] is not the only field set. Other set fields: [after] and [before] is not the only field set. Other set fields: [after]}]"))
+		assertThat('Error messages do not match', result.toString, is("QualifyResult.OnlySingleExists FAILURE [Result.Expression FAILURE Error: {Qualify_OnlySingleExists returned false.}]"))
 	}
 	
-	// Exists tests using alias
-	
-	@Test
-	def aliasWithExists_should_qualify() {
-		val barInstance = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(15)), of())
-		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance))))
-
-		// Assert Event
-		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "AliasExists")
-		assertTrue(result.success, 'Expected success result')
-		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))	
-	}
-
-	@Test
-	def aliasWithMultipleOrExists_should_qualify() {
-		val bazInstance = classes.createInstanceUsingBuilder('Baz', of('other', BigDecimal.valueOf(0)), of())
-		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of()))
-
-		val result1 = getQualifyResult(createUtilAndGetAllResults(fooInstance), "MultipleOr_NoAliases_Exists")
-		assertTrue(result1.success, 'Expected success result')
-	
-		val result2 = getQualifyResult(createUtilAndGetAllResults(fooInstance), "MultipleOrBranchNode_NoAliases_Exists")
-		assertTrue(result2.success, 'Expected success result')
-
-		val result3 = getQualifyResult(createUtilAndGetAllResults(fooInstance), "MultipleOr_SomeAliases_Exists")
-		assertTrue(result3.success, 'Expected success result')
-	
-		val result4 = getQualifyResult(createUtilAndGetAllResults(fooInstance), "MultipleOr_AllAliases_Exists")
-		assertTrue(result4.success, 'Expected success result')
-	
-		val result5 = getQualifyResult(createUtilAndGetAllResults(fooInstance), "MultipleOr_SingleAlias_Exists")
-		assertTrue(result5.success, 'Expected success result')
-	}
-
-	@Test
-	def aliasWithMultipleAndExists_should_qualify() {
-		val barInstance = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(15), 'after', BigDecimal.valueOf(10)), of())
-		val bazInstance = classes.createInstanceUsingBuilder('Baz', of('other', BigDecimal.valueOf(0)), of())
-		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
-
-		val result1 = getQualifyResult(createUtilAndGetAllResults(fooInstance), "MultipleAnd_NoAliases_Exists")
-		assertTrue(result1.success, 'Expected success result')
-	}
-
-	@Test
-	def aliasWithMultipleOrAndExists_should_qualify() {
-		val barInstance = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(15), 'after', BigDecimal.valueOf(10)), of())
-		val bazInstance = classes.createInstanceUsingBuilder('Baz', of('other', BigDecimal.valueOf(0)), of())
-		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
-
-		val result1 = getQualifyResult(createUtilAndGetAllResults(fooInstance), "MultipleOrAnd_NoAliases_Exists")
-		assertTrue(result1.success, 'Expected success result')
-	}
-
 	// Util methods
 		
 	def assertEvent(List<QualifyResult> results, String isEventName, boolean expectedSuccess, int expressionDataRuleResultCount) {

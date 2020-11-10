@@ -13,8 +13,9 @@ import com.regnosys.rosetta.generator.java.function.FuncGenerator
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
+import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
 import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
-import com.regnosys.rosetta.generator.java.qualify.QualifyFunctionGenerator
+import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.JavaNames
@@ -22,9 +23,7 @@ import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory.TestFolderAwareFsa
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.rosetta.util.DemandableLock
@@ -37,8 +36,6 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
-import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 
 /**
  * Generates code from your model files on save.
@@ -53,8 +50,6 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject ChoiceRuleGenerator choiceRuleGenerator
 	@Inject DataRuleGenerator dataRuleGenerator
 	@Inject BlueprintGenerator blueprintGenerator
-	@Inject QualifyFunctionGenerator<RosettaEvent> qualifyEventsGenerator
-	@Inject QualifyFunctionGenerator<RosettaProduct> qualifyProductsGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
@@ -127,10 +122,6 @@ class RosettaGenerator extends AbstractGenerator {
 					]
 					enumGenerator.generate(packages, fsa, elements, version)
 					blueprintGenerator.generate(packages, fsa, elements, version)
-					qualifyEventsGenerator.generate(packages, fsa, elements, packages.model.qualifyEvent, RosettaEvent,
-						version)
-					qualifyProductsGenerator.generate(packages, fsa, elements, packages.model.qualifyProduct,
-						RosettaProduct, version)
 
 					// Invoke externally defined code generators
 					externalGenerators.forEach [ generator |

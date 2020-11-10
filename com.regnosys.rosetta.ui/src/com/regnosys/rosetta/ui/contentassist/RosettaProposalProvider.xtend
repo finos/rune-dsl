@@ -9,10 +9,7 @@ import com.google.common.base.Predicates
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaProduct
-import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.services.RosettaGrammarAccess
@@ -23,7 +20,6 @@ import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.jface.text.contentassist.ICompletionProposal
-import org.eclipse.xtext.CrossReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.Keyword
 import org.eclipse.xtext.RuleCall
@@ -83,30 +79,6 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 		super.lookupCrossReference(model, reference, acceptor, filter, proposalFactory)
 	}
 	
-	override protected void lookupCrossReference(CrossReference crossReference,
-		ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
-		if (crossReference.type.classifier == ROSETTA_CALLABLE ||
-			crossReference.type.classifier == ROSETTA_ENUMERATION) {
-			val rosettaQualifiable = EcoreUtil2.getContainerOfType(context.currentModel, RosettaQualifiable) ?:
-				EcoreUtil2.getContainerOfType(context.previousModel, RosettaQualifiable)
-			var Predicate<IEObjectDescription> filter = switch (rosettaQualifiable) {
-				RosettaEvent:
-					[ objDesc |
-						objDesc.isEventAlias(rosettaQualifiable) || objDesc.isEventRootClass(rosettaQualifiable)
-					]
-				RosettaProduct:
-					[ objDesc |
-						objDesc.isProductAlias(rosettaQualifiable) || objDesc.isProductRootClass(rosettaQualifiable)
-					]
-				default:
-					Predicates.alwaysTrue()
-			}
-			lookupCrossReference(crossReference, context, acceptor, filter)
-		} else {
-			lookupCrossReference(crossReference, context, acceptor, Predicates.alwaysTrue())
-		}
-	}
-
 	override void complete_QualifiedNameWithWildcard(EObject model, RuleCall ruleCall, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
 		val rosettaModel = EcoreUtil2.getContainerOfType(model, RosettaModel)
 		val Predicate<IEObjectDescription> filter = if (rosettaModel !== null) {

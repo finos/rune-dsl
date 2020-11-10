@@ -1,22 +1,14 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.google.common.collect.Sets
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.qualify.QualifyFunctionGenerator
 import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.RosettaCallable
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaProduct
-import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -86,15 +78,6 @@ class ModelMetaGenerator {
 						«ENDFOR»
 					);
 				}
-
-				@Override
-				public «List»<«java.util.function.Function»<? super «dataClass», «QualifyResult»>> getQualifyFunctions() {
-					return Arrays.asList(
-						«FOR qf : qualifyFunctions(javaNames.packages, c.model.elements, c) SEPARATOR ','»
-							new «qf.javaPackage».«qf.functionName»()
-						«ENDFOR»
-					);
-				}
 				«IF !qualifierFuncs.nullOrEmpty»
 				
 				@Override
@@ -136,49 +119,5 @@ class ModelMetaGenerator {
 	static class ClassRule {
 		String className;
 		String ruleName;
-	}
-
-	
-	private def List<QualifyFunction> qualifyFunctions(RosettaJavaPackages packages, List<RosettaRootElement> elements,
-		RosettaCallable thisClass) {
-		val allQualifyFns = Sets.newLinkedHashSet
-		val superClasses 
-			= if(thisClass instanceof Data)
-				thisClass.allSuperTypes.map[name].toList
-				
-		// TODO create public constant with list of qualifiable classes / packages
-		allQualifyFns.addAll(
-			getQualifyFunctionsForRosettaClass(RosettaEvent, packages.model.qualifyEvent.name, elements))
-		allQualifyFns.addAll(
-			getQualifyFunctionsForRosettaClass(RosettaProduct, packages.model.qualifyProduct.name, elements))
-		return allQualifyFns.filter[superClasses.contains(it.className)].toList
-	}
-
-	private def <T extends RosettaRootElement & RosettaNamed> getQualifyFunctionsForRosettaClass(Class<T> clazz,
-		String javaPackage, List<RosettaRootElement> elements) {
-		val qualifyFns = Sets.newLinkedHashSet
-		elements.filter(clazz).forEach [
-			val rosettaClass = getRosettaClass(it)
-			val functionName = QualifyFunctionGenerator.getIsFunctionClassName(it.name)
-			rosettaClass.ifPresent [
-				qualifyFns.add(new QualifyFunction(it.name, javaPackage, functionName))
-			]
-		]
-		return qualifyFns
-	}
-
-	private def getRosettaClass(RosettaRootElement element) {
-		val rosettaClasses = newHashSet
-		element.eAllContents.filter(RosettaCallableCall).forEach [
-			collectRootCalls(it, [if(it instanceof Data) rosettaClasses.add(it)])
-		]
-		return rosettaClasses.stream.findAny
-	}
-
-	@org.eclipse.xtend.lib.annotations.Data
-	static class QualifyFunction {
-		String className;
-		String javaPackage;
-		String functionName;
 	}
 }

@@ -363,10 +363,6 @@ class RosettaAlias extends RosettaRootElement, RosettaDefinable, RosettaCallable
 /**********************************************************************
  * Qualifiable used for RosettaProduct and RosettaEvent. Check enum RosettaQualifiableType when adding new classes
  */
- 
-class RosettaQualifiable extends RosettaRootElement, RosettaNamed, RosettaDefinable {
-	contains RosettaExpression expression
-}
 
 class RosettaQualifiableConfiguration {
 	RosettaQualifiableType qType
@@ -380,21 +376,6 @@ enum RosettaQualifiableType {
 	None, Event, Product
 }
 
-/**********************************************************************
- * Products
- */
-
-class RosettaProduct extends RosettaQualifiable {
-	contains RosettaSynonym[] synonyms
-}
-
-/**********************************************************************
- * Events
- */
-
-class RosettaEvent extends RosettaQualifiable {
-	contains RosettaSynonym[] synonyms
-}
 
 /**********************************************************************
  * Calculations

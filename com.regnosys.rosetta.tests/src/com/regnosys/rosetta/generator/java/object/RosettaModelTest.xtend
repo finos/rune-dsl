@@ -5,10 +5,7 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaAlias
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaEvent
-import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
@@ -77,35 +74,5 @@ class RosettaModelTest{
 		
 		val alias = model.elements.get(0) as RosettaAlias
 		assertEquals("InflationSwap", alias.name)
-	}
-	
-	@Test
-	def void testAliasWithDistinctResourceSet() {
-		
-		val resource1 = 
-		'''
-			alias IRS
-			Swap -> interestLeg
-		'''
-		
-		val resource2 =
-		'''
-			type Swap:
-				inflationLeg string (0..*)
-				interestLeg string (0..*)
-			
-			isEvent Foo
-				IRS exists
-		'''
-		
-		val model = modelHelper.combineAndParseRosetta(resource1, resource2)
-				
-		val isEvents = model.elements.filter(RosettaEvent)
-		assertEquals(1, isEvents.size)
-		val isEventExpr = isEvents.get(0).expression
-		assertTrue(isEventExpr instanceof RosettaExistsExpression)
-		val argument = (isEventExpr as RosettaExistsExpression).argument
-		assertTrue(argument instanceof RosettaCallableCall)
-		assertEquals("IRS", (argument as RosettaCallableCall).callable.name)
 	}
 }

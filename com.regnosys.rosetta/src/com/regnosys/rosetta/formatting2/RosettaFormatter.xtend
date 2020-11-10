@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
@@ -28,7 +27,6 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
-import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
@@ -247,20 +245,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 			eleEnd,
 			INDENT
 		)
-		ele.expression.format
-	}
-	
-	def dispatch void format(RosettaEvent ele, extension IFormattableDocument document) {
-		ele.interior(INDENT)
-		ele.regionFor.assignment(rosettaNamedAccess.nameAssignment).append(ONE_SPACE_PRESERVE_NEWLINE)
-		ele.formatDefinition(document)
-		ele.expression.format
-	}
-	
-	def dispatch void format(RosettaProduct ele, extension IFormattableDocument document) {
-		ele.interior(INDENT)
-		ele.regionFor.assignment(rosettaNamedAccess.nameAssignment).append(ONE_SPACE_PRESERVE_NEWLINE)
-		ele.formatDefinition(document)
 		ele.expression.format
 	}
 

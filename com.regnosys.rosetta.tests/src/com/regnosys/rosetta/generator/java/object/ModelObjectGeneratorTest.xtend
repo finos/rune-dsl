@@ -462,16 +462,24 @@ class ModelObjectGeneratorTest {
 	@Test
 	def void isProductWithEnumValueRef() {
 		val code = '''
-			enum Enum: A B
+			isProduct root Foo;
+			
+			enum Enum: 
+				A
+				B
+			
 			type Foo:
 				attr Enum (0..1)
 			
-			isProduct FooProd
-				Foo -> attr = Enum -> A
+			func Qualify_FooProd:
+				[qualification Product]
+				inputs: foo Foo (1..1)
+				output: is_product boolean (1..1)
+				assign-output is_product:
+					foo -> attr = Enum -> A
 		'''.generateCode
 
 		code.compileToClasses
-
 	}
 	
 	@Disabled @Test
