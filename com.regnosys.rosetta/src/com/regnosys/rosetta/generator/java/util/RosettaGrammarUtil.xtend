@@ -1,10 +1,7 @@
 package com.regnosys.rosetta.generator.java.util
 
 import com.google.common.base.Strings
-import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaFeature
-import com.regnosys.rosetta.rosetta.RosettaProduct
-import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 import org.eclipse.xtext.nodemodel.ICompositeNode
@@ -32,24 +29,6 @@ class RosettaGrammarUtil {
 			return node.leafNodes.map[Strings.nullToEmpty(text)].join
 	}
 	
-	def static String grammarQualifiable(RosettaQualifiable q) {
-		
-		val grammar = new StringBuilder(toQualifiableName(q)).append(' ').append(q.name).append(' <').append(q.definition).append('>\n').append(grammarText(q.expression));
-		return grammar.toString
-	}
-	
-	private static def toQualifiableName(RosettaQualifiable qualifiableClass) {
-		if(qualifiableClass instanceof RosettaEvent) {
-			return 'isEvent'
-		}
-		else if (qualifiableClass instanceof RosettaProduct) {
-			return 'isProduct'
-		}
-		else {
-			throw new IllegalArgumentException("Unsupported class type " + qualifiableClass.class);
-		}
-	}
-		
 	def static String grammarWhenThen(EObject when, EObject then) {
 		return "when " + grammarText(when).trim + "\nthen " + grammarText(then).trim
 	}

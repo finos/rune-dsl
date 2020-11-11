@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
-import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
@@ -74,10 +73,6 @@ class RosettaExtensions {
 		
 	def collectRootCalls(RosettaAlias alias) {
 		return doCollectRootCalls(alias)
-	}
-
-	def collectRootCalls(RosettaQualifiable rq) {
-		return doCollectRootCalls(rq)
 	}
 
 	def private LinkedHashSet<RosettaType> doCollectRootCalls(EObject obj) {

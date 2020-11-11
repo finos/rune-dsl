@@ -61,20 +61,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testLowerCaseProductQualifier() {
-		val model = 
-		'''
-			isProduct bar
-				EconomicTerms -> economic exists
-					
-			type EconomicTerms:
-				economic string (1..1)
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_PRODUCT, INVALID_CASE,
-			"Product qualifier name should start with a capital")
-	}
-	
-	@Test
 	def void testLowerCaseWorkflowRule() {
 		val model = 
 		'''
@@ -571,38 +557,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 	}
 
-	@Test
-	def checkValidIsProductClassPath() {
-		val model = '''
-			type Foo:
-				foo string (1..1)
-			type Bar:
-				bar Foo (0..1)
-			
-			isProduct FooBar
-				Foo -> foo
-				and Bar -> bar -> foo
-		'''.parseRosetta
-		model.assertError(ROSETTA_PRODUCT, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE, 
-			'isProduct "FooBar" has multiple class references Foo, Bar. isProduct expressions should always start from the same class')
-	}
-	
-	@Test
-	def checkValidIsProductClass() {
-		val model = '''
-			isProduct root Foo;
-			
-			type Foo:
-				foo string (1..1)
-			type Bar:
-				bar Foo (0..1)
-			isProduct FooBar
-				Bar -> bar -> foo = ""
-		'''.parseRosetta
-		model.assertError(ROSETTA_PRODUCT, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE, 
-			"isProduct expressions should always start from the 'Foo' class. But found 'Bar'.")
-	}
-	
 	@Test
 	def void testUpperCaseAlias() {
 		val model =

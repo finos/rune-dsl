@@ -5,9 +5,7 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
-import com.rosetta.model.lib.meta.RosettaMetaDataBuilder
 import com.rosetta.model.lib.qualify.QualifyResult
-import com.rosetta.model.lib.qualify.QualifyResultsExtractor
 import java.math.BigDecimal
 import java.util.List
 import java.util.Map
@@ -26,12 +24,15 @@ import static org.hamcrest.core.Is.is
 class RosettaQualifyProductsTest {
 	
 	@Inject extension CodeGeneratorTestHelper
+	@Inject extension QualifyTestHelper
 	
 	Map<String, Class<?>> classes
 	
 	@BeforeEach
 	def void setUp() {
 		val code = '''
+			isProduct root Foo;
+			
 			type Foo:
 				bar Bar (0..*)
 				corge number (0..1)
@@ -43,27 +44,41 @@ class RosettaQualifyProductsTest {
 			type Baz:
 				quux number (0..1)
 
-			isProduct BranchNodeCountComparisonToLiteral
-				aliasBaz count = 2
+			func Qualify_BranchNodeCountComparisonToLiteral:
+				[qualification Product]
+				inputs: foo Foo (1..1)
+				output: is_product boolean (1..1)
+				assign-output is_product:
+					foo -> bar -> baz count = 2
 			
-			isProduct BranchAndLeafNodeCountComparisonToLiterals
-				aliasBaz count = 1
-				and aliasQux count = 1
+			func Qualify_BranchAndLeafNodeCountComparisonToLiterals:
+				[qualification Product]
+				inputs: foo Foo (1..1)
+				output: is_product boolean (1..1)
+				assign-output is_product:
+					foo -> bar -> baz count = 1
+					and foo -> bar -> qux count = 1
 			
-			isProduct LeafNodeCountComparisonToLiteral
-				Foo -> bar -> qux count = 2
-				
-			isProduct BranchNodeCountComparisonToFeatureCall
-				Foo -> bar -> baz count = Foo -> corge
-				
-			isProduct LeafNodeCountComparisonToFeatureCall
-				Foo -> bar -> qux count = Foo -> corge
+			func Qualify_LeafNodeCountComparisonToLiteral:
+				[qualification Product]
+				inputs: foo Foo (1..1)
+				output: is_product boolean (1..1)
+				assign-output is_product:
+					foo -> bar -> qux count = 2
 			
-			alias aliasBaz
-				Foo -> bar -> baz
+			func Qualify_BranchNodeCountComparisonToFeatureCall:
+				[qualification Product]
+				inputs: foo Foo (1..1)
+				output: is_product boolean (1..1)
+				assign-output is_product:
+					foo -> bar -> baz count = foo -> corge
 			
-			alias aliasQux
-				Foo -> bar -> qux
+			func Qualify_LeafNodeCountComparisonToFeatureCall:
+				[qualification Product]
+				inputs: foo Foo (1..1)
+				output: is_product boolean (1..1)
+				assign-output is_product:
+					foo -> bar -> qux count = foo -> corge
 		'''.generateCode
 		//println(code)
 		classes = code.compileToClasses
@@ -169,10 +184,5 @@ class RosettaQualifyProductsTest {
 				'Foo', 
 				of('corge', BigDecimal.valueOf(corge)), 
 				of('bar', bars)))
-	}
-	
-	def createUtilAndGetAllResults(RosettaModelObject model) {
-		val util = new QualifyResultsExtractor(RosettaMetaDataBuilder.getMetaData(model).qualifyFunctions, RosettaModelObject.cast(model))
-		return util.getAllResults()
 	}
 }

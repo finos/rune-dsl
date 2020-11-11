@@ -15,16 +15,7 @@ public interface RosettaMetaData<T extends RosettaModelObject> {
     
 	List<Validator<? super T>> choiceRuleValidators();
 	
-	/**
-	 *  Use {@link RosettaMetaData#getQualifyFunctions(QualifyFunctionFactory)} instead
-	 * @return an empty List
-	 */
-	@Deprecated
-	List<Function<? super T, QualifyResult>> getQualifyFunctions();
-	
-	default List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return getQualifyFunctions();
-	}
+	List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory);
 	
 	Validator<? super T> validator();
 	

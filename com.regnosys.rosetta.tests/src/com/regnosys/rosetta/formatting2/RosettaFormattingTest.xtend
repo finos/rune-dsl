@@ -340,62 +340,6 @@ class RosettaFormattingTest {
 	}
 
 	@Test
-	def void formatIsEvent() {
-		'''
-			namespace "test"
-			version "test"
-
-			type Type:
-				other Type (0..1)
-
-			isEvent TypeEvent
-			Type -> other -> other only exists
-					and Type -> other -> other is absent
-			 and Type -> other -> other  is absent
-			 	and Type -> other -> other is absent
-		''' -> '''
-			namespace "test"
-			version "test"
-
-			type Type:
-				other Type (0..1)
-
-			isEvent TypeEvent
-				Type -> other -> other only exists
-				and Type -> other -> other is absent
-				and Type -> other -> other  is absent
-				and Type -> other -> other is absent
-		'''
-	}
-
-	@Test
-	def void formatIsProduct() {
-		'''
-			namespace "test"
-						version "test"
-
-						type Type:
-							other Type (0..1)
-						isProduct TypeProduct
-			Type -> other -> other only exists
-					and Type -> other -> other is absent
-			 and Type -> other -> other  is absent
-			 	and Type -> other -> other is absent
-		''' -> '''
-			namespace "test"
-			version "test"
-
-			type Type:
-				other Type (0..1)
-			isProduct TypeProduct
-				Type -> other -> other only exists
-				and Type -> other -> other is absent
-				and Type -> other -> other  is absent
-				and Type -> other -> other is absent
-		'''
-	}
-	
-	@Test
 	def void formatListLiteral() {
 		'''
 			namespace "test"

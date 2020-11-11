@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaProduct
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
@@ -73,29 +72,5 @@ class RosettaExtensionsTest {
 		assertEquals(#['baz', 'bar', 'foo0', 'foo1'], baz.allEnumValues.map[name].toList)
 		assertEquals(#['bar', 'foo0', 'foo1'], bar.allEnumValues.map[name].toList)
 		assertEquals(#['foo0', 'foo1'], foo.allEnumValues.map[name].toList)
-	}
-	
-	@Test
-	def testRootCallsCollector() {
-		val model = '''
-			namespace test
-			version "1.2.3"
-			
-			type Foo:
-				attr string (1..1)
-			
-			type Bar:
-				attr2 string (1..1)
-			
-			alias alias1 Bar -> attr2
-			
-			isProduct FooBar
-				Foo -> attr exists
-				and alias1 exists
-		'''.parse.elements.filter(RosettaProduct).head
-		val roots = model.collectRootCalls.toList
-		assertEquals(2, roots.size)
-		assertEquals("Foo", roots.get(0).name)
-		assertEquals("Bar", roots.get(1).name)
 	}
 }

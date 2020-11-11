@@ -17,7 +17,6 @@ import com.regnosys.rosetta.rosetta.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaEvent
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
@@ -27,8 +26,6 @@ import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaProduct
-import com.regnosys.rosetta.rosetta.RosettaQualifiable
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
@@ -144,20 +141,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		val identifier = rule.commonIdentifier
 		if (identifier !== null) {
 			rule.root.checkAttributeExists(identifier.name, identifier.type)
-		}
-	}
-
-	@Check
-	def void checkEventQualifierNameStartsWithUpperCase(RosettaEvent event) {
-		if (!Character.isUpperCase(event.name.charAt(0))) {
-			warning("Event qualifier name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
-		}
-	}
-
-	@Check
-	def void checkProductQualifierNameStartsWithUpperCase(RosettaProduct product) {
-		if (!Character.isUpperCase(product.name.charAt(0))) {
-			warning("Product qualifier name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
 
@@ -403,25 +386,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					error('''Duplicate element named '«qName»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
 						toCheck, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
 				}
-			}
-		}
-	}
-	
-	@Check
-	def checkUniqueRootClassForRosettaQualifiable(RosettaQualifiable ele) {
-		val usedClasses = collectRootCalls(ele)
-
-		val qualifiableType = switch (ele) { RosettaProduct: 'isProduct' RosettaEvent: 'isEvent' default: 'unknown Qualifiable' }
-		if (usedClasses.size > 1) {
-			error('''«qualifiableType» "«ele.name»" has multiple class references «usedClasses.join(', ',[name])». isProduct expressions should always start from the same class''',
-				ele, ROSETTA_NAMED__NAME, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE)
-		}
-		if (usedClasses.size == 1) {
-			val allowedClass = switch (ele) { RosettaProduct: findProductRootName(ele) RosettaEvent: findEventRootName(
-				ele) default: null }
-			if (allowedClass !== null && usedClasses.head.name != allowedClass.name) {
-				error('''«qualifiableType» expressions should always start from the '«allowedClass.name»' class. But found '«usedClasses.head.name»'.''',
-					ele, ROSETTA_NAMED__NAME, MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE)
 			}
 		}
 	}

@@ -14,7 +14,6 @@ import org.eclipse.emf.ecore.EReference
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.RosettaQualifiable
 
 class RosettaExpectedTypeProvider {
 	
@@ -36,7 +35,6 @@ class RosettaExpectedTypeProvider {
 					new RFeatureCallType(null)
 				}
 			}
-			RosettaQualifiable case reference == ROSETTA_QUALIFIABLE__EXPRESSION,
 			RosettaConditionalExpression case reference == ROSETTA_CONDITIONAL_EXPRESSION__IF:
 				RBuiltinType.BOOLEAN
 			RosettaGroupByFeatureCall case reference == ROSETTA_GROUP_BY_FEATURE_CALL__CALL:

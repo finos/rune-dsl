@@ -103,41 +103,6 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	}
 
 	@Test
-	def void testProductExpressionEnumLiteral() {
-		'''
-			namespace "test"
-			
-			type Quote:
-				action ActionEnum (1..1)
-			enum ActionEnum:
-				new
-				correct
-				cancel
-
-			isProduct test
-				Quote -> action <> <|>
-		''' >= #['ActionEnum -> cancel', 'ActionEnum -> correct', 'ActionEnum -> new', '"Value"', "(", "[", "empty", "False", "True"]
-	}
-	
-	@Test
-	def void testProductExpressionEnumLiteral2() {
-		'''
-			namespace "test"
-			
-			type Quote:
-				action ActionEnum (1..1)
-
-			enum ActionEnum:
-				new
-				correct
-				cancel
-
-			isProduct test
-				<|>
-		''' >= #['"Value"', "(", "<", "[", "empty", "False", "True"]
-	}
-	
-	@Test
 	def void testAssignOutputEnumLiteral() {
 		'''
 			namespace "test"
@@ -162,41 +127,6 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 					<|>
 			
 		''' >= #['ActionEnum -> cancel', 'ActionEnum -> correct', 'ActionEnum -> new', 'attrIn', 'attrOut', 'test','"Value"', "(", "<", "[", "empty", "False","if", "True"]
-	}
-
-	@Test
-	def void testIsProduct() {
-		'''
-			
-			namespace "test"
-			
-			isProduct root EconomicTerms;
-
-			type EconomicTerms:
-			
-			type Quote:
-				attr String (1..1)
-			
-			
-			isProduct test
-				<|>
-		''' >= #['EconomicTerms', '"Value"', "(", "<", "[", "empty", "False", "True"]
-		'''
-			namespace "test"
-			
-			isProduct root EconomicTerms;
-			
-			type EconomicTerms:
-			
-			type Quote:
-				attr String (1..1)
-			
-			type EconomicTerms:
-				ecoTermsAttr String (1..1)
-			
-			isProduct test
-				EconomicTerms or <|>
-		''' >= #['EconomicTerms', '"Value"', "(", "[",  "empty", "False", "True"]
 	}
 
 	@Test

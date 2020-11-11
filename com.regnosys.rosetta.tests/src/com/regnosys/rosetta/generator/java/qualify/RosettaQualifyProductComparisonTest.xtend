@@ -21,7 +21,7 @@ import static org.hamcrest.core.Is.is
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaQualifyEventsComparisonTest {
+class RosettaQualifyProductComparisonTest {
 	
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension QualifyTestHelper
@@ -219,13 +219,6 @@ class RosettaQualifyEventsComparisonTest {
 				assign-output is_product:
 					foo -> bar -> before > foo -> bar2 -> before
 			
-«««			Group By Deprecate it
-			//isEvent GroupByFeatureCallGreaterThan
-			//	(Foo -> bar group by after) -> before  > (Foo -> bar2 group by after) -> before 
-			//
-			//isEvent GroupByFeatureCallGreaterThanAlias
-			//	aliasBeforeGroupByAfter > (Foo -> bar2 group by after) -> before
-			
 «««			Aliases
 			
 			func AliasBefore:
@@ -272,28 +265,28 @@ class RosettaQualifyEventsComparisonTest {
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
 
 		val results1 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results1, "FeatureCallEqualToLiteral", true, 1)
+		assertQualify(results1, "FeatureCallEqualToLiteral", true)
 		
 		val results2 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results2, "FeatureCallEqualToFeatureCall", true, 1)
+		assertQualify(results2, "FeatureCallEqualToFeatureCall", true)
 		
 		val results3 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results3, "FeatureCallsEqualToLiteralOr", true, 1)
+		assertQualify(results3, "FeatureCallsEqualToLiteralOr", true)
 		
 		val results4 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results4, "FeatureCallsEqualToLiteralAnd", true, 1)
+		assertQualify(results4, "FeatureCallsEqualToLiteralAnd", true)
 				
 		val results5 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results5, "FeatureCallNotEqualToLiteral", false, 1)
+		assertQualify(results5, "FeatureCallNotEqualToLiteral", false)
 						
 		val results6 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results6, "FeatureCallNotEqualToFeatureCall", false, 1)
+		assertQualify(results6, "FeatureCallNotEqualToFeatureCall", false)
 		
 		val results7 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results7, "FeatureCallListEqualToFeatureCall", true, 1)
+		assertQualify(results7, "FeatureCallListEqualToFeatureCall", true)
 		
 		val results8 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results8, "FeatureCallListNotEqualToFeatureCall", false, 1)
+		assertQualify(results8, "FeatureCallListNotEqualToFeatureCall", false)
 	}
 
 	@Test
@@ -304,28 +297,28 @@ class RosettaQualifyEventsComparisonTest {
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance1, barInstance2))))
 		
 		val results1 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results1, "FeatureCallEqualToLiteral", true, 1)
+		assertQualify(results1, "FeatureCallEqualToLiteral", true)
 		
 		val results2 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results2, "FeatureCallEqualToFeatureCall", true, 1)
+		assertQualify(results2, "FeatureCallEqualToFeatureCall", true)
 		
 		val results3 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results3, "FeatureCallsEqualToLiteralOr", true, 1)
+		assertQualify(results3, "FeatureCallsEqualToLiteralOr", true)
 		
 		val results4 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results4, "FeatureCallsEqualToLiteralAnd", true, 1)
+		assertQualify(results4, "FeatureCallsEqualToLiteralAnd", true)
 		
 		val results5 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results5, "FeatureCallNotEqualToLiteral", false, 1)
+		assertQualify(results5, "FeatureCallNotEqualToLiteral", false)
 				
 		val results6 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results6, "FeatureCallNotEqualToFeatureCall", false, 1)
+		assertQualify(results6, "FeatureCallNotEqualToFeatureCall", false)
 				
 		val results7 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results7, "FeatureCallListEqualToFeatureCall", true, 1)
+		assertQualify(results7, "FeatureCallListEqualToFeatureCall", true)
 		
 		val results8 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results8, "FeatureCallListNotEqualToFeatureCall", false, 1)
+		assertQualify(results8, "FeatureCallListNotEqualToFeatureCall", false)
 	}
 	
 	@Test
@@ -334,22 +327,22 @@ class RosettaQualifyEventsComparisonTest {
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of()))
 		
 		val results1 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results1, "FeatureCallEqualToLiteral", false, 1)
+		assertQualify(results1, "FeatureCallEqualToLiteral", false)
 		
 		val results2 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results2, "FeatureCallEqualToFeatureCall", false, 1)
+		assertQualify(results2, "FeatureCallEqualToFeatureCall", false)
 		
 		val results3 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results3, "FeatureCallNotEqualToLiteral", true, 1)
+		assertQualify(results3, "FeatureCallNotEqualToLiteral", true)
 		
 		val results4 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results4, "FeatureCallNotEqualToFeatureCall", true, 1)
+		assertQualify(results4, "FeatureCallNotEqualToFeatureCall", true)
 						
 		val results5 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results5, "FeatureCallListEqualToFeatureCall", false, 1)
+		assertQualify(results5, "FeatureCallListEqualToFeatureCall", false)
 		
 		val results6 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results6, "FeatureCallListNotEqualToFeatureCall", true, 1)
+		assertQualify(results6, "FeatureCallListNotEqualToFeatureCall", true)
 	}
 	
 	@Test
@@ -360,10 +353,10 @@ class RosettaQualifyEventsComparisonTest {
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance1, barInstance2))))
 		
 		val results1 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results1, "FeatureCallListEqualToFeatureCall", false, 1)
+		assertQualify(results1, "FeatureCallListEqualToFeatureCall", false)
 		
 		val results2 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results2, "FeatureCallListNotEqualToFeatureCall", true, 1)
+		assertQualify(results2, "FeatureCallListNotEqualToFeatureCall", true)
 	}
 	
 	@Test
@@ -373,25 +366,25 @@ class RosettaQualifyEventsComparisonTest {
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
 
 		val results1 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results1, "FeatureCallEqualToLiteral", false, 1)
+		assertQualify(results1, "FeatureCallEqualToLiteral", false)
 		
 		val results2 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results2, "FeatureCallEqualToFeatureCall", false, 1)
+		assertQualify(results2, "FeatureCallEqualToFeatureCall", false)
 		
 		val results3 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results3, "FeatureCallsEqualToLiteralOr", false, 1)
+		assertQualify(results3, "FeatureCallsEqualToLiteralOr", false)
 		
 		val results4 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results4, "FeatureCallsEqualToLiteralAnd", false, 1)
+		assertQualify(results4, "FeatureCallsEqualToLiteralAnd", false)
 				
 		val results5 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results5, "FeatureCallNotEqualToLiteral", true, 1)
+		assertQualify(results5, "FeatureCallNotEqualToLiteral", true)
 								
 		val results7 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results7, "FeatureCallListEqualToFeatureCall", false, 1)
+		assertQualify(results7, "FeatureCallListEqualToFeatureCall", false)
 		
 		val results8 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results8, "FeatureCallListNotEqualToFeatureCall", true, 1)
+		assertQualify(results8, "FeatureCallListNotEqualToFeatureCall", true)
 	}
 	
 	@Test
@@ -402,32 +395,32 @@ class RosettaQualifyEventsComparisonTest {
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance1, barInstance2))))
 		
 		val results1 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results1, "FeatureCallEqualToLiteral", false, 1)
+		assertQualify(results1, "FeatureCallEqualToLiteral", false)
 		
 		val results2 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results2, "FeatureCallEqualToFeatureCall", false, 1)
+		assertQualify(results2, "FeatureCallEqualToFeatureCall", false)
 		
 		val results3 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results3, "FeatureCallsEqualToLiteralOr", false, 1)
+		assertQualify(results3, "FeatureCallsEqualToLiteralOr", false)
 		
 		val results4 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results4, "FeatureCallsEqualToLiteralAnd", false, 1)
+		assertQualify(results4, "FeatureCallsEqualToLiteralAnd", false)
 		
 		val results5 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results5, "FeatureCallNotEqualToLiteral", true, 1)
+		assertQualify(results5, "FeatureCallNotEqualToLiteral", true)
 		
 		val results7 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results7, "FeatureCallListEqualToFeatureCall", false, 1)
+		assertQualify(results7, "FeatureCallListEqualToFeatureCall", false)
 		
 		val results8 = createUtilAndGetAllResults(fooInstance)
-		assertEvent(results8, "FeatureCallListNotEqualToFeatureCall", true, 1)
+		assertQualify(results8, "FeatureCallListNotEqualToFeatureCall", true)
 	}
 
 	// Util methods
 		
-	def assertEvent(List<QualifyResult> results, String isEventName, boolean expectedSuccess, int expressionDataRuleResultCount) {
-		val result = getQualifyResult(results, isEventName)
+	def assertQualify(List<QualifyResult> results, String isQualifyName, boolean expectedSuccess) {
+		val result = getQualifyResult(results, isQualifyName)
 		assertThat('Expected result (' + expectedSuccess + ') but got ' + result, result.success, is(expectedSuccess))
-		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(expressionDataRuleResultCount))
+		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
 }

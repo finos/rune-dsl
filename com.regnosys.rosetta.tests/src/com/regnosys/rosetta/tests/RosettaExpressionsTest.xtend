@@ -16,6 +16,8 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
+import org.junit.jupiter.api.Disabled
+import com.regnosys.rosetta.rosetta.simple.Function
 
 /**
  * A set of tests for all instances of RosettaExpression i.e. RosettaAdditiveExpression
@@ -36,8 +38,11 @@ class RosettaExpressionsTest {
 				one number (1..1)
 				two number (1..1)
 			
-			isProduct TestQualifier
-				Test -> one + Test -> two = 42
+			func TestQualifier:
+				inputs: test Test (1..1)
+				output: result boolean (1..1)
+				assign-output result:
+					test -> one + test -> two = 42
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -48,8 +53,11 @@ class RosettaExpressionsTest {
 				one date (1..1)
 				two date (1..1)
 			
-			isProduct TestQualifier
-				Test -> one - Test -> two = 42
+			func TestQualifier:
+				inputs: test Test (1..1)
+				output: result boolean (1..1)
+				assign-output result:
+					test -> one - test -> two = 42
 		'''.parseRosettaWithNoErrors.assertNoIssues
 	}
 	
@@ -61,8 +69,11 @@ class RosettaExpressionsTest {
 				two date (1..1)
 			
 			
-			isProduct TestQualifier
-				Test -> one + Test -> two = 42
+			func TestQualifier:
+				inputs: test Test (1..1)
+				output: result boolean (1..1)
+				assign-output result:
+					test -> one + test -> two = 42
 		'''.parseRosetta.assertError(ROSETTA_BINARY_OPERATION, RosettaIssueCodes.TYPE_ERROR, "Incompatible types: cannot use operator '+' with date and date.")
 	}
 	
@@ -77,23 +88,30 @@ class RosettaExpressionsTest {
 				one date (1..1)
 				two date (1..1)
 			
-			isProduct TestQualifier
-				Test -> one - Test -> two = 42
+			func TestQualifier:
+				inputs: test Test (1..1)
+				output: result boolean (1..1)
+				assign-output result:
+					test -> one - test -> two = 42
 		'''.generateCode
-		
-		val qualifier = code.get(rootPackage.qualifyProduct.name + ".IsTestQualifier")
+
+		val qualifier = code.get("com.rosetta.test.model.functions.TestQualifier")
 		assertThat(qualifier, containsString("MapperMaths.<BigDecimal, Date, Date>subtract"))
 	}
 	
 	@Test
+	@Disabled
 	def void shoudCodeGenerateAndCompileWhenSubtractingDates() {
 		val code = '''
 			type Test:
 				one date (1..1)
 				two date (1..1)
 			
-			isProduct TestQualifier
-				Test -> one - Test -> two = 42
+			func TestQualifier:
+				inputs: test Test (1..1)
+				output: result boolean (1..1)
+				assign-output result:
+					test -> one - test -> two = 42
 		'''.generateCode
 		
 		code.compileToClasses
@@ -107,8 +125,11 @@ class RosettaExpressionsTest {
 				two int (1..1)
 			
 			
-			isProduct TestQualifier
-				Test -> one + Test -> two = 42
+			func TestQualifier:
+				inputs: test Test (1..1)
+				output: result boolean (1..1)
+				assign-output result:
+					test -> one + test -> two = 42
 		'''.generateCode
 
 		code.compileToClasses
@@ -122,8 +143,11 @@ class RosettaExpressionsTest {
 					[metadata scheme]
 				two int (1..1)
 			
-			isProduct TestQualifier
-				Test -> one -> scheme = "scheme"
+			func TestQualifier:
+				inputs: test Test (1..1)
+				output: result boolean (1..1)
+				assign-output result:
+					test -> one -> scheme = "scheme"
 		'''.generateCode
 		code.compileToClasses
 	}
