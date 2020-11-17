@@ -80,6 +80,11 @@ class ModelMetaGenerator {
 					);
 				}
 				
+				@Deprecated
+				public «List»<«java.util.function.Function»<? super «dataClass», «QualifyResult»>> getQualifyFunctions() {
+					return «Collections».emptyList();
+				}
+				
 				@Override
 				public «List»<«java.util.function.Function»<? super «dataClass», «QualifyResult»>> getQualifyFunctions(«QualifyFunctionFactory» factory) {
 					«IF !qualifierFuncs.nullOrEmpty»
