@@ -1,5 +1,6 @@
 package com.rosetta.model.lib.meta;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -14,6 +15,15 @@ public interface RosettaMetaData<T extends RosettaModelObject> {
 	List<Validator<? super T>> dataRules();
     
 	List<Validator<? super T>> choiceRuleValidators();
+	
+	/**
+	 *  Use {@link RosettaMetaData#getQualifyFunctions(QualifyFunctionFactory)} instead
+	 * @return an empty List
+	 */
+	@Deprecated
+	default List<Function<? super T, QualifyResult>> getQualifyFunctions() {
+		return Collections.emptyList();
+	}
 	
 	List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory);
 	
