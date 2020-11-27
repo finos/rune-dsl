@@ -1,14 +1,20 @@
+Mappings
+!!!!!!!!
+
+Purpose
+^^^^^^^
+
+
 Mappings in Rosetta are the annotations on the model that specify how input documents in other formats 
 (e.g. FpML or ISDACreate json) can be transformed into Rosetta documents. Mappings are specified in the model as synonyms. Synonyms added throughout the model are 
 combined to map the data tree of an input document into the output Rosetta document. The synonyms can be used to generate an *Ingestion Environment*, 
 a library of java that when given an input document as input will output the resulting Rosetta document.
 
-Synonyms are specified on the attribute of data type and the vlaue of enum types.
+Synonyms are specified on the attributes of data type and the values of enum types.
+
 
 Basic Mappings
 ^^^^^^^^^^^^^^
-
-
 If any attribute does not have a synonym on it then the mapping will search down the Rosetta tree for the 
 next attributes that do have synonyms.
 
