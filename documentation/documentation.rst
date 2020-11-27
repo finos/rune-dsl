@@ -16,7 +16,7 @@ Data Component
 --------------
 
 
-**The Rosetta DSL provides tw data definition components** that are used to model data, grouped into two pairs:
+**The Rosetta DSL provides two data definition components** that are used to model data:
 
 * `Type <#type-label>`_
 * `Enumeration <#enumeration-label>`_
@@ -40,13 +40,13 @@ The Rosetta DSL convention is that type names use the *PascalCase* (starting wit
 
 The first component of the definition is a plain-text description of the type. Descriptions use quotation marks ``"`` ``"`` (to mark a string) in between angle brackets ``<`` ``>``. Descriptions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
 
-After the description come any `annotations <#annotations-label>`_ that are appiled to this type. The are written surrounded with '[' and ']' ::
+After the description come any `annotations <#annotations-label>`_ that are applied to this type. Annotations are written surrounded with '[' and ']' ::
  
   type WorkflowStep: <"A workflow step ....">
 	[metadata key]
 	[rootType]
 
-Then the definition of the type lists its component attributes. Each attribute consits of
+Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
 
 * name - 
   Required - Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
@@ -76,7 +76,8 @@ Built in types
 
 Basic Types
 """""""""""
-Rosetta defines 5 fundamental data types
+Rosetta defines five fundamental data types.  The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
+
  * ``string`` - Text
  * ``int`` - integer numbers
  * ``number`` - decimal numbers
@@ -87,7 +88,7 @@ Rosetta defines 5 fundamental data types
 
 Record Types
 """"""""""""
-Rosetta defines two ``recordType``\ s ``date`` and ``zonedDateTime``
+Rosetta defines two record types ``date`` and ``zonedDateTime``.  The set of record types available in the Rosetta DSL are controlled at the language level by the ``recordType`` definition.
 
 Record types are simplified data types:
 
@@ -96,7 +97,7 @@ Record types are simplified data types:
 
 Time
 """"
-The ``zonedDateTime`` record type unambiguoulsly refers to a single instant of time.
+The ``zonedDateTime`` record type unambiguously refers to a single instant of time.
 
 Alternativley in the CDM there is the data type ``BusinessCenterTime`` type, where a simple ``time`` "5:00:00" is specified alongside a business center.  The simple time should be interpreted with the timezone information of the associated business center.
 
@@ -1026,7 +1027,7 @@ In the below example, we first apply a filter and extract a ``fixedInterestRate`
 
 - ``if`` statement
 
-The syntax support if-then-else style statements. It consists of several comma separated terms consisting of a test and a possible result
+The syntax supports if-then-else style statements. It consists of several comma separated terms consisting of a test and a possible result.
 The tests are evaluated in order and when the first one matches its associated result is returned from the statement.
 If none of the tests match then a final possible result can be provided
 In the below example we first extract the Payout from a Contract then we try to find the appropriate asset class.
