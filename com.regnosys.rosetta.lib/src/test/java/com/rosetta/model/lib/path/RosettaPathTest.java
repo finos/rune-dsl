@@ -31,6 +31,53 @@ public class RosettaPathTest {
     private static final Element ROOT_ELEMENT = Element.create("root", of());
     private static final RosettaPath PARENT_PATH = RosettaPath.createPath(ROOT_ELEMENT);
 
+    private static final RosettaPath PATH_1 = RosettaPath.valueOf("a.b.c");
+	private static final RosettaPath PATH_2 = RosettaPath.valueOf("a.b(0).c");
+	private static final RosettaPath PATH_3 = RosettaPath.valueOf("a.b.d");
+	private static final RosettaPath PATH_4 = RosettaPath.valueOf("a.b(1)");
+	private static final RosettaPath PATH_5 = RosettaPath.valueOf("a.b(1).c");
+	private static final RosettaPath PATH_6 = RosettaPath.valueOf("a.b(1).d");
+    
+	@Test
+    void shouldCompareEmptyAndAndZeroPathIndexAndReturnEqualOrder() {
+        assertThat(PATH_1.compareTo(PATH_2), is(0));
+
+    }
+	
+	@Test
+    void shouldComparePathAndReturnLowerOrder() {
+        assertThat(PATH_1.compareTo(PATH_3), is(-1));
+        assertThat(PATH_2.compareTo(PATH_3), is(-1));
+    }
+
+	@Test
+    void shouldComparePathAndReturnHigherOrder() {
+        assertThat(PATH_3.compareTo(PATH_1), is(1));
+        assertThat(PATH_3.compareTo(PATH_1), is(1));
+    }
+	
+	@Test
+    void shouldCompareGreaterPathIndexAndReturnLowerOrder() {
+        assertThat(PATH_1.compareTo(PATH_4), is(-1));
+        assertThat(PATH_2.compareTo(PATH_4), is(-1));
+    }
+	
+	@Test
+    void shouldCompareLowerPathIndexAndReturnHigherOrder() {
+        assertThat(PATH_4.compareTo(PATH_1), is(1));
+        assertThat(PATH_4.compareTo(PATH_2), is(1));
+    }
+	
+	@Test
+    void shouldCompareLongerPathAndReturnLowerOrder() {
+        assertThat(PATH_4.compareTo(PATH_5), is(-1));
+    }
+	
+	@Test
+    void shouldCompareShorterPathAndReturnHigherOrder() {
+		assertThat(PATH_5.compareTo(PATH_4), is(1));
+    }
+	
     @Test
     void createNewSubPathHasSameParent() {
         assertThat(PARENT_PATH.newSubPath(ELEMENT_A).getParent(), is(PARENT_PATH));
