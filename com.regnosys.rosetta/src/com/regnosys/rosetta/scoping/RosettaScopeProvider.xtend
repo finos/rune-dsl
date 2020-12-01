@@ -34,6 +34,7 @@ import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.RosettaConfigExtension
+import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
@@ -59,191 +60,203 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	
 	public val static LIB_NAMESPACE = 'com.rosetta.model'
 	
+	static Logger LOGGER = Logger.getLogger(RosettaScopeProvider)
+	
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
 
 	override getScope(EObject context, EReference reference) {
-		switch reference {
-			case ROSETTA_GROUP_BY_EXPRESSION__ATTRIBUTE:
-				if (context instanceof RosettaGroupByFeatureCall) {
-					val featureCall = context.call
-					if (featureCall instanceof RosettaFeatureCall) {
-						val receiverType = typeProvider.getRType(featureCall.feature)
-						val featureScope = receiverType.createFeatureScope
-						if (featureScope !== null)
-							return featureScope
-					}
-					return IScope.NULLSCOPE
-				} else if (context instanceof RosettaGroupByExpression) {
-					val container = context.eContainer
-					if (container instanceof RosettaGroupByFeatureCall) {
-						val featureCall = container.call
+		try {
+			switch reference {
+				case ROSETTA_GROUP_BY_EXPRESSION__ATTRIBUTE:
+					if (context instanceof RosettaGroupByFeatureCall) {
+						val featureCall = context.call
 						if (featureCall instanceof RosettaFeatureCall) {
 							val receiverType = typeProvider.getRType(featureCall.feature)
 							val featureScope = receiverType.createFeatureScope
 							if (featureScope !== null)
 								return featureScope
 						}
-					}
-					else if (container instanceof RosettaGroupByExpression) {
-						val parentType = typeProvider.getRType(container.attribute)
-						val featureScope = parentType.createFeatureScope
-							if (featureScope !== null)
-								return featureScope
-					}
-					return IScope.NULLSCOPE
-				}
-			case ROSETTA_FEATURE_CALL__FEATURE: {
-				if (context instanceof RosettaFeatureCall) {
-					val receiverType = typeProvider.getRType(context.receiver)
-					val featureScope = receiverType.createFeatureScope
-					var allPosibilities = newArrayList
-					
-					if (featureScope!==null) {
-						allPosibilities.addAll(featureScope.allElements);
-					}
-					//if an attribute has metafields then then the meta names are valid in a feature call e.g. -> currency -> scheme
-					val receiver = context.receiver;
-					if (receiver instanceof RosettaFeatureCall) {
-						val feature = receiver.feature
-						switch(feature) {
-							Attribute: {
-								val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
-								// TODO check that we can use QualifiedName here 
-								if (metas !== null && !metas.isEmpty) {
-									allPosibilities.addAll(configs.findMetaTypes(feature).filter[
-										metas.contains(it.name.lastSegment.toString)
-									].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)])
-								}
+						return IScope.NULLSCOPE
+					} else if (context instanceof RosettaGroupByExpression) {
+						val container = context.eContainer
+						if (container instanceof RosettaGroupByFeatureCall) {
+							val featureCall = container.call
+							if (featureCall instanceof RosettaFeatureCall) {
+								val receiverType = typeProvider.getRType(featureCall.feature)
+								val featureScope = receiverType.createFeatureScope
+								if (featureScope !== null)
+									return featureScope
 							}
 						}
-					}
-					return new SimpleScope(allPosibilities)
-				}
-				return IScope.NULLSCOPE
-			}
-			case OPERATION__ASSIGN_ROOT: {
-				if (context instanceof Operation) {
-					val outAndAliases = newArrayList
-					val out = getOutput(context.function)
-					if (out !== null) {
-						outAndAliases.add(out)
-					}
-					outAndAliases.addAll(context.function.shortcuts)
-					return Scopes.scopeFor(outAndAliases)
-				}
-				return IScope.NULLSCOPE
-			}
-			case SEGMENT__ATTRIBUTE: {
-				switch (context) {
-					Operation: {
-						val receiverType = typeProvider.getRType(context.assignRoot)
-						val featureScope = receiverType.createFeatureScope
-						if (featureScope !== null) {
-							return featureScope;
+						else if (container instanceof RosettaGroupByExpression) {
+							val parentType = typeProvider.getRType(container.attribute)
+							val featureScope = parentType.createFeatureScope
+								if (featureScope !== null)
+									return featureScope
 						}
 						return IScope.NULLSCOPE
 					}
-					Segment: {
-						val prev = context.prev
-						if (prev !== null) {
-							if (prev.attribute !== null && !prev.attribute.eIsProxy) {
-								val receiverType = typeProvider.getRType(prev.attribute)
-								val featureScope = receiverType.createFeatureScope
-								if (featureScope !== null) {
-									return featureScope;
+				case ROSETTA_FEATURE_CALL__FEATURE: {
+					if (context instanceof RosettaFeatureCall) {
+						val receiverType = typeProvider.getRType(context.receiver)
+						val featureScope = receiverType.createFeatureScope
+						var allPosibilities = newArrayList
+						
+						if (featureScope!==null) {
+							allPosibilities.addAll(featureScope.allElements);
+						}
+						//if an attribute has metafields then then the meta names are valid in a feature call e.g. -> currency -> scheme
+						val receiver = context.receiver;
+						if (receiver instanceof RosettaFeatureCall) {
+							val feature = receiver.feature
+							switch(feature) {
+								Attribute: {
+									val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
+									// TODO check that we can use QualifiedName here 
+									if (metas !== null && !metas.isEmpty) {
+										allPosibilities.addAll(configs.findMetaTypes(feature).filter[
+											metas.contains(it.name.lastSegment.toString)
+										].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)])
+									}
 								}
-								return IScope.NULLSCOPE
 							}
 						}
-						if (context.eContainer instanceof Operation) {
-							return getScope(context.eContainer, reference)
+						return new SimpleScope(allPosibilities)
+					}
+					return IScope.NULLSCOPE
+				}
+				case OPERATION__ASSIGN_ROOT: {
+					if (context instanceof Operation) {
+						val outAndAliases = newArrayList
+						val out = getOutput(context.function)
+						if (out !== null) {
+							outAndAliases.add(out)
 						}
-						return defaultScope(context, reference)
+						outAndAliases.addAll(context.function.shortcuts)
+						return Scopes.scopeFor(outAndAliases)
 					}
-					default:
-						return defaultScope(context, reference)
+					return IScope.NULLSCOPE
 				}
-			}
-			case ROSETTA_CALLABLE_CALL__CALLABLE: {
-				if (context instanceof RosettaWorkflowRule) {
-					val parent = context.root?.parent
-					if (parent instanceof Data) {
-						val allClasses = parent.allSuperTypes
-						val scope = Scopes.scopeFor(allClasses)
-						return scope
-					}
-				} else if (context instanceof Operation) {
-					val function = context.function
-					val inputsAndOutputs = newArrayList
-					if(!function.inputs.nullOrEmpty)
-						inputsAndOutputs.addAll(function.inputs)
-					if(function.output!==null)
-						inputsAndOutputs.add(function.output)
-					return Scopes.scopeFor(inputsAndOutputs)
-				} else {
-					val container = EcoreUtil2.getContainerOfType(context, Function)
-					if(container !== null) {
-						return filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
-							descr | descr.EClass !== DATA
-						])
-					}
-					
-				}
-				return getParentScope(context, reference, defaultScope(context, reference))
-			}
-			case ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE: {
-				return filteredScope(defaultScope(context, reference), [EClass !== FUNCTION_DISPATCH])
-			}
-			case ROSETTA_ENUM_VALUE_REFERENCE__VALUE: {
-				if (context instanceof RosettaEnumValueReference) {
-					return Scopes.scopeFor(context.enumeration.allEnumValues)
-				}
-				return IScope.NULLSCOPE
-			}
-			case ROSETTA_WORKFLOW_RULE__COMMON_IDENTIFIER:
-				if (context instanceof RosettaWorkflowRule) {
-					val parent = context.root?.parent
-					if (parent instanceof Data) {
-						return Scopes.scopeFor(parent.allAttributes)
+				case SEGMENT__ATTRIBUTE: {
+					switch (context) {
+						Operation: {
+							val receiverType = typeProvider.getRType(context.assignRoot)
+							val featureScope = receiverType.createFeatureScope
+							if (featureScope !== null) {
+								return featureScope;
+							}
+							return IScope.NULLSCOPE
+						}
+						Segment: {
+							val prev = context.prev
+							if (prev !== null) {
+								if (prev.attribute !== null && !prev.attribute.eIsProxy) {
+									val receiverType = typeProvider.getRType(prev.attribute)
+									val featureScope = receiverType.createFeatureScope
+									if (featureScope !== null) {
+										return featureScope;
+									}
+									return IScope.NULLSCOPE
+								}
+							}
+							if (context.eContainer instanceof Operation) {
+								return getScope(context.eContainer, reference)
+							}
+							return defaultScope(context, reference)
+						}
+						default:
+							return defaultScope(context, reference)
 					}
 				}
-			case ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF: {
-				if (context instanceof RosettaExternalRegularAttribute) {
-					val classRef = (context.eContainer as RosettaExternalClass).typeRef
-					if(classRef instanceof Data)
-						return Scopes.scopeFor(classRef.allAttributes)
+				case ROSETTA_CALLABLE_CALL__CALLABLE: {
+					if (context instanceof RosettaWorkflowRule) {
+						val parent = context.root?.parent
+						if (parent instanceof Data) {
+							val allClasses = parent.allSuperTypes
+							val scope = Scopes.scopeFor(allClasses)
+							return scope
+						}
+					} else if (context instanceof Operation) {
+						val function = context.function
+						val inputsAndOutputs = newArrayList
+						if(!function.inputs.nullOrEmpty)
+							inputsAndOutputs.addAll(function.inputs)
+						if(function.output!==null)
+							inputsAndOutputs.add(function.output)
+						return Scopes.scopeFor(inputsAndOutputs)
+					} else {
+						val container = EcoreUtil2.getContainerOfType(context, Function)
+						if(container !== null) {
+							return filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
+								descr | descr.EClass !== DATA
+							])
+						}
+						
+					}
+					return getParentScope(context, reference, defaultScope(context, reference))
 				}
-				return IScope.NULLSCOPE
-			}			
-			case ROSETTA_EXTERNAL_ENUM_VALUE__ENUM_REF: {
-				if (context instanceof RosettaExternalEnumValue) {
-					val enumRef = (context.eContainer as RosettaExternalEnum).typeRef
-					if(enumRef instanceof RosettaEnumeration)
-						return Scopes.scopeFor(enumRef.allEnumValues)
+				case ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE: {
+					return filteredScope(defaultScope(context, reference), [EClass !== FUNCTION_DISPATCH])
 				}
-				return IScope.NULLSCOPE
-			}
-			case ANNOTATION_REF__ATTRIBUTE: {
-				if (context instanceof AnnotationRef) {
-					val annoRef = context.annotation
-					return Scopes.scopeFor(annoRef.attributes)
+				case ROSETTA_ENUM_VALUE_REFERENCE__VALUE: {
+					if (context instanceof RosettaEnumValueReference) {
+						return Scopes.scopeFor(context.enumeration.allEnumValues)
+					}
+					return IScope.NULLSCOPE
 				}
-				return IScope.NULLSCOPE
-			}
-			case FUNCTION_DISPATCH__ATTRIBUTE: {
-				if(context instanceof FunctionDispatch) {
-					return Scopes.scopeFor(getInputs(context))
+				case ROSETTA_WORKFLOW_RULE__COMMON_IDENTIFIER:
+					if (context instanceof RosettaWorkflowRule) {
+						val parent = context.root?.parent
+						if (parent instanceof Data) {
+							return Scopes.scopeFor(parent.allAttributes)
+						}
+					}
+				case ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF: {
+					if (context instanceof RosettaExternalRegularAttribute) {
+						val classRef = (context.eContainer as RosettaExternalClass).typeRef
+						if(classRef instanceof Data)
+							return Scopes.scopeFor(classRef.allAttributes)
+					}
+					return IScope.NULLSCOPE
+				}			
+				case ROSETTA_EXTERNAL_ENUM_VALUE__ENUM_REF: {
+					if (context instanceof RosettaExternalEnumValue) {
+						val enumRef = (context.eContainer as RosettaExternalEnum).typeRef
+						if(enumRef instanceof RosettaEnumeration)
+							return Scopes.scopeFor(enumRef.allEnumValues)
+					}
+					return IScope.NULLSCOPE
 				}
-				return IScope.NULLSCOPE
+				case ANNOTATION_REF__ATTRIBUTE: {
+					if (context instanceof AnnotationRef) {
+						val annoRef = context.annotation
+						return Scopes.scopeFor(annoRef.attributes)
+					}
+					return IScope.NULLSCOPE
+				}
+				case FUNCTION_DISPATCH__ATTRIBUTE: {
+					if(context instanceof FunctionDispatch) {
+						return Scopes.scopeFor(getInputs(context))
+					}
+					return IScope.NULLSCOPE
+				}
+				case CONSTRAINT__ATTRIBUTES: {
+					return context.getParentScope(reference, IScope.NULLSCOPE)
+				}
 			}
-			case CONSTRAINT__ATTRIBUTES: {
-				return context.getParentScope(reference, IScope.NULLSCOPE)
-			}
+			defaultScope(context, reference)
 		}
-		defaultScope(context, reference)
+		catch (Exception e) {
+			LOGGER.error ("Error scoping rosetta - \"" + e.message + "\" see debug logging for full trace");
+			LOGGER.debug("Full trace of error ", e);
+			//Any exception that is thrown here is going to have been caused by invalid grammar
+			//However invalid grammar is checked as the next step of the process - after scoping
+			//so just return an empty scope here and let the validator do its thing afterwards
+			return IScope.NULLSCOPE;
+		}
 	}
 	
 	override protected getImplicitImports(boolean ignoreCase) {
