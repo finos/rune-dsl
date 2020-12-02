@@ -8,6 +8,7 @@ import static java.lang.String.format;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,8 @@ import java.util.stream.Stream;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 
-public class RosettaPath {
+public class RosettaPath implements Comparable<RosettaPath> {
+	
     private final RosettaPath parent;
     private final RosettaPath.Element element;
 
@@ -180,8 +182,30 @@ public class RosettaPath {
         result = 31 * result + (element != null ? element.hashCode() : 0);
         return result;
     }
+    
+    /**
+     * Path elements with a zero index are equivalent to elements with no index. 
+     * The compareTo implementation is required to sort paths where no index and zero index are equal.
+     */
+	@Override
+	public int compareTo(RosettaPath other) {
+		Iterator<Element> i1 = allElements().iterator();
+		Iterator<Element> i2 = other.allElements().iterator();
 
-    public static class Element {
+		while (i1.hasNext() || i2.hasNext()) {
+			if (!i1.hasNext())
+				return -1;
+			if (!i2.hasNext())
+				return 1;
+			int result = i1.next().compareTo(i2.next());
+		    if (result != 0) {
+		    	return result;
+		    }
+		}
+		return 0;
+	}
+
+    public static class Element implements Comparable<Element> {
         public static final String DEFAULT_URI = "FpML_5_10";
 
         private final String uri;
@@ -285,6 +309,18 @@ public class RosettaPath {
             result = 31 * result + (attrs != null ? attrs.hashCode() : 0);
             return result;
         }
+
+        /**
+         * Path elements with a zero index are equivalent to elements with no index. 
+         * The compareTo implementation is required to sort paths where no index and zero index are equal.
+         */
+		@Override
+		public int compareTo(Element other) {
+			return Comparator
+					  .comparing(Element::getPath)
+					  .thenComparing((e1, e2) -> Integer.compare(e1.getIndex().orElse(0), e2.getIndex().orElse(0)))
+					  .compare(this, other);
+		}
     }
     
     static public class RosettaPathTree {
@@ -387,5 +423,4 @@ public class RosettaPath {
 			return result.toString();
 		}
     }
-
 }
