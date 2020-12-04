@@ -4,10 +4,9 @@ Mappings
 Purpose
 ^^^^^^^
 
+Mappings in Rosetta are the annotations on the model that specify how input documents in other formats (e.g. FpML or ISDACreate json) can be transformed into Rosetta documents. Mappings are specified in the model as synonyms. 
 
-Mappings in Rosetta are the annotations on the model that specify how input documents in other formats 
-(e.g. FpML or ISDACreate json) can be transformed into Rosetta documents. Mappings are specified in the model as synonyms. Synonyms added throughout the model are 
-combined to map the data tree of an input document into the output Rosetta document. The synonyms can be used to generate an *Ingestion Environment*, 
+Synonyms added throughout the model are combined to map the data tree of an input document into the output Rosetta document. The synonyms can be used to generate an *Ingestion Environment*, 
 a library of java that when given an input document as input will output the resulting Rosetta document.
 
 Synonyms are specified on the attributes of data type and the values of enum types.
@@ -15,8 +14,7 @@ Synonyms are specified on the attributes of data type and the values of enum typ
 
 Basic Mappings
 ^^^^^^^^^^^^^^
-If any attribute does not have a synonym on it then the mapping will search down the Rosetta tree for the 
-next attributes that do have synonyms.
+Basic mapping specify how a value from the input document can be directly mapped to a value in the resulting Rosetta document.
 
 Synonym Source
 ==============
@@ -30,7 +28,8 @@ A synonym source can extend another synonym source. This forms a a new synonym s
 
 Basic Synonym
 =============
-Synonyms are annotations on attributes of Rosetta types. They can be written inside the definition of the type or they can be specified separately.
+Synonyms are annotations on attributes of Rosetta types and the enumeration values of Rosetta Enums.  The model does have some legacy synonyms remaining 
+directly on rosetta types but these have no effect. They can be written inside the definition of the type or they can be specified in a seperate file to leave the type definitions simpler.
 
 Inline
 ------
@@ -58,33 +57,29 @@ Synonym Body
 ============
 Value
 -----
-The simplest synonym consists of a single value ``[value "independentAmount"]``. This means that the value of the input attribute "independantAmount" will be mapped to the associated field. If both the input attribute and the Rosetta field are simple types (string, number, date etc) then the input value will be stored in the appropriate place in the output document. If they are both complex types then the attributes contained within the complex type will be compared against synonyms inside the corresponding Rosetta type.
+The simplest synonym consists of a single value ``[value "independentAmount"]``. This means that the value of the input attribute "independentAmount" will be mapped to the associated Rosetta attribute. If both the input attribute and the Rosetta attribute are basic types (string, number, date etc) then the input value will be stored in the appropriate place in the output document. If they are both complex types (with child attributes of their own) then the attributes contained within the complex type will be compared against synonyms inside the corresponding Rosetta type. If one is complex and the other is basic then a mapping error will be recorded.
 
 Path
 ----
-The value of a synonym can be followed with a path declaration. E.g. ``[value "initialFixingDate" path "resetDates"]``. This allows a path of input document elements to be matched to a single Rosetta attribute. In the example the contents of the xml path "resetDates->initialFixingDate" will be mapped to the Rosetta attribute. Note that the path is applied as a prefix to the synonym value.
+The value of a synonym can be followed with a path declaration. E.g. ``[value "initialFixingDate" path "resetDates"]``. This allows a path of input document elements to be matched to a single Rosetta attribute. In the example the contents of the xml path "resetDates.initialFixingDate" will be mapped to the Rosetta attribute. Note that the path is applied as a prefix to the synonym value.
 
 Maps 2
 ------
-By default if a single input value is mapped to multiple Rosetta output values this is considered an error however by adding the "maps 2" keyword this can be overridden allowing the input value to map to many output Rosetta attributes
+Mappings are expected to be ont-to-one with each input value mapping to one Rosetta value. By default if a single input value is mapped to multiple Rosetta output values this is considered an error. However by adding the "maps 2" keyword this can be overridden allowing the input value to map to many output Rosetta values
 
 meta
 ----
-The *meta* keyword inside a synonym is used to map to metadata fields. E.g. ::
+The *meta* keyword inside a synonym is used to map to Rosetta `metadata <documentation.html#metadata-label>`_. E.g. ::
 
 	issuer string (0..1)
      [metadata scheme]
      [synonym FpML_5_10 value "issuer" meta "issuerIdScheme"]
 
-the input value associated withe "issuer" will be mapped to the value of the attribute issuer and the value of "issuerIdScheme" will be mapped to the scheme metadata attribute
-
-The three commonly used meta attributes are scheme, id and reference. The scheme provides a reference with which to interpret the relevant value. issuerIdScheme will be something like a url of a page that expains how to interpret the issuer.
-
-id is used to map an identifier from the input document that is expected to be unique within the contect of the document. The reference can then be used to reference that element from elsewhere in the resulting document
+the input value associated withe "issuer" will be mapped to the value of the attribute issuer and the value of "issuerIdScheme" will be mapped to the scheme metadata attribute.
 
 Enumerations
 ============
-A synonym on an enumeration provide mappings from the string values in your input document to the values of the enumeration. E.g. the fpml value 'Broker' will be mapped to the Rosetta constant *NaturalPersonRoleEnum.Broker* ::
+A synonym on an enumeration provide mappings from the string values in your input document to the values of the enumeration. E.g. the fpml value 'Broker' will be mapped to the Rosetta enum value *NaturalPersonRoleEnum.Broker* ::
 
 	enum NaturalPersonRoleEnum: <"The enumerated values for the natural person's role.">
 
@@ -103,23 +98,32 @@ In an eternal synonym file enum synonyms are defined in a block after the type a
 
 Advanced Mapping
 ^^^^^^^^^^^^^^^^
+The algorithm starts by *binding* the root of the input document to a pre-defined Rosetta `root type <documentation.html#roottype-label>`_
+
+It then recursivly traverses the input document
+
+Each step of the algorithm starts with the current attribute in the input document *bound* to a set of Rosetta objects in the output Rosetta document.
+
+For each input child attribute of the current input attribute the rosetta attributes of all the *bound* Rosetta objects type's are checked for synonyms that match the child attribute. For each matching attribute a new Rosetta object instance is created and *bound* to that child element. The algorithm then recurses with the current child becoming the current input attribute.
+
+When an input attribute has an associated value that value is set as the value of all the rosetta objects that are bound to the input attribute.
 
 Hints
 =====
-Hints are synonyms used to bypass a layer of rosetta without consuming an input attribute. They are required where an attribute has synonyms that would usually prevent the algorithm for searching down the Rosetta tree for attributes further down, but the current input element needs to not be consumed.
+Hints are synonyms used to bypass a layer of rosetta without *consuming* an input attribute. They are required where an attribute has synonyms that would usually prevent the algorithm for searching down the Rosetta tree for attributes further down, but the current input element needs to still be available to match to synonyms.
 
 e.g. ::
 
 	ResolvablePayoutQuantity:
 		+ assetIdentifier
-		[value "notionalAmount"]
-		[hint "currency"]
+			[value "notionalAmount"]
+			[hint "currency"]
 
 	AssetIdentifier:
 		+ currency
 			[value "currency" maps 2 meta "currencyScheme"]
 
-In this example the element "notionalAmount" is mapped to the asset identifier and the children of "notionalAmount" will be matched against the synonyms for AssetIdentifier. However the input element "currency" will also be mapped to the assetIdentifier but "currency" is still available to be mapped against the synonyms of AssetIdentifier. 
+In this example the input attribute "notionalAmount" is matched to the assetIdentifier and the children of "notionalAmount" will be matched against the synonyms for AssetIdentifier. However the input attribute "currency" will also be matched to the assetIdentifier but "currency" is still available to be matched against the synonyms of AssetIdentifier. 
 
 Merging inputs
 ==============
@@ -130,7 +134,7 @@ The synonyms ::
 		[synonym FpML_5_10 value feeLeg]
 		[synonym FpML_5_10 value generalTerms]
 
-will produce two InterestRatePayout objects. In order to create a single InterestRatePayout with value from the FpML feeLeg and general terms you want to use the synonym merging syntax ::
+will produce two InterestRatePayout objects. In order to create a single InterestRatePayout with values from the FpML feeLeg and generalTerms you want to use the synonym merging syntax ::
 
 	interestRatePayout InterestRatePayout (0..*)
 		[synonym FpML_5_10 value feeLeg, generalTerms]
@@ -157,7 +161,7 @@ e.g. ::
 	itemName string (1..1) <"In this ....">;
 		[synonym DTCC_11_0 set to "comment"]
 
-A set to can be conditional on a `when clause <#set-when-label>`_
+A set to can be conditional on a `when clause <#when-clause-label>`_
 
 e.g. ::
 
@@ -193,6 +197,7 @@ e.g. ::
 
 		[synonym Bank_A value e path "b.c" default to "DEFAULT"]
 
+. _when-clause-label:
 When clauses
 ============
 There are three types of when clause Test expression, Path expression or RosettaPath expression.
@@ -223,7 +228,7 @@ A Path expression tests to see if the synonym path that led us to the current cl
 
 RosettaPath Expression
 ----------------------
-A rosettaPath expression is similar to a path expression except that it examines the path in the resulting rosetta object that leads to this object.
+A rosettaPath expression checks the path through the rosetta document that leads to the current rosetta object. The path provided can start from any level in the document; in order for the condition to be true then the current path has to end with the given path.
 
 e.g. ::
 

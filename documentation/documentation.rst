@@ -1,6 +1,5 @@
 Rosetta Modelling Components
 ============================
-
 **The Rosetta syntax can express six types of model components**:
 
 * Data
@@ -14,8 +13,6 @@ This documentation details the purpose and features of each type of model compon
 
 Data Component
 --------------
-
-
 **The Rosetta DSL provides two data definition components** that are used to model data:
 
 * `Type <#type-label>`_
@@ -25,15 +22,12 @@ Data Component
 
 Type
 ^^^^
-
 Purpose
 """""""
-
 A *type* describes an *entity* (also sometimes referred to as an *object* or a *class*) in the model and is defined by a plain-text description and a set of *attributes* (also sometimes refered to as fields). Attributes specify the granular elements composing the entity.
 
 Syntax
 """"""
-
 The definition of a type starts with the keyword ``type``, followed by the type name. A colon ``:`` punctuation introduces the rest of the definition.
 
 The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase`_). Type names need to be unique across a `namespace <#namespace-label>`_. All those requirements are controlled by the Rosetta DSL grammar.
@@ -71,7 +65,6 @@ Then the definition of the type lists its component attributes. Each attribute i
 
 Built in types
 ^^^^^^^^^^^^^^
-
 .. _basic-type-label:
 
 Basic Types
@@ -117,17 +110,14 @@ Inheritance
 
 Enumeration
 ^^^^^^^^^^^
-
 Purpose
 """""""
-
 **Enumeration is the mechanism through which an attribute may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled (or enumeration) values.
 
 This mimics the *scheme* concept, whose values may be specified as part of an existing standard and can be represented through an enumeration in the Rosetta DSL. Typically, a scheme with no defined values is represented as a basic ``string`` type.
 
 Syntax
 """"""
-
 Enumerations are very simple modelling containers, which are defined in the same way as other model components. The definition of an enumeration starts with the ``enum`` keyword, followed by the enumeration name. A colon ``:`` punctuation introduces the rest of the definition, which contains a plain-text description of the enumeration and the list of enumeration values.
 
 .. code-block:: Haskell
@@ -165,7 +155,6 @@ An example is the day count fraction scheme for interest rate calculation, which
 
 Namespace
 ---------
-
 All Rosetta components are organised into namespaces. ::
 
   namespace cdm.base.datetime
@@ -176,13 +165,10 @@ The namespace provides a context within which references to components are resol
 
 Annotation Component
 --------------------
-
 Annotation Definition
 ^^^^^^^^^^^^^^^^^^^^^
-
 Purpose
 """""""
-
 Annotations allow to associate meta-information to model components, which can serve a number of purposes:
 
 * purely syntactic, to provide additional guidance when navigating model components
@@ -193,12 +179,12 @@ Examples of annotations and their usage for different purposes are illustrated b
 
 Syntax
 """"""
-
 Annotations are defined in the same way as other model components. The definition of an annotation starts with the ``annotation`` keyword, followed by the annotation name. A colon ``:`` punctuation introduces the rest of the definition, starting with a plain-text description of the annotation.
 
 Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase.
 
 It is possible to associate attributes to an annotation (see `metadata <#metadata-label>`_ example), even though some annotations may not require any further attribute. For instance:
+.. _roottype-label:
 
 .. code-block:: Haskell
 
@@ -208,7 +194,6 @@ It is possible to associate attributes to an annotation (see `metadata <#metadat
 
 Meta-Data and Reference
 ^^^^^^^^^^^^^^^^^^^^^^^
-
 Purpose
 """""""
 .. _metadata-label:
@@ -242,7 +227,6 @@ Other than the new annotation, data templates do not have any impact on the mode
 
 Syntax
 """"""
-
 Once an annotation is defined, its name and chosen attribute, if any, are used in between square brackets ``[`` ``]`` to annotate model components. The below ``Party`` and ``Identifier`` types illustrate how meta-data annotations and their relevant attributes can be used in a model:
 
 .. code-block:: Haskell
@@ -281,7 +265,6 @@ When a data type is annotated as a ``template``, the designation applies to all 
 
 Qualified Type
 ^^^^^^^^^^^^^^
-
 The Rosetta DSL provides for some special types called *qualified types*, which are specific to its application in the financial domain:
 
 * Calculation - ``calculation``
@@ -291,7 +274,6 @@ Those special types are designed to flag attributes which result from running so
 
 Calculation
 """""""""""
-
 The ``calculation`` qualified type, when specified instead of the type for the attribute, represents the outcome of a calculation. An example usage is the conversion from clean price to dirty price for a bond.
 
 .. code-block:: Haskell
@@ -309,7 +291,6 @@ An attribute with the ``calculation`` type is meant to be associated to a functi
 
 Object Qualification
 """"""""""""""""""""
-
 Similarly, ``productType`` and ``eventType`` represent the outcome of qualification logic to infer the type of an object (financial product or event) in the model. See the ``productQualifier`` attribute, alongside other identifier attributes in the ``ProductIdentification`` type:
 
 .. code-block:: Haskell
@@ -335,7 +316,6 @@ Attributes of these types are meant to be associated to an object qualification 
 
 Data Validation Component
 -------------------------
-
 **Data integrity is supported by validation components that are associated to each data type** in the Rosetta DSL. There are two types of validation components:
 
 * Cardinality
@@ -416,12 +396,10 @@ The definition of a condition starts with the ``condition`` keyword, followed by
 
 Special Syntax
 ^^^^^^^^^^^^^^
-
 Some specific language features have been introduced in the Rosetta DSL, to handle validation cases where the basic boolean logic components would create unecessarily verbose, and therefore less readable, expressions. Those use-cases were deemed frequent enough to justify developing a specific syntax for them.
 
 Choice
 """"""
-
 Choice rules define a choice constraint between the set of attributes of a type in the Rosetta DSL. They allow a simple and robust construct to translate the XML *xsd:choicesyntax*, although their usage is not limited to those XML use cases.
 
 The choice constraint can be either:
@@ -462,7 +440,6 @@ While most of the choice rules have two attributes, there is no limit to the num
 
 One-of (as complement to choice rule)
 """""""""""""""""""""""""""""""""""""
-
 In the case where all the attributes of a given type are subject to a required choice logic that results in one and only one of them being present in any instance of that type, the Rosetta DSL allows to associate a ``one-of`` condition to the type, as short-hand to by-pass the implementation of the corresponding choice rule.
 
 This feature is illustrated below:
@@ -476,7 +453,6 @@ This feature is illustrated below:
 
 Only Exists
 """""""""""
-
 The ``only exists`` component is an adaptation of the simple ``exists`` syntax, that verifies that the attribute exists but also that no other attribute of the type does.
 
 .. code-block:: Haskell
@@ -497,9 +473,10 @@ This syntax drastically reduces the condition expression, which would otherwise 
 
 .. note:: This condition is typically applied to attribues of objects whose type implements a ``one-of`` condition. In this case, the ``only`` qualifier is redundant with the ``one-of`` condition because only one of the attributes can exist. However, ``only`` makes the condition expression more explicit, and also robust to potential lifting of the ``one-of`` condition.
 
+.. _function-label:
+
 Function Component
 ------------------
-
 **In programming languages, a function is a fixed set of logical instructions returning an output** which can be parameterised by a set of inputs (also known as *arguments*). A function is *invoked* by specifying a set of values for the inputs and running the instructions accordingly. In the Rosetta DSL, this type of component has been unified under a single *function* construct.
 
 Functions are a fundamental building block to automate processes, because the same set of instructions can be executed as many times as required by varying the inputs to generate a different, yet deterministic, result.
@@ -522,21 +499,16 @@ Where widely adopted industry processes already exist, they should be reused and
 
 This concept of combining and reusing small components is also consistent with a modular component approach to modelling.
 
-.. _function-label:
-
 Function Specification
 ^^^^^^^^^^^^^^^^^^^^^^
-
 Purpose
 """""""
-
 **Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function's inputs and/or output through their *types* (or *enumerations*) in the data model. This amounts to specifying the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process.
 
 Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the domain model.
 
 Syntax
 """"""
-
 Functions are defined in the same way as other model components. The syntax of a function specification starts with the keyword ``func`` followed by the function name. A colon ``:`` punctuation introduces the rest of the definition.
 
 The Rosetta DSL convention for a function name is to use a PascalCase (upper `CamelCase`_) word. The function name needs to be unique across all types of functions in a model and validation logic is in place to enforce this.
@@ -550,14 +522,12 @@ The rest of the function specification supports the following components:
 
 Descriptions
 """"""""""""
-
 The role of a function must be clear for implementors of the model to build applications that provide such functionality. To better communicate the intent and use of functions, Rosetta supports multiple plain-text descriptions in functions. Descriptions can be provided for the function itself, for any input and output and for any statement block.
 
 Look for occurences of text descriptions in the snippets below.
 
 Inputs and Output
 """""""""""""""""
-
 Inputs and output are a function's equivalent of a type's attributes. As in a ``type``, each ``func`` attribute is defined by a name, data type (as either a ``type``, ``enum`` or ``basicType``) and cardinality.
 
 At minimum, a function must specify its output attribute, using the ``output`` keyword also followed by a colon ``:``.
@@ -581,13 +551,14 @@ Most functions, however, also require inputs, which are also expressed as attrib
 
 Conditions
 """"""""""
-
-A function's inputs and output can be constrained using *conditions*. Each condition is expressed as a logical statement that evaluates to True or False, using the same language features as those available to express condition statements in data types and detailed in the `Condition Statement Section <#condition-label>`_.
+A function's inputs and output can be constrained using *conditions*.
 
 Condition statements in a function can represent either:
 
 * a **pre-condition**, using the ``condition`` keyword, applicable to inputs only and evaluated prior to executing the function, or
 * a **post-condition**, using the ``post-condition`` keyword, applicable to inputs and output and evaluated after executing the function (once the output is known)
+
+Each type of condition keyword is followed by a boolean `expression <expressions.html>`_ which is evaluated to check the correctness of the function inputs and result.
 
 Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the constraints that impementors of this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
@@ -620,8 +591,9 @@ Conditions are an essential feature of the definition of a function. By constrai
 
 Function Definition
 ^^^^^^^^^^^^^^^^^^^
-
 **The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function's API. The creation of valid output objects can be fully or partially defined as part of a function specification, or completely left to the implementor.
+
+The return object or individual attributes of the return object can be set by the function definition using the assign-output syntax; the keyword ``assign-output`` is followed by a `Rosetta Path <expressions.html#rosetta-path-label>`_ , a ``:`` and then an `expression <expressions.html>`_ used to calculate the value from the inputs
 
 * A function is **fully defined** when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the generated code is directly usable in an implementation.
 * A function is **partially defined** when the output object's validation constraints are only partially satisfied. In this case, implementors will need to extend the generated code and assign the remaining values on the output object.
@@ -634,7 +606,6 @@ The output object will be systematically validated when invoking a function, so 
 
 Output Construction
 """""""""""""""""""
-
 In the ``EquityPriceObservation`` example above, the ``post-condition`` statements assert whether the observation's date and value are correctly populated according to the output of other, sub-functions, but delegates the construction of that output to implementors of the function.
 
 In practice, implementors of the function can be expected to re-use those sub-functions (``ResolveAdjustableDate`` and ``EquitySpot``) to construct the output. The drawback is that those sub-functions are likely to be executed twice: once to build the output and once to run the validation.
@@ -756,8 +727,6 @@ see `mapping <mapping.html>`_
 
 Reporting Component
 -------------------
-
-
 Motivation
 ^^^^^^^^^^
 
@@ -877,6 +846,8 @@ To ensure a model’s regulatory framework integrity, the authority, corpus and 
 
 The next section describes how to define reporting rules as model components.
 
+.. _report-rule-label:
+
 Rule Definition
 ^^^^^^^^^^^^^^^
 
@@ -947,20 +918,18 @@ The extracted value may be coming from a data attribute in the model, as above, 
 
 Extraction statements can be chained using the keyword `then`, which means that extraction continues from the previously extracted point.
 
-The syntax provides type safety when chaining rules, whereby the output type of the preceding rule must be equal to the input type of the following rule. In the below example, extraction starts from the ``Contract`` type, which corresponds to the output of the preceding ``ContractForEvent`` rule. The example below uses the ContractForEvent rule to find the Contract object ant ``then`` extracts the termination date from that contract
+The syntax provides type safety when chaining rules, whereby the output type of the preceding rule must be equal to the input type of the following rule. The example below uses the TradeForEvent rule to find the Trade object and ``then`` extracts the termination date from that trade
 
 .. code-block:: Haskell
 
  reporting rule MaturityDate <"Date of maturity of the financial instrument. Field only applies to debt instruments with defined maturity">
-   ContractForEvent then extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> terminationDate -> adjustableDate -> unadjustedDate
+ 	TradeForEvent then extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> terminationDate -> adjustableDate -> unadjustedDate
 
- reporting rule ContractForEvent
-   extract if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> contract only exists
-     then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> contract
-     else if WorkflowStep -> businessEvent -> primitives -> quantityChange -> after -> contract  exists
-       then WorkflowStep -> businessEvent -> primitives -> quantityChange -> after -> contract
-       else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> contract
-     as "Contract"
+ reporting rule TradeForEvent
+ 	extract
+ 		if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade only exists
+	then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
+		else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
 
 - ``as`` <FieldName>
 
@@ -1027,7 +996,10 @@ In the below example, we first apply a filter and extract a ``fixedInterestRate`
 
 - ``if`` statement
 
-The syntax supports if-then-else style statements. It consists of several comma separated terms consisting of a test and a possible result.
+The syntax supports two syntaxes for if then else style statements. The first has the structure ``if`` *boolean-expression* 
+
+
+It consists of several comma separated terms consisting of a test and a possible result.
 The tests are evaluated in order and when the first one matches its associated result is returned from the statement.
 If none of the tests match then a final possible result can be provided
 In the below example we first extract the Payout from a Contract then we try to find the appropriate asset class.
