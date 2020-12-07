@@ -8,6 +8,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
@@ -57,6 +58,7 @@ class CardinalityProvider {
 			RosettaAbsentExpression,
 			RosettaExistsExpression,
 			RosettaContainsExpression,
+			RosettaDisjointExpression,
 			RosettaRootElement,
 			RosettaEnumValueReference: false
 			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }

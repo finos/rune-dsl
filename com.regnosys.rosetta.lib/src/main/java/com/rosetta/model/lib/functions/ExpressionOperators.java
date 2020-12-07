@@ -2,6 +2,7 @@ package com.rosetta.model.lib.functions;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Collections;
 
 public class ExpressionOperators {
 
@@ -35,5 +36,17 @@ public class ExpressionOperators {
 
 	public static boolean contains(final Collection<?> container, final Collection<?> ele) {
 		return container != null && container.containsAll(ele);
+	}
+	
+	public static boolean disjoint(final Mapper<?> container, final Object ele) {
+		return !container.getMulti().contains(ele);
+	}
+
+	public static boolean disjoint(final Collection<?> container, final Object ele) {
+		return container != null && !container.contains(ele);
+	}
+
+	public static boolean disjoint(final Collection<?> container, final Collection<?> ele) {
+		return container != null && ele!=null && Collections.disjoint(container, ele);
 	}
 }

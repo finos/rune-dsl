@@ -18,6 +18,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -136,6 +137,9 @@ class ExpressionGenerator {
 			}
 			RosettaContainsExpression : {
 				'''«importMethod(ValidatorHelper,"contains")»(«expr.container.javaCode(params)», «expr.contained.javaCode(params)»)'''
+			}
+			RosettaDisjointExpression : {
+				'''«importMethod(ValidatorHelper,"disjoint")»(«expr.container.javaCode(params)», «expr.disjoint.javaCode(params)»)'''
 			}
 			RosettaParenthesisCalcExpression : {
 				expr.expression.javaCode(params, isLast)
