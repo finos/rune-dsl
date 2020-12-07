@@ -412,6 +412,7 @@ RosettaTestExpression returns RosettaExpression:
 		| {RosettaExistsExpression.argument=current} (only?='only')? (single?='single' | multiple?='multiple')? ('exists')
 		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
 		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaFeatureCall
+		| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaFeatureCall
 		| {RosettaWhenPresentExpression.left=current} 'when' 'present' operator=('=') right=RosettaFeatureCall
 	)?
 ;
@@ -578,6 +579,7 @@ RosettaCalcExists returns RosettaExpression:
 		  {RosettaExistsExpression.argument=current} only?='only'? (single?='single' | multiple?='multiple')? 'exists'
 		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
 		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaCalcAttributeCall
+		| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaCalcAttributeCall
 		)
 	)?
 ;

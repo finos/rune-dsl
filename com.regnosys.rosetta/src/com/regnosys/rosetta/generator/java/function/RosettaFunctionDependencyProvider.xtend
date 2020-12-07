@@ -8,6 +8,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
@@ -58,6 +59,10 @@ class RosettaFunctionDependencyProvider {
 			}
 			RosettaContainsExpression: {
 				functionDependencies(object.contained) + functionDependencies(object.container)
+			}
+			
+			RosettaDisjointExpression: {
+				functionDependencies(object.disjoint) + functionDependencies(object.container)
 			}
 			RosettaCountOperation:{
 				functionDependencies(object.argument)

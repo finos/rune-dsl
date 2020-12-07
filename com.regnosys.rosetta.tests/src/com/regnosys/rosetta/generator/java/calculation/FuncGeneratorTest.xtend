@@ -2,11 +2,17 @@ package com.regnosys.rosetta.generator.java.calculation
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
+
+
+import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -14,6 +20,8 @@ class FuncGeneratorTest {
 
 	@Inject extension FuncGeneratorHelper
 	@Inject extension CodeGeneratorTestHelper
+	@Inject extension ModelHelper
+	@Inject extension ValidationTestHelper
 
 	@Test
 	def void testSimpleFunctionGeneration() {
@@ -397,6 +405,62 @@ class FuncGeneratorTest {
 		].generateCode
 		//.writeClasses("shouldGenerateFunctionWithCreationLHS")
 		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateDisjoint() {
+		val code = #[
+		'''
+			namespace "com.rosetta.test.model.agreement"
+					version "test"
+			
+			type Top:
+				foo Foo (1..*)
+			
+			type Foo:
+				bar1 number (0..1)
+			
+			func Disjoint: <"checks disjoint">
+				inputs: 
+					top1 Top (1..1)
+					top2 Top (1..1)
+				
+				output: result boolean (1..1)
+				assign-output result:
+					top1-> foo disjoint top2 -> foo
+		'''
+		].generateCode
+		//.writeClasses("shouldGenerateDisjoint")
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldNotGenerateDisjointDifferentTypes() {
+		val model = 
+		'''
+			namespace "com.rosetta.test.model.agreement"
+					version "test"
+			
+			type Top:
+				foo Foo (1..*)
+				bar string (1..*)
+			
+			type Foo:
+				bar1 number (0..1)
+			
+			func ExtractBar: <"tries disjoint differnt types">
+				inputs: 
+					top1 Top (1..1)
+					top2 Top (1..1)
+				
+				output: result boolean (1..1)
+				assign-output result:
+					top1-> foo disjoint top2 -> bar
+		'''.parseRosetta
+		
+		
+		model.assertError(ROSETTA_DISJOINT_EXPRESSION, null, 
+			"Disjoint must operate on lists of the same type")
 	}
 		
 	

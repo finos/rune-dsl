@@ -1,5 +1,7 @@
 package com.rosetta.model.lib.validation;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -275,6 +277,19 @@ public class ValidatorHelper {
 		}
 		else {
 			return ComparisonResult.failure(formatMultiError(o1) + " does not contain all of " +formatMultiError(o2));
+		}
+	}
+	
+	public static <T> ComparisonResult disjoint(Mapper<T> o1, Mapper<T> o2) {
+		List<T> multi2 = o2.getMulti();
+		List<T> multi1 = o1.getMulti();
+		boolean result =  Collections.disjoint(multi1, multi2);
+		if (result) {
+			return ComparisonResult.success();
+		}
+		else {
+			Collection<T> common = multi1.stream().filter(multi2::contains).collect(Collectors.toSet());
+			return ComparisonResult.failure(formatMultiError(o1) + " is not disjoint from " +formatMultiError(o2) + "common items are " + common);
 		}
 	}
 	

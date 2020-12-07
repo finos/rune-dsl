@@ -408,6 +408,11 @@ class RosettaContainsExpression extends RosettaExpression {
 	contains RosettaExpression contained
 }
 
+class RosettaDisjointExpression extends RosettaExpression {
+	contains RosettaExpression ^container
+	contains RosettaExpression disjoint
+}
+
 class RosettaWhenPresentExpression extends RosettaExpression {
 	contains RosettaExpression left
 	String operator
