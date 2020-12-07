@@ -398,6 +398,33 @@ class FuncGeneratorTest {
 		//.writeClasses("shouldGenerateFunctionWithCreationLHS")
 		code.compileToClasses
 	}
+	
+	@Test
+	def void shouldGenerateDisjoint() {
+		val code = #[
+		'''
+			namespace "com.rosetta.test.model.agreement"
+					version "test"
+			
+			type Top:
+				foo Foo (1..*)
+			
+			type Foo:
+				bar1 number (0..1)
+			
+			func ExtractBar: <"Extracts a bar">
+				inputs: 
+					top1 Top (1..1)
+					top2 Top (1..1)
+				
+				output: result boolean (1..1)
+				assign-output result:
+					top1-> foo disjoint top2 -> foo
+		'''
+		].generateCode
+		//.writeClasses("shouldGenerateDisjoint")
+		code.compileToClasses
+	}
 		
 	
 }

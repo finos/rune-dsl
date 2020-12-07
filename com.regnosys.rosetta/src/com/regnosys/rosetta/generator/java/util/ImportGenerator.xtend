@@ -21,6 +21,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -202,6 +203,11 @@ class ImportGenerator {
 			RosettaContainsExpression: {
 				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 				addExpression(expression.contained)
+				addExpression(expression.container)
+			}
+			RosettaDisjointExpression: {
+				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
+				addExpression(expression.disjoint)
 				addExpression(expression.container)
 			}
 			default:

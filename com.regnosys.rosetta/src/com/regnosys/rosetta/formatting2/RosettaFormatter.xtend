@@ -11,6 +11,7 @@ import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaDefinable
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -293,6 +294,17 @@ class RosettaFormatter extends AbstractFormatter2 {
 		]
 		ele.container.format
 		ele.contained.format
+	}
+	
+	def dispatch void format(RosettaDisjointExpression ele, extension IFormattableDocument document) {
+		ele.regionFor.keywords(
+			rosettaTestExpressionAccess.containsKeyword_1_3_1_0,
+			rosettaCalcExistsAccess.containsKeyword_1_0_2_1_0
+		).forEach [
+			surround(ONE_SPACE)
+		]
+		ele.container.format
+		ele.disjoint.format
 	}
 
 	def dispatch void format(RosettaExpression ele, extension IFormattableDocument document) {
