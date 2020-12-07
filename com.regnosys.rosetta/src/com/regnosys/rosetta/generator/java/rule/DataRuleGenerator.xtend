@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.rule
 
-import com.google.common.base.CaseFormat
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
@@ -48,19 +47,7 @@ class DataRuleGenerator {
 			
 			«classBody.toString»
 		'''
-		fsa.generateFile('''«names.packages.model.dataRule.directoryName»/«dataRuleClassName(ele, data)».java''', content)
-	}
-
-	def static String dataRuleClassName(String dataRuleName) {
-		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, dataRuleName)
-		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
-		return camel
-	}
-	
-	
-
-	def  String dataRuleClassName(Condition cond, Data data) {
-		dataRuleClassName(cond.conditionName(data))
+		fsa.generateFile('''«names.packages.model.dataRule.directoryName»/«ele.conditionName(data).toConditionJavaType».java''', content)
 	}
 
 	private def StringConcatenationClient dataRuleClassBody(Condition rule, Data data, JavaNames javaName, String version)  {
@@ -76,7 +63,7 @@ class DataRuleGenerator {
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaDataRule»("«ruleName»")
-			public class «dataRuleClassName(ruleName)» implements «Validator»<«javaName.toJavaType(rosettaClass)»> {
+			public class «toConditionJavaType(ruleName)» implements «Validator»<«javaName.toJavaType(rosettaClass)»> {
 				
 				private static final String NAME = "«ruleName»";
 				private static final String DEFINITION = «definition»;

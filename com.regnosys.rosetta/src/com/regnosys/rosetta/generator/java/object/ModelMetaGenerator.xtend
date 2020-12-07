@@ -2,8 +2,6 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
-import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
@@ -20,13 +18,13 @@ import com.rosetta.model.lib.qualify.QualifyResult
 import com.rosetta.model.lib.validation.Validator
 import com.rosetta.model.lib.validation.ValidatorWithArg
 import java.util.Arrays
+import java.util.Collections
 import java.util.List
 import java.util.Set
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import java.util.Collections
 
 class ModelMetaGenerator {
 
@@ -62,11 +60,20 @@ class ModelMetaGenerator {
 			@«RosettaMeta»(model=«dataClass».class)
 			public class «className» implements «RosettaMetaData»<«dataClass»> {
 			
-				@Override
+				@Deprecated // remove method once all models have updated to DSL version 4.4.0
 				public «List»<«Validator»<? super «dataClass»>> dataRules() {
 					return «Arrays».asList(
 						«FOR r : conditionRules(c, c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
-							new «javaNames.packages.model.dataRule.name».«DataRuleGenerator.dataRuleClassName(r.ruleName)»()
+							new «javaNames.packages.model.dataRule.name».«r.ruleName.toConditionJavaType»()
+						«ENDFOR»
+					);
+				}
+				
+				//@Override // uncomment annotation once all models have updated to DSL version 4.4.0
+				public «List»<Class<? extends «Validator»<? super «dataClass»>>> typeValidators() {
+					return «Arrays».asList(
+						«FOR r : conditionRules(c, c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
+							«javaNames.packages.model.dataRule.name».«r.ruleName.toConditionJavaType».class
 						«ENDFOR»
 					);
 				}
@@ -75,12 +82,12 @@ class ModelMetaGenerator {
 				public «List»<«Validator»<? super «dataClass»>> choiceRuleValidators() {
 					return Arrays.asList(
 						«FOR r : conditionRules(c, c.conditions)[isChoiceRuleCondition] SEPARATOR ','»
-							new «javaNames.packages.model.choiceRule.name».«ChoiceRuleGenerator.choiceRuleClassName(r.ruleName)»()
+							new «javaNames.packages.model.choiceRule.name».«r.ruleName.toConditionJavaType»()
 						«ENDFOR»
 					);
 				}
 				
-				@Deprecated
+				@Deprecated // remove method once all models have updated to DSL version 4.3.0
 				public «List»<«java.util.function.Function»<? super «dataClass», «QualifyResult»>> getQualifyFunctions() {
 					return «Collections».emptyList();
 				}

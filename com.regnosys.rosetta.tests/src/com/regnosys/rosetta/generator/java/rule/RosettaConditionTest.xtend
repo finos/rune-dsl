@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import com.regnosys.rosetta.tests.util.DataRuleHelper
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.validation.ValidationResult
 import java.math.BigDecimal
@@ -25,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*
 class RosettaConditionTest {
 	
 	@Inject extension CodeGeneratorTestHelper
-	@Inject extension DataRuleHelper
+	@Inject extension ConditionHelper
 	
 	Map<String, Class<?>> classes
 	
@@ -66,12 +65,10 @@ class RosettaConditionTest {
 
 	
 	@Test
-	def exprSuccess_allDataRulesSucccess_should_qualify() {
+	def allConditionsShouldSuceed() {
 		val barInstance = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(5), 'after', BigDecimal.valueOf(3)), of())
 		val bazInstance = classes.createInstanceUsingBuilder('Baz', of('other', BigDecimal.valueOf(10)), of())
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
-
-		// Assert DataRules
 
 		// FeatureCallComparisonDecreasing (success)
 		assertCondition(fooInstance, 'FooFeatureCallComparisonDecreasing', true, "if bar exists then bar -> before > bar -> after")		
@@ -87,13 +84,11 @@ class RosettaConditionTest {
 	}
 
 	@Test
-	def exprSuccess_andDataRuleFail_orDataRulesSuccess_should_qualify() {
+	def oneConditionShouldFail() {
 		val barInstance = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(10), 'after', BigDecimal.valueOf(0)), of())
 		val bazInstance = classes.createInstanceUsingBuilder('Baz', of('other', BigDecimal.valueOf(10)), of())
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
 
-		// Assert DataRules
-		
 		// FeatureCallComparisonDecreasing (success)
 		assertCondition(fooInstance, 'FooFeatureCallComparisonDecreasing', true, "if bar exists then bar -> before > bar -> after")		
 		
@@ -108,33 +103,31 @@ class RosettaConditionTest {
 	}
 	
 	@Test
-	def exprSuccess_andDataRuleFail_orDataRulesFail_should_not_qualify() {
+	def allConditionsShouldFail() {
 		val barInstance = classes.createInstanceUsingBuilder('Bar', of('before', BigDecimal.valueOf(-10), 'after', BigDecimal.valueOf(0)), of())
 		val bazInstance = classes.createInstanceUsingBuilder('Baz', of('other', BigDecimal.valueOf(0)), of())
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
 
-		// Assert DataRules
-
 		// FeatureCallComparisonDecreasing (fail)
-		val dataRuleBarDescreasing = ValidationResult.cast(classes.runCondition(fooInstance, 'FooFeatureCallComparisonDecreasing'))
+		val dataRuleBarDescreasing = ValidationResult.cast(classes.runDataRule(fooInstance, 'FooFeatureCallComparisonDecreasing'))
 		assertFalse(dataRuleBarDescreasing.success)
 		assertThat(dataRuleBarDescreasing.definition, is("if bar exists then bar -> before > bar -> after"))
 		assertThat(dataRuleBarDescreasing.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getBefore] values [-10] are not > than all elements of paths [Foo->getBar[0]->getAfter] values [0]"))
 
 		// BarFeatureCallGreaterThanLiteralZero (fail)
-		val dataRuleBarGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero'))
+		val dataRuleBarGreaterThanZero = ValidationResult.cast(classes.runDataRule(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero'))
 		assertFalse(dataRuleBarGreaterThanZero.success)
 		assertThat(dataRuleBarGreaterThanZero.getDefinition(), is("if bar exists then bar -> after > 0"))
 		assertThat(dataRuleBarGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getAfter] values [0] are not > than all elements of paths [Integer] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralZero (fail)
-		val dataRuleBazGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero'))
+		val dataRuleBazGreaterThanZero = ValidationResult.cast(classes.runDataRule(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero'))
 		assertFalse(dataRuleBazGreaterThanZero.success)
 		assertThat(dataRuleBazGreaterThanZero.definition, is("if baz exists then baz -> other > 0"))
 		assertThat(dataRuleBazGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralFive (fail)
-		val dataRuleBazGreaterThanFive = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive'))
+		val dataRuleBazGreaterThanFive = ValidationResult.cast(classes.runDataRule(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive'))
 		assertFalse(dataRuleBazGreaterThanFive.success)
 		assertThat(dataRuleBazGreaterThanFive.definition, is("if baz exists then baz -> other > 5"))
 		assertThat(dataRuleBazGreaterThanFive.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [5]"))
@@ -143,7 +136,7 @@ class RosettaConditionTest {
 	// Util methods
 		
 	def assertCondition(RosettaModelObject model, String dataRuleName, boolean expectedSuccess, String expectedDefinition) {
-		val dataRuleResult = ValidationResult.cast(classes.runCondition(model, dataRuleName))
+		val dataRuleResult = ValidationResult.cast(classes.runDataRule(model, dataRuleName))
 		assertThat(dataRuleResult.success, is(expectedSuccess))	
 		assertThat(dataRuleResult.definition, is(expectedDefinition))
 	}

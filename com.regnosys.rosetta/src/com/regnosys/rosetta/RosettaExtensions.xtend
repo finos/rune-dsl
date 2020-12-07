@@ -1,5 +1,6 @@
 package com.regnosys.rosetta
 
+import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
@@ -273,6 +274,7 @@ class RosettaExtensions {
 	def String conditionName(Condition cond, Function func) {
 		return cond.conditionName(func.name, func.conditions)
 	}
+	
 	//Name convention: <type name>(<condition name>|<condition type><#>) where condition type should be 'choice' or 'oneof'.
 	private def String conditionName(Condition cond, String containerName, Collection<Condition> conditions) {
 		val name = if (!cond.name.nullOrEmpty)
@@ -285,5 +287,11 @@ class RosettaExtensions {
 				'''«type»«idx»'''
 			}
 		return '''«containerName»«name»'''
+	}
+	
+	def String toConditionJavaType(String conditionName) {
+		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, conditionName)
+		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
+		return camel
 	}
 }

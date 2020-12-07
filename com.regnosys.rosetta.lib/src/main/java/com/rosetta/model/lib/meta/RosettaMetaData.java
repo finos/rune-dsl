@@ -11,8 +11,8 @@ import com.rosetta.model.lib.validation.ValidatorWithArg;
 
 public interface RosettaMetaData<T extends RosettaModelObject> {
 
-	List<Validator<? super T>> dataRules();
-    
+	List<Class<? extends Validator<? super T>>> typeValidators();
+	
 	List<Validator<? super T>> choiceRuleValidators();
 	
 	List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory);
