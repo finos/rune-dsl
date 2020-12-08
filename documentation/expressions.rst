@@ -1,10 +1,14 @@
 Expressions
 !!!!!!!!!!!
-Rosetta Expressions are used to perfom simple calculations and comparisons. simple expressions can be built up using `operators <#operators-label>`_ to form more complex expressions.
+Rosetta Expressions are used to perfom simple calculations and comparisons. Simple expressions can be built up using `operators <#operators-label>`_ to form more complex expressions.
 They are used for `Functions <ducumentation.html#function-label>`_,
 `Data type validation conditions <documentation.html#condition-label>`_,
 `Conditional mappings <mapping.html#when-clause-label>`_ and 
 `Report Rules <documentation.html#report-rule-label>`_
+
+Expressions can be `evaluated` with a context of a Rosetta object to `return` a result. The result of an expression is either a single `basic <documentation.html#basic-type-label>` value (2.0, True, "USD"), a single Rosetta object (e.g. a Party object) or a `List` of values, all of the same type.
+
+The `type` or of an expression it the type of the result that it will evaluate too. E.g.an expression that evaluates to True or False is of type boolean, an expression that avaluates to a list of SecurityLegs is of type `List of SecurityLeg`. A list is an ordered collection of items.
 
 The below sections will detail the different types of Rosetta Expressions and how they are used. 
 
@@ -12,13 +16,28 @@ Constant Expressions
 """"""""""""""""""""
 An expression can be a `basic <documentation.html#basic-type-label>`_ constant such as 1, True or "USD". 
 
-Constants in themselves are valid expressions and are useful for comparisons to more complex expressions.
+Constants are valid expressions and are useful for comparisons to more complex expressions.
+
+
+Enumeration Constants
+=====================
+
+An expression can refer to an Rosetta Enumeration value using the name of the Enumeration type, '->' and the name of a value. E.g. ``DayOfWeekEnum->SAT``\.
+
+List Constants
+==============
+
+Constants can also be declared as lists using starting with ``[``, followed by a comma separated list of expressions and closing with ``]``. E.g. ::
+
+    [1,2]
+    ["A",B"]
+    [DayOfWeekEnum->SAT, DayOfWeekEnum->SUN]
 
 .. _rosetta-path-label:
 
 Rosetta Path Expressions
 """"""""""""""""""""""""
-The simplest Rosetta Path Expression is just the name of an attribute. For example, ``before`` in the context of a `condition <documentation.html#broken-link>` of a ContractFormationPrimitive will return the value of the before state of the contract formation. In the example below the before state is checked for `existence <#exists-label>`_.
+The simplest Rosetta Path Expression is just the name of an attribute. For example, ``before`` in the context of a `condition <documentation.html#broken-link>` of a ContractFormationPrimitive will evaluate to the value of the before state of the contract formation. In the example below the before state is checked for `existence <#exists-label>`_.
 
 .. code-block:: Haskell
   :emphasize-lines: 7
@@ -46,16 +65,19 @@ Attribute names can be chained together using `->` in order to refer to attribut
 
         condition BothBuyerAndSellerPartyRolesMustExist: 
             if lineage -> executionReference -> tradableProduct -> product -> security exists
+
 ..
     Not sure how to make this more helpful
 
-.. note::
-In some situations (Reporting rules and conditional mapping) it is unclear where a Rosetta Path Expression should start from. In this case the rosetta path should begin with a type name e.g. ``WorkflowStep -> eventIdentifier`` The grammar validation in Rosetta will make it clear when this is required.
+.. note:: In some situations (Reporting rules and conditional mapping) it is unclear where a Rosetta Path Expression should start from. In this case the rosetta path should begin with a type name e.g. ``WorkflowStep -> eventIdentifier`` The grammar validation in Rosetta will make it clear when this is required.
 
+If when evaluated a Rosetta path refers to an attribute that does not have a value in the object it is being evaluated against than the result is *null* - there is no value. If an attribute of that non-existant object is referenced then the result is still null.
 
 Cardinality
 ===========
 A Rosetta path expression that refers to an attribute with multiple `cardinality <documentation.html#cardinality_label>`_ will result in a list of values. If a chained rosetta path expression has multiple links with multiple cardinality then the reult is a flattened list. E.g. ``businessEvent -> primitives -> transfer -> cashTransfer`` (from Qualify_CashTransfer) gets all the *CashTransferComponent*\s from all the *Primitive*\s in a *WorkflowStep* as a single list.
+
+An expression that has the potential to yield multiple values is said to have *multiple cardiality* and will always evaluate to a list of zero or more elements.
 
 Only element
 ============
@@ -65,25 +87,11 @@ The keyword ``only-element`` can appear after an attribure name in a Rosetta pat
 	
 This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value the expression result is an error.
 
-Enumeration Constants
-=====================
-
-An expression can refer to an Rosetta Enumeration value using the same rosetta path syntax. E.g. DayOfWeekEnum->SAT.
-
-List Constants
-==============
-
-Constants of multiple cardinality can also be declared as lists using starting with ``[``, followed by a comma separated list of expressions and closing with ``]``. E.g. ::
-
-    [1,2]
-    ["A",B"]
-    [DayOfWeekEnum->SAT, DayOfWeekEnum->SUN]
-
 .. _operators-label:
 
 Operators
 """""""""
-Rosetta supports operators that combine expressions.
+Rosetta supports operators that combine expressions into more complicated expressions.
 
 Comparison Operators
 ====================
@@ -92,7 +100,7 @@ The result type of a comparison operator is always boolean
 * ``=`` - Equals. Returns *true* if the left expression is equal to the right expression, otherwise false.
 * ``<>`` - Does not equal. Returns *false* if the left expression is equal to the right expression, otherwise true.
 * ``<``, ``<=``, ``>=``, ``>``  - performs mathematical comparisons on the left and right values. Both left and right have to evaluate to numbers or lists of numbers.
-* ``exists`` - returns true if the left expression returns a result.
+* ``exists`` - returns true if the left expression returns a result. This can be further modified with additional keywords.
     * ``only`` - the value of left expression exists and is the only attribute with a value in its parent object.
     * ``single`` - the value of expression either has single cardinality or is list with exactly one value.
     * ``mutiple`` - the value expression has more than 2 results
@@ -108,17 +116,17 @@ Rosetta also has operators that are designed to function on lists
 
 If these contains operator is passed an expression that has single cardinality that expression is treated as a list containing the single element or an empty list if the element is null.
 
-The grammar enforces that the argument for count has multiple cardinality. For all other comparison operators, if either left or right expression has multiple cardinality then the semantics are
+The grammar enforces that the expression for count has multiple cardinality. For all other comparison operators, if either left or right expression has multiple cardinality then the semantics are
 
 * ``=`` 
-    * if both arguments are lists then the lists must contain elements that are ``=`` and in the same order.
-    * if the one argument is a list and the other is single then every element in the list must ``=`` the single value
+    * if both sides are lists then the lists must contain elements that are ``=`` and in the same order.
+    * if the one side is a list and the other is single then every element in the list must ``=`` the single value
 * ``<>``
-    * if both arguments are lists then then true is returned if the lists have different length or every element is ``<>`` to the corresonding element
-    * if one argument is a list then true is returned if any element ``<>`` the single element
-* ``>`` etc
-    * if both arguments are lists then every argument in the first list must be ``>`` the argument in the corresponding posistion in the second list
-    * if one argument is single then every element in the list must be ``>`` that single value
+    * if both sides are lists then then true is returned if the lists have different length or every element is ``<>`` to the corresonding element
+    * if one side is a list then true is returned if any element ``<>`` the single element
+* ``<``, ``<=``, ``>=``, ``>``
+    * if both sides are lists then every element in the first list must be ``>`` the element in the corresponding posistion in the second list
+    * if one side is single then every element in the list must be ``>`` that single value
 
 An expression that is expected to return multiple cardinality that returns null is considered to be equivalent to an empty list
 
@@ -168,6 +176,8 @@ An expression can be a call to a `Function <documentation.html#function-label>`_
 The arguments list is a list of expressions. The number and type of the expressions must match the inputs defined by the function definition. This will be enforced by the syntax validator.
 
 The type of a Function call expression is the type of the output of the called function.
+
+In the last line of the example below the Max function is called to find the larger of the two WhichIsBigger function arguments, which is then compared to the first argument. The if expression surrounding this will then return "A" if the first argument was larger, "B" if the second was larger.
 
 .. code-block:: Haskell
   :emphasize-lines: 18

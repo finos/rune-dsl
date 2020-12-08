@@ -100,11 +100,11 @@ Advanced Mapping
 ^^^^^^^^^^^^^^^^
 The algorithm starts by *binding* the root of the input document to a pre-defined Rosetta `root type <documentation.html#roottype-label>`_
 
-It then recursivly traverses the input document
+It then `recursivly <https://en.wikipedia.org/wiki/Recursion_(computer_science)>`_ traverses the input document
 
 Each step of the algorithm starts with the current attribute in the input document *bound* to a set of Rosetta objects in the output Rosetta document.
 
-For each input child attribute of the current input attribute the rosetta attributes of all the *bound* Rosetta objects type's are checked for synonyms that match the child attribute. For each matching attribute a new Rosetta object instance is created and *bound* to that child element. The algorithm then recurses with the current child becoming the current input attribute.
+For each child attribute of the current input attribute, the rosetta attributes of the type of all Rosetta objects *bound* to the current attribute are checked for synonyms that match that child attribute. For each matching attribute a new Rosetta object instance is created and *bound* to that child attribute. The algorithm then recurses with the current child becoming the current input attribute.
 
 When an input attribute has an associated value that value is set as the value of all the rosetta objects that are bound to the input attribute.
 

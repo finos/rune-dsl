@@ -352,7 +352,7 @@ Condition Statement
 Purpose
 """""""
 
-*Conditions* are logic statements associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False.
+*Conditions* are logic `expressions <expressions.html>`_ associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False As part of validation all the conditins are evaluated and if any evaluate to false then the validation fails.
 
 Syntax
 """"""
@@ -362,7 +362,7 @@ Condition statements are included in the definition of the type that they are as
 The definition of a condition starts with the ``condition`` keyword, followed by the name of the condition and a colon ``:`` punctuation. The condition's name must be unique in the context of the type that it applies to (but does not need to be unique across all data types of a given model). The rest of the condition definition comprises:
 
 * a plain-text description (optional)
-* a logic expression that applies to the the type's attributes
+* a boolean `expression <expressions.html>`_ that applies to the the type's attributes
 
 **The Rosetta DSL offers a restricted set of language features designed to be unambiguous and understandable** by domain experts who are not software engineers, while minimising unintentional behaviour. The Rosetta DSL is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations. The language features that are available in the Rosetta DSL to express validation conditions emulate the basic boolean logic available in usual programming languages:
 
@@ -558,7 +558,7 @@ Condition statements in a function can represent either:
 * a **pre-condition**, using the ``condition`` keyword, applicable to inputs only and evaluated prior to executing the function, or
 * a **post-condition**, using the ``post-condition`` keyword, applicable to inputs and output and evaluated after executing the function (once the output is known)
 
-Each type of condition keyword is followed by a boolean `expression <expressions.html>`_ which is evaluated to check the correctness of the function inputs and result.
+Each type of condition keyword is followed by a `boolean expression <expressions.html>`_ which is evaluated to check the correctness of the function inputs and result.
 
 Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the constraints that impementors of this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
@@ -591,7 +591,7 @@ Conditions are an essential feature of the definition of a function. By constrai
 
 Function Definition
 ^^^^^^^^^^^^^^^^^^^
-**The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function's API. The creation of valid output objects can be fully or partially defined as part of a function specification, or completely left to the implementor.
+**The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function's API. The creation of valid output objects can be fully or partially defined as part of a function specification, or completely left to the implementor. The parts of a function definition that have been fully defined as `Rosetta Expression <expressions.html>`_ will be be translated into functional code which don't require further implementation.
 
 The return object or individual attributes of the return object can be set by the function definition using the assign-output syntax; the keyword ``assign-output`` is followed by a `Rosetta Path <expressions.html#rosetta-path-label>`_ , a ``:`` and then an `expression <expressions.html>`_ used to calculate the value from the inputs
 
@@ -721,12 +721,11 @@ which could be invoked as part of multiple other functions that use the ``Econom
 
 Mapping Component
 -----------------
-
-see `mapping <mapping.html>`_
-
+Mapping in rosetta provides a mechanism for specifying how documents that are not Rosetta documents should be transformed into Rosetta documents. For more information see `mapping <mapping.html>`_
 
 Reporting Component
 -------------------
+
 Motivation
 ^^^^^^^^^^
 
