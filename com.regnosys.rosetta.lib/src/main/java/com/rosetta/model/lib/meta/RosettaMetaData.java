@@ -7,11 +7,12 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
 import com.rosetta.model.lib.qualify.QualifyResult;
 import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
 
 public interface RosettaMetaData<T extends RosettaModelObject> {
 
-	List<Class<? extends Validator<? super T>>> typeValidators();
+	List<Validator<? super T>> dataRules(ValidatorFactory factory);
 	
 	List<Validator<? super T>> choiceRuleValidators();
 	

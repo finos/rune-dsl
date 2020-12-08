@@ -8,6 +8,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
 import com.rosetta.model.lib.qualify.QualifyResult;
 import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
 
 public class BasicRosettaMetaData<T extends RosettaModelObject> implements RosettaMetaData<T> {
@@ -18,7 +19,7 @@ public class BasicRosettaMetaData<T extends RosettaModelObject> implements Roset
 	}
 
 	@Override
-	public List<Class<? extends Validator<? super T>>> typeValidators() {
+	public List<Validator<? super T>> dataRules(ValidatorFactory factory) {
 		return Collections.emptyList();
 	}
 	

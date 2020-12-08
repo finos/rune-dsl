@@ -25,6 +25,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.rosetta.model.lib.validation.ValidatorFactory
 
 class ModelMetaGenerator {
 
@@ -70,10 +71,10 @@ class ModelMetaGenerator {
 				}
 				
 				//@Override // uncomment annotation once all models have updated to DSL version 4.4.0
-				public «List»<Class<? extends «Validator»<? super «dataClass»>>> typeValidators() {
+				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
 						«FOR r : conditionRules(c, c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
-							«javaNames.packages.model.dataRule.name».«r.ruleName.toConditionJavaType».class
+							factory.create(«javaNames.packages.model.dataRule.name».«r.ruleName.toConditionJavaType».class)
 						«ENDFOR»
 					);
 				}
