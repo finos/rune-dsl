@@ -187,7 +187,7 @@ class ModelObjectGeneratorTest {
 	}
 	
 	@Test
-	def void shouldGenerateRosettaReferenceFieldt() {
+	def void shouldGenerateRosettaReferenceField() {
 		val code = '''
 			type TestObject: <"">
 				fieldOne Test2 (0..1) [metadata reference]

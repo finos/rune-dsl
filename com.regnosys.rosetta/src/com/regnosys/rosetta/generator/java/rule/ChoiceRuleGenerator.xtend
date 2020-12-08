@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.rule
 
-import com.google.common.base.CaseFormat
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -45,13 +44,13 @@ class ChoiceRuleGenerator {
 			
 			«classBody.toString»
 		'''
-		fsa.generateFile('''«names.packages.model.choiceRule.directoryName»/«choiceRuleClassName(cond.conditionName(data))».java''', fileContent)
+		fsa.generateFile('''«names.packages.model.choiceRule.directoryName»/«cond.conditionName(data).toConditionJavaType».java''', fileContent)
 	}
 	
 	private def StringConcatenationClient toChoiceRuleJava(Condition rule, Data data, JavaNames names, String version) {
 		val clazz = data.name
 		val ruleName = rule.conditionName(data)
-		val className = choiceRuleClassName(rule.conditionName(data))
+		val className = rule.conditionName(data).toConditionJavaType
 		val usedAttributes = if(rule.constraint.isOneOf) data.allAttributes else rule.constraint.attributes // TODO multi choice rules? 
 		val validationType = if(rule.constraint.isOneOf || rule.constraint.necessity === Necessity.REQUIRED) 'REQUIRED' else 'OPTIONAL'
 		'''
@@ -95,12 +94,6 @@ class ChoiceRuleGenerator {
 			}
 		}
 	'''
-	}
-
-	def static String choiceRuleClassName(String choiceRuleName) {
-		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, choiceRuleName)
-		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
-		return camel
 	}
 
 	def static String oneOfRuleClassName(String className) {
