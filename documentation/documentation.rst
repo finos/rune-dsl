@@ -159,7 +159,7 @@ All Rosetta components are organised into namespaces. ::
 
   namespace cdm.base.datetime
 
-The namespace provides a context within which references to components are resolved. The names of all components must be unique within a given namespace. Components can refer to other components in the same namespace using just their name. Components can refer to components outside their namespace either by giving the *fully qualified name* e.g. ``cdm.base.datetime.AdjustableDate`` or by importing the namespace into the current file ``import cdm.base.datetime``
+The namespace provides a context within which references to Rosetta components (types, functions enums etc.) are resolved. The names of all components must be unique within a given namespace. Components can refer to other components in the same namespace using just their name. Components can refer to components outside their namespace either by giving the *fully qualified name* e.g. ``cdm.base.datetime.AdjustableDate`` or by importing the namespace into the current file ``import cdm.base.datetime``
 
 .. _annotations-label:
 
