@@ -72,6 +72,8 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 
 /**
  * This class contains custom validation rules. 
@@ -569,6 +571,26 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			buildTypeGraph(bp.nodes, bp.output)
 		} catch (BlueprintUnresolvedTypeException e) {
 			error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
+		}
+	}
+	
+	@Check
+	def checkDisjointTypesMatch(RosettaDisjointExpression disjoint) {
+		val leftType  = disjoint.container.RType
+		val rightType = disjoint.disjoint.RType
+		val typesMatch = leftType == rightType //arguable could support leftType.isUsablaAs || rightType.isUsableAs but the generated code doesn't support it
+		if (!typesMatch) {
+			error('''Disjoint must operate on lists of the same type''', disjoint, ROSETTA_DISJOINT_EXPRESSION__DISJOINT)
+		}
+	}
+	
+	@Check
+	def checkContainsTypesMatch(RosettaContainsExpression disjoint) {
+		val leftType  = disjoint.container.RType
+		val rightType = disjoint.contained.RType
+		val typesMatch = leftType == rightType //arguable could support leftType.isUsablaAs || rightType.isUsableAs but the generated code doesn't support it
+		if (!typesMatch) {
+			error('''contains must operate on lists of the same type''', disjoint, ROSETTA_DISJOINT_EXPRESSION__DISJOINT)
 		}
 	}
 

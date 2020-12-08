@@ -14,6 +14,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -209,6 +210,10 @@ class ExpressionGeneratorWithBuilder {
 	
 	def dispatch StringConcatenationClient toJava(RosettaContainsExpression ele, Context ctx) {
 		'''«importMethod(ExpressionOperators, 'contains')»(«toJava(ele.container, ctx)», «toJava(ele.contained, ctx)»)'''
+	}
+	
+	def dispatch StringConcatenationClient toJava(RosettaDisjointExpression ele, Context ctx) {
+		'''«importMethod(ExpressionOperators, 'disjoint')»(«toJava(ele.container, ctx)», «toJava(ele.disjoint, ctx)»)'''
 	}
 	
 	private def StringConcatenationClient attributeAccess(RosettaFeature feature, boolean toOne, Context ctx) {
