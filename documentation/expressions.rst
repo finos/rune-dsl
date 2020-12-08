@@ -1,20 +1,24 @@
 Expressions
 !!!!!!!!!!!
-Rosetta expressions are used to perfom simple calculations and comparisons. simple expressions can be built up using `operators <#operators-label>`_ to form more complex expressions.
+Rosetta Expressions are used to perfom simple calculations and comparisons. simple expressions can be built up using `operators <#operators-label>`_ to form more complex expressions.
 They are used for `Functions <ducumentation.html#function-label>`_,
 `Data type validation conditions <documentation.html#condition-label>`_,
 `Conditional mappings <mapping.html#when-clause-label>`_ and 
 `Report Rules <documentation.html#report-rule-label>`_
 
+The below sections will detail the different types of Rosetta Expressions and how they are used. 
+
 Constant Expressions
 """"""""""""""""""""
-An expression can be a `basic <documentation.html#basic-tpye-label>`_ constant such as 1, true or "USD"
+An expression can be a `basic <documentation.html#basic-type-label>`_ constant such as 1, True or "USD". 
+
+Constants in themselves are valid expressions and are useful for comparisons to more complex expressions.
 
 .. _rosetta-path-label:
 
 Rosetta Path Expressions
 """"""""""""""""""""""""
-The simplest rosetta path expression is just the name of an attribute. ``before`` in the context of a condition of a ContrctFormationPrimitive condition or a function will return the value of the before state of the contract formation. in the example below the before state is checked for `existence <#exists-label>`_.
+The simplest Rosetta Path Expression is just the name of an attribute. For example, ``before`` in the context of a `condition <documentation.html#broken-link>` of a ContractFormationPrimitive will return the value of the before state of the contract formation. In the example below the before state is checked for `existence <#exists-label>`_.
 
 .. code-block:: Haskell
   :emphasize-lines: 7
@@ -27,7 +31,7 @@ The simplest rosetta path expression is just the name of an attribute. ``before`
 	condition: <"The quantity should be unchanged.">
 		if before exists ....
 
-Attribute names can be chained together using -> in order to refer to attributes further down the Rosetta object tree. In the example below the security of the product contained in a confirmation is checked for `existence <#exists-label>`_.
+Attribute names can be chained together using `->` in order to refer to attributes further down the Rosetta object tree. In the example below the security of the product contained in a confirmation is checked for `existence <#exists-label>`_.
 
 .. code-block:: Haskell
   :emphasize-lines: 10
@@ -45,7 +49,8 @@ Attribute names can be chained together using -> in order to refer to attributes
 ..
     Not sure how to make this more helpful
 
-In some situations (Reporting rules and conditional mapping) it is unclear where a RosettaPath expression should start from. In this case the rosetta path should begin with a type name e.g. ``WorkflowStep -> eventIdentifier`` The grammar validation in Rosetta will make it clear when this is required.
+.. note::
+In some situations (Reporting rules and conditional mapping) it is unclear where a Rosetta Path Expression should start from. In this case the rosetta path should begin with a type name e.g. ``WorkflowStep -> eventIdentifier`` The grammar validation in Rosetta will make it clear when this is required.
 
 
 Cardinality
@@ -56,9 +61,9 @@ Only element
 ============
 The keyword ``only-element`` can appear after an attribure name in a Rosetta path. ::
 
-    observationEvent -> primitives  only-element -> observation
-
-This imposes a contrant that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value the expression result is an error.
+    observationEvent -> primitives only-element -> observation
+	
+This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value the expression result is an error.
 
 Enumeration Constants
 =====================
@@ -84,8 +89,8 @@ Comparison Operators
 ====================
 The result type of a comparison operator is always boolean
 
-* ``=`` - returns *true* if the left expression is equal to the right expression, otherwise false.
-* ``<>`` - returns *false* if the left expression is equal to the right expression, otherwise true.
+* ``=`` - Equals. Returns *true* if the left expression is equal to the right expression, otherwise false.
+* ``<>`` - Does not equal. Returns *false* if the left expression is equal to the right expression, otherwise true.
 * ``<``, ``<=``, ``>=``, ``>``  - performs mathematical comparisons on the left and right values. Both left and right have to evaluate to numbers or lists of numbers.
 * ``exists`` - returns true if the left expression returns a result.
     * ``only`` - the value of left expression exists and is the only attribute with a value in its parent object.
@@ -103,19 +108,17 @@ Rosetta also has operators that are designed to function on lists
 
 If these contains operator is passed an expression that has single cardinality that expression is treated as a list containing the single element or an empty list if the element is null.
 
-The grammar enforces that the argument for count has multiple cardinality.
-
-If one or more arguments for the other comparison operators is multiple cardinality then the semantics are
+The grammar enforces that the argument for count has multiple cardinality. For all other comparison operators, if either left or right expression has multiple cardinality then the semantics are
 
 * ``=`` 
     * if both arguments are lists then the lists must contain elements that are ``=`` and in the same order.
-    * if the one argument is a list and the other is single then every element in the list must ``==`` the single value
+    * if the one argument is a list and the other is single then every element in the list must ``=`` the single value
 * ``<>``
-    * if both arguments are lists then then true is returned if the lists have different length or and element is ``<>`` to the corresonding element
+    * if both arguments are lists then then true is returned if the lists have different length or every element is ``<>`` to the corresonding element
     * if one argument is a list then true is returned if any element ``<>`` the single element
 * ``>`` etc
-    * If both arguments are lists then every argument int he first list must be ``>`` the argument in the corresponding posistion int he second list
-    * is one argument is single then every element in the list must be ``>`` that single value
+    * if both arguments are lists then every argument in the first list must be ``>`` the argument in the corresponding posistion in the second list
+    * if one argument is single then every element in the list must be ``>`` that single value
 
 An expression that is expected to return multiple cardinality that returns null is considered to be equivalent to an empty list
 
@@ -130,9 +133,7 @@ If one or more expressions being passed to an operator is of single cardinality 
 * null  > *any value* returns false
 * null  >= *any value* returns false
 
-*any value* here includes null. The behaviour is symetric - if the null apears on the either side of the expression the result is the same.
-
-if the null value is of multiple cardinality then it is treated as an empty list.
+*any value* here includes null. The behaviour is symetric - if the null apears on the either side of the expression the result is the same. if the null value is of multiple cardinality then it is treated as an empty list.
 
 Boolean Operators
 =================
