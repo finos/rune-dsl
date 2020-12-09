@@ -1,9 +1,11 @@
 package com.regnosys.rosetta.generator.java.rule
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
+import com.rosetta.model.lib.path.RosettaPath
 import java.util.Map
 import java.util.Optional
 import org.eclipse.xtext.testing.InjectWith
@@ -13,7 +15,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.google.common.collect.ImmutableMap.*
 import static org.junit.jupiter.api.Assertions.*
-import com.rosetta.model.lib.path.RosettaPath
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -21,15 +22,16 @@ class ChoiceRuleGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
+	@Inject extension RosettaExtensions
 	
 	@Test
 	def void choiceRuleJavaClassName() {
-		assertEquals('Test', ChoiceRuleGenerator.choiceRuleClassName('Test'))
-		assertEquals('TestChoiceRule', ChoiceRuleGenerator.choiceRuleClassName('Test_choiceRule'))
-		assertEquals('TestChoiceRule', ChoiceRuleGenerator.choiceRuleClassName('Test_choice_rule'))
-		assertEquals('TestChoiceRule', ChoiceRuleGenerator.choiceRuleClassName('TestChoiceRule'))
-		assertEquals('TestChoiceRule', ChoiceRuleGenerator.choiceRuleClassName('Test_ChoiceRule'))
-		assertEquals('TestChoice', ChoiceRuleGenerator.choiceRuleClassName('Test_choice'))
+		assertEquals('Test', toConditionJavaType('Test'))
+		assertEquals('TestChoiceRule', toConditionJavaType('Test_choiceRule'))
+		assertEquals('TestChoiceRule', toConditionJavaType('Test_choice_rule'))
+		assertEquals('TestChoiceRule', toConditionJavaType('TestChoiceRule'))
+		assertEquals('TestChoiceRule', toConditionJavaType('Test_ChoiceRule'))
+		assertEquals('TestChoice', toConditionJavaType('Test_choice'))
 	}
 	
 	@Test
