@@ -97,7 +97,7 @@ Comparison Operators
 ====================
 The result type of a comparison operator is always boolean
 
-* ``=`` - Equals. Returns *true* if the left expression is equal to the right expression, otherwise false.
+* ``=`` - Equals. Returns *true* if the left expression is equal to the right expression, otherwise false. Basic types are equal if their values are equal. Two complex rosetta types are equal if all of their attributes are equal, recursing down until all basic typed attributes are compared.
 * ``<>`` - Does not equal. Returns *false* if the left expression is equal to the right expression, otherwise true.
 * ``<``, ``<=``, ``>=``, ``>``  - performs mathematical comparisons on the left and right values. Both left and right have to evaluate to numbers or lists of numbers.
 * ``exists`` - returns true if the left expression returns a result. This can be further modified with additional keywords.
@@ -112,6 +112,7 @@ List Comparison Operators
 Rosetta also has operators that are designed to function on lists
 
 * ``contains`` or ``includes`` - every element in the right hand expression is = to an element in the left hand expression
+* ``disjoint`` - true if no element in the left side expression is equal to anu element in the right side expression
 * ``count`` - returns the number of elements in the expression to its left
 
 If these contains operator is passed an expression that has single cardinality that expression is treated as a list containing the single element or an empty list if the element is null.
