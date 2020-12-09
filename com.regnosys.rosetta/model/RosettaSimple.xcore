@@ -34,6 +34,7 @@ interface Annotated {
 class AnnotationRef {
 	refers Annotation ^annotation
 	refers Attribute attribute
+	String qualifier
 }
 
 abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {

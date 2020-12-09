@@ -7,6 +7,8 @@ annotation metadata: <"Defines metadata that can be specified on types, attribut
 	reference string (0..1) <"Specifies that an attribute can be specified with a reference that corresponds to a value with a key elsewhere in the model.">
 	scheme string (0..1) <"Specifies that an attribute can have a scheme assoicated with the value.">
 	template string (0..1) <"Specifies that a type can have a template.">
+	address string (0..1)
+	location string (0..1)
      
 annotation calculation: <"Marks a function as fully implemented calculation.">
 

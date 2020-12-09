@@ -814,6 +814,18 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					} else if (!metadatas.map[attribute?.name].contains("key")) {
 						error('''Types with [metadata template] annotation must also specify the [metadata key] annotation.''', it, ANNOTATION_REF__ATTRIBUTE)
 					}
+				case "address":
+					if (ele instanceof Attribute) {
+						
+					} else {
+						error('''[metadata address] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
+					}
+				case "location":
+					if (ele instanceof Attribute) {
+						//it.qualifier.isNullOrEmpty
+					} else {
+						error('''[metadata location] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
+					}
 				}
 		]
 	}
