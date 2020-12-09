@@ -34,7 +34,9 @@ The Rosetta DSL convention is that type names use the *PascalCase* (starting wit
 
 The first component of the definition is a plain-text description of the type. Descriptions use quotation marks ``"`` ``"`` (to mark a string) in between angle brackets ``<`` ``>``. Descriptions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
 
-After the description come any `annotations <#annotations-label>`_ that are applied to this type. Annotations are written surrounded with '[' and ']' ::
+After the description come any `annotations <#annotations-label>`_ that are applied to this type. Annotations are enclosed within square brackets '[' and ']'
+
+.. code-block:: Haskell
  
   type WorkflowStep: <"A workflow step ....">
 	[metadata key]
@@ -53,9 +55,9 @@ Then the definition of the type lists its component attributes. Each attribute i
 
 .. code-block:: Haskell
 
- type PeriodBound: <"The period bound is defined as a period and whether the bound is inclusive.">
-   period Period (1..1) <"The period to be used as the bound, e.g. 5Y.">
-   inclusive boolean (1..1) <"Whether the period bound is inclusive, e.g. for a lower bound, false would indicate greater than, whereas true would indicate greater than or equal to.">
+  type PeriodBound: <"The period bound is defined as a period and whether the bound is inclusive.">
+    period Period (1..1) <"The period to be used as the bound, e.g. 5Y.">
+    inclusive boolean (1..1) <"Whether the period bound is inclusive, e.g. for a lower bound, false would indicate greater than, whereas true would indicate greater than or equal to.">
 
  type Period: <"A class to define recurring periods or time offsets.">
    periodMultiplier int (1..1) <"A time period multiplier, e.g. 1, 2 or 3 etc. A negative value can be used when specifying an offset relative to another date, e.g. -2 days.">
@@ -92,7 +94,7 @@ Time
 """"
 The ``zonedDateTime`` record type unambiguously refers to a single instant of time.
 
-Alternativley in the CDM there is the data type ``BusinessCenterTime`` type, where a simple ``time`` "5:00:00" is specified alongside a business center.  The simple time should be interpreted with the timezone information of the associated business center.
+Alternatively in the CDM there is the data type ``BusinessCenterTime`` , where a simple ``time`` "5:00:00" is specified alongside a business center.  The simple time should be interpreted with the timezone information of the associated business center.
 
 Inheritance
 """""""""""
