@@ -8,7 +8,7 @@ They are used for `Functions <ducumentation.html#function-label>`_,
 
 Expressions can be `evaluated` with a context of a Rosetta object to `return` a result. The result of an expression is either a single `basic <documentation.html#basic-type-label>` value (2.0, True, "USD"), a single Rosetta object (e.g. a Party object) or a `List` of values, all of the same type.
 
-The `type` or of an expression it the type of the result that it will evaluate too. E.g.an expression that evaluates to True or False is of type boolean, an expression that avaluates to a list of SecurityLegs is of type `List of SecurityLeg`. A list is an ordered collection of items.
+The `type` of an expression is the type of the result that it will evaluate to. E.g. an expression that evaluates to True or False is of type boolean, an expression that evaluates to a list of SecurityLegs is of type `List of SecurityLeg`. A list is an ordered collection of items.
 
 The below sections will detail the different types of Rosetta Expressions and how they are used. 
 
@@ -22,12 +22,12 @@ Constants are valid expressions and are useful for comparisons to more complex e
 Enumeration Constants
 =====================
 
-An expression can refer to an Rosetta Enumeration value using the name of the Enumeration type, '->' and the name of a value. E.g. ``DayOfWeekEnum->SAT``\.
+An expression can refer to a Rosetta Enumeration value using the name of the Enumeration type, followed by '->' and finally the name of a value. E.g. ``DayOfWeekEnum -> SAT``\.
 
 List Constants
 ==============
 
-Constants can also be declared as lists using starting with ``[``, followed by a comma separated list of expressions and closing with ``]``. E.g. ::
+Constants can also be declared as lists using square brackets by starting with ``[``, followed by a comma separated list of expressions and closing with ``]``. E.g. ::
 
     [1,2]
     ["A",B"]
@@ -69,23 +69,23 @@ Attribute names can be chained together using `->` in order to refer to attribut
 ..
     Not sure how to make this more helpful
 
-.. note:: In some situations (Reporting rules and conditional mapping) it is unclear where a Rosetta Path Expression should start from. In this case the rosetta path should begin with a type name e.g. ``WorkflowStep -> eventIdentifier`` The grammar validation in Rosetta will make it clear when this is required.
+.. note:: In some situations (Reporting rules and conditional mapping) it is unclear where a Rosetta Path Expression should start from. In this case the rosetta path should begin with a type name e.g. ``WorkflowStep -> eventIdentifier`` . The grammar validation in Rosetta will make it clear when this is required.
 
-If when evaluated a Rosetta path refers to an attribute that does not have a value in the object it is being evaluated against than the result is *null* - there is no value. If an attribute of that non-existant object is referenced then the result is still null.
+If when evaluated a Rosetta path refers to an attribute that does not have a value in the object it is being evaluated against then the result is *null* - there is no value. If an attribute of that non-existant object is referenced then the result is still null.
 
 Cardinality
 ===========
-A Rosetta path expression that refers to an attribute with multiple `cardinality <documentation.html#cardinality_label>`_ will result in a list of values. If a chained rosetta path expression has multiple links with multiple cardinality then the reult is a flattened list. E.g. ``businessEvent -> primitives -> transfer -> cashTransfer`` (from Qualify_CashTransfer) gets all the *CashTransferComponent*\s from all the *Primitive*\s in a *WorkflowStep* as a single list.
+A Rosetta path expression that refers to an attribute with multiple `cardinality <documentation.html#cardinality_label>`_ will result in a list of values. If a chained rosetta path expression has multiple links with multiple cardinality then the result is a flattened list. E.g. ``businessEvent -> primitives -> transfer -> cashTransfer`` (from Qualify_CashTransfer) gets all the *CashTransferComponent*\s from all the *Primitive*\s in a *WorkflowStep* as a single list.
 
-An expression that has the potential to yield multiple values is said to have *multiple cardiality* and will always evaluate to a list of zero or more elements.
+An expression that has the potential to yield multiple values is said to have *multiple cardinality* and will always evaluate to a list of zero or more elements.
 
 Only element
 ============
-The keyword ``only-element`` can appear after an attribure name in a Rosetta path. ::
+The keyword ``only-element`` can appear after an attribute name in a Rosetta path. ::
 
     observationEvent -> primitives only-element -> observation
 	
-This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value the expression result is an error.
+This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value then the expression result will be an error.
 
 .. _operators-label:
 
@@ -102,7 +102,7 @@ The result type of a comparison operator is always boolean
 * ``<``, ``<=``, ``>=``, ``>``  - performs mathematical comparisons on the left and right values. Both left and right have to evaluate to numbers or lists of numbers.
 * ``exists`` - returns true if the left expression returns a result. This can be further modified with additional keywords.
     * ``only`` - the value of left expression exists and is the only attribute with a value in its parent object.
-    * ``single`` - the value of expression either has single cardinality or is list with exactly one value.
+    * ``single`` - the value of expression either has single cardinality or is a list with exactly one value.
     * ``mutiple`` - the value expression has more than 2 results
 * ``is absent`` - retuns true if the left expression does not return a result.
 * ``when present`` - if the left expression is absent returns true otherwise retuens the left expression ``=``  right expression.
@@ -137,12 +137,12 @@ Comparison Operators and Null
 =============================
 If one or more expressions being passed to an operator is of single cardinality but is null (not present) the behavior is as follows
 
-* null = *any value* retuns false
+* null = *any value* returns false
 * null <> *any value* returns true
 * null  > *any value* returns false
 * null  >= *any value* returns false
 
-*any value* here includes null. The behaviour is symetric - if the null apears on the either side of the expression the result is the same. if the null value is of multiple cardinality then it is treated as an empty list.
+*any value* here includes null. The behaviour is symmetric - if the null appears on the either side of the expression the result is the same. if the null value is of multiple cardinality then it is treated as an empty list.
 
 Boolean Operators
 =================
@@ -155,8 +155,8 @@ Arithmetic Operators
 ====================
 Rosetta supports basic arithmetic operators
 
-* ``+`` can take either two numerical types or two string typed expressions. The result is the sum of two numerical types or the concatentation of two string types
-* ``-``, ``*``, ``/`` take two numerical types and respectively subtract, multply and divide them to give a number result
+* ``+`` can take either two numerical types or two string typed expressions. The result is the sum of two numerical types or the concatenation of two string types
+* ``-``, ``*``, ``/`` take two numerical types and respectively subtract, multiply and divide them to give a number result.
 
 Conditional Expression
 """"""""""""""""""""""
