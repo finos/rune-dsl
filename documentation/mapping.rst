@@ -6,30 +6,29 @@ Purpose
 
 Mappings in Rosetta are the annotations on the model that specify how input documents in other formats (e.g. FpML or ISDACreate json) can be transformed into Rosetta documents. Mappings are specified in the model as synonyms. 
 
-Synonyms added throughout the model are combined to map the data tree of an input document into the output Rosetta document. The synonyms can be used to generate an *Ingestion Environment*, 
-a library of java that when given an input document as input will output the resulting Rosetta document.
+Synonyms added throughout the model are combined to map the data tree of an input document into the output Rosetta document. The synonyms can be used to generate an *Ingestion Environment*, a library of java that when given an input document will output the resulting Rosetta document.
 
 Synonyms are specified on the attributes of data type and the values of enum types.
 
 
 Basic Mappings
 ^^^^^^^^^^^^^^
-Basic mapping specify how a value from the input document can be directly mapped to a value in the resulting Rosetta document.
+Basic mappings specify how a value from the input document can be directly mapped to a value in the resulting Rosetta document.
 
 Synonym Source
 ==============
 First a *synonym source* is created. This can optionally extend a different synonym source
-``synonym source synonym source FpML_5_10 extends FpML``
+``synonym source FpML_5_10 extends FpML``
 This defines a set of synonyms that are used to ingest a category of input document, in this case FpML_5_10 documents
 
 Extends
 -------
-A synonym source can extend another synonym source. This forms a a new synonym source that has all the synonyms containes in the extended synonym source and can add additional synonyms as well as remove synonyms from it.
+A synonym source can extend another synonym source. This forms a new synonym source that has all the synonyms contained in the extended synonym source and can add additional synonyms as well as remove synonyms from it.
 
 Basic Synonym
 =============
 Synonyms are annotations on attributes of Rosetta types and the enumeration values of Rosetta Enums.  The model does have some legacy synonyms remaining 
-directly on rosetta types but these have no effect. They can be written inside the definition of the type or they can be specified in a seperate file to leave the type definitions simpler.
+directly on rosetta types but the location of the synonym in the model has no impact. They can be written inside the definition of the type or they can be specified in a seperate file to leave the type definitions simpler.
 
 Inline
 ------
@@ -61,11 +60,11 @@ The simplest synonym consists of a single value ``[value "independentAmount"]``.
 
 Path
 ----
-The value of a synonym can be followed with a path declaration. E.g. ``[value "initialFixingDate" path "resetDates"]``. This allows a path of input document elements to be matched to a single Rosetta attribute. In the example the contents of the xml path "resetDates.initialFixingDate" will be mapped to the Rosetta attribute. Note that the path is applied as a prefix to the synonym value.
+The value of a synonym can be followed with a path declaration. E.g. ``[value "initialFixingDate" path "resetDates"]``. This allows a path of input document elements to be matched to a single Rosetta attribute. In the example the contents of the xml path "resetDates.initialFixingDate" will be mapped to the Rosetta attribute. Note that the path is applied as a suffix to the synonym value.
 
 Maps 2
 ------
-Mappings are expected to be ont-to-one with each input value mapping to one Rosetta value. By default if a single input value is mapped to multiple Rosetta output values this is considered an error. However by adding the "maps 2" keyword this can be overridden allowing the input value to map to many output Rosetta values
+Mappings are expected to be one-to-one with each input value mapping to one Rosetta value. By default if a single input value is mapped to multiple Rosetta output values this is considered an error. However by adding the "maps 2" keyword this can be overridden allowing the input value to map to many output Rosetta values.
 
 meta
 ----
@@ -79,16 +78,16 @@ the input value associated withe "issuer" will be mapped to the value of the att
 
 Enumerations
 ============
-A synonym on an enumeration provide mappings from the string values in your input document to the values of the enumeration. E.g. the fpml value 'Broker' will be mapped to the Rosetta enum value *NaturalPersonRoleEnum.Broker* ::
+A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the fpml value 'Broker' will be mapped to the Rosetta enum value *NaturalPersonRoleEnum.Broker* ::
 
 	enum NaturalPersonRoleEnum: <"The enumerated values for the natural person's role.">
 
    	Broker <"The person who arranged with a client to execute the trade.">
     	 [synonym FpML_5_10 value "Broker"]
 
-External enum synonyms
-----------------------
-In an eternal synonym file enum synonyms are defined in a block after the type attribute synonyms, proceeded by the keyword *enums* ::
+External enumeration synonyms
+-----------------------------
+In an external synonym file ``enum`` synonyms are defined in a block after the type attribute synonyms, preceded by the keyword *enums* ::
 
 	enums
 
@@ -100,7 +99,7 @@ Advanced Mapping
 ^^^^^^^^^^^^^^^^
 The algorithm starts by *binding* the root of the input document to a pre-defined Rosetta `root type <documentation.html#roottype-label>`_
 
-It then `recursivly <https://en.wikipedia.org/wiki/Recursion_(computer_science)>`_ traverses the input document
+It then `recursively <https://en.wikipedia.org/wiki/Recursion_(computer_science)>`_ traverses the input document.
 
 Each step of the algorithm starts with the current attribute in the input document *bound* to a set of Rosetta objects in the output Rosetta document.
 
@@ -127,14 +126,14 @@ In this example the input attribute "notionalAmount" is matched to the assetIden
 
 Merging inputs
 ==============
-Where you have a Rosetta attribute with multiple cardinality to which more than one input element maps synonyms can be used to either create a single instance of the Rosetta attribute that merges the input elements or to create multiple attributes - one for each input element. E.g.
+Where a Rosetta attribute exists with multiple cardinality, to which more than one input element maps, synonyms can be used to either create a single instance of the Rosetta attribute that merges the input elements or to create multiple attributes - one for each input element. E.g.
 The synonyms ::
 
 	interestRatePayout InterestRatePayout (0..*)
 		[synonym FpML_5_10 value feeLeg]
 		[synonym FpML_5_10 value generalTerms]
 
-will produce two InterestRatePayout objects. In order to create a single InterestRatePayout with values from the FpML feeLeg and generalTerms you want to use the synonym merging syntax ::
+will produce two InterestRatePayout objects. In order to create a single InterestRatePayout with values from the FpML feeLeg and generalTerms the synonym merging syntax should be used::
 
 	interestRatePayout InterestRatePayout (0..*)
 		[synonym FpML_5_10 value feeLeg, generalTerms]
@@ -149,10 +148,10 @@ Conditional mappings allow more complicated mappings to be done. Conditional map
 Set To Mappings
 ---------------
 
-Set To mappings are used to set the value of the Rosetta attribute to a constant value
+Set To mappings are used to set the value of the Rosetta attribute to a constant value.
 They don't attempt to use any data from the input document as the value for the attribute and a synonym value must not be given.
 The type of the constant must be convertible to the type of the attribute.
-The constant value can be given as a string (converted as necessary) or an enum
+The constant value can be given as a string (converted as necessary) or an enum.
 
 e.g. ::
 
@@ -161,7 +160,7 @@ e.g. ::
 	itemName string (1..1) <"In this ....">;
 		[synonym DTCC_11_0 set to "comment"]
 
-A set to can be conditional on a `when clause <#when-clause-label>`_
+A set to mapping can be conditional on a `when clause <#when-clause-label>`_
 
 e.g. ::
 
@@ -200,7 +199,7 @@ e.g. ::
 . _when-clause-label:
 When clauses
 ============
-There are three types of when clause Test expression, Path expression or RosettaPath expression.
+There are three types of when clause; Test expression, Path expression or RosettaPath expression.
 
 Test Expression
 ---------------
@@ -221,7 +220,7 @@ e.g. ::
 
 Path Expression
 ---------------
-A Path expression tests to see if the synonym path that led us to the current class ::
+A Path expression checks the path through the rosetta document that leads to the current rosetta object. The path provided can only be the direct path from the level about in the document; in order for the condition to be true then the current path has to be the given path.::
 
 	role PartyRoleEnum (1..1) <"The party role.">;`
 		[synonym FpML_5_10 set to PartyRoleEnum.DeterminingParty when path = "trade.determiningParty"]
