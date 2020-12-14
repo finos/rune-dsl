@@ -816,12 +816,13 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					}
 				case "address":
 					if (ele instanceof Attribute) {
-						
+						// TODO check qualifier is not null (and check it is null in other metadata annotations)
 					} else {
 						error('''[metadata address] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
 					}
 				case "location":
 					if (ele instanceof Attribute) {
+						// TODO check qualifier is not null (and check it is null in other metadata annotations)
 						//it.qualifier.isNullOrEmpty
 					} else {
 						error('''[metadata location] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
