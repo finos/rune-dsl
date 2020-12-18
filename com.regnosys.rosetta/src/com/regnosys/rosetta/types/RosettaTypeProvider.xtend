@@ -126,7 +126,7 @@ class RosettaTypeProvider {
 							}
 						if (feature instanceof Annotated) {
 							if (featureType instanceof RAnnotateType) {
-								featureType.withMeta = extensions.hasMetaReferenceAnnotations(feature)
+								featureType.withMeta = extensions.hasMetaDataAnnotations(feature)
 							}
 						}
 						featureType

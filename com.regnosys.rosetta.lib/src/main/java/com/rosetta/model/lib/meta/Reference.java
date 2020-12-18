@@ -7,6 +7,18 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 
+
+/**
+ * @author TomForwood
+ * This class represents a reference to a rosetta object defined elsewhere.
+ * 
+ * The scope defines where the resolver should look to find the object linked to.
+ * 
+ * Scope can be 
+ *  - global - the key is universally unique and can be looked up anywhere - e.g. external database
+ * 	- document - the key must be unique in this document and can be found anywhere in the document
+ *  - the name of the rosetta class e.g. TradeableProduct- the key is only unique inside that TradeableProduct and should only be looked for inside that TradeableProduct
+ */
 public class Reference extends RosettaModelObject{
 	private final String scope;
 	private final String pointsTo;

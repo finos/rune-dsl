@@ -1,5 +1,15 @@
 package com.rosetta.model.lib.meta;
 
+/**
+ * @author TomForwood
+ * This class represents a value that can be references elsewhere to link to the object the key is associated with
+ * The keyValue is required to be unique within the scope defined by "scope"
+ * 
+ * Scope can be 
+ *  - global - the key must be universally unique
+ * 	- document - the key must be unique in this document
+ *  - the name of the rosetta class e.g. TradeableProduct- the object bearing this key is inside a TradeableProduct and the key is only unique inside that TradeableProduct
+ */
 public class Key {
 	private final String scope;
 	private final String keyValue;

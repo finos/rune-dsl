@@ -31,6 +31,7 @@ interface Annotated {
 	contains AnnotationRef[] annotations
 }
 
+//An arbitrary name=value qualifier on an annotation
 class AnnotationQualifier {
 	String qualName
 	String qualValue

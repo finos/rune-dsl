@@ -339,7 +339,7 @@ class FuncGenerator {
 	
 	private def boolean isReference(RosettaNamed ele) {
 		switch(ele) {
-			Annotated: hasMetaReferenceAnnotations(ele)
+			Annotated: hasMetaDataAnnotations(ele)
 			default:false
 		}
 	}
