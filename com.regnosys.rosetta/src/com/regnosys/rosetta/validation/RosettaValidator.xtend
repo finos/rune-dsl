@@ -815,7 +815,11 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 						error('''Types with [metadata template] annotation must also specify the [metadata key] annotation.''', it, ANNOTATION_REF__ATTRIBUTE)
 					}
 				case "location":
-					if (!(ele instanceof Attribute)) {
+					if (ele instanceof Attribute) {
+						if (qualifiers.exists[qualName=="pointsTo"]) {
+							error('''pointsTo qualifier b.''', it, ANNOTATION_REF__ATTRIBUTE)
+						}
+					} else {
 						error('''[metadata location] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
 					}
 				case "address":
