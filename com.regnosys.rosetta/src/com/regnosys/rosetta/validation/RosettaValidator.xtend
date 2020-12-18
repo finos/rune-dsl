@@ -817,7 +817,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				case "location":
 					if (ele instanceof Attribute) {
 						if (qualifiers.exists[qualName=="pointsTo"]) {
-							error('''pointsTo qualifier b.''', it, ANNOTATION_REF__ATTRIBUTE)
+							error('''pointsTo qualifier belongs on the address not the location.''', it, ANNOTATION_REF__ATTRIBUTE)
 						}
 					} else {
 						error('''[metadata location] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
