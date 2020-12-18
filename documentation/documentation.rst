@@ -1,6 +1,5 @@
 Rosetta Modelling Components
 ============================
-
 **The Rosetta syntax can express six types of model components**:
 
 * Data
@@ -14,39 +13,51 @@ This documentation details the purpose and features of each type of model compon
 
 Data Component
 --------------
+**The Rosetta DSL provides two data definition components** that are used to model data:
 
-**The Rosetta DSL provides four data definition components** that are used to model data, grouped into two pairs:
+* `Type <#type-label>`_
+* `Enumeration <#enumeration-label>`_
 
-* Type and Attribute
-* Enumeration and Enumeration Value
+.. _type-label:
 
-Type and Attribute
-^^^^^^^^^^^^^^^^^^^
-
+Type
+^^^^
 Purpose
 """""""
-
-A *type* describes an *entity* (also sometimes referred to as an *object* or a *class*) in the model and is defined by a plain-text description and a set of *attributes*. Attributes specify the granular elements composing the entity.
+A *type* describes an *entity* (also sometimes referred to as an *object* or a *class*) in the model and is defined by a plain-text description and a set of *attributes* (also sometimes refered to as fields). Attributes specify the granular elements composing the entity.
 
 Syntax
 """"""
-
 The definition of a type starts with the keyword ``type``, followed by the type name. A colon ``:`` punctuation introduces the rest of the definition.
+
+The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase`_). Type names need to be unique across a `namespace <#namespace-label>`_. All those requirements are controlled by the Rosetta DSL grammar.
 
 The first component of the definition is a plain-text description of the type. Descriptions use quotation marks ``"`` ``"`` (to mark a string) in between angle brackets ``<`` ``>``. Descriptions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
 
-Then the definition of the type lists its component attributes. Each attribute is defined by four components, syntactically ordered as:
+After the description come any `annotations <#annotations-label>`_ that are applied to this type. Annotations are enclosed within square brackets '[' and ']'
 
-* name
-* type
-* cardinality: see `Cardinality Section`_
-* description
+.. code-block:: Haskell
+ 
+  type WorkflowStep: <"A workflow step ....">
+	[metadata key]
+	[rootType]
+
+Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
+
+* name - 
+  Required - Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
+* type - 
+  Required - Each attribute can be specified either as a `basic type <#basic-type-label>`_, `record type <#record-type-label>`_, data type or `enumeration type <#enumeration-label>`_.
+* cardinality -  
+  Required - see `Cardinality <#cardinality-label>`_
+* description - Optional but recommended) - A description of the attribute using the sames <"..."> syntax as the type description
+* annotations - Optional - Annotations such as `synonyms <mapping.html>`_ or metadata can be applied to attributes
 
 .. code-block:: Haskell
 
- type PeriodBound: <"The period bound is defined as a period and whether the bound is inclusive.">
-   period Period (1..1) <"The period to be used as the bound, e.g. 5Y.">
-   inclusive boolean (1..1) <"Whether the period bound is inclusive, e.g. for a lower bound, false would indicate greater than, whereas true would indicate greater than or equal to.">
+  type PeriodBound: <"The period bound is defined as a period and whether the bound is inclusive.">
+    period Period (1..1) <"The period to be used as the bound, e.g. 5Y.">
+    inclusive boolean (1..1) <"Whether the period bound is inclusive, e.g. for a lower bound, false would indicate greater than, whereas true would indicate greater than or equal to.">
 
  type Period: <"A class to define recurring periods or time offsets.">
    periodMultiplier int (1..1) <"A time period multiplier, e.g. 1, 2 or 3 etc. A negative value can be used when specifying an offset relative to another date, e.g. -2 days.">
@@ -54,33 +65,36 @@ Then the definition of the type lists its component attributes. Each attribute i
 
 .. note:: The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as ``type``, so the start of a new definition marks the end of the previous one. For readability more generally, the Rosetta DSL looks to eliminate all the delimiters that are often used in traditional programming languages (such as curly braces ``{`` ``}`` or semi-colon ``;``).
 
-Each attribute can be specified either as a basic type, record type, data type or enumeration type. The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
+Built in types
+^^^^^^^^^^^^^^
+.. _basic-type-label:
 
-* Text - ``string``
-* Number - ``int`` (for integer) and ``number`` (for float)
-* Logic - ``boolean``
-* Time - ``time``
+Basic Types
+"""""""""""
+Rosetta defines five fundamental data types.  The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
 
-The set of record types available in the Rosetta DSL are controlled at the language level by the ``recordType`` definition as below:
+ * ``string`` - Text
+ * ``int`` - integer numbers
+ * ``number`` - decimal numbers
+ * ``boolean`` - logical true of false
+ * ``time`` - simple time values (e.g. "05:00:00")
 
-* Date and Time - ``date`` and ``zonedDateTime``
+.. _record-type-label:
 
-Record types are distinct from data types in the following ways:
+Record Types
+""""""""""""
+Rosetta defines two record types ``date`` and ``zonedDateTime``.  The set of record types available in the Rosetta DSL are controlled at the language level by the ``recordType`` definition.
+
+Record types are simplified data types:
 
 * Record types are pure data definitions and do not allow specification of validation logic in ``conditions``.
 * Record types are handled specially in the code-generators as so form part of the Rosetta DSL, rather than any Rosetta base domain model. 
 
-The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase`_), while attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase). Type names need to be unique across the model. All those requirements are controlled by the Rosetta DSL grammar.
-
 Time
 """"
+The ``zonedDateTime`` record type unambiguously refers to a single instant of time.
 
-For time zone adjustments, a time zone qualifier can be specified alongside a time in one of two ways:
-
-* Through the ``zonedDateTime`` basic type, which needs to be expressed either as `UTC`_ or as an offset to UTC, as specified by the ISO 8601 standard.
-* Through the ``BusinessCenterTime`` type, where time is specified alongside a business center.  This is used to specify a time dimension in relation to a future event: e.g. the earliest or latest exercise time of an option.
-
-While there has been discussion as to whether the Rosetta DSL should support dates which are specified as an offset to UTC with the ``Z`` suffix, no positive conclusion has been reached. The main reason is that all dates which need a business date context can already specify an associated business center.
+Alternatively in the CDM there is the data type ``BusinessCenterTime`` , where a simple ``time`` "5:00:00" is specified alongside a business center.  The simple time should be interpreted with the timezone information of the associated business center.
 
 Inheritance
 """""""""""
@@ -94,20 +108,18 @@ Inheritance
 
 .. note:: For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet is to highlight some of those features.
 
+.. _enumeration-label:
 
-Enumeration and Enumeration Value
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+Enumeration
+^^^^^^^^^^^
 Purpose
 """""""
-
 **Enumeration is the mechanism through which an attribute may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled (or enumeration) values.
 
 This mimics the *scheme* concept, whose values may be specified as part of an existing standard and can be represented through an enumeration in the Rosetta DSL. Typically, a scheme with no defined values is represented as a basic ``string`` type.
 
 Syntax
 """"""
-
 Enumerations are very simple modelling containers, which are defined in the same way as other model components. The definition of an enumeration starts with the ``enum`` keyword, followed by the enumeration name. A colon ``:`` punctuation introduces the rest of the definition, which contains a plain-text description of the enumeration and the list of enumeration values.
 
 .. code-block:: Haskell
@@ -118,9 +130,8 @@ Enumerations are very simple modelling containers, which are defined in the same
    M <"Month">
    Y <"Year">
 
-Enumeration names must be unique across a model. The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase).  In addition the enumeration name should end with the suffix Enum.
-
-Enumeration values have a restricted syntax to facilitate their integration with executable code: they cannot start with a numerical digit, and the only special character that can be associated with them is the underscore ``_``.
+Enumeration names must be unique across a `namespace <#namespace-label>`_. The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase).  In addition the enumeration name should end with the suffix Enum. 
+The Enumeration values cannot start with a numerical digit, and the only special character that can be associated with them is the underscore ``_``.
 
 In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a **display name** to any enumeration value. For those enumeration values, special characters are replaced with ``_`` while the ``displayName`` entry corresponds to the actual value.
 
@@ -142,16 +153,24 @@ An example is the day count fraction scheme for interest rate calculation, which
    _30E_360_ISDA displayName "30E/360.ISDA"
    _30_360 displayName "30/360"
 
+.. _namespace-label:
+
+Namespace
+---------
+All Rosetta components are organised into namespaces. ::
+
+  namespace cdm.base.datetime
+
+The namespace provides a context within which references to Rosetta components (types, functions enums etc.) are resolved. The names of all components must be unique within a given namespace. Components can refer to other components in the same namespace using just their name. Components can refer to components outside their namespace either by giving the *fully qualified name* e.g. ``cdm.base.datetime.AdjustableDate`` or by importing the namespace into the current file ``import cdm.base.datetime``
+
+.. _annotations-label:
 
 Annotation Component
 --------------------
-
 Annotation Definition
 ^^^^^^^^^^^^^^^^^^^^^
-
 Purpose
 """""""
-
 Annotations allow to associate meta-information to model components, which can serve a number of purposes:
 
 * purely syntactic, to provide additional guidance when navigating model components
@@ -162,12 +181,12 @@ Examples of annotations and their usage for different purposes are illustrated b
 
 Syntax
 """"""
-
 Annotations are defined in the same way as other model components. The definition of an annotation starts with the ``annotation`` keyword, followed by the annotation name. A colon ``:`` punctuation introduces the rest of the definition, starting with a plain-text description of the annotation.
 
 Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase.
 
-It is possible to associate attributes to an annotation (see ``metadata`` example), even though some annotations may not require any further attribute. For instance:
+It is possible to associate attributes to an annotation (see `metadata <#metadata-label>`_ example), even though some annotations may not require any further attribute. For instance:
+.. _roottype-label:
 
 .. code-block:: Haskell
 
@@ -177,9 +196,9 @@ It is possible to associate attributes to an annotation (see ``metadata`` exampl
 
 Meta-Data and Reference
 ^^^^^^^^^^^^^^^^^^^^^^^
-
 Purpose
 """""""
+.. _metadata-label:
 
 The ``metadata`` annotation allows to associate a set of meta-data qualifiers to types and attributes.
 
@@ -210,7 +229,6 @@ Other than the new annotation, data templates do not have any impact on the mode
 
 Syntax
 """"""
-
 Once an annotation is defined, its name and chosen attribute, if any, are used in between square brackets ``[`` ``]`` to annotate model components. The below ``Party`` and ``Identifier`` types illustrate how meta-data annotations and their relevant attributes can be used in a model:
 
 .. code-block:: Haskell
@@ -232,7 +250,7 @@ Once an annotation is defined, its name and chosen attribute, if any, are used i
      [metadata scheme]
    assignedIdentifier AssignedIdentifier (1..*)
 
-A ``key`` qualifier is associated to the ``Party`` type, which means it is referenceable. In the ``Identifier`` type, the ``reference`` qualifier, which is associated to the ``issuerReference`` attribute of type ``Party``, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the `Synonym Section`_ of the documentation.
+A ``key`` qualifier is associated to the ``Party`` type, which means it is referenceable. In the ``Identifier`` type, the ``reference`` qualifier, which is associated to the ``issuerReference`` attribute of type ``Party``, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the `synonym <mapping.html>`_ of the documentation.
 
 When a data type is annotated as a ``template``, the designation applies to all encapsulated types in that data type. In the example below, the designation of template eligibility for ``ContractualProduct`` also applies to ``EconomicTerms``, which is an encapsulated type in ``ContractualProduct``, and likewise applies to all encapsulated types in ``EconomicTerms``.
 
@@ -245,20 +263,19 @@ When a data type is annotated as a ``template``, the designation applies to all 
    productTaxonomy ProductTaxonomy (0..*)
    economicTerms EconomicTerms (1..1)
 
+.. _qualification-label:
 
 Qualified Type
 ^^^^^^^^^^^^^^
-
 The Rosetta DSL provides for some special types called *qualified types*, which are specific to its application in the financial domain:
 
 * Calculation - ``calculation``
 * Object qualification - ``productType`` ``eventType``
 
-Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model. The logic is being captured by specific types of functions that are detailed in the `Function Definition Section`_.
+Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model. The logic is being captured by specific types of functions that are detailed in the `Function Definition Section <#function-label>`_.
 
 Calculation
 """""""""""
-
 The ``calculation`` qualified type, when specified instead of the type for the attribute, represents the outcome of a calculation. An example usage is the conversion from clean price to dirty price for a bond.
 
 .. code-block:: Haskell
@@ -276,7 +293,6 @@ An attribute with the ``calculation`` type is meant to be associated to a functi
 
 Object Qualification
 """"""""""""""""""""
-
 Similarly, ``productType`` and ``eventType`` represent the outcome of qualification logic to infer the type of an object (financial product or event) in the model. See the ``productQualifier`` attribute, alongside other identifier attributes in the ``ProductIdentification`` type:
 
 .. code-block:: Haskell
@@ -302,7 +318,6 @@ Attributes of these types are meant to be associated to an object qualification 
 
 Data Validation Component
 -------------------------
-
 **Data integrity is supported by validation components that are associated to each data type** in the Rosetta DSL. There are two types of validation components:
 
 * Cardinality
@@ -310,10 +325,12 @@ Data Validation Component
 
 The validation components associated to a data type generate executable code designed to be executed on objects of that type. Implementors of the model can use the code generated from these validation components to build diagnostic tools that can scan objects and report on which validation rules were satisfied or broken. Typically, the validation code is included as part of any process that creates an object, to verify its validity from the point of creation.
 
+.. _cardinality-label:
+
 Cardinality
 ^^^^^^^^^^^
 
-Cardinality is a data integrity mechanism to control how many of each attribute an object of a given type can contain. The Rosetta DSL borrows from XML and specifies cardinality as a lower and upper bound in between ``(`` ``..`` ``)`` braces.
+Cardinality is a data integrity mechanism to control how many of each attribute an object of a given type can contain. The Rosetta DSL borrows from XML and specifies cardinality as a lower and upper bound in between ``(`` ``..`` ``)`` brackets.
 
 .. code-block:: Haskell
 
@@ -327,7 +344,9 @@ Cardinality is a data integrity mechanism to control how many of each attribute 
 
 The lower and upper bounds can both be any integer number. A 0 lower bound means attribute is optional. A ``*`` upper bound means an unbounded attribute. ``(1..1)`` represents that there must be one and only one attribute of this type. When the upper bound is greater than 1, the attribute will be considered as a list, to be handled as such in any generated code.
 
-A separate validation rule is generated for each attribute's cardinality constraint, so that any cardinality breach can be associated back to the specific attribute and not just to the object overall.
+A validation rule is generated for each attribute's cardinality constraint, so if the cardinality of the attribute does not match the requirement an error will be associated with that attrute by the validation process.
+
+.. _condition-label: 
 
 Condition Statement
 ^^^^^^^^^^^^^^^^^^^
@@ -335,7 +354,7 @@ Condition Statement
 Purpose
 """""""
 
-*Conditions* are logic statements associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False.
+*Conditions* are logic `expressions <expressions.html>`_ associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False As part of validation all the conditins are evaluated and if any evaluate to false then the validation fails.
 
 Syntax
 """"""
@@ -345,7 +364,7 @@ Condition statements are included in the definition of the type that they are as
 The definition of a condition starts with the ``condition`` keyword, followed by the name of the condition and a colon ``:`` punctuation. The condition's name must be unique in the context of the type that it applies to (but does not need to be unique across all data types of a given model). The rest of the condition definition comprises:
 
 * a plain-text description (optional)
-* a logic expression that applies to the the type's attributes
+* a boolean `expression <expressions.html>`_ that applies to the the type's attributes
 
 **The Rosetta DSL offers a restricted set of language features designed to be unambiguous and understandable** by domain experts who are not software engineers, while minimising unintentional behaviour. The Rosetta DSL is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations. The language features that are available in the Rosetta DSL to express validation conditions emulate the basic boolean logic available in usual programming languages:
 
@@ -379,12 +398,10 @@ The definition of a condition starts with the ``condition`` keyword, followed by
 
 Special Syntax
 ^^^^^^^^^^^^^^
-
 Some specific language features have been introduced in the Rosetta DSL, to handle validation cases where the basic boolean logic components would create unecessarily verbose, and therefore less readable, expressions. Those use-cases were deemed frequent enough to justify developing a specific syntax for them.
 
 Choice
 """"""
-
 Choice rules define a choice constraint between the set of attributes of a type in the Rosetta DSL. They allow a simple and robust construct to translate the XML *xsd:choicesyntax*, although their usage is not limited to those XML use cases.
 
 The choice constraint can be either:
@@ -425,7 +442,6 @@ While most of the choice rules have two attributes, there is no limit to the num
 
 One-of (as complement to choice rule)
 """""""""""""""""""""""""""""""""""""
-
 In the case where all the attributes of a given type are subject to a required choice logic that results in one and only one of them being present in any instance of that type, the Rosetta DSL allows to associate a ``one-of`` condition to the type, as short-hand to by-pass the implementation of the corresponding choice rule.
 
 This feature is illustrated below:
@@ -439,7 +455,6 @@ This feature is illustrated below:
 
 Only Exists
 """""""""""
-
 The ``only exists`` component is an adaptation of the simple ``exists`` syntax, that verifies that the attribute exists but also that no other attribute of the type does.
 
 .. code-block:: Haskell
@@ -460,9 +475,10 @@ This syntax drastically reduces the condition expression, which would otherwise 
 
 .. note:: This condition is typically applied to attribues of objects whose type implements a ``one-of`` condition. In this case, the ``only`` qualifier is redundant with the ``one-of`` condition because only one of the attributes can exist. However, ``only`` makes the condition expression more explicit, and also robust to potential lifting of the ``one-of`` condition.
 
+.. _function-label:
+
 Function Component
 ------------------
-
 **In programming languages, a function is a fixed set of logical instructions returning an output** which can be parameterised by a set of inputs (also known as *arguments*). A function is *invoked* by specifying a set of values for the inputs and running the instructions accordingly. In the Rosetta DSL, this type of component has been unified under a single *function* construct.
 
 Functions are a fundamental building block to automate processes, because the same set of instructions can be executed as many times as required by varying the inputs to generate a different, yet deterministic, result.
@@ -485,20 +501,16 @@ Where widely adopted industry processes already exist, they should be reused and
 
 This concept of combining and reusing small components is also consistent with a modular component approach to modelling.
 
-
 Function Specification
 ^^^^^^^^^^^^^^^^^^^^^^
-
 Purpose
 """""""
-
 **Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function's inputs and/or output through their *types* (or *enumerations*) in the data model. This amounts to specifying the `API <https://en.wikipedia.org/wiki/Application_programming_interface>`_ that implementors should conform to when building the function that supports the corresponding process.
 
 Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the domain model.
 
 Syntax
 """"""
-
 Functions are defined in the same way as other model components. The syntax of a function specification starts with the keyword ``func`` followed by the function name. A colon ``:`` punctuation introduces the rest of the definition.
 
 The Rosetta DSL convention for a function name is to use a PascalCase (upper `CamelCase`_) word. The function name needs to be unique across all types of functions in a model and validation logic is in place to enforce this.
@@ -512,14 +524,12 @@ The rest of the function specification supports the following components:
 
 Descriptions
 """"""""""""
-
 The role of a function must be clear for implementors of the model to build applications that provide such functionality. To better communicate the intent and use of functions, Rosetta supports multiple plain-text descriptions in functions. Descriptions can be provided for the function itself, for any input and output and for any statement block.
 
 Look for occurences of text descriptions in the snippets below.
 
 Inputs and Output
 """""""""""""""""
-
 Inputs and output are a function's equivalent of a type's attributes. As in a ``type``, each ``func`` attribute is defined by a name, data type (as either a ``type``, ``enum`` or ``basicType``) and cardinality.
 
 At minimum, a function must specify its output attribute, using the ``output`` keyword also followed by a colon ``:``.
@@ -543,13 +553,14 @@ Most functions, however, also require inputs, which are also expressed as attrib
 
 Conditions
 """"""""""
-
-A function's inputs and output can be constrained using *conditions*. Each condition is expressed as a logical statement that evaluates to True or False, using the same language features as those available to express condition statements in data types and detailed in the `Condition Statement Section`_.
+A function's inputs and output can be constrained using *conditions*.
 
 Condition statements in a function can represent either:
 
 * a **pre-condition**, using the ``condition`` keyword, applicable to inputs only and evaluated prior to executing the function, or
 * a **post-condition**, using the ``post-condition`` keyword, applicable to inputs and output and evaluated after executing the function (once the output is known)
+
+Each type of condition keyword is followed by a `boolean expression <expressions.html>`_ which is evaluated to check the correctness of the function inputs and result.
 
 Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the constraints that impementors of this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
@@ -582,8 +593,9 @@ Conditions are an essential feature of the definition of a function. By constrai
 
 Function Definition
 ^^^^^^^^^^^^^^^^^^^
+**The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function's API. The creation of valid output objects can be fully or partially defined as part of a function specification, or completely left to the implementor. The parts of a function definition that have been fully defined as `Rosetta Expression <expressions.html>`_ will be be translated into functional code which don't require further implementation.
 
-**The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function's API. The creation of valid output objects can be fully or partially defined as part of a function specification, or completely left to the implementor.
+The return object or individual attributes of the return object can be set by the function definition using the assign-output syntax; the keyword ``assign-output`` is followed by a `Rosetta Path <expressions.html#rosetta-path-label>`_ , a ``:`` and then an `expression <expressions.html>`_ used to calculate the value from the inputs
 
 * A function is **fully defined** when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the generated code is directly usable in an implementation.
 * A function is **partially defined** when the output object's validation constraints are only partially satisfied. In this case, implementors will need to extend the generated code and assign the remaining values on the output object.
@@ -596,7 +608,6 @@ The output object will be systematically validated when invoking a function, so 
 
 Output Construction
 """""""""""""""""""
-
 In the ``EquityPriceObservation`` example above, the ``post-condition`` statements assert whether the observation's date and value are correctly populated according to the output of other, sub-functions, but delegates the construction of that output to implementors of the function.
 
 In practice, implementors of the function can be expected to re-use those sub-functions (``ResolveAdjustableDate`` and ``EquitySpot``) to construct the output. The drawback is that those sub-functions are likely to be executed twice: once to build the output and once to run the validation.
@@ -638,7 +649,7 @@ The example above could be rewritten as follows:
 * Calculation
 * Short-hand function
 
-Those functions are typically associated to an annotation, as described in the `Qualified Type Section`_, to instruct code generators to create concrete functions.
+Those functions are typically associated to an annotation, as described in the `Qualified Type Section <#qualified-label>`_, to instruct code generators to create concrete functions.
 
 Object Qualification Function
 """""""""""""""""""""""""""""
@@ -712,252 +723,10 @@ which could be invoked as part of multiple other functions that use the ``Econom
 
 Mapping Component
 -----------------
-
-Synonym
-^^^^^^^
-
-Purpose
-"""""""
-
-*Synonym* is the baseline building block to map a model expressed in the Rosetta DSL to alternative data representations, whether those are open standards or proprietary. Synonyms can be complemented by mapping logic when the relationship is not a one-to-one or is conditional.
-
-Synonyms are specified at the attribute level for a data type. Synonyms can also be associated to enumerations and are specified at the enumeration value level. Mappings are typically implemented by traversing the model tree down, so knowledge of the context of an attribute (i.e. the type in which it is used) determines what it should map to. Knowledge about the upper-level type would be lost if synonyms were implemented at the class level.
-
-There is no limit to the number of synonyms that can be associated to any attribute, and there can even be several synonyms for a given data source (e.g. in the case of a conditional mapping).
-
-Syntax
-""""""
-
-Synonyms are introduced by the ``synonym`` keyword and are specified for each attribute in between square brackets ``[`` ``]``, same as an annotation. The baseline synonym syntax has two components:
-
-* **source**, which possible values are controlled by a special ``synonym source`` type of enumeration
-* **value**, which is a ``string`` that identifies the name of the attribute as it is found in the source
-
-For example for a data type:
-
-.. code-block:: Haskell
-
- type FxRate: <"A class describing the rate of a currency conversion: pair of currency, quotation mode and exchange rate.">
-
-   quotedCurrencyPair QuotedCurrencyPair (1..1) <"Defines the two currencies for an FX trade and the quotation relationship between the two currencies.">
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "quotedCurrencyPair"]
-   rate number (0..1) <"The rate of exchange between the two currencies of the leg of a deal. Must be specified with a quote basis.">
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "rate"]
-
-Or an enumeration:
-
-.. code-block:: Haskell
-
- enum NaturalPersonRoleEnum: <"The enumerated values for the natural person's role.">
-
-   Broker <"The person who arranged with a client to execute the trade.">
-     [synonym FpML_5_10 , CME_SubmissionIRS_1_0 , CME_ClearedConfirm_1_17 value "Broker"]
-   Buyer <"Acquirer of the legal title to the financial instrument.">
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "Buyer"]
-   DecisionMaker <"The party or person with legal responsibility for authorization of the execution of the transaction.">
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "DecisionMaker"]
-   ExecutionWithinFirm <"Person within the firm who is responsible for execution of the transaction.">
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "ExecutionWithinFirm"]
-   InvestmentDecisionMaker <"Person who is responsible for making the investment decision.">
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "InvestmentDecisionMaker"]
-   Seller <"Seller of the legal title to the financial instrument.">
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "Seller"]
-   Trader <"The person who executed the trade.">
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "Trader"]
-
-.. note:: The synonym value is of type ``string`` to facilitate integration with executable code. The alternative approach consisting of specifying the value as a compatible identifier alongside a display name has been disregarded because it has been deemed not appropriate to create a "code-friendly" value for the respective synonyms.
-
-A further set of attributes can be associated with a synonym, to address specific use cases:
-
-* **path** to allow mapping when data is nested in multiple levels within the respective model.
-* **hint** to allow mapping when data is nested in different ways between the respective models.
-
-The ``Price`` type provides a good illustration of such cases:
-
-.. code-block:: Haskell
-
- type Price: <"Generic description of the price concept applicable across product types, which can be expressed in a number of ways other than simply cash price">
-
-   cashPrice CashPrice (0..1) <"Price specified in cash terms, e.g. for securities proceeds or fee payment in a contractual product.">
-     [synonym FpML_5_10 value "initialPrice" path "rateOfReturn", "underlyer"]
-     [synonym FpML_5_10 hint "paymentAmount"]
-     [synonym FpML_5_10 hint "fixedAmount"]
-   exchangeRate ExchangeRate (0..1) <"Price specified as an exchange rate between two currencies.">
-     [synonym FpML_5_10 value "exchangeRate"]
-   fixedInterestRate FixedInterestRate (0..1) <"Price specified as a fixed interest rate.">
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "fixedRateSchedule" path "calculationPeriodAmount->calculation"]
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "fixedAmountCalculation"]
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "fixedRateSchedule"]
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 hint "fixedRate"]
-   floatingInterestRate FloatingInterestRate (0..1) <"Price specified as a spread on top of a floating interest rate."
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "floatingRateCalculation" path "calculationPeriodAmount->calculation"]
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "floatingRateCalculation" path "interestCalculation"]
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "floatingRateCalculation"]
-     [synonym FpML_5_10, CME_SubmissionIRS_1_0, CME_ClearedConfirm_1_17 value "floatingAmountCalculation"]
-
-* **tag** or a **componentID** to properly reflect the FIX standard, which uses those two components. There are only limited examples of such at present, as a result of the scope focus on post-execution use cases hence the limited reference to the FIX standard.
-
-.. code-block:: Haskell
-
- type InformationSource: <"A class defining the source for a piece of information (e.g. a rate fix or an FX fixing). The attribute names have been adjusted from FpML to address the fact that the information is not limited to rates.">
-   sourceProvider InformationProviderEnum (1..1)  <"An information source for obtaining a market data point. For example Bloomberg, Reuters, Telerate, etc.">
-     [synonym FIX_5_0_SP2 value "RateSource" tag 1446]
-   sourcePage string (0..1) <"A specific page for the source for obtaining a market data point. In FpML, this is specified as a scheme, rateSourcePageScheme, for which no coding Scheme or URI is specified.">
-   sourcePageHeading string (0..1) <"The heading for the source on a given source page.">
-
-* **definition** to provide a more explicit reference to the FIX enumeration values which are specified through a single digit or letter positioned as a prefix to the associated definition.
-
-.. code-block:: Haskell
-
- enum InformationProviderEnum:
-   AssocBanksSingapore
-   BankOfCanada
-   BankOfEngland
-   BankOfJapan
-   Bloomberg
-     [synonym FIX_5_0_SP2 value "0" definition "0 = Bloomberg"]
-   EuroCentralBank
-   FHLBSF
-   FederalReserve
-   ISDA
-   Other
-     [synonym FIX_5_0_SP2 value "99" definition "99 = Other"]
-   ReserveBankAustralia
-   ReserveBankNewZealand
-   Reuters
-     [synonym FIX_5_0_SP2 value "1" definition "1 = Reuters"]
-   SAFEX
-   Telerate
-     [synonym FIX_5_0_SP2 value "2" definition "2 = Telerate"]
-
-Meta-Data Mapping
-"""""""""""""""""
-
-When meta-data are associated to an attribute, as decribed in the `Meta-Data and Reference Section`_, additional synonym syntax allows to specify how to retrieve the corresponding meta-data from the source. This is illustrated by the usage of the ``meta`` synonym syntax in the example below:
-
-.. code-block:: Haskell
-
- type Identifier:
-   [metadata key]
-   issuerReference Party (0..1)
-     [metadata reference]
-     [synonym FpML_5_10 value "issuer" meta "href"]
-   issuer string (0..1)
-     [metadata scheme]
-     [synonym FpML_5_10 value "issuer" meta "issuerIdScheme"]
-   assignedIdentifier AssignedIdentifier (1..*)
-
-The ``issuer`` attribute has an associated ``scheme``. The scheme can be retrieved using the ``issuerIdScheme`` meta-data that is attached to the ``issuer`` value in the synonym source.
-
-To be able to specify an attribute as a reference from an existing source, the source itself must implement some cross-referencing mechanism so that the reference can be identified, as in the ``href`` / ``id`` mechanism used in XML. The cross-referencing works as follows:
-
-* the attribute must specify the identifier value for the reference in the synonym source. For the ``issuerReference`` attribute above, this is specified as the ``href`` meta-data of the ``issuer`` value in the source.
-* an identifier value must be associated to the object being referenced. For the ``Party`` type, this is specified as the ``id`` meta-data in the synonym source, as shown below:
-
-.. code-block:: Haskell
-
- type Party:
-   [metadata key]
-   [synonym FpML_5_10 value "Party" meta "id"]
-
-   partyId string (1..*)
-     [metadata scheme]
-   name string (0..1)
-     [metadata scheme]
-   person NaturalPerson (0..*)
-   account Account (0..1)
-
-The below JSON extract illustrates an implementation of these meta-data in the context of a *transaction event*, which identifies the parties to the transactions as well as the *issuer* of the event (i.e. who submits the transaction message).
-
-.. code-block:: Java
-
- "eventIdentifier": [
-    {
-      (...)
-      "issuerReference": {
-        "globalReference": "33f59558",
-        "externalReference": "party2"
-      },
-      "meta": {
-        "globalKey": "76cc9eab"
-      }
-    }
-  ],
-  (...)
-  "party": [
-    {
-      "meta": {
-        "globalKey": "33f59557",
-        "externalKey": "party1"
-      },
-      "partyId": [
-        {
-          "value": "Party 1",
-          "meta": {
-            "scheme": "http://www.fpml.org/coding-scheme/external"
-          }
-        }
-      ]
-    },
-    {
-      "meta": {
-        "globalKey": "33f59558",
-        "externalKey": "party2"
-      },
-      "partyId": [
-        {
-          "value": "Party 2",
-          "meta": {
-            "scheme": "http://www.fpml.org/coding-scheme/external"
-          }
-        }
-      ]
-    }
-  ],
-
-There are two parties to the event, associated with ``externalKey`` identifiers as "party1" and "party2". Their actual ``partyId`` values are "Party 1" and "Party 2", which are specified through an FpML ``scheme`` referred to in meta-data. Rosetta also associates an internal ``globalKey`` hash to each party, as implementation of the ``key`` meta-data.
-
-Thanks to the ``reference`` qualifier, the ``issuerReference`` attribute can simply reference the event issuer party as "Party 2" rather than duplicating its components. The cross-reference is sourced from the original FpML document using the implemented ``href`` synonym. The internal ``globalReference`` points to the ``globalKey`` hash while the ``externalReference`` points to the "party2" ``externalKey``, as sourced from the original FpML document. Also note that the ``issuerReference`` itself has an associated ``globalKey`` meta-data by default since its ``Identifier`` class has a ``key`` qualifier.
-
-.. note:: This example is not part of the Rosetta DSL but corresponds to the default JSON implementation of the model. The choice of either maintaining or shredding external references (such as "party2"), once cross-reference has been established using the source document, is up to implementors of the model.
-
-Mapping Rule
-^^^^^^^^^^^^
-
-Purpose
-"""""""
-
-There are cases where the mapping between existing standards and protocols and their relation to the model is not one-to-one or is conditional. Synonyms have been complemented with a syntax to express mapping logic that provides a balance between flexibility and legibility.
-
-Syntax
-""""""
-
-The mapping rule syntax differs from the normal Rosetta DSL syntax in that it is not expressed as a stand-alone block with a qualifier prefix such as ``condition``. Instead, the mapping rule is positioned as an extension of the synonym syntax. Several mapping rule expressions can be associated with a given synonym.
-
-A mapping rule is composed of two (optional) expressions:
-
-* **mapping value** prefixed with ``set to``, which specifies the value that the attribute should be set to when the conditional expression is true
-* **conditional expression** prefixed with ``when``, to associate conditional logic to the mapping value
-
-The mapping logic associated with the party role example below provides a good illustration of such logic:
-
-.. code-block:: Haskell
-
- type PartyRole:
-
-   partyReference Party (1..1)
-   role PartyRoleEnum (1..1)
-     [synonym FpML_5_10 set to PartyRoleEnum -> DeterminingParty when path = "trade->determiningParty"]
-     [synonym FpML_5_10 set to PartyRoleEnum -> BarrierDeterminationAgent when path = "trade->barrierDeterminationAgent"]
-     [synonym FpML_5_10 set to PartyRoleEnum -> HedgingParty when path = "trade->hedgingParty"]
-     [synonym FpML_5_10 set to PartyRoleEnum -> ArrangingBroker when path = "trade->brokerPartyReference"]
-     [synonym FpML_5_10, CME_ClearedConfirm_1_17 value "role" path "tradeHeader->partyTradeInformation->relatedParty"]
-   ownershipPartyReference Party (0..1)
-
+Mapping in rosetta provides a mechanism for specifying how documents that are not Rosetta documents should be transformed into Rosetta documents. For more information see `mapping <mapping.html>`_
 
 Reporting Component
 -------------------
-
 
 Motivation
 ^^^^^^^^^^
@@ -1078,6 +847,8 @@ To ensure a model’s regulatory framework integrity, the authority, corpus and 
 
 The next section describes how to define reporting rules as model components.
 
+.. _report-rule-label:
+
 Rule Definition
 ^^^^^^^^^^^^^^^
 
@@ -1127,7 +898,7 @@ In addition to those existing functional features, the Rosetta DSL provides othe
 
 When defining a reporting rule, the `extract` keyword defines a value to be reported, or to be used as input into a subsequent statement or another rule. The full expressional syntax of the Rosetta DSL can be used in the expression that defines the value to be extracted, including conditional statement such as ``if`` / ``else`` / ``or`` / ``exists``.
 
-An example is given below, that uses a mix of Boolean statements.
+An example is given below, that uses a mix of Boolean statements. This example looks at the fixed and floating rate specificiation of a interestrate payout and if there is one of each returns true
 
 .. code-block:: Haskell
 
@@ -1148,20 +919,18 @@ The extracted value may be coming from a data attribute in the model, as above, 
 
 Extraction statements can be chained using the keyword `then`, which means that extraction continues from the previously extracted point.
 
-The syntax provides type safety when chaining rules, whereby the output type of the preceding rule must be equal to the input type of the following rule. In the below example, extraction starts from the ``Contract`` type, which corresponds to the output of the preceding ``ContractForEvent`` rule.
+The syntax provides type safety when chaining rules, whereby the output type of the preceding rule must be equal to the input type of the following rule. The example below uses the TradeForEvent rule to find the Trade object and ``then`` extracts the termination date from that trade
 
 .. code-block:: Haskell
 
  reporting rule MaturityDate <"Date of maturity of the financial instrument. Field only applies to debt instruments with defined maturity">
-   ContractForEvent then extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> terminationDate -> adjustableDate -> unadjustedDate
+ 	TradeForEvent then extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> terminationDate -> adjustableDate -> unadjustedDate
 
- reporting rule ContractForEvent
-   extract if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> contract only exists
-     then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> contract
-     else if WorkflowStep -> businessEvent -> primitives -> quantityChange -> after -> contract  exists
-       then WorkflowStep -> businessEvent -> primitives -> quantityChange -> after -> contract
-       else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> contract
-     as "Contract"
+ reporting rule TradeForEvent
+ 	extract
+ 		if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade only exists
+	then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
+		else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
 
 - ``as`` <FieldName>
 
@@ -1226,12 +995,32 @@ In the below example, we first apply a filter and extract a ``fixedInterestRate`
    maxBy FixedInterestRate -> rate then
    extract FixedInterestRate -> rate as "Price"
 
+- ``if`` statement
 
-.. _Cardinality Section: https://docs.rosetta-technology.io/dsl/documentation.html#cardinality
-.. _Condition Statement Section: https://docs.rosetta-technology.io/dsl/documentation.html#condition-statement
-.. _Meta-Data and Reference Section: https://docs.rosetta-technology.io/dsl/documentation.html#meta-data-and-reference
-.. _Synonym Section: https://docs.rosetta-technology.io/dsl/documentation.html#synonym
-.. _Qualified Type Section: https://docs.rosetta-technology.io/dsl/documentation.html#qualified-type
-.. _Function Definition Section: https://docs.rosetta-technology.io/dsl/documentation.html#function-definition
+The syntax supports two syntaxes for if then else style statements. The first has the structure ``if`` *boolean-expression* 
+
+
+It consists of several comma separated terms consisting of a test and a possible result.
+The tests are evaluated in order and when the first one matches its associated result is returned from the statement.
+If none of the tests match then a final possible result can be provided
+In the below example we first extract the Payout from a Contract then we try to find the appropriate asset class.
+If there is a ForwardPayout with a foreignExchange underlier then "CU" is returned as the "2.2 Asset Class"
+If there is an OptionPayout with a foreignExchange underlier then "CU" is returned as the "2.2 Asset Class"
+otherwise the asset class is null
+
+.. code-block:: Haskell
+
+  extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout then
+  if (
+	  filter when Payout -> forwardPayout -> underlier -> underlyingProduct -> foreignExchange exists
+	    => return "CU" as "2.2 Asset Class",
+	  filter when Payout -> optionPayout -> underlier -> underlyingProduct -> foreignExchange exists
+	    => return "CU" as "2.2 Asset Class",
+		=> return "null" as "2.2 Asset Class"
+	)
+
+
+
+
 .. _CamelCase: https://en.wikipedia.org/wiki/Camel_case
 .. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
