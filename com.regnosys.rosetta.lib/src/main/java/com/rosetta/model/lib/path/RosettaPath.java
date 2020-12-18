@@ -27,6 +27,16 @@ public class RosettaPath implements Comparable<RosettaPath> {
 	
     private final RosettaPath parent;
     private final RosettaPath.Element element;
+    
+    public static class NullPath extends RosettaPath {
+    	public NullPath() {
+    		super (null, null);
+    	}
+    	@Override
+    	public RosettaPath newSubPath (String p) {
+    		return createPath(Element.valueOf(p));
+    	}
+    }
 
     private RosettaPath(RosettaPath parent, Element element) {
         this.parent = parent;

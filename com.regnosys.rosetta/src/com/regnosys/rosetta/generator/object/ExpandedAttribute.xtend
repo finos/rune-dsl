@@ -45,7 +45,9 @@ final class ExpandedAttribute {
 	
 	def refIndex() {
 		for (var i=0;i<metas.size;i++) {
-			if (metas.get(i).getName=="reference") return i;
+			switch metas.get(i).getName {
+				case "reference", case "address": return i
+			}
 		}
 		return -1;
 	}

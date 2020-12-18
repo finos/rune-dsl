@@ -46,7 +46,11 @@ fragment ClassSynonyms*:
 	synonyms+=RosettaClassSynonym;
 	
 AnnotationRef:
-	'[' annotation = [Annotation|ValidID] (attribute = [Attribute|ValidID] (qualifier = STRING)?)? ']'
+	'[' annotation = [Annotation|ValidID] (attribute = [Attribute|ValidID] (qualifiers += AnnotationQualifier)*)? ']'
+;
+
+AnnotationQualifier:
+	qualName = STRING '=' (qualValue= STRING | qualPath = RosettaFeatureCall)
 ;
 
 Data:

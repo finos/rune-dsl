@@ -32,6 +32,8 @@ class JavaClassTranslator {
 				'java.lang.String'
 			case RCalculationType.CALCULATION.calculationType:
 				'java.lang.String'
+			case 'Keys':
+				'com.rosetta.model.lib.meta.Keys'
 		}
 	}
 

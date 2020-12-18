@@ -238,6 +238,22 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertNoErrors
 	}
+	
+	@Test
+	def void testTypeErrorAssignment_05() {
+		val model =
+		'''
+
+			type Type:
+				other int (0..1)
+
+			func Funcy:
+				inputs: in0 Type (0..1)
+				output: out string (0..1)
+				assign-output out: in0->other
+		'''.parseRosetta
+		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'string' but was 'int'")
+	}
 
 	@Test
 	def void testCardinalityErrorAssignment_01() {
@@ -260,6 +276,57 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(OPERATION, null, "Expecting single cardinality as value. Use 'only-element' to assign only first value.")
 	}
+	
+	@Test
+	def void testAttributesWithLocationBadTarget() {
+		val model ='''
+			metaType scheme string
+			metaType reference string
+			
+			type Bar:
+				bar string (1..1)
+					[metadata address "pointsTo"=Foo->foo]
+			
+		'''.parseRosetta
+		//TODO work out how to assert linking error
+		//model.assertError(ROSETTA_CALLABLE_CALL, null, "Couldn't resolve reference to RosettaCallable 'Foo' on RosettaCallableCall")
+	}
+	
+	@Test
+	def void testAttributesWithLocationAndNoAddress() {
+		val model ='''
+			metaType scheme string
+			metaType reference string
+			
+			type Foo:
+				foo string (1..1) 
+			
+			type Bar:
+				bar string (1..1)
+					[metadata address "pointsTo"=Foo->foo]
+			
+		'''.parseRosetta
+		model.assertError(ANNOTATION_QUALIFIER, null, "Target of address must be annotated with metadata location")
+	}
+	
+	@Test
+	def void testAttributesWithLocationAndAddressWrongType() {
+		val model ='''
+			metaType scheme string
+			metaType reference string
+
+			type Foo:
+				foo int (1..1) 
+					[metadata location]
+			
+			type Bar:
+				bar string (1..1)
+					[metadata address "pointsTo"=Foo->foo]
+			
+		'''.parseRosetta
+		model.assertError(ANNOTATION_QUALIFIER, TYPE_ERROR, "Expected address target type of 'string' but was 'int'")
+	}
+	
 
 	@Test
 	def void testDuplicateAttribute() {

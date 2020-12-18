@@ -31,10 +31,16 @@ interface Annotated {
 	contains AnnotationRef[] annotations
 }
 
+class AnnotationQualifier {
+	String qualName
+	String qualValue
+	contains RosettaExpression qualPath
+}
+
 class AnnotationRef {
 	refers Annotation ^annotation
 	refers Attribute attribute
-	String qualifier
+	contains AnnotationQualifier[] qualifiers
 }
 
 abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
