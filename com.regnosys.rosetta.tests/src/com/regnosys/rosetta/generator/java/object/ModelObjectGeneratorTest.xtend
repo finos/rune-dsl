@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
+import com.rosetta.model.lib.meta.Keys.KeysBuilder
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -480,6 +481,37 @@ class ModelObjectGeneratorTest {
 		'''.generateCode
 
 		code.compileToClasses
+	}
+	
+	@Test
+	def void internalReferenceTest() {
+		val code ='''
+
+			type Foo:
+				foo string (1..1) 
+					[metadata location]
+			
+			type Bar:
+				bar string (1..1)
+					[metadata address "pointsTo"=Foo->foo]
+			
+		'''.generateCode
+		//code.writeClasses("internalReferenceTest")
+		val generatedClass = code.compileToClasses
+
+		val barClass = generatedClass.get(rootPackage.name + '.Bar')
+
+		val getter = barClass.getMethod("getBar")
+		assertThat(getter, CoreMatchers.notNullValue())
+		assertThat(getter.returnType.name, is('com.rosetta.model.metafields.BasicReferenceWithMetaString'))
+		
+		val fooClass = generatedClass.get(rootPackage.name + '.Foo')
+		val builderInstance = fooClass.getMethod("builder").invoke(null)
+		val metad = builderInstance.invoke("getOrCreateFoo")
+		val metas = metad.invoke("getOrCreateMeta")
+		val keys = metas.invoke("getKeys") as KeysBuilder
+		assertThat(keys.keys.size(), is(1));
+		
 	}
 	
 	@Disabled @Test

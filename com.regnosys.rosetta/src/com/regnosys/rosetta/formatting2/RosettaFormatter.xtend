@@ -160,7 +160,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 	def dispatch void format(AnnotationRef ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword(annotationRefAccess.leftSquareBracketKeyword_0).append(NO_SPACE)
 		ele.regionFor.keyword(annotationRefAccess.rightSquareBracketKeyword_3).prepend(NO_SPACE)
-		ele.regionFor.assignment(annotationRefAccess.attributeAssignment_2).prepend(ONE_SPACE)
+		ele.regionFor.assignment(annotationRefAccess.attributeAssignment_2_0).prepend(ONE_SPACE)
 	}
 	
 	def dispatch void format(Function ele, extension IFormattableDocument document) {

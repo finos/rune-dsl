@@ -20,6 +20,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension com.regnosys.rosetta.generator.util.Util.*
 import java.util.function.Consumer
+import com.rosetta.model.lib.meta.Key
 
 class ModelObjectBuilderGenerator {
 	
@@ -158,10 +159,18 @@ class ModelObjectBuilderGenerator {
 			«IF attribute.isDataType || attribute.hasMetas»
 				«IF !attribute.cardinalityIsListValue»
 					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»() {
+						«attribute.toBuilderTypeSingle(names)» result;
 						if («attribute.name»!=null) {
-							return «attribute.name»;
+							result = «attribute.name»;
 						}
-						else return «attribute.name» = new «attribute.toBuilderTypeSingle(names)»();
+						else {
+							result = «attribute.name» = new «attribute.toBuilderTypeSingle(names)»();
+							«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
+								result.getOrCreateMeta().getOrCreateKeys().addKey(new «Key».KeyBuilder().setScope("DOCUMENT"));
+							«ENDIF»
+						}
+						
+						return result;
 					}
 					
 				«ELSE»

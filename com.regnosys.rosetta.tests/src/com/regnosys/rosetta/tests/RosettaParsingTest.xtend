@@ -284,6 +284,23 @@ class RosettaParsingTest {
 	}
 	
 	@Test
+	def void testAttributesWithLocationAndAddress() {
+	'''
+			metaType scheme string
+			metaType reference string
+
+			type Foo:
+				foo string (1..1) 
+					[metadata location]
+			
+			type Bar:
+				bar string (1..1)
+					[metadata address "pointsTo"=Foo->foo]
+			
+		'''.parseRosettaWithNoErrors
+	}
+	
+	@Test
 	def void testSynonymsWithPathExpression() {
 		'''
 			type Foo:

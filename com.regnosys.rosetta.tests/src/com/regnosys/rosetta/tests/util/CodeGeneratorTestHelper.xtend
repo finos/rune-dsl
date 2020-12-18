@@ -2,22 +2,24 @@ package com.regnosys.rosetta.tests.util
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.RosettaGenerator
+import com.regnosys.rosetta.generator.RosettaInternalGenerator
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import com.regnosys.rosetta.rosetta.RosettaModel
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.HashMap
 import java.util.List
 import java.util.Map
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtext.generator.GeneratorContext
+import org.eclipse.xtext.util.CancelIndicator
 import org.eclipse.xtext.util.JavaVersion
+import org.eclipse.xtext.xbase.testing.InMemoryJavaCompiler
+import org.eclipse.xtext.xbase.testing.JavaSource
 import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static com.google.common.collect.ImmutableMap.*
-import java.io.File
-import java.nio.file.Paths
-import java.nio.file.Files
-import org.eclipse.xtext.xbase.testing.InMemoryJavaCompiler
-import org.eclipse.xtext.xbase.testing.JavaSource
-import com.regnosys.rosetta.generator.RosettaInternalGenerator
-import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import org.eclipse.xtext.generator.GeneratorContext
-import org.eclipse.xtext.util.CancelIndicator
 
 class CodeGeneratorTestHelper {
 
@@ -39,47 +41,39 @@ class CodeGeneratorTestHelper {
 	}
 	
 	def generateCode(CharSequence... models) {
-		val fsa = new RegisteringFileSystemAccess()
-				
 		val eResources = models.parseRosettaWithNoErrors.map[it.eResource];
+		generateCode(eResources)
+	}
+	
+	def generateCode(CharSequence model) {
+		val eResource = model.parseRosettaWithNoErrors.eResource;
+		generateCode(#[eResource])
+	}
+	
+	protected def generateCode(List<Resource> eResources) {
+		val fsa = new RegisteringFileSystemAccess()
 		val ctx = new GeneratorContext()=> [
 			cancelIndicator =  CancelIndicator.NullImpl
 		]
-		
 		eResources.forEach[
 			beforeGenerate(fsa, ctx)
 			doGenerate(fsa, ctx)
 			afterGenerate(fsa, ctx)
 		]
-
+		
 		val generatedCode = newHashMap
 		fsa.generatedFiles.forEach [
 			if (it.getJavaClassName() !== null) {
 				generatedCode.put(it.getJavaClassName(), it.getContents().toString());
 			}
 		]
-
+		
 		return generatedCode
 	}
 	
-	def generateCode(CharSequence model) {
-		val fsa = new RegisteringFileSystemAccess()
-		val eResource = model.parseRosettaWithNoErrors.eResource;
-		val ctx = new GeneratorContext()=> [
-			cancelIndicator =  CancelIndicator.NullImpl
-		]
-		eResource.beforeGenerate(fsa, ctx)
-		eResource.doGenerate(fsa, ctx)
-		eResource.afterGenerate(fsa, ctx)
-
-		val generatedCode = newHashMap
-		fsa.generatedFiles.forEach [
-			if (it.getJavaClassName() !== null) {
-				generatedCode.put(it.getJavaClassName(), it.getContents().toString());
-			}
-		]
-
-		return generatedCode
+	def generateCode(RosettaModel model) {
+		val eResource = model.eResource
+		generateCode(#[eResource])
 	}
 
 	def compileToClasses(Map<String, String> code) {
