@@ -290,6 +290,9 @@ class MetaFieldGenerator {
 
 				@Override
 				public «name»Builder prune() {
+					«IF !metaFieldTypes.filter[t|t.metaType.name=="Keys"].isEmpty»
+						if (keys!=null && !keys.hasData()) keys=null;
+					«ENDIF»
 					return this;
 				}
 				
@@ -298,7 +301,13 @@ class MetaFieldGenerator {
 					«IF metaFieldTypes.empty»
 					return false;
 					«ELSE»
-					return «FOR type : metaFieldTypes SEPARATOR " || \n"»«type.metaType.name.toFirstLower»!=null«ENDFOR»;
+					return «FOR type : metaFieldTypes SEPARATOR " || \n"»
+						«IF type.metaType.type.name=="Keys"»
+							keys!=null && keys.hasData()
+						«ELSE»
+							«type.metaType.name.toFirstLower»!=null
+						«ENDIF»
+					«ENDFOR»;
 					«ENDIF»
 				}
 				

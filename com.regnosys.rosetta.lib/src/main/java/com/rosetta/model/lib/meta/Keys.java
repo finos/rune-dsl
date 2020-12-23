@@ -46,5 +46,9 @@ public class Keys {
 		public void setKeys(List<Key.KeyBuilder> keys) {
 			this.keys = keys;
 		}
+		
+		public boolean hasData() {
+			return keys.stream().anyMatch(Key.KeyBuilder::hasData);
+		}
 	}
 }

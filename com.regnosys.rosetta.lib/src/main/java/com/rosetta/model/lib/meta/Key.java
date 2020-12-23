@@ -57,5 +57,9 @@ public class Key {
 			this.keyValue = keyValue;
 			return this;
 		}
+		
+		public boolean hasData() {
+			return keyValue!=null;
+		}
 	}
 }
