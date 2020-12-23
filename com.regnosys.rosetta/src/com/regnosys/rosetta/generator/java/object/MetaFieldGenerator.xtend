@@ -290,6 +290,9 @@ class MetaFieldGenerator {
 
 				@Override
 				public «name»Builder prune() {
+					«IF !metaFieldTypes.filter[t|t.metaType.name=="Keys"].isEmpty»
+						if (keys!=null && !keys.hasData()) keys=null;
+					«ENDIF»
 					return this;
 				}
 				
@@ -298,7 +301,13 @@ class MetaFieldGenerator {
 					«IF metaFieldTypes.empty»
 					return false;
 					«ELSE»
-					return «FOR type : metaFieldTypes SEPARATOR " || \n"»«type.metaType.name.toFirstLower»!=null«ENDFOR»;
+					return «FOR type : metaFieldTypes SEPARATOR " || \n"»
+						«IF type.metaType.type.name=="Keys"»
+							keys!=null && keys.hasData()
+						«ELSE»
+							«type.metaType.name.toFirstLower»!=null
+						«ENDIF»
+					«ENDFOR»;
 					«ENDIF»
 				}
 				
@@ -554,12 +563,15 @@ class MetaFieldGenerator {
 				
 				@Override
 				public FieldWithMeta«type.name.toFirstUpper»Builder prune() {
+					«IF type.isType»
+						if (getValue()!=null && !getValue().prune().hasData()) value = null;
+					«ENDIF»
+					if (getMeta()!=null && !getMeta().prune().hasData()) meta = null;
 					return this;
 				}
 				
 				@Override
 				public boolean hasData() {
-					if (getMeta()!=null && getMeta().hasData()) return true;
 					«IF type.isType»
 						if (getValue()!=null && getValue().hasData()) return true;
 					«ELSE»
