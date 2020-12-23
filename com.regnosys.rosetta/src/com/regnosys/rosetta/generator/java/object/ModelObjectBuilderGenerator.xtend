@@ -178,7 +178,12 @@ class ModelObjectBuilderGenerator {
 						if («attribute.name»==null) {
 							this.«attribute.name» = new «ArrayList»<>();
 						}
-						return getIndex(«attribute.name», _index, ()->new «attribute.toBuilderTypeSingle(names)»());
+						«attribute.toBuilderTypeSingle(names)» result;
+						result =  getIndex(«attribute.name», _index, ()->new «attribute.toBuilderTypeSingle(names)»());
+						«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
+							result.getOrCreateMeta().getOrCreateKeys().addKey(new «Key».KeyBuilder().setScope("DOCUMENT"));
+						«ENDIF»
+						return result;
 					}
 					
 				«ENDIF»
