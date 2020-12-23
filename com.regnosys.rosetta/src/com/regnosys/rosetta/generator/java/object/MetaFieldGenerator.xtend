@@ -563,12 +563,15 @@ class MetaFieldGenerator {
 				
 				@Override
 				public FieldWithMeta«type.name.toFirstUpper»Builder prune() {
+					«IF type.isType»
+						if (getValue()!=null && !getValue().prune().hasData()) value = null;
+					«ENDIF»
+					if (getMeta()!=null && !getMeta().prune().hasData()) meta = null;
 					return this;
 				}
 				
 				@Override
 				public boolean hasData() {
-					if (getMeta()!=null && getMeta().hasData()) return true;
 					«IF type.isType»
 						if (getValue()!=null && getValue().hasData()) return true;
 					«ELSE»
