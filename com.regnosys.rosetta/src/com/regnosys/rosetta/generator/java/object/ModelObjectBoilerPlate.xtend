@@ -32,7 +32,7 @@ class ModelObjectBoilerPlate {
 	def StringConcatenationClient builderBoilerPlate(Data c, JavaNames names) {
 		val attrs = c.expandedAttributes.filter[name != 'eventEffect'].toList
 		'''
-			«c.builderProcessMethod(names)»
+			«c.processMethod(names)»
 			«c.contributeEquals(attrs, toBuilder)»
 			«c.contributeHashCode(attrs)»
 			«c.contributeToString(toBuilder)»
@@ -45,7 +45,7 @@ class ModelObjectBoilerPlate {
 			interfaces.add(GlobalKey)
 		if(d.hasTemplateAnnotation)
 			interfaces.add(Templatable)
-		if (interfaces.empty) null else '''implements «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
+		if (interfaces.empty) null else ''', «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
 	
 	def StringConcatenationClient implementsClauseBuilder(Data d) {
@@ -57,7 +57,7 @@ class ModelObjectBoilerPlate {
 		if (d.name == "ContractualProduct" || d.name == "BusinessEvent") {
 			interfaces.add('''«Qualified»''')
 		}
-		if(interfaces.empty) null else ''' implements «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
+		if(interfaces.empty) null else ''', «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
 	
 	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names) {
@@ -149,41 +149,19 @@ class ModelObjectBoilerPlate {
 
 	private def StringConcatenationClient contributeToEquals(ExpandedAttribute a) '''
 	«IF a.cardinalityIsListValue»
-		if (!«ListEquals».listEquals(«a.name», _that.«a.name»)) return false;
+		if (!«ListEquals».listEquals(«a.name», _that.get«a.name.toFirstUpper»())) return false;
 	«ELSE»
-		if (!«Objects».equals(«a.name.toFirstLower», _that.«a.name.toFirstLower»)) return false;
+		if (!«Objects».equals(«a.name.toFirstLower», _that.get«a.name.toFirstUpper»())) return false;
 	«ENDIF»
 	'''
 
 	private def contribtueSuperHashCode(Data c) {
 		if(c.hasSuperType) 'super.hashCode()' else '0'
 	}
-
+	
 	private def processMethod(Data c, JavaNames names) '''
 		@Override
 		public void process(RosettaPath path, Processor processor) {
-			«IF c.hasSuperType»
-				super.process(path, processor);
-			«ENDIF»
-			
-			«FOR a : c.expandedAttributes.filter[!(isDataType || hasMetas)]»
-				«IF a.multiple»
-					«a.name».stream().forEach(a->processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, a, this«a.metaFlags»));
-				«ELSE»
-					processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, «a.name», this«a.metaFlags»);
-				«ENDIF»
-			«ENDFOR»
-			
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
-				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, «a.name»«a.metaFlags»);
-			«ENDFOR»
-		}
-		
-	'''
-	
-	private def builderProcessMethod(Data c, JavaNames names) '''
-		@Override
-		public void process(RosettaPath path, BuilderProcessor processor) {
 			«IF c.hasSuperType»
 				super.process(path, processor);
 			«ENDIF»

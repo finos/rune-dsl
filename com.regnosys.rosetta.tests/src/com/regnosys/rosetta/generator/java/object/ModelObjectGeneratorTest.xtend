@@ -28,7 +28,6 @@ import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
-import com.rosetta.model.lib.meta.Keys.KeysBuilder
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -43,7 +42,8 @@ class ModelObjectGeneratorTest {
 		val classes = '''
 			type Tester:
 				items string (0..*)
-		'''.compileJava8
+		'''
+		.compileJava8
 
 		val classTester = classes.get(rootPackage.name + ".Tester")
 		val classTesterBuilderInstance = classTester.getMethod("builder").invoke(null)
@@ -78,7 +78,7 @@ class ModelObjectGeneratorTest {
 				one int (0..1)
 				list int (0..*)
 		'''.generateCode
-		//code.writeClasses("intTest")
+		code.writeClasses("intTest")
 		val classes = code.compileToClasses
 
 		assertEquals(Integer, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)

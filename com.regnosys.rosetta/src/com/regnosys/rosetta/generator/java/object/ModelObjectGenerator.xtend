@@ -6,16 +6,12 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
-import com.regnosys.rosetta.generator.object.ExpandedSynonym
-import com.regnosys.rosetta.rosetta.RosettaClassSynonym
-import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RQualifiedType
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaClass
 import com.rosetta.model.lib.annotations.RosettaQualified
-import com.rosetta.model.lib.annotations.RosettaSynonym
 import com.rosetta.model.lib.meta.RosettaMetaData
 import java.util.List
 import java.util.Objects
@@ -40,15 +36,6 @@ class ModelObjectGenerator {
 			generateRosettaClass(javaNames, data, version))
 	}
 
-
-	private def hasSynonymPath(ExpandedSynonym synonym) {
-		synonym !== null && synonym.values.exists[path!==null]
-	}
-
-	private def hasSynonymPath(RosettaSynonymBase p) {
-		return hasSynonymPath(p.toRosettaExpandedSynonym)
-	}
-
 	private def generateRosettaClass(JavaNames javaNames, Data d, String version) {
 		val classBody = tracImports(d.classBody(javaNames, version))
 		'''
@@ -57,12 +44,10 @@ class ModelObjectGenerator {
 			«FOR imp : classBody.imports»
 				import «imp»;
 			«ENDFOR»
-«««			TODO fix imports below. See com.regnosys.rosetta.generator.java.object.ModelObjectBuilderGenerator.process(List<ExpandedAttribute>, boolean)
 
 			import com.rosetta.model.lib.RosettaModelObjectBuilder;
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.process.BuilderMerger;
-			import com.rosetta.model.lib.process.BuilderProcessor;
 			import com.rosetta.model.lib.process.Processor;
 			import com.rosetta.model.lib.process.AttributeMeta;
 
@@ -80,15 +65,62 @@ class ModelObjectGenerator {
 		«IF d.hasQualifiedAttribute»
 			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.getQualifiedClass).name».class)
 		«ENDIF»
-		«contributeClassSynonyms(d.synonyms)»
-		public class «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF» «d.implementsClause» {
-			«d.rosettaClass(names)»
-
-			«d.staticBuilderMethod»
-
+		
+		public interface «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d)» {
+			«d.name» build();
+			«d.builderName» toBuilder();
+			
+			«FOR attribute : d.expandedAttributes»
+			«javadoc(attribute.definition)»
+			public «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»();
+			«ENDFOR»
+			«val metaType = names.createJavaType(names.packages.model.meta, d.name+'Meta')»
+			final static «metaType» metaData = new «metaType»();
+			
+			@Override
+			default «RosettaMetaData»<? extends «d.name»> metaData() {
+				return metaData;
+			} 
+					
+			static «d.builderImplName» newBuilder() {
+				return new «d.builderImplName»();
+			}
+			
+			default Class<«d.name»> getType() {
+				return «d.name».class;
+			}
+				
+			interface «d.builderName» extends «d.name», «IF d.hasSuperType»«d.superType.builderName», «ENDIF»RosettaModelObjectBuilder {
+«««				Get or create methods will create a builder instence of an object for you if it does not exist
+				«FOR attribute : d.expandedAttributes»
+					«IF attribute.isDataType || attribute.hasMetas»
+						«IF attribute.cardinalityIsSingleValue»
+							public «attribute.toJavaType(names)» getOrCreate«attribute.name.toFirstUpper»();
+						«ELSE»
+							public «attribute.toJavaType(names)» getOrCreate«attribute.name.toFirstUpper»(int _index);
+						«ENDIF»
+					«ENDIF»
+				«ENDFOR»
+				
+				«FOR attribute : d.expandedAttributes»
+					«IF attribute.cardinalityIsSingleValue»
+						public «d.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+					«ELSE»
+						public «d.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+						public «d.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name»);
+						public «d.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx);
+						public «d.builderName» add«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+					«ENDIF»
+				«ENDFOR»
+			}
+		
+			class «d.implName» «IF d.hasSuperType»extends «d.superType.implName» «ENDIF»implements «d.name» {
+				«d.rosettaClass(names)»
+				
+				«d.boilerPlate(names)»
+			}
+			
 			«d.builderClass(names)»
-
-			«d.boilerPlate(names)»
 		}
 	'''
 
@@ -128,10 +160,9 @@ class ModelObjectGenerator {
 		«FOR attribute : expandedAttributes»
 			private final «attribute.toJavaType(names)» «attribute.name»;
 		«ENDFOR»
-		«val metaType = names.createJavaType(names.packages.model.meta, c.name+'Meta')»
-		private static «metaType» metaData = new «metaType»();
+		
 
-		protected «c.name»(«c.builderName» builder) {
+		protected «c.implName»(«c.builderName» builder) {
 			«IF c.hasSuperType»
 				super(builder);
 			«ENDIF»
@@ -141,29 +172,30 @@ class ModelObjectGenerator {
 		}
 
 		«FOR attribute : expandedAttributes»
-			«javadoc(attribute.definition)»
-			«contributeSynonyms(attribute.synonyms)»
+			@Override
 			public «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
 				return «attribute.name»;
 			}
 			
 		«ENDFOR»
 		
-		@Override
-		public «RosettaMetaData»<? extends «c.name»> metaData() {
-			return metaData;
-		} 
+		public «c.name» build() {
+			return this;
+		}
 
 		public «c.builderName» toBuilder() {
-			«c.builderName» builder = new «c.builderName»();
-			«FOR attribute : c.getAllSuperTypes.map[it.expandedAttributes].flatten»
-				«IF attribute.cardinalityIsListValue»
-					«Optional.importMethod("ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(«attribute.name» -> «attribute.name».forEach(builder::add«attribute.name.toFirstUpper»));
-				«ELSE»
-					«Optional.importMethod("ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
-				«ENDIF»
-			«ENDFOR»
+			«c.builderName» builder = newBuilder();
+			«IF (c.hasSuperType)»
+				super.setBuilderFields(builder);
+			«ENDIF»
+			setBuilderFields(builder);
 			return builder;
+		}
+		
+		protected void setBuilderFields(«c.builderName» builder) {
+			«FOR attribute :expandedAttributes»
+				«Optional.importMethod("ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
+			«ENDFOR»
 		}
 		'''
 	}
@@ -185,39 +217,6 @@ class ModelObjectGenerator {
 				'''FieldWithMeta«attribute.type.name.toFirstUpper»'''
 		return '''«names.toMetaType(attribute, name)»'''
 	}
-
-	private def StringConcatenationClient contributeClassSynonyms(List<RosettaClassSynonym> synonyms) '''
-		«FOR synonym : synonyms.filter[value!==null] »
-			«val path = if (hasSynonymPath(synonym)) ''', path="«synonym.value.path»" ''' else ''»
-			«val maps = if (synonym.value.maps > 0) ''', maps=«synonym.value.maps»''' else ''»
-			
-			«FOR source : synonym.sources»
-				@«RosettaSynonym»(value="«synonym.value.name»", source="«source.getName»"«path»«maps»)
-			«ENDFOR»
-		«ENDFOR»
-	'''
-
-	private def StringConcatenationClient contributeSynonyms(List<ExpandedSynonym> synonyms) '''
-		«FOR synonym : synonyms »
-			«val maps = if (synonym.values.exists[v|v.maps>1]) ''', maps=«synonym.values.map[maps].join(",")»''' else ''»
-			«FOR source : synonym.sources»
-				«IF !synonym.hasSynonymPath»
-					@«RosettaSynonym»(value="«synonym.values.map[name].join(",")»", source="«source.getName»"«maps»)
-				«ELSE»
-					«FOR value : synonym.values»
-						@«RosettaSynonym»(value="«value.name»", source="«source.getName»", path="«value.path»"«maps»)
-					«ENDFOR»
-				«ENDIF»
-			«ENDFOR»
-		«ENDFOR»
-	'''
-
-
-	private def staticBuilderMethod(Data c) '''
-		public static «builderName(c)» builder() {
-			return new «builderName(c)»();
-		}
-	'''
 
 	private def StringConcatenationClient attributeFromBuilder(ExpandedAttribute attribute) {
 		if(attribute.isDataType || attribute.hasMetas) {
