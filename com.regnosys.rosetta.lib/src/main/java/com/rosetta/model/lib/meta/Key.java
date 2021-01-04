@@ -80,6 +80,10 @@ public interface Key {
 			this.keyValue = keyValue;
 			return this;
 		}
+		
+		public boolean hasData() {
+			return keyValue!=null;
+		}
 
 		@Override
 		public KeyBuilder toBuilder() {
