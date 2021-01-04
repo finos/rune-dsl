@@ -23,6 +23,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.google.common.collect.ImmutableList
 
 class ModelObjectGenerator {
 	@Inject extension RosettaExtensions
@@ -72,7 +73,7 @@ class ModelObjectGenerator {
 			
 			«FOR attribute : d.expandedAttributes»
 			«javadoc(attribute.definition)»
-			public «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»();
+			«attribute.toJavaType(names)» get«attribute.name.toFirstUpper»();
 			«ENDFOR»
 			«val metaType = names.createJavaType(names.packages.model.meta, d.name+'Meta')»
 			final static «metaType» metaData = new «metaType»();
@@ -95,21 +96,21 @@ class ModelObjectGenerator {
 				«FOR attribute : d.expandedAttributes»
 					«IF attribute.isDataType || attribute.hasMetas»
 						«IF attribute.cardinalityIsSingleValue»
-							public «attribute.toJavaType(names)» getOrCreate«attribute.name.toFirstUpper»();
+							«attribute.toJavaType(names)» getOrCreate«attribute.name.toFirstUpper»();
 						«ELSE»
-							public «attribute.toJavaType(names)» getOrCreate«attribute.name.toFirstUpper»(int _index);
+							«attribute.toJavaType(names)» getOrCreate«attribute.name.toFirstUpper»(int _index);
 						«ENDIF»
 					«ENDIF»
 				«ENDFOR»
 				
 				«FOR attribute : d.expandedAttributes»
 					«IF attribute.cardinalityIsSingleValue»
-						public «d.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+						«d.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
 					«ELSE»
-						public «d.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
-						public «d.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name»);
-						public «d.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx);
-						public «d.builderName» add«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+						«d.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+						«d.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name»);
+						«d.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx);
+						«d.builderName» add«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
 					«ENDIF»
 				«ENDFOR»
 			}
@@ -222,7 +223,10 @@ class ModelObjectGenerator {
 		if(attribute.isDataType || attribute.hasMetas) {
 			'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
 		} else {
-			'''builder.get«attribute.name.toFirstUpper»()'''
+			if (attribute.cardinalityIsSingleValue)
+				'''builder.get«attribute.name.toFirstUpper»()«IF attribute.needsBuilder».build()«ENDIF»'''
+			else
+				'''builder.get«attribute.name.toFirstUpper»().stream()«IF attribute.needsBuilder».map(b->b.build)«ENDIF».collect(«ImmutableList».toImmutableList())'''
 		}
 	}
 
@@ -233,5 +237,6 @@ class ModelObjectGenerator {
 			'''f->f.build()'''
 		}
 	}
+	
 
 }

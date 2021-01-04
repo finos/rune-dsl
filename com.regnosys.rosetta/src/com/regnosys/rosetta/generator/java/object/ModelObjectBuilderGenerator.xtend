@@ -51,7 +51,8 @@ class ModelObjectBuilderGenerator {
 		class «builderImplName(c)» «IF c.hasSuperType»extends «c.superType.builderImplNameFull» «ENDIF» implements «c.builderName»«implementsClauseBuilder(c)» {
 		
 			«FOR attribute : c.expandedAttributes.filter[!it.overriding]»
-				protected «attribute.toBuilderType(names)» «attribute.name»;
+				protected «attribute.toBuilderType(names)» «attribute.name»«IF attribute.isMultiple» = 
+				new «ArrayList»<>()«ENDIF»;
 			«ENDFOR»
 		
 			public «builderImplName(c)»() {
@@ -184,9 +185,6 @@ class ModelObjectBuilderGenerator {
 					
 				«ELSE»
 					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int _index) {
-						if («attribute.name»==null) {
-							this.«attribute.name» = new «ArrayList»<>();
-						}
 						return getIndex(«attribute.name», _index, ()->new «attribute.toBuilderTypeSingle(names)»());
 					}
 					
@@ -208,18 +206,12 @@ class ModelObjectBuilderGenerator {
 		«IF attribute.cardinalityIsListValue»
 			@Override
 			public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name») {
-				if(this.«attribute.name» == null){
-					this.«attribute.name» = new «ArrayList.name»<>();
-				}
 				this.«attribute.name».add(«attribute.toBuilder»);
 				return this;
 			}
 			
 			@Override
 			public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx) {
-				if(this.«attribute.name» == null){
-					this.«attribute.name» = new «ArrayList.name»<>();
-				}
 				getIndex(this.«attribute.name», _idx, () -> «attribute.toBuilder»);
 				this.«attribute.name».set(_idx, «attribute.toBuilder»);
 				return this;
@@ -228,9 +220,6 @@ class ModelObjectBuilderGenerator {
 			«IF !attribute.overriding»
 				@Override 
 				public «thisClass.builderName» add«attribute.name.toFirstUpper»(«List.name»<«attribute.toTypeSingle(names)»> «attribute.name»s) {
-					if(this.«attribute.name» == null){
-						this.«attribute.name» = new «ArrayList»<>();
-					}
 					for («attribute.toTypeSingle(names)» toAdd : «attribute.name»s) {
 						this.«attribute.name».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
 					}
@@ -239,7 +228,7 @@ class ModelObjectBuilderGenerator {
 				
 				@Override 
 				public «thisClass.builderName» set«attribute.name.toFirstUpper»(«List.name»<«attribute.toTypeSingle(names)»> «attribute.name»s) {
-					if («attribute.name»s ==null) {
+					if («attribute.name»s ==null)  {
 						this.«attribute.name» = new «ArrayList»<>();
 					}
 					else {
@@ -390,8 +379,5 @@ class ModelObjectBuilderGenerator {
 		} else {
 			attribute.name
 		}
-	}
-	private def needsBuilder(ExpandedAttribute attribute){
-		attribute.isDataType || attribute.hasMetas
 	}
 }

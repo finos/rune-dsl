@@ -187,4 +187,8 @@ class ModelObjectBoilerPlate {
 		}
 		result.toString
 	}
+	
+	def needsBuilder(ExpandedAttribute attribute){
+		attribute.isDataType || attribute.hasMetas
+	}
 }

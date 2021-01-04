@@ -27,6 +27,10 @@ public interface RosettaModelObjectBuilder extends RosettaModelObject {
 	boolean hasData();
 	
 	default <A> A getIndex(List<A> list, int index, Supplier<A> supplier) {
+		if (index==-1 || index==Integer.MAX_VALUE) {//either of these values are code for just give me the next index
+			index = list.size();
+		}
+		
 		if (list.size()>index) {//this item already exists - return it
 			A a = list.get(index);
 			if (a==null) {//if there was null at this index before then create a new item
@@ -34,9 +38,6 @@ public interface RosettaModelObjectBuilder extends RosettaModelObject {
 				list.set(index, a);
 			}
 			return a;
-		}
-		if (index==-1 || index==Integer.MAX_VALUE) {//either of these values are code for just give me the next index
-			index = list.size();
 		}
 		
 		//the size of the list is less than required index - create a new item and pad with null's as necessary

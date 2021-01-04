@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.util
 import com.google.common.base.Splitter
 import com.regnosys.rosetta.types.RCalculationType
 import com.regnosys.rosetta.types.RQualifiedType
+import com.rosetta.model.lib.meta.Key
 
 class JavaClassTranslator {
 				
@@ -32,8 +33,17 @@ class JavaClassTranslator {
 				'java.lang.String'
 			case RCalculationType.CALCULATION.calculationType:
 				'java.lang.String'
-			case 'Keys':
-				'com.rosetta.model.lib.meta.Keys'
+		}
+	}
+	
+	static def toJavaClass(String typeName) {
+		switch typeName {
+		case 'Key', case 'Keys':
+			Key
+		case 'string':
+			String
+		default :
+			Object
 		}
 	}
 

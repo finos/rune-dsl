@@ -33,7 +33,7 @@ public interface Processor {
     		R instance, RosettaModelObject parent, AttributeMeta... metas);
 	
 	<R extends RosettaModelObject> boolean processRosetta(RosettaPath path, Class<R> rosettaType, 
-    		List<R> instance, RosettaModelObject parent, AttributeMeta... metas);
+    		List<? extends R> instance, RosettaModelObject parent, AttributeMeta... metas);
     
 	/**
      * process a rosetta primitive type
@@ -45,7 +45,7 @@ public interface Processor {
      */
     <T> void processBasic(RosettaPath path, Class<T> rosettaType, T instance, RosettaModelObject parent, AttributeMeta... metas);
     
-    <T> void processBasic(RosettaPath path, Class<T> rosettaType, Collection<T> instance, RosettaModelObject parent, AttributeMeta... metas);
+    <T> void processBasic(RosettaPath path, Class<T> rosettaType, Collection<? extends T> instance, RosettaModelObject parent, AttributeMeta... metas);
     
     /**
      * @return a report representing the result of this processor
