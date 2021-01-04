@@ -61,7 +61,7 @@ class MetaFieldGenerator {
 			if (ctx.cancelIndicator.canceled) {
 				return
 			}
-			val refs = nsc.value.flatMap[expandedAttributes].filter[hasMetas && metas.exists[name=="reference"]].map[type].toSet
+			val refs = nsc.value.flatMap[expandedAttributes].filter[hasMetas && metas.exists[name=="reference" || name=="address"]].map[type].toSet
 			
 			for (ref:refs) {
 				val targetModel = ref.model
@@ -76,7 +76,7 @@ class MetaFieldGenerator {
 					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(targetPackage, ref))
 			}
 			//find all the metaed types
-			val metas =  nsc.value.flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference"]].map[type].toSet
+			val metas =  nsc.value.flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference" || name=="address"]].map[type].toSet
 			for (meta:metas) {
 				if (ctx.cancelIndicator.canceled) {
 					return
@@ -107,10 +107,17 @@ class MetaFieldGenerator {
 		val externalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
 		externalKeyType.setName("externalKey")
 		externalKeyType.type = stringType;
+		
+		val keysType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
+		keysType.setName("Keys")
+		val keyType = RosettaFactoryImpl.eINSTANCE.createRosettaBasicType
+		keyType.name="Keys"
+		keysType.type = keyType;
 
 		val filteredTypes = utypes.filter[t|t.name != "key" && t.name != "id" && t.name != "reference"].map[new MetaFieldType(it, null)].toSet;
 		filteredTypes.add(new MetaFieldType(globalKeyType, AttributeMeta.GLOBAL_KEY))
 		filteredTypes.add(new MetaFieldType(externalKeyType, AttributeMeta.EXTERNAL_KEY))
+		filteredTypes.add(new MetaFieldType(keysType, AttributeMeta.EXTERNAL_KEY))
 		return filteredTypes
 	}
 
@@ -135,15 +142,14 @@ class MetaFieldGenerator {
 		import com.rosetta.model.lib.RosettaModelObject;
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-		«FOR i : interfaces»
-			import com.rosetta.model.lib.meta.«i»;
-		«ENDFOR»
+		import com.rosetta.model.lib.meta.*;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.path.RosettaPath;
 		import com.rosetta.model.lib.process.AttributeMeta;
 		import com.rosetta.model.lib.process.BuilderMerger;
 		import com.rosetta.model.lib.process.BuilderProcessor;
 		import com.rosetta.model.lib.process.Processor;
+		import com.rosetta.model.lib.meta.Keys;
 
 		import java.util.Objects;
 
@@ -162,7 +168,11 @@ class MetaFieldGenerator {
 			
 			private «name»(«name»Builder builder) {
 				«FOR type : metaFieldTypes»
-					«type.metaType.name.toFirstLower» = builder.«type.metaType.getter»;
+					«IF type.metaType.type.name=="Keys"»
+						«type.metaType.name.toFirstLower»  =builder.keys == null?null:builder.keys.build();
+					«ELSE»
+						«type.metaType.name.toFirstLower» = builder.«type.metaType.getter»;
+					«ENDIF»
 				«ENDFOR»
 			}
 			
@@ -222,7 +232,11 @@ class MetaFieldGenerator {
 			
 			public static class «name»Builder extends RosettaModelObjectBuilder implements «FOR i : interfaces SEPARATOR ', '»«i»Builder«ENDFOR» {
 				«FOR type : metaFieldTypes»
-					private «type.metaType.type.name.toJavaFullType» «type.metaType.name.toFirstLower»;
+					«IF type.metaType.type.name=="Keys"»
+						private Keys.KeysBuilder keys;
+					«ELSE»
+						private «type.metaType.type.name.toJavaType» «type.metaType.name.toFirstLower»;
+					«ENDIF»
 				«ENDFOR»			
 				
 				@Override
@@ -231,18 +245,42 @@ class MetaFieldGenerator {
 				}
 				
 				«FOR type : metaFieldTypes»
-					@Override
-					public «type.metaType.type.name.toJavaFullType» «type.metaType.getter» {
-						return «type.metaType.name.toFirstLower»;
-					}
+					«IF type.metaType.type.name=="Keys"»
+						@Override
+						public Keys.KeysBuilder «type.metaType.getter» {
+							return keys;
+						}
+						public Keys.KeysBuilder getOrCreateKeys() {
+							if (keys == null) {
+								keys = new Keys.KeysBuilder();
+							}
+							return keys;
+						}
+					«ELSE»
+						@Override
+						public «type.metaType.type.name.toJavaFullType» «type.metaType.getter» {
+							return «type.metaType.name.toFirstLower»;
+						}
+					«ENDIF»
 				«ENDFOR»
 				
 				«FOR type : metaFieldTypes»
 					@Override
-					public «name»Builder set«type.metaType.name.toFirstUpper»(«type.metaType.type.name.toJavaFullType» «type.metaType.name.toFirstLower») {
-						this.«type.metaType.name.toFirstLower» = «type.metaType.name.toFirstLower»;
-						return this;
-					}
+					«IF type.metaType.type.name=="Keys"»
+						public «name»Builder set«type.metaType.name.toFirstUpper»(Keys.KeysBuilder keys) {
+							this.«type.metaType.name.toFirstLower» = «type.metaType.name.toFirstLower»;
+							return this;
+						}
+						public «name»Builder set«type.metaType.name.toFirstUpper»(Keys keys) {
+							this.keys = keys.toBuilder();
+							return this;
+						}
+					«ELSE»
+						public «name»Builder set«type.metaType.name.toFirstUpper»(«type.metaType.type.name.toJavaFullType» «type.metaType.name.toFirstLower») {
+							this.«type.metaType.name.toFirstLower» = «type.metaType.name.toFirstLower»;
+							return this;
+						}
+					«ENDIF»
 				«ENDFOR»
 
 				@Override
@@ -252,6 +290,9 @@ class MetaFieldGenerator {
 
 				@Override
 				public «name»Builder prune() {
+					«IF !metaFieldTypes.filter[t|t.metaType.name=="Keys"].isEmpty»
+						if (keys!=null && !keys.hasData()) keys=null;
+					«ENDIF»
 					return this;
 				}
 				
@@ -260,13 +301,19 @@ class MetaFieldGenerator {
 					«IF metaFieldTypes.empty»
 					return false;
 					«ELSE»
-					return «FOR type : metaFieldTypes SEPARATOR " || \n"»«type.metaType.name.toFirstLower»!=null«ENDFOR»;
+					return «FOR type : metaFieldTypes SEPARATOR " || \n"»
+						«IF type.metaType.type.name=="Keys"»
+							keys!=null && keys.hasData()
+						«ELSE»
+							«type.metaType.name.toFirstLower»!=null
+						«ENDIF»
+					«ENDFOR»;
 					«ENDIF»
 				}
 				
 				@Override
 				public void process(RosettaPath path, BuilderProcessor processor) {
-					«FOR type : metaFieldTypes»
+					«FOR type : metaFieldTypes.filter[m|m.metaType.type.name!="Keys"]»
 						processor.processBasic(path.newSubPath("«type.metaType.name.toFirstLower»"), «type.metaType.type.name.toJavaType».class, «type.metaType.name.toFirstLower», this, «addAttributeMeta(type)»);
 					«ENDFOR»
 				}
@@ -471,6 +518,10 @@ class MetaFieldGenerator {
 					}
 				«ENDIF»
 				
+				public Class<«type.name.toJavaType»> getValueType() {
+					return «type.name.toJavaType».class;
+				}
+				
 				public MetaFields.MetaFieldsBuilder getMeta() {
 					return meta;
 				}
@@ -512,12 +563,15 @@ class MetaFieldGenerator {
 				
 				@Override
 				public FieldWithMeta«type.name.toFirstUpper»Builder prune() {
+					«IF type.isType»
+						if (getValue()!=null && !getValue().prune().hasData()) value = null;
+					«ENDIF»
+					if (getMeta()!=null && !getMeta().prune().hasData()) meta = null;
 					return this;
 				}
 				
 				@Override
 				public boolean hasData() {
-					if (getMeta()!=null && getMeta().hasData()) return true;
 					«IF type.isType»
 						if (getValue()!=null && getValue().hasData()) return true;
 					«ELSE»
@@ -597,6 +651,8 @@ class MetaFieldGenerator {
 		import «packages.defaultLib.name».RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.meta.ReferenceWithMeta;
+		import com.rosetta.model.lib.meta.Reference;
+		import com.rosetta.model.lib.meta.Reference.ReferenceBuilder;
 		import com.rosetta.model.lib.meta.ReferenceWithMetaBuilder;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.path.RosettaPath;
@@ -610,11 +666,13 @@ class MetaFieldGenerator {
 			private final String globalReference;
 			private final String externalReference;
 			private final «type.name» value;
+			private final Reference reference;
 			
 			private ReferenceWithMeta«type.name.toFirstUpper»(ReferenceWithMeta«type.name.toFirstUpper»Builder builder) {
 				value = ofNullable(builder.getValue()).map(v->v.build()).orElse(null);
 				globalReference = builder.globalReference;
 				externalReference = builder.externalReference;
+				this.reference = builder.reference==null?null:builder.reference.build();
 			}
 			
 			public «type.name» getValue() {
@@ -629,6 +687,10 @@ class MetaFieldGenerator {
 				return externalReference;
 			}
 			
+			public Reference getReference() {
+				return reference;
+			}
+			
 			private static BasicRosettaMetaData<ReferenceWithMeta«type.name.toFirstUpper»> metaData = new BasicRosettaMetaData<>();
 			
 			@Override
@@ -641,6 +703,7 @@ class MetaFieldGenerator {
 				builder.setValue(value);
 				builder.setGlobalReference(globalReference);
 				builder.setExternalReference(externalReference);
+				if (reference!=null) builder.setReference(reference.toBuilder());
 				return builder;
 			}
 			
@@ -693,6 +756,7 @@ class MetaFieldGenerator {
 				private «type.name».«type.name»Builder value;
 				private String globalReference;
 				private String externalReference;
+				private ReferenceBuilder reference;
 				
 				public ReferenceWithMeta«type.name.toFirstUpper»Builder() {}
 				
@@ -720,6 +784,10 @@ class MetaFieldGenerator {
 					return externalReference;
 				}
 				
+				public ReferenceBuilder getReference() {
+					return reference;
+				}
+				
 				public Class<«type.name.toJavaType»> getValueType() {
 					return «type.name.toJavaType».class;
 				}
@@ -744,6 +812,11 @@ class MetaFieldGenerator {
 					return this;
 				}
 				
+				public ReferenceWithMeta«type.name.toFirstUpper»Builder setReference(ReferenceBuilder reference) {
+					this.reference = reference;
+					return this;
+				}
+				
 				public ReferenceWithMeta«type.name.toFirstUpper» build() {
 					return new ReferenceWithMeta«type.name.toFirstUpper»(this);
 				}
@@ -758,7 +831,7 @@ class MetaFieldGenerator {
 				@Override
 				public boolean hasData() {
 					if (getValue()!=null && getValue().hasData()) return true;
-					return !(globalReference==null && externalReference==null);
+					return !(globalReference==null && externalReference==null && (reference==null || reference.getReference()==null));
 				}
 				
 				@Override
@@ -824,6 +897,8 @@ class MetaFieldGenerator {
 	import com.rosetta.model.lib.meta.BasicReferenceWithMetaBuilder;
 	import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 	import com.rosetta.model.lib.meta.ReferenceWithMeta;
+	import com.rosetta.model.lib.meta.Reference;
+	import com.rosetta.model.lib.meta.Reference.ReferenceBuilder;
 	import com.rosetta.model.lib.meta.RosettaMetaData;
 	import com.rosetta.model.lib.path.RosettaPath;
 	import com.rosetta.model.lib.records.Date;
@@ -835,11 +910,13 @@ class MetaFieldGenerator {
 		private final String globalReference;
 		private final String externalReference;
 		private final «type.name.toJavaType» value;
+		private final Reference reference;
 		
 		private BasicReferenceWithMeta«type.name.toFirstUpper»(BasicReferenceWithMeta«type.name.toFirstUpper»Builder builder){
 			value = builder.getValue();
 			globalReference = builder.globalReference;
 			externalReference = builder.externalReference;
+			this.reference = builder.reference==null?null:builder.reference.build();
 		}
 		
 		public «type.name.toJavaType» getValue() {
@@ -854,6 +931,10 @@ class MetaFieldGenerator {
 			return externalReference;
 		}
 		
+		public Reference getReference() {
+			return reference;
+		}
+		
 		private static BasicRosettaMetaData<BasicReferenceWithMeta«type.name.toFirstUpper»> metaData = new BasicRosettaMetaData<>();
 		
 		@Override
@@ -866,6 +947,7 @@ class MetaFieldGenerator {
 			builder.setValue(value);
 			builder.setGlobalReference(globalReference);
 			builder.setExternalReference(externalReference);
+			if (reference!=null) builder.setReference(reference.toBuilder());
 			return builder;
 		}
 		
@@ -918,6 +1000,7 @@ class MetaFieldGenerator {
 			private «type.name.toJavaType» value;
 			private String globalReference;
 			private String externalReference;
+			private ReferenceBuilder reference;
 			
 			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder() {}
 			
@@ -936,6 +1019,10 @@ class MetaFieldGenerator {
 			
 			public String getExternalReference() {
 				return externalReference;
+			}
+			
+			public ReferenceBuilder getReference() {
+				return reference;
 			}
 			
 			public Class<«type.name.toJavaType»> getValueType() {
@@ -957,6 +1044,11 @@ class MetaFieldGenerator {
 				return this;
 			}
 			
+			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder setReference(ReferenceBuilder reference) {
+				this.reference = reference;
+				return this;
+			}
+			
 			public BasicReferenceWithMeta«type.name.toFirstUpper» build() {
 				return new BasicReferenceWithMeta«type.name.toFirstUpper»(this);
 			}
@@ -968,7 +1060,7 @@ class MetaFieldGenerator {
 			
 			@Override
 			public boolean hasData() {
-				return !(value==null && globalReference==null && externalReference==null);
+				return !(value==null && globalReference==null && externalReference==null && (reference==null || reference.getReference()==null));
 			}
 			
 			@Override

@@ -928,8 +928,8 @@ An example is given below, that uses a mix of Boolean statements. This example l
 .. code-block:: Haskell
 
  reporting rule IsFixedFloat
-   extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> fixedRate count = 1
-   and Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> floatingRate count = 1
+   extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> fixedRate count = 1
+   and Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> floatingRate count = 1
 
 The extracted value may be coming from a data attribute in the model, as above, or may be directly specified as a value, such as a ``string`` in the below example.
 
@@ -964,7 +964,7 @@ Once a value has been extracted, the syntax allows to make it into a reportable 
 .. code-block:: Haskell
 
  reporting rule RateSpecification
-   extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification
+   extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification
    as "Rate Specification"
 
 The field name is an arbitrary ``string`` and should be aligned with the name of the reportable field as per the regulation. This field name will be used as column name when displaying computed reports, but is otherwise not functionally usable. To re-use the functional output of a reporting rule, the name of the rule (here: ``RateSpecification``) should be used instead.
@@ -976,7 +976,7 @@ The ``filter when`` keyword is used in cases where a particular data attribute m
 .. code-block:: Haskell
 
  reporting rule ReportingParty <"Identifier of reporting entity">
-   ContractForEvent then extract Contract -> partyContractInformation then
+   TradeForEvent then extract Trade -> partyContractInformation then
    filter when PartyContractInformation -> relatedParty -> role = PartyRoleEnum -> ReportingParty then
    extract PartyContractInformation -> partyReference
 
@@ -986,15 +986,15 @@ The functional expression can be either a direct Boolean expression, or the outp
 
  reporting rule FixedFloatRateLeg1 <"Fixed Float Price">
    filter when rule IsInterestRatePayout then
-   ContractForEvent then extract Contract -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate as "II.1.9 Rate leg 1"
+   TradeForEvent then extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate as "II.1.9 Rate leg 1"
 
 And the filtering rule is defined as:
 
 .. code-block:: Haskell
 
  reporting rule IsInterestRatePayout
-   ContractForEvent then
-   extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only exists
+   TradeForEvent then
+   extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only exists
 
 - ``extract multiple`` <Expression>
 
@@ -1016,7 +1016,7 @@ In the below example, we first apply a filter and extract a ``fixedInterestRate`
 .. code-block:: Haskell
 
  filter when rule IsFixedFloat then
-   extract Contract -> tradableProduct -> priceNotation -> price -> fixedInterestRate then
+   extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate then
    maxBy FixedInterestRate -> rate then
    extract FixedInterestRate -> rate as "Price"
 
@@ -1028,14 +1028,14 @@ The syntax supports two syntaxes for if then else style statements. The first ha
 It consists of several comma separated terms consisting of a test and a possible result.
 The tests are evaluated in order and when the first one matches its associated result is returned from the statement.
 If none of the tests match then a final possible result can be provided
-In the below example we first extract the Payout from a Contract then we try to find the appropriate asset class.
+In the below example we first extract the Payout from a Trade then we try to find the appropriate asset class.
 If there is a ForwardPayout with a foreignExchange underlier then "CU" is returned as the "2.2 Asset Class"
 If there is an OptionPayout with a foreignExchange underlier then "CU" is returned as the "2.2 Asset Class"
 otherwise the asset class is null
 
 .. code-block:: Haskell
 
-  extract Contract -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout then
+  extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout then
   if (
 	  filter when Payout -> forwardPayout -> underlier -> underlyingProduct -> foreignExchange exists
 	    => return "CU" as "2.2 Asset Class",

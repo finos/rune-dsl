@@ -27,6 +27,17 @@ public class RosettaPath implements Comparable<RosettaPath> {
 	
     private final RosettaPath parent;
     private final RosettaPath.Element element;
+    
+    //a Path that has 0 notional elements so when you create a subPath from it you get a path with 1 element
+    public static class NullPath extends RosettaPath {
+    	public NullPath() {
+    		super (null, null);
+    	}
+    	@Override
+    	public RosettaPath newSubPath (String p) {
+    		return createPath(Element.valueOf(p));
+    	}
+    }
 
     private RosettaPath(RosettaPath parent, Element element) {
         this.parent = parent;

@@ -66,14 +66,15 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.Check
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 
 /**
  * This class contains custom validation rules. 
@@ -85,7 +86,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaExpectedTypeProvider
 	@Inject extension RosettaTypeProvider
-	@Inject extension RosettaConfigExtension qualifiableExtension
 	@Inject extension RosettaTypeCompatibility
 	@Inject extension IQualifiedNameProvider
 	@Inject extension ResourceDescriptionsProvider
@@ -814,8 +814,49 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					} else if (!metadatas.map[attribute?.name].contains("key")) {
 						error('''Types with [metadata template] annotation must also specify the [metadata key] annotation.''', it, ANNOTATION_REF__ATTRIBUTE)
 					}
+				case "location":
+					if (ele instanceof Attribute) {
+						if (qualifiers.exists[qualName=="pointsTo"]) {
+							error('''pointsTo qualifier belongs on the address not the location.''', it, ANNOTATION_REF__ATTRIBUTE)
+						}
+					} else {
+						error('''[metadata location] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
+					}
+				case "address":
+					if (ele instanceof Attribute) {
+						qualifiers.forEach[
+							if (qualName=="pointsTo") {
+								//check the qualPath has the address metadata
+								switch qualPath {
+									RosettaFeatureCall : { 
+										val featCall = qualPath as RosettaFeatureCall
+										switch att:featCall.feature {
+											Attribute : checkForLocation(att, it)
+										default : error('''Target of an address must be an attribute''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
+											
+										}
+									}
+									default : error('''Target of an address must be an attribute''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
+								}
+								val targetType = qualPath.RType
+								val thisType = ele.RType
+								if (!targetType.isUseableAs(thisType))
+									error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
+								//Check it has
+							}
+						]
+					} else {
+						error('''[metadata address] annotation only allowed on an attribute.''', it, ANNOTATION_REF__ATTRIBUTE)
+					}
 				}
 		]
+	}
+		
+	def checkForLocation(Attribute attribute, AnnotationQualifier checked) {
+		var locationFound = !attribute.metadataAnnotations.filter[it.attribute?.name=="location"].empty
+		if (!locationFound) {
+			error('''Target of address must be annotated with metadata location''', checked, ANNOTATION_QUALIFIER__QUAL_PATH)
+		}
 	}
 	
 	@Check

@@ -153,7 +153,7 @@ class RosettaQualifyEventsExistsTest {
 				assign-output is_event:
 					foo -> bar -> before exists or ( foo -> baz -> other exists and foo -> bar -> after exists ) or foo -> baz -> bazValue exists
 			'''.generateCode
-		//println(code)
+		//.writeClasses("RosettaQualifyEventsExistsTest")
 		classes = code.compileToClasses
 	}
 
