@@ -1,6 +1,6 @@
 Rosetta Modelling Components
 ============================
-**The Rosetta syntax can express six types of model components**:
+**The Rosetta syntax can express seven types of model components**:
 
 * Data
 * Annotation
@@ -8,6 +8,7 @@ Rosetta Modelling Components
 * Function
 * Mapping (or *synonym*)
 * Reporting
+* Namespace
 
 This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those features.
 
@@ -155,13 +156,37 @@ An example is the day count fraction scheme for interest rate calculation, which
 
 .. _namespace-label:
 
-Namespace
----------
-All Rosetta components are organised into namespaces. ::
+Namespace Component
+-------------------
+Purpose
+"""""""
+The namespace syntax allows model artifacts in a data model to be organised into groups of namespaces. A namespace is an abstract container created to hold a logical grouping of model artifacts. The approach is designed to make it easier for users to understand the model structure and adopt selected components. It also aids the development cycle by insulating groups of components from model restructuring that may occur.  Model artifacts are organised into a directory structure that follows the namespaces’ Group and Artifact structure (a.k.a. “GAV coordinates”). This directory structure is exposed in the model editor.
 
-  namespace cdm.base.datetime
+By convention namespaces are organised into a hierarchy, with layers going from in to out. The hierarchy therefore contains an intrinsic inheritance structure where each layer has access to (“imports”) the layer outside, and is designed to be usable without any of its inner layers. Layers can contain several namespaces (“siblings”), which can also refer to each other. 
 
-The namespace provides a context within which references to Rosetta components (types, functions enums etc.) are resolved. The names of all components must be unique within a given namespace. Components can refer to other components in the same namespace using just their name. Components can refer to components outside their namespace either by giving the *fully qualified name* e.g. ``cdm.base.datetime.AdjustableDate`` or by importing the namespace into the current file ``import cdm.base.datetime``
+Syntax
+"""""""
+
+The definition of a namespace starts with the `namespace` keyword, followed by the location of the namespace in the directory structure. ::
+
+  namespace cdm.product.common
+
+The names of all components must be unique within a given namespace. Components can refer to other components in the same namespace using just their name. Components can refer to components outside their namespace either by giving the *fully qualified name* e.g. ``cdm.base.datetime.AdjustableDate`` or by importing the namespace into the current file.
+
+To gain access to model components contained within another namespace the `import` keyword is used. ::
+
+  import cdm.product.asset.*
+
+In the example above all model components contained within the cdm.product.asset namespace will be imported. Note, only components contained within the layer referenced will be imported, in order to import model components from namespaces embedded within that layer further namespaces need to be individually referenced. ::
+
+  import cdm.base.math.*
+  import cdm.base.datetime.*
+  import cdm.base.staticdata.party.*
+  import cdm.base.staticdata.asset.common.*
+  import cdm.base.staticdata.asset.rates.*
+  import cdm.base.staticdata.asset.credit.*
+
+In the example above all model components contained within the layers of the `cdm.base` namespace are imported.
 
 .. _annotations-label:
 
