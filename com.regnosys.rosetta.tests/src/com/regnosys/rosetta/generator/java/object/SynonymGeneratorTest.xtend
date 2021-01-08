@@ -9,6 +9,7 @@ import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+import com.regnosys.rosetta.rosetta.simple.Data
 
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
@@ -113,5 +114,21 @@ class SynonymGeneratorTest {
 		assertThat(testClass, containsString('@RosettaSynonym(value="adjustedDate", source="FpML")'))
 		assertThat(testClass, containsString('@RosettaSynonym(value="adjustedDate", source="FpML", path="relativeDate")'))
 
+	}
+	
+	@Test
+	def void shouldGenerateRosettaSynonymsWithOnlyMetaId() {
+		val code = '''
+			namespace «rootPackage.name»
+			type Test:
+			
+				adjustedDate date (0..1)
+					[metadata id]
+					[synonym FpML meta "id"]
+		'''.parseRosettaWithNoErrors
+		
+		val syn = code.elements.filter(Data).findFirst[name=="Test"].attributes.findFirst[name=="adjustedDate"].synonyms.get(0);
+		assertThat(syn.body, notNullValue)
+		assertThat(syn.body.metaValues.get(0), is("id"))
 	}
 }

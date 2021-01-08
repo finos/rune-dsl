@@ -267,14 +267,14 @@ RosettaSynonym:
 ;
 
 RosettaSynonymBody:
-	( 'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? 
+	( 'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? ('meta' (metaValues += STRING ',')* metaValues += STRING)? 
 		| 'hint' (hints+=STRING ',')* hints+=STRING
-		| mappingLogic=RosettaMappingSetTo )
-	('meta' (metaValues += STRING ',')* metaValues += STRING)?
+		| mappingLogic=RosettaMappingSetTo 
+		| 'meta' (metaValues += STRING ',')* metaValues += STRING)
+	
 	('dateFormat' format=STRING)?
 	('pattern' patternMatch=STRING patternReplace=STRING)?
 	('mapper' mapper=STRING)?
-	
 ;
 
 RosettaSynonymValue returns RosettaSynonymValueBase :
