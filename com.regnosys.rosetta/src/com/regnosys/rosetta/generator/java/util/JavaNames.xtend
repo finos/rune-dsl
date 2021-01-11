@@ -161,7 +161,7 @@ class JavaNames {
 			create(new RosettaJavaPackages(model))
 		}
 
-		private def create(RosettaJavaPackages packages) {
+		def create(RosettaJavaPackages packages) {
 			val result = new JavaNames
 			injector.injectMembers(result)
 			result.packages = packages

@@ -26,12 +26,17 @@ import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
 import com.google.common.collect.ImmutableList
+import java.util.ArrayList
+import com.regnosys.rosetta.rosetta.simple.SimpleFactory
+import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.rosetta.RosettaFactory
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
+	@Inject extension ModelObjectGenerator
 	
 	 
-	def void generate(RosettaJavaPackages packages, Resource resource, IFileSystemAccess2 fsa, IGeneratorContext ctx) {
+	def void generate(JavaNames names, Resource resource, IFileSystemAccess2 fsa, IGeneratorContext ctx) {
 		// moved from RosettaGenerator
 		val model = resource.contents.filter(RosettaModel).head
 		if((model?.name).nullOrEmpty){
@@ -44,11 +49,11 @@ class MetaFieldGenerator {
 //			try {
 				val allModels = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 				val allMetaTypes = allModels.flatMap[elements].filter(RosettaMetaType).toList
-				fsa.generateFile('''«packages.basicMetafields.directoryName»/MetaFields.java''',
-				metaFields(packages, "MetaFields", newArrayList("GlobalKeyFields"), allMetaTypes.metaFieldTypes))
+				fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaFields.java''',
+				metaFields(names, "MetaFields", newArrayList("GlobalKeyFields"), allMetaTypes.metaFieldTypes))
 				
-				fsa.generateFile('''«packages.basicMetafields.directoryName»/MetaAndTemplateFields.java''',
-				metaFields(packages, "MetaAndTemplateFields", newArrayList("GlobalKeyFields", "TemplateFields"), allMetaTypes.metaAndTemplateFieldTypes))
+				//fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaAndTemplateFields.java''',
+				//metaFields(names, "MetaAndTemplateFields", newArrayList("GlobalKeyFields", "TemplateFields"), allMetaTypes.metaAndTemplateFieldTypes))
 //			} finally {
 //				resource.resourceSet.adapterFactories.add(new MarkerAdapterFactory(model.name))
 //			}
@@ -104,6 +109,13 @@ class MetaFieldGenerator {
 		stringType.name="string"
 		return stringType
 	}
+	
+	def getCardSingle() {
+		val cardSingle = RosettaFactory.eINSTANCE.createRosettaCardinality
+		cardSingle.inf = 0
+		cardSingle.sup = 1
+		cardSingle
+	}
 
 	def getMetaFieldTypes(Collection<RosettaMetaType> utypes) {
 		val globalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
@@ -137,13 +149,52 @@ class MetaFieldGenerator {
 		return metaFieldTypes
 	}
 
-	def metaFields(RosettaJavaPackages packages, String name, Collection<String> interfaces, Collection<MetaFieldGenerator.MetaFieldType> metaFieldTypes) {
+	def metaFields(JavaNames names, String name, Collection<String> interfaces, Collection<MetaFieldGenerator.MetaFieldType> metaFieldTypes) {
 		if (metaFieldTypes.map[metaType].exists[t|t.name == "scheme"]) {
 			interfaces.add("MetaDataFields")
 		}
-		val classBody = tracImports(metaBody(name, interfaces, metaFieldTypes))
+		
+		
+		val cardMult = RosettaFactory.eINSTANCE.createRosettaCardinality
+		cardMult.inf = 0;
+		cardMult.sup = 1000;
+		cardMult.unbounded = true
+		
+		val schemeAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		schemeAttribute.card = cardSingle
+		schemeAttribute.name = "scheme"
+		schemeAttribute.type = stringType
+		
+		val globalKeyAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		globalKeyAttribute.setName("globalKey")
+		globalKeyAttribute.card = cardSingle
+		globalKeyAttribute.type = stringType
+
+		val externalKeyAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		externalKeyAttribute.setName("externalKey")
+		externalKeyAttribute.card = cardSingle
+		externalKeyAttribute.type = stringType;
+		
+		val keysType = SimpleFactory.eINSTANCE.createData()
+		keysType.setName("Key")
+		keysType.model = RosettaFactory.eINSTANCE.createRosettaModel
+		keysType.model.name = "com.rosetta.model.lib.meta"
+		val keysAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		keysAttribute.setName("keys")
+		keysAttribute.type = keysType
+		keysAttribute.card = cardMult
+		
+		
+		val Data d = SimpleFactory.eINSTANCE.createData;
+		d.name = "MetaFields"
+		d.attributes.addAll(#[
+			schemeAttribute, globalKeyAttribute, externalKeyAttribute, keysAttribute
+		])
+		val classBody = tracImports(d.classBody(names, "1"))
+		
+		//val classBody = tracImports(metaBody(name, interfaces, metaFieldTypes))
 		'''
-		package «packages.basicMetafields.name»;
+		package «names.packages.basicMetafields.name»;
 	
 	
 		«FOR imp : classBody.imports»
@@ -294,43 +345,61 @@ class MetaFieldGenerator {
 					«ENDFOR»
 					+ "}";
 			}
+		
+			@Override
+			public MetaFields build() {
+				return this;
+			}
 		}
 		
-		public static class «name»BuilderImpl extends RosettaModelObjectBuilder implements «FOR i : interfaces SEPARATOR ', '»«i»Builder«ENDFOR» {
+		public static class «name»BuilderImpl implements «name»Builder {
 			«FOR type : metaFieldTypes»
-				«IF type.metaType.type.name=="Keys"»
-					private Keys.KeysBuilder keys;
+				«IF type.isMultiple»
+					private «List»<«type.metaType.type.name.toJavaBuilderClass»> «type.metaType.name.toFirstLower» = new «ArrayList»<>();
 				«ELSE»
-					private «type.metaType.type.name.toJavaType» «type.metaType.name.toFirstLower»;
+					private «type.metaType.type.name.toJavaBuilderClass» «type.metaType.name.toFirstLower»;
 				«ENDIF»
-			«ENDFOR»			
+			«ENDFOR»		
 			
 			@Override
 			public RosettaMetaData<? extends «name»> metaData() {
 				return metaData;
 			}
 			
+			public MetaFieldsBuilder toBuilder() {
+				return this;
+			}
+			
 			«FOR type : metaFieldTypes»
-				«IF type.metaType.type.name=="Keys"»
-					@Override
-					public Keys.KeysBuilder «type.metaType.getter» {
-						return keys;
-					}
-					public Keys.KeysBuilder getOrCreateKeys() {
-						if (keys == null) {
-							keys = new Keys.KeysBuilder();
-						}
-						return keys;
-					}
+				@Override
+				«IF type.isMultiple»
+					public «List»<«type.metaType.type.name.toJavaBuilderClass»> «type.metaType.getter» {
 				«ELSE»
-					@Override
-					public «type.metaType.type.name.toJavaFullType» «type.metaType.getter» {
-						return «type.metaType.name.toFirstLower»;
-					}
+					public «type.metaType.type.name.toJavaBuilderClass» «type.metaType.getter» {
 				«ENDIF»
+					return «type.metaType.name.toFirstLower»;
+				}
 			«ENDFOR»
 			
 			«FOR type : metaFieldTypes»
+				«IF !type.isMultiple»
+					@Override
+					«name»Builder set«type.metaType.name.toFirstUpper»(«type.metaType.type.name.toJavaClass» «type.metaType.name.toFirstLower») {
+						this.«type.metaType.name.toFirstLower» = «type.metaType.name.toFirstLower»;
+						return this;
+					}
+				«ELSE»
+					@Override
+					«name»Builder set«type.metaType.name.toFirstUpper»(«List»<? extends «type.metaType.type.name.toJavaClass»> «type.metaType.name.toFirstLower»);
+					@Override
+					«name»Builder add«type.metaType.name.toFirstUpper»(«type.metaType.type.name.toJavaClass» «type.metaType.name.toFirstLower»);
+					@Override
+					«name»Builder add«type.metaType.name.toFirstUpper»(«type.metaType.type.name.toJavaClass» «type.metaType.name.toFirstLower», int _idx);
+					@Override
+					«name»Builder add«type.metaType.name.toFirstUpper»(«List»<? extends «type.metaType.type.name.toJavaClass»> «type.metaType.name.toFirstLower»);
+					@Override
+					«type.metaType.type.name.toJavaClass» getOrCreate«type.metaType.name.toFirstUpper»(int _idx);
+				«ENDIF»
 				@Override
 				«IF type.metaType.type.name=="Keys"»
 					public «name»Builder set«type.metaType.name.toFirstUpper»(Keys.KeysBuilder keys) {

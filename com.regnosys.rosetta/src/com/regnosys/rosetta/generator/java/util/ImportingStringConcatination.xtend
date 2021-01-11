@@ -25,7 +25,7 @@ class ImportingStringConcatination extends StringConcatenation {
 		if(reservedSimpleNames.contains(object.simpleName)) {
 			return object.name
 		}
-		addImport(object.name, object.isEnum && object.isMemberClass)
+		addImport(object.name, object.isEnum && object.isMemberClass || object.isLocalClass)
 		return object.simpleName
 	}
 	
@@ -81,10 +81,10 @@ class ImportingStringConcatination extends StringConcatenation {
 		val qualified = QualifiedName.create(qName.split('\\.'))
 		val target = qualified.lastSegment
 		if (target.contains('$')) {
-			if (!qualifyMemberClass) {
-				val toImport = qualified.skipLast(1).append(target.split('\\$').head)
-				imports.add(toImport.toString)
-			} else
+//			if (!qualifyMemberClass) {
+//				val toImport = qualified.skipLast(1).append(target.split('\\$').head)
+//				imports.add(toImport.toString)
+//			} else
 				imports.add(qName.replaceAll('\\$', '.'))
 
 		} else {

@@ -60,7 +60,7 @@ class ModelObjectGenerator {
 		'''
 	}
 
-	def private StringConcatenationClient classBody(Data d, JavaNames names, String version) '''
+	def StringConcatenationClient classBody(Data d, JavaNames names, String version) '''
 		«javadocWithVersion(d.definition, version)»
 		@«RosettaClass»
 		«IF d.hasQualifiedAttribute»

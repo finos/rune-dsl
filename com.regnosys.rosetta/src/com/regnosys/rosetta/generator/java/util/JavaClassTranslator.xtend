@@ -46,6 +46,16 @@ class JavaClassTranslator {
 			Object
 		}
 	}
+	static def toJavaBuilderClass(String typeName) {
+		switch typeName {
+		case 'Key', case 'Keys':
+			Key.KeyBuilder
+		case 'string':
+			String
+		default :
+			Object
+		}
+	}
 
 	static def toJavaType(String typename) {
 		val basicType = toJavaFullType(typename);
