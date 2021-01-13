@@ -24,12 +24,13 @@ import java.util.List
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import org.eclipse.xtend2.lib.StringConcatenationClient
-import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
 import com.google.common.collect.ImmutableList
 import java.util.ArrayList
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.RosettaFactory
+import com.rosetta.model.lib.meta.MetaDataFields
+import com.rosetta.model.lib.meta.GlobalKeyFields
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -50,7 +51,7 @@ class MetaFieldGenerator {
 				val allModels = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 				val allMetaTypes = allModels.flatMap[elements].filter(RosettaMetaType).toList
 				fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaFields.java''',
-				metaFields(names, "MetaFields", newArrayList("GlobalKeyFields"), allMetaTypes.metaFieldTypes))
+				metaFields(names, "MetaFields", newArrayList(GlobalKeyFields), allMetaTypes.metaFieldTypes))
 				
 				//fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaAndTemplateFields.java''',
 				//metaFields(names, "MetaAndTemplateFields", newArrayList("GlobalKeyFields", "TemplateFields"), allMetaTypes.metaAndTemplateFieldTypes))
@@ -149,9 +150,9 @@ class MetaFieldGenerator {
 		return metaFieldTypes
 	}
 
-	def metaFields(JavaNames names, String name, Collection<String> interfaces, Collection<MetaFieldGenerator.MetaFieldType> metaFieldTypes) {
+	def metaFields(JavaNames names, String name, Collection<Class<?>> interfaces, Collection<MetaFieldGenerator.MetaFieldType> metaFieldTypes) {
 		if (metaFieldTypes.map[metaType].exists[t|t.name == "scheme"]) {
-			interfaces.add("MetaDataFields")
+			interfaces.add(MetaDataFields)
 		}
 		
 		
@@ -190,33 +191,32 @@ class MetaFieldGenerator {
 		d.attributes.addAll(#[
 			schemeAttribute, globalKeyAttribute, externalKeyAttribute, keysAttribute
 		])
-		val classBody = tracImports(d.classBody(names, "1"))
+		val classBody = tracImports(d.classBody(names, "1", interfaces))
 		
 		//val classBody = tracImports(metaBody(name, interfaces, metaFieldTypes))
 		'''
 		package «names.packages.basicMetafields.name»;
-	
-	
-		«FOR imp : classBody.imports»
+
+		«FOR imp : classBody.imports.filter[i| !i.endsWith("MetaFieldsMeta")]»
 			import «imp»;
 		«ENDFOR»
 		«FOR imp : classBody.staticImports»
 			import static «imp»;
 		«ENDFOR»
-		import com.rosetta.model.lib.RosettaModelObject;
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.meta.*;
-		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.path.RosettaPath;
 		import com.rosetta.model.lib.process.AttributeMeta;
 		import com.rosetta.model.lib.process.BuilderMerger;
 		import com.rosetta.model.lib.process.Processor;
 		import java.util.Objects;
 		
-		import static java.util.Optional.ofNullable;
-		
 		«classBody.toString»
+		
+		class MetaFieldsMeta extends BasicRosettaMetaData<MetaFields>{
+		
+		}
 		'''
 	}
 	

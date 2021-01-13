@@ -16,6 +16,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import java.util.Objects
+import java.util.Collection
 
 class ModelObjectBoilerPlate {
 
@@ -39,12 +40,13 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 	
-	def StringConcatenationClient implementsClause(Data d) {
+	def StringConcatenationClient implementsClause(Data d, Collection<Class<?>> extraInterfaces) {
 		val interfaces = newHashSet
 		if(d.hasKeyedAnnotation)
 			interfaces.add(GlobalKey)
 		if(d.hasTemplateAnnotation)
 			interfaces.add(Templatable)
+		interfaces.addAll(extraInterfaces)
 		if (interfaces.empty) null else ''', «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
 	
@@ -61,7 +63,7 @@ class ModelObjectBoilerPlate {
 	}
 	
 	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isMultiple) '''List<«attribute.toTypeSingle(names)»>''' 
+		if (attribute.isMultiple) '''List<? extends «attribute.toTypeSingle(names)»>''' 
 		else attribute.toTypeSingle(names);
 	}
 	

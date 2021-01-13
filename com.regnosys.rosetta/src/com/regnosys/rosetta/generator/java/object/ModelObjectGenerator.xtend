@@ -16,7 +16,6 @@ import com.rosetta.model.lib.meta.RosettaMetaData
 import java.util.List
 import java.util.Objects
 import java.util.Optional
-import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
@@ -24,6 +23,8 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.google.common.collect.ImmutableList
+import java.util.Collections
+import java.util.Collection
 
 class ModelObjectGenerator {
 	@Inject extension RosettaExtensions
@@ -59,21 +60,25 @@ class ModelObjectGenerator {
 			«classBody.toString»
 		'''
 	}
+	
+	def StringConcatenationClient classBody(Data d, JavaNames names, String version) {
+		classBody(d, names, version, Collections.emptyList)
+	}
 
-	def StringConcatenationClient classBody(Data d, JavaNames names, String version) '''
+	def StringConcatenationClient classBody(Data d, JavaNames names, String version, Collection<Class<?>> interfaces) '''
 		«javadocWithVersion(d.definition, version)»
 		@«RosettaClass»
 		«IF d.hasQualifiedAttribute»
 			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.getQualifiedClass).name».class)
 		«ENDIF»
 		
-		public interface «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d)» {
+		public interface «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
 			«d.name» build();
 			«d.builderName» toBuilder();
 			
 			«FOR attribute : d.expandedAttributes»
-			«javadoc(attribute.definition)»
-			«attribute.toJavaType(names)» get«attribute.name.toFirstUpper»();
+				«javadoc(attribute.definition)»
+				«attribute.toJavaType(names)» get«attribute.name.toFirstUpper»();
 			«ENDFOR»
 			«val metaType = names.createJavaType(names.packages.model.meta, d.name+'Meta')»
 			final static «metaType» metaData = new «metaType»();
@@ -91,18 +96,17 @@ class ModelObjectGenerator {
 				return «d.name».class;
 			}
 				
-			interface «d.builderName» extends «d.name», «IF d.hasSuperType»«d.superType.builderName», «ENDIF»RosettaModelObjectBuilder {
-«««				Get or create methods will create a builder instence of an object for you if it does not exist
+			interface «d.builderName» extends «d.name», «IF d.hasSuperType»«d.superType.builderName», «ENDIF»RosettaModelObjectBuilder«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«inter»Builder«ENDFOR» {
+«««				Get or create methods will create a builder instance of an object for you if it does not exist
 				«FOR attribute : d.expandedAttributes»
 					«IF attribute.isDataType || attribute.hasMetas»
 						«IF attribute.cardinalityIsSingleValue»
 							«attribute.toJavaType(names)» getOrCreate«attribute.name.toFirstUpper»();
 						«ELSE»
-							«attribute.toJavaType(names)» getOrCreate«attribute.name.toFirstUpper»(int _index);
+							«attribute.toJavaTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int _index);
 						«ENDIF»
 					«ENDIF»
 				«ENDFOR»
-				
 				«FOR attribute : d.expandedAttributes»
 					«IF attribute.cardinalityIsSingleValue»
 						«d.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
@@ -161,7 +165,6 @@ class ModelObjectGenerator {
 		«FOR attribute : expandedAttributes»
 			private final «attribute.toJavaType(names)» «attribute.name»;
 		«ENDFOR»
-		
 
 		protected «c.implName»(«c.builderName» builder) {
 			«IF c.hasSuperType»
@@ -179,7 +182,6 @@ class ModelObjectGenerator {
 			}
 			
 		«ENDFOR»
-		
 		public «c.name» build() {
 			return this;
 		}
@@ -202,7 +204,7 @@ class ModelObjectGenerator {
 	}
 
 	private def StringConcatenationClient toJavaType(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isMultiple) '''«List»<«attribute.toJavaTypeSingle(names)»>'''
+		if (attribute.isMultiple) '''«List»<? extends «attribute.toJavaTypeSingle(names)»>'''
 		else attribute.toJavaTypeSingle(names)
 	}
 
@@ -232,7 +234,7 @@ class ModelObjectGenerator {
 
 	private def StringConcatenationClient buildRosettaObject(ExpandedAttribute attribute) {
 		if(attribute.cardinalityIsListValue) {
-			'''list -> list.stream().filter(«Objects»::nonNull).map(f->f.build()).filter(«Objects»::nonNull).collect(«Collectors».toList())'''
+			'''list -> list.stream().filter(«Objects»::nonNull).map(f->f.build()).filter(«Objects»::nonNull).collect(«ImmutableList».toImmutableList())'''
 		} else {
 			'''f->f.build()'''
 		}
