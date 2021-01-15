@@ -27,11 +27,11 @@ class GlobalKeyGeneratorTest {
 				[metadata key]
 				foo string (1..1)
 		'''.generateCode
-
+		//code.writeClasses("shouldGenerateGlobalKeyFieldAndGetterWhenSet")
 		val classess = code.compileToClasses
 		val withGlobalKey = classess.get(rootPackage.name + '.WithGlobalKey')
 
-		assertThat(withGlobalKey.declaredFields.map[name], hasItem('meta'))
+		assertThat(withGlobalKey.declaredMethods.map[name], hasItem('getMeta'))
 	}
 
 	@Test
@@ -44,9 +44,7 @@ class GlobalKeyGeneratorTest {
 		val classess = code.compileToClasses
 		val withoutGlobalKeys = classess.get(rootPackage.name + '.WithoutGlobalKeys')
 
-		assertThat(withoutGlobalKeys.fields.map[name], not(hasItem('metaFields')))
-
-		assertThat(withoutGlobalKeys.methods.exists[name.equals('meta')], is(false))
+		assertThat(withoutGlobalKeys.methods.map[name], not(hasItem('getMeta')))
 	}
 	
 	// TODO fails when the metaType is moved to annotations.rosetta or basictypes.rosetta (and removed from the code here).
@@ -70,11 +68,11 @@ class GlobalKeyGeneratorTest {
 		val classes = code.compileToClasses
 
 		val foo = classes.get(rootPackage.name + '.Foo')
-		assertThat(foo.declaredFields.map[name], hasItem('bar'))
-		assertThat(foo.declaredFields.map[name], hasItem('meta'))
+		assertThat(foo.declaredMethods.map[name], hasItem('getBar'))
+		assertThat(foo.declaredMethods.map[name], hasItem('getMeta'))
 		
 		val baz = classes.get(rootPackage.name + '.Baz')
-		assertThat(baz.declaredFields.map[name], hasItem('foo'))
+		assertThat(baz.declaredMethods.map[name], hasItem('getFoo'))
 		val fooMethod = baz.getMethod("getFoo")
 		val returnType = fooMethod.returnType
 		assertThat(returnType.simpleName, is('ReferenceWithMetaFoo'))

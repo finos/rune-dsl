@@ -18,6 +18,7 @@ import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.rosetta.model.lib.process.BuilderMerger
 
 class ModelObjectBuilderGenerator {
 	
@@ -113,7 +114,7 @@ class ModelObjectBuilderGenerator {
 	'''
 		@SuppressWarnings("unchecked")
 		@Override
-		public «builderName» merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+		public «builderName» merge(RosettaModelObjectBuilder other, «BuilderMerger» merger) {
 			«IF hasSuperType»
 				super.merge(other, merger);
 				
