@@ -82,6 +82,35 @@ public interface Key extends RosettaModelObject{
 		public Key build() {
 			return this;
 		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((keyValue == null) ? 0 : keyValue.hashCode());
+			result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			KeyImpl other = (KeyImpl) obj;
+			if (keyValue == null) {
+				if (other.keyValue != null)
+					return false;
+			} else if (!keyValue.equals(other.keyValue))
+				return false;
+			if (scope == null) {
+				if (other.scope != null)
+					return false;
+			} else if (!scope.equals(other.scope))
+				return false;
+			return true;
+		}
 	}
 	
 	public static class KeyBuilderImpl implements KeyBuilder{
@@ -132,6 +161,37 @@ public interface Key extends RosettaModelObject{
 			merger.mergeBasic(getKeyValue(), otherKey.getKeyValue(), this::setKeyValue);
 			merger.mergeBasic(getScope(), otherKey.getScope(), this::setScope);
 			return this;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((keyValue == null) ? 0 : keyValue.hashCode());
+			result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			KeyBuilderImpl other = (KeyBuilderImpl) obj;
+			if (keyValue == null) {
+				if (other.keyValue != null)
+					return false;
+			} else if (!keyValue.equals(other.keyValue))
+				return false;
+			if (scope == null) {
+				if (other.scope != null)
+					return false;
+			} else if (!scope.equals(other.scope))
+				return false;
+			return true;
 		}
 	}
 	
