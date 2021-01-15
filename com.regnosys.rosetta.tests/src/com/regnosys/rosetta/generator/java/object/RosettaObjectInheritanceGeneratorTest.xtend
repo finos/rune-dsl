@@ -34,7 +34,7 @@ class RosettaObjectInheritanceGeneratorTest {
 				dd string (0..1)
 
 		'''.generateCode
-
+		
 		val classes = genereated.compileToClasses
 
 		val classA = classes.get(rootPackage.name + ".A")
@@ -42,9 +42,9 @@ class RosettaObjectInheritanceGeneratorTest {
 		val classC = classes.get(rootPackage.name + ".C")
 		val classD = classes.get(rootPackage.name + ".D")
 
-		assertEquals(classD.superclass, classC)
-		assertEquals(classC.superclass, classB)
-		assertEquals(classB.superclass, classA)
+		assertTrue(classC.isAssignableFrom(classD))
+		assertTrue(classB.isAssignableFrom(classC))
+		assertTrue(classA.isAssignableFrom(classB))
 	}
 
 	@Test

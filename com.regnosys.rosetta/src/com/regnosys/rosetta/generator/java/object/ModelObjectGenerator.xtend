@@ -1,18 +1,24 @@
 
 package com.regnosys.rosetta.generator.java.object
 
+import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.java.util.JavaType
+import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RQualifiedType
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.annotations.RosettaClass
 import com.rosetta.model.lib.annotations.RosettaQualified
 import com.rosetta.model.lib.meta.RosettaMetaData
+import java.util.Collection
+import java.util.Collections
 import java.util.List
 import java.util.Objects
 import java.util.Optional
@@ -22,9 +28,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.google.common.collect.ImmutableList
-import java.util.Collections
-import java.util.Collection
 
 class ModelObjectGenerator {
 	@Inject extension RosettaExtensions
@@ -43,15 +46,9 @@ class ModelObjectGenerator {
 		'''
 			package «javaNames.packages.model.name»;
 
-			«FOR imp : classBody.imports»
+			«FOR imp : classBody.getImports(javaNames.packages.model.name, javaNames.toJavaType(d).name)»
 				import «imp»;
 			«ENDFOR»
-
-			import com.rosetta.model.lib.RosettaModelObjectBuilder;
-			import com.rosetta.model.lib.path.RosettaPath;
-			import com.rosetta.model.lib.process.BuilderMerger;
-			import com.rosetta.model.lib.process.Processor;
-			import com.rosetta.model.lib.process.AttributeMeta;
 
 			«FOR imp : classBody.staticImports»
 				import static «imp»;
@@ -65,16 +62,16 @@ class ModelObjectGenerator {
 		classBody(d, names, version, Collections.emptyList)
 	}
 
-	def StringConcatenationClient classBody(Data d, JavaNames names, String version, Collection<Class<?>> interfaces) '''
+	def StringConcatenationClient classBody(Data d, JavaNames names, String version, Collection<Object> interfaces) '''
 		«javadocWithVersion(d.definition, version)»
 		@«RosettaClass»
 		«IF d.hasQualifiedAttribute»
 			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.getQualifiedClass).name».class)
 		«ENDIF»
 		
-		public interface «d.name» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
+		public interface «names.toJavaType(d)» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
 			«d.name» build();
-			«d.builderName» toBuilder();
+			«names.toJavaType(d).toBuilderType» toBuilder();
 			
 			«FOR attribute : d.expandedAttributes»
 				«javadoc(attribute.definition)»
@@ -88,38 +85,49 @@ class ModelObjectGenerator {
 				return metaData;
 			} 
 					
-			static «d.builderImplName» newBuilder() {
-				return new «d.builderImplName»();
+			static «names.toJavaType(d).toBuilderType» newBuilder() {
+				return new «names.toJavaType(d).toBuilderImplType»();
 			}
 			
-			default Class<«d.name»> getType() {
+			default Class<? extends «d.name»> getType() {
 				return «d.name».class;
 			}
-				
-			interface «d.builderName» extends «d.name», «IF d.hasSuperType»«d.superType.builderName», «ENDIF»RosettaModelObjectBuilder«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«inter»Builder«ENDFOR» {
+			«d.processMethod(names)»
+			
+			interface «names.toJavaType(d)»Builder extends «d.name», «IF d.hasSuperType»«names.toJavaType(d.superType).toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
 «««				Get or create methods will create a builder instance of an object for you if it does not exist
 				«FOR attribute : d.expandedAttributes»
 					«IF attribute.isDataType || attribute.hasMetas»
 						«IF attribute.cardinalityIsSingleValue»
 							«attribute.toJavaType(names)» getOrCreate«attribute.name.toFirstUpper»();
 						«ELSE»
-							«attribute.toJavaTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int _index);
+							«attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int _index);
 						«ENDIF»
 					«ENDIF»
 				«ENDFOR»
 				«FOR attribute : d.expandedAttributes»
 					«IF attribute.cardinalityIsSingleValue»
-						«d.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+						«names.toJavaType(d).toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
 					«ELSE»
-						«d.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
-						«d.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name»);
-						«d.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx);
-						«d.builderName» add«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+						«names.toJavaType(d).toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name»);
+						«names.toJavaType(d).toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx);
+						«IF !attribute.isOverriding»
+						«names.toJavaType(d).toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+						«names.toJavaType(d).toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+						«ENDIF»
 					«ENDIF»
 				«ENDFOR»
+				«FOR pt :interfaces.filter(ParameterizedType).filter[type.simpleName=="ReferenceWithMeta"]»
+				
+					default Class<«pt.typeArgs.get(0).type»> getValueType() {
+						return «pt.typeArgs.get(0).type».class;
+					}
+				«ENDFOR»
 			}
-		
-			class «d.implName» «IF d.hasSuperType»extends «d.superType.implName» «ENDIF»implements «d.name» {
+			
+«««			This line reserves this name as a name
+			//«names.toJavaType(d).toImplType»
+			class «names.toJavaType(d)»Impl «IF d.hasSuperType»extends «names.toJavaType(d.superType).toImplType» «ENDIF»implements «d.name» {
 				«d.rosettaClass(names)»
 				
 				«d.boilerPlate(names)»
@@ -128,6 +136,18 @@ class ModelObjectGenerator {
 			«d.builderClass(names)»
 		}
 	'''
+	
+	def dispatch buildify(Object object) {
+		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+	}
+	
+	def dispatch buildify(Class<?> clazz) {
+		new JavaType(clazz.name+"."+clazz.simpleName+"Builder")
+	}
+	def dispatch buildify(ParameterizedType clazz) {
+		val builderType = new JavaType(clazz.type.name+"."+clazz.type.simpleName+"Builder")
+		new ParameterizedType(builderType, clazz.typeArgs)
+	}
 
 	def boolean globalKeyRecursive(Data class1) {
 		return class1.globalKey || (class1.superType !== null && class1.superType.globalKeyRecursive)
@@ -160,13 +180,13 @@ class ModelObjectGenerator {
 	}
 
 	private def StringConcatenationClient rosettaClass(Data c, JavaNames names) {
-		val expandedAttributes = c.expandedAttributes.filter[!it.overriding]
+		val expandedAttributes = c.expandedAttributes
 		'''
 		«FOR attribute : expandedAttributes»
 			private final «attribute.toJavaType(names)» «attribute.name»;
 		«ENDFOR»
 
-		protected «c.implName»(«c.builderName» builder) {
+		protected «names.toJavaType(c)»Impl(«names.toJavaType(c).toBuilderType» builder) {
 			«IF c.hasSuperType»
 				super(builder);
 			«ENDIF»
@@ -182,12 +202,14 @@ class ModelObjectGenerator {
 			}
 			
 		«ENDFOR»
+		@Override
 		public «c.name» build() {
 			return this;
 		}
 
-		public «c.builderName» toBuilder() {
-			«c.builderName» builder = newBuilder();
+		@Override
+		public «names.toJavaType(c).toBuilderType» toBuilder() {
+			«names.toJavaType(c).toBuilderType» builder = newBuilder();
 			«IF (c.hasSuperType)»
 				super.setBuilderFields(builder);
 			«ENDIF»
@@ -195,7 +217,7 @@ class ModelObjectGenerator {
 			return builder;
 		}
 		
-		protected void setBuilderFields(«c.builderName» builder) {
+		protected void setBuilderFields(«names.toJavaType(c).toBuilderType» builder) {
 			«FOR attribute :expandedAttributes»
 				«Optional.importMethod("ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
 			«ENDFOR»

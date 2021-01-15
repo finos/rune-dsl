@@ -12,13 +12,11 @@ import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.annotations.RosettaDataRule
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ComparisonResult
 import com.rosetta.model.lib.validation.ModelObjectValidator
 import com.rosetta.model.lib.validation.ValidationResult
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType
 import com.rosetta.model.lib.validation.Validator
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -80,16 +78,6 @@ class DataRuleGenerator {
 					}
 					
 					return «ValidationResult».failure(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", path, DEFINITION, result.getError());
-				}
-				
-				@Override
-				public «ValidationResult»<«rosettaClass.name»> validate(RosettaPath path, «RosettaModelObjectBuilder» «rosettaClass.name.toFirstLower») {
-					«ComparisonResult» result = executeDataRule((«rosettaClass.name»)«rosettaClass.name.toFirstLower».build());
-					if (result.get()) {
-						return ValidationResult.success(NAME, «ValidationType».DATA_RULE, "«rosettaClass.name»", path, DEFINITION);
-					}
-					
-					return ValidationResult.failure(NAME, «ValidationType».DATA_RULE,  "«rosettaClass.name»", path, DEFINITION, result.getError());
 				}
 				
 				private ComparisonResult executeDataRule(«rosettaClass.name» «rosettaClass.name.toFirstLower») {

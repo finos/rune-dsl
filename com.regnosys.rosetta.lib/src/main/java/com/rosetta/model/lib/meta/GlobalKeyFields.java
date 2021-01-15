@@ -8,7 +8,7 @@ public interface GlobalKeyFields {
 	
 	String getExternalKey();
 	
-	List<? extends Key> getKeys();
+	List<? extends Key> getKey();
 	
 	interface GlobalKeyFieldsBuilder extends GlobalKeyFields{
 		
@@ -16,10 +16,10 @@ public interface GlobalKeyFields {
 		
 		GlobalKeyFieldsBuilder setExternalKey(String ExternalKey);
 		
-		GlobalKeyFieldsBuilder setKeys(List<? extends Key> keys);
+		GlobalKeyFieldsBuilder setKey(List<? extends Key> keys);
 		GlobalKeyFieldsBuilder addKey(Key key);
 		GlobalKeyFieldsBuilder addKey(Key key, int _idx);
 		GlobalKeyFieldsBuilder addKey(List<? extends Key> keys);
-		GlobalKeyFieldsBuilder GetOrCreateKey(int _idx);
+		Key.KeyBuilder getOrCreateKey(int _idx);
 	}
 }

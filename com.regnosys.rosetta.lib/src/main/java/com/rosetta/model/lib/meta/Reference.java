@@ -21,6 +21,9 @@ import com.rosetta.model.lib.process.Processor;
  *         for inside that TradeableProduct
  */
 public interface Reference extends RosettaModelObject {
+	Reference build();
+	ReferenceBuilder toBuilder();
+	
 	String getScope();
 
 	String getPointsToB();

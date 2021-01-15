@@ -87,22 +87,6 @@ class ValidatorsGenerator {
 				}
 				return «ValidationResult.importMethod("success")»("«c.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "");
 			}
-			
-			@Override
-			public ValidationResult<«c.name»> validate(RosettaPath path, «RosettaModelObjectBuilder» b) {
-				«c.name».«c.name»Builder o = («c.name».«c.name»Builder) b;
-				String error = 
-					Lists.<ComparisonResult>newArrayList(
-						«FOR attr : attributes SEPARATOR ","»
-							«checkCardinality(attr)»
-						«ENDFOR»
-					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«Collectors.importMethod("joining")»("; "));
-				
-				if (!isNullOrEmpty(error)) {
-					return failure("«c.name»", ValidationType.MODEL_INSTANCE, o.getClass().getSimpleName(), path, "", error);
-				}
-				return success("«c.name»", ValidationType.MODEL_INSTANCE, o.getClass().getSimpleName(), path, "");
-			}
 		
 		}
 	'''

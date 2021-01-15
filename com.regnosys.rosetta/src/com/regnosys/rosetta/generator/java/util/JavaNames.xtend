@@ -153,6 +153,12 @@ class JavaNames {
 		"missing built-in type " + typeName
 		)
 	}
+	
+	static def JavaNames createBasicFromPackages(RosettaJavaPackages packages) {
+		val n = new JavaNames
+		n.packages = packages
+		n
+	}
 
 	static class Factory {
 		@Inject Injector injector

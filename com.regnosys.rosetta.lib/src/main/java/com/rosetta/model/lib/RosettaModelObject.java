@@ -27,7 +27,7 @@ public interface RosettaModelObject {
 		if (child!=null && processFurther) child.process(path, processor);
 	}
 
-	default <R extends RosettaModelObject> void processRosetta(RosettaPath path, Processor processor, Class<R> clazz, List<R> children, AttributeMeta... metas) {
+	default <R extends RosettaModelObject> void processRosetta(RosettaPath path, Processor processor, Class<R> clazz, List<? extends R> children, AttributeMeta... metas) {
 		processor.processRosetta(path, clazz, children, this, metas);
 		if (children!=null)  {
 			int index=0;

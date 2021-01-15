@@ -9,7 +9,6 @@ import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaQualified
-import com.rosetta.model.lib.annotations.RosettaSynonym
 import com.rosetta.model.lib.records.Date
 import java.math.BigDecimal
 import java.time.LocalTime
@@ -46,7 +45,7 @@ class ModelObjectGeneratorTest {
 		.compileJava8
 
 		val classTester = classes.get(rootPackage.name + ".Tester")
-		val classTesterBuilderInstance = classTester.getMethod("builder").invoke(null)
+		val classTesterBuilderInstance = classTester.getMethod("newBuilder").invoke(null)
 
 		classTesterBuilderInstance.class.getMethod('addItems', String).invoke(classTesterBuilderInstance, 'item1')
 		classTesterBuilderInstance.class.getMethod('addItems', String).invoke(classTesterBuilderInstance, 'item2')
@@ -78,7 +77,7 @@ class ModelObjectGeneratorTest {
 				one int (0..1)
 				list int (0..*)
 		'''.generateCode
-		code.writeClasses("intTest")
+		//code.writeClasses("intTest")
 		val classes = code.compileToClasses
 
 		assertEquals(Integer, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
@@ -151,7 +150,7 @@ class ModelObjectGeneratorTest {
 				fieldOne string (0..1) <"">
 		'''.compileJava8
 		val generatedClass = classes.get(rootPackage.name + ".TestObject")
-		val builderInstance = generatedClass.getMethod("builder").invoke(null)
+		val builderInstance = generatedClass.getMethod("newBuilder").invoke(null)
 		var inst = builderInstance.invoke("prune")
 		inst = builderInstance.invoke("build")
 		assertNull(inst.invoke("getFieldOne"))
@@ -176,7 +175,7 @@ class ModelObjectGeneratorTest {
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
 
-		val builderInstance = generatedClass.getMethod("builder").invoke(null)
+		val builderInstance = generatedClass.getMethod("newBuilder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFieldOne")
 		metad.invoke("setValue","fieldOne")
 
@@ -202,7 +201,7 @@ class ModelObjectGeneratorTest {
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
 
-		val builderInstance = generatedClass.getMethod("builder").invoke(null)
+		val builderInstance = generatedClass.getMethod("newBuilder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFieldOne")
 		metad.invoke("setExternalReference","fieldOne")
 
@@ -232,7 +231,7 @@ class ModelObjectGeneratorTest {
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
 
-		val builderInstance = generatedClass.getMethod("builder").invoke(null)
+		val builderInstance = generatedClass.getMethod("newBuilder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFieldOne")
 		metad.invoke("setExternalReference","fieldOne")
 
@@ -283,25 +282,6 @@ class ModelObjectGeneratorTest {
 
 		val schemeMethod = generatedClass.getMethod("getAttr")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
-	}
-    
-	@Test
-	def void shouldGenerateSchemeFieldWithSynonym() {
-		val code = '''
-			type TestObject: <"">
-				one string (0..1)
-					[metadata scheme]
-					[synonym FpML value "oneSyn" meta "oneScheme"]
-		'''.generateCode
-		//code.writeClasses("SchemeFieldWithSynonym")
-		val generatedClass = code.compileToClasses
-		val testClass = generatedClass.get(rootPackage.name + '.TestObject')
-		val getter = testClass.getMethod("getOne")
-
-		assertThat(getter.annotations.filter[RosettaSynonym.isAssignableFrom(class)].size, is(1))
-
-		val annotation = getter.getAnnotation(RosettaSynonym)
-		assertThat(annotation.value, is('oneSyn'))
 	}
 
 	@Test
@@ -372,8 +352,6 @@ class ModelObjectGeneratorTest {
 			type D:
 				s string (1..*)
 		'''.generateCode
-		// val classList = code.get(javaPackages.name + '.Rosetta')
-		// println(classList)
 		val rosetta = code.compileToClasses.get(rootPackage.name + '.Rosetta')
 
 		val rosettaClassList = rosetta.getMethod("classes").invoke(null) as List<Class<? extends RosettaModelObject>>
@@ -442,12 +420,12 @@ class ModelObjectGeneratorTest {
 			type Bar extends Foo:
 		'''.generateCode
 
+		//code.writeClasses("shouldSetAttributesOnEmptyClassWithInheritance")
 		val classes = code.compileToClasses
-
 		val subclassInstance = classes.get(rootPackage.name + '.Bar')
 
 		// set the super class attribute
-		val builderInstance = subclassInstance.getMethod("builder").invoke(null)
+		val builderInstance = subclassInstance.getMethod("newBuilder").invoke(null)
 		builderInstance.invoke("setAttr", "blah")
 		val subclassInstance2 = builderInstance.invoke("build") as RosettaModelObject
 
@@ -506,10 +484,10 @@ class ModelObjectGeneratorTest {
 		assertThat(getter.returnType.name, is('com.rosetta.model.metafields.BasicReferenceWithMetaString'))
 		
 		val fooClass = generatedClass.get(rootPackage.name + '.Foo')
-		val builderInstance = fooClass.getMethod("builder").invoke(null)
+		val builderInstance = fooClass.getMethod("newBuilder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFoo")
 		val metas = metad.invoke("getOrCreateMeta")
-		val keys = metas.invoke("getKeys") as List
+		val keys = metas.invoke("getKey") as List
 		assertThat(keys.size(), is(1));
 		
 	}
@@ -545,12 +523,6 @@ class ModelObjectGeneratorTest {
 		var bar = createObjectWithListThenPruneAndReturnList(ImmutableList.of('a', 'b'))
 		assertNotNull(bar)
 		assertEquals(bar.size, 2)
-	}
-	
-	@Test
-	def void shouldPruneEmptyListToNull() {
-		var bar = createObjectWithListThenPruneAndReturnList(ImmutableList.of())
-		assertNull(bar)
 	}
 	
 	private def createObjectWithListThenPruneAndReturnList(List<String> list) {

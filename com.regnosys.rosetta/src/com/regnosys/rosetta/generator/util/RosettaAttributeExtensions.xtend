@@ -85,12 +85,6 @@ class RosettaAttributeExtensions {
 		val name = if (rosExt.hasTemplateAnnotation(data)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
 		return new ExpandedType(rosModel, name, true, false, false)
 	}
-
-	// used in translate project
-	@SuppressWarnings("unused")
-	static private def ExpandedType provideStringType(RosettaRootElement ctx) {
-		return new ExpandedType(ctx.model, 'string', false, false, false)
-	}
 	
 	dispatch static def List<ExpandedAttribute> getExpandedAttributes(RosettaEnumeration rosettaEnum) {
 		rosettaEnum.enumValues.map[expandedEnumAttribute]
@@ -260,4 +254,7 @@ class RosettaAttributeExtensions {
 		return a.type instanceof RosettaQualifiedType
 	}
 	
+	static def isBuiltInType(RosettaType type) {
+		return !(type instanceof Data|| type instanceof RosettaEnumeration)
+	}
 }

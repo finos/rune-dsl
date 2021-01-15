@@ -30,12 +30,12 @@ class ModelObjectBoilerPlateTest {
 	
 		
 		val thisTestClass = classes.get(rootPackage.name + '.Test')
-		val thisTestBuilder = thisTestClass.getMethod('builder').invoke(null)
+		val thisTestBuilder = thisTestClass.getMethod('newBuilder').invoke(null)
 		thisTestBuilder.class.getMethod('setTestField', String).invoke(thisTestBuilder, 'test-value'); 
 		val thisTest = thisTestBuilder.class.getMethod('build').invoke(thisTestBuilder);
 		
 		val thatTestClass = classes.get(rootPackage.name + '.Test')
-		val thatTestBuilder = thatTestClass.getMethod('builder').invoke(null)
+		val thatTestBuilder = thatTestClass.getMethod('newBuilder').invoke(null)
 		thatTestBuilder.class.getMethod('setTestField', String).invoke(thatTestBuilder, 'test-value'); 
 		val thatTest = thatTestBuilder.class.getMethod('build').invoke(thatTestBuilder);
 		
@@ -53,11 +53,11 @@ class ModelObjectBoilerPlateTest {
 		val classes = code.compileToClasses
 	
 		val thisTestClass = classes.get(rootPackage.name + '.Test')
-		val thisTestBuilder = thisTestClass.getMethod('builder').invoke(null)
+		val thisTestBuilder = thisTestClass.getMethod('newBuilder').invoke(null)
 		thisTestBuilder.class.getMethod('setTestField', String).invoke(thisTestBuilder, 'test-value'); 
 		
 		val thatTestClass = classes.get(rootPackage.name + '.Test')
-		val thatTestBuilder = thatTestClass.getMethod('builder').invoke(null)
+		val thatTestBuilder = thatTestClass.getMethod('newBuilder').invoke(null)
 		thatTestBuilder.class.getMethod('setTestField', String).invoke(thatTestBuilder, 'test-value'); 
 		
 		assertThat(thisTestBuilder, is(thatTestBuilder))

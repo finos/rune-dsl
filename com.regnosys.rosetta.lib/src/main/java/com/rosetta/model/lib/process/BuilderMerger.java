@@ -3,7 +3,7 @@ package com.rosetta.model.lib.process;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
+import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 
 /**
@@ -33,7 +33,7 @@ public interface BuilderMerger {
 	 * @param o2 - a RosettaModelObjectBuilder object, which will be merged into o1, and then discarded.
 	 * @param o1Setter - method to overwrite object o1, e.g. lambda to the set method on the o1's parent object.
 	 */
-	<T extends RosettaModelObjectBuilder> void mergeRosetta(T o1, T o2, Consumer<T> o1Setter);
+	<T extends RosettaModelObject> void mergeRosetta(T o1, T o2, Consumer<T> o1Setter);
 
 	/**
 	 * Merge the two RosettaModelObjectBuilder object lists.
@@ -42,7 +42,7 @@ public interface BuilderMerger {
 	 * @param o2 - a list of RosettaModelObjectBuilder objects, which will be merged into o1, and then discarded.
 	 * @param o1GetOrCreateByIndex - method to get object at list index, or if absent create object at list index.
 	 */
-	<T extends RosettaModelObjectBuilder> void mergeRosetta(List<T> o1, List<T> o2, Function<Integer, T> o1GetOrCreateByIndex);
+	<T extends RosettaModelObject> void mergeRosetta(List<? extends T> o1, List<? extends T> o2, Function<Integer, T> o1GetOrCreateByIndex);
 	
 	/**
 	 * Merge the two primitive types.
@@ -61,5 +61,5 @@ public interface BuilderMerger {
 	 * @param o2 - a primitive types, which will be merged into o1, and then discarded.
 	 * @param o1Add - method to append an item to list o1, e.g. lambda to the add method on the o1's parent object.
 	 */
-	<T> void mergeBasic(List<T> o1, List<T> o2, Consumer<T> o1Add);
+	<T> void mergeBasic(List<? extends T> o1, List<? extends T> o2, Consumer<T> o1Add);
 }

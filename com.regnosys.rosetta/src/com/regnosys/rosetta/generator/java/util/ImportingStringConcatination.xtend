@@ -5,10 +5,12 @@ import java.util.Set
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenation
 import org.eclipse.xtext.naming.QualifiedName
+import java.util.Map
+import java.util.List
 
 class ImportingStringConcatination extends StringConcatenation {
 	@Accessors(PUBLIC_GETTER)
-	Set<String> imports = newHashSet
+	Map<String,QualifiedName> imports = newHashMap
 	Set<String> staticImports = newHashSet
 	Set<String> reservedSimpleNames = newHashSet
 	
@@ -25,8 +27,7 @@ class ImportingStringConcatination extends StringConcatenation {
 		if(reservedSimpleNames.contains(object.simpleName)) {
 			return object.name
 		}
-		addImport(object.name, object.isEnum && object.isMemberClass || object.isLocalClass)
-		return object.simpleName
+		addImport(object.name, object.simpleName)
 	}
 	
 	def dispatch protected String getStringRepresentation(Method object) {
@@ -42,9 +43,12 @@ class ImportingStringConcatination extends StringConcatenation {
 			if(reservedSimpleNames.contains(object.simpleName)) {
 				return object.name
 			}
-			addImport(object.name, false)
-			return object.simpleName
+			return addImport(object.name, object.simpleName)
 		}
+	}
+	
+	def dispatch protected String getStringRepresentation(ParameterizedType type) {
+		return '''«type.type.stringRepresentation»«IF type.typeArgs!==null && !type.typeArgs.isEmpty»<«FOR t:type.typeArgs SEPARATOR ', '»«t.stringRepresentation»«ENDFOR»>«ENDIF»'''
 	}
 	
 	def dispatch protected String getStringRepresentation(MetaType object) {
@@ -55,9 +59,8 @@ class ImportingStringConcatination extends StringConcatenation {
 			if(reservedSimpleNames.contains(object.metaFieldSimpleName)) {
 				return object.metaFieldName
 			}
-			addImport(object.name, false)
-			addImport(object.metaFieldName, false)
-			return object.metaFieldSimpleName
+			addImport(object.name, object.name)
+			return addImport(object.metaFieldName, object.metaFieldSimpleName)
 		}
 	}
 	
@@ -75,25 +78,32 @@ class ImportingStringConcatination extends StringConcatenation {
 		}
 	}
 
-	def private void addImport(String qName, boolean qualifyMemberClass) {
+	/** returns the name that should be used at in generated code. If an import can be added to then the shortname can be used
+	 * if an import cannot be added because it will clash then the full name must be used
+	*/
+	def String addImport(String qName, String shortName) {
 		if(qName.startsWith('java.lang.'))
-			return
-		val qualified = QualifiedName.create(qName.split('\\.'))
-		val target = qualified.lastSegment
-		if (target.contains('$')) {
-//			if (!qualifyMemberClass) {
-//				val toImport = qualified.skipLast(1).append(target.split('\\$').head)
-//				imports.add(toImport.toString)
-//			} else
-				imports.add(qName.replaceAll('\\$', '.'))
-
-		} else {
-			imports.add(qName)
-		}
+			return shortName
+		val fullName = qName.replaceAll('\\$','.')
+		var qualified = QualifiedName.create(fullName.split('\\.'))
+		
+		if (imports.getOrDefault(shortName, qualified)!=qualified) return fullName//if an import has already been added for this shortname (that is different from this fullname) then we can't add a clashing import 
+		
+		imports.put(shortName, qualified)
+		return shortName
 	}
 	
 	def getImports() {
-		imports.sortBy[it]
+		imports.values.map[toString].sortBy[it]
+	}
+	def getImports(String... excluding) {
+		val exQ = excluding.map[QualifiedName.create(split('\\.'))] 
+		
+		imports.values.filter[notMatch(exQ)].map[toString].sortBy[it]
+	}
+	
+	def boolean notMatch(QualifiedName importName, List<QualifiedName> packageName) {
+		return !packageName.contains(importName.skipLast(1))
 	}
 	
 	def getStaticImports() {
