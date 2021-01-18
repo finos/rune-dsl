@@ -94,6 +94,11 @@ public class Reference extends RosettaModelObject {
 		return new ReferenceBuilder().setScope(scope).setPointsTo(pointsTo).setReference(reference);
 	}
 
+	public static ReferenceBuilder builder() {
+		return new ReferenceBuilder();
+	}
+	
+	
 	@Override
 	protected void process(RosettaPath path, Processor processor) {
 	}

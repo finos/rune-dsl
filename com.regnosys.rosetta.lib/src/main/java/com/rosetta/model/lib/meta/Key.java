@@ -52,6 +52,10 @@ public class Key extends RosettaModelObject {
 		return key;
 	}
 
+	public static KeyBuilder builder() {
+		return new KeyBuilder();
+	}
+	
 	@Override 
 	public boolean equals(Object o) {
 		if (this == o)
