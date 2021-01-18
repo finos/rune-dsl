@@ -10,6 +10,7 @@ import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaQualified
 import com.rosetta.model.lib.annotations.RosettaSynonym
+import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.records.Date
 import java.math.BigDecimal
 import java.time.LocalTime
@@ -28,7 +29,6 @@ import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
-import com.rosetta.model.lib.meta.Keys.KeysBuilder
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -509,8 +509,8 @@ class ModelObjectGeneratorTest {
 		val builderInstance = fooClass.getMethod("builder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFoo")
 		val metas = metad.invoke("getOrCreateMeta")
-		val keys = metas.invoke("getKeys") as KeysBuilder
-		assertThat(keys.keys.size(), is(1));
+		val key = metas.invoke("getKey") as List<Key>
+		assertThat(key.size(), is(1));
 		
 	}
 	

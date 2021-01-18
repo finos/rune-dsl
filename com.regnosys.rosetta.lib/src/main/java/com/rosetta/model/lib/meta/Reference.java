@@ -1,5 +1,7 @@
 package com.rosetta.model.lib.meta;
 
+import java.util.Objects;
+
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.path.RosettaPath;
@@ -7,25 +9,24 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 
-
 /**
  * @author TomForwood
  * This class represents a reference to a rosetta object defined elsewhere.
- * 
+ * <p>
  * The scope defines where the resolver should look to find the object linked to.
- * 
- * Scope can be 
- *  - global - the key is universally unique and can be looked up anywhere - e.g. external database
- * 	- document - the key must be unique in this document and can be found anywhere in the document
- *  - the name of the rosetta class e.g. TradeableProduct- the key is only unique inside that TradeableProduct and should only be looked for inside that TradeableProduct
+ * <p>
+ * Scope can be
+ * - global - the key is universally unique and can be looked up anywhere - e.g. external database
+ * - document - the key must be unique in this document and can be found anywhere in the document
+ * - the name of the rosetta class e.g. TradeableProduct- the key is only unique inside that TradeableProduct and should only be looked for inside that TradeableProduct
  */
-public class Reference extends RosettaModelObject{
+public class Reference extends RosettaModelObject {
+	
 	private final String scope;
 	private final String pointsTo;
 	private final String reference;
-	
+
 	public Reference(String scope, String pointsTo, String reference) {
-		super();
 		this.scope = scope;
 		this.pointsTo = pointsTo;
 		this.reference = reference;
@@ -80,6 +81,14 @@ public class Reference extends RosettaModelObject{
 		return true;
 	}
 
+	@Override public String toString() {
+		return "Reference{" +
+				"scope='" + scope + '\'' +
+				", pointsTo='" + pointsTo + '\'' +
+				", reference='" + reference + '\'' +
+				'}';
+	}
+
 	@Override
 	public ReferenceBuilder toBuilder() {
 		return new ReferenceBuilder().setScope(scope).setPointsTo(pointsTo).setReference(reference);
@@ -93,7 +102,7 @@ public class Reference extends RosettaModelObject{
 	public RosettaMetaData<? extends RosettaModelObject> metaData() {
 		return null;
 	}
-	
+
 	public static class ReferenceBuilder extends RosettaModelObjectBuilder {
 
 		private String scope;
@@ -140,7 +149,7 @@ public class Reference extends RosettaModelObject{
 
 		@Override
 		public boolean hasData() {
-			return this.reference!=null;
+			return this.reference != null;
 		}
 
 		@Override
@@ -155,12 +164,37 @@ public class Reference extends RosettaModelObject{
 		@SuppressWarnings("unchecked")
 		@Override
 		public ReferenceBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			ReferenceBuilder o = (ReferenceBuilder)other;
+			ReferenceBuilder o = (ReferenceBuilder) other;
 			merger.mergeBasic(getScope(), o.getScope(), this::setScope);
 			merger.mergeBasic(getPointsTo(), o.getPointsTo(), this::setPointsTo);
 			merger.mergeBasic(getReference(), o.getReference(), this::setReference);
 			return this;
 		}
-		
+
+		@Override 
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+			ReferenceBuilder that = (ReferenceBuilder) o;
+			return Objects.equals(scope, that.scope) && 
+					Objects.equals(pointsTo, that.pointsTo) && 
+					Objects.equals(reference, that.reference);
+		}
+
+		@Override 
+		public int hashCode() {
+			return Objects.hash(scope, pointsTo, reference);
+		}
+
+		@Override 
+		public String toString() {
+			return "ReferenceBuilder{" +
+					"scope='" + scope + '\'' +
+					", pointsTo='" + pointsTo + '\'' +
+					", reference='" + reference + '\'' +
+					'}';
+		}
 	}
 }
