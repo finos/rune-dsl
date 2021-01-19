@@ -47,7 +47,7 @@ public interface Key extends RosettaModelObject{
 	default void process(RosettaPath path, Processor processor) {
 	}
 	
-	static KeyBuilder newBuilder() {
+	static KeyBuilder builder() {
 		return new KeyBuilderImpl();
 	}
 	
@@ -73,7 +73,7 @@ public interface Key extends RosettaModelObject{
 		}
 	
 		public KeyBuilder toBuilder() {
-			KeyBuilder key = newBuilder();
+			KeyBuilder key = builder();
 			key.setKeyValue(keyValue);
 			key.setScope(scope);
 			return key;

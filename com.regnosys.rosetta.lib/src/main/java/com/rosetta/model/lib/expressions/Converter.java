@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.functions;
+package com.rosetta.model.lib.expressions;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

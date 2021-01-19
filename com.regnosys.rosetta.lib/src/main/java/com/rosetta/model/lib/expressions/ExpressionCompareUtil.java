@@ -1,5 +1,8 @@
-package com.rosetta.model.lib.validation;
+package com.rosetta.model.lib.expressions;
 
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperGroupBy;
+import com.rosetta.model.lib.mapper.MapperS;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -8,11 +11,7 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
-import com.rosetta.model.lib.functions.Mapper;
-import com.rosetta.model.lib.functions.MapperGroupBy;
-import com.rosetta.model.lib.functions.MapperS;
-
-class ValidatorCompareUtil {
+class ExpressionCompareUtil {
 	
 	/**
 	 * Checks whether given mappers are both groupBy functions, if not handles as ungrouped mappers.

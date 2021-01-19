@@ -1,11 +1,10 @@
-package com.rosetta.model.lib.validation;
+package com.rosetta.model.lib.expressions;
 
+import com.rosetta.model.lib.mapper.Mapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
-
-import com.rosetta.model.lib.functions.Mapper;
 
 public class ComparisonResult implements Mapper<Boolean> {
 	private final boolean result;

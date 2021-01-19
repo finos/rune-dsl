@@ -50,10 +50,10 @@ class CalculationFuncGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
-				import com.rosetta.model.lib.functions.Mapper;
-				import com.rosetta.model.lib.functions.MapperMaths;
-				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.expressions.MapperMaths;
 				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.Mapper;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Period;
 				import com.rosetta.test.model.PeriodEnum;
 				import java.math.BigDecimal;
@@ -101,7 +101,7 @@ class CalculationFuncGeneratorTest {
 						
 						
 						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
-							return MapperS.of(in2).<Integer>map("getFrequency", _period -> _period.getFrequency());
+							return MapperS.of(in2).map("getFrequency", _period -> _period.getFrequency());
 						}
 						public static final class MONTHDefault extends MONTH {
 							@Override
@@ -132,10 +132,10 @@ class CalculationFuncGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.rosetta.model.lib.functions.Mapper;
-			import com.rosetta.model.lib.functions.MapperMaths;
-			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.expressions.MapperMaths;
 			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.Mapper;
+			import com.rosetta.model.lib.mapper.MapperS;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -193,12 +193,12 @@ class CalculationFuncGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.rosetta.model.lib.functions.Mapper;
-			import com.rosetta.model.lib.functions.MapperMaths;
-			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.expressions.MapperMaths;
 			import com.rosetta.model.lib.functions.Max;
 			import com.rosetta.model.lib.functions.Min;
 			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.Mapper;
+			import com.rosetta.model.lib.mapper.MapperS;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -273,10 +273,10 @@ class CalculationFuncGeneratorTest {
 		
 		import com.google.inject.ImplementedBy;
 		import com.google.inject.Inject;
-		import com.rosetta.model.lib.functions.Mapper;
-		import com.rosetta.model.lib.functions.MapperMaths;
-		import com.rosetta.model.lib.functions.MapperS;
+		import com.rosetta.model.lib.expressions.MapperMaths;
 		import com.rosetta.model.lib.functions.RosettaFunction;
+		import com.rosetta.model.lib.mapper.Mapper;
+		import com.rosetta.model.lib.mapper.MapperS;
 		import com.rosetta.model.lib.records.Date;
 		import com.rosetta.model.lib.validation.ModelObjectValidator;
 		import com.rosetta.test.model.FoncOut;
@@ -296,19 +296,16 @@ class CalculationFuncGeneratorTest {
 			public FoncOut evaluate(FuncIn funIn) {
 				
 				FoncOut.FoncOutBuilder resHolder = doEvaluate(funIn);
-				FoncOut.FoncOutBuilder resBuilder = assignOutput(resHolder, funIn);
-				final FoncOut res = resBuilder==null? null:resBuilder.build();
+				FoncOut res = assignOutput(resHolder, funIn);
 				
 				if (res!=null) objectValidator.validateAndFailOnErorr(FoncOut.class, res);
 				return res;
 			}
 			
 			private FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder resHolder, FuncIn funIn) {
-				@SuppressWarnings("unused") FoncOut res = resHolder.build();
 				resHolder
 					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get())
 				;
-				res = resHolder.build();
 				resHolder
 					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get())
 				;
@@ -319,11 +316,11 @@ class CalculationFuncGeneratorTest {
 			
 			
 			protected Mapper<Date> arg1(FuncIn funIn) {
-				return MapperS.of(funIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
+				return MapperS.of(funIn).map("getVal1", _funcIn -> _funcIn.getVal1());
 			}
 			
 			protected Mapper<LocalTime> arg2(FuncIn funIn) {
-				return MapperS.of(funIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
+				return MapperS.of(funIn).map("getVal2", _funcIn -> _funcIn.getVal2());
 			}
 			public static final class CalcDefault extends Calc {
 				@Override
@@ -368,10 +365,10 @@ class CalculationFuncGeneratorTest {
 		
 		import com.google.inject.ImplementedBy;
 		import com.google.inject.Inject;
-		import com.rosetta.model.lib.functions.Mapper;
-		import com.rosetta.model.lib.functions.MapperMaths;
-		import com.rosetta.model.lib.functions.MapperS;
+		import com.rosetta.model.lib.expressions.MapperMaths;
 		import com.rosetta.model.lib.functions.RosettaFunction;
+		import com.rosetta.model.lib.mapper.Mapper;
+		import com.rosetta.model.lib.mapper.MapperS;
 		import com.rosetta.model.lib.records.Date;
 		import com.rosetta.model.lib.validation.ModelObjectValidator;
 		import com.rosetta.test.model.FuncIn;
@@ -391,19 +388,16 @@ class CalculationFuncGeneratorTest {
 			public FuncOut evaluate(FuncIn funcIn) {
 				
 				FuncOut.FuncOutBuilder outHolder = doEvaluate(funcIn);
-				FuncOut.FuncOutBuilder outBuilder = assignOutput(outHolder, funcIn);
-				final FuncOut out = outBuilder==null? null:outBuilder.build();
+				FuncOut out = assignOutput(outHolder, funcIn);
 				
 				if (out!=null) objectValidator.validateAndFailOnErorr(FuncOut.class, out);
 				return out;
 			}
 			
 			private FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder outHolder, FuncIn funcIn) {
-				@SuppressWarnings("unused") FuncOut out = outHolder.build();
 				outHolder
 					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get())
 				;
-				out = outHolder.build();
 				outHolder
 					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get())
 				;
@@ -414,15 +408,15 @@ class CalculationFuncGeneratorTest {
 			
 			
 			protected Mapper<String> linkId(FuncIn funcIn) {
-				return MapperS.of(funcIn).<String>map("getValS", _funcIn -> _funcIn.getValS());
+				return MapperS.of(funcIn).map("getValS", _funcIn -> _funcIn.getValS());
 			}
 			
 			protected Mapper<Date> tradeDate(FuncIn funcIn) {
-				return MapperS.of(funcIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
+				return MapperS.of(funcIn).map("getVal1", _funcIn -> _funcIn.getVal1());
 			}
 			
 			protected Mapper<LocalTime> tradeTime(FuncIn funcIn) {
-				return MapperS.of(funcIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
+				return MapperS.of(funcIn).map("getVal2", _funcIn -> _funcIn.getVal2());
 			}
 			public static final class RTS_22_FieldsDefault extends RTS_22_Fields {
 				@Override
@@ -462,8 +456,8 @@ class CalculationFuncGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
-				import com.rosetta.model.lib.functions.MapperS;
 				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.OtherType;
 				import com.rosetta.test.model.WithMeta;
@@ -483,15 +477,13 @@ class CalculationFuncGeneratorTest {
 					public OtherType evaluate(WithMeta withMeta) {
 						
 						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
-						OtherType.OtherTypeBuilder outBuilder = assignOutput(outHolder, withMeta);
-						final OtherType out = outBuilder==null? null:outBuilder.build();
+						OtherType out = assignOutput(outHolder, withMeta);
 						
 						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
 						return out;
 					}
 					
 					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder outHolder, WithMeta withMeta) {
-						@SuppressWarnings("unused") OtherType out = outHolder.build();
 						outHolder
 							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperS.of(withMeta).get())
@@ -501,7 +493,6 @@ class CalculationFuncGeneratorTest {
 								).build()
 							)
 						;
-						out = outHolder.build();
 						outHolder
 							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperS.of(withMeta).get())
@@ -511,7 +502,6 @@ class CalculationFuncGeneratorTest {
 								).build()
 							, 1)
 						;
-						out = outHolder.build();
 						outHolder
 							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperS.of(withMeta).get())
@@ -561,8 +551,8 @@ class CalculationFuncGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
-				import com.rosetta.model.lib.functions.MapperC;
 				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.OtherType;
 				import com.rosetta.test.model.WithMeta;
@@ -584,15 +574,13 @@ class CalculationFuncGeneratorTest {
 					public OtherType evaluate(List<WithMeta> withMeta) {
 						
 						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
-						OtherType.OtherTypeBuilder outBuilder = assignOutput(outHolder, withMeta);
-						final OtherType out = outBuilder==null? null:outBuilder.build();
+						OtherType out = assignOutput(outHolder, withMeta);
 						
 						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
 						return out;
 					}
 					
 					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder outHolder, List<WithMeta> withMeta) {
-						@SuppressWarnings("unused") OtherType out = outHolder.build();
 						outHolder
 							.addAttrMulti(MapperC.of(withMeta)
 							.getItems().map(
@@ -600,7 +588,6 @@ class CalculationFuncGeneratorTest {
 								).collect(Collectors.toList())
 							)
 						;
-						out = outHolder.build();
 						outHolder
 							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperC.of(withMeta).get())
@@ -644,9 +631,9 @@ class CalculationFuncGeneratorTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
-			import com.rosetta.model.lib.functions.Mapper;
-			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.Mapper;
+			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.functions.AddOne;
 			
 			
@@ -730,8 +717,8 @@ class CalculationFuncGeneratorTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
-			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Math;
 			import com.rosetta.test.model.MathInput;
 			import com.rosetta.test.model.functions.AddOne;
@@ -779,7 +766,7 @@ class CalculationFuncGeneratorTest {
 					}
 					
 					private String assignOutput(String arg1Holder, Math in1, MathInput in2) {
-						arg1Holder = MapperS.of(addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+						arg1Holder = MapperS.of(addOne.evaluate(MapperS.of(in2).map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
 						return arg1Holder;
 					}
 				
@@ -814,7 +801,7 @@ class CalculationFuncGeneratorTest {
 					}
 					
 					private String assignOutput(String arg1Holder, Math in1, MathInput in2) {
-						arg1Holder = MapperS.of(subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+						arg1Holder = MapperS.of(subOne.evaluate(MapperS.of(in2).map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
 						return arg1Holder;
 					}
 				
@@ -850,9 +837,9 @@ class CalculationFuncGeneratorTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
-			import com.rosetta.model.lib.functions.Mapper;
-			import com.rosetta.model.lib.functions.MapperS;
 			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.Mapper;
+			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.functions.AddOne;
 			
 			

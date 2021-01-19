@@ -85,7 +85,7 @@ class ModelObjectGenerator {
 				return metaData;
 			} 
 					
-			static «names.toJavaType(d).toBuilderType» newBuilder() {
+			static «names.toJavaType(d).toBuilderType» builder() {
 				return new «names.toJavaType(d).toBuilderImplType»();
 			}
 			
@@ -99,7 +99,7 @@ class ModelObjectGenerator {
 				«FOR attribute : d.expandedAttributes»
 					«IF attribute.isDataType || attribute.hasMetas»
 						«IF attribute.cardinalityIsSingleValue»
-							«attribute.toJavaType(names)» getOrCreate«attribute.name.toFirstUpper»();
+							«attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»();
 						«ELSE»
 							«attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int _index);
 						«ENDIF»
@@ -209,7 +209,7 @@ class ModelObjectGenerator {
 
 		@Override
 		public «names.toJavaType(c).toBuilderType» toBuilder() {
-			«names.toJavaType(c).toBuilderType» builder = newBuilder();
+			«names.toJavaType(c).toBuilderType» builder = builder();
 			«IF (c.hasSuperType)»
 				super.setBuilderFields(builder);
 			«ENDIF»

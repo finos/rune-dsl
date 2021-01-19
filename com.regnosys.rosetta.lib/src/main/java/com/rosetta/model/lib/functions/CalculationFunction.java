@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.mapper.Mapper;
 
 public class CalculationFunction<T extends RosettaModelObject, R> implements Function<T, Mapper<? extends R>>{
 	

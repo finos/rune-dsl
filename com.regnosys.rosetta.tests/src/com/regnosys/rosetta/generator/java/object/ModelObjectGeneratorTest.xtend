@@ -45,7 +45,7 @@ class ModelObjectGeneratorTest {
 		.compileJava8
 
 		val classTester = classes.get(rootPackage.name + ".Tester")
-		val classTesterBuilderInstance = classTester.getMethod("newBuilder").invoke(null)
+		val classTesterBuilderInstance = classTester.getMethod("builder").invoke(null)
 
 		classTesterBuilderInstance.class.getMethod('addItems', String).invoke(classTesterBuilderInstance, 'item1')
 		classTesterBuilderInstance.class.getMethod('addItems', String).invoke(classTesterBuilderInstance, 'item2')
@@ -150,7 +150,7 @@ class ModelObjectGeneratorTest {
 				fieldOne string (0..1) <"">
 		'''.compileJava8
 		val generatedClass = classes.get(rootPackage.name + ".TestObject")
-		val builderInstance = generatedClass.getMethod("newBuilder").invoke(null)
+		val builderInstance = generatedClass.getMethod("builder").invoke(null)
 		var inst = builderInstance.invoke("prune")
 		inst = builderInstance.invoke("build")
 		assertNull(inst.invoke("getFieldOne"))
@@ -175,7 +175,7 @@ class ModelObjectGeneratorTest {
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
 
-		val builderInstance = generatedClass.getMethod("newBuilder").invoke(null)
+		val builderInstance = generatedClass.getMethod("builder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFieldOne")
 		metad.invoke("setValue","fieldOne")
 
@@ -201,7 +201,7 @@ class ModelObjectGeneratorTest {
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
 
-		val builderInstance = generatedClass.getMethod("newBuilder").invoke(null)
+		val builderInstance = generatedClass.getMethod("builder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFieldOne")
 		metad.invoke("setExternalReference","fieldOne")
 
@@ -231,7 +231,7 @@ class ModelObjectGeneratorTest {
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
 
-		val builderInstance = generatedClass.getMethod("newBuilder").invoke(null)
+		val builderInstance = generatedClass.getMethod("builder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFieldOne")
 		metad.invoke("setExternalReference","fieldOne")
 
@@ -425,7 +425,7 @@ class ModelObjectGeneratorTest {
 		val subclassInstance = classes.get(rootPackage.name + '.Bar')
 
 		// set the super class attribute
-		val builderInstance = subclassInstance.getMethod("newBuilder").invoke(null)
+		val builderInstance = subclassInstance.getMethod("builder").invoke(null)
 		builderInstance.invoke("setAttr", "blah")
 		val subclassInstance2 = builderInstance.invoke("build") as RosettaModelObject
 
@@ -484,7 +484,7 @@ class ModelObjectGeneratorTest {
 		assertThat(getter.returnType.name, is('com.rosetta.model.metafields.BasicReferenceWithMetaString'))
 		
 		val fooClass = generatedClass.get(rootPackage.name + '.Foo')
-		val builderInstance = fooClass.getMethod("newBuilder").invoke(null)
+		val builderInstance = fooClass.getMethod("builder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFoo")
 		val metas = metad.invoke("getOrCreateMeta")
 		val keys = metas.invoke("getKey") as List

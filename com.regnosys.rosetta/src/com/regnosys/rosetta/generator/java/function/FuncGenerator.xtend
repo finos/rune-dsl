@@ -6,7 +6,6 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.expression.Context
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
-import com.regnosys.rosetta.generator.java.expression.ExpressionGeneratorWithBuilder
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
@@ -34,11 +33,8 @@ import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
-import com.rosetta.model.lib.functions.Mapper
-import com.rosetta.model.lib.functions.MapperBuilder
-import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.RosettaFunction
-import com.rosetta.model.lib.math.BigDecimalExtensions
+
 import com.rosetta.model.lib.validation.ModelObjectValidator
 import java.util.Map
 import java.util.Optional
@@ -48,11 +44,13 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.rosetta.model.lib.mapper.MapperBuilder
+import com.rosetta.model.lib.mapper.Mapper
 
 class FuncGenerator {
 
 	@Inject ExpressionGenerator expressionGenerator
-	@Inject ExpressionGeneratorWithBuilder expressionWithBuilder
+	//@Inject ExpressionGeneratorWithBuilder expressionWithBuilder
 	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
@@ -60,7 +58,7 @@ class FuncGenerator {
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
 	@Inject  CardinalityProvider cardinality
-	@Inject JavaNames.Factory factory 
+	@Inject JavaNames.Factory factory
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = javaNames.packages.model.functions.directoryName + '/' + func.name + '.java'
@@ -141,8 +139,7 @@ class FuncGenerator {
 					
 					«output.toBuilderType(names)» «outputName»Holder = doEvaluate(«func.inputsAsArguments(names)»);
 					«IF outNeedsBuilder»
-						«outputType».«outputType»Builder «outputName»Builder = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
-						final «outputType» «outputName» = «outputName»Builder==null? null:«outputName»Builder.build();
+						«outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
 					«ELSE»
 						final «outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
 					«ENDIF»	
@@ -162,7 +159,7 @@ class FuncGenerator {
 				
 				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
 					«FOR indexed : func.operations.indexed»
-						«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType» «ENDIF»«outputName» = «outputName»Holder.build();«ENDIF»
+«««						«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType» «ENDIF»«outputName» = «outputName»Holder.build();«ENDIF»
 						«indexed.value.assign(aliasOut, names, output)»;
 					«ENDFOR»
 					return «outputName»Holder;
@@ -174,7 +171,7 @@ class FuncGenerator {
 					
 					«IF aliasOut.get(alias)»
 						protected «names.shortcutJavaType(alias)» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
-							return «expressionWithBuilder.toJava(alias.expression, Context.create(names))».get();
+							return «expressionGenerator.javaCode(alias.expression, new ParamMap)».get().toBuilder();
 						}
 					«ELSE»
 						protected «IF needsBuilder(alias)»«MapperBuilder»«ELSE»«Mapper»«ENDIF»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
@@ -246,7 +243,7 @@ class FuncGenerator {
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = ((MapperS<«type.toBuilderType(names)»>)(«expressionWithBuilder.toJava(op.expression, ctx)»)).get();
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)».toBuilder()
 			«ELSE»
 				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
 		else {
@@ -313,7 +310,7 @@ class FuncGenerator {
 			val assignRootType = typeProvider.getRType((operation.assignRoot as Attribute ).type)
 			if (assignRootType === RBuiltinType.NUMBER && valType !== RBuiltinType.NUMBER) {
 				// / case: number = 1
-				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
+//				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
 			}
 		}
 		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)».get()'''

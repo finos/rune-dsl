@@ -159,9 +159,9 @@ class ModelObjectBuilderGenerator {
 							result = «attribute.name»;
 						}
 						else {
-							result = «attribute.name» = «attribute.toTypeSingle(names)».newBuilder();
+							result = «attribute.name» = «attribute.toTypeSingle(names)».builder();
 							«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
-								result.getOrCreateMeta().toBuilder().addKey(«Key».newBuilder().setScope("DOCUMENT"));
+								result.getOrCreateMeta().toBuilder().addKey(«Key».builder().setScope("DOCUMENT"));
 							«ENDIF»
 						}
 						
@@ -175,9 +175,9 @@ class ModelObjectBuilderGenerator {
 							this.«attribute.name» = new «ArrayList»<>();
 						}
 						«attribute.toBuilderTypeSingle(names)» result;
-						result =  getIndex(«attribute.name», _index, ()-> «attribute.toTypeSingle(names)».newBuilder());
+						result =  getIndex(«attribute.name», _index, ()-> «attribute.toTypeSingle(names)».builder());
 						«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
-							result.getOrCreateMeta().toBuilder().addKey(new «Key».newBuilder().setScope("DOCUMENT"));
+							result.getOrCreateMeta().toBuilder().addKey(new «Key».builder().setScope("DOCUMENT"));
 						«ENDIF»
 						return result;
 					}

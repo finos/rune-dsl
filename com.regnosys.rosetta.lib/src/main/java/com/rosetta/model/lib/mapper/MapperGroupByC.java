@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.functions;
+package com.rosetta.model.lib.mapper;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -103,7 +103,7 @@ public class MapperGroupByC<T,G> implements MapperGroupByBuilder<T,G> {
 	}
 
 	@Override
-	public <F> MapperGroupByBuilder<F, G> mapC(NamedFunction<T, List<F>> mappingFunc) {
+	public <F> MapperGroupByBuilder<F, G> mapC(NamedFunction<T, List<? extends F>> mappingFunc) {
 		Map<MapperItem<G, ?>, MapperBuilder<F>> newItems = groupByItems.entrySet().stream()
 				.collect(Collectors.toMap(e->e.getKey(), e->e.getValue().mapC(mappingFunc)));
 		return new MapperGroupByC<F,G>(newItems);

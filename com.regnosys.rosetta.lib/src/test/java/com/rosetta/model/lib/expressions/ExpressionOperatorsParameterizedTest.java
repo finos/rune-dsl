@@ -1,7 +1,7 @@
-package com.rosetta.model.lib.validation;
+package com.rosetta.model.lib.expressions;
 
-import static com.rosetta.model.lib.validation.ValidatorHelper.exists;
-import static com.rosetta.model.lib.validation.ValidatorHelper.greaterThan;
+import static com.rosetta.model.lib.expressions.ExpressionOperators.exists;
+import static com.rosetta.model.lib.expressions.ExpressionOperators.greaterThan;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,11 +16,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.platform.commons.util.StringUtils;
+import com.rosetta.model.lib.mapper.MapperS;
 
-import com.rosetta.model.lib.functions.MapperS;
 
-
-public class ValidatorHelperParameterizedTest {
+public class ExpressionOperatorsParameterizedTest {
 
 	private static final Function<Foo, ComparisonResult> GREATER_THAN = (foo) -> 
 			greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.of(new Integer(5)));

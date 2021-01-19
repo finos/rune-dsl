@@ -1,7 +1,7 @@
-package com.rosetta.model.lib.functions;
+package com.rosetta.model.lib.mapper;
 
-import static com.rosetta.model.lib.functions.MapperItem.getMapperItem;
-import static com.rosetta.model.lib.functions.MapperItem.getMapperItems;
+import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
+import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * Maps list parent item to list child item.
 	 */
 	@Override
-	public <F> MapperBuilder<F> mapC(NamedFunction<T, List<F>> mappingFunc) {
+	public <F> MapperBuilder<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc) {
 		List<MapperItem<F,?>> results = new ArrayList<>();
 		
 		for (int i=0; i<items.size(); i++) {

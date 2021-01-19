@@ -1,5 +1,6 @@
-package com.rosetta.model.lib.functions;
+package com.rosetta.model.lib.mapper;
 
+import com.rosetta.model.lib.expressions.Converter;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
@@ -24,14 +25,14 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	/**
 	 * Helper function to map a value with multiple cardinality
 	 */
-	default <F> MapperBuilder<F> mapC(String name, Function<T, List<F>> mappingFunc) {
-		return mapC(new NamedFunctionImpl<>(name, mappingFunc));
+	default <F> MapperBuilder<F> mapC(String name, Function<T, List<? extends F>> mappingFunc) {
+		return mapC(new NamedFunctionImpl<T, List<? extends F>>(name, mappingFunc));
 	}
 	
 	/**
 	 * Map a value with multiple cardinality
 	 */
-	<F> MapperBuilder<F> mapC(NamedFunction<T, List<F>> mappingFunc);
+	<F> MapperBuilder<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc);
 	
 	
 	default <G> MapperGroupByBuilder<T,G> groupBy(Function<MapperItem<T,?>, MapperBuilder<G>> groupByFunc) {

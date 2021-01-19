@@ -7,7 +7,6 @@ import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Necessity
-import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.annotations.RosettaChoiceRule
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ExistenceChecker
@@ -66,23 +65,6 @@ class ChoiceRuleGenerator {
 				List<String> populatedFieldNames = new «LinkedList»<>();
 				«FOR a : usedAttributes»
 					if («importMethod(ExistenceChecker,"isSet")»(object.get« a.name.toFirstUpper »())) populatedFieldNames.add("«a.name»");
-				«ENDFOR»
-				
-				«ChoiceRuleValidationMethod» validationMethod = ChoiceRuleValidationMethod.«validationType»;
-				
-				if (validationMethod.check(populatedFieldNames.size())) {
-					return «importMethod(ValidationResult,"success")»(NAME, «ValidationType».CHOICE_RULE, "«clazz»", path, "");
-				}
-				return new «ValidationResult».«ChoiceRuleFailure»<«clazz»>(NAME, "«clazz»", choiceFieldNames, path, populatedFieldNames, validationMethod);
-			}
-		
-			@Override
-			public «ValidationResult»<«clazz»> validate(«RosettaPath» path, «RosettaModelObjectBuilder» builder) {
-				«clazz».«clazz»Builder object = («clazz».«clazz»Builder) builder;
-				«List»<String> choiceFieldNames = «importMethod(Arrays,"asList")»(«usedAttributes.join(', ')['"'+name+'"']»);
-				List<String> populatedFieldNames = new «LinkedList»<>();
-				«FOR a : usedAttributes»
-					if (isSet(object.get« a.name.toFirstUpper »())) populatedFieldNames.add("«a.name»");
 				«ENDFOR»
 				
 				«ChoiceRuleValidationMethod» validationMethod = ChoiceRuleValidationMethod.«validationType»;

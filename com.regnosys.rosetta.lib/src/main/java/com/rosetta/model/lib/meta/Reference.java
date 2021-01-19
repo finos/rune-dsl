@@ -26,7 +26,7 @@ public interface Reference extends RosettaModelObject {
 	
 	String getScope();
 
-	String getPointsToB();
+	String getPointsTo();
 
 	String getReference();
 
@@ -35,7 +35,7 @@ public interface Reference extends RosettaModelObject {
 		return null;
 	}
 	
-	static ReferenceBuilderImpl newBuilder() {
+	static ReferenceBuilderImpl builder() {
 		return new ReferenceBuilderImpl();
 	}
 	
@@ -67,7 +67,7 @@ public interface Reference extends RosettaModelObject {
 			return scope;
 		}
 
-		public String getPointsToB() {
+		public String getPointsTo() {
 			return pointsTo;
 		}
 
@@ -95,9 +95,9 @@ public interface Reference extends RosettaModelObject {
 				return false;
 			Reference other = (Reference) obj;
 			if (pointsTo == null) {
-				if (other.getPointsToB() != null)
+				if (other.getPointsTo() != null)
 					return false;
-			} else if (!pointsTo.equals(other.getPointsToB()))
+			} else if (!pointsTo.equals(other.getPointsTo()))
 				return false;
 			if (reference == null) {
 				if (other.getReference() != null)
@@ -137,7 +137,7 @@ public interface Reference extends RosettaModelObject {
 			return scope;
 		}
 
-		public String getPointsToB() {
+		public String getPointsTo() {
 			return pointsTo;
 		}
 
@@ -176,7 +176,7 @@ public interface Reference extends RosettaModelObject {
 		public ReferenceBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
 			ReferenceBuilder o = (ReferenceBuilder) other;
 			merger.mergeBasic(getScope(), o.getScope(), this::setScope);
-			merger.mergeBasic(getPointsToB (), o.getPointsToB(), this::setPointsTo);
+			merger.mergeBasic(getPointsTo(), o.getPointsTo(), this::setPointsTo);
 			merger.mergeBasic(getReference(), o.getReference(), this::setReference);
 			return this;
 		}

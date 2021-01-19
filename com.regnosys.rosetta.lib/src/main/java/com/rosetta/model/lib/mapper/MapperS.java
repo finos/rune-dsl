@@ -1,8 +1,9 @@
-package com.rosetta.model.lib.functions;
+package com.rosetta.model.lib.mapper;
 
-import static com.rosetta.model.lib.functions.MapperItem.getMapperItem;
-import static com.rosetta.model.lib.functions.MapperItem.getMapperItems;
+import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
+import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
+import com.rosetta.model.lib.RosettaModelObject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,9 @@ public class MapperS<T> implements MapperBuilder<T> {
 		if (t==null) {
 			return new MapperS<>(new MapperItem<>(t, MapperPath.builder().addNull(), true, Optional.empty()));
 		}
+		if (t instanceof RosettaModelObject) {
+			return new MapperS<>(new MapperItem<>(t, MapperPath.builder().addRoot(((RosettaModelObject)t).getType()), false, Optional.empty()));
+		}
 		return new MapperS<>(new MapperItem<>(t, MapperPath.builder().addRoot(t.getClass()), false, Optional.empty()));
 	}
 	
@@ -48,7 +52,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 	 * Maps single parent item to list child item.
 	 */
 	@Override
-	public <F> MapperBuilder<F> mapC(NamedFunction<T, List<F>> mappingFunc) {
+	public <F> MapperBuilder<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc) {
 		return new MapperC<>(getMapperItems(item, mappingFunc));
 	}
 

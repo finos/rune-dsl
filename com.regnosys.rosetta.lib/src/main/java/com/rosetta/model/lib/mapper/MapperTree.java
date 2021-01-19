@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.functions;
+package com.rosetta.model.lib.mapper;
 
 public class MapperTree<T> {
 	public enum Operator { AND, OR }

@@ -1,9 +1,9 @@
-package com.rosetta.model.lib.validation;
+package com.rosetta.model.lib.expressons;
 
-import static com.rosetta.model.lib.validation.ValidatorHelper.areEqual;
-import static com.rosetta.model.lib.validation.ValidatorHelper.exists;
-import static com.rosetta.model.lib.validation.ValidatorHelper.greaterThan;
-import static com.rosetta.model.lib.validation.ValidatorHelper.notEqual;
+import static com.rosetta.model.lib.expressions.ExpressionOperators.areEqual;
+import static com.rosetta.model.lib.expressions.ExpressionOperators.exists;
+import static com.rosetta.model.lib.expressions.ExpressionOperators.greaterThan;
+import static com.rosetta.model.lib.expressions.ExpressionOperators.notEqual;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -15,12 +15,12 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import com.rosetta.model.lib.expressions.ComparisonResult;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.mapper.MapperTree;
 
-import com.rosetta.model.lib.functions.MapperS;
-import com.rosetta.model.lib.functions.MapperTree;
 
-
-public class ValidatorHelperMapperTreeParameterizedTest {
+public class ExpressionOperatorsMapperTreeParameterizedTest {
 
 	private static final Function<Foo, ComparisonResult> GREATER_THAN_WITH_OR = (foo) -> 
 			greaterThan(MapperTree.or(

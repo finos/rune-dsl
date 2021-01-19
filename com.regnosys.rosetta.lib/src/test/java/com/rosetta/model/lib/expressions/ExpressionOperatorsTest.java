@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.validation;
+package com.rosetta.model.lib.expressions;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -8,12 +8,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperC;
+import com.rosetta.model.lib.mapper.MapperS;
 
-import com.rosetta.model.lib.functions.Mapper;
-import com.rosetta.model.lib.functions.MapperC;
-import com.rosetta.model.lib.functions.MapperS;
-
-public class ValidatorHelperTest {
+public class ExpressionOperatorsTest {
 
 	private final static BranchNode BRANCH_NODE_1 = new BranchNode(5);
 	private final static BranchNode BRANCH_NODE_2 = new BranchNode(5);
@@ -28,7 +27,7 @@ public class ValidatorHelperTest {
 		Mapper<Integer> mapper1 = MapperS.of(foo1).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapper2 = MapperS.of(foo2).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		
-		ComparisonResult result = ValidatorHelper.areEqual(mapper1, mapper2);
+		ComparisonResult result = ExpressionOperators.areEqual(mapper1, mapper2);
 		
 		assertThat(result.get(), is(true));
 	}
@@ -41,7 +40,7 @@ public class ValidatorHelperTest {
 		Mapper<Integer> mapper1 = MapperS.of(foo1).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapper2 = MapperS.of(foo2).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		
-		ComparisonResult result = ValidatorHelper.areEqual(mapper1, mapper2);
+		ComparisonResult result = ExpressionOperators.areEqual(mapper1, mapper2);
 		
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] [5] cannot be compared to [Foo->getListBranchNodes[0]->getIntLeafNode, Foo->getListBranchNodes[1]->getIntLeafNode] [5, 5]"));
@@ -54,7 +53,7 @@ public class ValidatorHelperTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		
-		ComparisonResult result = ValidatorHelper.areEqual(mapperC, mapperS);
+		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS);
 		
 		assertThat(result.get(), is(true));
 	}
@@ -66,7 +65,7 @@ public class ValidatorHelperTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		
-		ComparisonResult result = ValidatorHelper.areEqual(mapperC, mapperS);
+		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS);
 		
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] [10] does not equal [Foo->getObjectBranchNode->getIntLeafNode] [5]"));
@@ -79,7 +78,7 @@ public class ValidatorHelperTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		
-		ComparisonResult result = ValidatorHelper.areEqual(mapperC, mapperS);
+		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS);
 		
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode, Foo->getListBranchNodes[1]->getIntLeafNode] [5, 10] does not equal [Foo->getObjectBranchNode->getIntLeafNode] [5]"));
@@ -92,7 +91,7 @@ public class ValidatorHelperTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		
-		ComparisonResult result = ValidatorHelper.areEqual(mapperC, mapperS);
+		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS);
 		
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] [5] does not equal [Foo->getObjectBranchNode->getIntLeafNode]"));
@@ -105,7 +104,7 @@ public class ValidatorHelperTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		
-		ComparisonResult result = ValidatorHelper.areEqual(mapperC, mapperS);
+		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS);
 		
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] cannot be compared to [Foo->getObjectBranchNode->getIntLeafNode]"));
@@ -118,7 +117,7 @@ public class ValidatorHelperTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		
-		ComparisonResult result = ValidatorHelper.areEqual(mapperC, mapperS);
+		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS);
 		
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] [5] does not equal [Foo->getObjectBranchNode]"));
@@ -131,7 +130,7 @@ public class ValidatorHelperTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		
-		ComparisonResult result = ValidatorHelper.areEqual(mapperC, mapperS);
+		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS);
 		
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes] cannot be compared to [Foo->getObjectBranchNode]"));
@@ -144,13 +143,13 @@ public class ValidatorHelperTest {
 		
 		Mapper<BranchNode> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes);
 		
-		ComparisonResult result = ValidatorHelper.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_2)));
+		ComparisonResult result = ExpressionOperators.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_2)));
 		assertThat(result.get(), is(true));
 		
-		result = ValidatorHelper.contains(mapperC, MapperS.of(BRANCH_NODE_3));
+		result = ExpressionOperators.contains(mapperC, MapperS.of(BRANCH_NODE_3));
 		assertThat(result.get(), is(false));
 
-		result = ValidatorHelper.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)));
+		result = ExpressionOperators.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)));
 		assertThat(result.get(), is(false));
 		
 		assertThat(result.getError(), is("[5, 5] does not contain all of [5, 10]"));
@@ -158,7 +157,7 @@ public class ValidatorHelperTest {
 	
 	@Test
 	public void countElementsListLiteral() {
-		ComparisonResult result = ValidatorHelper.areEqual(MapperS.of(MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)).resultCount()),
+		ComparisonResult result = ExpressionOperators.areEqual(MapperS.of(MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)).resultCount()),
 				MapperS.of(Integer.valueOf(2)));
 		assertThat(result.get(), is(true));
 	}

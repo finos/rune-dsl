@@ -44,6 +44,9 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 
+/**
+ * This class should go away - the ImportingStringConcatenation method is superior
+ */
 class ImportGenerator {
 
 	static Logger LOGGER = Logger.getLogger(ImportGenerator)
@@ -88,14 +91,11 @@ class ImportGenerator {
 	}
 
 	def addSingleMapping(BlueprintExtract extract) {
-		imports.add('''«packages.defaultLib.name».functions.MapperS''')
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
-		staticImports.add('''«packages.defaultLib.name».validation.ValidatorHelper''')
 		addExpression(extract.call)
 	}
 
 	def addMappingImport() {
-		imports.add('''«packages.defaultLib.name».functions.MapperS''')
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
 	}
 
@@ -145,14 +145,11 @@ class ImportGenerator {
 	}
 
 	def void addExpression(RosettaExpression expression) {
-		imports.add('''«packages.defaultLib.name».functions.MapperS''')
-		imports.add('''«packages.defaultLib.name».functions.MapperTree''')
 		switch (expression) {
 			RosettaCallableCall: {
 				add(expression.callable)
 			}
 			RosettaGroupByFeatureCall: {
-				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 				addExpression(expression.call)
 				if (expression.groupBy !== null) addExpression(expression.groupBy)
 			}
@@ -160,11 +157,9 @@ class ImportGenerator {
 				addFeatureCall(expression)
 			}
 			RosettaExistsExpression: {
-				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 				addExpression(expression.argument)
 			}
 			RosettaBinaryOperation: {
-				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 				
 				if (#['+', '-'].contains(expression.operator)) {
 					imports.add(packages.defaultLibFunctions.name + ".MapperMaths")
@@ -175,11 +170,9 @@ class ImportGenerator {
 				addExpression(expression.right)
 			}
 			RosettaCountOperation: {
-				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 				addExpression(expression.argument)
 			}
 			RosettaWhenPresentExpression: {
-				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 				addExpression(expression.left)
 				addExpression(expression.right)
 			}
@@ -189,7 +182,6 @@ class ImportGenerator {
 			RosettaLiteral: {
 			}
 			RosettaAbsentExpression: {
-				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 				addExpression(expression.argument);
 			}
 			RosettaEnumValueReference: {
@@ -201,12 +193,10 @@ class ImportGenerator {
 				addExpression(expression.elsethen)
 			}
 			RosettaContainsExpression: {
-				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 				addExpression(expression.contained)
 				addExpression(expression.container)
 			}
 			RosettaDisjointExpression: {
-				staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 				addExpression(expression.disjoint)
 				addExpression(expression.container)
 			}
@@ -256,7 +246,6 @@ class ImportGenerator {
 	def addFilter(BlueprintFilter filter) {
 		if (filter.filter!==null) {
 			addExpression(filter.filter);
-			imports.add('''«packages.defaultLib.name».functions.MapperS''')
 			imports.add(packages.blueprintLib.name + ".runner.actions.Filter")
 		}
 		if (filter.filterBP!==null) {
@@ -267,7 +256,6 @@ class ImportGenerator {
 	def addReduce(BlueprintReduce reduce) {
 		if (reduce.expression!==null) {
 			addExpression(reduce.expression);
-			imports.add('''«packages.defaultLib.name».functions.MapperS''')
 		}
 		imports.add(packages.blueprintLib.name + ".runner.actions.ReduceBy")
 	}
@@ -281,11 +269,9 @@ class ImportGenerator {
 		imports.addAll("com.rosetta.model.lib.annotations.RosettaQualifiable", "java.util.function.Function",
 			rClass.fullName, packages.model.dataRule.name + ".*")
 		imports.add('''«packages.defaultLibQualify.name».QualifyResult''')
-		imports.add('''«packages.defaultLib.name».functions.MapperS''')
 		imports.add(packages.defaultLib.name + ".validation.ComparisonResult")
 		imports.add(packages.defaultLib.name + ".meta.FieldWithMeta")
 		addExpression(expr)
-		staticImports.add(packages.defaultLibValidation.name + ".ValidatorHelper")
 	}
 
 	def addNode(TypedBPNode typed) {

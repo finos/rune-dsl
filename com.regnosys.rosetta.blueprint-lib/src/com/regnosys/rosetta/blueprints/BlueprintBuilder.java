@@ -29,7 +29,7 @@ import com.regnosys.rosetta.blueprints.runner.nodes.ProcessorNode;
 import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
 import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.functions.MappingGroup;
+import com.rosetta.model.lib.mapper.MappingGroup;
 
 public class BlueprintBuilder<I,O, K1 extends Comparable<K1>, K2 extends Comparable<K2>> {
 	

@@ -1,45 +1,44 @@
-package com.rosetta.model.lib.math;
+package com.rosetta.model.lib.expressions;
 
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperS;
 import java.math.BigDecimal;
 import java.math.MathContext;
-
-import com.rosetta.model.lib.functions.Mapper;
-import com.rosetta.model.lib.functions.MapperS;
 
 public class BigDecimalExtensions {
 
 	/**
 	 * Add a and b
 	 */
-	public static BigDecimal add(BigDecimal a, BigDecimal b) {
+	private static BigDecimal add(BigDecimal a, BigDecimal b) {
 		return a.add(b);
 	}
 	
 	/**
 	 * Subtract b from a
 	 */
-	public static BigDecimal subtract(BigDecimal a, BigDecimal b) {
+	private static BigDecimal subtract(BigDecimal a, BigDecimal b) {
 		return a.subtract(b);
 	}
 
 	/**
 	 * Multiply a and b
 	 */
-	public static BigDecimal multiply(BigDecimal a, BigDecimal b) {
+	private static BigDecimal multiply(BigDecimal a, BigDecimal b) {
 		return a.multiply(b);
 	}
 
 	/**
 	 * Divide a by b 
 	 */
-	public static BigDecimal divide(BigDecimal a, BigDecimal b) {
+	private static BigDecimal divide(BigDecimal a, BigDecimal b) {
 		return a.divide(b, MathContext.DECIMAL128);
 	}
 
 	/**
 	 * Is a close to b, with given error
 	 */
-	public static boolean closeTo(BigDecimal a, BigDecimal b, BigDecimal error) {
+	private static boolean closeTo(BigDecimal a, BigDecimal b, BigDecimal error) {
 		return a.subtract(b).abs().compareTo(error) < 0;
 	}
 	/**

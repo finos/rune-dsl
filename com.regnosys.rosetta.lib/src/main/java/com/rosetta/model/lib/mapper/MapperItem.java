@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.functions;
+package com.rosetta.model.lib.mapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,12 +20,12 @@ public class MapperItem<T, P> implements Comparable<MapperItem<?, ?>> {
 		}
 	}
 	
-	static <C, P> List<MapperItem<C, ?>> getMapperItems(MapperItem<P, ?> parentItem, NamedFunction<P, List<C>> mappingFunc) {
+	static <C, P> List<MapperItem<C, ?>> getMapperItems(MapperItem<P, ?> parentItem, NamedFunction<P, List<? extends C>> mappingFunc) {
 		if (!parentItem.isError()) {
 			List<MapperItem<C, ?>> childItems = new ArrayList<>();
 			
 			P parent = parentItem.getMappedObject();
-			List<C> children = mappingFunc.apply(parent);
+			List<? extends C> children = mappingFunc.apply(parent);
 			
 			if (children!=null && !children.isEmpty()) {
 				for (int j=0; j<children.size(); j++) {

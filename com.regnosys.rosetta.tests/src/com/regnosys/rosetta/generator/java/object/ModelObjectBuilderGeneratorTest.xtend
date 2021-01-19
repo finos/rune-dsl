@@ -43,7 +43,7 @@ class ModelObjectBuilderGeneratorTest {
 		val classes = genereated.compileToClasses
 
 		val classD = classes.get(rootPackage.name + ".D")
-		val classDBuilderInstance = classD.getMethod("newBuilder").invoke(null);
+		val classDBuilderInstance = classD.getMethod("builder").invoke(null);
 
 		classDBuilderInstance.class.getMethod('setAa', String).invoke(classDBuilderInstance, 'fieldA');
 		classDBuilderInstance.class.getMethod('setBb', String).invoke(classDBuilderInstance, 'fieldB');
@@ -66,7 +66,7 @@ class ModelObjectBuilderGeneratorTest {
 		val classes = code.compileToClasses
 
 		val classTester = classes.get(rootPackage.name + ".Tester")
-		val classTesterBuilderInstance = classTester.getMethod("newBuilder").invoke(null);
+		val classTesterBuilderInstance = classTester.getMethod("builder").invoke(null);
 
 		classTesterBuilderInstance.class.getMethod('addItems', String).invoke(classTesterBuilderInstance, 'item1');
 		classTesterBuilderInstance.class.getMethod('addItems', String).invoke(classTesterBuilderInstance, 'item2');
@@ -133,7 +133,7 @@ class ModelObjectBuilderGeneratorTest {
 		val classes = code.compileToClasses
 
 		val testClass = classes.get(rootPackage.name + '.Test')
-		val testBuilderInstance = testClass.getMethod('newBuilder').invoke(null)
+		val testBuilderInstance = testClass.getMethod('builder').invoke(null)
 
 		testBuilderInstance.class.getMethod('setStringField', String).invoke(testBuilderInstance, 'test-value'); 
 		val testClassInstance = testBuilderInstance.class.getMethod('build').invoke(testBuilderInstance);
@@ -165,7 +165,7 @@ class ModelObjectBuilderGeneratorTest {
 		val classes = code.compileToClasses
 		
 		val rosettaObjectClass = classes.get(rootPackage.name + '.RosettaObject')
-		val rosettaObjctBuilder = rosettaObjectClass.getMethod('newBuilder').invoke(null)
+		val rosettaObjctBuilder = rosettaObjectClass.getMethod('builder').invoke(null)
 		
 		// Create RosettaObject instance for Parent
 		rosettaObjctBuilder.class.getMethod('setRosettaField', String).invoke(rosettaObjctBuilder, 'test-value-parent')
@@ -177,7 +177,7 @@ class ModelObjectBuilderGeneratorTest {
 		
 		// Build Child object
 		val childClass = classes.get(rootPackage.name + '.Child')
-		val childBuilder = childClass.getMethod('newBuilder').invoke(null)
+		val childBuilder = childClass.getMethod('builder').invoke(null)
 		childBuilder.class.getMethod('setChildField', rosettaObjectClass).invoke(childBuilder, rosettaObjectChild)
 		childBuilder.class.getMethod('addParentField', rosettaObjectClass).invoke(childBuilder, rosettaObjectParent)
 		val childInstance = childBuilder.class.getMethod('build').invoke(childBuilder)

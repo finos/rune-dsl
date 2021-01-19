@@ -3,8 +3,7 @@ package com.rosetta.model.lib.qualify;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-
-import com.rosetta.model.lib.validation.ComparisonResult;
+import com.rosetta.model.lib.expressions.ComparisonResult;
 import com.rosetta.model.lib.validation.ValidationResult;
 
 /**

@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.validation;
+package com.rosetta.model.lib.expressions;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -8,13 +8,15 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.functions.Mapper;
-import com.rosetta.model.lib.functions.MapperS;
-import com.rosetta.model.lib.functions.MapperTree;
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.mapper.MapperTree;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
 
-public class ValidatorHelper {
+public class ExpressionOperators {
 	
 	// notExists
 	
@@ -26,7 +28,7 @@ public class ValidatorHelper {
 	}
 	
 	public static <T> ComparisonResult notExists(MapperTree<T> t) {
-		return ValidatorMapperTreeUtil.evaluateTree(t, ValidatorHelper::notExists);
+		return ExpressionsMapperTreeUtil.evaluateTree(t, ExpressionOperators::notExists);
 	}
 	
 	// exists
@@ -39,7 +41,7 @@ public class ValidatorHelper {
 	}
 	
 	public static <T> ComparisonResult exists(MapperTree<T> t, boolean only) {
-		return ValidatorMapperTreeUtil.evaluateTree(t, only, ValidatorHelper::exists);
+		return ExpressionsMapperTreeUtil.evaluateTree(t, only, ExpressionOperators::exists);
 	}
 
 	// singleExists
@@ -57,7 +59,7 @@ public class ValidatorHelper {
 	}
 	
 	public static <T> ComparisonResult singleExists(MapperTree<T> t, boolean only) {
-		return ValidatorMapperTreeUtil.evaluateTree(t, only, ValidatorHelper::singleExists);
+		return ExpressionsMapperTreeUtil.evaluateTree(t, only, ExpressionOperators::singleExists);
 	}
 	
 	// multipleExists
@@ -75,7 +77,7 @@ public class ValidatorHelper {
 	}
 	
 	public static <T> ComparisonResult multipleExists(MapperTree<T> t, boolean only) {
-		return ValidatorMapperTreeUtil.evaluateTree(t, only, ValidatorHelper::multipleExists);
+		return ExpressionsMapperTreeUtil.evaluateTree(t, only, ExpressionOperators::multipleExists);
 	}
 	
 	// onlyExists
@@ -159,37 +161,37 @@ public class ValidatorHelper {
 	// areEqual
 	
 	public static <T, U> ComparisonResult areEqual(Mapper<T> m1, Mapper<U> m2) {
-		return ValidatorEqualityUtil.evaluate(m1, m2, ValidatorEqualityUtil::areEqual);
+		return ExpressionEqualityUtil.evaluate(m1, m2, ExpressionEqualityUtil::areEqual);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult areEqual(MapperTree<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::areEqual);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::areEqual);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult areEqual(Mapper<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::areEqual);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::areEqual);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult areEqual(MapperTree<T> t1, Mapper<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ValidatorHelper::areEqual);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::areEqual);
 	}
 	
 	// notEqual
 		
 	public static <T, U> ComparisonResult notEqual(Mapper<T> m1, Mapper<U> m2) {
-		return ValidatorEqualityUtil.evaluate(m1, m2, ValidatorEqualityUtil::notEqual);
+		return ExpressionEqualityUtil.evaluate(m1, m2, ExpressionEqualityUtil::notEqual);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult notEqual(MapperTree<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::notEqual);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::notEqual);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult notEqual(Mapper<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::notEqual);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::notEqual);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult notEqual(MapperTree<T> t1, Mapper<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ValidatorHelper::notEqual);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::notEqual);
 	}
 	
 	public static <T extends Comparable<? super T>> ComparisonResult notEqual(ComparisonResult r1, ComparisonResult r2) {
@@ -199,73 +201,73 @@ public class ValidatorHelper {
 	// greaterThan
 		
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(Mapper<T> o1, Mapper<U> o2) {
-		return ValidatorCompareUtil.evaluate(o1, o2, ValidatorCompareUtil::greaterThan);
+		return ExpressionCompareUtil.evaluate(o1, o2, ExpressionCompareUtil::greaterThan);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(MapperTree<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::greaterThan);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::greaterThan);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(Mapper<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::greaterThan);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::greaterThan);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(MapperTree<T> t1, Mapper<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ValidatorHelper::greaterThan);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::greaterThan);
 	}
 
 	// greaterThanEquals
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(Mapper<T> o1, Mapper<U> o2) {
-		return ValidatorCompareUtil.evaluate(o1, o2, ValidatorCompareUtil::greaterThanEquals);
+		return ExpressionCompareUtil.evaluate(o1, o2, ExpressionCompareUtil::greaterThanEquals);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(MapperTree<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::greaterThanEquals);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::greaterThanEquals);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(Mapper<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::greaterThanEquals);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::greaterThanEquals);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(MapperTree<T> t1, Mapper<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ValidatorHelper::greaterThanEquals);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::greaterThanEquals);
 	}
 	
 	// lessThan
 
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(Mapper<T> o1, Mapper<U> o2)  {
-		return ValidatorCompareUtil.evaluate(o1, o2, ValidatorCompareUtil::lessThan);
+		return ExpressionCompareUtil.evaluate(o1, o2, ExpressionCompareUtil::lessThan);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(MapperTree<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::lessThan);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::lessThan);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(Mapper<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::lessThan);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::lessThan);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(MapperTree<T> t1, Mapper<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ValidatorHelper::lessThan);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::lessThan);
 	}
 	
 	// lessThanEquals
 
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(Mapper<T> o1, Mapper<U> o2)  {
-		return ValidatorCompareUtil.evaluate(o1, o2, ValidatorCompareUtil::lessThanEquals);
+		return ExpressionCompareUtil.evaluate(o1, o2, ExpressionCompareUtil::lessThanEquals);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(MapperTree<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::lessThanEquals);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::lessThanEquals);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(Mapper<T> t1, MapperTree<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, t2, ValidatorHelper::lessThanEquals);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::lessThanEquals);
 	}
 	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(MapperTree<T> t1, Mapper<U> t2) {
-		return ValidatorMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ValidatorHelper::lessThanEquals);
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::lessThanEquals);
 	}
 
 	// contains

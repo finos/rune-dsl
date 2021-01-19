@@ -5,8 +5,8 @@ import java.util.function.Function;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.expressions.ComparisonResult;
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension;
-import com.rosetta.model.lib.validation.ComparisonResult;
 
 public interface QualifyFunctionFactory {
 

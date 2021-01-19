@@ -14,8 +14,9 @@ public class RosettaMetaDataBuilder {
 	}
 
 	private static <T extends RosettaModelObject> String getMetaClassName(T t) {
-		String simpleName = t.getClass().getSimpleName();
-		String name = t.getClass().getName();
+		Class<? extends RosettaModelObject> class1 = t.getType();
+		String simpleName = class1.getSimpleName();
+		String name = class1.getName();
 		String packageName = name.substring(0, name.lastIndexOf(simpleName));
 		return packageName + "meta." + simpleName + "Meta";
 	}

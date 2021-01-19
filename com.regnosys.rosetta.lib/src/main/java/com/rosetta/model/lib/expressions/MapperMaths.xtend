@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.functions
+package com.rosetta.model.lib.expressions
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -6,6 +6,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 import static java.time.temporal.ChronoUnit.DAYS
+import com.rosetta.model.lib.mapper.Mapper
+import com.rosetta.model.lib.mapper.MapperS
 
 class MapperMaths {
 	def static <R, A, B> Mapper<R> add(Mapper<A> in1, Mapper<B> in2) {

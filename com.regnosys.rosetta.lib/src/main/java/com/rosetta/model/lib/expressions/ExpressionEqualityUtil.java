@@ -1,7 +1,11 @@
-package com.rosetta.model.lib.validation;
+package com.rosetta.model.lib.expressions;
 
-import static com.rosetta.model.lib.validation.ErrorHelper.formatEqualsComparisonResultError;
+import static com.rosetta.model.lib.expressions.ErrorHelper.formatEqualsComparisonResultError;
 
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperC;
+import com.rosetta.model.lib.mapper.MapperGroupBy;
+import com.rosetta.model.lib.mapper.MapperS;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -9,12 +13,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import com.rosetta.model.lib.functions.Mapper;
-import com.rosetta.model.lib.functions.MapperC;
-import com.rosetta.model.lib.functions.MapperGroupBy;
-import com.rosetta.model.lib.functions.MapperS;
-
-class ValidatorEqualityUtil {
+class ExpressionEqualityUtil {
 
 	/**
 	 * Checks whether given mappers are both groupBy functions, if not handles as ungrouped mappers.

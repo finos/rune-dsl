@@ -1,10 +1,10 @@
-package com.rosetta.model.lib.validation;
+package com.rosetta.model.lib.expressions;
 
 import java.util.stream.Collectors;
 
 import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.functions.Mapper;
-import com.rosetta.model.lib.functions.MapperGroupBy;
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperGroupBy;
 
 public class ErrorHelper {
 

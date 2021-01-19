@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.functions;
+package com.rosetta.model.lib.mapper;
 
 import java.util.function.Function;
 

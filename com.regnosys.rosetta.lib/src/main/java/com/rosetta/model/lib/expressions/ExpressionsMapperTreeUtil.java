@@ -1,12 +1,11 @@
-package com.rosetta.model.lib.validation;
+package com.rosetta.model.lib.expressions;
 
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperTree;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.rosetta.model.lib.functions.Mapper;
-import com.rosetta.model.lib.functions.MapperTree;
-
-class ValidatorMapperTreeUtil {
+class ExpressionsMapperTreeUtil {
 
 	static <T> ComparisonResult evaluateTree(MapperTree<T> t, Function<Mapper<T>, ComparisonResult> func) {
 		if(!t.isLeaf()) {

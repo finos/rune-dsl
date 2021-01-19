@@ -46,12 +46,11 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
-import com.rosetta.model.lib.functions.MapperC
-import com.rosetta.model.lib.functions.MapperMaths
-import com.rosetta.model.lib.functions.MapperS
-import com.rosetta.model.lib.functions.MapperTree
-import com.rosetta.model.lib.meta.FieldWithMeta
-import com.rosetta.model.lib.validation.ValidatorHelper
+import com.rosetta.model.lib.mapper.MapperC
+import com.rosetta.model.lib.expressions.MapperMaths
+import com.rosetta.model.lib.mapper.MapperS
+import com.rosetta.model.lib.mapper.MapperTree
+import com.rosetta.model.lib.expressions.ExpressionOperators
 import java.math.BigDecimal
 import java.util.HashMap
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -60,6 +59,9 @@ import org.eclipse.xtext.util.Wrapper
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
+import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 
 class ExpressionGenerator {
 	
@@ -133,13 +135,13 @@ class ExpressionGenerator {
 				'''«MapperS».of(«expr.enumeration.toJavaType».«expr.value.convertValues»)'''
 			}
 			RosettaConditionalExpression : {
-				'''«importMethod(ValidatorHelper, expr.doIfName)»(«expr.^if.javaCode(params)», ()->«expr.ifthen.javaCode(params)»«IF expr.elsethen !== null», ()->«expr.elsethen.javaCode(params)»«ENDIF»)'''
+				'''«importMethod(ExpressionOperators, expr.doIfName)»(«expr.^if.javaCode(params)», ()->«expr.ifthen.javaCode(params)»«IF expr.elsethen !== null», ()->«expr.elsethen.javaCode(params)»«ENDIF»)'''
 			}
 			RosettaContainsExpression : {
-				'''«importMethod(ValidatorHelper,"contains")»(«expr.container.javaCode(params)», «expr.contained.javaCode(params)»)'''
+				'''«importMethod(ExpressionOperators,"contains")»(«expr.container.javaCode(params)», «expr.contained.javaCode(params)»)'''
 			}
 			RosettaDisjointExpression : {
-				'''«importMethod(ValidatorHelper,"disjoint")»(«expr.container.javaCode(params)», «expr.disjoint.javaCode(params)»)'''
+				'''«importMethod(ExpressionOperators,"disjoint")»(«expr.container.javaCode(params)», «expr.disjoint.javaCode(params)»)'''
 			}
 			RosettaParenthesisCalcExpression : {
 				expr.expression.javaCode(params, isLast)
@@ -216,13 +218,13 @@ class ExpressionGenerator {
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
-				'''«importWildCard(ValidatorHelper)»«doExistsExpr(exists, arg.javaCode(params))»'''
+				'''«importWildCard(ExpressionOperators)»«doExistsExpr(exists, arg.javaCode(params))»'''
 			else 
 				//if the argument is a binary expression then the exists needs to be pushed down into it
 				binary.binaryExpr(exists, params)
 		}
 		else {
-			'''«importWildCard(ValidatorHelper)»«doExistsExpr(exists, arg.javaCode(params))»'''
+			'''«importWildCard(ExpressionOperators)»«doExistsExpr(exists, arg.javaCode(params))»'''
 		}
 	}
 	
@@ -248,13 +250,13 @@ class ExpressionGenerator {
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
-				'''«ValidatorHelper».notExists(«binary.binaryExpr(notSet, params)»)'''
+				'''«ExpressionOperators».notExists(«binary.binaryExpr(notSet, params)»)'''
 			else
 				//if the arg is binary then the operator needs to be pushed down
 				binary.binaryExpr(notSet, params)
 		}
 		else {
-			'''«importMethod(ValidatorHelper,"notExists")»(«arg.javaCode(params)»)'''
+			'''«importMethod(ExpressionOperators,"notExists")»(«arg.javaCode(params)»)'''
 		}
 	}
 	
@@ -367,16 +369,16 @@ class ExpressionGenerator {
 				}
 			}
 			case ("+"): {
-				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>add(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaClass», «leftType», «rightType»>add(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			case ("-"): {
-				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>subtract(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaClass», «leftType», «rightType»>subtract(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			case ("*"): {
-				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>multiply(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaClass», «leftType», «rightType»>multiply(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			case ("/"): {
-				'''«MapperMaths».<«resultType.name.toJavaType», «leftType», «rightType»>divide(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
+				'''«MapperMaths».<«resultType.name.toJavaClass», «leftType», «rightType»>divide(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			default: {
 				// FIXME isProduct isEvent stuff in QualifyFunctionGenerator. Should be removed after alias migration
@@ -452,17 +454,17 @@ class ExpressionGenerator {
 	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right) {
 		switch operator {
 			case ("="):
-				'''«importWildCard(ValidatorHelper)»areEqual(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»areEqual(«left», «right»)'''
 			case ("<>"):
-				'''«importWildCard(ValidatorHelper)»notEqual(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»notEqual(«left», «right»)'''
 			case ("<") : 
-				'''«importWildCard(ValidatorHelper)»lessThan(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»lessThan(«left», «right»)'''
 			case ("<=") : 
-				'''«importWildCard(ValidatorHelper)»lessThanEquals(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»lessThanEquals(«left», «right»)'''
 			case (">") : 
-				'''«importWildCard(ValidatorHelper)»greaterThan(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»greaterThan(«left», «right»)'''
 			case (">=") : 
-				'''«importWildCard(ValidatorHelper)»greaterThanEquals(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»greaterThanEquals(«left», «right»)'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported binary operation of " + operator)
 		}
@@ -502,27 +504,27 @@ class ExpressionGenerator {
 		val mapFunc = attribute.buildMapFuncAttribute
 		if (attribute.card.isIsMany) {
 			if (attribute.metaAnnotations.nullOrEmpty)
-				'''.<«attribute.type.toJavaType»>mapC(«mapFunc»)'''
+				'''.mapC(«mapFunc»)'''
 			else if (!autoValue) {
-				'''.<«attribute.metaClass»>mapC(«mapFunc»)'''
+				'''.mapC(«mapFunc»)'''
 			}
 			else {
-				'''.mapC(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", «FieldWithMeta»::getValue)'''
+				'''.mapC(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", _f->_f.getValue())'''
 			}
 		}
 		else
 		{
 			if (attribute.metaAnnotations.nullOrEmpty){
 				if(attribute.type instanceof Data) 
-				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
+				'''.map(«mapFunc»)'''
 				else
-				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
+				'''.map(«mapFunc»)'''
 			}
 			else if (!autoValue) {
-				'''.<«attribute.metaClass»>map(«mapFunc»)'''
+				'''.map(«mapFunc»)'''
 			}
 			else
-				'''.map(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", «FieldWithMeta»::getValue)'''
+				'''.map(«mapFunc»).map("getValue", _f->_f.getValue())'''
 		}
 	}
 	
@@ -566,7 +568,7 @@ class ExpressionGenerator {
 			expr.set(expr.get.right)
 			exprs.add(expr.get)
 		}
-		'''.<«expr.get.attribute.type.name.toJavaType»>groupBy(g->new «MapperS»<>(g)«FOR ex:exprs»«buildMapFunc(ex.attribute as Attribute, isLast, true)»«ENDFOR»)'''
+		'''.<«expr.get.attribute.type.name.toJavaClass»>groupBy(g->new «MapperS»<>(g)«FOR ex:exprs»«buildMapFunc(ex.attribute as Attribute, isLast, true)»«ENDFOR»)'''
 	}
 	
 	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute) {
@@ -672,4 +674,14 @@ class ExpressionGenerator {
 		return '''«MapperTree».of(«code»)'''
 	}
 	
+}
+
+@Accessors
+@FinalFieldsConstructor
+class Context {
+	final JavaNames names
+	boolean inFunctionCall
+	static def create(JavaNames names) {
+		new Context(names)
+	}
 }
