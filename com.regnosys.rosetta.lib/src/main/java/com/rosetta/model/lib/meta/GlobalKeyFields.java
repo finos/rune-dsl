@@ -1,6 +1,8 @@
 package com.rosetta.model.lib.meta;
 
-import com.rosetta.model.lib.meta.Keys.KeysBuilder;
+import java.util.List;
+
+import com.rosetta.model.lib.meta.Key.KeyBuilder;
 
 public interface GlobalKeyFields {
 	
@@ -8,7 +10,7 @@ public interface GlobalKeyFields {
 	
 	String getExternalKey();
 	
-	Keys getKeys();
+	List<Key> getKey();
 	
 	interface GlobalKeyFieldsBuilder {
 		
@@ -16,12 +18,12 @@ public interface GlobalKeyFields {
 		
 		String getExternalKey();
 		
-		KeysBuilder getKeys();
+		List<KeyBuilder> getKey();
 		
 		GlobalKeyFieldsBuilder setGlobalKey(String globalKey);
 		
 		GlobalKeyFieldsBuilder setExternalKey(String ExternalKey);
 		
-		GlobalKeyFieldsBuilder setKeys(KeysBuilder keys);
+		GlobalKeyFieldsBuilder addKeyBuilder(List<KeyBuilder>  key);
 	}
 }
