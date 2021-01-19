@@ -774,6 +774,7 @@ class MetaFieldGenerator {
 				_result = prime * _result + ((globalReference == null) ? 0 : globalReference.hashCode());
 				_result = prime * _result + ((externalReference == null) ? 0 : externalReference.hashCode());
 				_result = prime * _result + ((value == null) ? 0 : value.hashCode());
+				_result = prime * _result + ((reference == null) ? 0 : reference.hashCode());
 				return _result;
 			}
 		
@@ -789,6 +790,7 @@ class MetaFieldGenerator {
 				if (!Objects.equals(globalReference, other.globalReference)) return false;
 				if (!Objects.equals(externalReference, other.externalReference)) return false;
 				if (!Objects.equals(value, other.value)) return false;
+				if (!Objects.equals(reference, other.reference)) return false;
 				return true;
 			}
 		
@@ -798,6 +800,7 @@ class MetaFieldGenerator {
 					"globalReference=" + this.globalReference + ", " +
 					"externalReference=" + this.externalReference + ", " +
 					"value=" + this.value +
+					"reference=" + this.reference +
 				"}";
 			}
 			
@@ -897,6 +900,7 @@ class MetaFieldGenerator {
 					merger.mergeRosetta(getValue(), o.getValue(), this::setValueBuilder);
 					merger.mergeBasic(getGlobalReference(), o.getGlobalReference(), this::setGlobalReference);
 					merger.mergeBasic(getExternalReference(), o.getExternalReference(), this::setExternalReference);
+					merger.mergeRosetta(getReference(), o.getReference(), this::setReference);
 					return this;
 				}
 				
@@ -907,6 +911,7 @@ class MetaFieldGenerator {
 					_result = prime * _result + ((globalReference == null) ? 0 : globalReference.hashCode());
 					_result = prime * _result + ((externalReference == null) ? 0 : externalReference.hashCode());
 					_result = prime * _result + ((value == null) ? 0 : value.hashCode());
+					_result = prime * _result + ((reference == null) ? 0 : reference.hashCode());
 					return _result;
 				}
 			
@@ -922,6 +927,7 @@ class MetaFieldGenerator {
 					if (!Objects.equals(globalReference, other.globalReference)) return false;
 					if (!Objects.equals(externalReference, other.externalReference)) return false;
 					if (!Objects.equals(value, other.value)) return false;
+					if (!Objects.equals(reference, other.reference)) return false;
 					return true;
 				}
 			
@@ -931,6 +937,7 @@ class MetaFieldGenerator {
 						"globalReference=" + this.globalReference + ", " +
 						"externalReference=" + this.externalReference + ", " +
 						"value=" + this.value +
+						"reference=" + this.reference +
 					"}";
 				}
 			}
@@ -1126,6 +1133,7 @@ class MetaFieldGenerator {
 				merger.mergeBasic(getValue(), o.getValue(), this::setValue);
 				merger.mergeBasic(getGlobalReference(), o.getGlobalReference(), this::setGlobalReference);
 				merger.mergeBasic(getExternalReference(), o.getExternalReference(), this::setExternalReference);
+				merger.mergeRosetta(getReference(), o.getReference(), this::setReference);
 				return this;
 			}
 			
