@@ -21,5 +21,6 @@ public interface GlobalKeyFields {
 		GlobalKeyFieldsBuilder addKey(Key key, int _idx);
 		GlobalKeyFieldsBuilder addKey(List<? extends Key> keys);
 		Key.KeyBuilder getOrCreateKey(int _idx);
+		List<? extends Key.KeyBuilder> getKey();
 	}
 }

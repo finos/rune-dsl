@@ -18,7 +18,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
-import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource
@@ -49,6 +48,12 @@ class RosettaAttributeExtensions {
 	
 	dispatch static def List<ExpandedAttribute> getExpandedAttributes(Data data) {
 		data.getExpandedAttributes(true)
+	}
+	
+	static def List<ExpandedAttribute> expandedAttributesPlus(Data data) {
+		val atts = data.expandedAttributes;
+		if (data.hasSuperType) atts.addAll(data.superType.expandedAttributesPlus)
+		return atts
 	}
 	
 	private static def List<ExpandedAttribute> additionalAttributes(Data data) {

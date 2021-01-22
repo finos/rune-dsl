@@ -157,12 +157,11 @@ class FuncGenerator {
 					return «outputName»;
 				}
 				
-				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
+				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
 					«FOR indexed : func.operations.indexed»
-«««						«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType» «ENDIF»«outputName» = «outputName»Holder.build();«ENDIF»
 						«indexed.value.assign(aliasOut, names, output)»;
 					«ENDFOR»
-					return «outputName»Holder;
+					return «outputName»;
 				}
 
 				protected abstract «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
@@ -249,10 +248,9 @@ class FuncGenerator {
 		else {
 			'''
 				«op.assignTarget(outs, names)»
-					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«
-					seg.attribute.name.toFirstUpper»«IF op.namedAssignTarget().reference && !op.assignAsKey»Ref«ENDIF
-					»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«
+					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
+					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«
 					ENDIF»«ENDFOR»
 			'''
 		}
@@ -273,14 +271,6 @@ class FuncGenerator {
 		if(op.assignAsKey) {
 			val metaClass = referenceWithMetaJavaType(op, names)
 			if (cardinality.isMulti(op.expression)) {
-				/*
-				.addParty(
-					MapperS.of(parties(product, partyA, partyB, quantity).get())
-					.getItems().map(
-							(item) -> ReferenceWithMetaParty.builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
-						).collect(Collectors.toList())
-					);
-				*/
 				'''
 				«expressionGenerator.javaCode(op.expression, new ParamMap)»
 				.getItems().map(
@@ -288,7 +278,6 @@ class FuncGenerator {
 					).collect(«Collectors».toList())
 				'''
 			} else {
-				//  ReferenceWithMetaEvent.builder().setGlobalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()
 				'''
 				«metaClass».builder().setGlobalReference(
 						«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
@@ -340,19 +329,12 @@ class FuncGenerator {
 			default:false
 		}
 	}
-
-	private def namedAssignTarget(Operation operation) {
-		if (operation.path === null) {
-			return operation.assignRoot
-		} else {
-			operation.pathAsSegmentList.last.attribute
-		}
-	}
+	
 	private def StringConcatenationClient assignTarget(Operation operation, Map<ShortcutDeclaration, Boolean> outs,
 		JavaNames names) {
 		val root = operation.assignRoot
 		switch (root) {
-			Attribute: '''«root.name»Holder'''
+			Attribute: '''«root.name»'''
 			ShortcutDeclaration: unfoldLHSShortcut(root)
 		}
 	}
@@ -382,7 +364,7 @@ class FuncGenerator {
 	private def dispatch StringConcatenationClient lhsExpand(RosettaCallable c) {
 		throw new IllegalStateException("No implementation for lhsExpand for "+c.class)
 	}
-	private def dispatch StringConcatenationClient lhsExpand(Attribute c) '''«c.name»Holder'''
+	private def dispatch StringConcatenationClient lhsExpand(Attribute c) '''«c.name»'''
 	
 	private def StringConcatenationClient contributeCondition(Condition condition) {
 		'''

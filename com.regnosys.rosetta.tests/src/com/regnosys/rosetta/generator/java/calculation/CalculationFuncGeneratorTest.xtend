@@ -92,9 +92,9 @@ class CalculationFuncGeneratorTest {
 							return out;
 						}
 						
-						private BigDecimal assignOutput(BigDecimal outHolder, PeriodEnum in1, Period in2) {
-							outHolder = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(BigDecimal.valueOf(30.0))).get();
-							return outHolder;
+						private BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
+							out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(BigDecimal.valueOf(30.0))).get();
+							return out;
 						}
 					
 						protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
@@ -153,9 +153,9 @@ class CalculationFuncGeneratorTest {
 					return out;
 				}
 				
-				private Integer assignOutput(Integer outHolder, Integer one) {
-					outHolder = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(oneA(one).get()), MapperS.of(oneA(one).get())).get();
-					return outHolder;
+				private Integer assignOutput(Integer out, Integer one) {
+					out = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(oneA(one).get()), MapperS.of(oneA(one).get())).get();
+					return out;
 				}
 			
 				protected abstract Integer doEvaluate(Integer one);
@@ -217,9 +217,9 @@ class CalculationFuncGeneratorTest {
 					return res;
 				}
 				
-				private Integer assignOutput(Integer resHolder, Integer arg1, Integer arg2) {
-					resHolder = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(a1(arg1, arg2).get()), MapperMaths.<Integer, Integer, Integer>multiply(MapperS.of(a2(arg1, arg2).get()), MapperS.of(Integer.valueOf(215)))).get();
-					return resHolder;
+				private Integer assignOutput(Integer res, Integer arg1, Integer arg2) {
+					res = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(a1(arg1, arg2).get()), MapperMaths.<Integer, Integer, Integer>multiply(MapperS.of(a2(arg1, arg2).get()), MapperS.of(Integer.valueOf(215)))).get();
+					return res;
 				}
 			
 				protected abstract Integer doEvaluate(Integer arg1, Integer arg2);
@@ -302,14 +302,14 @@ class CalculationFuncGeneratorTest {
 				return res;
 			}
 			
-			private FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder resHolder, FuncIn funIn) {
-				resHolder
+			private FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder res, FuncIn funIn) {
+				res
 					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get())
 				;
-				resHolder
+				res
 					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get())
 				;
-				return resHolder;
+				return res;
 			}
 		
 			protected abstract FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn);
@@ -394,14 +394,14 @@ class CalculationFuncGeneratorTest {
 				return out;
 			}
 			
-			private FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder outHolder, FuncIn funcIn) {
-				outHolder
+			private FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder out, FuncIn funcIn) {
+				out
 					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get())
 				;
-				outHolder
+				out
 					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get())
 				;
-				return outHolder;
+				return out;
 			}
 		
 			protected abstract FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn);
@@ -483,8 +483,8 @@ class CalculationFuncGeneratorTest {
 						return out;
 					}
 					
-					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder outHolder, WithMeta withMeta) {
-						outHolder
+					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder out, WithMeta withMeta) {
+						out
 							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperS.of(withMeta).get())
 										.map(r -> r.getMeta())
@@ -493,7 +493,7 @@ class CalculationFuncGeneratorTest {
 								).build()
 							)
 						;
-						outHolder
+						out
 							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperS.of(withMeta).get())
 										.map(r -> r.getMeta())
@@ -502,7 +502,7 @@ class CalculationFuncGeneratorTest {
 								).build()
 							, 1)
 						;
-						outHolder
+						out
 							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperS.of(withMeta).get())
 										.map(r -> r.getMeta())
@@ -511,7 +511,7 @@ class CalculationFuncGeneratorTest {
 								).build()
 							)
 						;
-						return outHolder;
+						return out;
 					}
 				
 					protected abstract OtherType.OtherTypeBuilder doEvaluate(WithMeta withMeta);
@@ -571,7 +571,7 @@ class CalculationFuncGeneratorTest {
 					* @param withMeta 
 					* @return out 
 					*/
-					public OtherType evaluate(List<WithMeta> withMeta) {
+					public OtherType evaluate(List<? extends WithMeta> withMeta) {
 						
 						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
 						OtherType out = assignOutput(outHolder, withMeta);
@@ -580,15 +580,15 @@ class CalculationFuncGeneratorTest {
 						return out;
 					}
 					
-					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder outHolder, List<WithMeta> withMeta) {
-						outHolder
+					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder out, List<? extends WithMeta> withMeta) {
+						out
 							.addAttrMulti(MapperC.of(withMeta)
 							.getItems().map(
 									(item) -> ReferenceWithMetaWithMeta.builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
 								).collect(Collectors.toList())
 							)
 						;
-						outHolder
+						out
 							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperC.of(withMeta).get())
 										.map(r -> r.getMeta())
@@ -597,14 +597,14 @@ class CalculationFuncGeneratorTest {
 								).build()
 							)
 						;
-						return outHolder;
+						return out;
 					}
 				
-					protected abstract OtherType.OtherTypeBuilder doEvaluate(List<WithMeta> withMeta);
+					protected abstract OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta);
 					
 					public static final class asKeyUsageDefault extends asKeyUsage {
 						@Override
-						protected  OtherType.OtherTypeBuilder doEvaluate(List<WithMeta> withMeta) {
+						protected  OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta) {
 							return OtherType.builder();
 						}
 					}
@@ -655,9 +655,9 @@ class CalculationFuncGeneratorTest {
 					return res;
 				}
 				
-				private Integer assignOutput(Integer resHolder) {
-					resHolder = MapperS.of(arg1().get()).get();
-					return resHolder;
+				private Integer assignOutput(Integer res) {
+					res = MapperS.of(arg1().get()).get();
+					return res;
 				}
 			
 				protected abstract Integer doEvaluate();
@@ -765,9 +765,9 @@ class CalculationFuncGeneratorTest {
 						return arg1;
 					}
 					
-					private String assignOutput(String arg1Holder, Math in1, MathInput in2) {
-						arg1Holder = MapperS.of(addOne.evaluate(MapperS.of(in2).map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
-						return arg1Holder;
+					private String assignOutput(String arg1, Math in1, MathInput in2) {
+						arg1 = MapperS.of(addOne.evaluate(MapperS.of(in2).map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+						return arg1;
 					}
 				
 					protected abstract String doEvaluate(Math in1, MathInput in2);
@@ -800,9 +800,9 @@ class CalculationFuncGeneratorTest {
 						return arg1;
 					}
 					
-					private String assignOutput(String arg1Holder, Math in1, MathInput in2) {
-						arg1Holder = MapperS.of(subOne.evaluate(MapperS.of(in2).map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
-						return arg1Holder;
+					private String assignOutput(String arg1, Math in1, MathInput in2) {
+						arg1 = MapperS.of(subOne.evaluate(MapperS.of(in2).map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+						return arg1;
 					}
 				
 					protected abstract String doEvaluate(Math in1, MathInput in2);
@@ -862,9 +862,9 @@ class CalculationFuncGeneratorTest {
 					return res;
 				}
 				
-				private Integer assignOutput(Integer resHolder, Integer arg1) {
-					resHolder = MapperS.of(addedOne(arg1).get()).get();
-					return resHolder;
+				private Integer assignOutput(Integer res, Integer arg1) {
+					res = MapperS.of(addedOne(arg1).get()).get();
+					return res;
 				}
 			
 				protected abstract Integer doEvaluate(Integer arg1);

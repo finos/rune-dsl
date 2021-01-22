@@ -8,8 +8,8 @@ public interface GlobalKey {
 	
 	interface GlobalKeyBuilder extends GlobalKey{
 
-		GlobalKeyFields getMeta();
+		GlobalKeyFields.GlobalKeyFieldsBuilder getMeta();
 
-		GlobalKeyFields getOrCreateMeta();
+		GlobalKeyFields.GlobalKeyFieldsBuilder getOrCreateMeta();
 	}
 }

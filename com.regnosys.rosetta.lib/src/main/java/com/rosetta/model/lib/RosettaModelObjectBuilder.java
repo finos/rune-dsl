@@ -1,9 +1,13 @@
 package com.rosetta.model.lib;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
-
+import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
 
 /**
  * @author TomForwood
@@ -20,6 +24,29 @@ public interface RosettaModelObjectBuilder extends RosettaModelObject {
 	 * A {b=null}
 	 */
 	public abstract <B extends RosettaModelObjectBuilder> B prune();
+	
+	void process(RosettaPath path, BuilderProcessor processor);
+	
+	default <R extends RosettaModelObjectBuilder> void processRosetta(RosettaPath path, BuilderProcessor processor, Class<R> clazz, R child, AttributeMeta... metas) {
+		boolean processFurther = processor.processRosetta(path, clazz, child, this, metas);
+		if (child!=null && processFurther) child.process(path, processor);
+	}
+	default <R extends RosettaModelObjectBuilder> void processRosetta(RosettaPath path, BuilderProcessor processor, Class<R> clazz, List<? extends R> children, AttributeMeta... metas) {
+		processor.processRosetta(path, clazz, children, this, metas);
+		if (children!=null)  {
+			int index=0;
+			// Iterate through a copy of children to prevent a fail-fast ConcurrentModificationException if a mapping processor modifies the children.
+			List<? extends RosettaModelObjectBuilder> copy = new ArrayList<>(children);
+			for (Iterator<? extends RosettaModelObjectBuilder> iterator = copy.iterator(); iterator.hasNext();) {
+				RosettaModelObjectBuilder child = iterator.next();
+				if (child!=null) {
+					RosettaPath indexedPath = path.withIndex(index);
+					child.process(indexedPath, processor);
+					index++;
+				}
+			}
+		}
+	}
 
 	/**
 	 * @return true if any of the primitive fields on this object are set or if any of its complex attributes have data

@@ -40,7 +40,7 @@ class JavaNames {
 
 	def StringConcatenationClient toListOrSingleJavaType(Attribute attribute) {
 		if (attribute.card.isIsMany) {
-			'''«List»<«attribute.type.toJavaType()»>'''
+			'''«List»<? extends «attribute.type.toJavaType()»>'''
 		} else
 			'''«attribute.type.toJavaType()»'''
 	}

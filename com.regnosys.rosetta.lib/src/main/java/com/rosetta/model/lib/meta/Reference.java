@@ -4,6 +4,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 
 /**
@@ -49,6 +50,9 @@ public interface Reference extends RosettaModelObject {
 		ReferenceBuilder setPointsTo(String pointsTo);
 
 		ReferenceBuilder setReference(String reference);
+		
+		default void process(RosettaPath path, BuilderProcessor processor) {
+		}
 	}
 
 	static class ReferenceImpl implements Reference {

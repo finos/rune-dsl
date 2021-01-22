@@ -4,6 +4,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
+import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
 import com.rosetta.model.lib.qualify.QualifyResult;
@@ -54,6 +55,9 @@ public interface Key extends RosettaModelObject{
 	interface KeyBuilder extends Key, RosettaModelObjectBuilder {
 		KeyBuilder setScope(String scope);
 		KeyBuilder setKeyValue(String keyValue);
+		
+		default void process(RosettaPath path, BuilderProcessor processor) {
+		}
 	}
 	
 	class KeyImpl implements Key {

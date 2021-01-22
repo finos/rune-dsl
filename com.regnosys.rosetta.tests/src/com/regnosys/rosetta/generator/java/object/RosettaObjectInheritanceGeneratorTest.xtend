@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -47,6 +48,7 @@ class RosettaObjectInheritanceGeneratorTest {
 		assertTrue(classA.isAssignableFrom(classB))
 	}
 
+	@Disabled //override is deprecated
 	@Test
 	def void shouldGenerateJavaClassWithOverridenAttributesAcrossNamespaces() {
 		val generated = newArrayList(
@@ -81,6 +83,7 @@ class RosettaObjectInheritanceGeneratorTest {
 		assertThrows(NoSuchFieldException, [|extendingTop.getDeclaredField("aField")]);
 	}
 
+	@Disabled //override is deprecated
 	@Test
 	def void shouldGenerateJavaClassWithOverridenListAttributesAcrossNamespaces() {
 		val generated = newArrayList(
@@ -114,6 +117,7 @@ class RosettaObjectInheritanceGeneratorTest {
 		assertThrows(NoSuchFieldException, [|extendingTop.getDeclaredField("aField")]);
 	}
 	
+	@Disabled
 	@Test
 	def void shouldGenerateJavaClassWithConditionsListAttributesAcrossNamespaces() {
 		val generated = newArrayList(

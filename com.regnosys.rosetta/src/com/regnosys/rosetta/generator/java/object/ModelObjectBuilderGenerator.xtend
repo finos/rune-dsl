@@ -177,7 +177,7 @@ class ModelObjectBuilderGenerator {
 						«attribute.toBuilderTypeSingle(names)» result;
 						result =  getIndex(«attribute.name», _index, ()-> «attribute.toTypeSingle(names)».builder());
 						«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
-							result.getOrCreateMeta().toBuilder().addKey(new «Key».builder().setScope("DOCUMENT"));
+							result.getOrCreateMeta().toBuilder().addKey(«Key».builder().setScope("DOCUMENT"));
 						«ENDIF»
 						return result;
 					}
@@ -188,9 +188,9 @@ class ModelObjectBuilderGenerator {
 	'''
 	
 	
-	private def StringConcatenationClient setters(RosettaType thisClass, JavaNames names)
+	private def StringConcatenationClient setters(Data thisClass, JavaNames names)
 		'''
-		«FOR attribute : thisClass.expandedAttributes»
+		«FOR attribute : thisClass.expandedAttributesPlus»
 			«doSetter(thisClass, attribute, names)»
 		«ENDFOR»
 	'''
@@ -210,7 +210,20 @@ class ModelObjectBuilderGenerator {
 				getIndex(this.«attribute.name», _idx, () -> «attribute.toBuilder»);
 				return this;
 			}
+			«IF attribute.hasMetas»
 			
+				@Override
+				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «attribute.name») {
+					this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«attribute.name»«IF attribute.isDataType».toBuilder()«ENDIF»);
+					return this;
+				}
+				
+				@Override
+				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «attribute.name», int _idx) {
+					this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«attribute.name»«IF attribute.isDataType».toBuilder()«ENDIF»);
+					return this;
+				}
+			«ENDIF»
 			«IF !attribute.overriding»
 				@Override 
 				public «thisName» add«attribute.name.toFirstUpper»(«List»<? extends «attribute.toTypeSingle(names)»> «attribute.name»s) {
@@ -234,15 +247,43 @@ class ModelObjectBuilderGenerator {
 					}
 					return this;
 				}
-				
+				«IF attribute.hasMetas»
+					
+					@Override
+					public «thisName» add«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.toTypeSingle(names, true)»> «attribute.name»s) {
+						if («attribute.name»s != null) {
+							for («attribute.toTypeSingle(names, true)» toAdd : «attribute.name»s) {
+								this.add«attribute.name.toFirstUpper»Value(toAdd);
+							}
+						}
+						return this;
+					}
+					
+					@Override
+					public «thisName» set«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.toTypeSingle(names, true)»> «attribute.name»s) {
+						this.«attribute.name».clear();
+						if («attribute.name»s!=null) {
+							«attribute.name»s.forEach(this::add«attribute.name.toFirstUpper»Value);
+						}
+						return this;
+					}
+				«ENDIF»
 			«ENDIF»
 			
 		«ELSE»
 			@Override
 			public «thisName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name») {
-				this.«attribute.name» = «attribute.toBuilder»;
+				this.«attribute.name» = «attribute.name»==null?null:«attribute.toBuilder»;
 				return this;
 			}
+			«IF attribute.hasMetas»
+				
+				@Override
+				public «thisName» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «attribute.name») {
+					this.getOrCreate«attribute.name.toFirstUpper»().setValue(«attribute.name»«IF attribute.isDataType»«ENDIF»);
+					return this;
+				}
+			«ENDIF»
 		«ENDIF»
 		'''
 	}

@@ -7,6 +7,7 @@ public interface ReferenceWithMeta<T> extends FieldWithMeta<T>{
 	String getExternalReference();
 	
 	Reference getReference();
+	Class<T> getValueType();
 	
 	interface ReferenceWithMetaBuilder<I> extends ReferenceWithMeta<I>, RosettaModelObjectBuilder {
 		
@@ -18,6 +19,5 @@ public interface ReferenceWithMeta<T> extends FieldWithMeta<T>{
 		
 		I getValue();
 		ReferenceWithMetaBuilder<I> setValue(I value);
-		Class<I> getValueType();
 	}
 }

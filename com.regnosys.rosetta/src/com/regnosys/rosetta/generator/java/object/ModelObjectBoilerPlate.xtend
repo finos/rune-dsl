@@ -20,10 +20,13 @@ import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.rosetta.model.lib.process.BuilderProcessor
+import com.rosetta.model.lib.process.AttributeMeta
 
 class ModelObjectBoilerPlate {
 
 	@Inject extension RosettaExtensions
+	@Inject extension ModelObjectBuilderGenerator
 
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
@@ -58,14 +61,18 @@ class ModelObjectBoilerPlate {
 		}
 		if(interfaces.empty) null else ''', «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
-	
 	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isMultiple) '''List<? extends «attribute.toTypeSingle(names)»>''' 
-		else attribute.toTypeSingle(names);
+		toType(attribute, names, false)
 	}
-	
+	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names, boolean underlying) {
+		if (attribute.isMultiple) '''List<? extends «attribute.toTypeSingle(names, underlying)»>''' 
+		else attribute.toTypeSingle(names, underlying);
+	}
 	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names) {
-		if(!attribute.hasMetas) return '''«names.toJavaType(attribute.type)»'''
+		toTypeSingle(attribute, names, false)
+	}
+	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names, boolean underlying) {
+		if(!attribute.hasMetas || underlying) return '''«names.toJavaType(attribute.type)»'''
 		val metaType = if (attribute.refIndex >= 0) {
 				if (attribute.isDataType)
 					'''ReferenceWithMeta«attribute.type.name.toFirstUpper»'''
@@ -174,16 +181,32 @@ class ModelObjectBoilerPlate {
 		}
 		
 	'''
+	
+	def StringConcatenationClient builderProcessMethod(Data c, JavaNames names) '''
+		@Override
+		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
+			«IF c.hasSuperType»
+				«names.toJavaType(c.superType).toBuilderType».super.process(path, processor);
+			«ENDIF»
+			
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
+				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
+			«ENDFOR»
+			
+			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
+				processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle(names)».class, get«a.name.toFirstUpper»()«a.metaFlags»);
+			«ENDFOR»
+		}
+		
+	'''
 
-    private def getMetaFlags(ExpandedAttribute attribute) {
-		val result = new StringBuilder()
+	private def StringConcatenationClient getMetaFlags(ExpandedAttribute attribute) {
 		if (attribute.type.isMetaType) {
-			result.append(", AttributeMeta.META")
+			''', «AttributeMeta».META'''
 		}
-		if (attribute.hasIdAnnotation) {
-			result.append(", AttributeMeta.GLOBAL_KEY_FIELD")
+		else if (attribute.hasIdAnnotation) {
+			''', «AttributeMeta».GLOBAL_KEY_FIELD'''
 		}
-		result.toString
 	}
 	
 	def needsBuilder(ExpandedAttribute attribute){

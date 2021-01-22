@@ -69,7 +69,7 @@ class ModelObjectGenerator {
 			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.getQualifiedClass).name».class)
 		«ENDIF»
 		
-		public interface «names.toJavaType(d)» extends «IF d.hasSuperType»«names.toJavaType(d.superType).name»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
+		public interface «names.toJavaType(d)» extends «IF d.hasSuperType»«names.toJavaType(d.superType)»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
 			«d.name» build();
 			«names.toJavaType(d).toBuilderType» toBuilder();
 			
@@ -92,6 +92,12 @@ class ModelObjectGenerator {
 			default Class<? extends «d.name»> getType() {
 				return «d.name».class;
 			}
+			«FOR pt :interfaces.filter(ParameterizedType).filter[type.simpleName=="ReferenceWithMeta"]»
+			
+				default Class<«pt.typeArgs.get(0).type»> getValueType() {
+					return «pt.typeArgs.get(0).type».class;
+				}
+			«ENDFOR»
 			«d.processMethod(names)»
 			
 			interface «names.toJavaType(d)»Builder extends «d.name», «IF d.hasSuperType»«names.toJavaType(d.superType).toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
@@ -100,32 +106,35 @@ class ModelObjectGenerator {
 					«IF attribute.isDataType || attribute.hasMetas»
 						«IF attribute.cardinalityIsSingleValue»
 							«attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»();
+							«attribute.toBuilderTypeSingle(names)» get«attribute.name.toFirstUpper»();
 						«ELSE»
 							«attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int _index);
+							«List»<? extends «attribute.toBuilderTypeSingle(names)»> get«attribute.name.toFirstUpper»();
 						«ENDIF»
 					«ENDIF»
 				«ENDFOR»
-				«FOR attribute : d.expandedAttributes»
+				«FOR attribute : d.expandedAttributesPlus»
 					«IF attribute.cardinalityIsSingleValue»
 						«names.toJavaType(d).toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+						«IF attribute.hasMetas»«names.toJavaType(d).toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «attribute.name»);«ENDIF»
 					«ELSE»
 						«names.toJavaType(d).toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name»);
 						«names.toJavaType(d).toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx);
+						«IF attribute.hasMetas»«names.toJavaType(d).toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «attribute.name»);
+						«names.toJavaType(d).toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «attribute.name», int _idx);«ENDIF»
 						«IF !attribute.isOverriding»
 						«names.toJavaType(d).toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
 						«names.toJavaType(d).toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
+						«IF attribute.hasMetas»«names.toJavaType(d).toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «attribute.name»);
+						«names.toJavaType(d).toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «attribute.name»);«ENDIF»
 						«ENDIF»
 					«ENDIF»
 				«ENDFOR»
-				«FOR pt :interfaces.filter(ParameterizedType).filter[type.simpleName=="ReferenceWithMeta"]»
 				
-					default Class<«pt.typeArgs.get(0).type»> getValueType() {
-						return «pt.typeArgs.get(0).type».class;
-					}
-				«ENDFOR»
+				«d.builderProcessMethod(names)»
 			}
 			
-«««			This line reserves this name as a name
+«««			This line reserves this name as a name SO any class imported with the smae name will automatically be fully qualified
 			//«names.toJavaType(d).toImplType»
 			class «names.toJavaType(d)»Impl «IF d.hasSuperType»extends «names.toJavaType(d.superType).toImplType» «ENDIF»implements «d.name» {
 				«d.rosettaClass(names)»
@@ -136,6 +145,7 @@ class ModelObjectGenerator {
 			«d.builderClass(names)»
 		}
 	'''
+	
 	
 	def dispatch buildify(Object object) {
 		throw new UnsupportedOperationException("TODO: auto-generated method stub")

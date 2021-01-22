@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.common.collect.Multimaps
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator.MetaFieldType
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
@@ -14,6 +13,7 @@ import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.rosetta.model.lib.GlobalKey
@@ -21,8 +21,10 @@ import com.rosetta.model.lib.meta.BasicRosettaMetaData
 import com.rosetta.model.lib.meta.GlobalKeyFields
 import com.rosetta.model.lib.meta.MetaDataFields
 import com.rosetta.model.lib.meta.ReferenceWithMeta
-import com.rosetta.model.lib.process.AttributeMeta
+import com.rosetta.model.lib.meta.TemplateFields
+import java.util.ArrayList
 import java.util.Collection
+import java.util.List
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -52,8 +54,8 @@ class MetaFieldGenerator {
 				fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaFields.java''',
 				metaFields(names, "MetaFields", newArrayList(GlobalKeyFields), allMetaTypes.metaFieldTypes))
 				
-				//fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaAndTemplateFields.java''',
-				//metaFields(names, "MetaAndTemplateFields", newArrayList("GlobalKeyFields", "TemplateFields"), allMetaTypes.metaAndTemplateFieldTypes))
+				fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaAndTemplateFields.java''',
+				metaFields(names, "MetaAndTemplateFields", newArrayList(GlobalKeyFields, TemplateFields), allMetaTypes.metaAndTemplateFieldTypes))
 //			} finally {
 //				resource.resourceSet.adapterFactories.add(new MarkerAdapterFactory(model.name))
 //			}
@@ -119,52 +121,11 @@ class MetaFieldGenerator {
 		cardSingle
 	}
 
-	def getMetaFieldTypes(Collection<RosettaMetaType> utypes) {
-		val globalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
-		globalKeyType.setName("globalKey")
-		globalKeyType.type = stringType;
-
-		val externalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
-		externalKeyType.setName("externalKey")
-		externalKeyType.type = stringType;
-		
-		val keysType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
-		keysType.setName("Keys")
-		val keyType = RosettaFactoryImpl.eINSTANCE.createRosettaBasicType
-		keyType.name="Keys"
-		keysType.type = keyType;
-
-		val filteredTypes = utypes.filter[t|t.name != "key" && t.name != "id" && t.name != "reference"].map[new MetaFieldType(it, null, false)].toSet;
-		filteredTypes.add(new MetaFieldType(globalKeyType, AttributeMeta.GLOBAL_KEY, false))
-		filteredTypes.add(new MetaFieldType(externalKeyType, AttributeMeta.EXTERNAL_KEY, false))
-		filteredTypes.add(new MetaFieldType(keysType, null, true))
-		return filteredTypes
-	}
-
-	def getMetaAndTemplateFieldTypes(Collection<RosettaMetaType> utypes) {
-		val templateGlobalReferenceType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
-		templateGlobalReferenceType.setName("templateGlobalReference")
-		templateGlobalReferenceType.type = stringType;
-
-		val metaFieldTypes = utypes.metaFieldTypes
-		metaFieldTypes.add(new MetaFieldType(templateGlobalReferenceType, null, false))
-		return metaFieldTypes
-	}
-
-	def metaFields(JavaNames names, String name, Collection<Object> interfaces, Collection<MetaFieldGenerator.MetaFieldType> metaFieldTypes) {
-		if (metaFieldTypes.map[metaType].exists[t|t.name == "scheme"]) {
-			interfaces.add(MetaDataFields)
-		}
-		
+	def List<Attribute> getMetaFieldTypes(Collection<RosettaMetaType> utypes) {
 		val cardMult = RosettaFactory.eINSTANCE.createRosettaCardinality
 		cardMult.inf = 0;
 		cardMult.sup = 1000;
 		cardMult.unbounded = true
-		
-		val schemeAttribute = SimpleFactory.eINSTANCE.createAttribute()
-		schemeAttribute.card = cardSingle
-		schemeAttribute.name = "scheme"
-		schemeAttribute.type = stringType
 		
 		val globalKeyAttribute = SimpleFactory.eINSTANCE.createAttribute()
 		globalKeyAttribute.setName("globalKey")
@@ -184,15 +145,44 @@ class MetaFieldGenerator {
 		keysAttribute.setName("key")
 		keysAttribute.type = keysType
 		keysAttribute.card = cardMult
+
+		val filteredTypes = utypes.filter[t|t.name != "key" && t.name != "id" && t.name != "reference"].toSet;
+		val result = filteredTypes.map[toAttribute].toList
+		result.addAll(#[globalKeyAttribute, externalKeyAttribute, keysAttribute])
+		return result
+	}
+	
+	def toAttribute(RosettaMetaType type) {
+		val newAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		newAttribute.card = cardSingle
+		newAttribute.name = type.name
+		newAttribute.type = type.type
+		return newAttribute
+	}
+
+	def getMetaAndTemplateFieldTypes(Collection<RosettaMetaType> utypes) {
+		val templateGlobalReferenceType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
+		templateGlobalReferenceType.setName("templateGlobalReference")
+		templateGlobalReferenceType.type = stringType;
+		
+		val plusTypes = new ArrayList(utypes)
+		plusTypes.add(templateGlobalReferenceType)
+		val metaFieldTypes = plusTypes.metaFieldTypes
+		return metaFieldTypes
+	}
+
+	def metaFields(JavaNames names, String name, Collection<Object> interfaces, Collection<Attribute> attributes) {
+		if (attributes.exists[t|t.name == "scheme"]) {
+			interfaces.add(MetaDataFields)
+		}
+
 		
 		
 		val Data d = SimpleFactory.eINSTANCE.createData;
-		d.name = "MetaFields"
+		d.name = name
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = "com.rosetta.model.metafields"
-		d.attributes.addAll(#[
-			schemeAttribute, globalKeyAttribute, externalKeyAttribute, keysAttribute
-		])
+		d.attributes.addAll(attributes)
 		val classBody = tracImports(d.classBody(names, "1", interfaces))
 		classBody.addImport(BasicRosettaMetaData.name, BasicRosettaMetaData.simpleName)
 		
@@ -200,7 +190,7 @@ class MetaFieldGenerator {
 		'''
 		package «names.packages.basicMetafields.name»;
 
-		«FOR imp : classBody.imports.filter[i| !i.endsWith("MetaFieldsMeta")]»
+		«FOR imp : classBody.imports.filter[i| !i.endsWith(name+"Meta")]»
 			import «imp»;
 		«ENDFOR»
 		«FOR imp : classBody.staticImports»
@@ -209,21 +199,10 @@ class MetaFieldGenerator {
 		
 		«classBody.toString»
 		
-		class MetaFieldsMeta extends BasicRosettaMetaData<MetaFields>{
+		class «name»Meta extends BasicRosettaMetaData<«name»>{
 		
 		}
 		'''
-	}
-	
-	def CharSequence addAttributeMeta(MetaFieldType type)
-		'''AttributeMeta.META«IF type.attributeMeta !== null», AttributeMeta.«type.attributeMeta»«ENDIF»'''
-	
-	
-	@org.eclipse.xtend.lib.annotations.Data 
-	static class MetaFieldType {
-		RosettaMetaType metaType
-		AttributeMeta attributeMeta
-		boolean isMultiple
 	}
 
 	def CharSequence fieldWithMeta(JavaNames names, RosettaType type) {

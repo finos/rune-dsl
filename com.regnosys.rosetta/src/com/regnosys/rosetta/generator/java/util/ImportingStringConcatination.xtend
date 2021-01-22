@@ -87,8 +87,9 @@ class ImportingStringConcatination extends StringConcatenation {
 		val fullName = qName.replaceAll('\\$','.')
 		var qualified = QualifiedName.create(fullName.split('\\.'))
 		
-		if (imports.getOrDefault(shortName, qualified)!=qualified) return fullName//if an import has already been added for this shortname (that is different from this fullname) then we can't add a clashing import 
-		
+		if (imports.getOrDefault(shortName, qualified)!=qualified) {
+			return fullName//if an import has already been added for this shortname (that is different from this fullname) then we can't add a clashing import 
+		}
 		imports.put(shortName, qualified)
 		return shortName
 	}

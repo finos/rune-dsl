@@ -56,8 +56,8 @@ class FuncGeneratorTest {
 					return result;
 				}
 				
-				private String assignOutput(String resultHolder, String name, String name2) {
-					return resultHolder;
+				private String assignOutput(String result, String name, String name2) {
+					return result;
 				}
 			
 				protected abstract String doEvaluate(String name, String name2);
@@ -343,6 +343,52 @@ class FuncGeneratorTest {
 		'''
 		].generateCode
 		//.writeClasses("shouldGenerateFunctionWithAssignemtnAsReference")
+		.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithAssignmentAsMeta() {
+
+		#[
+		'''
+			namespace "com.rosetta.test.model.party"
+			version "test"
+
+			type Party:
+				id number (1..1)
+				name string (1..1)
+			
+			type MyData:
+				val Party (1..1)
+					[metadata id]
+		''',
+		'''
+			namespace "com.rosetta.test.model.agreement"
+			version "test"
+			
+			import com.rosetta.test.model.party.*
+
+			type Agreement:
+				id number (1..1)
+				party Party (1..1)
+					[metadata id]
+				
+				condition AgreementValid:
+					if get_Party_Id() exists
+						then id is absent
+
+			func get_Party_Id:
+			 	inputs:
+			 		agreement Agreement (1..1)
+				output:
+					result MyData (1..1)
+					
+				assign-output result-> val : agreement -> party
+				
+
+		'''
+		].generateCode
+		//.writeClasses("shouldGenerateFunctionWithAssignmentAsMeta")
 		.compileToClasses
 	}
 	
