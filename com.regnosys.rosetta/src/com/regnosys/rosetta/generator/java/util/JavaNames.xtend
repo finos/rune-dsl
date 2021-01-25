@@ -49,6 +49,9 @@ class JavaNames {
 		if (type.name == RosettaAttributeExtensions.METAFIELDS_CLASS_NAME || type.name == RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME) {
 			return createJavaType(packages.basicMetafields, type.name)
 		}
+		if (type.metaType) {
+			return createForBasicType("string")
+		}
 		if (type.builtInType) {
 			return createForBasicType(type.name)
 		}

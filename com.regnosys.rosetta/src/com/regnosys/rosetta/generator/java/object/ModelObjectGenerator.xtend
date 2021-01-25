@@ -92,7 +92,7 @@ class ModelObjectGenerator {
 			default Class<? extends «d.name»> getType() {
 				return «d.name».class;
 			}
-			«FOR pt :interfaces.filter(ParameterizedType).filter[type.simpleName=="ReferenceWithMeta"]»
+			«FOR pt :interfaces.filter(ParameterizedType).filter[type.simpleName=="ReferenceWithMeta" || type.simpleName=="FieldWithMeta"]»
 			
 				default Class<«pt.typeArgs.get(0).type»> getValueType() {
 					return «pt.typeArgs.get(0).type».class;
@@ -220,14 +220,14 @@ class ModelObjectGenerator {
 		@Override
 		public «names.toJavaType(c).toBuilderType» toBuilder() {
 			«names.toJavaType(c).toBuilderType» builder = builder();
-			«IF (c.hasSuperType)»
-				super.setBuilderFields(builder);
-			«ENDIF»
 			setBuilderFields(builder);
 			return builder;
 		}
 		
 		protected void setBuilderFields(«names.toJavaType(c).toBuilderType» builder) {
+			«IF (c.hasSuperType)»
+				super.setBuilderFields(builder);
+			«ENDIF»
 			«FOR attribute :expandedAttributes»
 				«Optional.importMethod("ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
 			«ENDFOR»
@@ -255,12 +255,15 @@ class ModelObjectGenerator {
 
 	private def StringConcatenationClient attributeFromBuilder(ExpandedAttribute attribute) {
 		if(attribute.isDataType || attribute.hasMetas) {
-			'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
+			if (attribute.cardinalityIsListValue)
+				'''ofNullable(builder.get«attribute.name.toFirstUpper»()).filter(_l->!_l.isEmpty()).map(«attribute.buildRosettaObject»).orElse(null)'''
+			else
+				'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
 		} else {
 			if (attribute.cardinalityIsSingleValue)
 				'''builder.get«attribute.name.toFirstUpper»()«IF attribute.needsBuilder».build()«ENDIF»'''
 			else
-				'''builder.get«attribute.name.toFirstUpper»().stream()«IF attribute.needsBuilder».map(b->b.build)«ENDIF».collect(«ImmutableList».toImmutableList())'''
+				'''ofNullable(builder.get«attribute.name.toFirstUpper»()).filter(_l->!_l.isEmpty()).map(«ImmutableList»::copyOf).orElse(null)'''
 		}
 	}
 

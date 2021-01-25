@@ -101,7 +101,7 @@ class ModelObjectBuilderGeneratorTest {
 		// Base Case
 		assertThat(testClassCode,
 			containsString(
-				'this.multipleOnes = ofNullable(builder.getMultipleOnes()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);'))
+				'this.multipleOnes = ofNullable(builder.getMultipleOnes()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);'))
 
 		// Only do this for attributes that are RosettaClass
 		assertThat(testClassCode, not(containsString('this.multipleEnums = builder.multipleEnums.stream()')))

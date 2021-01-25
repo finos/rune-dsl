@@ -62,6 +62,7 @@ import static extension com.regnosys.rosetta.generator.java.util.JavaClassTransl
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
+import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 
 class ExpressionGenerator {
 	
@@ -504,27 +505,27 @@ class ExpressionGenerator {
 		val mapFunc = attribute.buildMapFuncAttribute
 		if (attribute.card.isIsMany) {
 			if (attribute.metaAnnotations.nullOrEmpty)
-				'''.mapC(«mapFunc»)'''
+				'''.<«attribute.type.toJavaType»>mapC(«mapFunc»)'''
 			else if (!autoValue) {
-				'''.mapC(«mapFunc»)'''
+				'''.<«attribute.metaClass»>mapC(«mapFunc»)'''
 			}
 			else {
-				'''.mapC(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", _f->_f.getValue())'''
+				'''.<«attribute.metaClass»>mapC(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", _f->_f.getValue())'''
 			}
 		}
 		else
 		{
 			if (attribute.metaAnnotations.nullOrEmpty){
 				if(attribute.type instanceof Data) 
-				'''.map(«mapFunc»)'''
+				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
 				else
-				'''.map(«mapFunc»)'''
+				'''.<«attribute.type.toJavaType»>map(«mapFunc»)'''
 			}
 			else if (!autoValue) {
-				'''.map(«mapFunc»)'''
+				'''.<«attribute.metaClass»>map(«mapFunc»)'''
 			}
 			else
-				'''.map(«mapFunc»).map("getValue", _f->_f.getValue())'''
+				'''.<«attribute.metaClass»>map(«mapFunc»).<«attribute.type.toJavaType»>map("getValue", _f->_f.getValue())'''
 		}
 	}
 	
@@ -544,8 +545,11 @@ class ExpressionGenerator {
 	
 	def JavaType metaClass(Attribute attribute) {
 		val names = attribute.javaNames
-		val name = if (attribute.annotations.exists[a|a.annotation?.name=="metadata" && a.attribute?.name=="reference"])  
-						"ReferenceWithMeta"+attribute.type.name.toFirstUpper
+		val name = if (!attribute.hasMetaFieldAnnotations)  
+						if (RosettaAttributeExtensions.isBuiltInType(attribute.type))
+							"BasicReferenceWithMeta"+attribute.type.name.toFirstUpper
+						else
+							"ReferenceWithMeta"+attribute.type.name.toFirstUpper
 				   else 
 				   		"FieldWithMeta"+attribute.type.name.toFirstUpper
 		return names.toMetaType(attribute, name)

@@ -641,6 +641,7 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Input2;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -678,7 +679,7 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Input, String, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.2/@nodes/@node", "->input2->colour", new StringIdentifier("->input2->colour"), input -> MapperS.of(input).map("getInput2", _input -> _input.getInput2()).map("getColour", _input2 -> _input2.getColour())))
+							startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.2/@nodes/@node", "->input2->colour", new StringIdentifier("->input2->colour"), input -> MapperS.of(input).<Input2>map("getInput2", _input -> _input.getInput2()).<String>map("getColour", _input2 -> _input2.getColour())))
 							.toBlueprint(getURI(), getName());
 					}
 				}
@@ -852,9 +853,9 @@ class RosettaBlueprintTest {
 				public BlueprintInstance<Input, String, INKEY, INKEY> blueprint() { 
 					return 
 						startsWith(actionFactory, BlueprintBuilder.<Input, String, INKEY, INKEY>and(actionFactory,
-							startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->traderef=\"3\"", input -> areEqual(MapperS.of(input).map("getTraderef", _input -> _input.getTraderef()), MapperS.of("3")).get()))
-							.then(actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@next/@node", "->traderef", new StringIdentifier("->traderef"), input -> MapperS.of(input).map("getTraderef", _input -> _input.getTraderef()))),
-							startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->colour", new StringIdentifier("->colour"), input -> MapperS.of(input).map("getColour", _input -> _input.getColour())))
+							startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->traderef=\"3\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("3")).get()))
+							.then(actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@next/@node", "->traderef", new StringIdentifier("->traderef"), input -> MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()))),
+							startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->colour", new StringIdentifier("->colour"), input -> MapperS.of(input).<String>map("getColour", _input -> _input.getColour())))
 							)
 						)
 						.toBlueprint(getURI(), getName());
@@ -887,6 +888,7 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.mapper.MapperS;
+				import java.math.BigDecimal;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -925,8 +927,8 @@ class RosettaBlueprintTest {
 					public BlueprintInstance<Input, Number, INKEY, INKEY> blueprint() { 
 						return 
 							startsWith(actionFactory, BlueprintBuilder.<Input, Number, INKEY, INKEY>and(actionFactory,
-								startsWith(actionFactory, actionFactory.<Input, Integer, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->a", new StringIdentifier("->a"), input -> MapperS.of(input).map("getA", _input -> _input.getA()))),
-								startsWith(actionFactory, actionFactory.<Input, BigDecimal, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->b", new StringIdentifier("->b"), input -> MapperS.of(input).map("getB", _input -> _input.getB())))
+								startsWith(actionFactory, actionFactory.<Input, Integer, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->a", new StringIdentifier("->a"), input -> MapperS.of(input).<Integer>map("getA", _input -> _input.getA()))),
+								startsWith(actionFactory, actionFactory.<Input, BigDecimal, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->b", new StringIdentifier("->b"), input -> MapperS.of(input).<BigDecimal>map("getB", _input -> _input.getB())))
 								)
 							)
 							.toBlueprint(getURI(), getName());
@@ -972,6 +974,8 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Foo;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1011,8 +1015,8 @@ class RosettaBlueprintTest {
 					public BlueprintInstance<Input, Object, INKEY, INKEY> blueprint() { 
 						return 
 							startsWith(actionFactory, BlueprintBuilder.<Input, Object, INKEY, INKEY>and(actionFactory,
-								startsWith(actionFactory, actionFactory.<Input, Foo, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->foo", new StringIdentifier("->foo"), input -> MapperS.of(input).map("getFoo", _input -> _input.getFoo()))),
-								startsWith(actionFactory, actionFactory.<Input, Bar, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->bar", new StringIdentifier("->bar"), input -> MapperS.of(input).map("getBar", _input -> _input.getBar())))
+								startsWith(actionFactory, actionFactory.<Input, Foo, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->foo", new StringIdentifier("->foo"), input -> MapperS.of(input).<Foo>map("getFoo", _input -> _input.getFoo()))),
+								startsWith(actionFactory, actionFactory.<Input, Bar, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->bar", new StringIdentifier("->bar"), input -> MapperS.of(input).<Bar>map("getBar", _input -> _input.getBar())))
 								)
 							)
 							.toBlueprint(getURI(), getName());
@@ -1053,6 +1057,7 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Input2;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1091,11 +1096,11 @@ class RosettaBlueprintTest {
 					public BlueprintInstance<Input1, String, INKEY, INKEY> blueprint() { 
 						return 
 							startsWith(actionFactory, BlueprintBuilder.<Input1, Input2, INKEY, INKEY>and(actionFactory,
-								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->i1", new StringIdentifier("->i1"), input1 -> MapperS.of(input1).map("getI1", _input1 -> _input1.getI1()))),
-								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->i2", new StringIdentifier("->i2"), input1 -> MapperS.of(input1).map("getI2", _input1 -> _input1.getI2())))
+								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->i1", new StringIdentifier("->i1"), input1 -> MapperS.of(input1).<Input2>map("getI1", _input1 -> _input1.getI1()))),
+								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->i2", new StringIdentifier("->i2"), input1 -> MapperS.of(input1).<Input2>map("getI2", _input1 -> _input1.getI2())))
 								)
 							)
-							.then(actionFactory.<Input2, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->traderef", new StringIdentifier("->traderef"), input2 -> MapperS.of(input2).map("getTraderef", _input2 -> _input2.getTraderef())))
+							.then(actionFactory.<Input2, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->traderef", new StringIdentifier("->traderef"), input2 -> MapperS.of(input2).<String>map("getTraderef", _input2 -> _input2.getTraderef())))
 							.toBlueprint(getURI(), getName());
 					}
 				}
@@ -1366,7 +1371,7 @@ class RosettaBlueprintTest {
 			@Override
 			public BlueprintInstance<Input, Input, INKEY, INKEY> blueprint() { 
 				return 
-					startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->traderef=\"Hello\"", input -> areEqual(MapperS.of(input).map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello")).get()))
+					startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->traderef=\"Hello\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello")).get()))
 					.toBlueprint(getURI(), getName());
 			}
 		}
@@ -1442,6 +1447,7 @@ class RosettaBlueprintTest {
 			package com.rosetta.test.model.blueprint;
 			
 			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.test.model.Hero;
 			import static com.rosetta.model.lib.expressions.ExpressionOperators.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
@@ -1483,9 +1489,9 @@ class RosettaBlueprintTest {
 				public BlueprintInstance<Avengers, String, INKEY, INKEY> blueprint() { 
 					return 
 						startsWith(actionFactory, new FilterByRule<Avengers, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "CanWieldMjolnir", new CanWieldMjolnirRule<INKEY>(actionFactory).blueprint()))
-						.then(actionFactory.<Avengers, Hero, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->heros", new StringIdentifier("->heros"), avengers -> MapperS.of(avengers).mapC("getHeros", _avengers -> _avengers.getHeros())))
-						.then(new Filter<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@node", "->name<>\"Thor\"", hero -> notEqual(MapperS.of(hero).map("getName", _hero -> _hero.getName()), MapperS.of("Thor")).get()))
-						.then(actionFactory.<Hero, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@next/@node", "->name", new StringIdentifier("->name"), hero -> MapperS.of(hero).map("getName", _hero -> _hero.getName())))
+						.then(actionFactory.<Avengers, Hero, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->heros", new StringIdentifier("->heros"), avengers -> MapperS.of(avengers).<Hero>mapC("getHeros", _avengers -> _avengers.getHeros())))
+						.then(new Filter<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@node", "->name<>\"Thor\"", hero -> notEqual(MapperS.of(hero).<String>map("getName", _hero -> _hero.getName()), MapperS.of("Thor")).get()))
+						.then(actionFactory.<Hero, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@next/@node", "->name", new StringIdentifier("->name"), hero -> MapperS.of(hero).<String>map("getName", _hero -> _hero.getName())))
 						.toBlueprint(getURI(), getName());
 				}
 			}
@@ -1568,7 +1574,7 @@ class RosettaBlueprintTest {
 				@Override
 				public BlueprintInstance<Foo, Boolean, INKEY, INKEY> blueprint() { 
 					return 
-						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->fixed count=12", new StringIdentifier("->fixed count=12"), foo -> areEqual(MapperS.of(MapperS.of(foo).mapC("getFixed", _foo -> _foo.getFixed()).resultCount()), MapperS.of(Integer.valueOf(12)))))
+						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->fixed count=12", new StringIdentifier("->fixed count=12"), foo -> areEqual(MapperS.of(MapperS.of(foo).<String>mapC("getFixed", _foo -> _foo.getFixed()).resultCount()), MapperS.of(Integer.valueOf(12)))))
 						.toBlueprint(getURI(), getName());
 				}
 			}
@@ -1672,7 +1678,7 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Input, Input, INKEY, String> blueprint() { 
 						return 
-							startsWith(actionFactory, actionFactory.<Input, INKEY, String>newRosettaGrouper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "group by ->traderef", input -> MapperS.of(input).map("getTraderef", _input -> _input.getTraderef())))
+							startsWith(actionFactory, actionFactory.<Input, INKEY, String>newRosettaGrouper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "group by ->traderef", input -> MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef())))
 							.toBlueprint(getURI(), getName());
 					}
 				}
@@ -1740,8 +1746,8 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Object, Input2, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(actionFactory, actionFactory.<Input2, Input1, INKEY, String>newRosettaDataJoin("__synthetic1.rosetta#//@elements.0/@nodes/@node", "joinInput2", input2 -> MapperS.of(input2).map("getKeyVal", _input2 -> _input2.getKeyVal()),
-									input1 -> MapperS.of(input1).mapC("getForeign", _input1 -> _input1.getForeign()),
+							startsWith(actionFactory, actionFactory.<Input2, Input1, INKEY, String>newRosettaDataJoin("__synthetic1.rosetta#//@elements.0/@nodes/@node", "joinInput2", input2 -> MapperS.of(input2).<String>map("getKeyVal", _input2 -> _input2.getKeyVal()),
+									input1 -> MapperS.of(input1).<String>mapC("getForeign", _input1 -> _input1.getForeign()),
 									Input2.class, Input1.class))
 							.toBlueprint(getURI(), getName());
 					}

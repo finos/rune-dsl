@@ -101,7 +101,7 @@ class CalculationFuncGeneratorTest {
 						
 						
 						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
-							return MapperS.of(in2).map("getFrequency", _period -> _period.getFrequency());
+							return MapperS.of(in2).<Integer>map("getFrequency", _period -> _period.getFrequency());
 						}
 						public static final class MONTHDefault extends MONTH {
 							@Override
@@ -316,11 +316,11 @@ class CalculationFuncGeneratorTest {
 			
 			
 			protected Mapper<Date> arg1(FuncIn funIn) {
-				return MapperS.of(funIn).map("getVal1", _funcIn -> _funcIn.getVal1());
+				return MapperS.of(funIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
 			}
 			
 			protected Mapper<LocalTime> arg2(FuncIn funIn) {
-				return MapperS.of(funIn).map("getVal2", _funcIn -> _funcIn.getVal2());
+				return MapperS.of(funIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
 			}
 			public static final class CalcDefault extends Calc {
 				@Override
@@ -408,15 +408,15 @@ class CalculationFuncGeneratorTest {
 			
 			
 			protected Mapper<String> linkId(FuncIn funcIn) {
-				return MapperS.of(funcIn).map("getValS", _funcIn -> _funcIn.getValS());
+				return MapperS.of(funcIn).<String>map("getValS", _funcIn -> _funcIn.getValS());
 			}
 			
 			protected Mapper<Date> tradeDate(FuncIn funcIn) {
-				return MapperS.of(funcIn).map("getVal1", _funcIn -> _funcIn.getVal1());
+				return MapperS.of(funcIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
 			}
 			
 			protected Mapper<LocalTime> tradeTime(FuncIn funcIn) {
-				return MapperS.of(funcIn).map("getVal2", _funcIn -> _funcIn.getVal2());
+				return MapperS.of(funcIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
 			}
 			public static final class RTS_22_FieldsDefault extends RTS_22_Fields {
 				@Override
@@ -766,7 +766,7 @@ class CalculationFuncGeneratorTest {
 					}
 					
 					private String assignOutput(String arg1, Math in1, MathInput in2) {
-						arg1 = MapperS.of(addOne.evaluate(MapperS.of(in2).map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+						arg1 = MapperS.of(addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
 						return arg1;
 					}
 				
@@ -801,7 +801,7 @@ class CalculationFuncGeneratorTest {
 					}
 					
 					private String assignOutput(String arg1, Math in1, MathInput in2) {
-						arg1 = MapperS.of(subOne.evaluate(MapperS.of(in2).map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+						arg1 = MapperS.of(subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
 						return arg1;
 					}
 				

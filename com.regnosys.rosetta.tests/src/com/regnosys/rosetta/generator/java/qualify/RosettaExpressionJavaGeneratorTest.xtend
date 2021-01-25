@@ -49,7 +49,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperS.of(foo).map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)))'))
+			is('greaterThan(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)))'))
 	}
 
 	/**
@@ -71,7 +71,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperS.of(foo).map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5))).or(greaterThan(MapperS.of(foo).map(\"getAttr2\", _foo -> _foo.getAttr2()), MapperS.of(Integer.valueOf(5))))'))
+			is('greaterThan(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5))).or(greaterThan(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()), MapperS.of(Integer.valueOf(5))))'))
 	}
 
 	/**
@@ -92,7 +92,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).map(\"getAttr2\", _foo -> _foo.getAttr2()))), MapperTree.of(MapperS.of(Integer.valueOf(5))))'))
+			is('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))), MapperTree.of(MapperS.of(Integer.valueOf(5))))'))
 	}
 	
 	/**
@@ -116,7 +116,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(mockClass))
 		
 		assertNotNull(generatedFunction)
-		assertEquals('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).map("getAttr1", _foo -> _foo.getAttr1())), MapperTree.or(MapperTree.and(MapperTree.of(MapperS.of(foo).map("getAttr2", _foo -> _foo.getAttr2())), MapperTree.of(MapperS.of(foo).map("getAttr3", _foo -> _foo.getAttr3()))), MapperTree.of(MapperS.of(foo).map("getAttr4", _foo -> _foo.getAttr4())))), MapperTree.of(MapperS.of(Integer.valueOf(5))))',formatGeneratedFunction('''«generatedFunction»'''))
+		assertEquals('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", _foo -> _foo.getAttr1())), MapperTree.or(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", _foo -> _foo.getAttr2())), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr3", _foo -> _foo.getAttr3()))), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr4", _foo -> _foo.getAttr4())))), MapperTree.of(MapperS.of(Integer.valueOf(5))))',formatGeneratedFunction('''«generatedFunction»'''))
 	}
 	
 	/**
@@ -140,7 +140,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperTree.and(MapperTree.of(MapperS.of(foo).map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).map(\"getAttr2\", _foo -> _foo.getAttr2()))), MapperTree.and(MapperTree.of(MapperS.of(foo).map(\"getAttr3\", _foo -> _foo.getAttr3())), MapperTree.of(MapperS.of(foo).map(\"getAttr4\", _foo -> _foo.getAttr4()))))'))
+			is('greaterThan(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))), MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr3\", _foo -> _foo.getAttr3())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr4\", _foo -> _foo.getAttr4()))))'))
 	}
 	
 	/**
@@ -156,7 +156,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('exists(MapperS.of(foo).map(\"getAttr\", _foo -> _foo.getAttr()), false)'))
+			is('exists(MapperS.of(foo).<Foo>map(\"getAttr\", _foo -> _foo.getAttr()), false)'))
 	}
 
 	/**
@@ -178,7 +178,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('exists(MapperS.of(foo).map(\"getAttr1\", _foo -> _foo.getAttr1()), false).or(exists(MapperS.of(foo).map(\"getAttr2\", _foo -> _foo.getAttr2()), false))'))
+			is('exists(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), false).or(exists(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()), false))'))
 	}
 	
 	/**
@@ -199,7 +199,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('exists(MapperTree.or(MapperTree.of(MapperS.of(foo).map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).map(\"getAttr2\", _foo -> _foo.getAttr2()))), false)'))
+			is('exists(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))), false)'))
 	}
 
 	// ( Foo -> attr1 = Foo -> attr2 ) or ( Foo -> attr1 = Foo -> attr2 )
@@ -224,7 +224,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('areEqual(MapperS.of(foo).map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).map(\"getAttr2\", _foo -> _foo.getAttr2())).or(areEqual(MapperS.of(foo).map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).map(\"getAttr4\", _foo -> _foo.getAttr4())))'))
+			is('areEqual(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2())).or(areEqual(MapperS.of(foo).<Foo>map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).<Foo>map(\"getAttr4\", _foo -> _foo.getAttr4())))'))
 	}
 	
 	@Test
@@ -247,7 +247,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('areEqual(MapperS.of(foo).map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).map(\"getAttr2\", _foo -> _foo.getAttr2())).or(areEqual(MapperS.of(foo).map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).map(\"getAttr4\", _foo -> _foo.getAttr4())))'))
+			is('areEqual(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2())).or(areEqual(MapperS.of(foo).<Foo>map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).<Foo>map(\"getAttr4\", _foo -> _foo.getAttr4())))'))
 	}
 	
 	private def String formatGeneratedFunction(StringConcatenationClient generatedFunction) {

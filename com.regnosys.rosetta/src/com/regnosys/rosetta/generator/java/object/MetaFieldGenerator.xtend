@@ -32,6 +32,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.rosetta.model.lib.meta.FieldWithMeta
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -109,7 +110,7 @@ class MetaFieldGenerator {
 	}
 
 	def getStringType() {
-		val stringType = RosettaFactoryImpl.eINSTANCE.createRosettaBasicType
+		val stringType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType
 		stringType.name="string"
 		return stringType
 	}
@@ -156,7 +157,7 @@ class MetaFieldGenerator {
 		val newAttribute = SimpleFactory.eINSTANCE.createAttribute()
 		newAttribute.card = cardSingle
 		newAttribute.name = type.name
-		newAttribute.type = type.type
+		newAttribute.type = type
 		return newAttribute
 	}
 
@@ -222,6 +223,7 @@ class MetaFieldGenerator {
 		metaAttribute.card = cardSingle
 		
 		val packageName= if (type.isBuiltInType) names.packages.basicMetafields.name else names.packages.model.metaField.name
+		val underlyingName= if (type.isBuiltInType) type.name.toJavaFullType else names.packages.model.name+"." + type.name
 		
 		val Data d = SimpleFactory.eINSTANCE.createData;
 		d.name = "FieldWithMeta"+type.name.toFirstUpper
@@ -230,10 +232,11 @@ class MetaFieldGenerator {
 		d.attributes.addAll(#[
 			valueAttribute, metaAttribute
 		])
-		val classBody = tracImports(d.classBody(names, "1", #[GlobalKey]))
+		
+		val FWMType = new ParameterizedType(new JavaType(FieldWithMeta.name), #[new ParameterizedType(new JavaType(underlyingName), #[])])
+		val classBody = tracImports(d.classBody(names, "1", #[GlobalKey, FWMType]))
 		classBody.addImport(BasicRosettaMetaData.name, BasicRosettaMetaData.simpleName)
 		
-		//val classBody = tracImports(metaBody(name, interfaces, metaFieldTypes))
 		'''
 		package «packageName»;
 

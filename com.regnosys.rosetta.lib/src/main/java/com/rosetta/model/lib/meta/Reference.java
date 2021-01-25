@@ -30,10 +30,12 @@ public interface Reference extends RosettaModelObject {
 	String getPointsTo();
 
 	String getReference();
+	
+	static RosettaMetaData<Reference> meta = new BasicRosettaMetaData<>();
 
 	@Override
 	default RosettaMetaData<? extends RosettaModelObject> metaData() {
-		return null;
+		return meta;
 	}
 	
 	static ReferenceBuilderImpl builder() {
@@ -42,6 +44,10 @@ public interface Reference extends RosettaModelObject {
 	
 	default Class<Reference> getType() {
 		return Reference.class;
+	}
+
+	@Override
+	default void process(RosettaPath path, Processor processor) {
 	}
 	
 	static interface ReferenceBuilder extends Reference, RosettaModelObjectBuilder {
@@ -193,12 +199,6 @@ public interface Reference extends RosettaModelObject {
 		@Override
 		public boolean hasData() {
 			return getReference() != null;
-		}
-
-		@Override
-		public void process(RosettaPath path, Processor processor) {
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("method process in RosettaModelObject has not been implemented");
 		}
 
 	}
