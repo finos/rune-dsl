@@ -8,12 +8,12 @@ import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 
 /**
- * @author TomForwood This interface represents a reference to a rosetta object
+ * @author TomForwood This class represents a reference to a rosetta object
  *         defined elsewhere.
- * 
+ *         <p>
  *         The scope defines where the resolver should look to find the object
  *         linked to.
- * 
+ *         <p>
  *         Scope can be - global - the key is universally unique and can be
  *         looked up anywhere - e.g. external database - document - the key must
  *         be unique in this document and can be found anywhere in the document
@@ -23,25 +23,26 @@ import com.rosetta.model.lib.process.Processor;
  */
 public interface Reference extends RosettaModelObject {
 	Reference build();
+
 	ReferenceBuilder toBuilder();
-	
+
 	String getScope();
 
 	String getPointsTo();
 
 	String getReference();
-	
+
 	static RosettaMetaData<Reference> meta = new BasicRosettaMetaData<>();
 
 	@Override
 	default RosettaMetaData<? extends RosettaModelObject> metaData() {
 		return meta;
 	}
-	
+
 	static ReferenceBuilderImpl builder() {
 		return new ReferenceBuilderImpl();
 	}
-	
+
 	default Class<Reference> getType() {
 		return Reference.class;
 	}
@@ -49,14 +50,14 @@ public interface Reference extends RosettaModelObject {
 	@Override
 	default void process(RosettaPath path, Processor processor) {
 	}
-	
+
 	static interface ReferenceBuilder extends Reference, RosettaModelObjectBuilder {
 		ReferenceBuilder setScope(String scope);
 
 		ReferenceBuilder setPointsTo(String pointsTo);
 
 		ReferenceBuilder setReference(String reference);
-		
+
 		default void process(RosettaPath path, BuilderProcessor processor) {
 		}
 	}

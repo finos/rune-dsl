@@ -28,7 +28,6 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RAnnotateType
-import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
@@ -294,14 +293,6 @@ class FuncGenerator {
 	}
 	
 	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx) {
-		val valType = typeProvider.getRType(operation.expression)
-		if (operation.path === null && operation.assignRoot instanceof Attribute) {
-			val assignRootType = typeProvider.getRType((operation.assignRoot as Attribute ).type)
-			if (assignRootType === RBuiltinType.NUMBER && valType !== RBuiltinType.NUMBER) {
-				// / case: number = 1
-//				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
-			}
-		}
 		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)».get()'''
 	}
 	

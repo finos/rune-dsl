@@ -49,7 +49,7 @@ class JavaNames {
 		if (type.name == RosettaAttributeExtensions.METAFIELDS_CLASS_NAME || type.name == RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME) {
 			return createJavaType(packages.basicMetafields, type.name)
 		}
-		if (type.metaType) {
+		if (type.metaType) {//TODO ExpandedType needs to store the underlying type for meta types if we want them to be anything other than strings
 			return createForBasicType("string")
 		}
 		if (type.builtInType) {
