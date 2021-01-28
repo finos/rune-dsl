@@ -241,7 +241,7 @@ class FuncGenerator {
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)».toBuilder()
+				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, ctx)»)
 			«ELSE»
 				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
 		else {
