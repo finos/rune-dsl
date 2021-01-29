@@ -264,7 +264,9 @@ class RosettaEnumValueReference extends RosettaExpression {
 }
 
 abstract class RosettaLiteral extends RosettaExpression, RosettaTyped {
-	op String stringValue()
+	op String stringValue() {
+		return "Unknown Literal"
+	}
 }
 
 class RosettaBooleanLiteral extends RosettaLiteral {
