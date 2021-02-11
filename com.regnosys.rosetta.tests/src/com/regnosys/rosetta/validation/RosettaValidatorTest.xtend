@@ -857,7 +857,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
 		'''.parseRosetta
 		model.assertError(ROSETTA_TYPE, null,
-			"SHARK!")
+			"checkForSharks")
 	}
 	
 	@Test

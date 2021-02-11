@@ -118,9 +118,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				super.invoke(state);	
 			}
 			catch (Exception e) {
-				log.error(e);
+				val String message = "Unexpected validation failure running "+ method.name
+				log.error(message,e);
 				state.hasErrors = true;
-				state.chain.add(createDiagnostic("Unexpected Exception running validator - "+e.message, state))
+				state.chain.add(createDiagnostic(message, state))
 			}
 		}
 		
