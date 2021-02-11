@@ -11,12 +11,16 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+import com.regnosys.rosetta.rosetta.simple.Data
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.RosettaRuntimeModule
+import org.eclipse.xtext.validation.Check
+import org.eclipse.xtext.service.SingletonBinding
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(MyRosettaInjectorProvider)
 class RosettaValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
@@ -844,6 +848,19 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void testFishIsAShark() {//This test tests that when a check throws an exception it is translated into a validation error - see ExceptionValidator below
+	val model='''
+			type MyFish:
+				foo int (0..1)
+				[synonym TEST_Base value "bar" path "baz" pattern "([A-Z)" "$1"]
+			synonym source TEST_Base
+
+		'''.parseRosetta
+		model.assertError(ROSETTA_TYPE, null,
+			"checkForSharks")
+	}
+	
+	@Test
 	def void enumSynonymWithPatternShouldBeValid() {
 	val model='''
 			enum Enumerate : X Y Z
@@ -863,4 +880,28 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			"Pattern to match must be a valid regular expression")
 	}
 
+}
+	
+class MyRosettaInjectorProvider extends RosettaInjectorProvider {
+	override createRuntimeModule() {
+		return new RosettaRuntimeModule(){
+			override bindClassLoaderToInstance() {
+				return MyRosettaInjectorProvider
+						.getClassLoader();
+			}
+			
+			@SingletonBinding(eager=true)
+			override Class<? extends RosettaValidator> bindRosettaValidator() {
+				return ExceptionValidator
+			}
+		}
+	}
+}
+
+class ExceptionValidator extends RosettaValidator{
+	@Check
+	def checkForSharks(Data ele) {
+		if (ele.name.contains("Fish")) throw new Exception("SHARK!")
+		
+	}
 }

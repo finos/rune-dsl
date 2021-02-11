@@ -75,6 +75,12 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import java.lang.reflect.Method
+import org.eclipse.xtext.validation.AbstractDeclarativeValidator
+import org.eclipse.xtext.validation.AbstractDeclarativeValidator.MethodWrapper
+import org.apache.log4j.Logger
+import org.eclipse.xtext.validation.FeatureBasedDiagnostic
+import org.eclipse.emf.common.util.Diagnostic
 
 /**
  * This class contains custom validation rules. 
@@ -95,6 +101,35 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject CardinalityProvider cardinality
 	@Inject RosettaGrammarAccess grammar
 	@Inject RosettaConfigExtension confExtensions
+	
+	static final Logger log = Logger.getLogger(RosettaValidator);
+	
+	protected override MethodWrapper createMethodWrapper(AbstractDeclarativeValidator instanceToUse, Method method) {
+		return new RosettaMethodWrapper(instanceToUse, method);
+	}
+	
+	protected static class RosettaMethodWrapper extends MethodWrapper {
+		protected new(AbstractDeclarativeValidator instance, Method m) {
+			super(instance, m)
+		}
+		
+		override void invoke(State state) {
+			try {
+				super.invoke(state);	
+			}
+			catch (Exception e) {
+				val String message = "Unexpected validation failure running "+ method.name
+				log.error(message,e);
+				state.hasErrors = true;
+				state.chain.add(createDiagnostic(message, state))
+			}
+		}
+		
+		def Diagnostic createDiagnostic(String message, State state) {
+			new FeatureBasedDiagnostic(Diagnostic.ERROR, message, state.currentObject, null, -1, state.currentCheckType, null, null)
+		}
+		
+	}
 	
 	@Check
 	def void checkClassNameStartsWithCapital(Data classe) {
