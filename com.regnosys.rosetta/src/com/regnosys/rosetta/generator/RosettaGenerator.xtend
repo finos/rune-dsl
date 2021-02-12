@@ -78,7 +78,7 @@ class RosettaGenerator extends AbstractGenerator {
 	}
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
-		LOGGER.debug("Starting the main generate method for " + resource.URI.toString)
+		LOGGER.trace("Starting the main generate method for " + resource.URI.toString)
 		val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, false)
 		val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 		try {

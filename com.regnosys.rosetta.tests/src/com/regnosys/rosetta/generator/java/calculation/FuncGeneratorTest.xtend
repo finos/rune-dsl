@@ -251,7 +251,7 @@ class FuncGeneratorTest {
 					result string (0..1)
 				
 				condition:
-					( m1 -> currency and m2 -> currency ) = currency
+					[ m1 -> currency , m2 -> currency ] = currency
 		'''.generateCode
 		code.compileToClasses
 	}

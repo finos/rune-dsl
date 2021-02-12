@@ -53,6 +53,7 @@ import com.regnosys.rosetta.rosetta.RosettaWhenCascadeExpression
 import com.regnosys.rosetta.rosetta.RosettaWhenExpression
 import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 
 class RosettaBlueprintTypeResolver {
 	
@@ -466,7 +467,9 @@ class RosettaBlueprintTypeResolver {
 	def dispatch RosettaType getInput(RosettaBinaryOperation expr) {
 		val t1 = getInput(expr.left)
 		val t2 = getInput(expr.right)
-		if (t1!=t2) throw new BlueprintTypeException('''Input types must be the same but were «t1.name» and «t2.name»''');
+		if (t1!==null && t2!==null && t1!=t2) {
+			throw new BlueprintTypeException('''Input types must be the same but were «t1.name» and «t2.name»''');
+		}
 		return t1
 	}
 
@@ -485,6 +488,10 @@ class RosettaBlueprintTypeResolver {
 			}
 			RosettaAlias: {
 				return getInput(callable.expression)
+			}
+			RosettaEnumeration :{
+				//evaluating a enum constant does not require an input type
+				return null
 			}
 		}
 		throw new UnsupportedOperationException(

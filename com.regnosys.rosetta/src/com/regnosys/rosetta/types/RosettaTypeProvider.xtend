@@ -46,6 +46,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import java.util.List
 
 class RosettaTypeProvider {
 
@@ -54,6 +55,7 @@ class RosettaTypeProvider {
 	@Inject IDValueConverter idConverter
 	@Inject RosettaTypeCompatibility compatibility
 	@Inject RosettaExtensions extensions
+	@Inject extension RosettaTypeCompatibility
 	
 	def RType getRType(EObject expression) {
 		expression.safeRType(newHashMap)
@@ -191,7 +193,7 @@ class RosettaTypeProvider {
 			EmptyLiteral:
 				RBuiltinType.ANY
 			ListLiteral:
-				expression.elements.head.RType
+				listType(expression.elements)
 			RosettaExternalFunction: {
 				expression.type.safeRType(cycleTracker)
 			}
@@ -303,6 +305,24 @@ class RosettaTypeProvider {
 			default:
 				false
 		}
+	}
+	
+	private def listType(List<RosettaExpression> exp) {
+		val types = exp.map[RType]
+		val result = types.reduce[p1, p2| parent(p1,p2)]
+		if (result===null) return new RErrorType(types.groupBy[name].keySet.join(', '));
+		return result;
+	}
+	
+	private def RType parent(RType type1, RType type2) {
+		if (type1===null || type2===null) {
+			return null;
+		}
+		if (type1==type2) {
+			return type1
+		}
+		if (type1.isUseableAs(type2)) return type2
+		if (type2.isUseableAs(type1)) return type1
 	}
 
 }

@@ -81,6 +81,7 @@ class RosettaOperators {
 			return new RErrorType('''left hand side of «op» expression must be boolean''')
 		if (right!=RBuiltinType.BOOLEAN)
 			return new RErrorType('''left hand side of «op» expression must be boolean''')
+		return RBuiltinType.BOOLEAN
 	}
 	
 	def RBuiltinType convertToBuiltIn(RType type) {

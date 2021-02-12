@@ -787,12 +787,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkListLiteral(ListLiteral ele) {
-		if (ele.elements.size > 1) {
-			val types = ele.elements.map[RType].filterNull.groupBy[name]
-			if (types.size > 1) {
-				val mostUsed = types.keySet.sortBy[types.get(it).size].reverseView
-				error('''All collection elements must have the same type. Types used: «mostUsed.join(', ')»''', ele, null)
-			}
+		val type = ele.RType
+		if (type instanceof RErrorType) {
+			error('''All collection elements must have the same super type but types were «type.message»''', ele, null)
 		}
 	}
 	
