@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -73,14 +74,14 @@ class RosettaTypeProviderTest {
 				inputs: foo Foo (1..1)
 				output: is_event boolean (1..1)
 				assign-output is_event:
-					(foo -> nBar or foo -> nBuz) = 4.0
+					[foo -> nBar, foo -> nBuz] contains 4.0
 			
 			func Qualify_MixedNumber:
 				[qualification BusinessEvent]
 				inputs: foo Foo (1..1)
 				output: is_event boolean (1..1)
 				assign-output is_event:
-					(foo -> nBar or foo -> iBar) = 4.0
+					[foo -> nBar, foo -> iBar] contains 4.0
 			
 			func Qualify_IntOnly:
 				[qualification BusinessEvent]
@@ -91,9 +92,9 @@ class RosettaTypeProviderTest {
 		'''.parseRosettaWithNoErrors.elements.filter(Function)
 		
 		val allNumber = funcs.filter[name == "Qualify_AllNumber"].head
-		assertEquals('number', (allNumber.operations.head.expression as RosettaBinaryOperation).left.RType.name)
+		assertEquals('number', (allNumber.operations.head.expression as RosettaContainsExpression).container.RType.name)
 		val mixed = funcs.filter[name == "Qualify_MixedNumber"].head
-		assertEquals('number', (mixed.operations.head.expression as RosettaBinaryOperation).left.RType.name)
+		assertEquals('number', (mixed.operations.head.expression as RosettaContainsExpression).container.RType.name)
 		val intOnly = funcs.filter[name == "Qualify_IntOnly"].head
 		assertEquals('int', (intOnly.operations.head.expression as RosettaBinaryOperation).left.RType.name)
 	}
