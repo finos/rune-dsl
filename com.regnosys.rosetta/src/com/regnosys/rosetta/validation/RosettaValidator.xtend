@@ -81,6 +81,7 @@ import org.eclipse.xtext.validation.AbstractDeclarativeValidator.MethodWrapper
 import org.apache.log4j.Logger
 import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 import org.eclipse.emf.common.util.Diagnostic
+import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 
 /**
  * This class contains custom validation rules. 
@@ -616,6 +617,14 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		val typesMatch = leftType == rightType //arguable could support leftType.isUsablaAs || rightType.isUsableAs but the generated code doesn't support it
 		if (!typesMatch) {
 			error('''Disjoint must operate on lists of the same type''', disjoint, ROSETTA_DISJOINT_EXPRESSION__DISJOINT)
+		}
+	}
+	
+	@Check
+	def checkBinaryParamsRightTypes(RosettaBinaryOperation binOp) {
+		val resultType = binOp.RType
+		if (resultType instanceof RErrorType) {
+			error(resultType.message, binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
 		}
 	}
 	

@@ -59,6 +59,13 @@ class RosettaBlueprintTypeResolver {
 	@Inject extension RosettaTypeProvider
 	@Inject extension RosettaTypeCompatibility
 	@Inject extension RosettaExtensions
+	
+	static class BlueprintTypeException extends Exception {
+		new(String string) {
+			super(string);
+		}
+		
+	}
 
 	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp, RosettaType output) {
 		val prevNode = new TypedBPNode // a hypothetical node before this BP
@@ -66,7 +73,12 @@ class RosettaBlueprintTypeResolver {
 		nextNode.input.type = output
 
 		val result = new TypedBPNode
-		result.next = bindTypes(nodeExp, prevNode, nextNode)
+		try {
+			result.next = bindTypes(nodeExp, prevNode, nextNode)
+		}
+		catch (BlueprintTypeException ex) {
+			throw new BlueprintUnresolvedTypeException(ex.message,nodeExp, BLUEPRINT_NODE_EXP__NODE, RosettaIssueCodes.TYPE_ERROR)
+		}
 		result.input = prevNode.output
 		result.inputKey = prevNode.outputKey
 		result.output = nextNode.input
@@ -388,7 +400,7 @@ class RosettaBlueprintTypeResolver {
 				nodeType.genericName = expected.genericName
 			} else if (expected.either != nodeType.either) {
 				BlueprintUnresolvedTypeException.error('''«fieldName» type of «expected.either» is not assignable from type «nodeType.either» of previous node «node.name»''',
-					node, BLUEPRINT_NODE__NAME, RosettaIssueCodes.TYPE_ERROR)
+					node, BLUEPRINT_NODE__INPUT, RosettaIssueCodes.TYPE_ERROR)
 			}
 		}
 	}
@@ -452,7 +464,10 @@ class RosettaBlueprintTypeResolver {
 	}
 
 	def dispatch RosettaType getInput(RosettaBinaryOperation expr) {
-		return getInput(expr.left)
+		val t1 = getInput(expr.left)
+		val t2 = getInput(expr.right)
+		if (t1!=t2) throw new BlueprintTypeException('''Input types must be the same but were «t1.name» and «t2.name»''');
+		return t1
 	}
 
 	def dispatch RosettaType getInput(RosettaCallableCall expr) {
