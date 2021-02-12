@@ -30,7 +30,7 @@ class RosettaOperators {
 			if(left instanceof RFeatureCallType) {
 				return left
 			}
-			return commonType(left,right)
+			return bothBoolean(left, right, op)
 		}
 		if (left instanceof REnumType && right instanceof REnumType &&
 			(comaptibility.isUseableAs(left, right) || comaptibility.isUseableAs(right, left))) {
@@ -76,13 +76,12 @@ class RosettaOperators {
 			return resultingType
 	}
 	
-	def private commonType(RType left, RType right) {
-		if (left == right) {
-			return left
-		} else if (left instanceof RNumberType && right instanceof RNumberType) {
-			return RNumberType.getCommonType(left as RNumberType, right as RNumberType)
-		}
-		RBuiltinType.BOOLEAN
+	def private bothBoolean(RType left, RType right, String op) {
+		if (left!=RBuiltinType.BOOLEAN)
+			return new RErrorType('''left hand side of «op» expression must be boolean''')
+		if (right!=RBuiltinType.BOOLEAN)
+			return new RErrorType('''left hand side of «op» expression must be boolean''')
+		return RBuiltinType.BOOLEAN
 	}
 	
 	def RBuiltinType convertToBuiltIn(RType type) {

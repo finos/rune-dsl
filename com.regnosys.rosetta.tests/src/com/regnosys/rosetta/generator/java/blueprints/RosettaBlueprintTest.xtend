@@ -776,6 +776,23 @@ class RosettaBlueprintTest {
 		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
 			"Input type of Input2 is not assignable from type Input of previous node ")
 	}
+	
+	@Test
+	def void brokenAndInputTypes2() {
+		val model = '''
+			reporting rule Blueprint1
+				extract Input->traderef + Input2->colour
+						
+			type Input:
+				traderef int (1..1)
+			
+			type Input2:
+				colour int (1..1)
+			
+		'''.parseRosetta
+		model.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR, 
+			"Input types must be the same but were Input and Input2")
+	}
 
 	@Test
 	def void brokenAndInputTypesExtends() {

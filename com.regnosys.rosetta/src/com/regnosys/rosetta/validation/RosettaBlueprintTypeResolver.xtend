@@ -44,12 +44,29 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.rosetta.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
+import com.regnosys.rosetta.rosetta.RosettaWhenCascadeExpression
+import com.regnosys.rosetta.rosetta.RosettaWhenExpression
+import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 
 class RosettaBlueprintTypeResolver {
 	
 	@Inject extension RosettaTypeProvider
 	@Inject extension RosettaTypeCompatibility
 	@Inject extension RosettaExtensions
+	
+	static class BlueprintTypeException extends Exception {
+		new(String string) {
+			super(string);
+		}
+		
+	}
 
 	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp, RosettaType output) {
 		val prevNode = new TypedBPNode // a hypothetical node before this BP
@@ -57,7 +74,12 @@ class RosettaBlueprintTypeResolver {
 		nextNode.input.type = output
 
 		val result = new TypedBPNode
-		result.next = bindTypes(nodeExp, prevNode, nextNode)
+		try {
+			result.next = bindTypes(nodeExp, prevNode, nextNode)
+		}
+		catch (BlueprintTypeException ex) {
+			throw new BlueprintUnresolvedTypeException(ex.message,nodeExp, BLUEPRINT_NODE_EXP__NODE, RosettaIssueCodes.TYPE_ERROR)
+		}
 		result.input = prevNode.output
 		result.inputKey = prevNode.outputKey
 		result.output = nextNode.input
@@ -379,7 +401,7 @@ class RosettaBlueprintTypeResolver {
 				nodeType.genericName = expected.genericName
 			} else if (expected.either != nodeType.either) {
 				BlueprintUnresolvedTypeException.error('''«fieldName» type of «expected.either» is not assignable from type «nodeType.either» of previous node «node.name»''',
-					node, BLUEPRINT_NODE__NAME, RosettaIssueCodes.TYPE_ERROR)
+					node, BLUEPRINT_NODE__INPUT, RosettaIssueCodes.TYPE_ERROR)
 			}
 		}
 	}
@@ -425,8 +447,13 @@ class RosettaBlueprintTypeResolver {
 
 	def dispatch RosettaType getInput(RosettaExpression expr) {
 		val rType = expr.RType
+		//TODO this need to be transformed somehow into a nice grammar error
 		throw new UnsupportedOperationException(
 			"Unexpected input expression "  + expr.class + "... " + rType)
+	}
+	
+	def dispatch RosettaType getInput(RosettaContainsExpression expr) {
+		return getInput(expr.container)
 	}
 	
 	def dispatch RosettaType getInput(RosettaLiteral literal) {
@@ -438,7 +465,12 @@ class RosettaBlueprintTypeResolver {
 	}
 
 	def dispatch RosettaType getInput(RosettaBinaryOperation expr) {
-		return getInput(expr.left)
+		val t1 = getInput(expr.left)
+		val t2 = getInput(expr.right)
+		if (t1!==null && t2!==null && t1!=t2) {
+			throw new BlueprintTypeException('''Input types must be the same but were «t1.name» and «t2.name»''');
+		}
+		return t1
 	}
 
 	def dispatch RosettaType getInput(RosettaCallableCall expr) {
@@ -457,6 +489,10 @@ class RosettaBlueprintTypeResolver {
 			RosettaAlias: {
 				return getInput(callable.expression)
 			}
+			RosettaEnumeration :{
+				//evaluating a enum constant does not require an input type
+				return null
+			}
 		}
 		throw new UnsupportedOperationException(
 			"Unexpected input parsing rosetta callable " + callable.class.simpleName)
@@ -473,9 +509,44 @@ class RosettaBlueprintTypeResolver {
 	def dispatch RosettaType getInput(RosettaExistsExpression expr) {
 		return getInput(expr.argument)
 	}
+	
+	def dispatch RosettaType getInput(RosettaAbsentExpression expr) {
+		return getInput(expr.argument)
+	}
+	
+	def dispatch RosettaType getInput(RosettaDisjointExpression expr) {
+		return getInput(expr.container)//TODO check RHS has matching scope? or is that checked elsewhere
+	}
+	
+	def dispatch RosettaType getInput(RosettaEnumValueReference expr) {
+		return null
+	}
+	
+	def dispatch RosettaType getInput(RosettaParenthesisCalcExpression expr) {
+		return getInput(expr.expression)
+	}
+	
+	def dispatch RosettaType getInput(RosettaWhenCascadeExpression expr) {
+		return getInput(expr.whens.get(0))
+	}
+	
+	def dispatch RosettaType getInput(RosettaWhenExpression expr) {
+		return getInput(expr.condition)
+	}
+	
+	def dispatch RosettaType getInput(RosettaWhenPresentExpression expr) {
+		return getInput(expr.left)
+	}
+	
+	def dispatch RosettaType getInput(RosettaCallableWithArgsCall expr) {
+		if (expr.args.size==0) return null
+		return getInput(expr.args.get(0))
+	}
 
 	def dispatch RosettaType getOutput(RosettaExpression expr) {
-		throw new UnsupportedOperationException("not sure of output type of  " + expr.class.simpleName)
+		var st = RosettaFactory.eINSTANCE.createRosettaBasicType
+		st.name = expr.getRType.name
+		return st
 	}
 
 	def dispatch RosettaType getOutput(RosettaAlias expr) {
@@ -506,7 +577,13 @@ class RosettaBlueprintTypeResolver {
 	
 	def dispatch RosettaType getOutput(RosettaConditionalExpression cond) {
 		return cond.ifthen.getOutput
-		//TODO the if case and the else case must return the same type
+		//TODO the if case and the else case must return the same type - or is this checked elsewhere?
+	}
+	
+	def dispatch RosettaType getOutput(RosettaContainsExpression cond) {
+		var st = RosettaFactory.eINSTANCE.createRosettaBasicType
+		st.name = cond.getRType.name
+		return st
 	}
 	
 	def dispatch RosettaType getOutput(RosettaGroupByFeatureCall groupCall) {

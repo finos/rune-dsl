@@ -641,15 +641,21 @@ class ExpressionGenerator {
 			RosettaEnumValue : {
 				'''«expr.name»'''
 			}
+			ListLiteral : {
+				'''[«FOR el:expr.elements SEPARATOR ", " »«el.toNodeLabel»«ENDFOR»]'''
+			}
 			RosettaLiteral : {
 				'''«expr.stringValue»'''
 			}
 			RosettaCountOperation : {
 				'''«toNodeLabel(expr.argument)» count'''
 			}
+			RosettaContainsExpression : {
+				'''«expr.container.toNodeLabel» contains «expr.contained.toNodeLabel»'''
+			}
 
 			default :
-				throw new UnsupportedOperationException("Unsupported expression type of "+expr.class.simpleName)
+				'''Unsupported expression type of «expr.class.simpleName»'''
 		}
 	}
 	
