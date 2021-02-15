@@ -12,6 +12,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -249,7 +250,7 @@ class FuncGeneratorTest {
 					result string (0..1)
 				
 				condition:
-					( m1 -> currency and m2 -> currency ) = currency
+					[ m1 -> currency , m2 -> currency ] = currency
 		'''.generateCode
 		code.compileToClasses
 	}
@@ -460,6 +461,34 @@ class FuncGeneratorTest {
 		
 		model.assertError(ROSETTA_DISJOINT_EXPRESSION, null, 
 			"Disjoint must operate on lists of the same type")
+	}
+	
+	@Test
+	def void shouldNotAndInts() {
+		val model = 
+		'''
+			namespace "com.rosetta.test.model.agreement"
+					version "test"
+			
+			type Top:
+				foo Foo (1..1)
+			
+			type Foo:
+				bar1 number (1..1)
+			
+			func ExtractBar: <"tries anding integers">
+				inputs: 
+					top1 Top (1..1)
+					top2 Top (1..1)
+				
+				output: result int (1..1)
+				assign-output result:
+					top1-> foo and top2 -> foo
+		'''.parseRosetta
+		
+		
+		model.assertError(SimplePackage.Literals.OPERATION, TYPE_ERROR, 
+			"left hand side of and expression must be boolean")
 	}
 		
 	

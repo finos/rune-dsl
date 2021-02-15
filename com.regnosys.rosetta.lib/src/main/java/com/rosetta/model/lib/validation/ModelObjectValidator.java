@@ -30,7 +30,7 @@ public interface ModelObjectValidator {
 		private final String errors;
 
 		public ModelObjectValidationException(String errors) {
-			super();
+			super(errors);
 			this.errors = errors;
 		}
 
