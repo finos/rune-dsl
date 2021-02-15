@@ -13,6 +13,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
+import com.regnosys.rosetta.validation.RosettaIssueCodes
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -487,7 +488,7 @@ class FuncGeneratorTest {
 		'''.parseRosetta
 		
 		
-		model.assertError(SimplePackage.Literals.OPERATION, TYPE_ERROR, 
+		model.assertError(SimplePackage.Literals.OPERATION, RosettaIssueCodes.TYPE_ERROR, 
 			"left hand side of and expression must be boolean")
 	}
 		
