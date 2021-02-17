@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
+
+<!--
+ Copyright (c) REGnosys 2017 (www.regnosys.com)
+-->
+
 <plugin>
-	<extension point="org.eclipse.emf.ecore.generated_package">
-		<package 
-			uri = "http://www.rosetta-model.com/Rosetta"
-			class = "com.regnosys.rosetta.rosetta.RosettaPackage"
-			genModel = "model/Rosetta.xcore" />
-	</extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated Rosetta -->
+      <package
+            uri="http://www.rosetta-model.com/Rosetta"
+            class="com.regnosys.rosetta.rosetta.RosettaPackage"
+            genModel="model/Rosetta.xcore"/>
+   </extension>
+
    <extension point="org.eclipse.emf.ecore.generated_package">
       <!-- @generated RosettaSimple -->
       <package

@@ -10,19 +10,6 @@
     <artifactId>com.regnosys.rosetta.lib</artifactId>
     <packaging>eclipse-plugin</packaging>
 
-    <properties>
-        <junit.jupiter.version>5.6.0</junit.jupiter.version>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -51,10 +38,10 @@
                 </executions>
                 <configuration>
                 	<excludes>
-                		<exclude>model/*.rosetta</exclude>
+                		<!-- exclude>model/*.rosetta</exclude-->
                 	</excludes>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
             <plugin>

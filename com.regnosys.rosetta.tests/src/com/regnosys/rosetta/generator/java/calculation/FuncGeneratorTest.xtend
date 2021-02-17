@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
+import com.regnosys.rosetta.validation.RosettaIssueCodes
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -329,10 +329,10 @@ class FuncGeneratorTest {
 				party Party (1..1)
 				
 				condition AgreementValid:
-					if get_Party_Id() exists
+					if Get_Party_Id() exists
 						then id is absent
 
-			func get_Party_Id:
+			func Get_Party_Id:
 			 	inputs:
 			 		agreement Agreement (1..1)
 				output:
@@ -488,7 +488,7 @@ class FuncGeneratorTest {
 		'''.parseRosetta
 		
 		
-		model.assertError(SimplePackage.Literals.OPERATION, TYPE_ERROR, 
+		model.assertError(SimplePackage.Literals.OPERATION, RosettaIssueCodes.TYPE_ERROR, 
 			"left hand side of and expression must be boolean")
 	}
 		
