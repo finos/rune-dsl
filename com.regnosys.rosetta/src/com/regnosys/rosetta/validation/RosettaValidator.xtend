@@ -82,6 +82,7 @@ import org.apache.log4j.Logger
 import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 import org.eclipse.emf.common.util.Diagnostic
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.BlueprintExtract
 
 /**
  * This class contains custom validation rules. 
@@ -607,6 +608,13 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			buildTypeGraph(bp.nodes, bp.output)
 		} catch (BlueprintUnresolvedTypeException e) {
 			error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
+		}
+	}
+	
+	@Check
+	def void checkExtractCardinality(BlueprintExtract extract) {
+		if (extract.multiple) {
+			warning("multiple keyword is redundant and deprecated", extract, BLUEPRINT_EXTRACT__MULTIPLE)
 		}
 	}
 	
