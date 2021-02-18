@@ -391,7 +391,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testDuplicateBasicTypeAttributeWithOverrideBadTypes() {
 		val model = '''
-			type
 			type Foo:
 				i int (1..1)
 			
