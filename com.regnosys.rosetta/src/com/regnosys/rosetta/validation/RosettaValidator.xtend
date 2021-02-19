@@ -83,6 +83,7 @@ import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 import org.eclipse.emf.common.util.Diagnostic
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.BlueprintExtract
+import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 
 /**
  * This class contains custom validation rules. 
@@ -615,6 +616,19 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	def void checkExtractCardinality(BlueprintExtract extract) {
 		if (extract.multiple) {
 			warning("multiple keyword is redundant and deprecated", extract, BLUEPRINT_EXTRACT__MULTIPLE)
+		}
+	}
+	
+	@Check
+	def void checkDataJoinType(BlueprintDataJoin join) {
+		val keyType = join.key.RType
+		val fkType = join.foreign.RType
+		if (keyType!=fkType) {
+			error('''Type of key («keyType.name») and foreignKey («fkType.name») do not match''', join, null, TYPE_ERROR)
+		}		
+		val multi = cardinality.isMulti(join.key)
+		if (multi) {
+			error('''Key expression must have single cardinality''', join, BLUEPRINT_DATA_JOIN__KEY)
 		}
 	}
 	

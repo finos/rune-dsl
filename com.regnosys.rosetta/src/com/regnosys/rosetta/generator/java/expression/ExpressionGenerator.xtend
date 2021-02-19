@@ -600,8 +600,23 @@ class ExpressionGenerator {
 		new(){
 		}
 		
-		def getClass(RosettaType c) {
-			return get(new ParamID(c, -1, null));
+		def dispatch String getClass(RosettaType c) {
+			return get(new ParamID(c, -1, null))
+		}
+		
+		def dispatch String getClass(Data c) {
+			entrySet.findFirst[e|
+				val type  = e.key.c
+				if (type instanceof Data) {
+					if (type.isSub(c)) return true
+				}
+				false	
+			]?.value
+		}
+		
+		def boolean isSub(Data d1, Data d2) {
+			if (d1==d2) return true
+			return d1.hasSuperType && d1.superType.isSub(d2)
 		}
 	}
 	

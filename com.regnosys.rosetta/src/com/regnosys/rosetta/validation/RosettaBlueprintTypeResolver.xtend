@@ -166,7 +166,10 @@ class RosettaBlueprintTypeResolver {
 				in1.output.type = getInput(node.key as RosettaFeatureCall)
 				in2.output.type = getInput(node.foreign)
 				val unifiedInput = new TypedBPNode
-				getUnionType(#[in1, in2], unifiedInput)
+				getUnionType(#[in1, in2, new TypedBPNode], unifiedInput)
+				//Unless we implement proper type unions (e.g. MyClass1 OR MyClass2) the input type of a data join is always object
+				//unifiedInput.output.setGenericName("Object")
+				
 				result.input.type = unifiedInput.output.type
 				result.input.genericName = unifiedInput.output.genericName
 			}
@@ -399,7 +402,11 @@ class RosettaBlueprintTypeResolver {
 				// the expected input is known and the actual is unbound - bind it
 				nodeType.type = expected.type
 				nodeType.genericName = expected.genericName
-			} else if (expected.either != nodeType.either) {
+			} else if (isAssignableTo(expected, nodeType)) {
+				nodeType.type = expected.type
+				nodeType.genericName = expected.genericName
+			}
+			else if (!isAssignableTo(expected, nodeType)){
 				BlueprintUnresolvedTypeException.error('''«fieldName» type of «expected.either» is not assignable from type «nodeType.either» of previous node «node.name»''',
 					node, BLUEPRINT_NODE__INPUT, RosettaIssueCodes.TYPE_ERROR)
 			}
@@ -675,6 +682,9 @@ class RosettaBlueprintTypeResolver {
 		if (!type1.bound || !type2.bound) return true;
 		if (type2.genericName=="number") {
 			return type1.genericName=="number" || type1.genericName=="int"
+		}
+		else if (type1.genericName=="Object")  {
+			return true
 		}
 		else if (type2.genericName!==null) {
 			return type2.genericName==type1.either

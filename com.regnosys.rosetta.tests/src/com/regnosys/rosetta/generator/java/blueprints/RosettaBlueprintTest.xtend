@@ -785,7 +785,7 @@ class RosettaBlueprintTest {
 	}
 	
 	@Test
-	def void brokenAndInputTypes2() {
+	def void brokenExpressionInputTypes() {
 		val model = '''
 			reporting rule Blueprint1
 				extract Input->traderef + Input2->colour
@@ -802,8 +802,8 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
-	def void brokenAndInputTypesExtends() {
-		'''
+	def void andInputTypesExtends() {
+		val code = '''
 			reporting rule Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				( extract Input->traderef , extract Input2->colour)
@@ -811,11 +811,11 @@ class RosettaBlueprintTest {
 			type Input:
 				traderef string (1..1)
 			
-			type Input2 extends Input: // Rosetta extension isn't polymorphic
+			type Input2 extends Input:
 				colour string (1..1)
 			
-		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
-			"Input type of Input2 is not assignable from type Input of previous node ")
+		'''.generateCode
+		code.compileToClasses
 	}
 
 	@Test
@@ -1831,9 +1831,50 @@ class RosettaBlueprintTest {
 			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
-		// writeOutClasses(blueprint, "selfJoin");
+		 writeOutClasses(blueprint, "selfJoin");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		blueprint.compileToClasses
+	}
+	
+	@Test
+	def void selfJoinBasic() {
+		val blueprint = '''
+			type MyType:
+				singleString string (1..1)
+				singleInt int (1..1)
+			
+				multiString string (0..*)
+				multiInt int (0..*)
+			
+			type MyType2:
+					multiInt int (0..*)
+				
+			reporting rule Rule1
+				join key MyType->singleInt foreignKey MyType->multiInt'''
+		.generateCode
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Rule1Rule")
+		//writeOutClasses(blueprint, "selfJoinBasic");
+		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		blueprint.compileToClasses
+	}
+	
+	@Test
+	def void joinKeyMismatch() {
+		val model = '''
+			type MyType:
+				singleString string (1..1)
+				singleInt int (1..1)
+			
+				multiString string (0..*)
+				multiInt int (0..*)
+				
+			reporting rule Rule1
+				join key MyType->multiInt foreignKey MyType->singleString'''
+		.parseRosetta
+		model.assertError(BLUEPRINT_DATA_JOIN, RosettaIssueCodes.TYPE_ERROR,
+			"Type of Key (int) and ForeignKey (string) do not match")
+		model.assertError(BLUEPRINT_DATA_JOIN, null,
+			"Key expression must have single cardinality")
 	}
 
 	@Test
