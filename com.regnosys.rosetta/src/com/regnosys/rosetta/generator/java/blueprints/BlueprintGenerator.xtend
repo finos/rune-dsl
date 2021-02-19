@@ -45,12 +45,14 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
+import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 
 class BlueprintGenerator {
 	
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension ExpressionGenerator
+	@Inject CardinalityProvider cardinality
 
 	/**
 	 * generate a blueprint java file
@@ -219,9 +221,9 @@ class BlueprintGenerator {
 				val nodeName = if (node.identifier !== null) node.identifier 
 								else if (node.name !== null) node.name
 								else cond.toNodeLabel
-				
+				val multi = cardinality.isMulti(cond)
 				val id = '''new StringIdentifier("«nodeName»")'''
-				if (!node.multiple)
+				if (!multi)
 				'''actionFactory.<«typedNode.input.getEither», «
 					typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaSingleMapper("«node.URI»", "«(cond).toNodeLabel
 						»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type))»)'''
