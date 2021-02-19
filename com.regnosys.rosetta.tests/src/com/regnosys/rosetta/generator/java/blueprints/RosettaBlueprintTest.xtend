@@ -693,7 +693,7 @@ class RosettaBlueprintTest {
 	@Test
 	@Disabled
 	def void multipleExtract() {
-		val blueprint = '''
+		val model = '''
 			type Input:
 				input2 int (1..*)
 			
@@ -702,7 +702,11 @@ class RosettaBlueprintTest {
 			{
 				extract multiple Input->input2 as "inputs"
 			}
-		'''.generateCode
+		'''.parseRosetta
+		
+		model.assertWarning(BLUEPRINT_EXTRACT, null, "multiple keyword is redundant and deprecated")
+		
+		val blueprint = model.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1")
 		// writeOutClasses(blueprint, "multipleExtract");
 		try {
@@ -1506,7 +1510,7 @@ class RosettaBlueprintTest {
 				public BlueprintInstance<Avengers, String, INKEY, INKEY> blueprint() { 
 					return 
 						startsWith(actionFactory, new FilterByRule<Avengers, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "CanWieldMjolnir", new CanWieldMjolnirRule<INKEY>(actionFactory).blueprint()))
-						.then(actionFactory.<Avengers, Hero, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->heros", new StringIdentifier("->heros"), avengers -> MapperS.of(avengers).<Hero>mapC("getHeros", _avengers -> _avengers.getHeros())))
+						.then(actionFactory.<Avengers, Hero, INKEY>newRosettaMultipleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->heros", new StringIdentifier("->heros"), avengers -> MapperS.of(avengers).<Hero>mapC("getHeros", _avengers -> _avengers.getHeros())))
 						.then(new Filter<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@node", "->name<>\"Thor\"", hero -> notEqual(MapperS.of(hero).<String>map("getName", _hero -> _hero.getName()), MapperS.of("Thor")).get()))
 						.then(actionFactory.<Hero, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@next/@node", "->name", new StringIdentifier("->name"), hero -> MapperS.of(hero).<String>map("getName", _hero -> _hero.getName())))
 						.toBlueprint(getURI(), getName());
