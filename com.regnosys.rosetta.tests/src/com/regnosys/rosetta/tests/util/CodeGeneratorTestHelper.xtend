@@ -77,12 +77,12 @@ class CodeGeneratorTestHelper {
 	}
 
 	def compileToClasses(Map<String, String> code) {
-		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA8);
+		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA11);
 	}
 
-	def compileJava8(CharSequence model) {
+	def compileJava11(CharSequence model) {
 		val code = generateCode(model)
-		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA8);
+		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA11);
 	}
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, String className, Map<String, Object> itemsToSet) {

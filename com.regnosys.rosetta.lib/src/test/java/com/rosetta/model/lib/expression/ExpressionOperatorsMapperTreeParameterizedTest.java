@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.expressons;
+package com.rosetta.model.lib.expression;
 
 import static com.rosetta.model.lib.expression.ExpressionOperators.areEqual;
 import static com.rosetta.model.lib.expression.ExpressionOperators.exists;
@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.mapper.MapperTree;
 
@@ -26,7 +25,7 @@ public class ExpressionOperatorsMapperTreeParameterizedTest {
 			greaterThan(MapperTree.or(
 							MapperTree.of(MapperS.of(foo).map("getAttr1", Foo::getAttr1)), 
 							MapperTree.of(MapperS.of(foo).map("getAttr2", Foo::getAttr2))), 
-					MapperTree.of(MapperS.of(new Integer(5))));
+					MapperTree.of(MapperS.of(Integer.valueOf(5))));
 	
 	private static final Function<Foo, ComparisonResult> GREATER_THAN_WITH_OR_AND = (foo) -> 
 			greaterThan(MapperTree.or(
@@ -35,7 +34,7 @@ public class ExpressionOperatorsMapperTreeParameterizedTest {
 								MapperTree.and(MapperTree.of(MapperS.of(foo).map("getAttr2", Foo::getAttr2)), 
 											   MapperTree.of(MapperS.of(foo).map("getAttr3", Foo::getAttr3))), 
 								MapperTree.of(MapperS.of(foo).map("getAttr4", Foo::getAttr4)))), 
-					MapperTree.of(MapperS.of(new Integer(5))));
+					MapperTree.of(MapperS.of(Integer.valueOf(5))));
 	
 	private static final Function<Foo, ComparisonResult> GREATER_THAN_AND = (foo) -> 
 			greaterThan(
