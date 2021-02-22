@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.expressions;
+package com.rosetta.model.lib.expression;
 
 import java.util.Collection;
 import java.util.Collections;

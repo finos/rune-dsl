@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.expressions;
+package com.rosetta.model.lib.expression;
 
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.MapperGroupBy;

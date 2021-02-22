@@ -19,7 +19,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.rosetta.lib.postprocess,
  com.rosetta.model.lib,
  com.rosetta.model.lib.annotations,
- com.rosetta.model.lib.expressions,
+ com.rosetta.model.lib.expression,
  com.rosetta.model.lib.functions,
  com.rosetta.model.lib.mapper,
  com.rosetta.model.lib.meta,

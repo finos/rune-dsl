@@ -1,6 +1,6 @@
-package com.rosetta.model.lib.expressions;
+package com.rosetta.model.lib.expression;
 
-import static com.rosetta.model.lib.expressions.ErrorHelper.formatEqualsComparisonResultError;
+import static com.rosetta.model.lib.expression.ErrorHelper.formatEqualsComparisonResultError;
 
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.MapperC;

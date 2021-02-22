@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.expression.ExpressionOperators;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.mapper.MapperTree;
 

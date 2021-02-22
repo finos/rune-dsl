@@ -1,6 +1,6 @@
 package com.rosetta.model.lib.mapper;
 
-import com.rosetta.model.lib.expressions.Converter;
+import com.rosetta.model.lib.expression.Converter;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
