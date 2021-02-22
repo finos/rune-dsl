@@ -835,7 +835,7 @@ class RosettaBlueprintTest {
 			package com.rosetta.test.model.blueprint;
 			
 			import com.rosetta.model.lib.mapper.MapperS;
-			import static com.rosetta.model.lib.expressions.ExpressionOperators.*;
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1355,7 +1355,7 @@ class RosettaBlueprintTest {
 		package com.rosetta.test.model.blueprint;
 		
 		import com.rosetta.model.lib.mapper.MapperS;
-		import static com.rosetta.model.lib.expressions.ExpressionOperators.*;
+		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		// manual imports
 		import com.regnosys.rosetta.blueprints.Blueprint;
 		import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1469,7 +1469,7 @@ class RosettaBlueprintTest {
 			
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Hero;
-			import static com.rosetta.model.lib.expressions.ExpressionOperators.*;
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1558,7 +1558,7 @@ class RosettaBlueprintTest {
 			package com.rosetta.test.model.blueprint;
 			
 			import com.rosetta.model.lib.mapper.MapperS;
-			import static com.rosetta.model.lib.expressions.ExpressionOperators.*;
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;

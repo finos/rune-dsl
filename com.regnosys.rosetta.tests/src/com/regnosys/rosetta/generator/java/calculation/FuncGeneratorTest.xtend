@@ -375,10 +375,10 @@ class FuncGeneratorTest {
 					[metadata id]
 				
 				condition AgreementValid:
-					if get_Party_Id() exists
+					if Get_Party_Id() exists
 						then id is absent
 
-			func get_Party_Id:
+			func Get_Party_Id:
 			 	inputs:
 			 		agreement Agreement (1..1)
 				output:

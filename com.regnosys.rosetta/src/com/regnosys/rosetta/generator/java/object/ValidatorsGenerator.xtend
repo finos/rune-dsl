@@ -24,8 +24,8 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.rosetta.model.lib.expressions.ComparisonResult
-import com.rosetta.model.lib.expressions.ExpressionOperators
+import com.rosetta.model.lib.expression.ComparisonResult
+import com.rosetta.model.lib.expression.ExpressionOperators
 
 class ValidatorsGenerator {
 

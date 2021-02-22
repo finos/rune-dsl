@@ -47,10 +47,10 @@ import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.mapper.MapperC
-import com.rosetta.model.lib.expressions.MapperMaths
+import com.rosetta.model.lib.expression.MapperMaths
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.mapper.MapperTree
-import com.rosetta.model.lib.expressions.ExpressionOperators
+import com.rosetta.model.lib.expression.ExpressionOperators
 import java.math.BigDecimal
 import java.util.HashMap
 import org.eclipse.xtend2.lib.StringConcatenationClient

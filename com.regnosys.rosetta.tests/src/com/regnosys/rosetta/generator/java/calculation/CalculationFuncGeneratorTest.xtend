@@ -50,7 +50,7 @@ class CalculationFuncGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
-				import com.rosetta.model.lib.expressions.MapperMaths;
+				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.Mapper;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -132,7 +132,7 @@ class CalculationFuncGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.rosetta.model.lib.expressions.MapperMaths;
+			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
@@ -193,7 +193,7 @@ class CalculationFuncGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.rosetta.model.lib.expressions.MapperMaths;
+			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.Max;
 			import com.rosetta.model.lib.functions.Min;
 			import com.rosetta.model.lib.functions.RosettaFunction;
@@ -273,7 +273,7 @@ class CalculationFuncGeneratorTest {
 		
 		import com.google.inject.ImplementedBy;
 		import com.google.inject.Inject;
-		import com.rosetta.model.lib.expressions.MapperMaths;
+		import com.rosetta.model.lib.expression.MapperMaths;
 		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.mapper.Mapper;
 		import com.rosetta.model.lib.mapper.MapperS;
@@ -365,7 +365,7 @@ class CalculationFuncGeneratorTest {
 		
 		import com.google.inject.ImplementedBy;
 		import com.google.inject.Inject;
-		import com.rosetta.model.lib.expressions.MapperMaths;
+		import com.rosetta.model.lib.expression.MapperMaths;
 		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.mapper.Mapper;
 		import com.rosetta.model.lib.mapper.MapperS;
