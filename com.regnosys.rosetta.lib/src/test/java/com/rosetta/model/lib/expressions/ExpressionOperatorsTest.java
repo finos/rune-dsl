@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.expressions;
+package com.rosetta.model.lib.expression;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;

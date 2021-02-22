@@ -1,4 +1,4 @@
-package com.rosetta.model.lib.expressions;
+package com.rosetta.model.lib.expression;
 
 import static com.rosetta.model.lib.expression.ExpressionOperators.exists;
 import static com.rosetta.model.lib.expression.ExpressionOperators.greaterThan;
