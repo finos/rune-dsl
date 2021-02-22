@@ -42,7 +42,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				items string (0..*)
 		'''
-		.compileJava8
+		.compileJava11
 
 		val classTester = classes.get(rootPackage.name + ".Tester")
 		val classTesterBuilderInstance = classTester.getMethod("builder").invoke(null)
@@ -65,7 +65,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				one string (0..1)
 				list string (0..*)
-		'''.compileJava8
+		'''.compileJava11
 
 		assertEquals(String, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 	}
@@ -90,7 +90,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				one number (0..1)
 				list number (0..*)
-		'''.compileJava8
+		'''.compileJava11
 
 		assertEquals(BigDecimal, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 
@@ -102,7 +102,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				one boolean (0..1)
 				list boolean (0..*)
-		'''.compileJava8
+		'''.compileJava11
 
 		assertEquals(Boolean, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 
@@ -114,7 +114,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				one date (0..1)
 				list date (0..*)
-		'''.compileJava8
+		'''.compileJava11
 		assertEquals(Date, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 	}
 
@@ -125,7 +125,7 @@ class ModelObjectGeneratorTest {
 				one date (0..1)
 				list date (0..*)
 				zoned zonedDateTime (0..1)
-		'''.compileJava8
+		'''.compileJava11
 		assertEquals(Date,
 			classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 		assertEquals(ZonedDateTime,
@@ -138,7 +138,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				one time (0..1)
 				list time (0..*)
-		'''.compileJava8
+		'''.compileJava11
 		assertEquals(LocalTime, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 	}
 
@@ -148,7 +148,7 @@ class ModelObjectGeneratorTest {
 		val classes = '''
 			type TestObject: <"">
 				fieldOne string (0..1) <"">
-		'''.compileJava8
+		'''.compileJava11
 		val generatedClass = classes.get(rootPackage.name + ".TestObject")
 		val builderInstance = generatedClass.getMethod("builder").invoke(null)
 		var inst = builderInstance.invoke("prune")
@@ -529,7 +529,7 @@ class ModelObjectGeneratorTest {
 		val classes = '''
 			type Foo: 
 				bar string (0..*) 
-		'''.compileJava8
+		'''.compileJava11
 		
 		var fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of(), of('bar', list)))
 		var prunedInstance = fooInstance.toBuilder.prune

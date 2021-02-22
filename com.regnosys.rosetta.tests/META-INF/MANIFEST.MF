@@ -25,4 +25,4 @@ Import-Package: org.junit.jupiter.api;bundle-version="5.7.0",
  com.regnosys.rosetta.rosetta,
  model
 Bundle-ActivationPolicy: lazy
-Export-Package: com.regnosys.rosetta.tests;x-internal=true
+Export-Package: com.regnosys.rosetta.tests
