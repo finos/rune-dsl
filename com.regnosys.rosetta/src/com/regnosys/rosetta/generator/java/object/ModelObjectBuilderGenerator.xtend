@@ -166,7 +166,7 @@ class ModelObjectBuilderGenerator {
 						else {
 							result = «attribute.name» = new «attribute.toBuilderTypeSingle(names)»();
 							«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
-								result.getOrCreateMeta().addKeyBuilder(new «Key».KeyBuilder().setScope("DOCUMENT"));
+								result.getOrCreateMeta().addKeyBuilder(«Key».builder().setScope("DOCUMENT"));
 							«ENDIF»
 						}
 						
@@ -179,11 +179,13 @@ class ModelObjectBuilderGenerator {
 							this.«attribute.name» = new «ArrayList»<>();
 						}
 						«attribute.toBuilderTypeSingle(names)» result;
-						result =  getIndex(«attribute.name», _index, ()->new «attribute.toBuilderTypeSingle(names)»());
-						«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
-							result.getOrCreateMeta().addKeyBuilder(new «Key».KeyBuilder().setScope("DOCUMENT"));
-						«ENDIF»
-						return result;
+						return getIndex(«attribute.name», _index, () -> {
+									«attribute.toBuilderTypeSingle(names)» new«attribute.name.toFirstUpper» = new «attribute.toBuilderTypeSingle(names)»();
+									«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
+										new«attribute.name.toFirstUpper».getOrCreateMeta().addKeyBuilder(«Key».builder().setScope("DOCUMENT"));
+									«ENDIF»
+									return new«attribute.name.toFirstUpper»;
+								});
 					}
 					
 				«ENDIF»
