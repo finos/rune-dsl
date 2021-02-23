@@ -178,7 +178,7 @@ class ModelObjectBuilderGenerator {
 						return getIndex(«attribute.name», _index, () -> {
 									«attribute.toBuilderTypeSingle(names)» new«attribute.name.toFirstUpper» = «attribute.toTypeSingle(names)».builder();
 									«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
-										new«attribute.name.toFirstUpper».getOrCreateMeta().addKeyBuilder(«Key».builder().setScope("DOCUMENT"));
+										new«attribute.name.toFirstUpper».getOrCreateMeta().addKey(«Key».builder().setScope("DOCUMENT"));
 									«ENDIF»
 									return new«attribute.name.toFirstUpper»;
 								});
