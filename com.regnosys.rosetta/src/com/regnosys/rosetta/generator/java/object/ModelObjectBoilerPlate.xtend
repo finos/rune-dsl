@@ -22,6 +22,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.rosetta.model.lib.process.BuilderProcessor
 import com.rosetta.model.lib.process.AttributeMeta
+import com.rosetta.model.lib.RosettaModelObject
 
 class ModelObjectBoilerPlate {
 
@@ -138,12 +139,12 @@ class ModelObjectBoilerPlate {
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
+			if (o == null || !(o instanceof «RosettaModelObject») || !getType().equals(((RosettaModelObject)o).getType())) return false;
 			«IF c.hasSuperType»
 				if (!super.equals(o)) return false;
 			«ENDIF»
 		
-			«IF !attributes.empty»«classNameFunc.apply(c)» _that = («classNameFunc.apply(c)») o;«ENDIF»
+			«IF !attributes.empty»«c.name.toFirstUpper» _that = getType().cast(o);«ENDIF»
 		
 			«FOR field : attributes.filter[!overriding]»
 				«field.contributeToEquals»

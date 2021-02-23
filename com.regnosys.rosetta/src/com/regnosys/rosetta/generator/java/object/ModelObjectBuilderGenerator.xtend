@@ -300,7 +300,7 @@ class ModelObjectBuilderGenerator {
 		@Override
 		public boolean hasData() {
 			«IF hasSuperType»if (super.hasData()) return true;«ENDIF»
-			«FOR attribute:attributes»    
+			«FOR attribute:attributes.filter[name!="meta"]»
 				«IF attribute.cardinalityIsListValue»
 					«IF attribute.isDataType»
 						if (get«attribute.name.toFirstUpper»()!=null && get«attribute.name.toFirstUpper»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
