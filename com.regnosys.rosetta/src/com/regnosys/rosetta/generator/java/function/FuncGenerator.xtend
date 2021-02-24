@@ -6,7 +6,6 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.expression.Context
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
-import com.regnosys.rosetta.generator.java.expression.ExpressionGeneratorWithBuilder
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
@@ -29,16 +28,12 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RAnnotateType
-import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
-import com.rosetta.model.lib.functions.Mapper
-import com.rosetta.model.lib.functions.MapperBuilder
-import com.rosetta.model.lib.functions.MapperS
 import com.rosetta.model.lib.functions.RosettaFunction
-import com.rosetta.model.lib.math.BigDecimalExtensions
+
 import com.rosetta.model.lib.validation.ModelObjectValidator
 import java.util.Map
 import java.util.Optional
@@ -48,11 +43,13 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.rosetta.model.lib.mapper.MapperBuilder
+import com.rosetta.model.lib.mapper.Mapper
 
 class FuncGenerator {
 
 	@Inject ExpressionGenerator expressionGenerator
-	@Inject ExpressionGeneratorWithBuilder expressionWithBuilder
+	//@Inject ExpressionGeneratorWithBuilder expressionWithBuilder
 	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
@@ -60,7 +57,7 @@ class FuncGenerator {
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
 	@Inject  CardinalityProvider cardinality
-	@Inject JavaNames.Factory factory 
+	@Inject JavaNames.Factory factory
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = javaNames.packages.model.functions.directoryName + '/' + func.name + '.java'
@@ -141,8 +138,7 @@ class FuncGenerator {
 					
 					«output.toBuilderType(names)» «outputName»Holder = doEvaluate(«func.inputsAsArguments(names)»);
 					«IF outNeedsBuilder»
-						«outputType».«outputType»Builder «outputName»Builder = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
-						final «outputType» «outputName» = «outputName»Builder==null? null:«outputName»Builder.build();
+						«outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
 					«ELSE»
 						final «outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
 					«ENDIF»	
@@ -160,12 +156,11 @@ class FuncGenerator {
 					return «outputName»;
 				}
 				
-				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
+				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
 					«FOR indexed : func.operations.indexed»
-						«IF outNeedsBuilder»«IF indexed.key == 0»@«SuppressWarnings»("unused") «outputType» «ENDIF»«outputName» = «outputName»Holder.build();«ENDIF»
 						«indexed.value.assign(aliasOut, names, output)»;
 					«ENDFOR»
-					return «outputName»Holder;
+					return «outputName»;
 				}
 
 				protected abstract «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
@@ -174,7 +169,7 @@ class FuncGenerator {
 					
 					«IF aliasOut.get(alias)»
 						protected «names.shortcutJavaType(alias)» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
-							return «expressionWithBuilder.toJava(alias.expression, Context.create(names))».get();
+							return «expressionGenerator.javaCode(alias.expression, new ParamMap)».get().toBuilder();
 						}
 					«ELSE»
 						protected «IF needsBuilder(alias)»«MapperBuilder»«ELSE»«Mapper»«ENDIF»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
@@ -246,16 +241,15 @@ class FuncGenerator {
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = ((MapperS<«type.toBuilderType(names)»>)(«expressionWithBuilder.toJava(op.expression, ctx)»)).get();
+				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, ctx)»)
 			«ELSE»
 				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
 		else {
 			'''
 				«op.assignTarget(outs, names)»
-					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«
-					seg.attribute.name.toFirstUpper»«IF op.namedAssignTarget().reference && !op.assignAsKey»Ref«ENDIF
-					»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«
+					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
+					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«
 					ENDIF»«ENDFOR»
 			'''
 		}
@@ -276,14 +270,6 @@ class FuncGenerator {
 		if(op.assignAsKey) {
 			val metaClass = referenceWithMetaJavaType(op, names)
 			if (cardinality.isMulti(op.expression)) {
-				/*
-				.addParty(
-					MapperS.of(parties(product, partyA, partyB, quantity).get())
-					.getItems().map(
-							(item) -> ReferenceWithMetaParty.builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
-						).collect(Collectors.toList())
-					);
-				*/
 				'''
 				«expressionGenerator.javaCode(op.expression, new ParamMap)»
 				.getItems().map(
@@ -291,7 +277,6 @@ class FuncGenerator {
 					).collect(«Collectors».toList())
 				'''
 			} else {
-				//  ReferenceWithMetaEvent.builder().setGlobalReference(MapperS.of(executionEvent).get().getMeta().getGlobalKey()).build()
 				'''
 				«metaClass».builder().setGlobalReference(
 						«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
@@ -308,14 +293,6 @@ class FuncGenerator {
 	}
 	
 	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx) {
-		val valType = typeProvider.getRType(operation.expression)
-		if (operation.path === null && operation.assignRoot instanceof Attribute) {
-			val assignRootType = typeProvider.getRType((operation.assignRoot as Attribute ).type)
-			if (assignRootType === RBuiltinType.NUMBER && valType !== RBuiltinType.NUMBER) {
-				// / case: number = 1
-				return '''«BigDecimalExtensions».valueOf(«MapperS».of(«expressionWithBuilder.toJava(operation.expression, ctx)»))'''
-			}
-		}
 		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)».get()'''
 	}
 	
@@ -343,19 +320,12 @@ class FuncGenerator {
 			default:false
 		}
 	}
-
-	private def namedAssignTarget(Operation operation) {
-		if (operation.path === null) {
-			return operation.assignRoot
-		} else {
-			operation.pathAsSegmentList.last.attribute
-		}
-	}
+	
 	private def StringConcatenationClient assignTarget(Operation operation, Map<ShortcutDeclaration, Boolean> outs,
 		JavaNames names) {
 		val root = operation.assignRoot
 		switch (root) {
-			Attribute: '''«root.name»Holder'''
+			Attribute: '''«root.name»'''
 			ShortcutDeclaration: unfoldLHSShortcut(root)
 		}
 	}
@@ -385,7 +355,7 @@ class FuncGenerator {
 	private def dispatch StringConcatenationClient lhsExpand(RosettaCallable c) {
 		throw new IllegalStateException("No implementation for lhsExpand for "+c.class)
 	}
-	private def dispatch StringConcatenationClient lhsExpand(Attribute c) '''«c.name»Holder'''
+	private def dispatch StringConcatenationClient lhsExpand(Attribute c) '''«c.name»'''
 	
 	private def StringConcatenationClient contributeCondition(Condition condition) {
 		'''

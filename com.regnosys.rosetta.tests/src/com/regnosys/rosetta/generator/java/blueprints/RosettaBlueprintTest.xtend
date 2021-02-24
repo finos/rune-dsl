@@ -640,7 +640,7 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Input2;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
@@ -650,12 +650,9 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.model.lib.functions.MapperTree;
 				import com.rosetta.test.model.Input;
 				import com.rosetta.test.model.Input2;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 				
 				/**
 				 * @version test
@@ -837,8 +834,8 @@ class RosettaBlueprintTest {
 			val expected = '''
 			package com.rosetta.test.model.blueprint;
 			
-			import com.rosetta.model.lib.functions.MapperS;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -848,11 +845,8 @@ class RosettaBlueprintTest {
 			import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 			import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 			import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-			import com.rosetta.model.lib.functions.MapperS;
-			import com.rosetta.model.lib.functions.MapperTree;
 			import com.rosetta.test.model.Input;
 			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			/**
 			 * @version test
@@ -914,7 +908,7 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import java.math.BigDecimal;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
@@ -924,12 +918,9 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.model.lib.functions.MapperTree;
 				import com.rosetta.test.model.Input;
 				import java.math.BigDecimal;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 				
 				/**
 				 * @version test
@@ -1003,7 +994,7 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				// manual imports
@@ -1014,13 +1005,10 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.model.lib.functions.MapperTree;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Input;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 				
 				/**
 				 * @version test
@@ -1089,7 +1077,7 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Input2;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
@@ -1099,12 +1087,9 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.model.lib.functions.MapperTree;
 				import com.rosetta.test.model.Input1;
 				import com.rosetta.test.model.Input2;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 				
 				/**
 				 * @version test
@@ -1362,14 +1347,15 @@ class RosettaBlueprintTest {
 				traderef string (1..1)
 			
 		'''.generateCode
+		blueprint.writeOutClasses("blueprint.filter")
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "filter");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		val expected = '''
 		package com.rosetta.test.model.blueprint;
 		
-		import com.rosetta.model.lib.functions.MapperS;
-		import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+		import com.rosetta.model.lib.mapper.MapperS;
+		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		// manual imports
 		import com.regnosys.rosetta.blueprints.Blueprint;
 		import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1378,11 +1364,8 @@ class RosettaBlueprintTest {
 		import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 		import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 		import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-		import com.rosetta.model.lib.functions.MapperS;
-		import com.rosetta.model.lib.functions.MapperTree;
 		import com.rosetta.test.model.Input;
 		import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-		import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 		
 		/**
 		 * @version test
@@ -1484,9 +1467,9 @@ class RosettaBlueprintTest {
 		val expected = '''
 			package com.rosetta.test.model.blueprint;
 			
-			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Hero;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1497,12 +1480,9 @@ class RosettaBlueprintTest {
 			import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 			import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 			import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-			import com.rosetta.model.lib.functions.MapperS;
-			import com.rosetta.model.lib.functions.MapperTree;
 			import com.rosetta.test.model.Avengers;
 			import com.rosetta.test.model.Hero;
 			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			/**
 			 * @version test
@@ -1577,8 +1557,8 @@ class RosettaBlueprintTest {
 		val expected = '''
 			package com.rosetta.test.model.blueprint;
 			
-			import com.rosetta.model.lib.functions.MapperS;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1587,11 +1567,8 @@ class RosettaBlueprintTest {
 			import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 			import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 			import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-			import com.rosetta.model.lib.functions.MapperS;
-			import com.rosetta.model.lib.functions.MapperTree;
 			import com.rosetta.test.model.Foo;
 			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 			
 			/**
 			 * @version test
@@ -1686,7 +1663,7 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.mapper.MapperS;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1694,8 +1671,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.model.lib.functions.MapperTree;
 				import com.rosetta.test.model.Input;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
@@ -1755,7 +1730,7 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.mapper.MapperS;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1763,8 +1738,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.model.lib.functions.MapperTree;
 				import com.rosetta.test.model.Input1;
 				import com.rosetta.test.model.Input2;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
@@ -2021,15 +1994,12 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.rosetta.model.lib.functions.CalculationFunction;
 				import com.rosetta.model.lib.functions.CalculationFunction.CalculationArgFunctions;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.model.lib.functions.MappingGroup;
 				import com.rosetta.test.model.Input;
 				import java.time.LocalDate;
 				import java.time.LocalTime;
 				import java.util.Collection;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				import static com.rosetta.model.lib.functions.MapperMaths.*;
-				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
 				
 				public abstract class Blueprint1<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Object, INKEY, INKEY> {
 					@Override

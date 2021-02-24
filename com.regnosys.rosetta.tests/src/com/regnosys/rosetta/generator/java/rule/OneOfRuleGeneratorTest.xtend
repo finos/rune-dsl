@@ -19,6 +19,7 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
+import com.rosetta.model.lib.validation.ValidationResult
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -54,11 +55,15 @@ class OneOfRuleGeneratorTest {
 		assertEquals('Foo_oneOf', ChoiceRuleGenerator.oneOfRuleName('Foo'))
 	}
 	
+	def <T extends RosettaModelObject> ValidationResult<T> doValidate(RosettaPath p, Validator<T> validator, RosettaModelObject toVal) {
+		return validator.validate(p, toVal as T);
+	}
+	
 	@Test
 	def void shouldPassRuleAsOneAttributeSet() {
 		val foo = getInstance('Foo', of('attr1', 'attr1 value'))
 		
-		val result = getOneOfRule('Foo').validate(TEST_PATH, foo.toBuilder)
+		val result = doValidate(TEST_PATH, getOneOfRule('Foo'), foo.toBuilder)
 		
 		assertTrue(result.success)
 		assertFalse(result.failureReason.present)
@@ -68,7 +73,7 @@ class OneOfRuleGeneratorTest {
 	def void shouldFailRuleAsNeitherAttributesAreSet() {
 		val foo = getInstance('Foo', of())
 		
-		val result = getOneOfRule('Foo').validate(TEST_PATH, foo.toBuilder)
+		val result = doValidate(TEST_PATH, getOneOfRule('Foo'), foo.toBuilder)
 		
 		assertFalse(result.success)
 		assertThat(result.failureReason.orElse(''), is("One and only one field must be set of 'attr1', 'attr2'. No fields are set."))
@@ -78,7 +83,7 @@ class OneOfRuleGeneratorTest {
 	def void shouldFailRuleAsBothAttributesAreSet() {
 		val foo = getInstance('Foo', of('attr1', 'attr1 value', 'attr2', 'attr2 value'))
 		
-		val result = getOneOfRule('Foo').validate(TEST_PATH, foo.toBuilder)
+		val result = doValidate(TEST_PATH, getOneOfRule('Foo'), foo.toBuilder)
 		
 		assertFalse(result.success)
 		assertThat(result.failureReason.orElse(''), is("One and only one field must be set of 'attr1', 'attr2'. Set fields are 'attr1', 'attr2'."))
@@ -88,7 +93,7 @@ class OneOfRuleGeneratorTest {
 		classes.createInstanceUsingBuilder(className, itemsToSet) as RosettaModelObject
 	}
 	
-	private def Validator<?> getOneOfRule(String className) {
+	private def Validator<? extends RosettaModelObject> getOneOfRule(String className) {
 		val metaClass = classes.get(rootPackage.meta.name + '.' + className + 'Meta').newInstance as RosettaMetaData<? extends RosettaModelObject>
 		val choiceRules = metaClass.choiceRuleValidators
 		
@@ -98,6 +103,6 @@ class OneOfRuleGeneratorTest {
 		
 		assertThat(oneOfRule.class.simpleName, is(className + 'OneOf0'))
 		
-		return oneOfRule
+		return oneOfRule as Validator<RosettaModelObject>
 	}
 }

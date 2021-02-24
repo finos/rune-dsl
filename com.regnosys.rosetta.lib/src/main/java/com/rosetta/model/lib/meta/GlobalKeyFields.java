@@ -2,28 +2,25 @@ package com.rosetta.model.lib.meta;
 
 import java.util.List;
 
-import com.rosetta.model.lib.meta.Key.KeyBuilder;
-
 public interface GlobalKeyFields {
 	
 	String getGlobalKey();
 	
 	String getExternalKey();
 	
-	List<Key> getKey();
+	List<? extends Key> getKey();
 	
-	interface GlobalKeyFieldsBuilder {
-		
-		String getGlobalKey();
-		
-		String getExternalKey();
-		
-		List<KeyBuilder> getKey();
+	interface GlobalKeyFieldsBuilder extends GlobalKeyFields{
 		
 		GlobalKeyFieldsBuilder setGlobalKey(String globalKey);
 		
 		GlobalKeyFieldsBuilder setExternalKey(String ExternalKey);
 		
-		GlobalKeyFieldsBuilder addKeyBuilder(List<KeyBuilder>  key);
+		GlobalKeyFieldsBuilder setKey(List<? extends Key> keys);
+		GlobalKeyFieldsBuilder addKey(Key key);
+		GlobalKeyFieldsBuilder addKey(Key key, int _idx);
+		GlobalKeyFieldsBuilder addKey(List<? extends Key> keys);
+		Key.KeyBuilder getOrCreateKey(int _idx);
+		List<? extends Key.KeyBuilder> getKey();
 	}
 }

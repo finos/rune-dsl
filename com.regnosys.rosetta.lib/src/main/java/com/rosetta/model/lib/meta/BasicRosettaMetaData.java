@@ -13,11 +13,6 @@ import com.rosetta.model.lib.validation.ValidatorWithArg;
 
 public class BasicRosettaMetaData<T extends RosettaModelObject> implements RosettaMetaData<T> {
 
-	@Deprecated
-	public List<Validator<? super T>> dataRules() {
-		return Collections.emptyList();
-	}
-
 	@Override
 	public List<Validator<? super T>> dataRules(ValidatorFactory factory) {
 		return Collections.emptyList();

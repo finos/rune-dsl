@@ -112,7 +112,7 @@ class RosettaCalculationType extends RosettaRootElement, RosettaFeatureOwner, Ro
 /**********************************************************************
  * Data model
  */
-class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature {
+class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaType {
 	
 }
 

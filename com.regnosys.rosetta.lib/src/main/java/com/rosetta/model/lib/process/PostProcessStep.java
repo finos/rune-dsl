@@ -2,7 +2,6 @@ package com.rosetta.model.lib.process;
 
 import com.rosetta.lib.postprocess.PostProcessorReport;
 import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.RosettaModelObjectBuilder;
 
 /**
  * @author TomForwood
@@ -25,6 +24,6 @@ public interface PostProcessStep {
 	 * @param builder an object to process
 	 * @return A resulting report of the processing.
 	 */
-	<T extends RosettaModelObject> PostProcessorReport runProcessStep(Class<T> topClass, RosettaModelObjectBuilder builder);
+	<T extends RosettaModelObject> PostProcessorReport runProcessStep(Class<? extends T> topClass, T instance);
 
 }

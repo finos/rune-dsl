@@ -8,71 +8,61 @@ import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.rosetta.model.lib.RosettaModelObjectBuilder
-import com.rosetta.model.lib.meta.RosettaMetaData
+import com.rosetta.model.lib.meta.Key
 import com.rosetta.util.BreadthFirstSearch
 import java.util.ArrayList
 import java.util.List
 import java.util.Optional
+import java.util.function.Consumer
 import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import static extension com.regnosys.rosetta.generator.util.Util.*
-import java.util.function.Consumer
-import com.rosetta.model.lib.meta.Key
+import com.rosetta.model.lib.process.BuilderMerger
 
 class ModelObjectBuilderGenerator {
 	
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension RosettaExtensions
-	
-	def builderName(RosettaType c) {
-		return c.name + 'Builder';
-	}
-	
-	def builderNameFull(RosettaType c) {
-		return c.fullname + '.' + c.name + 'Builder';
-	}
-	
-	def builderName(String typeName) {
-		return typeName + 'Builder';
-	}
 
 	def StringConcatenationClient builderClass(Data c, JavaNames names) '''
-		public static class «builderName(c)» extends «IF c.hasSuperType»«c.superType.builderNameFull»«ELSE»«RosettaModelObjectBuilder»«ENDIF»«implementsClauseBuilder(c)» {
+«««		This line reserves this name as a name
+		//«names.toJavaType(c).toBuilderImplType»
+		class «names.toJavaType(c)»BuilderImpl«IF c.hasSuperType» extends «names.toJavaType(c.superType).toBuilderImplType» «ENDIF» implements «names.toJavaType(c).toBuilderType»«implementsClauseBuilder(c)» {
 		
-			«FOR attribute : c.expandedAttributes.filter[!it.overriding]»
-				protected «attribute.toBuilderType(names)» «attribute.name»;
+			«FOR attribute : c.expandedAttributes»
+				protected «attribute.toBuilderType(names)» «attribute.name»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
 			«ENDFOR»
 		
-			public «builderName(c)»() {
+			public «names.toJavaType(c)»BuilderImpl() {
 			}
-					
-			@Override
-			public «RosettaMetaData»<? extends «c.name»> metaData() {
-				return metaData;
-			} 
 		
-			«c.expandedAttributes.filter[!it.overriding].builderGetters(names)»
+			«c.expandedAttributes.builderGetters(names)»
 		
 			«c.setters(names)»
 			«IF c.name=="ContractualProduct" || c.name=="BusinessEvent"»
 				«qualificationSetter(c)»
 			«ENDIF»
-		
+			
+			@Override
 			public «c.name» build() {
-				return new «c.name»(this);
+				return new «names.toJavaType(c).toImplType»(this);
+			}
+			
+			@Override
+			public «names.toJavaType(c).toBuilderType» toBuilder() {
+				return this;
 			}
 		
+			@SuppressWarnings("unchecked")
 			@Override
-			public «builderName(c)» prune() {
+			public «names.toJavaType(c).toBuilderType» prune() {
 				«IF c.hasSuperType»super.prune();«ENDIF»
 				«FOR attribute : c.expandedAttributes»
 					«IF !attribute.isMultiple && (attribute.isDataType || attribute.hasMetas)»
 						if («attribute.name»!=null && !«attribute.name».prune().hasData()) «attribute.name» = null;
 					«ELSEIF attribute.isMultiple && attribute.isDataType || attribute.hasMetas»
-						«attribute.name» = «Optional».ofNullable(«attribute.name»).map(l->l.stream().filter(b->b!=null).map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList())).filter(b->!b.isEmpty()).orElse(null);
+						«attribute.name» = «Optional».ofNullable(«attribute.name»).map(l->l.stream().filter(b->b!=null).<«attribute.toBuilderTypeSingle(names)»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList())).filter(b->!b.isEmpty()).orElse(null);
 					«ENDIF»
 				«ENDFOR»
 				return this;
@@ -119,10 +109,12 @@ class ModelObjectBuilderGenerator {
 		result.toString()
 	}
 
-    private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RosettaType type, boolean hasSuperType, JavaNames names) '''
-		«val builderName = type.builderName»
+	private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RosettaType type, boolean hasSuperType, JavaNames names) {
+		val builderName = names.toJavaType(type).toBuilderType
+	'''
+		@SuppressWarnings("unchecked")
 		@Override
-		public «builderName» merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+		public «builderName» merge(RosettaModelObjectBuilder other, «BuilderMerger» merger) {
 			«IF hasSuperType»
 				super.merge(other, merger);
 				
@@ -134,7 +126,7 @@ class ModelObjectBuilderGenerator {
 				«IF a.multiple»
 					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::getOrCreate«attributeName»);
 				«ELSE»
-					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::set«attributeName»Builder);
+					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::set«attributeName»);
 				«ENDIF»
 			«ENDFOR»
 			
@@ -143,30 +135,33 @@ class ModelObjectBuilderGenerator {
 				«IF a.multiple»
 					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), («Consumer»<«names.toJavaType(a.type)»>) this::add«attributeName»);
 				«ELSE»
-					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), this::set«attributeName»Builder);
+					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), this::set«attributeName»);
 				«ENDIF»
 			«ENDFOR»
 			return this;
 		}
 	'''
+	}
 
 	private def StringConcatenationClient builderGetters(Iterable<ExpandedAttribute> attributes, JavaNames names) '''
 		«FOR attribute : attributes»
-			public «attribute.toBuilderType(names)» get«attribute.name.toFirstUpper»() {
+			@Override
+			public «attribute.toBuilderTypeExt(names)» get«attribute.name.toFirstUpper»() {
 				return «attribute.name»;
 			}
 			
 			«IF attribute.isDataType || attribute.hasMetas»
 				«IF !attribute.cardinalityIsListValue»
+					@Override
 					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»() {
 						«attribute.toBuilderTypeSingle(names)» result;
 						if («attribute.name»!=null) {
 							result = «attribute.name»;
 						}
 						else {
-							result = «attribute.name» = new «attribute.toBuilderTypeSingle(names)»();
+							result = «attribute.name» = «attribute.toTypeSingle(names)».builder();
 							«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
-								result.getOrCreateMeta().addKeyBuilder(«Key».builder().setScope("DOCUMENT"));
+								result.getOrCreateMeta().toBuilder().addKey(«Key».builder().setScope("DOCUMENT"));
 							«ENDIF»
 						}
 						
@@ -175,14 +170,15 @@ class ModelObjectBuilderGenerator {
 					
 				«ELSE»
 					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int _index) {
+
 						if («attribute.name»==null) {
 							this.«attribute.name» = new «ArrayList»<>();
 						}
 						«attribute.toBuilderTypeSingle(names)» result;
 						return getIndex(«attribute.name», _index, () -> {
-									«attribute.toBuilderTypeSingle(names)» new«attribute.name.toFirstUpper» = new «attribute.toBuilderTypeSingle(names)»();
+									«attribute.toBuilderTypeSingle(names)» new«attribute.name.toFirstUpper» = «attribute.toTypeSingle(names)».builder();
 									«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
-										new«attribute.name.toFirstUpper».getOrCreateMeta().addKeyBuilder(«Key».builder().setScope("DOCUMENT"));
+										new«attribute.name.toFirstUpper».getOrCreateMeta().addKey(«Key».builder().setScope("DOCUMENT"));
 									«ENDIF»
 									return new«attribute.name.toFirstUpper»;
 								});
@@ -192,127 +188,103 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 		«ENDFOR»
 	'''
-
-	private def StringConcatenationClient setters(Data c, JavaNames names) {
-		val attributesProcessed = newArrayList
-		'''
-		«FOR current : c.allSuperTypes»
-		«c.setters(attributesProcessed, current, current != c, names)»
-		«ENDFOR»
-		'''
-	}
 	
 	
-	private def StringConcatenationClient setters(RosettaType thisClass, List<String> attributesProcessed, RosettaType clazz, boolean isSuper, JavaNames names)
+	private def StringConcatenationClient setters(Data thisClass, JavaNames names)
 		'''
-		«FOR attribute : clazz.expandedAttributes.filter(a|!attributesProcessed.contains(a.name))»
-			«doSetter(thisClass, isSuper, attribute, attributesProcessed, clazz, names)»
+		«FOR attribute : thisClass.expandedAttributesPlus»
+			«doSetter(thisClass, attribute, names)»
 		«ENDFOR»
 	'''
 	
-	private def StringConcatenationClient doSetter(RosettaType thisClass, boolean isSuper, ExpandedAttribute attribute, List<String> attributesProcessed, RosettaType clazz, JavaNames names) {
-		attributesProcessed.add(attribute.name)
+	private def StringConcatenationClient doSetter(RosettaType thisClass, ExpandedAttribute attribute, JavaNames names) {
+		val thisName = names.toJavaType(thisClass).toBuilderType
 		'''
 		«IF attribute.cardinalityIsListValue»
-			«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name») {
-				if(this.«attribute.name» == null){
-					this.«attribute.name» = new «ArrayList.name»<>();
-				}
+			@Override
+			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name») {
 				this.«attribute.name».add(«attribute.toBuilder»);
 				return this;
 			}
 			
-			«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx) {
-				if(this.«attribute.name» == null){
-					this.«attribute.name» = new «ArrayList.name»<>();
-				}
+			@Override
+			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx) {
 				getIndex(this.«attribute.name», _idx, () -> «attribute.toBuilder»);
-				this.«attribute.name».set(_idx, «attribute.toBuilder»);
 				return this;
 			}
+			«IF attribute.hasMetas»
 			
-			«IF !attribute.overriding»«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»(«List.name»<«attribute.toTypeSingle(names)»> «attribute.name»s) {
-				if(this.«attribute.name» == null){
-					this.«attribute.name» = new «ArrayList»<>();
+				@Override
+				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «attribute.name») {
+					this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«attribute.name»«IF attribute.isDataType».toBuilder()«ENDIF»);
+					return this;
 				}
-				for («attribute.toTypeSingle(names)» toAdd : «attribute.name»s) {
-					this.«attribute.name».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
+				
+				@Override
+				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «attribute.name», int _idx) {
+					this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«attribute.name»«IF attribute.isDataType».toBuilder()«ENDIF»);
+					return this;
 				}
-				return this;
-			}
-			
 			«ENDIF»
-			«IF attribute.isDataType || !attribute.metas.empty»
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Builder(«attribute.toBuilderTypeSingle(names)» «attribute.name») {
-					if(this.«attribute.name» == null){
+			«IF !attribute.overriding»
+				@Override 
+				public «thisName» add«attribute.name.toFirstUpper»(«List»<? extends «attribute.toTypeSingle(names)»> «attribute.name»s) {
+					if («attribute.name»s != null) {
+						for («attribute.toTypeSingle(names)» toAdd : «attribute.name»s) {
+							this.«attribute.name».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
+						}
+					}
+					return this;
+				}
+				
+				@Override 
+				public «thisName» set«attribute.name.toFirstUpper»(«List»<? extends «attribute.toTypeSingle(names)»> «attribute.name»s) {
+					if («attribute.name»s == null)  {
 						this.«attribute.name» = new «ArrayList»<>();
 					}
-					this.«attribute.name».add(«attribute.name»);
-					return this;
-				}
-				
-			«ENDIF»
-			«IF attribute.isDataType && !attribute.metas.empty»
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
-					return add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
-				}
-				
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name», int _idx) {
-					return add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build(), _idx);
-				}
-				
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«List.name»<«attribute.type.name»> «attribute.name»s) {
-					for («attribute.type.name» toAdd : «attribute.name»s) {
-						add«attribute.name.toFirstUpper»Ref(toAdd);
+					else {
+						this.«attribute.name» = «attribute.name»s.stream()
+							«IF needsBuilder(attribute)».map(_a->_a.toBuilder())«ENDIF»
+							.collect(«Collectors».toCollection(()->new ArrayList<>()));
 					}
 					return this;
 				}
-				
-				«IF isSuper»@Override «ENDIF»public «thisClass.builderName» add«attribute.name.toFirstUpper»Ref(«attribute.type.name» «attribute.name») {
-					if («attribute.name» != null) {
-						return add«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
-					}
-					return this;
-				}
-				
-			«ENDIF»
-			«IF isSuper»@Override «ENDIF»public «thisClass.builderName» clear«attribute.name.toFirstUpper»() {
-				this.«attribute.name» = null;
-				return this;
-			}
-			
-		«ELSE»
-			«IF isSuper || clazz.globalKey && attribute.name === 'globalKey'»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name») {
-				if («attribute.name» != null) {
-					this.«attribute.name» = «attribute.toBuilder»;
-				}
-				return this;
-			}
-
-			«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Builder(«attribute.toBuilderType(names)» «attribute.name») {
-				this.«attribute.name» = «attribute.name»;
-				return this;
-			}
-
-			«IF !attribute.metas.empty»
-				«IF attribute.isDataType»
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
-						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValueBuilder(«attribute.name»).build());
-					}
+				«IF attribute.hasMetas»
 					
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«names.toJavaType(attribute.type)» «attribute.name») {
-						if («attribute.name» != null) {
-							return set«attribute.name.toFirstUpper»Ref(«attribute.name».toBuilder());
+					@Override
+					public «thisName» add«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.toTypeSingle(names, true)»> «attribute.name»s) {
+						if («attribute.name»s != null) {
+							for («attribute.toTypeSingle(names, true)» toAdd : «attribute.name»s) {
+								this.add«attribute.name.toFirstUpper»Value(toAdd);
+							}
 						}
 						return this;
 					}
 					
-				«ELSE»
-					«IF isSuper»@Override «ENDIF»public «thisClass.builderName» set«attribute.name.toFirstUpper»Ref(«attribute.toBuilderTypeUnderlying(names)» «attribute.name») {
-						return set«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)».builder().setValue(«attribute.name»).build());
+					@Override
+					public «thisName» set«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.toTypeSingle(names, true)»> «attribute.name»s) {
+						this.«attribute.name».clear();
+						if («attribute.name»s!=null) {
+							«attribute.name»s.forEach(this::add«attribute.name.toFirstUpper»Value);
+						}
+						return this;
 					}
-					
 				«ENDIF»
+			«ENDIF»
+			
+		«ELSE»
+			@Override
+			public «thisName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name») {
+				this.«attribute.name» = «attribute.name»==null?null:«attribute.toBuilder»;
+				return this;
+			}
+			«IF attribute.hasMetas»
+				
+				@Override
+				public «thisName» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «attribute.name») {
+					this.getOrCreate«attribute.name.toFirstUpper»().setValue(«attribute.name»«IF attribute.isDataType»«ENDIF»);
+					return this;
+				}
 			«ENDIF»
 		«ENDIF»
 		'''
@@ -330,7 +302,7 @@ class ModelObjectBuilderGenerator {
 		@Override
 		public boolean hasData() {
 			«IF hasSuperType»if (super.hasData()) return true;«ENDIF»
-			«FOR attribute:attributes»    
+			«FOR attribute:attributes.filter[name!="meta"]»
 				«IF attribute.cardinalityIsListValue»
 					«IF attribute.isDataType»
 						if (get«attribute.name.toFirstUpper»()!=null && get«attribute.name.toFirstUpper»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
@@ -351,8 +323,13 @@ class ModelObjectBuilderGenerator {
 		if (attribute.isMultiple) '''List<«attribute.toBuilderTypeSingle(names)»>'''
 		else '''«attribute.toBuilderTypeSingle(names)»'''
 	}
+	
+	private def StringConcatenationClient toBuilderTypeExt(ExpandedAttribute attribute, JavaNames names) {
+		if (attribute.isMultiple) '''List<? extends «attribute.toBuilderTypeSingle(names)»>'''
+		else '''«attribute.toBuilderTypeSingle(names)»'''
+	}
 
-	private def StringConcatenationClient toBuilderTypeSingle(ExpandedAttribute attribute, JavaNames names) {
+	def StringConcatenationClient toBuilderTypeSingle(ExpandedAttribute attribute, JavaNames names) {
 		if (attribute.hasMetas) {
 			val buildername = if (attribute.refIndex >= 0) {
 					if (attribute.isDataType)
@@ -380,8 +357,5 @@ class ModelObjectBuilderGenerator {
 		} else {
 			attribute.name
 		}
-	}
-	private def needsBuilder(ExpandedAttribute attribute){
-		attribute.isDataType || attribute.hasMetas
 	}
 }

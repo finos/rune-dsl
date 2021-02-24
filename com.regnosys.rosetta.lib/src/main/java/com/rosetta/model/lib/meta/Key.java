@@ -1,104 +1,128 @@
 package com.rosetta.model.lib.meta;
 
-import java.util.Objects;
-
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
+import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+import com.rosetta.model.lib.qualify.QualifyResult;
+import com.rosetta.model.lib.validation.ValidationResult;
+import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorFactory;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
+import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 
 /**
  * @author TomForwood
  * This class represents a value that can be references elsewhere to link to the object the key is associated with
  * The keyValue is required to be unique within the scope defined by "scope"
- *
+ * 
  * Scope can be 
  *  - global - the key must be universally unique
  * 	- document - the key must be unique in this document
  *  - the name of the rosetta class e.g. TradeableProduct- the object bearing this key is inside a TradeableProduct and the key is only unique inside that TradeableProduct
  */
-public class Key extends RosettaModelObject {
-	
-	private final String scope;
-	private final String keyValue;
-	
-	public Key(String scope, String keyValue) {
-		this.scope = scope;
-		this.keyValue = keyValue;
-	}
-	
+public interface Key extends RosettaModelObject{
 
+	public String getScope();
+	public String getKeyValue();
+	
+	Key build();
+	KeyBuilder toBuilder();
+	
+	final static KeyMeta meta = new KeyMeta();
 	@Override
-	public RosettaMetaData<? extends RosettaModelObject> metaData() {
-		return null;
+	default RosettaMetaData<? extends RosettaModelObject> metaData() {
+		return meta;
 	}
 	
-	public String getScope() {
-		return scope;
+	default Class<? extends RosettaModelObject> getType() {
+		return Key.class;
 	}
 	
-	public String getKeyValue() {
-		return keyValue;
-	}
-
-	@Override
-	public KeyBuilder toBuilder() {
-		KeyBuilder key = new KeyBuilder();
-		key.setKeyValue(keyValue);
-		key.setScope(scope);
-		return key;
-	}
-
-	public static KeyBuilder builder() {
-		return new KeyBuilder();
+	default void process(RosettaPath path, Processor processor) {
 	}
 	
-	@Override 
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		Key key = (Key) o;
-		return Objects.equals(scope, key.scope) && Objects.equals(keyValue, key.keyValue);
-	}
-
-	@Override 
-	public int hashCode() {
-		return Objects.hash(scope, keyValue);
-	}
-
-	@Override 
-	public String toString() {
-		return "Key{" +
-				"scope='" + scope + '\'' +
-				", keyValue='" + keyValue + '\'' +
-				'}';
+	static KeyBuilder builder() {
+		return new KeyBuilderImpl();
 	}
 	
-
-	@Override
-	protected void process(RosettaPath path, Processor processor) {
-		// do nothing
-	}
-
-
-	public static class KeyBuilder extends RosettaModelObjectBuilder {
+	interface KeyBuilder extends Key, RosettaModelObjectBuilder {
+		KeyBuilder setScope(String scope);
+		KeyBuilder setKeyValue(String keyValue);
 		
-		private String scope;
-		private String keyValue;
-
-		@Override
-		public RosettaMetaData<? extends RosettaModelObject> metaData() {
-			return null;
+		default void process(RosettaPath path, BuilderProcessor processor) {
+		}
+	}
+	
+	class KeyImpl implements Key {
+		
+		private final String scope;
+		private final String keyValue;
+		public KeyImpl(KeyBuilder builder) {
+			super();
+			this.scope = builder.getScope();
+			this.keyValue = builder.getKeyValue();
+		}
+		public String getScope() {
+			return scope;
+		}
+		public String getKeyValue() {
+			return keyValue;
+		}
+	
+		public KeyBuilder toBuilder() {
+			KeyBuilder key = builder();
+			key.setKeyValue(keyValue);
+			key.setScope(scope);
+			return key;
 		}
 		
-		@Override
 		public Key build() {
-			return new Key(scope, keyValue);
+			return this;
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((keyValue == null) ? 0 : keyValue.hashCode());
+			result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			KeyImpl other = (KeyImpl) obj;
+			if (keyValue == null) {
+				if (other.keyValue != null)
+					return false;
+			} else if (!keyValue.equals(other.keyValue))
+				return false;
+			if (scope == null) {
+				if (other.scope != null)
+					return false;
+			} else if (!scope.equals(other.scope))
+				return false;
+			return true;
+		}
+	}
+	
+	public static class KeyBuilderImpl implements KeyBuilder{
+		private String scope;
+		private String keyValue;
+		
+		public Key build() {
+			return new KeyImpl(this);
 		}
 
 		public String getScope() {
@@ -118,53 +142,101 @@ public class Key extends RosettaModelObject {
 			this.keyValue = keyValue;
 			return this;
 		}
-
-		@Override
+		
 		public boolean hasData() {
 			return keyValue!=null;
 		}
 
-		@Override 
-		public boolean equals(Object o) {
-			if (this == o)
-				return true;
-			if (o == null || getClass() != o.getClass())
-				return false;
-			KeyBuilder that = (KeyBuilder) o;
-			return Objects.equals(scope, that.scope) && Objects.equals(keyValue, that.keyValue);
+		@Override
+		public KeyBuilder toBuilder() {
+			return this;
 		}
 
-		@Override 
-		public int hashCode() {
-			return Objects.hash(scope, keyValue);
-		}
-
-		@Override 
-		public String toString() {
-			return "KeyBuilder{" +
-					"scope='" + scope + '\'' +
-					", keyValue='" + keyValue + '\'' +
-					'}';
-		}
-
+		@SuppressWarnings("unchecked")
 		@Override
 		public KeyBuilder prune() {
 			return this;
 		}
 
-		
-
+		@SuppressWarnings("unchecked")
 		@Override
-		public void process(RosettaPath path, BuilderProcessor processor) {
-			// do nothing
+		public KeyBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			KeyBuilder otherKey = (KeyBuilder) other;
+			merger.mergeBasic(getKeyValue(), otherKey.getKeyValue(), this::setKeyValue);
+			merger.mergeBasic(getScope(), otherKey.getScope(), this::setScope);
+			return this;
 		}
 
 		@Override
-		public KeyBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			KeyBuilder o = (KeyBuilder) other;
-			merger.mergeBasic(getScope(), o.getScope(), this::setScope, AttributeMeta.META, AttributeMeta.GLOBAL_KEY);
-			merger.mergeBasic(getKeyValue(), o.getKeyValue(), this::setKeyValue, AttributeMeta.META, AttributeMeta.GLOBAL_KEY);
-			return this;
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((keyValue == null) ? 0 : keyValue.hashCode());
+			result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			KeyBuilderImpl other = (KeyBuilderImpl) obj;
+			if (keyValue == null) {
+				if (other.keyValue != null)
+					return false;
+			} else if (!keyValue.equals(other.keyValue))
+				return false;
+			if (scope == null) {
+				if (other.scope != null)
+					return false;
+			} else if (!scope.equals(other.scope))
+				return false;
+			return true;
+		}
+	}
+	
+	class KeyMeta implements RosettaMetaData<Key> {
+
+
+		@Override
+		public List<Validator<? super Key>> dataRules(ValidatorFactory factory) {
+			return Collections.emptyList();
+		}
+
+		@Override
+		public List<Validator<? super Key>> choiceRuleValidators() {
+			return Collections.emptyList();
+		}
+
+		@Override
+		public List<Function<? super Key, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+			return Collections.emptyList();
+		}
+
+		@Override
+		public Validator<? super Key> validator() {
+			return new Validator<Key>() {
+
+				@Override
+				public ValidationResult<Key> validate(RosettaPath path, Key key) {
+					if (key.getKeyValue()==null) {
+						return ValidationResult.failure("Key.value",ValidationType.MODEL_INSTANCE, "Key", path, "", "Key value must be set");
+					}
+					if (key.getScope()==null) {
+						return ValidationResult.failure("Key.scope",ValidationType.MODEL_INSTANCE, "Key", path, "", "Key scope must be set");
+					}
+					return ValidationResult.success("Key", ValidationType.MODEL_INSTANCE, "Key", path, "");
+				}
+			};
+		}
+
+		@Override
+		public ValidatorWithArg<? super Key, String> onlyExistsValidator() {
+			return null;
 		}
 	}
 }
