@@ -162,7 +162,6 @@ class ImportGenerator {
 			RosettaBinaryOperation: {
 				
 				if (#['+', '-'].contains(expression.operator)) {
-					imports.add(packages.defaultLibFunctions.name + ".MapperMaths")
 					imports.add("java.math.BigDecimal")
 				}
 
