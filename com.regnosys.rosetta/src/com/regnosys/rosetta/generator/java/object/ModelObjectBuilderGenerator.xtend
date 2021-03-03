@@ -12,7 +12,6 @@ import com.rosetta.model.lib.meta.Key
 import com.rosetta.util.BreadthFirstSearch
 import java.util.ArrayList
 import java.util.List
-import java.util.Optional
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -62,7 +61,7 @@ class ModelObjectBuilderGenerator {
 					«IF !attribute.isMultiple && (attribute.isDataType || attribute.hasMetas)»
 						if («attribute.name»!=null && !«attribute.name».prune().hasData()) «attribute.name» = null;
 					«ELSEIF attribute.isMultiple && attribute.isDataType || attribute.hasMetas»
-						«attribute.name» = «Optional».ofNullable(«attribute.name»).map(l->l.stream().filter(b->b!=null).<«attribute.toBuilderTypeSingle(names)»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList())).filter(b->!b.isEmpty()).orElse(null);
+						«attribute.name» = «attribute.name».stream().filter(b->b!=null).<«attribute.toBuilderTypeSingle(names)»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
 				return this;
@@ -203,7 +202,7 @@ class ModelObjectBuilderGenerator {
 		«IF attribute.cardinalityIsListValue»
 			@Override
 			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name») {
-				this.«attribute.name».add(«attribute.toBuilder»);
+				if («attribute.name»!=null) this.«attribute.name».add(«attribute.toBuilder»);
 				return this;
 			}
 			
