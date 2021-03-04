@@ -235,6 +235,8 @@ The ``metadata`` annotation allows to associate a set of meta-data qualifiers to
    scheme string (0..1)
    reference string (0..1)
    template string (0..1)
+   location string (0..1)
+   address string (0..1)
 
 Each attribute of the ``metadata`` annotation corresponds to a qualifier:
 
