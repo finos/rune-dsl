@@ -101,18 +101,18 @@ class ModelObjectBuilderGeneratorTest {
 		// Base Case
 		assertThat(testClassCode,
 			containsString(
-				'this.multipleOnes = ofNullable(builder.getMultipleOnes()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(Collectors.toList())).orElse(null);'))
+				'this.multipleOnes = ofNullable(builder.getMultipleOnes()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);'))
 
 		// Only do this for attributes that are RosettaClass
 		assertThat(testClassCode, not(containsString('this.multipleEnums = builder.multipleEnums.stream()')))
 
 		// Builder contains builders of RosettaClasses
-		assertThat(testClassCode, containsString('List<One.OneBuilder> multipleOnes;'))
+		assertThat(testClassCode, containsString('List<? extends One> multipleOnes;'))
 		assertThat(testClassCode, containsString('One.OneBuilder singleOne;'))
 
 		// Builder setters handles adding builder types
-		assertThat(testClassCode, containsString('public TestBuilder setSingleOne(One singleOne) {'))
-		assertThat(testClassCode, containsString('public TestBuilder addMultipleOnesBuilder(One.OneBuilder multipleOnes) {'))
+		assertThat(testClassCode, containsString('public Test.TestBuilder setSingleOne(One singleOne) {'))
+		assertThat(testClassCode, containsString('public Test.TestBuilder addMultipleOnes(One multipleOnes) {'))
 
 		code.compileToClasses
 	}

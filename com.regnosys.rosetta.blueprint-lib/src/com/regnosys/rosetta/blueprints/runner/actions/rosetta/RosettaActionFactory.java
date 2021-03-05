@@ -9,8 +9,8 @@ import com.regnosys.rosetta.blueprints.runner.nodes.ExpanderNode;
 import com.regnosys.rosetta.blueprints.runner.nodes.GroupNode;
 import com.regnosys.rosetta.blueprints.runner.nodes.ProcessorNode;
 import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.functions.Mapper;
-import com.rosetta.model.lib.functions.MappingGroup;
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MappingGroup;
 
 public interface RosettaActionFactory {
 

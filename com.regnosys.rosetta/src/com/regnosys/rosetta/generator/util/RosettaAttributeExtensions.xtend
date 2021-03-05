@@ -18,7 +18,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
-import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource
@@ -49,6 +48,12 @@ class RosettaAttributeExtensions {
 	
 	dispatch static def List<ExpandedAttribute> getExpandedAttributes(Data data) {
 		data.getExpandedAttributes(true)
+	}
+	
+	static def List<ExpandedAttribute> expandedAttributesPlus(Data data) {
+		val atts = data.expandedAttributes;
+		if (data.hasSuperType) atts.addAll(data.superType.expandedAttributesPlus)
+		return atts
 	}
 	
 	private static def List<ExpandedAttribute> additionalAttributes(Data data) {
@@ -84,12 +89,6 @@ class RosettaAttributeExtensions {
 		val rosExt = new RosettaExtensions // Can't inject as used in rosetta-translate and daml directly
 		val name = if (rosExt.hasTemplateAnnotation(data)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
 		return new ExpandedType(rosModel, name, true, false, false)
-	}
-
-	// used in translate project
-	@SuppressWarnings("unused")
-	static private def ExpandedType provideStringType(RosettaRootElement ctx) {
-		return new ExpandedType(ctx.model, 'string', false, false, false)
 	}
 	
 	dispatch static def List<ExpandedAttribute> getExpandedAttributes(RosettaEnumeration rosettaEnum) {
@@ -260,4 +259,7 @@ class RosettaAttributeExtensions {
 		return a.type instanceof RosettaQualifiedType
 	}
 	
+	static def isBuiltInType(RosettaType type) {
+		return !(type instanceof Data|| type instanceof RosettaEnumeration)
+	}
 }

@@ -1,7 +1,9 @@
 package com.rosetta.model.lib.process;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Set;
 
 import com.rosetta.model.lib.RosettaModelObject;
@@ -25,9 +27,13 @@ public interface Processor {
 	 * @param instance a RosettaModelObject representing the object
      * @param parent the RosettaModelObject which contains this object as an attribute
      * @param metas Flags indicating meta information about the attribute
+	 * @return 
 	 */
-	<R extends RosettaModelObject> void processRosetta(RosettaPath path, Class<R> rosettaType, 
+	<R extends RosettaModelObject> boolean processRosetta(RosettaPath path, Class<? extends R> rosettaType, 
     		R instance, RosettaModelObject parent, AttributeMeta... metas);
+	
+	<R extends RosettaModelObject> boolean processRosetta(RosettaPath path, Class<? extends R> rosettaType, 
+    		List<? extends R> instance, RosettaModelObject parent, AttributeMeta... metas);
     
 	/**
      * process a rosetta primitive type
@@ -37,7 +43,9 @@ public interface Processor {
      * @param parent the RosettaModelObject which contains these object as an attribute
      * @param metas Flags indicating meta information about the attribute
      */
-    <T> void processBasic(RosettaPath path, Class<T> rosettaType, T instance, RosettaModelObject parent, AttributeMeta... metas);
+    <T> void processBasic(RosettaPath path, Class<? extends T> rosettaType, T instance, RosettaModelObject parent, AttributeMeta... metas);
+    
+    <T> void processBasic(RosettaPath path, Class<? extends T> rosettaType, Collection<? extends T> instance, RosettaModelObject parent, AttributeMeta... metas);
     
     /**
      * @return a report representing the result of this processor

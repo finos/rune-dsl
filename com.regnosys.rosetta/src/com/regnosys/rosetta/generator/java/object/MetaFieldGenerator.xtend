@@ -1,30 +1,45 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.Multimaps
+import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.object.ExpandedType
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.generator.java.util.JavaType
+import com.regnosys.rosetta.generator.java.util.ParameterizedType
+import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.rosetta.model.lib.process.AttributeMeta
+import com.regnosys.rosetta.rosetta.simple.SimpleFactory
+import com.rosetta.model.lib.GlobalKey
+import com.rosetta.model.lib.meta.BasicRosettaMetaData
+import com.rosetta.model.lib.meta.GlobalKeyFields
+import com.rosetta.model.lib.meta.MetaDataFields
+import com.rosetta.model.lib.meta.ReferenceWithMeta
+import com.rosetta.model.lib.meta.TemplateFields
+import java.util.ArrayList
 import java.util.Collection
+import java.util.List
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaFullType
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
+import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.rosetta.model.lib.meta.FieldWithMeta
 
 class MetaFieldGenerator {
+	@Inject extension ImportManagerExtension
+	@Inject extension ModelObjectGenerator
 	
 	 
-	def void generate(RosettaJavaPackages packages, Resource resource, IFileSystemAccess2 fsa, IGeneratorContext ctx) {
+	def void generate(JavaNames names, Resource resource, IFileSystemAccess2 fsa, IGeneratorContext ctx) {
 		// moved from RosettaGenerator
 		val model = resource.contents.filter(RosettaModel).head
 		if((model?.name).nullOrEmpty){
@@ -37,11 +52,11 @@ class MetaFieldGenerator {
 //			try {
 				val allModels = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 				val allMetaTypes = allModels.flatMap[elements].filter(RosettaMetaType).toList
-				fsa.generateFile('''«packages.basicMetafields.directoryName»/MetaFields.java''',
-				metaFields(packages, "MetaFields", newArrayList("GlobalKeyFields"), allMetaTypes.metaFieldTypes))
+				fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaFields.java''',
+				metaFields(names, "MetaFields", newArrayList(GlobalKeyFields), allMetaTypes.metaFieldTypes))
 				
-				fsa.generateFile('''«packages.basicMetafields.directoryName»/MetaAndTemplateFields.java''',
-				metaFields(packages, "MetaAndTemplateFields", newArrayList("GlobalKeyFields", "TemplateFields"), allMetaTypes.metaAndTemplateFieldTypes))
+				fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaAndTemplateFields.java''',
+				metaFields(names, "MetaAndTemplateFields", newArrayList(GlobalKeyFields, TemplateFields), allMetaTypes.metaAndTemplateFieldTypes))
 //			} finally {
 //				resource.resourceSet.adapterFactories.add(new MarkerAdapterFactory(model.name))
 //			}
@@ -60,1125 +75,275 @@ class MetaFieldGenerator {
 			if (ctx.cancelIndicator.canceled) {
 				return
 			}
-			val refs = nsc.value.flatMap[expandedAttributes].filter[hasMetas && metas.exists[name=="reference" || name=="address"]].map[type].toSet
+			val refs = nsc.value.flatMap[expandedAttributes].filter[hasMetas && metas.exists[name=="reference" || name=="address"]].map[rosettaType].toSet
 			
 			for (ref:refs) {
 				val targetModel = ref.model
 				val targetPackage = new RosettaJavaPackages(targetModel)
+				val newNames=JavaNames.createBasicFromPackages(targetPackage)
 				
 				if (ctx.cancelIndicator.canceled) {
 					return
 				}
 				if (ref.isBuiltInType)
-					fsa.generateFile('''«targetPackage.basicMetafields.directoryName»/BasicReferenceWithMeta«ref.name.toFirstUpper».java''', basicReferenceWithMeta(targetPackage, ref))
+					fsa.generateFile('''«targetPackage.basicMetafields.directoryName»/BasicReferenceWithMeta«ref.name.toFirstUpper».java''', basicReferenceWithMeta(newNames, ref))
 				else
-					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(targetPackage, ref))
+					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(newNames, ref))
 			}
 			//find all the metaed types
-			val metas =  nsc.value.flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference" || name=="address"]].map[type].toSet
+			val metas =  nsc.value.flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference" || name=="address"]].map[rosettaType].toSet
 			for (meta:metas) {
 				if (ctx.cancelIndicator.canceled) {
 					return
 				}
 				val targetModel = meta.model
 				val targetPackage = new RosettaJavaPackages(targetModel)
+				val newNames=JavaNames.createBasicFromPackages(targetPackage)
 				
 				if(meta.isBuiltInType) {
-					fsa.generateFile('''«targetPackage.basicMetafields.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(targetPackage, meta))
+					fsa.generateFile('''«targetPackage.basicMetafields.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(newNames, meta))
 				} else {
-					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(targetPackage, meta))
+					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(newNames, meta))
 				}
 			}
 		}
 	}
 
 	def getStringType() {
-		val stringType = RosettaFactoryImpl.eINSTANCE.createRosettaBasicType
+		val stringType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType
 		stringType.name="string"
 		return stringType
 	}
+	
+	def getCardSingle() {
+		val cardSingle = RosettaFactory.eINSTANCE.createRosettaCardinality
+		cardSingle.inf = 0
+		cardSingle.sup = 1
+		cardSingle
+	}
 
-	def getMetaFieldTypes(Collection<RosettaMetaType> utypes) {
-		val globalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
-		globalKeyType.setName("globalKey")
-		globalKeyType.type = stringType;
-
-		val externalKeyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
-		externalKeyType.setName("externalKey")
-		externalKeyType.type = stringType;
+	def List<Attribute> getMetaFieldTypes(Collection<RosettaMetaType> utypes) {
+		val cardMult = RosettaFactory.eINSTANCE.createRosettaCardinality
+		cardMult.inf = 0;
+		cardMult.sup = 1000;
+		cardMult.unbounded = true
 		
-		val keyType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType
-		keyType.name = "key"
-		val keyDataType = RosettaFactoryImpl.eINSTANCE.createRosettaBasicType
-		keyDataType.name = "Key"
-		keyType.type = keyDataType;
+		val globalKeyAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		globalKeyAttribute.setName("globalKey")
+		globalKeyAttribute.card = cardSingle
+		globalKeyAttribute.type = stringType
 
-		val filteredTypes = utypes.filter[t|t.name != "key" && t.name != "id" && t.name != "reference"].map[new MetaFieldType(it, null, false, false)].toSet;
-		filteredTypes.add(new MetaFieldType(globalKeyType, AttributeMeta.GLOBAL_KEY, false, false))
-		filteredTypes.add(new MetaFieldType(externalKeyType, AttributeMeta.EXTERNAL_KEY, false, false))
-		filteredTypes.add(new MetaFieldType(keyType, AttributeMeta.EXTERNAL_KEY, true, true))
-		return filteredTypes
+		val externalKeyAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		externalKeyAttribute.setName("externalKey")
+		externalKeyAttribute.card = cardSingle
+		externalKeyAttribute.type = stringType;
+		
+		val keysType = SimpleFactory.eINSTANCE.createData()
+		keysType.setName("Key")
+		keysType.model = RosettaFactory.eINSTANCE.createRosettaModel
+		keysType.model.name = "com.rosetta.model.lib.meta"
+		val keysAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		keysAttribute.setName("key")
+		keysAttribute.type = keysType
+		keysAttribute.card = cardMult
+
+		val filteredTypes = utypes.filter[t|t.name != "key" && t.name != "id" && t.name != "reference"].toSet;
+		val result = filteredTypes.map[toAttribute].toList
+		result.addAll(#[globalKeyAttribute, externalKeyAttribute, keysAttribute])
+		return result
+	}
+	
+	def toAttribute(RosettaMetaType type) {
+		val newAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		newAttribute.card = cardSingle
+		newAttribute.name = type.name
+		newAttribute.type = type
+		return newAttribute
 	}
 
 	def getMetaAndTemplateFieldTypes(Collection<RosettaMetaType> utypes) {
 		val templateGlobalReferenceType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
 		templateGlobalReferenceType.setName("templateGlobalReference")
 		templateGlobalReferenceType.type = stringType;
-
-		val metaFieldTypes = utypes.metaFieldTypes
-		metaFieldTypes.add(new MetaFieldType(templateGlobalReferenceType, null, false, false))
+		
+		val plusTypes = new ArrayList(utypes)
+		plusTypes.add(templateGlobalReferenceType)
+		val metaFieldTypes = plusTypes.metaFieldTypes
 		return metaFieldTypes
 	}
 
-	def metaFields(RosettaJavaPackages packages, String name, Collection<String> interfaces, Collection<MetaFieldGenerator.MetaFieldType> metaFieldTypes) {
-		if (metaFieldTypes.map[metaType].exists[t|t.name == "scheme"]) {
-			interfaces.add("MetaDataFields")
+	def metaFields(JavaNames names, String name, Collection<Object> interfaces, Collection<Attribute> attributes) {
+		if (attributes.exists[t|t.name == "scheme"]) {
+			interfaces.add(MetaDataFields)
 		}
 
-	'''
-		package «packages.basicMetafields.name»;
-
-		import com.rosetta.model.lib.RosettaModelObject;
-		import com.rosetta.model.lib.RosettaModelObjectBuilder;
-		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-		import com.rosetta.model.lib.meta.*;
-		import com.rosetta.model.lib.meta.RosettaMetaData;
-		import com.rosetta.model.lib.path.RosettaPath;
-		import com.rosetta.model.lib.process.AttributeMeta;
-		import com.rosetta.model.lib.process.BuilderMerger;
-		import com.rosetta.model.lib.process.BuilderProcessor;
-		import com.rosetta.model.lib.process.Processor;
-		import com.rosetta.model.lib.meta.Key;
-		import com.rosetta.util.ListEquals;
-
-		import java.util.ArrayList;
-		import java.util.List;
-		import java.util.Objects;
-		import java.util.stream.Collectors;
 		
-		import static java.util.Optional.ofNullable;
-		import static com.rosetta.util.CollectionUtils.emptyIfNull;
-
-		public class «name» extends RosettaModelObject implements «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR» {
-			
-			«FOR type : metaFieldTypes»
-				private final «type.toType» «type.metaType.name.toFirstLower»;
-			«ENDFOR»
-			
-			private static BasicRosettaMetaData<«name»> metaData = new BasicRosettaMetaData<>();
-			
-			@Override
-			public RosettaMetaData<? extends «name»> metaData() {
-				return metaData;
-			}
-			
-			private «name»(«name»Builder builder) {
-				«FOR type : metaFieldTypes»
-					«IF type.metaType.type.name=="Key"»
-						«type.metaType.name.toFirstLower» = ofNullable(builder.get«type.metaType.name.toFirstUpper»()).map(v->v.stream().map(b->b.build()).collect(Collectors.toList())).orElse(null);
-					«ELSE»
-						«type.metaType.name.toFirstLower» = builder.«type.metaType.getter»;
-					«ENDIF»
-				«ENDFOR»
-			}
-			
-			«FOR type : metaFieldTypes»
-				@Override
-				public «type.toType» «type.metaType.getter» {
-					return «type.metaType.name.toFirstLower»;
-				}
-			«ENDFOR»
-			
-			@Override
-			public «name»Builder toBuilder() {
-				«name»Builder builder = new «name»Builder();
-				«FOR type : metaFieldTypes»
-					«IF type.metaType.type.name=="Key"»
-						ofNullable(«type.metaType.getter»).ifPresent(«type.metaType.name.toFirstLower»->«type.metaType.name.toFirstLower».forEach(builder::add«type.metaType.name.toFirstUpper»));
-					«ELSE»
-						ofNullable(«type.metaType.getter»).ifPresent(builder::set«type.metaType.name.toFirstUpper»);
-					«ENDIF»
-				«ENDFOR»
-				return builder;
-			}
-			
-			public static «name»Builder builder() {
-				return new «name»Builder();
-			}
-			
-			@Override
-			public int hashCode() {
-				final int prime = 31;
-				int _result = 1;
-				«FOR type : metaFieldTypes»
-					_result = prime * _result + ((«type.metaType.name.toFirstLower» == null) ? 0 : «type.metaType.name.toFirstLower».hashCode());
-				«ENDFOR»
-				return _result;
-			}
 		
-			@Override
-			public boolean equals(Object obj) {
-				if (this == obj)
-					return true;
-				if (obj == null || getClass() != obj.getClass())
-					return false;
-
-				«name» other = («name») obj;
-
-				«FOR type : metaFieldTypes»
-					«IF type.metaType.type.name=="Key"»
-						if (!ListEquals.listEquals(«type.metaType.name.toFirstLower», other.«type.metaType.name.toFirstLower»)) return false;
-					«ELSE»
-						if (!Objects.equals(«type.metaType.name.toFirstLower», other.«type.metaType.name.toFirstLower»)) return false;
-					«ENDIF»
-				«ENDFOR»
-				return true;
-			}
+		val Data d = SimpleFactory.eINSTANCE.createData;
+		d.name = name
+		d.model = RosettaFactory.eINSTANCE.createRosettaModel
+		d.model.name = "com.rosetta.model.metafields"
+		d.attributes.addAll(attributes)
+		val classBody = tracImports(d.classBody(names, "1", interfaces))
+		classBody.addImport(BasicRosettaMetaData.name, BasicRosettaMetaData.simpleName)
 		
-			@Override
-			public String toString() {
-				return "«name» {" +
-					«FOR type : metaFieldTypes SEPARATOR ' + ", " +'»
-						"«type.metaType.name.toFirstLower»=" + this.«type.metaType.name.toFirstLower»
-					«ENDFOR»
-					+ "}";
-			}
-			
-			public static class «name»Builder extends RosettaModelObjectBuilder implements «FOR i : interfaces SEPARATOR ', '»«i»Builder«ENDFOR» {
-				«FOR type : metaFieldTypes»
-					private «type.toBuilderType» «type.metaType.name.toFirstLower»;
-				«ENDFOR»
-				
-				@Override
-				public RosettaMetaData<? extends «name»> metaData() {
-					return metaData;
-				}
-				
-				«FOR type : metaFieldTypes»
-					«IF type.metaType.type.name=="Key"»
-						@Override
-						public «type.toBuilderType» «type.metaType.getter» {
-							return «type.metaType.name.toFirstLower»;
-						}
-						
-						public «type.toBuilderTypeSingle» getOrCreate«type.metaType.name.toFirstUpper»(int _index) {
-							if («type.metaType.name.toFirstLower» == null) {
-								this.«type.metaType.name.toFirstLower» = new ArrayList<>();
-							}
-							return getIndex(key, _index, «type.toBuilderTypeSingle»::new);
-						}
-					«ELSE»
-						@Override
-						public «type.toBuilderType» «type.metaType.getter» {
-							return «type.metaType.name.toFirstLower»;
-						}
-					«ENDIF»
-				«ENDFOR»
-				
-				«FOR type : metaFieldTypes»
-					«IF type.metaType.type.name=="Key"»
-						public «name»Builder add«type.metaType.name.toFirstUpper»(«type.metaType.type.name.toJavaFullType» «type.metaType.name.toFirstLower») {
-							ofNullable(«type.metaType.name.toFirstLower»)
-								.map(o->o.toBuilder())
-								.ifPresent(this::add«type.metaType.name.toFirstUpper»Builder);
-							return this;
-						}
-						
-						public «name»Builder add«type.metaType.name.toFirstUpper»Builder(«type.toBuilderTypeSingle» «type.metaType.name.toFirstLower») {
-							ofNullable(«type.metaType.name.toFirstLower»).ifPresent(o -> {
-								if (this.«type.metaType.name.toFirstLower» == null) {
-									this.«type.metaType.name.toFirstLower» = new ArrayList<>();
-								}
-								this.«type.metaType.name.toFirstLower».add(o);
-							});
-							return this;
-						}
-						
-						@Override
-						public «name»Builder add«type.metaType.name.toFirstUpper»Builder(«type.toBuilderType» «type.metaType.name.toFirstLower») {
-							emptyIfNull(key).forEach(this::addKeyBuilder);
-							return this;
-						}
-					«ELSE»
-						@Override
-						public «name»Builder set«type.metaType.name.toFirstUpper»(«type.toBuilderType» «type.metaType.name.toFirstLower») {
-							this.«type.metaType.name.toFirstLower» = «type.metaType.name.toFirstLower»;
-							return this;
-						}
-					«ENDIF»
-					
-				«ENDFOR»
+		//val classBody = tracImports(metaBody(name, interfaces, metaFieldTypes))
+		'''
+		package «names.packages.basicMetafields.name»;
 
-				@Override
-				public «name» build() {
-					return new «name»(this);
-				}
-
-				@Override
-				public «name»Builder prune() {
-					«IF !metaFieldTypes.filter[t|t.metaType.name=="Key"].isEmpty»
-						key = ofNullable(key).map(l->l.stream().filter(b->b!=null).map(b->(KeyBuilder)b.prune()).filter(b->b.hasData()).collect(Collectors.toList())).filter(b->!b.isEmpty()).orElse(null);
-					«ENDIF»
-					return this;
-				}
-				
-				@Override
-				public boolean hasData() {
-					«IF metaFieldTypes.empty»
-						return false;
-					«ELSE»
-						«FOR type : metaFieldTypes»
-							«IF type.metaType.type.name=="Key"»
-								if (get«type.metaType.name.toFirstUpper»()!=null && get«type.metaType.name.toFirstUpper»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
-							«ELSE»
-								if (get«type.metaType.name.toFirstUpper»()!=null) return true;
-							«ENDIF»
-						«ENDFOR»
-						return false;
-					«ENDIF»
-				}
-				
-				@Override
-				public void process(RosettaPath path, BuilderProcessor processor) {
-					«FOR type : metaFieldTypes.filter[m|m.metaType.type.name!="Key"]»
-						processor.processBasic(path.newSubPath("«type.metaType.name.toFirstLower»"), «type.metaType.type.name.toJavaType».class, «type.metaType.name.toFirstLower», this, «addAttributeMeta(type)»);
-					«ENDFOR»
-				
-				}
-				
-				@Override
-				public «name»Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-					«name»Builder o = («name»Builder) other;
-					
-					«FOR type : metaFieldTypes»
-						«IF type.metaType.type.name=="Key"»
-							merger.mergeRosetta(get«type.metaType.name.toFirstUpper»(), o.get«type.metaType.name.toFirstUpper»(), this::getOrCreate«type.metaType.name.toFirstUpper»);
-						«ELSE»
-							merger.mergeBasic(get«type.metaType.name.toFirstUpper»(), o.get«type.metaType.name.toFirstUpper»(), this::set«type.metaType.name.toFirstUpper», «addAttributeMeta(type)»);
-						«ENDIF»
-					«ENDFOR»
-					return this;
-				}
-				
-				@Override
-				public int hashCode() {
-					final int prime = 31;
-					int _result = 1;
-					«FOR type : metaFieldTypes»
-						_result = prime * _result + ((«type.metaType.name.toFirstLower» == null) ? 0 : «type.metaType.name.toFirstLower».hashCode());
-					«ENDFOR»
-					return _result;
-				}
-			
-				@Override
-				public boolean equals(Object obj) {
-					if (this == obj)
-						return true;
-					if (obj == null || getClass() != obj.getClass())
-						return false;
-
-					«name»Builder other = («name»Builder) obj;
-
-					«FOR type : metaFieldTypes»
-						«IF type.metaType.type.name=="Key"»
-							if (!ListEquals.listEquals(«type.metaType.name.toFirstLower», other.«type.metaType.name.toFirstLower»)) return false;
-						«ELSE»
-							if (!Objects.equals(«type.metaType.name.toFirstLower», other.«type.metaType.name.toFirstLower»)) return false;
-						«ENDIF»
-					«ENDFOR»
-					return true;
-				}
-			
-				@Override
-				public String toString() {
-					return "«name»Builder {" +
-						«FOR type : metaFieldTypes SEPARATOR ' + ", " +'»
-							"«type.metaType.name.toFirstLower»=" + this.«type.metaType.name.toFirstLower»
-						«ENDFOR»
-						+ "}";
-				}
-			}
-			
-			@Override
-			protected void process(RosettaPath path, Processor processor) {
-				«FOR type : metaFieldTypes.filter[m|m.metaType.type.name!="Key"]»
-					processor.processBasic(path.newSubPath("«type.metaType.name.toFirstLower»"), «type.metaType.type.name.toJavaType».class, «type.metaType.name.toFirstLower», this, AttributeMeta.META);
-				«ENDFOR»
-			}
+		«FOR imp : classBody.imports.filter[i| !i.endsWith(name+"Meta")]»
+			import «imp»;
+		«ENDFOR»
+		«FOR imp : classBody.staticImports»
+			import static «imp»;
+		«ENDFOR»
+		
+		«classBody.toString»
+		
+		class «name»Meta extends BasicRosettaMetaData<«name»>{
+		
 		}
-	'''
-	}
-	
-	def CharSequence addAttributeMeta(MetaFieldType type)
-		'''AttributeMeta.META«IF type.attributeMeta !== null», AttributeMeta.«type.attributeMeta»«ENDIF»'''
-	
-	def CharSequence toType(MetaFieldType type)
-		'''«IF type.multiple»List<«ENDIF»«type.toTypeSingle»«IF type.multiple»>«ENDIF»'''
-	
-	def CharSequence toTypeSingle(MetaFieldType type)
-		'''«type.metaType.type.name.toJavaFullType»'''
-	
-	def CharSequence toBuilderType(MetaFieldType type)
-		'''«IF type.multiple»List<«ENDIF»«type.toBuilderTypeSingle»«IF type.multiple»>«ENDIF»'''
-	
-	def CharSequence toBuilderTypeSingle(MetaFieldType type)
-		'''«type.metaType.type.name.toJavaFullType»«IF type.isType».«type.metaType.type.name.toFirstUpper»Builder«ENDIF»'''
-	
-	@org.eclipse.xtend.lib.annotations.Data 
-	static class MetaFieldType {
-		RosettaMetaType metaType
-		AttributeMeta attributeMeta
-		boolean type
-		boolean multiple
+		'''
 	}
 
-	def fieldWithMeta(RosettaJavaPackages packages, ExpandedType type) '''
-		«IF type.isBuiltInType»
-		package «packages.basicMetafields.name»;
-		«ELSE»
-		package «packages.model.metaField.name»;
-		«ENDIF»
+	def CharSequence fieldWithMeta(JavaNames names, RosettaType type) {
 		
-		«IF !type.isBuiltInType»
-		import «packages.model.name».*;
-		«ENDIF»
-		import «packages.defaultLib.name».GlobalKey;
-		import «packages.defaultLib.name».GlobalKeyBuilder;
-		import «packages.defaultLib.name».RosettaModelObject;
-		import «packages.defaultLib.name».RosettaModelObjectBuilder;
-		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-		import com.rosetta.model.lib.meta.FieldWithMeta;
-		import com.rosetta.model.lib.meta.FieldWithMetaBuilder;
-		import com.rosetta.model.lib.meta.RosettaMetaData;
-		import com.rosetta.model.lib.path.RosettaPath;
-		import com.rosetta.model.lib.process.*;
-		import com.rosetta.model.lib.records.Date;
-		import «packages.basicMetafields.name».MetaFields;
+		val valueAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		valueAttribute.card = cardSingle
+		valueAttribute.name = "value"
+		valueAttribute.type = type
 		
-		import java.util.Objects;
+		val metaType = SimpleFactory.eINSTANCE.createData()
+		metaType.setName("MetaFields")
+		metaType.model = RosettaFactory.eINSTANCE.createRosettaModel
+		metaType.model.name = names.packages.basicMetafields.name
+		val metaAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		metaAttribute.setName("meta")
+		metaAttribute.type = metaType
+		metaAttribute.card = cardSingle
+		
+		val packageName= if (type.isBuiltInType) names.packages.basicMetafields.name else names.packages.model.metaField.name
+		val underlyingName= if (type.isBuiltInType) type.name.toJavaFullType else names.packages.model.name+"." + type.name
+		
+		val Data d = SimpleFactory.eINSTANCE.createData;
+		d.name = "FieldWithMeta"+type.name.toFirstUpper
+		d.model = RosettaFactory.eINSTANCE.createRosettaModel
+		d.model.name = packageName
+		d.attributes.addAll(#[
+			valueAttribute, metaAttribute
+		])
+		
+		val FWMType = new ParameterizedType(new JavaType(FieldWithMeta.name), #[new ParameterizedType(new JavaType(underlyingName), #[])])
+		val classBody = tracImports(d.classBody(names, "1", #[GlobalKey, FWMType]))
+		classBody.addImport(BasicRosettaMetaData.name, BasicRosettaMetaData.simpleName)
+		
+		'''
+		package «packageName»;
 
-		import static java.util.Optional.ofNullable;
+		«FOR imp : classBody.imports.filter[i| !i.endsWith("FieldWithMeta"+type.name.toFirstUpper+"Meta")]»
+			import «imp»;
+		«ENDFOR»
+		«FOR imp : classBody.staticImports»
+			import static «imp»;
+		«ENDFOR»
 		
-		public class FieldWithMeta«type.name.toFirstUpper» extends RosettaModelObject implements FieldWithMeta<«type.name.toJavaType»>, GlobalKey {
-			private final «type.name.toJavaType» value;
-			private final MetaFields meta;
-			private static BasicRosettaMetaData<FieldWithMeta«type.name.toFirstUpper»> metaData = new BasicRosettaMetaData<>();
-			
-			@Override
-			public RosettaMetaData<? extends FieldWithMeta«type.name.toFirstUpper»> metaData() {
-				return metaData;
-			}
-			
-			private FieldWithMeta«type.name.toFirstUpper»(FieldWithMeta«type.name.toFirstUpper»Builder builder) {
-				«IF type.isType»
-					value = ofNullable(builder.getValue()).map(v->v.build()).orElse(null);
-				«ELSE»
-					value = builder.getValue();
-				«ENDIF»
-				meta = ofNullable(builder.getMeta()).map(MetaFields.MetaFieldsBuilder::build).orElse(null);
-			}
-			
-			public «type.name.toJavaType» getValue() {
-				return value;
-			}
-			
-			public MetaFields getMeta() {
-				return meta;
-			}
-			
-			public FieldWithMeta«type.name.toFirstUpper»Builder toBuilder() {
-				FieldWithMeta«type.name.toFirstUpper»Builder builder = new FieldWithMeta«type.name.toFirstUpper»Builder();
-				builder.setValue(value);
-				builder.setMeta(meta);
-				return builder;
-			}
-			
-			public static FieldWithMeta«type.name.toFirstUpper»Builder builder() {
-				return new FieldWithMeta«type.name.toFirstUpper»Builder();
-			}
-			
-			@Override
-			protected void process(RosettaPath path, Processor processor) {
-				processRosetta(path.newSubPath("meta"), processor, MetaFields.class, meta, AttributeMeta.META);
-				«IF type.isType»
-					processRosetta(path.newSubPath("value"), processor, «type.name.toJavaType».class, value);
-				«ELSE»
-					processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
-				«ENDIF»
-			}
-			
-			@Override
-			public int hashCode() {
-				final int prime = 31;
-				int _result = 1;
-				_result = prime * _result + ((meta == null) ? 0 : meta.hashCode());
-				_result = prime * _result + ((value == null) ? 0 : value.hashCode());
-				return _result;
-			}
+		«classBody.toString»
 		
-			@Override
-			public boolean equals(Object obj) {
-				if (this == obj)
-					return true;
-				if (obj == null || getClass() != obj.getClass())
-					return false;
-				
-				FieldWithMeta«type.name.toFirstUpper» other = (FieldWithMeta«type.name.toFirstUpper») obj;
-				
-				if (!Objects.equals(meta, other.meta)) return false;
-				if (!Objects.equals(value, other.value)) return false;
-				return true;
-			}
+		class FieldWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<FieldWithMeta«type.name.toFirstUpper»>{
 		
-			@Override
-			public String toString() {
-				return "FieldWithMeta«type.name.toFirstUpper» {" +
-					"value=" + this.value + ", " +
-					"meta=" + this.meta +
-				"}";
-			}
-			
-			public static class FieldWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder implements FieldWithMetaBuilder<«type.name.toJavaType»>, GlobalKeyBuilder {
-				«IF type.isType»
-					private «type.name».«type.name»Builder  value;
-				«ELSE»
-					private «type.name.toJavaType»  value;
-				«ENDIF»
-				private MetaFields.MetaFieldsBuilder meta;
-				
-				public FieldWithMeta«type.name.toFirstUpper»Builder() {}
-				
-				@Override
-				public RosettaMetaData<? extends FieldWithMeta«type.name.toFirstUpper»> metaData() {
-					return metaData;
-				}
-				
-				«IF type.isType»
-					public «type.name».«type.name»Builder getValue() {
-						return value;
-					}
-					
-					public «type.name».«type.name»Builder getOrCreateValue() {
-						return value = ofNullable(value).orElseGet(«type.name»::builder);
-					}
-				«ELSE»
-					public «type.name.toJavaType» getValue() {
-						return value;
-					}
-				«ENDIF»
-				
-				public Class<«type.name.toJavaType»> getValueType() {
-					return «type.name.toJavaType».class;
-				}
-				
-				public MetaFields.MetaFieldsBuilder getMeta() {
-					return meta;
-				}
-				
-				public MetaFields.MetaFieldsBuilder getOrCreateMeta() {
-					return meta = ofNullable(meta).orElseGet(MetaFields::builder);
-				}
-				
-				«IF type.isType»
-					public FieldWithMeta«type.name.toFirstUpper»Builder setValueBuilder(«type.name».«type.name»Builder value) {
-						this.value = value;
-						return this;
-					}
-					
-					public FieldWithMeta«type.name.toFirstUpper»Builder setValue(«type.name» value) {
-						this.value = ofNullable(value).map(t->t.toBuilder()).orElse(null);
-						return this;
-					}
-				«ELSE»
-					public FieldWithMeta«type.name.toFirstUpper»Builder setValue(«type.name.toJavaType» value) {
-						this.value = value;
-						return this;
-					}
-				«ENDIF»
-				
-				public FieldWithMeta«type.name.toFirstUpper»Builder setMeta(MetaFields meta) {
-					this.meta = ofNullable(meta).map(MetaFields::toBuilder).orElse(null);
-					return this;
-				}
-				
-				public FieldWithMeta«type.name.toFirstUpper»Builder setMetaBuilder(MetaFields.MetaFieldsBuilder meta) {
-					this.meta = meta;
-					return this;
-				}
-				
-				public FieldWithMeta«type.name.toFirstUpper» build() {
-					return new FieldWithMeta«type.name.toFirstUpper»(this);
-				}
-				
-				@Override
-				public FieldWithMeta«type.name.toFirstUpper»Builder prune() {
-					«IF type.isType»
-						if (getValue()!=null && !getValue().prune().hasData()) value = null;
-					«ENDIF»
-					if (getMeta()!=null && !getMeta().prune().hasData()) meta = null;
-					return this;
-				}
-				
-				@Override
-				public boolean hasData() {
-					«IF type.isType»
-						if (getValue()!=null && getValue().hasData()) return true;
-					«ELSE»
-						if (getValue()!=null) return true;
-					«ENDIF»
-					return false;
-				}
-				
-				@Override
-				public void process(RosettaPath path, BuilderProcessor processor) {
-					processRosetta(path.newSubPath("meta"), processor, MetaFields.class, meta, AttributeMeta.META);
-					«IF type.isType»
-						processRosetta(path.newSubPath("value"), processor, «type.name.toJavaType».class, value);
-					«ELSE»
-						processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
-					«ENDIF»
-				}
-				
-				@Override
-				public FieldWithMeta«type.name.toFirstUpper»Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-					FieldWithMeta«type.name.toFirstUpper»Builder o = (FieldWithMeta«type.name.toFirstUpper»Builder) other;
-					
-					merger.mergeRosetta(getMeta(), o.getMeta(), this::setMetaBuilder);
-					«IF type.isType»
-						merger.mergeRosetta(getValue(), o.getValue(), this::setValueBuilder);
-					«ELSE»
-						merger.mergeBasic(getValue(), o.getValue(), this::setValue);
-					«ENDIF»
-					return this;
-				}
-
-				@Override
-				public int hashCode() {
-					final int prime = 31;
-					int _result = 1;
-					_result = prime * _result + ((meta == null) ? 0 : meta.hashCode());
-					_result = prime * _result + ((value == null) ? 0 : value.hashCode());
-					return _result;
-				}
-			
-				@Override
-				public boolean equals(Object obj) {
-					if (this == obj)
-						return true;
-					if (obj == null || getClass() != obj.getClass())
-						return false;
-					
-					FieldWithMeta«type.name.toFirstUpper»Builder other = (FieldWithMeta«type.name.toFirstUpper»Builder) obj;
-					
-					if (!Objects.equals(meta, other.meta)) return false;
-					if (!Objects.equals(value, other.value)) return false;
-					return true;
-				}
-			
-				@Override
-				public String toString() {
-					return "FieldWithMeta«type.name.toFirstUpper»Builder {" +
-						"value=" + this.value + ", " +
-						"meta=" + this.meta +
-					"}";
-				}
-			}
 		}
-	'''
-	
-	def boolean isClassOrData(RosettaType type) {
-		return type instanceof Data
+		'''
 	}
 	
-	def referenceWithMeta(RosettaJavaPackages packages, ExpandedType type) '''
-		package «packages.model.metaField.name»;
+	def referenceAttributes(RosettaType type) {
+		val valueAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		valueAttribute.card = cardSingle
+		valueAttribute.name = "value"
+		valueAttribute.type = type
 		
-		import static java.util.Optional.ofNullable;
 		
-		import «packages.model.name».*;
-		import «packages.defaultLib.name».RosettaModelObject;
-		import «packages.defaultLib.name».RosettaModelObjectBuilder;
-		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-		import com.rosetta.model.lib.meta.ReferenceWithMeta;
-		import com.rosetta.model.lib.meta.Reference;
-		import com.rosetta.model.lib.meta.Reference.ReferenceBuilder;
-		import com.rosetta.model.lib.meta.ReferenceWithMetaBuilder;
-		import com.rosetta.model.lib.meta.RosettaMetaData;
-		import com.rosetta.model.lib.path.RosettaPath;
-		import com.rosetta.model.lib.process.*;
-		
-		import java.util.Objects;
-		
-		import static java.util.Optional.ofNullable;
-		
-		public class ReferenceWithMeta«type.name.toFirstUpper» extends RosettaModelObject implements ReferenceWithMeta<«type.name»>{
-			private final String globalReference;
-			private final String externalReference;
-			private final «type.name» value;
-			private final Reference reference;
-			
-			private ReferenceWithMeta«type.name.toFirstUpper»(ReferenceWithMeta«type.name.toFirstUpper»Builder builder) {
-				value = ofNullable(builder.getValue()).map(v->v.build()).orElse(null);
-				globalReference = builder.globalReference;
-				externalReference = builder.externalReference;
-				this.reference = builder.reference==null?null:builder.reference.build();
-			}
-			
-			public «type.name» getValue() {
-				return value;
-			}
-			
-			public String getGlobalReference() {
-				return globalReference;
-			}
-			
-			public String getExternalReference() {
-				return externalReference;
-			}
-			
-			public Reference getReference() {
-				return reference;
-			}
-			
-			private static BasicRosettaMetaData<ReferenceWithMeta«type.name.toFirstUpper»> metaData = new BasicRosettaMetaData<>();
-			
-			@Override
-			public RosettaMetaData<? extends ReferenceWithMeta«type.name.toFirstUpper»> metaData() {
-				return metaData;
-			}
-			
-			public ReferenceWithMeta«type.name.toFirstUpper»Builder toBuilder() {
-				ReferenceWithMeta«type.name.toFirstUpper»Builder builder = new ReferenceWithMeta«type.name.toFirstUpper»Builder();
-				builder.setValue(value);
-				builder.setGlobalReference(globalReference);
-				builder.setExternalReference(externalReference);
-				if (reference!=null) builder.setReference(reference.toBuilder());
-				return builder;
-			}
-			
-			public static ReferenceWithMeta«type.name.toFirstUpper»Builder builder() {
-				return new ReferenceWithMeta«type.name.toFirstUpper»Builder();
-			}
-			
-			@Override
-			protected void process(RosettaPath path, Processor processor) {
-				processRosetta(path.newSubPath("value"), processor, «type.name.toJavaType».class, value);
-				processor.processBasic(path.newSubPath("globalReference"), String.class, globalReference, this, AttributeMeta.META);
-				processor.processBasic(path.newSubPath("externalReference"), String.class, externalReference, this, AttributeMeta.META);
-			}
-			
-			@Override
-			public int hashCode() {
-				final int prime = 31;
-				int _result = 1;
-				_result = prime * _result + ((globalReference == null) ? 0 : globalReference.hashCode());
-				_result = prime * _result + ((externalReference == null) ? 0 : externalReference.hashCode());
-				_result = prime * _result + ((value == null) ? 0 : value.hashCode());
-				_result = prime * _result + ((reference == null) ? 0 : reference.hashCode());
-				return _result;
-			}
-		
-			@Override
-			public boolean equals(Object obj) {
-				if (this == obj)
-					return true;
-				if (obj == null || getClass() != obj.getClass())
-					return false;
-				
-				ReferenceWithMeta«type.name.toFirstUpper» other = (ReferenceWithMeta«type.name.toFirstUpper») obj;
-				
-				if (!Objects.equals(globalReference, other.globalReference)) return false;
-				if (!Objects.equals(externalReference, other.externalReference)) return false;
-				if (!Objects.equals(value, other.value)) return false;
-				if (!Objects.equals(reference, other.reference)) return false;
-				return true;
-			}
-		
-			@Override
-			public String toString() {
-				return "ReferenceWitMeta«type.name.toFirstUpper» {" +
-					"globalReference=" + this.globalReference + ", " +
-					"externalReference=" + this.externalReference + ", " +
-					"value=" + this.value +
-					"reference=" + this.reference +
-				"}";
-			}
-			
-			public static class ReferenceWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder implements ReferenceWithMetaBuilder<«type.name.toJavaType»>{
-				private «type.name».«type.name»Builder value;
-				private String globalReference;
-				private String externalReference;
-				private ReferenceBuilder reference;
-				
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder() {}
-				
-				@Override
-				public RosettaMetaData<? extends ReferenceWithMeta«type.name.toFirstUpper»> metaData() {
-					return metaData;
-				}
-				
-				public «type.name».«type.name»Builder getValue() {
-					return value;
-				}
-				
-				public «type.name».«type.name»Builder getOrCreateValue() {
-					if (value == null) {
-						value = «type.name».builder();
-					}
-					return value;
-				}
-				
-				public String getGlobalReference() {
-					return globalReference;
-				}
-				
-				public String getExternalReference() {
-					return externalReference;
-				}
-				
-				public ReferenceBuilder getReference() {
-					return reference;
-				}
-				
-				public Class<«type.name.toJavaType»> getValueType() {
-					return «type.name.toJavaType».class;
-				}
-				
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder setValue(«type.name» value) {
-					this.value = ofNullable(value).map(t->t.toBuilder()).orElse(null);
-					return this;
-				}
-				
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder setValueBuilder(«type.name».«type.name»Builder value) {
-					this.value = value;
-					return this;
-				}
-				
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder setGlobalReference(String reference) {
-					this.globalReference = reference;
-					return this;
-				}
-				
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder setExternalReference(String reference) {
-					this.externalReference = reference;
-					return this;
-				}
-				
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder setReference(ReferenceBuilder reference) {
-					this.reference = reference;
-					return this;
-				}
-				
-				public ReferenceWithMeta«type.name.toFirstUpper» build() {
-					return new ReferenceWithMeta«type.name.toFirstUpper»(this);
-				}
-				
-				@Override
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder prune() {
-					if (value != null) value = value.prune();
-					if (value != null && !value.hasData()) value = null;
-					return this;
-				}
-				
-				@Override
-				public boolean hasData() {
-					if (getValue()!=null && getValue().hasData()) return true;
-					return !(globalReference==null && externalReference==null && (reference==null || reference.getReference()==null));
-				}
-				
-				@Override
-				public void process(RosettaPath path, BuilderProcessor processor) {
-					processRosetta(path.newSubPath("value"), processor, «type.name.toJavaType».class, value);
-					processor.processBasic(path.newSubPath("globalReference"), String.class, globalReference, this, AttributeMeta.META);
-					processor.processBasic(path.newSubPath("externalReference"), String.class, externalReference, this, AttributeMeta.META);
-				}
+		val globalRefAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		globalRefAttribute.setName("globalReference")
+		globalRefAttribute.card = cardSingle
+		globalRefAttribute.type = stringType
 
-				@Override
-				public ReferenceWithMeta«type.name.toFirstUpper»Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-					ReferenceWithMeta«type.name.toFirstUpper»Builder o = (ReferenceWithMeta«type.name.toFirstUpper»Builder) other;
-					
-					merger.mergeRosetta(getValue(), o.getValue(), this::setValueBuilder);
-					merger.mergeBasic(getGlobalReference(), o.getGlobalReference(), this::setGlobalReference);
-					merger.mergeBasic(getExternalReference(), o.getExternalReference(), this::setExternalReference);
-					merger.mergeRosetta(getReference(), o.getReference(), this::setReference);
-					return this;
-				}
-				
-				@Override
-				public int hashCode() {
-					final int prime = 31;
-					int _result = 1;
-					_result = prime * _result + ((globalReference == null) ? 0 : globalReference.hashCode());
-					_result = prime * _result + ((externalReference == null) ? 0 : externalReference.hashCode());
-					_result = prime * _result + ((value == null) ? 0 : value.hashCode());
-					_result = prime * _result + ((reference == null) ? 0 : reference.hashCode());
-					return _result;
-				}
-			
-				@Override
-				public boolean equals(Object obj) {
-					if (this == obj)
-						return true;
-					if (obj == null || getClass() != obj.getClass())
-						return false;
-					
-					ReferenceWithMeta«type.name.toFirstUpper»Builder other = (ReferenceWithMeta«type.name.toFirstUpper»Builder) obj;
-					
-					if (!Objects.equals(globalReference, other.globalReference)) return false;
-					if (!Objects.equals(externalReference, other.externalReference)) return false;
-					if (!Objects.equals(value, other.value)) return false;
-					if (!Objects.equals(reference, other.reference)) return false;
-					return true;
-				}
-			
-				@Override
-				public String toString() {
-					return "ReferenceWitMeta«type.name.toFirstUpper»Builder {" +
-						"globalReference=" + this.globalReference + ", " +
-						"externalReference=" + this.externalReference + ", " +
-						"value=" + this.value +
-						"reference=" + this.reference +
-					"}";
-				}
-			}
-		}
-	'''
+		val externalRefAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		externalRefAttribute.setName("externalReference")
+		externalRefAttribute.card = cardSingle
+		externalRefAttribute.type = stringType;
+		
+		val refType = SimpleFactory.eINSTANCE.createData()
+		refType.setName("Reference")
+		refType.model = RosettaFactory.eINSTANCE.createRosettaModel
+		refType.model.name = "com.rosetta.model.lib.meta"
+		val refAttribute = SimpleFactory.eINSTANCE.createAttribute()
+		refAttribute.setName("reference")
+		refAttribute.type = refType
+		refAttribute.card = cardSingle
+		 #[valueAttribute, globalRefAttribute, externalRefAttribute, refAttribute]
+	}
 	
-	def basicReferenceWithMeta(RosettaJavaPackages packages, ExpandedType type) '''
-	package «packages.basicMetafields.name»;
-	
-	import com.rosetta.model.lib.RosettaModelObject;
-	import com.rosetta.model.lib.RosettaModelObjectBuilder;
-	import com.rosetta.model.lib.process.*;
-	import com.rosetta.model.lib.meta.BasicReferenceWithMetaBuilder;
-	import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-	import com.rosetta.model.lib.meta.ReferenceWithMeta;
-	import com.rosetta.model.lib.meta.Reference;
-	import com.rosetta.model.lib.meta.Reference.ReferenceBuilder;
-	import com.rosetta.model.lib.meta.RosettaMetaData;
-	import com.rosetta.model.lib.path.RosettaPath;
-	import com.rosetta.model.lib.records.Date;
-	
-	import java.math.BigDecimal;
-	import java.util.Objects;
-	
-	public class BasicReferenceWithMeta«type.name.toFirstUpper» extends RosettaModelObject implements ReferenceWithMeta<«type.name.toJavaType»>{
-		private final String globalReference;
-		private final String externalReference;
-		private final «type.name.toJavaType» value;
-		private final Reference reference;
+	def referenceWithMeta(JavaNames names, RosettaType type) {
 		
-		private BasicReferenceWithMeta«type.name.toFirstUpper»(BasicReferenceWithMeta«type.name.toFirstUpper»Builder builder){
-			value = builder.getValue();
-			globalReference = builder.globalReference;
-			externalReference = builder.externalReference;
-			this.reference = builder.reference==null?null:builder.reference.build();
-		}
+		val Data d = SimpleFactory.eINSTANCE.createData;
+		d.name = "ReferenceWithMeta"+type.name.toFirstUpper
+		d.model = RosettaFactory.eINSTANCE.createRosettaModel
+		d.model.name = names.packages.model.metaField.name
+		d.attributes.addAll(referenceAttributes(type))
+		val refInterface = new ParameterizedType(new JavaType(ReferenceWithMeta.name), #[new ParameterizedType(names.toJavaType(type), #[])])
+		val classBody = tracImports(d.classBody(names, "1", #[refInterface]))
+		classBody.addImport(BasicRosettaMetaData.name, BasicRosettaMetaData.simpleName)
 		
-		public «type.name.toJavaType» getValue() {
-			return value;
-		}
-		
-		public String getGlobalReference() {
-			return globalReference;
-		}
-		
-		public String getExternalReference() {
-			return externalReference;
-		}
-		
-		public Reference getReference() {
-			return reference;
-		}
-		
-		private static BasicRosettaMetaData<BasicReferenceWithMeta«type.name.toFirstUpper»> metaData = new BasicRosettaMetaData<>();
-		
-		@Override
-		public RosettaMetaData<? extends BasicReferenceWithMeta«type.name.toFirstUpper»> metaData() {
-			return metaData;
-		}
-		
-		public BasicReferenceWithMeta«type.name.toFirstUpper»Builder toBuilder() {
-			BasicReferenceWithMeta«type.name.toFirstUpper»Builder builder = new BasicReferenceWithMeta«type.name.toFirstUpper»Builder();
-			builder.setValue(value);
-			builder.setGlobalReference(globalReference);
-			builder.setExternalReference(externalReference);
-			if (reference!=null) builder.setReference(reference.toBuilder());
-			return builder;
-		}
-		
-		public static BasicReferenceWithMeta«type.name.toFirstUpper»Builder builder() {
-			return new BasicReferenceWithMeta«type.name.toFirstUpper»Builder();
-		}
-		
-		@Override
-		protected void process(RosettaPath path, Processor processor) {
-			processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
-			processor.processBasic(path.newSubPath("globalReference"), String.class, globalReference, this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("externalReference"), String.class, externalReference, this, AttributeMeta.META);
-		}
-		
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int _result = 1;
-			_result = prime * _result + ((globalReference == null) ? 0 : globalReference.hashCode());
-			_result = prime * _result + ((externalReference == null) ? 0 : externalReference.hashCode());
-			_result = prime * _result + ((value == null) ? 0 : value.hashCode());
-			return _result;
-		}
-	
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null || getClass() != obj.getClass())
-				return false;
-			
-			BasicReferenceWithMeta«type.name.toFirstUpper» other = (BasicReferenceWithMeta«type.name.toFirstUpper») obj;
-			
-			if (!Objects.equals(globalReference, other.globalReference)) return false;
-			if (!Objects.equals(externalReference, other.externalReference)) return false;
-			if (!Objects.equals(value, other.value)) return false;
-			return true;
-		}
-	
-		@Override
-		public String toString() {
-			return "BasicReferenceWitMeta«type.name.toFirstUpper» {" +
-				"globalReference=" + this.globalReference + ", " +
-				"externalReference=" + this.externalReference + ", " +
-				"value=" + this.value +
-			"}";
-		}
-		
-		public static class BasicReferenceWithMeta«type.name.toFirstUpper»Builder extends RosettaModelObjectBuilder implements BasicReferenceWithMetaBuilder<«type.name.toJavaType»>{
-			private «type.name.toJavaType» value;
-			private String globalReference;
-			private String externalReference;
-			private ReferenceBuilder reference;
-			
-			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder() {}
-			
-			@Override
-			public RosettaMetaData<? extends BasicReferenceWithMeta«type.name.toFirstUpper»> metaData() {
-				return metaData;
-			}
-			
-			public «type.name.toJavaType» getValue() {
-				return value;
-			}
-			
-			public String getGlobalReference() {
-				return globalReference;
-			}
-			
-			public String getExternalReference() {
-				return externalReference;
-			}
-			
-			public ReferenceBuilder getReference() {
-				return reference;
-			}
-			
-			public Class<«type.name.toJavaType»> getValueType() {
-				return «type.name.toJavaType».class;
-			}
-			
-			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder setValue(«type.name.toJavaType» value) {
-				this.value = value;
-				return this;
-			}
-			
-			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder setGlobalReference(String reference) {
-				this.globalReference = reference;
-				return this;
-			}
-			
-			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder setExternalReference(String reference) {
-				this.externalReference = reference;
-				return this;
-			}
-			
-			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder setReference(ReferenceBuilder reference) {
-				this.reference = reference;
-				return this;
-			}
-			
-			public BasicReferenceWithMeta«type.name.toFirstUpper» build() {
-				return new BasicReferenceWithMeta«type.name.toFirstUpper»(this);
-			}
-			
-			@Override
-			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder prune() {
-				return this;
-			}
-			
-			@Override
-			public boolean hasData() {
-				return !(value==null && globalReference==null && externalReference==null && (reference==null || reference.getReference()==null));
-			}
-			
-			@Override
-			public void process(RosettaPath path, BuilderProcessor processor) {
-				processor.processBasic(path.newSubPath("value"), «type.name.toJavaType».class, value, this);
-				processor.processBasic(path.newSubPath("globalReference"), String.class, globalReference, this, AttributeMeta.META);
-				processor.processBasic(path.newSubPath("externalReference"), String.class, externalReference, this, AttributeMeta.META);
-			}
+		//val classBody = tracImports(metaBody(name, interfaces, metaFieldTypes))
+		'''
+		package «names.packages.model.metaField.name»;
 
-			@Override
-			public BasicReferenceWithMeta«type.name.toFirstUpper»Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-				BasicReferenceWithMeta«type.name.toFirstUpper»Builder o = (BasicReferenceWithMeta«type.name.toFirstUpper»Builder) other;
-				
-				merger.mergeBasic(getValue(), o.getValue(), this::setValue);
-				merger.mergeBasic(getGlobalReference(), o.getGlobalReference(), this::setGlobalReference);
-				merger.mergeBasic(getExternalReference(), o.getExternalReference(), this::setExternalReference);
-				merger.mergeRosetta(getReference(), o.getReference(), this::setReference);
-				return this;
-			}
-			
-			@Override
-			public int hashCode() {
-				final int prime = 31;
-				int _result = 1;
-				_result = prime * _result + ((globalReference == null) ? 0 : globalReference.hashCode());
-				_result = prime * _result + ((externalReference == null) ? 0 : externalReference.hashCode());
-				_result = prime * _result + ((value == null) ? 0 : value.hashCode());
-				return _result;
-			}
+		«FOR imp : classBody.imports.filter[i| !i.endsWith("ReferenceWithMeta"+type.name.toFirstUpper+"Meta")]»
+			import «imp»;
+		«ENDFOR»
+		«FOR imp : classBody.staticImports»
+			import static «imp»;
+		«ENDFOR»
 		
-			@Override
-			public boolean equals(Object obj) {
-				if (this == obj)
-					return true;
-				if (obj == null || getClass() != obj.getClass())
-					return false;
-				
-				BasicReferenceWithMeta«type.name.toFirstUpper»Builder other = (BasicReferenceWithMeta«type.name.toFirstUpper»Builder) obj;
-				
-				if (!Objects.equals(globalReference, other.globalReference)) return false;
-				if (!Objects.equals(externalReference, other.externalReference)) return false;
-				if (!Objects.equals(value, other.value)) return false;
-				return true;
-			}
+		«classBody.toString»
 		
-			@Override
-			public String toString() {
-				return "BasicReferenceWitMeta«type.name.toFirstUpper»Builder {" +
-					"globalReference=" + this.globalReference + ", " +
-					"externalReference=" + this.externalReference + ", " +
-					"value=" + this.value +
-				"}";
-			}
+		class ReferenceWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<ReferenceWithMeta«type.name.toFirstUpper»>{
+		
 		}
-	}'''
+		'''
+	}
 	
-	def namespace(RosettaRootElement rc) {
+	def basicReferenceWithMeta(JavaNames names, RosettaType type) {
+		val Data d = SimpleFactory.eINSTANCE.createData;
+		d.name = "BasicReferenceWithMeta"+type.name.toFirstUpper
+		d.model = RosettaFactory.eINSTANCE.createRosettaModel
+		d.model.name = names.packages.basicMetafields.name
+		d.attributes.addAll(referenceAttributes(type))
+		val refInterface = new ParameterizedType(new JavaType(ReferenceWithMeta.name), #[new ParameterizedType(new JavaType(type.name.toJavaFullType), #[])])
+		val classBody = tracImports(d.classBody(names, "1", #[refInterface]))
+		classBody.addImport(BasicRosettaMetaData.name, BasicRosettaMetaData.simpleName)
+		
+		//val classBody = tracImports(metaBody(name, interfaces, metaFieldTypes))
+		'''
+		package «names.packages.basicMetafields.name»;
+
+		«FOR imp : classBody.imports.filter[i| !i.endsWith("BasicReferenceWithMeta"+type.name.toFirstUpper+"Meta")]»
+			import «imp»;
+		«ENDFOR»
+		«FOR imp : classBody.staticImports»
+			import static «imp»;
+		«ENDFOR»
+		
+		«classBody.toString»
+		
+		class BasicReferenceWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<BasicReferenceWithMeta«type.name.toFirstUpper»>{
+		
+		}
+		'''
+	}
+	
+	private def namespace(RosettaRootElement rc) {
 		return rc.model.name
-	}
-	
-	def getter(RosettaNamed type) {
-		'''get«type.name.toFirstUpper»()'''
 	}
 
 	/** generate once per resource marker */

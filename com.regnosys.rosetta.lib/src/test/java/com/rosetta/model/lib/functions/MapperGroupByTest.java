@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperGroupBy;
+import com.rosetta.model.lib.mapper.MapperS;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

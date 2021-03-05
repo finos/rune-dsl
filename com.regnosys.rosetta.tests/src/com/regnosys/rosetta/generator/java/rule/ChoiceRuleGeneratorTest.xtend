@@ -47,7 +47,7 @@ class ChoiceRuleGeneratorTest {
 		
 		val testChoiceRule = testChoiceRuleClass.newInstance;
 		
-		val validationResult = testChoiceRuleClass.getMethod("validate", RosettaPath, testInstance.class)
+		val validationResult = testChoiceRuleClass.getMatchingMethod("validate", #[RosettaPath, testInstance.class])
 			.invoke(testChoiceRule, null, testInstance)
 				
 		val isSuccess = validationResult.class.getMethod("isSuccess", null).invoke(validationResult) as Boolean
@@ -70,7 +70,7 @@ class ChoiceRuleGeneratorTest {
 		val testChoiceRuleClass = classes.get(rootPackage.choiceRule.name + ".TestOptionalChoice")
 		val testChoiceRule = testChoiceRuleClass.newInstance;
 		
-		val validationResult = testChoiceRuleClass.getMethod("validate", RosettaPath ,testInstance.class)
+		val validationResult = testChoiceRuleClass.getMatchingMethod("validate", #[RosettaPath ,testInstance.class])
 			.invoke(testChoiceRule, null, testInstance)
 				
 		val isSuccess = validationResult.class.getMethod("isSuccess", null).invoke(validationResult) as Boolean

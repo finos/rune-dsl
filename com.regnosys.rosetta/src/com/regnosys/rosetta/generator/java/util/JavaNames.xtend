@@ -40,7 +40,7 @@ class JavaNames {
 
 	def StringConcatenationClient toListOrSingleJavaType(Attribute attribute) {
 		if (attribute.card.isIsMany) {
-			'''«List»<«attribute.type.toJavaType()»>'''
+			'''«List»<? extends «attribute.type.toJavaType()»>'''
 		} else
 			'''«attribute.type.toJavaType()»'''
 	}
@@ -48,6 +48,9 @@ class JavaNames {
 	def JavaType toJavaType(ExpandedType type) {
 		if (type.name == RosettaAttributeExtensions.METAFIELDS_CLASS_NAME || type.name == RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME) {
 			return createJavaType(packages.basicMetafields, type.name)
+		}
+		if (type.metaType) {//TODO ExpandedType needs to store the underlying type for meta types if we want them to be anything other than strings
+			return createForBasicType("string")
 		}
 		if (type.builtInType) {
 			return createForBasicType(type.name)
@@ -153,6 +156,12 @@ class JavaNames {
 		"missing built-in type " + typeName
 		)
 	}
+	
+	static def JavaNames createBasicFromPackages(RosettaJavaPackages packages) {
+		val n = new JavaNames
+		n.packages = packages
+		n
+	}
 
 	static class Factory {
 		@Inject Injector injector
@@ -161,7 +170,7 @@ class JavaNames {
 			create(new RosettaJavaPackages(model))
 		}
 
-		private def create(RosettaJavaPackages packages) {
+		def create(RosettaJavaPackages packages) {
 			val result = new JavaNames
 			injector.injectMembers(result)
 			result.packages = packages

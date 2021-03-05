@@ -1,5 +1,6 @@
 package com.rosetta.model.lib.process;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.rosetta.model.lib.RosettaModelObject;
@@ -59,7 +60,7 @@ public interface BuilderProcessor {
      * @param parent the RosettaModelObjectbuilder which contains these object as an attribute
      * @param metas Flags indicating meta information about the attribute
      */
-    <T> void processBasic(RosettaPath path, Class<T> rosettaType, List<T> instances, RosettaModelObjectBuilder parent, AttributeMeta... metas);
+    <T> void processBasic(RosettaPath path, Class<T> rosettaType, Collection<? extends T> instances, RosettaModelObjectBuilder parent, AttributeMeta... metas);
     
     /**
      * @return a report representing the result of this processor

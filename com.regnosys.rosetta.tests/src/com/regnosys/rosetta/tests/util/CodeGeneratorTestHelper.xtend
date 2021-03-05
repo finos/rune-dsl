@@ -6,9 +6,9 @@ import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.rosetta.RosettaModel
 import java.io.File
+import java.lang.reflect.Method
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.HashMap
 import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.resource.Resource
@@ -77,12 +77,12 @@ class CodeGeneratorTestHelper {
 	}
 
 	def compileToClasses(Map<String, String> code) {
-		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA8);
+		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA11);
 	}
 
-	def compileJava8(CharSequence model) {
+	def compileJava11(CharSequence model) {
 		val code = generateCode(model)
-		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA8);
+		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA11);
 	}
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, String className, Map<String, Object> itemsToSet) {
@@ -94,16 +94,38 @@ class CodeGeneratorTestHelper {
 		val rosettaClassBuilderInstance = classes.get(rootPackage.name + '.' + className).getMethod(
 			"builder").invoke(null);
 		itemsToSet.forEach [ name, value |
-			rosettaClassBuilderInstance.class.getMethod('set' + name.toFirstUpper, value.class).invoke(
+			rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value.class]).invoke(
 				rosettaClassBuilderInstance, value);
 		]
 		itemsToAddToList.forEach [ name, objectsToAdd |
 			objectsToAdd.forEach [ value |
-				rosettaClassBuilderInstance.class.getMethod('add' + name.toFirstUpper, value.class).invoke(
+				val clazz = rosettaClassBuilderInstance.class
+				val meth = getMatchingMethod(clazz, 'add' + name.toFirstUpper, #[value].map[class])
+				meth.invoke(
 					rosettaClassBuilderInstance, value);
 			]
 		]
 		return rosettaClassBuilderInstance.class.getMethod('build').invoke(rosettaClassBuilderInstance);
+	}
+	
+	def Method getMatchingMethod(Class<?> clazz, String name, List<Class<?>> values) {
+		var methods = clazz.methods.filter[m|m.name==name]
+		methods = methods
+			.filter[m|m.parameterCount==values?.size]
+		val meth = methods.findFirst[m|m.paramsMatch(values)]
+		if (meth==null) {
+			val k=5;
+		}
+		meth
+	}
+	
+	static def paramsMatch(Method m, List<Class<?>> value) {
+		for (var i=0;i<m.parameterTypes.size;i++) {
+			val clazz = value.get(i)
+			val p = m.parameterTypes.get(i)
+			if (!p.isAssignableFrom(clazz)) return false
+		}
+		return true
 	}
 
 	def createCalculationInstance(Map<String, Class<?>> classes, String className) {

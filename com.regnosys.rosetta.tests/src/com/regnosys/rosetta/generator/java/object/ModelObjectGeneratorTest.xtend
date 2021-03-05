@@ -9,8 +9,6 @@ import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.annotations.RosettaQualified
-import com.rosetta.model.lib.annotations.RosettaSynonym
-import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.records.Date
 import java.math.BigDecimal
 import java.time.LocalTime
@@ -43,7 +41,8 @@ class ModelObjectGeneratorTest {
 		val classes = '''
 			type Tester:
 				items string (0..*)
-		'''.compileJava8
+		'''
+		.compileJava11
 
 		val classTester = classes.get(rootPackage.name + ".Tester")
 		val classTesterBuilderInstance = classTester.getMethod("builder").invoke(null)
@@ -66,7 +65,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				one string (0..1)
 				list string (0..*)
-		'''.compileJava8
+		'''.compileJava11
 
 		assertEquals(String, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 	}
@@ -91,7 +90,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				one number (0..1)
 				list number (0..*)
-		'''.compileJava8
+		'''.compileJava11
 
 		assertEquals(BigDecimal, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 
@@ -103,7 +102,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				one boolean (0..1)
 				list boolean (0..*)
-		'''.compileJava8
+		'''.compileJava11
 
 		assertEquals(Boolean, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 
@@ -115,7 +114,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				one date (0..1)
 				list date (0..*)
-		'''.compileJava8
+		'''.compileJava11
 		assertEquals(Date, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 	}
 
@@ -126,7 +125,7 @@ class ModelObjectGeneratorTest {
 				one date (0..1)
 				list date (0..*)
 				zoned zonedDateTime (0..1)
-		'''.compileJava8
+		'''.compileJava11
 		assertEquals(Date,
 			classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 		assertEquals(ZonedDateTime,
@@ -139,7 +138,7 @@ class ModelObjectGeneratorTest {
 			type Tester:
 				one time (0..1)
 				list time (0..*)
-		'''.compileJava8
+		'''.compileJava11
 		assertEquals(LocalTime, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
 	}
 
@@ -149,7 +148,7 @@ class ModelObjectGeneratorTest {
 		val classes = '''
 			type TestObject: <"">
 				fieldOne string (0..1) <"">
-		'''.compileJava8
+		'''.compileJava11
 		val generatedClass = classes.get(rootPackage.name + ".TestObject")
 		val builderInstance = generatedClass.getMethod("builder").invoke(null)
 		var inst = builderInstance.invoke("prune")
@@ -284,25 +283,6 @@ class ModelObjectGeneratorTest {
 		val schemeMethod = generatedClass.getMethod("getAttr")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
 	}
-    
-	@Test
-	def void shouldGenerateSchemeFieldWithSynonym() {
-		val code = '''
-			type TestObject: <"">
-				one string (0..1)
-					[metadata scheme]
-					[synonym FpML value "oneSyn" meta "oneScheme"]
-		'''.generateCode
-		//code.writeClasses("SchemeFieldWithSynonym")
-		val generatedClass = code.compileToClasses
-		val testClass = generatedClass.get(rootPackage.name + '.TestObject')
-		val getter = testClass.getMethod("getOne")
-
-		assertThat(getter.annotations.filter[RosettaSynonym.isAssignableFrom(class)].size, is(1))
-
-		val annotation = getter.getAnnotation(RosettaSynonym)
-		assertThat(annotation.value, is('oneSyn'))
-	}
 
 	@Test
 	def void shouldImplementGlobalKeyWhenDefined() {
@@ -372,8 +352,6 @@ class ModelObjectGeneratorTest {
 			type D:
 				s string (1..*)
 		'''.generateCode
-		// val classList = code.get(javaPackages.name + '.Rosetta')
-		// println(classList)
 		val rosetta = code.compileToClasses.get(rootPackage.name + '.Rosetta')
 
 		val rosettaClassList = rosetta.getMethod("classes").invoke(null) as List<Class<? extends RosettaModelObject>>
@@ -442,8 +420,8 @@ class ModelObjectGeneratorTest {
 			type Bar extends Foo:
 		'''.generateCode
 
+		//code.writeClasses("shouldSetAttributesOnEmptyClassWithInheritance")
 		val classes = code.compileToClasses
-
 		val subclassInstance = classes.get(rootPackage.name + '.Bar')
 
 		// set the super class attribute
@@ -509,8 +487,8 @@ class ModelObjectGeneratorTest {
 		val builderInstance = fooClass.getMethod("builder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFoo")
 		val metas = metad.invoke("getOrCreateMeta")
-		val key = metas.invoke("getKey") as List<Key>
-		assertThat(key.size(), is(1));
+		val keys = metas.invoke("getKey") as List
+		assertThat(keys.size(), is(1));
 		
 	}
 	
@@ -547,17 +525,11 @@ class ModelObjectGeneratorTest {
 		assertEquals(bar.size, 2)
 	}
 	
-	@Test
-	def void shouldPruneEmptyListToNull() {
-		var bar = createObjectWithListThenPruneAndReturnList(ImmutableList.of())
-		assertNull(bar)
-	}
-	
 	private def createObjectWithListThenPruneAndReturnList(List<String> list) {
 		val classes = '''
 			type Foo: 
 				bar string (0..*) 
-		'''.compileJava8
+		'''.compileJava11
 		
 		var fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of(), of('bar', list)))
 		var prunedInstance = fooInstance.toBuilder.prune
