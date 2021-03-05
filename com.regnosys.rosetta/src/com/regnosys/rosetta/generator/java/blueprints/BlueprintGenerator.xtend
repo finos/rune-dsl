@@ -41,6 +41,8 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
@@ -48,6 +50,7 @@ import static extension com.regnosys.rosetta.generator.java.util.JavaClassTransl
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 
 class BlueprintGenerator {
+	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
 	
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaBlueprintTypeResolver
@@ -73,54 +76,60 @@ class BlueprintGenerator {
 	 * Generate the text of a blueprint
 	 */
 	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RosettaType output, String name, String type, String uri, String version) {
-		val imports = new ImportGenerator(packageName)
-		imports.addBlueprintImports
-		imports.addSourceAndSink
-		
-		val typed = buildTypeGraph(nodes, output)
-		val typeArgs = bindArgs(typed)
-		imports.addTypes(typed)
-		val StringConcatenationClient scc = nodes.buildBody(typed, imports)
-		val body = tracImports(scc)
-		return '''
-			package «packageName.model.blueprint.name»;
+		try {
+			val imports = new ImportGenerator(packageName)
+			imports.addBlueprintImports
+			imports.addSourceAndSink
 			
-			«FOR imp : body.imports»
-				import «imp»;
-			«ENDFOR»
-			«FOR imp : body.staticImports»
-				import static «imp»;
-			«ENDFOR»
-			// manual imports
-			«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
-			import «importClass»;
-			«ENDFOR»
-			«FOR importClass : imports.staticImports»
-			import static «importClass».*;
-			«ENDFOR»
-			
-			«emptyJavadocWithVersion(version)»
-			public class «name»«type»«typeArgs» implements Blueprint<«typed.input.getEither», «typed.output.getEither», «typed.inputKey.getEither», «typed.outputKey.getEither»> {
+			val typed = buildTypeGraph(nodes, output)
+			val typeArgs = bindArgs(typed)
+			imports.addTypes(typed)
+			val StringConcatenationClient scc = nodes.buildBody(typed, imports)
+			val body = tracImports(scc)
+			return '''
+				package «packageName.model.blueprint.name»;
+				
+				«FOR imp : body.imports»
+					import «imp»;
+				«ENDFOR»
+				«FOR imp : body.staticImports»
+					import static «imp»;
+				«ENDFOR»
+				// manual imports
+				«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
+				import «importClass»;
+				«ENDFOR»
+				«FOR importClass : imports.staticImports»
+				import static «importClass».*;
+				«ENDFOR»
+				
+				«emptyJavadocWithVersion(version)»
+				public class «name»«type»«typeArgs» implements Blueprint<«typed.input.getEither», «typed.output.getEither», «typed.inputKey.getEither», «typed.outputKey.getEither»> {
 
-				private final RosettaActionFactory actionFactory;
+					private final RosettaActionFactory actionFactory;
 
-				public «name»«type»(RosettaActionFactory actionFactory) {
-					this.actionFactory = actionFactory;
+					public «name»«type»(RosettaActionFactory actionFactory) {
+						this.actionFactory = actionFactory;
+					}
+					
+					@Override
+					public String getName() {
+						return "«name»"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "«uri»";
+					}
+					
+					«body.toString»
 				}
-				
-				@Override
-				public String getName() {
-					return "«name»"; 
-				}
-				
-				@Override
-				public String getURI() {
-					return "«uri»";
-				}
-				
-				«body.toString»
+				'''
 			}
-			'''
+			catch (Exception e) {
+				LOGGER.error("Error generating blueprint java for "+name, e);
+				return '''Unexpected Error generating «name».java Please see log for details'''
+			}
 	}
 	
 	/**
