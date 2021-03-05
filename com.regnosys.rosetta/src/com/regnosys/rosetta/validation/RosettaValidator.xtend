@@ -84,6 +84,8 @@ import org.eclipse.emf.common.util.Diagnostic
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintDataJoin
+import com.regnosys.rosetta.rosetta.BlueprintReduce
+import com.regnosys.rosetta.types.RosettaOperators
 
 /**
  * This class contains custom validation rules. 
@@ -100,6 +102,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension RosettaFunctionExtensions
+	@Inject extension RosettaOperators
 	@Inject ExpressionHelper exprHelper
 	@Inject CardinalityProvider cardinality
 	@Inject RosettaGrammarAccess grammar
@@ -629,6 +632,22 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		val multi = cardinality.isMulti(join.key)
 		if (multi) {
 			error('''Key expression must have single cardinality''', join, BLUEPRINT_DATA_JOIN__KEY)
+		}
+	}
+	
+	@Check
+	def void checkBlueprintReduce(BlueprintReduce reduce) {
+		if (reduce.expression!==null) {
+			val exrType = reduce.expression.RType
+			if (!exrType.isSelfComparable) {
+				error('''The expression for «reduce.action» must return a comparable type (e.g. number or date) the curent expression returns «exrType.name»''', reduce, BLUEPRINT_REDUCE__EXPRESSION, TYPE_ERROR)
+			}
+			
+			val multi = cardinality.isMulti(reduce.expression)
+			if (multi) {
+				error('''The expression for «reduce.action» must return a single value the curent expression returns multiple values''', reduce, BLUEPRINT_REDUCE__EXPRESSION)
+			}
+			
 		}
 	}
 	
