@@ -1004,7 +1004,8 @@ And the filtering rule is defined as:
 
 - ``maxBy`` / ``minBy``
 
-The syntax supports selecting values by their natural ordering (ascending numbers, ascending alphabet) using the ``maxBy`` and ``minBy`` keywords.
+The syntax supports selecting values by an ordering based on an attribute using the ``maxBy`` and ``minBy`` keywords. The selected attribute must be of single cardinality and must be of a comparable basic data type
+e.g. date, time, number, string
 
 In the below example, we first apply a filter and extract a ``fixedInterestRate`` attribute. There could be multiple attribute values, so we select the highest one and then report it as the “Price” field.
 
