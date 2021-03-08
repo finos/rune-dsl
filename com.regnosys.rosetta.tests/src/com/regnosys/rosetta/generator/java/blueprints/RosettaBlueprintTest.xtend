@@ -1637,11 +1637,31 @@ class RosettaBlueprintTest {
 			
 			type Foo:
 				fixed string (0..*)
-				order int (0..*)
+				order int (0..1)
 			
 		'''.generateCode
 		// writeOutClasses(blueprint, "maxBy");
 		blueprint.compileToClasses
+	}
+	
+	@Test
+	def void maxByBrokenTypeAndCardinality() {
+		val model = '''
+			reporting rule IsFixedFloat
+			maxBy Foo->order
+			
+			type Bar:
+				thing int (1..1)
+			
+			type Foo:
+				fixed string (0..*)
+				order Bar (0..*)
+			
+		'''.parseRosetta
+		model.assertError(BLUEPRINT_REDUCE, RosettaIssueCodes.TYPE_ERROR,
+			"The expression for maxBy must return a comparable type (e.g. number or date) the curent expression returns Bar")
+		model.assertError(BLUEPRINT_REDUCE, null,
+			"The expression for maxBy must return a single value the curent expression returns multiple values")
 	}
 
 	@Test
