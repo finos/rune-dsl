@@ -782,10 +782,10 @@ class RosettaBlueprintTest {
 	}
 	
 	@Test
-	def void brokenExpressionInputTypes() {
+	def void multiplicationExpression() {
 		val model = '''
 			reporting rule Blueprint1
-				extract Input->traderef + Input2->colour
+				extract Input->traderef * Input2->colour
 						
 			type Input:
 				traderef int (1..1)
@@ -796,6 +796,20 @@ class RosettaBlueprintTest {
 		'''.parseRosetta
 		model.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR, 
 			"Input types must be the same but were Input and Input2")
+	}
+	
+	@Test
+	def void brokenExpressionInputTypes() {
+		val model = '''
+			reporting rule Blueprint1
+				extract Input->traderef * Input->colour
+						
+			type Input:
+				traderef int (1..1)
+				colour int (1..1)
+			
+		'''.parseRosetta
+		model.generateCode.compileToClasses
 	}
 
 	@Test
@@ -1609,10 +1623,10 @@ class RosettaBlueprintTest {
 	def void oneOf() {
 		val blueprint = '''
 			reporting rule FixedFloat
-				if ( extract Foo -> fixed = "Wood" => extract Foo -> floating,
-					extract Foo -> fixed => extract Foo -> sinking,
-					=> extract Foo -> swimming
-				)
+				if extract Foo -> fixed = "Wood" do extract Foo -> floating
+					else if extract Foo -> fixed do extract Foo -> sinking
+					else do extract Foo -> swimming
+				endif
 					
 			
 			type Foo:

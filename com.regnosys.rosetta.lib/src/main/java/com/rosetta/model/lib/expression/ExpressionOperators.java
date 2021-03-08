@@ -149,15 +149,6 @@ public class ExpressionOperators {
 		}
 	}
 	
-	// doWhenPresent
-	
-	public static <T> ComparisonResult doWhenPresent(Mapper<T> whenPresent, ComparisonResult compare) {
-		if(exists(whenPresent, false).get())
-			return compare;
-		else 
-			return ComparisonResult.success();
-	}
-	
 	// areEqual
 	
 	public static <T, U> ComparisonResult areEqual(Mapper<T> m1, Mapper<U> m2) {

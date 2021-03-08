@@ -926,9 +926,10 @@ In addition to those existing functional features, the Rosetta DSL provides othe
 
 - ``extract`` <Expression>
 
-When defining a reporting rule, the `extract` keyword defines a value to be reported, or to be used as input into a subsequent statement or another rule. The full expressional syntax of the Rosetta DSL can be used in the expression that defines the value to be extracted, including conditional statement such as ``if`` / ``else`` / ``or`` / ``exists``.
+When defining a reporting rule, the `extract` keyword defines a value to be reported, or to be used as input into a subsequent statement or another rule. 
+The full expressional syntax of the Rosetta DSL can be used in the expression that defines the value to be extracted, including conditional statement such as ``if`` / ``else`` / ``or`` / ``exists`` and mathmatical operators.
 
-An example is given below, that uses a mix of Boolean statements. This example looks at the fixed and floating rate specificiation of a interestrate payout and if there is one of each returns true
+An example is given below, that uses a mix of Boolean statements. This example looks at the fixed and floating rate specification of an InterestRatePayout and if there is one of each returns true
 
 .. code-block:: Haskell
 
@@ -945,9 +946,9 @@ The extracted value may be coming from a data attribute in the model, as above, 
    or WorkflowStep -> businessEvent -> primitives -> quantityChange exists
      then "NEWT"
 
-- <ExtractionExpression1> ``then`` <ExtractionExpression2>
+- <ReportExpression1> ``then`` <ReportExpression2>
 
-Extraction statements can be chained using the keyword `then`, which means that extraction continues from the previously extracted point.
+Report statements can be chained using the keyword `then`, which means that extraction continues from the previously extracted point.
 
 The syntax provides type safety when chaining rules, whereby the output type of the preceding rule must be equal to the input type of the following rule. The example below uses the TradeForEvent rule to find the Trade object and ``then`` extracts the termination date from that trade
 
@@ -959,7 +960,7 @@ The syntax provides type safety when chaining rules, whereby the output type of 
  reporting rule TradeForEvent
  	extract
  		if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade only exists
-	then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
+			then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
 		else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
 
 - ``as`` <FieldName>
@@ -1001,17 +1002,6 @@ And the filtering rule is defined as:
    TradeForEvent then
    extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only exists
 
-- ``extract multiple`` <Expression>
-
-When extracting a type with a multiple cardinality, the `multiple` keyword must be applied. This is typically used before a filter step where we extract multiple values and then filter it down to a single value, as in the below example.
-
-.. code-block:: Haskell
-
- reporting rule ReportingTimestamp <"Reporting timestamp">
-   extract multiple WorkflowStep -> timestamp then
-   filter when EventTimestamp -> qualification = EventTimestampQualificationEnum -> eventCreationDateTime then
-   extract EventTimestamp -> dateTime as "I.5 Reporting Timestamp"
-
 - ``maxBy`` / ``minBy``
 
 The syntax supports selecting values by their natural ordering (ascending numbers, ascending alphabet) using the ``maxBy`` and ``minBy`` keywords.
@@ -1025,14 +1015,12 @@ In the below example, we first apply a filter and extract a ``fixedInterestRate`
    maxBy FixedInterestRate -> rate then
    extract FixedInterestRate -> rate as "Price"
 
-- ``if`` statement
+- ``Rule if`` statement
 
-The syntax supports two syntaxes for if then else style statements. The first has the structure ``if`` *boolean-expression* 
-
-
-It consists of several comma separated terms consisting of a test and a possible result.
-The tests are evaluated in order and when the first one matches its associated result is returned from the statement.
-If none of the tests match then a final possible result can be provided
+The rule if statement consists of the keyword ``if`` followed by condition that will be evaluated ``return`` followed by a rule. 
+If the condition is true then the value of the ``return`` rule is returned.
+Additional conditions and ``return`` rules can be specified with ``else if``. Only the first matching condition's ``return`` will be executed.
+``else return`` can be used to provide an alternative that will be executed if no conditions match
 In the below example we first extract the Payout from a Trade then we try to find the appropriate asset class.
 If there is a ForwardPayout with a foreignExchange underlier then "CU" is returned as the "2.2 Asset Class"
 If there is an OptionPayout with a foreignExchange underlier then "CU" is returned as the "2.2 Asset Class"
@@ -1041,12 +1029,11 @@ otherwise the asset class is null
 .. code-block:: Haskell
 
   extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout then
-  if (
-	  filter when Payout -> forwardPayout -> underlier -> underlyingProduct -> foreignExchange exists
-	    => return "CU" as "2.2 Asset Class",
-	  filter when Payout -> optionPayout -> underlier -> underlyingProduct -> foreignExchange exists
-	    => return "CU" as "2.2 Asset Class",
-		=> return "null" as "2.2 Asset Class"
+  if filter when Payout -> forwardPayout -> underlier -> underlyingProduct -> foreignExchange exists
+	    do return "CU" as "2.2 Asset Class"
+	  else if filter when Payout -> optionPayout -> underlier -> underlyingProduct -> foreignExchange exists
+	    do return "CU" as "2.2 Asset Class",
+		do return "null" as "2.2 Asset Class"
 	)
 
 

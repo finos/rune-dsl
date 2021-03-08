@@ -18,7 +18,6 @@ import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
-import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -179,10 +178,6 @@ class RosettaExtensions {
 		}
 		else if(expr instanceof RosettaAbsentExpression) {
 			expr.argument.collectLeafTypes(visitor)
-		}
-		else if(expr instanceof RosettaWhenPresentExpression) {
-			// only check right
-			expr.right.collectLeafTypes(visitor)
 		}
 		else if(expr instanceof RosettaEnumValueReference) {
 			visitor.apply(expr.enumeration)

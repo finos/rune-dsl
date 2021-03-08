@@ -5,7 +5,6 @@
 package com.regnosys.rosetta.rosetta
 
 import java.util.stream.Collectors
-import com.regnosys.rosetta.rosetta.simple.Annotated
 
 class RosettaModel extends RosettaDefinable {
 	String name
@@ -383,11 +382,6 @@ enum RosettaQualifiableType {
  * Calculations
  */
 
-class RosettaWhenClause {
-	contains RosettaExpression when
-	contains RosettaExpression call
-}
-
 class RosettaBinaryOperation extends RosettaExpression {
 	contains RosettaExpression left
 	String operator
@@ -415,12 +409,6 @@ class RosettaDisjointExpression extends RosettaExpression {
 	contains RosettaExpression disjoint
 }
 
-class RosettaWhenPresentExpression extends RosettaExpression {
-	contains RosettaExpression left
-	String operator
-	contains RosettaExpression right
-}
-
 class RosettaGroupByFeatureCall extends RosettaExpression {
 	contains RosettaExpression call
 	contains RosettaGroupByExpression groupBy
@@ -445,15 +433,6 @@ class RosettaConditionalExpression extends RosettaExpression {
 	contains RosettaExpression ^if
 	contains RosettaExpression ifthen
 	contains RosettaExpression elsethen
-}
-
-class RosettaWhenCascadeExpression extends RosettaExpression {
-	contains RosettaWhenExpression[] whens
-}
-
-class RosettaWhenExpression extends RosettaExpression {
-	contains RosettaExpression condition
-	contains RosettaExpression then
 }
 
 class RosettaCallableWithArgsCall extends RosettaExpression {

@@ -113,9 +113,6 @@ class CodeGeneratorTestHelper {
 		methods = methods
 			.filter[m|m.parameterCount==values?.size]
 		val meth = methods.findFirst[m|m.paramsMatch(values)]
-		if (meth==null) {
-			val k=5;
-		}
 		meth
 	}
 	

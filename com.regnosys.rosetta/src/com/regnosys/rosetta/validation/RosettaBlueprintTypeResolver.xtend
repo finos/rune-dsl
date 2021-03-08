@@ -49,9 +49,6 @@ import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
-import com.regnosys.rosetta.rosetta.RosettaWhenCascadeExpression
-import com.regnosys.rosetta.rosetta.RosettaWhenExpression
-import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 
@@ -531,18 +528,6 @@ class RosettaBlueprintTypeResolver {
 	
 	def dispatch RosettaType getInput(RosettaParenthesisCalcExpression expr) {
 		return getInput(expr.expression)
-	}
-	
-	def dispatch RosettaType getInput(RosettaWhenCascadeExpression expr) {
-		return getInput(expr.whens.get(0))
-	}
-	
-	def dispatch RosettaType getInput(RosettaWhenExpression expr) {
-		return getInput(expr.condition)
-	}
-	
-	def dispatch RosettaType getInput(RosettaWhenPresentExpression expr) {
-		return getInput(expr.left)
 	}
 	
 	def dispatch RosettaType getInput(RosettaCallableWithArgsCall expr) {

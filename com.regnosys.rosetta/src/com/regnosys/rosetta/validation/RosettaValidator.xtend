@@ -33,7 +33,6 @@ import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
-import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -259,14 +258,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 						Data: {
 							// must have single cardinality in group by function
 							var gbe = groupByExp
-							while (gbe !== null) {
-								if (gbe.attribute instanceof WithCardinality &&
-									(gbe.attribute as WithCardinality).card.isIsMany) {
-									error('''attribute «gbe.attribute.name» of «(gbe.attribute.eContainer as Data).name» has multiple cardinality. Group by expressions must be single''',
-										featureCallGroupBy, ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, CARDINALITY_ERROR)
-									return
-								}
-								gbe = gbe.right
+							if (cardinality.isMulti(gbe)) {
+								error('''group by expression has multiple cardinality. Group by expressions must be single''',
+										featureCallGroupBy, ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, CARDINALITY_ERROR)	
 							}
 						}
 						default: {

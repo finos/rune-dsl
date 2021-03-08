@@ -49,7 +49,7 @@ AnnotationRef:
 ;
 
 AnnotationQualifier:
-	qualName = STRING '=' (qualValue= STRING | qualPath = RosettaFeatureCall)
+	qualName = STRING '=' (qualValue= STRING | qualPath = RosettaClassAttributeCall)
 ;
 
 Data:
@@ -133,7 +133,7 @@ EmptyLiteral:
 ;
 
 ListLiteral:
-	'[' elements += RosettaExpression (',' elements += RosettaExpression )* ']';
+	'[' elements += RosettaCalcExpression (',' elements += RosettaCalcExpression )* ']';
 
 // old stuff
 RosettaRootElement:
@@ -339,7 +339,7 @@ RosettaMapPath:
 ;
 
 RosettaMapRosettaPath:
-	'rosettaPath' '=' path=RosettaFeatureCall
+	'rosettaPath' '=' path=RosettaClassAttributeCall
 ;
 
 RosettaMapTestExpression returns RosettaExpression:
@@ -399,61 +399,17 @@ RosettaOrganisation:
  * Expressions 
  */ 
 
-RosettaExpression:
-	RosettaBooleanOperation
-;
-
-RosettaBooleanOperation returns RosettaExpression:
-	RosettaTestExpression ({RosettaBinaryOperation.left=current} operator=('or' | 'and') right=RosettaTestExpression)*
-;
-
-RosettaTestExpression returns RosettaExpression:
-	RosettaCountOperation
-	(
-		{RosettaBinaryOperation.left=current} operator=('='|'<'|'>'|'<='|'>='|'<>') right=RosettaCountOperation
-		| {RosettaExistsExpression.argument=current} (only?='only')? (single?='single' | multiple?='multiple')? ('exists')
-		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
-		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaFeatureCall
-		| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaFeatureCall
-		| {RosettaWhenPresentExpression.left=current} 'when' 'present' operator=('=') right=RosettaFeatureCall
-	)?
-;
-
-RosettaCountOperation returns RosettaExpression:
-	RosettaAdditiveExpression ( {RosettaCountOperation.argument=current} 'count')?
-;
-
-RosettaAdditiveExpression returns RosettaExpression:
-	RosettaGroupByFeatureCall ({RosettaBinaryOperation.left=current} operator=('+' | '-') right=RosettaGroupByFeatureCall)*
-;
-
 RosettaGroupByFeatureCall returns RosettaExpression:
-	RosettaFeatureCall ({RosettaGroupByFeatureCall.call=current} 'group' 'by' groupBy=RosettaGroupByExpression)?
+	RosettaCalcAttributeCall ( =>({RosettaGroupByFeatureCall.call=current} 'group' 'by') groupBy=RosettaGroupByExpression)?
 ;
 
 RosettaGroupByExpression:
 	// TODO change to Attribute after migration
-	attribute = [RosettaTypedFeature|ValidID] (FEATURE_CALL_SEPARATOR right = RosettaGroupByExpression)?
-;
-
-RosettaFeatureCall returns RosettaExpression:
-	RosettaPrimaryExpression ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID] toOne ?= 'only-element'?)*
-;
-
-RosettaPrimaryExpression returns RosettaExpression:
-	RosettaCallableCall
-
-	| RosettaLiteral
-	| '(' RosettaExpression ')'
+	attribute = [RosettaTypedFeature|ValidID] (=>FEATURE_CALL_SEPARATOR right = RosettaGroupByExpression)?
 ;
 
 RosettaCallableCall: 
 	callable=[RosettaCallable|QualifiedName]
-;
-
-RosettaConditionalExpression returns RosettaExpression:
-	RosettaExpression // Blueprint stuff
-	| {RosettaConditionalExpression} 'if' if=RosettaExpression 'then' ifthen=RosettaConditionalExpression 'else' elsethen=RosettaConditionalExpression
 ;
 
 RosettaLiteral:
@@ -503,9 +459,9 @@ terminal FEATURE_CALL_SEPARATOR:
 RosettaWorkflowRule:
 	'workflow' 'rule' RosettaNamed RosettaDefinable?
 	(marketPractice += RosettaMarketPractice)*
-	('when' when = RosettaExpression)?
+	('when' when = RosettaCalcExpression)?
 	root = RosettaTreeNode
-	('and' data = RosettaExpression)?
+	('and' data = RosettaCalcExpression)?
 	('commonId' ( commonIdentifier = [RosettaTypedFeature|ValidID] | 'path' commonIdPath = RosettaClassAttributeCall ) )?
 ;
 
@@ -537,7 +493,7 @@ RosettaAlias:
 ;
 
 RosettaAliasExpression returns RosettaExpression:
-	RosettaFeatureCall
+	RosettaClassAttributeCall
 	(
 		({RosettaBinaryOperation.left=current} operator='and' right=RosettaAliasExpression)
 		| ({RosettaBinaryOperation.left=current} operator='or' right=RosettaAliasExpression)
@@ -603,7 +559,7 @@ RosettaCalcMultiplicative returns RosettaExpression:
 ;
 
 RosettaCalcCountOperation returns RosettaExpression:
-	RosettaCalcAttributeCall (=> ({RosettaCountOperation.argument=current} 'count'))?
+	RosettaGroupByFeatureCall (=> ({RosettaCountOperation.argument=current} 'count'))?
 ;
 
 RosettaCalcAttributeCall returns RosettaExpression:
@@ -745,7 +701,7 @@ BlueprintValidate :
 ;
 
 BlueprintFilter :
-	'filter' 'when' (filter = RosettaBooleanOperation | 'rule' filterBP = BlueprintRef)
+	'filter' 'when' (filter = RosettaCalcExpression | 'rule' filterBP = BlueprintRef)
 ;
 
 // RENAME THIS TO BlueprintOr
@@ -762,19 +718,19 @@ BlueprintRef:
 ;
 
 BlueprintExtract:
-	'extract' (multiple?='multiple')? call=RosettaConditionalExpression ('as' identifier=STRING)?
+	'extract' (multiple?='multiple')? call=RosettaCalcExpression ('as' identifier=STRING)?
 ;
 
 BlueprintReturn:
-	'return' expression = RosettaExpression ('as' identifier=STRING)?
+	'return' expression = RosettaCalcExpression ('as' identifier=STRING)?
 ;
 
 BlueprintGroup:
-	'groupby' key=RosettaFeatureCall 
+	'groupby' key=RosettaCalcExpression 
 ;
 
 BlueprintDataJoin:
-	'join' 'key' key=RosettaFeatureCall 'foreignKey' foreign=RosettaFeatureCall
+	'join' 'key' key=RosettaClassAttributeCall 'foreignKey' foreign=RosettaClassAttributeCall
 ;
 
 BlueprintLookup:
@@ -790,20 +746,20 @@ BlueprintReduce :
 	(
 		action=('first'| 'last')
 		|
-		action=('maxBy'| 'minBy') expression=RosettaConditionalExpression
+		action=('maxBy'| 'minBy') expression=RosettaCalcAdditive
 	)
 ;
 
 BlueprintOneOf :
-	'if' '('
+	'if' 
 		bps+=BlueprintIfThen 
-		(',' bps+=BlueprintIfThen)? ','?
-		('=>' elseNode = BlueprintNodeExp)?
-	')'
+		(=>'else' 'if' bps+=BlueprintIfThen)*
+		(=>'else' 'do' elseNode = BlueprintNodeExp)?
+	'endif'
 ;
 
 BlueprintIfThen :
-	ifNode=BlueprintNodeExp '=>' thenNode=BlueprintNodeExp
+	ifNode=BlueprintNodeExp (=>'do' thenNode=BlueprintNodeExp)
 	
 ;
 

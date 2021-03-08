@@ -33,7 +33,6 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.validation.TypedBPNode
@@ -170,10 +169,6 @@ class ImportGenerator {
 			}
 			RosettaCountOperation: {
 				addExpression(expression.argument)
-			}
-			RosettaWhenPresentExpression: {
-				addExpression(expression.left)
-				addExpression(expression.right)
 			}
 			RosettaBigDecimalLiteral: {
 				imports.add("java.math.BigDecimal")
