@@ -1666,7 +1666,7 @@ class RosettaBlueprintTest {
 			
 			reporting rule MinFixed
 				extract Foo->fixed then
-				minBy itself
+				minimum
 			
 			type Foo:
 				fixed string (0..*)
@@ -1674,7 +1674,7 @@ class RosettaBlueprintTest {
 			
 		'''.parseRosetta
 		val code=blueprint.generateCode
-		//writeOutClasses(code, "maxByRule");
+		writeOutClasses(code, "maxByRule");
 		code.compileToClasses
 	}
 	

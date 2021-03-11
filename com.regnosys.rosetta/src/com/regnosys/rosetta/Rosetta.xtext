@@ -746,7 +746,9 @@ BlueprintReduce :
 	(
 		action=('first'| 'last')
 		|
-		action=('maxBy'| 'minBy') (expression=RosettaCalcAdditive | 'rule' reduceBP = BlueprintRef | itself?='itself')
+		action=('maxBy'| 'minBy') (expression=RosettaCalcAdditive | 'rule' reduceBP = BlueprintRef )
+		|
+		action=('minimum' | 'maximum')
 	)
 ;
 

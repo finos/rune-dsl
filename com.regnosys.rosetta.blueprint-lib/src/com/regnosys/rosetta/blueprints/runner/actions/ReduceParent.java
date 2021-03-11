@@ -13,18 +13,21 @@ import java.util.stream.Collectors;
 
 public abstract class ReduceParent<I, Kr extends Comparable<Kr>, K> extends NamedNode implements ProcessorNode<I, I, K>{
 
-	protected Action action;
+	private final Action action;
 	protected Map<K, Candidate> candidates = new HashMap<>();
 
 	public enum Action {
 			MAXBY,
 			MINBY,
+			MINIMUM,
+			MAXIMUM,
 			FIRST,
 			LAST;
 		}
 
-	public ReduceParent(String uri, String label) {
+	public ReduceParent(String uri, String label, Action action) {
 		super(uri, label);
+		this.action = action;
 	}
 	
 	class Candidate {
@@ -70,8 +73,10 @@ public abstract class ReduceParent<I, Kr extends Comparable<Kr>, K> extends Name
 		Candidate rival = new Candidate(key, input);
 		switch (action) {
 		case MAXBY:
+		case MAXIMUM:
 			candidates.merge(group, rival, this::mergeMax);
 			break;
+		case MINIMUM:
 		case MINBY:
 			candidates.merge(group, rival, this::mergeMin);
 			break;
