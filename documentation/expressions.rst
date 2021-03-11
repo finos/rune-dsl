@@ -105,7 +105,6 @@ The result type of a comparison operator is always boolean
     * ``single`` - the value of expression either has single cardinality or is a list with exactly one value.
     * ``mutiple`` - the value expression has more than 2 results
 * ``is absent`` - retuns true if the left expression does not return a result.
-* ``when present`` - if the left expression is absent returns true otherwise retuens the left expression ``=``  right expression.
 
 List Comparison Operators
 =========================
