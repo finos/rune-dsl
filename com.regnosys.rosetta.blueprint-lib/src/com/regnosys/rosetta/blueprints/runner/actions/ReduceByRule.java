@@ -12,8 +12,7 @@ public class ReduceByRule<I, Kr extends Comparable<Kr> , K> extends ReduceParent
 	CaptureDownstream<Kr, I> downstream;
 	
 	public ReduceByRule(String uri, String label, Action action, BlueprintInstance<? super I, Kr, I, I> evalBP) {
-		super(uri,label);
-		this.action = action;
+		super(uri,label, action);
 		this.evalBP = evalBP;
 		downstream = new CaptureDownstream<>();
 		evalBP.addDownstreams(downstream);

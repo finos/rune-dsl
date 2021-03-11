@@ -251,13 +251,16 @@ class ImportGenerator {
 	}
 	
 	def addReduce(BlueprintReduce reduce) {
+		imports.add(packages.blueprintLib.name + ".runner.actions.ReduceParent")
 		if (reduce.expression!==null) {
 			addExpression(reduce.expression);
+			imports.add(packages.blueprintLib.name + ".runner.actions.ReduceBy")
 		}
-		if (reduce.reduceBP!==null) {
+		else if (reduce.reduceBP!==null) {
 			imports.add(packages.blueprintLib.name + ".runner.actions.ReduceByRule")
 		}
-		imports.add(packages.blueprintLib.name + ".runner.actions.ReduceBy")
+		else
+			imports.add(packages.blueprintLib.name + ".runner.actions.ReduceBySelf")
 	}
 
 	def addGrouper(BlueprintGroup group) {
