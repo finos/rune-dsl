@@ -287,7 +287,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 
 	def dispatch void format(RosettaContainsExpression ele, extension IFormattableDocument document) {
 		ele.regionFor.keywords(
-			rosettaTestExpressionAccess.containsKeyword_1_3_1_0,
 			rosettaCalcExistsAccess.containsKeyword_1_0_2_1_0
 		).forEach [
 			surround(ONE_SPACE)
@@ -298,7 +297,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 	
 	def dispatch void format(RosettaDisjointExpression ele, extension IFormattableDocument document) {
 		ele.regionFor.keywords(
-			rosettaTestExpressionAccess.containsKeyword_1_3_1_0,
 			rosettaCalcExistsAccess.containsKeyword_1_0_2_1_0
 		).forEach [
 			surround(ONE_SPACE)
@@ -329,14 +327,11 @@ class RosettaFormatter extends AbstractFormatter2 {
 	
 	def dispatch void format(RosettaConditionalExpression ele, extension IFormattableDocument document) {
 		ele.regionFor.keywords(
-			rosettaConditionalExpressionAccess.ifKeyword_1_1,
 			rosettaCalcConditionalExpressionAccess.ifKeyword_1
 		).forEach [
 			append(ONE_SPACE_PRESERVE_NEWLINE)
 		]
 		ele.regionFor.keywords(
-			rosettaConditionalExpressionAccess.elseKeyword_1_5,
-			rosettaConditionalExpressionAccess.thenKeyword_1_3,
 			rosettaCalcConditionalExpressionAccess.elseKeyword_5_0,
 			rosettaCalcConditionalExpressionAccess.thenKeyword_3
 		).forEach [

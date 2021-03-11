@@ -5,7 +5,7 @@ import com.regnosys.rosetta.blueprints.runner.nodes.ExpanderNode;
 
 import java.util.Collection;
 
-public class StreamExpander<I,O, K extends Comparable<K>> extends Upstream<O, K> implements Downstream<I, K> {
+public class StreamExpander<I,O, K> extends Upstream<O, K> implements Downstream<I, K> {
 
 	
 	ExpanderNode<? super I, O, K> expander;
@@ -18,7 +18,7 @@ public class StreamExpander<I,O, K extends Comparable<K>> extends Upstream<O, K>
 	}
 	
 	@Override
-	public <I2 extends I> void process(GroupableData<I2, K> input) {
+	public <I2 extends I, K2 extends K> void process(GroupableData<I2,K2> input) {
 		Collection<GroupableData<O, K>> outputCol = expander.process(input);
 		for (GroupableData<O, K> output:outputCol) {
 			downstream.distribute(output);

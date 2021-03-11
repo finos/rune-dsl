@@ -7,8 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 
-public interface SinkNode<I, O, K extends Comparable<K>> extends Node<I, O, K, K> {
-	void process(GroupableData<? extends I, K> input);
+public interface SinkNode<I, O, K> extends Node<I, O, K, K> {
+	void process(GroupableData<? extends I, ? extends K> input);
 	void terminate();
 	Future<O> result();
 	Future<List<Collection<Issue>>> issues();

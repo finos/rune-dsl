@@ -33,7 +33,6 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.validation.TypedBPNode
@@ -43,6 +42,7 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -171,10 +171,6 @@ class ImportGenerator {
 			RosettaCountOperation: {
 				addExpression(expression.argument)
 			}
-			RosettaWhenPresentExpression: {
-				addExpression(expression.left)
-				addExpression(expression.right)
-			}
 			RosettaBigDecimalLiteral: {
 				imports.add("java.math.BigDecimal")
 			}
@@ -199,6 +195,8 @@ class ImportGenerator {
 				addExpression(expression.disjoint)
 				addExpression(expression.container)
 			}
+			RosettaCallable:{}
+			RosettaCallableWithArgsCall: {}
 			default:
 				throw new UnsupportedOperationException("Unsupported expression type of " + expression.class.simpleName)
 		}
@@ -255,6 +253,9 @@ class ImportGenerator {
 	def addReduce(BlueprintReduce reduce) {
 		if (reduce.expression!==null) {
 			addExpression(reduce.expression);
+		}
+		if (reduce.reduceBP!==null) {
+			imports.add(packages.blueprintLib.name + ".runner.actions.ReduceByRule")
 		}
 		imports.add(packages.blueprintLib.name + ".runner.actions.ReduceBy")
 	}

@@ -657,7 +657,7 @@ class RosettaBlueprintTest {
 				/**
 				 * @version test
 				 */
-				public class Blueprint1Rule<INKEY extends Comparable<INKEY>> implements Blueprint<Input, String, INKEY, INKEY> {
+				public class Blueprint1Rule<INKEY> implements Blueprint<Input, String, INKEY, INKEY> {
 				
 					private final RosettaActionFactory actionFactory;
 				
@@ -782,10 +782,10 @@ class RosettaBlueprintTest {
 	}
 	
 	@Test
-	def void brokenExpressionInputTypes() {
+	def void multiplicationExpression() {
 		val model = '''
 			reporting rule Blueprint1
-				extract Input->traderef + Input2->colour
+				extract Input->traderef * Input2->colour
 						
 			type Input:
 				traderef int (1..1)
@@ -796,6 +796,20 @@ class RosettaBlueprintTest {
 		'''.parseRosetta
 		model.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR, 
 			"Input types must be the same but were Input and Input2")
+	}
+	
+	@Test
+	def void brokenExpressionInputTypes() {
+		val model = '''
+			reporting rule Blueprint1
+				extract Input->traderef * Input->colour
+						
+			type Input:
+				traderef int (1..1)
+				colour int (1..1)
+			
+		'''.parseRosetta
+		model.generateCode.compileToClasses
 	}
 
 	@Test
@@ -828,7 +842,7 @@ class RosettaBlueprintTest {
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
-		// writeOutClasses(blueprint, "complexAnd");
+		 //writeOutClasses(blueprint, "complexAnd");
 		try {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -851,7 +865,7 @@ class RosettaBlueprintTest {
 			/**
 			 * @version test
 			 */
-			public class Blueprint1Rule<INKEY extends Comparable<INKEY>> implements Blueprint<Input, String, INKEY, INKEY> {
+			public class Blueprint1Rule<INKEY> implements Blueprint<Input, String, INKEY, INKEY> {
 			
 				private final RosettaActionFactory actionFactory;
 			
@@ -925,7 +939,7 @@ class RosettaBlueprintTest {
 				/**
 				 * @version test
 				 */
-				public class Blueprint1Rule<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Number, INKEY, INKEY> {
+				public class Blueprint1Rule<INKEY> implements Blueprint<Input, Number, INKEY, INKEY> {
 				
 					private final RosettaActionFactory actionFactory;
 				
@@ -1013,7 +1027,7 @@ class RosettaBlueprintTest {
 				/**
 				 * @version test
 				 */
-				public class Blueprint1Rule<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Object, INKEY, INKEY> {
+				public class Blueprint1Rule<INKEY> implements Blueprint<Input, Object, INKEY, INKEY> {
 				
 					private final RosettaActionFactory actionFactory;
 				
@@ -1094,7 +1108,7 @@ class RosettaBlueprintTest {
 				/**
 				 * @version test
 				 */
-				public class Blueprint1Rule<INKEY extends Comparable<INKEY>> implements Blueprint<Input1, String, INKEY, INKEY> {
+				public class Blueprint1Rule<INKEY> implements Blueprint<Input1, String, INKEY, INKEY> {
 				
 					private final RosettaActionFactory actionFactory;
 				
@@ -1174,7 +1188,7 @@ class RosettaBlueprintTest {
 				import com.rosetta.test.model.Output;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
-				public abstract class Blueprint1<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Output, INKEY, INKEY> {
+				public abstract class Blueprint1<INKEY> implements Blueprint<Input, Output, INKEY, INKEY> {
 					@Override
 					public String getName() {
 						return "Blueprint1"; 
@@ -1347,7 +1361,7 @@ class RosettaBlueprintTest {
 				traderef string (1..1)
 			
 		'''.generateCode
-		blueprint.writeOutClasses("blueprint.filter")
+		//blueprint.writeOutClasses("blueprint.filter")
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "filter");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
@@ -1370,7 +1384,7 @@ class RosettaBlueprintTest {
 		/**
 		 * @version test
 		 */
-		public class SimpleBlueprintRule<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Input, INKEY, INKEY> {
+		public class SimpleBlueprintRule<INKEY> implements Blueprint<Input, Input, INKEY, INKEY> {
 		
 			private final RosettaActionFactory actionFactory;
 		
@@ -1487,7 +1501,7 @@ class RosettaBlueprintTest {
 			/**
 			 * @version test
 			 */
-			public class WorthyAvengerRule<INKEY extends Comparable<INKEY>> implements Blueprint<Avengers, String, INKEY, INKEY> {
+			public class WorthyAvengerRule<INKEY> implements Blueprint<Avengers, String, INKEY, INKEY> {
 			
 				private final RosettaActionFactory actionFactory;
 			
@@ -1573,7 +1587,7 @@ class RosettaBlueprintTest {
 			/**
 			 * @version test
 			 */
-			public class IsFixedFloatRule<INKEY extends Comparable<INKEY>> implements Blueprint<Foo, Boolean, INKEY, INKEY> {
+			public class IsFixedFloatRule<INKEY> implements Blueprint<Foo, Boolean, INKEY, INKEY> {
 			
 				private final RosettaActionFactory actionFactory;
 			
@@ -1609,10 +1623,10 @@ class RosettaBlueprintTest {
 	def void oneOf() {
 		val blueprint = '''
 			reporting rule FixedFloat
-				if ( extract Foo -> fixed = "Wood" => extract Foo -> floating,
-					extract Foo -> fixed => extract Foo -> sinking,
-					=> extract Foo -> swimming
-				)
+				if extract Foo -> fixed = "Wood" do extract Foo -> floating
+					else if extract Foo -> fixed do extract Foo -> sinking
+					else do extract Foo -> swimming
+				endif
 					
 			
 			type Foo:
@@ -1642,6 +1656,26 @@ class RosettaBlueprintTest {
 		'''.generateCode
 		// writeOutClasses(blueprint, "maxBy");
 		blueprint.compileToClasses
+	}
+	
+	@Test
+	def void maxByRule() {
+		val blueprint = '''
+			reporting rule IsFixedFloat
+			maxBy rule MinFixed
+			
+			reporting rule MinFixed
+				extract Foo->fixed then
+				minBy itself
+			
+			type Foo:
+				fixed string (0..*)
+				order int (0..1)
+			
+		'''.parseRosetta
+		val code=blueprint.generateCode
+		//writeOutClasses(code, "maxByRule");
+		code.compileToClasses
 	}
 	
 	@Test
@@ -1697,7 +1731,7 @@ class RosettaBlueprintTest {
 				/**
 				 * @version test
 				 */
-				public class SimpleBlueprintRule<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Input, INKEY, String> {
+				public class SimpleBlueprintRule<INKEY> implements Blueprint<Input, Input, INKEY, String> {
 				
 					private final RosettaActionFactory actionFactory;
 				
@@ -1765,7 +1799,7 @@ class RosettaBlueprintTest {
 				/**
 				 * @version test
 				 */
-				public class SimpleBlueprintRule<INKEY extends Comparable<INKEY>> implements Blueprint<Object, Input2, INKEY, INKEY> {
+				public class SimpleBlueprintRule<INKEY> implements Blueprint<Object, Input2, INKEY, INKEY> {
 				
 					private final RosettaActionFactory actionFactory;
 				
@@ -1824,7 +1858,7 @@ class RosettaBlueprintTest {
 			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
-		 writeOutClasses(blueprint, "selfJoin");
+		 //writeOutClasses(blueprint, "selfJoin");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		blueprint.compileToClasses
 	}
@@ -1919,6 +1953,32 @@ class RosettaBlueprintTest {
 			assertEquals(expected, blueprintJava)
 		} finally {
 		}
+	}
+	
+	@Disabled
+	@Test
+	def void functionCall() {
+		val blueprint = ''' 
+			type Foo:
+				bar Bar (1..1)
+			
+			type Bar:
+				val string (1..1)
+			
+			reporting rule Rule1
+				return MyFunc(1)
+			
+			func MyFunc:
+				inputs: 
+					foo number (0..1)
+				output: 
+					bar number (1..1)
+			assign-output bar:
+				foo +1
+				
+			'''.generateCode
+			//blueprint.writeClasses("functionCall")
+			blueprint.compileToClasses
 	}
 
 	@Test

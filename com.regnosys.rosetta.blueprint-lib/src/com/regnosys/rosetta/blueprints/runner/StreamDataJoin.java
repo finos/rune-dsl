@@ -5,7 +5,7 @@ import java.util.Collection;
 import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 import com.regnosys.rosetta.blueprints.runner.nodes.DataJoinNode;
 
-public class StreamDataJoin<I1, I2, K extends Comparable<K>> extends Upstream<I1, K> implements Downstream<Object, K> {
+public class StreamDataJoin<I1, I2, K> extends Upstream<I1, K> implements Downstream<Object, K> {
 
 	private DataJoinNode<I1, I2, K> joinNode;
 	
@@ -17,7 +17,7 @@ public class StreamDataJoin<I1, I2, K extends Comparable<K>> extends Upstream<I1
 	}
 
 	@Override
-	public <IU> void process(GroupableData<IU, K> input) {
+	public <IU, KI extends K> void process(GroupableData<IU, KI> input) {
 		Collection<GroupableData<I1, K>> outputCol = joinNode.process(input);
 		for (GroupableData<I1, K> output:outputCol) {
 			downstream.distribute(output);

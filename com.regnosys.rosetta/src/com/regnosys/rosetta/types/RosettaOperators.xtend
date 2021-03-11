@@ -94,6 +94,7 @@ class RosettaOperators {
 		return binaryTypeMap.containsKey(new BinaryOperation(COMPARISON_OPS.get(0), type.convertToBuiltIn, type.convertToBuiltIn));
 	}
 
+	@Inject
 	def private synchronized void initialize() {
 		if (!binaryTypeMap.empty) {
 			return
@@ -132,6 +133,7 @@ class RosettaOperators {
 			operation(dateTime, dateTime) => bool
 			operation(zonedDateTime, zonedDateTime) => bool
 			operation(time, time) => bool
+			operation(string, string) => bool
 		}
 		for (it : EQUALITY_OPS) {
 			operation(_int, _int) => bool

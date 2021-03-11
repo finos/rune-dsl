@@ -36,7 +36,6 @@ import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
@@ -110,9 +109,6 @@ class ExpressionGenerator {
 			}
 			RosettaAbsentExpression : {
 				absentExpr(expr, expr.argument, params)
-			}
-			RosettaWhenPresentExpression : {
-				whenPresentExpr(expr, expr.left, params)
 			}
 			RosettaCallableCall : {
 				callableCall(expr, params) 
@@ -327,10 +323,6 @@ class ExpressionGenerator {
 	
 	def StringConcatenationClient countExpr(RosettaCountOperation expr, RosettaExpression test, ParamMap params) {
 		'''«MapperS».of(«expr.argument.javaCode(params)».resultCount())'''
-	}
-	
-	def StringConcatenationClient whenPresentExpr(RosettaWhenPresentExpression expr, RosettaExpression left, ParamMap params) {
-		'''doWhenPresent(«left.javaCode(params)», «toComparisonOp(expr.left.javaCode(params), expr.operator, expr.right.javaCode(params))»)'''
 	}
 	
 	def StringConcatenationClient binaryExpr(RosettaBinaryOperation expr, RosettaExpression test, ParamMap params) {
@@ -627,7 +619,7 @@ class ExpressionGenerator {
 	}
 	
 	/**
-	 * Create a string representation of a rossetta function  
+	 * Create a string representation of a rosetta function  
 	 * mainly used to give human readable names to the mapping functions used to extract attributes
 	 */
 	def StringConcatenationClient toNodeLabel(RosettaExpression expr) {
@@ -667,6 +659,9 @@ class ExpressionGenerator {
 			}
 			RosettaContainsExpression : {
 				'''«expr.container.toNodeLabel» contains «expr.contained.toNodeLabel»'''
+			}
+			RosettaParenthesisCalcExpression : {
+				'''(«expr.expression.toNodeLabel»)'''
 			}
 
 			default :

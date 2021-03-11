@@ -33,7 +33,6 @@ import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.RosettaWhenPresentExpression
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -166,17 +165,6 @@ class RosettaTypeProvider {
 			}
 			RosettaCountOperation: {
 				RBuiltinType.NUMBER
-			}
-			RosettaWhenPresentExpression: {
-				val leftType = expression.left.safeRType(cycleTracker)
-				if (leftType instanceof RErrorType) {
-					return leftType
-				}
-				val rightType = expression.right.safeRType(cycleTracker)
-				if (rightType instanceof RErrorType) {
-					return rightType
-				}
-				expression.operator.resultType(leftType, rightType)
 			}
 			RosettaContainsExpression,
 			RosettaDisjointExpression,

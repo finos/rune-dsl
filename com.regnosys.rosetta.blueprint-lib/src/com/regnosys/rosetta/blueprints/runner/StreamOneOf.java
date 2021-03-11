@@ -6,7 +6,7 @@ import java.util.List;
 import com.regnosys.rosetta.blueprints.BlueprintInstance;
 import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 
-public class StreamOneOf <I, O, K1 extends Comparable<K1>, K2 extends Comparable<K2>> extends Upstream<O, K2> implements Downstream<I, K1>{
+public class StreamOneOf <I, O, K1, K2> extends Upstream<O, K2> implements Downstream<I, K1>{
 	
 	UpstreamList<I, K1> upstreamList = new UpstreamList<>();
 	private List<BlueprintInstance<? super I, ? extends Object, K1, K1>> filters;
@@ -24,7 +24,7 @@ public class StreamOneOf <I, O, K1 extends Comparable<K1>, K2 extends Comparable
 	}
 
 	@Override
-	public <I2 extends I> void process(GroupableData<I2, K1> input) {
+	public <I2 extends I, KI extends K1> void process(GroupableData<I2, KI> input) {
 		for (int i=0;i<filters.size();i++) {
 			BlueprintInstance<? super I, ? extends Object, K1, K1> filter = filters.get(i);
 			filter.process(input);

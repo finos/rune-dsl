@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 
-public class StreamSink<I, O, K extends Comparable<K>> extends NodeImpl implements Downstream<I, K> {
+public class StreamSink<I, O, K> extends NodeImpl implements Downstream<I, K> {
 	SinkNode<I, O, K> sink;
 	UpstreamList<I,K> upstreamList = new UpstreamList<>();
 	
@@ -18,7 +18,7 @@ public class StreamSink<I, O, K extends Comparable<K>> extends NodeImpl implemen
 	}
 
 	@Override
-	public <I2 extends I> void process(GroupableData<I2, K> input) {
+	public <I2 extends I, K2 extends K> void process(GroupableData<I2, K2> input) {
 		sink.process(input);
 	}
 

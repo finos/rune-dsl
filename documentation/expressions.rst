@@ -105,7 +105,6 @@ The result type of a comparison operator is always boolean
     * ``single`` - the value of expression either has single cardinality or is a list with exactly one value.
     * ``mutiple`` - the value expression has more than 2 results
 * ``is absent`` - retuns true if the left expression does not return a result.
-* ``when present`` - if the left expression is absent returns true otherwise retuens the left expression ``=``  right expression.
 
 List Comparison Operators
 =========================
@@ -201,3 +200,19 @@ In the last line of the example below the Max function is called to find the lar
             r string (1..1)
         assign-output r:
             if Max(a,b)=a then "A" else "B"
+
+Operator Precedence
+"""""""""""""""""""
+Formally expressions in rosetta are evaluated in the following order (See `Operator Precedence <https://en.wikipedia.org/wiki/Order_of_operations>`_). Higher are evaluated first
+
+- RosettaPathExpressions - e.g. 'Lineage -> executionReference'
+- Brackets - e.g. '(1+2)'
+- if-then-else - e.g. 'if (1=2) then 3'
+- only-element - e.g. 'Lineage -> executionReference only-element'
+- count - e.g. 'Lineage -> executionReference count'
+- Multiplicative operators '*','/' - e.g. '3*4'
+- Additive operators '+'.'-' - e.g. '3-4'
+- Comparison operators '>=', '<=','>','<' - e.g. '3>4
+- Existence operators 'exists','is absent','contains','disjoint' - e.g. 'Lineage -> executionReference exists'
+- and - e.g. '5>6 and true'
+- or - e.g. '5>6 or true'

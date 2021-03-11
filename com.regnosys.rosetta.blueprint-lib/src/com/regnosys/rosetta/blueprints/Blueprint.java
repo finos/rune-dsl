@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public interface Blueprint<IN, OUT, KIN extends Comparable<KIN>, KOUT extends Comparable<KOUT>> {
+public interface Blueprint<IN, OUT, KIN, KOUT> {
     String getName();
     String getURI();
     
