@@ -227,7 +227,7 @@ Purpose
 """""""
 .. _metadata-label:
 
-The ``metadata`` annotation allows the declaration of a a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations 
+The ``metadata`` annotation allows the declaration of a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations 
 
 .. code-block:: Haskell
 
@@ -284,7 +284,12 @@ The ``reference`` metadata annotation denotes that an attribute can be either a 
 External References
 ///////////////////
 
-Attributes and types that have the ``key`` or ``id`` annotation additionally have an ``externalKey`` attached to them. This is used to store keys that are read from an exernal source e.g. FpML id metadata attribute. A corresponding externalRefefdence 
+Attributes and types that have the ``key`` or ``id`` annotation additionally have an ``externalKey`` attached to them. This is used to store keys that are read from an exernal source e.g. FpML id metadata attribute. 
+
+Attributes with the ``referecne`` keyword have a corresponding externalReference field which is used to store references from external sources. The reference resolver processor can be used to link up the references.
+
+Templates
+/////////
 
 When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together. 
 
