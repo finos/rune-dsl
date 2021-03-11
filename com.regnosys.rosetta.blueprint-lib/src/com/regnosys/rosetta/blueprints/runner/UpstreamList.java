@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class UpstreamList<I, K extends Comparable<K>> {
+public class UpstreamList<I, K> {
 	AtomicInteger count = new AtomicInteger(0);
 	
 	List<Upstream<? extends I,K>> up = new ArrayList<>();

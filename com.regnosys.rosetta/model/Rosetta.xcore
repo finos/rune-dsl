@@ -589,6 +589,8 @@ class BlueprintCustomNode extends BlueprintNode {
 class BlueprintReduce extends BlueprintNode {
 	String action
 	contains RosettaExpression expression
+	contains BlueprintRef reduceBP
+	boolean itself
 }
 
 class BlueprintOneOf extends BlueprintNode {

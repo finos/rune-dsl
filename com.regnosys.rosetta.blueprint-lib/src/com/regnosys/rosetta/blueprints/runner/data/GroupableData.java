@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class GroupableData<I, K extends Comparable<K>> {
+public class GroupableData<I, K> {
 
 	private final K key;
 	private final I data;
@@ -62,7 +62,7 @@ public class GroupableData<I, K extends Comparable<K>> {
 		timestamp = System.currentTimeMillis();
 	}
 	
-	public static <I, K extends Comparable<K>> GroupableData<I,K> initialData(K key, I data, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, boolean tracing) {
+	public static <I, K> GroupableData<I,K> initialData(K key, I data, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, boolean tracing) {
 		return new GroupableData<>(key, data, identifier, ImmutableList.copyOf(issues), node, tracing, Collections.emptyList());
 	}
 	
@@ -73,7 +73,7 @@ public class GroupableData<I, K extends Comparable<K>> {
 		return groupableData;
 	}
 	
-	public <K2 extends Comparable<K2>> GroupableData<I,K2> withNewKey(K2 newKey, Collection<Issue> newIssues, NamedNode node) {
+	public <K2> GroupableData<I,K2> withNewKey(K2 newKey, Collection<Issue> newIssues, NamedNode node) {
 		Collection<Issue> resultIssues = mergeIssues(newIssues);
 		GroupableData<I, K2> groupableData = new GroupableData<>(newKey, data, identifier, resultIssues, node, tracing, this);
 		descendents.add(groupableData);
@@ -87,7 +87,7 @@ public class GroupableData<I, K extends Comparable<K>> {
 		return groupableData;
 	}
 	
-	public static <I, K extends Comparable<K>> GroupableData<I,K> withMultiplePrecedents(K key, I data, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, Collection<GroupableData<?,?>> precedents) {
+	public static <I, K> GroupableData<I,K> withMultiplePrecedents(K key, I data, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, Collection<GroupableData<?,?>> precedents) {
 		List<GroupableData<?,?>> tracedPrecendents = precedents.stream().filter(p->p.tracing).collect(ImmutableList.toImmutableList());
 		GroupableData<I, K> groupableData = new GroupableData<>(key, data, identifier, ImmutableList.copyOf(issues), node, !tracedPrecendents.isEmpty(), tracedPrecendents);
 		precedents.forEach(gd->gd.descendents.add(groupableData));

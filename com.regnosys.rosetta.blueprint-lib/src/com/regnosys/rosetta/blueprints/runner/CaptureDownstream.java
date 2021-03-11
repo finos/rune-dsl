@@ -6,8 +6,8 @@ import java.util.Map;
 
 import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 
-public class CaptureDownstream<O, K extends Comparable<K>> implements Downstream<O, K> {
-	private final Map<K, GroupableData<? extends O, K>> results = new HashMap<>();
+public class CaptureDownstream<O, K> implements Downstream<O, K> {
+	private final Map<K, GroupableData<? extends O, ? extends K>> results = new HashMap<>();
 
 	@Override
 	public String getURI() {
@@ -20,11 +20,11 @@ public class CaptureDownstream<O, K extends Comparable<K>> implements Downstream
 	}
 
 	@Override
-	public <I2 extends O> void process(GroupableData<I2, K> input) {
+	public <I2 extends O, K2 extends K> void process(GroupableData<I2,K2> input) {
 		results.put(input.getKey(), input);
 	}
 
-	public static <I2, K extends Comparable<K>> boolean isTruthy(GroupableData<I2, K> input) {
+	public static <I2, K> boolean isTruthy(GroupableData<I2, K> input) {
 		if (input==null) {
 			return false;
 		}
@@ -46,7 +46,7 @@ public class CaptureDownstream<O, K extends Comparable<K>> implements Downstream
 		return null;
 	}
 
-	public GroupableData<? extends O, K> getResult(K key) {
+	public GroupableData<? extends O, ? extends K> getResult(K key) {
 		return results.get(key);
 	}
 	

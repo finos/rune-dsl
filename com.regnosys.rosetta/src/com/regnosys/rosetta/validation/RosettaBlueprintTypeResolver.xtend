@@ -51,12 +51,14 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.types.RosettaOperators
 
 class RosettaBlueprintTypeResolver {
 	
 	@Inject extension RosettaTypeProvider
 	@Inject extension RosettaTypeCompatibility
 	@Inject extension RosettaExtensions
+	@Inject extension RosettaOperators
 	
 	static class BlueprintTypeException extends Exception {
 		new(String string) {
@@ -193,6 +195,7 @@ class RosettaBlueprintTypeResolver {
 				if (node.expression!==null) {
 					result.input.type = getInput(node.expression)
 				}
+				
 			}
 			default: {
 				throw new UnsupportedOperationException("Trying to compute inputs of unknown node type " + node.class)
@@ -314,6 +317,14 @@ class RosettaBlueprintTypeResolver {
 			BlueprintReduce: {
 				tNode.output = tNode.input
 				tNode.outputKey = tNode.inputKey
+				if (node.reduceBP!==null) {
+					val bpIn = new TypedBPNode
+					val bpOut = new TypedBPNode
+					bpIn.output=tNode.input;
+					bpIn.inputKey = tNode.inputKey;
+					bpOut.input.genericName  ="Comparable"
+					tNode.andNodes.add(bindTypes(node.reduceBP.blueprint.nodes, bpIn, bpOut))
+				}
 			}
 			BlueprintGroup: {
 				tNode.output = tNode.input
@@ -540,6 +551,8 @@ class RosettaBlueprintTypeResolver {
 		st.name = expr.getRType.name
 		return st
 	}
+	
+	//def dispatch RosettaType getOutput(RosettaCallable)
 
 	def dispatch RosettaType getOutput(RosettaAlias expr) {
 		getOutput(expr.expression)
@@ -668,8 +681,11 @@ class RosettaBlueprintTypeResolver {
 		if (type2.genericName=="number") {
 			return type1.genericName=="number" || type1.genericName=="int"
 		}
-		else if (type1.genericName=="Object")  {
+		else if (type1.genericName=="Object") {
 			return true
+		}
+		else if (type2.genericName=="Comparable") {
+			return type1.type?.RType?.isSelfComparable
 		}
 		else if (type2.genericName!==null) {
 			return type2.genericName==type1.either

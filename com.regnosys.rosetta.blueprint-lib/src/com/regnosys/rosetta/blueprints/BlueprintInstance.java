@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-public class BlueprintInstance <I, O, K1 extends Comparable<K1>, K2 extends Comparable<K2>> extends Upstream<O, K2> implements Downstream<I, K1>{
+public class BlueprintInstance <I, O, K1 , K2> extends Upstream<O, K2> implements Downstream<I, K1>{
 
 	//private final Collection<Downstream<? super I,K1>> heads;
 	//private Collection<Upstream<?, K2>> tails;
@@ -44,7 +44,7 @@ public class BlueprintInstance <I, O, K1 extends Comparable<K1>, K2 extends Comp
 
 
 	@Override
-	public <I2 extends I> void process(GroupableData<I2, K1> input) {
+	public <I2 extends I, KI extends K1> void process(GroupableData<I2, KI> input) {
 		internalHead.process(input);
 	}
 
@@ -78,7 +78,7 @@ public class BlueprintInstance <I, O, K1 extends Comparable<K1>, K2 extends Comp
 		}
 
 		@Override
-		public <I2 extends I> void process(GroupableData<I2, K1> input) {
+		public <I2 extends I, KI extends K1> void process(GroupableData<I2, KI> input) {
 			downstream.distribute(input);
 		}
 
@@ -123,7 +123,7 @@ public class BlueprintInstance <I, O, K1 extends Comparable<K1>, K2 extends Comp
 		}
 
 		@Override
-		public <I2 extends O> void process(GroupableData<I2, K2> input) {
+		public <I2 extends O, KO extends K2> void process(GroupableData<I2, KO> input) {
 			BlueprintInstance.this.downstream.distribute(input);
 		}
 

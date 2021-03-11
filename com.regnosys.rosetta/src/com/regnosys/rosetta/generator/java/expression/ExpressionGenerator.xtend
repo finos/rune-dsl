@@ -619,7 +619,7 @@ class ExpressionGenerator {
 	}
 	
 	/**
-	 * Create a string representation of a rossetta function  
+	 * Create a string representation of a rosetta function  
 	 * mainly used to give human readable names to the mapping functions used to extract attributes
 	 */
 	def StringConcatenationClient toNodeLabel(RosettaExpression expr) {
@@ -659,6 +659,9 @@ class ExpressionGenerator {
 			}
 			RosettaContainsExpression : {
 				'''«expr.container.toNodeLabel» contains «expr.contained.toNodeLabel»'''
+			}
+			RosettaParenthesisCalcExpression : {
+				'''(«expr.expression.toNodeLabel»)'''
 			}
 
 			default :

@@ -6,14 +6,14 @@ import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DownstreamList<I, K extends Comparable<K>> {
+public class DownstreamList<I, K> {
 	protected List<Downstream<? super I, K>> downstream;
 	
 	public DownstreamList() {
 		downstream = new ArrayList<>();
 	}
 	
-	public void distribute(GroupableData<? extends I, K> input) {
+	public void distribute(GroupableData<? extends I, ? extends K> input) {
 		for (Downstream<? super I, K> down:downstream) {
 			down.process(input);
 		}

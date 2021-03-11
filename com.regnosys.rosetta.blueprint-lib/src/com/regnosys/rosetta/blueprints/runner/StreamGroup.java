@@ -6,7 +6,7 @@ import com.regnosys.rosetta.blueprints.runner.nodes.GroupNode;
 import java.util.Collection;
 import java.util.Optional;
 
-public class StreamGroup<I, K extends Comparable<K>, K2 extends Comparable<K2>> 
+public class StreamGroup<I, K, K2> 
 	extends Upstream<I, K2> 
 	implements Downstream<I, K>{
 	
@@ -20,7 +20,7 @@ public class StreamGroup<I, K extends Comparable<K>, K2 extends Comparable<K2>>
 	}
 
 	@Override
-	public <I2 extends I> void process(GroupableData<I2, K> input) {
+	public <I2 extends I, KI extends K> void process(GroupableData<I2, KI> input) {
 		Optional<GroupableData<I2, K2>> output = processor.process(input);
 		if (output.isPresent()) {
 			downstream.distribute(output.get());

@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public class Filter<I, K extends Comparable<K>> extends NamedNode implements ProcessorNode<I, I, K> {
+public class Filter<I, K> extends NamedNode implements ProcessorNode<I, I, K> {
 
 	Predicate<? super I> filter;	
 	
@@ -18,7 +18,7 @@ public class Filter<I, K extends Comparable<K>> extends NamedNode implements Pro
 	}
 
 	@Override
-	public <T extends I> Optional<GroupableData<I, K>> process(GroupableData<T, K> input) {
+	public <T extends I, K2 extends K> Optional<GroupableData<I, K2>> process(GroupableData<T, K2> input) {
 		if (filter.test(input.getData())) {
 			return Optional.of(input.withIssues(input.getData(), Collections.emptyList(), this));
 		}

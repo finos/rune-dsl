@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Optional;
 //import org.apache.log4j.Logger;
 
-public class StreamProcessor<I,O, K extends Comparable<K>> extends Upstream<O, K> implements Downstream<I, K>{
+public class StreamProcessor<I,O, K> extends Upstream<O, K> implements Downstream<I, K>{
 	//private final static Logger logger = Logger.getLogger(StreamProcessor.class);
 	
 	ProcessorNode<? super I, O, K> processor;
@@ -19,8 +19,8 @@ public class StreamProcessor<I,O, K extends Comparable<K>> extends Upstream<O, K
 	}
 
 	@Override
-	public <I2 extends I> void process(GroupableData<I2, K> input) {
-		Optional<GroupableData<O, K>> output = processor.process(input);
+	public <I2 extends I, K2 extends K> void process(GroupableData<I2, K2> input) {
+		Optional<GroupableData<O, K2>> output = processor.process(input);
 		if (output.isPresent()) {
 			downstream.distribute(output.get());
 		}
@@ -29,8 +29,8 @@ public class StreamProcessor<I,O, K extends Comparable<K>> extends Upstream<O, K
 	@Override
 	public void terminate() {
 		if (upstreamList.terminateUpstream()) {
-			Collection<GroupableData<? extends O, K>> terminal = processor.terminate();
-			for (GroupableData<? extends O, K> data:terminal) {
+			Collection<GroupableData<? extends O, ? extends K>> terminal = processor.terminate();
+			for (GroupableData<? extends O, ? extends K> data:terminal) {
 				downstream.distribute(data);
 			}
 			downstream.terminate();

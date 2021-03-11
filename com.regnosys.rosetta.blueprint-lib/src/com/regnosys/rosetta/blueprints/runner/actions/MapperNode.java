@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class MapperNode<I,O, K extends Comparable<K>> extends NamedNode implements ProcessorNode<I, O, K> {
+public class MapperNode<I,O, K> extends NamedNode implements ProcessorNode<I, O, K> {
 
 	private final Function<I, O> mapFunction;
 	private final DataIdentifier identifier;
@@ -23,7 +23,7 @@ public class MapperNode<I,O, K extends Comparable<K>> extends NamedNode implemen
 
 
 	@Override
-	public <T extends I> Optional<GroupableData<O, K>> process(GroupableData<T, K> input) {
+	public <T extends I, K2 extends K> Optional<GroupableData<O, K2>> process(GroupableData<T, K2> input) {
 		O result = mapFunction.apply(input.getData());
 		return Optional.ofNullable(input.withNewData(result, identifier, Collections.emptyList(), this));
 	}

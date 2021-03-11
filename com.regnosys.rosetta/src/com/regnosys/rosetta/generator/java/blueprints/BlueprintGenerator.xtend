@@ -152,13 +152,13 @@ class BlueprintGenerator {
 		}
 		if (!node.inputKey.bound) {
 			if (!first) result+=", "
-			result += "INKEY extends Comparable<INKEY>"
+			result += "INKEY"
 			node.inputKey.genericName = "INKEY"
 			first=false
 		}
 		if (!node.outputKey.bound) {
 			if (!first) result+=", "
-			result+="OUTKEY extends Comparable<OUTKEY>"
+			result+="OUTKEY"
 			node.outputKey.genericName = "OUTKEY"
 		}
 		if (result.length>0) return "<"+result+">"
@@ -295,6 +295,17 @@ class BlueprintGenerator {
 					'''new ReduceBy<«typedNode.input.either», «node.expression.getOutput.name.toJavaType», «typedNode.inputKey.either»>("«
 					node.URI»", "«node.expression.toNodeLabel»", ReduceBy.Action.«node.action.toUpperCase», 
 					«typedNode.input.either.toFirstLower» -> «node.expression.javaCode(new ParamMap(typedNode.input.type))».get())'''
+				}
+				else if (node.itself) {
+					'''new ReduceBy<«typedNode.input.either», «typedNode.input.either», «typedNode.inputKey.either»>("«
+					node.URI»", "itself", ReduceBy.Action.«node.action.toUpperCase», 
+					«typedNode.input.either.toFirstLower» -> «typedNode.input.either.toFirstLower»)'''
+				}
+				else if (node.reduceBP!==null) {
+					val subNode = typedNode.andNodes.get(0)
+					'''new ReduceByRule<«typedNode.input.either», «subNode.output.either», «typedNode.inputKey.either»>("«
+						node.URI»", "«node.reduceBP.blueprint.name»", ReduceBy.Action.«node.action.toUpperCase»,
+						new «node.reduceBP.blueprint.name»Rule<«typedNode.input.either»>(actionFactory).blueprint())'''
 				}
 				else {
 					'''new ReduceBy<«typedNode.input.either», Integer, «typedNode.inputKey.either»>("«node.URI»", "«node.expression.toNodeLabel»

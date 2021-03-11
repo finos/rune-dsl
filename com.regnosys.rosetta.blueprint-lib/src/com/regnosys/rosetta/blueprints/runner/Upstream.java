@@ -2,7 +2,7 @@ package com.regnosys.rosetta.blueprints.runner;
 
 import java.util.List;
 
-public abstract class Upstream<O, K extends Comparable<K>> extends NodeImpl {
+public abstract class Upstream<O, K> extends NodeImpl {
 	protected DownstreamList<O, K> downstream;
 	
 	//Marks a StreamNode that Produces O that can be upstream of a node that consumes O

@@ -6,7 +6,7 @@ import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
 import java.util.Optional;
 
 
-public class StreamSource<O, K extends Comparable<K>> extends Upstream<O, K>{
+public class StreamSource<O, K> extends Upstream<O, K>{
 	SourceNode<O, K> processor;	
 	
 	public StreamSource(String name, SourceNode<O, K> processor) {

@@ -12,7 +12,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class Merger<I, B, O,K extends Comparable<K>> extends StatefullNode implements ProcessorNode<I, O, K> {
+public class Merger<I, B, O,K> extends StatefullNode implements ProcessorNode<I, O, K> {
 
 	private final Function<DataIdentifier, BiConsumer<B, ? extends I>> inserters;
 	private final Function<K, ? extends B> supplier;
@@ -43,7 +43,7 @@ public class Merger<I, B, O,K extends Comparable<K>> extends StatefullNode imple
 	}
 
 	@Override
-	public <T extends I> Optional<GroupableData<O, K>> process(GroupableData<T, K> input) {
+	public <T extends I, K2 extends K> Optional<GroupableData<O, K2>> process(GroupableData<T, K2> input) {
 		IssuesAndResult<B> result = results.getOrDefault(input.getKey(), 
 				new IssuesAndResult<>(supplier.apply(input.getKey())));
 		@SuppressWarnings("unchecked")
@@ -62,7 +62,7 @@ public class Merger<I, B, O,K extends Comparable<K>> extends StatefullNode imple
 	}
 
 	@Override
-	public Collection<GroupableData<? extends O, K>> terminate() {
+	public Collection<GroupableData<? extends O, ? extends K>> terminate() {
 		return results.entrySet().stream()
 				.map(e->GroupableData.withMultiplePrecedents(e.getKey(), 
 						finalizer.apply(e.getValue().result), resultType, 
