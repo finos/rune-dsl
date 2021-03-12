@@ -1014,45 +1014,7 @@ Once a value has been extracted, the syntax allows to make it into a reportable 
 
 The field name is an arbitrary ``string`` and should be aligned with the name of the reportable field as per the regulation. This field name will be used as column name when displaying computed reports, but is otherwise not functionally usable. To re-use the functional output of a reporting rule, the name of the rule (here: ``RateSpecification``) should be used instead.
 
-- ``filter when`` <FunctionalExpression>
 
-The ``filter when`` keyword is used in cases where a particular data attribute must be selected while multiple exist. The effect will be to filter the data only on those paths where the condition defined by the functional expression is satisfied.
-
-.. code-block:: Haskell
-
- reporting rule ReportingParty <"Identifier of reporting entity">
-   TradeForEvent then extract Trade -> partyContractInformation then
-   filter when PartyContractInformation -> relatedParty -> role = PartyRoleEnum -> ReportingParty then
-   extract PartyContractInformation -> partyReference
-
-The functional expression can be either a direct Boolean expression, or the output of another rule, in which case the syntax is: ``filter when rule`` <RuleName>, as in the below example.
-
-.. code-block:: Haskell
-
- reporting rule FixedFloatRateLeg1 <"Fixed Float Price">
-   filter when rule IsInterestRatePayout then
-   TradeForEvent then extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate as "II.1.9 Rate leg 1"
-
-And the filtering rule is defined as:
-
-.. code-block:: Haskell
-
- reporting rule IsInterestRatePayout
-   TradeForEvent then
-   extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only exists
-
-- ``maxBy`` / ``minBy``
-
-The syntax supports selecting values by an ordering based on an attribute using the ``maxBy`` and ``minBy`` keywords. The selected attribute must be of single cardinality and must be of a comparable basic data type
-e.g. date, time, number, string
-In the below example, we first apply a filter and extract a ``fixedInterestRate`` attribute. There could be multiple attribute values, so we select the highest one and then report it as the “Price” field.
-
-.. code-block:: Haskell
-
- filter when rule IsFixedFloat then
-   extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate then
-   maxBy FixedInterestRate -> rate then
-   extract FixedInterestRate -> rate as "Price"
 
 - ``Rule if`` statement
 
@@ -1074,6 +1036,67 @@ otherwise the asset class is null
 	    do return "CU" as "2.2 Asset Class",
 		do return "null" as "2.2 Asset Class"
 	endif
+
+Filtering Rules
+///////////////
+
+Filtering and max/min/first/last rules take a collection of input objects and return a subset of them. The output type of the rule is always the same as the input.
+
+- ``filter when`` <FunctionalExpression>
+
+The ``filter when`` keyword takes each input value and uses it as input to a provided test expression The result type of the test expression must be boolean and its input type must be the input type of the filter rule. 
+If the expression returns ``true`` for a given input that value is included in the output.
+The code below selects the PartyContactInformation objects then filters to only the paries that are reportingParties before then returning the partyReferences
+
+.. code-block:: Haskell
+
+ reporting rule ReportingParty <"Identifier of reporting entity">
+   TradeForEvent then extract Trade -> partyContractInformation then
+   filter when PartyContractInformation -> relatedParty -> role = PartyRoleEnum -> ReportingParty then
+   extract PartyContractInformation -> partyReference
+
+The functional expression can be either a direct Boolean expression as above, or the output of another rule, in which case the syntax is: ``filter when rule`` <RuleName>, as in the below example.
+This example filters all the input trades to return only the ones that InterestRatePayouts and then extracts the fixed interest rate for them.
+
+.. code-block:: Haskell
+
+ reporting rule FixedFloatRateLeg1 <"Fixed Float Price">
+   filter when rule IsInterestRatePayout then
+   TradeForEvent then extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate as "II.1.9 Rate leg 1"
+
+And the filtering rule is defined as:
+
+.. code-block:: Haskell
+
+ reporting rule IsInterestRatePayout
+   TradeForEvent then
+   extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only exists
+
+- ``maximum`` / ``minimum``
+
+The ``maximum`` and ``minimum`` keywords return only a single value (for a given key). The value returned will be the higest or lowest value. The input type to the rule must be of a comparable basic data type
+e.g. date, time, number, string
+In the below example, we first apply a filter and extract a ``rate`` attribute. There could be multiple rate values, so we select the highest one.
+
+.. code-block:: Haskell
+
+ filter when rule IsFixedFloat then
+   extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate then
+   maximum
+
+- ``maxBy`` / ``minBy``
+
+The syntax also supports selecting values by an ordering based on an attribute using the ``maxBy`` and ``minBy`` keywords. For each input value to the rule the provided test expression or rule is evaluated to give a test result and paired with the input value. 
+When all values have been processes the pair with the highest test result is selected and the associated value is returned by the rule.
+The test expression or rule must return a value of single cardinality and must be of a comparable basic data type
+e.g. date, time, number, string
+In the below example, we first apply a filter and extract a ``fixedInterestRate`` attribute. There could be multiple attribute values, so we select the one with the higest rate and return that FixedInterestRate object.
+
+.. code-block:: Haskell
+
+ filter when rule IsFixedFloat then
+   extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate then
+   maxBy FixedInterestRate -> rate
 
 
 
