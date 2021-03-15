@@ -15,7 +15,7 @@ public class MapperNode<I,O, K> extends NamedNode implements ProcessorNode<I, O,
 	private final DataIdentifier identifier;
 	
 	public MapperNode(String uri, String label, Function<I, O> mapFunction, DataIdentifier identifier) {
-		super(uri, label);
+		super(uri, label, identifier);
 		this.mapFunction = mapFunction;
 		this.identifier = identifier;
 	}

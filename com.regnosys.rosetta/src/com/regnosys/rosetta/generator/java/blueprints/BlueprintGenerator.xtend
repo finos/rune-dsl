@@ -216,22 +216,21 @@ class BlueprintGenerator {
 	 * write out an individual graph node
 	 */
 	def StringConcatenationClient buildNode(BlueprintNode node, TypedBPNode typedNode, Context context) {
+		val id = createIdentifier(node); 
 		switch (node) {
+			
 			BlueprintMerge: {
 				context.addMerger(node, typedNode)
 				'''new Merger<>("«node.URI»", "Create «node.output.name»", «node.toFunctionName»(), this::«node.toFunctionName()»Supplier, «node.output.name».«node.output.name»Builder::build, 
-					new StringIdentifier("«node.output.name»"), false)'''
+					«id», false)'''
 			}
 			BlueprintExtract: {
 				context.imports.addTypes(typedNode)
 				context.imports.addSingleMapping(node)
 				
 				val cond = node.call
-				val nodeName = if (node.identifier !== null) node.identifier 
-								else if (node.name !== null) node.name
-								else cond.toNodeLabel
 				val multi = cardinality.isMulti(cond)
-				val id = '''new StringIdentifier("«nodeName»")'''
+				
 				if (!multi)
 				'''actionFactory.<«typedNode.input.getEither», «
 					typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaSingleMapper("«node.URI»", "«(cond).toNodeLabel
@@ -246,11 +245,6 @@ class BlueprintGenerator {
 				context.imports.addMappingImport()
 				
 				val expr = node.expression 
-				val nodeName = if (node.identifier !== null) node.identifier 
-								else if (node.name !== null) node.name
-								else expr.toNodeLabel
-				
-				val id = '''new StringIdentifier("«nodeName»")'''
 				'''actionFactory.<«typedNode.input.getEither», «typedNode.output.getEither», «typedNode.inputKey.getEither»> newRosettaReturn("«node.URI»", "«expr.toNodeLabel»",  «id»,  () -> «expr.javaCode(new ParamMap())»)'''
 			}
 			BlueprintLookup: {
@@ -258,17 +252,16 @@ class BlueprintGenerator {
 				context.imports.addMappingImport()
 				val nodeName = if (node.identifier !== null) node.identifier else node.name
 				//val lookupLamda = '''«typedNode.input.type.name.toFirstLower» -> lookup«node.name»(«typedNode.input.type.name.toFirstLower»)'''
-				val id = '''new StringIdentifier("Lookup «nodeName»")'''
 				'''actionFactory.<«typedNode.input.getEither», «
 					typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaLookup("«node.URI»", "«nodeName»", «id», "«node.name»")'''
 			
 			}
 			BlueprintAnd : {
-				node.andNode(typedNode, context)
+				node.andNode(typedNode, context, id)
 			}
 			BlueprintOneOf : {
 				context.addIfElse(node, typedNode)
-				node.ifElse(typedNode, context)
+				node.ifElse(typedNode, context, id)
 			}
 			BlueprintRef : {
 				context.addBPRef(typedNode)
@@ -278,16 +271,16 @@ class BlueprintGenerator {
 			}
 			BlueprintValidate : {
 				context.imports.addValidate(node);
-				'''actionFactory.<«node.input.name», «typedNode.inputKey.either»>newRosettaValidator("«node.URI»", "Validate Rosetta", «node.input.name».class)'''
+				'''actionFactory.<«node.input.name», «typedNode.inputKey.either»>newRosettaValidator("«node.URI»", "Validate Rosetta", «id», «node.input.name».class)'''
 			}
 			BlueprintFilter :{
 				context.imports.addFilter(node);
 				if(node.filter!==null) {
 				'''new Filter<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filter.toNodeLabel»", «typedNode.input.either.toFirstLower
-					» -> «node.filter.javaCode(new ParamMap(typedNode.input.type))».get())'''
+					» -> «node.filter.javaCode(new ParamMap(typedNode.input.type))».get(), «id»)'''
 				}
 				else {
-					'''new FilterByRule<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filterBP.blueprint.name»", new «node.filterBP.blueprint.name»Rule<«typedNode.inputKey.either»>(actionFactory).blueprint())'''
+					'''new FilterByRule<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filterBP.blueprint.name»", new «node.filterBP.blueprint.name»Rule<«typedNode.inputKey.either»>(actionFactory).blueprint(), «id»)'''
 				}
 			}
 			BlueprintReduce : {
@@ -295,16 +288,16 @@ class BlueprintGenerator {
 				if (node.expression!==null) {
 					'''new ReduceBy<«typedNode.input.either», «node.expression.getOutput.name.toJavaType», «typedNode.inputKey.either»>("«
 					node.URI»", "«node.expression.toNodeLabel»", ReduceParent.Action.«node.action.toUpperCase», 
-					«typedNode.input.either.toFirstLower» -> «node.expression.javaCode(new ParamMap(typedNode.input.type))».get())'''
+					«typedNode.input.either.toFirstLower» -> «node.expression.javaCode(new ParamMap(typedNode.input.type))».get(), «id»)'''
 				}
 				else if (node.reduceBP!==null) {
 					val subNode = typedNode.andNodes.get(0)
 					'''new ReduceByRule<«typedNode.input.either», «subNode.output.either», «typedNode.inputKey.either»>("«
 						node.URI»", "«node.reduceBP.blueprint.name»", ReduceParent.Action.«node.action.toUpperCase»,
-						new «node.reduceBP.blueprint.name»Rule<«typedNode.input.either»>(actionFactory).blueprint())'''
+						new «node.reduceBP.blueprint.name»Rule<«typedNode.input.either»>(actionFactory).blueprint(), «id»)'''
 				}
 				else {
-					'''new ReduceBySelf<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.action»", ReduceParent.Action.«node.action.toUpperCase»)'''
+					'''new ReduceBySelf<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.action»", ReduceParent.Action.«node.action.toUpperCase», «id»)'''
 				}
 			}
 			BlueprintDataJoin: {
@@ -313,7 +306,7 @@ class BlueprintGenerator {
 				val foreignInput = (node.foreign as RosettaFeatureCall).input
 				val fkType = (node.key as RosettaFeatureCall).output
 				'''
-				actionFactory.<«joinInput.name», «foreignInput.name», «typedNode.inputKey.either», «fkType.name.toJavaType»>newRosettaDataJoin("«node.URI»", "join«joinInput.name»", «joinInput.name.toFirstLower» -> «node.key.javaCode(new ParamMap(joinInput))»,
+				actionFactory.<«joinInput.name», «foreignInput.name», «typedNode.inputKey.either», «fkType.name.toJavaType»>newRosettaDataJoin("«node.URI»", "join«joinInput.name»", «id», «joinInput.name.toFirstLower» -> «node.key.javaCode(new ParamMap(joinInput))»,
 						«foreignInput.name.toFirstLower» -> «node.foreign.javaCode(new ParamMap(foreignInput))»,
 						«joinInput.name».class, «foreignInput.name».class)'''
 			}
@@ -328,10 +321,43 @@ class BlueprintGenerator {
 			BlueprintGroup : {
 				context.imports.addGrouper(node);
 				'''actionFactory.<«typedNode.input.either», «typedNode.inputKey.either», «typedNode.outputKey.either
-				»>newRosettaGrouper("«node.URI»", "group by «node.key.toNodeLabel»", «typedNode.input.type.name.toFirstLower» -> «node.key.javaCode(new ParamMap(typedNode.input.type))»)'''
+				»>newRosettaGrouper("«node.URI»", "group by «node.key.toNodeLabel»", «id», «typedNode.input.type.name.toFirstLower» -> «node.key.javaCode(new ParamMap(typedNode.input.type))»)'''
 			}
 			default: {
 				throw new UnsupportedOperationException("Can't generate code for node of type "+node.class)
+			}
+		}
+	}
+	
+	def createIdentifier(BlueprintNode node) {
+		switch (node) {
+			BlueprintMerge: {
+				'''new StringIdentifier("«node.output.name»")'''
+			}
+			BlueprintExtract: {
+				val nodeName = if (node.identifier !== null) node.identifier 
+								else if (node.name !== null) node.name
+								else node.call.toNodeLabel
+				'''new StringIdentifier("«nodeName»")'''
+			}
+			BlueprintReturn: {
+				val nodeName = if (node.identifier !== null) node.identifier 
+								else if (node.name !== null) node.name
+								else node.expression.toNodeLabel
+				
+				'''new StringIdentifier("«nodeName»")'''
+			}
+			BlueprintLookup: {
+				val nodeName = if (node.identifier !== null) node.identifier else node.name
+				'''new StringIdentifier("Lookup «nodeName»")'''
+			}
+			default: {
+				if (node.identifier!==null) {
+					'''new StringIdentifier("«node.identifier»")'''
+				}
+				else {
+					'''null'''
+				}
 			}
 		}
 	}
@@ -351,7 +377,7 @@ class BlueprintGenerator {
 		}
 	}
 	
-	def StringConcatenationClient andNode(BlueprintAnd andNode, TypedBPNode andTyped, Context context) {
+	def StringConcatenationClient andNode(BlueprintAnd andNode, TypedBPNode andTyped, Context context, CharSequence id) {
 		'''
 		BlueprintBuilder.<«andTyped.outFullS»>and(actionFactory,
 			«FOR bp:andNode.bps.indexed  SEPARATOR ","»
@@ -361,7 +387,7 @@ class BlueprintGenerator {
 		'''
 	}
 	
-	def StringConcatenationClient ifElse(BlueprintOneOf node, TypedBPNode andTyped, Context context) {
+	def StringConcatenationClient ifElse(BlueprintOneOf node, TypedBPNode andTyped, Context context, CharSequence id) {
 		'''ifElse(actionFactory, getURI(), getName(),
 				«FOR bp:node.bps.indexed SEPARATOR ","»
 					new BlueprintIfThen(startsWith(actionFactory, «bp.value.ifNode.buildGraph(andTyped.ifNodes.get(bp.key), context)»),
