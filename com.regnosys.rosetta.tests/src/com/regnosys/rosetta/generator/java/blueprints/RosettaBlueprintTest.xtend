@@ -1980,6 +1980,32 @@ class RosettaBlueprintTest {
 			//blueprint.writeClasses("functionCall")
 			blueprint.compileToClasses
 	}
+	
+	@Test
+	def void shouldUseNS() {
+		val code = #['''
+			namespace "ns1"
+			
+			
+			type TestObject: <"">
+				fieldOne string (0..1)
+			
+			reporting rule Rule1
+				extract TestObject -> fieldOne	
+			
+		''','''
+			namespace "ns12"
+			
+			import ns1.*
+			
+			reporting rule Rule2
+				Rule1
+		'''
+		].generateCode
+		//code.writeClasses("shouldUseNS")
+		code.compileToClasses
+		
+	}
 
 	@Test
 	@Disabled

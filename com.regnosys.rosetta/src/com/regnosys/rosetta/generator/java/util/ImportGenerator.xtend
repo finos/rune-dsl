@@ -43,6 +43,8 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.rosetta.RosettaModel
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -198,7 +200,7 @@ class ImportGenerator {
 			RosettaCallable:{}
 			RosettaCallableWithArgsCall: {}
 			default:
-				throw new UnsupportedOperationException("Unsupported expression type of " + expression.class.simpleName)
+				LOGGER.warn("Unsupported expression type of " + expression.class.simpleName)
 		}
 	}
 
@@ -290,6 +292,10 @@ class ImportGenerator {
 	def addJoin(BlueprintDataJoin join) {
 		addExpression(join.foreign)
 		addExpression(join.key);
+	}
+		
+	def addBPRef(RosettaBlueprint blueprint) {
+		imports.add('''«(blueprint.eContainer as RosettaModel).name».blueprint.«blueprint.name»Rule''')
 	}
 
 }
