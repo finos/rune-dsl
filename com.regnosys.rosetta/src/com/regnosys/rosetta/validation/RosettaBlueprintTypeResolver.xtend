@@ -52,6 +52,8 @@ import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.types.RosettaOperators
+import java.util.Set
+import java.util.HashSet
 
 class RosettaBlueprintTypeResolver {
 	
@@ -74,7 +76,7 @@ class RosettaBlueprintTypeResolver {
 
 		val result = new TypedBPNode
 		try {
-			result.next = bindTypes(nodeExp, prevNode, nextNode)
+			result.next = bindTypes(nodeExp, prevNode, nextNode, new HashSet)
 		}
 		catch (BlueprintTypeException ex) {
 			throw new BlueprintUnresolvedTypeException(ex.message,nodeExp, BLUEPRINT_NODE_EXP__NODE, RosettaIssueCodes.TYPE_ERROR)
@@ -86,19 +88,19 @@ class RosettaBlueprintTypeResolver {
 		return result
 	}
 
-	def TypedBPNode bindTypes(BlueprintNodeExp nodeExp, TypedBPNode parentNode, TypedBPNode outputNode) {
+	def TypedBPNode bindTypes(BlueprintNodeExp nodeExp, TypedBPNode parentNode, TypedBPNode outputNode, Set<BlueprintNode> visited) {
 		val typedNode = new TypedBPNode
 		typedNode.node = nodeExp.node
 		typedNode.input = parentNode.output
 		typedNode.inputKey = parentNode.outputKey
 
 		val nodeFixedTypes = computeExpected(nodeExp)
-		link(typedNode)
+		link(typedNode, visited)
 		bindFixedTypes(typedNode, nodeFixedTypes, nodeExp.node)
 
 		// check outputs
 		if (nodeExp.next !== null) {
-			typedNode.next = nodeExp.next.bindTypes(typedNode, outputNode)
+			typedNode.next = nodeExp.next.bindTypes(typedNode, outputNode, visited)
 		} else {
 			if (!typedNode.output.isAssignableTo(outputNode.input)) {
 				BlueprintUnresolvedTypeException.error('''output type of node «typedNode.output.either» does not match required type of «outputNode.input.either»''', nodeExp.node,
@@ -205,8 +207,12 @@ class RosettaBlueprintTypeResolver {
 	}
 
 	//link the object refs forward through types that are unchanged by this type of node
-	def void link(TypedBPNode tNode) {
+	def void link(TypedBPNode tNode, Set<BlueprintNode> visited) {
 		val node = tNode.node
+		if (visited.contains(node)) {
+			return
+		}
+		visited.add(node)
 		switch (node) {
 			BlueprintMerge: {
 				tNode.outputKey = tNode.inputKey
@@ -230,7 +236,7 @@ class RosettaBlueprintTypeResolver {
 					val bpOut = new TypedBPNode
 					bpIn.output = tNode.input
 					bpIn.outputKey = tNode.inputKey
-					tNode.andNodes.add(bindTypes(child, bpIn, bpOut))
+					tNode.andNodes.add(bindTypes(child, bpIn, bpOut, visited))
 
 					if (bpIn.output !== bpOut.input) {
 						allPassThroughInput = false
@@ -260,7 +266,7 @@ class RosettaBlueprintTypeResolver {
 					bpIn.output=tNode.input;
 					bpIn.inputKey = tNode.inputKey;
 					bpOut.input.genericName  ="Boolean"
-					bindTypes(node.filterBP.blueprint.nodes, bpIn, bpOut)
+					bindTypes(node.filterBP.blueprint.nodes, bpIn, bpOut, visited)
 				}
 			}
 			BlueprintOneOf: {
@@ -275,9 +281,9 @@ class RosettaBlueprintTypeResolver {
 					val bpOut = new TypedBPNode
 					bpIn.output = tNode.input
 					bpIn.outputKey = tNode.inputKey
-					tNode.andNodes.add(bindTypes(allThens.get(i), bpIn, bpOut))
+					tNode.andNodes.add(bindTypes(allThens.get(i), bpIn, bpOut, visited))
 					if (i<node.bps.size) {
-						tNode.ifNodes.add(bindTypes(node.bps.get(i).ifNode, bpIn, new TypedBPNode))//the output type of the if's can be anything (null or boolean false==false)
+						tNode.ifNodes.add(bindTypes(node.bps.get(i).ifNode, bpIn, new TypedBPNode, visited))//the output type of the if's can be anything (null or boolean false==false)
 					}
 					if (bpIn.output !== bpOut.input) {
 						allPassThroughInput = false
@@ -306,7 +312,7 @@ class RosettaBlueprintTypeResolver {
 				bpOut.input = tNode.output
 				bpOut.inputKey = tNode.outputKey
 
-				bindTypes(node.blueprint.nodes, bpIn, bpOut)
+				bindTypes(node.blueprint.nodes, bpIn, bpOut, visited)
 				tNode.output = bpOut.input
 				tNode.outputKey = bpOut.inputKey
 			}
@@ -323,7 +329,7 @@ class RosettaBlueprintTypeResolver {
 					bpIn.output=tNode.input;
 					bpIn.inputKey = tNode.inputKey;
 					bpOut.input.genericName  ="Comparable"
-					tNode.andNodes.add(bindTypes(node.reduceBP.blueprint.nodes, bpIn, bpOut))
+					tNode.andNodes.add(bindTypes(node.reduceBP.blueprint.nodes, bpIn, bpOut, visited))
 				}
 			}
 			BlueprintGroup: {

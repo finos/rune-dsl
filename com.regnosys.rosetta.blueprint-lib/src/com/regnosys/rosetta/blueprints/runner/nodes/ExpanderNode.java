@@ -5,8 +5,8 @@ import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 import java.util.Collection;
 
 public interface ExpanderNode<I,O, K> extends Node<I, O, K, K> {
-	Collection<GroupableData<O, K>> process(GroupableData<? extends I, ? extends K> input);
-	Collection<GroupableData<? extends O, K>> terminate();
+	<T extends I, KO extends K> Collection<GroupableData<O, KO>> process(GroupableData<T, KO> input);
+	Collection<GroupableData<? extends O, ? extends K>> terminate();
 	String getName();
 	String getURI();
 }

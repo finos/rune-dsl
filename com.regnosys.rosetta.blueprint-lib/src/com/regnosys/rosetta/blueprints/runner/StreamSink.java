@@ -37,7 +37,7 @@ public class StreamSink<I, O, K> extends NodeImpl implements Downstream<I, K> {
 		return sink.result();
 	}
 
-	public Collection<GroupableData<? extends I, K>> getFinalData() {
+	public Collection<GroupableData<? extends I, ? extends K>> getFinalData() {
 		return sink.getFinalData();
 	}
 

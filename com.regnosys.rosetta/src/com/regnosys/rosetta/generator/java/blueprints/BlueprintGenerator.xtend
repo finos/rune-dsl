@@ -273,6 +273,7 @@ class BlueprintGenerator {
 			BlueprintRef : {
 				context.addBPRef(typedNode)
 				context.imports.addTypes(typedNode)
+				context.imports.addBPRef(node.blueprint)
 				'''get«node.blueprint.name.toFirstUpper»()'''
 			}
 			BlueprintValidate : {

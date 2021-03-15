@@ -19,8 +19,8 @@ public class StreamExpander<I,O, K> extends Upstream<O, K> implements Downstream
 	
 	@Override
 	public <I2 extends I, K2 extends K> void process(GroupableData<I2,K2> input) {
-		Collection<GroupableData<O, K>> outputCol = expander.process(input);
-		for (GroupableData<O, K> output:outputCol) {
+		Collection<GroupableData<O, K2>> outputCol = expander.process(input);
+		for (GroupableData<O, K2> output:outputCol) {
 			downstream.distribute(output);
 		}
 	}
@@ -28,8 +28,8 @@ public class StreamExpander<I,O, K> extends Upstream<O, K> implements Downstream
 	@Override
 	public void terminate() {
 		if (upstreamList.terminateUpstream()) {
-			Collection<GroupableData<? extends O, K>> outputCol = expander.terminate();
-			for (GroupableData<? extends O, K> output:outputCol) {
+			Collection<GroupableData<? extends O, ? extends K>> outputCol = expander.terminate();
+			for (GroupableData<? extends O, ? extends K> output:outputCol) {
 				downstream.distribute(output);
 			}
 			downstream.terminate();
