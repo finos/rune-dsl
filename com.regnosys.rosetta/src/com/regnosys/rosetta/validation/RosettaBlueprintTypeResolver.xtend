@@ -209,9 +209,9 @@ class RosettaBlueprintTypeResolver {
 	//link the object refs forward through types that are unchanged by this type of node
 	def void link(TypedBPNode tNode, Set<BlueprintNode> visited) {
 		val node = tNode.node
-		if (visited.contains(node)) {
+		/*if (visited.contains(node)) {
 			return
-		}
+		}*/
 		visited.add(node)
 		switch (node) {
 			BlueprintMerge: {
