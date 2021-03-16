@@ -66,23 +66,33 @@ public class GroupableData<I, K> {
 		return new GroupableData<>(key, data, identifier, ImmutableList.copyOf(issues), node, tracing, Collections.emptyList());
 	}
 	
-	public <I2> GroupableData<I2,K> withIssues(I2 newData, Collection<Issue> newIssues, NamedNode node) {
+	public GroupableData<I, K> withNewIdentifier(DataIdentifier newIdentifier, Collection<Issue> newIssues, NamedNode node) {
 		Collection<Issue> resultIssues = mergeIssues(newIssues);
-		GroupableData<I2, K> groupableData = new GroupableData<>(key, newData, identifier, resultIssues, node, tracing, this);
+		DataIdentifier id = newIdentifier==null?identifier:newIdentifier;
+		GroupableData<I, K> groupableData = new GroupableData<>(key, data, id, resultIssues, node, tracing, this);
+		return groupableData;
+	}
+	
+	public <I2> GroupableData<I2,K> withIssues(I2 newData, DataIdentifier newIdentifier, Collection<Issue> newIssues, NamedNode node) {
+		Collection<Issue> resultIssues = mergeIssues(newIssues);
+		DataIdentifier id = newIdentifier==null?identifier:newIdentifier;
+		GroupableData<I2, K> groupableData = new GroupableData<>(key, newData, id, resultIssues, node, tracing, this);
 		descendents.add(groupableData);
 		return groupableData;
 	}
 	
-	public <K2> GroupableData<I,K2> withNewKey(K2 newKey, Collection<Issue> newIssues, NamedNode node) {
+	public <K2> GroupableData<I,K2> withNewKey(K2 newKey, DataIdentifier newIdentifier, Collection<Issue> newIssues, NamedNode node) {
 		Collection<Issue> resultIssues = mergeIssues(newIssues);
-		GroupableData<I, K2> groupableData = new GroupableData<>(newKey, data, identifier, resultIssues, node, tracing, this);
+		DataIdentifier id = newIdentifier==null?identifier:newIdentifier;
+		GroupableData<I, K2> groupableData = new GroupableData<>(newKey, data, id, resultIssues, node, tracing, this);
 		descendents.add(groupableData);
 		return groupableData;
 	}
 	
 	public <I2> GroupableData<I2,K> withNewData(I2 newData, DataIdentifier newIdentifier, Collection<Issue> newIssues, NamedNode node) {
 		Collection<Issue> resultIssues = mergeIssues(newIssues);
-		GroupableData<I2, K> groupableData = new GroupableData<>(key, newData, newIdentifier, resultIssues, node, tracing, this);
+		DataIdentifier id = newIdentifier==null?identifier:newIdentifier;
+		GroupableData<I2, K> groupableData = new GroupableData<>(key, newData, id, resultIssues, node, tracing, this);
 		descendents.add(groupableData);
 		return groupableData;
 	}

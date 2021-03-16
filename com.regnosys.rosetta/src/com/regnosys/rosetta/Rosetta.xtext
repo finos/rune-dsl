@@ -689,6 +689,7 @@ BlueprintNode:
 		BlueprintReduce |
 		BlueprintOneOf
 	)
+	('as' identifier=STRING)?
 ;
 
 
@@ -718,11 +719,11 @@ BlueprintRef:
 ;
 
 BlueprintExtract:
-	'extract' (multiple?='multiple')? call=RosettaCalcExpression ('as' identifier=STRING)?
+	'extract' (multiple?='multiple')? call=RosettaCalcExpression 
 ;
 
 BlueprintReturn:
-	'return' expression = RosettaCalcExpression ('as' identifier=STRING)?
+	'return' expression = RosettaCalcExpression
 ;
 
 BlueprintGroup:
@@ -734,7 +735,7 @@ BlueprintDataJoin:
 ;
 
 BlueprintLookup:
-	'lookup' name=ID output=[RosettaType] ('as' identifier=STRING)?
+	'lookup' name=ID output=[RosettaType]
 ;
 
 // Stuff we dont need (yet)

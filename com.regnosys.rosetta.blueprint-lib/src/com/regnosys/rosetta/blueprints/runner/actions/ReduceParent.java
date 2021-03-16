@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.blueprints.runner.actions;
 
+import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 import com.regnosys.rosetta.blueprints.runner.nodes.NamedNode;
 import com.regnosys.rosetta.blueprints.runner.nodes.ProcessorNode;
@@ -25,8 +26,8 @@ public abstract class ReduceParent<I, Kr extends Comparable<Kr>, K> extends Name
 			LAST;
 		}
 
-	public ReduceParent(String uri, String label, Action action) {
-		super(uri, label);
+	public ReduceParent(String uri, String label, Action action, DataIdentifier identifier) {
+		super(uri, label, identifier);
 		this.action = action;
 	}
 	
@@ -94,7 +95,7 @@ public abstract class ReduceParent<I, Kr extends Comparable<Kr>, K> extends Name
 
 	@Override
 	public Collection<GroupableData<? extends I, ? extends K>> terminate() {
-		Function<Candidate, GroupableData<? extends I, ? extends K>> f = c->c.data.withIssues(c.data.getData(), Collections.emptyList(), this);
+		Function<Candidate, GroupableData<? extends I, ? extends K>> f = c->c.data.withIssues(c.data.getData(), getIdentifier(), Collections.emptyList(), this);
 		return candidates.values().stream().map(f).collect(Collectors.toList());
 	}
 

@@ -213,7 +213,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		Collection<StreamSource<?,?>> sources = Collections.emptySet();
 		
 		for (MappingGroup<I, ?> mappingGroup:mappings) {
-			ProcessorNode<I, ?, K1> rsm = actionFactory.newRosettaSimpleMapper(mappingGroup.getUri()+"/"+mappingGroup.getIdentifier(), mappingGroup.getIdentifier()+"/"+mappingGroup.getIdentifier(), mappingGroup);
+			ProcessorNode<I, ?, K1> rsm = actionFactory.newRosettaSimpleMapper(mappingGroup.getUri()+"/"+mappingGroup.getIdentifier(), mappingGroup.getIdentifier()+"/"+mappingGroup.getIdentifier(), null, mappingGroup);
 			StreamProcessor<I, ?, K1> process = new StreamProcessor<>(rsm);
 			heads.add(process);
 			tails.add(process);
@@ -229,7 +229,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		Collection<StreamSource<?,?>> sources = Collections.emptySet();
 		
 		for (MappingGroup<I, ? extends O> mappingGroup:mappings) {
-			ProcessorNode<I, ? extends O, K1> rsm = actionFactory.newRosettaCalculationMapper(mappingGroup.getUri(), mappingGroup.getIdentifier(), mappingGroup);
+			ProcessorNode<I, ? extends O, K1> rsm = actionFactory.newRosettaCalculationMapper(mappingGroup.getUri(), mappingGroup.getIdentifier(), null, mappingGroup);
 			StreamProcessor<I, ? extends O, K1> process = new StreamProcessor<>(rsm);
 			heads.add(process);
 			tails.add(process);

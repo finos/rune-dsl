@@ -16,7 +16,6 @@ public class Merger<I, B, O,K> extends StatefullNode implements ProcessorNode<I,
 
 	private final Function<DataIdentifier, BiConsumer<B, ? extends I>> inserters;
 	private final Function<K, ? extends B> supplier;
-	private final DataIdentifier resultType;
 	
 	private final Function<B, O> finalizer;
 	
@@ -35,10 +34,9 @@ public class Merger<I, B, O,K> extends StatefullNode implements ProcessorNode<I,
 	public Merger(String uri, String label, Function<DataIdentifier, BiConsumer<B, ? extends I>> insertors, 
 			Function<K, ? extends B> supplier, Function<B, O> finalizer,
 			DataIdentifier resultType, boolean	publishIntermediate) {
-		super(uri, label, publishIntermediate);
+		super(uri, label, publishIntermediate, resultType);
 		this.inserters = insertors;
 		this.supplier = supplier;
-		this.resultType = resultType;
 		this.finalizer = finalizer;
 	}
 
@@ -55,7 +53,7 @@ public class Merger<I, B, O,K> extends StatefullNode implements ProcessorNode<I,
 		result.issues.addAll(input.getIssues());
 		results.putIfAbsent(input.getKey(), result);
 		if (publishIntermediate) {
-			return Optional.of(input.withNewData(finalizer.apply(result.result), resultType, 
+			return Optional.of(input.withNewData(finalizer.apply(result.result), getIdentifier(), 
 					Collections.emptyList(), this));
 		}
 		else return Optional.empty();
@@ -65,7 +63,7 @@ public class Merger<I, B, O,K> extends StatefullNode implements ProcessorNode<I,
 	public Collection<GroupableData<? extends O, ? extends K>> terminate() {
 		return results.entrySet().stream()
 				.map(e->GroupableData.withMultiplePrecedents(e.getKey(), 
-						finalizer.apply(e.getValue().result), resultType, 
+						finalizer.apply(e.getValue().result), getIdentifier(), 
 						e.getValue().issues, this, e.getValue().precedents.values())
 					)
 				.collect(Collectors.collectingAndThen(Collectors.toList(), ImmutableList::copyOf));
