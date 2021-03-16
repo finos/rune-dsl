@@ -48,6 +48,9 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.generator.java.function.RosettaFunctionDependencyProvider
+import com.regnosys.rosetta.generator.java.util.JavaNames
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
@@ -56,26 +59,27 @@ class BlueprintGenerator {
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension ExpressionGenerator
 	@Inject CardinalityProvider cardinality
+	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
 
 	/**
 	 * generate a blueprint java file
 	 */
-	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
+	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version, extension JavaNames names) {
 		elements.filter(RosettaBlueprintReport).forEach [ report |
 			fsa.generateFile(packages.model.blueprint.directoryName + '/' + report.name + 'Report.java',
-				generateBlueprint(packages, report.nodes, null, report.name, 'Report', report.URI, version))
+				generateBlueprint(packages, report.nodes, null, report.name, 'Report', report.URI, version, names))
 		]
 		
 		elements.filter(RosettaBlueprint).forEach [ bp |
 			fsa.generateFile(packages.model.blueprint.directoryName + '/' + bp.name + 'Rule.java',
-				generateBlueprint(packages, bp.nodes, bp.output, bp.name, 'Rule', bp.URI, version))
+				generateBlueprint(packages, bp.nodes, bp.output, bp.name, 'Rule', bp.URI, version, names))
 		]
 	}
 
 	/**
 	 * Generate the text of a blueprint
 	 */
-	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RosettaType output, String name, String type, String uri, String version) {
+	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RosettaType output, String name, String type, String uri, String version, extension JavaNames names) {
 		try {
 			val imports = new ImportGenerator(packageName)
 			imports.addBlueprintImports
@@ -84,7 +88,7 @@ class BlueprintGenerator {
 			val typed = buildTypeGraph(nodes, output)
 			val typeArgs = bindArgs(typed)
 			imports.addTypes(typed)
-			val StringConcatenationClient scc = nodes.buildBody(typed, imports)
+			val StringConcatenationClient scc = nodes.buildBody(typed, imports, names)
 			val body = tracImports(scc)
 			return '''
 				package «packageName.model.blueprint.name»;
@@ -167,9 +171,12 @@ class BlueprintGenerator {
 	/**
 	 * build the body of the blueprint class
 	 */
-	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, TypedBPNode typedNode, ImportGenerator imports) {
+	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, TypedBPNode typedNode, ImportGenerator imports, extension JavaNames names) {
 		val context = new Context(nodes, imports)
 		return '''
+			«FOR dep : nodes.functionDependencies»
+				@«Inject» protected «dep.toJavaType» «dep.name.toFirstLower»;
+			«ENDFOR»
 			
 			@Override
 			public BlueprintInstance<«typedNode.input.either», «typedNode.output.either», «typedNode.inputKey.either», «typedNode.outputKey.either»> blueprint() { 
@@ -488,6 +495,27 @@ class BlueprintGenerator {
 			'''«packageName.model.name».«type.name»'''.toString
 		else 
 			type.name.toJavaFullType
+	}
+	
+	def Iterable<RosettaCallableWithArgs> functionDependencies(BlueprintNodeExp node) {
+		return node.node.functionDependencies + (node.next===null?#[]:node.next.functionDependencies)
+	}
+	
+	def Iterable<RosettaCallableWithArgs> functionDependencies(BlueprintNode node) {
+		switch (node) {
+			BlueprintAnd : {
+				node.bps.flatMap[functionDependencies].toList
+			}
+			BlueprintExtract: {
+				functionDependencyProvider.functionDependencies(node.call)
+			}
+			BlueprintReturn: {
+				functionDependencyProvider.functionDependencies(node.expression)
+			}
+			default :{
+				#[]
+			}
+		}
 	}
 
 	

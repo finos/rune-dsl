@@ -1955,7 +1955,6 @@ class RosettaBlueprintTest {
 		}
 	}
 	
-	@Disabled
 	@Test
 	def void functionCall() {
 		val blueprint = ''' 
@@ -1963,10 +1962,10 @@ class RosettaBlueprintTest {
 				bar Bar (1..1)
 			
 			type Bar:
-				val string (1..1)
+				val number (1..1)
 			
 			reporting rule Rule1
-				return MyFunc(1)
+				extract MyFunc(Foo->bar->val)
 			
 			func MyFunc:
 				inputs: 
@@ -1976,7 +1975,8 @@ class RosettaBlueprintTest {
 			assign-output bar:
 				foo +1
 				
-			'''.generateCode
+			'''.parseRosettaWithNoErrors
+			.generateCode
 			//blueprint.writeClasses("functionCall")
 			blueprint.compileToClasses
 	}
