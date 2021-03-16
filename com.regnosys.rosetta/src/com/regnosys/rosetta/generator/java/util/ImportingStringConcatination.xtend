@@ -43,7 +43,7 @@ class ImportingStringConcatination extends StringConcatenation {
 			if(reservedSimpleNames.contains(object.simpleName)) {
 				return object.name
 			}
-			return addImport(object.name, object.simpleName)
+			return addImport(object.name, object.simpleName, object.extended)
 		}
 	}
 	
@@ -77,21 +77,25 @@ class ImportingStringConcatination extends StringConcatenation {
 			staticImports.add(qName  + '.' + method.name)	
 		}
 	}
+	
+	def String addImport(String qName, String shortName) {
+		addImport(qName, shortName, false)
+	}
 
 	/** returns the name that should be used at in generated code. If an import can be added to then the shortname can be used
 	 * if an import cannot be added because it will clash then the full name must be used
 	*/
-	def String addImport(String qName, String shortName) {
+	def String addImport(String qName, String shortName, boolean extended) {
 		if(qName.startsWith('java.lang.'))
 			return shortName
 		val fullName = qName.replaceAll('\\$','.')
 		var qualified = QualifiedName.create(fullName.split('\\.'))
 		
 		if (imports.getOrDefault(shortName, qualified)!=qualified) {
-			return fullName//if an import has already been added for this shortname (that is different from this fullname) then we can't add a clashing import 
+			return '''«IF extended»? extends «ENDIF»«fullName»'''//if an import has already been added for this shortname (that is different from this fullname) then we can't add a clashing import 
 		}
 		imports.put(shortName, qualified)
-		return shortName
+		return '''«IF extended»? extends «ENDIF»«shortName»'''
 	}
 	
 	def getImports() {

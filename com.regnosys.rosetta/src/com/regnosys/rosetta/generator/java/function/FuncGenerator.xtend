@@ -45,6 +45,8 @@ import org.eclipse.xtext.naming.QualifiedName
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.rosetta.model.lib.mapper.MapperBuilder
 import com.rosetta.model.lib.mapper.Mapper
+import com.regnosys.rosetta.generator.java.util.ParameterizedType
+import java.util.List
 
 class FuncGenerator {
 
@@ -127,7 +129,7 @@ class FuncGenerator {
 					* @return «outputName» «ModelGeneratorUtil.escape(output.definition)»
 				«ENDIF»
 				*/
-				public «outputType» evaluate(«func.inputsAsParameters(names)») {
+				public «outputType.extendedParam» evaluate(«func.inputsAsParameters(names)») {
 					«IF !func.conditions.empty»
 						// pre-conditions
 						«FOR cond:func.conditions»
@@ -137,11 +139,7 @@ class FuncGenerator {
 					«ENDIF»
 					
 					«output.toBuilderType(names)» «outputName»Holder = doEvaluate(«func.inputsAsArguments(names)»);
-					«IF outNeedsBuilder»
-						«outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
-					«ELSE»
-						final «outputType» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
-					«ENDIF»	
+					«output.toBuilderType(names)» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
 					
 					«IF !func.postConditions.empty»
 						// post-conditions
@@ -151,7 +149,7 @@ class FuncGenerator {
 						«ENDFOR»
 					«ENDIF»
 					«IF outNeedsBuilder»
-					if («outputName»!=null) objectValidator.validateAndFailOnErorr(«outputType».class, «outputName»);
+					if («outputName»!=null) objectValidator.validateAndFailOnErorr(«names.toJavaType(output.type)».class, «outputName»);
 					«ENDIF»
 					return «outputName»;
 				}
@@ -180,7 +178,7 @@ class FuncGenerator {
 				public static final class «className»Default extends «className» {
 					@Override
 					protected  «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
-						return «IF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
+						return «IF output.isMany»List.of()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
 					}
 				}
 				«IF func.isQualifierFunction()»
@@ -209,7 +207,7 @@ class FuncGenerator {
 				@«Inject» protected «toTargetClassName(enumFunc)» «toTargetClassName(enumFunc).lastSegment»;
 			«ENDFOR»
 			
-			public «outputType» evaluate(«function.inputsAsParameters(names)») {
+			public «outputType.extendedParam» evaluate(«function.inputsAsParameters(names)») {
 				switch («enumParam») {
 					«FOR enumFunc : dispatchingFuncs»
 						«val enumValClass = toTargetClassName(enumFunc).lastSegment»
@@ -241,9 +239,9 @@ class FuncGenerator {
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, ctx)»)
+				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, ctx, type.isMany)»)
 			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx)»«ENDIF»'''
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx, type.isMany)»«ENDIF»'''
 		else {
 			'''
 				«op.assignTarget(outs, names)»
@@ -292,8 +290,8 @@ class FuncGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx) {
-		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)».get()'''
+	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx, boolean isMulti) {
+		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
 	}
 	
 	def boolean hasMeta(RType type) {
@@ -365,12 +363,12 @@ class FuncGenerator {
 		'''
 	}
 
-	private def JavaType outputTypeOrVoid(Function function, extension JavaNames names) {
+	private def ParameterizedType outputTypeOrVoid(Function function, extension JavaNames names) {
 		val out = getOutput(function)
 		if (out === null) {
-			names.voidType()
+			new ParameterizedType(names.voidType(),#[])
 		} else {
-			out.type.toJavaType()
+			out.toListOrSingleJavaType()
 		}
 	}
 
@@ -379,7 +377,7 @@ class FuncGenerator {
 	}
 
 	private def StringConcatenationClient inputsAsParameters(extension Function function, extension JavaNames names) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.toListOrSingleJavaType()» «input.name»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.toListOrSingleJavaType.extendedParam» «input.name»«ENDFOR»'''
 	}
 
 	def private StringConcatenationClient shortcutJavaType(JavaNames names, ShortcutDeclaration feature) {
@@ -388,9 +386,15 @@ class FuncGenerator {
 		'''«javaType»«IF needsBuilder(rType)».«javaType»Builder«ENDIF»'''
 	}
 
-	private def StringConcatenationClient toBuilderType(Attribute attr, JavaNames names) {
-		val javaType = names.toJavaType(attr.type)
-		'''«IF needsBuilder(attr)»«javaType».«javaType»Builder«ELSE»«javaType»«ENDIF»'''
+	private def ParameterizedType toBuilderType(Attribute attr, JavaNames names) {
+		var javaType = names.toJavaType(attr.type)
+		if (needsBuilder(attr)) javaType = javaType.toBuilderType
+		if (attr.isMany) {
+			new ParameterizedType(new JavaType(List.name), #[new ParameterizedType(javaType,#[])])
+		}
+		else {
+			new ParameterizedType(javaType, #[])
+		}
 	}
 
 	private def isMany(RosettaFeature feature) {
