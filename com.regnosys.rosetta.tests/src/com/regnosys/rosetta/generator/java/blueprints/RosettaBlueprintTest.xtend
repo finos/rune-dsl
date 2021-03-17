@@ -749,7 +749,6 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
-	@Disabled
 	def void invalidPath() {
 		'''
 			type Input:
@@ -761,7 +760,7 @@ class RosettaBlueprintTest {
 			reporting rule Blueprint1
 				extract Input->input2->name
 		'''.parseRosetta.assertError(ROSETTA_FEATURE_CALL, RosettaIssueCodes.MISSING_ATTRIBUTE,
-			"Couldn't resolve reference to RosettaFeature 'name'")
+			"attempted to reference unknown field of Input2")
 	}
 
 	@Test
@@ -1979,6 +1978,49 @@ class RosettaBlueprintTest {
 			.generateCode
 			//blueprint.writeClasses("functionCall")
 			blueprint.compileToClasses
+	}
+	
+	@Test
+	def void expressionBadTypes() {
+		 ''' 
+			type Foo:
+				bar Bar (1..1)
+			
+			type Bar:
+				val number (1..1)
+			
+			reporting rule Rule1
+				extract Foo->bar->val + Bar->val
+			'''.parseRosetta
+			.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR,
+			"Input types must be the same but were Foo and Bar")
+			
+	}
+	
+	@Test
+	def void functionCallBadTypes() {
+		 ''' 
+			type Foo:
+				bar Bar (1..1)
+			
+			type Bar:
+				val number (1..1)
+			
+			reporting rule Rule1
+				extract MyFunc(Foo->bar->val, Bar->val)
+			
+			func MyFunc:
+				inputs: 
+					a number (0..1)
+					b number (0..1)
+				output: 
+					r number (1..1)
+			assign-output r:
+				a +b
+				
+			'''.parseRosetta
+			.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR,
+			"Input types must be the same but were [Foo, Bar]")
 	}
 	
 	@Test
