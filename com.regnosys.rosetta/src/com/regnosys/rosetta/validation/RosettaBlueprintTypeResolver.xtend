@@ -549,7 +549,10 @@ class RosettaBlueprintTypeResolver {
 	
 	def dispatch RosettaType getInput(RosettaCallableWithArgsCall expr) {
 		if (expr.args.size==0) return null
-		return getInput(expr.args.get(0))
+		val inputs = expr.args.map[getInput]
+		if (inputs.toSet.size>1)
+			throw new BlueprintTypeException('''Input types must be the same but were «inputs.map[name]»''');
+		return inputs.get(0)
 	}
 
 	def dispatch RosettaType getOutput(RosettaExpression expr) {

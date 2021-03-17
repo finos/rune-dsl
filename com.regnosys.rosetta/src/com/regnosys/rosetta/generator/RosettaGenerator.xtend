@@ -121,7 +121,7 @@ class RosettaGenerator extends AbstractGenerator {
 						}
 					]
 					enumGenerator.generate(packages, fsa, elements, version)
-					blueprintGenerator.generate(packages, fsa, elements, version)
+					blueprintGenerator.generate(packages, fsa, elements, version, javaNames)
 
 					// Invoke externally defined code generators
 					externalGenerators.forEach [ generator |
