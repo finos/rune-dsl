@@ -38,7 +38,7 @@ class ModelMetaGeneratorTest {
 					override <T extends RosettaModelObject> validateAndFailOnErorr(Class<T> topClass, T modelObject) {
 					}
 					override <T extends RosettaModelObject> validateAndFailOnErorr(Class<T> topClass,
-						List<T> modelObjects) {
+						List<? extends T> modelObjects) {
 					}
 				})
 			}

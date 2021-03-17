@@ -258,28 +258,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'string' but was 'int'")
 	}
-
-	@Test
-	def void testCardinalityErrorAssignment_01() {
-		val model =
-		'''
-			type WithMeta:
-				[metadata key]
-
-			type OtherType:
-				attrSingle WithMeta (0..1)
-				[metadata reference]
-				attrMulti WithMeta (0..*)
-				[metadata reference]
-
-			func asKeyUsage:
-				inputs: withMeta WithMeta(0..*)
-				output: out OtherType (0..1)
-				assign-output out -> attrMulti[1]:
-					withMeta as-key
-		'''.parseRosetta
-		model.assertError(OPERATION, null, "Expecting single cardinality as value. Use 'only-element' to assign only first value.")
-	}
 	
 	@Test
 	def void testAttributesWithLocationBadTarget() {

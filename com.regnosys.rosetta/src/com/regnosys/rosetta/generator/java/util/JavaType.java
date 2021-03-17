@@ -4,6 +4,7 @@ public class JavaType {
 
 	private String name;
 	private String simpleName;
+	private boolean extended;
 
 	public JavaType(String name) {
 		this.name = name;
@@ -23,6 +24,16 @@ public class JavaType {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public JavaType asExtended() {
+		JavaType javaType = new JavaType(name, simpleName);
+		javaType.extended = true;
+		return javaType;
+	}
+	
+	public boolean getExtended() {
+		return extended;
 	}
 
 	public String getSimpleName() {

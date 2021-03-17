@@ -620,6 +620,17 @@ Most functions, however, also require inputs, which are also expressed as attrib
        determinationMethod DeterminationMethodEnum (1..1)
     output:
        time TimeZone (1..1)
+       
+Inputs and outputs can both have multiple cardinality in which case they will be treated as lists
+
+.. code-block:: Haskell
+
+ func UpdateAmountForEachQuantity: 
+   inputs:
+      priceQuantity PriceQuantity (0..*) 
+      amount number (1..1) 
+   output:
+      updatedPriceQuantity PriceQuantity (0..*) 
 
 Conditions
 """"""""""

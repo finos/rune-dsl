@@ -30,7 +30,6 @@ import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
-import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
 class JavaNames {
@@ -38,11 +37,11 @@ class JavaNames {
 	@Accessors(PUBLIC_GETTER)
 	RosettaJavaPackages packages
 
-	def StringConcatenationClient toListOrSingleJavaType(Attribute attribute) {
+	def ParameterizedType toListOrSingleJavaType(Attribute attribute) {
 		if (attribute.card.isIsMany) {
-			'''«List»<? extends «attribute.type.toJavaType()»>'''
+			return new ParameterizedType(List.toJavaType, #[new ParameterizedType(attribute.type.toJavaType, null)])
 		} else
-			'''«attribute.type.toJavaType()»'''
+			new ParameterizedType(attribute.type.toJavaType, null)
 	}
 
 	def JavaType toJavaType(ExpandedType type) {
@@ -67,6 +66,10 @@ class JavaNames {
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + func?.class?.name)
 		}
+	}
+	
+	def JavaType toJavaType(Class<?> c) {
+		return new JavaType(c.name);
 	}
 
 	def JavaType toJavaType(RosettaType type) {

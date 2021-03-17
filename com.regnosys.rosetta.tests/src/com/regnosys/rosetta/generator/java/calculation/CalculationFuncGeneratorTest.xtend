@@ -87,7 +87,7 @@ class CalculationFuncGeneratorTest {
 						public BigDecimal evaluate(PeriodEnum in1, Period in2) {
 							
 							BigDecimal outHolder = doEvaluate(in1, in2);
-							final BigDecimal out = assignOutput(outHolder, in1, in2);
+							BigDecimal out = assignOutput(outHolder, in1, in2);
 							
 							return out;
 						}
@@ -148,7 +148,7 @@ class CalculationFuncGeneratorTest {
 				public Integer evaluate(Integer one) {
 					
 					Integer outHolder = doEvaluate(one);
-					final Integer out = assignOutput(outHolder, one);
+					Integer out = assignOutput(outHolder, one);
 					
 					return out;
 				}
@@ -212,7 +212,7 @@ class CalculationFuncGeneratorTest {
 				public Integer evaluate(Integer arg1, Integer arg2) {
 					
 					Integer resHolder = doEvaluate(arg1, arg2);
-					final Integer res = assignOutput(resHolder, arg1, arg2);
+					Integer res = assignOutput(resHolder, arg1, arg2);
 					
 					return res;
 				}
@@ -280,6 +280,7 @@ class CalculationFuncGeneratorTest {
 		import com.rosetta.model.lib.records.Date;
 		import com.rosetta.model.lib.validation.ModelObjectValidator;
 		import com.rosetta.test.model.FoncOut;
+		import com.rosetta.test.model.FoncOut.FoncOutBuilder;
 		import com.rosetta.test.model.FuncIn;
 		import java.time.LocalTime;
 		
@@ -296,7 +297,7 @@ class CalculationFuncGeneratorTest {
 			public FoncOut evaluate(FuncIn funIn) {
 				
 				FoncOut.FoncOutBuilder resHolder = doEvaluate(funIn);
-				FoncOut res = assignOutput(resHolder, funIn);
+				FoncOut.FoncOutBuilder res = assignOutput(resHolder, funIn);
 				
 				if (res!=null) objectValidator.validateAndFailOnErorr(FoncOut.class, res);
 				return res;
@@ -373,6 +374,7 @@ class CalculationFuncGeneratorTest {
 		import com.rosetta.model.lib.validation.ModelObjectValidator;
 		import com.rosetta.test.model.FuncIn;
 		import com.rosetta.test.model.FuncOut;
+		import com.rosetta.test.model.FuncOut.FuncOutBuilder;
 		import java.time.LocalTime;
 		
 		
@@ -388,7 +390,7 @@ class CalculationFuncGeneratorTest {
 			public FuncOut evaluate(FuncIn funcIn) {
 				
 				FuncOut.FuncOutBuilder outHolder = doEvaluate(funcIn);
-				FuncOut out = assignOutput(outHolder, funcIn);
+				FuncOut.FuncOutBuilder out = assignOutput(outHolder, funcIn);
 				
 				if (out!=null) objectValidator.validateAndFailOnErorr(FuncOut.class, out);
 				return out;
@@ -460,6 +462,7 @@ class CalculationFuncGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.OtherType;
+				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
 				import java.util.Optional;
@@ -477,7 +480,7 @@ class CalculationFuncGeneratorTest {
 					public OtherType evaluate(WithMeta withMeta) {
 						
 						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
-						OtherType out = assignOutput(outHolder, withMeta);
+						OtherType.OtherTypeBuilder out = assignOutput(outHolder, withMeta);
 						
 						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
 						return out;
@@ -555,6 +558,7 @@ class CalculationFuncGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.OtherType;
+				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
 				import java.util.List;
@@ -574,7 +578,7 @@ class CalculationFuncGeneratorTest {
 					public OtherType evaluate(List<? extends WithMeta> withMeta) {
 						
 						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
-						OtherType out = assignOutput(outHolder, withMeta);
+						OtherType.OtherTypeBuilder out = assignOutput(outHolder, withMeta);
 						
 						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
 						return out;
@@ -650,7 +654,7 @@ class CalculationFuncGeneratorTest {
 				public Integer evaluate() {
 					
 					Integer resHolder = doEvaluate();
-					final Integer res = assignOutput(resHolder);
+					Integer res = assignOutput(resHolder);
 					
 					return res;
 				}
@@ -760,7 +764,7 @@ class CalculationFuncGeneratorTest {
 					public String evaluate(Math in1, MathInput in2) {
 						
 						String arg1Holder = doEvaluate(in1, in2);
-						final String arg1 = assignOutput(arg1Holder, in1, in2);
+						String arg1 = assignOutput(arg1Holder, in1, in2);
 						
 						return arg1;
 					}
@@ -795,7 +799,7 @@ class CalculationFuncGeneratorTest {
 					public String evaluate(Math in1, MathInput in2) {
 						
 						String arg1Holder = doEvaluate(in1, in2);
-						final String arg1 = assignOutput(arg1Holder, in1, in2);
+						String arg1 = assignOutput(arg1Holder, in1, in2);
 						
 						return arg1;
 					}
@@ -857,7 +861,7 @@ class CalculationFuncGeneratorTest {
 				public Integer evaluate(Integer arg1) {
 					
 					Integer resHolder = doEvaluate(arg1);
-					final Integer res = assignOutput(resHolder, arg1);
+					Integer res = assignOutput(resHolder, arg1);
 					
 					return res;
 				}

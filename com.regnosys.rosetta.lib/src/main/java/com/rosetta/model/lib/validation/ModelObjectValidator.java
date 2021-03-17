@@ -24,7 +24,7 @@ public interface ModelObjectValidator {
 	 * @param modelObjects
 	 * @throws RuntimeException if validation fails
 	 */
-	<T extends RosettaModelObject> void validateAndFailOnErorr(Class<T> topClass, List<T> modelObjects);
+	<T extends RosettaModelObject> void validateAndFailOnErorr(Class<T> topClass, List<? extends T> modelObjects);
 	
 	class ModelObjectValidationException extends RuntimeException {
 		private final String errors;

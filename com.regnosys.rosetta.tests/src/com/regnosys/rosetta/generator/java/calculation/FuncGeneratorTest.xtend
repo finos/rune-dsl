@@ -52,7 +52,7 @@ class FuncGeneratorTest {
 				public String evaluate(String name, String name2) {
 					
 					String resultHolder = doEvaluate(name, name2);
-					final String result = assignOutput(resultHolder, name, name2);
+					String result = assignOutput(resultHolder, name, name2);
 					
 					return result;
 				}
@@ -538,5 +538,46 @@ class FuncGeneratorTest {
 			"left hand side of and expression must be boolean")
 	}
 		
-	
+	@Test
+	def void shouldReturnMultiple() {
+		val model = 
+		'''
+			namespace "com.rosetta.test.model.agreement"
+					version "test"
+			
+			type Top:
+				foo Foo (1..*)
+				foob Foo (1..1)
+			
+			type Foo:
+				bar1 number (1..*)
+				
+			func ExtractFoo: <"tries returning list of complex">
+				inputs: 
+					top1 Top (1..1)
+				
+				output: result Foo (1..*)
+				assign-output result:
+					top1-> foo
+					
+			func ExtractFoowithAlias: <"tries returning list of complex">
+				inputs: 
+					top1 Top (1..1)
+				output: result Foo (1..1)
+				alias foos: top1->foo 
+				assign-output result:
+					foos
+			
+			func ExtractBar: <"tries returning list of basic">
+				inputs: 
+					top1 Top (1..1)
+				
+				output: result number (1..*)
+				assign-output result:
+					top1-> foo -> bar1
+		'''.parseRosettaWithNoErrors
+		model.generateCode
+		//.writeClasses("shouldReturnMultiple")
+		.compileToClasses
+	}
 }
