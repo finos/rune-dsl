@@ -625,11 +625,12 @@ Inputs and outputs can both have multiple cardinality in which case they will be
 
 .. code-block:: Haskell
 
- func MutiplyListBy2: <"Multiplies each element in a list by 2">
-    inputs:
-       numbers number (1..*)
-    output:
-       doubles number  (1..*)
+ func UpdateAmountForEachQuantity: 
+   inputs:
+      priceQuantity PriceQuantity (0..*) 
+      amount number (1..1) 
+   output:
+      updatedPriceQuantity PriceQuantity (0..*) 
 
 Conditions
 """"""""""
