@@ -997,7 +997,7 @@ The extracted value may be coming from a data attribute in the model, as above, 
 
 - <ReportExpression1> ``then`` <ReportExpression2>
 
-Report statements can be chained using the keyword `then`, which means that extraction continues from the previous point.
+Report statements can be chained using the keyword ``then``, which means that extraction continues from the previous point.
 
 The syntax provides type safety when chaining rules, whereby the output type of the preceding rule must be equal to the input type of the following rule. The example below uses the TradeForEvent rule to find the Trade object and ``then`` extracts the termination date from that trade
 
@@ -1011,10 +1011,9 @@ The syntax provides type safety when chaining rules, whereby the output type of 
  		if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade only exists
 	then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
 		else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
-
 - ``as`` <FieldName>
 
-Once a value has been extracted, the syntax allows to make it into a reportable field under the required field name using the ``as`` keyword, as in the below example.
+Any report statement can be follows by ``as`` This sets a label under which the value will appear in a report, as in the below example.
 
 .. code-block:: Haskell
 
@@ -1022,9 +1021,7 @@ Once a value has been extracted, the syntax allows to make it into a reportable 
    extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification
    as "Rate Specification"
 
-The field name is an arbitrary ``string`` and should be aligned with the name of the reportable field as per the regulation. This field name will be used as column name when displaying computed reports, but is otherwise not functionally usable. To re-use the functional output of a reporting rule, the name of the rule (here: ``RateSpecification``) should be used instead.
-
-
+The label is an arbitrary ``string`` and should be aligned with the name of the reportable field as per the regulation. This field name will be used as column name when displaying computed reports, but is otherwise not functionally usable.
 
 - ``Rule if`` statement
 
