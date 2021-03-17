@@ -663,6 +663,9 @@ class ExpressionGenerator {
 			RosettaParenthesisCalcExpression : {
 				'''(«expr.expression.toNodeLabel»)'''
 			}
+			RosettaCallableWithArgsCall :{
+				'''«expr.callable.name»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)'''
+			}
 
 			default :
 				'''Unsupported expression type of «expr.class.simpleName»'''
