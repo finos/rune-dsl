@@ -620,6 +620,16 @@ Most functions, however, also require inputs, which are also expressed as attrib
        determinationMethod DeterminationMethodEnum (1..1)
     output:
        time TimeZone (1..1)
+       
+Inputs and outputs can both have multiple cardinality in which case they will be treated as lists
+
+.. code-block:: Haskell
+
+ func MutiplyListBy2: <"Multiplies each element in a list by 2">
+    inputs:
+       numbers number (1..*)
+    output:
+       doubles number  (1..*)
 
 Conditions
 """"""""""
