@@ -194,9 +194,9 @@ class ExpressionGenerator {
 		
 		return switch (callable) {
 			Function: {
-				funcExt.getOutput(callable).card.isMany
+				val multi = funcExt.getOutput(callable).card.isMany
 				val implicitArg = funcExt.implicitFirstArgument(expr)
-				'''«MapperS».of(«callable.name.toFirstLower».evaluate(«IF implicitArg !== null»«implicitArg.name.toFirstLower»«ENDIF»«args(expr, params)»))'''
+				'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«callable.name.toFirstLower».evaluate(«IF implicitArg !== null»«implicitArg.name.toFirstLower»«ENDIF»«args(expr, params)»))'''
 			}
 			RosettaExternalFunction:
 				'''«MapperS».of(new «factory.create(callable.model).toJavaType(callable as RosettaCallableWithArgs)»().execute(«args(expr, params)»))'''
