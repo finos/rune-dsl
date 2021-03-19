@@ -580,4 +580,33 @@ class FuncGeneratorTest {
 		//.writeClasses("shouldReturnMultiple")
 		.compileToClasses
 	}
+	
+	@Test
+	def void funcCallingMultipleFunc() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+			
+			func F1:
+					inputs: num number (1..1)
+					output: nums number (1..*)
+					
+			func F2:
+				inputs: nums number(1..*)
+				output: str string (1..1)
+				
+			func F3:
+				inputs: num number (1..1)
+				output: str string (1..1)
+				assign-output str: F2(F1(num))
+			func F4:
+					inputs: num number (1..*)
+					output: str string (1..1)
+					assign-output str: F2(num)
+			'''.parseRosettaWithNoErrors
+		model.generateCode
+		.writeClasses("funcCallingMultipleFunc")
+		.compileToClasses
+
+	}
 }
