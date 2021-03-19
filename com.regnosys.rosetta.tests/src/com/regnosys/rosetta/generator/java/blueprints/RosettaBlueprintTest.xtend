@@ -2069,6 +2069,29 @@ class RosettaBlueprintTest {
 		code.compileToClasses
 		
 	}
+	
+	@Test
+	def void brokenRuleTypes() {
+		'''
+			type Foo: <"">
+				bar Bar (0..1)
+			
+			type Bar:
+				str string (1..1)
+			
+			reporting rule Rule1
+				extract Foo->bar then
+				Rule2
+							
+			reporting rule Rule2
+				extract Foo->bar->str
+			
+		'''
+		.parseRosetta
+			.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR, 168, 5,
+			"Input type of Foo is not assignable from type Bar of previous node")
+		
+	}
 
 	@Test
 	@Disabled
