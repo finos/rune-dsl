@@ -2086,9 +2086,10 @@ class RosettaBlueprintTest {
 			reporting rule Rule2
 				extract Foo->bar->str
 			
-		'''
+		'''.toString
+		.replace('\r', "")
 		.parseRosetta
-			.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR, 168, 5,
+			.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
 			"Input type of Foo is not assignable from type Bar of previous node")
 		
 	}
