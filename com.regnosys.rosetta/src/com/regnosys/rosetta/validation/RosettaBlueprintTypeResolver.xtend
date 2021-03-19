@@ -312,7 +312,14 @@ class RosettaBlueprintTypeResolver {
 				bpOut.input = tNode.output
 				bpOut.inputKey = tNode.outputKey
 
-				bindTypes(node.blueprint.nodes, bpIn, bpOut, visited)
+				try {
+					bindTypes(node.blueprint.nodes, bpIn, bpOut, visited)
+				}
+				catch (BlueprintUnresolvedTypeException e) {
+					//we found an that the types don't match further down the stack - we want to report it as an error with this call
+					BlueprintUnresolvedTypeException.error(e.message,
+					node, BLUEPRINT_REF__BLUEPRINT, e.code)
+				}
 				tNode.output = bpOut.input
 				tNode.outputKey = bpOut.inputKey
 			}
