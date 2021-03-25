@@ -16,6 +16,4 @@ public interface ProcessorNode<I,O, K> extends Node<I, O, K, K>{
 	    LOGGER.trace("calling teminate on "+getName()+" instance of "+this.getClass());
 		return Collections.emptyList();
 	}
-	String getName();
-	String getURI();
 }

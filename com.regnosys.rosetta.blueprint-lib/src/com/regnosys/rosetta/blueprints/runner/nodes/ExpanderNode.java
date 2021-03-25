@@ -7,6 +7,4 @@ import java.util.Collection;
 public interface ExpanderNode<I,O, K> extends Node<I, O, K, K> {
 	<T extends I, KO extends K> Collection<GroupableData<O, KO>> process(GroupableData<T, KO> input);
 	Collection<GroupableData<? extends O, ? extends K>> terminate();
-	String getName();
-	String getURI();
 }

@@ -187,7 +187,8 @@ class ImportGenerator {
 			RosettaConditionalExpression: {
 				addExpression(expression.^if)
 				addExpression(expression.ifthen)
-				addExpression(expression.elsethen)
+				if (expression.elsethen!==null) 
+					addExpression(expression.elsethen)
 			}
 			RosettaContainsExpression: {
 				addExpression(expression.contained)
@@ -296,6 +297,8 @@ class ImportGenerator {
 		
 	def addBPRef(RosettaBlueprint blueprint) {
 		imports.add('''«(blueprint.eContainer as RosettaModel).name».blueprint.«blueprint.name»Rule''')
+		imports.add('''«packages.blueprintLib.name».runner.actions.IdChange''')
+		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
 	}
 
 }

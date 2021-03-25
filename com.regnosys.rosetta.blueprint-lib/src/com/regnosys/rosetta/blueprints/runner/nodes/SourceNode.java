@@ -6,7 +6,5 @@ import java.util.Optional;
 
 public interface SourceNode<O, K> extends Node<Void, O, K, K> {
 	Optional<GroupableData<O, K>> nextItem();
-	String getName();
-	String getURI();
 
 }

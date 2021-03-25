@@ -5,10 +5,6 @@ import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.util.HashMap
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
@@ -20,6 +16,11 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
+import static org.mockito.Mockito.mock
+import com.google.inject.Injector
+import com.google.inject.Guice
+import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory
+import java.util.Map
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -61,6 +62,16 @@ class RosettaBlueprintTest {
 		'''
 		// println(r)
 		parseRosettaWithNoErrors(r)
+	}
+	
+	def loadBlueprint(Map<String, Class<?>> classes, String blueprintName) {
+		val Class<?> bpClass  = classes.get(blueprintName)
+		assertNotNull(bpClass)
+		val RosettaActionFactory raf = mock(RosettaActionFactory)
+		val Injector injector = Guice.createInjector([binder| {
+			binder.bind(RosettaActionFactory).toInstance(raf);
+		}]);
+		return injector.getInstance(bpClass)
 	}
 
 	@Test
@@ -642,6 +653,7 @@ class RosettaBlueprintTest {
 				
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Input2;
+				import javax.inject.Inject;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -658,9 +670,10 @@ class RosettaBlueprintTest {
 				 * @version test
 				 */
 				public class Blueprint1Rule<INKEY> implements Blueprint<Input, String, INKEY, INKEY> {
-				
+					
 					private final RosettaActionFactory actionFactory;
-				
+					
+					@Inject
 					public Blueprint1Rule(RosettaActionFactory actionFactory) {
 						this.actionFactory = actionFactory;
 					}
@@ -684,7 +697,9 @@ class RosettaBlueprintTest {
 					}
 				}
 			'''
-			blueprint.compileToClasses
+			val classes = blueprint.compileToClasses
+			val bpImpl = classes.loadBlueprint("com.rosetta.test.model.blueprint.Blueprint1Rule")
+			assertNotNull(bpImpl)
 			assertEquals(expected, blueprintJava)
 		} finally {
 		}
@@ -848,6 +863,7 @@ class RosettaBlueprintTest {
 			package com.rosetta.test.model.blueprint;
 			
 			import com.rosetta.model.lib.mapper.MapperS;
+			import javax.inject.Inject;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
@@ -865,9 +881,10 @@ class RosettaBlueprintTest {
 			 * @version test
 			 */
 			public class Blueprint1Rule<INKEY> implements Blueprint<Input, String, INKEY, INKEY> {
-			
+				
 				private final RosettaActionFactory actionFactory;
-			
+				
+				@Inject
 				public Blueprint1Rule(RosettaActionFactory actionFactory) {
 					this.actionFactory = actionFactory;
 				}
@@ -923,6 +940,7 @@ class RosettaBlueprintTest {
 				
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.math.BigDecimal;
+				import javax.inject.Inject;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -939,9 +957,10 @@ class RosettaBlueprintTest {
 				 * @version test
 				 */
 				public class Blueprint1Rule<INKEY> implements Blueprint<Input, Number, INKEY, INKEY> {
-				
+					
 					private final RosettaActionFactory actionFactory;
-				
+					
+					@Inject
 					public Blueprint1Rule(RosettaActionFactory actionFactory) {
 						this.actionFactory = actionFactory;
 					}
@@ -1010,6 +1029,7 @@ class RosettaBlueprintTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
+				import javax.inject.Inject;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1027,9 +1047,10 @@ class RosettaBlueprintTest {
 				 * @version test
 				 */
 				public class Blueprint1Rule<INKEY> implements Blueprint<Input, Object, INKEY, INKEY> {
-				
+					
 					private final RosettaActionFactory actionFactory;
-				
+					
+					@Inject
 					public Blueprint1Rule(RosettaActionFactory actionFactory) {
 						this.actionFactory = actionFactory;
 					}
@@ -1092,6 +1113,7 @@ class RosettaBlueprintTest {
 				
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Input2;
+				import javax.inject.Inject;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1108,9 +1130,10 @@ class RosettaBlueprintTest {
 				 * @version test
 				 */
 				public class Blueprint1Rule<INKEY> implements Blueprint<Input1, String, INKEY, INKEY> {
-				
+					
 					private final RosettaActionFactory actionFactory;
-				
+					
+					@Inject
 					public Blueprint1Rule(RosettaActionFactory actionFactory) {
 						this.actionFactory = actionFactory;
 					}
@@ -1332,7 +1355,7 @@ class RosettaBlueprintTest {
 
 	@Test
 	def void ruleRef() {
-		'''
+		val parsed = '''
 			type Foo:
 				bar Bar (1..1)
 			
@@ -1347,6 +1370,11 @@ class RosettaBlueprintTest {
 				extract Foo->bar
 			
 		'''.parseRosettaWithNoErrors
+		val classes= parsed.generateCode
+		//.writeClasses("ruleRef")
+		.compileToClasses
+		val bpImpl = classes.loadBlueprint("com.rosetta.test.model.blueprint.Rule1Rule")
+		assertNotNull(bpImpl)
 	}
 
 	@Test
@@ -1360,7 +1388,7 @@ class RosettaBlueprintTest {
 				traderef string (1..1)
 			
 		'''.generateCode
-		blueprint.writeOutClasses("blueprint.filter")
+		//blueprint.writeClasses("blueprint.filter")
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "filter");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
@@ -1368,6 +1396,7 @@ class RosettaBlueprintTest {
 		package com.rosetta.test.model.blueprint;
 		
 		import com.rosetta.model.lib.mapper.MapperS;
+		import javax.inject.Inject;
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		// manual imports
 		import com.regnosys.rosetta.blueprints.Blueprint;
@@ -1384,9 +1413,10 @@ class RosettaBlueprintTest {
 		 * @version test
 		 */
 		public class SimpleBlueprintRule<INKEY> implements Blueprint<Input, Input, INKEY, INKEY> {
-		
+			
 			private final RosettaActionFactory actionFactory;
-		
+			
+			@Inject
 			public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
 				this.actionFactory = actionFactory;
 			}
@@ -1448,7 +1478,7 @@ class RosettaBlueprintTest {
 			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.FilterRuleRule")
-		// writeOutClasses(blueprint, "filterWhenRule");
+		//writeClasses(blueprint, "filterWhenRule");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 
 		blueprint.compileToClasses
@@ -1474,6 +1504,7 @@ class RosettaBlueprintTest {
 				name string (1..1)
 			
 		'''.generateCode
+		//blueprint.writeClasses("lookupRule")
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.WorthyAvengerRule")
 		blueprint.compileToClasses
 
@@ -1482,6 +1513,7 @@ class RosettaBlueprintTest {
 			
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Hero;
+			import javax.inject.Inject;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
@@ -1501,9 +1533,10 @@ class RosettaBlueprintTest {
 			 * @version test
 			 */
 			public class WorthyAvengerRule<INKEY> implements Blueprint<Avengers, String, INKEY, INKEY> {
-			
+				
 				private final RosettaActionFactory actionFactory;
-			
+				
+				@Inject
 				public WorthyAvengerRule(RosettaActionFactory actionFactory) {
 					this.actionFactory = actionFactory;
 				}
@@ -1522,11 +1555,17 @@ class RosettaBlueprintTest {
 				@Override
 				public BlueprintInstance<Avengers, String, INKEY, INKEY> blueprint() { 
 					return 
-						startsWith(actionFactory, new FilterByRule<Avengers, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "CanWieldMjolnir", new CanWieldMjolnirRule<INKEY>(actionFactory).blueprint(), null))
+						startsWith(actionFactory, new FilterByRule<Avengers, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "CanWieldMjolnir", 
+											getCanWieldMjolnir(), null))
 						.then(actionFactory.<Avengers, Hero, INKEY>newRosettaMultipleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->heros", new StringIdentifier("->heros"), avengers -> MapperS.of(avengers).<Hero>mapC("getHeros", _avengers -> _avengers.getHeros())))
 						.then(new Filter<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@node", "->name<>\"Thor\"", hero -> notEqual(MapperS.of(hero).<String>map("getName", _hero -> _hero.getName()), MapperS.of("Thor")).get(), null))
 						.then(actionFactory.<Hero, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@next/@node", "->name", new StringIdentifier("->name"), hero -> MapperS.of(hero).<String>map("getName", _hero -> _hero.getName())))
 						.toBlueprint(getURI(), getName());
+				}
+				
+				@Inject private CanWieldMjolnirRule canWieldMjolnirRef;
+				protected BlueprintInstance <Avengers, Boolean, INKEY, INKEY> getCanWieldMjolnir() {
+					return canWieldMjolnirRef.blueprint();
 				}
 			}
 		'''
@@ -1571,6 +1610,7 @@ class RosettaBlueprintTest {
 			package com.rosetta.test.model.blueprint;
 			
 			import com.rosetta.model.lib.mapper.MapperS;
+			import javax.inject.Inject;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
@@ -1587,9 +1627,10 @@ class RosettaBlueprintTest {
 			 * @version test
 			 */
 			public class IsFixedFloatRule<INKEY> implements Blueprint<Foo, Boolean, INKEY, INKEY> {
-			
+				
 				private final RosettaActionFactory actionFactory;
-			
+				
+				@Inject
 				public IsFixedFloatRule(RosettaActionFactory actionFactory) {
 					this.actionFactory = actionFactory;
 				}
@@ -1641,6 +1682,28 @@ class RosettaBlueprintTest {
 		blueprint.compileToClasses
 
 	}
+	
+	@Test
+	def void expressionIf() {
+		val blueprint = '''
+			reporting rule FixedFloat
+				extract if Foo -> fixed = "Wood" then Foo -> floating
+					else if Foo -> fixed = "Steel" then Foo -> sinking
+					
+			
+			type Foo:
+				fixed string (0..*)
+				floating string (0..*)
+				sinking string (1..1)
+				swimming string (1..1)
+			
+		'''.generateCode
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.FixedFloatRule")
+		// writeOutClasses(blueprint, "blueprintOneOf");
+		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		blueprint.compileToClasses
+
+	}
 
 	@Test
 	def void maxBy() {
@@ -1673,7 +1736,7 @@ class RosettaBlueprintTest {
 			
 		'''.parseRosetta
 		val code=blueprint.generateCode
-		writeOutClasses(code, "maxByRule");
+		//writeClasses(code, "maxByRule");
 		code.compileToClasses
 	}
 	
@@ -1717,6 +1780,7 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.mapper.MapperS;
+				import javax.inject.Inject;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1731,9 +1795,10 @@ class RosettaBlueprintTest {
 				 * @version test
 				 */
 				public class SimpleBlueprintRule<INKEY> implements Blueprint<Input, Input, INKEY, String> {
-				
+					
 					private final RosettaActionFactory actionFactory;
-				
+					
+					@Inject
 					public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
 						this.actionFactory = actionFactory;
 					}
@@ -1784,6 +1849,7 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import com.rosetta.model.lib.mapper.MapperS;
+				import javax.inject.Inject;
 				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
@@ -1799,9 +1865,10 @@ class RosettaBlueprintTest {
 				 * @version test
 				 */
 				public class SimpleBlueprintRule<INKEY> implements Blueprint<Object, Input2, INKEY, INKEY> {
-				
+					
 					private final RosettaActionFactory actionFactory;
-				
+					
+					@Inject
 					public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
 						this.actionFactory = actionFactory;
 					}
@@ -1879,7 +1946,7 @@ class RosettaBlueprintTest {
 				join key MyType->singleInt foreignKey MyType->multiInt'''
 		.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Rule1Rule")
-		//writeOutClasses(blueprint, "selfJoinBasic");
+		//writeClasses(blueprint, "selfJoinBasic");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		blueprint.compileToClasses
 	}
@@ -2045,7 +2112,10 @@ class RosettaBlueprintTest {
 		'''
 		].generateCode
 		//code.writeClasses("shouldUseNS")
-		code.compileToClasses
+		val classes = code.compileToClasses
+		val bpImpl = classes.loadBlueprint("ns12.blueprint.Rule2Rule")
+		assertNotNull(bpImpl)
+		
 		
 	}
 	
@@ -2300,18 +2370,6 @@ class RosettaBlueprintTest {
 			blueprint.compileToClasses
 
 		} finally {
-		}
-	}
-
-	@Deprecated
-	static def writeOutClasses(HashMap<String, String> map, String testName) {
-		for (entry : map.entrySet) {
-			val name = entry.key;
-			val pathName = name.replace('.', File.separator)
-			val path = Paths.get("target/" + testName + "/java", pathName + ".java")
-			Files.createDirectories(path.parent);
-			Files.write(path, entry.value.bytes)
-
 		}
 	}
 }
