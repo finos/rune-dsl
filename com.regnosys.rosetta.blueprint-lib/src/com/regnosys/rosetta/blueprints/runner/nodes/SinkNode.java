@@ -14,6 +14,5 @@ public interface SinkNode<I, O, K> extends Node<I, O, K, K> {
 	Future<List<Collection<Issue>>> issues();
 
 	Collection<GroupableData<? extends I, ? extends K>> getFinalData();
-	String getURI();
 	String getLabel();
 }

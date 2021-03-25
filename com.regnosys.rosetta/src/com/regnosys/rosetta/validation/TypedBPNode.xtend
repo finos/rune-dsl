@@ -26,4 +26,13 @@ class TypedBPNode {
 			result.outputKey = inputKey
 			result
 		}
+		
+		static def combine(TypedBPNode in, TypedBPNode out) {
+			val result = new TypedBPNode
+			result.input = in.input
+			result.inputKey = in.inputKey
+			result.output = out.output
+			result.outputKey = out.outputKey
+			result
+		}
 	}

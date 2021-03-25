@@ -90,6 +90,7 @@ class BlueprintGenerator {
 			imports.addTypes(typed)
 			val StringConcatenationClient scc = nodes.buildBody(typed, imports, names)
 			val body = tracImports(scc)
+			body.addImport("javax.inject.Inject", "Inject")
 			return '''
 				package «packageName.model.blueprint.name»;
 				
@@ -109,9 +110,10 @@ class BlueprintGenerator {
 				
 				«emptyJavadocWithVersion(version)»
 				public class «name»«type»«typeArgs» implements Blueprint<«typed.input.getEither», «typed.output.getEither», «typed.inputKey.getEither», «typed.outputKey.getEither»> {
-
+					
 					private final RosettaActionFactory actionFactory;
-
+					
+					@Inject
 					public «name»«type»(RosettaActionFactory actionFactory) {
 						this.actionFactory = actionFactory;
 					}
@@ -274,7 +276,8 @@ class BlueprintGenerator {
 				context.addBPRef(typedNode)
 				context.imports.addTypes(typedNode)
 				context.imports.addBPRef(node.blueprint)
-				'''get«node.blueprint.name.toFirstUpper»()'''
+				'''get«node.blueprint.name.toFirstUpper»()«IF node.identifier!==null»)
+				.then(new IdChange("«node.URI»", "as «node.identifier»", «id»)«ENDIF»'''				
 			}
 			BlueprintValidate : {
 				context.imports.addValidate(node);
@@ -287,7 +290,9 @@ class BlueprintGenerator {
 					» -> «node.filter.javaCode(new ParamMap(typedNode.input.type))».get(), «id»)'''
 				}
 				else {
-					'''new FilterByRule<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filterBP.blueprint.name»", new «node.filterBP.blueprint.name»Rule<«typedNode.inputKey.either»>(actionFactory).blueprint(), «id»)'''
+					context.addBPRef(typedNode)
+					'''new FilterByRule<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filterBP.blueprint.name»", 
+					get«node.filterBP.blueprint.name.toFirstUpper»(), «id»)'''
 				}
 			}
 			BlueprintReduce : {
@@ -298,10 +303,11 @@ class BlueprintGenerator {
 					«typedNode.input.either.toFirstLower» -> «node.expression.javaCode(new ParamMap(typedNode.input.type))».get(), «id»)'''
 				}
 				else if (node.reduceBP!==null) {
+					context.addBPRef(typedNode)
 					val subNode = typedNode.andNodes.get(0)
 					'''new ReduceByRule<«typedNode.input.either», «subNode.output.either», «typedNode.inputKey.either»>("«
 						node.URI»", "«node.reduceBP.blueprint.name»", ReduceParent.Action.«node.action.toUpperCase»,
-						new «node.reduceBP.blueprint.name»Rule<«typedNode.input.either»>(actionFactory).blueprint(), «id»)'''
+						get«node.reduceBP.blueprint.name.toFirstUpper»(), «id»)'''
 				}
 				else {
 					'''new ReduceBySelf<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.action»", ReduceParent.Action.«node.action.toUpperCase», «id»)'''
@@ -440,13 +446,13 @@ class BlueprintGenerator {
 			}'''
 	}
 	
-	def blueprintRef(String ref, TypedBPNode typedNode, Context context) {	
+	def StringConcatenationClient blueprintRef(String ref, TypedBPNode typedNode, Context context) 	
 		'''
+		@«Inject» private «ref.toFirstUpper»Rule «ref.toFirstLower»Ref;
 		protected BlueprintInstance «typedNode.typeArgs» get«ref.toFirstUpper»() {
-			Blueprint«typedNode.typeArgs» rule = new «ref.toFirstUpper»Rule<>(actionFactory);
-			return rule.blueprint();
+			return «ref.toFirstLower»Ref.blueprint();
 		}'''
-	}
+	
 		
 	protected def CharSequence typeArgs(TypedBPNode typedNode)
 		'''<«typedNode.input.toString», «typedNode.output.toString», «typedNode.inputKey.toString», «typedNode.outputKey.toString»>'''
@@ -549,7 +555,20 @@ class BlueprintGenerator {
 		}
 		
 		def addBPRef(TypedBPNode node) {
-			bpRefs.put((node.node as BlueprintRef).blueprint.name, node)
+			addBPRef(node.node, node)
+		}
+		def dispatch addBPRef(BlueprintNode node, TypedBPNode nodeType) {
+			LOGGER.error("unexpected node type adding bpRef")
+			""
+		}
+		def dispatch addBPRef(BlueprintRef ref, TypedBPNode node) {
+			bpRefs.put(ref.blueprint.name, node)
+		}
+		def dispatch addBPRef(BlueprintFilter ref, TypedBPNode node) {
+			bpRefs.put(ref.filterBP.blueprint.name, node.andNodes.get(0))
+		}
+		def dispatch addBPRef(BlueprintReduce ref, TypedBPNode node) {
+			bpRefs.put(ref.reduceBP.blueprint.name, node.andNodes.get(0))
 		}
 		
 		def addIfElse(BlueprintOneOf oneOf, TypedBPNode node) {

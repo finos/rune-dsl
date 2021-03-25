@@ -266,7 +266,10 @@ class RosettaBlueprintTypeResolver {
 					bpIn.output=tNode.input;
 					bpIn.inputKey = tNode.inputKey;
 					bpOut.input.genericName  ="Boolean"
+					bpOut.inputKey = tNode.inputKey
+					bpIn.outputKey = tNode.inputKey
 					bindTypes(node.filterBP.blueprint.nodes, bpIn, bpOut, visited)
+					tNode.andNodes.add(TypedBPNode.combine(bpOut, bpIn).invert)
 				}
 			}
 			BlueprintOneOf: {
@@ -334,9 +337,13 @@ class RosettaBlueprintTypeResolver {
 					val bpIn = new TypedBPNode
 					val bpOut = new TypedBPNode
 					bpIn.output=tNode.input;
+					bpIn.outputKey = tNode.input
 					bpIn.inputKey = tNode.inputKey;
 					bpOut.input.genericName  ="Comparable"
-					tNode.andNodes.add(bindTypes(node.reduceBP.blueprint.nodes, bpIn, bpOut, visited))
+					bpOut.inputKey = tNode.input
+					//check the called node meets type expectations
+					bindTypes(node.reduceBP.blueprint.nodes, bpIn, bpOut, visited)
+					tNode.andNodes.add(TypedBPNode.combine(bpOut, bpIn).invert)
 				}
 			}
 			BlueprintGroup: {
@@ -561,6 +568,9 @@ class RosettaBlueprintTypeResolver {
 			throw new BlueprintTypeException('''Input types must be the same but were «inputs.map[name]»''');
 		return inputs.get(0)
 	}
+	def dispatch RosettaType getInput(Void typed) {
+		return null
+	}
 
 	def dispatch RosettaType getOutput(RosettaExpression expr) {
 		var st = RosettaFactory.eINSTANCE.createRosettaBasicType
@@ -637,6 +647,9 @@ class RosettaBlueprintTypeResolver {
 		}
 		throw new UnsupportedOperationException("Unexpected input parsing rosetta feature call feature of type " +
 			feature.class.simpleName)
+	}
+	def dispatch RosettaType getOutput(Void typed) {
+		return null
 	}
 
 	def getLastType(RosettaExpression expression) {
