@@ -54,6 +54,8 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.types.RosettaOperators
 import java.util.Set
 import java.util.HashSet
+import com.regnosys.rosetta.validation.TypedBPNode.BPCardinality
+import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 
 class RosettaBlueprintTypeResolver {
 	
@@ -61,6 +63,7 @@ class RosettaBlueprintTypeResolver {
 	@Inject extension RosettaTypeCompatibility
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaOperators
+	@Inject CardinalityProvider cardinality
 	
 	static class BlueprintTypeException extends Exception {
 		new(String string) {
@@ -133,32 +136,39 @@ class RosettaBlueprintTypeResolver {
 		switch (node) {
 			BlueprintMerge: {
 				result.output.type = node.output
+				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintExtract: {
 				// extract defines both the input and output types
 				result.input.type = getInput(node.call)
 				// and the output type comes from the expression
 				result.output.type = getOutput(node.call)
+				result.cardinality.set(0, if (cardinality.isMulti(node.call)) BPCardinality.EXPAND else BPCardinality.UNCHANGED)
 			}
 			BlueprintReturn: {
 				result.input.type = null
 				// and the output type comes from the expression
 				result.output.type = getOutput(node.expression)
+				result.cardinality.set(0, if(cardinality.isMulti(node.expression)) BPCardinality.EXPAND else BPCardinality.UNCHANGED)
 			}
 			BlueprintRef: {
 				result.output.type = node.output
 			}
 			BlueprintValidate: {
 				result.input.type = node.input
+				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintFilter: {
 				if(node.filter!==null) {
 					result.input.type = getInput(node.filter)
 				}
+				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintGroup: {
 				result.input.type = getInput(node.key as RosettaFeatureCall)
 				result.outputKey.type = getOutput(node.key as RosettaFeatureCall)
+				//Cardinality is a difficult concept if you go changing the keys
+				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintDataJoin: {
 				result.output.type = getInput(node.key as RosettaFeatureCall)
@@ -173,31 +183,39 @@ class RosettaBlueprintTypeResolver {
 				
 				result.input.type = unifiedInput.output.type
 				result.input.genericName = unifiedInput.output.genericName
+				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintSource: {
 				result.output.type = node.output
 				result.outputKey.type = node.outputKey
 				result.input.genericName = "Void"
 				result.inputKey.type = node.outputKey
+				//not sure about this cardinality but this node type is unused
+				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintCustomNode: {
 				result.input.type = node.input
 				result.output.type = node.output
 				result.inputKey.type = node.inputKey
 				result.outputKey.type = node.outputKey
+				//Cardinality depends on the implementation - but it isn't used
+				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintLookup : {
 				result.output.type = node.output
+				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintAnd: {
+				result.cardinality.set(0, BPCardinality.EXPAND)
 			}
 			BlueprintOneOf: {
+				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintReduce: {
 				if (node.expression!==null) {
 					result.input.type = getInput(node.expression)
 				}
-				
+				result.cardinality.set(0, BPCardinality.REDUCE)
 			}
 			default: {
 				throw new UnsupportedOperationException("Trying to compute inputs of unknown node type " + node.class)
@@ -268,7 +286,14 @@ class RosettaBlueprintTypeResolver {
 					bpOut.input.genericName  ="Boolean"
 					bpOut.inputKey = tNode.inputKey
 					bpIn.outputKey = tNode.inputKey
-					bindTypes(node.filterBP.blueprint.nodes, bpIn, bpOut, visited)
+					try {
+						bindTypes(node.filterBP.blueprint.nodes, bpIn, bpOut, visited)
+					}
+					catch (BlueprintUnresolvedTypeException e) {
+					//we found an that the types don't match further down the stack - we want to report it as an error with this call
+						BlueprintUnresolvedTypeException.error(e.message,
+						node.filterBP, BLUEPRINT_REF__BLUEPRINT, e.code)
+					}
 					tNode.andNodes.add(TypedBPNode.combine(bpOut, bpIn).invert)
 				}
 			}
@@ -316,7 +341,8 @@ class RosettaBlueprintTypeResolver {
 				bpOut.inputKey = tNode.outputKey
 
 				try {
-					bindTypes(node.blueprint.nodes, bpIn, bpOut, visited)
+					val child = bindTypes(node.blueprint.nodes, bpIn, bpOut, visited)
+					tNode.cardinality = child.cardinality
 				}
 				catch (BlueprintUnresolvedTypeException e) {
 					//we found an that the types don't match further down the stack - we want to report it as an error with this call
@@ -342,7 +368,12 @@ class RosettaBlueprintTypeResolver {
 					bpOut.input.genericName  ="Comparable"
 					bpOut.inputKey = tNode.input
 					//check the called node meets type expectations
-					bindTypes(node.reduceBP.blueprint.nodes, bpIn, bpOut, visited)
+					try {
+						bindTypes(node.reduceBP.blueprint.nodes, bpIn, bpOut, visited)
+					} catch (BlueprintUnresolvedTypeException e) {
+						// we found an that the types don't match further down the stack - we want to report it as an error with this call
+						BlueprintUnresolvedTypeException.error(e.message, node.reduceBP, BLUEPRINT_REF__BLUEPRINT, e.code)
+					}
 					tNode.andNodes.add(TypedBPNode.combine(bpOut, bpIn).invert)
 				}
 			}
@@ -422,6 +453,7 @@ class RosettaBlueprintTypeResolver {
 		bindInType(node.inputKey, expected.inputKey, bpNode, "InputKey")
 		bindOutType(node.output, expected.output, bpNode, "Output")
 		bindOutType(node.outputKey, expected.outputKey, bpNode, "OutputKey")
+		node.cardinality.set(0,expected.cardinality.get(0))
 	}
 
 	def bindInType(BindableType nodeType, BindableType expected, BlueprintNode node, String fieldName) {
