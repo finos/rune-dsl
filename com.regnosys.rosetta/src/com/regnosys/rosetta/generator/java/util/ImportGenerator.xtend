@@ -45,6 +45,7 @@ import static extension com.regnosys.rosetta.generator.java.util.JavaClassTransl
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -200,6 +201,9 @@ class ImportGenerator {
 			}
 			RosettaCallable:{}
 			RosettaCallableWithArgsCall: {}
+			RosettaParenthesisCalcExpression : {
+				addExpression(expression.expression)
+			}
 			default:
 				LOGGER.warn("Unsupported expression type of " + expression.class.simpleName)
 		}

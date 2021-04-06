@@ -32,7 +32,7 @@ public interface RosettaActionFactory {
 
 	<I, O, K> ProcessorNode<I, O, K> newRosettaReturn(String uri, String label, DataIdentifier id, Supplier<Mapper<O>> function);
 	
-	<I extends RosettaModelObject, O, K> ProcessorNode<I, O, K> newRosettaLookup(String uri, String label, DataIdentifier id, String lookupName);
+	<I, O, K> ProcessorNode<I, O, K> newRosettaLookup(String uri, String label, DataIdentifier id, String lookupName);
 
 	<I extends RosettaModelObject, O> void registerLookup(String lookupName, LookupFunction<I, O> function);
 

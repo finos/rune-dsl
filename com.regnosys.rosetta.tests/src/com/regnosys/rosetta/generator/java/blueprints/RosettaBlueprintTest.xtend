@@ -64,6 +64,29 @@ class RosettaBlueprintTest {
 		parseRosettaWithNoErrors(r)
 	}
 	
+	@Test
+	def void reportWithBadCardinality() {
+		'''
+			body Authority TEST_REG
+			corpus MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with fields
+				BarField
+			
+			type Bar:
+				field string (1..*)
+							
+			eligibility rule FooRule
+				return "true"
+			
+			reporting rule BarField
+				extract Bar->field
+		'''
+		.parseRosetta.assertWarning(ROSETTA_BLUEPRINT_REPORT, null, "Report field from rule BarField should be of single cardinality")
+	}
+	
 	def loadBlueprint(Map<String, Class<?>> classes, String blueprintName) {
 		val Class<?> bpClass  = classes.get(blueprintName)
 		assertNotNull(bpClass)
@@ -1488,13 +1511,12 @@ class RosettaBlueprintTest {
 	def void lookupRule() {
 		val blueprint = '''
 			reporting rule WorthyAvenger
+				extract Avengers -> heros then 
 				filter when rule CanWieldMjolnir 
-					then extract Avengers -> heros
 					then filter when Hero -> name <> 'Thor'
 					then extract Hero -> name
 			
 			eligibility rule CanWieldMjolnir
-				extract Avengers -> heros then 
 				lookup CanWieldMjolnir boolean
 			
 			type Avengers:
@@ -1555,16 +1577,16 @@ class RosettaBlueprintTest {
 				@Override
 				public BlueprintInstance<Avengers, String, INKEY, INKEY> blueprint() { 
 					return 
-						startsWith(actionFactory, new FilterByRule<Avengers, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "CanWieldMjolnir", 
+						startsWith(actionFactory, actionFactory.<Avengers, Hero, INKEY>newRosettaMultipleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->heros", new StringIdentifier("->heros"), avengers -> MapperS.of(avengers).<Hero>mapC("getHeros", _avengers -> _avengers.getHeros())))
+						.then(new FilterByRule<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "CanWieldMjolnir", 
 											getCanWieldMjolnir(), null))
-						.then(actionFactory.<Avengers, Hero, INKEY>newRosettaMultipleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "->heros", new StringIdentifier("->heros"), avengers -> MapperS.of(avengers).<Hero>mapC("getHeros", _avengers -> _avengers.getHeros())))
 						.then(new Filter<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@node", "->name<>\"Thor\"", hero -> notEqual(MapperS.of(hero).<String>map("getName", _hero -> _hero.getName()), MapperS.of("Thor")).get(), null))
 						.then(actionFactory.<Hero, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@next/@node", "->name", new StringIdentifier("->name"), hero -> MapperS.of(hero).<String>map("getName", _hero -> _hero.getName())))
 						.toBlueprint(getURI(), getName());
 				}
 				
 				@Inject private CanWieldMjolnirRule canWieldMjolnirRef;
-				protected BlueprintInstance <Avengers, Boolean, INKEY, INKEY> getCanWieldMjolnir() {
+				protected BlueprintInstance <Hero, Boolean, INKEY, INKEY> getCanWieldMjolnir() {
 					return canWieldMjolnirRef.blueprint();
 				}
 			}
@@ -1572,10 +1594,10 @@ class RosettaBlueprintTest {
 		assertEquals(expected, blueprintJava)
 
 	}
-
+	
 	@Test
-	def void filterWhenRuleBrokenType() {
-		'''
+	def void filterCardinalityAndType() {
+		val model = '''
 			reporting rule TestRule
 				extract Input->flag
 						
@@ -1585,11 +1607,14 @@ class RosettaBlueprintTest {
 			
 			type Input:
 				traderef string (1..1)
-				flag number (1..1)
+				flag string (1..*)
 			
-		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
-			"output type of node BigDecimal does not match required type of Boolean")
-
+		'''.parseRosetta
+		
+		model.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
+			"output type of node String does not match required type of Boolean")
+		model.assertError(BLUEPRINT_FILTER, null,
+			"The expression for Filter must return a single value but the rule TestRule can return multiple values")
 	}
 
 	@Test
@@ -1757,7 +1782,30 @@ class RosettaBlueprintTest {
 		model.assertError(BLUEPRINT_REDUCE, RosettaIssueCodes.TYPE_ERROR,
 			"The expression for maxBy must return a comparable type (e.g. number or date) the curent expression returns Bar")
 		model.assertError(BLUEPRINT_REDUCE, null,
-			"The expression for maxBy must return a single value the curent expression returns multiple values")
+			"The expression for maxBy must return a single value the curent expression can return multiple values")
+	}
+	
+	@Test
+	def void maxByRuleBrokenTypeAndCardinality() {
+		val model = '''
+			reporting rule IsFixedFloat
+			maxBy rule MinFixed
+			
+			reporting rule MinFixed
+				extract Foo->fixed
+			
+			type Foo:
+				fixed Bar (0..*)
+				order int (0..1)
+			
+			type Bar:
+				val string (1..1)
+			
+		'''.parseRosetta
+		model.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
+			"output type of node Bar does not match required type of Comparable")
+		model.assertError(BLUEPRINT_REDUCE, null,
+			"The expression for maxBy must return a single value but the rule MinFixed can return multiple values")
 	}
 
 	@Test

@@ -14,6 +14,9 @@ class TypedBPNode {
 		public List<TypedBPNode> ifNodes = newArrayList
 
 		public TypedBPNode next
+		
+		public BPCardinality[] cardinality = newArrayOfSize(1)//we need different nodes to share a cardinality without knowing what it is yet.
+		//so use an array to get pointer type semantics 
 
 		override toString() '''
 		(«input.either», «inputKey.either»)->(«output.either», «outputKey.either»)'''
@@ -34,5 +37,11 @@ class TypedBPNode {
 			result.output = out.output
 			result.outputKey = out.outputKey
 			result
+		}
+		
+		enum BPCardinality {
+			EXPAND,
+			REDUCE,
+			UNCHANGED
 		}
 	}

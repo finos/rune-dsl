@@ -85,6 +85,8 @@ import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 import com.regnosys.rosetta.rosetta.BlueprintReduce
 import com.regnosys.rosetta.types.RosettaOperators
+import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
+import com.regnosys.rosetta.rosetta.BlueprintFilter
 
 /**
  * This class contains custom validation rules. 
@@ -639,9 +641,70 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			
 			val multi = cardinality.isMulti(reduce.expression)
 			if (multi) {
-				error('''The expression for «reduce.action» must return a single value the curent expression returns multiple values''', reduce, BLUEPRINT_REDUCE__EXPRESSION)
+				error('''The expression for «reduce.action» must return a single value the curent expression can return multiple values''', reduce, BLUEPRINT_REDUCE__EXPRESSION)
 			}
 			
+		}
+		else if (reduce.reduceBP!==null) {
+			val node = buildTypeGraph(reduce.reduceBP.blueprint.nodes, reduce.reduceBP.output)
+			if (!checkSingle(node, false)) {
+				error('''The expression for maxBy must return a single value but the rule «reduce.reduceBP.blueprint.name» can return multiple values''', reduce, BLUEPRINT_REDUCE__REDUCE_BP)
+			}
+		}
+	}
+	
+	@Check
+	def void checkBlueprintFilte(BlueprintFilter filter) {
+		if (filter.filter!==null) {
+			val exrType = filter.filter.RType
+			if (exrType!==RBuiltinType.BOOLEAN) {
+				error('''The expression for Filter must return a boolean the curent expression returns «exrType.name»''', filter, BLUEPRINT_FILTER__FILTER, TYPE_ERROR)
+			}
+			
+			val multi = cardinality.isMulti(filter.filter)
+			if (multi) {
+				error('''The expression for Filter must return a single value the curent expression can return multiple values''', filter, BLUEPRINT_FILTER__FILTER)
+			}
+			
+		}
+		else if (filter.filterBP!==null) {
+			val node = buildTypeGraph(filter.filterBP.blueprint.nodes, filter.filterBP.output)
+			if (!checkSingle(node, false)) {
+				error('''The expression for Filter must return a single value but the rule «filter.filterBP.blueprint.name» can return multiple values''', filter, BLUEPRINT_FILTER__FILTER_BP)
+			}
+		}
+	}
+	
+	@Check
+	def void checkReportCardinality(RosettaBlueprintReport report) {
+		for (bp: report.reportingRules) {
+			try {
+				val node = buildTypeGraph(bp.nodes, bp.output)
+				if (!checkSingle(node, false)) {
+					warning("Report field from rule "+ bp.name +" should be of single cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES)
+				}
+			} catch (BlueprintUnresolvedTypeException e) {
+				error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
+			}
+		}
+	}
+	
+	def boolean checkSingle(TypedBPNode node, boolean isAlreadyMultiple) {
+		val multiple = switch(node.cardinality.get(0)) {
+			case UNCHANGED: {isAlreadyMultiple}
+			case EXPAND: {
+				true
+			}
+			case REDUCE: {
+				false
+			}
+		}
+		
+		if (node.next!==null) {
+			return checkSingle(node.next, multiple)
+		}
+		else {
+			return !multiple
 		}
 	}
 	
