@@ -56,6 +56,7 @@ import java.util.Set
 import java.util.HashSet
 import com.regnosys.rosetta.validation.TypedBPNode.BPCardinality
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
+import com.regnosys.rosetta.rosetta.simple.Function
 
 class RosettaBlueprintTypeResolver {
 	
@@ -617,6 +618,14 @@ class RosettaBlueprintTypeResolver {
 	}
 
 	def dispatch RosettaType getOutput(RosettaCallableCall callable) {
+		return callable.callable.output
+	}
+	
+	def dispatch RosettaType getOutput(Function func) {
+		return func.output.type
+	}
+	
+	def dispatch RosettaType getOutput(RosettaCallableWithArgsCall callable) {
 		return callable.callable.output
 	}
 	
