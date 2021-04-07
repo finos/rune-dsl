@@ -2079,7 +2079,12 @@ class RosettaBlueprintTest {
 				val number (1..1)
 			
 			reporting rule Rule1
+				return MyFunc1() then
 				extract MyFunc(Foo->bar->val)
+			
+			func MyFunc1: 
+				output:
+					foo Foo (1..1)
 			
 			func MyFunc:
 				inputs: 
@@ -2091,7 +2096,7 @@ class RosettaBlueprintTest {
 				
 			'''.parseRosettaWithNoErrors
 			.generateCode
-			//blueprint.writeClasses("functionCall")
+			blueprint.writeClasses("functionCall")
 			blueprint.compileToClasses
 	}
 	
