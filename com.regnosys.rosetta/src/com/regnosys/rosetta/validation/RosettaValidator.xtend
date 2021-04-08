@@ -152,8 +152,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			return
 		}
 		if (fCall.isToOne && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
-			!cardinality.isMulti(fCall.feature)) {
-			error("'only-element' can not be used for single cardinality features.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
+			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
+			error("'only-element' can not be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
 		}
 
 	}
@@ -705,6 +705,28 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 		else {
 			return !multiple
+		}
+	}
+	
+	@Check
+	def checkExpressionCardinality(RosettaBinaryOperation binOp) {
+		val leftCard = cardinality.isMulti(binOp.left)
+		val rightCard = cardinality.isMulti(binOp.right)
+		if (leftCard!=rightCard) {
+			if (RosettaOperators.COMPARISON_OPS.contains(binOp.operator) || RosettaOperators.EQUALITY_OPS.contains(binOp.operator)) {
+				if (binOp.cardOp===null) {
+					warning('''Comparison operator «binOp.operator» should specify 'all' or 'any' when comparing a list to a single value''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
+				}
+				else if (binOp.cardOp=="any" && binOp.operator!="<>") {
+					warning('''Any is not currently supported for «binOp.operator»''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
+				}
+				else if (binOp.cardOp=="all" && binOp.operator=="<>") {
+					warning('''All is not currently supported for «binOp.operator»''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
+				}
+			}
+		}
+		else if (binOp.cardOp!==null) {
+			warning('''binOp.cardOp is only aplicable when the sides have differing cardinality''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
 		}
 	}
 	

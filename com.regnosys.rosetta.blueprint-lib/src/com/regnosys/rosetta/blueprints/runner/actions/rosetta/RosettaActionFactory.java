@@ -36,6 +36,6 @@ public interface RosettaActionFactory {
 
 	<I extends RosettaModelObject, O> void registerLookup(String lookupName, LookupFunction<I, O> function);
 
-	interface LookupFunction<I extends RosettaModelObject, O> extends Function<I, Mapper<O>> {
+	interface LookupFunction<I, O> extends Function<I, Mapper<O>> {
 	}
 }

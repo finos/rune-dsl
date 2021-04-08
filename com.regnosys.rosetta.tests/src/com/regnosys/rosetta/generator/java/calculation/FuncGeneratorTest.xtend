@@ -605,8 +605,93 @@ class FuncGeneratorTest {
 					assign-output str: F2(num)
 			'''.parseRosettaWithNoErrors
 		model.generateCode
-		.writeClasses("funcCallingMultipleFunc")
+		//.writeClasses("funcCallingMultipleFunc")
 		.compileToClasses
 
+	}
+	
+	@Test
+	def void funcUsingListEquals() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+			
+			type T1:
+					num number (1..1)
+					nums number (1..*)
+					
+			func F1:
+				inputs: t1 T1(1..1)
+						t2 T1(1..1)
+				output: res boolean (1..1)
+				assign-output res: t1->num = t2->nums
+
+			'''.parseRosetta
+		model.assertWarning(ROSETTA_BINARY_OPERATION, null, "Comparison operator = should specify 'all' or 'any' when comparing a list to a single value")
+	}
+	
+	@Test
+	def void funcUsingListAnyEquals() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+			
+			type T1:
+					num number (1..1)
+					nums number (1..*)
+					
+			func F1:
+				inputs: t1 T1(1..1)
+						t2 T1(1..1)
+				output: res boolean (1..1)
+				assign-output res: t1->num any <> t2->nums
+
+			'''.parseRosetta
+		model.assertWarning(ROSETTA_BINARY_OPERATION, null, "All is not currently supported for <>")
+	}
+	
+	@Test
+	def void funcOnlyElementAnyMultiple() {
+		'''
+			namespace "demo"
+			version "${project.version}"
+			
+			type T1:
+					t T2 (1..1)
+					ts T2 (1..*)
+			type T2:
+					num number (1..1)
+					nums number (1..*)
+					
+			func F1:
+				inputs: t1 T1(1..1)
+				output: res number (1..1)
+				assign-output res: t1->ts->num only-element
+
+			'''.parseRosettaWithNoErrors.generateCode
+		//.writeClasses("funcCallingMultipleFunc")
+		.compileToClasses
+	}
+	
+	@Test
+	def void funcOnlyElementOnlySingle() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+			
+			type T1:
+					t T2 (1..1)
+					ts T2 (1..*)
+			type T2:
+					num number (1..1)
+					nums number (1..*)
+					
+			func F1:
+				inputs: t1 T1(1..1)
+				output: res number (1..1)
+				assign-output res: t1->t->num only-element
+
+			'''.parseRosetta
+		model.assertError(ROSETTA_FEATURE_CALL, null, "'only-element' can not be used for single cardinality expressions.")
 	}
 }

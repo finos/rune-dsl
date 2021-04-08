@@ -85,7 +85,7 @@ The keyword ``only-element`` can appear after an attribute name in a Rosetta pat
 
     observationEvent -> primitives only-element -> observation
 	
-This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value then the expression result will be an error.
+This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value then the expression result will be null.
 
 .. _operators-label:
 
@@ -113,20 +113,28 @@ Rosetta also has operators that are designed to function on lists
 * ``contains`` or ``includes`` - every element in the right hand expression is = to an element in the left hand expression
 * ``disjoint`` - true if no element in the left side expression is equal to anu element in the right side expression
 * ``count`` - returns the number of elements in the expression to its left
+* ``(all\any) = (<>, < etc)``
 
-If these contains operator is passed an expression that has single cardinality that expression is treated as a list containing the single element or an empty list if the element is null.
+If the contains operator is passed an expression that has single cardinality that expression is treated as a list containing the single element or an empty list if the element is null.
 
-The grammar enforces that the expression for count has multiple cardinality. For all other comparison operators, if either left or right expression has multiple cardinality then the semantics are
+The grammar enforces that the expression for count has multiple cardinality. 
+
+For the comparison operators if either left or right expression has multiple cardinality then either the other side should have multiple cardinality or `all` or `any` should be specified. (At present only `any` is supported for `<>` and `all` for the other comparison operators.
+
+The semantics for list comparisons are as follows
 
 * ``=`` 
-    * if both sides are lists then the lists must contain elements that are ``=`` and in the same order.
-    * if the one side is a list and the other is single then every element in the list must ``=`` the single value
+    * if both sides are lists then the lists must contain elements that are ``=`` when compared pairwise in the order.
+    * if the one side is a list and the other is single and `all` is specified then every element in the list must ``=`` the single value
+    * if the one side is a list and the other is single and `any` is specified then at least one element in the list must ``=`` the single value (unimplemented)
 * ``<>``
-    * if both sides are lists then then true is returned if the lists have different length or every element is ``<>`` to the corresonding element
-    * if one side is a list then true is returned if any element ``<>`` the single element
+    * if both sides are lists then then true is returned if the lists have different length or every element is ``<>`` to the corresonding element by position
+    * if one side is a list and the `any` is specified then true is returned if any element ``<>`` the single element
+    * if one side is a list and the `all` is specified then true is returned if all elements ``<>`` the single element (unimplemented)
 * ``<``, ``<=``, ``>=``, ``>``
     * if both sides are lists then every element in the first list must be ``>`` the element in the corresponding posistion in the second list
-    * if one side is single then every element in the list must be ``>`` that single value
+    * if one side is single and `all` is specified then every element in the list must be ``>`` that single value
+    * if one side is single and `any` is specified then at least one element in the list must be ``>`` that single value (unimplemented)
 
 An expression that is expected to return multiple cardinality that returns null is considered to be equivalent to an empty list
 
