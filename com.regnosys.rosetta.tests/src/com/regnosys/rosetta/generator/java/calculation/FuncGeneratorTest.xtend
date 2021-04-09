@@ -644,7 +644,7 @@ class FuncGeneratorTest {
 				inputs: t1 T1(1..1)
 						t2 T1(1..1)
 				output: res boolean (1..1)
-				assign-output res: t1->num any <> t2->nums
+				assign-output res: t1->num all <> t2->nums
 
 			'''.parseRosetta
 		model.assertWarning(ROSETTA_BINARY_OPERATION, null, "All is not currently supported for <>")

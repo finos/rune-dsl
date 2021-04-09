@@ -726,7 +726,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		}
 		else if (binOp.cardOp!==null) {
-			warning('''binOp.cardOp is only aplicable when the sides have differing cardinality''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
+			warning('''«binOp.cardOp» is only aplicable when the sides have differing cardinality''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
 		}
 	}
 	
