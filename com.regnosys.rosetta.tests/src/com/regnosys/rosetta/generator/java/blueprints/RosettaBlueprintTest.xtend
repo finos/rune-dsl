@@ -1543,12 +1543,14 @@ class RosettaBlueprintTest {
 			import com.regnosys.rosetta.blueprints.BlueprintInstance;
 			import com.regnosys.rosetta.blueprints.runner.actions.Filter;
 			import com.regnosys.rosetta.blueprints.runner.actions.FilterByRule;
+			import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
 			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 			import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 			import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 			import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
 			import com.rosetta.test.model.Avengers;
 			import com.rosetta.test.model.Hero;
+			import com.rosetta.test.model.blueprint.CanWieldMjolnirRule;
 			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 			
 			/**
