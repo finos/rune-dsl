@@ -2096,7 +2096,7 @@ class RosettaBlueprintTest {
 				
 			'''.parseRosettaWithNoErrors
 			.generateCode
-			blueprint.writeClasses("functionCall")
+			//blueprint.writeClasses("functionCall")
 			blueprint.compileToClasses
 	}
 	
@@ -2144,19 +2144,19 @@ class RosettaBlueprintTest {
 	}
 	
 	@Test
-	def void shouldUseNS() {
+	def void shouldUseBlueprintFromDifferentNS() {
 		val code = #['''
-			namespace "ns1"
+			namespace ns1
 			
 			
-			type TestObject: <"">
+			type TestObject: 
 				fieldOne string (0..1)
 			
 			reporting rule Rule1
 				extract TestObject -> fieldOne	
 			
 		''','''
-			namespace "ns12"
+			namespace ns2
 			
 			import ns1.*
 			
@@ -2164,12 +2164,37 @@ class RosettaBlueprintTest {
 				Rule1
 		'''
 		].generateCode
-		//code.writeClasses("shouldUseNS")
+		//code.writeClasses("shouldUseBlueprintFromDifferentNS")
 		val classes = code.compileToClasses
-		val bpImpl = classes.loadBlueprint("ns12.blueprint.Rule2Rule")
+		val bpImpl = classes.loadBlueprint("ns2.blueprint.Rule2Rule")
 		assertNotNull(bpImpl)
-		
-		
+	}
+	 
+	@Test
+	def void shouldUseBlueprintRuleFromDifferentNS() {
+		val code = #['''
+			namespace ns1
+			
+			
+			type TestObject: 
+				fieldOne string (0..1)
+			
+			reporting rule Rule1
+				extract TestObject -> fieldOne exists
+			
+		''','''
+			namespace ns2
+			
+			import ns1.*
+			
+			reporting rule Rule2
+				filter when rule Rule1
+		'''
+		].generateCode
+		//code.writeClasses("shouldUseBlueprintRuleFromDifferentNS")
+		val classes = code.compileToClasses
+		val bpImpl = classes.loadBlueprint("ns2.blueprint.Rule2Rule")
+		assertNotNull(bpImpl)
 	}
 	
 	@Test
