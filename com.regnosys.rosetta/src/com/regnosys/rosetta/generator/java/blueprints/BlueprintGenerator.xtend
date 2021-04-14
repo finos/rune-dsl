@@ -555,7 +555,7 @@ class BlueprintGenerator {
 		}
 		
 		def addBPRef(TypedBPNode node) {
-			addBPRef(node.node, node)
+			addBPRef(node.node, node)		
 		}
 		def dispatch addBPRef(BlueprintNode node, TypedBPNode nodeType) {
 			LOGGER.error("unexpected node type adding bpRef")
@@ -563,12 +563,15 @@ class BlueprintGenerator {
 		}
 		def dispatch addBPRef(BlueprintRef ref, TypedBPNode node) {
 			bpRefs.put(ref.blueprint.name, node)
+			imports.addBPRef(ref.blueprint)
 		}
 		def dispatch addBPRef(BlueprintFilter ref, TypedBPNode node) {
 			bpRefs.put(ref.filterBP.blueprint.name, node.andNodes.get(0))
+			imports.addBPRef(ref.filterBP.blueprint)
 		}
 		def dispatch addBPRef(BlueprintReduce ref, TypedBPNode node) {
 			bpRefs.put(ref.reduceBP.blueprint.name, node.andNodes.get(0))
+			imports.addBPRef(ref.reduceBP.blueprint)
 		}
 		
 		def addIfElse(BlueprintOneOf oneOf, TypedBPNode node) {
