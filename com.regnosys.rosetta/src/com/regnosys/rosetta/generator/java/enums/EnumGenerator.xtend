@@ -90,13 +90,5 @@ class EnumGenerator {
 	«ENDFOR»
 	'''
 	
-	/**
-	 * Use EnumHelper.formatEnumName(String) instead
-	 */
-	@Deprecated
-	def static String formatEnumName(String name) {
-		EnumHelper.formatEnumName(name);
-	}
-
 	
 }

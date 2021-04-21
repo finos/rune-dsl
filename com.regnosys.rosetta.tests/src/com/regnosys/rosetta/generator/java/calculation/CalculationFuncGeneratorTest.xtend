@@ -887,4 +887,107 @@ class CalculationFuncGeneratorTest {
 			'''
 		)
 	}
+	
+		@Test
+	def void testEnumFuncWithLowerCase() {
+		val genereated = '''
+			type Period:
+				frequency int (1..1)
+				periodEnum PeriodEnum (1..1)
+				period number (1..1)
+			
+			enum PeriodEnum:
+				Month
+			
+			func DayFraction :
+				inputs: in2 Period( 1..1 )
+				output: res number (1..1)
+				alias p: PeriodEnumFunc(in2 -> periodEnum, in2)
+				assign-output res: p / 360
+				
+			func PeriodEnumFunc :
+				inputs:
+					in1 PeriodEnum( 1..1 )
+						in2 Period( 1..1 )
+				output: out number( 1..1 )
+			
+			func PeriodEnumFunc(in1: PeriodEnum -> Month ):
+				alias i: in2 -> frequency
+				assign-output out: i * 30.0
+		'''.generateCode.get("com.rosetta.test.model.functions.PeriodEnumFunc")
+
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.expression.MapperMaths;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.Mapper;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Period;
+				import com.rosetta.test.model.PeriodEnum;
+				import java.math.BigDecimal;
+				
+				
+				/**
+				 * @version test
+				 */
+				public class PeriodEnumFunc {
+					
+					@Inject protected PeriodEnumFunc.MONTH MONTH;
+					
+					public BigDecimal evaluate(PeriodEnum in1, Period in2) {
+						switch (in1) {
+							case MONTH:
+								return MONTH.evaluate(in1, in2);
+							default:
+								throw new IllegalArgumentException("Enum value not implemented: " + in1);
+						}
+					}
+					
+					
+					@ImplementedBy(MONTH.MONTHDefault.class)
+					public static abstract class MONTH implements RosettaFunction {
+					
+						/**
+						* @param in1 
+						* @param in2 
+						* @return out 
+						*/
+						public BigDecimal evaluate(PeriodEnum in1, Period in2) {
+							
+							BigDecimal outHolder = doEvaluate(in1, in2);
+							BigDecimal out = assignOutput(outHolder, in1, in2);
+							
+							return out;
+						}
+						
+						private BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
+							out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(BigDecimal.valueOf(30.0))).get();
+							return out;
+						}
+					
+						protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
+						
+						
+						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
+							return MapperS.of(in2).<Integer>map("getFrequency", _period -> _period.getFrequency());
+						}
+						public static final class MONTHDefault extends MONTH {
+							@Override
+							protected  BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
+								return null;
+							}
+						}
+					}
+				}
+			'''.toString,
+			genereated
+		)
+
+	}
+	
+	
 }
