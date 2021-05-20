@@ -471,7 +471,7 @@ class FuncGeneratorTest {
 			type Bar:
 				id number (1..1)
 			
-			func UpdateBarId: <"Extracts a bar">
+			func UpdateBarId: <"Updates Bar.id by assign-output on an alias">
 				inputs: 
 					top Top (1..1)
 					newId number (1..1)
