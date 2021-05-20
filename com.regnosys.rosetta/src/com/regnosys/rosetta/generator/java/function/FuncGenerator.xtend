@@ -320,8 +320,7 @@ class FuncGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient assignTarget(Operation operation, Map<ShortcutDeclaration, Boolean> outs,
-		JavaNames names) {
+	private def StringConcatenationClient assignTarget(Operation operation, Map<ShortcutDeclaration, Boolean> outs, JavaNames names) {
 		val root = operation.assignRoot
 		switch (root) {
 			Attribute: '''«root.name»'''
@@ -333,7 +332,7 @@ class FuncGenerator {
 		switch (shortcut.expression) {
 			RosettaCallableWithArgsCall: 
 				// assign-output for an alias
-				'''«Optional».ofNullable(«shortcut.name»(«expressionGenerator.aliasCallArgs(shortcut)»)).map(o->o.toBuilder()).orElse(null)'''
+				'''«shortcut.name»(«expressionGenerator.aliasCallArgs(shortcut)»)'''
 			default: 
 				'''«lhsExpand(shortcut.expression)»'''
 		}		
