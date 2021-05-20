@@ -47,6 +47,7 @@ import com.rosetta.model.lib.mapper.MapperBuilder
 import com.rosetta.model.lib.mapper.Mapper
 import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import java.util.List
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 
 class FuncGenerator {
 
@@ -329,8 +330,13 @@ class FuncGenerator {
 	}
 	
 	private def StringConcatenationClient unfoldLHSShortcut(ShortcutDeclaration shortcut) {
-		println(shortcut)
-		'''«lhsExpand(shortcut.expression)»'''
+		switch (shortcut.expression) {
+			RosettaCallableWithArgsCall: 
+				// assign-output for an alias
+				'''«Optional».ofNullable(«shortcut.name»(«expressionGenerator.aliasCallArgs(shortcut)»)).map(o->o.toBuilder()).orElse(null)'''
+			default: 
+				'''«lhsExpand(shortcut.expression)»'''
+		}		
 	}
 	
 	private def dispatch StringConcatenationClient lhsExpand(RosettaExpression f) {
