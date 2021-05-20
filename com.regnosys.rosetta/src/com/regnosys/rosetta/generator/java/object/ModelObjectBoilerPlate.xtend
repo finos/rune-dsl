@@ -48,7 +48,7 @@ class ModelObjectBoilerPlate {
 		if(d.hasTemplateAnnotation)
 			interfaces.add(Templatable)
 		interfaces.addAll(extraInterfaces)
-		if (interfaces.empty) null else ''', «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
+		if (interfaces.empty) null else ''', «FOR i : interfaces.sortBy[class.name] SEPARATOR ', '»«i»«ENDFOR»'''
 	}
 	
 	def StringConcatenationClient implementsClauseBuilder(Data d) {
