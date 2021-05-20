@@ -261,7 +261,7 @@ class FuncGeneratorTest {
 
 		val code = #[
 		'''
-			namespace "com.rosetta.test.model.party"
+			namespace com.rosetta.test.model.party
 			version "test"
 
 			type Party:
@@ -270,7 +270,7 @@ class FuncGeneratorTest {
 				name string (1..1)
 		''',
 		'''
-			namespace "com.rosetta.test.model.agreement"
+			namespace com.rosetta.test.model.agreement
 			version "test"
 			
 			import com.rosetta.test.model.party.*
@@ -308,7 +308,7 @@ class FuncGeneratorTest {
 
 		#[
 		'''
-			namespace "com.rosetta.test.model.party"
+			namespace com.rosetta.test.model.party
 			version "test"
 
 			type Party:
@@ -319,7 +319,7 @@ class FuncGeneratorTest {
 				val string (1..1)
 		''',
 		'''
-			namespace "com.rosetta.test.model.agreement"
+			namespace com.rosetta.test.model.agreement
 			version "test"
 			
 			import com.rosetta.test.model.party.*
@@ -352,7 +352,7 @@ class FuncGeneratorTest {
 
 		#[
 		'''
-			namespace "com.rosetta.test.model.party"
+			namespace com.rosetta.test.model.party
 			version "test"
 
 			type Party:
@@ -364,7 +364,7 @@ class FuncGeneratorTest {
 					[metadata id]
 		''',
 		'''
-			namespace "com.rosetta.test.model.agreement"
+			namespace com.rosetta.test.model.agreement
 			version "test"
 			
 			import com.rosetta.test.model.party.*
@@ -397,8 +397,8 @@ class FuncGeneratorTest {
 	def void shouldGenerateFunctionWithConditionalAssignment() {
 		#[
 		'''
-			namespace "com.rosetta.test.model.agreement"
-					version "test"
+			namespace com.rosetta.test.model.agreement
+			version "test"
 			
 			type Top:
 				foo Foo (1..*)
@@ -427,8 +427,8 @@ class FuncGeneratorTest {
 	def void shouldGenerateFunctionWithCreationLHSUsingAlias() {
 		val code = #[
 		'''
-			namespace "com.rosetta.test.model.agreement"
-					version "test"
+			namespace com.rosetta.test.model.agreement
+			version "test"
 			
 			type Top:
 				foo Foo (1..1)
@@ -454,12 +454,48 @@ class FuncGeneratorTest {
 		code.compileToClasses
 	}
 	
+	
+	@Test
+	def void shouldGenerateFunctionWithAliasAssignOutput() {
+		val code = #[
+		'''
+			namespace com.rosetta.test.model.agreement
+			version "test"
+			
+			type Top:
+				foo Foo (1..1)
+			
+			type Foo:
+				bar Bar (0..1)
+			
+			type Bar:
+				id number (1..1)
+			
+			func UpdateBarId: <"Updates Bar.id by assign-output on an alias">
+				inputs: 
+					top Top (1..1)
+					newId number (1..1)
+				
+				output: 
+					topOut Top (1..1)
+				
+				alias barAlias : 
+					topOut -> foo -> bar
+				
+				assign-output barAlias -> id:
+					newId
+		'''
+		].generateCode
+		//.writeClasses("shouldGenerateFunctionWithAliasAssignOutput")
+		code.compileToClasses
+	}
+	
 	@Test
 	def void shouldGenerateDisjoint() {
 		val code = #[
 		'''
-			namespace "com.rosetta.test.model.agreement"
-					version "test"
+			namespace com.rosetta.test.model.agreement
+			version "test"
 			
 			type Top:
 				foo Foo (1..*)
@@ -485,8 +521,8 @@ class FuncGeneratorTest {
 	def void shouldNotGenerateDisjointDifferentTypes() {
 		val model = 
 		'''
-			namespace "com.rosetta.test.model.agreement"
-					version "test"
+			namespace com.rosetta.test.model.agreement
+			version "test"
 			
 			type Top:
 				foo Foo (1..*)
@@ -514,8 +550,8 @@ class FuncGeneratorTest {
 	def void shouldNotAndInts() {
 		val model = 
 		'''
-			namespace "com.rosetta.test.model.agreement"
-					version "test"
+			namespace com.rosetta.test.model.agreement
+			version "test"
 			
 			type Top:
 				foo Foo (1..1)
@@ -542,8 +578,8 @@ class FuncGeneratorTest {
 	def void shouldReturnMultiple() {
 		val model = 
 		'''
-			namespace "com.rosetta.test.model.agreement"
-					version "test"
+			namespace com.rosetta.test.model.agreement
+			version "test"
 			
 			type Top:
 				foo Foo (1..*)
