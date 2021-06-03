@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 
@@ -39,7 +40,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 		}
 		return new MapperS<>(new MapperItem<>(t, path, false, Optional.ofNullable(parent)));
 	}
-
+	
 	/**
 	 * Maps single parent item to single child item.
 	 */

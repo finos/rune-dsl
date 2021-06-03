@@ -103,6 +103,7 @@ class FuncGeneratorTest {
 					if foo exists
 					then False
 		'''.generateCode
+		.writeClasses("shouldGenerateFuncWithAssignOutputDoIfBooleanLiteralsAndNoElse")
 		code.compileToClasses
 	}
 
@@ -230,6 +231,8 @@ class FuncGeneratorTest {
 					if bar -> baz exists
 					then bar -> baz > 5
 		'''.generateCode
+				.writeClasses("shouldGenerateFuncWithAssignOutputDoIfComparisonResultAndNoElse")
+		
 		code.compileToClasses
 	}
 
@@ -668,4 +671,35 @@ class FuncGeneratorTest {
 		model.generateCode.writeClasses("funcCallingMultipleFuncWithAlias").compileToClasses
 
 	}
+	
+	@Test
+	def void typeWithCondition() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+			
+			type Foo:
+				bar Bar (1..1)
+				
+				condition XXX:
+				if bar -> num exists
+				then bar -> zap contains Zap -> A
+				and if bar -> zap contains Zap -> A
+				then bar -> num exists
+			
+			type Bar:
+				num number (1..1)
+				zap Zap (1..1)
+			
+			enum Zap:
+				A B C
+			
+		'''.parseRosettaWithNoErrors
+		model.generateCode.writeClasses("typeWithCondition").compileToClasses
+
+	}
+	
+	
+	
+	
 }
