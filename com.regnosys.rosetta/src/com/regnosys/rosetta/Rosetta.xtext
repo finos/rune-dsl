@@ -536,7 +536,7 @@ RosettaCalcExists returns RosettaExpression:
 		->(
 		  {RosettaExistsExpression.argument=current} only?='only'? (single?='single' | multiple?='multiple')? 'exists'
 		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
-		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaCalcAttributeCall
+		| {RosettaContainsExpression.container=current} 'contains' contained=RosettaCalcAttributeCall
 		| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaCalcAttributeCall
 		)
 	)?
