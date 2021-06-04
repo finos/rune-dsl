@@ -2292,7 +2292,7 @@ class RosettaBlueprintTest {
 		'''.toString
 		.replace('\r', "")
 		.generateCode
-		blueprint.writeClasses("infiniteLoop");
+		//blueprint.writeClasses("longNestedIfElseWithReturn0");
 			
 		
 		blueprint.compileToClasses
@@ -2346,7 +2346,7 @@ class RosettaBlueprintTest {
 		'''.toString
 		.replace('\r', "")
 		.generateCode
-		blueprint.writeClasses("longNestedIfElseWithNoReturn");
+		//blueprint.writeClasses("longNestedIfElseWithNoReturn");
 			
 		
 		blueprint.compileToClasses

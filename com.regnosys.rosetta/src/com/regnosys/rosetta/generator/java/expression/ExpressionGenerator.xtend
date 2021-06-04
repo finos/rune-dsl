@@ -63,6 +63,7 @@ import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.con
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import com.rosetta.model.lib.mapper.Mapper
+import com.rosetta.model.lib.mapper.MapperUtils
 
 class ExpressionGenerator {
 	
@@ -154,13 +155,14 @@ class ExpressionGenerator {
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
 		}
 	}
-			
+
 	private def StringConcatenationClient genConditionalMapper(RosettaConditionalExpression expr, ParamMap params)'''
-		«IF !expr.ifthen.evalulatesToMapper»«importMethod(ExpressionOperators,"toComparisonResult")»(«ENDIF»«Mapper».of(() -> {
+		«IF !expr.ifthen.evalulatesToMapper»«importMethod(ExpressionOperators,"toComparisonResult")»(«ENDIF»«importMethod(MapperUtils, "from")»(() -> {
 		«expr.genConditional(params)»
 		})«IF !expr.ifthen.evalulatesToMapper»)«ENDIF»'''
 		
-	
+
+		
 	private def StringConcatenationClient genConditional(RosettaConditionalExpression expr, ParamMap params) {
 		return '''if («expr.^if.javaCode(params)».get()) {
 			return «expr.ifthen.javaCode(params)»;
@@ -466,7 +468,14 @@ class ExpressionGenerator {
 		collectExpressions(expr, [exprs.add(it)])
 
 		return !exprs.empty && 
-			exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall || it instanceof RosettaFeatureCall || it instanceof RosettaCallableCall || it instanceof RosettaFeatureCall || it instanceof RosettaCallableWithArgsCall || it instanceof RosettaLiteral]
+			exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall || 
+									it instanceof RosettaFeatureCall || 
+									it instanceof RosettaCallableCall || 
+									it instanceof RosettaFeatureCall || 
+									it instanceof RosettaCallableWithArgsCall || 
+									it instanceof RosettaLiteral ||
+									it instanceof RosettaConditionalExpression
+			]
 	}
 	
 	/**

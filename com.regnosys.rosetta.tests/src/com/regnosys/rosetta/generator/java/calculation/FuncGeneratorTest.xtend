@@ -103,7 +103,7 @@ class FuncGeneratorTest {
 					if foo exists
 					then False
 		'''.generateCode
-		.writeClasses("shouldGenerateFuncWithAssignOutputDoIfBooleanLiteralsAndNoElse")
+		//.writeClasses("shouldGenerateFuncWithAssignOutputDoIfBooleanLiteralsAndNoElse")
 		code.compileToClasses
 	}
 
@@ -231,7 +231,7 @@ class FuncGeneratorTest {
 					if bar -> baz exists
 					then bar -> baz > 5
 		'''.generateCode
-				.writeClasses("shouldGenerateFuncWithAssignOutputDoIfComparisonResultAndNoElse")
+				//.writeClasses("shouldGenerateFuncWithAssignOutputDoIfComparisonResultAndNoElse")
 		
 		code.compileToClasses
 	}
@@ -668,7 +668,7 @@ class FuncGeneratorTest {
 				assign-output str: f2
 			
 		'''.parseRosettaWithNoErrors
-		model.generateCode.writeClasses("funcCallingMultipleFuncWithAlias").compileToClasses
+		model.generateCode//.writeClasses("funcCallingMultipleFuncWithAlias").compileToClasses
 
 	}
 	
@@ -695,11 +695,43 @@ class FuncGeneratorTest {
 				A B C
 			
 		'''.parseRosettaWithNoErrors
-		model.generateCode.writeClasses("typeWithCondition").compileToClasses
+		model.generateCode//.writeClasses("typeWithCondition").compileToClasses
 
 	}
 	
-	
+    @Test
+    def void nestedIfElse() {
+   	 val model = '''
+		namespace "demo"
+		version "${project.version}"
+		
+		func IfElseTest:
+		inputs:
+			s1 string (1..1)
+			s2 string (1..1)
+		output: result string (1..1)
+		
+		assign-output result:
+			if s1 = "1"
+				then if s2 = "a"
+					then "result1a"
+				else
+					if s2 = "b"
+						then "result1b"
+			else 
+				"result1"
+			else if s1 = "2" then
+				if s2 = "a"
+				then "result2a"
+				else if s2 = "b"
+				then "result2b"
+				else "result2"
+		    else
+		"result"
+    '''.parseRosettaWithNoErrors
+    model.generateCode.writeClasses("nestedIfElse").compileToClasses
+
+    }
 	
 	
 }

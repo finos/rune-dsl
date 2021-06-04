@@ -36,7 +36,6 @@ public class RosettaPathTest {
 	private static final RosettaPath PATH_3 = RosettaPath.valueOf("a.b.d");
 	private static final RosettaPath PATH_4 = RosettaPath.valueOf("a.b(1)");
 	private static final RosettaPath PATH_5 = RosettaPath.valueOf("a.b(1).c");
-	private static final RosettaPath PATH_6 = RosettaPath.valueOf("a.b(1).d");
     
 	@Test
     void shouldCompareEmptyAndAndZeroPathIndexAndReturnEqualOrder() {
