@@ -47,6 +47,7 @@ import com.rosetta.model.lib.mapper.MapperBuilder
 import com.rosetta.model.lib.mapper.Mapper
 import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import java.util.List
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 
 class FuncGenerator {
 
@@ -170,7 +171,7 @@ class FuncGenerator {
 							return «expressionGenerator.javaCode(alias.expression, new ParamMap)».get().toBuilder();
 						}
 					«ELSE»
-						protected «IF needsBuilder(alias)»«MapperBuilder»«ELSE»«Mapper»«ENDIF»<«toJavaType(typeProvider.getRType(alias.expression))»> «alias.name»(«func.inputsAsParameters(names)») {
+						protected «IF needsBuilder(alias)»«MapperBuilder»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
 							return «expressionGenerator.javaCode(alias.expression, new ParamMap)»;
 						}
 					«ENDIF»
@@ -319,8 +320,7 @@ class FuncGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient assignTarget(Operation operation, Map<ShortcutDeclaration, Boolean> outs,
-		JavaNames names) {
+	private def StringConcatenationClient assignTarget(Operation operation, Map<ShortcutDeclaration, Boolean> outs, JavaNames names) {
 		val root = operation.assignRoot
 		switch (root) {
 			Attribute: '''«root.name»'''
@@ -329,8 +329,13 @@ class FuncGenerator {
 	}
 	
 	private def StringConcatenationClient unfoldLHSShortcut(ShortcutDeclaration shortcut) {
-		println(shortcut)
-		'''«lhsExpand(shortcut.expression)»'''
+		switch (shortcut.expression) {
+			RosettaCallableWithArgsCall: 
+				// assign-output for an alias
+				'''«shortcut.name»(«expressionGenerator.aliasCallArgs(shortcut)»)'''
+			default: 
+				'''«lhsExpand(shortcut.expression)»'''
+		}		
 	}
 	
 	private def dispatch StringConcatenationClient lhsExpand(RosettaExpression f) {

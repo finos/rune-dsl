@@ -2093,8 +2093,39 @@ class RosettaBlueprintTest {
 					foo number (0..1)
 				output: 
 					bar number (1..1)
-			assign-output bar:
-				foo +1
+				assign-output bar:
+					foo + 1
+				
+			'''.parseRosettaWithNoErrors
+			.generateCode
+			//blueprint.writeClasses("functionCall")
+			blueprint.compileToClasses
+	}
+	
+	@Test
+	def void functionCalls() {
+		val blueprint = ''' 
+			type Foo:
+				bar Bar (1..1)
+			
+			type Bar:
+				val number (1..1)
+			
+			reporting rule Rule1
+				return MyFunc1() then
+				extract MyFunc(Foo->bar->val) > MyFunc(3.0)
+			
+			func MyFunc1: 
+				output:
+					foo Foo (1..1)
+			
+			func MyFunc:
+				inputs: 
+					foo number (0..1)
+				output: 
+					bar number (1..1)
+				assign-output bar:
+					foo + 1
 				
 			'''.parseRosettaWithNoErrors
 			.generateCode
