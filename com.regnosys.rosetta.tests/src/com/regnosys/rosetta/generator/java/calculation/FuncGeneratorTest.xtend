@@ -35,33 +35,33 @@ class FuncGeneratorTest {
 		'''.assertToGeneratedFunction(
 			'''
 				package com.rosetta.test.model.functions;
-
+				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
-
-
+				
+				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
-
+				
 					/**
-					* @param name
-					* @param name2
-					* @return result
+					* @param name 
+					* @param name2 
+					* @return result 
 					*/
 					public String evaluate(String name, String name2) {
-
+						
 						String resultHolder = doEvaluate(name, name2);
 						String result = assignOutput(resultHolder, name, name2);
-
+						
 						return result;
 					}
-
+					
 					private String assignOutput(String result, String name, String name2) {
 						return result;
 					}
-
+				
 					protected abstract String doEvaluate(String name, String name2);
-
+					
 					public static final class FuncFooDefault extends FuncFoo {
 						@Override
 						protected  String doEvaluate(String name, String name2) {
