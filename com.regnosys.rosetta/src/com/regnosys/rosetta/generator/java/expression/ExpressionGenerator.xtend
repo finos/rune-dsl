@@ -62,8 +62,6 @@ import org.eclipse.xtext.util.Wrapper
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
-import com.rosetta.model.lib.mapper.Mapper
-import com.rosetta.model.lib.mapper.MapperUtils
 
 class ExpressionGenerator {
 	
@@ -157,7 +155,7 @@ class ExpressionGenerator {
 	}
 
 	private def StringConcatenationClient genConditionalMapper(RosettaConditionalExpression expr, ParamMap params)'''
-		«IF !expr.ifthen.evalulatesToMapper»«importMethod(ExpressionOperators,"toComparisonResult")»(«ENDIF»«importMethod(MapperUtils, "from")»(() -> {
+		«IF !expr.ifthen.evalulatesToMapper»com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(«ENDIF»com.rosetta.model.lib.mapper.MapperUtils.from(() -> {
 		«expr.genConditional(params)»
 		})«IF !expr.ifthen.evalulatesToMapper»)«ENDIF»'''
 		

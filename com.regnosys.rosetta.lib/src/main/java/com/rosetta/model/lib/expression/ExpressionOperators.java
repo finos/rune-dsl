@@ -142,7 +142,7 @@ public class ExpressionOperators {
 		return resultDoIf(test, ifthen, () -> ComparisonResult.success());
 	}
 	
-	public static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
+	private static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
 		if (mapper instanceof ComparisonResult) {
 			return (ComparisonResult) mapper;
 		} else {
