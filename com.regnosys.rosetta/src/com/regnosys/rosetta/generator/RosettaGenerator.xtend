@@ -36,6 +36,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import com.regnosys.rosetta.generator.util.MapperUtilsGenerator
 
 /**
  * Generates code from your model files on save.
@@ -61,6 +62,7 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
 	@Inject FuncGenerator funcGenerator
+	@Inject MapperUtilsGenerator mapperUtilsGenerator
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
@@ -90,6 +92,8 @@ class RosettaGenerator extends AbstractGenerator {
 					newHashSet
 				} else resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toSet
 
+				mapperUtilsGenerator.generate(fsa)
+				
 				// generate for each model object
 				resource.contents.filter(RosettaModel).forEach [
 					val version = version

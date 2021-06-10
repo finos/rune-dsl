@@ -105,6 +105,7 @@ class FuncGeneratorTest {
 					if foo exists
 					then False
 		'''.generateCode
+		//.writeClasses("shouldGenerateFuncWithAssignOutputDoIfBooleanLiteralsAndNoElse")
 		code.compileToClasses
 	}
 
@@ -232,6 +233,8 @@ class FuncGeneratorTest {
 					if bar -> baz exists
 					then bar -> baz > 5
 		'''.generateCode
+				//.writeClasses("shouldGenerateFuncWithAssignOutputDoIfComparisonResultAndNoElse")
+
 		code.compileToClasses
 	}
 
@@ -671,6 +674,32 @@ class FuncGeneratorTest {
 		model.generateCode
 		//.writeClasses("funcCallingMultipleFuncWithAlias")
 		.compileToClasses
+	}
+
+	@Test
+	def void typeWithCondition() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+
+			type Foo:
+				bar Bar (1..1)
+
+				condition XXX:
+				if bar -> num exists
+				then bar -> zap contains Zap -> A
+				and if bar -> zap contains Zap -> A
+				then bar -> num exists
+
+			type Bar:
+				num number (1..1)
+				zap Zap (1..1)
+
+			enum Zap:
+				A B C
+
+		'''.parseRosettaWithNoErrors
+		model.generateCode//.writeClasses("typeWithCondition").compileToClasses
 
 	}
 
@@ -693,7 +722,7 @@ class FuncGeneratorTest {
 			'''.parseRosetta
 		model.assertWarning(ROSETTA_BINARY_OPERATION, null, "Comparison operator = should specify 'all' or 'any' when comparing a list to a single value")
 	}
-	
+
 	@Test
 	def void funcUsingListEqualsAll() {
 		val code = '''
@@ -701,22 +730,22 @@ class FuncGeneratorTest {
 			version "${project.version}"
 
 			func F1:
-				inputs: 
+				inputs:
 					s1 string (1..1)
 					s2 string (1..*)
-				output: 
+				output:
 					res boolean (1..1)
 				assign-output res: s1 all = s2
 
 			'''.generateCode
 		val classes = code.compileToClasses
-		
+
 		val func = classes.createFunc("F1");
 		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "a")))
 		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "b")))
 		assertFalse(func.invokeFunc(Boolean, "b", List.of("a", "a")))
 	}
-	
+
 
 	@Test
 	def void funcUsingListEqualsAny() {
@@ -725,16 +754,16 @@ class FuncGeneratorTest {
 			version "${project.version}"
 
 			func F1:
-				inputs: 
+				inputs:
 					s1 string (1..1)
 					s2 string (1..*)
-				output: 
+				output:
 					res boolean (1..1)
 				assign-output res: s1 any = s2
 
 			'''.generateCode
 		val classes = code.compileToClasses
-		
+
 		val func = classes.createFunc("F1");
 		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "a")))
 		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "b")))
@@ -749,16 +778,16 @@ class FuncGeneratorTest {
 			version "${project.version}"
 
 			func F1:
-				inputs: 
+				inputs:
 					n1 int (1..1)
 					n2 int (1..*)
-				output: 
+				output:
 					res boolean (1..1)
 				assign-output res: n1 all = n2
 
 			'''.generateCode
 		val classes = code.compileToClasses
-		
+
 		val func = classes.createFunc("F1");
 		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 1)))
 		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 2)))
@@ -772,16 +801,16 @@ class FuncGeneratorTest {
 			version "${project.version}"
 
 			func F1:
-				inputs: 
+				inputs:
 					n1 int (1..1)
 					n2 int (1..*)
-				output: 
+				output:
 					res boolean (1..1)
 				assign-output res: n1 any = n2
 
 			'''.generateCode
 		val classes = code.compileToClasses
-		
+
 		val func = classes.createFunc("F1");
 		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 1)))
 		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 2)))
@@ -795,22 +824,22 @@ class FuncGeneratorTest {
 			version "${project.version}"
 
 			func F1:
-				inputs: 
+				inputs:
 					s1 string (1..1)
 					s2 string (1..*)
-				output: 
+				output:
 					res boolean (1..1)
 				assign-output res: s1 all <> s2
 
 			'''.generateCode
 		val classes = code.compileToClasses
-		
+
 		val func = classes.createFunc("F1");
 		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "a")))
 		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "b")))
 		assertTrue(func.invokeFunc(Boolean, "b", List.of("a", "a")))
 	}
-	
+
 	@Test
 	def void funcUsingListNotEqualsAny() {
 		val code = '''
@@ -818,16 +847,16 @@ class FuncGeneratorTest {
 			version "${project.version}"
 
 			func F1:
-				inputs: 
+				inputs:
 					s1 string (1..1)
 					s2 string (1..*)
-				output: 
+				output:
 					res boolean (1..1)
 				assign-output res: s1 any <> s2
 
 			'''.generateCode
 		val classes = code.compileToClasses
-		
+
 		val func = classes.createFunc("F1");
 		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "a")))
 		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "b")))
@@ -841,22 +870,22 @@ class FuncGeneratorTest {
 			version "${project.version}"
 
 			func F1:
-				inputs: 
+				inputs:
 					n1 int (1..1)
 					n2 int (1..*)
-				output: 
+				output:
 					res boolean (1..1)
 				assign-output res: n1 all <> n2
 
 			'''.generateCode
 		val classes = code.compileToClasses
-		
+
 		val func = classes.createFunc("F1");
 		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 1)))
 		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 2)))
 		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
 	}
-	
+
 	@Test
 	def void funcUsingListComparableNotEqualsAny() {
 		val code = '''
@@ -864,16 +893,16 @@ class FuncGeneratorTest {
 			version "${project.version}"
 
 			func F1:
-				inputs: 
+				inputs:
 					n1 int (1..1)
 					n2 int (1..*)
-				output: 
+				output:
 					res boolean (1..1)
 				assign-output res: n1 any <> n2
 
 			'''.generateCode
 		val classes = code.compileToClasses
-		
+
 		val func = classes.createFunc("F1");
 		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 1)))
 		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 2)))
@@ -887,16 +916,16 @@ class FuncGeneratorTest {
 			version "${project.version}"
 
 			func F1:
-				inputs: 
+				inputs:
 					n1 int (1..1)
 					n2 int (1..*)
-				output: 
+				output:
 					res boolean (1..1)
 				assign-output res: n1 all > n2
 
 			'''.generateCode
 		val classes = code.compileToClasses
-		
+
 		val func = classes.createFunc("F1");
 		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
 		assertFalse(func.invokeFunc(Boolean, 2, List.of(1, 2)))
@@ -910,16 +939,16 @@ class FuncGeneratorTest {
 			version "${project.version}"
 
 			func F1:
-				inputs: 
+				inputs:
 					n1 int (1..1)
 					n2 int (1..*)
-				output: 
+				output:
 					res boolean (1..1)
 				assign-output res: n1 any > n2
 
 			'''.generateCode
 		val classes = code.compileToClasses
-		
+
 		val func = classes.createFunc("F1");
 		//assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
 		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 2)))
@@ -970,4 +999,40 @@ class FuncGeneratorTest {
 			'''.parseRosetta
 		model.assertError(ROSETTA_FEATURE_CALL, null, "'only-element' can not be used for single cardinality expressions.")
 	}
+
+    @Test
+    def void nestedIfElse() {
+   	 val model = '''
+		namespace "demo"
+		version "${project.version}"
+
+		func IfElseTest:
+		inputs:
+			s1 string (1..1)
+			s2 string (1..1)
+		output: result string (1..1)
+
+		assign-output result:
+			if s1 = "1"
+				then if s2 = "a"
+					then "result1a"
+				else
+					if s2 = "b"
+						then "result1b"
+			else
+				"result1"
+			else if s1 = "2" then
+				if s2 = "a"
+				then "result2a"
+				else if s2 = "b"
+				then "result2b"
+				else "result2"
+		    else
+		"result"
+    '''.parseRosettaWithNoErrors
+    model.generateCode.writeClasses("nestedIfElse").compileToClasses
+
+    }
+
+
 }

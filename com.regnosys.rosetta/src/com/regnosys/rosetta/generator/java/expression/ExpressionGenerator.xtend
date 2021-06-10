@@ -6,6 +6,7 @@ import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
+import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaAlias
@@ -45,25 +46,24 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
-import com.rosetta.model.lib.mapper.MapperC
+import com.rosetta.model.lib.expression.CardinalityOperator
+import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
+import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.mapper.MapperTree
-import com.rosetta.model.lib.expression.ExpressionOperators
 import java.math.BigDecimal
 import java.util.HashMap
+import java.util.Optional
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.util.Wrapper
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
-import org.eclipse.xtend.lib.annotations.Accessors
-import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
-import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
-import com.rosetta.model.lib.expression.CardinalityOperator
-import java.util.Optional
+import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 
 class ExpressionGenerator {
 	
@@ -134,7 +134,7 @@ class ExpressionGenerator {
 				'''«MapperS».of(«expr.enumeration.toJavaType».«expr.value.convertValues»)'''
 			}
 			RosettaConditionalExpression : {
-				'''«importMethod(ExpressionOperators, expr.doIfName)»(«expr.^if.javaCode(params)», ()->«expr.ifthen.javaCode(params)»«IF expr.elsethen !== null», ()->«expr.elsethen.javaCode(params)»«ENDIF»)'''
+				'''«expr.genConditionalMapper(params)»'''
 			}
 			RosettaContainsExpression : {
 				'''«importMethod(ExpressionOperators,"contains")»(«expr.container.javaCode(params)», «expr.contained.javaCode(params)»)'''
@@ -155,10 +155,48 @@ class ExpressionGenerator {
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
 		}
 	}
-	
-	private def String doIfName(RosettaConditionalExpression expr) {
-		if (expr.ifthen.evalulatesToMapper) "doIf"
-		else "resultDoIf"
+
+	private def StringConcatenationClient genConditionalMapper(RosettaConditionalExpression expr, ParamMap params)'''
+		«IF !expr.ifthen.evalulatesToMapper»com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(«ENDIF»com.rosetta.model.lib.mapper.MapperUtils.from(() -> {
+		«expr.genConditional(params)»
+		})«IF !expr.ifthen.evalulatesToMapper»)«ENDIF»'''
+
+
+
+	private def StringConcatenationClient genConditional(RosettaConditionalExpression expr, ParamMap params) {
+		return '''if («expr.^if.javaCode(params)».get()) {
+			return «expr.ifthen.javaCode(params)»;
+		}
+		«IF expr.childElseThen !== null»
+			«expr.childElseThen.genElseIf(params)»
+		«ELSEIF expr.elsethen !== null»else {
+			return «expr.elsethen.javaCode(params)»;
+		}«ELSE»else {
+			return «MapperS».ofNull();
+		}
+		«ENDIF»'''
+	}
+
+	private def StringConcatenationClient genElseIf(RosettaConditionalExpression next, ParamMap params) {
+		'''
+		«IF next !== null»else if («next.^if.javaCode(params)».get()) {
+			return «next.ifthen.javaCode(params)»;
+		}
+		«IF next.childElseThen !== null»
+		«next.childElseThen.genElseIf(params)»
+		«ELSEIF next.elsethen !== null»else {
+			return «next.elsethen.javaCode(params)»;
+		}«ELSEIF next.elsethen === null»else {
+			return «MapperS».ofNull();
+		}«ENDIF»
+		«ENDIF»
+		'''
+	}
+
+
+	private def RosettaConditionalExpression childElseThen(RosettaConditionalExpression expr) {
+		if (expr.elsethen instanceof RosettaConditionalExpression)
+			expr.elsethen as RosettaConditionalExpression
 	}
 	
 	/**
@@ -430,7 +468,14 @@ class ExpressionGenerator {
 		collectExpressions(expr, [exprs.add(it)])
 
 		return !exprs.empty && 
-			exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall || it instanceof RosettaFeatureCall || it instanceof RosettaCallableCall || it instanceof RosettaFeatureCall || it instanceof RosettaCallableWithArgsCall || it instanceof RosettaLiteral]
+			exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall ||
+									it instanceof RosettaFeatureCall ||
+									it instanceof RosettaCallableCall ||
+									it instanceof RosettaFeatureCall ||
+									it instanceof RosettaCallableWithArgsCall ||
+									it instanceof RosettaLiteral ||
+									it instanceof RosettaConditionalExpression
+			]
 	}
 	
 	/**
@@ -468,7 +513,7 @@ class ExpressionGenerator {
 	private def StringConcatenationClient toCardinalityOperator(String cardOp, String defaultOp) {
 		'''«CardinalityOperator».«Optional.ofNullable(cardOp).map[toFirstUpper].orElse(defaultOp)»'''
 	}
-	
+
 	/**
 	 * converts an expression into a boolean result using the test expression pushed down (see exists etc)
 	 */	
