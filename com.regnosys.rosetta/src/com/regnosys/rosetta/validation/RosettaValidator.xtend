@@ -717,12 +717,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				if (binOp.cardOp===null) {
 					warning('''Comparison operator «binOp.operator» should specify 'all' or 'any' when comparing a list to a single value''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
 				}
-				else if (binOp.cardOp=="any" && binOp.operator!="<>") {
-					warning('''Any is not currently supported for «binOp.operator»''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
-				}
-				else if (binOp.cardOp=="all" && binOp.operator=="<>") {
-					warning('''All is not currently supported for «binOp.operator»''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
-				}
 			}
 		}
 		else if (binOp.cardOp!==null) {

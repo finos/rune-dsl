@@ -62,6 +62,8 @@ import static extension com.regnosys.rosetta.generator.java.util.JavaClassTransl
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
+import com.rosetta.model.lib.expression.CardinalityOperator
+import java.util.Optional
 
 class ExpressionGenerator {
 	
@@ -376,11 +378,11 @@ class ExpressionGenerator {
 			default: {
 				// FIXME isProduct isEvent stuff in QualifyFunctionGenerator. Should be removed after alias migration
 				if(left.needsMapperTree && !right.needsMapperTree) {
-					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«toMapperTree(expr.right.javaCode(params))»''')
+					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«toMapperTree(expr.right.javaCode(params))»''', expr.cardOp)
 				} else if(!left.needsMapperTree && right.needsMapperTree) {
-					toComparisonOp('''«toMapperTree(expr.left.javaCode(params))»''', expr.operator, '''«expr.right.javaCode(params)»''')
+					toComparisonOp('''«toMapperTree(expr.left.javaCode(params))»''', expr.operator, '''«expr.right.javaCode(params)»''', expr.cardOp)
 				} else {
-					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''')
+					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''', expr.cardOp)
 				}
 			}
 		}
@@ -444,23 +446,27 @@ class ExpressionGenerator {
 		return type.isPresent && rosettaTypes.stream.allMatch[it.equals(type.get)]
 	}
 		
-	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right) {
+	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right, String cardOp) {
 		switch operator {
 			case ("="):
-				'''«importWildCard(ExpressionOperators)»areEqual(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»areEqual(«left», «right», «toCardinalityOperator(cardOp, "All")»)'''
 			case ("<>"):
-				'''«importWildCard(ExpressionOperators)»notEqual(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»notEqual(«left», «right», «toCardinalityOperator(cardOp, "Any")»)'''
 			case ("<") : 
-				'''«importWildCard(ExpressionOperators)»lessThan(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»lessThan(«left», «right», «toCardinalityOperator(cardOp, "All")»)'''
 			case ("<=") : 
-				'''«importWildCard(ExpressionOperators)»lessThanEquals(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»lessThanEquals(«left», «right», «toCardinalityOperator(cardOp, "All")»)'''
 			case (">") : 
-				'''«importWildCard(ExpressionOperators)»greaterThan(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»greaterThan(«left», «right», «toCardinalityOperator(cardOp, "All")»)'''
 			case (">=") : 
-				'''«importWildCard(ExpressionOperators)»greaterThanEquals(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»greaterThanEquals(«left», «right», «toCardinalityOperator(cardOp, "All")»)'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported binary operation of " + operator)
 		}
+	}
+	
+	private def StringConcatenationClient toCardinalityOperator(String cardOp, String defaultOp) {
+		'''«CardinalityOperator».«Optional.ofNullable(cardOp).map[toFirstUpper].orElse(defaultOp)»'''
 	}
 	
 	/**

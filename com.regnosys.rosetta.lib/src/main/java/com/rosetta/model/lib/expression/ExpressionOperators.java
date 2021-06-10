@@ -138,9 +138,11 @@ public class ExpressionOperators {
 			return toComparisonResult(elsethen.get());
 		}
 	}
+	
 	public static ComparisonResult resultDoIf(Mapper<Boolean> test, Supplier<Mapper<Boolean>> ifthen) {
 		return resultDoIf(test, ifthen, () -> ComparisonResult.success());
 	}
+	
 	private static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
 		if (mapper instanceof ComparisonResult) {
 			return (ComparisonResult) mapper;
@@ -149,40 +151,44 @@ public class ExpressionOperators {
 		}
 	}
 	
+	interface CompareFunction<T, U> {
+	    ComparisonResult apply(T t, U u, CardinalityOperator o);
+	}
+	
 	// areEqual
 	
-	public static <T, U> ComparisonResult areEqual(Mapper<T> m1, Mapper<U> m2) {
-		return ExpressionEqualityUtil.evaluate(m1, m2, ExpressionEqualityUtil::areEqual);
+	public static <T, U> ComparisonResult areEqual(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
+		return ExpressionEqualityUtil.evaluate(m1, m2, o, ExpressionEqualityUtil::areEqual);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult areEqual(MapperTree<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::areEqual);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult areEqual(MapperTree<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::areEqual);
+	}
+
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult areEqual(Mapper<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::areEqual);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult areEqual(Mapper<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::areEqual);
-	}
-	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult areEqual(MapperTree<T> t1, Mapper<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::areEqual);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult areEqual(MapperTree<T> t1, Mapper<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), o, ExpressionOperators::areEqual);
 	}
 	
 	// notEqual
 		
-	public static <T, U> ComparisonResult notEqual(Mapper<T> m1, Mapper<U> m2) {
-		return ExpressionEqualityUtil.evaluate(m1, m2, ExpressionEqualityUtil::notEqual);
+	public static <T, U> ComparisonResult notEqual(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
+		return ExpressionEqualityUtil.evaluate(m1, m2, o, ExpressionEqualityUtil::notEqual);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult notEqual(MapperTree<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::notEqual);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult notEqual(MapperTree<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::notEqual);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult notEqual(Mapper<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::notEqual);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult notEqual(Mapper<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::notEqual);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult notEqual(MapperTree<T> t1, Mapper<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::notEqual);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult notEqual(MapperTree<T> t1, Mapper<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), o, ExpressionOperators::notEqual);
 	}
 	
 	public static <T extends Comparable<? super T>> ComparisonResult notEqual(ComparisonResult r1, ComparisonResult r2) {
@@ -191,74 +197,74 @@ public class ExpressionOperators {
 	
 	// greaterThan
 		
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(Mapper<T> o1, Mapper<U> o2) {
-		return ExpressionCompareUtil.evaluate(o1, o2, ExpressionCompareUtil::greaterThan);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
+		return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::greaterThan);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(MapperTree<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::greaterThan);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(MapperTree<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::greaterThan);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(Mapper<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::greaterThan);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(Mapper<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::greaterThan);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(MapperTree<T> t1, Mapper<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::greaterThan);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(MapperTree<T> t1, Mapper<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), o, ExpressionOperators::greaterThan);
 	}
 
 	// greaterThanEquals
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(Mapper<T> o1, Mapper<U> o2) {
-		return ExpressionCompareUtil.evaluate(o1, o2, ExpressionCompareUtil::greaterThanEquals);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
+		return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::greaterThanEquals);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(MapperTree<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::greaterThanEquals);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(MapperTree<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::greaterThanEquals);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(Mapper<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::greaterThanEquals);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(Mapper<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::greaterThanEquals);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(MapperTree<T> t1, Mapper<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::greaterThanEquals);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(MapperTree<T> t1, Mapper<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), o, ExpressionOperators::greaterThanEquals);
 	}
 	
 	// lessThan
 
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(Mapper<T> o1, Mapper<U> o2)  {
-		return ExpressionCompareUtil.evaluate(o1, o2, ExpressionCompareUtil::lessThan);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o)  {
+		return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::lessThan);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(MapperTree<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::lessThan);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(MapperTree<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::lessThan);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(Mapper<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::lessThan);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(Mapper<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::lessThan);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(MapperTree<T> t1, Mapper<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::lessThan);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(MapperTree<T> t1, Mapper<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), o, ExpressionOperators::lessThan);
 	}
 	
 	// lessThanEquals
 
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(Mapper<T> o1, Mapper<U> o2)  {
-		return ExpressionCompareUtil.evaluate(o1, o2, ExpressionCompareUtil::lessThanEquals);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o)  {
+		return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::lessThanEquals);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(MapperTree<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::lessThanEquals);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(MapperTree<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::lessThanEquals);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(Mapper<T> t1, MapperTree<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, ExpressionOperators::lessThanEquals);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(Mapper<T> t1, MapperTree<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, t2, o, ExpressionOperators::lessThanEquals);
 	}
 	
-	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(MapperTree<T> t1, Mapper<U> t2) {
-		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), ExpressionOperators::lessThanEquals);
+	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(MapperTree<T> t1, Mapper<U> t2, CardinalityOperator o) {
+		return ExpressionsMapperTreeUtil.evaluateTrees(t1, MapperTree.of(t2), o, ExpressionOperators::lessThanEquals);
 	}
 
 	// contains

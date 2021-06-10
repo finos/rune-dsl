@@ -1,18 +1,20 @@
 package com.regnosys.rosetta.generator.java.calculation
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
+import com.regnosys.rosetta.validation.RosettaIssueCodes
+import java.util.List
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.SimplePackage
-import com.regnosys.rosetta.validation.RosettaIssueCodes
+import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -666,7 +668,9 @@ class FuncGeneratorTest {
 				assign-output str: f2
 
 		'''.parseRosettaWithNoErrors
-		model.generateCode.writeClasses("funcCallingMultipleFuncWithAlias").compileToClasses
+		model.generateCode
+		//.writeClasses("funcCallingMultipleFuncWithAlias")
+		.compileToClasses
 
 	}
 
@@ -689,25 +693,237 @@ class FuncGeneratorTest {
 			'''.parseRosetta
 		model.assertWarning(ROSETTA_BINARY_OPERATION, null, "Comparison operator = should specify 'all' or 'any' when comparing a list to a single value")
 	}
-
+	
 	@Test
-	def void funcUsingListAnyEquals() {
-		val model = '''
-			namespace "demo"
+	def void funcUsingListEqualsAll() {
+		val code = '''
+			namespace com.rosetta.test.model
 			version "${project.version}"
 
-			type T1:
-					num number (1..1)
-					nums number (1..*)
+			func F1:
+				inputs: 
+					s1 string (1..1)
+					s2 string (1..*)
+				output: 
+					res boolean (1..1)
+				assign-output res: s1 all = s2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func = classes.createFunc("F1");
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertFalse(func.invokeFunc(Boolean, "b", List.of("a", "a")))
+	}
+	
+
+	@Test
+	def void funcUsingListEqualsAny() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
 
 			func F1:
-				inputs: t1 T1(1..1)
-						t2 T1(1..1)
-				output: res boolean (1..1)
-				assign-output res: t1->num all <> t2->nums
+				inputs: 
+					s1 string (1..1)
+					s2 string (1..*)
+				output: 
+					res boolean (1..1)
+				assign-output res: s1 any = s2
 
-			'''.parseRosetta
-		model.assertWarning(ROSETTA_BINARY_OPERATION, null, "All is not currently supported for <>")
+			'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func = classes.createFunc("F1");
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertFalse(func.invokeFunc(Boolean, "b", List.of("a", "a")))
+	}
+
+
+	@Test
+	def void funcUsingListComparableEqualsAll() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs: 
+					n1 int (1..1)
+					n2 int (1..*)
+				output: 
+					res boolean (1..1)
+				assign-output res: n1 all = n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func = classes.createFunc("F1");
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertFalse(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+	}
+
+	@Test
+	def void funcUsingListComparableEqualsAny() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs: 
+					n1 int (1..1)
+					n2 int (1..*)
+				output: 
+					res boolean (1..1)
+				assign-output res: n1 any = n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func = classes.createFunc("F1");
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertFalse(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+	}
+
+	@Test
+	def void funcUsingListNotEqualsAll() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs: 
+					s1 string (1..1)
+					s2 string (1..*)
+				output: 
+					res boolean (1..1)
+				assign-output res: s1 all <> s2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func = classes.createFunc("F1");
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertTrue(func.invokeFunc(Boolean, "b", List.of("a", "a")))
+	}
+	
+	@Test
+	def void funcUsingListNotEqualsAny() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs: 
+					s1 string (1..1)
+					s2 string (1..*)
+				output: 
+					res boolean (1..1)
+				assign-output res: s1 any <> s2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func = classes.createFunc("F1");
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertTrue(func.invokeFunc(Boolean, "b", List.of("a", "a")))
+	}
+
+	@Test
+	def void funcUsingListComparableNotEqualsAll() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs: 
+					n1 int (1..1)
+					n2 int (1..*)
+				output: 
+					res boolean (1..1)
+				assign-output res: n1 all <> n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func = classes.createFunc("F1");
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+	}
+	
+	@Test
+	def void funcUsingListComparableNotEqualsAny() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs: 
+					n1 int (1..1)
+					n2 int (1..*)
+				output: 
+					res boolean (1..1)
+				assign-output res: n1 any <> n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func = classes.createFunc("F1");
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+	}
+
+	@Test
+	def void funcUsingListComparableGreaterThanAll() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs: 
+					n1 int (1..1)
+					n2 int (1..*)
+				output: 
+					res boolean (1..1)
+				assign-output res: n1 all > n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func = classes.createFunc("F1");
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 2, List.of(1, 2)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(2, 2)))
+	}
+
+	@Test
+	def void funcUsingListComparableGreaterThanAny() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs: 
+					n1 int (1..1)
+					n2 int (1..*)
+				output: 
+					res boolean (1..1)
+				assign-output res: n1 any > n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func = classes.createFunc("F1");
+		//assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 2)))
+		//assertFalse(func.invokeFunc(Boolean, 1, List.of(2, 2)))
 	}
 
 	@Test

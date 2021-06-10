@@ -384,7 +384,7 @@ enum RosettaQualifiableType {
 
 class RosettaBinaryOperation extends RosettaExpression {
 	contains RosettaExpression left
-	String cardOp//when comparing things of cardinality should be 'all' or 'any' = should be null for single cardinality
+	String cardOp // when comparing things of cardinality should be 'all' or 'any' = should be null for single cardinality
 	String operator
 	contains RosettaExpression right
 }
