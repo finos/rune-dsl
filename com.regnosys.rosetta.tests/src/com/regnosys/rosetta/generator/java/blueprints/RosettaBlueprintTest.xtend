@@ -1220,7 +1220,7 @@ class RosettaBlueprintTest {
 		// writeOutClasses(blueprint, "genNestedBlueprints");
 		try {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
-			val expected = '''7
+			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
 				import com.regnosys.rosetta.blueprints.Blueprint;
