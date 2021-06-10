@@ -110,7 +110,7 @@ List Comparison Operators
 =========================
 Rosetta also has operators that are designed to function on lists
 
-* ``contains`` or ``includes`` - every element in the right hand expression is = to an element in the left hand expression
+* ``contains`` - every element in the right hand expression is = to an element in the left hand expression
 * ``disjoint`` - true if no element in the left side expression is equal to anu element in the right side expression
 * ``count`` - returns the number of elements in the expression to its left
 * ``(all\any) = (<>, < etc)``
