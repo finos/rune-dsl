@@ -2275,6 +2275,119 @@ class RosettaBlueprintTest {
 		
 	}
 
+
+	@Test
+	def void longNestedIfElseWithReturn0() {
+		var blueprint = '''
+		type Foo:
+			bar Bar (1..1)
+		
+		enum Bar:
+			A B C D F G H I J K L M N O P Q R S T U V W X Y Z
+		
+		reporting rule BarField
+				extract if Foo -> bar = Bar -> A then "A"
+					else if Foo -> bar = Bar -> B then "B"
+					else if Foo -> bar = Bar -> C then "C"
+					else if Foo -> bar = Bar -> D then "D"
+					else if Foo -> bar = Bar -> F then "F"
+					else if Foo -> bar = Bar -> G then "G"
+					else if Foo -> bar = Bar -> H then "H"
+					else if Foo -> bar = Bar -> I then "I"
+					else if Foo -> bar = Bar -> B then "B"
+					else if Foo -> bar = Bar -> C then "C"
+					else if Foo -> bar = Bar -> D then "D"
+					else if Foo -> bar = Bar -> F then "F"
+					else if Foo -> bar = Bar -> G then "G"
+					else if Foo -> bar = Bar -> H then "H"
+					else if Foo -> bar = Bar -> I then "I"
+					else if Foo -> bar = Bar -> J then "J"
+					else if Foo -> bar = Bar -> K then "K"
+					else if Foo -> bar = Bar -> L then "L"
+					else if Foo -> bar = Bar -> M then "M"
+					else if Foo -> bar = Bar -> N then "N"
+					else if Foo -> bar = Bar -> O then "O"
+					else if Foo -> bar = Bar -> P then "P"
+					else if Foo -> bar = Bar -> Q then "Q"
+					else if Foo -> bar = Bar -> R then "R"
+					else if Foo -> bar = Bar -> S then "S"
+					else if Foo -> bar = Bar -> T then "T"
+					else if Foo -> bar = Bar -> U then "U"
+					else if Foo -> bar = Bar -> V then "V"
+					else if Foo -> bar = Bar -> W then "W"
+					else if Foo -> bar = Bar -> X then "X"
+					else if Foo -> bar = Bar -> Y then "Y"
+					else if Foo -> bar = Bar -> Z then "Z"
+					else "0"
+			
+		'''.toString
+		.replace('\r', "")
+		.generateCode
+		//blueprint.writeClasses("longNestedIfElseWithReturn0");
+			
+		
+		blueprint.compileToClasses
+		
+	}
+
+
+	@Test
+	def void longNestedIfElseWithNoReturn() {
+		var blueprint = '''
+		type Foo:
+			bar Bar (1..1)
+		
+		enum Bar:
+			A B C D F G H I J K L M N O P Q R S T U V W X Y Z
+		
+		reporting rule BarField
+				extract if Foo -> bar = Bar -> A then "A"
+					else if Foo -> bar = Bar -> B then "B"
+					else if Foo -> bar = Bar -> C then "C"
+					else if Foo -> bar = Bar -> D then "D"
+					else if Foo -> bar = Bar -> F then "F"
+					else if Foo -> bar = Bar -> G then "G"
+					else if Foo -> bar = Bar -> H then "H"
+					else if Foo -> bar = Bar -> I then "I"
+					else if Foo -> bar = Bar -> B then "B"
+					else if Foo -> bar = Bar -> C then "C"
+					else if Foo -> bar = Bar -> D then "D"
+					else if Foo -> bar = Bar -> F then "F"
+					else if Foo -> bar = Bar -> G then "G"
+					else if Foo -> bar = Bar -> H then "H"
+					else if Foo -> bar = Bar -> I then "I"
+					else if Foo -> bar = Bar -> J then "J"
+					else if Foo -> bar = Bar -> K then "K"
+					else if Foo -> bar = Bar -> L then "L"
+					else if Foo -> bar = Bar -> M then "M"
+					else if Foo -> bar = Bar -> N then "N"
+					else if Foo -> bar = Bar -> O then "O"
+					else if Foo -> bar = Bar -> P then "P"
+					else if Foo -> bar = Bar -> Q then "Q"
+					else if Foo -> bar = Bar -> R then "R"
+					else if Foo -> bar = Bar -> S then "S"
+					else if Foo -> bar = Bar -> T then "T"
+					else if Foo -> bar = Bar -> U then "U"
+					else if Foo -> bar = Bar -> V then "V"
+					else if Foo -> bar = Bar -> W then "W"
+					else if Foo -> bar = Bar -> X then "X"
+					else if Foo -> bar = Bar -> Y then "Y"
+					else if Foo -> bar = Bar -> Z then "Z"
+			
+		'''.toString
+		.replace('\r', "")
+		.generateCode
+		//blueprint.writeClasses("longNestedIfElseWithNoReturn");
+			
+		
+		blueprint.compileToClasses
+		
+	}
+
+
+
+
+
 	@Test
 	@Disabled
 	def void calculationUnifiedType() {

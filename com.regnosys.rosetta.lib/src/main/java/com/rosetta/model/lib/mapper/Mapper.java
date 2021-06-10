@@ -21,7 +21,6 @@ public interface Mapper<T> {
 	
 	List<String> getErrors();
 	
-	
 	interface Path {
 		List<String> getNames();
 		List<String> getGetters();

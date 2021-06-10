@@ -141,6 +141,7 @@ public class ExpressionOperators {
 	public static ComparisonResult resultDoIf(Mapper<Boolean> test, Supplier<Mapper<Boolean>> ifthen) {
 		return resultDoIf(test, ifthen, () -> ComparisonResult.success());
 	}
+	
 	private static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
 		if (mapper instanceof ComparisonResult) {
 			return (ComparisonResult) mapper;

@@ -39,7 +39,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 		}
 		return new MapperS<>(new MapperItem<>(t, path, false, Optional.ofNullable(parent)));
 	}
-
+	
 	/**
 	 * Maps single parent item to single child item.
 	 */
