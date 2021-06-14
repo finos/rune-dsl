@@ -46,6 +46,7 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
+import com.rosetta.model.lib.expression.CardinalityOperator
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
 import com.rosetta.model.lib.mapper.MapperC
@@ -53,6 +54,7 @@ import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.mapper.MapperTree
 import java.math.BigDecimal
 import java.util.HashMap
+import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -158,39 +160,39 @@ class ExpressionGenerator {
 		«IF !expr.ifthen.evalulatesToMapper»com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(«ENDIF»com.rosetta.model.lib.mapper.MapperUtils.from(() -> {
 		«expr.genConditional(params)»
 		})«IF !expr.ifthen.evalulatesToMapper»)«ENDIF»'''
-		
 
-		
+
+
 	private def StringConcatenationClient genConditional(RosettaConditionalExpression expr, ParamMap params) {
 		return '''if («expr.^if.javaCode(params)».get()) {
 			return «expr.ifthen.javaCode(params)»;
 		}
 		«IF expr.childElseThen !== null»
-			«expr.childElseThen.genElseIf(params)» 
+			«expr.childElseThen.genElseIf(params)»
 		«ELSEIF expr.elsethen !== null»else {
 			return «expr.elsethen.javaCode(params)»;
 		}«ELSE»else {
-			return «MapperS».ofNull();	
+			return «MapperS».ofNull();
 		}
 		«ENDIF»'''
 	}
-	
+
 	private def StringConcatenationClient genElseIf(RosettaConditionalExpression next, ParamMap params) {
 		'''
 		«IF next !== null»else if («next.^if.javaCode(params)».get()) {
 			return «next.ifthen.javaCode(params)»;
 		}
 		«IF next.childElseThen !== null»
-		«next.childElseThen.genElseIf(params)» 
+		«next.childElseThen.genElseIf(params)»
 		«ELSEIF next.elsethen !== null»else {
 			return «next.elsethen.javaCode(params)»;
 		}«ELSEIF next.elsethen === null»else {
-			return «MapperS».ofNull();	
+			return «MapperS».ofNull();
 		}«ENDIF»
 		«ENDIF»
 		'''
-	}	
-	
+	}
+
 
 	private def RosettaConditionalExpression childElseThen(RosettaConditionalExpression expr) {
 		if (expr.elsethen instanceof RosettaConditionalExpression)
@@ -414,11 +416,11 @@ class ExpressionGenerator {
 			default: {
 				// FIXME isProduct isEvent stuff in QualifyFunctionGenerator. Should be removed after alias migration
 				if(left.needsMapperTree && !right.needsMapperTree) {
-					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«toMapperTree(expr.right.javaCode(params))»''')
+					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«toMapperTree(expr.right.javaCode(params))»''', expr.cardOp)
 				} else if(!left.needsMapperTree && right.needsMapperTree) {
-					toComparisonOp('''«toMapperTree(expr.left.javaCode(params))»''', expr.operator, '''«expr.right.javaCode(params)»''')
+					toComparisonOp('''«toMapperTree(expr.left.javaCode(params))»''', expr.operator, '''«expr.right.javaCode(params)»''', expr.cardOp)
 				} else {
-					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''')
+					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''', expr.cardOp)
 				}
 			}
 		}
@@ -466,11 +468,11 @@ class ExpressionGenerator {
 		collectExpressions(expr, [exprs.add(it)])
 
 		return !exprs.empty && 
-			exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall || 
-									it instanceof RosettaFeatureCall || 
-									it instanceof RosettaCallableCall || 
-									it instanceof RosettaFeatureCall || 
-									it instanceof RosettaCallableWithArgsCall || 
+			exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall ||
+									it instanceof RosettaFeatureCall ||
+									it instanceof RosettaCallableCall ||
+									it instanceof RosettaFeatureCall ||
+									it instanceof RosettaCallableWithArgsCall ||
 									it instanceof RosettaLiteral ||
 									it instanceof RosettaConditionalExpression
 			]
@@ -489,25 +491,29 @@ class ExpressionGenerator {
 		return type.isPresent && rosettaTypes.stream.allMatch[it.equals(type.get)]
 	}
 		
-	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right) {
+	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right, String cardOp) {
 		switch operator {
 			case ("="):
-				'''«importWildCard(ExpressionOperators)»areEqual(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»areEqual(«left», «right», «toCardinalityOperator(cardOp, "All")»)'''
 			case ("<>"):
-				'''«importWildCard(ExpressionOperators)»notEqual(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»notEqual(«left», «right», «toCardinalityOperator(cardOp, "Any")»)'''
 			case ("<") : 
-				'''«importWildCard(ExpressionOperators)»lessThan(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»lessThan(«left», «right», «toCardinalityOperator(cardOp, "All")»)'''
 			case ("<=") : 
-				'''«importWildCard(ExpressionOperators)»lessThanEquals(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»lessThanEquals(«left», «right», «toCardinalityOperator(cardOp, "All")»)'''
 			case (">") : 
-				'''«importWildCard(ExpressionOperators)»greaterThan(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»greaterThan(«left», «right», «toCardinalityOperator(cardOp, "All")»)'''
 			case (">=") : 
-				'''«importWildCard(ExpressionOperators)»greaterThanEquals(«left», «right»)'''
+				'''«importWildCard(ExpressionOperators)»greaterThanEquals(«left», «right», «toCardinalityOperator(cardOp, "All")»)'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported binary operation of " + operator)
 		}
 	}
 	
+	private def StringConcatenationClient toCardinalityOperator(String cardOp, String defaultOp) {
+		'''«CardinalityOperator».«Optional.ofNullable(cardOp).map[toFirstUpper].orElse(defaultOp)»'''
+	}
+
 	/**
 	 * converts an expression into a boolean result using the test expression pushed down (see exists etc)
 	 */	

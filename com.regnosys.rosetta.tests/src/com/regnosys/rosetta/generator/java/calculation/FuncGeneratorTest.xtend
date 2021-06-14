@@ -1,18 +1,20 @@
 package com.regnosys.rosetta.generator.java.calculation
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
+import com.regnosys.rosetta.validation.RosettaIssueCodes
+import java.util.List
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.SimplePackage
-import com.regnosys.rosetta.validation.RosettaIssueCodes
+import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -232,7 +234,7 @@ class FuncGeneratorTest {
 					then bar -> baz > 5
 		'''.generateCode
 				//.writeClasses("shouldGenerateFuncWithAssignOutputDoIfComparisonResultAndNoElse")
-		
+
 		code.compileToClasses
 	}
 
@@ -264,7 +266,7 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.party
 				version "test"
-				
+
 				type Party:
 					[metadata key]
 					id number (1..1)
@@ -273,9 +275,9 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-				
+
 				import com.rosetta.test.model.party.*
-				
+
 				type Agreement:
 					id number (1..1)
 					party Party (1..1)
@@ -284,20 +286,20 @@ class FuncGeneratorTest {
 			'''
 				namespace "com.rosetta.test.model.func"
 				version "test"
-				
+
 				import com.rosetta.test.model.party.*
 				import com.rosetta.test.model.agreement.*
-				
+
 				func Create_Agreement:
 				 	inputs:
 				 		party Party (1..1)
 				 	id number (1..1)
 					output:
 						agreement Agreement (1..1)
-						
+
 					assign-output agreement -> id: id
 					assign-output agreement -> party: party as-key
-				
+
 			'''
 		].generateCode
 		code.compileToClasses
@@ -310,37 +312,37 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.party
 				version "test"
-				
+
 				type Party:
 					id number (1..1)
 					name MyData (1..1)
-				
+
 				type MyData:
 					val string (1..1)
 			''',
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-				
+
 				import com.rosetta.test.model.party.*
-				
+
 				type Agreement:
 					id number (1..1)
 					party Party (1..1)
-					
+
 					condition AgreementValid:
 						if Get_Party_Id() exists
 							then id is absent
-				
+
 				func Get_Party_Id:
 				 	inputs:
 				 		agreement Agreement (1..1)
 					output:
 						result MyData (1..1)
-						
+
 					assign-output result : agreement -> party -> name
-					
-				
+
+
 			'''
 		].generateCode// .writeClasses("shouldGenerateFunctionWithAssignemtnAsReference")
 		.compileToClasses
@@ -353,11 +355,11 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.party
 				version "test"
-				
+
 				type Party:
 					id number (1..1)
 					name string (1..1)
-				
+
 				type MyData:
 					val Party (1..1)
 						[metadata id]
@@ -365,27 +367,27 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-				
+
 				import com.rosetta.test.model.party.*
-				
+
 				type Agreement:
 					id number (1..1)
 					party Party (1..1)
 						[metadata id]
-					
+
 					condition AgreementValid:
 						if Get_Party_Id() exists
 							then id is absent
-				
+
 				func Get_Party_Id:
 				 	inputs:
 				 		agreement Agreement (1..1)
 					output:
 						result MyData (1..1)
-						
+
 					assign-output result-> val : agreement -> party
-					
-				
+
+
 			'''
 		].generateCode// .writeClasses("shouldGenerateFunctionWithAssignmentAsMeta")
 		.compileToClasses
@@ -397,17 +399,17 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-				
+
 				type Top:
 					foo Foo (1..*)
-				
+
 				type Foo:
 					bar1 Bar (0..1)
 					bar2 Bar (0..1)
-					
+
 				type Bar:
 					id number (1..1)
-				
+
 				func ExtractBar: <"Extracts a bar">
 					inputs: top Top (1..1)
 					output: bar Bar (1..1)
@@ -426,17 +428,17 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-				
+
 				type Top:
 					foo Foo (1..1)
-				
+
 				type Foo:
 					bar1 Bar (0..1)
 					bar2 Bar (0..1)
-					
+
 				type Bar:
 					id number (1..1)
-				
+
 				func ExtractBar: <"Extracts a bar">
 					inputs: top Top (1..1)
 					output: topOut Top (1..1)
@@ -457,27 +459,27 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-				
+
 				type Top:
 					foo Foo (1..1)
-				
+
 				type Foo:
 					bar Bar (0..1)
-				
+
 				type Bar:
 					id number (1..1)
-				
+
 				func UpdateBarId: <"Updates Bar.id by assign-output on an alias">
-					inputs: 
+					inputs:
 						top Top (1..1)
 						newId number (1..1)
-					
-					output: 
+
+					output:
 						topOut Top (1..1)
-					
-					alias barAlias : 
+
+					alias barAlias :
 						topOut -> foo -> bar
-					
+
 					assign-output barAlias -> id:
 						newId
 			'''
@@ -492,18 +494,18 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-				
+
 				type Top:
 					foo Foo (1..*)
-				
+
 				type Foo:
 					bar1 number (0..1)
-				
+
 				func Disjoint: <"checks disjoint">
-					inputs: 
+					inputs:
 						top1 Top (1..1)
 						top2 Top (1..1)
-					
+
 					output: result boolean (1..1)
 					assign-output result:
 						top1-> foo disjoint top2 -> foo
@@ -624,13 +626,14 @@ class FuncGeneratorTest {
 				inputs: num number (1..1)
 				output: str string (1..1)
 				assign-output str: F2(F1(num))
-				
+
 			func F4:
-				inputs: num number (1..*)
-				output: str string (1..1)
-				assign-output str: F2(num)
-		'''.parseRosettaWithNoErrors
-		model.generateCode// .writeClasses("funcCallingMultipleFunc")
+					inputs: num number (1..*)
+					output: str string (1..1)
+					assign-output str: F2(num)
+			'''.parseRosettaWithNoErrors
+		model.generateCode
+		//.writeClasses("funcCallingMultipleFunc")
 		.compileToClasses
 
 	}
@@ -640,77 +643,375 @@ class FuncGeneratorTest {
 		val model = '''
 			namespace "demo"
 			version "${project.version}"
-			
+
 			type Number:
 				num number (1..1)
-			
+
 			func F1:
 				inputs: num number (1..1)
 				output: numbers Number (1..*)
-					
+
 			func F2:
 				inputs: nums number(1..*)
 				output: str string (1..1)
-				
+
 			func F3:
 				inputs: num number (1..1)
 				output: str string (1..1)
-				
+
 				alias f1: F1(num)
 				assign-output str: F2(f1 -> num)
-				
+
 			func F4:
 				inputs: num number (1..*)
 				output: str string (1..1)
-				
-				alias f2: F2(num)
-				
-				assign-output str: f2
-			
-		'''.parseRosettaWithNoErrors
-		model.generateCode//.writeClasses("funcCallingMultipleFuncWithAlias").compileToClasses
 
+				alias f2: F2(num)
+
+				assign-output str: f2
+
+		'''.parseRosettaWithNoErrors
+		model.generateCode
+		//.writeClasses("funcCallingMultipleFuncWithAlias")
+		.compileToClasses
 	}
-	
+
 	@Test
 	def void typeWithCondition() {
 		val model = '''
 			namespace "demo"
 			version "${project.version}"
-			
+
 			type Foo:
 				bar Bar (1..1)
-				
+
 				condition XXX:
 				if bar -> num exists
 				then bar -> zap contains Zap -> A
 				and if bar -> zap contains Zap -> A
 				then bar -> num exists
-			
+
 			type Bar:
 				num number (1..1)
 				zap Zap (1..1)
-			
+
 			enum Zap:
 				A B C
-			
+
 		'''.parseRosettaWithNoErrors
 		model.generateCode//.writeClasses("typeWithCondition").compileToClasses
 
 	}
-	
+
+	@Test
+	def void funcUsingListEquals() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+
+			type T1:
+					num number (1..1)
+					nums number (1..*)
+
+			func F1:
+				inputs: t1 T1(1..1)
+						t2 T1(1..1)
+				output: res boolean (1..1)
+				assign-output res: t1->num = t2->nums
+
+			'''.parseRosetta
+		model.assertWarning(ROSETTA_BINARY_OPERATION, null, "Comparison operator = should specify 'all' or 'any' when comparing a list to a single value")
+	}
+
+	@Test
+	def void funcUsingListEqualsAll() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs:
+					s1 string (1..1)
+					s2 string (1..*)
+				output:
+					res boolean (1..1)
+				assign-output res: s1 all = s2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertFalse(func.invokeFunc(Boolean, "b", List.of("a", "a")))
+	}
+
+
+	@Test
+	def void funcUsingListEqualsAny() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs:
+					s1 string (1..1)
+					s2 string (1..*)
+				output:
+					res boolean (1..1)
+				assign-output res: s1 any = s2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertFalse(func.invokeFunc(Boolean, "b", List.of("a", "a")))
+	}
+
+
+	@Test
+	def void funcUsingListComparableEqualsAll() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs:
+					n1 int (1..1)
+					n2 int (1..*)
+				output:
+					res boolean (1..1)
+				assign-output res: n1 all = n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertFalse(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+	}
+
+	@Test
+	def void funcUsingListComparableEqualsAny() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs:
+					n1 int (1..1)
+					n2 int (1..*)
+				output:
+					res boolean (1..1)
+				assign-output res: n1 any = n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertFalse(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+	}
+
+	@Test
+	def void funcUsingListNotEqualsAll() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs:
+					s1 string (1..1)
+					s2 string (1..*)
+				output:
+					res boolean (1..1)
+				assign-output res: s1 all <> s2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertTrue(func.invokeFunc(Boolean, "b", List.of("a", "a")))
+	}
+
+	@Test
+	def void funcUsingListNotEqualsAny() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs:
+					s1 string (1..1)
+					s2 string (1..*)
+				output:
+					res boolean (1..1)
+				assign-output res: s1 any <> s2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertTrue(func.invokeFunc(Boolean, "b", List.of("a", "a")))
+	}
+
+	@Test
+	def void funcUsingListComparableNotEqualsAll() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs:
+					n1 int (1..1)
+					n2 int (1..*)
+				output:
+					res boolean (1..1)
+				assign-output res: n1 all <> n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+	}
+
+	@Test
+	def void funcUsingListComparableNotEqualsAny() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs:
+					n1 int (1..1)
+					n2 int (1..*)
+				output:
+					res boolean (1..1)
+				assign-output res: n1 any <> n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+	}
+
+	@Test
+	def void funcUsingListComparableGreaterThanAll() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs:
+					n1 int (1..1)
+					n2 int (1..*)
+				output:
+					res boolean (1..1)
+				assign-output res: n1 all > n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 2, List.of(1, 2)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(2, 2)))
+	}
+
+	@Test
+	def void funcUsingListComparableGreaterThanAny() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+
+			func F1:
+				inputs:
+					n1 int (1..1)
+					n2 int (1..*)
+				output:
+					res boolean (1..1)
+				assign-output res: n1 any > n2
+
+			'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		//assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 2)))
+		//assertFalse(func.invokeFunc(Boolean, 1, List.of(2, 2)))
+	}
+
+	@Test
+	def void funcOnlyElementAnyMultiple() {
+		'''
+			namespace "demo"
+			version "${project.version}"
+
+			type T1:
+					t T2 (1..1)
+					ts T2 (1..*)
+			type T2:
+					num number (1..1)
+					nums number (1..*)
+
+			func F1:
+				inputs: t1 T1(1..1)
+				output: res number (1..1)
+				assign-output res: t1->ts->num only-element
+
+			'''.parseRosettaWithNoErrors.generateCode
+		//.writeClasses("funcCallingMultipleFunc")
+		.compileToClasses
+	}
+
+	@Test
+	def void funcOnlyElementOnlySingle() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+
+			type T1:
+					t T2 (1..1)
+					ts T2 (1..*)
+			type T2:
+					num number (1..1)
+					nums number (1..*)
+
+			func F1:
+				inputs: t1 T1(1..1)
+				output: res number (1..1)
+				assign-output res: t1->t->num only-element
+
+			'''.parseRosetta
+		model.assertError(ROSETTA_FEATURE_CALL, null, "'only-element' can not be used for single cardinality expressions.")
+	}
+
     @Test
     def void nestedIfElse() {
    	 val model = '''
 		namespace "demo"
 		version "${project.version}"
-		
+
 		func IfElseTest:
 		inputs:
 			s1 string (1..1)
 			s2 string (1..1)
 		output: result string (1..1)
-		
+
 		assign-output result:
 			if s1 = "1"
 				then if s2 = "a"
@@ -718,7 +1019,7 @@ class FuncGeneratorTest {
 				else
 					if s2 = "b"
 						then "result1b"
-			else 
+			else
 				"result1"
 			else if s1 = "2" then
 				if s2 = "a"
@@ -732,6 +1033,6 @@ class FuncGeneratorTest {
     model.generateCode.writeClasses("nestedIfElse").compileToClasses
 
     }
-	
-	
+
+
 }

@@ -23,11 +23,11 @@ import com.rosetta.model.lib.mapper.MapperS;
 public class ExpressionOperatorsParameterizedTest {
 
 	private static final Function<Foo, ComparisonResult> GREATER_THAN = (foo) -> 
-			greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)));
+			greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All);
 	
 	private static final Function<Foo, ComparisonResult> GREATER_THAN_WITH_OR = (foo) -> 
-			greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)))
-					.or(greaterThan(MapperS.of(foo).map("getAttr2", Foo::getAttr2), MapperS.of(Integer.valueOf(5))));
+			greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)
+					.or(greaterThan(MapperS.of(foo).map("getAttr2", Foo::getAttr2), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All));
 	
 	private static final Function<Foo, ComparisonResult> EXISTS = (foo) -> 
 			exists(MapperS.of(foo).map("getAttr1", Foo::getAttr1), false);
@@ -37,11 +37,14 @@ public class ExpressionOperatorsParameterizedTest {
 					.or(exists(MapperS.of(foo).map("getAttr2", Foo::getAttr2), false));
 	
 	private static final Function<Bar, ComparisonResult> GREATER_THAN_LIST = (bar) -> 
-			greaterThan(MapperS.of(bar).mapC("getFoos1", Bar::getFoos1).map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)));
+			greaterThan(MapperS.of(bar).mapC("getFoos1", Bar::getFoos1).map("getAttr1", 
+					Foo::getAttr1), MapperS.of(Integer.valueOf(5)), 
+					CardinalityOperator.All);
 	
 	private static final Function<Bar, ComparisonResult> GREATER_THAN_LIST_GROUP_BY = (bar) -> 
 			greaterThan(MapperS.of(bar).mapC("getFoos1", Bar::getFoos1).groupBy(i->new MapperS<>(i).map("getAttr1",Foo::getAttr1)).map("getAttr2", Foo::getAttr2), 
-						MapperS.of(bar).mapC("getFoos2", Bar::getFoos2).groupBy(i->new MapperS<>(i).map("getAttr1", Foo::getAttr1)).map("getAttr2", Foo::getAttr2));
+						MapperS.of(bar).mapC("getFoos2", Bar::getFoos2).groupBy(i->new MapperS<>(i).map("getAttr1", Foo::getAttr1)).map("getAttr2", Foo::getAttr2), 
+						CardinalityOperator.All);
 	
 			
 	@ParameterizedTest(name = "{0}")

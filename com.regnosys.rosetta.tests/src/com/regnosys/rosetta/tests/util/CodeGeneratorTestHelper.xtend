@@ -5,6 +5,7 @@ import com.regnosys.rosetta.generator.RosettaGenerator
 import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.rosetta.RosettaModel
+import com.rosetta.model.lib.functions.RosettaFunction
 import java.io.File
 import java.lang.reflect.Method
 import java.nio.file.Files
@@ -108,6 +109,18 @@ class CodeGeneratorTestHelper {
 		return rosettaClassBuilderInstance.class.getMethod('build').invoke(rosettaClassBuilderInstance);
 	}
 	
+	def createFunc(Map<String, Class<?>> classes, String funcName) {
+		classes.get(rootPackage.functions.name + '.' + funcName) // get abstract func class
+				.declaredClasses.get(0) // get default func implementation (e.g. inner class) 
+				.declaredConstructor.newInstance
+				as RosettaFunction 
+	}
+	
+	def <T> invokeFunc(RosettaFunction func, Class<T> resultClass, Object... inputs) {
+		val evaluateMethod = func.class.getMatchingMethod("evaluate", inputs.map[class])
+		evaluateMethod.invoke(func, inputs) as T
+	}
+	
 	def Method getMatchingMethod(Class<?> clazz, String name, List<Class<?>> values) {
 		var methods = clazz.methods.filter[m|m.name==name]
 		methods = methods
@@ -130,7 +143,7 @@ class CodeGeneratorTestHelper {
 		val foundClazz = classes.get(fqn)
 		if(foundClazz === null)
 			throw new IllegalStateException('''No generated class '«fqn»' found''')
-		return foundClazz.newInstance
+		return foundClazz.declaredConstructor.newInstance
 	}
 
 	@Deprecated
