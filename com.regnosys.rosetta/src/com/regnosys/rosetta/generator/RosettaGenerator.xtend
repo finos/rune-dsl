@@ -36,7 +36,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.regnosys.rosetta.generator.util.MapperUtilsGenerator
+import com.regnosys.rosetta.generator.util.BackwardCompatibilityGenerator
 
 /**
  * Generates code from your model files on save.
@@ -62,7 +62,7 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
 	@Inject FuncGenerator funcGenerator
-	@Inject MapperUtilsGenerator mapperUtilsGenerator
+	@Inject BackwardCompatibilityGenerator backwardCompatibilityGenerator
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
@@ -91,8 +91,6 @@ class RosettaGenerator extends AbstractGenerator {
 					LOGGER.warn("No resource set found for " + resource.URI.toString)
 					newHashSet
 				} else resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toSet
-
-				mapperUtilsGenerator.generate(fsa)
 				
 				// generate for each model object
 				resource.contents.filter(RosettaModel).forEach [
@@ -154,6 +152,8 @@ class RosettaGenerator extends AbstractGenerator {
 
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		try {
+			backwardCompatibilityGenerator.generate(fsa2)
+			
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
 			val models = if (resource.resourceSet?.resources === null) {
