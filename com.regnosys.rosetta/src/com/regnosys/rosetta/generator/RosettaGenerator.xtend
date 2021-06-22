@@ -152,10 +152,11 @@ class RosettaGenerator extends AbstractGenerator {
 
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		try {
-			backwardCompatibilityGenerator.generate(fsa2)
-			
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
+			
+			backwardCompatibilityGenerator.generate(fsa)
+			
 			val models = if (resource.resourceSet?.resources === null) {
 							LOGGER.warn("No resource set found for " + resource.URI.toString)
 							newArrayList
@@ -168,7 +169,7 @@ class RosettaGenerator extends AbstractGenerator {
 			
 			javaPackageInfoGenerator.generatePackageInfoClasses(fsa, namespaceDescriptionMap)
 			namespaceHierarchyGenerator.generateNamespacePackageHierarchy(fsa, namespaceDescriptionMap, namespaceUrilMap)
-
+			
 			externalGenerators.forEach [ generator |
 				generator.afterGenerate(models, [ map |
 					map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]
