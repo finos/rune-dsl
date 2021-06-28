@@ -10,13 +10,23 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.BlueprintDataJoin
+import com.regnosys.rosetta.rosetta.BlueprintExtract
+import com.regnosys.rosetta.rosetta.BlueprintFilter
+import com.regnosys.rosetta.rosetta.BlueprintReduce
 import com.regnosys.rosetta.rosetta.RosettaAlias
+import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
+import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
@@ -26,6 +36,7 @@ import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaTreeNode
@@ -35,6 +46,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
+import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -49,44 +61,34 @@ import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
+import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
+import java.lang.reflect.Method
 import java.time.format.DateTimeFormatter
 import java.util.List
 import java.util.Stack
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
+import org.apache.log4j.Logger
+import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
+import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.xtext.validation.Check
-import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
+import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import java.lang.reflect.Method
-import org.eclipse.xtext.validation.AbstractDeclarativeValidator
-import org.eclipse.xtext.validation.AbstractDeclarativeValidator.MethodWrapper
-import org.apache.log4j.Logger
-import org.eclipse.xtext.validation.FeatureBasedDiagnostic
-import org.eclipse.emf.common.util.Diagnostic
-import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.BlueprintExtract
-import com.regnosys.rosetta.rosetta.BlueprintDataJoin
-import com.regnosys.rosetta.rosetta.BlueprintReduce
-import com.regnosys.rosetta.types.RosettaOperators
-import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import com.regnosys.rosetta.rosetta.BlueprintFilter
 
 /**
  * This class contains custom validation rules. 
@@ -1086,9 +1088,48 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 	}
 	
+	@Check
+	def checkOnlyExistsPathsHaveCommonParent(RosettaOnlyExistsExpression e) {
+		val parents = e.args
+				.map[onlyExistsParentType]
+				.filter[it !== null]
+				.toSet
+		if (parents.size > 1) {
+			error('''Only exists paths must have a common parent. Found types «parents.join(", ")».''', e, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS)
+		}
+	}
 	
-	
-	
+	private def getOnlyExistsParentType(RosettaExpression e) {
+		switch (e) {
+			RosettaFeatureCall: {
+				val parentFeatureCall = e.receiver
+				switch (parentFeatureCall) {
+					RosettaFeatureCall: {
+						val parentFeature = parentFeatureCall.feature 
+						if (parentFeature instanceof RosettaTypedFeature) {
+							return parentFeature.type.name
+						}
+					}
+					RosettaCallableCall: {
+						val parentCallable = parentFeatureCall.callable 
+						if (parentCallable instanceof Attribute) {
+							return parentCallable.type.name
+						}
+					}
+					default: {
+						log.warn("Only exists parent type unsupported " + parentFeatureCall)
+						return null
+					}
+						
+				}
+			}
+			default: {
+				log.warn("Only exists expression type unsupported " + e)
+				return null
+			}
+		}
+	} 
+
 	/*
 	@Inject TargetURIConverter converter
 	@Inject IResourceDescriptionsProvider index

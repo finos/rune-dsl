@@ -29,6 +29,7 @@ import java.util.LinkedHashSet
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 class RosettaExtensions {
 	
@@ -172,6 +173,9 @@ class RosettaExtensions {
 		else if(expr instanceof RosettaFeatureCall) {
 			if (expr.feature instanceof RosettaTyped)
 				visitor.apply((expr.feature as RosettaTyped).type)
+		}
+		else if(expr instanceof RosettaOnlyExistsExpression) {
+			expr.args.forEach[collectLeafTypes(visitor)]
 		}
 		else if(expr instanceof RosettaExistsExpression) {
 			expr.argument.collectLeafTypes(visitor)

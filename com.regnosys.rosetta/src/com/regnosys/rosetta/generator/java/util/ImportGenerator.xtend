@@ -46,6 +46,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -158,6 +159,9 @@ class ImportGenerator {
 			}
 			RosettaFeatureCall: {
 				addFeatureCall(expression)
+			}
+			RosettaOnlyExistsExpression: {
+				expression.args.forEach[addExpression]
 			}
 			RosettaExistsExpression: {
 				addExpression(expression.argument)

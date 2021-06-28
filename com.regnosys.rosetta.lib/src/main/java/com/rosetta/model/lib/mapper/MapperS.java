@@ -33,7 +33,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 		return new MapperS<>(new MapperItem<>(t, MapperPath.builder().addRoot(t.getClass()), false, Optional.empty()));
 	}
 	
-	public static <T,P> MapperBuilder<T> of(T t, MapperPath path, P parent) {
+	public static <T,P> MapperBuilder<T> of(T t, MapperPath path, MapperItem<P, ?> parent) {
 		if (t==null) { 
 			return new MapperS<>(new MapperItem<>(t, path, true, Optional.ofNullable(parent)));
 		}
@@ -70,12 +70,17 @@ public class MapperS<T> implements MapperBuilder<T> {
 	
 	@Override
 	public Optional<?> getParent() {
-		return item.getParent();
+		return findParent(item)
+				.map(MapperItem::getMappedObject);
 	}
 
 	@Override
 	public List<?> getParentMulti() {
-		return getParent()
+		return  item.getParentItem()
+				.map(this::findParent)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.map(MapperItem::getMappedObject)
 				.map(Collections::singletonList)
 				.orElse(Collections.emptyList());
 	}

@@ -30,11 +30,11 @@ public class ExpressionOperatorsParameterizedTest {
 					.or(greaterThan(MapperS.of(foo).map("getAttr2", Foo::getAttr2), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All));
 	
 	private static final Function<Foo, ComparisonResult> EXISTS = (foo) -> 
-			exists(MapperS.of(foo).map("getAttr1", Foo::getAttr1), false);
+			exists(MapperS.of(foo).map("getAttr1", Foo::getAttr1));
 	
 	private static final Function<Foo, ComparisonResult> EXISTS_WITH_OR = (foo) -> 
-			exists(MapperS.of(foo).map("getAttr1", Foo::getAttr1), false)
-					.or(exists(MapperS.of(foo).map("getAttr2", Foo::getAttr2), false));
+			exists(MapperS.of(foo).map("getAttr1", Foo::getAttr1))
+					.or(exists(MapperS.of(foo).map("getAttr2", Foo::getAttr2)));
 	
 	private static final Function<Bar, ComparisonResult> GREATER_THAN_LIST = (bar) -> 
 			greaterThan(MapperS.of(bar).mapC("getFoos1", Bar::getFoos1).map("getAttr1", 

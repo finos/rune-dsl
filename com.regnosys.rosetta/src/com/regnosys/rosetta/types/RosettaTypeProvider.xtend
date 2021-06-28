@@ -46,6 +46,7 @@ import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import java.util.List
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 class RosettaTypeProvider {
 
@@ -168,6 +169,7 @@ class RosettaTypeProvider {
 			}
 			RosettaContainsExpression,
 			RosettaDisjointExpression,
+			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
 			RosettaAbsentExpression,
 			RosettaBooleanLiteral:
@@ -282,6 +284,7 @@ class RosettaTypeProvider {
 	private def boolean isFeatureCallTypeContext(EObject expression) {
 		val container = expression.eContainer
 		switch container {
+			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
 			RosettaAbsentExpression,
 			RosettaAlias:
