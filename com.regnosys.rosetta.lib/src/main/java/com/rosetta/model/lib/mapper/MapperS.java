@@ -76,10 +76,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 
 	@Override
 	public List<?> getParentMulti() {
-		return  item.getParentItem()
-				.map(this::findParent)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+		return findParent(item)
 				.map(MapperItem::getMappedObject)
 				.map(Collections::singletonList)
 				.orElse(Collections.emptyList());

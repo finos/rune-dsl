@@ -1,9 +1,5 @@
 package com.rosetta.model.lib.mapper;
 
-import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.expression.Converter;
-import com.rosetta.model.lib.meta.FieldWithMeta;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,6 +7,9 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.rosetta.model.lib.expression.Converter;
+import com.rosetta.model.lib.meta.FieldWithMeta;
 
 public interface MapperBuilder<T> extends Mapper<T> {
 
@@ -61,6 +60,7 @@ public interface MapperBuilder<T> extends Mapper<T> {
 
 	Stream<MapperItem<T, ?>> getItems();
 	
+	@SuppressWarnings("unchecked")
 	default Optional<MapperItem<?, ?>> findParent(MapperItem<?, ?> item) {
 		var parentItem = item.getParentItem();
 		if (parentItem.isPresent()) {
