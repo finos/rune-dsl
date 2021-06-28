@@ -108,7 +108,7 @@ public class ExpressionOperators {
 		
 		// Run validation then and results together 
 		return parents.stream()
-			.map(p -> validateOnlyExists(p, RosettaFeatureCallfields))
+			.map(p -> validateOnlyExists(p, fields))
 			.reduce(ComparisonResult.success(), (a, b) -> a.and(b));
 	}
 
