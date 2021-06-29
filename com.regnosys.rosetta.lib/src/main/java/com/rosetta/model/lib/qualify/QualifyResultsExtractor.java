@@ -1,7 +1,6 @@
 package com.rosetta.model.lib.qualify;
 
 import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.qualify.QualifyResult;
 
 import java.util.Collections;
 import java.util.List;

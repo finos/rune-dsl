@@ -36,6 +36,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import com.regnosys.rosetta.generator.util.BackwardCompatibilityGenerator
 
 /**
  * Generates code from your model files on save.
@@ -61,6 +62,7 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
 	@Inject FuncGenerator funcGenerator
+	@Inject BackwardCompatibilityGenerator backwardCompatibilityGenerator
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
@@ -89,7 +91,7 @@ class RosettaGenerator extends AbstractGenerator {
 					LOGGER.warn("No resource set found for " + resource.URI.toString)
 					newHashSet
 				} else resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toSet
-
+				
 				// generate for each model object
 				resource.contents.filter(RosettaModel).forEach [
 					val version = version
@@ -152,6 +154,9 @@ class RosettaGenerator extends AbstractGenerator {
 		try {
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
+			
+			backwardCompatibilityGenerator.generate(fsa)
+			
 			val models = if (resource.resourceSet?.resources === null) {
 							LOGGER.warn("No resource set found for " + resource.URI.toString)
 							newArrayList
@@ -164,7 +169,7 @@ class RosettaGenerator extends AbstractGenerator {
 			
 			javaPackageInfoGenerator.generatePackageInfoClasses(fsa, namespaceDescriptionMap)
 			namespaceHierarchyGenerator.generateNamespacePackageHierarchy(fsa, namespaceDescriptionMap, namespaceUrilMap)
-
+			
 			externalGenerators.forEach [ generator |
 				generator.afterGenerate(models, [ map |
 					map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]

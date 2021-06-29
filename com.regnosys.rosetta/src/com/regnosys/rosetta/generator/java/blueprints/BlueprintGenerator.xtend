@@ -176,7 +176,7 @@ class BlueprintGenerator {
 	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, TypedBPNode typedNode, ImportGenerator imports, extension JavaNames names) {
 		val context = new Context(nodes, imports)
 		return '''
-			«FOR dep : nodes.functionDependencies»
+			«FOR dep : nodes.functionDependencies.toSet»
 				@«Inject» protected «dep.toJavaType» «dep.name.toFirstLower»;
 			«ENDFOR»
 			

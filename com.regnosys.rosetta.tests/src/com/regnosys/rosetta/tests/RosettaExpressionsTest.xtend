@@ -17,7 +17,6 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import org.junit.jupiter.api.Disabled
-import com.regnosys.rosetta.rosetta.simple.Function
 
 /**
  * A set of tests for all instances of RosettaExpression i.e. RosettaAdditiveExpression

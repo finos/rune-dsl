@@ -25,7 +25,8 @@ public class ExpressionOperatorsMapperTreeParameterizedTest {
 			greaterThan(MapperTree.or(
 							MapperTree.of(MapperS.of(foo).map("getAttr1", Foo::getAttr1)), 
 							MapperTree.of(MapperS.of(foo).map("getAttr2", Foo::getAttr2))), 
-					MapperTree.of(MapperS.of(Integer.valueOf(5))));
+					MapperTree.of(MapperS.of(Integer.valueOf(5))), 
+					CardinalityOperator.All);
 	
 	private static final Function<Foo, ComparisonResult> GREATER_THAN_WITH_OR_AND = (foo) -> 
 			greaterThan(MapperTree.or(
@@ -34,7 +35,8 @@ public class ExpressionOperatorsMapperTreeParameterizedTest {
 								MapperTree.and(MapperTree.of(MapperS.of(foo).map("getAttr2", Foo::getAttr2)), 
 											   MapperTree.of(MapperS.of(foo).map("getAttr3", Foo::getAttr3))), 
 								MapperTree.of(MapperS.of(foo).map("getAttr4", Foo::getAttr4)))), 
-					MapperTree.of(MapperS.of(Integer.valueOf(5))));
+					MapperTree.of(MapperS.of(Integer.valueOf(5))), 
+					CardinalityOperator.All);
 	
 	private static final Function<Foo, ComparisonResult> GREATER_THAN_AND = (foo) -> 
 			greaterThan(
@@ -43,7 +45,8 @@ public class ExpressionOperatorsMapperTreeParameterizedTest {
 							MapperTree.of(MapperS.of(foo).map("getAttr2", Foo::getAttr2))), 
 					MapperTree.and(
 							MapperTree.of(MapperS.of(foo).map("getAttr3", Foo::getAttr3)), 
-							MapperTree.of(MapperS.of(foo).map("getAttr4", Foo::getAttr4))));
+							MapperTree.of(MapperS.of(foo).map("getAttr4", Foo::getAttr4))), 
+					CardinalityOperator.All);
 			
 	private static final Function<Foo, ComparisonResult> ARE_EQUAL_AND = (foo) -> 
 			areEqual(
@@ -52,7 +55,8 @@ public class ExpressionOperatorsMapperTreeParameterizedTest {
 							MapperTree.of(MapperS.of(foo).map("getAttr2", Foo::getAttr2))), 
 					MapperTree.and(
 							MapperTree.of(MapperS.of(foo).map("getAttr3", Foo::getAttr3)), 
-							MapperTree.of(MapperS.of(foo).map("getAttr4", Foo::getAttr4))));
+							MapperTree.of(MapperS.of(foo).map("getAttr4", Foo::getAttr4))), 
+					CardinalityOperator.All);
 	
 	private static final Function<Foo, ComparisonResult> NOT_EQUAL_AND = (foo) -> 
 			notEqual(
@@ -61,7 +65,8 @@ public class ExpressionOperatorsMapperTreeParameterizedTest {
 							MapperTree.of(MapperS.of(foo).map("getAttr2", Foo::getAttr2))), 
 					MapperTree.and(
 							MapperTree.of(MapperS.of(foo).map("getAttr3", Foo::getAttr3)), 
-							MapperTree.of(MapperS.of(foo).map("getAttr4", Foo::getAttr4))));
+							MapperTree.of(MapperS.of(foo).map("getAttr4", Foo::getAttr4))), 
+					CardinalityOperator.Any);
 			
 			
 	private static final Function<Foo, ComparisonResult> EXISTS_WITH_OR = (foo) -> 

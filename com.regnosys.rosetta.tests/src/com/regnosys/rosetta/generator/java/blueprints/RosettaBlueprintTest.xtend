@@ -885,6 +885,7 @@ class RosettaBlueprintTest {
 			val expected = '''
 			package com.rosetta.test.model.blueprint;
 			
+			import com.rosetta.model.lib.expression.CardinalityOperator;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import javax.inject.Inject;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -927,7 +928,7 @@ class RosettaBlueprintTest {
 				public BlueprintInstance<Input, String, INKEY, INKEY> blueprint() { 
 					return 
 						startsWith(actionFactory, BlueprintBuilder.<Input, String, INKEY, INKEY>and(actionFactory,
-							startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->traderef=\"3\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("3")).get(), null))
+							startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->traderef=\"3\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("3"), CardinalityOperator.All).get(), null))
 							.then(actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@next/@node", "->traderef", new StringIdentifier("->traderef"), input -> MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()))),
 							startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->colour", new StringIdentifier("->colour"), input -> MapperS.of(input).<String>map("getColour", _input -> _input.getColour())))
 							)
@@ -1418,6 +1419,7 @@ class RosettaBlueprintTest {
 		val expected = '''
 		package com.rosetta.test.model.blueprint;
 		
+		import com.rosetta.model.lib.expression.CardinalityOperator;
 		import com.rosetta.model.lib.mapper.MapperS;
 		import javax.inject.Inject;
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -1458,7 +1460,7 @@ class RosettaBlueprintTest {
 			@Override
 			public BlueprintInstance<Input, Input, INKEY, INKEY> blueprint() { 
 				return 
-					startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->traderef=\"Hello\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello")).get(), null))
+					startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->traderef=\"Hello\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get(), null))
 					.toBlueprint(getURI(), getName());
 			}
 		}
@@ -1533,6 +1535,7 @@ class RosettaBlueprintTest {
 		val expected = '''
 			package com.rosetta.test.model.blueprint;
 			
+			import com.rosetta.model.lib.expression.CardinalityOperator;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Hero;
 			import javax.inject.Inject;
@@ -1582,7 +1585,7 @@ class RosettaBlueprintTest {
 						startsWith(actionFactory, actionFactory.<Avengers, Hero, INKEY>newRosettaMultipleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->heros", new StringIdentifier("->heros"), avengers -> MapperS.of(avengers).<Hero>mapC("getHeros", _avengers -> _avengers.getHeros())))
 						.then(new FilterByRule<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "CanWieldMjolnir", 
 											getCanWieldMjolnir(), null))
-						.then(new Filter<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@node", "->name<>\"Thor\"", hero -> notEqual(MapperS.of(hero).<String>map("getName", _hero -> _hero.getName()), MapperS.of("Thor")).get(), null))
+						.then(new Filter<Hero, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@node", "->name<>\"Thor\"", hero -> notEqual(MapperS.of(hero).<String>map("getName", _hero -> _hero.getName()), MapperS.of("Thor"), CardinalityOperator.Any).get(), null))
 						.then(actionFactory.<Hero, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@next/@next/@next/@node", "->name", new StringIdentifier("->name"), hero -> MapperS.of(hero).<String>map("getName", _hero -> _hero.getName())))
 						.toBlueprint(getURI(), getName());
 				}
@@ -1636,6 +1639,7 @@ class RosettaBlueprintTest {
 		val expected = '''
 			package com.rosetta.test.model.blueprint;
 			
+			import com.rosetta.model.lib.expression.CardinalityOperator;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import javax.inject.Inject;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -1676,7 +1680,7 @@ class RosettaBlueprintTest {
 				@Override
 				public BlueprintInstance<Foo, Boolean, INKEY, INKEY> blueprint() { 
 					return 
-						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->fixed count=12", new StringIdentifier("->fixed count=12"), foo -> areEqual(MapperS.of(MapperS.of(foo).<String>mapC("getFixed", _foo -> _foo.getFixed()).resultCount()), MapperS.of(Integer.valueOf(12)))))
+						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "->fixed count=12", new StringIdentifier("->fixed count=12"), foo -> areEqual(MapperS.of(MapperS.of(foo).<String>mapC("getFixed", _foo -> _foo.getFixed()).resultCount()), MapperS.of(Integer.valueOf(12)), CardinalityOperator.All)))
 						.toBlueprint(getURI(), getName());
 				}
 			}
@@ -2093,8 +2097,39 @@ class RosettaBlueprintTest {
 					foo number (0..1)
 				output: 
 					bar number (1..1)
-			assign-output bar:
-				foo +1
+				assign-output bar:
+					foo + 1
+				
+			'''.parseRosettaWithNoErrors
+			.generateCode
+			//blueprint.writeClasses("functionCall")
+			blueprint.compileToClasses
+	}
+	
+	@Test
+	def void functionCalls() {
+		val blueprint = ''' 
+			type Foo:
+				bar Bar (1..1)
+			
+			type Bar:
+				val number (1..1)
+			
+			reporting rule Rule1
+				return MyFunc1() then
+				extract MyFunc(Foo->bar->val) > MyFunc(3.0)
+			
+			func MyFunc1: 
+				output:
+					foo Foo (1..1)
+			
+			func MyFunc:
+				inputs: 
+					foo number (0..1)
+				output: 
+					bar number (1..1)
+				assign-output bar:
+					foo + 1
 				
 			'''.parseRosettaWithNoErrors
 			.generateCode
@@ -2243,6 +2278,119 @@ class RosettaBlueprintTest {
 			"Input type of Foo is not assignable from type Bar of previous node")
 		
 	}
+
+
+	@Test
+	def void longNestedIfElseWithReturn0() {
+		var blueprint = '''
+		type Foo:
+			bar Bar (1..1)
+		
+		enum Bar:
+			A B C D F G H I J K L M N O P Q R S T U V W X Y Z
+		
+		reporting rule BarField
+				extract if Foo -> bar = Bar -> A then "A"
+					else if Foo -> bar = Bar -> B then "B"
+					else if Foo -> bar = Bar -> C then "C"
+					else if Foo -> bar = Bar -> D then "D"
+					else if Foo -> bar = Bar -> F then "F"
+					else if Foo -> bar = Bar -> G then "G"
+					else if Foo -> bar = Bar -> H then "H"
+					else if Foo -> bar = Bar -> I then "I"
+					else if Foo -> bar = Bar -> B then "B"
+					else if Foo -> bar = Bar -> C then "C"
+					else if Foo -> bar = Bar -> D then "D"
+					else if Foo -> bar = Bar -> F then "F"
+					else if Foo -> bar = Bar -> G then "G"
+					else if Foo -> bar = Bar -> H then "H"
+					else if Foo -> bar = Bar -> I then "I"
+					else if Foo -> bar = Bar -> J then "J"
+					else if Foo -> bar = Bar -> K then "K"
+					else if Foo -> bar = Bar -> L then "L"
+					else if Foo -> bar = Bar -> M then "M"
+					else if Foo -> bar = Bar -> N then "N"
+					else if Foo -> bar = Bar -> O then "O"
+					else if Foo -> bar = Bar -> P then "P"
+					else if Foo -> bar = Bar -> Q then "Q"
+					else if Foo -> bar = Bar -> R then "R"
+					else if Foo -> bar = Bar -> S then "S"
+					else if Foo -> bar = Bar -> T then "T"
+					else if Foo -> bar = Bar -> U then "U"
+					else if Foo -> bar = Bar -> V then "V"
+					else if Foo -> bar = Bar -> W then "W"
+					else if Foo -> bar = Bar -> X then "X"
+					else if Foo -> bar = Bar -> Y then "Y"
+					else if Foo -> bar = Bar -> Z then "Z"
+					else "0"
+			
+		'''.toString
+		.replace('\r', "")
+		.generateCode
+		//blueprint.writeClasses("longNestedIfElseWithReturn0");
+			
+		
+		blueprint.compileToClasses
+		
+	}
+
+
+	@Test
+	def void longNestedIfElseWithNoReturn() {
+		var blueprint = '''
+		type Foo:
+			bar Bar (1..1)
+		
+		enum Bar:
+			A B C D F G H I J K L M N O P Q R S T U V W X Y Z
+		
+		reporting rule BarField
+				extract if Foo -> bar = Bar -> A then "A"
+					else if Foo -> bar = Bar -> B then "B"
+					else if Foo -> bar = Bar -> C then "C"
+					else if Foo -> bar = Bar -> D then "D"
+					else if Foo -> bar = Bar -> F then "F"
+					else if Foo -> bar = Bar -> G then "G"
+					else if Foo -> bar = Bar -> H then "H"
+					else if Foo -> bar = Bar -> I then "I"
+					else if Foo -> bar = Bar -> B then "B"
+					else if Foo -> bar = Bar -> C then "C"
+					else if Foo -> bar = Bar -> D then "D"
+					else if Foo -> bar = Bar -> F then "F"
+					else if Foo -> bar = Bar -> G then "G"
+					else if Foo -> bar = Bar -> H then "H"
+					else if Foo -> bar = Bar -> I then "I"
+					else if Foo -> bar = Bar -> J then "J"
+					else if Foo -> bar = Bar -> K then "K"
+					else if Foo -> bar = Bar -> L then "L"
+					else if Foo -> bar = Bar -> M then "M"
+					else if Foo -> bar = Bar -> N then "N"
+					else if Foo -> bar = Bar -> O then "O"
+					else if Foo -> bar = Bar -> P then "P"
+					else if Foo -> bar = Bar -> Q then "Q"
+					else if Foo -> bar = Bar -> R then "R"
+					else if Foo -> bar = Bar -> S then "S"
+					else if Foo -> bar = Bar -> T then "T"
+					else if Foo -> bar = Bar -> U then "U"
+					else if Foo -> bar = Bar -> V then "V"
+					else if Foo -> bar = Bar -> W then "W"
+					else if Foo -> bar = Bar -> X then "X"
+					else if Foo -> bar = Bar -> Y then "Y"
+					else if Foo -> bar = Bar -> Z then "Z"
+			
+		'''.toString
+		.replace('\r', "")
+		.generateCode
+		//blueprint.writeClasses("longNestedIfElseWithNoReturn");
+			
+		
+		blueprint.compileToClasses
+		
+	}
+
+
+
+
 
 	@Test
 	@Disabled

@@ -543,11 +543,11 @@ RosettaCalcExists returns RosettaExpression:
 ;
 
 RosettaCalcEquality returns RosettaExpression:
-	RosettaCalcComparison ( =>({RosettaBinaryOperation.left=current} operator=('='|'<>')) right=RosettaCalcComparison)*
+	RosettaCalcComparison ( =>({RosettaBinaryOperation.left=current} (cardOp=('all'|'any'))? operator=('='|'<>')) right=RosettaCalcComparison)*
 ;
 	
 RosettaCalcComparison returns RosettaExpression:
-	RosettaCalcAdditive ( =>({RosettaBinaryOperation.left=current} operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
+	RosettaCalcAdditive ( =>({RosettaBinaryOperation.left=current} (cardOp=('all'|'any'))? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
 ;
 
 RosettaCalcAdditive returns RosettaExpression:

@@ -1,5 +1,6 @@
 package com.rosetta.model.lib.expression;
 
+import com.rosetta.model.lib.expression.ExpressionOperators.CompareFunction;
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.MapperTree;
 import java.util.function.BiFunction;
@@ -25,24 +26,24 @@ class ExpressionsMapperTreeUtil {
 		return func.apply(t.getData(), only);
 	}
 	
-	static <T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult evaluateTrees(MapperTree<T> t1, MapperTree<X> t2, BiFunction<Mapper<T>, Mapper<X>, ComparisonResult> comparisonFunction) {
+	static <T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult evaluateTrees(MapperTree<T> t1, MapperTree<X> t2, CardinalityOperator o, CompareFunction<Mapper<T>, Mapper<X>> comparisonFunction) {
 		if(!t1.isLeaf()) {
-			ComparisonResult left = evaluateTrees(t1.getLeft(), t2, comparisonFunction);
-			ComparisonResult right = evaluateTrees(t1.getRight(), t2, comparisonFunction);
+			ComparisonResult left = evaluateTrees(t1.getLeft(), t2, o, comparisonFunction);
+			ComparisonResult right = evaluateTrees(t1.getRight(), t2, o, comparisonFunction);
 			return evaluateIgnoreEmptyOperand(t1.getOperator(), left, right);
 		}
 		else
-			return evaluateTrees(t1.getData(), t2, comparisonFunction);
+			return evaluateTrees(t1.getData(), t2, o, comparisonFunction);
 	}
 	
-	static <T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult evaluateTrees(Mapper<T> m1, MapperTree<X> t2, BiFunction<Mapper<T>, Mapper<X>, ComparisonResult> comparisonFunction) {
+	static <T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult evaluateTrees(Mapper<T> m1, MapperTree<X> t2, CardinalityOperator o, CompareFunction<Mapper<T>, Mapper<X>> comparisonFunction) {
 		if(!t2.isLeaf()) {
-			ComparisonResult left = evaluateTrees(m1, t2.getLeft(), comparisonFunction);
-			ComparisonResult right = evaluateTrees(m1, t2.getRight(), comparisonFunction);
+			ComparisonResult left = evaluateTrees(m1, t2.getLeft(), o, comparisonFunction);
+			ComparisonResult right = evaluateTrees(m1, t2.getRight(), o, comparisonFunction);
 			return evaluateIgnoreEmptyOperand(t2.getOperator(), left, right);
 		}
 		else
-			return comparisonFunction.apply(m1, t2.getData());
+			return comparisonFunction.apply(m1, t2.getData(), o);
 	}
 	
 	static ComparisonResult evaluate(MapperTree.Operator op, ComparisonResult left, ComparisonResult right) {
