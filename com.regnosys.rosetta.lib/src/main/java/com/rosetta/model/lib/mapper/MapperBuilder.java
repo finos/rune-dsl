@@ -60,14 +60,13 @@ public interface MapperBuilder<T> extends Mapper<T> {
 
 	Stream<MapperItem<T, ?>> getItems();
 	
-	@SuppressWarnings("unchecked")
 	default Optional<MapperItem<?, ?>> findParent(MapperItem<?, ?> item) {
 		var parentItem = item.getParentItem();
 		if (parentItem.isPresent()) {
 			if (parentItem.get().getMappedObject() instanceof FieldWithMeta) {
 				return findParent(parentItem.get());
 			}
-			return (Optional<MapperItem<?, ?>>) parentItem;
+			return Optional.of(parentItem.get());
 		}
 		return Optional.empty();
 	}
