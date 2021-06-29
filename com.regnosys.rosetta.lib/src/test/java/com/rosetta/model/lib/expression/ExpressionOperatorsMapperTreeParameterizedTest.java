@@ -72,8 +72,7 @@ public class ExpressionOperatorsMapperTreeParameterizedTest {
 	private static final Function<Foo, ComparisonResult> EXISTS_WITH_OR = (foo) -> 
 			exists(MapperTree.or(
 					MapperTree.of(MapperS.of(foo).map("getAttr1", Foo::getAttr1)), 
-								  MapperTree.of(MapperS.of(foo).map("getAttr2", Foo::getAttr2))), 
-					false);
+								  MapperTree.of(MapperS.of(foo).map("getAttr2", Foo::getAttr2))));
 	
 	@ParameterizedTest(name = "{0}")
     @MethodSource("evaluateFunctionTestParams")

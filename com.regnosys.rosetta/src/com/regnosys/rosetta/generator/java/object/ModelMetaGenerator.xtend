@@ -61,16 +61,7 @@ class ModelMetaGenerator {
 			@«RosettaMeta»(model=«dataClass».class)
 			public class «className» implements «RosettaMetaData»<«dataClass»> {
 			
-				@Deprecated // remove method once all models have updated to DSL version 4.4.0
-				public «List»<«Validator»<? super «dataClass»>> dataRules() {
-					return «Arrays».asList(
-						«FOR r : conditionRules(c, c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
-							new «javaNames.packages.model.dataRule.name».«r.ruleName.toConditionJavaType»()
-						«ENDFOR»
-					);
-				}
-				
-				//@Override // uncomment annotation once all models have updated to DSL version 4.4.0
+				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
 						«FOR r : conditionRules(c, c.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
@@ -86,11 +77,6 @@ class ModelMetaGenerator {
 							new «javaNames.packages.model.choiceRule.name».«r.ruleName.toConditionJavaType»()
 						«ENDFOR»
 					);
-				}
-				
-				@Deprecated // remove method once all models have updated to DSL version 4.3.0
-				public «List»<«java.util.function.Function»<? super «dataClass», «QualifyResult»>> getQualifyFunctions() {
-					return «Collections».emptyList();
 				}
 				
 				@Override
@@ -112,7 +98,7 @@ class ModelMetaGenerator {
 				}
 				
 				@Override
-				public «ValidatorWithArg»<? super «dataClass», String> onlyExistsValidator() {
+				public «ValidatorWithArg»<? super «dataClass», «Set»<String>> onlyExistsValidator() {
 					return new «javaNames.packages.model.existsValidation.name».«ValidatorsGenerator.onlyExistsValidatorName(c)»();
 				}
 			}

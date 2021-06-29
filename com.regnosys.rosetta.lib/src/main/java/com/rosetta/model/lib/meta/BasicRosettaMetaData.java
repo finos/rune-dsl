@@ -2,6 +2,7 @@ package com.rosetta.model.lib.meta;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.rosetta.model.lib.RosettaModelObject;
@@ -34,7 +35,7 @@ public class BasicRosettaMetaData<T extends RosettaModelObject> implements Roset
 	}
 
 	@Override
-	public ValidatorWithArg<T, String> onlyExistsValidator() {
+	public ValidatorWithArg<T, Set<String>> onlyExistsValidator() {
 		return null;
 	}
 }

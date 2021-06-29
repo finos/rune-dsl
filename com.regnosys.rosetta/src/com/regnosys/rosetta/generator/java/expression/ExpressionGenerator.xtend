@@ -34,6 +34,7 @@ import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -64,6 +65,7 @@ import org.eclipse.xtext.util.Wrapper
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
+import java.util.List
 
 class ExpressionGenerator {
 	
@@ -100,8 +102,11 @@ class ExpressionGenerator {
 				}
 				featureCall(expr, params, isLast, autoValue)
 			}
+			RosettaOnlyExistsExpression : {
+				onlyExistsExpr(expr, params)
+			}
 			RosettaExistsExpression : {
-				existsExpr(expr, expr.argument, params)
+				existsExpr(expr, params)
 			}
 			RosettaBinaryOperation : {
 				binaryExpr(expr, null, params)
@@ -193,7 +198,6 @@ class ExpressionGenerator {
 		'''
 	}
 
-
 	private def RosettaConditionalExpression childElseThen(RosettaConditionalExpression expr) {
 		if (expr.elsethen instanceof RosettaConditionalExpression)
 			expr.elsethen as RosettaConditionalExpression
@@ -250,8 +254,12 @@ class ExpressionGenerator {
 		'''«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF !(arg instanceof EmptyLiteral)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDFOR»'''
 	}
 	
-	def StringConcatenationClient existsExpr(RosettaExistsExpression exists, RosettaExpression argument, ParamMap params) {
-		val arg = getAliasExpressionIfPresent(argument)
+	def StringConcatenationClient onlyExistsExpr(RosettaOnlyExistsExpression onlyExists, ParamMap params) {
+		'''«importWildCard(ExpressionOperators)»onlyExists(«List».of(«FOR arg : onlyExists.args SEPARATOR ', '»«arg.javaCode(params)»«ENDFOR»))'''
+	}
+	
+	def StringConcatenationClient existsExpr(RosettaExistsExpression exists, ParamMap params) {
+		val arg = getAliasExpressionIfPresent(exists.argument)
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
@@ -275,13 +283,13 @@ class ExpressionGenerator {
 	
 	private def StringConcatenationClient doExistsExpr(RosettaExistsExpression exists, StringConcatenationClient arg) {
 		if(exists.single)
-			'''singleExists(«arg», «exists.only»)'''
+			'''singleExists(«arg»)'''
 		else if(exists.multiple)
-			'''multipleExists(«arg», «exists.only»)'''
-		else 
-			'''exists(«arg», «exists.only»)'''
+			'''multipleExists(«arg»)'''
+		else
+			'''exists(«arg»)'''
 	}
-	
+
 	def StringConcatenationClient absentExpr(RosettaAbsentExpression notSet, RosettaExpression argument, ParamMap params) {
 		val arg = getAliasExpressionIfPresent(argument)
 		val binary = arg.findBinaryOperation

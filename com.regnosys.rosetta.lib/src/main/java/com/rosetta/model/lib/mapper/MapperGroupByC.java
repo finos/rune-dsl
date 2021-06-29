@@ -62,12 +62,12 @@ public class MapperGroupByC<T,G> implements MapperGroupByBuilder<T,G> {
 	public Optional<?> getParent() {
 		List<MapperItem<T, ?>> collect = getItems(false).collect(Collectors.toList());
 		if (collect.size()!=1) return Optional.empty();
-		return collect.get(0).getParent();
+		return collect.get(0).getParentItem();
 	}
 
 	@Override
 	public List<?> getParentMulti() {
-		return getItems(false).map(i->i.getParent()).collect(Collectors.toList());
+		return getItems(false).map(i->i.getParentItem()).collect(Collectors.toList());
 	}
 
 	@Override

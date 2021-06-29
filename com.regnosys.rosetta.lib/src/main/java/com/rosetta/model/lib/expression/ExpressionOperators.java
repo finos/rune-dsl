@@ -3,16 +3,17 @@ package com.rosetta.model.lib.expression;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.Mapper.Path;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.mapper.MapperTree;
 import com.rosetta.model.lib.meta.RosettaMetaData;
-import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
 
@@ -33,22 +34,22 @@ public class ExpressionOperators {
 	
 	// exists
 	
-	public static <T> ComparisonResult exists(Mapper<T> o, boolean only) {
+	public static <T> ComparisonResult exists(Mapper<T> o) {
 		if (o.resultCount()>0) {
-			return only ? onlyExists(o) : ComparisonResult.success();
+			return ComparisonResult.success();
 		}
 		return ComparisonResult.failure(o.getErrorPaths() + " does not exist");
 	}
 	
-	public static <T> ComparisonResult exists(MapperTree<T> t, boolean only) {
-		return ExpressionsMapperTreeUtil.evaluateTree(t, only, ExpressionOperators::exists);
+	public static <T> ComparisonResult exists(MapperTree<T> t) {
+		return ExpressionsMapperTreeUtil.evaluateTree(t, ExpressionOperators::exists);
 	}
-
+	
 	// singleExists
 	
-	public static <T> ComparisonResult singleExists(Mapper<T> o, boolean only) {
+	public static <T> ComparisonResult singleExists(Mapper<T> o) {
 		if (o.resultCount()==1) {
-			return only ? onlyExists(o) : ComparisonResult.success();
+			return  ComparisonResult.success();
 		}
 		
 		String error = o.resultCount() > 0 ?
@@ -58,15 +59,15 @@ public class ExpressionOperators {
 		return ComparisonResult.failure(error);
 	}
 	
-	public static <T> ComparisonResult singleExists(MapperTree<T> t, boolean only) {
-		return ExpressionsMapperTreeUtil.evaluateTree(t, only, ExpressionOperators::singleExists);
+	public static <T> ComparisonResult singleExists(MapperTree<T> t) {
+		return ExpressionsMapperTreeUtil.evaluateTree(t, ExpressionOperators::singleExists);
 	}
 	
 	// multipleExists
 	
-	public static <T> ComparisonResult multipleExists(Mapper<T> o, boolean only) {
+	public static <T> ComparisonResult multipleExists(Mapper<T> o) {
 		if (o.resultCount()>1) {
-			return only ? onlyExists(o) : ComparisonResult.success();
+			return ComparisonResult.success();
 		}
 		
 		String error = o.resultCount() > 0 ?
@@ -76,41 +77,64 @@ public class ExpressionOperators {
 		return ComparisonResult.failure(error);
 	}
 	
-	public static <T> ComparisonResult multipleExists(MapperTree<T> t, boolean only) {
-		return ExpressionsMapperTreeUtil.evaluateTree(t, only, ExpressionOperators::multipleExists);
+	public static <T> ComparisonResult multipleExists(MapperTree<T> t) {
+		return ExpressionsMapperTreeUtil.evaluateTree(t, ExpressionOperators::multipleExists);
 	}
 	
 	// onlyExists
 	
-	private static <T> ComparisonResult onlyExists(Mapper<T> o) {
-		// Ensure all objects are of type RosettaModelObject
-		List<? extends RosettaModelObject> parents = o.getParentMulti().stream()
-			    .filter(p -> p instanceof RosettaModelObject)
-			    .map (p -> (RosettaModelObject) p)
-			    .collect(Collectors.toList());
-		// Get the function name
-		Optional<String> field = o.getPaths().stream().map(p -> p.getLastName()).distinct().findFirst();
-		// Check with onlyExistsValidator
-		//TODO work out what the correct rosettPath is here
-		return field.map(f -> validateOnlyExists(null, parents, f))
-				.orElseThrow(() -> new IllegalArgumentException("Error occurred while checking only exists on " + o));
+	public static ComparisonResult onlyExists(List<? extends Mapper<?>> o) {
+		// Validation rule checks that all parents match
+		Set<RosettaModelObject> parents = o.stream()
+				.map(Mapper::getParentMulti)
+				.flatMap(Collection::stream)
+				.map(RosettaModelObject.class::cast)
+			    .collect(Collectors.toSet());
+		
+		if (parents.size() == 0) {
+			return ComparisonResult.failure("No fields set.");
+		}
+
+		// Find attributes to check
+		Set<String> fields = o.stream()
+				.flatMap(m -> Stream.concat(m.getPaths().stream(), m.getErrorPaths().stream()))
+				.map(ExpressionOperators::getAttributeName)
+				.collect(Collectors.toSet());
+		
+		// The number of attributes to check, should equal the number of mappers
+		if (fields.size() != o.size()) {
+			return ComparisonResult.failure("All required fields not set.");
+		}
+		
+		// Run validation then and results together 
+		return parents.stream()
+			.map(p -> validateOnlyExists(p, fields))
+			.reduce(ComparisonResult.success(), (a, b) -> a.and(b));
+	}
+
+	/**
+	 * @return attributeName - get the attribute name which is the path leaf node, unless attribute has metadata (scheme/reference etc), where it is the paths penultimate node. 
+	 */
+	private static String getAttributeName(Path p) {
+		String attr = p.getLastName();
+		return "value".equals(attr) || "reference".equals(attr) || "globalReference".equals(attr) ? 
+				p.getNames().get(p.getNames().size() - 2) : 
+				attr;
 	}
 	
-	private static <T extends RosettaModelObject> ComparisonResult validateOnlyExists(RosettaPath path, List<T> parents, String field) {
-		ComparisonResult result = ComparisonResult.success();
-		for(T parent : parents) {
-			@SuppressWarnings("unchecked")
-			RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
-			ValidatorWithArg<? super T, String> onlyExistsValidator = meta.onlyExistsValidator();
-			if (onlyExistsValidator != null) {
-				ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(path, parent, field);
-				// Translate validationResult into comparisonResult
-				result = result.and(validationResult.isSuccess() ? ComparisonResult.success() : ComparisonResult.failure(validationResult.getFailureReason().orElse("")));
-			} else {
-				result = result.and(ComparisonResult.success());
-			}
+	private static <T extends RosettaModelObject> ComparisonResult validateOnlyExists(T parent, Set<String> fields) {
+		@SuppressWarnings("unchecked")
+		RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
+		ValidatorWithArg<? super T, Set<String>> onlyExistsValidator = meta.onlyExistsValidator();
+		if (onlyExistsValidator != null) {
+			ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
+			// Translate validationResult into comparisonResult
+			return validationResult.isSuccess() ? 
+					ComparisonResult.success() : 
+					ComparisonResult.failure(validationResult.getFailureReason().orElse(""));
+		} else {
+			return ComparisonResult.success();
 		}
-		return result;
 	}
 	
 	/**

@@ -16,6 +16,8 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
+import com.regnosys.rosetta.rosetta.RosettaMapPathValue
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
@@ -26,7 +28,6 @@ import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
-import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 
 class CardinalityProvider {
 	
@@ -56,6 +57,7 @@ class CardinalityProvider {
 			RosettaSynonymValueBase,
 			RosettaCountOperation,
 			RosettaAbsentExpression,
+			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
 			RosettaContainsExpression,
 			RosettaDisjointExpression,

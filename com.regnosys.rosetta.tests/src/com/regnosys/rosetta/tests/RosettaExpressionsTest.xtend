@@ -181,12 +181,12 @@ class RosettaExpressionsTest {
 				one Foo (1..*)
 					[metadata scheme]
 				two int (1..1)
-			
+
 			type Foo:
 				one string (1..1)
 					[metadata scheme]
 				two int (1..1)
-			
+
 			func TestQualifier:
 				inputs: test Test(1..1)
 				output: is_product boolean (1..1)

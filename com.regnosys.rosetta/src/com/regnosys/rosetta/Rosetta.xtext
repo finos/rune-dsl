@@ -534,10 +534,10 @@ RosettaCalcAnd returns RosettaExpression:
 RosettaCalcExists returns RosettaExpression:
 	RosettaCalcEquality (
 		->(
-		  {RosettaExistsExpression.argument=current} only?='only'? (single?='single' | multiple?='multiple')? 'exists'
-		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
-		| {RosettaContainsExpression.container=current} 'contains' contained=RosettaCalcAttributeCall
-		| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaCalcAttributeCall
+			{RosettaExistsExpression.argument=current} (single?='single' | multiple?='multiple')? 'exists'
+			| {RosettaAbsentExpression.argument=current} 'is' 'absent'
+			| {RosettaContainsExpression.container=current} 'contains' contained=RosettaCalcAttributeCall
+			| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaCalcAttributeCall
 		)
 	)?
 ;
@@ -574,14 +574,18 @@ RosettaCalcPrimary returns RosettaExpression:
 	| RosettaCallableCall
 	| RosettaLiteral
 	| RosettaParenthesisCalcExpression
+	| RosettaCalcOnlyExists
 ;
 RosettaCalcConditionalExpression returns RosettaExpression:
 	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?
 ;
 
-
 RosettaParenthesisCalcExpression:
 	'(' expression = RosettaCalcExpression ')'
+;
+
+RosettaCalcOnlyExists returns RosettaExpression:
+	{RosettaOnlyExistsExpression} (args+=RosettaClassAttributeCall | ('(' args+=RosettaClassAttributeCall (',' args+=RosettaClassAttributeCall)* ')')) 'only' 'exists'
 ;
 
 /*****************************************

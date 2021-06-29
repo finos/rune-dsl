@@ -57,6 +57,7 @@ import java.util.HashSet
 import com.regnosys.rosetta.validation.TypedBPNode.BPCardinality
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 class RosettaBlueprintTypeResolver {
 	
@@ -572,6 +573,10 @@ class RosettaBlueprintTypeResolver {
 	
 	def dispatch RosettaType getInput(RosettaGroupByFeatureCall call) {
 		return getInput(call.call);		
+	}
+	
+	def dispatch RosettaType getInput(RosettaOnlyExistsExpression expr) {
+		return getInput(expr.args.get(0))
 	}
 	
 	def dispatch RosettaType getInput(RosettaExistsExpression expr) {
