@@ -307,12 +307,11 @@ See the Apache License Version 2.0 for the specific language governing permissio
 					<artifactId>tycho-compiler-plugin</artifactId>
 					<version>${tycho-version}</version>
 					<configuration>
-						<!-- <compilerArgument>-err:-forbidden</compilerArgument> -->
 						<useProjectSettings>false</useProjectSettings>
 						<compilerVersion>11</compilerVersion>
-						<source>11</source>
-						<target>1.8</target>
-						<deriveReleaseCompilerArgumentFromTargetLevel>false</deriveReleaseCompilerArgumentFromTargetLevel>
+						<source>${maven.compiler.source}</source>
+						<target>${maven.compiler.target}</target>
+						<release>${maven.compiler.target}</release>
 						<verbose>true</verbose>
  					</configuration>
 				</plugin>
