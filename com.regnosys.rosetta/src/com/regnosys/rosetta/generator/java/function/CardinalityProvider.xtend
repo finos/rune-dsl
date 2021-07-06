@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
@@ -47,7 +46,6 @@ class CardinalityProvider {
 			ShortcutDeclaration: obj.expression.isMulti
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
-			RosettaAlias: obj.expression.isMulti
 			RosettaGroupByFeatureCall,
 			ListLiteral: true
 			RosettaLiteral,

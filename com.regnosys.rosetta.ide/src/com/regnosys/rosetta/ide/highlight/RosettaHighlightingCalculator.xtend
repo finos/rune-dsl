@@ -1,22 +1,18 @@
 package com.regnosys.rosetta.ide.highlight
 
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalRef
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
-import com.regnosys.rosetta.rosetta.RosettaMarketPractice
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
@@ -68,22 +64,10 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 				highlightFeature(acceptor, object, ROSETTA_REGULATORY_REFERENCE__SEGMENTS, NAMED_ID)
 
 			}
-			RosettaMarketPractice: {
-				highlightFeature(acceptor, object, ROSETTA_MARKET_PRACTICE__ORGANISATION, ORGANISATION_ID)
-			}
 			RosettaSynonymBase: {
 				highlightFeatureForAllChildren(acceptor, object, ROSETTA_SYNONYM_BASE__SOURCES, SOURCE_ID)
 			// TODO this works for RosettaSynonym but not RosettaMetaSynonym
 			// highlightFeatureForAllChildren(acceptor, object, ROSETTA_SYNONYM_BASE__META_VALUES, META_ID)
-			}
-			RosettaWorkflowRule: {
-				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, RULE_ID)
-			}
-			RosettaCallableCall case object.callable instanceof RosettaAlias: {
-				highlightFeature(acceptor, object, ROSETTA_CALLABLE_CALL__CALLABLE, ALIASES_ID)
-			}
-			RosettaAlias: {
-				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, ALIASES_ID)
 			}
 			RosettaExternalRef: {
 				highlightFeature(acceptor, object, ROSETTA_EXTERNAL_REF__TYPE_REF, CLASS_ID)

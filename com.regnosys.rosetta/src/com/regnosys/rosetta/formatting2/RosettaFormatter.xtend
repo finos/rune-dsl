@@ -4,7 +4,6 @@
 package com.regnosys.rosetta.formatting2
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
@@ -30,8 +29,6 @@ import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 import com.regnosys.rosetta.rosetta.RosettaSynonym
-import com.regnosys.rosetta.rosetta.RosettaTreeNode
-import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -227,16 +224,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 		)
 		ele.expression.format
 	}
-	def dispatch void format(RosettaAlias ele, extension IFormattableDocument document) {
-		ele.regionFor.keyword(rosettaAliasAccess.aliasKeyword_0).append(ONE_SPACE)
-		val eleEnd = ele.nextHiddenRegion
-		set(
-			ele.regionFor.assignment(rosettaNamedAccess.nameAssignment).nextHiddenRegion,
-			eleEnd,
-			INDENT
-		)
-		ele.expression.format
-	}
 	
 	def dispatch void format(Operation ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword(':').prepend(NO_SPACE).append(ONE_SPACE_PRESERVE_NEWLINE)
@@ -341,12 +328,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.^if.interior(INDENT).format
 		ele.elsethen.interior(INDENT).format
 		ele.ifthen.interior(INDENT).format
-	}
-
-	def dispatch void format(RosettaWorkflowRule rosettaWorkflowRule, extension IFormattableDocument document) {
-	}
-
-	def dispatch void format(RosettaTreeNode rosettaTreeNode, extension IFormattableDocument document) {
 	}
 
 	def dispatch void format(RosettaChoiceRule rosettaChoiceRule, extension IFormattableDocument document) {

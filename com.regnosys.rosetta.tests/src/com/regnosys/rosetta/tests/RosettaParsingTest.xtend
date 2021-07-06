@@ -409,6 +409,8 @@ class RosettaParsingTest {
 	@Test
 	def void testClassSynonym() {
 	'''
+			synonym source FpML
+			
 			type Foo:
 				[synonym FpML value "FooSyn"]
 				bar boolean (1..1)

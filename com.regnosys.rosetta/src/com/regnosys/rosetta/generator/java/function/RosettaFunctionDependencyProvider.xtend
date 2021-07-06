@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
@@ -43,9 +42,6 @@ class RosettaFunctionDependencyProvider {
 			}
 			RosettaExistsExpression: {
 				functionDependencies(object.argument)
-			}
-			RosettaAlias: {
-				functionDependencies(object.expression)
 			}
 			RosettaFeatureCall:
 				functionDependencies(object.receiver)

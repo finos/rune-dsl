@@ -9,7 +9,6 @@ import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
@@ -259,7 +258,7 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient existsExpr(RosettaExistsExpression exists, ParamMap params) {
-		val arg = getAliasExpressionIfPresent(exists.argument)
+		val arg = exists.argument
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
@@ -291,7 +290,7 @@ class ExpressionGenerator {
 	}
 
 	def StringConcatenationClient absentExpr(RosettaAbsentExpression notSet, RosettaExpression argument, ParamMap params) {
-		val arg = getAliasExpressionIfPresent(argument)
+		val arg = argument
 		val binary = arg.findBinaryOperation
 		if (binary !== null) {
 			if(binary.isLogicalOperation)
@@ -310,9 +309,6 @@ class ExpressionGenerator {
 		switch (call)  {
 			Data : {
 				'''«MapperS».of(«params.getClass(call)»)'''
-			}
-			RosettaAlias : {
-				call.expression.javaCode(params)
 			}
 			Attribute : {
 				// Data Attributes can only be called from their conditions
@@ -374,8 +370,8 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient binaryExpr(RosettaBinaryOperation expr, RosettaExpression test, ParamMap params) {
-		val left = getAliasExpressionIfPresent(expr.left)
-		val right = getAliasExpressionIfPresent(expr.right)
+		val left = expr.left
+		val right = expr.right
 		val leftRtype = typeProvider.getRType(expr.left)
 		val rightRtype = typeProvider.getRType(expr.right)
 		val resultType = operators.resultType(expr.operator, leftRtype,rightRtype)
@@ -422,52 +418,17 @@ class ExpressionGenerator {
 				'''«MapperMaths».<«resultType.name.toJavaClass», «leftType», «rightType»>divide(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
 			}
 			default: {
-				// FIXME isProduct isEvent stuff in QualifyFunctionGenerator. Should be removed after alias migration
-				if(left.needsMapperTree && !right.needsMapperTree) {
-					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«toMapperTree(expr.right.javaCode(params))»''', expr.cardOp)
-				} else if(!left.needsMapperTree && right.needsMapperTree) {
-					toComparisonOp('''«toMapperTree(expr.left.javaCode(params))»''', expr.operator, '''«expr.right.javaCode(params)»''', expr.cardOp)
-				} else {
-					toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''', expr.cardOp)
-				}
+				toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''', expr.cardOp)
 			}
 		}
 	}
 	
-	private def boolean needsMapperTree(RosettaExpression expr) {
-		if (expr instanceof RosettaGroupByFeatureCall) {
-			val call = expr.call
-			switch (call) {
-				RosettaCallableCall: {
-					val callable = call.callable
-					if (callable instanceof RosettaAlias) {
-						return callable.expression.isLogicalOperation
-					}
-				}
-				RosettaBinaryOperation: return call.isLogicalOperation
-			}
-		}
-		return expr.isLogicalOperation
-	}
 	
 	private def boolean isLogicalOperation(RosettaExpression expr) {
 		if(expr instanceof RosettaBinaryOperation) return expr.operator == "and" || expr.operator == "or"
 		return false
 	}
-	
-	/**
-	 * Inspect expression and return alias expression if present.  Currently, nested aliases are not supported.
-	 */
-	private def getAliasExpressionIfPresent(RosettaExpression expr) {
-		if (expr instanceof RosettaCallableCall) {
-			val callable = expr.callable
-			if(callable instanceof RosettaAlias) {
-				return callable.expression
-			}
-		}
-		return expr
-	}
-	
+		
 	/**
 	 * Collects all expressions down the tree, and checks that they're all either FeatureCalls or CallableCalls (or anything that resolves to a Mapper)
 	 */

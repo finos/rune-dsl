@@ -115,9 +115,6 @@ class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaTy
 	
 }
 
-class RosettaStereotypeValue extends RosettaRootElement, RosettaNamed {
-}
-
 class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable {
 	refers RosettaEnumeration superType
 	contains RosettaSynonym[] synonyms
@@ -236,15 +233,6 @@ class RosettaMandate extends RosettaRootElement, RosettaNamed, RosettaDefinable 
 class RosettaSegment extends RosettaRootElement, RosettaNamed {
 }
 
-class RosettaMarketPractice {
-	refers RosettaOrganisation organisation
-	String document
-	String recommendation
-}
-
-class RosettaOrganisation extends RosettaRootElement, RosettaNamed {
-}
-
 /**********************************************************************
  * Expressions
  */
@@ -301,28 +289,6 @@ class RosettaParenthesisCalcExpression extends RosettaExpression{
 	contains RosettaExpression expression
 }
 
-
-/**********************************************************************
- * Workflow rule
- */
-
-class RosettaWorkflowRule extends RosettaRootElement, RosettaNamed, RosettaDefinable {
-	contains RosettaMarketPractice[] marketPractice
-	contains RosettaExpression when
-	contains RosettaTreeNode root
-	contains RosettaExpression data
-	refers RosettaTypedFeature commonIdentifier
-	contains RosettaExpression commonIdPath
-}
-
-class RosettaTreeNode {
-	refers RosettaType parent
-	boolean not
-	contains RosettaTreeNode[] children
-}
-
-
-
 /**********************************************************************
  * Mappings
  */
@@ -351,14 +317,6 @@ class RosettaMapRosettaPath extends RosettaExpression {
 
 class RosettaMapPathValue extends RosettaExpression {
 	String path
-}
-
-/**********************************************************************
- * Alias
- */
-
-class RosettaAlias extends RosettaRootElement, RosettaDefinable, RosettaCallable {
-	contains RosettaExpression expression
 }
 
 /**********************************************************************
@@ -557,7 +515,6 @@ class RosettaBlueprintReport extends RosettaRootElement {
  
 class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	contains RosettaRegulatoryReference[] references
-	contains RosettaMarketPractice[] marketPractice
 	contains BlueprintNodeExp nodes
 	refers RosettaType output
 }

@@ -2,7 +2,6 @@ package com.regnosys.rosetta
 
 import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
@@ -72,10 +71,6 @@ class RosettaExtensions {
 		return seenSynonyms		
 	}
 		
-	def collectRootCalls(RosettaAlias alias) {
-		return doCollectRootCalls(alias)
-	}
-
 	def private LinkedHashSet<RosettaType> doCollectRootCalls(EObject obj) {
 		val classes = newLinkedHashSet
 		obj.eAllContents.filter(RosettaCallableCall).forEach [
@@ -88,19 +83,13 @@ class RosettaExtensions {
 	 * Collect all callable objects at the root nodes
 	 */
 	def void collectRootCalls(RosettaExpression expr, (RosettaCallable)=>void visitor) {
-		if(expr instanceof RosettaAlias) {
-			expr.expression.collectRootCalls(visitor)
-		}
-		else if(expr instanceof RosettaBinaryOperation) {
+		if(expr instanceof RosettaBinaryOperation) {
 			expr.left.collectRootCalls(visitor)
 			expr.right.collectRootCalls(visitor)
 		}
 		else if(expr instanceof RosettaCallableCall) {
 			val callable = expr.callable
-			if(callable instanceof RosettaAlias) {
-				callable.expression.collectRootCalls(visitor)
-			} 
-			else if(callable instanceof Data|| callable instanceof RosettaEnumeration) {
+			if(callable instanceof Data|| callable instanceof RosettaEnumeration) {
 				visitor.apply(callable)
 			}
 			else {
@@ -129,19 +118,13 @@ class RosettaExtensions {
 	 * Collect all object types at the leaf nodes of the expression tree
 	 */
 	def void collectLeafTypes(RosettaExpression expr, (RosettaType) => void visitor) {
-		if(expr instanceof RosettaAlias) {
-			expr.expression.collectLeafTypes(visitor)
-		}
-		else if(expr instanceof RosettaBinaryOperation) {
+		if(expr instanceof RosettaBinaryOperation) {
 			expr.left.collectLeafTypes(visitor)
 			expr.right.collectLeafTypes(visitor)
 		}
 		else if(expr instanceof RosettaCallableCall) {
 			val callable = expr.callable
-			if(callable instanceof RosettaAlias) {
-				callable.expression.collectLeafTypes(visitor)
-			}
-			else if (callable instanceof ShortcutDeclaration) {
+			if (callable instanceof ShortcutDeclaration) {
 				callable.expression.collectLeafTypes(visitor)
 			}
 			else if(callable instanceof Data) {
@@ -201,10 +184,7 @@ class RosettaExtensions {
 	 * Collect all expressions
 	 */
 	def void collectExpressions(RosettaExpression expr, (RosettaExpression) => void visitor) {
-		if(expr instanceof RosettaAlias) {
-			expr.expression.collectExpressions(visitor)
-		}
-		else if(expr instanceof RosettaGroupByFeatureCall) {
+		if(expr instanceof RosettaGroupByFeatureCall) {
 			expr.call.collectExpressions(visitor)
 		}
 		else if(expr instanceof RosettaBinaryOperation) {

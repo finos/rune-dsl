@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
@@ -20,20 +19,6 @@ class RosettaTypeProviderTest {
 
 	@Inject extension RosettaTypeProvider
 	@Inject extension ModelHelper modelHelper
-
-	@Test
-	def testAliasStackOverflow() {
-		val rule = '''
-			type Foo:
-				bar string (0..*)
-			
-			alias A <"...">
-				Foo -> bar 
-				or A
-		'''.parseRosettaWithNoErrors.elements.filter(RosettaAlias).head
-
-		assertEquals('Can not compute type for A because of recursive call.', rule.RType.name)
-	}
 	
 	@Test
 	def void testEnumCompatibility() {

@@ -4,7 +4,6 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -54,25 +53,5 @@ class RosettaModelTest{
 		
 		val enumValues2 = enum.enumValues.get(1) 
 		assertEquals("KnownSymbol", enumValues2.name)
-	}
-	
-	@Test
-	def void testAlias() {
-		val model =
-		'''
-			alias InflationSwap
-			Swap -> inflationLeg
-			
-			alias IRS
-			Swap -> interestLeg
-			
-			type Swap:
-				inflationLeg string (0..*)
-					[synonym FIX value "inflation"]
-				interestLeg string (0..*)
-		'''.parseRosettaWithNoErrors
-		
-		val alias = model.elements.get(0) as RosettaAlias
-		assertEquals("InflationSwap", alias.name)
 	}
 }
