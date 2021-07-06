@@ -30,6 +30,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testLowerCaseClass() {
 		val model =
 		'''
+			synonym source FIX
+			synonym source FpML
+			
 			type partyIdentifier: <"">
 				partyId string (1..1) <"">
 					[synonym FIX value "PartyID" tag 448]
@@ -55,6 +58,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testUpperCaseAttribute() {
 		val model =
 		'''
+			synonym source FIX
+			synonym source FpML
 			type PartyIdentifier: <"">
 					PartyId string (1..1) <"">
 						[synonym FIX value "PartyID" tag 448]
@@ -493,6 +498,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def checkMappingSetToWhenTypeCheck() {
 		val model = '''
+			synonym source FpML
 			type Foo:
 				stringVal string (1..1)
 			

@@ -23,12 +23,15 @@ class RosettaModelTest{
 	@Test
 	def void testEnumeration() {
 		val model =
-		'''
+		'''			
 			enum QuoteRejectReasonEnum: <"The enumeration values.">
 			[synonym ISO value "QuoteRejectReason" componentID 24]
 				UnknownSymbol <"unknown symbol">
 				[synonym ISO_20022 value "UK" definition "Unknown Symbol"]
 				KnownSymbol
+				
+			synonym source ISO
+			synonym source ISO_20022
 		'''.parseRosettaWithNoErrors
 		
 		val enum = model.elements.get(0) as RosettaEnumeration
