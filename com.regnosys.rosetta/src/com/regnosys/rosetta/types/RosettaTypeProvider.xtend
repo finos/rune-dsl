@@ -3,7 +3,6 @@ package com.regnosys.rosetta.types
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
@@ -92,18 +91,6 @@ class RosettaTypeProvider {
 			}
 			Data:
 				new RDataType(expression)
-			RosettaAlias: {
-				val exp = expression.expression
-				if (exp !== null && exp.eAllContents.filter(RosettaCallableCall).findFirst[expression == it.callable] === null) {
-					val expressionType = exp.safeRType(cycleTracker)
-					if (expressionType instanceof RFeatureCallType)
-						return expressionType
-					else
-						new RFeatureCallType(expressionType)
-				} else {
-					new RErrorType('Can not compute type for ' + expression.name + " because of recursive call.")
-				}
-			}
 			ShortcutDeclaration: {
 				cycleTracker.put(expression, null)
 				val type = expression.expression.safeRType(cycleTracker)
@@ -286,8 +273,7 @@ class RosettaTypeProvider {
 		switch container {
 			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
-			RosettaAbsentExpression,
-			RosettaAlias:
+			RosettaAbsentExpression:
 				true
 			RosettaBinaryOperation:
 				container.featureCallTypeContext

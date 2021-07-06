@@ -92,7 +92,7 @@ class RosettaExpressionJavaGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))), MapperTree.of(MapperS.of(Integer.valueOf(5))), CardinalityOperator.All)'))
+			is('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)'))
 	}
 	
 	/**
@@ -116,7 +116,7 @@ class RosettaExpressionJavaGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(mockClass))
 		
 		assertNotNull(generatedFunction)
-		assertEquals('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", _foo -> _foo.getAttr1())), MapperTree.or(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", _foo -> _foo.getAttr2())), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr3", _foo -> _foo.getAttr3()))), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr4", _foo -> _foo.getAttr4())))), MapperTree.of(MapperS.of(Integer.valueOf(5))), CardinalityOperator.All)',formatGeneratedFunction('''«generatedFunction»'''))
+		assertEquals('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", _foo -> _foo.getAttr1())), MapperTree.or(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", _foo -> _foo.getAttr2())), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr3", _foo -> _foo.getAttr3()))), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr4", _foo -> _foo.getAttr4())))), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)',formatGeneratedFunction('''«generatedFunction»'''))
 	}
 	
 	/**

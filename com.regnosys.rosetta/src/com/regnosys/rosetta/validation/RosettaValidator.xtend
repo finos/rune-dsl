@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
 import com.regnosys.rosetta.rosetta.BlueprintReduce
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
@@ -39,11 +38,9 @@ import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
-import com.regnosys.rosetta.rosetta.RosettaTreeNode
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
@@ -173,43 +170,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (!annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
 			warning("Attribute name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
-	}
-
-	@Check
-	def void checkWorkflowRuleNameStartsWithUpperCase(RosettaWorkflowRule rule) {
-		if (!Character.isUpperCase(rule.name.charAt(0))) {
-			warning("Workflow rule name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
-		}
-	}
-
-	@Check
-	def void checkWorkflowRuleCommonIdentifier(RosettaWorkflowRule rule) {
-		val identifier = rule.commonIdentifier
-		if (identifier !== null) {
-			rule.root.checkAttributeExists(identifier.name, identifier.type)
-		}
-	}
-
-	@Check
-	def void checkAliasNameStartsWithLowerCase(RosettaAlias alias) {
-		if (!Character.isLowerCase(alias.name.charAt(0))) {
-			warning("Alias name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
-		}
-	}
-
-	private def void checkAttributeExists(RosettaTreeNode node, String expectedName, RosettaType expectedType) {
-		node.children.forEach [
-			if (parent instanceof Data && !parent.eIsProxy) {
-				val attribute = (parent as Data).allAttributes.findFirst[name == expectedName]
-				if (attribute === null)
-					error('''Class '«parent.name»' does not have an attribute '«expectedName»'«»''', it,
-						ROSETTA_TREE_NODE__PARENT, MISSING_ATTRIBUTE)
-				else if (attribute.getType != expectedType)
-					error('''Attribute '«attribute.name»' of class '«parent.name»' is of type '«attribute.type.name»' (expected '«expectedType.name»')''',
-						it, ROSETTA_TREE_NODE__PARENT, TYPE_ERROR)
-				checkAttributeExists(expectedName, expectedType)
-			}
-		]
 	}
 
 	@Check

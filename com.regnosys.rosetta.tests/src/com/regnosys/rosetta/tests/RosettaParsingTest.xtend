@@ -34,6 +34,9 @@ class RosettaParsingTest {
 	@Test
 	def void testClassWithEnumReference() {
 	'''
+			synonym source FpML
+			synonym source FIX
+			
 			type PartyIdentifier: <"Bla">
 				partyId string (1..1) <"Bla">
 					[synonym FIX value "PartyID" tag 448]
@@ -52,6 +55,10 @@ class RosettaParsingTest {
 	@Test
 	def void testStandards() {
 	'''
+			synonym source FIX
+			synonym source FpML
+			synonym source ISO_20022
+			
 			type BasicTypes: <"">
 				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">
 					[synonym FIX value "PartyID" tag 448]
@@ -63,6 +70,7 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymRefs() {
 	'''
+			synonym source FIX
 			type BasicTypes: <"">
 				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">
 					[synonym FIX value "PartyID" tag 448]
@@ -101,6 +109,9 @@ class RosettaParsingTest {
 	@Test
 	def void testMultipleSynonyms() {
 	'''
+			synonym source FpML
+			synonym source FIX
+
 			type PartyIdentifier: <"The set of [partyId, PartyIdSource] associated with a party.">
 				partyId string (1..1) <"The identifier associated with a party, e.g. the 20 digits LEI code.">
 					[synonym FIX value "PartyID" tag 448]
@@ -118,6 +129,9 @@ class RosettaParsingTest {
 	@Test
 	def void testEnumeration() {
 	'''
+			synonym source FpML
+			synonym source FIX
+			
 			enum QuoteRejectReasonEnum: <"The enumeration values to qualify the reason as to why a quote has been rejected.">
 				UnknownSymbol
 					[synonym FIX value "1" definition "foo"]
@@ -129,6 +143,8 @@ class RosettaParsingTest {
 	@Test
 	def void testMultipleOrNoAttributeSynonym() {
 	'''
+			synonym source FIX
+			synonym source FpML
 			type TradeIdentifier: <"The trade identifier, along with the party that assigned it.">
 				[synonym FpML value "partyTradeIdentifier"]
 				IdentifyingParty string (1..1) <"The party that assigns the trade identifier">
@@ -161,6 +177,7 @@ class RosettaParsingTest {
 	@Test
 	def void testAttributeWithReferenceAnchorAndScheme() {
 	'''
+			synonym source FpML
 			type Foo:
 				foo string (1..1)
 					[metadata reference]
@@ -182,65 +199,7 @@ class RosettaParsingTest {
 
 		'''.parseRosettaWithNoErrors	
 	}
-	
-	@Test
-	def void testWokflowRuleWithCommonId() {
-	'''
-			type Foo:
-				quoteId string (1..1)
 			
-			type Bar:
-				quoteId string (1..1)
-			
-			workflow rule FooBar
-				[marketPractice ISDA write-up "bla" recommendation "bla"]
-				Foo precedes Bar
-					and Foo -> quoteId exists
-				commonId quoteId
-		'''.parseRosettaWithNoErrors
-	}
-	
-	@Test
-	def void testWokflowRuleWithCommonPathId() {
-	'''
-			type Base:
-				quoteId string (1..1)
-			
-			type Foo extends Base:
-				a string (1..1)
-			
-			type Bar extends Base:
-				b string (1..1)
-			
-			workflow rule FooBar
-				when Foo exists
-				Foo precedes Bar
-				commonId path Base -> quoteId
-		'''.parseRosettaWithNoErrors
-	}
-	
-	@Test
-	def void testWokflowRuleWithCommonPathIdAndClassType() {
-	'''
-			type Base:
-				quote Quote (1..1)
-			
-			type Quote:
-				quoteId string (1..1)
-			
-			type Foo extends Base:
-				a string (1..1)
-			
-			type Bar extends Base:
-				b string (1..1)
-			
-			workflow rule FooBar
-				when Foo exists
-				Foo precedes Bar
-				commonId path Base -> quote -> quoteId
-		'''.parseRosettaWithNoErrors
-	}
-	
 	@Test
 	def void testAttributeWithMetadataReferenceAnnotation() {
 		'''
@@ -303,6 +262,7 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymsWithPathExpression() {
 		'''
+			synonym source FpML
 			type Foo:
 				foo int (0..1)
 					[synonym FpML value "foo" path "fooPath1"]
@@ -312,6 +272,7 @@ class RosettaParsingTest {
 	@Test
 	def void synonymsWithHint() {
 		'''
+			synonym source FpML
 			type Foo:
 				foo int (0..1)
 					[synonym FpML hint "myHint"]
@@ -321,6 +282,7 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingSetToBoolean() {
 		'''
+			synonym source FpML
 			type Foo:
 				foo boolean (0..1)
 					[synonym FpML set to True when "FooSyn" exists]
@@ -330,6 +292,7 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingSetToString() {
 		'''
+			synonym source FpML
 			type Foo:
 				foo string (0..1)
 					[synonym FpML set to "A" when "FooSyn" exists]
@@ -340,6 +303,7 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingSetToEnum() {
 		'''
+			synonym source FpML
 			type Foo:
 				foo BarEnum (0..1)
 					[synonym FpML set to BarEnum -> a when "FooSyn" exists]
@@ -352,6 +316,7 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingDefaultToEnum() {
 		'''
+			synonym source FpML
 			type Foo:
 				foo BarEnum (0..1)
 					[synonym FpML value "FooSyn" default to BarEnum -> a]
@@ -364,6 +329,7 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingSetWhenEqualsCondition() {
 		'''
+			synonym source FpML
 			type Foo:
 				foo boolean (0..1)
 					[synonym FpML value "FooSyn" set when "path->to->string" = BarEnum -> a]
@@ -376,6 +342,7 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingSetWhenExistsCondition() {
 		'''
+			synonym source FpML
 			type Foo:
 				foo boolean (0..1)
 				[synonym FpML value "FooSyn" set when "path->to->string" exists]
@@ -385,6 +352,7 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingSetWhenIsAbsentCondition() {
 		'''
+			synonym source FpML
 			type Foo:
 				foo boolean (0..1)
 				[synonym FpML value "FooSyn" set when "path->to->string" is absent]
@@ -394,6 +362,7 @@ class RosettaParsingTest {
 	@Test
 	def void testSynonymMappingMultipleSetToWhenConditions() {
 		'''
+			synonym source FpML
 			type Foo:
 				foo string (0..1)
 					[synonym FpML
@@ -409,6 +378,8 @@ class RosettaParsingTest {
 	@Test
 	def void testClassSynonym() {
 	'''
+			synonym source FpML
+			
 			type Foo:
 				[synonym FpML value "FooSyn"]
 				bar boolean (1..1)

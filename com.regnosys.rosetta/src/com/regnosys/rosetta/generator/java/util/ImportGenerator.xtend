@@ -13,7 +13,6 @@ import com.regnosys.rosetta.rosetta.BlueprintReduce
 import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.BlueprintValidate
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
@@ -126,15 +125,7 @@ class ImportGenerator {
 		addExpression(call.receiver)
 	}
 
-	def dispatch add(RosettaCallable call) {
-		switch (call) {
-			RosettaAlias: {
-				addExpression(call.expression)
-			}
-		}
-	}
-
-	def dispatch add(Object call) {
+	def add(Object call) {
 		println
 	}
 

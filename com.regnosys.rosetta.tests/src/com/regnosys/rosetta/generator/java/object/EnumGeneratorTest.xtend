@@ -24,6 +24,7 @@ class RosettaEnumHelperTest {
     @Test
     def void shouldGenerateAnnotationForEnumSynonyms() {
         val code = '''
+        	synonym source FpML
             enum TestEnum:
             	one <"Some description"> [synonym FpML value "oneSynonym"]
             	two <"Some other description"> [synonym FpML value "twoSynonym"]
@@ -57,11 +58,12 @@ class RosettaEnumHelperTest {
     @Test
     def void shouldGenerateAllDisplayNameAndConstructors() {
         val code = '''
-            enum TestEnumWithDisplay:
-                one displayName "uno" <"Some description"> [synonym FpML value "oneSynonym"]
-                two <"Some other description"> [synonym FpML value "twoSynonym"]
-                three displayName "tria" <"Some description"> [synonym FpML value "threeSynonym"]
-                four  displayName "tessera" <"Some description"> [synonym FpML value "fourSynonym"]
+        	synonym source FpML
+        	enum TestEnumWithDisplay:
+        		one displayName "uno" <"Some description"> [synonym FpML value "oneSynonym"]
+        		two <"Some other description"> [synonym FpML value "twoSynonym"]
+        		three displayName "tria" <"Some description"> [synonym FpML value "threeSynonym"]
+        		four  displayName "tessera" <"Some description"> [synonym FpML value "fourSynonym"]
         '''.generateCode
 
         val testEnumCode = code.get(rootPackage.name + ".TestEnumWithDisplay")
