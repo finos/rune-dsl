@@ -44,7 +44,7 @@ class RosettaBlueprintTest {
 	def void parseSimpleReport() {
 		val r = '''
 			body Authority TEST_REG
-			corpus MiFIR
+			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule

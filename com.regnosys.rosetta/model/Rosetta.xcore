@@ -5,6 +5,7 @@
 package com.regnosys.rosetta.rosetta
 
 import java.util.stream.Collectors
+import com.regnosys.rosetta.rosetta.simple.References
 
 class RosettaModel extends RosettaDefinable {
 	String name
@@ -115,13 +116,13 @@ class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaTy
 	
 }
 
-class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable {
+class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable, References {
 	refers RosettaEnumeration superType
 	contains RosettaSynonym[] synonyms
 	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
-class RosettaEnumValue extends RosettaNamed, RosettaDefinable , RosettaFeature {
+class RosettaEnumValue extends RosettaNamed, RosettaDefinable, RosettaFeature, References {
 	String display
 	contains RosettaEnumSynonym[] enumSynonyms
 	container RosettaEnumeration enumeration opposite enumValues
@@ -228,6 +229,8 @@ class RosettaRegulatoryRegime extends RosettaRootElement, RosettaNamed, RosettaD
 
 class RosettaMandate extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	String corpusType
+	String displayName
+	refers RosettaRegulatoryRegime body
 }
 
 class RosettaSegment extends RosettaRootElement, RosettaNamed {
