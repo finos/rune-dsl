@@ -70,7 +70,9 @@ class BlueprintGenerator {
 				generateBlueprint(packages, report.nodes, null, report.name, 'Report', report.URI, version, names))
 		]
 		
-		elements.filter(RosettaBlueprint).forEach [ bp |
+		elements.filter(RosettaBlueprint)
+			.filter[nodes !== null]
+			.forEach [ bp |
 			fsa.generateFile(packages.model.blueprint.directoryName + '/' + bp.name + 'Rule.java',
 				generateBlueprint(packages, bp.nodes, bp.output, bp.name, 'Rule', bp.URI, version, names))
 		]
