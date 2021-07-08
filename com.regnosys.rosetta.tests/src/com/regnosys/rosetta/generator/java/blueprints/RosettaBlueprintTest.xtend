@@ -2389,7 +2389,20 @@ class RosettaBlueprintTest {
 	}
 
 
+	@Test
+	def void reportingRuleWithoutBodyDoesNotGenerateCode() {
+		var blueprint = '''
+		
+		reporting rule BarField
 
+		'''.toString
+		.replace('\r', "")
+		.generateCode
+		// blueprint.writeClasses("reportingRuleWithoutBodyDoesNotGenerateCode");
+			
+		blueprint.compileToClasses
+		
+	}
 
 
 	@Test
