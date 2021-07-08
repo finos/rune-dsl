@@ -43,7 +43,10 @@ fragment Synonyms*:
 
 fragment ClassSynonyms*:
 	synonyms+=RosettaClassSynonym;
-	
+
+fragment References*:
+	references+=RosettaRegulatoryReference;
+
 AnnotationRef:
 	'[' annotation = [Annotation|ValidID] (attribute = [Attribute|ValidID] (qualifiers += AnnotationQualifier)*)? ']'
 ;
@@ -54,17 +57,17 @@ AnnotationQualifier:
 
 Data:
 	'type' RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' Definable?
-	(Annotations| ClassSynonyms)*
+	(References|Annotations|ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
 ;
 
 Attribute:
-	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable? (Annotations|Synonyms)*
+	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable? (References|Annotations|Synonyms)*
 ;
 
 Enumeration returns RosettaEnumeration:
-	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable?
+	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable? References*
 		(synonyms += RosettaSynonym)*
 		enumValues += RosettaEnumValue*
 ;
@@ -76,7 +79,7 @@ Function:
 		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
 	)
 	 ':' Definable?
-	Annotations?
+	(References|Annotations)*
 	('inputs:' inputs += Attribute+)?
 	('output:' output = Attribute)?
 	
@@ -228,7 +231,7 @@ RosettaMetaType:
 ;
 
 RosettaEnumValue:
-	RosettaNamed ('displayName' display=STRING)? RosettaDefinable?
+	RosettaNamed ('displayName' display=STRING)? RosettaDefinable? References*
 	(enumSynonyms += RosettaEnumSynonym)*
 ;
 
@@ -362,7 +365,7 @@ RosettaMapPathValue returns RosettaExpression:
  */ 
  
 RosettaRegulatoryReference:
-	'[' ('regulatoryReference') regRegime=[RosettaRegulatoryRegime|ValidID] mandates+=([RosettaMandate|ValidID])+ (segments+=RosettaSegmentRef)+ 'provision' provision=STRING (reportedField?='reportedField')?  ']'
+	'[' ('regulatoryReference'|'docReference') regRegime=[RosettaRegulatoryRegime|ValidID] mandates+=([RosettaMandate|ValidID])+ (segments+=RosettaSegmentRef)+ ('provision' provision=STRING)? (reportedField?='reportedField')?  ']'
 ;
 
 RosettaSegmentRef:
@@ -371,11 +374,11 @@ RosettaSegmentRef:
 
 // TODO - refactor these to have the correct names.
 RosettaRegulatoryRegime:
-	('body'|'regulatoryRegime') (bodyType=ID)? RosettaNamed RosettaDefinable?
+	('body') (bodyType=ID) RosettaNamed RosettaDefinable?
 ;
 
 RosettaMandate:
-	('corpus'|'mandate') (corpusType=ID)? (STRING)? RosettaNamed RosettaDefinable? // FIXME what is "(STRING)?" for?
+	('corpus') (corpusType=ID) (body=[RosettaRegulatoryRegime])? (displayName=STRING)? RosettaNamed RosettaDefinable?
 ;
 
 RosettaSegment:

@@ -19,6 +19,7 @@ import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.WithCardinality
 import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
+import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
 
@@ -49,7 +50,7 @@ abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
 }
 
 
-class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallable, AssignPathRoot, WithCardinality {
+class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallable, AssignPathRoot, WithCardinality, References {
 	boolean override
 	contains RosettaSynonym[] synonyms
 }
@@ -57,7 +58,7 @@ class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallab
 abstract class Definable extends RosettaDefinable {}
 
 
-class Data extends RosettaType, RootElement, RosettaCallable {
+class Data extends RosettaType, RootElement, RosettaCallable, References {
 	refers Data superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
@@ -68,7 +69,7 @@ class Data extends RosettaType, RootElement, RosettaCallable {
 	}
 }
 
-class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs {
+class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs, References {
 	contains Attribute[] inputs
 	contains Attribute output
 	contains ShortcutDeclaration[] shortcuts
@@ -136,4 +137,8 @@ class EmptyLiteral extends RosettaLiteral {}
 
 class ListLiteral extends RosettaLiteral {
 	contains RosettaExpression[] elements
+}
+
+class References {
+	contains RosettaRegulatoryReference[] references
 }
