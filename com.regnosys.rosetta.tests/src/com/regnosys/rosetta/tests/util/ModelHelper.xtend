@@ -20,11 +20,7 @@ class ModelHelper {
 			
 		body Authority ESMA
 		body Authority CFTC
-		
-		organisation ISDA
-		organisation SIFMA
-		organisation FIX_TradingCommunity
-		
+				
 		corpus Regulation MiFIR
 		corpus Regulation EMIR
 		

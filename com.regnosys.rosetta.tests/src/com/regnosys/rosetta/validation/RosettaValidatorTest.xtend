@@ -30,6 +30,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testLowerCaseClass() {
 		val model =
 		'''
+			synonym source FIX
+			synonym source FpML
+			
 			type partyIdentifier: <"">
 				partyId string (1..1) <"">
 					[synonym FIX value "PartyID" tag 448]
@@ -55,6 +58,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testUpperCaseAttribute() {
 		val model =
 		'''
+			synonym source FIX
+			synonym source FpML
 			type PartyIdentifier: <"">
 					PartyId string (1..1) <"">
 						[synonym FIX value "PartyID" tag 448]
@@ -63,56 +68,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertWarning(ATTRIBUTE, INVALID_CASE,
             "Attribute name should start with a lower case")
 	}
-	
-	@Test
-	def void testLowerCaseWorkflowRule() {
-		val model = 
-		'''
-			workflow rule quote <"Bla">
-				Foo precedes Bar
-					
-			type Foo:
-			
-			type Bar:
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_WORKFLOW_RULE, INVALID_CASE,
-			"Workflow rule name should start with a capital")
-	}
-	
-	@Test
-	def void testInconsistentCommonAttributeType() {
-		val model =
-		'''
-			type Foo:
-				id int (1..1)
-			type Bar:
-				id boolean (1..1)
-			
-			workflow rule WorkflowRule
-			Foo precedes Bar
-			commonId id
-		'''.parseRosetta
-		model.assertError(ROSETTA_TREE_NODE, TYPE_ERROR, 
-			"Attribute 'id' of class 'Bar' is of type 'boolean' (expected 'int')")
-	}
-	
-	@Test
-	def void testMissingCommonAttribute() {
-		val model =
-		'''
-			type Foo:
-				id int (1..1)
-			type Bar: <"">
-			
-			workflow rule
-			WorkflowRule
-			Foo precedes Bar
-			commonId id
-		'''.parseRosetta
-		model.assertError(ROSETTA_TREE_NODE, MISSING_ATTRIBUTE, 
-			"Class 'Bar' does not have an attribute")
-	}
-	
+		
 	@Test
 	def void testTypeExpectation() {
 		val model =
@@ -438,35 +394,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_TYPE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
 	}
-	
-	@Test
-	def void testDuplicateWorkflowRule_ClassName() {
-		val model = '''
-			type Foo:
-			
-			type Bar:
-			
-			workflow rule Foo
-				Foo must precede Bar
-		'''.parseRosetta
-		model.assertError(ROSETTA_WORKFLOW_RULE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
-	}
-	
-	@Test
-	def void testDuplicateWorkflowRule_EnumName() {
-		val model = '''
-			enum Foo: Entry
-			
-			type Bar:
-			
-			type Baz:
-			
-			workflow rule Foo
-				Bar must precede Baz
-		'''.parseRosetta
-		model.assertError(ROSETTA_WORKFLOW_RULE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
-	}
-	
+		
 	@Test
 	def void testDuplicateChoiceRuleAttribute_thisOne() {
 		val model = '''
@@ -570,6 +498,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def checkMappingSetToWhenTypeCheck() {
 		val model = '''
+			synonym source FpML
 			type Foo:
 				stringVal string (1..1)
 			
@@ -603,22 +532,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 						and 0.2 >= 0.1
 		'''.parseRosetta
 		model.assertNoErrors
-	}
-
-	@Test
-	def void testUpperCaseAlias() {
-		val model =
-		'''
-			type Bar:
-				bar string (0..1)
-			
-			alias Foo
-				Bar -> bar
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_ALIAS, INVALID_CASE,
-            "Alias name should start with a lower case")
-	}
-	
+	}	
 	
 	@Test
 	def checkDateZonedDateTypes() {

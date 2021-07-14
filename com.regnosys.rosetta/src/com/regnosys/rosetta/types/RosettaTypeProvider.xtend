@@ -3,7 +3,6 @@ package com.regnosys.rosetta.types
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
@@ -46,6 +45,7 @@ import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import java.util.List
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 class RosettaTypeProvider {
 
@@ -91,18 +91,6 @@ class RosettaTypeProvider {
 			}
 			Data:
 				new RDataType(expression)
-			RosettaAlias: {
-				val exp = expression.expression
-				if (exp !== null && exp.eAllContents.filter(RosettaCallableCall).findFirst[expression == it.callable] === null) {
-					val expressionType = exp.safeRType(cycleTracker)
-					if (expressionType instanceof RFeatureCallType)
-						return expressionType
-					else
-						new RFeatureCallType(expressionType)
-				} else {
-					new RErrorType('Can not compute type for ' + expression.name + " because of recursive call.")
-				}
-			}
 			ShortcutDeclaration: {
 				cycleTracker.put(expression, null)
 				val type = expression.expression.safeRType(cycleTracker)
@@ -168,6 +156,7 @@ class RosettaTypeProvider {
 			}
 			RosettaContainsExpression,
 			RosettaDisjointExpression,
+			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
 			RosettaAbsentExpression,
 			RosettaBooleanLiteral:
@@ -282,9 +271,9 @@ class RosettaTypeProvider {
 	private def boolean isFeatureCallTypeContext(EObject expression) {
 		val container = expression.eContainer
 		switch container {
+			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
-			RosettaAbsentExpression,
-			RosettaAlias:
+			RosettaAbsentExpression:
 				true
 			RosettaBinaryOperation:
 				container.featureCallTypeContext

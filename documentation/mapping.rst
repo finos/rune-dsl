@@ -28,7 +28,7 @@ A synonym source can extend another synonym source. This forms a new synonym sou
 Basic Synonym
 =============
 Synonyms are annotations on attributes of Rosetta types and the enumeration values of Rosetta Enums.  The model does have some legacy synonyms remaining 
-directly on rosetta types but the location of the synonym in the model has no impact. They can be written inside the definition of the type or they can be specified in a seperate file to leave the type definitions simpler.
+directly on rosetta types but the location of the synonym in the model has no impact. They can be written inside the definition of the type or they can be specified in a separate file to leave the type definitions simpler.
 
 Inline
 ------

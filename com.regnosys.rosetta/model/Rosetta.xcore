@@ -5,6 +5,7 @@
 package com.regnosys.rosetta.rosetta
 
 import java.util.stream.Collectors
+import com.regnosys.rosetta.rosetta.simple.References
 
 class RosettaModel extends RosettaDefinable {
 	String name
@@ -115,16 +116,13 @@ class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaTy
 	
 }
 
-class RosettaStereotypeValue extends RosettaRootElement, RosettaNamed {
-}
-
-class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable {
+class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable, References {
 	refers RosettaEnumeration superType
 	contains RosettaSynonym[] synonyms
 	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
-class RosettaEnumValue extends RosettaNamed, RosettaDefinable , RosettaFeature {
+class RosettaEnumValue extends RosettaNamed, RosettaDefinable, RosettaFeature, References {
 	String display
 	contains RosettaEnumSynonym[] enumSynonyms
 	container RosettaEnumeration enumeration opposite enumValues
@@ -231,18 +229,11 @@ class RosettaRegulatoryRegime extends RosettaRootElement, RosettaNamed, RosettaD
 
 class RosettaMandate extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	String corpusType
+	String displayName
+	refers RosettaRegulatoryRegime body
 }
 
 class RosettaSegment extends RosettaRootElement, RosettaNamed {
-}
-
-class RosettaMarketPractice {
-	refers RosettaOrganisation organisation
-	String document
-	String recommendation
-}
-
-class RosettaOrganisation extends RosettaRootElement, RosettaNamed {
 }
 
 /**********************************************************************
@@ -301,28 +292,6 @@ class RosettaParenthesisCalcExpression extends RosettaExpression{
 	contains RosettaExpression expression
 }
 
-
-/**********************************************************************
- * Workflow rule
- */
-
-class RosettaWorkflowRule extends RosettaRootElement, RosettaNamed, RosettaDefinable {
-	contains RosettaMarketPractice[] marketPractice
-	contains RosettaExpression when
-	contains RosettaTreeNode root
-	contains RosettaExpression data
-	refers RosettaTypedFeature commonIdentifier
-	contains RosettaExpression commonIdPath
-}
-
-class RosettaTreeNode {
-	refers RosettaType parent
-	boolean not
-	contains RosettaTreeNode[] children
-}
-
-
-
 /**********************************************************************
  * Mappings
  */
@@ -354,14 +323,6 @@ class RosettaMapPathValue extends RosettaExpression {
 }
 
 /**********************************************************************
- * Alias
- */
-
-class RosettaAlias extends RosettaRootElement, RosettaDefinable, RosettaCallable {
-	contains RosettaExpression expression
-}
-
-/**********************************************************************
  * Qualifiable used for RosettaProduct and RosettaEvent. Check enum RosettaQualifiableType when adding new classes
  */
 
@@ -389,11 +350,14 @@ class RosettaBinaryOperation extends RosettaExpression {
 	contains RosettaExpression right
 }
 
+class RosettaOnlyExistsExpression extends RosettaExpression {
+	contains RosettaExpression[] args
+}
+
 class RosettaExistsExpression extends RosettaExpression {
 	contains RosettaExpression argument
-	boolean only
-	boolean single
-	boolean multiple
+    boolean single
+    boolean multiple
 }
 
 class RosettaAbsentExpression extends RosettaExpression {
@@ -554,7 +518,6 @@ class RosettaBlueprintReport extends RosettaRootElement {
  
 class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	contains RosettaRegulatoryReference[] references
-	contains RosettaMarketPractice[] marketPractice
 	contains BlueprintNodeExp nodes
 	refers RosettaType output
 }

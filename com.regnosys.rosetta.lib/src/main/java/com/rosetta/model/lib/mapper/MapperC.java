@@ -69,8 +69,6 @@ public class MapperC<T> implements MapperBuilder<T> {
 		return new MapperC<>(results);
 	}
 	
-	
-	
 	protected Stream<MapperItem<T,?>> nonErrorItems() {
 		return items.stream().filter(i->!i.isError());
 	}
@@ -97,9 +95,10 @@ public class MapperC<T> implements MapperBuilder<T> {
 	@Override
 	public Optional<?> getParent() {
 		List<?> collect = nonErrorItems()
-			.map(i->i.getParent())
+			.map(this::findParent)
 			.filter(Optional::isPresent)
 			.map(Optional::get)
+			.map(MapperItem::getMappedObject)
 			.collect(Collectors.toList());
 		return collect.size()==1 ? Optional.of(collect.get(0)) : Optional.empty();
 	}
@@ -107,9 +106,10 @@ public class MapperC<T> implements MapperBuilder<T> {
 	@Override
 	public List<?> getParentMulti() {
 		return nonErrorItems()
-				.map(i->i.getParent())
+				.map(this::findParent)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
+				.map(MapperItem::getMappedObject)
 				.collect(Collectors.toList());
 	}
 	

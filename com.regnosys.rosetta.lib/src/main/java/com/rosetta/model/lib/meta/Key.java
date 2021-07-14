@@ -14,6 +14,7 @@ import com.rosetta.model.lib.validation.ValidatorFactory;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 
@@ -235,7 +236,7 @@ public interface Key extends RosettaModelObject{
 		}
 
 		@Override
-		public ValidatorWithArg<? super Key, String> onlyExistsValidator() {
+		public ValidatorWithArg<? super Key, Set<String>> onlyExistsValidator() {
 			return null;
 		}
 	}

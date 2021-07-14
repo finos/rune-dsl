@@ -43,7 +43,10 @@ fragment Synonyms*:
 
 fragment ClassSynonyms*:
 	synonyms+=RosettaClassSynonym;
-	
+
+fragment References*:
+	references+=RosettaRegulatoryReference;
+
 AnnotationRef:
 	'[' annotation = [Annotation|ValidID] (attribute = [Attribute|ValidID] (qualifiers += AnnotationQualifier)*)? ']'
 ;
@@ -54,17 +57,17 @@ AnnotationQualifier:
 
 Data:
 	'type' RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' Definable?
-	(Annotations| ClassSynonyms)*
+	(References|Annotations|ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
 ;
 
 Attribute:
-	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable? (Annotations|Synonyms)*
+	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable? (References|Annotations|Synonyms)*
 ;
 
 Enumeration returns RosettaEnumeration:
-	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable?
+	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable? References*
 		(synonyms += RosettaSynonym)*
 		enumValues += RosettaEnumValue*
 ;
@@ -76,7 +79,7 @@ Function:
 		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
 	)
 	 ':' Definable?
-	Annotations?
+	(References|Annotations)*
 	('inputs:' inputs += Attribute+)?
 	('output:' output = Attribute)?
 	
@@ -137,8 +140,7 @@ ListLiteral:
 
 // old stuff
 RosettaRootElement:
-	Enumeration | RosettaWorkflowRule | RosettaAlias | 
-	RosettaOrganisation | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | RosettaStereotypeValue |
+	Enumeration | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | 
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaBlueprint | RosettaQualifiedType | RosettaCalculationType  | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaBlueprintReport
@@ -228,12 +230,8 @@ RosettaMetaType:
 	'metaType' RosettaNamed RosettaTyped
 ;
 
-RosettaStereotypeValue:
-	'stereotype' RosettaNamed
-;
-
 RosettaEnumValue:
-	RosettaNamed ('displayName' display=STRING)? RosettaDefinable?
+	RosettaNamed ('displayName' display=STRING)? RosettaDefinable? References*
 	(enumSynonyms += RosettaEnumSynonym)*
 ;
 
@@ -367,7 +365,7 @@ RosettaMapPathValue returns RosettaExpression:
  */ 
  
 RosettaRegulatoryReference:
-	'[' ('regulatoryReference') regRegime=[RosettaRegulatoryRegime|ValidID] mandates+=([RosettaMandate|ValidID])+ (segments+=RosettaSegmentRef)+ 'provision' provision=STRING (reportedField?='reportedField')?  ']'
+	'[' ('regulatoryReference'|'docReference') regRegime=[RosettaRegulatoryRegime|ValidID] mandates+=([RosettaMandate|ValidID])+ (segments+=RosettaSegmentRef)+ ('provision' provision=STRING)? (reportedField?='reportedField')?  ']'
 ;
 
 RosettaSegmentRef:
@@ -376,24 +374,17 @@ RosettaSegmentRef:
 
 // TODO - refactor these to have the correct names.
 RosettaRegulatoryRegime:
-	('body'|'regulatoryRegime') (bodyType=ID)? RosettaNamed RosettaDefinable?
+	('body') (bodyType=ID) RosettaNamed RosettaDefinable?
 ;
 
 RosettaMandate:
-	('corpus'|'mandate') (corpusType=ID)? (STRING)? RosettaNamed RosettaDefinable? // FIXME what is "(STRING)?" for?
+	('corpus') (corpusType=ID) (body=[RosettaRegulatoryRegime])? (displayName=STRING)? RosettaNamed RosettaDefinable?
 ;
 
 RosettaSegment:
 	'segment' RosettaNamed
 ;
 
-RosettaMarketPractice:
-	'[' 'marketPractice' organisation=[RosettaOrganisation|ValidID] 'write-up' document=STRING 'recommendation' recommendation=STRING ']'
-;
-
-RosettaOrganisation:
-	'organisation' RosettaNamed
-;
 
 /**********************************************************************
  * Expressions 
@@ -452,27 +443,6 @@ terminal FEATURE_CALL_SEPARATOR:
 ;
 
 
-/**********************************************************************
- * Workflow Rule
- */
- 
-RosettaWorkflowRule:
-	'workflow' 'rule' RosettaNamed RosettaDefinable?
-	(marketPractice += RosettaMarketPractice)*
-	('when' when = RosettaCalcExpression)?
-	root = RosettaTreeNode
-	('and' data = RosettaCalcExpression)?
-	('commonId' ( commonIdentifier = [RosettaTypedFeature|ValidID] | 'path' commonIdPath = RosettaClassAttributeCall ) )?
-;
-
-RosettaTreeNode:
-	parent = [RosettaType|QualifiedName]
-	( 
-		(not?='not' 'precedes' | 'precedes')
-		(children+=RosettaTreeNode | '(' children+=RosettaTreeNode ( ('and' | 'or') children+=RosettaTreeNode)* ')' )
-	)?
-;
-
 RosettaClassAttributeCall returns RosettaExpression:
 	RosettaClassReference ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID])*
 ;
@@ -480,24 +450,6 @@ RosettaClassAttributeCall returns RosettaExpression:
 RosettaClassReference returns RosettaExpression:
 	{RosettaCallableCall}
 	callable=[Data|QualifiedName]
-;
-
-
-/**********************************************************************
- * Alias
- */
- 
-RosettaAlias:
-	'alias' RosettaNamed RosettaDefinable?
- 	expression = RosettaAliasExpression
-;
-
-RosettaAliasExpression returns RosettaExpression:
-	RosettaClassAttributeCall
-	(
-		({RosettaBinaryOperation.left=current} operator='and' right=RosettaAliasExpression)
-		| ({RosettaBinaryOperation.left=current} operator='or' right=RosettaAliasExpression)
-	)?
 ;
 
 
@@ -534,10 +486,10 @@ RosettaCalcAnd returns RosettaExpression:
 RosettaCalcExists returns RosettaExpression:
 	RosettaCalcEquality (
 		->(
-		  {RosettaExistsExpression.argument=current} only?='only'? (single?='single' | multiple?='multiple')? 'exists'
-		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
-		| {RosettaContainsExpression.container=current} ('contains' | 'includes') contained=RosettaCalcAttributeCall
-		| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaCalcAttributeCall
+			{RosettaExistsExpression.argument=current} (single?='single' | multiple?='multiple')? 'exists'
+			| {RosettaAbsentExpression.argument=current} 'is' 'absent'
+			| {RosettaContainsExpression.container=current} 'contains' contained=RosettaCalcAttributeCall
+			| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaCalcAttributeCall
 		)
 	)?
 ;
@@ -574,14 +526,18 @@ RosettaCalcPrimary returns RosettaExpression:
 	| RosettaCallableCall
 	| RosettaLiteral
 	| RosettaParenthesisCalcExpression
+	| RosettaCalcOnlyExists
 ;
 RosettaCalcConditionalExpression returns RosettaExpression:
 	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?
 ;
 
-
 RosettaParenthesisCalcExpression:
 	'(' expression = RosettaCalcExpression ')'
+;
+
+RosettaCalcOnlyExists returns RosettaExpression:
+	{RosettaOnlyExistsExpression} (args+=RosettaClassAttributeCall | ('(' args+=RosettaClassAttributeCall (',' args+=RosettaClassAttributeCall)* ')')) 'only' 'exists'
 ;
 
 /*****************************************
@@ -663,7 +619,6 @@ RosettaBlueprintReport:
 RosettaBlueprint:
  	('reporting'|'eligibility') 'rule' RosettaNamed RosettaDefinable?
 	(references += RosettaRegulatoryReference)*
-	(marketPractice += RosettaMarketPractice)*
 	(nodes = BlueprintNodeExp)?
 	('output' output=[Data])?
 ;

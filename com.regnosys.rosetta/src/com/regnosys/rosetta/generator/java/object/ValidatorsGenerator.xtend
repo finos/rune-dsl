@@ -9,7 +9,8 @@ import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.rosetta.model.lib.RosettaModelObjectBuilder
+import com.rosetta.model.lib.expression.ComparisonResult
+import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ExistenceChecker
 import com.rosetta.model.lib.validation.ValidationResult
@@ -24,8 +25,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.rosetta.model.lib.expression.ComparisonResult
-import com.rosetta.model.lib.expression.ExpressionOperators
 
 class ValidatorsGenerator {
 
@@ -96,55 +95,27 @@ class ValidatorsGenerator {
 	}
 
 	def private StringConcatenationClient onlyExistsClassBody(Data c, JavaNames names, String version) '''
-		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaType(c)», String> {
+		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaType(c)», «Set»<String>> {
 		
 			@Override
-			public «ValidationResult»<«c.name»> validate(«RosettaPath» path, «c.name» o, String field) {
-				«Map»<String,Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
+			public <T2 extends «c.name»> «ValidationResult»<«c.name»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
+				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
 						«FOR attr : c.attributes»
 							.put("«attr.name»", «ExistenceChecker».isSet(o.get«attr.name?.toFirstUpper»()))
 						«ENDFOR»
 						.build();
-				// Exclude given method name
-				«Map»<String, Boolean> otherFieldsExistenceMap = fieldExistenceMap.entrySet().stream()
-						.filter(x -> !x.getKey().equals(field))
-						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-				// Find any other fields that are set
-				«Set»<String> setFields = otherFieldsExistenceMap.entrySet().stream()
+				
+				// Find the fields that are set
+				«Set»<String> setFields = fieldExistenceMap.entrySet().stream()
 						.filter(Map.Entry::getValue)
-						.collect(«Collectors».toMap(Map.Entry::getKey, Map.Entry::getValue))
-						.keySet();
-		
-				if (!setFields.isEmpty()) {
-					return failure("«c.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "",
-							String.format("[%s] is not the only field set. Other set fields: %s", field, setFields));
+						.map(Map.Entry::getKey)
+						.collect(«Collectors».toSet());
+				
+				if (setFields.equals(fields)) {
+					return «ValidationResult.importMethod("success")»("«c.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "");
 				}
-				return success("«c.name»", ValidationType.ONLY_EXISTS, o.getClass().getSimpleName(), path, "");
-			}
-			
-			@Override
-			public ValidationResult<«c.name»> validate(RosettaPath path, «RosettaModelObjectBuilder» b, String field) {
-				«c.name».«c.name»Builder o = («c.name».«c.name»Builder)b;
-				Map<String,Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
-						«FOR attr : c.attributes»
-							.put("«attr.name»", «ExistenceChecker».isSet(o.get«attr.name?.toFirstUpper»()))
-						«ENDFOR»
-						.build();
-				// Exclude given method name
-				Map<String, Boolean> otherFieldsExistenceMap = fieldExistenceMap.entrySet().stream()
-						.filter(x -> !x.getKey().equals(field))
-						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-				// Find any other fields that are set
-				Set<String> setFields = otherFieldsExistenceMap.entrySet().stream()
-						.filter(Map.Entry::getValue)
-						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-						.keySet();
-		
-				if (!setFields.isEmpty()) {
-					return «ValidationResult.importMethod("failure")»("«c.name»", ValidationType.ONLY_EXISTS, o.getClass().getSimpleName(), path, "",
-							String.format("[%s] is not the only field set. Other set fields: %s", field, setFields));
-				}
-				return «ValidationResult.importMethod("success")»("«c.name»", ValidationType.ONLY_EXISTS, o.getClass().getSimpleName(), path, "");
+				return «ValidationResult.importMethod("failure")»("«c.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "",
+						String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
 			}
 		}
 	'''

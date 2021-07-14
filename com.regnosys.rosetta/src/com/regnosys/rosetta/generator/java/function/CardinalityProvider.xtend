@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
@@ -16,6 +15,8 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
+import com.regnosys.rosetta.rosetta.RosettaMapPathValue
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
@@ -26,7 +27,6 @@ import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
-import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 
 class CardinalityProvider {
 	
@@ -46,7 +46,6 @@ class CardinalityProvider {
 			ShortcutDeclaration: obj.expression.isMulti
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
-			RosettaAlias: obj.expression.isMulti
 			RosettaGroupByFeatureCall,
 			ListLiteral: true
 			RosettaLiteral,
@@ -56,6 +55,7 @@ class CardinalityProvider {
 			RosettaSynonymValueBase,
 			RosettaCountOperation,
 			RosettaAbsentExpression,
+			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
 			RosettaContainsExpression,
 			RosettaDisjointExpression,

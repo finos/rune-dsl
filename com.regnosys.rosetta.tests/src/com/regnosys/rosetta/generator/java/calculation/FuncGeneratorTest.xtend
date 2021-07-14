@@ -248,10 +248,10 @@ class FuncGeneratorTest {
 				currency string (1..1)
 			
 			func Foo:
-			 	inputs:
-			 		m1 Money  (0..1)
-			 	m2 Money (0..1)
-			 	currency string (0..1)
+				inputs:
+					m1 Money  (0..1)
+					m2 Money (0..1)
+					currency string (0..1)
 				output:
 					result string (0..1)
 				
@@ -963,15 +963,15 @@ class FuncGeneratorTest {
 			namespace "demo"
 			version "${project.version}"
 
-			type T1:
-					t T2 (1..1)
-					ts T2 (1..*)
-			type T2:
+			type Type1:
+					t Type2 (1..1)
+					ts Type2 (1..*)
+			type Type2:
 					num number (1..1)
 					nums number (1..*)
 
-			func F1:
-				inputs: t1 T1(1..1)
+			func Func1:
+				inputs: t1 Type1(1..1)
 				output: res number (1..1)
 				assign-output res: t1->ts->num only-element
 

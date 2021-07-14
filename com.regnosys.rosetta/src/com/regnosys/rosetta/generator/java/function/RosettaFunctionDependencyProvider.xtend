@@ -1,25 +1,25 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.simple.Function
 import org.eclipse.emf.ecore.EObject
 
 import static com.regnosys.rosetta.generator.util.Util.*
-import com.regnosys.rosetta.rosetta.RosettaCountOperation
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -37,11 +37,11 @@ class RosettaFunctionDependencyProvider {
 				functionDependencies(object.ifthen) +
 				functionDependencies(object.elsethen)
 			}
+			RosettaOnlyExistsExpression: {
+				functionDependencies(object.args)
+			}
 			RosettaExistsExpression: {
 				functionDependencies(object.argument)
-			}
-			RosettaAlias: {
-				functionDependencies(object.expression)
 			}
 			RosettaFeatureCall:
 				functionDependencies(object.receiver)

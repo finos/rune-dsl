@@ -13,7 +13,6 @@ import com.regnosys.rosetta.rosetta.BlueprintReduce
 import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.BlueprintValidate
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
@@ -46,6 +45,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -125,15 +125,7 @@ class ImportGenerator {
 		addExpression(call.receiver)
 	}
 
-	def dispatch add(RosettaCallable call) {
-		switch (call) {
-			RosettaAlias: {
-				addExpression(call.expression)
-			}
-		}
-	}
-
-	def dispatch add(Object call) {
+	def add(Object call) {
 		println
 	}
 
@@ -158,6 +150,9 @@ class ImportGenerator {
 			}
 			RosettaFeatureCall: {
 				addFeatureCall(expression)
+			}
+			RosettaOnlyExistsExpression: {
+				expression.args.forEach[addExpression]
 			}
 			RosettaExistsExpression: {
 				addExpression(expression.argument)

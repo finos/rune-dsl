@@ -1,12 +1,15 @@
 package com.rosetta.model.lib.mapper;
 
-import com.rosetta.model.lib.expression.Converter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.rosetta.model.lib.expression.Converter;
+import com.rosetta.model.lib.meta.FieldWithMeta;
 
 public interface MapperBuilder<T> extends Mapper<T> {
 
@@ -56,4 +59,15 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	MapperBuilder<Object> unionDifferent(MapperBuilder<?> mapper);
 
 	Stream<MapperItem<T, ?>> getItems();
+	
+	default Optional<MapperItem<?, ?>> findParent(MapperItem<?, ?> item) {
+		var parentItem = item.getParentItem();
+		if (parentItem.isPresent()) {
+			if (parentItem.get().getMappedObject() instanceof FieldWithMeta) {
+				return findParent(parentItem.get());
+			}
+			return Optional.of(parentItem.get());
+		}
+		return Optional.empty();
+	}
 }

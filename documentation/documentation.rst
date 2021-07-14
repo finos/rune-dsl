@@ -157,7 +157,9 @@ An example is the day count fraction scheme for interest rate calculation, which
 .. _namespace-label:
 
 Namespace Component
--------------------
+--------------------
+Namespace Definition
+^^^^^^^^^^^^^^^^^^^^
 Purpose
 """""""
 The namespace syntax allows model artifacts in a data model to be organised into groups of namespaces. A namespace is an abstract container created to hold a logical grouping of model artifacts. The approach is designed to make it easier for users to understand the model structure and adopt selected components. It also aids the development cycle by insulating groups of components from model restructuring that may occur.  Model artifacts are organised into a directory structure that follows the namespaces’ Group and Artifact structure (a.k.a. “GAV coordinates”). This directory structure is exposed in the model editor.

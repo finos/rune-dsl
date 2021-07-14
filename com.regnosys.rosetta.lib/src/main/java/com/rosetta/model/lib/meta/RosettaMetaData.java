@@ -1,6 +1,7 @@
 package com.rosetta.model.lib.meta;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.rosetta.model.lib.RosettaModelObject;
@@ -20,5 +21,5 @@ public interface RosettaMetaData<T extends RosettaModelObject> {
 	
 	Validator<? super T> validator();
 	
-	ValidatorWithArg<? super T,String> onlyExistsValidator();
+	ValidatorWithArg<? super T, Set<String>> onlyExistsValidator();
 }

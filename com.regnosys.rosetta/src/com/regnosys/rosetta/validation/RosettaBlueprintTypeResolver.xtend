@@ -18,7 +18,6 @@ import com.regnosys.rosetta.rosetta.BlueprintRef
 import com.regnosys.rosetta.rosetta.BlueprintReturn
 import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.BlueprintValidate
-import com.regnosys.rosetta.rosetta.RosettaAlias
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
@@ -57,6 +56,7 @@ import java.util.HashSet
 import com.regnosys.rosetta.validation.TypedBPNode.BPCardinality
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 class RosettaBlueprintTypeResolver {
 	
@@ -554,9 +554,6 @@ class RosettaBlueprintTypeResolver {
 			Data: {
 				return callable
 			}
-			RosettaAlias: {
-				return getInput(callable.expression)
-			}
 			RosettaEnumeration :{
 				//evaluating a enum constant does not require an input type
 				return null
@@ -572,6 +569,10 @@ class RosettaBlueprintTypeResolver {
 	
 	def dispatch RosettaType getInput(RosettaGroupByFeatureCall call) {
 		return getInput(call.call);		
+	}
+	
+	def dispatch RosettaType getInput(RosettaOnlyExistsExpression expr) {
+		return getInput(expr.args.get(0))
 	}
 	
 	def dispatch RosettaType getInput(RosettaExistsExpression expr) {
@@ -612,10 +613,6 @@ class RosettaBlueprintTypeResolver {
 	}
 	
 	//def dispatch RosettaType getOutput(RosettaCallable)
-
-	def dispatch RosettaType getOutput(RosettaAlias expr) {
-		getOutput(expr.expression)
-	}
 
 	def dispatch RosettaType getOutput(RosettaCallableCall callable) {
 		return callable.callable.output

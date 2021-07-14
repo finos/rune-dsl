@@ -17,7 +17,6 @@ import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaWorkflowRule
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -172,14 +171,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					}
 				}
 				case ROSETTA_CALLABLE_CALL__CALLABLE: {
-					if (context instanceof RosettaWorkflowRule) {
-						val parent = context.root?.parent
-						if (parent instanceof Data) {
-							val allClasses = parent.allSuperTypes
-							val scope = Scopes.scopeFor(allClasses)
-							return scope
-						}
-					} else if (context instanceof Operation) {
+					if (context instanceof Operation) {
 						val function = context.function
 						val inputsAndOutputs = newArrayList
 						if(!function.inputs.nullOrEmpty)
@@ -207,13 +199,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					}
 					return IScope.NULLSCOPE
 				}
-				case ROSETTA_WORKFLOW_RULE__COMMON_IDENTIFIER:
-					if (context instanceof RosettaWorkflowRule) {
-						val parent = context.root?.parent
-						if (parent instanceof Data) {
-							return Scopes.scopeFor(parent.allAttributes)
-						}
-					}
 				case ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF: {
 					if (context instanceof RosettaExternalRegularAttribute) {
 						val classRef = (context.eContainer as RosettaExternalClass).typeRef

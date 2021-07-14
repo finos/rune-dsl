@@ -44,7 +44,7 @@ class RosettaBlueprintTest {
 	def void parseSimpleReport() {
 		val r = '''
 			body Authority TEST_REG
-			corpus MiFIR
+			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule
@@ -2389,7 +2389,20 @@ class RosettaBlueprintTest {
 	}
 
 
+	@Test
+	def void reportingRuleWithoutBodyDoesNotGenerateCode() {
+		var blueprint = '''
+		
+		reporting rule BarField
 
+		'''.toString
+		.replace('\r', "")
+		.generateCode
+		// blueprint.writeClasses("reportingRuleWithoutBodyDoesNotGenerateCode");
+			
+		blueprint.compileToClasses
+		
+	}
 
 
 	@Test

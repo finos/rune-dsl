@@ -71,6 +71,7 @@ class RosettaAttributeExtensions {
 				false,
 				emptyList,
 				"",
+				emptyList,
 				false,
 				false,
 				false,
@@ -97,7 +98,7 @@ class RosettaAttributeExtensions {
 	
 	def static ExpandedAttribute expandedEnumAttribute(RosettaEnumValue value) {
 		new ExpandedAttribute(value.name,value.enumeration.name, null, null, false, 0,0, false, value.enumSynonyms.map[toExpandedSynonym], 
-			value.definition, false, true, false, Collections.emptyList
+			value.definition, value.references, false, true, false, Collections.emptyList
 		)
 	}
 	
@@ -148,6 +149,7 @@ class RosettaAttributeExtensions {
 					false,
 					attr.toRosettaExpandedSynonym(i),
 					attr.definition,
+					attr.references,
 					false,
 					false,
 					false,
@@ -166,6 +168,7 @@ class RosettaAttributeExtensions {
 			attr.card.unbounded,
 			attr.synonyms.toRosettaExpandedSynonyms(-1),
 			attr.definition,
+			attr.references,
 			attr.calculation,
 			attr.isEnumeration,
 			attr.qualified,
