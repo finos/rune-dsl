@@ -63,7 +63,7 @@ class ModelObjectGenerator {
 	}
 
 	def StringConcatenationClient classBody(Data d, JavaNames names, String version, Collection<Object> interfaces) '''
-		«javadocWithVersion(d.definition, version)»
+		«javadoc(d, version)»
 		@«RosettaClass»
 		«IF d.hasQualifiedAttribute»
 			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.getQualifiedClass).name».class)
@@ -74,7 +74,7 @@ class ModelObjectGenerator {
 			«names.toJavaType(d).toBuilderType» toBuilder();
 			
 			«FOR attribute : d.expandedAttributes»
-				«javadoc(attribute.definition)»
+				«javadoc(attribute.definition, attribute.docReferences, null)»
 				«attribute.toJavaType(names)» get«attribute.name.toFirstUpper»();
 			«ENDFOR»
 			«val metaType = names.createJavaType(names.packages.model.meta, d.name+'Meta')»

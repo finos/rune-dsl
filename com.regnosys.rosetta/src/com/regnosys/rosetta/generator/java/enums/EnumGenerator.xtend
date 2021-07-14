@@ -37,12 +37,12 @@ class EnumGenerator {
 		import «packages.defaultLibAnnotations.name».RosettaSynonym;
 		«ENDIF»
 		
-		«javadocWithVersion(e.definition, version)»
+		«javadoc(e, version)»
 		public enum «e.name» {
 		    
 			«FOR value: allEnumsValues(e) SEPARATOR ',\n'»
 
-				«javadoc(value.definition)»
+				«javadoc(value)»
 				«value.contributeAnnotations»
 				«IF value.display !== null»
 				    «convertValuesWithDisplay(value)»
