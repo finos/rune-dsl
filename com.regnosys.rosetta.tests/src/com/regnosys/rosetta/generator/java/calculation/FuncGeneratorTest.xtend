@@ -7,7 +7,6 @@ import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
 import java.util.List
-import java.util.Arrays
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
@@ -41,8 +40,7 @@ class FuncGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
-				import java.util.Arrays;
-
+				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -743,9 +741,9 @@ class FuncGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertTrue(func.invokeFunc(Boolean, "a", Arrays.asList("a", "a")))
-		assertFalse(func.invokeFunc(Boolean, "a", Arrays.asList("a", "b")))
-		assertFalse(func.invokeFunc(Boolean, "b", Arrays.asList("a", "a")))
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertFalse(func.invokeFunc(Boolean, "b", List.of("a", "a")))
 	}
 
 
@@ -767,9 +765,9 @@ class FuncGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertTrue(func.invokeFunc(Boolean, "a", Arrays.asList("a", "a")))
-		assertTrue(func.invokeFunc(Boolean, "a", Arrays.asList("a", "b")))
-		assertFalse(func.invokeFunc(Boolean, "b", Arrays.asList("a", "a")))
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertFalse(func.invokeFunc(Boolean, "b", List.of("a", "a")))
 	}
 
 
@@ -791,9 +789,9 @@ class FuncGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertTrue(func.invokeFunc(Boolean, 1, Arrays.asList(1, 1)))
-		assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(1, 2)))
-		assertFalse(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertFalse(func.invokeFunc(Boolean, 2, List.of(1, 1)))
 	}
 
 	@Test
@@ -814,9 +812,9 @@ class FuncGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertTrue(func.invokeFunc(Boolean, 1, Arrays.asList(1, 1)))
-		assertTrue(func.invokeFunc(Boolean, 1, Arrays.asList(1, 2)))
-		assertFalse(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertFalse(func.invokeFunc(Boolean, 2, List.of(1, 1)))
 	}
 
 	@Test
@@ -837,9 +835,9 @@ class FuncGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertFalse(func.invokeFunc(Boolean, "a", Arrays.asList("a", "a")))
-		assertFalse(func.invokeFunc(Boolean, "a", Arrays.asList("a", "b")))
-		assertTrue(func.invokeFunc(Boolean, "b", Arrays.asList("a", "a")))
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertTrue(func.invokeFunc(Boolean, "b", List.of("a", "a")))
 	}
 
 	@Test
@@ -860,9 +858,9 @@ class FuncGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertFalse(func.invokeFunc(Boolean, "a", Arrays.asList("a", "a")))
-		assertTrue(func.invokeFunc(Boolean, "a", Arrays.asList("a", "b")))
-		assertTrue(func.invokeFunc(Boolean, "b", Arrays.asList("a", "a")))
+		assertFalse(func.invokeFunc(Boolean, "a", List.of("a", "a")))
+		assertTrue(func.invokeFunc(Boolean, "a", List.of("a", "b")))
+		assertTrue(func.invokeFunc(Boolean, "b", List.of("a", "a")))
 	}
 
 	@Test
@@ -883,9 +881,9 @@ class FuncGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(1, 1)))
-		assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(1, 2)))
-		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
 	}
 
 	@Test
@@ -906,9 +904,9 @@ class FuncGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(1, 1)))
-		assertTrue(func.invokeFunc(Boolean, 1, Arrays.asList(1, 2)))
-		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 1, List.of(1, 2)))
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
 	}
 
 	@Test
@@ -929,9 +927,9 @@ class FuncGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
-		assertFalse(func.invokeFunc(Boolean, 2, Arrays.asList(1, 2)))
-		assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(2, 2)))
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, 2, List.of(1, 2)))
+		assertFalse(func.invokeFunc(Boolean, 1, List.of(2, 2)))
 	}
 
 	@Test
@@ -952,9 +950,9 @@ class FuncGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		//assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
-		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 2)))
-		//assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(2, 2)))
+		//assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, 2, List.of(1, 2)))
+		//assertFalse(func.invokeFunc(Boolean, 1, List.of(2, 2)))
 	}
 
 	@Test

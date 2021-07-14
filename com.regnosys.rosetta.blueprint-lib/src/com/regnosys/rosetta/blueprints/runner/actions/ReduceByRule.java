@@ -5,7 +5,6 @@ import com.regnosys.rosetta.blueprints.runner.CaptureDownstream;
 import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 import java.util.List;
-import java.util.Arrays;
 
 public class ReduceByRule<I, Kr extends Comparable<Kr> , K> extends ReduceParent<I, Kr, K> {
 
@@ -21,7 +20,7 @@ public class ReduceByRule<I, Kr extends Comparable<Kr> , K> extends ReduceParent
 	}
 	
 	protected <T extends I, K2 extends K> Kr getReduction(GroupableData<T,K2> input) {
-		GroupableData<T,T> reKeyed = input.withNewKey(input.getData(), null, Arrays.asList(), this);
+		GroupableData<T,T> reKeyed = input.withNewKey(input.getData(), null, List.of(), this);
 		evalBP.process(reKeyed);
 		evalBP.terminate();
 		GroupableData<? extends Kr, ? extends I> result = downstream.getResult(input.getData());
