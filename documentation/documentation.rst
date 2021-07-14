@@ -88,6 +88,7 @@ The syntax to define a segment is: ``segment`` <Type>. Below are some examples o
  segment whereas
  segment annex
  segment table
+ segment namingConvension
 
 Once a segment type is defined, it can be associated to an identifier (i.e some free text representing either the segment number or name) and combined with other segment types to point to a specific section in a document. For instance:
 
@@ -97,8 +98,48 @@ Once a segment type is defined, it can be associated to an identifier (i.e some 
 
 
 .. _documentation-reference-label:
+
 Documentation Reference
 ^^^^^^^^^^^^^^^^^^^^^^^
+
+Syntax
+""""""
+
+The `document reference hierarchy <#document-reference-hierarchy-label>`_ is used to create a ``docReference`` refers to a ``corpus``, the ``segments`` and the ``provision``. 
+
+.. code-block:: Haskell
+
+    [docReference <Body> <Corpus>
+      <Segment1>
+      <Segment2>
+      <SegmentN...>
+      provision <"ProvisionText">]
+
+
+The ``docReference`` has the same syntax as the ``regulatoryReference`` however, can be applied to any `data <#data-component-label>`_ or `function <#function-label>`_  component. 
+
+In some instances, an model type may have a different naming convention based on the context in which it is being used, for example a legal definition may refer to the data type with a different name. The ``docReference`` syntax allows a type to be annotated with the naming conversion ``segment``, and the ``corpus`` and ``body`` that defines it.
+
+
+.. code-block:: Haskell
+
+ type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
+      [docReference ICMA GMRA
+        namingConvension "seller" 
+        provision "As defined in the GRMA Seller party ..."]
+
+
+The `docReference` can also be added to an attribute of a type:
+
+.. code-block:: Haskell
+
+ type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
+      ...
+      payer CounterpartyRoleEnum (1..1)
+        [docReference ICMA GMRA
+          namingConvension "seller" 
+          provision "As defined in the GRMA Seller party ..."]
+
 
 
 .. _data-component-label:
@@ -995,13 +1036,17 @@ Syntax
 
 The syntax of reporting field rules is as follows:
 
-  ``reporting rule`` <Name>
+.. code-block:: Haskell
 
-  [``regulatoryReference`` <Body> <Corpus> <Segment1> <Segment2> <...> ``provision`` <”ProvisionText”>]
-
+  <RuleType> rule <Name>
+    [regulatoryReference <Body> <Corpus>
+      <Segment1>
+      <Segment2>
+      <SegmentN...>
+      provision <"ProvisionText">]
   <FunctionalExpression>
 
-For eligibility rules, the syntax is the same but starts with the keyword ``eligibility rule``.
+The <RuleType> can be either ``reporting`` or ``eligibility``.
 
 The functional expression of reporting rules uses the same syntax components that are already available to express logical statements in other modelling components, such as the condition statements that support data validation.
 
@@ -1010,8 +1055,10 @@ Functional expressions are composable, so a rule can also call another rule. Whe
 .. code-block:: Haskell
 
  eligibility rule NexusCompliant
-   [regulatoryReference MAS SFA MAS_2013 part "1 " section "Citation and commencement"
-   provision "In these Regulations, unless the context otherwise requires; Booked in Singapore, Traded in Singapore"]
+   [regulatoryReference MAS SFA MAS_2013
+      part "1"
+      section "Citation and commencement"
+      provision "In these Regulations, unless the context otherwise requires; Booked in Singapore, Traded in Singapore"]
    (
      BookedInSingapore,
      TradedInSingapore
