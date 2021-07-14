@@ -46,6 +46,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.rosetta.model.lib.mapper.Mapper
 import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import java.util.List
+import java.util.Arrays
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 
 class FuncGenerator {
@@ -71,6 +72,7 @@ class FuncGenerator {
 			} else {
 				tracImports(func.classBody(func.name, dependencies, javaNames, version, false), func.name)
 			}
+        classBody.addImport(Arrays.name, Arrays.simpleName)
 		val content = '''
 			package «javaNames.packages.model.functions.name»;
 			
@@ -178,7 +180,7 @@ class FuncGenerator {
 				public static final class «className»Default extends «className» {
 					@Override
 					protected  «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
-						return «IF output.isMany»List.of()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
+						return «IF output.isMany»Arrays.asList()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
 					}
 				}
 				«IF func.isQualifierFunction()»

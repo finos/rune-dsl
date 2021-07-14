@@ -57,7 +57,8 @@ class CalculationFuncGeneratorTest {
 				import com.rosetta.test.model.Period;
 				import com.rosetta.test.model.PeriodEnum;
 				import java.math.BigDecimal;
-				
+				import java.util.Arrays;
+
 				
 				/**
 				 * @version test
@@ -136,6 +137,7 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
+			import java.util.Arrays;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -199,6 +201,7 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
+			import java.util.Arrays;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -283,6 +286,7 @@ class CalculationFuncGeneratorTest {
 		import com.rosetta.test.model.FoncOut.FoncOutBuilder;
 		import com.rosetta.test.model.FuncIn;
 		import java.time.LocalTime;
+		import java.util.Arrays;
 		
 		
 		@ImplementedBy(Calc.CalcDefault.class)
@@ -376,6 +380,7 @@ class CalculationFuncGeneratorTest {
 		import com.rosetta.test.model.FuncOut;
 		import com.rosetta.test.model.FuncOut.FuncOutBuilder;
 		import java.time.LocalTime;
+		import java.util.Arrays;
 		
 		
 		@ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
@@ -465,8 +470,9 @@ class CalculationFuncGeneratorTest {
 				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
+				import java.util.Arrays;
 				import java.util.Optional;
-				
+
 				
 				@ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
 				public abstract class asKeyUsage implements RosettaFunction {
@@ -561,6 +567,7 @@ class CalculationFuncGeneratorTest {
 				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
+				import java.util.Arrays;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -639,7 +646,8 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.functions.AddOne;
-			
+			import java.util.Arrays;
+
 			
 			@ImplementedBy(Adder.AdderDefault.class)
 			public abstract class Adder implements RosettaFunction {
@@ -727,7 +735,8 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.test.model.MathInput;
 			import com.rosetta.test.model.functions.AddOne;
 			import com.rosetta.test.model.functions.SubOne;
-			
+			import java.util.Arrays;
+
 			
 			/**
 			 * @version test
@@ -845,7 +854,8 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.functions.AddOne;
-			
+			import java.util.Arrays;
+
 			
 			@ImplementedBy(Adder.AdderDefault.class)
 			public abstract class Adder implements RosettaFunction {
