@@ -192,12 +192,12 @@ class FuncGenerator {
 		'''
 	}
 	
-	def private StringConcatenationClient dispatchClassBody(Function function,String className, Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version) {
+	def private StringConcatenationClient dispatchClassBody(Function function, String className, Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version) {
 		val dispatchingFuncs = function.dispatchingFunctions.sortBy[name].toList
 		val enumParam = function.inputs.filter[type instanceof RosettaEnumeration].head.name
 		val outputType = function.outputTypeOrVoid(names)
 		'''
-		«emptyJavadocWithVersion(version)»
+		«javadoc(function, version)»
 		public class «className» {
 			«FOR dep : dependencies»
 				@«Inject» protected «dep.toJavaType» «dep.name.toFirstLower»;
