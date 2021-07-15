@@ -528,7 +528,7 @@ Data Validation Component
 * Cardinality
 * Condition Statement
 
-The validation components associated to a data type generate executable code designed to be executed on objects of that type. implementors of the model can use the code generated from these validation components to build diagnostic tools that can scan objects and report on which validation rules were satisfied or broken. Typically, the validation code is included as part of any process that creates an object, to verify its validity from the point of creation.
+The validation components associated to a data type generate executable code designed to be executed on objects of that type. Implementors of the model can use the code generated from these validation components to build diagnostic tools that can scan objects and report on which validation rules were satisfied or broken. Typically, the validation code is included as part of any process that creates an object, to verify its validity from the point of creation.
 
 .. _cardinality-label:
 
