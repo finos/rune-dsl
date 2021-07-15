@@ -88,7 +88,7 @@ The syntax to define a segment is: ``segment`` <Type>. Below are some examples o
  segment whereas
  segment annex
  segment table
- segment namingConvension
+ segment namingConvention
 
 Once a segment type is defined, it can be associated to an identifier (i.e some free text representing either the segment number or name) and combined with other segment types to point to a specific section in a document. For instance:
 
@@ -125,7 +125,7 @@ In some instances, an model type may have a different naming convention based on
 
  type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
       [docReference ICMA GMRA
-        namingConvension "seller" 
+        namingConvention "seller" 
         provision "As defined in the GRMA Seller party ..."]
 
 
@@ -137,7 +137,7 @@ The `docReference` can also be added to an attribute of a type:
       ...
       payer CounterpartyRoleEnum (1..1)
         [docReference ICMA GMRA
-          namingConvension "seller" 
+          namingConvention "seller" 
           provision "As defined in the GRMA Seller party ..."]
 
 
