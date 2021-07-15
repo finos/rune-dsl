@@ -204,10 +204,10 @@ enum RosettaSynonymRef {
 
 
 /**********************************************************************
- * Things
+ * docReferences
  */
 
-class RosettaRegulatoryReference extends RosettaRegulatoryMandate {
+class RosettaDocReference extends RosettaRegulatoryBody {
 	String provision
 	contains RosettaSegmentRef[] segments
 	boolean reportedField
@@ -218,19 +218,19 @@ class RosettaSegmentRef {
 	String segmentRef
 }
 
-class RosettaRegulatoryMandate {
-	refers RosettaRegulatoryRegime regRegime
-	refers RosettaMandate[] mandates
+class RosettaRegulatoryBody {
+	refers RosettaBody body
+	refers RosettaCorpus[] corpuses
 }
 
-class RosettaRegulatoryRegime extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+class RosettaBody extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	String bodyType
 }
 
-class RosettaMandate extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+class RosettaCorpus extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	String corpusType
 	String displayName
-	refers RosettaRegulatoryRegime body
+	refers RosettaBody body
 }
 
 class RosettaSegment extends RosettaRootElement, RosettaNamed {
@@ -463,14 +463,14 @@ class RosettaExternalSynonym {
  *  */
  
 class RosettaBlueprintReport extends RosettaRootElement {
-	contains RosettaRegulatoryMandate regulatoryMandate
+	contains RosettaRegulatoryBody regulatoryBody
 	refers RosettaBlueprint[] reportingRules
 	refers RosettaBlueprint[] eligibilityRules
-	refers RosettaMandate reportingStandard
+	refers RosettaCorpus reportingStandard
 	
 	op String name() {
-		(regulatoryMandate.regRegime.name.toFirstUpper 
-				+ regulatoryMandate.mandates.stream.map[RosettaMandate man | man.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
+		(getRegulatoryBody.getBody.name.toFirstUpper 
+				+ getRegulatoryBody.corpuses.stream.map[RosettaCorpus man | man.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
 	}
 	/**
 	* FIXME: Never create Grammar model Instances programmatically.
@@ -517,14 +517,14 @@ class RosettaBlueprintReport extends RosettaRootElement {
 }
  
 class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {
-	contains RosettaRegulatoryReference[] references
+	contains RosettaDocReference[] references
 	contains BlueprintNodeExp nodes
 	refers RosettaType output
 }
 
 class BlueprintNodeExp {
 	contains BlueprintNode node
-	contains RosettaRegulatoryReference reference
+	contains RosettaDocReference reference
 	contains BlueprintNodeExp next 
 }
 

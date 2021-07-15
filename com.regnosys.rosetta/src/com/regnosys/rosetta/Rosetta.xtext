@@ -45,7 +45,7 @@ fragment ClassSynonyms*:
 	synonyms+=RosettaClassSynonym;
 
 fragment References*:
-	references+=RosettaRegulatoryReference;
+	references+=RosettaDocReference;
 
 AnnotationRef:
 	'[' annotation = [Annotation|ValidID] (attribute = [Attribute|ValidID] (qualifiers += AnnotationQualifier)*)? ']'
@@ -140,7 +140,7 @@ ListLiteral:
 
 // old stuff
 RosettaRootElement:
-	Enumeration | RosettaRegulatoryRegime | RosettaMandate | RosettaSegment | 
+	Enumeration | RosettaBody | RosettaCorpus | RosettaSegment | 
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaBlueprint | RosettaQualifiedType | RosettaCalculationType  | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaBlueprintReport
@@ -364,21 +364,20 @@ RosettaMapPathValue returns RosettaExpression:
  * Things
  */ 
  
-RosettaRegulatoryReference:
-	'[' ('regulatoryReference'|'docReference') regRegime=[RosettaRegulatoryRegime|ValidID] mandates+=([RosettaMandate|ValidID])+ (segments+=RosettaSegmentRef)+ ('provision' provision=STRING)? (reportedField?='reportedField')?  ']'
+RosettaDocReference:
+	'[' ('regulatoryReference'|'docReference') body=[RosettaBody|ValidID] corpuses+=([RosettaCorpus|ValidID])+ (segments+=RosettaSegmentRef)+ ('provision' provision=STRING)? (reportedField?='reportedField')?  ']'
 ;
 
 RosettaSegmentRef:
 	segment=[RosettaSegment|ValidID] segmentRef=STRING
 ;
 
-// TODO - refactor these to have the correct names.
-RosettaRegulatoryRegime:
+RosettaBody:
 	('body') (bodyType=ID) RosettaNamed RosettaDefinable?
 ;
 
-RosettaMandate:
-	('corpus') (corpusType=ID) (body=[RosettaRegulatoryRegime])? (displayName=STRING)? RosettaNamed RosettaDefinable?
+RosettaCorpus:
+	('corpus') (corpusType=ID) (body=[RosettaBody])? (displayName=STRING)? RosettaNamed RosettaDefinable?
 ;
 
 RosettaSegment:
@@ -597,8 +596,8 @@ RosettaExternalEnumSynonym returns RosettaEnumSynonym:
  * Reporting support
  *****************************************/
 
-RosettaRegulatoryMandate:
-	regRegime=[RosettaRegulatoryRegime|ValidID] mandates+=([RosettaMandate|ValidID])+
+RosettaRegulatoryBody:
+	body=[RosettaBody|ValidID] corpuses+=([RosettaCorpus|ValidID])+
 ;   
 
 
@@ -606,11 +605,11 @@ RosettaRegulatoryMandate:
  * Blueprints.
  * */
 RosettaBlueprintReport:
-	'report' regulatoryMandate=RosettaRegulatoryMandate
+	'report' regulatoryBody=RosettaRegulatoryBody
 	'in' ('real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5'|'ASATP')
 	'when'
 	eligibilityRules+=[RosettaBlueprint] ( 'and' eligibilityRules+=[RosettaBlueprint])*
-	('using' 'standard' reportingStandard=[RosettaMandate])?
+	('using' 'standard' reportingStandard=[RosettaCorpus])?
 	'with' 'fields'
 	reportingRules += [RosettaBlueprint]*
 ;
@@ -618,13 +617,13 @@ RosettaBlueprintReport:
 
 RosettaBlueprint:
  	('reporting'|'eligibility') 'rule' RosettaNamed RosettaDefinable?
-	(references += RosettaRegulatoryReference)*
+	(references += RosettaDocReference)*
 	(nodes = BlueprintNodeExp)?
 	('output' output=[Data])?
 ;
 
 BlueprintNodeExp:
-	node=BlueprintNode (reference = RosettaRegulatoryReference)? ('then' next=BlueprintNodeExp)? 
+	node=BlueprintNode (reference = RosettaDocReference)? ('then' next=BlueprintNodeExp)? 
 ;
 
 BlueprintNode:

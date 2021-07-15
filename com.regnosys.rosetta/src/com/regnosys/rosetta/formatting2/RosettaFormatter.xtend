@@ -27,7 +27,6 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
-import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -48,6 +47,7 @@ import org.eclipse.xtext.formatting2.IFormattableDocument
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatter
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -236,7 +236,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.expression.format
 	}
 
-	def dispatch void format(RosettaRegulatoryReference rosettaRegulatoryReference,
+	def dispatch void format(RosettaDocReference rosettaRegulatoryReference,
 		extension IFormattableDocument document) {
 		rosettaRegulatoryReference.prepend[newLine].surround[indent]
 	}
