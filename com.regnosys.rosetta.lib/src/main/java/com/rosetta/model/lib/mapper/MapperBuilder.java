@@ -61,7 +61,7 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	Stream<MapperItem<T, ?>> getItems();
 	
 	default Optional<MapperItem<?, ?>> findParent(MapperItem<?, ?> item) {
-		var parentItem = item.getParentItem();
+		Optional<? extends MapperItem<?, ?>> parentItem = item.getParentItem();
 		if (parentItem.isPresent()) {
 			if (parentItem.get().getMappedObject() instanceof FieldWithMeta) {
 				return findParent(parentItem.get());

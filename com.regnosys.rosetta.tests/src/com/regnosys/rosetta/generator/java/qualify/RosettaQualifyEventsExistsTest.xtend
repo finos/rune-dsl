@@ -9,6 +9,7 @@ import com.rosetta.model.lib.qualify.QualifyResult
 import java.math.BigDecimal
 import java.util.List
 import java.util.Map
+import java.util.Arrays
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.BeforeEach
@@ -277,7 +278,7 @@ class RosettaQualifyEventsExistsTest {
 	def shouldQualifyOnlyExists5() {
 		val barInstance = classes.createInstanceUsingBuilder('Bar', 
 			of('before', BigDecimal.valueOf(15)), 
-			of('afterList', List.of(BigDecimal.valueOf(20), BigDecimal.valueOf(21)))
+			of('afterList', Arrays.asList(BigDecimal.valueOf(20), BigDecimal.valueOf(21)))
 		)
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance))))
 		
