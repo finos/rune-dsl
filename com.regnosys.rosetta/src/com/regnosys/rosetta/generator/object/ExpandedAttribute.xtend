@@ -6,6 +6,7 @@ import com.regnosys.rosetta.rosetta.RosettaSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaType
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
+import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 
 @Data
 final class ExpandedAttribute {
@@ -24,6 +25,8 @@ final class ExpandedAttribute {
 	List<ExpandedSynonym> synonyms
 
 	String definition
+	
+	List<RosettaRegulatoryReference> docReferences
 	boolean hasCalculation
 	boolean isEnum
 	boolean isQualified
