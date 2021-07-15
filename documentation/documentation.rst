@@ -38,7 +38,7 @@ The Rosetta DSL convention is that type names use the *PascalCase* (starting wit
 
 The first component of the definition is a plain-text description of the type.
 
-After the description come any `annotations <#annotations-label>`_ that are applied to this type. Annotations are enclosed within square brackets '[' and ']'
+After the description come any further `meta-data annotations <#meta-data-component-label>`_ that are applied to this type. Meta-data are enclosed within square brackets ``[...]``.
 
 .. code-block:: Haskell
  
@@ -157,7 +157,7 @@ An example is the day count fraction scheme for interest rate calculation, which
    _30E_360_ISDA displayName "30E/360.ISDA"
    _30_360 displayName "30/360"
 
-.. _annotations-label:
+.. _meta-data-component-label:
 
 Meta-Data Component
 -------------------
@@ -170,7 +170,7 @@ Descriptions
 Purpose
 """""""
 
-Plain-text descriptions can be associated to any model component. Although not generating any executable code, descriptions are first-class meta-data components of any model. As modelling best practice, a definition ought to exist for every model component and be clear and comprehensive.
+Plain-text descriptions can be associated to any model component. Although not generating any executable code, descriptions are first-class meta-data components of any model. As modelling best practice, a description ought to exist for every model component and be clear and comprehensive.
 
 Syntax
 """"""
@@ -259,7 +259,7 @@ A document reference is created using the ``docReference`` syntax. This ``docRef
       provision <"ProvisionText">]
 
 
-In some instances, a model type may have a different naming convention based on the context in which it is being used, for example a legal definition may refer to the data type with a different name. The ``docReference`` syntax allows a type to be annotated with the naming conversion ``segment``, and the ``corpus`` and ``body`` that defines it.
+In some instances, a model type may have a different naming convention based on the context in which it is being used, for example a legal definition may refer to the data type with a different name. The ``docReference`` syntax allows a type to be annotated using the naming convention ``segment`` with the ``body`` and ``corpus`` that define it.
 
 .. code-block:: Haskell
 
@@ -279,8 +279,10 @@ A ``docReference`` can also be added to an attribute of a type:
           namingConvention "seller" 
           provision "As defined in the GRMA Seller party ..."]
 
-Annotation Definition
-^^^^^^^^^^^^^^^^^^^^^
+.. _annotation-label:
+
+Annotation
+^^^^^^^^^^
 Purpose
 """""""
 Annotations are a mechanism that allow additional meta-data components to be to specified in a model (beyond the ones already provided by the Rosetta DSL, such as decriptions or documemnt references). Those meta-data components can be then associated to model components to serve a number of purposes:
@@ -393,12 +395,12 @@ Once an annotation is defined, its name and chosen attribute, if any, are used i
 
  type Party:
    [metadata key]
- partyId string (1..*)
-   [metadata scheme]
- name string (0..1)
-   [metadata scheme]
- person NaturalPerson (0..*)
- account Account (0..1)
+   partyId string (1..*)
+     [metadata scheme]
+   name string (0..1)
+     [metadata scheme]
+   person NaturalPerson (0..*)
+   account Account (0..1)
 
  type Identifier:
    [metadata key]
