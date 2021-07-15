@@ -172,8 +172,8 @@ After the description come any `annotations <#annotations-label>`_ that are appl
 .. code-block:: Haskell
  
   type WorkflowStep: <"A workflow step ....">
-	[metadata key]
-	[rootType]
+   [metadata key]
+   [rootType]
 
 Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
 
@@ -206,11 +206,11 @@ Basic Types
 """""""""""
 Rosetta defines five fundamental data types.  The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
 
- * ``string`` - Text
- * ``int`` - integer numbers
- * ``number`` - decimal numbers
- * ``boolean`` - logical true of false
- * ``time`` - simple time values (e.g. "05:00:00")
+* ``string`` - Text
+* ``int`` - integer numbers
+* ``number`` - decimal numbers
+* ``boolean`` - logical true of false
+* ``time`` - simple time values (e.g. "05:00:00")
 
 .. _record-type-label:
 
@@ -346,6 +346,7 @@ Annotations are defined in the same way as other model components. The definitio
 Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase.
 
 It is possible to associate attributes to an annotation (see `metadata <#metadata-label>`_ example), even though some annotations may not require any further attribute. For instance:
+
 .. _roottype-label:
 
 .. code-block:: Haskell
@@ -372,8 +373,8 @@ The ``metadata`` annotation allows the declaration of a set of meta-data qualifi
    scheme string (0..1)
    reference string (0..1)
    template string (0..1)
-	 location string (0..1) <"Specifies this is the target of an internal reference">
-	 address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere">
+   location string (0..1) <"Specifies this is the target of an internal reference">
+   address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere">
 
 Each attribute of the ``metadata`` annotation corresponds to a qualifier that can be applied to a rosetta type or attribute:
 
@@ -990,11 +991,11 @@ Syntax
 
 A report is specified using the following syntax:
 
-  ``report`` <Authority> <Corpus1> <Corpus2> <...> ``in`` <TimingRule>
+.. code-block:: Haskell
 
-  ``when`` <EligibilityRule1> ``and`` <EligibilityRule2> ``and`` <...>
-
-  ``with fields`` <FieldRule1> <FieldRule2> <...>
+ report <Authority> <Corpus1> <Corpus2> <...> in <TimingRule>
+   when <EligibilityRule1> and <EligibilityRule2> and <...>
+   with fields <FieldRule1> <FieldRule2> <...>
 
 An example is given below.
 
@@ -1038,13 +1039,13 @@ The syntax of reporting field rules is as follows:
 
 .. code-block:: Haskell
 
-  <RuleType> rule <Name>
-    [regulatoryReference <Body> <Corpus>
-      <Segment1>
-      <Segment2>
-      <SegmentN...>
-      provision <"ProvisionText">]
-  <FunctionalExpression>
+ <RuleType> rule <Name>
+   [regulatoryReference <Body> <Corpus>
+     <Segment1>
+     <Segment2>
+     <SegmentN...>
+     provision <"ProvisionText">]
+   <FunctionalExpression>
 
 The <RuleType> can be either ``reporting`` or ``eligibility``.
 
@@ -1103,6 +1104,7 @@ The syntax provides type safety when chaining rules, whereby the output type of 
  		if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade only exists
 	then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
 		else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
+
 - ``as`` <FieldName>
 
 Any report statement can be follows by ``as`` This sets a label under which the value will appear in a report, as in the below example.
