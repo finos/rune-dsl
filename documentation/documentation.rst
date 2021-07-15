@@ -3,7 +3,7 @@ Rosetta Modelling Components
 **The Rosetta syntax can express seven types of model components**:
 
 * Data
-* Annotation
+* Meta-Data
 * Data Validation (or *condition*)
 * Function
 * Mapping (or *synonym*)
@@ -11,135 +11,6 @@ Rosetta Modelling Components
 * Namespace
 
 This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those features.
-
-Descriptions and Documentation
-------------------------------
-
-Description and documentation are key parts of the syntax allowing rich definitions to all model components including the `data <#data-component-label>`_, `reporting <#reporting-component-label>`_ and `function <#function-label>`_  components. 
-
-
-Descriptions
-^^^^^^^^^^^^
-
-Syntax
-""""""
-
-The syntax to add a description is: ``<"...">``. There are several examples throughout this document.
-
-
-.. _document-reference-hierarchy-label:
-
-
-Document Reference Hierarchy
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Purpose
-"""""""
-
-To reference text published in a document, the Rosetta DSL supports a number of key concepts that allow to refer to specific documents, their content and who owns them as direct model components.
-
-Syntax
-""""""
-
-There are 3 syntax components to define the hierarchy of documentation content:
-
-#. Body
-#. Corpus
-#. Segment
-
-A body refers to an entity that is the author, publisher or owner of a document. Examples of bodies include regulatory authorities or trade associations.
-
-The syntax to define a body is: ``body`` <Type> <Name> <Description>. Some examples of bodies, with their corresponding types, are given below.
-
-.. code-block:: Haskell
-
- body Organisation ISDA
-   <"Since 1985, the International Swaps and Derivatives Association has worked to make the global derivatives markets safer and more efficient">
-
- body Authority ESMA
-   <"ESMA is an independent EU Authority that contributes to safeguarding the stability of the European Union's financial system by enhancing the protection of investors and promoting stable and orderly financial markets.">
-
- body Authority MAS
-   <"The Monetary Authority of Singapore (MAS) is Singapore’s central bank and integrated financial regulator. MAS also works with the financial industry to develop Singapore as a dynamic international financial centre.">
-
-
-
-A corpus refers to a document set that contains the textual provision that is being referenced. For example, regulatory rules can be specified according to different levels of detail, including laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations).
-
-The syntax to define a corpus is: ``corpus`` <Type> <Body> <Alias> <Name> <Description>. While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known.
-
-Some examples of corpuses, with their corresponding types, are given below. In those cases, the aliases refer to the official numbering of document by the relevant authority.
-
-.. code-block:: Haskell
-
- corpus Regulation ESMA "600/2014" MiFIR
-   <"Regulation (EU) No 600/2014 of the European Parliament and of the Council of 15 May 2014 on markets in financial instruments and amending Regulation (EU) No 648/2012 Text with EEA relevance">
-
- corpus Act MAS "289" SFA
-   <"The Securities And Futures Act relates to the regulation of activities and institutions in the securities and derivatives industry, including leveraged foreign exchange trading, of financial benchmarks and of clearing facilities, and for matters connected therewith.">
-
-Corpuses are typically large sets of documents which can contain many rule specifications. The Rosetta DSL provides the concept of segment to allow to refer to a specific section in a given document.
-
-The syntax to define a segment is: ``segment`` <Type>. Below are some examples of segment types, as are often found in trade association and regulatory texts.
-
-.. code-block:: Haskell
-
- segment article
- segment whereas
- segment annex
- segment table
- segment namingConvention
-
-Once a segment type is defined, it can be associated to an identifier (i.e some free text representing either the segment number or name) and combined with other segment types to point to a specific section in a document. For instance:
-
-.. code-block:: Haskell
-
- article "26" paragraph "2"
-
-
-.. _documentation-reference-label:
-
-Documentation Reference
-^^^^^^^^^^^^^^^^^^^^^^^
-
-Syntax
-""""""
-
-The `document reference hierarchy <#document-reference-hierarchy-label>`_ is used to create a ``docReference`` refers to a ``corpus``, the ``segments`` and the ``provision``. 
-
-.. code-block:: Haskell
-
-    [docReference <Body> <Corpus>
-      <Segment1>
-      <Segment2>
-      <SegmentN...>
-      provision <"ProvisionText">]
-
-
-The ``docReference`` has the same syntax as the ``regulatoryReference`` however, can be applied to any `data <#data-component-label>`_ or `function <#function-label>`_  component. 
-
-In some instances, an model type may have a different naming convention based on the context in which it is being used, for example a legal definition may refer to the data type with a different name. The ``docReference`` syntax allows a type to be annotated with the naming conversion ``segment``, and the ``corpus`` and ``body`` that defines it.
-
-
-.. code-block:: Haskell
-
- type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
-      [docReference ICMA GMRA
-        namingConvention "seller" 
-        provision "As defined in the GRMA Seller party ..."]
-
-
-The `docReference` can also be added to an attribute of a type:
-
-.. code-block:: Haskell
-
- type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
-      ...
-      payer CounterpartyRoleEnum (1..1)
-        [docReference ICMA GMRA
-          namingConvention "seller" 
-          provision "As defined in the GRMA Seller party ..."]
-
 
 
 .. _data-component-label:
@@ -165,7 +36,7 @@ The definition of a type starts with the keyword ``type``, followed by the type 
 
 The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase`_). Type names need to be unique across a `namespace <#namespace-label>`_. All those requirements are controlled by the Rosetta DSL grammar.
 
-The first component of the definition is a plain-text description of the type. Descriptions use quotation marks ``"`` ``"`` (to mark a string) in between angle brackets ``<`` ``>``. Descriptions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
+The first component of the definition is a plain-text description of the type.
 
 After the description come any `annotations <#annotations-label>`_ that are applied to this type. Annotations are enclosed within square brackets '[' and ']'
 
@@ -325,17 +196,135 @@ In the example above all model components contained within the layers of the `cd
 
 .. _annotations-label:
 
-Annotation Component
---------------------
+Meta-Data Component
+-------------------
+
+Meta-data are key parts of the syntax allowing rich definitions to all model components including the `data <#data-component-label>`_, `reporting <#reporting-component-label>`_ and `function <#function-label>`_  components. 
+
+Descriptions
+^^^^^^^^^^^^
+
+Purpose
+"""""""
+
+Plain-text descriptions can be associated to any model component. Although not generating any executable code, descriptions are first-class meta-data components of any model. As modelling best practice, a definition ought to exist for every model component and be clear and comprehensive.
+
+Syntax
+""""""
+
+The syntax to add a description uses quotation marks in between angle brackets ``<"...">``. There are several examples throughout this document.
+
+Document Reference
+^^^^^^^^^^^^^^^^^^
+
+Purpose
+"""""""
+
+A document reference is a type of meta-data description that can associate information published in a separate document to model components. The Rosetta DSL allows to define those specific documents, who owns them and their content as direct model components, and to associate them to any other `data <#data-component-label>`_ or `function <#function-label>`_ components.
+
+.. _document-reference-hierarchy-label:
+
+Syntax (Document Hierarchy)
+"""""""""""""""""""""""""""
+
+There are 3 syntax components to define the hierarchy of document references:
+
+#. Body
+#. Corpus
+#. Segment
+
+A body refers to an entity that is the author, publisher or owner of a document. Examples of bodies include regulatory authorities or trade associations.
+
+The syntax to define a body is: ``body`` <Type> <Name> <Description>. Some examples of bodies, with their corresponding types, are given below.
+
+.. code-block:: Haskell
+
+ body Organisation ISDA
+   <"Since 1985, the International Swaps and Derivatives Association has worked to make the global derivatives markets safer and more efficient">
+
+ body Authority ESMA
+   <"ESMA is an independent EU Authority that contributes to safeguarding the stability of the European Union's financial system by enhancing the protection of investors and promoting stable and orderly financial markets.">
+
+ body Authority MAS
+   <"The Monetary Authority of Singapore (MAS) is Singapore’s central bank and integrated financial regulator. MAS also works with the financial industry to develop Singapore as a dynamic international financial centre.">
+
+A corpus refers to a document set that contains the textual provision that is being referenced. For example, regulatory rules can be specified according to different levels of detail, including laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations).
+
+The syntax to define a corpus is: ``corpus`` <Type> <Body> <Alias> <Name> <Description>. While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known.
+
+Some examples of corpuses, with their corresponding types, are given below. In those cases, the aliases refer to the official numbering of document by the relevant authority.
+
+.. code-block:: Haskell
+
+ corpus Regulation ESMA "600/2014" MiFIR
+   <"Regulation (EU) No 600/2014 of the European Parliament and of the Council of 15 May 2014 on markets in financial instruments and amending Regulation (EU) No 648/2012 Text with EEA relevance">
+
+ corpus Act MAS "289" SFA
+   <"The Securities And Futures Act relates to the regulation of activities and institutions in the securities and derivatives industry, including leveraged foreign exchange trading, of financial benchmarks and of clearing facilities, and for matters connected therewith.">
+
+Corpuses are typically large sets of documents which can contain many rule specifications. The Rosetta DSL provides the concept of segment to allow to refer to a specific section in a given document.
+
+The syntax to define a segment is: ``segment`` <Type>. Below are some examples of segment types, as are often found in trade association and regulatory texts.
+
+.. code-block:: Haskell
+
+ segment article
+ segment whereas
+ segment annex
+ segment table
+ segment namingConvention
+
+Once a segment type is defined, it can be associated to an identifier (i.e some free text representing either the segment number or name) and combined with other segment types to point to a specific section in a document. For instance:
+
+.. code-block:: Haskell
+
+ article "26" paragraph "2"
+
+.. _document-reference-label:
+
+Syntax (Document Reference)
+"""""""""""""""""""""""""""
+
+A document reference is created using the ``docReference`` syntax. This ``docReference`` must be associated to a ``corpus`` and ``segment`` defined according to the `document reference hierarchy <#document-reference-hierarchy-label>`_ section. The document reference can copy the actual text being referred to using the ``provision`` syntax. 
+
+.. code-block:: Haskell
+
+    [docReference <Body> <Corpus>
+      <Segment1>
+      <Segment2>
+      <SegmentN...>
+      provision <"ProvisionText">]
+
+
+In some instances, a model type may have a different naming convention based on the context in which it is being used, for example a legal definition may refer to the data type with a different name. The ``docReference`` syntax allows a type to be annotated with the naming conversion ``segment``, and the ``corpus`` and ``body`` that defines it.
+
+.. code-block:: Haskell
+
+ type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
+      [docReference ICMA GMRA
+        namingConvention "seller" 
+        provision "As defined in the GRMA Seller party ..."]
+
+A ``docReference`` can also be added to an attribute of a type:
+
+.. code-block:: Haskell
+
+ type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
+      ...
+      payer CounterpartyRoleEnum (1..1)
+        [docReference ICMA GMRA
+          namingConvention "seller" 
+          provision "As defined in the GRMA Seller party ..."]
+
 Annotation Definition
 ^^^^^^^^^^^^^^^^^^^^^
 Purpose
 """""""
-Annotations allow to associate meta-information to model components, which can serve a number of purposes:
+Annotations are a mechanism that allow additional meta-data components to be to specified in a model (beyond the ones already provided by the Rosetta DSL, such as decriptions or documemnt references). Those meta-data components can be then associated to model components to serve a number of purposes:
 
-* purely syntactic, to provide additional guidance when navigating model components
 * to add constraints to a model that may be enforced by syntax validation
 * to modify the actual behaviour of a model in generated code
+* purely syntactic, to provide additional guidance when navigating model components
 
 Examples of annotations and their usage for different purposes are illustrated below.
 
@@ -968,7 +957,10 @@ Purpose
 
 One of the first challenges of expressing regulatory rules for the financial domain is to organise the content of the regulatory framework that mandates these rules. The financial industry is a global, highly regulated industry, where a single line of business or activity may operate across multiple jurisdictions and regulatory regimes. The applicable regulations can span thousands of pages of legal text with intricate cross-references.
 
-To organise such regulatory content within a model, the Rosetta DSL supports a number of key concepts that allow to refer to specific documents, their content and who owns them as direct model components. See `document reference hierarchy <#document-reference-hierarchy-label>`_ for more information.
+Syntax
+""""""
+
+To organise such regulatory content within a model, the Rosetta DSL supports a number of syntax components that allow to refer to specific documents, their content and who owns them as direct model components. Those components are defined in the `document reference hierarchy <#document-reference-hierarchy-label>`_ section.
 
 Report Definition
 ^^^^^^^^^^^^^^^^^
@@ -1047,7 +1039,7 @@ The syntax of reporting field rules is as follows:
      provision <"ProvisionText">]
    <FunctionalExpression>
 
-The <RuleType> can be either ``reporting`` or ``eligibility``.
+The <RuleType> can be either ``reporting`` or ``eligibility``. The ``regulatoryReference`` syntax is the same as the ``docReference`` syntax documented in the `document reference <#document-reference-label>`_ section. However it can only be applied to regulatory rules.
 
 The functional expression of reporting rules uses the same syntax components that are already available to express logical statements in other modelling components, such as the condition statements that support data validation.
 
