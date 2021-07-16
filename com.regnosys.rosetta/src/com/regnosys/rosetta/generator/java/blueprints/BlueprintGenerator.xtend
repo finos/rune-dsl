@@ -24,7 +24,6 @@ import com.regnosys.rosetta.rosetta.BlueprintValidate
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
@@ -51,6 +50,7 @@ import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.generator.java.function.RosettaFunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
@@ -489,7 +489,7 @@ class BlueprintGenerator {
 		else return "? extends "+ typeS 
 	}
 	
-	def findOutputRefs(BlueprintMerge merge, RosettaRegulatoryReference bpRef) {
+	def findOutputRefs(BlueprintMerge merge, RosettaDocReference bpRef) {
 //		val a = merge.output as RosettaClass
 //		val b = a.regularAttributes
 //		val c = b.filter[it.references.exists[matchesRef(bpRef)]]
@@ -529,12 +529,12 @@ class BlueprintGenerator {
 	
 	@Data static class AttributePath {
 		List<Attribute> path
-		RosettaRegulatoryReference ref
+		RosettaDocReference ref
 	}
 	
 	@Data static class RegdOutputField {
 		Attribute attrib
-		RosettaRegulatoryReference ref
+		RosettaDocReference ref
 	}
 	
 	@Data static class Context {
