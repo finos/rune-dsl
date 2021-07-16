@@ -64,6 +64,7 @@ import org.eclipse.xtext.util.Wrapper
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
+import java.util.Arrays
 import java.util.List
 
 class ExpressionGenerator {
@@ -254,7 +255,7 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient onlyExistsExpr(RosettaOnlyExistsExpression onlyExists, ParamMap params) {
-		'''«importWildCard(ExpressionOperators)»onlyExists(«List».of(«FOR arg : onlyExists.args SEPARATOR ', '»«arg.javaCode(params)»«ENDFOR»))'''
+		'''«importWildCard(ExpressionOperators)»onlyExists(«Arrays».asList(«FOR arg : onlyExists.args SEPARATOR ', '»«arg.javaCode(params)»«ENDFOR»))'''
 	}
 	
 	def StringConcatenationClient existsExpr(RosettaExistsExpression exists, ParamMap params) {
