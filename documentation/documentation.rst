@@ -1,9 +1,10 @@
 Rosetta Modelling Components
 ============================
-**The Rosetta syntax can express seven types of model components**:
+**The Rosetta syntax can express eight types of model components**:
 
 * Data
 * Meta-Data
+* Expression (or *logic*)
 * Data Validation (or *condition*)
 * Function
 * Namespace
@@ -475,47 +476,45 @@ Attributes of these types are meant to be associated to an object qualification 
 
 .. note:: The qualified type feature in the Rosetta DSL is under evaluation and may be replaced by a mechanism that is purely based on these function annotations in the future.
 
+.. _expression-label:
+
 Expression Component
 --------------------
 
-Rosetta Expressions are used to perfom simple calculations and comparisons. Simple expressions can be built up using `operators <#operators-label>`_ to form more complex expressions.
-They are used for `Functions <ducumentation.html#function-label>`_,
-`Data type validation conditions <documentation.html#condition-label>`_,
-`Conditional mappings <mapping.html#when-clause-label>`_ and 
-`Report Rules <documentation.html#report-rule-label>`_
+**The Rosetta DSL offers a restricted set of language features to express simple logic**, such as simple operations and comparisons. The language is designed to be unambiguous and understandable by domain experts who are not software engineers while minimising unintentional behaviour. Simple expressions can be built up using `operators <#operators-label>`_ to form more complex expressions.
 
-Expressions can be `evaluated` with a context of a Rosetta object to `return` a result. The result of an expression is either a single `basic <documentation.html#basic-type-label>` value (2.0, True, "USD"), a single Rosetta object (e.g. a Party object) or a `List` of values, all of the same type.
+.. note:: The Rosetta DSL is not a *Turing-complete* language: e.g. it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations.
 
-The `type` of an expression is the type of the result that it will evaluate to. E.g. an expression that evaluates to True or False is of type boolean, an expression that evaluates to a list of SecurityLegs is of type `List of SecurityLeg`. A list is an ordered collection of items.
+Logical expressions are used within the following model components:
 
-The below sections will detail the different types of Rosetta Expressions and how they are used. 
+- `Functions <ducumentation.html#function-label>`_,
+- `Data type validation conditions <documentation.html#condition-label>`_,
+- `Conditional mappings <mapping.html#when-clause-label>`_ and 
+- `Report Rules <documentation.html#report-rule-label>`_
 
-Constant Expressions
-^^^^^^^^^^^^^^^^^^^^
-An expression can be a `basic <documentation.html#basic-type-label>`_ constant such as 1, True or "USD". 
+Expressions are evaluated within the context of a Rosetta object to return a result. The result of an expression can be either:
 
-Constants are valid expressions and are useful for comparisons to more complex expressions.
+- a single `basic type <documentation.html#basic-type-label>` value: e.g. 2.0, True, "USD",
+- a single Rosetta object (data type or enumeration): e.g. a `Party` object or
+- a `list <list-label>`_ of results, all of the same type (basic type or Rosetta object).
 
+The type of an expression is the type of the result that it will evaluate to. E.g. an expression that evaluates to True or False is of type boolean, an expression that evaluates to a list of `Party` is of type `List of Party`. 
 
-Enumeration Constants
-""""""""""""""""""""
-
-An expression can refer to a Rosetta Enumeration value using the name of the Enumeration type, followed by '->' and finally the name of a value. E.g. ``DayOfWeekEnum -> SAT``\.
-
-List Constants
-""""""""""""""""""""
-
-Constants can also be declared as lists using square brackets by starting with ``[``, followed by a comma separated list of expressions and closing with ``]``. E.g. ::
-
-    [1,2]
-    ["A",B"]
-    [DayOfWeekEnum->SAT, DayOfWeekEnum->SUN]
+The below sections detail the different types of Rosetta expressions and how they are used. 
 
 .. _rosetta-path-label:
 
-Rosetta Path Expressions
-^^^^^^^^^^^^^^^^^^^^
-The simplest Rosetta Path Expression is just the name of an attribute. For example, ``before`` in the context of a `condition <documentation.html#broken-link>` of a ContractFormationPrimitive will evaluate to the value of the before state of the contract formation. In the example below the before state is checked for `existence <#exists-label>`_.
+Rosetta Path Expression
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Purpose
+"""""""
+A Rosetta path expression is used to return the value of an attribute inside a Rosetta object.
+
+Syntax
+""""""
+
+The simplest Rosetta path expression is just the name of an attribute. In the example below, the ``before`` attribute of a ``ContractFormationPrimitive`` object is checked for `existence <#exists-label>`_ inside a `condition <#condition-label> associated to that data type.
 
 .. code-block:: Haskell
   :emphasize-lines: 7
@@ -528,7 +527,7 @@ The simplest Rosetta Path Expression is just the name of an attribute. For examp
 	condition: <"The quantity should be unchanged.">
 		if before exists ....
 
-Attribute names can be chained together using `->` in order to refer to attributes further down the Rosetta object tree. In the example below the security of the product contained in a confirmation is checked for `existence <#exists-label>`_.
+Attribute names can be chained together using ``->`` in order to recursively refer to attributes further down inside that Rosetta object. In the example below, the ``security`` of the ``product`` contained in a ``Confirmation`` object is checked for `existence <#exists-label>`_.
 
 .. code-block:: Haskell
   :emphasize-lines: 10
@@ -544,32 +543,83 @@ Attribute names can be chained together using `->` in order to refer to attribut
         condition BothBuyerAndSellerPartyRolesMustExist: 
             if lineage -> executionReference -> tradableProduct -> product -> security exists
 
-..
-    Not sure how to make this more helpful
+If a Rosetta path is applied to an attribute that does not have a value in the object it is being evaluated against, the result is *null* - i.e. there is no value. If an attribute of that non-existant object is further evaluated, the result is still *null*. In the above example, if `executionReference` is *null*, the final `security` attribute will also evaluate to *null*.
 
-.. note:: In some situations (Reporting rules and conditional mapping) it is unclear where a Rosetta Path Expression should start from. In this case the rosetta path should begin with a type name e.g. ``WorkflowStep -> eventIdentifier`` . The grammar validation in Rosetta will make it clear when this is required.
+.. note:: In situations where the context of the object in which the Rosetta path expression should be evaluated is not already specified (e.g. reporting rules or conditional mapping), the Rosetta path should begin with the data type name e.g. ``WorkflowStep -> eventIdentifier``. where applicable, this requirement is enforced by syntax validation in the Rosetta DSL.
 
-If when evaluated a Rosetta path refers to an attribute that does not have a value in the object it is being evaluated against then the result is *null* - there is no value. If an attribute of that non-existant object is referenced then the result is still null.
+.. _list-label:
 
-Cardinality
-""""""""""""""""""""
-A Rosetta path expression that refers to an attribute with multiple `cardinality <documentation.html#cardinality_label>`_ will result in a list of values. If a chained rosetta path expression has multiple links with multiple cardinality then the result is a flattened list. E.g. ``businessEvent -> primitives -> transfer -> cashTransfer`` (from Qualify_CashTransfer) gets all the *CashTransferComponent*\s from all the *Primitive*\s in a *WorkflowStep* as a single list.
+List
+""""
 
-An expression that has the potential to yield multiple values is said to have *multiple cardinality* and will always evaluate to a list of zero or more elements.
+A list is an ordered collection of items. A Rosetta path expression that refers to an attribute with multiple `cardinality <documentation.html#cardinality_label>`_ will result in a list of values. If a chained Rosetta path expression has multiple links with multiple cardinality then the result is a flattened list. For example (as extracted from the ``Qualify_CashTransfer`` function). ::
+
+  businessEvent -> primitives -> transfer -> cashTransfer
+
+gets all the `cashTransferComponent` from all the `primitive` attributes as a single list.
+
+An expression that has the potential to yield multiple values is said to have *multiple cardinality* and will always evaluate to a list of zero or more elements, *even when the result is a single element*.
 
 Only element
-""""""""""""""""""""
+""""""""""""
 The keyword ``only-element`` can appear after an attribute name in a Rosetta path. ::
 
-    observationEvent -> primitives only-element -> observation
+  observationEvent -> primitives only-element -> observation
 	
 This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value then the expression result will be null.
+
+Constant Expressions
+^^^^^^^^^^^^^^^^^^^^
+
+Purpose
+"""""""
+
+An expression can be a `basic type <documentation.html#basic-type-label>`_ constant such as 2.0, True or "USD". Constant expressions are useful for comparisons to more complex expressions.
+
+Enumeration Constant
+""""""""""""""""""""
+
+An expression can refer to a Rosetta Enumeration value using the name of the enumeration type followed by ``->`` and the name of the enumeration value. E.g.
+
+  DayOfWeekEnum -> SAT
+
+List Constant
+"""""""""""""
+
+Constants can also be declared as lists using a comma separated list of expressions enclosed within square brackets ``[...]``. E.g.:
+
+    [1,2]
+    ["A",B"]
+    [DayOfWeekEnum->SAT, DayOfWeekEnum->SUN]
 
 .. _operators-label:
 
 Operators
-^^^^^^^^^^^^^^^^^^^^
-Rosetta supports operators that combine expressions into more complicated expressions.
+^^^^^^^^^
+
+Purpose
+"""""""
+
+Rosetta supports operators that combine expressions into more complicated expressions. The language emulates the basic boolean logic available in usual programming languages, which can be used within conditional statements:
+
+* conditional statements: ``if``, ``then``, ``else``
+* comparison operators: ``=``, ``<>``, ``<``, ``<=``, ``>=``, ``>``
+* list comparison operator: ``exists``, ``is absent``, ``contains``, ``count``
+* boolean operators: ``and``, ``or``
+* arithmetic operators: `+``, ``-``
+
+Conditional Statement
+"""""""""""""""""""""
+
+Conditional statements consist of an ``if`` clause followed by a ``then`` clause with optional ``else`` clauses.
+
+The ``if clause`` consists of the keyword ``if`` followed by a boolean expression
+The ``then clause`` consists of the keyword ``then`` followed by any expression
+The optional ``else clause`` consists of the keyword ``else`` followed by any expression
+
+If the ``if clause`` evaluates to true then the result of the ``then clause`` is returned by the conditional expression. if it evaluates to false then the result of the ``else clause`` is returned if present, else null is returned.
+
+The type of the expression is the type of the expression contained in the ``then clause``\. The grammar enforces that the type of the else expression matches the then expression.
 
 Comparison Operators
 """"""""""""""""""""
@@ -585,7 +635,7 @@ The result type of a comparison operator is always boolean
 * ``is absent`` - retuns true if the left expression does not return a result.
 
 List Comparison Operators
-""""""""""""""""""""
+"""""""""""""""""""""""""
 Rosetta also has operators that are designed to function on lists
 
 * ``contains`` - every element in the right hand expression is = to an element in the left hand expression
@@ -619,13 +669,13 @@ An expression that is expected to return multiple cardinality that returns null 
 .. _null-label:
 
 Comparison Operators and Null
-""""""""""""""""""""
+"""""""""""""""""""""""""""""
 If one or more expressions being passed to an operator is of single cardinality but is null (not present) the behavior is as follows
 
-* null = *any value* returns false
+* null  = *any value* returns false
 * null <> *any value* returns true
 * null  > *any value* returns false
-* null  >= *any value* returns false
+* null >= *any value* returns false
 
 *any value* here includes null. The behaviour is symmetric - if the null appears on the either side of the expression the result is the same. if the null value is of multiple cardinality then it is treated as an empty list.
 
@@ -643,21 +693,33 @@ Rosetta supports basic arithmetic operators
 * ``+`` can take either two numerical types or two string typed expressions. The result is the sum of two numerical types or the concatenation of two string types
 * ``-``, ``*``, ``/`` take two numerical types and respectively subtract, multiply and divide them to give a number result.
 
-Conditional Expression
-^^^^^^^^^^^^^^^^^^^^
-Conditional expressions consist of an ``if clause`` followed by a ``then clause`` with an optional ``else clause``
+Operator Precedence
+"""""""""""""""""""
+Expressions are evaluated in Rosetta in the following order (See `Operator Precedence <https://en.wikipedia.org/wiki/Order_of_operations>`_). Higher are evaluated first.
 
-The ``if clause`` consists of the keyword ``if`` followed by a boolean expression
-The ``then clause`` consists of the keyword ``then`` followed by any expression
-The optional ``else clause`` consists of the keyword ``else`` followed by any expression
-
-If the ``if clause`` evaluates to true then the result of the ``then clause`` is returned by the conditional expression. if it evaluates to false then the result of the ``else clause`` is returned if present, else null is returned.
-
-The type of the expression is the type of the expression contained in the ``then clause``\. The grammar enforces that the type of the else expression matches the then expression. 
+#. RosettaPathExpressions - e.g. 'Lineage -> executionReference'
+#. Brackets - e.g. '(1+2)'
+#. if-then-else - e.g. 'if (1=2) then 3'
+#. only-element - e.g. 'Lineage -> executionReference only-element'
+#. count - e.g. 'Lineage -> executionReference count'
+#. Multiplicative operators '*','/' - e.g. '3*4'
+#. Additive operators '+'.'-' - e.g. '3-4'
+#. Comparison operators '>=', '<=','>','<' - e.g. '3>4
+#. Existence operators 'exists','is absent','contains','disjoint' - e.g. 'Lineage -> executionReference exists'
+#. and - e.g. '5>6 and true'
+#. or - e.g. '5>6 or true'
 
 Function calls
-^^^^^^^^^^^^^^^^^^^^
-An expression can be a call to a `Function <documentation.html#function-label>`_. A function call consists of the function name, followed by ``(``, a comma separated list if ``arguments`` and a closing ``)``
+^^^^^^^^^^^^^^
+
+Purpose
+"""""""
+
+An expression can be a call to a `function <documentation.html#function-label>`_, that returns the output of that function evaluation.
+
+Syntax
+""""""
+A function call consists of the function name, followed by a comma separated list of arguments enclosed within round brackets ``(...)``. 
 
 The arguments list is a list of expressions. The number and type of the expressions must match the inputs defined by the function definition. This will be enforced by the syntax validator.
 
@@ -686,22 +748,6 @@ In the last line of the example below the Max function is called to find the lar
             r string (1..1)
         assign-output r:
             if Max(a,b)=a then "A" else "B"
-
-Operator Precedence
-^^^^^^^^^^^^^^^^^^^^
-Formally expressions in rosetta are evaluated in the following order (See `Operator Precedence <https://en.wikipedia.org/wiki/Order_of_operations>`_). Higher are evaluated first
-
-- RosettaPathExpressions - e.g. 'Lineage -> executionReference'
-- Brackets - e.g. '(1+2)'
-- if-then-else - e.g. 'if (1=2) then 3'
-- only-element - e.g. 'Lineage -> executionReference only-element'
-- count - e.g. 'Lineage -> executionReference count'
-- Multiplicative operators '*','/' - e.g. '3*4'
-- Additive operators '+'.'-' - e.g. '3-4'
-- Comparison operators '>=', '<=','>','<' - e.g. '3>4
-- Existence operators 'exists','is absent','contains','disjoint' - e.g. 'Lineage -> executionReference exists'
-- and - e.g. '5>6 and true'
-- or - e.g. '5>6 or true'
 
 
 Data Validation Component
@@ -734,7 +780,7 @@ The lower and upper bounds can both be any integer number. A 0 lower bound means
 
 A validation rule is generated for each attribute's cardinality constraint, so if the cardinality of the attribute does not match the requirement an error will be associated with that attribute by the validation process.
 
-.. _condition-label: 
+.. _condition-label:
 
 Condition Statement
 ^^^^^^^^^^^^^^^^^^^
@@ -752,14 +798,7 @@ Condition statements are included in the definition of the type that they are as
 The definition of a condition starts with the ``condition`` keyword, followed by the name of the condition and a colon ``:`` punctuation. The condition's name must be unique in the context of the type that it applies to (but does not need to be unique across all data types of a given model). The rest of the condition definition comprises:
 
 * a plain-text description (optional)
-* a boolean `expression <expressions.html>`_ that applies to the the type's attributes
-
-**The Rosetta DSL offers a restricted set of language features designed to be unambiguous and understandable** by domain experts who are not software engineers, while minimising unintentional behaviour. The Rosetta DSL is not a *Turing-complete* language: it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations. The language features that are available in the Rosetta DSL to express validation conditions emulate the basic boolean logic available in usual programming languages:
-
-* conditional statements: ``if``, ``then``, ``else``
-* boolean operators: ``and``, ``or``
-* list statements: ``exists``, ``is absent``, ``contains``, ``count``
-* comparison operators: ``=``, ``<>``, ``<``, ``<=``, ``>=``, ``>``
+* a boolean-type `expression <expressions.html>`_ that applies to the the type's attributes
 
 .. code-block:: Haskell
 
