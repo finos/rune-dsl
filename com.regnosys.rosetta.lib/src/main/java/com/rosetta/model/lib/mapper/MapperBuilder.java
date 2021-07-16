@@ -41,7 +41,7 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	default <G> MapperGroupByBuilder<T,G> groupBy(Function<MapperItem<T,?>, MapperBuilder<G>> groupByFunc) {
 		Function<MapperItem<T,?>,MapperItem<G, ?>> keyFunction = 
 				i -> groupByFunc.apply(i).getItems().findFirst().get();
-		Function<MapperItem<T,?>,MapperBuilder<T>> identity = i->new MapperS<>(i);
+		Function<MapperItem<T,?>,MapperBuilder<T>> identity = MapperS::new;
 		BinaryOperator<MapperBuilder<T>> merger = MapperBuilder<T>::unionSame;
 		Map<MapperItem<G, ?>, MapperBuilder<T>> gbi = getItems()
 				.collect(Collectors.toMap(keyFunction, 

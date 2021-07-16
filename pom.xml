@@ -309,7 +309,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 					<version>${tycho-version}</version>
 					<configuration>
 						<useProjectSettings>false</useProjectSettings>
-						<compilerVersion>11</compilerVersion>
+						<compilerVersion>1.8</compilerVersion>
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
 						<release>${maven.compiler.release}</release>
