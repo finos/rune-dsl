@@ -3,14 +3,17 @@ Rosetta Modelling Components
 **The Rosetta syntax can express seven types of model components**:
 
 * Data
-* Annotation
+* Meta-Data
 * Data Validation (or *condition*)
 * Function
+* Namespace
 * Mapping (or *synonym*)
 * Reporting
-* Namespace
 
 This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those features.
+
+
+.. _data-component-label:
 
 Data Component
 --------------
@@ -25,7 +28,7 @@ Type
 ^^^^
 Purpose
 """""""
-A *type* describes an *entity* (also sometimes referred to as an *object* or a *class*) in the model and is defined by a plain-text description and a set of *attributes* (also sometimes refered to as fields). Attributes specify the granular elements composing the entity.
+A *type* describes an *entity* (also sometimes referred to as an *object* or a *class*) in the model and is defined by a plain-text description and a set of *attributes* (also sometimes referred to as fields). Attributes specify the granular elements composing the entity.
 
 Syntax
 """"""
@@ -33,15 +36,15 @@ The definition of a type starts with the keyword ``type``, followed by the type 
 
 The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* `CamelCase`_). Type names need to be unique across a `namespace <#namespace-label>`_. All those requirements are controlled by the Rosetta DSL grammar.
 
-The first component of the definition is a plain-text description of the type. Descriptions use quotation marks ``"`` ``"`` (to mark a string) in between angle brackets ``<`` ``>``. Descriptions, although not generating any executable code, are integral meta-data components of the model. As modelling best practice, a definition ought to exist for every artefact and be clear and comprehensive.
+The first component of the definition is a plain-text description of the type.
 
-After the description come any `annotations <#annotations-label>`_ that are applied to this type. Annotations are enclosed within square brackets '[' and ']'
+After the description come any further `meta-data annotations <#meta-data-component-label>`_ that are applied to this type. Meta-data are enclosed within square brackets ``[...]``.
 
 .. code-block:: Haskell
  
   type WorkflowStep: <"A workflow step ....">
-	[metadata key]
-	[rootType]
+   [metadata key]
+   [rootType]
 
 Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
 
@@ -51,7 +54,7 @@ Then the definition of the type lists its component attributes. Each attribute i
   Required - Each attribute can be specified either as a `basic type <#basic-type-label>`_, `record type <#record-type-label>`_, data type or `enumeration type <#enumeration-label>`_.
 * cardinality -  
   Required - see `Cardinality <#cardinality-label>`_
-* description - Optional but recommended) - A description of the attribute using the sames <"..."> syntax as the type description
+* description - Optional but recommended) - A description of the attribute using the same <"..."> syntax as the type description
 * annotations - Optional - Annotations such as `synonyms <mapping.html>`_ or metadata can be applied to attributes
 
 .. code-block:: Haskell
@@ -74,11 +77,11 @@ Basic Types
 """""""""""
 Rosetta defines five fundamental data types.  The set of basic types available in the Rosetta DSL are controlled at the language level by the ``basicType`` definition:
 
- * ``string`` - Text
- * ``int`` - integer numbers
- * ``number`` - decimal numbers
- * ``boolean`` - logical true of false
- * ``time`` - simple time values (e.g. "05:00:00")
+* ``string`` - Text
+* ``int`` - integer numbers
+* ``number`` - decimal numbers
+* ``boolean`` - logical true of false
+* ``time`` - simple time values (e.g. "05:00:00")
 
 .. _record-type-label:
 
@@ -95,7 +98,7 @@ Time
 """"
 The ``zonedDateTime`` record type unambiguously refers to a single instant of time.
 
-Alternatively in the CDM there is the data type ``BusinessCenterTime`` , where a simple ``time`` "5:00:00" is specified alongside a business center.  The simple time should be interpreted with the timezone information of the associated business center.
+Alternatively in the CDM there is the data type ``BusinessCenterTime`` , where a simple ``time`` "5:00:00" is specified alongside a business centre.  The simple time should be interpreted with the time-zone information of the associated business centre.
 
 Inheritance
 """""""""""
@@ -154,55 +157,139 @@ An example is the day count fraction scheme for interest rate calculation, which
    _30E_360_ISDA displayName "30E/360.ISDA"
    _30_360 displayName "30/360"
 
-.. _namespace-label:
+.. _meta-data-component-label:
 
-Namespace Component
---------------------
-Namespace Definition
-^^^^^^^^^^^^^^^^^^^^
+Meta-Data Component
+-------------------
+
+Meta-data are key parts of the syntax allowing rich definitions to all model components including the `data <#data-component-label>`_, `reporting <#reporting-component-label>`_ and `function <#function-label>`_  components. 
+
+Descriptions
+^^^^^^^^^^^^
+
 Purpose
 """""""
-The namespace syntax allows model artifacts in a data model to be organised into groups of namespaces. A namespace is an abstract container created to hold a logical grouping of model artifacts. The approach is designed to make it easier for users to understand the model structure and adopt selected components. It also aids the development cycle by insulating groups of components from model restructuring that may occur.  Model artifacts are organised into a directory structure that follows the namespaces’ Group and Artifact structure (a.k.a. “GAV coordinates”). This directory structure is exposed in the model editor.
 
-By convention namespaces are organised into a hierarchy, with layers going from in to out. The hierarchy therefore contains an intrinsic inheritance structure where each layer has access to (“imports”) the layer outside, and is designed to be usable without any of its inner layers. Layers can contain several namespaces (“siblings”), which can also refer to each other. 
+Plain-text descriptions can be associated to any model component. Although not generating any executable code, descriptions are first-class meta-data components of any model. As modelling best practice, a description ought to exist for every model component and be clear and comprehensive.
 
 Syntax
-"""""""
+""""""
 
-The definition of a namespace starts with the `namespace` keyword, followed by the location of the namespace in the directory structure. ::
+The syntax to add a description uses quotation marks in between angle brackets ``<"...">``. There are several examples throughout this document.
 
-  namespace cdm.product.common
+Document Reference
+^^^^^^^^^^^^^^^^^^
 
-The names of all components must be unique within a given namespace. Components can refer to other components in the same namespace using just their name. Components can refer to components outside their namespace either by giving the *fully qualified name* e.g. ``cdm.base.datetime.AdjustableDate`` or by importing the namespace into the current file.
-
-To gain access to model components contained within another namespace the `import` keyword is used. ::
-
-  import cdm.product.asset.*
-
-In the example above all model components contained within the cdm.product.asset namespace will be imported. Note, only components contained within the layer referenced will be imported, in order to import model components from namespaces embedded within that layer further namespaces need to be individually referenced. ::
-
-  import cdm.base.math.*
-  import cdm.base.datetime.*
-  import cdm.base.staticdata.party.*
-  import cdm.base.staticdata.asset.common.*
-  import cdm.base.staticdata.asset.rates.*
-  import cdm.base.staticdata.asset.credit.*
-
-In the example above all model components contained within the layers of the `cdm.base` namespace are imported.
-
-.. _annotations-label:
-
-Annotation Component
---------------------
-Annotation Definition
-^^^^^^^^^^^^^^^^^^^^^
 Purpose
 """""""
-Annotations allow to associate meta-information to model components, which can serve a number of purposes:
 
-* purely syntactic, to provide additional guidance when navigating model components
+A document reference is a type of meta-data description that can associate information published in a separate document to model components. The Rosetta DSL allows to define those specific documents, who owns them and their content as direct model components, and to associate them to any other `data <#data-component-label>`_ or `function <#function-label>`_ components.
+
+.. _document-reference-hierarchy-label:
+
+Syntax (Document Hierarchy)
+"""""""""""""""""""""""""""
+
+There are 3 syntax components to define the hierarchy of document references:
+
+#. Body
+#. Corpus
+#. Segment
+
+A body refers to an entity that is the author, publisher or owner of a document. Examples of bodies include regulatory authorities or trade associations.
+
+The syntax to define a body is: ``body`` <Type> <Name> <Description>. Some examples of bodies, with their corresponding types, are given below.
+
+.. code-block:: Haskell
+
+ body Organisation ISDA
+   <"Since 1985, the International Swaps and Derivatives Association has worked to make the global derivatives markets safer and more efficient">
+
+ body Authority ESMA
+   <"ESMA is an independent EU Authority that contributes to safeguarding the stability of the European Union's financial system by enhancing the protection of investors and promoting stable and orderly financial markets.">
+
+ body Authority MAS
+   <"The Monetary Authority of Singapore (MAS) is Singapore’s central bank and integrated financial regulator. MAS also works with the financial industry to develop Singapore as a dynamic international financial centre.">
+
+A corpus refers to a document set that contains the textual provision that is being referenced. For example, regulatory rules can be specified according to different levels of detail, including laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations).
+
+The syntax to define a corpus is: ``corpus`` <Type> <Body> <Alias> <Name> <Description>. While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known.
+
+Some examples of corpuses, with their corresponding types, are given below. In those cases, the aliases refer to the official numbering of document by the relevant authority.
+
+.. code-block:: Haskell
+
+ corpus Regulation ESMA "600/2014" MiFIR
+   <"Regulation (EU) No 600/2014 of the European Parliament and of the Council of 15 May 2014 on markets in financial instruments and amending Regulation (EU) No 648/2012 Text with EEA relevance">
+
+ corpus Act MAS "289" SFA
+   <"The Securities And Futures Act relates to the regulation of activities and institutions in the securities and derivatives industry, including leveraged foreign exchange trading, of financial benchmarks and of clearing facilities, and for matters connected therewith.">
+
+Corpuses are typically large sets of documents which can contain many rule specifications. The Rosetta DSL provides the concept of segment to allow to refer to a specific section in a given document.
+
+The syntax to define a segment is: ``segment`` <Type>. Below are some examples of segment types, as are often found in trade association and regulatory texts.
+
+.. code-block:: Haskell
+
+ segment article
+ segment whereas
+ segment annex
+ segment table
+ segment namingConvention
+
+Once a segment type is defined, it can be associated to an identifier (i.e some free text representing either the segment number or name) and combined with other segment types to point to a specific section in a document. For instance:
+
+.. code-block:: Haskell
+
+ article "26" paragraph "2"
+
+.. _document-reference-label:
+
+Syntax (Document Reference)
+"""""""""""""""""""""""""""
+
+A document reference is created using the ``docReference`` syntax. This ``docReference`` must be associated to a ``corpus`` and ``segment`` defined according to the `document reference hierarchy <#document-reference-hierarchy-label>`_ section. The document reference can copy the actual text being referred to using the ``provision`` syntax. 
+
+.. code-block:: Haskell
+
+    [docReference <Body> <Corpus>
+      <Segment1>
+      <Segment2>
+      <SegmentN...>
+      provision <"ProvisionText">]
+
+
+In some instances, a model type may have a different naming convention based on the context in which it is being used, for example a legal definition may refer to the data type with a different name. The ``docReference`` syntax allows a type to be annotated using the naming convention ``segment`` with the ``body`` and ``corpus`` that define it.
+
+.. code-block:: Haskell
+
+ type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
+      [docReference ICMA GMRA
+        namingConvention "seller" 
+        provision "As defined in the GRMA Seller party ..."]
+
+A ``docReference`` can also be added to an attribute of a type:
+
+.. code-block:: Haskell
+
+ type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
+      ...
+      payer CounterpartyRoleEnum (1..1)
+        [docReference ICMA GMRA
+          namingConvention "seller" 
+          provision "As defined in the GRMA Seller party ..."]
+
+.. _annotation-label:
+
+Annotation
+^^^^^^^^^^
+Purpose
+"""""""
+Annotations are a mechanism that allow additional meta-data components to be to specified in a model (beyond the ones already provided by the Rosetta DSL, such as decriptions or documemnt references). Those meta-data components can be then associated to model components to serve a number of purposes:
+
 * to add constraints to a model that may be enforced by syntax validation
 * to modify the actual behaviour of a model in generated code
+* purely syntactic, to provide additional guidance when navigating model components
 
 Examples of annotations and their usage for different purposes are illustrated below.
 
@@ -213,6 +300,7 @@ Annotations are defined in the same way as other model components. The definitio
 Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase.
 
 It is possible to associate attributes to an annotation (see `metadata <#metadata-label>`_ example), even though some annotations may not require any further attribute. For instance:
+
 .. _roottype-label:
 
 .. code-block:: Haskell
@@ -221,7 +309,7 @@ It is possible to associate attributes to an annotation (see `metadata <#metadat
 
  annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
 
-An annotation can be added to a Rosetta Type or attribute by enclosing the name of the annotation in sqaure bracketss 
+An annotation can be added to a Rosetta Type or attribute by enclosing the name of the annotation in square brackets 
 
 Meta-Data and Reference
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -239,8 +327,8 @@ The ``metadata`` annotation allows the declaration of a set of meta-data qualifi
    scheme string (0..1)
    reference string (0..1)
    template string (0..1)
-	 location string (0..1) <"Specifies this is the target of an internal reference">
-	 address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere">
+   location string (0..1) <"Specifies this is the target of an internal reference">
+   address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere">
 
 Each attribute of the ``metadata`` annotation corresponds to a qualifier that can be applied to a rosetta type or attribute:
 
@@ -250,7 +338,7 @@ Each attribute of the ``metadata`` annotation corresponds to a qualifier that ca
 
 Referencing
 """""""""""
-Referencing allows an attribute in rosetta to refer to a rosetta object in a different location. A reference consists of a metadata ID associated with an object and elsewhere an attribute that instead of having a normal value has that id as a reference metadata field. E.g. the exanple below has a Party with "globalKey" (see below) acting as an identifier and later on a reference to that party using the "globalReference" (see below also)::
+Referencing allows an attribute in rosetta to refer to a rosetta object in a different location. A reference consists of a metadata ID associated with an object and elsewhere an attribute that instead of having a normal value has that id as a reference metadata field. E.g. the example below has a Party with "globalKey" (see below) acting as an identifier and later on a reference to that party using the "globalReference" (see below also)::
 
  "party" : {
     "meta" : {
@@ -273,22 +361,22 @@ Referencing allows an attribute in rosetta to refer to a rosetta object in a dif
   }      
 
 
-Rosetta currenly supports 3 different mechanisms for references with different scopes. It is intended that these will all be migrated to a single mechanism.
+Rosetta currently supports 3 different mechanisms for references with different scopes. It is intended that these will all be migrated to a single mechanism.
 
 Global References
 /////////////////
 
 
-The ``key`` and ``id`` metadata annotations cause a globaly unique key to be generated for the rosetta object or attribute. The value of the key corresponds to a hash code to be generated by the model implementation. The implementation provided in the Rosetta DSL is a *deep hash* that uses the complete set of attribute values that compose the type and its attributes, recursively.
+The ``key`` and ``id`` metadata annotations cause a globally unique key to be generated for the rosetta object or attribute. The value of the key corresponds to a hash code to be generated by the model implementation. The implementation provided in the Rosetta DSL is a *deep hash* that uses the complete set of attribute values that compose the type and its attributes, recursively.
 
 The ``reference`` metadata annotation denotes that an attribute can be either a direct value like any other attribute or can be replaces with a ``reference`` to a global key defined elsewhere. The key need not be defined in the current document but can instead be a reference to an external document.
 
 External References
 ///////////////////
 
-Attributes and types that have the ``key`` or ``id`` annotation additionally have an ``externalKey`` attached to them. This is used to store keys that are read from an exernal source e.g. FpML id metadata attribute. 
+Attributes and types that have the ``key`` or ``id`` annotation additionally have an ``externalKey`` attached to them. This is used to store keys that are read from an external source e.g. FpML id metadata attribute. 
 
-Attributes with the ``referecne`` keyword have a corresponding externalReference field which is used to store references from external sources. The reference resolver processor can be used to link up the references.
+Attributes with the ``reference`` keyword have a corresponding externalReference field which is used to store references from external sources. The reference resolver processor can be used to link up the references.
 
 Templates
 /////////
@@ -307,12 +395,12 @@ Once an annotation is defined, its name and chosen attribute, if any, are used i
 
  type Party:
    [metadata key]
- partyId string (1..*)
-   [metadata scheme]
- name string (0..1)
-   [metadata scheme]
- person NaturalPerson (0..*)
- account Account (0..1)
+   partyId string (1..*)
+     [metadata scheme]
+   name string (0..1)
+     [metadata scheme]
+   person NaturalPerson (0..*)
+   account Account (0..1)
 
  type Identifier:
    [metadata key]
@@ -416,7 +504,7 @@ Cardinality is a data integrity mechanism to control how many of each attribute 
 
 The lower and upper bounds can both be any integer number. A 0 lower bound means attribute is optional. A ``*`` upper bound means an unbounded attribute. ``(1..1)`` represents that there must be one and only one attribute of this type. When the upper bound is greater than 1, the attribute will be considered as a list, to be handled as such in any generated code.
 
-A validation rule is generated for each attribute's cardinality constraint, so if the cardinality of the attribute does not match the requirement an error will be associated with that attrute by the validation process.
+A validation rule is generated for each attribute's cardinality constraint, so if the cardinality of the attribute does not match the requirement an error will be associated with that attribute by the validation process.
 
 .. _condition-label: 
 
@@ -426,7 +514,7 @@ Condition Statement
 Purpose
 """""""
 
-*Conditions* are logic `expressions <expressions.html>`_ associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False As part of validation all the conditins are evaluated and if any evaluate to false then the validation fails.
+*Conditions* are logic `expressions <expressions.html>`_ associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False As part of validation all the conditions are evaluated and if any evaluate to false then the validation fails.
 
 Syntax
 """"""
@@ -470,7 +558,7 @@ The definition of a condition starts with the ``condition`` keyword, followed by
 
 Special Syntax
 ^^^^^^^^^^^^^^
-Some specific language features have been introduced in the Rosetta DSL, to handle validation cases where the basic boolean logic components would create unecessarily verbose, and therefore less readable, expressions. Those use-cases were deemed frequent enough to justify developing a specific syntax for them.
+Some specific language features have been introduced in the Rosetta DSL, to handle validation cases where the basic boolean logic components would create unnecessarily verbose, and therefore less readable, expressions. Those use-cases were deemed frequent enough to justify developing a specific syntax for them.
 
 Choice
 """"""
@@ -545,7 +633,7 @@ The ``only exists`` component is an adaptation of the simple ``exists`` syntax, 
 
 This syntax drastically reduces the condition expression, which would otherwise require to combine one ``exists`` with multiple ``is absent`` (applied to all other attributes). It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for ``is absent``.
 
-.. note:: This condition is typically applied to attribues of objects whose type implements a ``one-of`` condition. In this case, the ``only`` qualifier is redundant with the ``one-of`` condition because only one of the attributes can exist. However, ``only`` makes the condition expression more explicit, and also robust to potential lifting of the ``one-of`` condition.
+.. note:: This condition is typically applied to attributes of objects whose type implements a ``one-of`` condition. In this case, the ``only`` qualifier is redundant with the ``one-of`` condition because only one of the attributes can exist. However, ``only`` makes the condition expression more explicit, and also robust to potential lifting of the ``one-of`` condition.
 
 .. _function-label:
 
@@ -589,7 +677,7 @@ The Rosetta DSL convention for a function name is to use a PascalCase (upper `Ca
 
 The rest of the function specification supports the following components:
 
-* plain-text decriptions
+* plain-text descriptions
 * inputs and output attributes (the latter is mandatory)
 * condition statements on inputs and output
 * output construction statements
@@ -598,7 +686,7 @@ Descriptions
 """"""""""""
 The role of a function must be clear for implementors of the model to build applications that provide such functionality. To better communicate the intent and use of functions, Rosetta supports multiple plain-text descriptions in functions. Descriptions can be provided for the function itself, for any input and output and for any statement block.
 
-Look for occurences of text descriptions in the snippets below.
+Look for occurrences of text descriptions in the snippets below.
 
 Inputs and Output
 """""""""""""""""
@@ -645,7 +733,7 @@ Condition statements in a function can represent either:
 
 Each type of condition keyword is followed by a `boolean expression <expressions.html>`_ which is evaluated to check the correctness of the function inputs and result.
 
-Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the constraints that impementors of this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
+Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the constraints that implementors of this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
 .. code-block:: Haskell
 
@@ -803,10 +891,48 @@ which could be invoked as part of multiple other functions that use the ``Econom
 
  PaymentDate( EconomicTerms )
 
+.. _namespace-label:
+
+Namespace Component
+--------------------
+Namespace Definition
+^^^^^^^^^^^^^^^^^^^^
+Purpose
+"""""""
+The namespace syntax allows model artefacts in a data model to be organised into groups of namespaces. A namespace is an abstract container created to hold a logical grouping of model artefacts. The approach is designed to make it easier for users to understand the model structure and adopt selected components. It also aids the development cycle by insulating groups of components from model restructuring that may occur.  Model artefacts are organised into a directory structure that follows the namespaces’ Group and Artefact structure (a.k.a. “GAV coordinates”). This directory structure is exposed in the model editor.
+
+By convention namespaces are organised into a hierarchy, with layers going from in to out. The hierarchy therefore contains an intrinsic inheritance structure where each layer has access to (“imports”) the layer outside, and is designed to be usable without any of its inner layers. Layers can contain several namespaces (“siblings”), which can also refer to each other. 
+
+Syntax
+""""""
+
+The definition of a namespace starts with the `namespace` keyword, followed by the location of the namespace in the directory structure. ::
+
+  namespace cdm.product.common
+
+The names of all components must be unique within a given namespace. Components can refer to other components in the same namespace using just their name. Components can refer to components outside their namespace either by giving the *fully qualified name* e.g. ``cdm.base.datetime.AdjustableDate`` or by importing the namespace into the current file.
+
+To gain access to model components contained within another namespace the `import` keyword is used. ::
+
+  import cdm.product.asset.*
+
+In the example above all model components contained within the cdm.product.asset namespace will be imported. Note, only components contained within the layer referenced will be imported, in order to import model components from namespaces embedded within that layer further namespaces need to be individually referenced. ::
+
+  import cdm.base.math.*
+  import cdm.base.datetime.*
+  import cdm.base.staticdata.party.*
+  import cdm.base.staticdata.asset.common.*
+  import cdm.base.staticdata.asset.rates.*
+  import cdm.base.staticdata.asset.credit.*
+
+In the example above all model components contained within the layers of the `cdm.base` namespace are imported.
 
 Mapping Component
 -----------------
 Mapping in rosetta provides a mechanism for specifying how documents that are not Rosetta documents should be transformed into Rosetta documents. For more information see `mapping <mapping.html>`_
+
+
+.. _reporting-component-label:
 
 Reporting Component
 -------------------
@@ -831,60 +957,10 @@ Purpose
 
 One of the first challenges of expressing regulatory rules for the financial domain is to organise the content of the regulatory framework that mandates these rules. The financial industry is a global, highly regulated industry, where a single line of business or activity may operate across multiple jurisdictions and regulatory regimes. The applicable regulations can span thousands of pages of legal text with intricate cross-references.
 
-To organise such regulatory content within a model, the Rosetta DSL supports a number of key concepts that allow to refer to specific documents, their content and who owns them as direct model components.
-
 Syntax
 """"""
 
-There are 3 syntax components to define the hierarchy of regulatory content:
-
-#. Body
-#. Corpus
-#. Segment
-
-A body refers to an entity that is the author, publisher or owner of a regulatory document. Examples of bodies include regulatory authorities or trade associations.
-
-The syntax to define a body is: ``body`` <Type> <Name> <Description>. Some examples of bodies, with their corresponding types, are given below.
-
-.. code-block:: Haskell
-
- body Organisation ISDA
-   <"Since 1985, the International Swaps and Derivatives Association has worked to make the global derivatives markets safer and more efficient">
-
- body Authority MAS
-   <"The Monetary Authority of Singapore (MAS) is Singapore’s central bank and integrated financial regulator. MAS also works with the financial industry to develop Singapore as a dynamic international financial centre.">
-
-A corpus refers to a document set that contains rule specifications. Rules can be specified according to different levels of detail, including laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations).
-
-The syntax to define a corpus is: ``corpus`` <Type> <Alias> <Name> <Description>. While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known.
-
-Some examples of corpuses, with their corresponding types, are given below. In those cases, the aliases refer to the official numbering of document by the relevant authority.
-
-.. code-block:: Haskell
-
- corpus Regulation "600/2014" MiFIR
-   <"Regulation (EU) No 600/2014 of the European Parliament and of the Council of 15 May 2014 on markets in financial instruments and amending Regulation (EU) No 648/2012 Text with EEA relevance">
-
- corpus Act "289" SFA
-   <"The Securities And Futures Act relates to the regulation of activities and institutions in the securities and derivatives industry, including leveraged foreign exchange trading, of financial benchmarks and of clearing facilities, and for matters connected therewith.">
-
-Corpuses are typically large sets of documents which can contain many rule specifications. The Rosetta DSL provides the concept of segment to allow to refer to a specific section in a given document.
-
-The syntax to define a segment is: ``segment`` <Type>. Below are some examples of segment types, as are often found in regulatory texts.
-
-.. code-block:: Haskell
-
- segment article
- segment whereas
- segment annex
- segment table
-
-Once a segment type is defined, it can be associated to an identifier (i.e some free text representing either the segment number or name) and combined with other segment types to point to a specific section in a document. For instance:
-
-.. code-block:: Haskell
-
- article "26" paragraph "2"
-
+To organise such regulatory content within a model, the Rosetta DSL supports a number of syntax components that allow to refer to specific documents, their content and who owns them as direct model components. Those components are defined in the `document reference hierarchy <#document-reference-hierarchy-label>`_ section.
 
 Report Definition
 ^^^^^^^^^^^^^^^^^
@@ -907,11 +983,11 @@ Syntax
 
 A report is specified using the following syntax:
 
-  ``report`` <Authority> <Corpus1> <Corpus2> <...> ``in`` <TimingRule>
+.. code-block:: Haskell
 
-  ``when`` <EligibilityRule1> ``and`` <EligibilityRule2> ``and`` <...>
-
-  ``with fields`` <FieldRule1> <FieldRule2> <...>
+ report <Authority> <Corpus1> <Corpus2> <...> in <TimingRule>
+   when <EligibilityRule1> and <EligibilityRule2> and <...>
+   with fields <FieldRule1> <FieldRule2> <...>
 
 An example is given below.
 
@@ -953,13 +1029,17 @@ Syntax
 
 The syntax of reporting field rules is as follows:
 
-  ``reporting rule`` <Name>
+.. code-block:: Haskell
 
-  [``regulatoryReference`` <Body> <Corpus> <Segment1> <Segment2> <...> ``provision`` <”ProvisionText”>]
+ <RuleType> rule <Name>
+   [regulatoryReference <Body> <Corpus>
+     <Segment1>
+     <Segment2>
+     <SegmentN...>
+     provision <"ProvisionText">]
+   <FunctionalExpression>
 
-  <FunctionalExpression>
-
-For eligibility rules, the syntax is the same but starts with the keyword ``eligibility rule``.
+The <RuleType> can be either ``reporting`` or ``eligibility``. The ``regulatoryReference`` syntax is the same as the ``docReference`` syntax documented in the `document reference <#document-reference-label>`_ section. However it can only be applied to regulatory rules.
 
 The functional expression of reporting rules uses the same syntax components that are already available to express logical statements in other modelling components, such as the condition statements that support data validation.
 
@@ -968,8 +1048,10 @@ Functional expressions are composable, so a rule can also call another rule. Whe
 .. code-block:: Haskell
 
  eligibility rule NexusCompliant
-   [regulatoryReference MAS SFA MAS_2013 part "1 " section "Citation and commencement"
-   provision "In these Regulations, unless the context otherwise requires; Booked in Singapore, Traded in Singapore"]
+   [regulatoryReference MAS SFA MAS_2013
+      part "1"
+      section "Citation and commencement"
+      provision "In these Regulations, unless the context otherwise requires; Booked in Singapore, Traded in Singapore"]
    (
      BookedInSingapore,
      TradedInSingapore
@@ -981,7 +1063,7 @@ In addition to those existing functional features, the Rosetta DSL provides othe
 
 When defining a reporting rule, the `extract` keyword defines a value to be reported, or to be used as input into a subsequent statement or another rule. The full expressional syntax of the Rosetta DSL can be used in the expression that defines the value to be extracted, including conditional statement such as ``if`` / ``else`` / ``or`` / ``exists``.
 
-An example is given below, that uses a mix of Boolean statements. This example looks at the fixed and floating rate specificiation of an InterestRatePayout and if there is one of each returns true
+An example is given below, that uses a mix of Boolean statements. This example looks at the fixed and floating rate specification of an InterestRatePayout and if there is one of each returns true
 
 .. code-block:: Haskell
 
@@ -1014,6 +1096,7 @@ The syntax provides type safety when chaining rules, whereby the output type of 
  		if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade only exists
 	then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
 		else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
+
 - ``as`` <FieldName>
 
 Any report statement can be follows by ``as`` This sets a label under which the value will appear in a report, as in the below example.
@@ -1056,7 +1139,7 @@ Filtering and max/min/first/last rules take a collection of input objects and re
 
 The ``filter when`` keyword takes each input value and uses it as input to a provided test expression The result type of the test expression must be boolean and its input type must be the input type of the filter rule. 
 If the expression returns ``true`` for a given input that value is included in the output.
-The code below selects the PartyContactInformation objects then filters to only the paries that are reportingParties before then returning the partyReferences
+The code below selects the PartyContactInformation objects then filters to only the parties that are reportingParties before then returning the partyReferences
 
 .. code-block:: Haskell
 
@@ -1084,7 +1167,7 @@ And the filtering rule is defined as:
 
 - ``maximum`` / ``minimum``
 
-The ``maximum`` and ``minimum`` keywords return only a single value (for a given key). The value returned will be the higest or lowest value. The input type to the rule must be of a comparable basic data type
+The ``maximum`` and ``minimum`` keywords return only a single value (for a given key). The value returned will be the highest or lowest value. The input type to the rule must be of a comparable basic data type
 e.g. date, time, number, string
 In the below example, we first apply a filter and extract a ``rate`` attribute. There could be multiple rate values, so we select the highest one.
 
@@ -1100,7 +1183,7 @@ The syntax also supports selecting values by an ordering based on an attribute u
 When all values have been processes the pair with the highest test result is selected and the associated value is returned by the rule.
 The test expression or rule must return a value of single cardinality and must be of a comparable basic data type
 e.g. date, time, number, string
-In the below example, we first apply a filter and extract a ``fixedInterestRate`` attribute. There could be multiple attribute values, so we select the one with the higest rate and return that FixedInterestRate object.
+In the below example, we first apply a filter and extract a ``fixedInterestRate`` attribute. There could be multiple attribute values, so we select the one with the highest rate and return that FixedInterestRate object.
 
 .. code-block:: Haskell
 
