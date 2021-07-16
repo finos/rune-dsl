@@ -41,8 +41,8 @@ public abstract class ReduceParent<I, Kr extends Comparable<Kr>, K> extends Name
 	}
 
 	protected Candidate mergeMax(Candidate incumbant, Candidate rival) {
-		if (incumbant==null) return rival;
-		if (rival.key==null) return incumbant;
+		if (incumbant==null || incumbant.key==null) return rival;
+		if (rival==null || rival.key==null) return incumbant;
 		else if (rival.key.compareTo(incumbant.key)>0) {
 			return rival;
 		}
@@ -50,8 +50,8 @@ public abstract class ReduceParent<I, Kr extends Comparable<Kr>, K> extends Name
 	}
 
 	protected Candidate mergeMin(Candidate incumbant, Candidate rival) {
-		if (incumbant==null) return rival;
-		if (rival.key==null) return incumbant;
+		if (incumbant==null || incumbant.key==null) return rival;
+		if (rival==null || rival.key==null) return incumbant;
 		else if (rival.key.compareTo(incumbant.key)<0) {
 			return rival;
 		}
