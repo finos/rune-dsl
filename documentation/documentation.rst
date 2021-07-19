@@ -1398,7 +1398,7 @@ e.g. ::
 
 		[synonym Bank_A value e path "b.c" default to "DEFAULT"]
 
-. _when-clause-label:
+.. _when-clause-label:
 When clauses
 """"""""""""
 There are three types of when clause; Test expression, Path expression or RosettaPath expression.
