@@ -1203,14 +1203,12 @@ In the example above all model components contained within the layers of the `cd
 Mapping Component
 -----------------
 
-Mapping in Rosetta provides a mechanism for specifying how documents that are not Rosetta documents should be transformed into Rosetta documents. For more information see `mapping <mapping.html>`_
-
 Purpose
 ^^^^^^^
 
-Mappings in Rosetta are the annotations on the model that specify how input documents in other formats (e.g. FpML or ISDACreate json) can be transformed into Rosetta documents. Mappings are specified in the model as synonyms. 
+Mapping in Rosetta provides a mechanism for specifying how documents in other formats (e.g. FpML or ISDACreate json) should be transformed into Rosetta documents. Mappings are specified as *synonym* annotations in the model.
 
-Synonyms added throughout the model are combined to map the data tree of an input document into the output Rosetta document. The synonyms can be used to generate an *Ingestion Environment*, a library of java that when given an input document will output the resulting Rosetta document.
+Synonyms added throughout the model are combined to map the data tree of an input document into the output Rosetta document. The synonyms can be used to generate an *Ingestion Environment*, a java library which, given an input document, will output the resulting Rosetta document.
 
 Synonyms are specified on the attributes of data type and the values of enum types.
 
@@ -1226,16 +1224,16 @@ First a *synonym source* is created. This can optionally extend a different syno
 This defines a set of synonyms that are used to ingest a category of input document, in this case FpML_5_10 documents
 
 Extends
-/////////////////
+///////
 A synonym source can extend another synonym source. This forms a new synonym source that has all the synonyms contained in the extended synonym source and can add additional synonyms as well as remove synonyms from it.
 
 Basic Synonym
-""""""""""""""
+"""""""""""""
 Synonyms are annotations on attributes of Rosetta types and the enumeration values of Rosetta Enums.  The model does have some legacy synonyms remaining 
 directly on rosetta types but the location of the synonym in the model has no impact. They can be written inside the definition of the type or they can be specified in a separate file to leave the type definitions simpler.
 
 Inline
-/////////////////
+//////
 An inline synonym consists of '[' followed by the keyword *synonym* and the name of the synonym source followed by the body of the synonym and an ']' ::
 
 	type Collateral:
@@ -1244,7 +1242,7 @@ An inline synonym consists of '[' followed by the keyword *synonym* and the name
 
 
 External synonym
-/////////////////
+////////////////
 External synonyms are defined inside the synonym source declaration so the synonym keyword and the synonym source are not required in every synonym. 
 A synonym is added to an attribute by referencing the type and attribute name and then declaring the synonym to add as the synonym body surrounded by '[]'. The code below removes all the synonyms from the independentAmount attribute of Collateral and then adds in a new synonym ::
 
@@ -1257,21 +1255,21 @@ A synonym is added to an attribute by referencing the type and attribute name an
 	}
 
 Synonym Body
-""""""""""""""
+""""""""""""
 Value
-/////////////////
+/////
 The simplest synonym consists of a single value ``[value "independentAmount"]``. This means that the value of the input attribute "independentAmount" will be mapped to the associated Rosetta attribute. If both the input attribute and the Rosetta attribute are basic types (string, number, date etc) then the input value will be stored in the appropriate place in the output document. If they are both complex types (with child attributes of their own) then the attributes contained within the complex type will be compared against synonyms inside the corresponding Rosetta type. If one is complex and the other is basic then a mapping error will be recorded.
 
 Path
-/////////////////
+////
 The value of a synonym can be followed with a path declaration. E.g. ``[value "initialFixingDate" path "resetDates"]``. This allows a path of input document elements to be matched to a single Rosetta attribute. In the example the contents of the xml path "resetDates.initialFixingDate" will be mapped to the Rosetta attribute. Note that the path is applied as a suffix to the synonym value.
 
 Maps 2
-/////////////////
+//////
 Mappings are expected to be one-to-one with each input value mapping to one Rosetta value. By default if a single input value is mapped to multiple Rosetta output values this is considered an error. However by adding the "maps 2" keyword this can be overridden allowing the input value to map to many output Rosetta values.
 
 meta
-/////////////////
+////
 The *meta* keyword inside a synonym is used to map to Rosetta `metadata <documentation.html#metadata-label>`_. E.g. ::
 
 	issuer string (0..1)
@@ -1281,7 +1279,7 @@ The *meta* keyword inside a synonym is used to map to Rosetta `metadata <documen
 the input value associated withe "issuer" will be mapped to the value of the attribute issuer and the value of "issuerIdScheme" will be mapped to the scheme metadata attribute.
 
 Enumerations
-""""""""""""""
+""""""""""""
 A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the fpml value 'Broker' will be mapped to the Rosetta enum value *NaturalPersonRoleEnum.Broker* ::
 
 	enum NaturalPersonRoleEnum: <"The enumerated values for the natural person's role.">
@@ -1290,7 +1288,7 @@ A synonym on an enumeration provides mappings from the string values in the inpu
     	 [synonym FpML_5_10 value "Broker"]
 
 External enumeration synonyms
-/////////////////
+/////////////////////////////
 In an external synonym file ``enum`` synonyms are defined in a block after the type attribute synonyms, preceded by the keyword *enums* ::
 
 	enums
@@ -1312,7 +1310,7 @@ For each child attribute of the current input attribute, the rosetta attributes 
 When an input attribute has an associated value that value is set as the value of all the rosetta objects that are bound to the input attribute.
 
 Hints
-""""""""""""""
+"""""
 Hints are synonyms used to bypass a layer of rosetta without *consuming* an input attribute. They are required where an attribute has synonyms that would usually prevent the algorithm for searching down the Rosetta tree for attributes further down, but the current input element needs to still be available to match to synonyms.
 
 e.g. ::
@@ -1343,14 +1341,14 @@ will produce two InterestRatePayout objects. In order to create a single Interes
 		[synonym FpML_5_10 value feeLeg, generalTerms]
 
 Conditional Mappings
-""""""""""""""
+""""""""""""""""""""
 
 Conditional mappings allow more complicated mappings to be done. Conditional mappings come in two types, `Set To <#set-to-label>`_ and `Set When <#set-when-label>`_.
 
 .. _set-to-label:
 
 Set To Mappings
-/////////////////
+///////////////
 
 Set To mappings are used to set the value of the Rosetta attribute to a constant value.
 They don't attempt to use any data from the input document as the value for the attribute and a synonym value must not be given.
@@ -1402,11 +1400,11 @@ e.g. ::
 
 . _when-clause-label:
 When clauses
-""""""""""""""
+""""""""""""
 There are three types of when clause; Test expression, Path expression or RosettaPath expression.
 
 Test Expression
-/////////////////
+///////////////
 A test expression consists of a synonym path and one of three types of test. The synonym path is from the mapping that bound to this class.
 
 * exists - tests whether a value with the given path exists in the input document
@@ -1423,14 +1421,14 @@ e.g. ::
 		[synonym FpML_5_10 value fraDiscounting set when "fraDiscounting" <> "NONE"]
 
 Path Expression
-/////////////////
+///////////////
 A Path expression checks the path through the rosetta document that leads to the current rosetta object. The path provided can only be the direct path from the level about in the document; in order for the condition to be true then the current path has to be the given path.::
 
 	role PartyRoleEnum (1..1) <"The party role.">;`
 		[synonym FpML_5_10 set to PartyRoleEnum.DeterminingParty when path = "trade.determiningParty"]
 
 RosettaPath Expression
-/////////////////
+//////////////////////
 A rosettaPath expression checks the path through the rosetta document that leads to the current rosetta object. The path provided can start from any level in the document; in order for the condition to be true then the current path has to end with the given path.
 
 e.g. ::
@@ -1440,7 +1438,7 @@ e.g. ::
 			set when rosettaPath = Event -> eventIdentifier -> assignedIdentifier -> identifier]
 
 Mapper
-""""""""""""""
+""""""
 Occasionally the Rosetta mapping syntax is not powerful enough to perform the required transformation from the input document to the output document. In this case a *Mapper* can be called from a synonym ::
 
 	NotifyingParty:
@@ -1450,7 +1448,7 @@ Occasionally the Rosetta mapping syntax is not powerful enough to perform the re
 When the ingestion is run a class called CounterPartyMappingProcessor will be loaded and its mapping method invoked with the partially mapped Rosetta element. The creation of mapper classes is outside the scope of this document but the full power of the programming language can be used to transform the output.
 
 Format
-""""""""""""""
+""""""
 A date/time synonym can be followed by a format construct. The keyword `format` should be followed by a string. The string should be a `Date format <https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html>`_
 
 E.g. ::
@@ -1459,7 +1457,7 @@ E.g. ::
 
 
 Pattern
-""""""""""""""
+"""""""
 A synonym can optionally be followed by a the pattern construct. It is only applicable to enums and basic types other than date/times. The keyword `pattern` followed by two quoted strings. The first string is a `regular expression <https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html>`_ 
 used to match against the input value. The second string is a replacement expression used to reformat the matched input before it is processed as usual for the basictype/enum. 
 
