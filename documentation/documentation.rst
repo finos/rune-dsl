@@ -493,7 +493,7 @@ Logical expressions are used within the following model components:
 
 Expressions are evaluated within the context of a Rosetta object to return a result. The result of an expression can be either:
 
-- a single `basic type <#basic-type-label>` value: e.g. 2.0, True, "USD",
+- a single `basic type <#basic-type-label>`_ value: e.g. 2.0, True, "USD",
 - a single Rosetta object (data type or enumeration): e.g. a `Party` object or
 - a `list <#list-label>`_ of results, all of the same type (basic type or Rosetta object).
 
@@ -513,7 +513,7 @@ A Rosetta path expression is used to return the value of an attribute inside a R
 Syntax
 """"""
 
-The simplest Rosetta path expression is just the name of an attribute. In the example below, the ``before`` attribute of a ``ContractFormationPrimitive`` object is checked for `existence <#exists-label>`_ inside a `condition <#condition-label>` associated to that data type.
+The simplest Rosetta path expression is just the name of an attribute. In the example below, the ``before`` attribute of a ``ContractFormationPrimitive`` object is checked for `existence <#exists-label>`_ inside a `condition <#condition-label>`_ associated to that data type.
 
 .. code-block:: Haskell
   :emphasize-lines: 7
@@ -561,7 +561,7 @@ An expression that has the potential to return a value with *multiple cardinalit
 
 Only element
 """"""""""""
-The keyword ``only-element`` can appear after an attribute name in a Rosetta path. ::
+The ``only-element`` keyword can appear after an attribute name in a Rosetta path. ::
 
   observationEvent -> primitives only-element -> observation
 	
@@ -613,7 +613,7 @@ Conditional Statement
 Conditional statements consist of:
 
 - an *if clause* with the keyword ``if`` followed by a boolean expression,
-- a *then clause* with the keyword then followed by any expression and
+- a *then clause* with the keyword ``then`` followed by any expression and
 - an optional *else clause* with the keyword ``else`` followed by any expression
 
 If the *if clause* evaluates to True, the result of the *then clause* is returned by the conditional expression. If it evaluates to False, the result of the *else clause* is returned if present, else *null* is returned.
