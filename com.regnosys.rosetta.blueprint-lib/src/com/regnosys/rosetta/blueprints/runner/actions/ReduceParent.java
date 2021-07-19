@@ -31,7 +31,7 @@ public abstract class ReduceParent<I, Kr extends Comparable<Kr>, K> extends Name
 		this.action = action;
 	}
 	
-	class Candidate {
+	public class Candidate {
 		Kr key;
 		GroupableData<? extends I, ? extends K> data;
 		public Candidate(Kr key, GroupableData<? extends I, ? extends K> input) {
@@ -39,8 +39,12 @@ public abstract class ReduceParent<I, Kr extends Comparable<Kr>, K> extends Name
 			this.data = input;
 		}
 	}
-
-	protected Candidate mergeMax(Candidate incumbant, Candidate rival) {
+	
+	public Candidate newCandidate(Kr key, GroupableData<? extends I, ? extends K> input) {
+		return new Candidate(key, input);
+	}
+	
+	public Candidate mergeMax(Candidate incumbant, Candidate rival) {
 		if (incumbant==null || incumbant.key==null) return rival;
 		if (rival==null || rival.key==null) return incumbant;
 		else if (rival.key.compareTo(incumbant.key)>0) {
@@ -49,7 +53,7 @@ public abstract class ReduceParent<I, Kr extends Comparable<Kr>, K> extends Name
 		return incumbant;
 	}
 
-	protected Candidate mergeMin(Candidate incumbant, Candidate rival) {
+	public Candidate mergeMin(Candidate incumbant, Candidate rival) {
 		if (incumbant==null || incumbant.key==null) return rival;
 		if (rival==null || rival.key==null) return incumbant;
 		else if (rival.key.compareTo(incumbant.key)<0) {
@@ -58,12 +62,12 @@ public abstract class ReduceParent<I, Kr extends Comparable<Kr>, K> extends Name
 		return incumbant;
 	}
 
-	protected Candidate first(Candidate incumbant, Candidate rival) {
+	public Candidate first(Candidate incumbant, Candidate rival) {
 		if (incumbant==null) return rival;
 		return incumbant;
 	}
 
-	protected Candidate last(Candidate incumbant, Candidate rival) {
+	public Candidate last(Candidate incumbant, Candidate rival) {
 		return rival;
 	}
 
