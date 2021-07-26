@@ -11,7 +11,7 @@ Rosetta Modelling Components
 * Mapping (or *synonym*)
 * Reporting
 
-This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. As the initial live application of the Rosetta DSL, examples from the ISDA CDM will be used to illustrate each of those features.
+This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. Examples from the Demonstration Model will be used to illustrate each of those features..
 
 
 .. _data-component-label:
@@ -43,7 +43,7 @@ After the description come any further `meta-data annotations <#meta-data-compon
 
 .. code-block:: Haskell
  
-  type WorkflowStep: <"A workflow step ....">
+  type VehicleOwnership: <"Representative record of vehicle ownership">
    [metadata key]
    [rootType]
 
@@ -60,13 +60,11 @@ Then the definition of the type lists its component attributes. Each attribute i
 
 .. code-block:: Haskell
 
-  type PeriodBound: <"The period bound is defined as a period and whether the bound is inclusive.">
-    period Period (1..1) <"The period to be used as the bound, e.g. 5Y.">
-    inclusive boolean (1..1) <"Whether the period bound is inclusive, e.g. for a lower bound, false would indicate greater than, whereas true would indicate greater than or equal to.">
-
- type Period: <"A class to define recurring periods or time offsets.">
-   periodMultiplier int (1..1) <"A time period multiplier, e.g. 1, 2 or 3 etc. A negative value can be used when specifying an offset relative to another date, e.g. -2 days.">
-   period PeriodEnum (1..1) <"A time period, e.g. a day, week, month or year of the stream. If the periodMultiplier value is 0 (zero) then period must contain the value D (day).">
+  type Engine: <"Description of the engine.">
+    engineType EngineTypeEnum (1..1) <"Type of engine.">
+    power number (1..1) <"Break horse power.">
+    mpg number (1..1) <"Miles per gallon.">
+    emissionMetrics EmissionMetrics (1..1) <"List of emission metrics in grams per km.">
 
 .. note:: The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as ``type``, so the start of a new definition marks the end of the previous one. For readability more generally, the Rosetta DSL looks to eliminate all the delimiters that are often used in traditional programming languages (such as curly braces ``{`` ``}`` or semi-colon ``;``).
 
@@ -99,7 +97,7 @@ Time
 """"
 The ``zonedDateTime`` record type unambiguously refers to a single instant of time.
 
-Alternatively in the CDM there is the data type ``BusinessCenterTime`` , where a simple ``time`` "5:00:00" is specified alongside a business centre.  The simple time should be interpreted with the time-zone information of the associated business centre.
+Alternatively, a model could define a data type ``BusinessCenterTime``, where a simple ``time`` "5:00:00" is specified alongside a business center. The simple time should be interpreted with the time-zone information of the associated business centre.
 
 Inheritance
 """""""""""
@@ -108,8 +106,11 @@ Inheritance
 
 .. code-block:: Haskell
 
- type Offset extends Period:
-    dayType DayTypeEnum (0..1)
+ type Vehicle extends VehicleFeature: 
+    specification Specification (1..1)
+    registrationID string (1..1)
+    vehicleTaxBand VehicleTaxBandEnum (1..1)
+    vehicleClassification VehicleClassificationEnum (1..1)
 
 .. note:: For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet is to highlight some of those features.
 
