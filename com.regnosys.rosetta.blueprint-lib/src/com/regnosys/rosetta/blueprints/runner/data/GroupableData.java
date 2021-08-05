@@ -101,6 +101,14 @@ public class GroupableData<I, K> {
 		return groupableData;
 	}
 	
+	public <I2> GroupableData<I2,K> withNewRepeatableData(List<I2> newRepeatableData, DataIdentifier newIdentifier, Collection<Issue> newIssues, NamedNode node) {
+		Collection<Issue> resultIssues = mergeIssues(newIssues);
+		DataIdentifier id = newIdentifier==null?identifier:newIdentifier;
+		GroupableData<I2, K> groupableData = new GroupableData<>(key, null, newRepeatableData, id, resultIssues, node, tracing, this);
+		descendents.add(groupableData);
+		return groupableData;
+	}
+	
 	public static <I, K> GroupableData<I,K> withMultiplePrecedents(K key, I data, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, Collection<GroupableData<?,?>> precedents) {
 		List<GroupableData<?,?>> tracedPrecendents = precedents.stream().filter(p->p.tracing).collect(ImmutableList.toImmutableList());
 		GroupableData<I, K> groupableData = new GroupableData<>(key, data, null, identifier, ImmutableList.copyOf(issues), node, !tracedPrecendents.isEmpty(), tracedPrecendents);
