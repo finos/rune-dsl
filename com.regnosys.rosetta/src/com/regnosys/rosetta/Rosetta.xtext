@@ -673,7 +673,7 @@ BlueprintRef:
 ;
 
 BlueprintExtract:
-	'extract' (multiple?='multiple')? call=RosettaCalcExpression 
+	'extract' (repeatable?='repeatable')? call=RosettaCalcExpression 
 ;
 
 BlueprintReturn:

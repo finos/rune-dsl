@@ -573,12 +573,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 	}
 	
-	@Check
-	def void checkExtractCardinality(BlueprintExtract extract) {
-		if (extract.multiple) {
-			warning("multiple keyword is redundant and deprecated", extract, BLUEPRINT_EXTRACT__MULTIPLE)
-		}
-	}
+//	@Check
+//	def void checkExtractCardinality(BlueprintExtract extract) {
+//		if (extract.multiple) {
+//			warning("multiple keyword is redundant and deprecated", extract, BLUEPRINT_EXTRACT__MULTIPLE)
+//		}
+//	}
 	
 	@Check
 	def void checkDataJoinType(BlueprintDataJoin join) {

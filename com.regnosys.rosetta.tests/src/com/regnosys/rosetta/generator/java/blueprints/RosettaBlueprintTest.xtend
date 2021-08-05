@@ -55,12 +55,13 @@ class RosettaBlueprintTest {
 				field string (1..1)
 			
 			eligibility rule FooRule
-				return "true"
+				filter when Bar->field exists
 			
 			reporting rule BarField
-				extract Bar->field
+				extract Bar->field as "1.0 BarField"
 		'''
-		// println(r)
+//		.generateCode
+//		println(r)
 		parseRosettaWithNoErrors(r)
 	}
 	
@@ -77,7 +78,7 @@ class RosettaBlueprintTest {
 			
 			type Bar:
 				field string (1..*)
-							
+			
 			eligibility rule FooRule
 				return "true"
 			
@@ -729,58 +730,69 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
-	@Disabled
-	def void multipleExtract() {
-		val model = '''
-			type Input:
-				input2 int (1..*)
+	def void repeatableExtract() {
+		val code = '''
+			type Foo:
+				listAttr int (1..*)
 			
-			blueprint Blueprint1
+			reporting rule RepeatableValue
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-			{
-				extract multiple Input->input2 as "inputs"
-			}
-		'''.parseRosetta
-		
-		model.assertWarning(BLUEPRINT_EXTRACT, null, "multiple keyword is redundant and deprecated")
-		
-		val blueprint = model.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1")
-		// writeOutClasses(blueprint, "multipleExtract");
+				extract repeatable Foo -> listAttr as "Repeating Value"
+			
+		'''.generateCode
+		println(code)
+		val blueprintJava = code.get("com.rosetta.test.model.blueprint.RepeatableValueRule")
+		// writeOutClasses(blueprint, "repeatableExtract");
 		try {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
+				import com.rosetta.model.lib.mapper.MapperS;
+				import javax.inject.Inject;
+				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.test.model.Input;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.test.model.Foo;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
-				public abstract class Blueprint1<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Integer, INKEY, INKEY> {
+				/**
+				 * @version test
+				 */
+				public class RepeatableValueRule<INKEY> implements Blueprint<Foo, Integer, INKEY, INKEY> {
+					
+					private final RosettaActionFactory actionFactory;
+					
+					@Inject
+					public RepeatableValueRule(RosettaActionFactory actionFactory) {
+						this.actionFactory = actionFactory;
+					}
+					
 					@Override
 					public String getName() {
-						return "Blueprint1"; 
+						return "RepeatableValue"; 
 					}
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#com.rosetta.test.model.com.rosetta.test.model.Blueprint1";
+						return "__synthetic1.rosetta#com.rosetta.test.model.RepeatableValue";
 					}
 					
 					
 					@Override
-					public BlueprintInstance<Input, Integer, INKEY, INKEY> blueprint() { 
+					public BlueprintInstance<Foo, Integer, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(getRosettaActionFactory().<Input, Integer, INKEY>newRosettaMultipleMapper("__synthetic1.rosetta#//@elements.1/@nodes/@node", "->input2", new StringIdentifier("inputs"), input -> MapperS.of(input).mapC("getInput2", Input::getInput2)))
+							startsWith(actionFactory, actionFactory.<Foo, Integer, INKEY>newRosettaRepeatableMapper("__synthetic1.rosetta#//@elements.1/@nodes/@node", "->listAttr", new StringIdentifier("Repeating Value"), foo -> MapperS.of(foo).<Integer>mapC("getListAttr", _foo -> _foo.getListAttr())))
 							.toBlueprint(getURI(), getName());
 					}
 				}
 			'''
-			blueprint.compileToClasses
+			code.compileToClasses
 			assertEquals(expected, blueprintJava)
 		} finally {
 		}
