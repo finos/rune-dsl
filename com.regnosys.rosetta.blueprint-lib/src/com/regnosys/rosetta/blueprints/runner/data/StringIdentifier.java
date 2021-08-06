@@ -1,10 +1,11 @@
 package com.regnosys.rosetta.blueprints.runner.data;
 
-public class StringIdentifier implements DataIdentifier {
+import java.util.Comparator;
+
+public class StringIdentifier implements DataIdentifier, Comparable<StringIdentifier> {
 	private final String s;
 
 	public StringIdentifier(String s) {
-		super();
 		this.s = s;
 	}
 
@@ -39,5 +40,10 @@ public class StringIdentifier implements DataIdentifier {
 		} else if (!s.equals(other.s))
 			return false;
 		return true;
+	}
+
+	@Override
+	public int compareTo(StringIdentifier o) {
+		return Comparator.comparing(StringIdentifier::getS).compare(this, o);
 	}	
 }

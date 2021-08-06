@@ -14,7 +14,7 @@ public class GroupableData<I, K> {
 
 	private final K key;
 	private final I data;
-	private final List<I> repeatableData;
+	private final Optional<Integer> repeatableDataIndex;
 	private final DataIdentifier identifier;
 	private final Collection<Issue> issues;
 	private final boolean tracing;
@@ -26,10 +26,10 @@ public class GroupableData<I, K> {
 	
 	private final Collection<GroupableData<?,?>> descendents;
 	
-	protected GroupableData(K key, I data, List<I> repeatableData, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, boolean tracing, GroupableData<?,?> precedent) {
+	protected GroupableData(K key, I data, Integer repeatableDataIndex, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, boolean tracing, GroupableData<?,?> precedent) {
 		this.key = key;
 		this.data = data;
-		this.repeatableData = Optional.ofNullable(repeatableData).orElse(new ArrayList<>());
+		this.repeatableDataIndex = Optional.ofNullable(repeatableDataIndex);
 		this.identifier = identifier;
 		this.issues = issues;
 		this.nodeName = node.getURI();
@@ -44,10 +44,10 @@ public class GroupableData<I, K> {
 		timestamp = System.currentTimeMillis();
 	}
 	
-	protected GroupableData(K key, I data, List<I> repeatableData, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, boolean tracing, Collection<GroupableData<?,?>> precedents) {
+	protected GroupableData(K key, I data, Integer repeatableDataIndex, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, boolean tracing, Collection<GroupableData<?,?>> precedents) {
 		this.key = key;
 		this.data = data;
-		this.repeatableData = Optional.ofNullable(repeatableData).orElse(new ArrayList<>());
+		this.repeatableDataIndex = Optional.ofNullable(repeatableDataIndex);
 		this.identifier = identifier;
 		this.issues = issues;
 		this.nodeName = node.getURI();
@@ -64,10 +64,6 @@ public class GroupableData<I, K> {
 	
 	public static <I, K> GroupableData<I,K> initialData(K key, I data, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, boolean tracing) {
 		return new GroupableData<>(key, data, null, identifier, ImmutableList.copyOf(issues), node, tracing, Collections.emptyList());
-	}
-	
-	public static <I, K> GroupableData<I,K> initialRepeatableData(K key, List<I> repeatableData, DataIdentifier identifier, Collection<Issue> issues, NamedNode node, boolean tracing) {
-		return new GroupableData<>(key, null, repeatableData, identifier, ImmutableList.copyOf(issues), node, tracing, Collections.emptyList());
 	}
 	
 	public GroupableData<I, K> withNewIdentifier(DataIdentifier newIdentifier, Collection<Issue> newIssues, NamedNode node) {
@@ -101,10 +97,10 @@ public class GroupableData<I, K> {
 		return groupableData;
 	}
 	
-	public <I2> GroupableData<I2,K> withNewRepeatableData(List<I2> newRepeatableData, DataIdentifier newIdentifier, Collection<Issue> newIssues, NamedNode node) {
+	public <I2> GroupableData<I2,K> withNewRepeatableData(I2 newData, int index, DataIdentifier newIdentifier, Collection<Issue> newIssues, NamedNode node) {
 		Collection<Issue> resultIssues = mergeIssues(newIssues);
 		DataIdentifier id = newIdentifier==null?identifier:newIdentifier;
-		GroupableData<I2, K> groupableData = new GroupableData<>(key, null, newRepeatableData, id, resultIssues, node, tracing, this);
+		GroupableData<I2, K> groupableData = new GroupableData<>(key, newData, index, id, resultIssues, node, tracing, this);
 		descendents.add(groupableData);
 		return groupableData;
 	}
@@ -118,7 +114,7 @@ public class GroupableData<I, K> {
 	
 	public GroupableData<I,K> withTracing(NamedNode node, boolean tracing) {
 		Collection<Issue> resultIssues = issues;
-		GroupableData<I, K> groupableData = new GroupableData<>(key, data, repeatableData, identifier, resultIssues, node, tracing, this);
+		GroupableData<I, K> groupableData = new GroupableData<>(key, data, null, identifier, resultIssues, node, tracing, this);
 		descendents.add(groupableData);
 		return groupableData;
 	}
@@ -131,8 +127,8 @@ public class GroupableData<I, K> {
 		return data;
 	}
 	
-	public List<I> getRepeatableData() {
-		return repeatableData;
+	public Optional<Integer> getRepeatableDataIndex() {
+		return repeatableDataIndex;
 	}
 
 	public DataIdentifier getIdentifier() {
@@ -145,7 +141,7 @@ public class GroupableData<I, K> {
 
 	@Override
 	public String toString() {
-		return "GroupableData [key=" + key + ", data=" + data + ", repeatableData=" + repeatableData + ", identifier=" + identifier + ", issues=" + issues
+		return "GroupableData [key=" + key + ", data=" + data + ", repeatableDataIndex=" + repeatableDataIndex + ", identifier=" + identifier + ", issues=" + issues
 				+ "]";
 	}
 
