@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class GroupableData<I, K> {
 
@@ -143,8 +144,12 @@ public class GroupableData<I, K> {
 
 	@Override
 	public String toString() {
-		return "GroupableData [key=" + key + ", data=" + data + ", repeatableDataIndex=" + repeatableDataIndex + ", identifier=" + identifier + ", issues=" + issues
-				+ "]";
+		return new ToStringBuilder(this)
+				.append("data", data)
+				.append("repeatableDataIndex", repeatableDataIndex)
+				.append("identifier", identifier)
+				.append("issues", issues)
+				.toString();
 	}
 
 	public Collection<GroupableData<?,?>> getPrecedents() {
