@@ -69,24 +69,171 @@ class RosettaBlueprintTest {
 	def void reportWithBadCardinality() {
 		'''
 			body Authority TEST_REG
-			corpus MiFIR
+			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule
 			with fields
 				BarField
+				BarFieldList
 			
 			type Bar:
-				field string (1..*)
+				field string (1..1)
+				fieldList string (1..*)
 			
 			eligibility rule FooRule
 				return "true"
-			
+
 			reporting rule BarField
 				extract Bar->field
+			
+			reporting rule BarFieldList
+				extract Bar->fieldList
 		'''
-		.parseRosetta.assertWarning(ROSETTA_BLUEPRINT_REPORT, null, "Report field from rule BarField should be of single cardinality")
+		.parseRosetta.assertWarning(ROSETTA_BLUEPRINT_REPORT, null, "Report field from rule BarFieldList should be of single cardinality")
 	}
+	
+	@Test
+	def void shouldParseReportWithSingleRepeatableBasicTypeRule() {
+		'''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with fields
+				RepeatableBarFieldList
+			
+			type Bar:
+				fieldList string (1..*)
+			
+			eligibility rule FooRule
+				filter when Bar->fieldList exists
+
+			reporting rule RepeatableBarFieldList
+				extract repeatable Bar->fieldList
+		'''
+		.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void shouldParseReportWithExtractThenRepeatableBasicTypeRule() {
+		'''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with fields
+				RepeatableBazFieldList
+			
+			type Bar:
+				baz Baz (1..1)
+			
+			type Baz:
+				fieldList string (1..*)
+			
+			eligibility rule FooRule
+				filter when Bar->baz exists
+
+			reporting rule RepeatableBazFieldList
+				extract Bar->baz then
+				extract repeatable Baz->fieldList
+		'''
+		.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void shouldParseReportWithExtractRuleThenRepeatableBasicTypeRule() {
+		'''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with fields
+				RepeatableBazFieldList
+			
+			type Bar:
+				baz Baz (1..1)
+			
+			type Baz:
+				fieldList string (1..*)
+			
+			eligibility rule FooRule
+				filter when Bar->baz exists
+
+			reporting rule RepeatableBazFieldList
+				BarBaz then
+				extract repeatable Baz->fieldList
+			
+			reporting rule BarBaz
+				extract Bar->baz
+		'''
+		.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void shouldParseReportWithRepeatableComplexTypeRuleThenExtract() {
+		'''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with fields
+				RepeatableBarBazList
+			
+			type Bar:
+				bazList Baz (1..*)
+			
+			type Baz:
+				field string (1..1)
+			
+			eligibility rule FooRule
+				filter when Bar->bazList exists
+
+			reporting rule RepeatableBarBazList
+				extract repeatable Bar->bazList then
+				(
+					extract Baz->field
+				)
+		'''
+		.parseRosettaWithNoIssues
+	}
+
+	@Test
+	def void shouldParseReportWithRepeatableComplexTypeRuleThenExtractRule() {
+		'''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with fields
+				RepeatableBarBazList
+			
+			type Bar:
+				bazList Baz (1..*)
+			
+			type Baz:
+				field string (1..1)
+			
+			eligibility rule FooRule
+				filter when Bar->bazList exists
+
+			reporting rule RepeatableBarBazList
+				extract repeatable Bar->bazList then
+				(
+					BazField
+				)
+			
+			reporting rule BazField
+				extract Baz->field
+		'''
+		.parseRosettaWithNoIssues
+	}
+
 	
 	def loadBlueprint(Map<String, Class<?>> classes, String blueprintName) {
 		val Class<?> bpClass  = classes.get(blueprintName)

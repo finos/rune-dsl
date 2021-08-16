@@ -642,15 +642,24 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def void checkReportCardinality(RosettaBlueprintReport report) {
+		var index = 0
 		for (bp: report.reportingRules) {
 			try {
 				val node = buildTypeGraph(bp.nodes, bp.output)
-				if (!checkSingle(node, false)) {
-					warning("Report field from rule "+ bp.name +" should be of single cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES)
+				if (node.repeatable) {
+					if (checkSingle(node, false)) {
+						warning("Report field from repeatable rule "+ bp.name +" should be of multiple cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
+					}
+				} else {
+					if (!checkSingle(node, false)) {
+						warning("Report field from rule "+ bp.name +" should be of single cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
+					}
 				}
+				
 			} catch (BlueprintUnresolvedTypeException e) {
 				error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
 			}
+			index++
 		}
 	}
 	
