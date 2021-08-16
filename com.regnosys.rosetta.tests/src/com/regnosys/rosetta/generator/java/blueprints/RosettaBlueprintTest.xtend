@@ -66,7 +66,7 @@ class RosettaBlueprintTest {
 	}
 	
 	@Test
-	def void reportWithBadCardinality() {
+	def void reportWithBadRuleCardinality() {
 		'''
 			body Authority TEST_REG
 			corpus TEST_REG MiFIR
@@ -92,6 +92,31 @@ class RosettaBlueprintTest {
 		'''
 		.parseRosetta.assertWarning(ROSETTA_BLUEPRINT_REPORT, null, "Report field from rule BarFieldList should be of single cardinality")
 	}
+
+	@Test
+	def void reportWithBadRepeatableRuleCardinality() {
+		'''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with fields
+				RepeatableBarFieldList
+			
+			type Bar:
+				fieldList string (1..*)
+			
+			eligibility rule FooRule
+				filter when Bar->fieldList exists
+
+			reporting rule RepeatableBarFieldList
+				extract repeatable Bar->fieldList then
+				maximum
+		'''
+		.parseRosetta.assertError(ROSETTA_BLUEPRINT_REPORT, null, "Report field from repeatable rule RepeatableBarFieldList should be of multiple cardinality")
+	}
+
 	
 	@Test
 	def void shouldParseReportWithSingleRepeatableBasicTypeRule() {
