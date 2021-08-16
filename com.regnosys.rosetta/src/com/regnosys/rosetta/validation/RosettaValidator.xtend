@@ -648,7 +648,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				val node = buildTypeGraph(bp.nodes, bp.output)
 				if (node.repeatable) {
 					if (checkSingle(node, false)) {
-						warning("Report field from repeatable rule "+ bp.name +" should be of multiple cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
+						error("Report field from repeatable rule "+ bp.name +" should be of multiple cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
 					}
 				} else {
 					if (!checkSingle(node, false)) {
