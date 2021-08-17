@@ -1,7 +1,5 @@
 package com.regnosys.rosetta.blueprints.runner.data;
 
-import java.util.Comparator;
-
 public class StringIdentifier implements DataIdentifier {
 	private final String s;
 
