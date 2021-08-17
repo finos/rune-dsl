@@ -241,11 +241,16 @@ class BlueprintGenerator {
 				
 				val cond = node.call
 				val multi = cardinality.isMulti(cond)
+				val repeatable = node.repeatable
 				
 				if (!multi)
 				'''actionFactory.<«typedNode.input.getEither», «
 					typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaSingleMapper("«node.URI»", "«(cond).toNodeLabel
 						»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type))»)'''
+				else if (repeatable)
+				'''actionFactory.<«typedNode.input.getEither», «
+									typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaRepeatableMapper("«node.URI»", "«(cond).toNodeLabel
+														»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type))»)'''
 				else
 				'''actionFactory.<«typedNode.input.getEither», «
 									typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaMultipleMapper("«node.URI»", "«(cond).toNodeLabel

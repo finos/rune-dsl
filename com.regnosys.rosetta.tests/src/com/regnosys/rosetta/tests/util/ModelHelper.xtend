@@ -93,6 +93,12 @@ class ModelHelper {
 		parsed.forEach[assertNoErrors]
 		return parsed;
 	}
+	
+	def parseRosettaWithNoIssues(CharSequence model) {
+		val parsed = parseRosetta(model)
+		parsed.assertNoIssues
+		return parsed;
+	}
 
 	def combineAndParseRosetta(CharSequence... models) {
 		var m = versionInfo.toString

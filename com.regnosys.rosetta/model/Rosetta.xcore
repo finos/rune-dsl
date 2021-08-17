@@ -581,7 +581,7 @@ class BlueprintFilter extends BlueprintNode {
 
 class BlueprintExtract extends BlueprintNode {
 	contains RosettaExpression call
-	boolean multiple
+	boolean repeatable
 }
 
 class BlueprintReturn extends BlueprintNode {

@@ -4,7 +4,6 @@ public class StringIdentifier implements DataIdentifier {
 	private final String s;
 
 	public StringIdentifier(String s) {
-		super();
 		this.s = s;
 	}
 

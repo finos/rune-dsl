@@ -86,6 +86,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.BlueprintRef
 
 /**
  * This class contains custom validation rules. 
@@ -575,8 +576,11 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def void checkExtractCardinality(BlueprintExtract extract) {
-		if (extract.multiple) {
-			warning("multiple keyword is redundant and deprecated", extract, BLUEPRINT_EXTRACT__MULTIPLE)
+		if (extract.repeatable) {
+			val multi = cardinality.isMulti(extract.call)
+			if (!multi) {
+				error("Repeatable keyword must extract multiple cardinality", extract, BLUEPRINT_EXTRACT__REPEATABLE)
+			}
 		}
 	}
 	
@@ -616,7 +620,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
-	def void checkBlueprintFilte(BlueprintFilter filter) {
+	def void checkBlueprintFilter(BlueprintFilter filter) {
 		if (filter.filter!==null) {
 			val exrType = filter.filter.RType
 			if (exrType!==RBuiltinType.BOOLEAN) {
@@ -638,16 +642,29 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
-	def void checkReportCardinality(RosettaBlueprintReport report) {
+	def void checkReport(RosettaBlueprintReport report) {
+		var index = 0
 		for (bp: report.reportingRules) {
 			try {
 				val node = buildTypeGraph(bp.nodes, bp.output)
-				if (!checkSingle(node, false)) {
-					warning("Report field from rule "+ bp.name +" should be of single cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES)
+				
+				// check cardinality
+				if (node.repeatable) {
+					if (checkSingle(node, false)) {
+						error("Report field from repeatable rule "+ bp.name +" should be of multiple cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
+					}
+				} else {
+					if (!checkSingle(node, false)) {
+						warning("Report field from rule "+ bp.name +" should be of single cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
+					}
 				}
+				// check duplicate report fields
+				checkDuplicateReportFields(bp.name, node, report)
+				
 			} catch (BlueprintUnresolvedTypeException e) {
 				error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
 			}
+			index++
 		}
 	}
 	
@@ -668,6 +685,27 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		else {
 			return !multiple
 		}
+	}
+	
+	/**
+	 * Checks if report blueprint descendant rules are also included in the report.
+	 */
+	def void checkDuplicateReportFields(String initialBpName, TypedBPNode node, RosettaBlueprintReport report) {
+		// if node contains an andNode check that it is not in the list of reporting rules
+		node.andNodes.forEach[
+			val andNode = it.node
+			if (andNode instanceof BlueprintRef) {
+				val bp = andNode.blueprint
+				val index = report.reportingRules.indexOf(bp)
+				if (index != -1)
+					error("Duplicate report field " + bp.name + ".  Parent report field " + initialBpName + " already adds " + bp.name + " to the report.", 
+						report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
+			}
+		]
+		// check descendant node
+		if (node.next !== null) {
+			checkDuplicateReportFields(initialBpName, node.next, report)
+		}	
 	}
 	
 	@Check

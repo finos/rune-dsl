@@ -1,10 +1,14 @@
 package com.regnosys.rosetta.generator.java.blueprints
 
+import com.google.inject.Guice
 import com.google.inject.Inject
+import com.google.inject.Injector
+import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
+import java.util.Map
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
@@ -17,10 +21,6 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
-import com.google.inject.Injector
-import com.google.inject.Guice
-import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory
-import java.util.Map
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -55,37 +55,44 @@ class RosettaBlueprintTest {
 				field string (1..1)
 			
 			eligibility rule FooRule
-				return "true"
+				filter when Bar->field exists
 			
 			reporting rule BarField
-				extract Bar->field
+				extract Bar->field as "1.0 BarField"
 		'''
-		// println(r)
+//		.generateCode
+//		println(r)
 		parseRosettaWithNoErrors(r)
 	}
 	
 	@Test
-	def void reportWithBadCardinality() {
+	def void reportWithBadRuleCardinality() {
 		'''
 			body Authority TEST_REG
-			corpus MiFIR
+			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule
 			with fields
 				BarField
+				BarFieldList
 			
 			type Bar:
-				field string (1..*)
-							
+				field string (1..1)
+				fieldList string (1..*)
+			
 			eligibility rule FooRule
 				return "true"
-			
+
 			reporting rule BarField
 				extract Bar->field
+			
+			reporting rule BarFieldList
+				extract Bar->fieldList
 		'''
-		.parseRosetta.assertWarning(ROSETTA_BLUEPRINT_REPORT, null, "Report field from rule BarField should be of single cardinality")
+		.parseRosetta.assertWarning(ROSETTA_BLUEPRINT_REPORT, null, "Report field from rule BarFieldList should be of single cardinality")
 	}
+
 	
 	def loadBlueprint(Map<String, Class<?>> classes, String blueprintName) {
 		val Class<?> bpClass  = classes.get(blueprintName)
@@ -723,64 +730,6 @@ class RosettaBlueprintTest {
 			val classes = blueprint.compileToClasses
 			val bpImpl = classes.loadBlueprint("com.rosetta.test.model.blueprint.Blueprint1Rule")
 			assertNotNull(bpImpl)
-			assertEquals(expected, blueprintJava)
-		} finally {
-		}
-	}
-
-	@Test
-	@Disabled
-	def void multipleExtract() {
-		val model = '''
-			type Input:
-				input2 int (1..*)
-			
-			blueprint Blueprint1
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-			{
-				extract multiple Input->input2 as "inputs"
-			}
-		'''.parseRosetta
-		
-		model.assertWarning(BLUEPRINT_EXTRACT, null, "multiple keyword is redundant and deprecated")
-		
-		val blueprint = model.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1")
-		// writeOutClasses(blueprint, "multipleExtract");
-		try {
-			assertThat(blueprintJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.test.model.Input;
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
-				public abstract class Blueprint1<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Integer, INKEY, INKEY> {
-					@Override
-					public String getName() {
-						return "Blueprint1"; 
-					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#com.rosetta.test.model.com.rosetta.test.model.Blueprint1";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Input, Integer, INKEY, INKEY> blueprint() { 
-						return 
-							startsWith(getRosettaActionFactory().<Input, Integer, INKEY>newRosettaMultipleMapper("__synthetic1.rosetta#//@elements.1/@nodes/@node", "->input2", new StringIdentifier("inputs"), input -> MapperS.of(input).mapC("getInput2", Input::getInput2)))
-							.toBlueprint(getURI(), getName());
-					}
-				}
-			'''
-			blueprint.compileToClasses
 			assertEquals(expected, blueprintJava)
 		} finally {
 		}

@@ -2,6 +2,7 @@ package com.regnosys.rosetta.validation
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.rosetta.BlueprintAnd
 import com.regnosys.rosetta.rosetta.BlueprintCustomNode
 import com.regnosys.rosetta.rosetta.BlueprintDataJoin
@@ -18,45 +19,44 @@ import com.regnosys.rosetta.rosetta.BlueprintRef
 import com.regnosys.rosetta.rosetta.BlueprintReturn
 import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.BlueprintValidate
+import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RBuiltinType
+import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.validation.TypedBPNode.BPCardinality
 import java.util.ArrayList
+import java.util.HashSet
 import java.util.List
+import java.util.Set
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
-import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.types.RosettaOperators
-import java.util.Set
-import java.util.HashSet
-import com.regnosys.rosetta.validation.TypedBPNode.BPCardinality
-import com.regnosys.rosetta.generator.java.function.CardinalityProvider
-import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 class RosettaBlueprintTypeResolver {
 	
@@ -89,6 +89,7 @@ class RosettaBlueprintTypeResolver {
 		result.inputKey = prevNode.outputKey
 		result.output = nextNode.input
 		result.outputKey = nextNode.inputKey
+		result.repeatable = result.next.repeatable
 		return result
 	}
 
@@ -97,14 +98,15 @@ class RosettaBlueprintTypeResolver {
 		typedNode.node = nodeExp.node
 		typedNode.input = parentNode.output
 		typedNode.inputKey = parentNode.outputKey
-
+		
 		val nodeFixedTypes = computeExpected(nodeExp)
 		link(typedNode, visited)
 		bindFixedTypes(typedNode, nodeFixedTypes, nodeExp.node)
-
+		
 		// check outputs
 		if (nodeExp.next !== null) {
 			typedNode.next = nodeExp.next.bindTypes(typedNode, outputNode, visited)
+			typedNode.repeatable = typedNode.repeatable || typedNode.next.repeatable
 		} else {
 			if (!typedNode.output.isAssignableTo(outputNode.input)) {
 				BlueprintUnresolvedTypeException.error('''output type of node «typedNode.output.either» does not match required type of «outputNode.input.either»''', nodeExp.node,
@@ -123,6 +125,7 @@ class RosettaBlueprintTypeResolver {
 			}
 
 			outputNode.inputKey = typedNode.outputKey;
+			outputNode.repeatable = typedNode.repeatable
 		}
 		typedNode
 	}
@@ -145,6 +148,7 @@ class RosettaBlueprintTypeResolver {
 				// and the output type comes from the expression
 				result.output.type = getOutput(node.call)
 				result.cardinality.set(0, if (cardinality.isMulti(node.call)) BPCardinality.EXPAND else BPCardinality.UNCHANGED)
+				result.repeatable = node.repeatable
 			}
 			BlueprintReturn: {
 				result.input.type = null
@@ -455,6 +459,7 @@ class RosettaBlueprintTypeResolver {
 		bindOutType(node.output, expected.output, bpNode, "Output")
 		bindOutType(node.outputKey, expected.outputKey, bpNode, "OutputKey")
 		node.cardinality.set(0,expected.cardinality.get(0))
+		node.repeatable = expected.repeatable
 	}
 
 	def bindInType(BindableType nodeType, BindableType expected, BlueprintNode node, String fieldName) {
