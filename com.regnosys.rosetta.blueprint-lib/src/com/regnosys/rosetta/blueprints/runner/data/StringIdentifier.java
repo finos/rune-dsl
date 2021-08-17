@@ -2,7 +2,7 @@ package com.regnosys.rosetta.blueprints.runner.data;
 
 import java.util.Comparator;
 
-public class StringIdentifier implements DataIdentifier, Comparable<StringIdentifier> {
+public class StringIdentifier implements DataIdentifier {
 	private final String s;
 
 	public StringIdentifier(String s) {
@@ -40,10 +40,5 @@ public class StringIdentifier implements DataIdentifier, Comparable<StringIdenti
 		} else if (!s.equals(other.s))
 			return false;
 		return true;
-	}
-
-	@Override
-	public int compareTo(StringIdentifier o) {
-		return Comparator.comparing(StringIdentifier::getS).compare(this, o);
 	}	
 }
