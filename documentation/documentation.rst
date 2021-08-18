@@ -1231,7 +1231,7 @@ In the example below, the ``repeatable`` keyword in reporting rule ``NotionalAmo
 		CDENotionalAmountScheduleEndDate
 		as "33/35-$ 35 End date leg 1"
 		
-Note that the ``$`` symbol can be used in the label to specify the step index.
+Note that the ``-$`` symbol is used in the label to index the repeated groups ensuring that they appear in a logical order in the Reports view of Rosetta.
 
 .. _CamelCase: https://en.wikipedia.org/wiki/Camel_case
 .. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
