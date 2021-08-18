@@ -1191,8 +1191,49 @@ In the below example, we first apply a filter and extract a ``fixedInterestRate`
    extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate then
    maxBy FixedInterestRate -> rate
 
+Repeatable Rules
+///////////////
+
+The syntax also supports the reporting of repeatable sets of data as required by most regulations.
+
+For example, in the CFTC Part 45 regulations, fields 33-35 require the reporting a notional quantity schedule. For each quantity schedule step, the following fields should be reported:
+- Notional amount
+- Effective date
+- End date
+
+In the example below, the ``repeatable`` keyword in reporting rule ``NotionalAmountScheduleLeg1`` specifies that the extracted list of quantity notional schedule steps should be reported as a repeating set of data.  The rules specified within the brackets define the fields that should be reported for each repeating step.  
 
 
+.. code-block:: Haskell
+
+ reporting rule NotionalAmountScheduleLeg1 <"Notional Amount Schedule">
+	[regulatoryReference CFTC Part45 appendix "1" item "33-35" field "Notional Amount Schedule"
+		provision "Fields 33-35 are repeatable and shall be populated in the case of derivatives involving notional amount schedules"]
+    TradeForEvent then
+        InterestRateLeg1 then
+            extract repeatable InterestRatePayout -> payoutQuantity -> quantitySchedule -> stepSchedule -> step then
+            (
+                NotionalAmountScheduleLeg1Amount,
+                NotionalAmountScheduleLeg1EndDate,		
+                NotionalAmountScheduleLeg1EffectiveDate
+            )
+
+ reporting rule NotionalAmountScheduleLeg1Amount <"Notional amount in effect on associated effective date of leg 1">
+	[regulatoryReference CFTC Part45 appendix "1" item "33" field "Notional amount in effect on associated effective date of leg 1"]
+		CDENotionalAmountScheduleAmount
+		as "33/35-$ 33 Notional amount leg 1"
+
+ reporting rule NotionalAmountScheduleLeg1EffectiveDate <"Effective date of the notional amount of leg 1">
+	[regulatoryReference CFTC Part45 appendix "1" item "34" field "Effective date of the notional amount of leg 1"]
+		CDENotionalAmountScheduleEffectiveDate
+		as "33/35-$ 34 Effective date leg 1"
+
+ reporting rule NotionalAmountScheduleLeg1EndDate <"End date of the notional amount of leg 1">
+	[regulatoryReference CFTC Part45 appendix "1" item "35" field "End date of the notional amount of leg 1"]
+		CDENotionalAmountScheduleEndDate
+		as "33/35-$ 35 End date leg 1"
+		
+Note that the ``$`` symbol can be used in the label to specify the step index.
 
 .. _CamelCase: https://en.wikipedia.org/wiki/Camel_case
 .. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
