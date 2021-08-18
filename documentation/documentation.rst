@@ -1194,15 +1194,13 @@ In the below example, we first apply a filter and extract a ``fixedInterestRate`
 Repeatable Rules
 ///////////////
 
-The syntax also supports the reporting of repeatable sets of data as required by most regulations.
+The syntax also supports the reporting of repeatable sets of data as required by most regulations.  For example, in the CFTC Part 45 regulations, fields 33-35 require the reporting of a notional quantity schedule. For each quantity schedule step, the notional amount, effective date and end date must be reported.
 
-For example, in the CFTC Part 45 regulations, fields 33-35 require the reporting a notional quantity schedule. For each quantity schedule step, the following fields should be reported:
-- Notional amount
-- Effective date
-- End date
+- ``extract repeatable`` <ExpressionWithMultipleCardinality> ( <ReportingRule1>, <ReportingRule2> ... <ReportingRuleN> )
+
+The ``repeatable`` keyword specifies that the extract expression will be reported as a repeating set of data.  The rules specified in the brackets specify the fields to report for each repeating data set.
 
 In the example below, the ``repeatable`` keyword in reporting rule ``NotionalAmountScheduleLeg1`` specifies that the extracted list of quantity notional schedule steps should be reported as a repeating set of data.  The rules specified within the brackets define the fields that should be reported for each repeating step.  
-
 
 .. code-block:: Haskell
 
