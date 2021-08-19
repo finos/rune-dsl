@@ -58,27 +58,27 @@ class CalculationFuncGeneratorTest {
 				import com.rosetta.test.model.PeriodEnum;
 				import java.math.BigDecimal;
 				import java.util.Arrays;
-
+				
 				
 				/**
 				 * @version test
 				 */
 				public class PeriodEnumFunc {
 					
-					@Inject protected PeriodEnumFunc.MONTH MONTH;
+					@Inject protected PeriodEnumFunc.MONTH mONTH_;
 					
 					public BigDecimal evaluate(PeriodEnum in1, Period in2) {
 						switch (in1) {
-							case MONTH:
-								return MONTH.evaluate(in1, in2);
+							case mONTH_:
+								return mONTH_.evaluate(in1, in2);
 							default:
 								throw new IllegalArgumentException("Enum value not implemented: " + in1);
 						}
 					}
 					
 					
-					@ImplementedBy(MONTH.MONTHDefault.class)
-					public static abstract class MONTH implements RosettaFunction {
+					@ImplementedBy(mONTH_.mONTH_Default.class)
+					public static abstract class mONTH_ implements RosettaFunction {
 					
 						/**
 						* @param in1 
@@ -104,7 +104,7 @@ class CalculationFuncGeneratorTest {
 						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
 							return MapperS.of(in2).<Integer>map("getFrequency", _period -> _period.getFrequency());
 						}
-						public static final class MONTHDefault extends MONTH {
+						public static final class mONTH_Default extends mONTH_ {
 							@Override
 							protected  BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
 								return null;
@@ -736,30 +736,30 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.test.model.functions.AddOne;
 			import com.rosetta.test.model.functions.SubOne;
 			import java.util.Arrays;
-
+			
 			
 			/**
 			 * @version test
 			 */
 			public class MathFunc {
 				
-				@Inject protected MathFunc.INCR INCR;
-				@Inject protected MathFunc.DECR DECR;
+				@Inject protected MathFunc.INCR iNCR_;
+				@Inject protected MathFunc.DECR dECR_;
 				
 				public String evaluate(Math in1, MathInput in2) {
 					switch (in1) {
-						case INCR:
-							return INCR.evaluate(in1, in2);
-						case DECR:
-							return DECR.evaluate(in1, in2);
+						case iNCR_:
+							return iNCR_.evaluate(in1, in2);
+						case dECR_:
+							return dECR_.evaluate(in1, in2);
 						default:
 							throw new IllegalArgumentException("Enum value not implemented: " + in1);
 					}
 				}
 				
 				
-				@ImplementedBy(INCR.INCRDefault.class)
-				public static abstract class INCR implements RosettaFunction {
+				@ImplementedBy(iNCR_.iNCR_Default.class)
+				public static abstract class iNCR_ implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -785,7 +785,7 @@ class CalculationFuncGeneratorTest {
 				
 					protected abstract String doEvaluate(Math in1, MathInput in2);
 					
-					public static final class INCRDefault extends INCR {
+					public static final class iNCR_Default extends iNCR_ {
 						@Override
 						protected  String doEvaluate(Math in1, MathInput in2) {
 							return null;
@@ -793,8 +793,8 @@ class CalculationFuncGeneratorTest {
 					}
 				}
 				
-				@ImplementedBy(DECR.DECRDefault.class)
-				public static abstract class DECR implements RosettaFunction {
+				@ImplementedBy(dECR_.dECR_Default.class)
+				public static abstract class dECR_ implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -820,7 +820,7 @@ class CalculationFuncGeneratorTest {
 				
 					protected abstract String doEvaluate(Math in1, MathInput in2);
 					
-					public static final class DECRDefault extends DECR {
+					public static final class dECR_Default extends dECR_ {
 						@Override
 						protected  String doEvaluate(Math in1, MathInput in2) {
 							return null;

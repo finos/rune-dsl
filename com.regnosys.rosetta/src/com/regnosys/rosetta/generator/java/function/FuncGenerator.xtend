@@ -206,13 +206,13 @@ class FuncGenerator {
 			«ENDFOR»
 			
 			«FOR enumFunc : dispatchingFuncs»
-				@«Inject» protected «toTargetClassName(enumFunc)» «toTargetClassName(enumFunc).lastSegment»;
+				@«Inject» protected «toTargetClassName(enumFunc)» «toTargetClassNameVariable(enumFunc)»;
 			«ENDFOR»
 			
 			public «outputType.extendedParam» evaluate(«function.inputsAsParameters(names)») {
 				switch («enumParam») {
 					«FOR enumFunc : dispatchingFuncs»
-						«val enumValClass = toTargetClassName(enumFunc).lastSegment»
+						«val enumValClass = toTargetClassNameVariable(enumFunc)»
 						case «enumValClass»:
 							return «enumValClass».evaluate(«function.inputsAsArguments(names)»);
 					«ENDFOR»
@@ -223,7 +223,7 @@ class FuncGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 			
-			«val enumValClass = toTargetClassName(enumFunc).lastSegment»
+			«val enumValClass = toTargetClassNameVariable(enumFunc)»
 			«enumFunc.classBody(enumValClass, collectFunctionDependencies(enumFunc), names,  version, true)»
 			«ENDFOR»
 		}'''
@@ -232,6 +232,10 @@ class FuncGenerator {
 	
 	private def QualifiedName toTargetClassName(FunctionDispatch ele) {
 		return QualifiedName.create(ele.name).append(ele.value.value.name)
+	}
+	
+	private def String toTargetClassNameVariable(FunctionDispatch ele) {
+		return toTargetClassName(ele).lastSegment.toFirstLower + "_" // to avoid name clashes
 	}
 	
 	private def StringConcatenationClient assign(Operation op, Map<ShortcutDeclaration, Boolean> outs,
