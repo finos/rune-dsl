@@ -206,15 +206,14 @@ class FuncGenerator {
 			«ENDFOR»
 			
 			«FOR enumFunc : dispatchingFuncs»
-				@«Inject» protected «toTargetClassName(enumFunc)» «toTargetClassNameVariable(enumFunc)»;
+				@«Inject» protected «toTargetClassName(enumFunc)» «toTargetClassName(enumFunc).lastSegment»;
 			«ENDFOR»
 			
 			public «outputType.extendedParam» evaluate(«function.inputsAsParameters(names)») {
 				switch («enumParam») {
 					«FOR enumFunc : dispatchingFuncs»
-						«val enumValClass = toTargetClassNameVariable(enumFunc)»
-						case «enumValClass»:
-							return «enumValClass».evaluate(«function.inputsAsArguments(names)»);
+						case «toEnumClassName(enumFunc).lastSegment»:
+							return «toTargetClassName(enumFunc).lastSegment».evaluate(«function.inputsAsArguments(names)»);
 					«ENDFOR»
 					default:
 						throw new IllegalArgumentException("Enum value not implemented: " + «enumParam»);
@@ -223,7 +222,7 @@ class FuncGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 			
-			«val enumValClass = toTargetClassNameVariable(enumFunc)»
+			«val enumValClass = toTargetClassName(enumFunc).lastSegment»
 			«enumFunc.classBody(enumValClass, collectFunctionDependencies(enumFunc), names,  version, true)»
 			«ENDFOR»
 		}'''
@@ -231,11 +230,11 @@ class FuncGenerator {
 	
 	
 	private def QualifiedName toTargetClassName(FunctionDispatch ele) {
-		return QualifiedName.create(ele.name).append(ele.value.value.name)
+		return QualifiedName.create(ele.name).append(ele.value.value.name.toFirstLower + "_") // to avoid name clashes
 	}
 	
-	private def String toTargetClassNameVariable(FunctionDispatch ele) {
-		return toTargetClassName(ele).lastSegment.toFirstLower + "_" // to avoid name clashes
+	private def QualifiedName toEnumClassName(FunctionDispatch ele) {
+		return QualifiedName.create(ele.name).append(ele.value.value.name)
 	}
 	
 	private def StringConcatenationClient assign(Operation op, Map<ShortcutDeclaration, Boolean> outs,

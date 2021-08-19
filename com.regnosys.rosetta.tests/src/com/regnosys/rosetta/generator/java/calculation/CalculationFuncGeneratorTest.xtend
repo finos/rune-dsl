@@ -65,11 +65,11 @@ class CalculationFuncGeneratorTest {
 				 */
 				public class PeriodEnumFunc {
 					
-					@Inject protected PeriodEnumFunc.MONTH mONTH_;
+					@Inject protected PeriodEnumFunc.mONTH_ mONTH_;
 					
 					public BigDecimal evaluate(PeriodEnum in1, Period in2) {
 						switch (in1) {
-							case mONTH_:
+							case MONTH:
 								return mONTH_.evaluate(in1, in2);
 							default:
 								throw new IllegalArgumentException("Enum value not implemented: " + in1);
@@ -743,14 +743,14 @@ class CalculationFuncGeneratorTest {
 			 */
 			public class MathFunc {
 				
-				@Inject protected MathFunc.INCR iNCR_;
-				@Inject protected MathFunc.DECR dECR_;
+				@Inject protected MathFunc.iNCR_ iNCR_;
+				@Inject protected MathFunc.dECR_ dECR_;
 				
 				public String evaluate(Math in1, MathInput in2) {
 					switch (in1) {
-						case iNCR_:
+						case INCR:
 							return iNCR_.evaluate(in1, in2);
-						case dECR_:
+						case DECR:
 							return dECR_.evaluate(in1, in2);
 						default:
 							throw new IllegalArgumentException("Enum value not implemented: " + in1);
