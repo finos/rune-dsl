@@ -10,11 +10,13 @@ import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
+import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -33,8 +35,10 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.RosettaFunction
-
+import com.rosetta.model.lib.mapper.Mapper
 import com.rosetta.model.lib.validation.ModelObjectValidator
+import java.util.Arrays
+import java.util.List
 import java.util.Map
 import java.util.Optional
 import java.util.stream.Collectors
@@ -42,12 +46,8 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
+import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.rosetta.model.lib.mapper.Mapper
-import com.regnosys.rosetta.generator.java.util.ParameterizedType
-import java.util.List
-import java.util.Arrays
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 
 class FuncGenerator {
 
@@ -212,9 +212,8 @@ class FuncGenerator {
 			public «outputType.extendedParam» evaluate(«function.inputsAsParameters(names)») {
 				switch («enumParam») {
 					«FOR enumFunc : dispatchingFuncs»
-						«val enumValClass = toTargetClassName(enumFunc).lastSegment»
-						case «enumValClass»:
-							return «enumValClass».evaluate(«function.inputsAsArguments(names)»);
+						case «toEnumClassName(enumFunc).lastSegment»:
+							return «toTargetClassName(enumFunc).lastSegment».evaluate(«function.inputsAsArguments(names)»);
 					«ENDFOR»
 					default:
 						throw new IllegalArgumentException("Enum value not implemented: " + «enumParam»);
@@ -231,7 +230,11 @@ class FuncGenerator {
 	
 	
 	private def QualifiedName toTargetClassName(FunctionDispatch ele) {
-		return QualifiedName.create(ele.name).append(ele.value.value.name)
+		return QualifiedName.create(ele.name).append(ele.value.value.name.toFirstLower + "_") // to avoid name clashes
+	}
+	
+	private def QualifiedName toEnumClassName(FunctionDispatch ele) {
+		return QualifiedName.create(ele.name).append(formatEnumName(ele.value.value.name))
 	}
 	
 	private def StringConcatenationClient assign(Operation op, Map<ShortcutDeclaration, Boolean> outs,
