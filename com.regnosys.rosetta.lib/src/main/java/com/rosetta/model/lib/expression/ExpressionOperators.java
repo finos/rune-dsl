@@ -153,7 +153,7 @@ public class ExpressionOperators {
 	
 	/**
 	 * DoIf implementation for ComparisonResult.
-	 s*/
+	 */
 	public static ComparisonResult resultDoIf(Mapper<Boolean> test, Supplier<Mapper<Boolean>> ifthen, Supplier<Mapper<Boolean>> elsethen) {
 		boolean testResult = test.getMulti().stream().allMatch(Boolean::booleanValue);
 		if (testResult) {
@@ -293,7 +293,7 @@ public class ExpressionOperators {
 
 	// contains
 	
-	public static <T> ComparisonResult contains(Mapper<T> o1, Mapper<T> o2) {
+	public static <T> ComparisonResult contains(Mapper<? extends T> o1, Mapper<? extends T> o2) {
 		boolean result =  o1.getMulti().containsAll(o2.getMulti());
 		if (result) {
 			return ComparisonResult.success();

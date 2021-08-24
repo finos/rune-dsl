@@ -53,6 +53,7 @@ import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.mapper.MapperTree
 import java.math.BigDecimal
+import java.util.Arrays
 import java.util.HashMap
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -64,8 +65,6 @@ import org.eclipse.xtext.util.Wrapper
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
-import java.util.Arrays
-import java.util.List
 
 class ExpressionGenerator {
 	
@@ -242,8 +241,9 @@ class ExpressionGenerator {
 				val implicitArg = funcExt.implicitFirstArgument(expr)
 				'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«callable.name.toFirstLower».evaluate(«IF implicitArg !== null»«implicitArg.name.toFirstLower»«ENDIF»«args(expr, params)»))'''
 			}
-			RosettaExternalFunction:
+			RosettaExternalFunction: {
 				'''«MapperS».of(new «factory.create(callable.model).toJavaType(callable as RosettaCallableWithArgs)»().execute(«args(expr, params)»))'''
+			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable with args type of " + expr.eClass.name)
 		}
@@ -251,7 +251,11 @@ class ExpressionGenerator {
 	}
 	
 	private def StringConcatenationClient args(RosettaCallableWithArgsCall expr, ParamMap params) {
-		'''«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(params)»«IF !(arg instanceof EmptyLiteral)»«IF cardinalityProvider.isMulti(arg)».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDFOR»'''
+		'''«FOR argExpr : expr.args SEPARATOR ', '»«arg(argExpr, params)»«ENDFOR»'''
+	}
+	
+	private def StringConcatenationClient arg(RosettaExpression expr, ParamMap params) {
+		'''«expr.javaCode(params)»«IF !(expr instanceof EmptyLiteral)»«IF cardinalityProvider.isMulti(expr)».getMulti()«ELSE».get()«ENDIF»«ENDIF»'''
 	}
 	
 	def StringConcatenationClient onlyExistsExpr(RosettaOnlyExistsExpression onlyExists, ParamMap params) {
@@ -321,7 +325,8 @@ class ExpressionGenerator {
 				'''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)'''
 			}
 			ShortcutDeclaration : {
-				'''«MapperS».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»get()«ENDIF»)'''
+				val multi = cardinalityProvider.isMulti(call)
+				'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
 			}
 			RosettaEnumeration: '''«call.toJavaType»'''
 			default: 
