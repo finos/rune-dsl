@@ -172,7 +172,7 @@ class FuncGenerator {
 							return «expressionGenerator.javaCode(alias.expression, new ParamMap)».get().toBuilder();
 						}
 					«ELSE»
-						protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
+						protected «IF needsGenericsExt(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
 							return «expressionGenerator.javaCode(alias.expression, new ParamMap)»;
 						}
 					«ENDIF»
@@ -399,6 +399,7 @@ class FuncGenerator {
 		var javaType = names.toJavaType(attr.type)
 		if (needsBuilder(attr)) javaType = javaType.toBuilderType
 		if (attr.isMany) {
+			if (needsGenericsExt(attr)) javaType = javaType.asExtended
 			new ParameterizedType(new JavaType(List.name), #[new ParameterizedType(javaType,#[])])
 		}
 		else {

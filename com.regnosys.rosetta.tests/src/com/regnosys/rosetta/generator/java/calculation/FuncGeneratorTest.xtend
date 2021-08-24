@@ -6,7 +6,6 @@ import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
-import java.util.List
 import java.util.Arrays
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -28,14 +27,15 @@ class FuncGeneratorTest {
 
 	@Test
 	def void testSimpleFunctionGeneration() {
-		'''
+		val code = '''
 			func FuncFoo:
 			 	inputs:
 			 		name string  (0..1)
-			 	name2 string (0..1)
+			 		name2 string (0..1)
 				output:
 					result string (0..1)
-		'''.assertToGeneratedFunction(
+		'''
+		code.assertToGeneratedFunction(
 			'''
 				package com.rosetta.test.model.functions;
 				
@@ -75,7 +75,227 @@ class FuncGeneratorTest {
 				}
 			'''
 		)
+		code.compileJava8
 	}
+
+	@Test
+	def void shouldGenerateFunctionWithStringListOutput() {
+		val code = '''
+			func FuncFoo:
+			 	inputs:
+			 		name string  (0..1)
+			 		name2 string (0..1)
+				output:
+					result string (0..*)
+		'''
+		code.assertToGeneratedFunction(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param name 
+					* @param name2 
+					* @return result 
+					*/
+					public List<String> evaluate(String name, String name2) {
+						
+						List<String> resultHolder = doEvaluate(name, name2);
+						List<String> result = assignOutput(resultHolder, name, name2);
+						
+						return result;
+					}
+					
+					private List<String> assignOutput(List<String> result, String name, String name2) {
+						return result;
+					}
+				
+					protected abstract List<String> doEvaluate(String name, String name2);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<String> doEvaluate(String name, String name2) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''
+		)
+		code.compileJava8
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithNumberListOutput() {
+		val code = '''
+			func FuncFoo:
+			 	inputs:
+			 		name string  (0..1)
+			 		name2 string (0..1)
+				output:
+					result number (0..*)
+		'''
+		code.assertToGeneratedFunction(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import java.math.BigDecimal;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param name 
+					* @param name2 
+					* @return result 
+					*/
+					public List<? extends BigDecimal> evaluate(String name, String name2) {
+						
+						List<BigDecimal> resultHolder = doEvaluate(name, name2);
+						List<BigDecimal> result = assignOutput(resultHolder, name, name2);
+						
+						return result;
+					}
+					
+					private List<BigDecimal> assignOutput(List<BigDecimal> result, String name, String name2) {
+						return result;
+					}
+				
+					protected abstract List<BigDecimal> doEvaluate(String name, String name2);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<BigDecimal> doEvaluate(String name, String name2) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''
+		)
+		code.compileJava8
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithIntListOutput() {
+		val code = '''
+			func FuncFoo:
+			 	inputs:
+			 		name string  (0..1)
+			 		name2 string (0..1)
+				output:
+					result int (0..*)
+		'''
+		code.assertToGeneratedFunction(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param name 
+					* @param name2 
+					* @return result 
+					*/
+					public List<Integer> evaluate(String name, String name2) {
+						
+						List<Integer> resultHolder = doEvaluate(name, name2);
+						List<Integer> result = assignOutput(resultHolder, name, name2);
+						
+						return result;
+					}
+					
+					private List<Integer> assignOutput(List<Integer> result, String name, String name2) {
+						return result;
+					}
+				
+					protected abstract List<Integer> doEvaluate(String name, String name2);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<Integer> doEvaluate(String name, String name2) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''
+		)
+		code.compileJava8
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithDateListOutput() {
+		val code = '''
+			func FuncFoo:
+			 	inputs:
+			 		name string  (0..1)
+			 		name2 string (0..1)
+				output:
+					result date (0..*)
+		'''
+		code.assertToGeneratedFunction(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.records.Date;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param name 
+					* @param name2 
+					* @return result 
+					*/
+					public List<? extends Date> evaluate(String name, String name2) {
+						
+						List<? extends Date> resultHolder = doEvaluate(name, name2);
+						List<? extends Date> result = assignOutput(resultHolder, name, name2);
+						
+						return result;
+					}
+					
+					private List<? extends Date> assignOutput(List<? extends Date> result, String name, String name2) {
+						return result;
+					}
+				
+					protected abstract List<? extends Date> doEvaluate(String name, String name2);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<? extends Date> doEvaluate(String name, String name2) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''
+		)
+		code.compileJava8
+	}
+
 
 	@Test
 	def void shouldGenerateFuncWithAssignOutputDoIfBooleanLiterals() {
@@ -613,32 +833,157 @@ class FuncGeneratorTest {
 	@Test
 	def void funcCallingMultipleFunc() {
 		val model = '''
-			namespace "demo"
-			version "${project.version}"
-			
 			func F1:
-				inputs: num number (1..1)
-				output: nums number (1..*)
+				inputs: f1Input date (1..1)
+				output: f1OutputList date (1..*)
 					
 			func F2:
-				inputs: nums number(1..*)
-				output: str string (1..1)
+				inputs: f2InputList date (1..*)
+				output: f2Output date (1..1)
 				
 			func F3:
-				inputs: num number (1..1)
-				output: str string (1..1)
-				assign-output str: F2(F1(num))
-
-			func F4:
-					inputs: num number (1..*)
-					output: str string (1..1)
-					assign-output str: F2(num)
-			'''.parseRosettaWithNoErrors
-		model.generateCode
-		//.writeClasses("funcCallingMultipleFunc")
-		.compileToClasses
+				inputs: f3Input date (1..1)
+				output: f3Output date (1..1)
+				assign-output f3Output: F2(F1(f3Input))
+			'''
+		val code = model.generateCode
+		val f3 = code.get("com.rosetta.test.model.functions.F3")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.records.Date;
+				import com.rosetta.test.model.functions.F1;
+				import com.rosetta.test.model.functions.F2;
+				import java.util.Arrays;
+				
+				
+				@ImplementedBy(F3.F3Default.class)
+				public abstract class F3 implements RosettaFunction {
+					
+					// RosettaFunction dependencies
+					//
+					@Inject protected F1 f1;
+					@Inject protected F2 f2;
+				
+					/**
+					* @param f3Input 
+					* @return f3Output 
+					*/
+					public Date evaluate(Date f3Input) {
+						
+						Date f3OutputHolder = doEvaluate(f3Input);
+						Date f3Output = assignOutput(f3OutputHolder, f3Input);
+						
+						return f3Output;
+					}
+					
+					private Date assignOutput(Date f3Output, Date f3Input) {
+						f3Output = MapperS.of(f2.evaluate(MapperC.of(f1.evaluate(MapperS.of(f3Input).get())).getMulti())).get();
+						return f3Output;
+					}
+				
+					protected abstract Date doEvaluate(Date f3Input);
+					
+					public static final class F3Default extends F3 {
+						@Override
+						protected  Date doEvaluate(Date f3Input) {
+							return null;
+						}
+					}
+				}
+			'''.toString,
+			f3
+		)
+		code.compileToClasses
 
 	}
+	
+	@Test
+	def void funcCallingMultipleFunc2() {
+		val model = '''
+			func F1:
+				inputs: f1Input date (1..1)
+				output: f1OutputList date (1..*)
+					
+			func F2:
+				inputs: f2InputList date (1..*)
+				output: f2Output date (1..1)
+				
+			func F3:
+				inputs: f3Input date (1..1)
+				output: f3Output date (1..1)
+				alias f1OutList: F1(f3Input)
+				assign-output f3Output: F2(f1OutList)
+			'''
+		val code = model.generateCode
+		val f3 = code.get("com.rosetta.test.model.functions.F3")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.Mapper;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.records.Date;
+				import com.rosetta.test.model.functions.F1;
+				import com.rosetta.test.model.functions.F2;
+				import java.util.Arrays;
+				
+				
+				@ImplementedBy(F3.F3Default.class)
+				public abstract class F3 implements RosettaFunction {
+					
+					// RosettaFunction dependencies
+					//
+					@Inject protected F1 f1;
+					@Inject protected F2 f2;
+				
+					/**
+					* @param f3Input 
+					* @return f3Output 
+					*/
+					public Date evaluate(Date f3Input) {
+						
+						Date f3OutputHolder = doEvaluate(f3Input);
+						Date f3Output = assignOutput(f3OutputHolder, f3Input);
+						
+						return f3Output;
+					}
+					
+					private Date assignOutput(Date f3Output, Date f3Input) {
+						f3Output = MapperS.of(f2.evaluate(MapperC.of(f1OutList(f3Input).getMulti()).getMulti())).get();
+						return f3Output;
+					}
+				
+					protected abstract Date doEvaluate(Date f3Input);
+					
+					
+					protected Mapper<? extends Date> f1OutList(Date f3Input) {
+						return MapperC.of(f1.evaluate(MapperS.of(f3Input).get()));
+					}
+					public static final class F3Default extends F3 {
+						@Override
+						protected  Date doEvaluate(Date f3Input) {
+							return null;
+						}
+					}
+				}
+			'''.toString,
+			f3
+		)
+		code.compileToClasses
+
+	}
+	
 
 	@Test
 	def void funcCallingMultipleFuncWithAlias() {
@@ -1032,7 +1377,9 @@ class FuncGeneratorTest {
 		    else
 		"result"
     '''.parseRosettaWithNoErrors
-    model.generateCode.writeClasses("nestedIfElse").compileToClasses
+    model.generateCode
+    //.writeClasses("nestedIfElse")
+    .compileToClasses
 
     }
 
