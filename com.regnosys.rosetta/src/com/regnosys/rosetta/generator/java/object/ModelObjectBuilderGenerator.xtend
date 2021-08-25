@@ -322,9 +322,9 @@ class ModelObjectBuilderGenerator {
 		if (attribute.isMultiple) '''List<«attribute.toBuilderTypeSingle(names)»>'''
 		else '''«attribute.toBuilderTypeSingle(names)»'''
 	}
-	
+
 	private def StringConcatenationClient toBuilderTypeExt(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isMultiple) '''List<? extends «attribute.toBuilderTypeSingle(names)»>'''
+		if (attribute.isMultiple) '''List<«IF attribute.dataType || attribute.hasMetas»? extends «ENDIF»«attribute.toBuilderTypeSingle(names)»>'''
 		else '''«attribute.toBuilderTypeSingle(names)»'''
 	}
 

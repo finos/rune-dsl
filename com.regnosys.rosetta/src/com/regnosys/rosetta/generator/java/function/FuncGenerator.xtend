@@ -131,7 +131,7 @@ class FuncGenerator {
 					* @return «outputName» «ModelGeneratorUtil.escape(output.definition)»
 				«ENDIF»
 				*/
-				public «outputType.extendedParam» evaluate(«func.inputsAsParameters(names)») {
+				public «IF outNeedsBuilder»«outputType.extendedParam»«ELSE»«outputType»«ENDIF» evaluate(«func.inputsAsParameters(names)») {
 					«IF !func.conditions.empty»
 						// pre-conditions
 						«FOR cond:func.conditions»
@@ -172,7 +172,7 @@ class FuncGenerator {
 							return «expressionGenerator.javaCode(alias.expression, new ParamMap)».get().toBuilder();
 						}
 					«ELSE»
-						protected «IF needsGenericsExt(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
+						protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
 							return «expressionGenerator.javaCode(alias.expression, new ParamMap)»;
 						}
 					«ENDIF»
@@ -386,7 +386,7 @@ class FuncGenerator {
 	}
 
 	private def StringConcatenationClient inputsAsParameters(extension Function function, extension JavaNames names) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.toListOrSingleJavaType.extendedParam» «input.name»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«IF  input.needsBuilder»«input.toListOrSingleJavaType.extendedParam»«ELSE»«input.toListOrSingleJavaType»«ENDIF» «input.name»«ENDFOR»'''
 	}
 
 	def private StringConcatenationClient shortcutJavaType(JavaNames names, ShortcutDeclaration feature) {
@@ -399,7 +399,7 @@ class FuncGenerator {
 		var javaType = names.toJavaType(attr.type)
 		if (needsBuilder(attr)) javaType = javaType.toBuilderType
 		if (attr.isMany) {
-			if (needsGenericsExt(attr)) javaType = javaType.asExtended
+			//if (needsGenericsExt(attr)) javaType = javaType.asExtended
 			new ParameterizedType(new JavaType(List.name), #[new ParameterizedType(javaType,#[])])
 		}
 		else {

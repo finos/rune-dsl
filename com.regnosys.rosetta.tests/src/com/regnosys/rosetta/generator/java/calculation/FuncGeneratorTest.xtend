@@ -75,7 +75,7 @@ class FuncGeneratorTest {
 				}
 			'''
 		)
-		code.compileJava8
+		code.generateCode.compileToClasses
 	}
 
 	@Test
@@ -129,7 +129,7 @@ class FuncGeneratorTest {
 				}
 			'''
 		)
-		code.compileJava8
+		code.generateCode.compileToClasses
 	}
 	
 	@Test
@@ -161,7 +161,7 @@ class FuncGeneratorTest {
 					* @param name2 
 					* @return result 
 					*/
-					public List<? extends BigDecimal> evaluate(String name, String name2) {
+					public List<BigDecimal> evaluate(String name, String name2) {
 						
 						List<BigDecimal> resultHolder = doEvaluate(name, name2);
 						List<BigDecimal> result = assignOutput(resultHolder, name, name2);
@@ -184,7 +184,7 @@ class FuncGeneratorTest {
 				}
 			'''
 		)
-		code.compileJava8
+		code.generateCode.compileToClasses
 	}
 	
 	@Test
@@ -238,7 +238,7 @@ class FuncGeneratorTest {
 				}
 			'''
 		)
-		code.compileJava8
+		code.generateCode.compileToClasses
 	}
 	
 	@Test
@@ -270,30 +270,30 @@ class FuncGeneratorTest {
 					* @param name2 
 					* @return result 
 					*/
-					public List<? extends Date> evaluate(String name, String name2) {
+					public List<Date> evaluate(String name, String name2) {
 						
-						List<? extends Date> resultHolder = doEvaluate(name, name2);
-						List<? extends Date> result = assignOutput(resultHolder, name, name2);
+						List<Date> resultHolder = doEvaluate(name, name2);
+						List<Date> result = assignOutput(resultHolder, name, name2);
 						
 						return result;
 					}
 					
-					private List<? extends Date> assignOutput(List<? extends Date> result, String name, String name2) {
+					private List<Date> assignOutput(List<Date> result, String name, String name2) {
 						return result;
 					}
 				
-					protected abstract List<? extends Date> doEvaluate(String name, String name2);
+					protected abstract List<Date> doEvaluate(String name, String name2);
 					
 					public static final class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<? extends Date> doEvaluate(String name, String name2) {
+						protected  List<Date> doEvaluate(String name, String name2) {
 							return Arrays.asList();
 						}
 					}
 				}
 			'''
 		)
-		code.compileJava8
+		code.generateCode.compileToClasses
 	}
 
 
@@ -826,8 +826,9 @@ class FuncGeneratorTest {
 				assign-output result:
 					top1-> foo -> bar1
 		'''.parseRosettaWithNoErrors
-		model.generateCode// .writeClasses("shouldReturnMultiple")
-		.compileToClasses
+		 model
+		 	.generateCode//.writeClasses("shouldReturnMultiple")
+			.compileToClasses
 	}
 
 	@Test
@@ -922,6 +923,92 @@ class FuncGeneratorTest {
 				assign-output f3Output: F2(f1OutList)
 			'''
 		val code = model.generateCode
+		val f1 = code.get("com.rosetta.test.model.functions.F1")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.records.Date;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(F1.F1Default.class)
+				public abstract class F1 implements RosettaFunction {
+				
+					/**
+					* @param f1Input 
+					* @return f1OutputList 
+					*/
+					public List<Date> evaluate(Date f1Input) {
+						
+						List<Date> f1OutputListHolder = doEvaluate(f1Input);
+						List<Date> f1OutputList = assignOutput(f1OutputListHolder, f1Input);
+						
+						return f1OutputList;
+					}
+					
+					private List<Date> assignOutput(List<Date> f1OutputList, Date f1Input) {
+						return f1OutputList;
+					}
+				
+					protected abstract List<Date> doEvaluate(Date f1Input);
+					
+					public static final class F1Default extends F1 {
+						@Override
+						protected  List<Date> doEvaluate(Date f1Input) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f1
+		)
+		val f2 = code.get("com.rosetta.test.model.functions.F2")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.records.Date;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(F2.F2Default.class)
+				public abstract class F2 implements RosettaFunction {
+				
+					/**
+					* @param f2InputList 
+					* @return f2Output 
+					*/
+					public Date evaluate(List<Date> f2InputList) {
+						
+						Date f2OutputHolder = doEvaluate(f2InputList);
+						Date f2Output = assignOutput(f2OutputHolder, f2InputList);
+						
+						return f2Output;
+					}
+					
+					private Date assignOutput(Date f2Output, List<Date> f2InputList) {
+						return f2Output;
+					}
+				
+					protected abstract Date doEvaluate(List<Date> f2InputList);
+					
+					public static final class F2Default extends F2 {
+						@Override
+						protected  Date doEvaluate(List<Date> f2InputList) {
+							return null;
+						}
+					}
+				}
+			'''.toString,
+			f2
+		)
 		val f3 = code.get("com.rosetta.test.model.functions.F3")
 		assertEquals(
 			'''
@@ -967,7 +1054,7 @@ class FuncGeneratorTest {
 					protected abstract Date doEvaluate(Date f3Input);
 					
 					
-					protected Mapper<? extends Date> f1OutList(Date f3Input) {
+					protected Mapper<Date> f1OutList(Date f3Input) {
 						return MapperC.of(f1.evaluate(MapperS.of(f3Input).get()));
 					}
 					public static final class F3Default extends F3 {

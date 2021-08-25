@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.util
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Annotated
@@ -14,7 +13,6 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import org.eclipse.xtext.EcoreUtil2
@@ -111,42 +109,6 @@ class RosettaFunctionExtensions {
 	dispatch def boolean needsBuilder(RType type) {
 		switch (type) {
 			RDataType: true
-			default: false
-		}
-	}
-
-	dispatch def boolean needsGenericsExt(Void ele) {
-		false
-	}
-
-	dispatch def boolean needsGenericsExt(RosettaTyped ele) {
-		needsGenericsExt(ele.type)
-	}
-
-	dispatch def boolean needsGenericsExt(ShortcutDeclaration alias) {
-		needsGenericsExt(typeProvider.getRType(alias.expression))
-	}
-
-	dispatch def boolean needsGenericsExt(AssignPathRoot root) {
-		switch (root) {
-			Attribute: root.type.needsGenericsExt
-			ShortcutDeclaration: typeProvider.getRType(root.expression).needsGenericsExt
-			default: false
-		}
-	}
-
-	dispatch def boolean needsGenericsExt(RosettaType type) {
-		switch (type) {
-			Data: true
-			RosettaRecordType: true
-			default: false
-		}
-	}
-
-	dispatch def boolean needsGenericsExt(RType type) {
-		switch (type) {
-			RDataType: true
-			RRecordType: true
 			default: false
 		}
 	}
