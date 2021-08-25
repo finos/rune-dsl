@@ -78,7 +78,6 @@ class ModelObjectGeneratorTest {
 				list int (0..*)
 		'''.generateCode
 		//code.writeClasses("intTest")
-		println(code)
 		val classes = code.compileToClasses
 
 		assertEquals(Integer, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)

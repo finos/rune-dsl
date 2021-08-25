@@ -399,7 +399,6 @@ class FuncGenerator {
 		var javaType = names.toJavaType(attr.type)
 		if (needsBuilder(attr)) javaType = javaType.toBuilderType
 		if (attr.isMany) {
-			//if (needsGenericsExt(attr)) javaType = javaType.asExtended
 			new ParameterizedType(new JavaType(List.name), #[new ParameterizedType(javaType,#[])])
 		}
 		else {
