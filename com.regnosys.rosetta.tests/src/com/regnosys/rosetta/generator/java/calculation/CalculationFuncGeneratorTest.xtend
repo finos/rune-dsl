@@ -320,7 +320,7 @@ class CalculationFuncGeneratorTest {
 			protected abstract FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn);
 			
 			
-			protected Mapper<? extends Date> arg1(FuncIn funIn) {
+			protected Mapper<Date> arg1(FuncIn funIn) {
 				return MapperS.of(funIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
 			}
 			
@@ -418,7 +418,7 @@ class CalculationFuncGeneratorTest {
 				return MapperS.of(funcIn).<String>map("getValS", _funcIn -> _funcIn.getValS());
 			}
 			
-			protected Mapper<? extends Date> tradeDate(FuncIn funcIn) {
+			protected Mapper<Date> tradeDate(FuncIn funcIn) {
 				return MapperS.of(funcIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
 			}
 			

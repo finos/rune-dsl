@@ -161,7 +161,7 @@ class ExpressionGenerator {
 	}
 
 	private def StringConcatenationClient genConditionalMapper(RosettaConditionalExpression expr, ParamMap params)'''
-		«IF !expr.ifthen.evalulatesToMapper»com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(«ENDIF»com.rosetta.model.lib.mapper.MapperUtils.from«IF cardinalityProvider.isMulti(expr)»C«ENDIF»(() -> {
+		«IF !expr.ifthen.evalulatesToMapper»com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(«ENDIF»com.rosetta.model.lib.mapper.MapperUtils.from«IF funcExt.needsBuilder(typeProvider.getRType(expr.ifthen))»Ext«ENDIF»(() -> {
 		«expr.genConditional(params)»
 		})«IF !expr.ifthen.evalulatesToMapper»)«ENDIF»'''
 
