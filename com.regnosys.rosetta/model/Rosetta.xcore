@@ -189,12 +189,14 @@ class RosettaSynonymBody extends RosettaSynonymBase {
 	String format
 	String patternMatch
 	String patternReplace
+	boolean removeHtml
 }
 
 class RosettaEnumSynonym extends RosettaSynonymBase, RosettaDefinable {
 	String synonymValue
 	String patternMatch
 	String patternReplace
+	boolean removeHtml
 }
 
 enum RosettaSynonymRef {

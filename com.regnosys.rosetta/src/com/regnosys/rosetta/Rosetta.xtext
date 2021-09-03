@@ -271,6 +271,7 @@ RosettaSynonymBody:
 	
 	('dateFormat' format=STRING)?
 	('pattern' patternMatch=STRING patternReplace=STRING)?
+	(removeHtml ?= 'removeHtml')?
 	('mapper' mapper=STRING)?
 ;
 
@@ -294,6 +295,7 @@ RosettaEnumSynonym:
 	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*  
 		'value' synonymValue=STRING ('definition' definition=STRING)?  
 		('pattern' patternMatch=STRING patternReplace=STRING)? 
+		(removeHtml ?= 'removeHtml')?
 	']'
 ;
 

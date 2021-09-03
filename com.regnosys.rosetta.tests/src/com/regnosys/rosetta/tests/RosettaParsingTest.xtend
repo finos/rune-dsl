@@ -7,16 +7,15 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
-	
 	
 	@Test
 	def void testClass() {
@@ -446,7 +445,7 @@ class RosettaParsingTest {
 	}
 	
 	@Test
-	def void externalSynonymWithPattenshouldParseWithNoErrors() {
+	def void externalSynonymWithPattenShouldParseWithNoErrors() {
 	 '''
 			type Foo:
 				foo int (0..1)
@@ -463,7 +462,7 @@ class RosettaParsingTest {
 	}
 	
 	@Test
-	def void externalEnumSynonymWithPattenshouldParseWithNoErrors() {
+	def void externalEnumSynonymWithPattenShouldParseWithNoErrors() {
 	'''
 			enum Foo:
 				FOO
@@ -495,6 +494,23 @@ class RosettaParsingTest {
 				Foo:
 					+ foo
 						[value "bar" path "baz" meta "barScheme"]
+			}
+		'''.parseRosettaWithNoErrors
+	}
+	
+	@Test
+	def void externalSynonymWithRemoveHtmlShouldParseWithNoErrors() {
+	'''
+			type Foo:
+				foo string (0..1)
+			
+			synonym source TEST_Base
+			
+			synonym source TEST extends TEST_Base {
+				
+				Foo:
+					+ foo
+						[value "bar" removeHtml]
 			}
 		'''.parseRosettaWithNoErrors
 	}
