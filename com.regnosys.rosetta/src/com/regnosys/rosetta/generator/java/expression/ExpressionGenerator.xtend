@@ -6,7 +6,6 @@ import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
-import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
@@ -27,12 +26,9 @@ import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
-import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
-import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
@@ -46,7 +42,6 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
-import com.rosetta.model.lib.expression.CardinalityOperator
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
 import com.rosetta.model.lib.mapper.MapperC
@@ -55,16 +50,21 @@ import com.rosetta.model.lib.mapper.MapperTree
 import java.math.BigDecimal
 import java.util.Arrays
 import java.util.HashMap
-import java.util.Optional
-import org.eclipse.xtend.lib.annotations.Accessors
-import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.xtext.util.Wrapper
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
+import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
+import org.eclipse.xtext.util.Wrapper
+import com.regnosys.rosetta.rosetta.RosettaLiteral
+import com.rosetta.model.lib.expression.CardinalityOperator
+import java.util.Optional
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
+import org.eclipse.xtend.lib.annotations.Accessors
 
 class ExpressionGenerator {
 	
@@ -434,6 +434,12 @@ class ExpressionGenerator {
 		if(expr instanceof RosettaBinaryOperation) return expr.operator == "and" || expr.operator == "or"
 		return false
 	}
+	
+	private def boolean isArithmeticOperation(RosettaExpression expr) {
+		if(expr instanceof RosettaBinaryOperation) 
+			return RosettaOperators.ARITHMETIC_OPS.contains(expr.operator)
+		return false
+	}
 		
 	/**
 	 * Collects all expressions down the tree, and checks that they're all either FeatureCalls or CallableCalls (or anything that resolves to a Mapper)
@@ -449,7 +455,8 @@ class ExpressionGenerator {
 									it instanceof RosettaFeatureCall ||
 									it instanceof RosettaCallableWithArgsCall ||
 									it instanceof RosettaLiteral ||
-									it instanceof RosettaConditionalExpression
+									it instanceof RosettaConditionalExpression ||
+									isArithmeticOperation(it)
 			]
 	}
 	
@@ -462,8 +469,8 @@ class ExpressionGenerator {
 		collectLeafTypes(binaryExpr, [rosettaTypes.add(it)])
 		
 		// check whether they're all the same type
-		val type = rosettaTypes.stream.findAny
-		return type.isPresent && rosettaTypes.stream.allMatch[it.equals(type.get)]
+		val type = rosettaTypes.stream.filter[it !== null].findAny
+		return type.isPresent && rosettaTypes.stream.filter[it !== null].allMatch[it.equals(type.get)]
 	}
 		
 	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right, String cardOp) {

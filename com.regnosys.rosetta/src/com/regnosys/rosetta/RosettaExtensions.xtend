@@ -13,6 +13,7 @@ import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -24,11 +25,8 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import java.util.Collection
-import java.util.LinkedHashSet
 import java.util.Set
 import org.eclipse.emf.common.util.URI
-import org.eclipse.emf.ecore.EObject
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 class RosettaExtensions {
 	
@@ -69,14 +67,6 @@ class RosettaExtensions {
 		if(s !== null && seenSynonyms.add(s)) 
 			doGetSynonyms(s, seenSynonyms)
 		return seenSynonyms		
-	}
-		
-	def private LinkedHashSet<RosettaType> doCollectRootCalls(EObject obj) {
-		val classes = newLinkedHashSet
-		obj.eAllContents.filter(RosettaCallableCall).forEach [
-			collectRootCalls(it, [if(it instanceof Data && !it.eIsProxy) classes.add(it as RosettaType)])
-		]
-		return classes
 	}
 	
 	/**
