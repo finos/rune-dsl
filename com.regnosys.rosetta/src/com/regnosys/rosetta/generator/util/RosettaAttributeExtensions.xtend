@@ -104,7 +104,7 @@ class RosettaAttributeExtensions {
 	
 	def static ExpandedSynonym toExpandedSynonym(RosettaEnumSynonym syn) {
 		new ExpandedSynonym(syn.sources, Collections.singletonList(new ExpandedSynonymValue(syn.synonymValue, null, 0, false)), newArrayList, Collections.emptyList, null, null,
-			null, syn.patternMatch, syn.patternReplace
+			null, syn.patternMatch, syn.patternReplace, syn.removeHtml
 		)
 	}
 
@@ -117,7 +117,7 @@ class RosettaAttributeExtensions {
 			s|new ExpandedSynonym(s.sources, metaSynValue(s.body.values,s.body.metaValues.get(index))
 				//new ExpandedSynonymValue(s.metaValues.get(index), path+"."+value, maps, true)
 			.toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, 
-				s.body.mapper, s.body.format, s.body.patternMatch, s.body.patternReplace)
+				s.body.mapper, s.body.format, s.body.patternMatch, s.body.patternReplace, s.body.removeHtml)
 		]
 		s.toList
 	}
@@ -127,7 +127,7 @@ class RosettaAttributeExtensions {
 			s|new ExpandedSynonym(sources, metaSynValue(s.body.values, s.body.metaValues.get(index))
 				//new ExpandedSynonymValue(s.metaValues.get(index), path+"."+value, maps, true)
 			.toList, s.body.hints, s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, 
-				s.body.mapper, s.body.format, s.body.patternMatch, s.body.patternReplace)
+				s.body.mapper, s.body.format, s.body.patternMatch, s.body.patternReplace, s.body.removeHtml)
 		]
 		.filter[!values.isEmpty]
 		.toList
@@ -184,13 +184,13 @@ class RosettaAttributeExtensions {
 		if (meta<0) {
 			synonyms.map[new ExpandedSynonym(sources, body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], body.hints, 
 				body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], body.mappingLogic, 
-				body.mapper, body.format, body.patternMatch, body.patternReplace
+				body.mapper, body.format, body.patternMatch, body.patternReplace, body.removeHtml
 			)]
 		} else {
 			synonyms.filter[body.metaValues.size>meta]
 			.map[s|new ExpandedSynonym(s.sources, metaSynValue(s.body.values,s.body.metaValues.get(meta)), s.body.hints, 
 				s.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], s.body.mappingLogic, 
-				s.body.mapper, s.body.format, s.body.patternMatch, s.body.patternReplace
+				s.body.mapper, s.body.format, s.body.patternMatch, s.body.patternReplace, s.body.removeHtml
 			)]
 			.toList
 		}
@@ -216,7 +216,7 @@ class RosettaAttributeExtensions {
 	static dispatch def toRosettaExpandedSynonym(RosettaSynonym syn) {
 		new ExpandedSynonym(syn.sources, syn.body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], 
 			syn.body.hints, syn.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], syn.body.mappingLogic, 
-			syn.body.mapper, syn.body.format, syn.body.patternMatch, syn.body.patternReplace
+			syn.body.mapper, syn.body.format, syn.body.patternMatch, syn.body.patternReplace, syn.body.removeHtml
 		)
 	}
 	
@@ -234,20 +234,20 @@ class RosettaAttributeExtensions {
 		
 		new ExpandedSynonym(sources, syn.body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], syn.body.hints, 
 			syn.body.metaValues.map[new ExpandedSynonymValue(it, null, 1, true)], syn.body.mappingLogic, syn.body.mapper,
-			syn.body.format, syn.body.patternMatch, syn.body.patternReplace
+			syn.body.format, syn.body.patternMatch, syn.body.patternReplace, syn.body.removeHtml
 		)
 	}
 	
 	static dispatch def toRosettaExpandedSynonym(RosettaExternalClassSynonym syn) {
 		val synVals = if (syn.value===null) Collections.emptyList else newArrayList(new ExpandedSynonymValue(syn.value.name, syn.value.path, syn.value.maps, false))
 		val synMetaVals = if (syn.metaValue!==null) newArrayList(new ExpandedSynonymValue(syn.metaValue.name, syn.metaValue.path, syn.metaValue.maps, true)) else Collections.emptyList
-		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null, null, null, null)	
+		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null, null, null, null, false)	
 	}
 	
 	static dispatch def toRosettaExpandedSynonym(RosettaClassSynonym syn) {
 		val synVals = if (syn.value===null) Collections.emptyList else newArrayList(new ExpandedSynonymValue(syn.value.name, syn.value.path, syn.value.maps, false))
 		val synMetaVals = if (syn.metaValue!==null) newArrayList(new ExpandedSynonymValue(syn.metaValue.name, syn.metaValue.path, syn.metaValue.maps, true)) else Collections.emptyList
-		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null, null, null, null)
+		new ExpandedSynonym(syn.sources, synVals, newArrayList, synMetaVals, null, null, null, null, null, false)
 	}
 
 	private def static boolean isCalculation(RosettaTypedFeature a) {

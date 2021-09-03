@@ -19,7 +19,6 @@ import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.WithCardinality
 import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.RosettaDocReference
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
 

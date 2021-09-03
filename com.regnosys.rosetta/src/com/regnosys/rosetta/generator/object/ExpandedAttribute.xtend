@@ -1,12 +1,12 @@
 package com.regnosys.rosetta.generator.object
 
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaType
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
-import com.regnosys.rosetta.rosetta.RosettaDocReference
 
 @Data
 final class ExpandedAttribute {
@@ -99,6 +99,7 @@ final class ExpandedSynonym {
 	String format
 	String patternMatcher
 	String patternReplace
+	boolean removeHtml
 }
 
 @Data
