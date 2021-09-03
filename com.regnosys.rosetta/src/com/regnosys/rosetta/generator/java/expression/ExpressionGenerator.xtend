@@ -434,6 +434,12 @@ class ExpressionGenerator {
 		if(expr instanceof RosettaBinaryOperation) return expr.operator == "and" || expr.operator == "or"
 		return false
 	}
+	
+	private def boolean isArithmeticOperation(RosettaExpression expr) {
+		if(expr instanceof RosettaBinaryOperation) 
+			return RosettaOperators.ARITHMETIC_OPS.contains(expr.operator)
+		return false
+	}
 		
 	/**
 	 * Collects all expressions down the tree, and checks that they're all either FeatureCalls or CallableCalls (or anything that resolves to a Mapper)
@@ -449,7 +455,8 @@ class ExpressionGenerator {
 									it instanceof RosettaFeatureCall ||
 									it instanceof RosettaCallableWithArgsCall ||
 									it instanceof RosettaLiteral ||
-									it instanceof RosettaConditionalExpression
+									it instanceof RosettaConditionalExpression ||
+									isArithmeticOperation(it)
 			]
 	}
 	
@@ -462,8 +469,8 @@ class ExpressionGenerator {
 		collectLeafTypes(binaryExpr, [rosettaTypes.add(it)])
 		
 		// check whether they're all the same type
-		val type = rosettaTypes.stream.findAny
-		return type.isPresent && rosettaTypes.stream.allMatch[it.equals(type.get)]
+		val type = rosettaTypes.stream.filter[it !== null].findAny
+		return type.isPresent && rosettaTypes.stream.filter[it !== null].allMatch[it.equals(type.get)]
 	}
 		
 	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right, String cardOp) {

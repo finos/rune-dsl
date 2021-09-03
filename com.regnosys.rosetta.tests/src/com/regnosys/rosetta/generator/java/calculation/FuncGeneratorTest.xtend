@@ -1469,6 +1469,28 @@ class FuncGeneratorTest {
     .compileToClasses
 
     }
+    
+    @Test
+    def void mathOperationInsideIfStatement() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+			
+			func AddInsideIf:
+				inputs:
+					i1 int (1..1)
+					i2 int (1..1)
+					b boolean (1..1)
+				output: result int (1..1)
+				
+				assign-output result:
+					if b = True
+					then i1 + i2
+					else 0
+		'''.parseRosettaWithNoErrors
+		model.generateCode
+		//.writeClasses("nestedIfElse")
+		.compileToClasses
 
-
+    }
 }
