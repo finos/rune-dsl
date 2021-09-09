@@ -251,6 +251,7 @@ class FuncGenerator {
 			'''
 				«op.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
+					«IF hasMetaDataAddress(seg.attribute)».getOrCreateValue()«ENDIF»
 					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
 					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«
 					ENDIF»«ENDFOR»
