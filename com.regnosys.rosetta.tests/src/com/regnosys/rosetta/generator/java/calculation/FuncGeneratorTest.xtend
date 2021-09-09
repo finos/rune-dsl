@@ -42,7 +42,7 @@ class FuncGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import java.util.Arrays;
-
+				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -131,7 +131,7 @@ class FuncGeneratorTest {
 		)
 		code.generateCode.compileToClasses
 	}
-	
+
 	@Test
 	def void shouldGenerateFunctionWithNumberListOutput() {
 		val code = '''
@@ -186,7 +186,7 @@ class FuncGeneratorTest {
 		)
 		code.generateCode.compileToClasses
 	}
-	
+
 	@Test
 	def void shouldGenerateFunctionWithIntListOutput() {
 		val code = '''
@@ -240,7 +240,7 @@ class FuncGeneratorTest {
 		)
 		code.generateCode.compileToClasses
 	}
-	
+
 	@Test
 	def void shouldGenerateFunctionWithDateListOutput() {
 		val code = '''
@@ -296,7 +296,6 @@ class FuncGeneratorTest {
 		code.generateCode.compileToClasses
 	}
 
-
 	@Test
 	def void shouldGenerateFuncWithAssignOutputDoIfBooleanLiterals() {
 		val code = '''
@@ -327,7 +326,7 @@ class FuncGeneratorTest {
 					if foo exists
 					then False
 		'''.generateCode
-		//.writeClasses("shouldGenerateFuncWithAssignOutputDoIfBooleanLiteralsAndNoElse")
+		// .writeClasses("shouldGenerateFuncWithAssignOutputDoIfBooleanLiteralsAndNoElse")
 		code.compileToClasses
 	}
 
@@ -455,8 +454,7 @@ class FuncGeneratorTest {
 					if bar -> baz exists
 					then bar -> baz > 5
 		'''.generateCode
-				//.writeClasses("shouldGenerateFuncWithAssignOutputDoIfComparisonResultAndNoElse")
-
+		// .writeClasses("shouldGenerateFuncWithAssignOutputDoIfComparisonResultAndNoElse")
 		code.compileToClasses
 	}
 
@@ -488,7 +486,7 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.party
 				version "test"
-
+				
 				type Party:
 					[metadata key]
 					id number (1..1)
@@ -497,9 +495,9 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-
+				
 				import com.rosetta.test.model.party.*
-
+				
 				type Agreement:
 					id number (1..1)
 					party Party (1..1)
@@ -508,20 +506,20 @@ class FuncGeneratorTest {
 			'''
 				namespace "com.rosetta.test.model.func"
 				version "test"
-
+				
 				import com.rosetta.test.model.party.*
 				import com.rosetta.test.model.agreement.*
-
+				
 				func Create_Agreement:
 				 	inputs:
 				 		party Party (1..1)
 				 	id number (1..1)
 					output:
 						agreement Agreement (1..1)
-
+				
 					assign-output agreement -> id: id
 					assign-output agreement -> party: party as-key
-
+				
 			'''
 		].generateCode
 		code.compileToClasses
@@ -534,39 +532,39 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.party
 				version "test"
-
+				
 				type Party:
 					id number (1..1)
 					name MyData (1..1)
-
+				
 				type MyData:
 					val string (1..1)
 			''',
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-
+				
 				import com.rosetta.test.model.party.*
-
+				
 				type Agreement:
 					id number (1..1)
 					party Party (1..1)
-
+				
 					condition AgreementValid:
-						if Get_Party_Id() exists
-							then id is absent
-
+					if Get_Party_Id() exists
+						then id is absent
+				
 				func Get_Party_Id:
 				 	inputs:
 				 		agreement Agreement (1..1)
 					output:
 						result MyData (1..1)
-
+				
 					assign-output result : agreement -> party -> name
-
-
+				
+				
 			'''
-		].generateCode// .writeClasses("shouldGenerateFunctionWithAssignemtnAsReference")
+		].generateCode // .writeClasses("shouldGenerateFunctionWithAssignemtnAsReference")
 		.compileToClasses
 	}
 
@@ -577,11 +575,11 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.party
 				version "test"
-
+				
 				type Party:
 					id number (1..1)
 					name string (1..1)
-
+				
 				type MyData:
 					val Party (1..1)
 						[metadata id]
@@ -589,29 +587,29 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-
+				
 				import com.rosetta.test.model.party.*
-
+				
 				type Agreement:
 					id number (1..1)
 					party Party (1..1)
 						[metadata id]
-
+				
 					condition AgreementValid:
 						if Get_Party_Id() exists
 							then id is absent
-
+				
 				func Get_Party_Id:
 				 	inputs:
 				 		agreement Agreement (1..1)
 					output:
 						result MyData (1..1)
-
+				
 					assign-output result-> val : agreement -> party
-
-
+				
+				
 			'''
-		].generateCode// .writeClasses("shouldGenerateFunctionWithAssignmentAsMeta")
+		].generateCode // .writeClasses("shouldGenerateFunctionWithAssignmentAsMeta")
 		.compileToClasses
 	}
 
@@ -621,17 +619,17 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-
+				
 				type Top:
 					foo Foo (1..*)
-
+				
 				type Foo:
 					bar1 Bar (0..1)
 					bar2 Bar (0..1)
-
+				
 				type Bar:
 					id number (1..1)
-
+				
 				func ExtractBar: <"Extracts a bar">
 					inputs: top Top (1..1)
 					output: bar Bar (1..1)
@@ -640,7 +638,7 @@ class FuncGeneratorTest {
 						if foo -> bar1 exists then foo -> bar1
 						//else if foo -> bar2 exists then foo -> bar2
 			'''
-		].generateCode// .writeClasses("shouldGenerateFunctionWithConditionalAssignment")
+		].generateCode // .writeClasses("shouldGenerateFunctionWithConditionalAssignment")
 		.compileToClasses
 	}
 
@@ -650,17 +648,17 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-
+				
 				type Top:
 					foo Foo (1..1)
-
+				
 				type Foo:
 					bar1 Bar (0..1)
 					bar2 Bar (0..1)
-
+				
 				type Bar:
 					id number (1..1)
-
+				
 				func ExtractBar: <"Extracts a bar">
 					inputs: top Top (1..1)
 					output: topOut Top (1..1)
@@ -681,27 +679,27 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-
+				
 				type Top:
 					foo Foo (1..1)
-
+				
 				type Foo:
 					bar Bar (0..1)
-
+				
 				type Bar:
 					id number (1..1)
-
+				
 				func UpdateBarId: <"Updates Bar.id by assign-output on an alias">
 					inputs:
 						top Top (1..1)
 						newId number (1..1)
-
+				
 					output:
 						topOut Top (1..1)
-
+				
 					alias barAlias :
 						topOut -> foo -> bar
-
+				
 					assign-output barAlias -> id:
 						newId
 			'''
@@ -716,18 +714,18 @@ class FuncGeneratorTest {
 			'''
 				namespace com.rosetta.test.model.agreement
 				version "test"
-
+				
 				type Top:
 					foo Foo (1..*)
-
+				
 				type Foo:
 					bar1 number (0..1)
-
+				
 				func Disjoint: <"checks disjoint">
 					inputs:
 						top1 Top (1..1)
 						top2 Top (1..1)
-
+				
 					output: result boolean (1..1)
 					assign-output result:
 						top1-> foo disjoint top2 -> foo
@@ -826,9 +824,8 @@ class FuncGeneratorTest {
 				assign-output result:
 					top1-> foo -> bar1
 		'''.parseRosettaWithNoErrors
-		 model
-		 	.generateCode//.writeClasses("shouldReturnMultiple")
-			.compileToClasses
+		model.generateCode // .writeClasses("shouldReturnMultiple")
+		.compileToClasses
 	}
 
 	@Test
@@ -846,7 +843,7 @@ class FuncGeneratorTest {
 				inputs: f3Input date (1..1)
 				output: f3Output date (1..1)
 				assign-output f3Output: F2(F1(f3Input))
-			'''
+		'''
 		val code = model.generateCode
 		val f3 = code.get("com.rosetta.test.model.functions.F3")
 		assertEquals(
@@ -904,7 +901,7 @@ class FuncGeneratorTest {
 		code.compileToClasses
 
 	}
-	
+
 	@Test
 	def void funcCallingMultipleFunc2() {
 		val model = '''
@@ -921,7 +918,7 @@ class FuncGeneratorTest {
 				output: f3Output date (1..1)
 				alias f1OutList: F1(f3Input)
 				assign-output f3Output: F2(f1OutList)
-			'''
+		'''
 		val code = model.generateCode
 		val f1 = code.get("com.rosetta.test.model.functions.F1")
 		assertEquals(
@@ -1070,43 +1067,41 @@ class FuncGeneratorTest {
 		code.compileToClasses
 
 	}
-	
 
 	@Test
 	def void funcCallingMultipleFuncWithAlias() {
 		val model = '''
 			namespace "demo"
 			version "${project.version}"
-
+			
 			type Number:
 				num number (1..1)
-
+			
 			func F1:
 				inputs: num number (1..1)
 				output: numbers Number (1..*)
-
+			
 			func F2:
 				inputs: nums number(1..*)
 				output: str string (1..1)
-
+			
 			func F3:
 				inputs: num number (1..1)
 				output: str string (1..1)
-
+			
 				alias f1: F1(num)
 				assign-output str: F2(f1 -> num)
-
+			
 			func F4:
 				inputs: num number (1..*)
 				output: str string (1..1)
-
+			
 				alias f2: F2(num)
-
+			
 				assign-output str: f2
-
+			
 		'''.parseRosettaWithNoErrors
-		model.generateCode
-		//.writeClasses("funcCallingMultipleFuncWithAlias")
+		model.generateCode// .writeClasses("funcCallingMultipleFuncWithAlias")
 		.compileToClasses
 	}
 
@@ -1115,26 +1110,25 @@ class FuncGeneratorTest {
 		val model = '''
 			namespace "demo"
 			version "${project.version}"
-
+			
 			type Foo:
 				bar Bar (1..1)
-
+			
 				condition XXX:
 				if bar -> num exists
 				then bar -> zap contains Zap -> A
 				and if bar -> zap contains Zap -> A
 				then bar -> num exists
-
+			
 			type Bar:
 				num number (1..1)
 				zap Zap (1..1)
-
+			
 			enum Zap:
 				A B C
-
+			
 		'''.parseRosettaWithNoErrors
-		model.generateCode//.writeClasses("typeWithCondition").compileToClasses
-
+		model.generateCode // .writeClasses("typeWithCondition").compileToClasses
 	}
 
 	@Test
@@ -1142,19 +1136,20 @@ class FuncGeneratorTest {
 		val model = '''
 			namespace "demo"
 			version "${project.version}"
-
+			
 			type T1:
 					num number (1..1)
 					nums number (1..*)
-
+			
 			func F1:
 				inputs: t1 T1(1..1)
 						t2 T1(1..1)
 				output: res boolean (1..1)
 				assign-output res: t1->num = t2->nums
-
-			'''.parseRosetta
-		model.assertWarning(ROSETTA_BINARY_OPERATION, null, "Comparison operator = should specify 'all' or 'any' when comparing a list to a single value")
+			
+		'''.parseRosetta
+		model.assertWarning(ROSETTA_BINARY_OPERATION, null,
+			"Comparison operator = should specify 'all' or 'any' when comparing a list to a single value")
 	}
 
 	@Test
@@ -1162,7 +1157,7 @@ class FuncGeneratorTest {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
-
+			
 			func F1:
 				inputs:
 					s1 string (1..1)
@@ -1170,8 +1165,8 @@ class FuncGeneratorTest {
 				output:
 					res boolean (1..1)
 				assign-output res: s1 all = s2
-
-			'''.generateCode
+			
+		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
@@ -1180,13 +1175,12 @@ class FuncGeneratorTest {
 		assertFalse(func.invokeFunc(Boolean, "b", Arrays.asList("a", "a")))
 	}
 
-
 	@Test
 	def void funcUsingListEqualsAny() {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
-
+			
 			func F1:
 				inputs:
 					s1 string (1..1)
@@ -1194,8 +1188,8 @@ class FuncGeneratorTest {
 				output:
 					res boolean (1..1)
 				assign-output res: s1 any = s2
-
-			'''.generateCode
+			
+		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
@@ -1204,13 +1198,12 @@ class FuncGeneratorTest {
 		assertFalse(func.invokeFunc(Boolean, "b", Arrays.asList("a", "a")))
 	}
 
-
 	@Test
 	def void funcUsingListComparableEqualsAll() {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
-
+			
 			func F1:
 				inputs:
 					n1 int (1..1)
@@ -1218,8 +1211,8 @@ class FuncGeneratorTest {
 				output:
 					res boolean (1..1)
 				assign-output res: n1 all = n2
-
-			'''.generateCode
+			
+		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
@@ -1233,7 +1226,7 @@ class FuncGeneratorTest {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
-
+			
 			func F1:
 				inputs:
 					n1 int (1..1)
@@ -1241,8 +1234,8 @@ class FuncGeneratorTest {
 				output:
 					res boolean (1..1)
 				assign-output res: n1 any = n2
-
-			'''.generateCode
+			
+		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
@@ -1256,7 +1249,7 @@ class FuncGeneratorTest {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
-
+			
 			func F1:
 				inputs:
 					s1 string (1..1)
@@ -1264,8 +1257,8 @@ class FuncGeneratorTest {
 				output:
 					res boolean (1..1)
 				assign-output res: s1 all <> s2
-
-			'''.generateCode
+			
+		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
@@ -1279,7 +1272,7 @@ class FuncGeneratorTest {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
-
+			
 			func F1:
 				inputs:
 					s1 string (1..1)
@@ -1287,8 +1280,8 @@ class FuncGeneratorTest {
 				output:
 					res boolean (1..1)
 				assign-output res: s1 any <> s2
-
-			'''.generateCode
+			
+		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
@@ -1302,7 +1295,7 @@ class FuncGeneratorTest {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
-
+			
 			func F1:
 				inputs:
 					n1 int (1..1)
@@ -1310,8 +1303,8 @@ class FuncGeneratorTest {
 				output:
 					res boolean (1..1)
 				assign-output res: n1 all <> n2
-
-			'''.generateCode
+			
+		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
@@ -1325,7 +1318,7 @@ class FuncGeneratorTest {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
-
+			
 			func F1:
 				inputs:
 					n1 int (1..1)
@@ -1333,8 +1326,8 @@ class FuncGeneratorTest {
 				output:
 					res boolean (1..1)
 				assign-output res: n1 any <> n2
-
-			'''.generateCode
+			
+		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
@@ -1348,7 +1341,7 @@ class FuncGeneratorTest {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
-
+			
 			func F1:
 				inputs:
 					n1 int (1..1)
@@ -1356,8 +1349,8 @@ class FuncGeneratorTest {
 				output:
 					res boolean (1..1)
 				assign-output res: n1 all > n2
-
-			'''.generateCode
+			
+		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
@@ -1371,7 +1364,7 @@ class FuncGeneratorTest {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
-
+			
 			func F1:
 				inputs:
 					n1 int (1..1)
@@ -1379,14 +1372,14 @@ class FuncGeneratorTest {
 				output:
 					res boolean (1..1)
 				assign-output res: n1 any > n2
-
-			'''.generateCode
+			
+		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		//assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
+		// assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
 		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 2)))
-		//assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(2, 2)))
+	// assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(2, 2)))
 	}
 
 	@Test
@@ -1394,21 +1387,20 @@ class FuncGeneratorTest {
 		'''
 			namespace "demo"
 			version "${project.version}"
-
+			
 			type Type1:
 					t Type2 (1..1)
 					ts Type2 (1..*)
 			type Type2:
 					num number (1..1)
 					nums number (1..*)
-
+			
 			func Func1:
 				inputs: t1 Type1(1..1)
 				output: res number (1..1)
 				assign-output res: t1->ts->num only-element
-
-			'''.parseRosettaWithNoErrors.generateCode
-		//.writeClasses("funcCallingMultipleFunc")
+			
+		'''.parseRosettaWithNoErrors.generateCode// .writeClasses("funcCallingMultipleFunc")
 		.compileToClasses
 	}
 
@@ -1417,61 +1409,61 @@ class FuncGeneratorTest {
 		val model = '''
 			namespace "demo"
 			version "${project.version}"
-
+			
 			type T1:
 					t T2 (1..1)
 					ts T2 (1..*)
 			type T2:
 					num number (1..1)
 					nums number (1..*)
-
+			
 			func F1:
 				inputs: t1 T1(1..1)
 				output: res number (1..1)
 				assign-output res: t1->t->num only-element
-
-			'''.parseRosetta
-		model.assertError(ROSETTA_FEATURE_CALL, null, "'only-element' can not be used for single cardinality expressions.")
+			
+		'''.parseRosetta
+		model.assertError(ROSETTA_FEATURE_CALL, null,
+			"'only-element' can not be used for single cardinality expressions.")
 	}
 
-    @Test
-    def void nestedIfElse() {
-   	 val model = '''
-		namespace "demo"
-		version "${project.version}"
-
-		func IfElseTest:
-		inputs:
-			s1 string (1..1)
-			s2 string (1..1)
-		output: result string (1..1)
-
-		assign-output result:
-			if s1 = "1"
-				then if s2 = "a"
-					then "result1a"
+	@Test
+	def void nestedIfElse() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+			
+			func IfElseTest:
+			inputs:
+				s1 string (1..1)
+				s2 string (1..1)
+			output: result string (1..1)
+			
+			assign-output result:
+				if s1 = "1"
+					then if s2 = "a"
+						then "result1a"
+					else
+						if s2 = "b"
+							then "result1b"
 				else
-					if s2 = "b"
-						then "result1b"
-			else
-				"result1"
-			else if s1 = "2" then
-				if s2 = "a"
-				then "result2a"
-				else if s2 = "b"
-				then "result2b"
-				else "result2"
-		    else
-		"result"
-    '''.parseRosettaWithNoErrors
-    model.generateCode
-    //.writeClasses("nestedIfElse")
-    .compileToClasses
+					"result1"
+				else if s1 = "2" then
+					if s2 = "a"
+					then "result2a"
+					else if s2 = "b"
+					then "result2b"
+					else "result2"
+					  else
+			"result"
+		  '''.parseRosettaWithNoErrors
+		model.generateCode// .writeClasses("nestedIfElse")
+		.compileToClasses
 
-    }
-    
-    @Test
-    def void mathOperationInsideIfStatement() {
+	}
+
+	@Test
+	def void mathOperationInsideIfStatement() {
 		val model = '''
 			namespace "demo"
 			version "${project.version}"
@@ -1488,9 +1480,46 @@ class FuncGeneratorTest {
 					then i1 + i2
 					else 0
 		'''.parseRosettaWithNoErrors
-		model.generateCode
-		//.writeClasses("nestedIfElse")
+		model.generateCode// .writeClasses("nestedIfElse")
 		.compileToClasses
 
-    }
+	}
+
+	@Test
+	def void assignOutputOnResolvedQuantity() {
+		val model = '''
+			namespace "demo"
+			version "${project.version}"
+			
+			type Quantity:
+				amount number (1..1)
+				
+			type PriceQuantity:
+				[metadata key]
+				quantity Quantity (0..*)
+				    [metadata location]
+				    
+			type ResolvablePayoutQuantity:
+				resolvedQuantity Quantity (0..1)
+				[metadata address "pointsTo"=PriceQuantity->quantity]
+			
+			type Cashflow:
+				payoutQuantity ResolvablePayoutQuantity (1..1)
+			
+			func InterestCashSettlementAmount:
+				inputs:
+					x number (1..1)
+				output:
+					cashflow Cashflow (1..1)
+
+			assign-output cashflow -> payoutQuantity -> resolvedQuantity -> amount:
+				 x
+
+		'''.parseRosettaWithNoErrors
+		model.generateCode
+		//.writeClasses("assignOutputOnResolvedQuantity")
+		.compileToClasses
+
+	}
+
 }
