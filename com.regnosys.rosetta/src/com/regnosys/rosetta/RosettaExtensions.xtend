@@ -227,6 +227,10 @@ class RosettaExtensions {
 		metaAnnotations.exists[attribute?.name != "reference" && attribute?.name != "address"]
 	}
 	
+	def boolean hasMetaDataAddress(Annotated it) {
+		metaAnnotations.exists[attribute?.name == "address"]
+	}
+	
 	def boolean hasIdAnnotation(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "id"]
 	}
