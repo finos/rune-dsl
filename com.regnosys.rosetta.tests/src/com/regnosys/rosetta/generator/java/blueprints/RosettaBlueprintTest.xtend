@@ -180,6 +180,64 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
+	def void extractUsingItemForBasicType() {
+		val r = '''
+			type Foo:
+				bar string (0..1)
+			
+			reporting rule Blueprint1
+				extract Foo->bar then
+				extract item
+		'''
+		parseRosettaWithNoErrors(r)
+	}
+
+	@Test
+	def void extractUsingItemForComplexType() {
+		val r = '''
+			type Foo:
+				bar Bar (0..1)
+			
+			type Bar:
+				baz string (0..1)
+			
+			reporting rule Blueprint1
+				extract Foo->bar then
+				extract item->baz
+		'''
+		parseRosettaWithNoErrors(r)	
+	}
+
+
+	@Test
+	def void extractUsingItemForBasicTypeList() {
+		val r = '''
+			type Foo:
+				bar string (0..*)
+			
+			reporting rule Blueprint1
+				extract Foo->bar then
+				maxBy item
+		'''
+		parseRosettaWithNoErrors(r)
+	}
+
+	@Test
+	def void filterItemAsMetaTypeListThenExtractResultAlsoUsingItem() {
+		val r = '''
+			type Foo:
+				bar string (0..*)
+					[metadata scheme]
+			
+			reporting rule Blueprint1
+				extract Foo->bar then
+				filter when item->scheme = "xyz"
+				extract item
+		'''
+		parseRosettaWithNoErrors(r)
+	}
+
+	@Test
 	def void invalidPath() {
 		'''
 			type Input:
