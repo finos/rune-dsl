@@ -7,12 +7,15 @@ import com.google.common.base.Predicate
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.BlueprintExtract
+import com.regnosys.rosetta.rosetta.BlueprintNodeExp
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
 import com.regnosys.rosetta.rosetta.RosettaExternalEnum
 import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
+import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
@@ -48,6 +51,7 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import org.eclipse.xtext.util.CancelIndicator
 
 /**
  * This class contains custom scoping description.
@@ -100,6 +104,29 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					}
 				case ROSETTA_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaFeatureCall) {
+						
+						try {
+							// try just hacking it
+							val blah = context.receiver.eContainer.eContainer.eContainer
+							if (blah instanceof BlueprintNodeExp) {
+								val node = blah.node
+								if (node instanceof BlueprintExtract) {
+									val call = node.call
+									if (call instanceof RosettaFeatureCall) {
+										val feature = call.leafFeature
+										//EcoreUtil2.resolveAll(feature, CancelIndicator.NullImpl)
+										val features = newArrayList
+										features.add(feature)
+										return Scopes.scopeFor(features)
+									}
+								}
+							}	
+						} catch (Exception e) {
+							
+						}
+						
+					
+						
 						val receiverType = typeProvider.getRType(context.receiver)
 						val featureScope = receiverType.createFeatureScope
 						var allPosibilities = newArrayList
@@ -186,7 +213,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 								descr | descr.EClass !== DATA
 							])
 						}
-						
 					}
 					return getParentScope(context, reference, defaultScope(context, reference))
 				}
@@ -231,6 +257,10 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case CONSTRAINT__ATTRIBUTES: {
 					return context.getParentScope(reference, IScope.NULLSCOPE)
 				}
+				default: {
+					println(reference)
+				}
+					
 			}
 			defaultScope(context, reference)
 		}
@@ -317,5 +347,12 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			default:
 				null
 		}
+	}
+	
+	private static def RosettaFeature getLeafFeature(RosettaFeatureCall featureCall) {
+		val feature = featureCall.feature
+		if (feature instanceof RosettaFeatureCall)
+			return feature.leafFeature
+		return feature	
 	}
 }

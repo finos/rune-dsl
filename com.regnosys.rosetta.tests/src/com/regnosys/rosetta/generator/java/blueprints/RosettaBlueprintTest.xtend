@@ -193,6 +193,7 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
+	@Disabled
 	def void extractUsingItemForComplexType() {
 		val r = '''
 			type Foo:
@@ -210,6 +211,7 @@ class RosettaBlueprintTest {
 
 
 	@Test
+	@Disabled
 	def void extractUsingItemForBasicTypeList() {
 		val r = '''
 			type Foo:
@@ -223,6 +225,7 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
+	@Disabled
 	def void filterItemAsMetaTypeListThenExtractResultAlsoUsingItem() {
 		val r = '''
 			type Foo:
