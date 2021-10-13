@@ -304,6 +304,8 @@ public class ExpressionOperators {
 		}
 	}
 	
+	// disjoint
+	
 	public static <T> ComparisonResult disjoint(Mapper<T> o1, Mapper<T> o2) {
 		List<T> multi2 = o2.getMulti();
 		List<T> multi1 = o1.getMulti();
@@ -315,6 +317,15 @@ public class ExpressionOperators {
 			Collection<T> common = multi1.stream().filter(multi2::contains).collect(Collectors.toSet());
 			return ComparisonResult.failure(formatMultiError(o1) + " is not disjoint from " +formatMultiError(o2) + "common items are " + common);
 		}
+	}
+	
+	// distinct
+	
+	public static <T> Mapper<T> distinct(Mapper<T> o) {
+		return MapperC.of(o.getMulti()
+				.stream()
+				.distinct()
+				.collect(Collectors.toList()));
 	}
 	
 	public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {
@@ -333,10 +344,5 @@ public class ExpressionOperators {
 		return t instanceof RosettaModelObject  ? 
 				t.getClass().getSimpleName() : // for rosettaModelObjects only log class name otherwise error messages are way too long
 				o.getMulti().toString();
-	}
-	
-	public static <T> Mapper<T> distinct(Mapper<T> o) {
-		List<T> x = o.getMulti().stream().distinct().collect(Collectors.toList());
-		return MapperC.of(x);
 	}
 }
