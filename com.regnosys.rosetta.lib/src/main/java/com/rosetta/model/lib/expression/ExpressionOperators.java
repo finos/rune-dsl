@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.Mapper.Path;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.mapper.MapperTree;
@@ -332,5 +333,10 @@ public class ExpressionOperators {
 		return t instanceof RosettaModelObject  ? 
 				t.getClass().getSimpleName() : // for rosettaModelObjects only log class name otherwise error messages are way too long
 				o.getMulti().toString();
+	}
+	
+	public static <T> Mapper<T> distinct(Mapper<T> o) {
+		List<T> x = o.getMulti().stream().distinct().collect(Collectors.toList());
+		return MapperC.of(x);
 	}
 }

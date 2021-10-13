@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.generator.java.calculation
 
+import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
@@ -7,13 +8,17 @@ import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
 import java.util.Arrays
+import java.util.List
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
+import static com.google.common.collect.ImmutableMap.*
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
@@ -1380,6 +1385,470 @@ class FuncGeneratorTest {
 		// assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
 		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 2)))
 	// assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(2, 2)))
+	}
+
+	@Test
+	def void funcWithListOfIntDistinct() {
+		val model = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			type Foo:
+				n int (0..*)
+			
+			func DistinctFunc:
+				inputs:
+					foo Foo (0..1)
+				output:
+					res int (0..*)
+				assign-output res: foo -> n distinct
+			
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.DistinctFunc")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Foo;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
+				public abstract class DistinctFunc implements RosettaFunction {
+				
+					/**
+					* @param foo 
+					* @return res 
+					*/
+					public List<Integer> evaluate(Foo foo) {
+						
+						List<Integer> resHolder = doEvaluate(foo);
+						List<Integer> res = assignOutput(resHolder, foo);
+						
+						return res;
+					}
+					
+					private List<Integer> assignOutput(List<Integer> res, Foo foo) {
+						res = distinct(MapperS.of(foo).<Integer>mapC("getN", _foo -> _foo.getN())).getMulti();
+						return res;
+					}
+				
+					protected abstract List<Integer> doEvaluate(Foo foo);
+					
+					public static final class DistinctFuncDefault extends DistinctFunc {
+						@Override
+						protected  List<Integer> doEvaluate(Foo foo) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("DistinctFunc");
+		val foo = classes.createInstanceUsingBuilder('Foo', of(), of('n', ImmutableList.of(1,1,1,2,2,3)))
+		val res = func.invokeFunc(List, foo)
+		assertEquals(3, res.size);
+		assertThat(res, hasItems(1, 2, 3));
+		
+	}
+	
+	@Test
+	def void funcWithListOfIntDistinct2() {
+		val model = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func DistinctFunc:
+				inputs:
+					n int (0..*)
+				output:
+					res int (0..*)
+				assign-output res: n distinct
+			
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.DistinctFunc")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
+				public abstract class DistinctFunc implements RosettaFunction {
+				
+					/**
+					* @param n 
+					* @return res 
+					*/
+					public List<Integer> evaluate(List<Integer> n) {
+						
+						List<Integer> resHolder = doEvaluate(n);
+						List<Integer> res = assignOutput(resHolder, n);
+						
+						return res;
+					}
+					
+					private List<Integer> assignOutput(List<Integer> res, List<Integer> n) {
+						res = distinct(MapperC.of(n)).getMulti();
+						return res;
+					}
+				
+					protected abstract List<Integer> doEvaluate(List<Integer> n);
+					
+					public static final class DistinctFuncDefault extends DistinctFunc {
+						@Override
+						protected  List<Integer> doEvaluate(List<Integer> n) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("DistinctFunc");
+		val res = func.invokeFunc(List, ImmutableList.of(1,1,1,2,2,3))
+		assertEquals(3, res.size);
+		assertThat(res, hasItems(1, 2, 3));
+	}
+	
+	@Test
+	def void funcWithListOfStringDistinct() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			type Foo:
+				n string (0..*)
+			
+			func DistinctFunc:
+				inputs:
+					foo Foo (0..1)
+				output:
+					res string (0..*)
+				assign-output res: foo -> n distinct
+			
+		'''.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("DistinctFunc");
+		val foo = classes.createInstanceUsingBuilder('Foo', of(), of('n', ImmutableList.of("1","1","1","2","2","3")))
+		val res = func.invokeFunc(List, foo)
+		assertEquals(3, res.size);
+		assertThat(res, hasItems("1", "2", "3"));
+	}
+
+	@Test
+	def void funcWithListOfStringDistinct2() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func DistinctFunc:
+				inputs:
+					n string (0..*)
+				output:
+					res string (0..*)
+				assign-output res: n distinct
+			
+		'''.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("DistinctFunc");
+		val res = func.invokeFunc(List, ImmutableList.of("1","1","1","2","2","3"))
+		assertEquals(3, res.size);
+		assertThat(res, hasItems("1", "2", "3"));
+	}
+
+	@Test
+	def void funcWithListOfComplexTypeDistinct() {
+		val model = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			type Foo:
+				barList Bar (0..*)
+			
+			type Bar:
+				n int (0..1)
+			
+			func DistinctFunc:
+				inputs:
+					foo Foo (0..1)
+				output:
+					res Bar (0..*)
+				assign-output res: foo -> barList distinct
+			
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.DistinctFunc")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Bar.BarBuilder;
+				import com.rosetta.test.model.Foo;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
+				public abstract class DistinctFunc implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param foo 
+					* @return res 
+					*/
+					public List<? extends Bar> evaluate(Foo foo) {
+						
+						List<Bar.BarBuilder> resHolder = doEvaluate(foo);
+						List<Bar.BarBuilder> res = assignOutput(resHolder, foo);
+						
+						if (res!=null) objectValidator.validateAndFailOnErorr(Bar.class, res);
+						return res;
+					}
+					
+					private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, Foo foo) {
+						res = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti())
+						;
+						return res;
+					}
+				
+					protected abstract List<Bar.BarBuilder> doEvaluate(Foo foo);
+					
+					public static final class DistinctFuncDefault extends DistinctFunc {
+						@Override
+						protected  List<Bar.BarBuilder> doEvaluate(Foo foo) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("DistinctFunc");
+		
+		val bar1 = classes.createInstanceUsingBuilder('Bar', of('n', 1), of())
+		val bar2 = classes.createInstanceUsingBuilder('Bar', of('n', 2), of())
+		val bar3 = classes.createInstanceUsingBuilder('Bar', of('n', 3), of())
+		
+		val barList = newArrayList
+		barList.add(bar1)
+		barList.add(bar1)
+		barList.add(bar1)
+		barList.add(bar2)
+		barList.add(bar2)
+		barList.add(bar3)
+		
+		val foo = classes.createInstanceUsingBuilder('Foo', of(), of('barList', barList))
+		
+		val res = func.invokeFunc(List, foo)
+		assertEquals(3, res.size);
+		assertThat(res, hasItems(bar1, bar2, bar3));
+	}
+	
+	@Test
+	def void funcWithListOfComplexTypeDistinct2() {
+		val model = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			type Bar:
+				n int (0..1)
+			
+			func DistinctFunc:
+				inputs:
+					barList Bar (0..*)
+				output:
+					res Bar (0..*)
+				assign-output res: barList distinct
+			
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.DistinctFunc")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Bar.BarBuilder;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
+				public abstract class DistinctFunc implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param barList 
+					* @return res 
+					*/
+					public List<? extends Bar> evaluate(List<? extends Bar> barList) {
+						
+						List<Bar.BarBuilder> resHolder = doEvaluate(barList);
+						List<Bar.BarBuilder> res = assignOutput(resHolder, barList);
+						
+						if (res!=null) objectValidator.validateAndFailOnErorr(Bar.class, res);
+						return res;
+					}
+					
+					private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, List<? extends Bar> barList) {
+						res = toBuilder(distinct(MapperC.of(barList)).getMulti())
+						;
+						return res;
+					}
+				
+					protected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList);
+					
+					public static final class DistinctFuncDefault extends DistinctFunc {
+						@Override
+						protected  List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("DistinctFunc");
+		
+		val bar1 = classes.createInstanceUsingBuilder('Bar', of('n', 1), of())
+		val bar2 = classes.createInstanceUsingBuilder('Bar', of('n', 2), of())
+		val bar3 = classes.createInstanceUsingBuilder('Bar', of('n', 3), of())
+		
+		val barList = newArrayList
+		barList.add(bar1)
+		barList.add(bar1)
+		barList.add(bar1)
+		barList.add(bar2)
+		barList.add(bar2)
+		barList.add(bar3)
+		
+		val res = func.invokeFunc(List, barList)
+		assertEquals(3, res.size);
+		assertThat(res, hasItems(bar1, bar2, bar3));
+	}
+	
+	@Test
+	def void funcWithListOfStringDistinctThenOnlyElement() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			type Foo:
+				n string (0..*)
+			
+			func DistinctFunc:
+				inputs:
+					foo Foo (0..1)
+				output:
+					res string (0..1)
+				assign-output res: foo -> n distinct only-element
+			
+		'''.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("DistinctFunc");
+		val foo = classes.createInstanceUsingBuilder('Foo', of(), of('n', ImmutableList.of("1","1","1")))
+		val res = func.invokeFunc(String, foo)
+		assertEquals("1", res);
+	}
+
+	@Test
+	def void funcWithListOfStringDistinctThenOnlyElement2() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func DistinctFunc:
+				inputs:
+					n string (0..*)
+				output:
+					res string (0..1)
+				assign-output res: n distinct only-element
+			
+		'''.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("DistinctFunc");
+		val res = func.invokeFunc(String,  ImmutableList.of("1","1","1"))
+		assertEquals("1", res);
+	}
+	
+	@Test
+	def void funcWithListOfStringDistinctThenOnlyElement3() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func DistinctFunc:
+				inputs:
+					n string (0..*)
+				output:
+					res string (0..1)
+				alias x:
+					n distinct only-element
+				assign-output res: 
+					x
+			
+		'''.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("DistinctFunc");
+		val res = func.invokeFunc(String,  ImmutableList.of("1","1","1"))
+		assertEquals("1", res);
+	}
+	
+	@Test
+	def void funcWithListOfStringDistinctThenOnlyElement4() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func DistinctFunc:
+				inputs:
+					n string (0..*)
+				output:
+					res string (0..1)
+				alias x:
+					n
+				assign-output res: 
+					x distinct only-element
+			
+		'''.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("DistinctFunc");
+		val res = func.invokeFunc(String,  ImmutableList.of("1","1","1"))
+		assertEquals("1", res);
 	}
 
 	@Test

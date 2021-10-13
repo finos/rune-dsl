@@ -59,7 +59,7 @@ class FuncGenerator {
 	@Inject extension RosettaExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
-	@Inject  CardinalityProvider cardinality
+	@Inject CardinalityProvider cardinality
 	@Inject JavaNames.Factory factory
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {

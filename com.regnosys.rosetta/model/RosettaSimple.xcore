@@ -45,6 +45,7 @@ class AnnotationRef {
 }
 
 abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
+	boolean distinct
 	boolean toOne
 }
 
