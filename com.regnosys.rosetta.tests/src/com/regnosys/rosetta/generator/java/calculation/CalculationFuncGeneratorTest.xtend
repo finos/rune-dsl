@@ -562,6 +562,7 @@ class CalculationFuncGeneratorTest {
 				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.OtherType;
 				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
@@ -601,7 +602,7 @@ class CalculationFuncGeneratorTest {
 						;
 						out
 							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setGlobalReference(
-									Optional.ofNullable(MapperC.of(withMeta).get())
+									Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
 										.map(r -> r.getMeta())
 										.map(m -> m.getGlobalKey())
 										.orElse(null)
