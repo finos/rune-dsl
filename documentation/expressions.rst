@@ -67,7 +67,6 @@ Attribute names can be chained together using `->` in order to refer to attribut
             if lineage -> executionReference -> tradableProduct -> product -> security exists
 
 ..
-    Not sure how to make this more helpful
 
 .. note:: In some situations (Reporting rules and conditional mapping) it is unclear where a Rosetta Path Expression should start from. In this case the rosetta path should begin with a type name e.g. ``WorkflowStep -> eventIdentifier`` . The grammar validation in Rosetta will make it clear when this is required.
 
@@ -83,7 +82,9 @@ Only element
 ============
 The keyword ``only-element`` can appear after an attribute name in a Rosetta path. ::
 
-    observationEvent -> primitives only-element -> observation
+.. code-block:: Haskell
+
+ observationEvent -> primitives only-element -> observation
 
 This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value then the expression result will be null.
 
@@ -91,12 +92,15 @@ Distinct
 ============
 The keyword ``distinct`` can appear after an attribute with multiple cardinality in a Rosetta path. ::
 
-    payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct
+.. code-block:: Haskell
 
-The operation will returns a subset of the list containing only distinct elements.  It’s useful for removing duplicate elements from a list, and can be combined with other syntax features such as ``count`` to determine if all elements of a list are equal.
+ quantity -> unitOfAmount -> currency distinct
 
-    payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
+The operation will return a subset of the list containing only distinct elements.  It’s useful for removing duplicate elements from a list, and can be combined with other syntax features such as ``count`` to determine if all elements of a list are equal.
 
+.. code-block:: Haskell
+
+ payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
 
 .. _operators-label:
 
