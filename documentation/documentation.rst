@@ -1192,12 +1192,14 @@ The ``join`` syntax filters data by comparing two data sets, and selecting the v
 
 In the syntax below, the data is first split into two data sets, then the ``join`` statement selects a sublist of the primary data set where the primary key matches the foreign key.
 
-(
-  ``extract`` <PathToPrimaryDataSet>,
-  ``extract`` <PathToSecondaryDataSet>
-) ``then``
-``join key`` <PrimaryDataSetPathToKey> ``foreignKey`` <SecondaryDataSetPathToForeignKey> ``then``
-``extract`` <PrimaryDataSetPathToExtract>
+.. code-block:: Haskell
+
+ (
+   extract <PathToPrimaryDataSet>,
+   extract <PathToSecondaryDataSet>
+ ) then
+ join key <PrimaryDataSetPathToKey> foreignKey <SecondaryDataSetPathToForeignKey> then
+ extract <PrimaryDataSetPathToExtract>
 
 In the below example, the ``Trade`` is split into a primary data (i.e., a list of ``Counterparty``) and, a secondary data set (a `BuyerSeller`).  The ``key`` and ``foreignKey`` correspond to attributes of the same type (i.e., ``CounterpartyRoleEnum``) in the primary and secondary data sets respectively.  The ``join`` operation will filter the list of ``Counterparty`` to only the values where the ``Counterparty->role`` matches the ``BuyerSeller -> buyer``.
 
