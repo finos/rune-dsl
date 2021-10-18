@@ -3,18 +3,18 @@ Expressions
 Rosetta Expressions are used to perfom simple calculations and comparisons. Simple expressions can be built up using `operators <#operators-label>`_ to form more complex expressions.
 They are used for `Functions <ducumentation.html#function-label>`_,
 `Data type validation conditions <documentation.html#condition-label>`_,
-`Conditional mappings <mapping.html#when-clause-label>`_ and 
+`Conditional mappings <mapping.html#when-clause-label>`_ and
 `Report Rules <documentation.html#report-rule-label>`_
 
 Expressions can be `evaluated` with a context of a Rosetta object to `return` a result. The result of an expression is either a single `basic <documentation.html#basic-type-label>` value (2.0, True, "USD"), a single Rosetta object (e.g. a Party object) or a `List` of values, all of the same type.
 
 The `type` of an expression is the type of the result that it will evaluate to. E.g. an expression that evaluates to True or False is of type boolean, an expression that evaluates to a list of SecurityLegs is of type `List of SecurityLeg`. A list is an ordered collection of items.
 
-The below sections will detail the different types of Rosetta Expressions and how they are used. 
+The below sections will detail the different types of Rosetta Expressions and how they are used.
 
 Constant Expressions
 """"""""""""""""""""
-An expression can be a `basic <documentation.html#basic-type-label>`_ constant such as 1, True or "USD". 
+An expression can be a `basic <documentation.html#basic-type-label>`_ constant such as 1, True or "USD".
 
 Constants are valid expressions and are useful for comparisons to more complex expressions.
 
@@ -42,9 +42,9 @@ The simplest Rosetta Path Expression is just the name of an attribute. For examp
 .. code-block:: Haskell
   :emphasize-lines: 7
 
-  type ContractFormationPrimitive: 
+  type ContractFormationPrimitive:
 
-	before ExecutionState (0..1) 
+	before ExecutionState (0..1)
 	after PostContractFormationState (1..1)
 
 	condition: <"The quantity should be unchanged.">
@@ -57,13 +57,13 @@ Attribute names can be chained together using `->` in order to refer to attribut
 
     type Confirmation: <"A class to specify a trade confirmation.">
 
-        identifier Identifier (1..*) 
-        party Party (1..*) 
-        partyRole PartyRole (1..*) 
-        lineage Lineage (0..1) 
+        identifier Identifier (1..*)
+        party Party (1..*)
+        partyRole PartyRole (1..*)
+        lineage Lineage (0..1)
         status ConfirmationStatusEnum (1..1)
 
-        condition BothBuyerAndSellerPartyRolesMustExist: 
+        condition BothBuyerAndSellerPartyRolesMustExist:
             if lineage -> executionReference -> tradableProduct -> product -> security exists
 
 ..
@@ -84,8 +84,19 @@ Only element
 The keyword ``only-element`` can appear after an attribute name in a Rosetta path. ::
 
     observationEvent -> primitives only-element -> observation
-	
+
 This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value then the expression result will be null.
+
+Distinct
+============
+The keyword ``distinct`` can appear after an attribute with multiple cardinality in a Rosetta path. ::
+
+    payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct
+
+The operation will returns a subset of the list containing only distinct elements.  It’s useful for removing duplicate elements from a list, and can be combined with other syntax features such as ``count`` to determine if all elements of a list are equal.
+
+    payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
+
 
 .. _operators-label:
 
@@ -117,13 +128,13 @@ Rosetta also has operators that are designed to function on lists
 
 If the contains operator is passed an expression that has single cardinality that expression is treated as a list containing the single element or an empty list if the element is null.
 
-The grammar enforces that the expression for count has multiple cardinality. 
+The grammar enforces that the expression for count has multiple cardinality.
 
 For the comparison operators if either left or right expression has multiple cardinality then either the other side should have multiple cardinality or `all` or `any` should be specified. (At present only `any` is supported for `<>` and `all` for the other comparison operators.
 
 The semantics for list comparisons are as follows
 
-* ``=`` 
+* ``=``
     * if both sides are lists then the lists must contain elements that are ``=`` when compared pairwise in the order.
     * if the one side is a list and the other is single and `all` is specified then every element in the list must ``=`` the single value
     * if the one side is a list and the other is single and `any` is specified then at least one element in the list must ``=`` the single value (unimplemented)
@@ -175,7 +186,7 @@ The optional ``else clause`` consists of the keyword ``else`` followed by any ex
 
 If the ``if clause`` evaluates to true then the result of the ``then clause`` is returned by the conditional expression. if it evaluates to false then the result of the ``else clause`` is returned if present, else null is returned.
 
-The type of the expression is the type of the expression contained in the ``then clause``\. The grammar enforces that the type of the else expression matches the then expression. 
+The type of the expression is the type of the expression contained in the ``then clause``\. The grammar enforces that the type of the else expression matches the then expression.
 
 Function calls
 """"""""""""""
@@ -199,7 +210,7 @@ In the last line of the example below the Max function is called to find the lar
         assign-output r:
             if (a>=b) then a
             else b
-            
+
     func WhichIsBigger:
         inputs:
             a number (1..1)

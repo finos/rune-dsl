@@ -41,18 +41,18 @@ The first component of the definition is a plain-text description of the type.
 After the description come any further `meta-data annotations <#meta-data-component-label>`_ that are applied to this type. Meta-data are enclosed within square brackets ``[...]``.
 
 .. code-block:: Haskell
- 
+
   type WorkflowStep: <"A workflow step ....">
    [metadata key]
    [rootType]
 
 Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
 
-* name - 
+* name -
   Required - Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
-* type - 
+* type -
   Required - Each attribute can be specified either as a `basic type <#basic-type-label>`_, `record type <#record-type-label>`_, data type or `enumeration type <#enumeration-label>`_.
-* cardinality -  
+* cardinality -
   Required - see `Cardinality <#cardinality-label>`_
 * description - Optional but recommended) - A description of the attribute using the same <"..."> syntax as the type description
 * annotations - Optional - Annotations such as `synonyms <mapping.html>`_ or metadata can be applied to attributes
@@ -92,7 +92,7 @@ Rosetta defines two record types ``date`` and ``zonedDateTime``.  The set of rec
 Record types are simplified data types:
 
 * Record types are pure data definitions and do not allow specification of validation logic in ``conditions``.
-* Record types are handled specially in the code-generators as so form part of the Rosetta DSL, rather than any Rosetta base domain model. 
+* Record types are handled specially in the code-generators as so form part of the Rosetta DSL, rather than any Rosetta base domain model.
 
 Time
 """"
@@ -134,7 +134,7 @@ Enumerations are very simple modelling containers, which are defined in the same
    M <"Month">
    Y <"Year">
 
-Enumeration names must be unique across a `namespace <#namespace-label>`_. The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase).  In addition the enumeration name should end with the suffix Enum. 
+Enumeration names must be unique across a `namespace <#namespace-label>`_. The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase).  In addition the enumeration name should end with the suffix Enum.
 The Enumeration values cannot start with a numerical digit, and the only special character that can be associated with them is the underscore ``_``.
 
 In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a **display name** to any enumeration value. For those enumeration values, special characters are replaced with ``_`` while the ``displayName`` entry corresponds to the actual value.
@@ -162,7 +162,7 @@ An example is the day count fraction scheme for interest rate calculation, which
 Meta-Data Component
 -------------------
 
-Meta-data are key parts of the syntax allowing rich definitions to all model components including the `data <#data-component-label>`_, `reporting <#reporting-component-label>`_ and `function <#function-label>`_  components. 
+Meta-data are key parts of the syntax allowing rich definitions to all model components including the `data <#data-component-label>`_, `reporting <#reporting-component-label>`_ and `function <#function-label>`_  components.
 
 Descriptions
 ^^^^^^^^^^^^
@@ -248,7 +248,7 @@ Once a segment type is defined, it can be associated to an identifier (i.e some 
 Syntax (Document Reference)
 """""""""""""""""""""""""""
 
-A document reference is created using the ``docReference`` syntax. This ``docReference`` must be associated to a ``corpus`` and ``segment`` defined according to the `document reference hierarchy <#document-reference-hierarchy-label>`_ section. The document reference can copy the actual text being referred to using the ``provision`` syntax. 
+A document reference is created using the ``docReference`` syntax. This ``docReference`` must be associated to a ``corpus`` and ``segment`` defined according to the `document reference hierarchy <#document-reference-hierarchy-label>`_ section. The document reference can copy the actual text being referred to using the ``provision`` syntax.
 
 .. code-block:: Haskell
 
@@ -265,7 +265,7 @@ In some instances, a model type may have a different naming convention based on 
 
  type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
       [docReference ICMA GMRA
-        namingConvention "seller" 
+        namingConvention "seller"
         provision "As defined in the GRMA Seller party ..."]
 
 A ``docReference`` can also be added to an attribute of a type:
@@ -276,7 +276,7 @@ A ``docReference`` can also be added to an attribute of a type:
       ...
       payer CounterpartyRoleEnum (1..1)
         [docReference ICMA GMRA
-          namingConvention "seller" 
+          namingConvention "seller"
           provision "As defined in the GRMA Seller party ..."]
 
 .. _annotation-label:
@@ -309,7 +309,7 @@ It is possible to associate attributes to an annotation (see `metadata <#metadat
 
  annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
 
-An annotation can be added to a Rosetta Type or attribute by enclosing the name of the annotation in square brackets 
+An annotation can be added to a Rosetta Type or attribute by enclosing the name of the annotation in square brackets
 
 Meta-Data and Reference
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -317,7 +317,7 @@ Purpose
 """""""
 .. _metadata-label:
 
-The ``metadata`` annotation allows the declaration of a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations 
+The ``metadata`` annotation allows the declaration of a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations
 
 .. code-block:: Haskell
 
@@ -355,10 +355,10 @@ Referencing allows an attribute in rosetta to refer to a rosetta object in a dif
       }
     } ]
   }
- 
+
  "partyReference" : {
         "globalReference" : "3d9e6ab8"
-  }      
+  }
 
 
 Rosetta currently supports 3 different mechanisms for references with different scopes. It is intended that these will all be migrated to a single mechanism.
@@ -374,14 +374,14 @@ The ``reference`` metadata annotation denotes that an attribute can be either a 
 External References
 ///////////////////
 
-Attributes and types that have the ``key`` or ``id`` annotation additionally have an ``externalKey`` attached to them. This is used to store keys that are read from an external source e.g. FpML id metadata attribute. 
+Attributes and types that have the ``key`` or ``id`` annotation additionally have an ``externalKey`` attached to them. This is used to store keys that are read from an external source e.g. FpML id metadata attribute.
 
 Attributes with the ``reference`` keyword have a corresponding externalReference field which is used to store references from external sources. The reference resolver processor can be used to link up the references.
 
 Templates
 /////////
 
-When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together. 
+When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
 
 Other than the new annotation, data templates do not have any impact on the model, i.e. no new types, attributes, or conditions.
 
@@ -506,7 +506,7 @@ The lower and upper bounds can both be any integer number. A 0 lower bound means
 
 A validation rule is generated for each attribute's cardinality constraint, so if the cardinality of the attribute does not match the requirement an error will be associated with that attribute by the validation process.
 
-.. _condition-label: 
+.. _condition-label:
 
 Condition Statement
 ^^^^^^^^^^^^^^^^^^^
@@ -619,17 +619,12 @@ The ``only exists`` component is an adaptation of the simple ``exists`` syntax, 
 
 .. code-block:: Haskell
 
- type PriceNotation:
-    price Price (1..1)
-    assetIdentifier AssetIdentifier (0..1)
-
-    condition CurrencyAssetIdentifier:
-       if price -> fixedInterestRate exists
-       then assetIdentifier -> currency only exists
-
-    condition RateOptionAssetIdentifier:
-       if price -> floatingInterestRate exists
-       then assetIdentifier -> rateOption only exists
+func Qualify_AssetClass_InterestRate_Swap:
+  inputs: economicTerms EconomicTerms (1..1)
+  output: is_product boolean (1..1)
+  assign-output is_product:
+    economicTerms -> payout -> interestRatePayout only exists
+      or (economicTerms -> payout -> interestRatePayout,  economicTerms -> payout -> cashflow) only exists
 
 This syntax drastically reduces the condition expression, which would otherwise require to combine one ``exists`` with multiple ``is absent`` (applied to all other attributes). It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for ``is absent``.
 
@@ -710,17 +705,17 @@ Most functions, however, also require inputs, which are also expressed as attrib
        determinationMethod DeterminationMethodEnum (1..1)
     output:
        time TimeZone (1..1)
-       
+
 Inputs and outputs can both have multiple cardinality in which case they will be treated as lists
 
 .. code-block:: Haskell
 
- func UpdateAmountForEachQuantity: 
+ func UpdateAmountForEachQuantity:
    inputs:
-      priceQuantity PriceQuantity (0..*) 
-      amount number (1..1) 
+      priceQuantity PriceQuantity (0..*)
+      amount number (1..1)
    output:
-      updatedPriceQuantity PriceQuantity (0..*) 
+      updatedPriceQuantity PriceQuantity (0..*)
 
 Conditions
 """"""""""
@@ -901,7 +896,7 @@ Purpose
 """""""
 The namespace syntax allows model artefacts in a data model to be organised into groups of namespaces. A namespace is an abstract container created to hold a logical grouping of model artefacts. The approach is designed to make it easier for users to understand the model structure and adopt selected components. It also aids the development cycle by insulating groups of components from model restructuring that may occur.  Model artefacts are organised into a directory structure that follows the namespaces’ Group and Artefact structure (a.k.a. “GAV coordinates”). This directory structure is exposed in the model editor.
 
-By convention namespaces are organised into a hierarchy, with layers going from in to out. The hierarchy therefore contains an intrinsic inheritance structure where each layer has access to (“imports”) the layer outside, and is designed to be usable without any of its inner layers. Layers can contain several namespaces (“siblings”), which can also refer to each other. 
+By convention namespaces are organised into a hierarchy, with layers going from in to out. The hierarchy therefore contains an intrinsic inheritance structure where each layer has access to (“imports”) the layer outside, and is designed to be usable without any of its inner layers. Layers can contain several namespaces (“siblings”), which can also refer to each other.
 
 Syntax
 """"""
@@ -1111,7 +1106,7 @@ The label is an arbitrary ``string`` and should be aligned with the name of the 
 
 - ``Rule if`` statement
 
-The rule if statement consists of the keyword ``if`` followed by condition that will be evaluated ``return`` followed by a rule. 
+The rule if statement consists of the keyword ``if`` followed by condition that will be evaluated ``return`` followed by a rule.
 If the condition is true then the value of the ``return`` rule is returned.
 Additional conditions and ``return`` rules can be specified with ``else if``. Only the first matching condition's ``return`` will be executed.
 ``else return`` can be used to provide an alternative that will be executed if no conditions match
@@ -1137,7 +1132,7 @@ Filtering and max/min/first/last rules take a collection of input objects and re
 
 - ``filter when`` <FunctionalExpression>
 
-The ``filter when`` keyword takes each input value and uses it as input to a provided test expression The result type of the test expression must be boolean and its input type must be the input type of the filter rule. 
+The ``filter when`` keyword takes each input value and uses it as input to a provided test expression The result type of the test expression must be boolean and its input type must be the input type of the filter rule.
 If the expression returns ``true`` for a given input that value is included in the output.
 The code below selects the PartyContactInformation objects then filters to only the parties that are reportingParties before then returning the partyReferences
 
@@ -1179,7 +1174,7 @@ In the below example, we first apply a filter and extract a ``rate`` attribute. 
 
 - ``maxBy`` / ``minBy``
 
-The syntax also supports selecting values by an ordering based on an attribute using the ``maxBy`` and ``minBy`` keywords. For each input value to the rule the provided test expression or rule is evaluated to give a test result and paired with the input value. 
+The syntax also supports selecting values by an ordering based on an attribute using the ``maxBy`` and ``minBy`` keywords. For each input value to the rule the provided test expression or rule is evaluated to give a test result and paired with the input value.
 When all values have been processes the pair with the highest test result is selected and the associated value is returned by the rule.
 The test expression or rule must return a value of single cardinality and must be of a comparable basic data type
 e.g. date, time, number, string
@@ -1191,6 +1186,31 @@ In the below example, we first apply a filter and extract a ``fixedInterestRate`
    extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate then
    maxBy FixedInterestRate -> rate
 
+- ``join`` statement
+
+The ``join`` syntax filters data by comparing two data sets, and selecting the values that have a matching key.
+
+In the syntax below, the data is first split into two data sets, then the ``join`` statement selects a sublist of the primary data set where the primary key matches the foreign key.
+
+(
+  ``extract`` <PathToPrimaryDataSet>,
+  ``extract`` <PathToSecondaryDataSet>
+) ``then``
+``join key`` <PrimaryDataSetPathToKey> ``foreignKey`` <SecondaryDataSetPathToForeignKey> ``then``
+``extract`` <PrimaryDataSetPathToExtract>
+
+In the below example, the ``Trade`` is split into a primary data (i.e., a list of ``Counterparty``) and, a secondary data set (a `BuyerSeller`).  The ``key`` and ``foreignKey`` correspond to attributes of the same type (i.e., ``CounterpartyRoleEnum``) in the primary and secondary data sets respectively.  The ``join`` operation will filter the list of ``Counterparty`` to only the values where the ``Counterparty->role`` matches the ``BuyerSeller -> buyer``.
+
+.. code-block:: Haskell
+
+ (
+   extract Trade -> tradableProduct -> counterparty,
+   extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> optionPayout -> buyerSeller
+ ) then
+ join key Counterparty -> role foreignKey BuyerSeller -> buyer then
+ extract Counterparty -> partyReference
+
+
 Repeatable Rules
 ///////////////
 
@@ -1200,7 +1220,7 @@ The syntax also supports the reporting of repeatable sets of data as required by
 
 The ``repeatable`` keyword specifies that the extract expression will be reported as a repeating set of data.  The rules specified in the brackets specify the fields to report for each repeating data set.
 
-In the example below, the ``repeatable`` keyword in reporting rule ``NotionalAmountScheduleLeg1`` specifies that the extracted list of quantity notional schedule steps should be reported as a repeating set of data.  The rules specified within the brackets define the fields that should be reported for each repeating step.  
+In the example below, the ``repeatable`` keyword in reporting rule ``NotionalAmountScheduleLeg1`` specifies that the extracted list of quantity notional schedule steps should be reported as a repeating set of data.  The rules specified within the brackets define the fields that should be reported for each repeating step.
 
 .. code-block:: Haskell
 
@@ -1212,7 +1232,7 @@ In the example below, the ``repeatable`` keyword in reporting rule ``NotionalAmo
             extract repeatable InterestRatePayout -> payoutQuantity -> quantitySchedule -> stepSchedule -> step then
             (
                 NotionalAmountScheduleLeg1Amount,
-                NotionalAmountScheduleLeg1EndDate,		
+                NotionalAmountScheduleLeg1EndDate,
                 NotionalAmountScheduleLeg1EffectiveDate
             )
 
@@ -1230,7 +1250,7 @@ In the example below, the ``repeatable`` keyword in reporting rule ``NotionalAmo
 	[regulatoryReference CFTC Part45 appendix "1" item "35" field "End date of the notional amount of leg 1"]
 		CDENotionalAmountScheduleEndDate
 		as "33/35-$ 35 End date leg 1"
-		
+
 Note that the ``-$`` symbol is used in the label to index the repeated groups ensuring that they appear in a logical order in the Reports view of Rosetta.
 
 .. _CamelCase: https://en.wikipedia.org/wiki/Camel_case
