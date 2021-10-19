@@ -30,7 +30,7 @@ public class StringIdentifier implements DataIdentifier {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
+//		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
 		result = prime * result + ((s == null) ? 0 : s.hashCode());
 		return result;
 	}
@@ -44,11 +44,11 @@ public class StringIdentifier implements DataIdentifier {
 		if (getClass() != obj.getClass())
 			return false;
 		StringIdentifier other = (StringIdentifier) obj;
-		if (rule == null) {
-			if (other.rule != null)
-				return false;
-		} else if (!rule.equals(other.rule))
-			return false;
+//		if (rule == null) {
+//			if (other.rule != null)
+//				return false;
+//		} else if (!rule.equals(other.rule))
+//			return false;
 		if (s == null) {
 			if (other.s != null)
 				return false;
