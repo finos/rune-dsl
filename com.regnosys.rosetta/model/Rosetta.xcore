@@ -6,6 +6,7 @@ package com.regnosys.rosetta.rosetta
 
 import java.util.stream.Collectors
 import com.regnosys.rosetta.rosetta.simple.References
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class RosettaModel extends RosettaDefinable {
 	String name
@@ -13,15 +14,11 @@ class RosettaModel extends RosettaDefinable {
 	contains Import[] imports
 	contains RosettaQualifiableConfiguration[] configurations opposite model 
 	contains RosettaRootElement[] elements opposite model
-	
 }
 
 class Import {
 	String importedNamespace
 }
-/**
- * New model
- */
 
 /**********************************************************************
  * Common types
@@ -54,7 +51,6 @@ class RosettaFeature extends RosettaNamed {
 	derived String getNameOrDefault get {
 		return name ?: 'value'
 	}
-
 }
 
 class RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
@@ -74,7 +70,6 @@ abstract class RosettaFeatureOwner extends RosettaDefinable {
 
 abstract class RosettaType extends RosettaRootElement, RosettaNamed {
 }
-
 
 
 /**********************************************************************
@@ -100,7 +95,6 @@ class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaC
 class RosettaParameter extends RosettaTypedFeature {
 	boolean isArray
 }
-
 
 class RosettaQualifiedType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType, RosettaCallableWithArgs {
 }
@@ -332,8 +326,7 @@ class RosettaMapPathValue extends RosettaExpression {
 class RosettaQualifiableConfiguration {
 	RosettaQualifiableType qType
 	refers RosettaModel model opposite configurations
-	/* TODO Change type to Data after migration is finished */
-	refers RosettaType rosettaClass
+	refers Data rosettaClass
 	
 }
 
@@ -464,12 +457,13 @@ class RosettaExternalSynonym {
 }
 
 /********************
- * Blueprint - Should be a seperate grammar
- *  */
+* Blueprint - Should be a separate grammar
+*/
  
 class RosettaBlueprintReport extends RosettaRootElement {
 	contains RosettaRegulatoryBody regulatoryBody
 	refers RosettaBlueprint[] reportingRules
+	refers Data reportType
 	refers RosettaBlueprint[] eligibilityRules
 	refers RosettaCorpus reportingStandard
 	
@@ -520,7 +514,7 @@ class RosettaBlueprintReport extends RosettaRootElement {
 		return firstNodeExpr
 	}
 }
- 
+
 class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	contains RosettaDocReference[] references
 	contains BlueprintNodeExp nodes

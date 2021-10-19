@@ -352,28 +352,28 @@ class BlueprintGenerator {
 	def createIdentifier(BlueprintNode node) {
 		switch (node) {
 			BlueprintMerge: {
-				'''new StringIdentifier("«node.output.name»")'''
+				'''new StringIdentifier("«node.output.name»", getClass())'''
 			}
 			BlueprintExtract: {
 				val nodeName = if (node.identifier !== null) node.identifier 
 								else if (node.name !== null) node.name
 								else node.call.toNodeLabel
-				'''new StringIdentifier("«nodeName»")'''
+				'''new StringIdentifier("«nodeName»", getClass())'''
 			}
 			BlueprintReturn: {
 				val nodeName = if (node.identifier !== null) node.identifier 
 								else if (node.name !== null) node.name
 								else node.expression.toNodeLabel
 				
-				'''new StringIdentifier("«nodeName»")'''
+				'''new StringIdentifier("«nodeName»", getClass())'''
 			}
 			BlueprintLookup: {
 				val nodeName = if (node.identifier !== null) node.identifier else node.name
-				'''new StringIdentifier("Lookup «nodeName»")'''
+				'''new StringIdentifier("Lookup «nodeName»", getClass())'''
 			}
 			default: {
 				if (node.identifier!==null) {
-					'''new StringIdentifier("«node.identifier»")'''
+					'''new StringIdentifier("«node.identifier»", getClass())'''
 				}
 				else {
 					'''null'''

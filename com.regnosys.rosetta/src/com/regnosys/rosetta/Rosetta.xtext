@@ -47,6 +47,9 @@ fragment ClassSynonyms*:
 fragment References*:
 	references+=RosettaDocReference;
 
+fragment RuleReferences*:
+	ruleReferences+=RosettaRuleReference;
+
 AnnotationRef:
 	'[' annotation = [Annotation|ValidID] (attribute = [Attribute|ValidID] (qualifiers += AnnotationQualifier)*)? ']'
 ;
@@ -63,7 +66,7 @@ Data:
 ;
 
 Attribute:
-	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable? (References|Annotations|Synonyms)*
+	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable? (References|Annotations|Synonyms|RuleReferences)*
 ;
 
 Enumeration returns RosettaEnumeration:
@@ -396,8 +399,7 @@ RosettaGroupByFeatureCall returns RosettaExpression:
 ;
 
 RosettaGroupByExpression:
-	// TODO change to Attribute after migration
-	attribute = [RosettaTypedFeature|ValidID] (=>FEATURE_CALL_SEPARATOR right = RosettaGroupByExpression)?
+	attribute = [Attribute|ValidID] (=>FEATURE_CALL_SEPARATOR right = RosettaGroupByExpression)?
 ;
 
 RosettaCallableCall: 
@@ -606,18 +608,22 @@ RosettaRegulatoryBody:
 
 
 /*****************************************
- * Blueprints.
- * */
+ * Blueprints
+ */
+ 
 RosettaBlueprintReport:
 	'report' regulatoryBody=RosettaRegulatoryBody
 	'in' ('real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5'|'ASATP')
 	'when'
 	eligibilityRules+=[RosettaBlueprint] ( 'and' eligibilityRules+=[RosettaBlueprint])*
 	('using' 'standard' reportingStandard=[RosettaCorpus])?
-	'with' 'fields'
-	reportingRules += [RosettaBlueprint]*
+	'with' ('fields' reportingRules += [RosettaBlueprint]* | 'type' reportType=[Data|QualifiedName])
 ;
 
+
+RosettaRuleReference:
+	'[' 'ruleReference' 'rule' reportingRule=[RosettaBlueprint] ']'	
+;
 
 RosettaBlueprint:
  	('reporting'|'eligibility') 'rule' RosettaNamed RosettaDefinable?
