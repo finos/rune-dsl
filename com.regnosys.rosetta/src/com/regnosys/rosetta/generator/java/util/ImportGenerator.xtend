@@ -95,11 +95,13 @@ class ImportGenerator {
 
 	def addSingleMapping(BlueprintExtract extract) {
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
+		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
 		addExpression(extract.call)
 	}
 
 	def addMappingImport() {
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
+		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
 	}
 
 	def void addFeatureCall(RosettaFeatureCall call) {
@@ -298,6 +300,7 @@ class ImportGenerator {
 		imports.add('''«(blueprint.eContainer as RosettaModel).name».blueprint.«blueprint.name»Rule''')
 		imports.add('''«packages.blueprintLib.name».runner.actions.IdChange''')
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
+		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
 	}
 
 }

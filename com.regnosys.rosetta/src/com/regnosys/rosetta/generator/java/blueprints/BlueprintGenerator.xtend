@@ -3,8 +3,11 @@ package com.regnosys.rosetta.generator.java.blueprints
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
+import com.regnosys.rosetta.generator.java.function.CardinalityProvider
+import com.regnosys.rosetta.generator.java.function.RosettaFunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.BlueprintAnd
 import com.regnosys.rosetta.rosetta.BlueprintCustomNode
 import com.regnosys.rosetta.rosetta.BlueprintDataJoin
@@ -23,6 +26,8 @@ import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.BlueprintValidate
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -35,22 +40,17 @@ import com.regnosys.rosetta.validation.TypedBPNode
 import java.util.List
 import java.util.Map
 import javax.inject.Inject
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
-import org.apache.log4j.Level
-import org.apache.log4j.Logger
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import com.regnosys.rosetta.generator.java.function.CardinalityProvider
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.generator.java.function.RosettaFunctionDependencyProvider
-import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.rosetta.RosettaDocReference
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
@@ -352,28 +352,28 @@ class BlueprintGenerator {
 	def createIdentifier(BlueprintNode node) {
 		switch (node) {
 			BlueprintMerge: {
-				'''new StringIdentifier("«node.output.name»", getClass())'''
+				'''new RuleIdentifier("«node.output.name»", getClass())'''
 			}
 			BlueprintExtract: {
 				val nodeName = if (node.identifier !== null) node.identifier 
 								else if (node.name !== null) node.name
 								else node.call.toNodeLabel
-				'''new StringIdentifier("«nodeName»", getClass())'''
+				'''new RuleIdentifier("«nodeName»", getClass())'''
 			}
 			BlueprintReturn: {
 				val nodeName = if (node.identifier !== null) node.identifier 
 								else if (node.name !== null) node.name
 								else node.expression.toNodeLabel
 				
-				'''new StringIdentifier("«nodeName»", getClass())'''
+				'''new RuleIdentifier("«nodeName»", getClass())'''
 			}
 			BlueprintLookup: {
 				val nodeName = if (node.identifier !== null) node.identifier else node.name
-				'''new StringIdentifier("Lookup «nodeName»", getClass())'''
+				'''new RuleIdentifier("Lookup «nodeName»", getClass())'''
 			}
 			default: {
 				if (node.identifier!==null) {
-					'''new StringIdentifier("«node.identifier»", getClass())'''
+					'''new RuleIdentifier("«node.identifier»", getClass())'''
 				}
 				else {
 					'''null'''
@@ -474,7 +474,7 @@ class BlueprintGenerator {
 ««« TODO - add this in when things break			result.put(new RosettaIdentifier("«outputRef.ref.refId»"), (builder, input) -> builder.set«outputRef.attrib.name.toFirstUpper»(Converter.convert(«outputRef.attrib.type.name.toJavaType».class, input)));
 			«ENDFOR»
 			«FOR field : (merge.output as com.regnosys.rosetta.rosetta.simple.Data).attributes»
-			result.put(new StringIdentifier("«field.name»"), (builder, input) -> builder.set«field.name.toFirstUpper»(Converter.convert(«(field as RosettaTyped).type .name.toJavaType».class, input)));
+			result.put(new RuleIdentifier("«field.name»", getClass()), (builder, input) -> builder.set«field.name.toFirstUpper»(Converter.convert(«(field as RosettaTyped).type .name.toJavaType».class, input)));
 			«ENDFOR»
 			return result;
 		}''' 
