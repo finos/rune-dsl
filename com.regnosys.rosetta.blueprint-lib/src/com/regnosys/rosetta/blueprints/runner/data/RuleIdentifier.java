@@ -5,18 +5,18 @@ import java.util.Optional;
 public class RuleIdentifier implements DataIdentifier {
 	
 	private final String label;
-	private final Class<?> clazz;
+	private final Class<?> ruleType;
 	private final Optional<Integer> repeatableIndex;
 	
-	public RuleIdentifier(String label, Class<?> clazz) {
+	public RuleIdentifier(String label, Class<?> ruleType) {
 		this.label = label;
-		this.clazz = clazz;
+		this.ruleType = ruleType;
 		this.repeatableIndex = Optional.empty();
 	}
 	
-	public RuleIdentifier(String label, Class<?> clazz, int repeatableIndex) {
+	public RuleIdentifier(String label, Class<?> ruleType, int repeatableIndex) {
 		this.label = label;
-		this.clazz = clazz;
+		this.ruleType = ruleType;
 		this.repeatableIndex = Optional.of(repeatableIndex);
 	}
 	
@@ -24,8 +24,8 @@ public class RuleIdentifier implements DataIdentifier {
 		return label;
 	}
 
-	public Class<?> getClazz() {
-		return clazz;
+	public Class<?> getRuleType() {
+		return ruleType;
 	}
 
 	public Optional<Integer> getRepeatableIndex() {
@@ -36,7 +36,7 @@ public class RuleIdentifier implements DataIdentifier {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((clazz == null) ? 0 : clazz.hashCode());
+		result = prime * result + ((ruleType == null) ? 0 : ruleType.hashCode());
 		result = prime * result + ((label == null) ? 0 : label.hashCode());
 		result = prime * result + ((repeatableIndex == null) ? 0 : repeatableIndex.hashCode());
 		return result;
@@ -51,10 +51,10 @@ public class RuleIdentifier implements DataIdentifier {
 		if (getClass() != obj.getClass())
 			return false;
 		RuleIdentifier other = (RuleIdentifier) obj;
-		if (clazz == null) {
-			if (other.clazz != null)
+		if (ruleType == null) {
+			if (other.ruleType != null)
 				return false;
-		} else if (!clazz.equals(other.clazz))
+		} else if (!ruleType.equals(other.ruleType))
 			return false;
 		if (label == null) {
 			if (other.label != null)
@@ -71,6 +71,6 @@ public class RuleIdentifier implements DataIdentifier {
 
 	@Override
 	public String toString() {
-		return "RuleIdentifier [label=" + label + ", clazz=" + clazz + ", repeatableIndex=" + repeatableIndex + "]";
+		return "RuleIdentifier [label=" + label + ", ruleType=" + ruleType + ", repeatableIndex=" + repeatableIndex + "]";
 	}
 }

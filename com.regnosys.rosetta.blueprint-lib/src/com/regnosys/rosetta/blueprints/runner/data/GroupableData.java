@@ -174,7 +174,7 @@ public class GroupableData<I, K> {
 			RuleIdentifier ruleId = (RuleIdentifier) id;
 			String label = ruleId.getLabel();
 			String i = String.valueOf(index);
-			return new RuleIdentifier(label.contains("$") ? label.replace("$", i) : String.format("%s (%s)", id, i), ruleId.getClass(), index);
+			return new RuleIdentifier(label.contains("$") ? label.replace("$", i) : String.format("%s (%s)", id, i), ruleId.getRuleType(), index);
 		}
 		return id;
 	}
