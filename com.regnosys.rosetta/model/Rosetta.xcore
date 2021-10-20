@@ -471,48 +471,6 @@ class RosettaBlueprintReport extends RosettaRootElement {
 		(getRegulatoryBody.getBody.name.toFirstUpper 
 				+ getRegulatoryBody.corpuses.stream.map[RosettaCorpus man | man.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
 	}
-	/**
-	* FIXME: Never create Grammar model Instances programmatically.
-	* Only needed in Generator, create wrapper objects for that in the BlueprintGenerator!
-	*/
-	op BlueprintNodeExp nodes() {
-		var BlueprintNodeExp currentNodeExpr = null
-		var BlueprintNodeExp firstNodeExpr = null
-		
-		for (eligibilityRule : eligibilityRules) {
-			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
-			ref.blueprint = eligibilityRule
-			ref.name = eligibilityRule.name
-			
-			var newNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
-			newNodeExpr.node = ref
-			newNodeExpr.node.name = ref.name
-						
-			if (null === currentNodeExpr) firstNodeExpr = newNodeExpr
-			else currentNodeExpr.next = newNodeExpr
-				
-			currentNodeExpr = newNodeExpr
-		}
-		
-		val andNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
-		currentNodeExpr.next = andNodeExpr
-		
-		val node = RosettaFactory.eINSTANCE.createBlueprintAnd
-		andNodeExpr.node = node
-
-		node.name = name()
-		reportingRules.forEach[
-			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
-			ref.blueprint = it
-			ref.name = it.name
-			val rule = RosettaFactory.eINSTANCE.createBlueprintNodeExp
-			rule.node = ref
-			rule.node.name = ref.name
-			node.bps.add(rule)
-		]
-				
-		return firstNodeExpr
-	}
 }
 
 class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {

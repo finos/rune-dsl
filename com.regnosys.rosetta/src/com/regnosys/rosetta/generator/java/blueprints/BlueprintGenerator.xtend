@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.generator.java.blueprints
 
+import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
@@ -28,6 +29,7 @@ import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaDocReference
+import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -60,6 +62,7 @@ class BlueprintGenerator {
 	@Inject extension ExpressionGenerator
 	@Inject CardinalityProvider cardinality
 	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
+	@Inject extension RosettaExtensions
 
 	/**
 	 * generate a blueprint java file
@@ -67,7 +70,7 @@ class BlueprintGenerator {
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version, extension JavaNames names) {
 		elements.filter(RosettaBlueprintReport).forEach [ report |
 			fsa.generateFile(packages.model.blueprint.directoryName + '/' + report.name + 'Report.java',
-				generateBlueprint(packages, report.nodes, null, report.name, 'Report', report.URI, version, names))
+				generateBlueprint(packages, firstNodeExpression(report), null, report.name, 'Report', report.URI, version, names))
 		]
 		
 		elements.filter(RosettaBlueprint)
@@ -76,6 +79,49 @@ class BlueprintGenerator {
 			fsa.generateFile(packages.model.blueprint.directoryName + '/' + bp.name + 'Rule.java',
 				generateBlueprint(packages, bp.nodes, bp.output, bp.name, 'Rule', bp.URI, version, names))
 		]
+	}
+
+	/**
+	 * get first node expression
+	 */
+	def firstNodeExpression(RosettaBlueprintReport report) {
+		var BlueprintNodeExp currentNodeExpr = null
+		var BlueprintNodeExp firstNodeExpr = null
+		
+		for (eligibilityRule : report.eligibilityRules) {
+			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
+			ref.blueprint = eligibilityRule
+			ref.name = eligibilityRule.name
+			
+			var newNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
+			newNodeExpr.node = ref
+			newNodeExpr.node.name = ref.name
+						
+			if (null === currentNodeExpr) firstNodeExpr = newNodeExpr
+			else currentNodeExpr.next = newNodeExpr
+				
+			currentNodeExpr = newNodeExpr
+		}
+		
+		val andNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
+		currentNodeExpr.next = andNodeExpr
+		
+		val node = RosettaFactory.eINSTANCE.createBlueprintAnd
+		andNodeExpr.node = node
+
+		node.name = report.name
+		
+		report.allReportingRules.forEach[
+			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
+			ref.blueprint = it
+			ref.name = it.name
+			val rule = RosettaFactory.eINSTANCE.createBlueprintNodeExp
+			rule.node = ref
+			rule.node.name = ref.name
+			node.bps.add(rule)
+		]
+				
+		return firstNodeExpr
 	}
 
 	/**

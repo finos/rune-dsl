@@ -42,7 +42,7 @@ class RosettaBlueprintTest {
 
 	@Test
 	def void parseSimpleReportWithFields() {
-		val r = '''
+		val model = '''
 			body Authority TEST_REG
 			corpus TEST_REG MiFIR
 			
@@ -60,14 +60,84 @@ class RosettaBlueprintTest {
 			type Bar:
 				field string (1..1)
 		'''
-//		.generateCode
-//		println(r)
-		parseRosettaWithNoErrors(r)
+		val code = model.generateCode
+		//println(code)
+		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRReport")
+		try {
+			assertThat(reportJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import javax.inject.Inject;
+				// manual imports
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
+				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.blueprint.BarFieldRule;
+				import com.rosetta.test.model.blueprint.FooRuleRule;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				/**
+				 * @version test
+				 */
+				public class TEST_REGMiFIRReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+					
+					private final RosettaActionFactory actionFactory;
+					
+					@Inject
+					public TEST_REGMiFIRReport(RosettaActionFactory actionFactory) {
+						this.actionFactory = actionFactory;
+					}
+					
+					@Override
+					public String getName() {
+						return "TEST_REGMiFIR"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#//@elements.2";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() { 
+						return 
+							startsWith(actionFactory, getFooRule())
+							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>and(actionFactory,
+								startsWith(actionFactory, getBarField())
+								)
+							)
+							.toBlueprint(getURI(), getName());
+					}
+					
+					@Inject private FooRuleRule fooRuleRef;
+					protected BlueprintInstance <Bar, Bar, INKEY, INKEY> getFooRule() {
+						return fooRuleRef.blueprint();
+					}
+					
+					@Inject private BarFieldRule barFieldRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarField() {
+						return barFieldRef.blueprint();
+					}
+				}
+			'''
+			assertEquals(expected, reportJava)
+			code.compileToClasses
+		} finally {
+		}
 	}
 
 	@Test
 	def void parseSimpleReportWithType() {
-		val r = '''
+		val model = '''
 			body Authority TEST_REG
 			corpus TEST_REG MiFIR
 			
@@ -88,9 +158,79 @@ class RosettaBlueprintTest {
 			type Bar:
 				field string (1..1)
 		'''
-//		.generateCode
-//		println(r)
-		parseRosettaWithNoErrors(r)
+		val code = model.generateCode
+		//println(code)
+		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRReport")
+		try {
+			assertThat(reportJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import javax.inject.Inject;
+				// manual imports
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
+				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.blueprint.BarFieldRule;
+				import com.rosetta.test.model.blueprint.FooRuleRule;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				/**
+				 * @version test
+				 */
+				public class TEST_REGMiFIRReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+					
+					private final RosettaActionFactory actionFactory;
+					
+					@Inject
+					public TEST_REGMiFIRReport(RosettaActionFactory actionFactory) {
+						this.actionFactory = actionFactory;
+					}
+					
+					@Override
+					public String getName() {
+						return "TEST_REGMiFIR"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#//@elements.2";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() { 
+						return 
+							startsWith(actionFactory, getFooRule())
+							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>and(actionFactory,
+								startsWith(actionFactory, getBarField())
+								)
+							)
+							.toBlueprint(getURI(), getName());
+					}
+					
+					@Inject private FooRuleRule fooRuleRef;
+					protected BlueprintInstance <Bar, Bar, INKEY, INKEY> getFooRule() {
+						return fooRuleRef.blueprint();
+					}
+					
+					@Inject private BarFieldRule barFieldRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarField() {
+						return barFieldRef.blueprint();
+					}
+				}
+			'''
+			assertEquals(expected, reportJava)
+			code.compileToClasses
+		} finally {
+		}
 	}
 	
 

@@ -3,6 +3,8 @@ package com.regnosys.rosetta
 import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
@@ -27,6 +29,8 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import java.util.Collection
 import java.util.Set
 import org.eclipse.emf.common.util.URI
+
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class RosettaExtensions {
 	
@@ -271,5 +275,37 @@ class RosettaExtensions {
 		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, conditionName)
 		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
 		return camel
+	}
+	
+	/**
+	 * Get all reporting rules for blueprint report
+	 */
+	def getAllReportingRules(RosettaBlueprintReport report) {
+		val rules = newHashSet
+		if (report.reportType !== null) {
+			report.reportType.collectReportingRules(rules, newHashSet)
+		} else {
+			rules.addAll(report.reportingRules)
+		}
+		return rules
+	}
+	
+	/**
+	 * Recursively collects all reporting rules for all attributes
+	 */
+	private def void collectReportingRules(Data dataType, Set<RosettaBlueprint> collectedRules, Set<Data> collectedTypes) {
+		dataType.allAttributes.forEach[attr|
+			val attrType = attr.type
+			if (attrType.builtInType || attrType instanceof RosettaEnumeration) {
+				collectedRules.addAll(attr.ruleReferences.map[reportingRule])
+			} else if (attrType instanceof Data) {
+				if (!collectedTypes.contains(attrType)) {
+					collectedTypes.add(attrType)
+					attrType.collectReportingRules(collectedRules, collectedTypes)
+				}
+			} else {
+				throw new IllegalArgumentException("Did not collect reporting rules from type " + attrType)
+			}
+		]	
 	}
 }
