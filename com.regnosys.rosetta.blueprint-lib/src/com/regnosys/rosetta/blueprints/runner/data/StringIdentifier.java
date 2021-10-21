@@ -1,37 +1,22 @@
 package com.regnosys.rosetta.blueprints.runner.data;
 
 public class StringIdentifier implements DataIdentifier {
-	private final String s;
-	private final Class<?> rule;
-
-	public StringIdentifier(String s) {
-		this(s, null);
-	}
 	
-	public StringIdentifier(String s, Class<?> rule) {
-		this.s = s;
-		this.rule = rule;
+	private final String id;
+
+	public StringIdentifier(String id) {
+		this.id = id;
 	}
 
-	public String getS() {
-		return s;
-	}
-	
-	public Class<?> getRule() {
-		return rule;
-	}
-
-	@Override
-	public String toString() {
-		return "StringIdentifier [s=" + s + ", rule=" + rule + "]";
+	public String getId() {
+		return id;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-//		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
-		result = prime * result + ((s == null) ? 0 : s.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
 
@@ -44,18 +29,16 @@ public class StringIdentifier implements DataIdentifier {
 		if (getClass() != obj.getClass())
 			return false;
 		StringIdentifier other = (StringIdentifier) obj;
-//		if (rule == null) {
-//			if (other.rule != null)
-//				return false;
-//		} else if (!rule.equals(other.rule))
-//			return false;
-		if (s == null) {
-			if (other.s != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!s.equals(other.s))
+		} else if (!id.equals(other.id))
 			return false;
 		return true;
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "StringIdentifier [id=" + id + "]";
+	}
 }

@@ -2,31 +2,27 @@ package com.regnosys.rosetta.blueprints.runner.data;
 
 import java.util.Optional;
 
-public class RuleIdentifier implements DataIdentifier {
+public class RuleIdentifier extends StringIdentifier {
 	
-	private final String label;
 	private final Class<?> ruleType;
 	private final boolean repeatable;
 	private final Optional<Integer> repeatableIndex;
 	
 	public RuleIdentifier(String label, Class<?> ruleType, boolean repeatable) {
-		this.label = label;
+		super(label);
 		this.ruleType = ruleType;
 		this.repeatable = repeatable;
 		this.repeatableIndex = Optional.empty();
 	}
 	
 	public RuleIdentifier(RuleIdentifier rule, int repeatableIndex) {
-		this.label = rule.label.contains("$") ? 
-				rule.label.replace("$", String.valueOf(repeatableIndex)) : 
-				String.format("%s (%d)", rule.label, repeatableIndex);
+		// add index to label
+		super(rule.getId().contains("$") ? 
+				rule.getId().replace("$", String.valueOf(repeatableIndex)) : 
+				String.format("%s (%d)", rule.getId(), repeatableIndex));
 		this.ruleType = rule.ruleType;
 		this.repeatable = rule.repeatable;
 		this.repeatableIndex = Optional.of(repeatableIndex);
-	}
-	
-	public String getLabel() {
-		return label;
 	}
 
 	public Class<?> getRuleType() {
@@ -44,10 +40,10 @@ public class RuleIdentifier implements DataIdentifier {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((ruleType == null) ? 0 : ruleType.hashCode());
-		result = prime * result + ((label == null) ? 0 : label.hashCode());
+		int result = super.hashCode();
+		result = prime * result + (repeatable ? 1231 : 1237);
 		result = prime * result + ((repeatableIndex == null) ? 0 : repeatableIndex.hashCode());
+		result = prime * result + ((ruleType == null) ? 0 : ruleType.hashCode());
 		return result;
 	}
 
@@ -55,31 +51,29 @@ public class RuleIdentifier implements DataIdentifier {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		RuleIdentifier other = (RuleIdentifier) obj;
-		if (ruleType == null) {
-			if (other.ruleType != null)
-				return false;
-		} else if (!ruleType.equals(other.ruleType))
-			return false;
-		if (label == null) {
-			if (other.label != null)
-				return false;
-		} else if (!label.equals(other.label))
+		if (repeatable != other.repeatable)
 			return false;
 		if (repeatableIndex == null) {
 			if (other.repeatableIndex != null)
 				return false;
 		} else if (!repeatableIndex.equals(other.repeatableIndex))
 			return false;
+		if (ruleType == null) {
+			if (other.ruleType != null)
+				return false;
+		} else if (!ruleType.equals(other.ruleType))
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "RuleIdentifier [label=" + label + ", ruleType=" + ruleType + ", repeatableIndex=" + repeatableIndex + "]";
+		return "RuleIdentifier [ruleType=" + ruleType + ", repeatable=" + repeatable + ", repeatableIndex="
+				+ repeatableIndex + ", id=" + getId() + "]";
 	}
 }
