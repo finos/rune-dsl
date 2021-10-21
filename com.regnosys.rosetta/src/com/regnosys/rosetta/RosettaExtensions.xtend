@@ -301,7 +301,11 @@ class RosettaExtensions {
 			} else if (attrType instanceof Data) {
 				if (!collectedTypes.contains(attrType)) {
 					collectedTypes.add(attrType)
-					attrType.collectReportingRules(collectedRules, collectedTypes)
+					val attrRules = attr.ruleReferences.map[reportingRule]
+					if (attrRules.empty)
+						attrType.collectReportingRules(collectedRules, collectedTypes)
+					else 
+						collectedRules.addAll(attrRules)
 				}
 			} else {
 				throw new IllegalArgumentException("Did not collect reporting rules from type " + attrType)

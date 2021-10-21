@@ -6,17 +6,22 @@ public class RuleIdentifier implements DataIdentifier {
 	
 	private final String label;
 	private final Class<?> ruleType;
+	private final boolean repeatable;
 	private final Optional<Integer> repeatableIndex;
 	
-	public RuleIdentifier(String label, Class<?> ruleType) {
+	public RuleIdentifier(String label, Class<?> ruleType, boolean repeatable) {
 		this.label = label;
 		this.ruleType = ruleType;
+		this.repeatable = repeatable;
 		this.repeatableIndex = Optional.empty();
 	}
 	
-	public RuleIdentifier(String label, Class<?> ruleType, int repeatableIndex) {
-		this.label = label;
-		this.ruleType = ruleType;
+	public RuleIdentifier(RuleIdentifier rule, int repeatableIndex) {
+		this.label = rule.label.contains("$") ? 
+				rule.label.replace("$", String.valueOf(repeatableIndex)) : 
+				String.format("%s (%d)", rule.label, repeatableIndex);
+		this.ruleType = rule.ruleType;
+		this.repeatable = rule.repeatable;
 		this.repeatableIndex = Optional.of(repeatableIndex);
 	}
 	
@@ -26,6 +31,10 @@ public class RuleIdentifier implements DataIdentifier {
 
 	public Class<?> getRuleType() {
 		return ruleType;
+	}
+	
+	public boolean isRepeatable() {
+		return repeatable;
 	}
 
 	public Optional<Integer> getRepeatableIndex() {

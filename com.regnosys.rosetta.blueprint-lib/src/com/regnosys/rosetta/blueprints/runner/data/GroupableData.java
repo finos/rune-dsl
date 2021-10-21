@@ -171,10 +171,7 @@ public class GroupableData<I, K> {
 	private static DataIdentifier getNewIdentifier(DataIdentifier newId, Integer index, DataIdentifier defaultId) {
 		DataIdentifier id = newId == null ? defaultId : newId;
 		if (id != null && id instanceof RuleIdentifier && index != null) {
-			RuleIdentifier ruleId = (RuleIdentifier) id;
-			String label = ruleId.getLabel();
-			String i = String.valueOf(index);
-			return new RuleIdentifier(label.contains("$") ? label.replace("$", i) : String.format("%s (%s)", id, i), ruleId.getRuleType(), index);
+			return new RuleIdentifier((RuleIdentifier) id, index);
 		}
 		return id;
 	}

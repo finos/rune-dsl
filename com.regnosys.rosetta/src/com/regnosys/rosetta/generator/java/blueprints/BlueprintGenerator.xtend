@@ -111,7 +111,7 @@ class BlueprintGenerator {
 
 		node.name = report.name
 		
-		report.allReportingRules.forEach[
+		report.allReportingRules.sortBy[name].forEach[
 			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
 			ref.blueprint = it
 			ref.name = it.name
@@ -398,28 +398,28 @@ class BlueprintGenerator {
 	def createIdentifier(BlueprintNode node) {
 		switch (node) {
 			BlueprintMerge: {
-				'''new RuleIdentifier("«node.output.name»", getClass())'''
+				'''new RuleIdentifier("«node.output.name»", getClass(), false)'''
 			}
 			BlueprintExtract: {
 				val nodeName = if (node.identifier !== null) node.identifier 
 								else if (node.name !== null) node.name
 								else node.call.toNodeLabel
-				'''new RuleIdentifier("«nodeName»", getClass())'''
+				'''new RuleIdentifier("«nodeName»", getClass(), «node.repeatable»)'''
 			}
 			BlueprintReturn: {
 				val nodeName = if (node.identifier !== null) node.identifier 
 								else if (node.name !== null) node.name
 								else node.expression.toNodeLabel
 				
-				'''new RuleIdentifier("«nodeName»", getClass())'''
+				'''new RuleIdentifier("«nodeName»", getClass(), false)'''
 			}
 			BlueprintLookup: {
 				val nodeName = if (node.identifier !== null) node.identifier else node.name
-				'''new RuleIdentifier("Lookup «nodeName»", getClass())'''
+				'''new RuleIdentifier("Lookup «nodeName»", getClass(), false)'''
 			}
 			default: {
 				if (node.identifier!==null) {
-					'''new RuleIdentifier("«node.identifier»", getClass())'''
+					'''new RuleIdentifier("«node.identifier»", getClass(), false)'''
 				}
 				else {
 					'''null'''
