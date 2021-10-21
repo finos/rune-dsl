@@ -8,10 +8,10 @@ public class RuleIdentifier extends StringIdentifier {
 	private final boolean repeatable;
 	private final Optional<Integer> repeatableIndex;
 	
-	public RuleIdentifier(String label, Class<?> ruleType, boolean repeatable) {
+	public RuleIdentifier(String label, Class<?> ruleType) {
 		super(label);
 		this.ruleType = ruleType;
-		this.repeatable = repeatable;
+		this.repeatable = false;
 		this.repeatableIndex = Optional.empty();
 	}
 	
@@ -21,7 +21,7 @@ public class RuleIdentifier extends StringIdentifier {
 				rule.getId().replace("$", String.valueOf(repeatableIndex)) : 
 				String.format("%s (%d)", rule.getId(), repeatableIndex));
 		this.ruleType = rule.ruleType;
-		this.repeatable = rule.repeatable;
+		this.repeatable = true;
 		this.repeatableIndex = Optional.of(repeatableIndex);
 	}
 

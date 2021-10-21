@@ -398,28 +398,28 @@ class BlueprintGenerator {
 	def createIdentifier(BlueprintNode node) {
 		switch (node) {
 			BlueprintMerge: {
-				'''new RuleIdentifier("«node.output.name»", getClass(), false)'''
+				'''new RuleIdentifier("«node.output.name»", getClass())'''
 			}
 			BlueprintExtract: {
 				val nodeName = if (node.identifier !== null) node.identifier 
 								else if (node.name !== null) node.name
 								else node.call.toNodeLabel
-				'''new RuleIdentifier("«nodeName»", getClass(), «node.repeatable»)'''
+				'''new RuleIdentifier("«nodeName»", getClass())'''
 			}
 			BlueprintReturn: {
 				val nodeName = if (node.identifier !== null) node.identifier 
 								else if (node.name !== null) node.name
 								else node.expression.toNodeLabel
 				
-				'''new RuleIdentifier("«nodeName»", getClass(), false)'''
+				'''new RuleIdentifier("«nodeName»", getClass())'''
 			}
 			BlueprintLookup: {
 				val nodeName = if (node.identifier !== null) node.identifier else node.name
-				'''new RuleIdentifier("Lookup «nodeName»", getClass(), false)'''
+				'''new RuleIdentifier("Lookup «nodeName»", getClass())'''
 			}
 			default: {
 				if (node.identifier!==null) {
-					'''new RuleIdentifier("«node.identifier»", getClass(), false)'''
+					'''new RuleIdentifier("«node.identifier»", getClass())'''
 				}
 				else {
 					'''null'''
