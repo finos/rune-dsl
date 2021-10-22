@@ -203,7 +203,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testTypeErrorAssignment_05() {
 		val model =
 		'''
-
 			type Type:
 				other int (0..1)
 
@@ -217,7 +216,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	
 	@Test
 	def void testAttributesWithLocationBadTarget() {
-		val model ='''
+		'''
 			metaType scheme string
 			metaType reference string
 			
@@ -772,7 +771,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def blah() {
+	def shouldGenerateRuleCardinalityWarning() {
 		val model = '''
 			body Authority TEST_REG
 			corpus TEST_REG MiFIR
@@ -797,6 +796,31 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field BarReport->a has single cardinality whereas the reporting rule A has multiple cardinality.")
 	}
 
+	@Test
+	def shouldGenerateRuleTypeError() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule A
+				extract Bar->bar1 as "A"
+			
+			type Bar:
+				bar1 date (0..1)
+			
+			type BarReport:
+				a string (1..1)
+					[ruleReference rule A]
+		'''.parseRosetta
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field BarReport->a has type string whereas the reporting rule A has type date.")
+	}
 }
 	
 class MyRosettaInjectorProvider extends RosettaInjectorProvider {

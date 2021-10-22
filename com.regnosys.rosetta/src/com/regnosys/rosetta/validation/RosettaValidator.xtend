@@ -719,12 +719,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	/**
 	 * Recursively collects all reporting rules for all attributes
 	 */
-	private def void checkReportType(Data dataType) {
-		
+	private def void checkReportType(Data dataType) {	
 		dataType.allAttributes.forEach[attr|
-//			val attrType = attr.type
-			
-			
 			if(attr.ruleReference !== null) {
 				val bp = attr.ruleReference.reportingRule
 				val node = buildTypeGraph(bp.nodes, bp.output)
@@ -738,9 +734,17 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 						'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
 					warning(cardWarning, attr.ruleReference, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 				}
+				// check type
+				if (attr.type !== node.output?.type) {
+					val typeError = '''Type mismatch - report field «dataType.name»->«attr.name» has type «attr.type.name» ''' +
+						'''whereas the reporting rule «bp.name» has type «node.output.type.name».'''
+					error(typeError, attr.ruleReference, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				
+				}
+				
+				// TODO duplicate fields
 			}
 
-			
 			val attrType = attr.type
 			if (attrType instanceof Data) {
 			//if (!collectedTypes.contains(attrType)) {
