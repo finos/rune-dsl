@@ -717,7 +717,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	/**
-	 * Recursively collects all reporting rules for all attributes
+	 * Recursively check all report attribute type and cardinality match the associated reporting rules
 	 */
 	private def void checkReportType(Data dataType) {	
 		dataType.allAttributes.forEach[attr|
@@ -725,7 +725,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				val bp = attr.ruleReference.reportingRule
 				val node = buildTypeGraph(bp.nodes, bp.output)
 				
-				val attrSingle = attr.toExpandedAttribute.cardinalityIsSingleValue
+				val attrExt = attr.toExpandedAttribute
+				val attrSingle = attrExt.cardinalityIsSingleValue
 				val ruleSingle = checkSingle(node, false)
 				
 				// check cardinality
@@ -735,7 +736,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					warning(cardWarning, attr.ruleReference, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 				}
 				// check type
-				if (attr.type !== node.output?.type) {
+				if ((attrExt.builtInType || attrExt.enum) && attr.type !== node.output?.type) {
 					val typeError = '''Type mismatch - report field «dataType.name»->«attr.name» has type «attr.type.name» ''' +
 						'''whereas the reporting rule «bp.name» has type «node.output.type.name».'''
 					error(typeError, attr.ruleReference, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
