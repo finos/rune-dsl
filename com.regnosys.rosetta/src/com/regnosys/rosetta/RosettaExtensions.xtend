@@ -31,6 +31,7 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import java.util.List
 
 class RosettaExtensions {
 	
@@ -283,7 +284,7 @@ class RosettaExtensions {
 	def getAllReportingRules(RosettaBlueprintReport report) {
 		val rules = newHashSet
 		if (report.reportType !== null) {
-			report.reportType.collectReportingRules(rules, newHashSet)
+			report.reportType.collectReportingRules([rules.add(it)], newHashSet)
 		} else {
 			rules.addAll(report.reportingRules)
 		}
@@ -293,19 +294,23 @@ class RosettaExtensions {
 	/**
 	 * Recursively collects all reporting rules for all attributes
 	 */
-	private def void collectReportingRules(Data dataType, Set<RosettaBlueprint> collectedRules, Set<Data> collectedTypes) {
+	def void collectReportingRules(Data dataType, (RosettaBlueprint) => void visitor, Set<Data> collectedTypes) {
 		dataType.allAttributes.forEach[attr|
 			val attrType = attr.type
-			if (attrType.builtInType || attrType instanceof RosettaEnumeration) {
-				collectedRules.addAll(attr.ruleReference?.reportingRule)
+			val attrEx = attr.toExpandedAttribute
+			if (attrEx.builtInType || attrEx.enum) {
+				visitor.apply(attr.ruleReference?.reportingRule)
+				
 			} else if (attrType instanceof Data) {
 				if (!collectedTypes.contains(attrType)) {
 					collectedTypes.add(attrType)
 					val attrRule = attr.ruleReference?.reportingRule
+					// only collect rules from nested type if no rule exists at the top level
+					// e.g. nested reporting rules are not supported (except for repeatable rules where only the top level rule should be collected) 
 					if (attrRule === null)
-						attrType.collectReportingRules(collectedRules, collectedTypes)
+						attrType.collectReportingRules(visitor, collectedTypes)
 					else 
-						collectedRules.addAll(attrRule)
+						visitor.apply(attrRule)
 				}
 			} else {
 				throw new IllegalArgumentException("Did not collect reporting rules from type " + attrType)
