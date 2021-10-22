@@ -87,6 +87,7 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import com.regnosys.rosetta.rosetta.BlueprintRef
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 /**
  * This class contains custom validation rules. 
@@ -669,6 +670,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 			index++
 		}
+		
+		if (report.reportType !== null) {
+			checkReportType(report.reportType)
+		}
 	}
 	
 	def boolean checkSingle(TypedBPNode node, boolean isAlreadyMultiple) {
@@ -709,6 +714,40 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (node.next !== null) {
 			checkDuplicateReportFields(initialBpName, node.next, report)
 		}	
+	}
+	
+	/**
+	 * Recursively collects all reporting rules for all attributes
+	 */
+	private def void checkReportType(Data dataType) {
+		
+		dataType.allAttributes.forEach[attr|
+//			val attrType = attr.type
+			
+			
+			if(attr.ruleReference !== null) {
+				val bp = attr.ruleReference.reportingRule
+				val node = buildTypeGraph(bp.nodes, bp.output)
+				
+				val attrSingle = attr.toExpandedAttribute.cardinalityIsSingleValue
+				val ruleSingle = checkSingle(node, false)
+				
+				// check cardinality
+				if (attrSingle !== ruleSingle) {
+					val cardWarning = '''Cardinality mismatch - report field «dataType.name»->«attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
+						'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
+					warning(cardWarning, attr.ruleReference, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				}
+			}
+
+			
+			val attrType = attr.type
+			if (attrType instanceof Data) {
+			//if (!collectedTypes.contains(attrType)) {
+				attrType.checkReportType
+			//}
+			}
+		]	
 	}
 	
 	@Check

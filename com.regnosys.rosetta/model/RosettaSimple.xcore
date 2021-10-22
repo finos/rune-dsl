@@ -52,9 +52,10 @@ abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
 }
 
 
-class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallable, AssignPathRoot, WithCardinality, References, RosettaRuleReferences {
+class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallable, AssignPathRoot, WithCardinality, References {
 	boolean override
 	contains RosettaSynonym[] synonyms
+	contains RosettaRuleReference ruleReference
 }
 
 abstract class Definable extends RosettaDefinable {}
@@ -144,10 +145,6 @@ class ListLiteral extends RosettaLiteral {
 
 class References {
 	contains com.regnosys.rosetta.rosetta.RosettaDocReference[] references
-}
-
-class RosettaRuleReferences {
-	contains RosettaRuleReference[] ruleReferences
 }
 
 class RosettaRuleReference {

@@ -297,15 +297,15 @@ class RosettaExtensions {
 		dataType.allAttributes.forEach[attr|
 			val attrType = attr.type
 			if (attrType.builtInType || attrType instanceof RosettaEnumeration) {
-				collectedRules.addAll(attr.ruleReferences.map[reportingRule])
+				collectedRules.addAll(attr.ruleReference?.reportingRule)
 			} else if (attrType instanceof Data) {
 				if (!collectedTypes.contains(attrType)) {
 					collectedTypes.add(attrType)
-					val attrRules = attr.ruleReferences.map[reportingRule]
-					if (attrRules.empty)
+					val attrRule = attr.ruleReference?.reportingRule
+					if (attrRule === null)
 						attrType.collectReportingRules(collectedRules, collectedTypes)
 					else 
-						collectedRules.addAll(attrRules)
+						collectedRules.addAll(attrRule)
 				}
 			} else {
 				throw new IllegalArgumentException("Did not collect reporting rules from type " + attrType)

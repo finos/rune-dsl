@@ -47,8 +47,8 @@ fragment ClassSynonyms*:
 fragment References*:
 	references+=RosettaDocReference;
 
-fragment RuleReferences*:
-	ruleReferences+=RosettaRuleReference;
+fragment RuleReference*:
+	ruleReference=RosettaRuleReference;
 
 AnnotationRef:
 	'[' annotation = [Annotation|ValidID] (attribute = [Attribute|ValidID] (qualifiers += AnnotationQualifier)*)? ']'
@@ -66,7 +66,7 @@ Data:
 ;
 
 Attribute:
-	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable? (References|Annotations|Synonyms|RuleReferences)*
+	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable? (References|Annotations|Synonyms)* RuleReference?
 ;
 
 Enumeration returns RosettaEnumeration:

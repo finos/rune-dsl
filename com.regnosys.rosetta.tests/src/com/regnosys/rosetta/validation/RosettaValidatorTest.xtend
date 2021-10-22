@@ -770,6 +770,32 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(ROSETTA_ENUM_SYNONYM, null,
 			"Pattern to match must be a valid regular expression")
 	}
+	
+	@Test
+	def blah() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule A
+				extract Bar->bar1 as "A"
+			
+			type Bar:
+				bar1 string (0..*)
+			
+			type BarReport:
+				a string (1..1)
+					[ruleReference rule A]
+		'''.parseRosetta
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field BarReport->a has single cardinality whereas the reporting rule A has multiple cardinality.")
+	}
 
 }
 	
