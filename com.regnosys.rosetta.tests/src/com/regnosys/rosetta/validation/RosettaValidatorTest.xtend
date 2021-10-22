@@ -791,7 +791,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type BarReport:
 				a string (1..1)
-					[ruleReference rule A]
+					[ruleReference A]
 		'''.parseRosetta
 		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field BarReport->a has single cardinality whereas the reporting rule A has multiple cardinality.")
 	}
@@ -817,7 +817,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type BarReport:
 				a string (1..1)
-					[ruleReference rule A]
+					[ruleReference A]
 		'''.parseRosetta
 		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field BarReport->a has type string whereas the reporting rule A has type date.")
 	}
@@ -844,7 +844,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type BarReport:
 				a string (1..1)
-					[ruleReference rule A]
+					[ruleReference A]
 		'''.parseRosetta
 		model.assertNoIssues
 	}
@@ -871,9 +871,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type BarReport:
 				a string (1..1)
-					[ruleReference rule A]
+					[ruleReference A]
 				b string (1..1)
-					[ruleReference rule A]
+					[ruleReference A]
 		'''.parseRosetta
 		model.assertError(ROSETTA_RULE_REFERENCE, null, "Duplicate reporting rule A")
 	}

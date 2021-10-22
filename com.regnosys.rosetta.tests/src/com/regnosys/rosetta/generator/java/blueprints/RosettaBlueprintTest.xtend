@@ -238,22 +238,22 @@ class RosettaBlueprintTest {
 			
 			type BarReport:
 				barBarOne string (1..1)
-					[ruleReference rule BarBarOne]
+					[ruleReference BarBarOne]
 				barBarTwo string (1..1)
-					[ruleReference rule BarBarTwo]
+					[ruleReference BarBarTwo]
 				barBaz BarBazReport (1..1)
 				barQuxList BarQuxReport (0..*)
-					[ruleReference rule BarQuxList]
+					[ruleReference BarQuxList]
 			
 			type BarBazReport:
 				barBaz1 string (1..1)
-					[ruleReference rule BarBaz]
+					[ruleReference BarBaz]
 			
 			type BarQuxReport:
 				bazQux1 string (1..1)
-					[ruleReference rule QuxQux1]
+					[ruleReference QuxQux1]
 				bazQux2 string (1..1)
-					[ruleReference rule QuxQux2]
+					[ruleReference QuxQux2]
 		'''
 		val code = model.generateCode
 		//println(code)

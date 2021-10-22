@@ -622,7 +622,7 @@ RosettaBlueprintReport:
 
 
 RosettaRuleReference:
-	'[' 'ruleReference' 'rule' reportingRule=[RosettaBlueprint] ']'	
+	'[' 'ruleReference' reportingRule=[RosettaBlueprint] ']'	
 ;
 
 RosettaBlueprint:
