@@ -137,7 +137,7 @@ public class BlueprintInstance <I, O, K1 , K2> extends Upstream<O, K2> implement
 
         Object reportData = sinks.stream().map(s->s.result()).findFirst().get().get();
         Collection<GroupableData<? extends Object, ?>> traceData = sinks.stream().flatMap(s->s.getFinalData().stream()).collect(Collectors.toList());
-        return new BlueprintReport(getLabel(), reportData, traceData, reportBuilder);
+        return new BlueprintReport(getLabel(), reportData, traceData);
     }
 
 	public Upstream<I, K1> getInternalHead() {
