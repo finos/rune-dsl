@@ -69,15 +69,21 @@ class BlueprintGenerator {
 	 */
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version, extension JavaNames names) {
 		elements.filter(RosettaBlueprintReport).forEach [ report |
-			fsa.generateFile(packages.model.blueprint.directoryName + '/' + report.name + 'Report.java',
-				generateBlueprint(packages, firstNodeExpression(report), null, report.name, 'Report', report.URI, version, names))
+			// generate blueprint report
+			fsa.generateFile(packages.model.blueprint.directoryName + '/' + report.name + 'BlueprintReport.java',
+				generateBlueprint(packages, firstNodeExpression(report), null, report.name, 'BlueprintReport', report.URI, report.reportType?.name, version, names))
+			// generate output report type builder
+			if (report.reportType !== null) {
+				fsa.generateFile(packages.model.blueprint.directoryName + '/' + report.reportType.name + 'TypeBuilder.java',
+					generateReportBuilder(packages, report, version, names))
+			}
 		]
 		
 		elements.filter(RosettaBlueprint)
 			.filter[nodes !== null]
 			.forEach [ bp |
 			fsa.generateFile(packages.model.blueprint.directoryName + '/' + bp.name + 'Rule.java',
-				generateBlueprint(packages, bp.nodes, bp.output, bp.name, 'Rule', bp.URI, version, names))
+				generateBlueprint(packages, bp.nodes, bp.output, bp.name, 'Rule', bp.URI, null, version, names))
 		]
 	}
 
@@ -127,7 +133,7 @@ class BlueprintGenerator {
 	/**
 	 * Generate the text of a blueprint
 	 */
-	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RosettaType output, String name, String type, String uri, String version, extension JavaNames names) {
+	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RosettaType output, String name, String type, String uri, String reportBuilderName, String version, extension JavaNames names) {
 		try {
 			val imports = new ImportGenerator(packageName)
 			imports.addBlueprintImports
@@ -136,7 +142,7 @@ class BlueprintGenerator {
 			val typed = buildTypeGraph(nodes, output)
 			val typeArgs = bindArgs(typed)
 			imports.addTypes(typed)
-			val StringConcatenationClient scc = nodes.buildBody(typed, imports, names)
+			val StringConcatenationClient scc = nodes.buildBody(typed, reportBuilderName, imports, names)
 			val body = tracImports(scc)
 			body.addImport("javax.inject.Inject", "Inject")
 			return '''
@@ -221,7 +227,7 @@ class BlueprintGenerator {
 	/**
 	 * build the body of the blueprint class
 	 */
-	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, TypedBPNode typedNode, ImportGenerator imports, extension JavaNames names) {
+	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, TypedBPNode typedNode, String reportBuilderName, ImportGenerator imports, extension JavaNames names) {
 		val context = new Context(nodes, imports)
 		return '''
 			«FOR dep : nodes.functionDependencies.toSet»
@@ -232,7 +238,7 @@ class BlueprintGenerator {
 			public BlueprintInstance<«typedNode.input.either», «typedNode.output.either», «typedNode.inputKey.either», «typedNode.outputKey.either»> blueprint() { 
 				return 
 					startsWith(actionFactory, «nodes.buildGraph(typedNode.next, context)»)
-					.toBlueprint(getURI(), getName());
+					.toBlueprint(getURI(), getName()«IF reportBuilderName !== null», new «reportBuilderName»TypeBuilder()«ENDIF»);
 			}
 			«FOR unimplemented : context.customs.entrySet»
 			
@@ -577,6 +583,66 @@ class BlueprintGenerator {
 		}
 	}
 
+	/**
+	 * 
+	 */
+	def generateReportBuilder(RosettaJavaPackages packageName, RosettaBlueprintReport report, String version, extension JavaNames names) {
+		try {
+			val imports = new ImportGenerator(packageName)
+			imports.addBlueprintReportBuilder(report.reportType)
+//			imports.addSourceAndSink
+			
+//			val typed = buildTypeGraph(nodes, output)
+//			val typeArgs = bindArgs(typed)
+//			imports.addTypes(typed)
+			val StringConcatenationClient scc = report.buildReportBuilderBody(packageName, imports, names)
+			val body = tracImports(scc)
+//			body.addImport("javax.inject.Inject", "Inject")
+			return '''
+				package «packageName.model.blueprint.name»;
+				
+				«FOR imp : body.imports»
+					import «imp»;
+				«ENDFOR»
+				«FOR imp : body.staticImports»
+					import static «imp»;
+				«ENDFOR»
+				
+				«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
+				import «importClass»;
+				«ENDFOR»
+				«FOR importClass : imports.staticImports»
+				import static «importClass».*;
+				«ENDFOR»
+				
+				«emptyJavadocWithVersion(version)»
+				public class «report.reportType.name»TypeBuilder implements ReportTypeBuilder {
+					
+					«body.toString»
+				}
+				'''
+			}
+			catch (Exception e) {
+				LOGGER.error("Error generating blueprint java for "+report.reportType.name, e);
+				return '''Unexpected Error generating «report.reportType.name».java Please see log for details'''
+			}
+	}
+	
+	def StringConcatenationClient buildReportBuilderBody(RosettaBlueprintReport report, RosettaJavaPackages packageName, ImportGenerator imports, extension JavaNames names) {
+		'''
+		@Override
+		public «report.reportType.name» buildReport(«Map»<StringIdentifier, GroupableData<?, String>> reportData) {
+			«report.reportType.name».«report.reportType.name»Builder reportBuilder = «report.reportType.name».builder();
+			//reportData.forEach(x -> {
+			//	x.values().forEach(y -> {
+			//		RuleIdentifier identifier = (RuleIdentifier) y.getIdentifier();
+			//		Class<?> ruleType = identifier.getRuleType();
+			//		
+			//	});
+			//});
+			return reportBuilder.build();
+		}'''
+	}
 	
 	@Data static class AttributePath {
 		List<Attribute> path

@@ -13,27 +13,25 @@ import java.util.stream.Collectors;
 
 public class BlueprintInstance <I, O, K1 , K2> extends Upstream<O, K2> implements Downstream<I, K1>{
 
-	//private final Collection<Downstream<? super I,K1>> heads;
-	//private Collection<Upstream<?, K2>> tails;
-	
 	protected final Collection<StreamSink<?,?,?>> sinks;
 	protected final Collection<StreamSource<?,?>> sources;
 	
-	final InternalHead internalHead;
-	final InternalTail internalTail;
+	private final ReportTypeBuilder reportTypeBuilder;
 	
-	UpstreamList<I, K1> upstreamList = new UpstreamList<>();
+	private final InternalHead internalHead;
+	private final InternalTail internalTail;
+	
+	private final UpstreamList<I, K1> upstreamList = new UpstreamList<>();
 
 
 
 	public BlueprintInstance(String uri, String label, Collection<Downstream<? super I, K1>> heads,
     		Collection<Upstream<? extends O, K2>> tails, Collection<StreamSource<?, ?>> sources,
-			Collection<StreamSink<?, ?, ?>> sinks) {
+			Collection<StreamSink<?, ?, ?>> sinks, ReportTypeBuilder reportTypeBuilder) {
 		super(uri, label);
-		//this.heads = heads;
-		//this.tails = tails;
 		this.sinks = sinks;
 		this.sources = sources;
+		this.reportTypeBuilder = reportTypeBuilder;
 		internalTail = new InternalTail();
 		tails.forEach(t->t.addDownstreams(internalTail));
 
@@ -139,25 +137,23 @@ public class BlueprintInstance <I, O, K1 , K2> extends Upstream<O, K2> implement
 
         Object reportData = sinks.stream().map(s->s.result()).findFirst().get().get();
         Collection<GroupableData<? extends Object, ?>> traceData = sinks.stream().flatMap(s->s.getFinalData().stream()).collect(Collectors.toList());
-        return new BlueprintReport(getLabel(), reportData, traceData);
+        return new BlueprintReport(getLabel(), reportData, traceData, reportBuilder);
     }
-
-
 
 	public Upstream<I, K1> getInternalHead() {
 		return internalHead;
 	}
 
-
-
 	public Downstream<O, K2> getInternalTail() {
 		return internalTail;
 	}
 
-
-
 	@Override
 	public Collection<Upstream<? extends I, K1>> getUpstreams() {
 		return upstreamList.getUpstreams();
+	}
+	
+	public ReportTypeBuilder getReportTypeBuilder() {
+		return reportTypeBuilder;
 	}
 }

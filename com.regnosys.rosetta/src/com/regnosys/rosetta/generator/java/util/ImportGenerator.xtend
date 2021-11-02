@@ -94,14 +94,22 @@ class ImportGenerator {
 	}
 
 	def addSingleMapping(BlueprintExtract extract) {
-		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
-		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
+		addMappingImport
 		addExpression(extract.call)
 	}
 
 	def addMappingImport() {
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
 		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
+	}
+	
+	def addBlueprintReportBuilder(Data reportType) {
+		addMappingImport
+		imports.addAll(
+			'''«packages.model.name».«reportType.name»''',
+			'''«packages.blueprintLib.name».ReportTypeBuilder''',
+			'''«packages.blueprintLib.name».runner.data.GroupableData''')
+
 	}
 
 	def void addFeatureCall(RosettaFeatureCall call) {

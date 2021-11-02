@@ -31,7 +31,6 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import java.util.List
 
 class RosettaExtensions {
 	

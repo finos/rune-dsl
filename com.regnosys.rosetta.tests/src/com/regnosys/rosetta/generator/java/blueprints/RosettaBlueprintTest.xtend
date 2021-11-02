@@ -94,7 +94,7 @@ class RosettaBlueprintTest {
 		'''
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRReport")
+		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -122,12 +122,12 @@ class RosettaBlueprintTest {
 				/**
 				 * @version test
 				 */
-				public class TEST_REGMiFIRReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
 					
 					@Inject
-					public TEST_REGMiFIRReport(RosettaActionFactory actionFactory) {
+					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
 						this.actionFactory = actionFactory;
 					}
 					
@@ -257,7 +257,7 @@ class RosettaBlueprintTest {
 		'''
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRReport")
+		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -285,12 +285,12 @@ class RosettaBlueprintTest {
 				/**
 				 * @version test
 				 */
-				public class TEST_REGMiFIRReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
 					
 					@Inject
-					public TEST_REGMiFIRReport(RosettaActionFactory actionFactory) {
+					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
 						this.actionFactory = actionFactory;
 					}
 					
@@ -316,7 +316,7 @@ class RosettaBlueprintTest {
 								startsWith(actionFactory, getBarQuxList())
 								)
 							)
-							.toBlueprint(getURI(), getName());
+							.toBlueprint(getURI(), getName(), new BarReportTypeBuilder());
 					}
 					
 					@Inject private FooRuleRule fooRuleRef;
@@ -346,9 +346,47 @@ class RosettaBlueprintTest {
 				}
 			'''
 			assertEquals(expected, reportJava)
-			code.compileToClasses
+
 		} finally {
 		}
+		val reportBuilderJava = code.get("com.rosetta.test.model.blueprint.BarReportTypeBuilder")
+		try {
+			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import java.util.Map;
+				
+				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
+				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import com.rosetta.test.model.BarReport;
+				
+				/**
+				 * @version test
+				 */
+				public class BarReportTypeBuilder implements ReportTypeBuilder {
+					
+					@Override
+					public BarReport buildReport(Map<StringIdentifier, GroupableData<?, String>> reportData) {
+						BarReport.BarReportBuilder reportBuilder = BarReport.builder();
+						//reportData.forEach(x -> {
+						//	x.values().forEach(y -> {
+						//		RuleIdentifier identifier = (RuleIdentifier) y.getIdentifier();
+						//		Class<?> ruleType = identifier.getRuleType();
+						//		
+						//	});
+						//});
+						return reportBuilder.build();
+					}
+				}
+			'''
+			assertEquals(expected, reportBuilderJava)
+
+		} finally {
+		}
+		code.compileToClasses
 	}
 	
 

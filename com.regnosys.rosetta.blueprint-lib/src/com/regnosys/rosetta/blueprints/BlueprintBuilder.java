@@ -218,7 +218,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 			heads.add(process);
 			tails.add(process);
 		}
-		return new BlueprintInstance<I, Object, K1, K1>(uri, "Simple mapping", heads, tails, sources, sinks);
+		return new BlueprintInstance<I, Object, K1, K1>(uri, "Simple mapping", heads, tails, sources, sinks, null);
 	}
 	
 	public static <I extends RosettaModelObject, O, K1> BlueprintInstance<I, O, K1, K1> doCalcMappings(RosettaActionFactory actionFactory, String uri, Collection<MappingGroup<I, ? extends O>> mappings){
@@ -234,12 +234,16 @@ public class BlueprintBuilder<I,O, K1, K2> {
 			heads.add(process);
 			tails.add(process);
 		}
-		return new BlueprintInstance<I, O, K1, K1>(uri, "Calculation mapping", heads, tails, sources, sinks);
+		return new BlueprintInstance<I, O, K1, K1>(uri, "Calculation mapping", heads, tails, sources, sinks, null);
 	}
 	
 	public BlueprintInstance<I, O, K1, K2> toBlueprint(String uri, String blueprintName) {
+		return toBlueprint(uri, blueprintName, null);
+	}
+	
+	public BlueprintInstance<I, O, K1, K2> toBlueprint(String uri, String blueprintName, ReportTypeBuilder reportBuilder) {
 		return new BlueprintInstance<I, O, K1, K2>(uri, blueprintName, heads, 
-				tails.stream().map(Upstream.class::cast).collect(Collectors.toList()), sources, sinks);
+				tails.stream().map(Upstream.class::cast).collect(Collectors.toList()), sources, sinks, reportBuilder);
 	}
 	
 }
