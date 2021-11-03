@@ -105,7 +105,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 				import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
@@ -126,7 +125,6 @@ class RosettaBlueprintTest {
 				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
-					private final ReportTypeBuilder reportTypeBuilder = null;
 					
 					@Inject
 					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
@@ -141,11 +139,6 @@ class RosettaBlueprintTest {
 					@Override
 					public String getURI() {
 						return "__synthetic1.rosetta#//@elements.2";
-					}
-					
-					@Override
-					public ReportTypeBuilder getReportTypeBuilder() {
-						return reportTypeBuilder;
 					}
 					
 					
@@ -275,7 +268,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 				import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
@@ -296,7 +288,6 @@ class RosettaBlueprintTest {
 				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
-					private final ReportTypeBuilder reportTypeBuilder = new BarReportTypeBuilder();
 					
 					@Inject
 					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
@@ -311,11 +302,6 @@ class RosettaBlueprintTest {
 					@Override
 					public String getURI() {
 						return "__synthetic1.rosetta#//@elements.2";
-					}
-					
-					@Override
-					public ReportTypeBuilder getReportTypeBuilder() {
-						return reportTypeBuilder;
 					}
 					
 					
@@ -476,7 +462,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
@@ -492,7 +477,6 @@ class RosettaBlueprintTest {
 				public class Blueprint1Rule<INKEY> implements Blueprint<Foo, String, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
-					private final ReportTypeBuilder reportTypeBuilder = null;
 					
 					@Inject
 					public Blueprint1Rule(RosettaActionFactory actionFactory) {
@@ -507,11 +491,6 @@ class RosettaBlueprintTest {
 					@Override
 					public String getURI() {
 						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					@Override
-					public ReportTypeBuilder getReportTypeBuilder() {
-						return reportTypeBuilder;
 					}
 					
 					
@@ -639,7 +618,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 				import com.regnosys.rosetta.blueprints.runner.actions.Filter;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
@@ -655,7 +633,6 @@ class RosettaBlueprintTest {
 				public class Blueprint1Rule<INKEY> implements Blueprint<Input, String, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
-					private final ReportTypeBuilder reportTypeBuilder = null;
 					
 					@Inject
 					public Blueprint1Rule(RosettaActionFactory actionFactory) {
@@ -670,11 +647,6 @@ class RosettaBlueprintTest {
 					@Override
 					public String getURI() {
 						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					@Override
-					public ReportTypeBuilder getReportTypeBuilder() {
-						return reportTypeBuilder;
 					}
 					
 					
@@ -723,7 +695,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
@@ -739,7 +710,6 @@ class RosettaBlueprintTest {
 				public class Blueprint1Rule<INKEY> implements Blueprint<Input, Number, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
-					private final ReportTypeBuilder reportTypeBuilder = null;
 					
 					@Inject
 					public Blueprint1Rule(RosettaActionFactory actionFactory) {
@@ -754,11 +724,6 @@ class RosettaBlueprintTest {
 					@Override
 					public String getURI() {
 						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					@Override
-					public ReportTypeBuilder getReportTypeBuilder() {
-						return reportTypeBuilder;
 					}
 					
 					
@@ -820,7 +785,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
@@ -837,7 +801,6 @@ class RosettaBlueprintTest {
 				public class Blueprint1Rule<INKEY> implements Blueprint<Input, Object, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
-					private final ReportTypeBuilder reportTypeBuilder = null;
 					
 					@Inject
 					public Blueprint1Rule(RosettaActionFactory actionFactory) {
@@ -852,11 +815,6 @@ class RosettaBlueprintTest {
 					@Override
 					public String getURI() {
 						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					@Override
-					public ReportTypeBuilder getReportTypeBuilder() {
-						return reportTypeBuilder;
 					}
 					
 					
@@ -912,7 +870,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
@@ -928,7 +885,6 @@ class RosettaBlueprintTest {
 				public class Blueprint1Rule<INKEY> implements Blueprint<Input1, String, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
-					private final ReportTypeBuilder reportTypeBuilder = null;
 					
 					@Inject
 					public Blueprint1Rule(RosettaActionFactory actionFactory) {
@@ -943,11 +899,6 @@ class RosettaBlueprintTest {
 					@Override
 					public String getURI() {
 						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					@Override
-					public ReportTypeBuilder getReportTypeBuilder() {
-						return reportTypeBuilder;
 					}
 					
 					
@@ -1020,7 +971,6 @@ class RosettaBlueprintTest {
 		import com.regnosys.rosetta.blueprints.Blueprint;
 		import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 		import com.regnosys.rosetta.blueprints.BlueprintInstance;
-		import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 		import com.regnosys.rosetta.blueprints.runner.actions.Filter;
 		import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 		import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
@@ -1034,7 +984,6 @@ class RosettaBlueprintTest {
 		public class SimpleBlueprintRule<INKEY> implements Blueprint<Input, Input, INKEY, INKEY> {
 			
 			private final RosettaActionFactory actionFactory;
-			private final ReportTypeBuilder reportTypeBuilder = null;
 			
 			@Inject
 			public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
@@ -1049,11 +998,6 @@ class RosettaBlueprintTest {
 			@Override
 			public String getURI() {
 				return "__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint";
-			}
-			
-			@Override
-			public ReportTypeBuilder getReportTypeBuilder() {
-				return reportTypeBuilder;
 			}
 			
 			
@@ -1144,7 +1088,6 @@ class RosettaBlueprintTest {
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 			import com.regnosys.rosetta.blueprints.BlueprintInstance;
-			import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 			import com.regnosys.rosetta.blueprints.runner.actions.Filter;
 			import com.regnosys.rosetta.blueprints.runner.actions.FilterByRule;
 			import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
@@ -1164,7 +1107,6 @@ class RosettaBlueprintTest {
 			public class WorthyAvengerRule<INKEY> implements Blueprint<Avengers, String, INKEY, INKEY> {
 				
 				private final RosettaActionFactory actionFactory;
-				private final ReportTypeBuilder reportTypeBuilder = null;
 				
 				@Inject
 				public WorthyAvengerRule(RosettaActionFactory actionFactory) {
@@ -1179,11 +1121,6 @@ class RosettaBlueprintTest {
 				@Override
 				public String getURI() {
 					return "__synthetic1.rosetta#com.rosetta.test.model.WorthyAvenger";
-				}
-				
-				@Override
-				public ReportTypeBuilder getReportTypeBuilder() {
-					return reportTypeBuilder;
 				}
 				
 				
@@ -1255,7 +1192,6 @@ class RosettaBlueprintTest {
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 			import com.regnosys.rosetta.blueprints.BlueprintInstance;
-			import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 			import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 			import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
@@ -1270,7 +1206,6 @@ class RosettaBlueprintTest {
 			public class IsFixedFloatRule<INKEY> implements Blueprint<Foo, Boolean, INKEY, INKEY> {
 				
 				private final RosettaActionFactory actionFactory;
-				private final ReportTypeBuilder reportTypeBuilder = null;
 				
 				@Inject
 				public IsFixedFloatRule(RosettaActionFactory actionFactory) {
@@ -1285,11 +1220,6 @@ class RosettaBlueprintTest {
 				@Override
 				public String getURI() {
 					return "__synthetic1.rosetta#com.rosetta.test.model.IsFixedFloat";
-				}
-				
-				@Override
-				public ReportTypeBuilder getReportTypeBuilder() {
-					return reportTypeBuilder;
 				}
 				
 				
@@ -1456,7 +1386,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
@@ -1469,7 +1398,6 @@ class RosettaBlueprintTest {
 				public class SimpleBlueprintRule<INKEY> implements Blueprint<Input, Input, INKEY, String> {
 					
 					private final RosettaActionFactory actionFactory;
-					private final ReportTypeBuilder reportTypeBuilder = null;
 					
 					@Inject
 					public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
@@ -1484,11 +1412,6 @@ class RosettaBlueprintTest {
 					@Override
 					public String getURI() {
 						return "__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint";
-					}
-					
-					@Override
-					public ReportTypeBuilder getReportTypeBuilder() {
-						return reportTypeBuilder;
 					}
 					
 					
@@ -1532,7 +1455,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
@@ -1546,7 +1468,6 @@ class RosettaBlueprintTest {
 				public class SimpleBlueprintRule<INKEY> implements Blueprint<Object, Input2, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
-					private final ReportTypeBuilder reportTypeBuilder = null;
 					
 					@Inject
 					public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
@@ -1561,11 +1482,6 @@ class RosettaBlueprintTest {
 					@Override
 					public String getURI() {
 						return "__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint";
-					}
-					
-					@Override
-					public ReportTypeBuilder getReportTypeBuilder() {
-						return reportTypeBuilder;
 					}
 					
 					

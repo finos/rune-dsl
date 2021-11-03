@@ -67,7 +67,6 @@ class ImportGenerator {
 	def addBlueprintImports() {
 		imports.addAll(
 		'''«packages.blueprintLib.name».Blueprint''',
-		'''«packages.blueprintLib.name».ReportTypeBuilder''',
 		'''«packages.blueprintLib.name».BlueprintInstance''',
 		'''«packages.blueprintLib.name».BlueprintBuilder''',
 		'''«packages.blueprintLib.name».runner.actions.rosetta.RosettaActionFactory''')

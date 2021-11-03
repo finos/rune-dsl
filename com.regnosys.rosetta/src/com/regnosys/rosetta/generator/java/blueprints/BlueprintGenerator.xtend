@@ -53,7 +53,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
@@ -167,7 +166,6 @@ class BlueprintGenerator {
 				public class «name»«type»«typeArgs» implements Blueprint<«typed.input.getEither», «typed.output.getEither», «typed.inputKey.getEither», «typed.outputKey.getEither»> {
 					
 					private final RosettaActionFactory actionFactory;
-					private final ReportTypeBuilder reportTypeBuilder = «IF reportBuilderName !== null»new «reportBuilderName»TypeBuilder()«ELSE»null«ENDIF»;
 					
 					@Inject
 					public «name»«type»(RosettaActionFactory actionFactory) {
@@ -182,11 +180,6 @@ class BlueprintGenerator {
 					@Override
 					public String getURI() {
 						return "«uri»";
-					}
-					
-					@Override
-					public ReportTypeBuilder getReportTypeBuilder() {
-						return reportTypeBuilder;
 					}
 					
 					«body.toString»
