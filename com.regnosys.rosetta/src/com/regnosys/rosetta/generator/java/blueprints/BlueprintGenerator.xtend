@@ -53,6 +53,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
@@ -633,15 +634,60 @@ class BlueprintGenerator {
 		@Override
 		public «report.reportType.name» buildReport(«Map»<StringIdentifier, GroupableData<?, String>> reportData) {
 			«report.reportType.name».«report.reportType.name»Builder reportBuilder = «report.reportType.name».builder();
-			//reportData.forEach(x -> {
-			//	x.values().forEach(y -> {
-			//		RuleIdentifier identifier = (RuleIdentifier) y.getIdentifier();
-			//		Class<?> ruleType = identifier.getRuleType();
-			//		
-			//	});
-			//});
+			
+			reportData.values().forEach(groupableData -> {
+				RuleIdentifier identifier = (RuleIdentifier) groupableData.getIdentifier();
+				Class<?> ruleType = identifier.getRuleType();
+				Object data = groupableData.getData();
+				«report.reportType.buildRules»
+			});
+			
 			return reportBuilder.build();
 		}'''
+	}
+	
+	def StringConcatenationClient buildRules(com.regnosys.rosetta.rosetta.simple.Data dataType) {
+		'''«FOR attr : dataType.allAttributes»
+			«val rule = attr.ruleReference?.reportingRule»
+			«IF rule !== null && !attr.card.isIsMany»
+				if («rule.name»Rule.class.isAssignableFrom(ruleType)) {
+					//reportBuilder.set«attr.name.toFirstUpper»(data);
+				}
+			«ENDIF»
+		«ENDFOR»
+		'''
+//		dataType.allAttributes.forEach[attr|
+//			val attrType = attr.type
+//			val attrEx = attr.toExpandedAttribute
+//			val rule = attr.ruleReference?.reportingRule
+//			
+//			if (rule !== null) {
+//				'''
+//				if («rule.name») {
+//					
+//				}'''
+//			}
+
+			
+//			if (attrEx.builtInType || attrEx.enum) {
+//				visitor.apply(attr.ruleReference?.reportingRule)
+//				
+//			}
+//			 else if (attrType instanceof Data) {
+//				if (!collectedTypes.contains(attrType)) {
+//					collectedTypes.add(attrType)
+//					val attrRule = attr.ruleReference?.reportingRule
+//					// only collect rules from nested type if no rule exists at the top level
+//					// e.g. nested reporting rules are not supported (except for repeatable rules where only the top level rule should be collected) 
+//					if (attrRule === null)
+//						attrType.collectReportingRules(visitor, collectedTypes)
+//					else 
+//						visitor.apply(attrRule)
+//				}
+//			} else {
+//				throw new IllegalArgumentException("Did not collect reporting rules from type " + attrType)
+//			}
+//		]	
 	}
 	
 	@Data static class AttributePath {

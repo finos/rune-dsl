@@ -371,13 +371,19 @@ class RosettaBlueprintTest {
 					@Override
 					public BarReport buildReport(Map<StringIdentifier, GroupableData<?, String>> reportData) {
 						BarReport.BarReportBuilder reportBuilder = BarReport.builder();
-						//reportData.forEach(x -> {
-						//	x.values().forEach(y -> {
-						//		RuleIdentifier identifier = (RuleIdentifier) y.getIdentifier();
-						//		Class<?> ruleType = identifier.getRuleType();
-						//		
-						//	});
-						//});
+						
+						reportData.values().forEach(groupableData -> {
+							RuleIdentifier identifier = (RuleIdentifier) groupableData.getIdentifier();
+							Class<?> ruleType = identifier.getRuleType();
+							Object data = groupableData.getData();
+							if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
+								//reportBuilder.setBarBarOne(data);
+							}
+							if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
+								//reportBuilder.setBarBarTwo(data);
+							}
+						});
+						
 						return reportBuilder.build();
 					}
 				}

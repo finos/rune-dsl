@@ -242,6 +242,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 	}
 	
 	public BlueprintInstance<I, O, K1, K2> toBlueprint(String uri, String blueprintName, ReportTypeBuilder reportBuilder) {
+		System.out.println(String.format("**** BlueprintBuilder %s %s", blueprintName, reportBuilder));
 		return new BlueprintInstance<I, O, K1, K2>(uri, blueprintName, heads, 
 				tails.stream().map(Upstream.class::cast).collect(Collectors.toList()), sources, sinks, reportBuilder);
 	}

@@ -29,6 +29,7 @@ public class BlueprintInstance <I, O, K1 , K2> extends Upstream<O, K2> implement
     		Collection<Upstream<? extends O, K2>> tails, Collection<StreamSource<?, ?>> sources,
 			Collection<StreamSink<?, ?, ?>> sinks, ReportTypeBuilder reportTypeBuilder) {
 		super(uri, label);
+		System.out.println(String.format("**** BlueprintInstance %s %s", label, reportTypeBuilder));
 		this.sinks = sinks;
 		this.sources = sources;
 		this.reportTypeBuilder = reportTypeBuilder;
