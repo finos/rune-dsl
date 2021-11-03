@@ -8,7 +8,6 @@ import java.util.List;
 public interface Blueprint<IN, OUT, KIN, KOUT> {
     String getName();
     String getURI();
-    ReportTypeBuilder getReportTypeBuilder();
     
 	@SafeVarargs
 	static public <A> List<A> of(A a, A... aas) {
