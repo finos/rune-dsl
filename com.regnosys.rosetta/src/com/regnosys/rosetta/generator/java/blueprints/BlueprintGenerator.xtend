@@ -167,6 +167,7 @@ class BlueprintGenerator {
 				public class «name»«type»«typeArgs» implements Blueprint<«typed.input.getEither», «typed.output.getEither», «typed.inputKey.getEither», «typed.outputKey.getEither»> {
 					
 					private final RosettaActionFactory actionFactory;
+					private final ReportTypeBuilder reportTypeBuilder = «IF reportBuilderName !== null»new «reportBuilderName»TypeBuilder()«ELSE»null«ENDIF»;
 					
 					@Inject
 					public «name»«type»(RosettaActionFactory actionFactory) {
@@ -181,6 +182,11 @@ class BlueprintGenerator {
 					@Override
 					public String getURI() {
 						return "«uri»";
+					}
+					
+					@Override
+					public ReportTypeBuilder getReportTypeBuilder() {
+						return reportTypeBuilder;
 					}
 					
 					«body.toString»

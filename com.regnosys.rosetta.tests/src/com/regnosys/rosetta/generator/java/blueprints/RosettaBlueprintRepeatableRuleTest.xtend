@@ -248,6 +248,7 @@ class RosettaBlueprintRepeatableRuleTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
@@ -262,6 +263,7 @@ class RosettaBlueprintRepeatableRuleTest {
 				public class RepeatableValueRule<INKEY> implements Blueprint<Foo, Integer, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
+					private final ReportTypeBuilder reportTypeBuilder = null;
 					
 					@Inject
 					public RepeatableValueRule(RosettaActionFactory actionFactory) {
@@ -276,6 +278,11 @@ class RosettaBlueprintRepeatableRuleTest {
 					@Override
 					public String getURI() {
 						return "__synthetic1.rosetta#com.rosetta.test.model.RepeatableValue";
+					}
+					
+					@Override
+					public ReportTypeBuilder getReportTypeBuilder() {
+						return reportTypeBuilder;
 					}
 					
 					
