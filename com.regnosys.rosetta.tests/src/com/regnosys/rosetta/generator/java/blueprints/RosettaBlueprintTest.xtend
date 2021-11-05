@@ -570,7 +570,7 @@ class RosettaBlueprintTest {
 			        [ruleReference Nationality]
 			    hasSpecialAbilities boolean (1..1) <"Basic type - boolean">
 			        [ruleReference SpecialAbilities]
-			    powers PowerEnum (0..*) <"Enum type - multiple cardinality">
+			    powers PowerEnum (0..1) <"Enum type - multiple cardinality not allowed">
 			        [ruleReference Powers]
 			    attribute AttributeReport (0..1)  <"Nested report">
 			    organisations OrganisationReport (0..*) <"Repeatable rule">
@@ -702,6 +702,7 @@ class RosettaBlueprintTest {
 				import java.time.ZonedDateTime;
 				import java.util.Collection;
 				import test.reg.CountryEnum;
+				import test.reg.PowerEnum;
 				
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
@@ -736,6 +737,9 @@ class RosettaBlueprintTest {
 								}
 								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
 									dataItemReportBuilder.setHasSpecialAbilities((Boolean) data); 
+								}
+								if (PowersRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.setPowers((PowerEnum) data); 
 								}
 								if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
 									dataItemReportBuilder.getOrCreateAttribute().setHeroInt((Integer) data); 
