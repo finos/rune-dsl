@@ -39,6 +39,7 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.validation.BindableType
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver
 import com.regnosys.rosetta.validation.TypedBPNode
+import java.util.Collection
 import java.util.List
 import java.util.Map
 import javax.inject.Inject
@@ -53,6 +54,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
@@ -74,7 +76,7 @@ class BlueprintGenerator {
 				generateBlueprint(packages, firstNodeExpression(report), null, report.name, 'BlueprintReport', report.URI, report.reportType?.name, version, names))
 			// generate output report type builder
 			if (report.reportType !== null) {
-				fsa.generateFile(packages.model.blueprint.directoryName + '/' + report.reportType.name + 'TypeBuilder.java',
+				fsa.generateFile(packages.model.blueprint.directoryName + '/' + report.reportType.name.toDataItemReportBuilderName + '.java',
 					generateReportBuilder(packages, report, version, names))
 			}
 		]
@@ -118,6 +120,7 @@ class BlueprintGenerator {
 		node.name = report.name
 		
 		report.allReportingRules.sortBy[name].forEach[
+			// TODO fix for attributes with no rules
 			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
 			ref.blueprint = it
 			ref.name = it.name
@@ -133,7 +136,7 @@ class BlueprintGenerator {
 	/**
 	 * Generate the text of a blueprint
 	 */
-	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RosettaType output, String name, String type, String uri, String reportBuilderName, String version, extension JavaNames names) {
+	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RosettaType output, String name, String type, String uri, String dataItemReportBuilderName, String version, extension JavaNames names) {
 		try {
 			val imports = new ImportGenerator(packageName)
 			imports.addBlueprintImports
@@ -142,7 +145,7 @@ class BlueprintGenerator {
 			val typed = buildTypeGraph(nodes, output)
 			val typeArgs = bindArgs(typed)
 			imports.addTypes(typed)
-			val StringConcatenationClient scc = nodes.buildBody(typed, reportBuilderName, imports, names)
+			val StringConcatenationClient scc = nodes.buildBody(typed, dataItemReportBuilderName, imports, names)
 			val body = tracImports(scc)
 			body.addImport("javax.inject.Inject", "Inject")
 			return '''
@@ -227,7 +230,7 @@ class BlueprintGenerator {
 	/**
 	 * build the body of the blueprint class
 	 */
-	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, TypedBPNode typedNode, String reportBuilderName, ImportGenerator imports, extension JavaNames names) {
+	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, TypedBPNode typedNode, String dataItemReportBuilderName, ImportGenerator imports, extension JavaNames names) {
 		val context = new Context(nodes, imports)
 		return '''
 			«FOR dep : nodes.functionDependencies.toSet»
@@ -238,7 +241,8 @@ class BlueprintGenerator {
 			public BlueprintInstance<«typedNode.input.either», «typedNode.output.either», «typedNode.inputKey.either», «typedNode.outputKey.either»> blueprint() { 
 				return 
 					startsWith(actionFactory, «nodes.buildGraph(typedNode.next, context)»)
-					.toBlueprint(getURI(), getName()«IF reportBuilderName !== null», new «reportBuilderName»TypeBuilder()«ENDIF»);
+					«IF dataItemReportBuilderName !== null».addDataItemReportBuilder(new «dataItemReportBuilderName.toDataItemReportBuilderName»())«ENDIF»
+					.toBlueprint(getURI(), getName());
 			}
 			«FOR unimplemented : context.customs.entrySet»
 			
@@ -584,20 +588,16 @@ class BlueprintGenerator {
 	}
 
 	/**
-	 * 
+	 * Builds DataItemReportBuilder that takes a list of GroupableData
 	 */
 	def generateReportBuilder(RosettaJavaPackages packageName, RosettaBlueprintReport report, String version, extension JavaNames names) {
 		try {
 			val imports = new ImportGenerator(packageName)
-			imports.addBlueprintReportBuilder(report.reportType)
-//			imports.addSourceAndSink
-			
-//			val typed = buildTypeGraph(nodes, output)
-//			val typeArgs = bindArgs(typed)
-//			imports.addTypes(typed)
-			val StringConcatenationClient scc = report.buildReportBuilderBody(packageName, imports, names)
+			imports.addDataItemReportBuilder(report.reportType)
+
+			val StringConcatenationClient scc = report.buildDataItemReportBuilderBody(names)
 			val body = tracImports(scc)
-//			body.addImport("javax.inject.Inject", "Inject")
+
 			return '''
 				package «packageName.model.blueprint.name»;
 				
@@ -616,7 +616,7 @@ class BlueprintGenerator {
 				«ENDFOR»
 				
 				«emptyJavadocWithVersion(version)»
-				public class «report.reportType.name»TypeBuilder implements ReportTypeBuilder {
+				public class «report.reportType.name.toDataItemReportBuilderName» implements DataItemReportBuilder {
 					
 					«body.toString»
 				}
@@ -628,65 +628,54 @@ class BlueprintGenerator {
 			}
 	}
 	
-	def StringConcatenationClient buildReportBuilderBody(RosettaBlueprintReport report, RosettaJavaPackages packageName, ImportGenerator imports, extension JavaNames names) {
+	def StringConcatenationClient buildDataItemReportBuilderBody(RosettaBlueprintReport report, extension JavaNames names) {
+		val reportTypeName = report.reportType.name
+		val builderName = "dataItemReportBuilder"
 		'''
 		@Override
-		public «report.reportType.name» buildReport(«Map»<StringIdentifier, GroupableData<?, String>> reportData) {
-			«report.reportType.name».«report.reportType.name»Builder reportBuilder = «report.reportType.name».builder();
+		public <T> «reportTypeName» buildReport(«Collection»<GroupableData<?, T>> reportData) {
+			«reportTypeName».«reportTypeName»Builder «builderName» = «reportTypeName».builder();
 			
-			reportData.values().forEach(groupableData -> {
-				RuleIdentifier identifier = (RuleIdentifier) groupableData.getIdentifier();
-				Class<?> ruleType = identifier.getRuleType();
-				Object data = groupableData.getData();
-				«report.reportType.buildRules»
+			reportData.forEach(groupableData -> {
+				DataIdentifier dataIdentifier = groupableData.getIdentifier();
+				if (dataIdentifier instanceof RuleIdentifier) {
+					RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+					Class<?> ruleType = ruleIdentifier.getRuleType();
+					Object data = groupableData.getData();
+					«report.reportType.buildRules(builderName, names)»
+				}
 			});
 			
-			return reportBuilder.build();
+			return «builderName».build();
 		}'''
 	}
 	
-	def StringConcatenationClient buildRules(com.regnosys.rosetta.rosetta.simple.Data dataType) {
+	def StringConcatenationClient buildRules(com.regnosys.rosetta.rosetta.simple.Data dataType, String builderPath, extension JavaNames names) {
 		'''«FOR attr : dataType.allAttributes»
+			«val attrEx = attr.toExpandedAttribute»
+			«val attrType = attr.type»
 			«val rule = attr.ruleReference?.reportingRule»
-			«IF rule !== null && !attr.card.isIsMany»
-				if («rule.name»Rule.class.isAssignableFrom(ruleType)) {
-					//reportBuilder.set«attr.name.toFirstUpper»(data);
-				}
+			«IF rule !== null»
+				«IF attr.card.isIsMany»
+					«IF attrType instanceof com.regnosys.rosetta.rosetta.simple.Data»
+						«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»(ruleIdentifier.getRepeatableIndex().get())''', names)»
+					«ENDIF»
+				«ELSE»
+					if («rule.name»Rule.class.isAssignableFrom(ruleType)) {
+						«builderPath».set«attr.name.toFirstUpper»((«attrEx.type.toJavaType») data); 
+					}
+				«ENDIF»
+			«ELSEIF attrType instanceof com.regnosys.rosetta.rosetta.simple.Data»
+				«IF !attr.card.isIsMany»
+					«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»()''', names)»
+				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
-		'''
-//		dataType.allAttributes.forEach[attr|
-//			val attrType = attr.type
-//			val attrEx = attr.toExpandedAttribute
-//			val rule = attr.ruleReference?.reportingRule
-//			
-//			if (rule !== null) {
-//				'''
-//				if («rule.name») {
-//					
-//				}'''
-//			}
-
-			
-//			if (attrEx.builtInType || attrEx.enum) {
-//				visitor.apply(attr.ruleReference?.reportingRule)
-//				
-//			}
-//			 else if (attrType instanceof Data) {
-//				if (!collectedTypes.contains(attrType)) {
-//					collectedTypes.add(attrType)
-//					val attrRule = attr.ruleReference?.reportingRule
-//					// only collect rules from nested type if no rule exists at the top level
-//					// e.g. nested reporting rules are not supported (except for repeatable rules where only the top level rule should be collected) 
-//					if (attrRule === null)
-//						attrType.collectReportingRules(visitor, collectedTypes)
-//					else 
-//						visitor.apply(attrRule)
-//				}
-//			} else {
-//				throw new IllegalArgumentException("Did not collect reporting rules from type " + attrType)
-//			}
-//		]	
+		'''	
+	}
+	
+	def String toDataItemReportBuilderName(String dataItemReportTypeName) {
+		'''«dataItemReportTypeName»_DataItemReportBuilder'''
 	}
 	
 	@Data static class AttributePath {

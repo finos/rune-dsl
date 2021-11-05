@@ -316,7 +316,8 @@ class RosettaBlueprintTest {
 								startsWith(actionFactory, getBarQuxList())
 								)
 							)
-							.toBlueprint(getURI(), getName(), new BarReportTypeBuilder());
+							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
+							.toBlueprint(getURI(), getName());
 					}
 					
 					@Inject private FooRuleRule fooRuleRef;
@@ -349,15 +350,16 @@ class RosettaBlueprintTest {
 
 		} finally {
 		}
-		val reportBuilderJava = code.get("com.rosetta.test.model.blueprint.BarReportTypeBuilder")
+		val reportBuilderJava = code.get("com.rosetta.test.model.blueprint.BarReport_DataItemReportBuilder")
 		try {
 			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import java.util.Map;
+				import java.util.Collection;
 				
-				import com.regnosys.rosetta.blueprints.ReportTypeBuilder;
+				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
+				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
@@ -366,25 +368,37 @@ class RosettaBlueprintTest {
 				/**
 				 * @version test
 				 */
-				public class BarReportTypeBuilder implements ReportTypeBuilder {
+				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
 					
 					@Override
-					public BarReport buildReport(Map<StringIdentifier, GroupableData<?, String>> reportData) {
-						BarReport.BarReportBuilder reportBuilder = BarReport.builder();
+					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
+						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
 						
-						reportData.values().forEach(groupableData -> {
-							RuleIdentifier identifier = (RuleIdentifier) groupableData.getIdentifier();
-							Class<?> ruleType = identifier.getRuleType();
-							Object data = groupableData.getData();
-							if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-								//reportBuilder.setBarBarOne(data);
-							}
-							if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-								//reportBuilder.setBarBarTwo(data);
+						reportData.forEach(groupableData -> {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.setBarBarOne((String) data); 
+								}
+								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.setBarBarTwo((String) data); 
+								}
+								if (BarBazRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.getOrCreateBarBaz().setBarBaz1((String) data); 
+								}
+								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().get()).setBazQux1((String) data); 
+								}
+								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().get()).setBazQux2((String) data); 
+								}
 							}
 						});
 						
-						return reportBuilder.build();
+						return dataItemReportBuilder.build();
 					}
 				}
 			'''
@@ -395,6 +409,242 @@ class RosettaBlueprintTest {
 		code.compileToClasses
 	}
 	
+	@Test
+	def void parseReportWithType() {
+		val model = '''
+			namespace "test.reg"
+			version "test"
+			
+			body Authority Shield <"Strategic Homeland Intervention, Enforcement and Logistics Division">
+			
+			corpus Act "Avengers Initiative" Avengers <"The Avengers Initiative (a.k.a Phase 1; originally conceptualized as the Protector Initiative) was a secret project created by S.H.I.E.L.D. to create the Avengers, a response team comprised of the most able individuals humankind has to offer. The Initiative will defend Earth from imminent global threats that are beyond the warfighting capability of conventional military forces. ">
+			
+			corpus Regulations "Sokovia Accords" SokoviaAccords <"The Sokovia Accords are a set of legal documents designed to regulate the activities of enhanced individuals, specifically those who work for either government agencies such as S.H.I.E.L.D. or for private organizations such as the Avengers">
+			
+			segment rationale
+			segment rationale_author
+			segment structured_provision
+			
+			segment section
+			segment field
+			
+			report Shield Avengers SokoviaAccords in real-time
+			    when HasSuperPowers
+			    with type SokoviaAccordsReport
+			
+			type SokoviaAccordsReport:
+			    heroName string (1..1) <"Basic type - string">
+			        [ruleReference HeroName]
+			    dateOfBirth date (1..1) <"Basic type - date">
+			        [ruleReference DateOfBirth]
+			    nationality CountryEnum (1..1) <"Enum type">
+			        [ruleReference Nationality]
+			    hasSpecialAbilities boolean (1..1) <"Basic type - boolean">
+			        [ruleReference SpecialAbilities]
+			    powers PowerEnum (0..*) <"Enum type - multiple cardinality">
+			        [ruleReference Powers]
+			    attribute AttributeReport (0..1)  <"Nested report">
+			    organisations OrganisationReport (0..*) <"Repeatable rule">
+			        [ruleReference HeroOrganisations]
+			    notModelled string (1..1) <"Not modelled">
+			        [ruleReference NotModelled]
+			
+			type AttributeReport:
+			    heroInt int (1..1) <"Basic type - int">
+			        [ruleReference AttributeInt]
+			    heroNumber number (1..1) <"Basic type - number">
+			        [ruleReference AttributeNumber]
+			    heroTime time (1..1) <"Basic type - time">
+			        [ruleReference AttributeTime]
+			    heroZonedDateTime zonedDateTime (1..1) <"Record type - zonedDateTime">
+			        [ruleReference AttributeZonedDateTime]
+			
+			type OrganisationReport: <"Repeated rule">
+			    name string (1..1)
+			        [ruleReference OrganisationName]
+			    isGovernmentAgency boolean (1..1)
+			        [ruleReference IsGovernmentAgency]
+			    country CountryEnum (1..1)
+			        [ruleReference OrganisationCountry]
+			
+			eligibility rule HasSuperPowers
+			     filter when Person -> hasSpecialAbilities
+			
+			reporting rule HeroName <"Name">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "1" provision "Hero Name."]
+			    extract Person -> name as "Hero Name"
+			
+			reporting rule DateOfBirth <"Date of birth">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "2" provision "Date of birth."]
+			    extract Person -> dateOfBirth as "Date of Birth"
+			
+			reporting rule Nationality <"Nationality">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "2" provision "Nationality."]
+			    extract Person -> nationality as "Nationality"
+			
+			reporting rule SpecialAbilities <"Has Special Abilities">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "3" provision "Has Special Abilities"]
+			    extract Person -> hasSpecialAbilities as "Has Special Abilities"
+			
+			reporting rule Powers <"Super Power Name">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Powers."]
+			    extract Person -> powers as "Powers"
+			
+			reporting rule AttributeInt <"Attribute - Int">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Int."]
+			    extract Person -> attribute -> heroInt as "Attribute - Int"
+			
+			reporting rule AttributeNumber <"Attribute - Number">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Number."]
+			    extract Person -> attribute -> heroNumber as "Attribute - Number"
+			
+			reporting rule AttributeZonedDateTime <"Attribute - ZonedDateTime">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - ZonedDateTime."]
+			    extract Person -> attribute -> heroZonedDateTime as "Attribute - ZonedDateTime"
+			
+			reporting rule AttributeTime <"Attribute - Time">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Time."]
+			    extract Person -> attribute -> heroTime as "Attribute - Time"
+			
+			reporting rule HeroOrganisations <"Has Special Abilities">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
+			    extract repeatable Person -> organisations then
+			    (
+			        OrganisationName,
+			        OrganisationCountry,
+			        IsGovernmentAgency
+			    ) as "Hero Organisations"
+			
+			reporting rule OrganisationName <"Has Special Abilities">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
+			    extract Organisation -> name as "Organisation Name"
+			
+			reporting rule OrganisationCountry <"Has Special Abilities">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
+			    extract Organisation -> country as "Organisation Country"
+			
+			reporting rule IsGovernmentAgency <"Has Special Abilities">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
+			    extract Organisation -> isGovernmentAgency as "Is Government Agency"
+			
+			reporting rule NotModelled <"Not Modelled">
+			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "6"  provision "Not Modelled."]
+			    return "Not modelled" as "Not Modelled"
+			
+			type Person:
+			    name string (1..1)
+			    dateOfBirth date (1..1)
+			    nationality CountryEnum (1..1)
+			    hasSpecialAbilities boolean (1..1)
+			    powers PowerEnum (0..*)
+			    attribute Attribute (0..1)
+			    organisations Organisation (0..*)
+			
+			type Attribute:
+			    heroInt int (1..1)
+			    heroNumber number (1..1)
+			    heroZonedDateTime zonedDateTime (1..1)
+			    heroTime time (1..1)
+			
+			type Organisation:
+			    name string (1..1)
+			    isGovernmentAgency boolean (1..1)
+			    country CountryEnum (1..1)
+			
+			enum PowerEnum:
+			    Armour
+			    Flight
+			    SuperhumanReflexes
+			    SuperhumanStrength
+			
+			enum CountryEnum:
+			    UnitedStatesOfAmerica
+		'''
+		val code = model.generateCode
+		val reportBuilderJava = code.get("test.reg.blueprint.SokoviaAccordsReport_DataItemReportBuilder")
+		try {
+			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package test.reg.blueprint;
+				
+				import com.rosetta.model.lib.records.Date;
+				import java.math.BigDecimal;
+				import java.time.LocalTime;
+				import java.time.ZonedDateTime;
+				import java.util.Collection;
+				import test.reg.CountryEnum;
+				
+				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
+				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import test.reg.SokoviaAccordsReport;
+				
+				/**
+				 * @version test
+				 */
+				public class SokoviaAccordsReport_DataItemReportBuilder implements DataItemReportBuilder {
+					
+					@Override
+					public <T> SokoviaAccordsReport buildReport(Collection<GroupableData<?, T>> reportData) {
+						SokoviaAccordsReport.SokoviaAccordsReportBuilder dataItemReportBuilder = SokoviaAccordsReport.builder();
+						
+						reportData.forEach(groupableData -> {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+								if (HeroNameRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.setHeroName((String) data); 
+								}
+								if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.setDateOfBirth((Date) data); 
+								}
+								if (NationalityRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.setNationality((CountryEnum) data); 
+								}
+								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.setHasSpecialAbilities((Boolean) data); 
+								}
+								if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.getOrCreateAttribute().setHeroInt((Integer) data); 
+								}
+								if (AttributeNumberRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.getOrCreateAttribute().setHeroNumber((BigDecimal) data); 
+								}
+								if (AttributeTimeRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.getOrCreateAttribute().setHeroTime((LocalTime) data); 
+								}
+								if (AttributeZonedDateTimeRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.getOrCreateAttribute().setHeroZonedDateTime((ZonedDateTime) data); 
+								}
+								if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().get()).setName((String) data); 
+								}
+								if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().get()).setIsGovernmentAgency((Boolean) data); 
+								}
+								if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().get()).setCountry((CountryEnum) data); 
+								}
+								if (NotModelledRule.class.isAssignableFrom(ruleType)) {
+									dataItemReportBuilder.setNotModelled((String) data); 
+								}
+							}
+						});
+						
+						return dataItemReportBuilder.build();
+					}
+				}
+			'''
+			assertEquals(expected, reportBuilderJava)
+
+		} finally {
+		}
+		code.compileToClasses
+	}
 
 	@Test
 	def void reportWithBadRuleCardinality() {

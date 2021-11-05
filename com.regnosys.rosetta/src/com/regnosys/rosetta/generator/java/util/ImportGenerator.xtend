@@ -103,11 +103,12 @@ class ImportGenerator {
 		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
 	}
 	
-	def addBlueprintReportBuilder(Data reportType) {
+	def addDataItemReportBuilder(Data reportType) {
 		addMappingImport
 		imports.addAll(
 			'''«packages.model.name».«reportType.name»''',
-			'''«packages.blueprintLib.name».ReportTypeBuilder''',
+			'''«packages.blueprintLib.name».DataItemReportBuilder''',
+			'''«packages.blueprintLib.name».runner.data.DataIdentifier''',
 			'''«packages.blueprintLib.name».runner.data.GroupableData''')
 
 	}
