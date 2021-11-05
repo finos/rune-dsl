@@ -298,8 +298,10 @@ class RosettaExtensions {
 			val attrType = attr.type
 			val attrEx = attr.toExpandedAttribute
 			if (attrEx.builtInType || attrEx.enum) {
-				visitor.apply(attr.ruleReference?.reportingRule)
-				
+				val rule = attr.ruleReference?.reportingRule
+				if (rule !== null) {
+					visitor.apply(rule)
+				}
 			} else if (attrType instanceof Data) {
 				if (!collectedTypes.contains(attrType)) {
 					collectedTypes.add(attrType)

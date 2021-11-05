@@ -410,6 +410,135 @@ class RosettaBlueprintTest {
 	}
 	
 	@Test
+	def void parseSimpleReportWithEmptyType() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			type BarReport:
+				barBarOne string (1..1)
+					// no rules
+			
+			type Bar:
+				bar1 string (1..1)
+
+		'''
+		val code = model.generateCode
+		//println(code)
+		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		try {
+			assertThat(reportJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import javax.inject.Inject;
+				// manual imports
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
+				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.blueprint.FooRuleRule;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				/**
+				 * @version test
+				 */
+				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, Bar, INKEY, INKEY> {
+					
+					private final RosettaActionFactory actionFactory;
+					
+					@Inject
+					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
+						this.actionFactory = actionFactory;
+					}
+					
+					@Override
+					public String getName() {
+						return "TEST_REGMiFIR"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#//@elements.2";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Bar, Bar, INKEY, INKEY> blueprint() { 
+						return 
+							startsWith(actionFactory, getFooRule())
+							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
+							.toBlueprint(getURI(), getName());
+					}
+					
+					@Inject private FooRuleRule fooRuleRef;
+					protected BlueprintInstance <Bar, Bar, INKEY, INKEY> getFooRule() {
+						return fooRuleRef.blueprint();
+					}
+				}
+			'''
+			assertEquals(expected, reportJava)
+
+		} finally {
+		}
+		val reportBuilderJava = code.get("com.rosetta.test.model.blueprint.BarReport_DataItemReportBuilder")
+		try {
+			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import java.util.Collection;
+				
+				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
+				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import com.rosetta.test.model.BarReport;
+				
+				/**
+				 * @version test
+				 */
+				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
+					
+					@Override
+					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
+						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
+						
+						reportData.forEach(groupableData -> {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+							}
+						});
+						
+						return dataItemReportBuilder.build();
+					}
+				}
+			'''
+			assertEquals(expected, reportBuilderJava)
+
+		} finally {
+		}
+		code.compileToClasses
+	}
+	
+	@Test
 	def void parseReportWithType() {
 		val model = '''
 			namespace "test.reg"

@@ -111,16 +111,10 @@ class BlueprintGenerator {
 			currentNodeExpr = newNodeExpr
 		}
 		
-		val andNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
-		currentNodeExpr.next = andNodeExpr
-		
 		val node = RosettaFactory.eINSTANCE.createBlueprintAnd
-		andNodeExpr.node = node
-
 		node.name = report.name
 		
 		report.allReportingRules.sortBy[name].forEach[
-			// TODO fix for attributes with no rules
 			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
 			ref.blueprint = it
 			ref.name = it.name
@@ -129,7 +123,13 @@ class BlueprintGenerator {
 			rule.node.name = ref.name
 			node.bps.add(rule)
 		]
-				
+		
+		if (!node.bps.empty) {
+			val andNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
+			andNodeExpr.node = node
+			currentNodeExpr.next = andNodeExpr			
+		}
+			
 		return firstNodeExpr
 	}
 
@@ -276,8 +276,8 @@ class BlueprintGenerator {
 	 */
 	def StringConcatenationClient buildGraph(BlueprintNodeExp nodeExp, TypedBPNode typedNode, Context context) 
 		'''
-		«nodeExp.node.buildNode(typedNode, context)»«IF nodeExp.next!==null»)
-		.then(«nodeExp.next.buildGraph(typedNode.next, context)»«ENDIF»'''
+		«nodeExp.node.buildNode(typedNode, context)»«IF nodeExp.next !== null»)
+		.then(« nodeExp.next.buildGraph(typedNode.next, context)»«ENDIF»'''
 	
 	/**
 	 * write out an individual graph node
@@ -455,11 +455,13 @@ class BlueprintGenerator {
 	
 	def StringConcatenationClient andNode(BlueprintAnd andNode, TypedBPNode andTyped, Context context, CharSequence id) {
 		'''
-		BlueprintBuilder.<«andTyped.outFullS»>and(actionFactory,
-			«FOR bp:andNode.bps.indexed  SEPARATOR ","»
-			startsWith(actionFactory, «bp.value.buildGraph(andTyped.andNodes.get(bp.key), context)»)
-			«ENDFOR»
-			)
+		«IF !andNode.bps.isEmpty»
+			BlueprintBuilder.<«andTyped.outFullS»>and(actionFactory,
+				«FOR bp:andNode.bps.indexed  SEPARATOR ","»
+				startsWith(actionFactory, «bp.value.buildGraph(andTyped.andNodes.get(bp.key), context)»)
+				«ENDFOR»
+				)
+			«ENDIF»
 		'''
 	}
 	

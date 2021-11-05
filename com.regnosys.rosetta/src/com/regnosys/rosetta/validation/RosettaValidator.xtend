@@ -748,7 +748,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					val typeError = '''Type mismatch - report field «dataType.name»->«attr.name» has type «attrType.name» ''' +
 						'''whereas the reporting rule «bp.name» has type «node.output.type.name».'''
 					error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				}
 				
+				// check basic type cardinality supported
+				if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
+					val unsupportedWarning = '''Report attributes with basic type («attr.type.name») and multiple cardinality is not supported.'''
+					error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
 				}
 			}
 			// check nested report attributes types
