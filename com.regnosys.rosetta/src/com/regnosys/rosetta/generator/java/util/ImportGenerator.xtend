@@ -94,12 +94,23 @@ class ImportGenerator {
 	}
 
 	def addSingleMapping(BlueprintExtract extract) {
-		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
+		addMappingImport
 		addExpression(extract.call)
 	}
 
 	def addMappingImport() {
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
+		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
+	}
+	
+	def addDataItemReportBuilder(Data reportType) {
+		addMappingImport
+		imports.addAll(
+			'''«packages.model.name».«reportType.name»''',
+			'''«packages.blueprintLib.name».DataItemReportBuilder''',
+			'''«packages.blueprintLib.name».runner.data.DataIdentifier''',
+			'''«packages.blueprintLib.name».runner.data.GroupableData''')
+
 	}
 
 	def void addFeatureCall(RosettaFeatureCall call) {
@@ -298,6 +309,7 @@ class ImportGenerator {
 		imports.add('''«(blueprint.eContainer as RosettaModel).name».blueprint.«blueprint.name»Rule''')
 		imports.add('''«packages.blueprintLib.name».runner.actions.IdChange''')
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
+		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
 	}
 
 }

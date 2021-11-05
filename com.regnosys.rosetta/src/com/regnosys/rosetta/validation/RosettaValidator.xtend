@@ -14,6 +14,7 @@ import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
 import com.regnosys.rosetta.rosetta.BlueprintReduce
+import com.regnosys.rosetta.rosetta.BlueprintRef
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
@@ -67,6 +68,7 @@ import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnr
 import java.lang.reflect.Method
 import java.time.format.DateTimeFormatter
 import java.util.List
+import java.util.Set
 import java.util.Stack
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
@@ -85,8 +87,8 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.BlueprintRef
 
 /**
  * This class contains custom validation rules. 
@@ -669,6 +671,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 			index++
 		}
+		
+		if (report.reportType !== null) {
+			checkReportType(report.reportType, newHashSet, newHashSet)
+		}
 	}
 	
 	def boolean checkSingle(TypedBPNode node, boolean isAlreadyMultiple) {
@@ -709,6 +715,54 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (node.next !== null) {
 			checkDuplicateReportFields(initialBpName, node.next, report)
 		}	
+	}
+	
+	/**
+	 * Recursively check all report attribute type and cardinality match the associated reporting rules
+	 */
+	private def void checkReportType(Data dataType, Set<RosettaBlueprint> rules, Set<Data> types) {
+		dataType.allAttributes.forEach[attr|
+			val attrType = attr.type
+			val ruleRef = attr.ruleReference
+			if(ruleRef !== null) {
+				val bp = ruleRef.reportingRule
+				// check duplicates
+				if (!rules.add(bp)) {
+					error("Duplicate reporting rule " + bp.name, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				}
+				
+				val node = buildTypeGraph(bp.nodes, bp.output)
+				
+				val attrExt = attr.toExpandedAttribute
+				val attrSingle = attrExt.cardinalityIsSingleValue
+				val ruleSingle = checkSingle(node, false)
+				
+				// check cardinality
+				if (attrSingle != ruleSingle) {
+					val cardWarning = '''Cardinality mismatch - report field «dataType.name»->«attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
+						'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
+					warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				}
+				// check type
+				if ((attrExt.builtInType || attrExt.enum) && attrType.name != node.output?.type.name) {
+					val typeError = '''Type mismatch - report field «dataType.name»->«attr.name» has type «attrType.name» ''' +
+						'''whereas the reporting rule «bp.name» has type «node.output.type.name».'''
+					error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				}
+				
+				// check basic type cardinality supported
+				if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
+					val unsupportedWarning = '''Report attributes with basic type («attr.type.name») and multiple cardinality is not supported.'''
+					error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
+				}
+			}
+			// check nested report attributes types
+			if (attrType instanceof Data) {
+				if (!types.contains(attrType)) {
+					attrType.checkReportType(rules, types)
+				}
+			}
+		]
 	}
 	
 	@Check
