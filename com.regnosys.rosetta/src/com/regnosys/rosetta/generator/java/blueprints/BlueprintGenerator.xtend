@@ -660,7 +660,7 @@ class BlueprintGenerator {
 			«IF rule !== null»
 				«IF attr.card.isIsMany»
 					«IF attrType instanceof com.regnosys.rosetta.rosetta.simple.Data»
-						«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»(ruleIdentifier.getRepeatableIndex().get())''', names)»
+						«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»(ruleIdentifier.getRepeatableIndex().orElse(0))''', names)»
 					«ENDIF»
 				«ELSE»
 					if («rule.name»Rule.class.isAssignableFrom(ruleType)) {

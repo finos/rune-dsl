@@ -390,10 +390,10 @@ class RosettaBlueprintTest {
 									dataItemReportBuilder.getOrCreateBarBaz().setBarBaz1((String) data); 
 								}
 								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().get()).setBazQux1((String) data); 
+									dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0)).setBazQux1((String) data); 
 								}
 								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().get()).setBazQux2((String) data); 
+									dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0)).setBazQux2((String) data); 
 								}
 							}
 						});
@@ -754,13 +754,13 @@ class RosettaBlueprintTest {
 									dataItemReportBuilder.getOrCreateAttribute().setHeroZonedDateTime((ZonedDateTime) data); 
 								}
 								if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().get()).setName((String) data); 
+									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0)).setName((String) data); 
 								}
 								if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().get()).setIsGovernmentAgency((Boolean) data); 
+									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0)).setIsGovernmentAgency((Boolean) data); 
 								}
 								if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().get()).setCountry((CountryEnum) data); 
+									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0)).setCountry((CountryEnum) data); 
 								}
 								if (NotModelledRule.class.isAssignableFrom(ruleType)) {
 									dataItemReportBuilder.setNotModelled((String) data); 
