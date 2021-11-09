@@ -671,9 +671,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 			index++
 		}
-		
+			
 		if (report.reportType !== null) {
-			checkReportType(report.reportType, newHashSet, newHashSet)
+			checkReportDuplicateRules(report.reportType, newHashSet, newHashSet)
 		}
 	}
 	
@@ -718,11 +718,47 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	/**
-	 * Recursively check all report attribute type and cardinality match the associated reporting rules
+	 * Check all report attribute type and cardinality match the associated reporting rules
 	 */
-	private def void checkReportType(Data dataType, Set<RosettaBlueprint> rules, Set<Data> types) {
-		dataType.allAttributes.forEach[attr|
-			val attrType = attr.type
+	@Check
+	def void checkAttributeRuleReference(Attribute attr) {
+		val ruleRef = attr.ruleReference
+		if(ruleRef !== null) {
+			val bp = ruleRef.reportingRule
+			val node = buildTypeGraph(bp.nodes, bp.output)
+			
+			val attrExt = attr.toExpandedAttribute
+			val attrSingle = attrExt.cardinalityIsSingleValue
+			val ruleSingle = checkSingle(node, false)
+			
+			// check cardinality
+			if (attrSingle != ruleSingle) {
+				val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
+					'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
+				warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+			}
+			// check type
+			if ((attrExt.builtInType || attrExt.enum) && attr.type.name != node.output?.type.name) {
+				val typeError = '''Type mismatch - report field «attr.name» has type «attr.type.name» ''' +
+					'''whereas the reporting rule «bp.name» has type «node.output.type.name».'''
+				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+			}
+			
+			// check basic type cardinality supported
+			if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
+				val unsupportedWarning = '''Report attributes with basic type («attr.type.name») and multiple cardinality is not supported.'''
+				error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
+			}
+		}
+	}
+	
+	
+	/**
+	 * Recursively check all report attributes 
+	 */
+	private def void checkReportDuplicateRules(Data dataType, Set<RosettaBlueprint> rules, Set<Data> types) {
+		val attrs = dataType.allAttributes
+		attrs.forEach[attr|
 			val ruleRef = attr.ruleReference
 			if(ruleRef !== null) {
 				val bp = ruleRef.reportingRule
@@ -730,36 +766,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				if (!rules.add(bp)) {
 					error("Duplicate reporting rule " + bp.name, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 				}
-				
-				val node = buildTypeGraph(bp.nodes, bp.output)
-				
-				val attrExt = attr.toExpandedAttribute
-				val attrSingle = attrExt.cardinalityIsSingleValue
-				val ruleSingle = checkSingle(node, false)
-				
-				// check cardinality
-				if (attrSingle != ruleSingle) {
-					val cardWarning = '''Cardinality mismatch - report field «dataType.name»->«attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
-						'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
-					warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
-				}
-				// check type
-				if ((attrExt.builtInType || attrExt.enum) && attrType.name != node.output?.type.name) {
-					val typeError = '''Type mismatch - report field «dataType.name»->«attr.name» has type «attrType.name» ''' +
-						'''whereas the reporting rule «bp.name» has type «node.output.type.name».'''
-					error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
-				}
-				
-				// check basic type cardinality supported
-				if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
-					val unsupportedWarning = '''Report attributes with basic type («attr.type.name») and multiple cardinality is not supported.'''
-					error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
-				}
 			}
 			// check nested report attributes types
+			val attrType = attr.type
 			if (attrType instanceof Data) {
 				if (!types.contains(attrType)) {
-					attrType.checkReportType(rules, types)
+					attrType.checkReportDuplicateRules(rules, types)
 				}
 			}
 		]
