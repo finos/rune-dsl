@@ -738,9 +738,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
 			// check type
-			if ((attrExt.builtInType || attrExt.enum) && attr.type.name != node.output?.type.name) {
+			val bpType = node.output?.type?.name
+			if ((attrExt.builtInType || attrExt.enum) && attr.type.name != bpType) {
 				val typeError = '''Type mismatch - report field «attr.name» has type «attr.type.name» ''' +
-					'''whereas the reporting rule «bp.name» has type «node.output.type.name».'''
+					'''whereas the reporting rule «bp.name» has type «IF bpType !== null»«bpType»«ELSE»unknown«ENDIF».'''
 				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
 			

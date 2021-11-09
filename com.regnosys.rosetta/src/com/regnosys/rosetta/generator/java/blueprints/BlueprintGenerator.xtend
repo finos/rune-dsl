@@ -55,6 +55,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import java.util.function.Consumer
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
@@ -619,7 +620,7 @@ class BlueprintGenerator {
 				
 				«emptyJavadocWithVersion(version)»
 				public class «report.reportType.name.toDataItemReportBuilderName» implements DataItemReportBuilder {
-					
+				
 					«body.toString»
 				}
 				'''
@@ -638,15 +639,18 @@ class BlueprintGenerator {
 		public <T> «reportTypeName» buildReport(«Collection»<GroupableData<?, T>> reportData) {
 			«reportTypeName».«reportTypeName»Builder «builderName» = «reportTypeName».builder();
 			
-			reportData.forEach(groupableData -> {
+			for (GroupableData<?, T> groupableData : reportData) {
 				DataIdentifier dataIdentifier = groupableData.getIdentifier();
 				if (dataIdentifier instanceof RuleIdentifier) {
 					RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
 					Class<?> ruleType = ruleIdentifier.getRuleType();
 					Object data = groupableData.getData();
+					if (data == null) {
+						continue;
+					}
 					«report.reportType.buildRules(builderName, names)»
 				}
-			});
+			}
 			
 			return «builderName».build();
 		}'''
@@ -664,7 +668,7 @@ class BlueprintGenerator {
 					«ENDIF»
 				«ELSE»
 					if («rule.name»Rule.class.isAssignableFrom(ruleType)) {
-						«builderPath».set«attr.name.toFirstUpper»((«attrEx.type.toJavaType») data); 
+						DataItemReportUtils.setField(«builderPath»::set«attr.name.toFirstUpper», «attrEx.type.toJavaType».class, data, «rule.name»Rule.class);
 					}
 				«ENDIF»
 			«ELSEIF attrType instanceof com.regnosys.rosetta.rosetta.simple.Data»

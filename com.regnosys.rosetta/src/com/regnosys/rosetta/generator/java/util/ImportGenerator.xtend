@@ -108,6 +108,7 @@ class ImportGenerator {
 		imports.addAll(
 			'''«packages.model.name».«reportType.name»''',
 			'''«packages.blueprintLib.name».DataItemReportBuilder''',
+			'''«packages.blueprintLib.name».DataItemReportUtils''',
 			'''«packages.blueprintLib.name».runner.data.DataIdentifier''',
 			'''«packages.blueprintLib.name».runner.data.GroupableData''')
 
