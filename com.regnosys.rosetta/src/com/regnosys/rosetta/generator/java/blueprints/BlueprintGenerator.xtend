@@ -639,15 +639,18 @@ class BlueprintGenerator {
 		public <T> «reportTypeName» buildReport(«Collection»<GroupableData<?, T>> reportData) {
 			«reportTypeName».«reportTypeName»Builder «builderName» = «reportTypeName».builder();
 			
-			reportData.forEach(groupableData -> {
+			for (GroupableData<?, T> groupableData : reportData) {
 				DataIdentifier dataIdentifier = groupableData.getIdentifier();
 				if (dataIdentifier instanceof RuleIdentifier) {
 					RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
 					Class<?> ruleType = ruleIdentifier.getRuleType();
 					Object data = groupableData.getData();
+					if (data == null) {
+						continue;
+					}
 					«report.reportType.buildRules(builderName, names)»
 				}
-			});
+			}
 			
 			return «builderName».build();
 		}

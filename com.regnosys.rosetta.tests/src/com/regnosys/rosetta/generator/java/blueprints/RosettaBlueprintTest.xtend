@@ -376,12 +376,15 @@ class RosettaBlueprintTest {
 					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
 						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
 						
-						reportData.forEach(groupableData -> {
+						for (GroupableData<?, T> groupableData : reportData) {
 							DataIdentifier dataIdentifier = groupableData.getIdentifier();
 							if (dataIdentifier instanceof RuleIdentifier) {
 								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
 								Class<?> ruleType = ruleIdentifier.getRuleType();
 								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
 								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
 									setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
@@ -398,7 +401,7 @@ class RosettaBlueprintTest {
 									setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 								}
 							}
-						});
+						}
 						
 						return dataItemReportBuilder.build();
 					}
@@ -530,14 +533,17 @@ class RosettaBlueprintTest {
 					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
 						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
 						
-						reportData.forEach(groupableData -> {
+						for (GroupableData<?, T> groupableData : reportData) {
 							DataIdentifier dataIdentifier = groupableData.getIdentifier();
 							if (dataIdentifier instanceof RuleIdentifier) {
 								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
 								Class<?> ruleType = ruleIdentifier.getRuleType();
 								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
 							}
-						});
+						}
 						
 						return dataItemReportBuilder.build();
 					}
@@ -742,12 +748,15 @@ class RosettaBlueprintTest {
 					public <T> SokoviaAccordsReport buildReport(Collection<GroupableData<?, T>> reportData) {
 						SokoviaAccordsReport.SokoviaAccordsReportBuilder dataItemReportBuilder = SokoviaAccordsReport.builder();
 						
-						reportData.forEach(groupableData -> {
+						for (GroupableData<?, T> groupableData : reportData) {
 							DataIdentifier dataIdentifier = groupableData.getIdentifier();
 							if (dataIdentifier instanceof RuleIdentifier) {
 								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
 								Class<?> ruleType = ruleIdentifier.getRuleType();
 								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
 								if (HeroNameRule.class.isAssignableFrom(ruleType)) {
 									setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
 								}
@@ -788,7 +797,7 @@ class RosettaBlueprintTest {
 									setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
 								}
 							}
-						});
+						}
 						
 						return dataItemReportBuilder.build();
 					}
