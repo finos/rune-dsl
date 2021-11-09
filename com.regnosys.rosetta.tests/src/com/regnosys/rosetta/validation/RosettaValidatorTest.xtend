@@ -4,20 +4,20 @@
 package com.regnosys.rosetta.validation
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.RosettaRuntimeModule
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
+import org.eclipse.xtext.service.SingletonBinding
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.eclipse.xtext.validation.Check
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import com.regnosys.rosetta.rosetta.simple.Data
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.RosettaRuntimeModule
-import org.eclipse.xtext.validation.Check
-import org.eclipse.xtext.service.SingletonBinding
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -783,17 +783,17 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			eligibility rule FooRule
 				filter when Bar->bar1 exists
 			
-			reporting rule A
+			reporting rule Aa
 				extract Bar->bar1 as "A"
 			
 			type Bar:
 				bar1 string (0..*)
 			
 			type BarReport:
-				a string (1..1)
-					[ruleReference A]
+				aa string (1..1)
+					[ruleReference Aa]
 		'''.parseRosetta
-		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field BarReport->a has single cardinality whereas the reporting rule A has multiple cardinality.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
 	}
 
 	@Test
@@ -807,19 +807,60 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule
-				filter when Bar->bar1 exists
+				filter when Bar->barA exists
 			
-			reporting rule A
-				extract Bar->bar1 as "A"
+			reporting rule Aa
+				extract Bar->barA as "A"
+
+			reporting rule Bb
+				extract Bar->barB as "B"
+				
+			reporting rule Cc
+				extract Bar->barC as "C"
+
+			reporting rule Dd
+				extract Bar->barD as "D"
+
+			reporting rule Ee
+				extract Bar->barE as "E"
+				
+			reporting rule Ff
+				extract Bar->barF as "F"
 			
 			type Bar:
-				bar1 date (0..1)
+				barA date (0..1)
+				barB time (0..1)
+				barC zonedDateTime (0..1)
+				barD int (0..1)
+				barE number (0..1)
+				barF BazEnum (0..1)
+
+			enum BazEnum:
+				X
+				Y
+				Z
 			
 			type BarReport:
-				a string (1..1)
-					[ruleReference A]
+				aa string (1..1)
+					[ruleReference Aa]
+				bb string (1..1)
+					[ruleReference Bb]
+				cc string (1..1)
+					[ruleReference Cc]
+				dd string (1..1)
+					[ruleReference Dd]
+				ee string (1..1)
+					[ruleReference Ee]
+				ff string (1..1)
+					[ruleReference Ff]
+			
 		'''.parseRosetta
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field BarReport->a has type string whereas the reporting rule A has type date.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type date.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field bb has type string whereas the reporting rule Bb has type time.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field cc has type string whereas the reporting rule Cc has type zonedDateTime.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field dd has type string whereas the reporting rule Dd has type int.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field ee has type string whereas the reporting rule Ee has type number.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field ff has type string whereas the reporting rule Ff has type BazEnum.")
 	}
 	
 	@Test

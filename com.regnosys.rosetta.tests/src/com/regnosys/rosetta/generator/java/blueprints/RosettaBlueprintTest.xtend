@@ -2284,6 +2284,68 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
+	def void shouldGenerateDataType() {
+		val blueprint = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->barA exists
+			
+			reporting rule Aa
+				extract Bar->barA as "A"
+
+			reporting rule Bb
+				extract Bar->barB as "B"
+				
+			reporting rule Cc
+				extract Bar->barC as "C"
+
+			reporting rule Dd
+				extract Bar->barD as "D"
+
+			reporting rule Ee
+				extract Bar->barE as "E"
+				
+			reporting rule Ff
+				extract Bar->barF as "F"
+			
+			type Bar:
+				barA date (0..1)
+				barB time (0..1)
+				barC zonedDateTime (0..1)
+				barD int (0..1)
+				barE number (0..1)
+				barF BazEnum (0..1)
+
+			enum BazEnum:
+				X
+				Y
+				Z
+			
+			type BarReport:
+				aa date (1..1)
+					[ruleReference Aa]
+				bb time (1..1)
+					[ruleReference Bb]
+				cc zonedDateTime (1..1)
+					[ruleReference Cc]
+				dd int (1..1)
+					[ruleReference Dd]
+				ee number (1..1)
+					[ruleReference Ee]
+				ff BazEnum (1..1)
+					[ruleReference Ff]
+			
+		'''.generateCode
+		blueprint.compileToClasses
+	}
+
+	@Test
 	@Disabled // we don't currently support hand written blueprint nodes
 	def void custom() {
 		val blueprint = '''
