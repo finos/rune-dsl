@@ -864,6 +864,38 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def shouldGenerateRuleTypeError2() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->barA exists
+			
+			reporting rule Aa
+			(
+				extract Bar->barA as "A",
+				extract Bar->barB as "B"
+			)
+			
+			type Bar:
+				barA string (0..1)
+				barB number (0..1)
+			
+			type BarReport:
+				aa string (1..1)
+					[ruleReference Aa]
+			
+		'''.parseRosetta
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type unknown.")
+	}
+	
+	@Test
 	def shouldGenerateRuleTypeErrorUsingReturn() {
 		val model = '''
 			body Authority TEST_REG
