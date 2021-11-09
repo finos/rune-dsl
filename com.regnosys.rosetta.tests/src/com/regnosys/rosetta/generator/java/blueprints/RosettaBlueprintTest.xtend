@@ -357,7 +357,9 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import java.util.Collection;
+				import java.util.function.Consumer;
 				
+				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
@@ -369,7 +371,7 @@ class RosettaBlueprintTest {
 				 * @version test
 				 */
 				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
-					
+				
 					@Override
 					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
 						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
@@ -381,24 +383,32 @@ class RosettaBlueprintTest {
 								Class<?> ruleType = ruleIdentifier.getRuleType();
 								Object data = groupableData.getData();
 								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.setBarBarOne((String) data); 
+									setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.setBarBarTwo((String) data); 
+									setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 								if (BarBazRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateBarBaz().setBarBaz1((String) data); 
+									setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
 								}
 								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0)).setBazQux1((String) data); 
+									setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
 								}
 								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0)).setBazQux2((String) data); 
+									setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 								}
 							}
 						});
 						
 						return dataItemReportBuilder.build();
+					}
+					
+					private <T> void setField(Consumer<T> setter, Class<T> clazz, Object data, Class<? extends Blueprint> rule) {
+						if (clazz.isInstance(data)) {
+							setter.accept(clazz.cast(data));
+						} else {
+							System.out.println("Failed to set report field for rule " + rule.getClass().getName() + ". Expected type " + clazz.getName() + " but found " + data != null ? data.getClass().getName() : "null" + ".");
+						}
 					}
 				}
 			'''
@@ -501,7 +511,9 @@ class RosettaBlueprintTest {
 				package com.rosetta.test.model.blueprint;
 				
 				import java.util.Collection;
+				import java.util.function.Consumer;
 				
+				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
@@ -513,7 +525,7 @@ class RosettaBlueprintTest {
 				 * @version test
 				 */
 				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
-					
+				
 					@Override
 					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
 						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
@@ -528,6 +540,14 @@ class RosettaBlueprintTest {
 						});
 						
 						return dataItemReportBuilder.build();
+					}
+					
+					private <T> void setField(Consumer<T> setter, Class<T> clazz, Object data, Class<? extends Blueprint> rule) {
+						if (clazz.isInstance(data)) {
+							setter.accept(clazz.cast(data));
+						} else {
+							System.out.println("Failed to set report field for rule " + rule.getClass().getName() + ". Expected type " + clazz.getName() + " but found " + data != null ? data.getClass().getName() : "null" + ".");
+						}
 					}
 				}
 			'''
@@ -701,9 +721,11 @@ class RosettaBlueprintTest {
 				import java.time.LocalTime;
 				import java.time.ZonedDateTime;
 				import java.util.Collection;
+				import java.util.function.Consumer;
 				import test.reg.CountryEnum;
 				import test.reg.PowerEnum;
 				
+				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
@@ -715,7 +737,7 @@ class RosettaBlueprintTest {
 				 * @version test
 				 */
 				public class SokoviaAccordsReport_DataItemReportBuilder implements DataItemReportBuilder {
-					
+				
 					@Override
 					public <T> SokoviaAccordsReport buildReport(Collection<GroupableData<?, T>> reportData) {
 						SokoviaAccordsReport.SokoviaAccordsReportBuilder dataItemReportBuilder = SokoviaAccordsReport.builder();
@@ -727,48 +749,56 @@ class RosettaBlueprintTest {
 								Class<?> ruleType = ruleIdentifier.getRuleType();
 								Object data = groupableData.getData();
 								if (HeroNameRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.setHeroName((String) data); 
+									setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
 								}
 								if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.setDateOfBirth((Date) data); 
+									setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
 								}
 								if (NationalityRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.setNationality((CountryEnum) data); 
+									setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
 								}
 								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.setHasSpecialAbilities((Boolean) data); 
+									setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
 								}
 								if (PowersRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.setPowers((PowerEnum) data); 
+									setField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
 								}
 								if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateAttribute().setHeroInt((Integer) data); 
+									setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
 								}
 								if (AttributeNumberRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateAttribute().setHeroNumber((BigDecimal) data); 
+									setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
 								}
 								if (AttributeTimeRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateAttribute().setHeroTime((LocalTime) data); 
+									setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
 								}
 								if (AttributeZonedDateTimeRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateAttribute().setHeroZonedDateTime((ZonedDateTime) data); 
+									setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
 								}
 								if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0)).setName((String) data); 
+									setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
 								}
 								if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0)).setIsGovernmentAgency((Boolean) data); 
+									setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
 								}
 								if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0)).setCountry((CountryEnum) data); 
+									setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
 								}
 								if (NotModelledRule.class.isAssignableFrom(ruleType)) {
-									dataItemReportBuilder.setNotModelled((String) data); 
+									setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
 								}
 							}
 						});
 						
 						return dataItemReportBuilder.build();
+					}
+					
+					private <T> void setField(Consumer<T> setter, Class<T> clazz, Object data, Class<? extends Blueprint> rule) {
+						if (clazz.isInstance(data)) {
+							setter.accept(clazz.cast(data));
+						} else {
+							System.out.println("Failed to set report field for rule " + rule.getClass().getName() + ". Expected type " + clazz.getName() + " but found " + data != null ? data.getClass().getName() : "null" + ".");
+						}
 					}
 				}
 			'''
