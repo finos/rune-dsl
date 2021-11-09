@@ -653,14 +653,6 @@ class BlueprintGenerator {
 			}
 			
 			return «builderName».build();
-		}
-		
-		private <T> void setField(«Consumer»<T> setter, Class<T> clazz, Object data, Class<? extends Blueprint> rule) {
-			if (clazz.isInstance(data)) {
-				setter.accept(clazz.cast(data));
-			} else {
-				System.out.println("Failed to set report field for rule " + rule.getClass().getName() + ". Expected type " + clazz.getName() + " but found " + data != null ? data.getClass().getName() : "null" + ".");
-			}
 		}'''
 	}
 	
@@ -676,7 +668,7 @@ class BlueprintGenerator {
 					«ENDIF»
 				«ELSE»
 					if («rule.name»Rule.class.isAssignableFrom(ruleType)) {
-						setField(«builderPath»::set«attr.name.toFirstUpper», «attrEx.type.toJavaType».class, data, «rule.name»Rule.class);
+						DataItemReportUtils.setField(«builderPath»::set«attr.name.toFirstUpper», «attrEx.type.toJavaType».class, data, «rule.name»Rule.class);
 					}
 				«ENDIF»
 			«ELSEIF attrType instanceof com.regnosys.rosetta.rosetta.simple.Data»
