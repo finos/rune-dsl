@@ -102,15 +102,26 @@ enum Necessity {
 	optional, required
 }
 
-class Operation extends Definable {
+abstract class Operation extends Definable {
 	container Function function opposite operations
 	refers AssignPathRoot assignRoot
 	contains Segment path
 	contains RosettaExpression expression
-	boolean assignAsKey
 	op Segment[] pathAsSegmentList() {
 		return if(path !== null) path.asSegmentList(path) else new BasicEList
 	}
+}
+
+class AssignOutputOperation extends Operation {
+	boolean assignAsKey
+}
+
+class SetOutputOperation extends Operation {
+	refers AssignPathRoot input
+}
+
+class ListModifyOperation extends RosettaNamed, RosettaExpression {
+	contains RosettaExpression body
 }
 
 class Segment {

@@ -48,6 +48,7 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.rosetta.simple.AssignOutputOperation
 
 class FuncGenerator {
 
@@ -157,7 +158,7 @@ class FuncGenerator {
 				}
 				
 				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
-					«FOR indexed : func.operations.indexed»
+					«FOR indexed : func.operations.filter(AssignOutputOperation).indexed»
 						«indexed.value.assign(aliasOut, names, output)»;
 					«ENDFOR»
 					return «outputName»;
@@ -237,7 +238,7 @@ class FuncGenerator {
 		return QualifiedName.create(ele.name).append(formatEnumName(ele.value.value.name))
 	}
 	
-	private def StringConcatenationClient assign(Operation op, Map<ShortcutDeclaration, Boolean> outs,
+	private def StringConcatenationClient assign(AssignOutputOperation op, Map<ShortcutDeclaration, Boolean> outs,
 		JavaNames names, Attribute type) {
 		val pathAsList = op.pathAsSegmentList
 		val ctx = Context.create(names)
@@ -269,7 +270,7 @@ class FuncGenerator {
 			}
 	}
 	
-	private def StringConcatenationClient assignValue(Operation op, JavaNames names) {
+	private def StringConcatenationClient assignValue(AssignOutputOperation op, JavaNames names) {
 		if(op.assignAsKey) {
 			val metaClass = referenceWithMetaJavaType(op, names)
 			if (cardinality.isMulti(op.expression)) {

@@ -123,8 +123,22 @@ PostCondition returns Condition:
 ;
 
 Operation:
+	AssignOutputOperation | SetOutputOperation
+;
+
+AssignOutputOperation:
 	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
 	expression = RosettaCalcExpression assignAsKey?='as-key'?
+;
+
+SetOutputOperation:
+	'set' assignRoot = [AssignPathRoot|ValidID]':' Definable?
+		input = [AssignPathRoot|ValidID]
+			expression = ListModifyOperation
+;
+
+ListModifyOperation:
+	{ListModifyOperation} 'filter' (RosettaNamed)? ('['body = RosettaCalcExpression ']')?
 ;
 
 Segment:
