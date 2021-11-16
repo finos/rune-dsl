@@ -20,7 +20,14 @@ class BackwardCompatibilityGenerator {
 				/**
 				 * Used when generating code for nested if statements
 				 */
-				public static <T> Mapper<T> from(Supplier<Mapper<T>> supplier) {
+				public static <T> Mapper<T> fromBuiltInType(Supplier<Mapper<T>> supplier) {
+					return supplier.get();
+				}
+			
+				/**
+				 * Used when generating code for nested if statements
+				 */
+				public static <T> Mapper<? extends T> fromDataType(Supplier<Mapper<? extends T>> supplier) {
 					return supplier.get();
 				}
 			
