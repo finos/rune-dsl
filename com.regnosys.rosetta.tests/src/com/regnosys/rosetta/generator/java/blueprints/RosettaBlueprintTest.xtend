@@ -1728,9 +1728,9 @@ class RosettaBlueprintTest {
 			
 		'''.parseRosetta
 		model.assertError(BLUEPRINT_REDUCE, RosettaIssueCodes.TYPE_ERROR,
-			"The expression for maxBy must return a comparable type (e.g. number or date) the curent expression returns Bar")
+			"The expression for maxBy must return a comparable type (e.g. number or date) the current expression returns Bar")
 		model.assertError(BLUEPRINT_REDUCE, null,
-			"The expression for maxBy must return a single value the curent expression can return multiple values")
+			"The expression for maxBy must return a single value the current expression can return multiple values")
 	}
 	
 	@Test
@@ -1966,8 +1966,26 @@ class RosettaBlueprintTest {
 			"Key expression must have single cardinality")
 	}
 
+	
 	@Test
-	def void functionCall() {
+	def void expressionBadTypes() {
+		 ''' 
+			type Foo:
+				bar Bar (1..1)
+			
+			type Bar:
+				val number (1..1)
+			
+			reporting rule Rule1
+				extract Foo->bar->val + Bar->val
+			'''.parseRosetta
+			.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR,
+			"Input types must be the same but were Foo and Bar")
+			
+	}
+
+	@Test
+	def void functionCallFromExtract() {
 		val blueprint = ''' 
 			type Foo:
 				bar Bar (1..1)
@@ -1998,7 +2016,7 @@ class RosettaBlueprintTest {
 	}
 	
 	@Test
-	def void functionCalls() {
+	def void functionCallsFromExtract() {
 		val blueprint = ''' 
 			type Foo:
 				bar Bar (1..1)
@@ -2024,29 +2042,13 @@ class RosettaBlueprintTest {
 				
 			'''.parseRosettaWithNoErrors
 			.generateCode
-			//blueprint.writeClasses("functionCall")
+			//blueprint.writeClasses("functionCallsFromExtract")
 			blueprint.compileToClasses
 	}
+
 	
 	@Test
-	def void expressionBadTypes() {
-		 ''' 
-			type Foo:
-				bar Bar (1..1)
-			
-			type Bar:
-				val number (1..1)
-			
-			reporting rule Rule1
-				extract Foo->bar->val + Bar->val
-			'''.parseRosetta
-			.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR,
-			"Input types must be the same but were Foo and Bar")
-			
-	}
-	
-	@Test
-	def void functionCallBadTypes() {
+	def void functionCallFromExtractBadTypes() {
 		 ''' 
 			type Foo:
 				bar Bar (1..1)
@@ -2063,12 +2065,135 @@ class RosettaBlueprintTest {
 					b number (0..1)
 				output: 
 					r number (1..1)
-			assign-output r:
-				a +b
+				assign-output r:
+					a + b
 				
 			'''.parseRosetta
 			.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR,
 			"Input types must be the same but were [Foo, Bar]")
+	}
+	
+	@Test
+	def void functionCallFromFilterWhen() {
+		val blueprint = ''' 
+			type Foo:
+				bar Bar (1..1)
+			
+			type Bar:
+				val number (1..1)
+			
+			reporting rule Rule1
+				return MyFunc1() then
+				filter when MyFunc(Foo->bar->val)
+			
+			func MyFunc1: 
+				output:
+					foo Foo (1..1)
+			
+			func MyFunc:
+				inputs: 
+					foo number (0..1)
+				output: 
+					result boolean (1..1)
+				assign-output result:
+					foo > 1
+			
+			'''.parseRosettaWithNoErrors
+			.generateCode
+			//blueprint.writeClasses("functionCallFromFilterWhen")
+			blueprint.compileToClasses
+	}
+	
+	@Test
+	def void functionCallFromFilterWhenBadTypes() {
+		 ''' 
+			type Foo:
+				bar Bar (1..1)
+			
+			type Bar:
+				val number (1..1)
+			
+			reporting rule Rule1
+				return MyFunc1() then
+				filter when MyFunc(Foo->bar->val)
+			
+			func MyFunc1: 
+				output:
+					foo Foo (1..*)
+			
+			func MyFunc:
+				inputs: 
+					foo number (0..1)
+				output: 
+					result number (1..1)
+				assign-output result:
+					foo + 1
+			
+			'''.parseRosetta
+			.assertError(BLUEPRINT_FILTER, RosettaIssueCodes.TYPE_ERROR,
+			"The expression for Filter must return a boolean the current expression returns number")
+	}
+	
+	@Test
+	def void functionCallFromMaxBy() {
+		val blueprint = ''' 
+			type Foo:
+				bar Bar (1..1)
+			
+			type Bar:
+				val number (1..1)
+			
+			reporting rule Rule1
+				return MyFunc1() then
+				maxBy MyFunc(Foo->bar)
+			
+			func MyFunc1: 
+				output:
+					foo Foo (1..1)
+			
+			func MyFunc:
+				inputs: 
+					bar Bar (0..1)
+				output: 
+					result number (1..1)
+				assign-output result:
+					bar->val + 1
+			
+			'''.parseRosettaWithNoErrors
+			.generateCode
+			//blueprint.writeClasses("functionCallFromMaxBy")
+			blueprint.compileToClasses
+	}
+	
+	@Test
+	def void functionCallFromMinBy() {
+		val blueprint = ''' 
+			type Foo:
+				bar Bar (1..1)
+			
+			type Bar:
+				val number (1..1)
+			
+			reporting rule Rule1
+				return MyFunc1() then
+				minBy MyFunc(Foo->bar)
+			
+			func MyFunc1: 
+				output:
+					foo Foo (1..1)
+			
+			func MyFunc:
+				inputs: 
+					bar Bar (0..1)
+				output: 
+					result number (1..1)
+				assign-output result:
+					bar->val + 1
+			
+			'''.parseRosettaWithNoErrors
+			.generateCode
+			//blueprint.writeClasses("functionCallFromMaxBy")
+			blueprint.compileToClasses
 	}
 	
 	@Test

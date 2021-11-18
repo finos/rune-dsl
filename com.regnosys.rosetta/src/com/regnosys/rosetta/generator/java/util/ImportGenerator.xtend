@@ -15,8 +15,11 @@ import com.regnosys.rosetta.rosetta.BlueprintValidate
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
@@ -31,9 +34,13 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.validation.TypedBPNode
 import java.util.Comparator
 import org.apache.log4j.Logger
@@ -41,11 +48,6 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
-import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -137,6 +139,16 @@ class ImportGenerator {
 		addExpression(call.receiver)
 	}
 
+	def void addCallableWithArgs(RosettaCallableWithArgs callable) {
+		switch (callable) {
+			Function: {
+				imports.add(callable.output.type.fullName);
+			}
+			default:
+				throw new UnsupportedOperationException("Unsupported expression type: " + callable.class.simpleName)
+		}
+	}
+
 	def add(Object call) {
 		println
 	}
@@ -207,7 +219,9 @@ class ImportGenerator {
 				addExpression(expression.container)
 			}
 			RosettaCallable:{}
-			RosettaCallableWithArgsCall: {}
+			RosettaCallableWithArgsCall: {
+				addCallableWithArgs(expression.callable)
+			}
 			RosettaParenthesisCalcExpression : {
 				addExpression(expression.expression)
 			}
