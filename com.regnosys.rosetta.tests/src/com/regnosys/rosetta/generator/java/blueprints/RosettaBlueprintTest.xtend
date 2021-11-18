@@ -2404,6 +2404,50 @@ class RosettaBlueprintTest {
 		
 	}
 
+	@Test
+	def void ifWithSingleCardinality() {
+		var blueprint = '''
+		type Foo:
+			test boolean (1..1)
+			bar Bar (1..1)
+			bar2 Bar (1..1)
+		
+		type Bar:
+			attr string (1..1)
+		
+		reporting rule BarField
+			extract 
+				if Foo->test = True 
+				then Foo->bar
+				else Foo->bar2
+		
+		'''.generateCode
+		//blueprint.writeClasses("ifWithSingleCardinality")
+		blueprint.compileToClasses
+	}
+	
+	@Test
+	def void ifWithMultipleCardinality() {
+		var blueprint = '''
+		type Foo:
+			test boolean (1..1)
+			bar Bar (1..*)
+			bar2 Bar (1..*)
+		
+		type Bar:
+			attr string (1..1)
+		
+		reporting rule BarField
+			extract 
+				if Foo->test = True 
+				then Foo->bar
+				else Foo->bar2
+		
+		'''.generateCode
+		//blueprint.writeClasses("ifWithSingleCardinality")
+		blueprint.compileToClasses
+	}
+
 
 	@Test
 	def void reportingRuleWithoutBodyDoesNotGenerateCode() {
