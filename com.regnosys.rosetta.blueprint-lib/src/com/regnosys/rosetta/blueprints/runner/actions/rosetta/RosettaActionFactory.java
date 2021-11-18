@@ -18,11 +18,11 @@ public interface RosettaActionFactory {
 	
 	<I extends RosettaModelObject, O, K > ProcessorNode<I, O, K> newRosettaSimpleMapper(String uri, String label, DataIdentifier id, MappingGroup<I, O> mappings);
 	
-	<I extends RosettaModelObject, O, K> ProcessorNode<I, O, K> newRosettaSingleMapper(String uri, String label, DataIdentifier id, Function<I, Mapper<O>> function);
+	<I extends RosettaModelObject, O, K> ProcessorNode<I, O, K> newRosettaSingleMapper(String uri, String label, DataIdentifier id, Function<I, Mapper<? extends O>> function);
 	
-	<I extends RosettaModelObject, O, K> ExpanderNode<I, O, K> newRosettaMultipleMapper(String uri, String label, DataIdentifier id, Function<I, Mapper<O>> function);
+	<I extends RosettaModelObject, O, K> ExpanderNode<I, O, K> newRosettaMultipleMapper(String uri, String label, DataIdentifier id, Function<I, Mapper<? extends O>> function);
 
-	<I extends RosettaModelObject, O, K> ExpanderNode<I, O, K> newRosettaRepeatableMapper(String uri, String label, DataIdentifier id, Function<I, Mapper<O>> function);
+	<I extends RosettaModelObject, O, K> ExpanderNode<I, O, K> newRosettaRepeatableMapper(String uri, String label, DataIdentifier id, Function<I, Mapper<? extends O>> function);
 	
 	<I extends RosettaModelObject, K> ProcessorNode<I, I, K> newRosettaValidator(String uri, String label, DataIdentifier id, Class<I> ingestionType);
 	
