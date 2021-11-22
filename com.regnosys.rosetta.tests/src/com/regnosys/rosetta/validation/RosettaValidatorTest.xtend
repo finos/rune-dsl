@@ -891,7 +891,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[ruleReference Aa]
 			
 		'''.parseRosetta
-//		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
 		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type unknown.")
 	}
 	
