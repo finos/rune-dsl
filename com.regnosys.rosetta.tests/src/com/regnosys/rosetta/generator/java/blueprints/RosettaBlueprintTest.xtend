@@ -1890,10 +1890,10 @@ class RosettaBlueprintTest {
 					}
 				}
 			'''
-			blueprint.compileToClasses
 			assertEquals(expected, blueprintJava)
 		} finally {
 		}
+		blueprint.compileToClasses
 	}
 
 	@Test

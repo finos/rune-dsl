@@ -405,8 +405,8 @@ class RosettaBlueprintTypeResolver {
  * and sets the output node of tNode to that type
  */
 	private def getUnionType(List<TypedBPNode> types, TypedBPNode tNode) {
-		val outputTypes = types.map[output.type].filter[it !== null]
-		val count = outputTypes.map[name].toSet.length
+		val outputTypes = types.map[output.type]
+		val count = outputTypes.map[it?.name].toSet.length
 		if (count == 1) {
 			tNode.output.type = outputTypes.get(0)
 			tNode.output.genericName = types.get(0).output.genericName
@@ -417,11 +417,11 @@ class RosettaBlueprintTypeResolver {
 		 if (!end.isUseableAs(expectedOutput)) {*/
 		else
 			tNode.output.setGenericName("Object") // if there is more then one type just go for object
-		val keyTypes = types.map[outputKey.type].filter[it !== null]
-		val countKey = keyTypes.map[name].toSet.length
+		val keyTypes = types.map[outputKey.type]
+		val countKey = keyTypes.map[it?.name].toSet.length
 		if (countKey == 1)
 			tNode.outputKey.type = keyTypes.get(0)
-		else if (keyTypes.forall[it.name == "int" || it.name == "number"])
+		else if (keyTypes.forall[it !== null && (it.name == "int" || it.name == "number")])
 			tNode.outputKey.setGenericName("Number")
 		/*				val end= getRType(typedNode.output.type)
 		 * 		val expectedOutput= getRType(outputNode.input.type)
@@ -431,22 +431,22 @@ class RosettaBlueprintTypeResolver {
 	}
 
 	def getBaseType(List<TypedBPNode> types, TypedBPNode tNode, BlueprintNode node) {
-		val inputTypes = types.map[input.type].filter[it !== null]
-		val count = inputTypes.map[name].toSet.length
+		val inputTypes = types.map[input.type]
+		val count = inputTypes.map[it?.name].toSet.length
 		if (count == 1)
 			tNode.input.type = inputTypes.get(0)
-		else if (inputTypes.forall[it.name == "int" || it.name == "number"])
+		else if (inputTypes.forall[it !== null && (it.name == "int" || it.name == "number")])
 			tNode.input.setGenericName("Integer")
 		else
 			BlueprintUnresolvedTypeException.error('''input types of andNode «inputTypes.map[name]» are not compatible''', node, BLUEPRINT_NODE__INPUT,
 				RosettaIssueCodes.TYPE_ERROR)
 
 		// now for keys
-		val inputKeyTypes = types.map[inputKey.type].filter[it !== null]
-		val countKey = inputKeyTypes.map[name].toSet.length
+		val inputKeyTypes = types.map[inputKey.type]
+		val countKey = inputKeyTypes.map[it?.name].toSet.length
 		if (countKey == 1)
 			tNode.inputKey.type = inputKeyTypes.get(0)
-		else if (inputKeyTypes.forall[it.name == "int" || it.name == "number"])
+		else if (inputKeyTypes.forall[it !== null && (it.name == "int" || it.name == "number")])
 			tNode.inputKey.setGenericName("Integer")
 		else
 			BlueprintUnresolvedTypeException.error('''inputKey types of andNode «inputKeyTypes.map[name]» are not compatible''', node,
