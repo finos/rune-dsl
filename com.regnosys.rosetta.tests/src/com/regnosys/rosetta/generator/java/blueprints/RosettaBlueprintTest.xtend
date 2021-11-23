@@ -365,6 +365,12 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 				import com.rosetta.test.model.BarReport;
+				import com.rosetta.test.model.blueprint.BarBarOneRule;
+				import com.rosetta.test.model.blueprint.BarBarTwoRule;
+				import com.rosetta.test.model.blueprint.BarBazRule;
+				import com.rosetta.test.model.blueprint.BarQuxListRule;
+				import com.rosetta.test.model.blueprint.QuxQux1Rule;
+				import com.rosetta.test.model.blueprint.QuxQux2Rule;
 				
 				/**
 				 * @version test
@@ -398,6 +404,108 @@ class RosettaBlueprintTest {
 								}
 								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+								}
+							}
+						}
+						
+						return dataItemReportBuilder.build();
+					}
+				}
+			'''
+			assertEquals(expected, reportBuilderJava)
+
+		} finally {
+		}
+		code.compileToClasses
+	}
+	
+	@Test
+	def void parseSimpleReportWithDifferentNS() {
+		val model = #['''
+			namespace ns1
+			
+			type Bar:
+				bar1 string (1..1)
+				bar2 string (1..1)
+			
+		''','''
+			namespace ns2
+			
+			import ns1.*
+			
+			reporting rule BarBarTwo
+				extract Bar->bar2 as "2 BarTwo"
+			
+		''','''
+			namespace ns3
+			
+			import ns1.*
+			import ns2.*
+			
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+				when FooRule
+				with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule BarBarOne
+				extract Bar->bar1 as "1 BarOne"
+			
+			type BarReport:
+				barBarOne string (1..1)
+					[ruleReference BarBarOne]
+				barBarTwo string (1..1)
+					[ruleReference BarBarTwo]
+			
+		'''
+		]
+		val code = model.generateCode
+		//println(code)
+		val reportBuilderJava = code.get("ns3.blueprint.BarReport_DataItemReportBuilder")
+		try {
+			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package ns3.blueprint;
+				
+				import java.util.Collection;
+				
+				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
+				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
+				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import ns2.blueprint.BarBarTwoRule;
+				import ns3.BarReport;
+				import ns3.blueprint.BarBarOneRule;
+				
+				/**
+				 * @version 0.0.0
+				 */
+				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
+				
+					@Override
+					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
+						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
+						
+						for (GroupableData<?, T> groupableData : reportData) {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
+								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+								}
+								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 							}
 						}
@@ -719,6 +827,20 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 				import test.reg.SokoviaAccordsReport;
+				import test.reg.blueprint.AttributeIntRule;
+				import test.reg.blueprint.AttributeNumberRule;
+				import test.reg.blueprint.AttributeTimeRule;
+				import test.reg.blueprint.AttributeZonedDateTimeRule;
+				import test.reg.blueprint.DateOfBirthRule;
+				import test.reg.blueprint.HeroNameRule;
+				import test.reg.blueprint.HeroOrganisationsRule;
+				import test.reg.blueprint.IsGovernmentAgencyRule;
+				import test.reg.blueprint.NationalityRule;
+				import test.reg.blueprint.NotModelledRule;
+				import test.reg.blueprint.OrganisationCountryRule;
+				import test.reg.blueprint.OrganisationNameRule;
+				import test.reg.blueprint.PowersRule;
+				import test.reg.blueprint.SpecialAbilitiesRule;
 				
 				/**
 				 * @version test

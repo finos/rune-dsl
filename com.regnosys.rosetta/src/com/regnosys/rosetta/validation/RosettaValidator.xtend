@@ -741,9 +741,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			// check type
 			val bpType = node.output?.type?.name
 			val bpGenericType = node.output?.genericName
-			if ((attrExt.builtInType || attrExt.enum) && (attr.type.name != bpType && !attr.type.name.equalsIgnoreCase(bpGenericType))) {
+			if (!node.repeatable && (bpType !== null || bpGenericType !== null) && (attr.type.name != bpType && !attr.type.name.equalsIgnoreCase(bpGenericType))) {
 				val typeError = '''Type mismatch - report field «attr.name» has type «attr.type.name» ''' +
-					'''whereas the reporting rule «bp.name» has type «IF bpType !== null»«bpType»«ELSE»unknown«ENDIF».'''
+					'''whereas the reporting rule «bp.name» has type «IF bpType !== null»«bpType»«ELSEIF bpGenericType !== null»«bpGenericType»«ELSE»unknown«ENDIF».'''
 				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
 			
