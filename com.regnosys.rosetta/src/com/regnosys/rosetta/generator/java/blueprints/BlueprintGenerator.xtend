@@ -584,6 +584,12 @@ class BlueprintGenerator {
 			BlueprintReturn: {
 				functionDependencyProvider.functionDependencies(node.expression)
 			}
+			BlueprintFilter: {
+				functionDependencyProvider.functionDependencies(node.filter)
+			}
+			BlueprintReduce: {
+				functionDependencyProvider.functionDependencies(node.expression)
+			}
 			default :{
 				#[]
 			}

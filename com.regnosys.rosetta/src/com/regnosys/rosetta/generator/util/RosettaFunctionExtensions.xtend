@@ -16,6 +16,7 @@ import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.RosettaExpression
 
 class RosettaFunctionExtensions {
 
@@ -87,14 +88,14 @@ class RosettaFunctionExtensions {
 		needsBuilder(ele.type)
 	}
 
-	dispatch def boolean needsBuilder(ShortcutDeclaration alias) {
-		needsBuilder(typeProvider.getRType(alias.expression))
+	dispatch def boolean needsBuilder(RosettaExpression expr) {
+		needsBuilder(typeProvider.getRType(expr))
 	}
 
 	dispatch def boolean needsBuilder(AssignPathRoot root) {
 		switch (root) {
 			Attribute: root.type.needsBuilder
-			ShortcutDeclaration: typeProvider.getRType(root.expression).needsBuilder
+			ShortcutDeclaration: root.expression.needsBuilder
 			default: false
 		}
 	}

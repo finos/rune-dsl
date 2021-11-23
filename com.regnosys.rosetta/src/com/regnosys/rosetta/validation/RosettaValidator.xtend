@@ -608,12 +608,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (reduce.expression!==null) {
 			val exrType = reduce.expression.RType
 			if (!exrType.isSelfComparable) {
-				error('''The expression for «reduce.action» must return a comparable type (e.g. number or date) the curent expression returns «exrType.name»''', reduce, BLUEPRINT_REDUCE__EXPRESSION, TYPE_ERROR)
+				error('''The expression for «reduce.action» must return a comparable type (e.g. number or date) the current expression returns «exrType.name»''', reduce, BLUEPRINT_REDUCE__EXPRESSION, TYPE_ERROR)
 			}
 			
 			val multi = cardinality.isMulti(reduce.expression)
 			if (multi) {
-				error('''The expression for «reduce.action» must return a single value the curent expression can return multiple values''', reduce, BLUEPRINT_REDUCE__EXPRESSION)
+				error('''The expression for «reduce.action» must return a single value the current expression can return multiple values''', reduce, BLUEPRINT_REDUCE__EXPRESSION)
 			}
 			
 		}
@@ -630,12 +630,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (filter.filter!==null) {
 			val exrType = filter.filter.RType
 			if (exrType!==RBuiltinType.BOOLEAN) {
-				error('''The expression for Filter must return a boolean the curent expression returns «exrType.name»''', filter, BLUEPRINT_FILTER__FILTER, TYPE_ERROR)
+				error('''The expression for Filter must return a boolean the current expression returns «exrType.name»''', filter, BLUEPRINT_FILTER__FILTER, TYPE_ERROR)
 			}
 			
 			val multi = cardinality.isMulti(filter.filter)
 			if (multi) {
-				error('''The expression for Filter must return a single value the curent expression can return multiple values''', filter, BLUEPRINT_FILTER__FILTER)
+				error('''The expression for Filter must return a single value the current expression can return multiple values''', filter, BLUEPRINT_FILTER__FILTER)
 			}
 			
 		}
@@ -740,7 +740,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 			// check type
 			val bpType = node.output?.type?.name
-			if ((attrExt.builtInType || attrExt.enum) && attr.type.name != bpType) {
+			val bpGenericType = node.output?.genericName
+			if ((attrExt.builtInType || attrExt.enum) && (attr.type.name != bpType && !attr.type.name.equalsIgnoreCase(bpGenericType))) {
 				val typeError = '''Type mismatch - report field «attr.name» has type «attr.type.name» ''' +
 					'''whereas the reporting rule «bp.name» has type «IF bpType !== null»«bpType»«ELSE»unknown«ENDIF».'''
 				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)

@@ -1990,5 +1990,478 @@ class FuncGeneratorTest {
 		.compileToClasses
 
 	}
+	
+	@Test
+	def void ifWithSingleStringType() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		test boolean (1..1)
+			 		t1 string  (1..1)
+			 		t2 string (1..1)
+				output:
+					result string (1..1)
+				
+				assign-output result:
+					if test = True
+					then t1
+					else t2
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import java.util.Arrays;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param test 
+					* @param t1 
+					* @param t2 
+					* @return result 
+					*/
+					public String evaluate(Boolean test, String t1, String t2) {
+						
+						String resultHolder = doEvaluate(test, t1, t2);
+						String result = assignOutput(resultHolder, test, t1, t2);
+						
+						return result;
+					}
+					
+					private String assignOutput(String result, Boolean test, String t1, String t2) {
+						result = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+						if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+							return MapperS.of(t1);
+						}
+						else {
+							return MapperS.of(t2);
+						}
+						}).get();
+						return result;
+					}
+				
+					protected abstract String doEvaluate(Boolean test, String t1, String t2);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  String doEvaluate(Boolean test, String t1, String t2) {
+							return null;
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
 
+	@Test
+	def void ifWithMultipleStringType() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		test boolean (1..1)
+			 		t1 string  (1..*)
+			 		t2 string (1..*)
+				output:
+					result string (1..*)
+				
+				assign-output result:
+					if test = True
+					then t1
+					else t2
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param test 
+					* @param t1 
+					* @param t2 
+					* @return result 
+					*/
+					public List<String> evaluate(Boolean test, List<String> t1, List<String> t2) {
+						
+						List<String> resultHolder = doEvaluate(test, t1, t2);
+						List<String> result = assignOutput(resultHolder, test, t1, t2);
+						
+						return result;
+					}
+					
+					private List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
+						result = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+						if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+							return MapperC.of(t1);
+						}
+						else {
+							return MapperC.of(t2);
+						}
+						}).getMulti();
+						return result;
+					}
+				
+					protected abstract List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+
+	@Test
+	def void ifWithSingleNumberType() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		test boolean (1..1)
+			 		t1 number  (1..1)
+			 		t2 number (1..1)
+				output:
+					result number (1..1)
+				
+				assign-output result:
+					if test = True
+					then t1
+					else t2
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import java.math.BigDecimal;
+				import java.util.Arrays;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param test 
+					* @param t1 
+					* @param t2 
+					* @return result 
+					*/
+					public BigDecimal evaluate(Boolean test, BigDecimal t1, BigDecimal t2) {
+						
+						BigDecimal resultHolder = doEvaluate(test, t1, t2);
+						BigDecimal result = assignOutput(resultHolder, test, t1, t2);
+						
+						return result;
+					}
+					
+					private BigDecimal assignOutput(BigDecimal result, Boolean test, BigDecimal t1, BigDecimal t2) {
+						result = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+						if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+							return MapperS.of(t1);
+						}
+						else {
+							return MapperS.of(t2);
+						}
+						}).get();
+						return result;
+					}
+				
+					protected abstract BigDecimal doEvaluate(Boolean test, BigDecimal t1, BigDecimal t2);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  BigDecimal doEvaluate(Boolean test, BigDecimal t1, BigDecimal t2) {
+							return null;
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+
+	@Test
+	def void ifWithMultipleNumberType() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		test boolean (1..1)
+			 		t1 number  (1..*)
+			 		t2 number (1..*)
+				output:
+					result number (1..*)
+				
+				assign-output result:
+					if test = True
+					then t1
+					else t2
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import java.math.BigDecimal;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param test 
+					* @param t1 
+					* @param t2 
+					* @return result 
+					*/
+					public List<BigDecimal> evaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+						
+						List<BigDecimal> resultHolder = doEvaluate(test, t1, t2);
+						List<BigDecimal> result = assignOutput(resultHolder, test, t1, t2);
+						
+						return result;
+					}
+					
+					private List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+						result = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+						if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+							return MapperC.of(t1);
+						}
+						else {
+							return MapperC.of(t2);
+						}
+						}).getMulti();
+						return result;
+					}
+				
+					protected abstract List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+	
+	@Test
+	def void ifWithSingleDataType() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		test boolean (1..1)
+			 		b1 Bar (1..1)
+			 		b2 Bar (1..1)
+				output:
+					result Bar (1..1)
+				
+				assign-output result:
+					if test = True
+					then b1
+					else b2
+			
+			type Bar:
+				s1 string (1..1)
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Bar.BarBuilder;
+				import java.util.Arrays;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param test 
+					* @param b1 
+					* @param b2 
+					* @return result 
+					*/
+					public Bar evaluate(Boolean test, Bar b1, Bar b2) {
+						
+						Bar.BarBuilder resultHolder = doEvaluate(test, b1, b2);
+						Bar.BarBuilder result = assignOutput(resultHolder, test, b1, b2);
+						
+						if (result!=null) objectValidator.validateAndFailOnErorr(Bar.class, result);
+						return result;
+					}
+					
+					private Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
+						result = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+						if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+							return MapperS.of(b1);
+						}
+						else {
+							return MapperS.of(b2);
+						}
+						}).get())
+						;
+						return result;
+					}
+				
+					protected abstract Bar.BarBuilder doEvaluate(Boolean test, Bar b1, Bar b2);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  Bar.BarBuilder doEvaluate(Boolean test, Bar b1, Bar b2) {
+							return Bar.builder();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+
+	@Test
+	def void ifWithMultipleDataTypes() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		test boolean (1..1)
+			 		b1 Bar (1..*)
+			 		b2 Bar (1..*)
+				output:
+					result Bar (1..*)
+				
+				assign-output result:
+					if test = True
+					then b1
+					else b2
+			
+			type Bar:
+				s1 string (1..1)
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Bar.BarBuilder;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param test 
+					* @param b1 
+					* @param b2 
+					* @return result 
+					*/
+					public List<? extends Bar> evaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
+						
+						List<Bar.BarBuilder> resultHolder = doEvaluate(test, b1, b2);
+						List<Bar.BarBuilder> result = assignOutput(resultHolder, test, b1, b2);
+						
+						if (result!=null) objectValidator.validateAndFailOnErorr(Bar.class, result);
+						return result;
+					}
+					
+					private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
+						result = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+						if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+							return MapperC.of(b1);
+						}
+						else {
+							return MapperC.of(b2);
+						}
+						}).getMulti())
+						;
+						return result;
+					}
+				
+					protected abstract List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
 }
