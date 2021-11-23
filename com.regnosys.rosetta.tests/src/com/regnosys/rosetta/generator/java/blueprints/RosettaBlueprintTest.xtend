@@ -365,6 +365,12 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 				import com.rosetta.test.model.BarReport;
+				import com.rosetta.test.model.blueprint.BarBarOneRule;
+				import com.rosetta.test.model.blueprint.BarBarTwoRule;
+				import com.rosetta.test.model.blueprint.BarBazRule;
+				import com.rosetta.test.model.blueprint.BarQuxListRule;
+				import com.rosetta.test.model.blueprint.QuxQux1Rule;
+				import com.rosetta.test.model.blueprint.QuxQux2Rule;
 				
 				/**
 				 * @version test
@@ -821,6 +827,20 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 				import test.reg.SokoviaAccordsReport;
+				import test.reg.blueprint.AttributeIntRule;
+				import test.reg.blueprint.AttributeNumberRule;
+				import test.reg.blueprint.AttributeTimeRule;
+				import test.reg.blueprint.AttributeZonedDateTimeRule;
+				import test.reg.blueprint.DateOfBirthRule;
+				import test.reg.blueprint.HeroNameRule;
+				import test.reg.blueprint.HeroOrganisationsRule;
+				import test.reg.blueprint.IsGovernmentAgencyRule;
+				import test.reg.blueprint.NationalityRule;
+				import test.reg.blueprint.NotModelledRule;
+				import test.reg.blueprint.OrganisationCountryRule;
+				import test.reg.blueprint.OrganisationNameRule;
+				import test.reg.blueprint.PowersRule;
+				import test.reg.blueprint.SpecialAbilitiesRule;
 				
 				/**
 				 * @version test
