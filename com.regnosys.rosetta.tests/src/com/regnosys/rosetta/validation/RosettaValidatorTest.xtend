@@ -892,7 +892,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 		'''.parseRosetta
 		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type unknown.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type Object.")
 	}
 	
 	@Test
@@ -1054,7 +1054,83 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
 	}
+
+	@Test
+	def void shouldNotGenerateTypeValidationError5() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule BarBarOne
+				(
+					filter when Bar->test = True then extract Bar->bar1,
+					filter when Bar->test = False then extract Bar->bar2
+				)  as "1 BarOne"
+			
+			type Bar:
+				test boolean (1..1)
+				bar1 Baz (1..1)
+				bar2 Baz (1..1)
+			
+			type Baz:
+				baz1 number (1..1)
+			
+			type BarReport:
+				barBarOne Baz (1..1)
+					[ruleReference BarBarOne]
+			
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+	}
 	
+	@Test
+	def void shouldGenerateTypeValidationErrorDifferentDataType() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule BarBarOne
+				(
+					filter when Bar->test = True then extract Bar->bar1,
+					filter when Bar->test = False then extract Bar->bar2
+				)  as "1 BarOne"
+			
+			type Bar:
+				test boolean (1..1)
+				bar1 Baz (1..1)
+				bar2 Qux (1..1)
+			
+			type Baz:
+				baz1 number (1..1)
+			
+			type Qux:
+				qux1 int (1..1)
+			
+			type BarReport:
+				barBarOne Baz (1..1)
+					[ruleReference BarBarOne]
+			
+		'''.parseRosetta
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field barBarOne has type Baz whereas the reporting rule BarBarOne has type Object.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+	}
+
+
 	@Test
 	def shouldGenerateDuplicateRuleError() {
 		val model = '''
