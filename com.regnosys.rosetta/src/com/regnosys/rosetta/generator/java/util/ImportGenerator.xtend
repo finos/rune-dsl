@@ -66,7 +66,7 @@ class ImportGenerator {
 		this.packages = packageName;
 	}
 
-	def addBlueprintImports() {
+	def void addBlueprintImports() {
 		imports.addAll(
 		'''«packages.blueprintLib.name».Blueprint''',
 		'''«packages.blueprintLib.name».BlueprintInstance''',
@@ -75,13 +75,13 @@ class ImportGenerator {
 		staticImports.add('''«packages.blueprintLib.name».BlueprintBuilder''')
 	}
 
-	def addSourceAndSink() {
+	def void addSourceAndSink() {
 		imports.addAll(
 		'''«packages.blueprintLib.name».runner.nodes.SinkNode''',
 		'''«packages.blueprintLib.name».runner.nodes.SourceNode''')
 	}
 
-	def addSimpleMerger(BlueprintMerge merge, Iterable<RegdOutputField> outRefs) {
+	def void addSimpleMerger(BlueprintMerge merge, Iterable<RegdOutputField> outRefs) {
 		val extraImport2 = outRefs.map[it.attrib.type].map[fullName()].filter[isImportable]
 		imports.addAll(extraImport2)
 		imports.add('''«packages.model.name».«merge.output.name»''')
@@ -90,22 +90,22 @@ class ImportGenerator {
 			'java.util.HashMap')
 	}
 	
-	def addIfThen(BlueprintOneOf oneOf) {
+	def void addIfThen(BlueprintOneOf oneOf) {
 		imports.addAll(
 		'''«packages.blueprintLib.name».BlueprintIfThen''')
 	}
 
-	def addSingleMapping(BlueprintExtract extract) {
+	def void addSingleMapping(BlueprintExtract extract) {
 		addMappingImport
 		addExpression(extract.call)
 	}
 
-	def addMappingImport() {
+	def void addMappingImport() {
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
 		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
 	}
 	
-	def addDataItemReportBuilder(Data reportType) {
+	def void addDataItemReportBuilder(Data reportType) {
 		addMappingImport
 		imports.addAll(
 			'''«packages.model.name».«reportType.name»''',
@@ -113,8 +113,12 @@ class ImportGenerator {
 			'''«packages.blueprintLib.name».DataItemReportUtils''',
 			'''«packages.blueprintLib.name».runner.data.DataIdentifier''',
 			'''«packages.blueprintLib.name».runner.data.GroupableData''')
-
 	}
+	
+	def void addDataItemReportRule(RosettaBlueprint blueprint) {
+		imports.add('''«(blueprint.eContainer as RosettaModel).name».blueprint.«blueprint.name»Rule''')
+	}
+	
 
 	def void addFeatureCall(RosettaFeatureCall call) {
 		val feature = call.feature
@@ -149,7 +153,7 @@ class ImportGenerator {
 		}
 	}
 
-	def add(Object call) {
+	def void add(Object call) {
 		println
 	}
 

@@ -55,7 +55,6 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import java.util.function.Consumer
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
@@ -604,7 +603,7 @@ class BlueprintGenerator {
 			val imports = new ImportGenerator(packageName)
 			imports.addDataItemReportBuilder(report.reportType)
 
-			val StringConcatenationClient scc = report.buildDataItemReportBuilderBody(names)
+			val StringConcatenationClient scc = report.buildDataItemReportBuilderBody(names, imports)
 			val body = tracImports(scc)
 
 			return '''
@@ -637,7 +636,7 @@ class BlueprintGenerator {
 			}
 	}
 	
-	def StringConcatenationClient buildDataItemReportBuilderBody(RosettaBlueprintReport report, extension JavaNames names) {
+	def StringConcatenationClient buildDataItemReportBuilderBody(RosettaBlueprintReport report, extension JavaNames names, ImportGenerator imports) {
 		val reportTypeName = report.reportType.name
 		val builderName = "dataItemReportBuilder"
 		'''
@@ -654,7 +653,7 @@ class BlueprintGenerator {
 					if (data == null) {
 						continue;
 					}
-					«report.reportType.buildRules(builderName, names)»
+					«report.reportType.buildRules(builderName, names, imports)»
 				}
 			}
 			
@@ -662,15 +661,16 @@ class BlueprintGenerator {
 		}'''
 	}
 	
-	def StringConcatenationClient buildRules(com.regnosys.rosetta.rosetta.simple.Data dataType, String builderPath, extension JavaNames names) {
+	def StringConcatenationClient buildRules(com.regnosys.rosetta.rosetta.simple.Data dataType, String builderPath, extension JavaNames names, ImportGenerator imports) {
 		'''«FOR attr : dataType.allAttributes»
 			«val attrEx = attr.toExpandedAttribute»
 			«val attrType = attr.type»
 			«val rule = attr.ruleReference?.reportingRule»
 			«IF rule !== null»
+				«imports.addDataItemReportRule(rule)»
 				«IF attr.card.isIsMany»
 					«IF attrType instanceof com.regnosys.rosetta.rosetta.simple.Data»
-						«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»(ruleIdentifier.getRepeatableIndex().orElse(0))''', names)»
+						«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»(ruleIdentifier.getRepeatableIndex().orElse(0))''', names, imports)»
 					«ENDIF»
 				«ELSE»
 					if («rule.name»Rule.class.isAssignableFrom(ruleType)) {
@@ -679,7 +679,7 @@ class BlueprintGenerator {
 				«ENDIF»
 			«ELSEIF attrType instanceof com.regnosys.rosetta.rosetta.simple.Data»
 				«IF !attr.card.isIsMany»
-					«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»()''', names)»
+					«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»()''', names, imports)»
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
