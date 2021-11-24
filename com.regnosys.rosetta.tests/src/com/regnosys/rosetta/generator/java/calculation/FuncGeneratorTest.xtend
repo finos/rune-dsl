@@ -2521,7 +2521,7 @@ class FuncGeneratorTest {
 					
 					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 						filteredFoos = toBuilder(MapperC.of(foos)
-							.filter(item->areEqual(item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
+							.filter(__item -> areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
 						;
 						return filteredFoos;
 					}
@@ -2611,7 +2611,7 @@ class FuncGeneratorTest {
 					
 					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 						filteredFoos = toBuilder(MapperC.of(foos)
-							.filter(fooItem->areEqual(fooItem.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
+							.filter(__fooItem -> areEqual(__fooItem.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
 						;
 						return filteredFoos;
 					}
@@ -2704,8 +2704,8 @@ class FuncGeneratorTest {
 					
 					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 						filteredFoos = toBuilder(MapperC.of(foos)
-							.filter(item->areEqual(item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
-							.filter(item->areEqual(item.<Boolean>map("getInclude2", _foo -> _foo.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
+							.filter(__item -> areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
+							.filter(__item -> areEqual(__item.<Boolean>map("getInclude2", _foo -> _foo.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
 						;
 						return filteredFoos;
 					}

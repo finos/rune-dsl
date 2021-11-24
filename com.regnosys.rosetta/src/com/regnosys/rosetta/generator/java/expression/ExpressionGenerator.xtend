@@ -158,7 +158,6 @@ class ExpressionGenerator {
 				'''«MapperC».of(«FOR ele: expr.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
 			}
 			ListOperation : {
-				params.put(new ParamID(null, -1, null, ClosureParameter), expr.parameter.getNameOrDefault)
 				listOperation(expr, params)
 			}
 			default: 
@@ -345,13 +344,26 @@ class ExpressionGenerator {
 				distinctOrOnlyElement('''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)''', expr.distinct, expr.toOne)
 			}
 			RosettaEnumeration: '''«call.toJavaType»'''
-			ClosureParameter: '''«call.getNameOrDefault»'''
+			ClosureParameter: '''«call.getNameOrDefault.toDecoratedName»'''
 			case null: {
-				'''«params.get(new ParamID(null, -1, null, ClosureParameter))»'''
+				val defaultClosureParameter = EcoreUtil2.getContainerOfType(expr, ListOperation)
+				if (defaultClosureParameter !== null) {
+					'''«defaultClosureParameter.parameter.getNameOrDefault.toDecoratedName»'''
+				} else {
+					throw new IllegalArgumentException("Callable with null call")
+				}
+				
 			}
-			default:
+			default: 
 				throw new UnsupportedOperationException("Unsupported callable type of " + call?.class?.simpleName)
 		}
+	}
+	
+	/**
+	 * Prefix name with double underscore to avoid name clashes with model names.
+	 */
+	private def toDecoratedName(String name) {
+		'''__«name»'''
 	}
 	
 	def aliasCallArgs(ShortcutDeclaration alias) {
@@ -628,7 +640,7 @@ class ExpressionGenerator {
 			case FILTER: {
 				'''
 				«op.receiver.javaCode(params)»
-					.filter(«op.parameter.getNameOrDefault»->«op.body.javaCode(params)».get())'''
+					.filter(«op.parameter.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
 			}
 			case MAP: {
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)
@@ -652,26 +664,25 @@ class ExpressionGenerator {
 	@org.eclipse.xtend.lib.annotations.Data static class ParamID {
 		RosettaType c
 		int index
-		String name
-		Class<?> t;
+		String name;
 	}
 	
 	//Class mapping from class name or positional index to the name of a variable defined in the containing code
 	static class ParamMap extends HashMap<ParamID, String> {
 		new(RosettaType c) {
 			if (null !== c)
-				put(new ParamID(c, -1, null, null), c.name.toFirstLower);
+				put(new ParamID(c, -1, null), c.name.toFirstLower);
 		}
 		
 		new(RosettaType c, String name) {
-			put(new ParamID(c, -1, null, null), name);
+			put(new ParamID(c, -1, null), name);
 		}
 		
 		new(){
 		}
 		
 		def dispatch String getClass(RosettaType c) {
-			return get(new ParamID(c, -1, null, null))
+			return get(new ParamID(c, -1, null))
 		}
 		
 		def dispatch String getClass(Data c) {
