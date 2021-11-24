@@ -15,6 +15,7 @@ import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
 import java.math.BigDecimal
 import org.junit.jupiter.api.Disabled
+import com.google.common.collect.ImmutableList
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -421,7 +422,6 @@ class ListOperationTest {
 	
 	
 	@Test
-	@Disabled
 	def void shouldGenerateFunctionWithNestedFilters() {
 		val model = '''
 			type Foo:
@@ -440,7 +440,7 @@ class ListOperationTest {
 					foos 
 						filter foo [ foo -> bars 
 							filter bar [ bar -> include = True ] 
-							count = 1 ]
+								count = 2 ]
 		'''
 		val code = model.generateCode
 		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -484,7 +484,7 @@ class ListOperationTest {
 					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 						filteredFoos = toBuilder(MapperC.of(foos)
 							.filter(__foo -> areEqual(MapperS.of(__foo.<Bar>mapC("getBars", _foo -> _foo.getBars())
-								.filter(__bar -> areEqual(__bar.<Boolean>map("getInclude", _bar -> _bar.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).resultCount()), MapperS.of(Integer.valueOf(1)), CardinalityOperator.All).get()).getMulti())
+								.filter(__bar -> areEqual(__bar.<Boolean>map("getInclude", _bar -> _bar.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).resultCount()), MapperS.of(Integer.valueOf(2)), CardinalityOperator.All).get()).getMulti())
 						;
 						return filteredFoos;
 					}
@@ -504,17 +504,22 @@ class ListOperationTest {
 		val classes = code.compileToClasses
 		val func = classes.createFunc("FuncFoo");
 		
-		val foo1 = classes.createInstanceUsingBuilder('Foo', of('include', true, 'attr', 'a'), of())
-		val foo2 = classes.createInstanceUsingBuilder('Foo', of('include', true, 'attr', 'b'), of())
-		val foo3 = classes.createInstanceUsingBuilder('Foo', of('include', false, 'attr', 'c'), of())
+		val bar1 = classes.createInstanceUsingBuilder('Bar', of('include', true), of())
+		val bar2 = classes.createInstanceUsingBuilder('Bar', of('include', false), of())
+		
+		val foo1 = classes.createInstanceUsingBuilder('Foo', of(), of('bars', ImmutableList.of(bar1, bar2, bar2))) // count 1
+		val foo2 = classes.createInstanceUsingBuilder('Foo', of(), of('bars', ImmutableList.of(bar1, bar1, bar2))) // count 2
+		val foo3 = classes.createInstanceUsingBuilder('Foo', of(), of('bars', ImmutableList.of(bar1, bar1, bar1))) // count 3
+		val foo4 = classes.createInstanceUsingBuilder('Foo', of(), of('bars', ImmutableList.of(bar2, bar1, bar1))) // count 2
 		
 		val fooList = newArrayList
 		fooList.add(foo1)
 		fooList.add(foo2)
 		fooList.add(foo3)
+		fooList.add(foo4)
 		
 		val res = func.invokeFunc(List, fooList)
 		assertEquals(2, res.size);
-		assertThat(res, hasItems(foo1, foo2));
+		assertThat(res, hasItems(foo2, foo4));
 	}
 }
