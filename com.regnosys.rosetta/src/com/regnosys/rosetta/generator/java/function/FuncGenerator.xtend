@@ -49,6 +49,7 @@ import org.eclipse.xtext.naming.QualifiedName
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.rosetta.simple.AssignOutputOperation
+import com.regnosys.rosetta.rosetta.simple.SetOutputOperation
 
 class FuncGenerator {
 
@@ -161,6 +162,9 @@ class FuncGenerator {
 					«FOR indexed : func.operations.filter(AssignOutputOperation).indexed»
 						«indexed.value.assign(aliasOut, names, output)»;
 					«ENDFOR»
+					«FOR indexed : func.operations.filter(SetOutputOperation).indexed»
+						«indexed.value.assign(aliasOut, names, output)»;
+					«ENDFOR»
 					return «outputName»;
 				}
 
@@ -238,8 +242,7 @@ class FuncGenerator {
 		return QualifiedName.create(ele.name).append(formatEnumName(ele.value.value.name))
 	}
 	
-	private def StringConcatenationClient assign(AssignOutputOperation op, Map<ShortcutDeclaration, Boolean> outs,
-		JavaNames names, Attribute type) {
+	private def StringConcatenationClient assign(AssignOutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type) {
 		val pathAsList = op.pathAsSegmentList
 		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
@@ -253,8 +256,26 @@ class FuncGenerator {
 				«op.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
 					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«
-					ENDIF»«ENDFOR»
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»
+			'''
+		}
+	}
+	
+	private def StringConcatenationClient assign(SetOutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type) {
+		val pathAsList = op.pathAsSegmentList
+		val ctx = Context.create(names)
+		if (pathAsList.isEmpty)
+			'''
+			«IF needsBuilder(op.assignRoot)»
+				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, ctx, type.isMany)»)
+			«ELSE»
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx, type.isMany)»«ENDIF»'''
+		else {
+			'''
+				«op.assignTarget(outs, names)»
+					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
+					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
+					.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(null)«ENDIF»«ENDFOR»
 			'''
 		}
 	}
@@ -295,6 +316,32 @@ class FuncGenerator {
 							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
 		}
 	}
+	
+//	private def StringConcatenationClient assignValue(AssignOutputOperation op, JavaNames names) {
+//		if(op.assignAsKey) {
+//			val metaClass = referenceWithMetaJavaType(op, names)
+//			if (cardinality.isMulti(op.expression)) {
+//				'''
+//				«expressionGenerator.javaCode(op.expression, new ParamMap)»
+//				.getItems().map(
+//						(item) -> «metaClass».builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
+//					).collect(«Collectors».toList())
+//				'''
+//			} else {
+//				'''
+//				«metaClass».builder().setGlobalReference(
+//						«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
+//							.map(r -> r.getMeta())
+//							.map(m -> m.getGlobalKey())
+//							.orElse(null)
+//					).build()
+//				'''
+//			}
+//		} else {
+//		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
+//							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
+//		}
+//	}
 	
 	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx, boolean isMulti) {
 		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''

@@ -3,12 +3,14 @@ package com.rosetta.model.lib.mapper;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
-import com.rosetta.model.lib.RosettaModelObject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import com.rosetta.model.lib.RosettaModelObject;
 
 
 public class MapperS<T> implements MapperBuilder<T> {
@@ -56,6 +58,11 @@ public class MapperS<T> implements MapperBuilder<T> {
 		return new MapperC<>(getMapperItems(item, mappingFunc));
 	}
 
+	@Override
+	public MapperBuilder<T> filter(Predicate<MapperBuilder<T>> predicate) {
+		throw new IllegalArgumentException("Filter not supported for MapperS");
+	}
+	
 	@Override
 	public T get() {
 		return item.getMappedObject();

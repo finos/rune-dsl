@@ -22,6 +22,7 @@ import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.WithCardinality
+import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
@@ -61,7 +62,8 @@ class CardinalityProvider {
 			RosettaDisjointExpression,
 			RosettaRootElement,
 			RosettaEnumValueReference,
-			RosettaMapPathValue: false
+			RosettaMapPathValue,
+			ClosureParameter: false
 			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }
 		}
 	}

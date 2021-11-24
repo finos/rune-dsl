@@ -17,6 +17,7 @@ import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import org.eclipse.emf.ecore.EObject
 
 import static com.regnosys.rosetta.generator.util.Util.*
@@ -70,7 +71,8 @@ class RosettaFunctionDependencyProvider {
 			RosettaExternalFunction,
 			RosettaEnumValueReference,
 			RosettaLiteral,
-			RosettaCallableCall:
+			RosettaCallableCall,
+			ListOperation:
 				emptyList()
 			default:
 				if(object !== null)
