@@ -28,6 +28,7 @@ import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 class CardinalityProvider {
 	
@@ -48,7 +49,8 @@ class CardinalityProvider {
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
 			RosettaGroupByFeatureCall,
-			ListLiteral: true
+			ListLiteral,
+			ListOperation: true
 			RosettaLiteral,
 			RosettaBinaryOperation, // check '+' operator
 			RosettaTypedFeature,

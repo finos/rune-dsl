@@ -159,7 +159,7 @@ class RosettaTypeProvider {
 				expression.operator.resultType(leftType, rightType)
 			}
 			RosettaCountOperation: {
-				RBuiltinType.NUMBER
+				RBuiltinType.INT
 			}
 			RosettaContainsExpression,
 			RosettaDisjointExpression,
