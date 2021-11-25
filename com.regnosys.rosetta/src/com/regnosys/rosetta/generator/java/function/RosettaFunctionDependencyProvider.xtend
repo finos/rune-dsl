@@ -65,14 +65,16 @@ class RosettaFunctionDependencyProvider {
 			RosettaDisjointExpression: {
 				functionDependencies(object.disjoint) + functionDependencies(object.container)
 			}
-			RosettaCountOperation:{
+			RosettaCountOperation: {
 				functionDependencies(object.argument)
+			}
+			ListOperation: {
+				functionDependencies(object.body) + functionDependencies(object.receiver)
 			}
 			RosettaExternalFunction,
 			RosettaEnumValueReference,
 			RosettaLiteral,
-			RosettaCallableCall,
-			ListOperation:
+			RosettaCallableCall:
 				emptyList()
 			default:
 				if(object !== null)

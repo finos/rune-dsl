@@ -448,7 +448,100 @@ class ListOperationTest {
 	}
 	
 	@Test
-	@Disabled
+	def void shouldGenerateFunctionWithFilterListAndFuncCalls() {
+		val model = '''
+			type Foo:
+				include boolean (1..1)
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					filteredFoos Foo (0..*)
+				
+				set filteredFoos:
+					foos 
+						filter [ FuncFooTest( item ) ]
+						filter [ FuncFooTest2( item ) ]
+			
+			func FuncFooTest:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					result boolean (0..1)
+				
+				set result:
+					foo -> include
+			
+			func FuncFooTest2:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					result boolean (0..1)
+				
+				set result:
+					foo -> include
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo(true, 'a')
+		val foo2 = classes.createFoo(true, 'b')
+		val foo3 = classes.createFoo(false, 'c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList)
+		assertEquals(2, res.size);
+		assertThat(res, hasItems(foo1, foo2));
+	}
+	
+	@Test
+	@Disabled // Code gen issue
+	def void shouldGenerateFunctionWithFilterAndAlias() {
+		val model = '''
+			type Foo:
+				include boolean (1..1)
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					filteredFooAttrs string (0..*)
+				
+				alias filteredFoosAlias:
+					foos 
+						filter [ item -> include = True ]
+				
+				set filteredFooAttrs:
+					filteredFoosAlias -> attr
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo(true, 'a')
+		val foo2 = classes.createFoo(true, 'b')
+		val foo3 = classes.createFoo(false, 'c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList)
+		assertEquals(2, res.size);
+		assertThat(res, hasItems('a', 'b'));
+	}
+	
+	@Test
+	@Disabled // Add syntax support
 	def void shouldGenerateFunctionWithFilterListAndOnlyElement() {
 		val model = '''
 			type Foo:
@@ -484,7 +577,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	@Disabled
+	@Disabled // Add syntax support
 	def void shouldGenerateFunctionWithFilterListAndDistinct() {
 		val model = '''
 			type Foo:
@@ -523,7 +616,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	@Disabled
+	@Disabled // Add syntax support
 	def void shouldGenerateFunctionWithFilterListAndPath() {
 		val model = '''
 			type Foo:
