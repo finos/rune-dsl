@@ -615,7 +615,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	//@Disabled // Add syntax support
+	@Disabled // Add syntax support
 	def void shouldGenerateFunctionWithFilterListAndOnlyElement() {
 		val model = '''
 			type Foo:
@@ -770,7 +770,7 @@ class ListOperationTest {
 		assertEquals(2, res.size);
 		assertThat(res, hasItems(bar2, bar4));
 	}
-
+	
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, boolean include, String attr) {
 		classes.createInstanceUsingBuilder('Foo', of('include', include, 'attr', attr), of()) as RosettaModelObject
 	}
