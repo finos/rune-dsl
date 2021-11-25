@@ -325,6 +325,9 @@ class ExpressionGenerator {
 	}
 	
 	protected def StringConcatenationClient callableCall(RosettaCallableCall expr, ParamMap params) {
+		if (expr.implicitReceiver) {
+			return '''«EcoreUtil2.getContainerOfType(expr, ListOperation).parameter.getNameOrDefault.toDecoratedName»'''
+		}
 		val call = expr.callable
 		switch (call)  {
 			Data : {
@@ -345,15 +348,6 @@ class ExpressionGenerator {
 			}
 			RosettaEnumeration: '''«call.toJavaType»'''
 			ClosureParameter: '''«call.getNameOrDefault.toDecoratedName»'''
-			case null: {
-				val defaultClosureParameter = EcoreUtil2.getContainerOfType(expr, ListOperation)
-				if (defaultClosureParameter !== null) {
-					'''«defaultClosureParameter.parameter.getNameOrDefault.toDecoratedName»'''
-				} else {
-					throw new IllegalArgumentException("Callable with null call")
-				}
-				
-			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable type of " + call?.class?.simpleName)
 		}
