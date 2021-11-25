@@ -523,6 +523,43 @@ class ListOperationTest {
 	}
 	
 	@Test
+	@Disabled
+	def void shouldGenerateFunctionWithFilterListAndPath() {
+		val model = '''
+			type Foo:
+				include boolean (1..1)
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					filteredFooAttr string (0..*)
+				
+				set filteredFooAttr:
+					foos 
+						filter fooItem [ fooItem -> include = True ]
+							-> attr
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo(true, 'a')
+		val foo2 = classes.createFoo(true, 'b')
+		val foo3 = classes.createFoo(false, 'c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList)
+		assertEquals(2, res.size);
+		assertThat(res, hasItems('a', 'b'));
+	}
+	
+	@Test
 	def void shouldGenerateFunctionWithNestedFilters() {
 		val model = '''
 			type Bar:
