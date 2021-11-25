@@ -413,6 +413,42 @@ class ListOperationTest {
 	}
 	
 	@Test
+	def void shouldGenerateFunctionWithFilterListAndInputParameter() {
+		val model = '''
+			type Foo:
+				include boolean (1..1)
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		test boolean (1..1)
+				output:
+					filteredFoos Foo (0..*)
+				
+				set filteredFoos:
+					foos 
+						filter [ item -> include = test ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo(true, 'a')
+		val foo2 = classes.createFoo(true, 'b')
+		val foo3 = classes.createFoo(false, 'c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList, true)
+		assertEquals(2, res.size);
+		assertThat(res, hasItems(foo1, foo2));
+	}
+	
+	@Test
 	def void shouldGenerateFunctionWithFilterListAndCount() {
 		val model = '''
 			type Foo:
@@ -497,6 +533,45 @@ class ListOperationTest {
 		fooList.add(foo3)
 		
 		val res = func.invokeFunc(List, fooList)
+		assertEquals(2, res.size);
+		assertThat(res, hasItems(foo1, foo2));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithFilterListAndAliasParameter() {
+		val model = '''
+			type Foo:
+				include boolean (1..1)
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		test boolean (1..1)
+				output:
+					filteredFoos Foo (0..*)
+				
+				alias testAlias:
+					test
+				
+				set filteredFoos:
+					foos 
+						filter [ item -> include = testAlias ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo(true, 'a')
+		val foo2 = classes.createFoo(true, 'b')
+		val foo3 = classes.createFoo(false, 'c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList, true)
 		assertEquals(2, res.size);
 		assertThat(res, hasItems(foo1, foo2));
 	}
