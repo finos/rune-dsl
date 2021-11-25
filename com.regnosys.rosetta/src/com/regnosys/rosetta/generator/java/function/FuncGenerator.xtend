@@ -23,11 +23,13 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.AssignOutputOperation
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.SetOutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RAnnotateType
 import com.regnosys.rosetta.types.RType
@@ -48,8 +50,6 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.regnosys.rosetta.rosetta.simple.AssignOutputOperation
-import com.regnosys.rosetta.rosetta.simple.SetOutputOperation
 
 class FuncGenerator {
 
@@ -316,32 +316,6 @@ class FuncGenerator {
 							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
 		}
 	}
-	
-//	private def StringConcatenationClient assignValue(AssignOutputOperation op, JavaNames names) {
-//		if(op.assignAsKey) {
-//			val metaClass = referenceWithMetaJavaType(op, names)
-//			if (cardinality.isMulti(op.expression)) {
-//				'''
-//				«expressionGenerator.javaCode(op.expression, new ParamMap)»
-//				.getItems().map(
-//						(item) -> «metaClass».builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
-//					).collect(«Collectors».toList())
-//				'''
-//			} else {
-//				'''
-//				«metaClass».builder().setGlobalReference(
-//						«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
-//							.map(r -> r.getMeta())
-//							.map(m -> m.getGlobalKey())
-//							.orElse(null)
-//					).build()
-//				'''
-//			}
-//		} else {
-//		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
-//							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
-//		}
-//	}
 	
 	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx, boolean isMulti) {
 		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
