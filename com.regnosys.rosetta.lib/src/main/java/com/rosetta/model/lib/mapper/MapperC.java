@@ -6,6 +6,7 @@ import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,7 +74,14 @@ public class MapperC<T> implements MapperBuilder<T> {
 	@Override
 	public MapperBuilder<T> filter(Predicate<MapperBuilder<T>> predicate) {
 		return new MapperC<>(items.stream()
-				.filter(item -> predicate.test(new MapperS<T>(item)))
+				.filter(item -> predicate.test(new MapperS<>(item)))
+				.collect(Collectors.toList()));
+	}
+	
+	@Override
+	public <F> MapperBuilder<F> map(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc) {
+		return MapperC.of(items.stream()
+				.map(item -> mappingFunc.apply(new MapperS<>(item)).get())
 				.collect(Collectors.toList()));
 	}
 	

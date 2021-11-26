@@ -38,10 +38,9 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	 */
 	<F> MapperBuilder<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc);
 	
-	/**
-	 * Blah
-	 */
 	MapperBuilder<T> filter(Predicate<MapperBuilder<T>> predicate);
+	
+	<F> MapperBuilder<F> map(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc);
 	
 	default <G> MapperGroupByBuilder<T,G> groupBy(Function<MapperItem<T,?>, MapperBuilder<G>> groupByFunc) {
 		Function<MapperItem<T,?>,MapperItem<G, ?>> keyFunction = 

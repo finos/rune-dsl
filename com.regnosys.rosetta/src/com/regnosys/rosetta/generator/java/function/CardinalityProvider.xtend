@@ -48,6 +48,7 @@ class CardinalityProvider {
 			ShortcutDeclaration: obj.expression.isMulti
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
+			ClosureParameter: obj.operation.receiver.isMulti
 			RosettaGroupByFeatureCall,
 			ListLiteral,
 			ListOperation: true
@@ -64,8 +65,7 @@ class CardinalityProvider {
 			RosettaDisjointExpression,
 			RosettaRootElement,
 			RosettaEnumValueReference,
-			RosettaMapPathValue,
-			ClosureParameter: false
+			RosettaMapPathValue: false
 			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }
 		}
 	}

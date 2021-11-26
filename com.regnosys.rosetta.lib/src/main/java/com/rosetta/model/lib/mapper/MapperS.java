@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -61,6 +62,11 @@ public class MapperS<T> implements MapperBuilder<T> {
 	@Override
 	public MapperBuilder<T> filter(Predicate<MapperBuilder<T>> predicate) {
 		throw new IllegalArgumentException("Filter not supported for MapperS");
+	}
+	
+	@Override
+	public <F> MapperBuilder<F> map(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc) {
+		throw new IllegalArgumentException("Map not supported for MapperS");
 	}
 	
 	@Override

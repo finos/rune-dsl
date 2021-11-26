@@ -637,7 +637,9 @@ class ExpressionGenerator {
 					.filter(«op.parameter.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
 			}
 			case MAP: {
-				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)
+				'''
+				«op.receiver.javaCode(params)»
+					.map(«op.parameter.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)»)'''
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)

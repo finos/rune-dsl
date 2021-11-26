@@ -771,6 +771,250 @@ class ListOperationTest {
 		assertThat(res, hasItems(bar2, bar4));
 	}
 	
+	@Test
+	def void shouldGenerateFunctionWithMapListItemParameter() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				set strings:
+					foos 
+						map [ item -> attr ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList)
+		assertEquals(3, res.size);
+		assertThat(res, hasItems('a', 'b', 'c'));
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateFunctionWithMapListItemParameter2() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					fooCounts int (0..*)
+				
+				set fooCounts:
+					bars 
+						map bar [ bar -> foos ]
+						map fooListItem [ fooListItem count ]
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Foo;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param bars 
+					* @return fooCounts 
+					*/
+					public List<Integer> evaluate(List<? extends Bar> bars) {
+						
+						List<Integer> fooCountsHolder = doEvaluate(bars);
+						List<Integer> fooCounts = assignOutput(fooCountsHolder, bars);
+						
+						return fooCounts;
+					}
+					
+					private List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
+						fooCounts = MapperC.of(bars)
+							.map(__bar -> __bar.<Foo>mapX("getFoos", _bar -> _bar.getFoos()))
+							.map(__fooListItem -> MapperS.of(__fooListItem.resultCount())).getMulti();
+						return fooCounts;
+					}
+				
+					protected abstract List<Integer> doEvaluate(List<? extends Bar> bars);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<Integer> doEvaluate(List<? extends Bar> bars) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		
+		val bar1 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar2 = classes.createBar(ImmutableList.of(foo1, foo2))
+		val bar3 = classes.createBar(ImmutableList.of(foo1))
+		
+		val res = func.invokeFunc(List, ImmutableList.of(bar1, bar2, bar3))
+		assertEquals(3, res.size);
+		assertThat(res, hasItems(3, 2, 1));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithMapListNamedParameter() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				set strings:
+					foos 
+						map fooItem [ fooItem -> attr ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList)
+		assertEquals(3, res.size);
+		assertThat(res, hasItems('a', 'b', 'c'));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithMapListModifyItemFunc() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					updatedFoos Foo (0..*)
+				
+				set updatedFoos:
+					foos 
+						map [ NewFoo( item -> attr + "_1" ) ]
+			
+			func NewFoo:
+			 	inputs:
+			 		attr string (1..1)
+				output:
+					foo Foo (0..1)
+				
+				assign-output foo -> attr:
+					attr
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList)
+		assertEquals(3, res.size);
+		
+		val expectedFoo1 = classes.createFoo('a_1')
+		val expectedFoo2 = classes.createFoo('b_1')
+		val expectedFoo3 = classes.createFoo('c_1')
+		
+		assertThat(res, hasItems(expectedFoo1, expectedFoo2, expectedFoo3));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithFilterThenMap() {
+		val model = '''
+			type Foo:
+				include boolean (1..1)
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					newFoos string (0..*)
+				
+				set newFoos:
+					foos 
+						filter [ item -> include = True ]
+						map [ item -> attr ]
+
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo(true, 'a')
+		val foo2 = classes.createFoo(true, 'b')
+		val foo3 = classes.createFoo(false, 'c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList)
+		assertEquals(2, res.size);
+		assertThat(res, hasItems('a', 'b'));
+	}
+	
+	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {
+		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of()) as RosettaModelObject
+	}
+	
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, boolean include, String attr) {
 		classes.createInstanceUsingBuilder('Foo', of('include', include, 'attr', attr), of()) as RosettaModelObject
 	}
