@@ -615,6 +615,47 @@ class ListOperationTest {
 	}
 	
 	@Test
+	def void shouldGenerateFunctionWithFilterListAliasAndOnlyElement() {
+		val model = '''
+			type Foo2:
+				include boolean (0..1)
+				include2 boolean (0..1)
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo2 (0..*)
+			 		test boolean (1..1)
+			 		test2 boolean (1..1)
+				output:
+					foo Foo2 (0..1)
+				
+				alias filteredFoos:
+					foos 
+						filter [ if test exists then item -> include = test else True ]
+						filter [ if test2 exists then item -> include2 = test2 else True ]
+				
+				assign-output foo:
+					filteredFoos only-element
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo2(true, true, 'a')
+		val foo2 = classes.createFoo2(true, false, 'b')
+		val foo3 = classes.createFoo2(false, true, 'c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(RosettaModelObject, fooList, true, true)
+		assertEquals(foo1, res);
+	}
+	
+	@Test
 	@Disabled // Add syntax support
 	def void shouldGenerateFunctionWithFilterListAndOnlyElement() {
 		val model = '''
@@ -806,7 +847,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	@Disabled
+	@Disabled // code gen / path flattening issue
 	def void shouldGenerateFunctionWithMapListItemParameter2() {
 		val model = '''
 			type Bar:
