@@ -278,7 +278,7 @@ class FuncGenerator {
 				«op.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
 					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
-					.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(null)«ENDIF»«ENDFOR»
+					.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»
 			'''
 		}
 	}
@@ -318,6 +318,11 @@ class FuncGenerator {
 		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
 							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
 		}
+	}
+	
+	private def StringConcatenationClient assignValue(SetOutputOperation op, JavaNames names) {
+		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
+							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
 	}
 	
 	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx, boolean isMulti) {

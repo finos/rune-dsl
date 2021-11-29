@@ -2464,4 +2464,77 @@ class FuncGeneratorTest {
 		)
 		code.compileToClasses
 	}
+	
+	@Test
+	def void shouldSetList() {
+		val model = '''
+			type Foo:
+				outList string (0..*)
+			
+			func FuncFoo:
+			 	inputs:
+			 		inList string (0..*)
+				output:
+					foo Foo (1..1)
+				
+				set foo -> outList:
+					inList
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Foo;
+				import com.rosetta.test.model.Foo.FooBuilder;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param inList 
+					* @return foo 
+					*/
+					public Foo evaluate(List<String> inList) {
+						
+						Foo.FooBuilder fooHolder = doEvaluate(inList);
+						Foo.FooBuilder foo = assignOutput(fooHolder, inList);
+						
+						if (foo!=null) objectValidator.validateAndFailOnErorr(Foo.class, foo);
+						return foo;
+					}
+					
+					private Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
+						foo
+							.setOutList(MapperC.of(inList).getMulti())
+						;
+						return foo;
+					}
+				
+					protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  Foo.FooBuilder doEvaluate(List<String> inList) {
+							return Foo.builder();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+	
 }

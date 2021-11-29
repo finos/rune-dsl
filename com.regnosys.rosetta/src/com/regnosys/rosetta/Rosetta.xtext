@@ -132,7 +132,7 @@ AssignOutputOperation:
 ;
 
 SetOutputOperation:
-	'set' assignRoot = [AssignPathRoot|ValidID]':' Definable?
+	'set' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
 		expression = ListOperation
 ;
 
