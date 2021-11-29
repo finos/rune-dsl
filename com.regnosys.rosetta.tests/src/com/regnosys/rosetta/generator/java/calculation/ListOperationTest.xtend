@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
+import com.rosetta.model.lib.RosettaModelObject
 import java.util.List
+import java.util.Map
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Disabled
@@ -15,8 +17,6 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
-import com.rosetta.model.lib.RosettaModelObject
-import java.util.Map
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -653,6 +653,178 @@ class ListOperationTest {
 		
 		val res = func.invokeFunc(RosettaModelObject, fooList, true, true)
 		assertEquals(foo1, res);
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithFilterListAliasAndOnlyElement2() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				include boolean (1..1)
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bar Bar (1..1)
+				output:
+					foos Foo (0..*)
+				
+				set foos:
+					bar -> foos 
+						map [ if item -> include = True then Create_Foo( item -> include, item -> attr + "_bar" ) else item ]
+			
+			func Create_Foo:
+				inputs:
+					include boolean (1..1)
+					attr string (1..1)
+				output:
+					foo Foo (1..1)
+				
+				assign-output foo -> include: include
+				assign-output foo -> attr: attr
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.expression.MapperMaths;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperBuilder;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Foo;
+				import com.rosetta.test.model.Foo.FooBuilder;
+				import com.rosetta.test.model.functions.Create_Foo;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+					
+					// RosettaFunction dependencies
+					//
+					@Inject protected Create_Foo create_Foo;
+				
+					/**
+					* @param bar 
+					* @return foos 
+					*/
+					public List<? extends Foo> evaluate(Bar bar) {
+						
+						List<Foo.FooBuilder> foosHolder = doEvaluate(bar);
+						List<Foo.FooBuilder> foos = assignOutput(foosHolder, bar);
+						
+						if (foos!=null) objectValidator.validateAndFailOnErorr(Foo.class, foos);
+						return foos;
+					}
+					
+					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
+						foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
+							.map(__item -> (MapperBuilder<? extends Foo>)  com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+							if (areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+								return MapperS.of(create_Foo.evaluate(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()).get(), MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()));
+							}
+							else {
+								return __item;
+							}
+							})).getMulti())
+						;
+						return foos;
+					}
+				
+					protected abstract List<Foo.FooBuilder> doEvaluate(Bar bar);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<Foo.FooBuilder> doEvaluate(Bar bar) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo(true, 'foo')
+		val foo2 = classes.createFoo(false, 'foo')
+		
+		val bar = classes.createBar(ImmutableList.of(foo1, foo2, foo2))
+		
+		val res = func.invokeFunc(List, bar)
+		assertEquals(3, res.size);
+		
+		val expectedNewFoo = classes.createFoo(true, 'foo_bar')
+		
+		assertThat(res, hasItems(expectedNewFoo, foo2));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithFilterListAliasAndOnlyElement3() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				include boolean (1..1)
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bar Bar (1..1)
+				output:
+					updatedBar Bar (1..1)
+				
+				assign-output updatedBar -> foos:
+					bar -> foos 
+						map [ if item -> include = True then Create_Foo( item -> include, Create_Attr( item -> attr, "_bar" ) ) else item ]
+			
+			func Create_Foo:
+				inputs:
+					include boolean (1..1)
+					attr string (1..1)
+				output:
+					foo Foo (1..1)
+				
+				assign-output foo -> include: include
+				assign-output foo -> attr: attr
+			
+			func Create_Attr:
+				inputs:
+					s1 string (1..1)
+					s2 string (1..1)
+				output:
+					out string (1..1)
+				assign-output out:
+					s1 + s2
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo(true, 'foo')
+		val foo2 = classes.createFoo(false, 'foo')
+		
+		val bar = classes.createBar(ImmutableList.of(foo1, foo2, foo2))
+		
+		val res = func.invokeFunc(RosettaModelObject, bar)
+		
+		val expectedBar = classes.createBar(ImmutableList.of(classes.createFoo(true, 'foo_bar'), foo2, foo2))
+		
+		assertEquals(expectedBar, res);
 	}
 	
 	@Test

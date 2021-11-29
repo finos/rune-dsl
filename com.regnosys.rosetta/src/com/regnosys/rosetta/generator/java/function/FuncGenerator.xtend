@@ -28,6 +28,7 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.SetOutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
@@ -173,8 +174,10 @@ class FuncGenerator {
 				«FOR alias : func.shortcuts»
 					
 					«IF aliasOut.get(alias)»
-						protected «names.shortcutJavaType(alias)» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
-							return «expressionGenerator.javaCode(alias.expression, new ParamMap)».get().toBuilder();
+						«val multi = cardinality.isMulti(alias.expression)»
+						«val returnType = names.shortcutJavaType(alias)»
+						protected «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
+							return toBuilder(«expressionGenerator.javaCode(alias.expression, new ParamMap)»«IF multi».getMulti()«ELSE».get()«ENDIF»);
 						}
 					«ELSE»
 						protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
@@ -370,8 +373,15 @@ class FuncGenerator {
 	
 	private def dispatch StringConcatenationClient lhsExpand(RosettaFeatureCall f) 
 	'''«lhsExpand(f.receiver)».«f.feature.lhsFeature»'''
+	
 	private def dispatch StringConcatenationClient lhsExpand(RosettaCallableCall f) 
 	'''«f.callable.lhsExpand»'''
+	
+	private def dispatch StringConcatenationClient lhsExpand(ShortcutDeclaration f) 
+	'''«f.expression.lhsExpand»'''
+	
+	private def dispatch StringConcatenationClient lhsExpand(ListOperation f) 
+	'''«f.receiver.lhsExpand»'''
 	
 	private def dispatch StringConcatenationClient lhsFeature(RosettaFeature f){
 		throw new IllegalStateException("No implementation for lhsFeature for "+f.class)

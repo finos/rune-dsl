@@ -38,6 +38,7 @@ import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -50,6 +51,7 @@ import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.expression.CardinalityOperator
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
+import com.rosetta.model.lib.mapper.MapperBuilder
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.mapper.MapperTree
@@ -66,7 +68,6 @@ import org.eclipse.xtext.util.Wrapper
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
-import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 
 class ExpressionGenerator {
 	
@@ -639,7 +640,7 @@ class ExpressionGenerator {
 			case MAP: {
 				'''
 				«op.receiver.javaCode(params)»
-					.map(«op.parameter.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)»)'''
+					.map(«op.parameter.getNameOrDefault.toDecoratedName» -> («MapperBuilder»<«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«typeProvider.getRType(op.body).name.toJavaType»>)  «op.body.javaCode(params)»)'''
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)

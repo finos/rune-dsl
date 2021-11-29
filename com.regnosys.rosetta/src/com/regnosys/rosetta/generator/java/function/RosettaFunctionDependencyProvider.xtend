@@ -21,6 +21,7 @@ import com.regnosys.rosetta.rosetta.simple.ListOperation
 import org.eclipse.emf.ecore.EObject
 
 import static com.regnosys.rosetta.generator.util.Util.*
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -71,6 +72,9 @@ class RosettaFunctionDependencyProvider {
 			ListOperation: {
 				functionDependencies(object.body) + functionDependencies(object.receiver)
 			}
+			ListLiteral: {
+				newArrayList(object.elements.flatMap[functionDependencies])
+			},
 			RosettaExternalFunction,
 			RosettaEnumValueReference,
 			RosettaLiteral,
