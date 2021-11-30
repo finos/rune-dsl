@@ -17,6 +17,9 @@ class ExpressionHelper {
 	}
 
 	def List<RosettaCallable> findOutputRef(EObject ele, Stack<String> trace) {
+		if (ele === null) {
+			return emptyList
+		}
 		switch (ele) {
 			ShortcutDeclaration: {
 				trace.push(ele.name)

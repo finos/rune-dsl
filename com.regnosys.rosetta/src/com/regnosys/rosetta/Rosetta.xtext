@@ -123,8 +123,17 @@ PostCondition returns Condition:
 ;
 
 Operation:
+	AssignOutputOperation | SetOutputOperation
+;
+
+AssignOutputOperation:
 	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
 	expression = RosettaCalcExpression assignAsKey?='as-key'?
+;
+
+SetOutputOperation:
+	'set' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
+		expression = ListOperation
 ;
 
 Segment:
@@ -394,16 +403,13 @@ RosettaSegment:
  * Expressions 
  */ 
 
-RosettaGroupByFeatureCall returns RosettaExpression:
-	RosettaCalcAttributeCall ( =>({RosettaGroupByFeatureCall.call=current} 'group' 'by') groupBy=RosettaGroupByExpression)?
-;
-
 RosettaGroupByExpression:
 	attribute = [Attribute|ValidID] (=>FEATURE_CALL_SEPARATOR right = RosettaGroupByExpression)?
 ;
 
 RosettaCallableCall: 
 	callable=[RosettaCallable|QualifiedName]
+	| implicitReceiver ?= 'item'
 ;
 
 RosettaLiteral:
@@ -517,6 +523,15 @@ RosettaCalcCountOperation returns RosettaExpression:
 	RosettaGroupByFeatureCall (=> ({RosettaCountOperation.argument=current} 'count'))?
 ;
 
+RosettaGroupByFeatureCall returns RosettaExpression:
+	ListOperation ( =>({RosettaGroupByFeatureCall.call=current} 'group' 'by') groupBy=RosettaGroupByExpression)?
+;
+
+ListOperation returns RosettaExpression:
+	RosettaCalcAttributeCall
+	( => ({ListOperation.receiver=current}  operationKind = ListOperationKind) parameter = ClosureParameter '['body = RosettaCalcExpression ']')*
+;
+
 RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
 	( =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])? distinct ?= 'distinct'? toOne ?= 'only-element'?)*
@@ -532,6 +547,15 @@ RosettaCalcPrimary returns RosettaExpression:
 	| RosettaLiteral
 	| RosettaParenthesisCalcExpression
 	| RosettaCalcOnlyExists
+;
+
+ClosureParameter:
+	name = ValidID
+	| {ClosureParameter}
+;
+
+enum ListOperationKind:
+	filter | map
 ;
 RosettaCalcConditionalExpression returns RosettaExpression:
 	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?

@@ -102,16 +102,46 @@ enum Necessity {
 	optional, required
 }
 
-class Operation extends Definable {
+abstract class Operation extends Definable {
 	container Function function opposite operations
 	refers AssignPathRoot assignRoot
 	contains Segment path
 	contains RosettaExpression expression
-	boolean assignAsKey
 	op Segment[] pathAsSegmentList() {
 		return if(path !== null) path.asSegmentList(path) else new BasicEList
 	}
 }
+
+class AssignOutputOperation extends Operation {
+	boolean assignAsKey
+}
+
+class SetOutputOperation extends Operation {
+	refers AssignPathRoot input
+}
+
+class ListOperation extends RosettaExpression {
+	contains RosettaExpression receiver
+	ListOperationKind operationKind
+	contains ClosureParameter parameter opposite operation
+	contains RosettaExpression body
+}
+
+enum ListOperationKind {
+	filter
+	, map
+}
+
+class ClosureParameter extends RosettaCallable {
+	container ListOperation operation opposite parameter
+	/**
+	 * @return The name or 'item' if it's <code>null</code>
+	 */
+	derived String getNameOrDefault get {
+		return name ?: 'item'
+	}
+}
+
 
 class Segment {
 	

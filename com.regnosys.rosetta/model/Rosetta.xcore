@@ -242,6 +242,7 @@ abstract class RosettaExpression {
 class RosettaCallableCall extends RosettaExpression {
 	boolean distinct
 	boolean toOne
+	boolean implicitReceiver
 	refers RosettaCallable callable
 }
 

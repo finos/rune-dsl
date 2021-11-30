@@ -22,11 +22,13 @@ import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.WithCardinality
+import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 class CardinalityProvider {
 	
@@ -46,8 +48,10 @@ class CardinalityProvider {
 			ShortcutDeclaration: obj.expression.isMulti
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
+			ClosureParameter: obj.operation.receiver.isMulti
 			RosettaGroupByFeatureCall,
-			ListLiteral: true
+			ListLiteral,
+			ListOperation: true
 			RosettaLiteral,
 			RosettaBinaryOperation, // check '+' operator
 			RosettaTypedFeature,

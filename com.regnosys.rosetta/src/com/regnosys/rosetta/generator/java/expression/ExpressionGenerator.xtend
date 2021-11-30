@@ -38,10 +38,12 @@ import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -49,6 +51,7 @@ import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.expression.CardinalityOperator
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
+import com.rosetta.model.lib.mapper.MapperBuilder
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.mapper.MapperTree
@@ -155,6 +158,9 @@ class ExpressionGenerator {
 			ListLiteral : {
 				'''«MapperC».of(«FOR ele: expr.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
 			}
+			ListOperation : {
+				listOperation(expr, params)
+			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
 		}
@@ -232,7 +238,7 @@ class ExpressionGenerator {
 					RosettaEnumValue: 
 						return '''«MapperS».of(«feature.enumeration.toJavaType».«feature.convertValues»)'''
 					default: 
-						throw new UnsupportedOperationException("Unsupported expression type of "+feature.class.simpleName)
+						throw new UnsupportedOperationException("Unsupported expression type of "+feature?.class?.simpleName)
 				}
 				'''«MapperC».of(«javaCode(call.receiver, params, false)»«right».getMulti())'''
 			}
@@ -255,7 +261,7 @@ class ExpressionGenerator {
 				'''«MapperS».of(new «factory.create(callable.model).toJavaType(callable as RosettaCallableWithArgs)»().execute(«args(expr, params)»))'''
 			}
 			default: 
-				throw new UnsupportedOperationException("Unsupported callable with args type of " + expr.eClass.name)
+				throw new UnsupportedOperationException("Unsupported callable with args type of " + expr?.eClass?.name)
 		}
 		
 	}
@@ -320,6 +326,9 @@ class ExpressionGenerator {
 	}
 	
 	protected def StringConcatenationClient callableCall(RosettaCallableCall expr, ParamMap params) {
+		if (expr.implicitReceiver) {
+			return '''«EcoreUtil2.getContainerOfType(expr, ListOperation).parameter.getNameOrDefault.toDecoratedName»'''
+		}
 		val call = expr.callable
 		switch (call)  {
 			Data : {
@@ -339,9 +348,17 @@ class ExpressionGenerator {
 				distinctOrOnlyElement('''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)''', expr.distinct, expr.toOne)
 			}
 			RosettaEnumeration: '''«call.toJavaType»'''
+			ClosureParameter: '''«call.getNameOrDefault.toDecoratedName»'''
 			default: 
-				throw new UnsupportedOperationException("Unsupported callable type of "+call.class.simpleName)
+				throw new UnsupportedOperationException("Unsupported callable type of " + call?.class?.simpleName)
 		}
+	}
+	
+	/**
+	 * Prefix name with double underscore to avoid name clashes with model names.
+	 */
+	private def toDecoratedName(String name) {
+		'''__«name»'''
 	}
 	
 	def aliasCallArgs(ShortcutDeclaration alias) {
@@ -612,6 +629,24 @@ class ExpressionGenerator {
 		'''.<«expr.get.attribute.type.name.toJavaClass»>groupBy(g->new «MapperS»<>(g)«FOR ex:exprs»«buildMapFunc(ex.attribute as Attribute, isLast, true)»«ENDFOR»)'''
 	}
 	
+	//
+	def StringConcatenationClient listOperation(ListOperation op, ParamMap params) {
+		switch (op.operationKind) {
+			case FILTER: {
+				'''
+				«op.receiver.javaCode(params)»
+					.filterList(«op.parameter.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
+			}
+			case MAP: {
+				'''
+				«op.receiver.javaCode(params)»
+					.mapList(«op.parameter.getNameOrDefault.toDecoratedName» -> («MapperBuilder»<«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«typeProvider.getRType(op.body).name.toJavaType»>)  «op.body.javaCode(params)»)'''
+			}
+			default:
+				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)
+		}
+	}
+	
 	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute) {
 		if(attribute.eContainer instanceof Data) 
 			'''"get«attribute.name.toFirstUpper»", «attribute.attributeTypeVariableName» -> «IF attribute.override»(«attribute.type.toJavaType») «ENDIF»«attribute.attributeTypeVariableName».get«attribute.name.toFirstUpper»()'''
@@ -633,11 +668,11 @@ class ExpressionGenerator {
 	static class ParamMap extends HashMap<ParamID, String> {
 		new(RosettaType c) {
 			if (null !== c)
-				put(new ParamID(c,-1, null), c.name.toFirstLower);
+				put(new ParamID(c, -1, null), c.name.toFirstLower);
 		}
 		
 		new(RosettaType c, String name) {
-			put(new ParamID(c,-1, null), name);
+			put(new ParamID(c, -1, null), name);
 		}
 		
 		new(){

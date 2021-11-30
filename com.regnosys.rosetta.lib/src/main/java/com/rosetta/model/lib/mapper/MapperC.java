@@ -6,6 +6,8 @@ import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,6 +69,33 @@ public class MapperC<T> implements MapperBuilder<T> {
 			results.addAll(getMapperItems(items.get(i), mappingFunc));
 		}
 		return new MapperC<>(results);
+	}
+	
+	/**
+	 * Filter items of list based on the given predicate.
+	 * 
+	 * @param predicate - test that determines whether to filter list item. True to include in list, and false to exclude.
+	 * @return filtered list 
+	 */
+	@Override
+	public MapperBuilder<T> filterList(Predicate<MapperBuilder<T>> predicate) {
+		return new MapperC<>(items.stream()
+				.filter(item -> predicate.test(new MapperS<>(item)))
+				.collect(Collectors.toList()));
+	}
+	
+	/**
+	 * Map items of a list based on the given mapping function.
+	 * 
+	 * @param <F>
+	 * @param mappingFunc
+	 * @return mapped list
+	 */
+	@Override
+	public <F> MapperBuilder<F> mapList(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc) {
+		return MapperC.of(items.stream()
+				.map(item -> mappingFunc.apply(new MapperS<>(item)).get())
+				.collect(Collectors.toList()));
 	}
 	
 	protected Stream<MapperItem<T,?>> nonErrorItems() {
