@@ -635,12 +635,12 @@ class ExpressionGenerator {
 			case FILTER: {
 				'''
 				«op.receiver.javaCode(params)»
-					.filter(«op.parameter.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
+					.filterList(«op.parameter.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
 			}
 			case MAP: {
 				'''
 				«op.receiver.javaCode(params)»
-					.map(«op.parameter.getNameOrDefault.toDecoratedName» -> («MapperBuilder»<«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«typeProvider.getRType(op.body).name.toJavaType»>)  «op.body.javaCode(params)»)'''
+					.mapList(«op.parameter.getNameOrDefault.toDecoratedName» -> («MapperBuilder»<«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«typeProvider.getRType(op.body).name.toJavaType»>)  «op.body.javaCode(params)»)'''
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)

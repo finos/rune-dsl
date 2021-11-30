@@ -60,13 +60,13 @@ public class MapperS<T> implements MapperBuilder<T> {
 	}
 
 	@Override
-	public MapperBuilder<T> filter(Predicate<MapperBuilder<T>> predicate) {
-		throw new IllegalArgumentException("Filter not supported for MapperS");
+	public MapperBuilder<T> filterList(Predicate<MapperBuilder<T>> predicate) {
+		throw new IllegalArgumentException("Filter list not supported for single items");
 	}
 	
 	@Override
-	public <F> MapperBuilder<F> map(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc) {
-		throw new IllegalArgumentException("Map not supported for MapperS");
+	public <F> MapperBuilder<F> mapList(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc) {
+		throw new IllegalArgumentException("Map list not supported for single items");
 	}
 	
 	@Override

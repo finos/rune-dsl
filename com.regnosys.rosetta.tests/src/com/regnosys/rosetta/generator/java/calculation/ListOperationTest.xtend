@@ -82,7 +82,7 @@ class ListOperationTest {
 					
 					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 						filteredFoos = toBuilder(MapperC.of(foos)
-							.filter(__item -> areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
+							.filterList(__item -> areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
 						;
 						return filteredFoos;
 					}
@@ -173,7 +173,7 @@ class ListOperationTest {
 					
 					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 						filteredFoos = toBuilder(MapperC.of(foos)
-							.filter(__fooItem -> areEqual(__fooItem.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
+							.filterList(__fooItem -> areEqual(__fooItem.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
 						;
 						return filteredFoos;
 					}
@@ -302,8 +302,8 @@ class ListOperationTest {
 					
 					private List<Foo2.Foo2Builder> assignOutput(List<Foo2.Foo2Builder> filteredFoos, List<? extends Foo2> foos) {
 						filteredFoos = toBuilder(MapperC.of(foos)
-							.filter(__item -> areEqual(__item.<Boolean>map("getInclude", _foo2 -> _foo2.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
-							.filter(__item -> areEqual(__item.<Boolean>map("getInclude2", _foo2 -> _foo2.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
+							.filterList(__item -> areEqual(__item.<Boolean>map("getInclude", _foo2 -> _foo2.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
+							.filterList(__item -> areEqual(__item.<Boolean>map("getInclude2", _foo2 -> _foo2.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
 						;
 						return filteredFoos;
 					}
@@ -383,7 +383,7 @@ class ListOperationTest {
 					
 					private List<Boolean> assignOutput(List<Boolean> filteredFoos, List<Boolean> foos) {
 						filteredFoos = MapperC.of(foos)
-							.filter(__item -> areEqual(__item, MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti();
+							.filterList(__item -> areEqual(__item, MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti();
 						return filteredFoos;
 					}
 				
@@ -732,7 +732,7 @@ class ListOperationTest {
 					
 					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
 						foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-							.map(__item -> (MapperBuilder<? extends Foo>)  com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+							.mapList(__item -> (MapperBuilder<? extends Foo>)  com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
 							if (areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 								return MapperS.of(create_Foo.evaluate(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()).get(), MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()));
 							}
@@ -1072,8 +1072,8 @@ class ListOperationTest {
 					
 					private List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
 						fooCounts = MapperC.of(bars)
-							.map(__bar -> __bar.<Foo>mapX("getFoos", _bar -> _bar.getFoos()))
-							.map(__fooListItem -> MapperS.of(__fooListItem.resultCount())).getMulti();
+							.mapList(__bar -> __bar.<Foo>mapX("getFoos", _bar -> _bar.getFoos()))
+							.mapList(__fooListItem -> MapperS.of(__fooListItem.resultCount())).getMulti();
 						return fooCounts;
 					}
 				

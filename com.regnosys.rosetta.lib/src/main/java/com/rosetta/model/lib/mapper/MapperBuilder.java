@@ -38,9 +38,22 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	 */
 	<F> MapperBuilder<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc);
 	
-	MapperBuilder<T> filter(Predicate<MapperBuilder<T>> predicate);
+	/**
+	 * Filter items of list based on the given predicate.
+	 * 
+	 * @param predicate - test that determines whether to filter list item. True to include in list, and false to exclude.
+	 * @return filtered list 
+	 */
+	MapperBuilder<T> filterList(Predicate<MapperBuilder<T>> predicate);
 	
-	<F> MapperBuilder<F> map(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc);
+	/**
+	 * Map items of a list based on the given mapping function.
+	 * 
+	 * @param <F>
+	 * @param mappingFunc
+	 * @return mapped list
+	 */
+	<F> MapperBuilder<F> mapList(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc);
 	
 	default <G> MapperGroupByBuilder<T,G> groupBy(Function<MapperItem<T,?>, MapperBuilder<G>> groupByFunc) {
 		Function<MapperItem<T,?>,MapperItem<G, ?>> keyFunction = 
