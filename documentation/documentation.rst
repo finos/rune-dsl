@@ -578,6 +578,97 @@ The operation will return a subset of the list containing only distinct elements
 
  payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
 
+Filter
+""""""
+
+The ``filter`` keyword filters the items of a list based on a ``boolean`` expression.  For each list item, a ``boolean`` expression specified in the square brackets is evaluated to determine whether to include or exclude the item.  The resulting list is assigned to output parameter.  Note that filtering a list does not change the item type, e.g. when filtering a list of `Vehicle`, the output list type must also be of `Vehicle`.
+
+The keyword ``item`` is used to refer to the list item in the test expression.
+
+.. code-block:: Haskell
+  :emphasize-lines: 10
+
+  func FindVehiclesByEngineType: <"Find all vehicles with given engine type.">
+      inputs:
+          vehicles Vehicle (0..*)
+          engineType EngineTypeEnum (1..1)
+      output:
+          vehiclesWithEngineType Vehicle (0..*)
+
+      set vehiclesWithEngineType: <"Filter each list 'item' with the given test.">
+          vehicles
+              filter [ item -> specification -> engine -> engineType = engineType ]
+
+Alternatively, the list item can be a named parameter.
+
+.. code-block:: Haskell
+  :emphasize-lines: 10
+
+   func FindDriversWithMaximumZeroTo60: <"Find all vehicles with given maximum 0 - 60 mph.">
+      inputs:
+          vehicles Vehicle (0..*)
+          zeroTo60 number (1..1)
+      output:
+          vehiclesWithMaximumZeroTo60 Vehicle (0..*)
+
+      set vehiclesWithMaximumZeroTo60: <"Each list 'item' can have a name specified.">
+          vehicles
+              filter vehicle [ vehicle -> specification -> zeroTo60 < zeroTo60 ]
+
+List operations, such as ``filter``, can contain expressions (e.g. if / else statements), call other functions, and also be chained together, as in the example below.
+
+.. code-block:: Haskell
+
+  func FindVehiclesWithinEmissionLimits: <"Find all vehicles within given emissions metrics.">
+      inputs:
+          vehicles Vehicle (0..*)
+          carbonMonoxideCOLimit int (0..1)
+          nitrogenOxydeNOXLimit int (0..1)
+          particulateMatterPMLimit int (0..1)
+      output:
+          vehiclesWithinEmissionLimits Vehicle (0..*)
+
+      set vehiclesWithinEmissionLimits: <"Filter (and other list operations) can contain expressions, and can be chained together.">
+          vehicles
+              filter [ if carbonMonoxideCOLimit exists then item -> specification -> engine -> emissionMetrics -> carbonMonoxideCO <= carbonMonoxideCOLimit else True ]
+              filter [ if nitrogenOxydeNOXLimit exists then item -> specification -> engine -> emissionMetrics -> nitrogenOxydeNOX <= nitrogenOxydeNOXLimit else True ]
+              filter [ if particulateMatterPMLimit exists then item -> specification -> engine -> emissionMetrics -> particulateMatterPM <= particulateMatterPMLimit else True ]
+
+List operations can also be nested within other list operations.
+
+.. code-block:: Haskell
+
+  func FindOwnersWithinPenaltyPointLimit: <"Find all owners within penalty point limits on any driver licence (owners can have multiple licences, issued by different countries).">
+      inputs:
+         owners VehicleOwnership (0..*)
+         maximumPenaltyPoints int (1..1)
+      output:
+         ownersWithinPenaltyPointLimit VehicleOwnership (0..*)
+
+      set ownersWithinPenaltyPointLimit: <"Nested filter required to determine if all owner's licences do not exceed the penalty point limit.">
+          owners
+              filter owner [ owner -> drivingLicence
+                  filter licence [ licence -> penaltyPoints > maximumPenaltyPoints ] count = 0
+              ]
+
+Map
+"""
+
+The ``map`` keyword has been added to modify the items of a list based on an expression.  For each list item, the expression specified in the square brackets is invoked to modify the item.  The resulting list is assigned to output parameter.  The ``map`` keyword was chosen as it is the most widely used terms for this use-case, used in languages such as Java, Python, Scala, Perl, Clojure, Erlang, F#, Haskell, Javascript, PHP, and Ruby.
+
+.. code-block:: Haskell
+
+  func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
+      inputs:
+          drivingLicences DrivingLicence (0..*)
+      output:
+          ownersName string (0..*)
+
+      set ownersName: <"Filter lists to only include drivers with first and last names, then use 'map' to convert driving licences into list of names.">
+          drivingLicences
+              filter [ item -> firstName exists and item -> surname exists ]
+              map [ item -> firstName + " " + item -> surname ]
+
 Constant Expressions
 ^^^^^^^^^^^^^^^^^^^^
 
