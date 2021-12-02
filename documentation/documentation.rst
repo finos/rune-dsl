@@ -550,7 +550,7 @@ If a Rosetta path is applied to an attribute that does not have a value in the o
 .. _list-label:
 
 List
-""""
+^^^^
 
 A list is an ordered collection of items. A Rosetta path expression that refers to an attribute with multiple `cardinality <documentation.html#cardinality_label>`_ will result in a list of values. If a chained Rosetta path expression has multiple links with multiple cardinality then the result is a flattened list. For example (as extracted from the ``Qualify_CashTransfer`` function). ::
 
@@ -569,7 +569,7 @@ The ``only-element`` keyword can appear after an attribute name in a Rosetta pat
 This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value then the expression result will be null.
 
 Distinct
-============
+""""""""
 The keyword ``distinct`` can appear after an attribute with multiple cardinality in a Rosetta path. ::
 
  quantity -> unitOfAmount -> currency distinct
