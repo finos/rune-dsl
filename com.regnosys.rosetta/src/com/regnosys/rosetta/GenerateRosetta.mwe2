@@ -39,7 +39,7 @@ Workflow {
 
 			parserGenerator = parser.antlr.XtextAntlrGeneratorFragment2 {
 				// set to true to get a debug Grammar
-				debugGrammar = false
+				debugGrammar = true
 			}
 			serializer = {
 				generateStub = false

@@ -275,7 +275,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		val parentScope = getParentScope(object.eContainer, reference, outer)
 		switch (object) {
 			ListOperation: {
-				return Scopes.scopeFor(#[object.parameter], parentScope)
+				return Scopes.scopeFor(object.parameters, parentScope)
 			}
 			Data: {
 				return Scopes.scopeFor(object.allAttributes, outer)

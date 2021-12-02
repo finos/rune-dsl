@@ -327,7 +327,7 @@ class ExpressionGenerator {
 	
 	protected def StringConcatenationClient callableCall(RosettaCallableCall expr, ParamMap params) {
 		if (expr.implicitReceiver) {
-			return '''«EcoreUtil2.getContainerOfType(expr, ListOperation).parameter.getNameOrDefault.toDecoratedName»'''
+			return '''«EcoreUtil2.getContainerOfType(expr, ListOperation).firstOrImplicit.getNameOrDefault.toDecoratedName»'''
 		}
 		val call = expr.callable
 		switch (call)  {
@@ -635,12 +635,12 @@ class ExpressionGenerator {
 			case FILTER: {
 				'''
 				«op.receiver.javaCode(params)»
-					.filterList(«op.parameter.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
+					.filterList(«op.firstOrImplicit.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
 			}
 			case MAP: {
 				'''
 				«op.receiver.javaCode(params)»
-					.mapList(«op.parameter.getNameOrDefault.toDecoratedName» -> («MapperBuilder»<«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«typeProvider.getRType(op.body).name.toJavaType»>)  «op.body.javaCode(params)»)'''
+					.mapList(«op.firstOrImplicit.getNameOrDefault.toDecoratedName» -> («MapperBuilder»<«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«typeProvider.getRType(op.body).name.toJavaType»>)  «op.body.javaCode(params)»)'''
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)

@@ -78,7 +78,7 @@ class RosettaTypeProvider {
 		switch expression {
 			RosettaCallableCall: {
 				if(expression.implicitReceiver)
-					safeRType(EcoreUtil2.getContainerOfType(expression, ListOperation).parameter, cycleTracker).wrapInFeatureCallType(expression)
+					safeRType(EcoreUtil2.getContainerOfType(expression, ListOperation).firstOrImplicit, cycleTracker).wrapInFeatureCallType(expression)
 				else
 					safeRType(expression.callable, cycleTracker).wrapInFeatureCallType(expression)
 			}
@@ -272,7 +272,7 @@ class RosettaTypeProvider {
 			ListOperation:
 				switch(expression.operationKind) {
 					case FILTER:
-						expression.parameter.safeRType(cycleTracker)
+						expression.firstOrImplicit.safeRType(cycleTracker)
 					default:
 						expression.body.safeRType(cycleTracker)
 				}

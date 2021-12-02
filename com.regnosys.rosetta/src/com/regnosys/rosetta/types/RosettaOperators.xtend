@@ -14,12 +14,6 @@ class RosettaOperators {
 	public static val EQUALITY_OPS = #['=', '<>']
 	public static val LOGICAL_OPS = #['and', 'or']
 
-	@Data
-	private static class BinaryOperation {
-		String operator
-		RBuiltinType left
-		RBuiltinType right
-	}
 	@Inject RosettaTypeCompatibility comaptibility
 
 	val Map<BinaryOperation, RType> binaryTypeMap = newHashMap
@@ -158,4 +152,10 @@ class RosettaOperators {
 	def private void =>(BinaryOperation operation, RType result) {
 		binaryTypeMap.put(operation, result)
 	}
+}
+@Data
+package class BinaryOperation {
+	String operator
+	RBuiltinType left
+	RBuiltinType right
 }

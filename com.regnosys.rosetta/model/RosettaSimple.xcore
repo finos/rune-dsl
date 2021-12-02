@@ -123,17 +123,25 @@ class SetOutputOperation extends Operation {
 class ListOperation extends RosettaExpression {
 	contains RosettaExpression receiver
 	ListOperationKind operationKind
-	contains ClosureParameter parameter opposite operation
+	contains ClosureParameter[] parameters opposite operation
 	contains RosettaExpression body
+	
+	op ClosureParameter getFirstOrImplicit() {
+		return if (parameters.size == 1)
+			parameters.get(0)
+		else
+			parameters.findFirst[name === null]
+	}
 }
 
 enum ListOperationKind {
 	filter
 	, map
+	, sum
 }
 
 class ClosureParameter extends RosettaCallable {
-	container ListOperation operation opposite parameter
+	container ListOperation operation opposite parameters
 	/**
 	 * @return The name or 'item' if it's <code>null</code>
 	 */
