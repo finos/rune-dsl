@@ -4,20 +4,20 @@
 package com.regnosys.rosetta.validation
 
 import com.google.inject.Inject
+import com.regnosys.rosetta.RosettaRuntimeModule
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
+import org.eclipse.xtext.service.SingletonBinding
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.eclipse.xtext.validation.Check
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import com.regnosys.rosetta.rosetta.simple.Data
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.RosettaRuntimeModule
-import org.eclipse.xtext.validation.Check
-import org.eclipse.xtext.service.SingletonBinding
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -203,7 +203,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testTypeErrorAssignment_05() {
 		val model =
 		'''
-
 			type Type:
 				other int (0..1)
 
@@ -217,7 +216,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	
 	@Test
 	def void testAttributesWithLocationBadTarget() {
-		val model ='''
+		'''
 			metaType scheme string
 			metaType reference string
 			
@@ -299,7 +298,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 	}
 	
-		@Test
+	@Test
 	def void testDuplicateAttributeWithOverrideBadTypes() {
 		val model = '''
 			type A1 :
@@ -770,7 +769,422 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(ROSETTA_ENUM_SYNONYM, null,
 			"Pattern to match must be a valid regular expression")
 	}
+	
+	@Test
+	def shouldGenerateRuleCardinalityWarning() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule Aa
+				extract Bar->bar1 as "A"
+			
+			type Bar:
+				bar1 string (0..*)
+			
+			type BarReport:
+				aa string (1..1)
+					[ruleReference Aa]
+		'''.parseRosetta
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
+	}
 
+	@Test
+	def shouldGenerateRuleTypeError() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->barA exists
+			
+			reporting rule Aa
+				extract Bar->barA as "A"
+
+			reporting rule Bb
+				extract Bar->barB as "B"
+				
+			reporting rule Cc
+				extract Bar->barC as "C"
+
+			reporting rule Dd
+				extract Bar->barD as "D"
+
+			reporting rule Ee
+				extract Bar->barE as "E"
+				
+			reporting rule Ff
+				extract Bar->barF as "F"
+			
+			type Bar:
+				barA date (0..1)
+				barB time (0..1)
+				barC zonedDateTime (0..1)
+				barD int (0..1)
+				barE number (0..1)
+				barF BazEnum (0..1)
+
+			enum BazEnum:
+				X
+				Y
+				Z
+			
+			type BarReport:
+				aa string (1..1)
+					[ruleReference Aa]
+				bb string (1..1)
+					[ruleReference Bb]
+				cc string (1..1)
+					[ruleReference Cc]
+				dd string (1..1)
+					[ruleReference Dd]
+				ee string (1..1)
+					[ruleReference Ee]
+				ff string (1..1)
+					[ruleReference Ff]
+			
+		'''.parseRosetta
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type date.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field bb has type string whereas the reporting rule Bb has type time.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field cc has type string whereas the reporting rule Cc has type zonedDateTime.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field dd has type string whereas the reporting rule Dd has type int.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field ee has type string whereas the reporting rule Ee has type number.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field ff has type string whereas the reporting rule Ff has type BazEnum.")
+	}
+	
+	@Test
+	def shouldGenerateRuleTypeError2() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->barA exists
+			
+			reporting rule Aa
+			(
+				extract Bar->barA as "A",
+				extract Bar->barB as "B"
+			)
+			
+			type Bar:
+				barA string (0..1)
+				barB number (0..1)
+			
+			type BarReport:
+				aa string (1..1)
+					[ruleReference Aa]
+			
+		'''.parseRosetta
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type Object.")
+	}
+	
+	@Test
+	def shouldNotGenerateRuleTypeErrorUsingReturn() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule A
+				return "Not Modelled" 
+					as "A"
+			
+			type Bar:
+				bar1 string (0..1)
+			
+			type BarReport:
+				a string (1..1)
+					[ruleReference A]
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
+
+	@Test
+	def void shouldNotGenerateTypeValidationError() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule BarBarOne
+				(
+					filter when Bar->test = True then extract Bar->bar1,
+					filter when Bar->test = False then extract Bar->bar2
+				)  as "1 BarOne"
+			
+			type Bar:
+				test boolean (1..1)
+				bar1 string (1..1)
+				bar2 string (1..1)
+			
+			type BarReport:
+				barBarOne string (1..1)
+					[ruleReference BarBarOne]
+			
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+	}
+	
+	@Test
+	def void shouldNotGenerateTypeValidationError2() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule BarBarOne
+				(
+					filter when Bar->test = True then extract Bar->bar1 + Bar->bar2,
+					filter when Bar->test = False then extract Bar->bar2
+				)  as "1 BarOne"
+			
+			type Bar:
+				test boolean (1..1)
+				bar1 string (1..1)
+				bar2 string (1..1)
+			
+			type BarReport:
+				barBarOne string (1..1)
+					[ruleReference BarBarOne]
+			
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+	}
+	
+	@Test
+	def void shouldNotGenerateTypeValidationError3() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule BarBarOne
+				(
+					filter when Bar->test = True then extract Bar->bar1 * Bar->bar2,
+					filter when Bar->test = False then extract Bar->bar2
+				)  as "1 BarOne"
+			
+			type Bar:
+				test boolean (1..1)
+				bar1 number (1..1)
+				bar2 number (1..1)
+			
+			type BarReport:
+				barBarOne number (1..1)
+					[ruleReference BarBarOne]
+			
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+	}
+	
+	@Test
+	def void shouldNotGenerateTypeValidationError4() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule BarBarOne
+				(
+					filter when Bar->test = True then extract Bar->bar1,
+					filter when Bar->test = False then extract Bar->bar2
+				)  as "1 BarOne"
+			
+			type Bar:
+				test boolean (1..1)
+				bar1 number (1..1)
+				bar2 int (1..1)
+			
+			type BarReport:
+				barBarOne number (1..1)
+					[ruleReference BarBarOne]
+			
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+	}
+
+	@Test
+	def void shouldNotGenerateTypeValidationError5() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule BarBarOne
+				(
+					filter when Bar->test = True then extract Bar->bar1,
+					filter when Bar->test = False then extract Bar->bar2
+				)  as "1 BarOne"
+			
+			type Bar:
+				test boolean (1..1)
+				bar1 Baz (1..1)
+				bar2 Baz (1..1)
+			
+			type Baz:
+				baz1 number (1..1)
+			
+			type BarReport:
+				barBarOne Baz (1..1)
+					[ruleReference BarBarOne]
+			
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+	}
+	
+	@Test
+	def void shouldGenerateTypeValidationErrorDifferentDataType() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule BarBarOne
+				(
+					filter when Bar->test = True then extract Bar->bar1,
+					filter when Bar->test = False then extract Bar->bar2
+				)  as "1 BarOne"
+			
+			type Bar:
+				test boolean (1..1)
+				bar1 Baz (1..1)
+				bar2 Qux (1..1)
+			
+			type Baz:
+				baz1 number (1..1)
+			
+			type Qux:
+				qux1 int (1..1)
+			
+			type BarReport:
+				barBarOne Baz (1..1)
+					[ruleReference BarBarOne]
+			
+		'''.parseRosetta
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field barBarOne has type Baz whereas the reporting rule BarBarOne has type Object.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+	}
+
+
+	@Test
+	def shouldGenerateDuplicateRuleError() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule A
+				return "Not Modelled" 
+					as "A"
+			
+			type Bar:
+				bar1 string (0..1)
+			
+			type BarReport:
+				a string (1..1)
+					[ruleReference A]
+				b string (1..1)
+					[ruleReference A]
+		'''.parseRosetta
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Duplicate reporting rule A")
+	}
+	
+	@Test
+	def shouldGenerateUnsupportedCardinalityError() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule
+				filter when Bar->bar1 exists
+			
+			reporting rule A
+				extract Bar->bar1 as "A"
+			
+			type Bar:
+				bar1 string (0..*)
+			
+			type BarReport:
+				a string (0..*)
+					[ruleReference A]
+		'''.parseRosetta
+		model.assertError(ATTRIBUTE, null, "Report attributes with basic type (string) and multiple cardinality is not supported.")
+	}
 }
 	
 class MyRosettaInjectorProvider extends RosettaInjectorProvider {

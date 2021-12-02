@@ -16,12 +16,13 @@ import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.WithCardinality
-import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
+import com.regnosys.rosetta.rosetta.WithCardinality
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import org.eclipse.emf.common.util.BasicEList
 
-abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated{}
+abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {
+}
 
 class Annotation extends RootElement, RosettaCallable {
 	String prefix
@@ -46,6 +47,7 @@ class AnnotationRef {
 }
 
 abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
+	boolean distinct
 	boolean toOne
 }
 
@@ -53,6 +55,7 @@ abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
 class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallable, AssignPathRoot, WithCardinality, References {
 	boolean override
 	contains RosettaSynonym[] synonyms
+	contains RosettaRuleReference ruleReference
 }
 
 abstract class Definable extends RosettaDefinable {}
@@ -98,16 +101,47 @@ class Constraint {
 enum Necessity {
 	optional, required
 }
-class Operation extends Definable {
+
+abstract class Operation extends Definable {
 	container Function function opposite operations
 	refers AssignPathRoot assignRoot
 	contains Segment path
 	contains RosettaExpression expression
-	boolean assignAsKey
 	op Segment[] pathAsSegmentList() {
 		return if(path !== null) path.asSegmentList(path) else new BasicEList
 	}
 }
+
+class AssignOutputOperation extends Operation {
+	boolean assignAsKey
+}
+
+class SetOutputOperation extends Operation {
+	refers AssignPathRoot input
+}
+
+class ListOperation extends RosettaExpression {
+	contains RosettaExpression receiver
+	ListOperationKind operationKind
+	contains ClosureParameter parameter opposite operation
+	contains RosettaExpression body
+}
+
+enum ListOperationKind {
+	filter
+	, map
+}
+
+class ClosureParameter extends RosettaCallable {
+	container ListOperation operation opposite parameter
+	/**
+	 * @return The name or 'item' if it's <code>null</code>
+	 */
+	derived String getNameOrDefault get {
+		return name ?: 'item'
+	}
+}
+
 
 class Segment {
 	
@@ -140,5 +174,10 @@ class ListLiteral extends RosettaLiteral {
 }
 
 class References {
-	contains RosettaRegulatoryReference[] references
+	contains com.regnosys.rosetta.rosetta.RosettaDocReference[] references
 }
+
+class RosettaRuleReference {
+	refers RosettaBlueprint reportingRule
+}
+

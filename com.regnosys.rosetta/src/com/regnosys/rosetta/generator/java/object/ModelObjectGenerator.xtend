@@ -236,7 +236,7 @@ class ModelObjectGenerator {
 	}
 
 	private def StringConcatenationClient toJavaType(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isMultiple) '''«List»<? extends «attribute.toJavaTypeSingle(names)»>'''
+		if (attribute.isMultiple) '''«List»<«IF attribute.dataType || attribute.hasMetas»? extends «ENDIF»«attribute.toJavaTypeSingle(names)»>'''
 		else attribute.toJavaTypeSingle(names)
 	}
 

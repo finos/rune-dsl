@@ -5,7 +5,6 @@ import com.regnosys.rosetta.generator.RosettaGenerator
 import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.rosetta.model.lib.functions.RosettaFunction
 import java.io.File
 import java.lang.reflect.Method
 import java.nio.file.Files
@@ -26,6 +25,7 @@ class CodeGeneratorTestHelper {
 
 	@Inject extension RosettaGenerator
 	@Inject extension ModelHelper
+	
 	def generateCode(CharSequence model, RosettaInternalGenerator generator) {
 		val fsa = new RegisteringFileSystemAccess()
 		val eResource = model.parseRosettaWithNoErrors.eResource;
@@ -78,12 +78,12 @@ class CodeGeneratorTestHelper {
 	}
 
 	def compileToClasses(Map<String, String> code) {
-		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA11);
+		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA8);
 	}
 
-	def compileJava11(CharSequence model) {
+	def compileJava8(CharSequence model) {
 		val code = generateCode(model)
-		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA11);
+		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA8);
 	}
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, String className, Map<String, Object> itemsToSet) {
@@ -108,19 +108,7 @@ class CodeGeneratorTestHelper {
 		]
 		return rosettaClassBuilderInstance.class.getMethod('build').invoke(rosettaClassBuilderInstance);
 	}
-	
-	def createFunc(Map<String, Class<?>> classes, String funcName) {
-		classes.get(rootPackage.functions.name + '.' + funcName) // get abstract func class
-				.declaredClasses.get(0) // get default func implementation (e.g. inner class) 
-				.declaredConstructor.newInstance
-				as RosettaFunction 
-	}
-	
-	def <T> invokeFunc(RosettaFunction func, Class<T> resultClass, Object... inputs) {
-		val evaluateMethod = func.class.getMatchingMethod("evaluate", inputs.map[class])
-		evaluateMethod.invoke(func, inputs) as T
-	}
-	
+
 	def Method getMatchingMethod(Class<?> clazz, String name, List<Class<?>> values) {
 		var methods = clazz.methods.filter[m|m.name==name]
 		methods = methods

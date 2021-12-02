@@ -14,6 +14,7 @@ import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
 import com.regnosys.rosetta.rosetta.BlueprintReduce
+import com.regnosys.rosetta.rosetta.BlueprintRef
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
@@ -44,6 +45,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
+import com.regnosys.rosetta.rosetta.simple.AssignOutputOperation
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -67,6 +69,7 @@ import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnr
 import java.lang.reflect.Method
 import java.time.format.DateTimeFormatter
 import java.util.List
+import java.util.Set
 import java.util.Stack
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
@@ -85,6 +88,7 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 /**
@@ -154,7 +158,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
 			error("'only-element' can not be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
 		}
-
+		if (fCall.isDistinct && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
+			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
+			error("'distinct' can not be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
+		}
 	}
 
 	@Check
@@ -575,8 +582,11 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def void checkExtractCardinality(BlueprintExtract extract) {
-		if (extract.multiple) {
-			warning("multiple keyword is redundant and deprecated", extract, BLUEPRINT_EXTRACT__MULTIPLE)
+		if (extract.repeatable) {
+			val multi = cardinality.isMulti(extract.call)
+			if (!multi) {
+				error("Repeatable keyword must extract multiple cardinality", extract, BLUEPRINT_EXTRACT__REPEATABLE)
+			}
 		}
 	}
 	
@@ -598,12 +608,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (reduce.expression!==null) {
 			val exrType = reduce.expression.RType
 			if (!exrType.isSelfComparable) {
-				error('''The expression for «reduce.action» must return a comparable type (e.g. number or date) the curent expression returns «exrType.name»''', reduce, BLUEPRINT_REDUCE__EXPRESSION, TYPE_ERROR)
+				error('''The expression for «reduce.action» must return a comparable type (e.g. number or date) the current expression returns «exrType.name»''', reduce, BLUEPRINT_REDUCE__EXPRESSION, TYPE_ERROR)
 			}
 			
 			val multi = cardinality.isMulti(reduce.expression)
 			if (multi) {
-				error('''The expression for «reduce.action» must return a single value the curent expression can return multiple values''', reduce, BLUEPRINT_REDUCE__EXPRESSION)
+				error('''The expression for «reduce.action» must return a single value the current expression can return multiple values''', reduce, BLUEPRINT_REDUCE__EXPRESSION)
 			}
 			
 		}
@@ -616,16 +626,16 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
-	def void checkBlueprintFilte(BlueprintFilter filter) {
+	def void checkBlueprintFilter(BlueprintFilter filter) {
 		if (filter.filter!==null) {
 			val exrType = filter.filter.RType
 			if (exrType!==RBuiltinType.BOOLEAN) {
-				error('''The expression for Filter must return a boolean the curent expression returns «exrType.name»''', filter, BLUEPRINT_FILTER__FILTER, TYPE_ERROR)
+				error('''The expression for Filter must return a boolean the current expression returns «exrType.name»''', filter, BLUEPRINT_FILTER__FILTER, TYPE_ERROR)
 			}
 			
 			val multi = cardinality.isMulti(filter.filter)
 			if (multi) {
-				error('''The expression for Filter must return a single value the curent expression can return multiple values''', filter, BLUEPRINT_FILTER__FILTER)
+				error('''The expression for Filter must return a single value the current expression can return multiple values''', filter, BLUEPRINT_FILTER__FILTER)
 			}
 			
 		}
@@ -638,16 +648,33 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
-	def void checkReportCardinality(RosettaBlueprintReport report) {
+	def void checkReport(RosettaBlueprintReport report) {
+		var index = 0
 		for (bp: report.reportingRules) {
 			try {
 				val node = buildTypeGraph(bp.nodes, bp.output)
-				if (!checkSingle(node, false)) {
-					warning("Report field from rule "+ bp.name +" should be of single cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES)
+				
+				// check cardinality
+				if (node.repeatable) {
+					if (checkSingle(node, false)) {
+						error("Report field from repeatable rule "+ bp.name +" should be of multiple cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
+					}
+				} else {
+					if (!checkSingle(node, false)) {
+						warning("Report field from rule "+ bp.name +" should be of single cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
+					}
 				}
+				// check duplicate report fields
+				checkDuplicateReportFields(bp.name, node, report)
+				
 			} catch (BlueprintUnresolvedTypeException e) {
 				error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
 			}
+			index++
+		}
+			
+		if (report.reportType !== null) {
+			checkReportDuplicateRules(report.reportType, newHashSet, newHashSet)
 		}
 	}
 	
@@ -668,6 +695,89 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		else {
 			return !multiple
 		}
+	}
+	
+	/**
+	 * Checks if report blueprint descendant rules are also included in the report.
+	 */
+	def void checkDuplicateReportFields(String initialBpName, TypedBPNode node, RosettaBlueprintReport report) {
+		// if node contains an andNode check that it is not in the list of reporting rules
+		node.andNodes.forEach[
+			val andNode = it.node
+			if (andNode instanceof BlueprintRef) {
+				val bp = andNode.blueprint
+				val index = report.reportingRules.indexOf(bp)
+				if (index != -1)
+					error("Duplicate report field " + bp.name + ".  Parent report field " + initialBpName + " already adds " + bp.name + " to the report.", 
+						report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
+			}
+		]
+		// check descendant node
+		if (node.next !== null) {
+			checkDuplicateReportFields(initialBpName, node.next, report)
+		}	
+	}
+	
+	/**
+	 * Check all report attribute type and cardinality match the associated reporting rules
+	 */
+	@Check
+	def void checkAttributeRuleReference(Attribute attr) {
+		val ruleRef = attr.ruleReference
+		if(ruleRef !== null) {
+			val bp = ruleRef.reportingRule
+			val node = buildTypeGraph(bp.nodes, bp.output)
+			
+			val attrExt = attr.toExpandedAttribute
+			val attrSingle = attrExt.cardinalityIsSingleValue
+			val ruleSingle = checkSingle(node, false)
+			
+			// check cardinality
+			if (attrSingle != ruleSingle) {
+				val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
+					'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
+				warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+			}
+			// check type
+			val bpType = node.output?.type?.name
+			val bpGenericType = node.output?.genericName
+			if (!node.repeatable && (bpType !== null || bpGenericType !== null) && (attr.type.name != bpType && !attr.type.name.equalsIgnoreCase(bpGenericType))) {
+				val typeError = '''Type mismatch - report field «attr.name» has type «attr.type.name» ''' +
+					'''whereas the reporting rule «bp.name» has type «IF bpType !== null»«bpType»«ELSEIF bpGenericType !== null»«bpGenericType»«ELSE»unknown«ENDIF».'''
+				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+			}
+			
+			// check basic type cardinality supported
+			if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
+				val unsupportedWarning = '''Report attributes with basic type («attr.type.name») and multiple cardinality is not supported.'''
+				error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
+			}
+		}
+	}
+	
+	
+	/**
+	 * Recursively check all report attributes 
+	 */
+	private def void checkReportDuplicateRules(Data dataType, Set<RosettaBlueprint> rules, Set<Data> types) {
+		val attrs = dataType.allAttributes
+		attrs.forEach[attr|
+			val ruleRef = attr.ruleReference
+			if(ruleRef !== null) {
+				val bp = ruleRef.reportingRule
+				// check duplicates
+				if (!rules.add(bp)) {
+					error("Duplicate reporting rule " + bp.name, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				}
+			}
+			// check nested report attributes types
+			val attrType = attr.type
+			if (attrType instanceof Data) {
+				if (!types.contains(attrType)) {
+					attrType.checkReportDuplicateRules(rules, types)
+				}
+			}
+		]
 	}
 	
 	@Check
@@ -827,18 +937,18 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
-	def checkAsKeyUsage(Operation ele) {
+	def checkAsKeyUsage(AssignOutputOperation ele) {
 		if (!ele.assignAsKey) {
 			return
 		}
 		if(ele.path === null) {
-			error(''''«grammar.operationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used when assigning an attribute. Example: "assign-output out -> attribute: value as-key"''', ele, OPERATION__ASSIGN_AS_KEY)
+			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used when assigning an attribute. Example: "assign-output out -> attribute: value as-key"''', ele, ASSIGN_OUTPUT_OPERATION__ASSIGN_AS_KEY)
 			return
 		}
 		val segments = ele.path?.asSegmentList(ele.path)
 		val attr =  segments?.last?.attribute
 		if(!attr.hasReferenceAnnotation) {
-			error(''''«grammar.operationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
+			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
 		}
 	}
 	

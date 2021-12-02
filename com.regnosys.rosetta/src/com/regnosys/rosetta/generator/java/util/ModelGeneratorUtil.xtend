@@ -4,8 +4,8 @@ import com.google.common.html.HtmlEscapers
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.simple.References
-import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 import java.util.List
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 
 class ModelGeneratorUtil {
 	
@@ -19,7 +19,7 @@ class ModelGeneratorUtil {
 		javadoc(definition, docRef, version)
 	}
 
-	static def javadoc(String definition, List<RosettaRegulatoryReference> docRef, String version) '''
+	static def javadoc(String definition, List<RosettaDocReference> docRef, String version) '''
 		/**
 		«javadocDefinition(definition)»
 		«javadocVersion(version)»
@@ -44,15 +44,15 @@ class ModelGeneratorUtil {
 		«IF version !==null && !version.isEmpty» * @version «version»«ENDIF»
 	'''
 	
-	private static def javadocDocRef(List<RosettaRegulatoryReference> references) '''
+	private static def javadocDocRef(List<RosettaDocReference> references) '''
 		«IF references !==null && !references.isEmpty»
 			«FOR reference : references»
 			 *
-			 * Body «reference.regRegime.name»
-			«FOR mandate : reference.mandates» * Corpus «mandate.corpusType» «mandate.name» «IF mandate.displayName !== null»«HtmlEscapers.htmlEscaper().escape(mandate.displayName)»«ENDIF» «IF mandate.definition !== null»"«HtmlEscapers.htmlEscaper().escape(mandate.definition)»"«ENDIF» «ENDFOR»
+			 * Body «reference.getBody.name»
+			«FOR mandate : reference.corpuses» * Corpus «mandate.getCorpusType» «mandate.name» «IF mandate.getDisplayName !== null»«HtmlEscapers.htmlEscaper().escape(mandate.getDisplayName)»«ENDIF» «IF mandate.definition !== null»"«HtmlEscapers.htmlEscaper().escape(mandate.definition)»"«ENDIF» «ENDFOR»
 			«FOR segment : reference.segments» * «segment.segment.name» "«HtmlEscapers.htmlEscaper().escape(segment.segmentRef)»"«ENDFOR»
 			 *
-			 * Provision «reference.provision»
+			 * Provision «reference.getProvision»
 			 *
 			«ENDFOR»
 		«ENDIF»

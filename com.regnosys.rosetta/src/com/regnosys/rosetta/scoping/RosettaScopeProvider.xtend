@@ -48,6 +48,7 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 /**
  * This class contains custom scoping description.
@@ -180,6 +181,10 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 							inputsAndOutputs.add(function.output)
 						return Scopes.scopeFor(inputsAndOutputs)
 					} else {
+						val listOp = EcoreUtil2.getContainerOfType(context, ListOperation)
+						if(listOp !== null) {
+							return getParentScope(context, reference, IScope.NULLSCOPE)
+						}
 						val container = EcoreUtil2.getContainerOfType(context, Function)
 						if(container !== null) {
 							return filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
@@ -269,6 +274,9 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		}
 		val parentScope = getParentScope(object.eContainer, reference, outer)
 		switch (object) {
+			ListOperation: {
+				return Scopes.scopeFor(#[object.parameter], parentScope)
+			}
 			Data: {
 				return Scopes.scopeFor(object.allAttributes, outer)
 			}

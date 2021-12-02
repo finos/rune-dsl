@@ -6,6 +6,7 @@ package com.regnosys.rosetta.rosetta
 
 import java.util.stream.Collectors
 import com.regnosys.rosetta.rosetta.simple.References
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class RosettaModel extends RosettaDefinable {
 	String name
@@ -13,15 +14,11 @@ class RosettaModel extends RosettaDefinable {
 	contains Import[] imports
 	contains RosettaQualifiableConfiguration[] configurations opposite model 
 	contains RosettaRootElement[] elements opposite model
-	
 }
 
 class Import {
 	String importedNamespace
 }
-/**
- * New model
- */
 
 /**********************************************************************
  * Common types
@@ -54,7 +51,6 @@ class RosettaFeature extends RosettaNamed {
 	derived String getNameOrDefault get {
 		return name ?: 'value'
 	}
-
 }
 
 class RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
@@ -74,7 +70,6 @@ abstract class RosettaFeatureOwner extends RosettaDefinable {
 
 abstract class RosettaType extends RosettaRootElement, RosettaNamed {
 }
-
 
 
 /**********************************************************************
@@ -100,7 +95,6 @@ class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaC
 class RosettaParameter extends RosettaTypedFeature {
 	boolean isArray
 }
-
 
 class RosettaQualifiedType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType, RosettaCallableWithArgs {
 }
@@ -189,12 +183,14 @@ class RosettaSynonymBody extends RosettaSynonymBase {
 	String format
 	String patternMatch
 	String patternReplace
+	boolean removeHtml
 }
 
 class RosettaEnumSynonym extends RosettaSynonymBase, RosettaDefinable {
 	String synonymValue
 	String patternMatch
 	String patternReplace
+	boolean removeHtml
 }
 
 enum RosettaSynonymRef {
@@ -204,10 +200,10 @@ enum RosettaSynonymRef {
 
 
 /**********************************************************************
- * Things
+ * docReferences
  */
 
-class RosettaRegulatoryReference extends RosettaRegulatoryMandate {
+class RosettaDocReference extends RosettaRegulatoryBody {
 	String provision
 	contains RosettaSegmentRef[] segments
 	boolean reportedField
@@ -218,19 +214,19 @@ class RosettaSegmentRef {
 	String segmentRef
 }
 
-class RosettaRegulatoryMandate {
-	refers RosettaRegulatoryRegime regRegime
-	refers RosettaMandate[] mandates
+class RosettaRegulatoryBody {
+	refers RosettaBody body
+	refers RosettaCorpus[] corpuses
 }
 
-class RosettaRegulatoryRegime extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+class RosettaBody extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	String bodyType
 }
 
-class RosettaMandate extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+class RosettaCorpus extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	String corpusType
 	String displayName
-	refers RosettaRegulatoryRegime body
+	refers RosettaBody body
 }
 
 class RosettaSegment extends RosettaRootElement, RosettaNamed {
@@ -244,7 +240,9 @@ abstract class RosettaExpression {
 }
 
 class RosettaCallableCall extends RosettaExpression {
+	boolean distinct
 	boolean toOne
+	boolean implicitReceiver
 	refers RosettaCallable callable
 }
 
@@ -329,8 +327,7 @@ class RosettaMapPathValue extends RosettaExpression {
 class RosettaQualifiableConfiguration {
 	RosettaQualifiableType qType
 	refers RosettaModel model opposite configurations
-	/* TODO Change type to Data after migration is finished */
-	refers RosettaType rosettaClass
+	refers Data rosettaClass
 	
 }
 
@@ -385,6 +382,7 @@ class RosettaGroupByExpression {
 }
 
 class RosettaFeatureCall extends RosettaExpression {
+	boolean distinct
 	boolean toOne
 	contains RosettaExpression receiver
 	refers RosettaFeature feature
@@ -401,6 +399,7 @@ class RosettaConditionalExpression extends RosettaExpression {
 }
 
 class RosettaCallableWithArgsCall extends RosettaExpression {
+	boolean distinct
 	boolean toOne
 	refers RosettaCallableWithArgs callable
 	contains RosettaExpression[] args
@@ -459,72 +458,31 @@ class RosettaExternalSynonym {
 }
 
 /********************
- * Blueprint - Should be a seperate grammar
- *  */
+* Blueprint - Should be a separate grammar
+*/
  
 class RosettaBlueprintReport extends RosettaRootElement {
-	contains RosettaRegulatoryMandate regulatoryMandate
+	contains RosettaRegulatoryBody regulatoryBody
 	refers RosettaBlueprint[] reportingRules
+	refers Data reportType
 	refers RosettaBlueprint[] eligibilityRules
-	refers RosettaMandate reportingStandard
+	refers RosettaCorpus reportingStandard
 	
 	op String name() {
-		(regulatoryMandate.regRegime.name.toFirstUpper 
-				+ regulatoryMandate.mandates.stream.map[RosettaMandate man | man.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
-	}
-	/**
-	* FIXME: Never create Grammar model Instances programmatically.
-	* Only needed in Generator, create wrapper objects for that in the BlueprintGenerator!
-	*/
-	op BlueprintNodeExp nodes() {
-		var BlueprintNodeExp currentNodeExpr = null
-		var BlueprintNodeExp firstNodeExpr = null
-		
-		for (eligibilityRule : eligibilityRules) {
-			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
-			ref.blueprint = eligibilityRule
-			ref.name = eligibilityRule.name
-			
-			var newNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
-			newNodeExpr.node = ref
-			newNodeExpr.node.name = ref.name
-						
-			if (null === currentNodeExpr) firstNodeExpr = newNodeExpr
-			else currentNodeExpr.next = newNodeExpr
-				
-			currentNodeExpr = newNodeExpr
-		}
-		
-		val andNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
-		currentNodeExpr.next = andNodeExpr
-		
-		val node = RosettaFactory.eINSTANCE.createBlueprintAnd
-		andNodeExpr.node = node
-
-		node.name = name()
-		reportingRules.forEach[
-			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
-			ref.blueprint = it
-			ref.name = it.name
-			val rule = RosettaFactory.eINSTANCE.createBlueprintNodeExp
-			rule.node = ref
-			rule.node.name = ref.name
-			node.bps.add(rule)
-		]
-				
-		return firstNodeExpr
+		(getRegulatoryBody.getBody.name.toFirstUpper 
+				+ getRegulatoryBody.corpuses.stream.map[RosettaCorpus man | man.name.toFirstUpper].collect(Collectors.joining('_'))).replace(' ', '')
 	}
 }
- 
+
 class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {
-	contains RosettaRegulatoryReference[] references
+	contains RosettaDocReference[] references
 	contains BlueprintNodeExp nodes
 	refers RosettaType output
 }
 
 class BlueprintNodeExp {
 	contains BlueprintNode node
-	contains RosettaRegulatoryReference reference
+	contains RosettaDocReference reference
 	contains BlueprintNodeExp next 
 }
 
@@ -581,7 +539,7 @@ class BlueprintFilter extends BlueprintNode {
 
 class BlueprintExtract extends BlueprintNode {
 	contains RosettaExpression call
-	boolean multiple
+	boolean repeatable
 }
 
 class BlueprintReturn extends BlueprintNode {

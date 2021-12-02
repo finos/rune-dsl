@@ -40,15 +40,21 @@ public class BlueprintBuilder<I,O, K1, K2> {
 	
 	private final Collection<StreamSink<?,?,?>> sinks;
 	private final Collection<StreamSource<?,?>> sources;
-
+	private final DataItemReportBuilder dataItemReportBuilder;
 	
-	private BlueprintBuilder(RosettaActionFactory actionFactory, Collection<Downstream<? super I, K1>> head, Collection<Upstream<? extends O, K2>> tails,
-			Collection<StreamSink<?, ?, ?>> sinks, Collection<StreamSource<?,?>> sources) {
+	
+	private BlueprintBuilder(RosettaActionFactory actionFactory, 
+			Collection<Downstream<? super I, K1>> heads, 
+			Collection<Upstream<? extends O, K2>> tails,
+			Collection<StreamSink<?, ?, ?>> sinks, 
+			Collection<StreamSource<?,?>> sources,
+			DataItemReportBuilder dataItemReportBuilder) {
 		this.actionFactory = actionFactory;
-		this.heads = head;
+		this.heads = heads;
 		this.tails = tails;
 		this.sinks = sinks;
 		this.sources = sources;
+		this.dataItemReportBuilder = dataItemReportBuilder;
 	}
 	
 	public RosettaActionFactory getRosettaActionFactory() {
@@ -74,36 +80,34 @@ public class BlueprintBuilder<I,O, K1, K2> {
 	
 	public static <O, K> BlueprintBuilder<Void,O,K, K> startsWith(RosettaActionFactory actionFactory, SourceNode<O, K> sourceNode) {
 		StreamSource<O,K> source = new StreamSource<>(sourceNode.getName(),sourceNode);
-		return new BlueprintBuilder<>(actionFactory, Collections.emptyList(), of(source), of(), of(source));
+		return new BlueprintBuilder<>(actionFactory, Collections.emptyList(), of(source), of(), of(source), null);
 	}
 	
 	public static <I, O, K> BlueprintBuilder<I,O,K, K> startsWith(RosettaActionFactory actionFactory, ExpanderNode<I,O,K> expandNode) {
 		StreamExpander<I, O, K> expand = new StreamExpander<>(expandNode);
-		return new BlueprintBuilder<>(actionFactory, of(expand), of(expand), of(), of());
+		return new BlueprintBuilder<>(actionFactory, of(expand), of(expand), of(), of(), null);
 	}
 	
 	public static <I, K, K2> BlueprintBuilder<I,I,K, K2> startsWith(RosettaActionFactory actionFactory, GroupNode<I,K, K2> groupNode) {
 		StreamGroup<I, K, K2> group = new StreamGroup<>(groupNode);
-		return new BlueprintBuilder<>(actionFactory, of(group), of(group), of(), of());
+		return new BlueprintBuilder<>(actionFactory, of(group), of(group), of(), of(), null);
 	}
 	
 	public static <I, O, K> BlueprintBuilder<I,O, K, K> startsWith(RosettaActionFactory actionFactory, ProcessorNode<I, O, K> processorNode) {
 		StreamProcessor<I, O, K> group = new StreamProcessor<>(processorNode);
-		return new BlueprintBuilder<>(actionFactory, of(group), of(group), of(), of());
+		return new BlueprintBuilder<>(actionFactory, of(group), of(group), of(), of(), null);
 	}
 	
 	public static <I1, I2, K> BlueprintBuilder<Object, I1, K, K> startsWith(RosettaActionFactory actionFactory, DataJoinNode<I1, I2, K> joinNode) {
 		StreamDataJoin<I1, I2, K> joiner = new StreamDataJoin<>(joinNode);
-		return new BlueprintBuilder<Object, I1, K, K>(actionFactory, of(joiner), of(joiner), of(), of());
+		return new BlueprintBuilder<Object, I1, K, K>(actionFactory, of(joiner), of(joiner), of(), of(), null);
 	}
 	
-	public static <I, O, K1, K2> BlueprintBuilder<I, O, K1, K2> startsWith(RosettaActionFactory actionFactory, 
-			BlueprintInstance<I, O, K1, K2> bp2) {
-		return new BlueprintBuilder<>(actionFactory, Collections.singletonList(bp2), Collections.singletonList(bp2), bp2.sinks, bp2.sources);
+	public static <I, O, K1, K2> BlueprintBuilder<I, O, K1, K2> startsWith(RosettaActionFactory actionFactory, BlueprintInstance<I, O, K1, K2> bp2) {
+		return new BlueprintBuilder<>(actionFactory, Collections.singletonList(bp2), Collections.singletonList(bp2), bp2.sinks, bp2.sources, null);
 	}
 	
-	public static <I, O, K1, K2> BlueprintBuilder<I, O, K1, K2> startsWith(RosettaActionFactory actionFactory, 
-			BlueprintBuilder<I, O, K1, K2> bpb) {
+	public static <I, O, K1, K2> BlueprintBuilder<I, O, K1, K2> startsWith(RosettaActionFactory actionFactory, BlueprintBuilder<I, O, K1, K2> bpb) {
 		return bpb;
 	}
 	
@@ -113,7 +117,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		for (Upstream<? extends O, K2> up: tails) {
 			up.addDownstreams(expand);
 		}
-		return new BlueprintBuilder<I, O2, K1, K2>(actionFactory, heads, of(expand), of(), sources);
+		return new BlueprintBuilder<I, O2, K1, K2>(actionFactory, heads, of(expand), of(), sources, dataItemReportBuilder);
 	}
 	
 	public <K3> BlueprintBuilder<I,O, K1, K3> then(GroupNode<O,K2,K3> groupNode) {
@@ -122,7 +126,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		for (Upstream<? extends O, K2> up: tails) {
 			up.addDownstreams(group);
 		}
-		return new BlueprintBuilder<I,O, K1, K3>(actionFactory, heads, of(group), of(), sources);
+		return new BlueprintBuilder<I,O, K1, K3>(actionFactory, heads, of(group), of(), sources, dataItemReportBuilder);
 	}
 	
 	public <O2> BlueprintBuilder<I, O2, K1, K2> then(ProcessorNode<? super O, O2, K2> procesorNode) {
@@ -131,7 +135,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		for (Upstream<? extends O, K2> up: tails) {
 			up.addDownstreams(process);
 		}
-		return new BlueprintBuilder<I, O2, K1, K2>(actionFactory, heads, of(process), of(), sources);
+		return new BlueprintBuilder<I, O2, K1, K2>(actionFactory, heads, of(process), of(), sources, dataItemReportBuilder);
 	}
 	
 	public <I1, I2> BlueprintBuilder<I, I1, K1, K2> then(DataJoinNode<I1, I2, K2> joinNode) {
@@ -139,7 +143,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		for (Upstream<? extends O, K2> up: tails) {
 			up.addDownstreams(joiner);
 		}
-		return new BlueprintBuilder<I, I1, K1, K2>(actionFactory, heads, of(joiner), of(), sources);
+		return new BlueprintBuilder<I, I1, K1, K2>(actionFactory, heads, of(joiner), of(), sources, dataItemReportBuilder);
 	}
 	
 	public <O2, K3> BlueprintBuilder<I, O2, K1, K3> then(BlueprintBuilder<O, O2, K2, K3> bp2) {
@@ -155,7 +159,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 				ImmutableList.<StreamSink<?, ?, ?>>builder().addAll(this.sinks).addAll(bp2.sinks).build();;
 		Collection<StreamSource<?,?>> sources = 
 				ImmutableList.<StreamSource<?,?>>builder().addAll(this.sources).addAll(bp2.sources).build();
-		return new BlueprintBuilder<>(actionFactory, heads, bp2.tails, sinks, sources);
+		return new BlueprintBuilder<>(actionFactory, heads, bp2.tails, sinks, sources, dataItemReportBuilder);
 	}
 	
 	public <O2, K3> BlueprintBuilder<I, O2, K1, K3> then(BlueprintInstance<? super O, O2, K2, K3> bp2) {
@@ -166,7 +170,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 				ImmutableList.<StreamSink<?, ?, ?>>builder().addAll(this.sinks).addAll(bp2.getSinks()).build();;
 		Collection<StreamSource<?,?>> sources = 
 				ImmutableList.<StreamSource<?,?>>builder().addAll(this.sources).addAll(bp2.getSources()).build();
-		return new BlueprintBuilder<>(actionFactory, heads, Collections.singletonList(bp2), sinks, sources);
+		return new BlueprintBuilder<>(actionFactory, heads, Collections.singletonList(bp2), sinks, sources, bp2.getDataItemReportBuilder());
 	}
 	
 	public BlueprintBuilder<I,O, K1, K2> andSink(SinkNode<? super O, ?, K2> sinkNode) {
@@ -174,7 +178,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		for (Upstream<? extends O, K2> up: tails) {
 			up.addDownstreams(sink);
 		}
-		return new BlueprintBuilder<I, O, K1, K2>(actionFactory, heads, of(), of(sink), sources);
+		return new BlueprintBuilder<I, O, K1, K2>(actionFactory, heads, of(), of(sink), sources, dataItemReportBuilder);
 	}
 	
 	@SafeVarargs
@@ -183,7 +187,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		Collection<Upstream<? extends O, K2>> tails = Arrays.stream(bps).flatMap(bp->bp.tails.stream()).collect(ImmutableList.toImmutableList());
 		Collection<StreamSink<?, ?, ?>> sinks = Arrays.stream(bps).flatMap(bp->bp.sinks.stream()).collect(ImmutableList.toImmutableList());
 		Collection<StreamSource<?,?>> sources = Arrays.stream(bps).flatMap(bp->bp.sources.stream()).collect(ImmutableList.toImmutableList());
-		return new BlueprintBuilder<I, O, K1, K2>(actionFactory, heads, tails, sinks, sources);
+		return new BlueprintBuilder<I, O, K1, K2>(actionFactory, heads, tails, sinks, sources, null);
 	}
 	
 	@SafeVarargs
@@ -202,7 +206,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		Collection<Upstream<? extends O, K2>> tails = Arrays.stream(ifThens).flatMap(it->it.thenInstance.tails.stream()).collect(ImmutableList.toImmutableList());
 		Collection<StreamSink<?, ?, ?>> sinks = thens.stream().flatMap(bp->bp.sinks.stream()).collect(ImmutableList.toImmutableList());
 		Collection<StreamSource<?,?>> sources = thens.stream().flatMap(bp->bp.sources.stream()).collect(ImmutableList.toImmutableList());
-		return new BlueprintBuilder<I, O, K1, K2>(actionFactory, of (oneOf), tails, sinks, sources);
+		return new BlueprintBuilder<I, O, K1, K2>(actionFactory, of (oneOf), tails, sinks, sources, null);
 	}
 
 	public static <I extends RosettaModelObject, K1> BlueprintInstance<I, Object, K1, K1> doSimpleMappings(RosettaActionFactory actionFactory, String uri, String label, Collection<MappingGroup<I, ?>> mappings){
@@ -218,7 +222,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 			heads.add(process);
 			tails.add(process);
 		}
-		return new BlueprintInstance<I, Object, K1, K1>(uri, "Simple mapping", heads, tails, sources, sinks);
+		return new BlueprintInstance<I, Object, K1, K1>(uri, "Simple mapping", heads, tails, sources, sinks, null);
 	}
 	
 	public static <I extends RosettaModelObject, O, K1> BlueprintInstance<I, O, K1, K1> doCalcMappings(RosettaActionFactory actionFactory, String uri, Collection<MappingGroup<I, ? extends O>> mappings){
@@ -234,12 +238,15 @@ public class BlueprintBuilder<I,O, K1, K2> {
 			heads.add(process);
 			tails.add(process);
 		}
-		return new BlueprintInstance<I, O, K1, K1>(uri, "Calculation mapping", heads, tails, sources, sinks);
+		return new BlueprintInstance<I, O, K1, K1>(uri, "Calculation mapping", heads, tails, sources, sinks, null);
+	}
+	
+	public BlueprintBuilder<I,O, K1, K2> addDataItemReportBuilder(DataItemReportBuilder dataItemReportBuilder) {
+		return new BlueprintBuilder<I, O, K1, K2>(actionFactory, heads, tails, sinks, sources, dataItemReportBuilder);
 	}
 	
 	public BlueprintInstance<I, O, K1, K2> toBlueprint(String uri, String blueprintName) {
 		return new BlueprintInstance<I, O, K1, K2>(uri, blueprintName, heads, 
-				tails.stream().map(Upstream.class::cast).collect(Collectors.toList()), sources, sinks);
-	}
-	
+				tails.stream().map(Upstream.class::cast).collect(Collectors.toList()), sources, sinks, dataItemReportBuilder);
+	}	
 }

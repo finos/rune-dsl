@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,11 +38,27 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	 */
 	<F> MapperBuilder<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc);
 	
+	/**
+	 * Filter items of list based on the given predicate.
+	 * 
+	 * @param predicate - test that determines whether to filter list item. True to include in list, and false to exclude.
+	 * @return filtered list 
+	 */
+	MapperBuilder<T> filterList(Predicate<MapperBuilder<T>> predicate);
+	
+	/**
+	 * Map items of a list based on the given mapping function.
+	 * 
+	 * @param <F>
+	 * @param mappingFunc
+	 * @return mapped list
+	 */
+	<F> MapperBuilder<F> mapList(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc);
 	
 	default <G> MapperGroupByBuilder<T,G> groupBy(Function<MapperItem<T,?>, MapperBuilder<G>> groupByFunc) {
 		Function<MapperItem<T,?>,MapperItem<G, ?>> keyFunction = 
 				i -> groupByFunc.apply(i).getItems().findFirst().get();
-		Function<MapperItem<T,?>,MapperBuilder<T>> identity = i->new MapperS<>(i);
+		Function<MapperItem<T,?>,MapperBuilder<T>> identity = MapperS::new;
 		BinaryOperator<MapperBuilder<T>> merger = MapperBuilder<T>::unionSame;
 		Map<MapperItem<G, ?>, MapperBuilder<T>> gbi = getItems()
 				.collect(Collectors.toMap(keyFunction, 
@@ -61,7 +78,7 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	Stream<MapperItem<T, ?>> getItems();
 	
 	default Optional<MapperItem<?, ?>> findParent(MapperItem<?, ?> item) {
-		var parentItem = item.getParentItem();
+		Optional<? extends MapperItem<?, ?>> parentItem = item.getParentItem();
 		if (parentItem.isPresent()) {
 			if (parentItem.get().getMappedObject() instanceof FieldWithMeta) {
 				return findParent(parentItem.get());

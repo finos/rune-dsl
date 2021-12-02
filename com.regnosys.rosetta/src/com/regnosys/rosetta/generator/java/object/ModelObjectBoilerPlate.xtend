@@ -158,7 +158,7 @@ class ModelObjectBoilerPlate {
 	«IF a.cardinalityIsListValue»
 		if (!«ListEquals».listEquals(«a.name», _that.get«a.name.toFirstUpper»())) return false;
 	«ELSE»
-		if (!«Objects».equals(«a.name.toFirstLower», _that.get«a.name.toFirstUpper»())) return false;
+		if (!«Objects».equals(«a.name», _that.get«a.name.toFirstUpper»())) return false;
 	«ENDIF»
 	'''
 

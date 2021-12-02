@@ -26,6 +26,7 @@ import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaMapPath
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapRosettaPath
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
@@ -33,19 +34,21 @@ import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import java.util.List
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 class RosettaTypeProvider {
 
@@ -73,8 +76,12 @@ class RosettaTypeProvider {
 			return null
 		}
 		switch expression {
-			RosettaCallableCall:
-				safeRType(expression.callable, cycleTracker).wrapInFeatureCallType(expression)
+			RosettaCallableCall: {
+				if(expression.implicitReceiver)
+					safeRType(EcoreUtil2.getContainerOfType(expression, ListOperation).parameter, cycleTracker).wrapInFeatureCallType(expression)
+				else
+					safeRType(expression.callable, cycleTracker).wrapInFeatureCallType(expression)
+			}
 			RosettaCallableWithArgsCall: {
 				if (expression.callable instanceof RosettaExternalFunction) {
 					val fun = expression.callable as RosettaExternalFunction
@@ -152,7 +159,7 @@ class RosettaTypeProvider {
 				expression.operator.resultType(leftType, rightType)
 			}
 			RosettaCountOperation: {
-				RBuiltinType.NUMBER
+				RBuiltinType.INT
 			}
 			RosettaContainsExpression,
 			RosettaDisjointExpression,
@@ -255,6 +262,20 @@ class RosettaTypeProvider {
 				if(expression.output !== null) expression.output.safeRType(cycleTracker) else RBuiltinType.MISSING
 			Condition:
 				expression.expression.safeRType(cycleTracker)
+			ClosureParameter: {
+				val setOp = EcoreUtil2.getContainerOfType(expression.operation, ListOperation) // TODO get container with opposite in xcore and use receiver
+				if(setOp !== null) {
+					setOp.receiver.safeRType(cycleTracker)
+				} else
+					RBuiltinType.MISSING
+			}
+			ListOperation:
+				switch(expression.operationKind) {
+					case FILTER:
+						expression.parameter.safeRType(cycleTracker)
+					default:
+						expression.body.safeRType(cycleTracker)
+				}
 			default:
 				RBuiltinType.MISSING
 		}

@@ -63,7 +63,7 @@ public class Merger<I, B, O,K> extends StatefullNode implements ProcessorNode<I,
 	public Collection<GroupableData<? extends O, ? extends K>> terminate() {
 		return results.entrySet().stream()
 				.map(e->GroupableData.withMultiplePrecedents(e.getKey(), 
-						finalizer.apply(e.getValue().result), getIdentifier(), 
+						finalizer.apply(e.getValue().result), null, getIdentifier(), 
 						e.getValue().issues, this, e.getValue().precedents.values())
 					)
 				.collect(Collectors.collectingAndThen(Collectors.toList(), ImmutableList::copyOf));

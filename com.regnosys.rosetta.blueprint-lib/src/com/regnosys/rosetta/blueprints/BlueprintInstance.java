@@ -1,5 +1,9 @@
 package com.regnosys.rosetta.blueprints;
 
+import java.util.Collection;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
 import com.regnosys.rosetta.blueprints.runner.Downstream;
 import com.regnosys.rosetta.blueprints.runner.StreamSink;
 import com.regnosys.rosetta.blueprints.runner.StreamSource;
@@ -7,41 +11,31 @@ import com.regnosys.rosetta.blueprints.runner.Upstream;
 import com.regnosys.rosetta.blueprints.runner.UpstreamList;
 import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 
-import java.util.Collection;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
 public class BlueprintInstance <I, O, K1 , K2> extends Upstream<O, K2> implements Downstream<I, K1>{
 
-	//private final Collection<Downstream<? super I,K1>> heads;
-	//private Collection<Upstream<?, K2>> tails;
-	
 	protected final Collection<StreamSink<?,?,?>> sinks;
 	protected final Collection<StreamSource<?,?>> sources;
 	
-	final InternalHead internalHead;
-	final InternalTail internalTail;
+	private final DataItemReportBuilder dataItemReportBuilder;
 	
-	UpstreamList<I, K1> upstreamList = new UpstreamList<>();
-
-
+	private final InternalHead internalHead;
+	private final InternalTail internalTail;
+	
+	private final UpstreamList<I, K1> upstreamList = new UpstreamList<>();
 
 	public BlueprintInstance(String uri, String label, Collection<Downstream<? super I, K1>> heads,
     		Collection<Upstream<? extends O, K2>> tails, Collection<StreamSource<?, ?>> sources,
-			Collection<StreamSink<?, ?, ?>> sinks) {
+			Collection<StreamSink<?, ?, ?>> sinks, DataItemReportBuilder dataItemReportBuilder) {
 		super(uri, label);
-		//this.heads = heads;
-		//this.tails = tails;
 		this.sinks = sinks;
 		this.sources = sources;
+		this.dataItemReportBuilder = dataItemReportBuilder;
 		internalTail = new InternalTail();
 		tails.forEach(t->t.addDownstreams(internalTail));
 
 		internalHead =new InternalHead();
 		heads.forEach(h->internalHead.addDownstreams(h));
 	}
-    
-
 
 	@Override
 	public <I2 extends I, KI extends K1> void process(GroupableData<I2, KI> input) {
@@ -68,7 +62,11 @@ public class BlueprintInstance <I, O, K1 , K2> extends Upstream<O, K2> implement
         return sinks;
     }
     
-    public class InternalHead extends Upstream<I, K1> implements Downstream<I, K1> {
+    public DataItemReportBuilder getDataItemReportBuilder() {
+		return dataItemReportBuilder;
+	}
+
+	public class InternalHead extends Upstream<I, K1> implements Downstream<I, K1> {
 
     	//DownstreamList<I, K1> downstream = new DownstreamList<>();//this contains all the first nodes of the BP
     	
@@ -139,22 +137,16 @@ public class BlueprintInstance <I, O, K1 , K2> extends Upstream<O, K2> implement
 
         Object reportData = sinks.stream().map(s->s.result()).findFirst().get().get();
         Collection<GroupableData<? extends Object, ?>> traceData = sinks.stream().flatMap(s->s.getFinalData().stream()).collect(Collectors.toList());
-        return new BlueprintReport(getLabel(), reportData, traceData);
+        return new BlueprintReport(getLabel(), reportData, traceData, dataItemReportBuilder);
     }
-
-
 
 	public Upstream<I, K1> getInternalHead() {
 		return internalHead;
 	}
 
-
-
 	public Downstream<O, K2> getInternalTail() {
 		return internalTail;
 	}
-
-
 
 	@Override
 	public Collection<Upstream<? extends I, K1>> getUpstreams() {

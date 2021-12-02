@@ -1,12 +1,12 @@
 package com.regnosys.rosetta.generator.object
 
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaType
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
-import com.regnosys.rosetta.rosetta.RosettaRegulatoryReference
 
 @Data
 final class ExpandedAttribute {
@@ -26,7 +26,7 @@ final class ExpandedAttribute {
 
 	String definition
 	
-	List<RosettaRegulatoryReference> docReferences
+	List<RosettaDocReference> docReferences
 	boolean hasCalculation
 	boolean isEnum
 	boolean isQualified
@@ -99,6 +99,7 @@ final class ExpandedSynonym {
 	String format
 	String patternMatcher
 	String patternReplace
+	boolean removeHtml
 }
 
 @Data

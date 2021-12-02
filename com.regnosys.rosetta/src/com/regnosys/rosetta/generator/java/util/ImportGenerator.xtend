@@ -15,8 +15,11 @@ import com.regnosys.rosetta.rosetta.BlueprintValidate
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaCountOperation
@@ -31,9 +34,13 @@ import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
 import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.validation.TypedBPNode
 import java.util.Comparator
 import org.apache.log4j.Logger
@@ -41,11 +48,6 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
-import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -64,7 +66,7 @@ class ImportGenerator {
 		this.packages = packageName;
 	}
 
-	def addBlueprintImports() {
+	def void addBlueprintImports() {
 		imports.addAll(
 		'''«packages.blueprintLib.name».Blueprint''',
 		'''«packages.blueprintLib.name».BlueprintInstance''',
@@ -73,13 +75,13 @@ class ImportGenerator {
 		staticImports.add('''«packages.blueprintLib.name».BlueprintBuilder''')
 	}
 
-	def addSourceAndSink() {
+	def void addSourceAndSink() {
 		imports.addAll(
 		'''«packages.blueprintLib.name».runner.nodes.SinkNode''',
 		'''«packages.blueprintLib.name».runner.nodes.SourceNode''')
 	}
 
-	def addSimpleMerger(BlueprintMerge merge, Iterable<RegdOutputField> outRefs) {
+	def void addSimpleMerger(BlueprintMerge merge, Iterable<RegdOutputField> outRefs) {
 		val extraImport2 = outRefs.map[it.attrib.type].map[fullName()].filter[isImportable]
 		imports.addAll(extraImport2)
 		imports.add('''«packages.model.name».«merge.output.name»''')
@@ -88,19 +90,35 @@ class ImportGenerator {
 			'java.util.HashMap')
 	}
 	
-	def addIfThen(BlueprintOneOf oneOf) {
+	def void addIfThen(BlueprintOneOf oneOf) {
 		imports.addAll(
 		'''«packages.blueprintLib.name».BlueprintIfThen''')
 	}
 
-	def addSingleMapping(BlueprintExtract extract) {
-		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
+	def void addSingleMapping(BlueprintExtract extract) {
+		addMappingImport
 		addExpression(extract.call)
 	}
 
-	def addMappingImport() {
+	def void addMappingImport() {
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
+		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
 	}
+	
+	def void addDataItemReportBuilder(Data reportType) {
+		addMappingImport
+		imports.addAll(
+			'''«packages.model.name».«reportType.name»''',
+			'''«packages.blueprintLib.name».DataItemReportBuilder''',
+			'''«packages.blueprintLib.name».DataItemReportUtils''',
+			'''«packages.blueprintLib.name».runner.data.DataIdentifier''',
+			'''«packages.blueprintLib.name».runner.data.GroupableData''')
+	}
+	
+	def void addDataItemReportRule(RosettaBlueprint blueprint) {
+		imports.add('''«(blueprint.eContainer as RosettaModel).name».blueprint.«blueprint.name»Rule''')
+	}
+	
 
 	def void addFeatureCall(RosettaFeatureCall call) {
 		val feature = call.feature
@@ -125,7 +143,17 @@ class ImportGenerator {
 		addExpression(call.receiver)
 	}
 
-	def add(Object call) {
+	def void addCallableWithArgs(RosettaCallableWithArgs callable) {
+		switch (callable) {
+			Function: {
+				imports.add(callable.output.type.fullName);
+			}
+			default:
+				throw new UnsupportedOperationException("Unsupported expression type: " + callable.class.simpleName)
+		}
+	}
+
+	def void add(Object call) {
 		println
 	}
 
@@ -195,7 +223,9 @@ class ImportGenerator {
 				addExpression(expression.container)
 			}
 			RosettaCallable:{}
-			RosettaCallableWithArgsCall: {}
+			RosettaCallableWithArgsCall: {
+				addCallableWithArgs(expression.callable)
+			}
 			RosettaParenthesisCalcExpression : {
 				addExpression(expression.expression)
 			}
@@ -298,6 +328,7 @@ class ImportGenerator {
 		imports.add('''«(blueprint.eContainer as RosettaModel).name».blueprint.«blueprint.name»Rule''')
 		imports.add('''«packages.blueprintLib.name».runner.actions.IdChange''')
 		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
+		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
 	}
 
 }

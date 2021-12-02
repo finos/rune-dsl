@@ -49,11 +49,11 @@ After the description come any further `meta-data annotations <#meta-data-compon
 
 Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
 
-* name - 
+* name -
   Required - Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
-* type - 
+* type -
   Required - Each attribute can be specified either as a `basic type <#basic-type-label>`_, `record type <#record-type-label>`_, data type or `enumeration type <#enumeration-label>`_.
-* cardinality -  
+* cardinality -
   Required - see `Cardinality <#cardinality-label>`_
 * description - Optional but recommended) - A description of the attribute using the same <"..."> syntax as the type description
 * annotations - Optional - Annotations such as `synonyms <mapping.html>`_ or metadata can be applied to attributes
@@ -91,7 +91,7 @@ Rosetta defines two record types ``date`` and ``zonedDateTime``.  The set of rec
 Record types are simplified data types:
 
 * Record types are pure data definitions and do not allow specification of validation logic in ``conditions``.
-* Record types are handled specially in the code-generators as so form part of the Rosetta DSL, rather than any Rosetta base domain model. 
+* Record types are handled specially in the code-generators as so form part of the Rosetta DSL, rather than any Rosetta base domain model.
 
 Time
 """"
@@ -106,7 +106,7 @@ Inheritance
 
 .. code-block:: Haskell
 
- type Vehicle extends VehicleFeature: 
+ type Vehicle extends VehicleFeature:
     specification Specification (1..1)
     registrationID string (1..1)
     vehicleTaxBand VehicleTaxBandEnum (1..1)
@@ -136,7 +136,7 @@ Enumerations are very simple modelling containers, which are defined in the same
    M <"Month">
    Y <"Year">
 
-Enumeration names must be unique across a `namespace <#namespace-label>`_. The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase).  In addition the enumeration name should end with the suffix Enum. 
+Enumeration names must be unique across a `namespace <#namespace-label>`_. The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase).  In addition the enumeration name should end with the suffix Enum.
 The Enumeration values cannot start with a numerical digit, and the only special character that can be associated with them is the underscore ``_``.
 
 In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a **display name** to any enumeration value. For those enumeration values, special characters are replaced with ``_`` while the ``displayName`` entry corresponds to the actual value.
@@ -164,7 +164,7 @@ An example is the day count fraction scheme for interest rate calculation, which
 Meta-Data Component
 -------------------
 
-Meta-data are key parts of the syntax allowing rich definitions to all model components including the `data <#data-component-label>`_, `reporting <#reporting-component-label>`_ and `function <#function-label>`_  components. 
+Meta-data are key parts of the syntax allowing rich definitions to all model components including the `data <#data-component-label>`_, `reporting <#reporting-component-label>`_ and `function <#function-label>`_  components.
 
 Descriptions
 ^^^^^^^^^^^^
@@ -250,7 +250,7 @@ Once a segment type is defined, it can be associated to an identifier (i.e some 
 Syntax (Document Reference)
 """""""""""""""""""""""""""
 
-A document reference is created using the ``docReference`` syntax. This ``docReference`` must be associated to a ``corpus`` and ``segment`` defined according to the `document reference hierarchy <#document-reference-hierarchy-label>`_ section. The document reference can copy the actual text being referred to using the ``provision`` syntax. 
+A document reference is created using the ``docReference`` syntax. This ``docReference`` must be associated to a ``corpus`` and ``segment`` defined according to the `document reference hierarchy <#document-reference-hierarchy-label>`_ section. The document reference can copy the actual text being referred to using the ``provision`` syntax.
 
 .. code-block:: Haskell
 
@@ -267,7 +267,7 @@ In some instances, a model type may have a different naming convention based on 
 
  type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
       [docReference ICMA GMRA
-        namingConvention "seller" 
+        namingConvention "seller"
         provision "As defined in the GRMA Seller party ..."]
 
 A ``docReference`` can also be added to an attribute of a type:
@@ -278,7 +278,7 @@ A ``docReference`` can also be added to an attribute of a type:
       ...
       payer CounterpartyRoleEnum (1..1)
         [docReference ICMA GMRA
-          namingConvention "seller" 
+          namingConvention "seller"
           provision "As defined in the GRMA Seller party ..."]
 
 .. _annotation-label:
@@ -311,7 +311,7 @@ It is possible to associate attributes to an annotation (see `metadata <#metadat
 
  annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
 
-An annotation can be added to a Rosetta Type or attribute by enclosing the name of the annotation in square brackets 
+An annotation can be added to a Rosetta Type or attribute by enclosing the name of the annotation in square brackets
 
 Meta-Data and Reference
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -319,7 +319,7 @@ Purpose
 """""""
 .. _metadata-label:
 
-The ``metadata`` annotation allows the declaration of a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations 
+The ``metadata`` annotation allows the declaration of a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations
 
 .. code-block:: Haskell
 
@@ -357,10 +357,10 @@ Referencing allows an attribute in rosetta to refer to a rosetta object in a dif
       }
     } ]
   }
- 
+
  "partyReference" : {
         "globalReference" : "3d9e6ab8"
-  }      
+  }
 
 
 Rosetta currently supports 3 different mechanisms for references with different scopes. It is intended that these will all be migrated to a single mechanism.
@@ -375,14 +375,14 @@ The ``reference`` metadata annotation denotes that an attribute can be either a 
 External References
 ///////////////////
 
-Attributes and types that have the ``key`` or ``id`` annotation additionally have an ``externalKey`` attached to them. This is used to store keys that are read from an external source e.g. FpML id metadata attribute. 
+Attributes and types that have the ``key`` or ``id`` annotation additionally have an ``externalKey`` attached to them. This is used to store keys that are read from an external source e.g. FpML id metadata attribute.
 
 Attributes with the ``reference`` keyword have a corresponding externalReference field which is used to store references from external sources. The reference resolver processor can be used to link up the references.
 
 Templates
 /////////
 
-When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together. 
+When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
 
 Other than the new annotation, data templates do not have any impact on the model, i.e. no new types, attributes, or conditions.
 
@@ -489,7 +489,7 @@ Logical expressions are used within the following model components:
 
 - `Functions <#function-label>`_,
 - `Data type validation conditions <#condition-label>`_,
-- `Conditional mappings <#when-clause-label>`_ and 
+- `Conditional mappings <#when-clause-label>`_ and
 - `Report Rules <#report-rule-label>`_
 
 Expressions are evaluated within the context of a Rosetta object to return a result. The result of an expression can be either:
@@ -498,9 +498,9 @@ Expressions are evaluated within the context of a Rosetta object to return a res
 - a single Rosetta object (data type or enumeration): e.g. a `Party` object or
 - a `list <#list-label>`_ of results, all of the same type (basic type or Rosetta object).
 
-The type of an expression is the type of the result that it will evaluate to. E.g. an expression that evaluates to True or False is of type boolean, an expression that evaluates to a list of `Party` is of type `List of Party`. 
+The type of an expression is the type of the result that it will evaluate to. E.g. an expression that evaluates to True or False is of type boolean, an expression that evaluates to a list of `Party` is of type `List of Party`.
 
-The below sections detail the different types of Rosetta expressions and how they are used. 
+The below sections detail the different types of Rosetta expressions and how they are used.
 
 .. _rosetta-path-label:
 
@@ -519,9 +519,9 @@ The simplest Rosetta path expression is just the name of an attribute. In the ex
 .. code-block:: Haskell
   :emphasize-lines: 7
 
-  type ContractFormationPrimitive: 
+  type ContractFormationPrimitive:
 
-	before ExecutionState (0..1) 
+	before ExecutionState (0..1)
 	after PostContractFormationState (1..1)
 
 	condition: <"The quantity should be unchanged.">
@@ -534,13 +534,13 @@ Attribute names can be chained together using ``->`` in order to recursively ref
 
     type Confirmation: <"A class to specify a trade confirmation.">
 
-        identifier Identifier (1..*) 
-        party Party (1..*) 
-        partyRole PartyRole (1..*) 
-        lineage Lineage (0..1) 
+        identifier Identifier (1..*)
+        party Party (1..*)
+        partyRole PartyRole (1..*)
+        lineage Lineage (0..1)
         status ConfirmationStatusEnum (1..1)
 
-        condition BothBuyerAndSellerPartyRolesMustExist: 
+        condition BothBuyerAndSellerPartyRolesMustExist:
             if lineage -> executionReference -> tradableProduct -> product -> security exists
 
 If a Rosetta path is applied to an attribute that does not have a value in the object it is being evaluated against, the result is *null* - i.e. there is no value. If an attribute of that non-existant object is further evaluated, the result is still *null*. In the above example, if `executionReference` is *null*, the final `security` attribute will also evaluate to *null*.
@@ -565,8 +565,18 @@ Only element
 The ``only-element`` keyword can appear after an attribute name in a Rosetta path. ::
 
   observationEvent -> primitives only-element -> observation
-	
+
 This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to `null <#null-label>`_\, an empty list or a list with more than one value then the expression result will be null.
+
+Distinct
+============
+The keyword ``distinct`` can appear after an attribute with multiple cardinality in a Rosetta path. ::
+
+ quantity -> unitOfAmount -> currency distinct
+
+The operation will return a subset of the list containing only distinct elements.  It’s useful for removing duplicate elements from a list, and can be combined with other syntax features such as ``count`` to determine if all elements of a list are equal. ::
+
+ payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
 
 Constant Expressions
 ^^^^^^^^^^^^^^^^^^^^
@@ -629,7 +639,7 @@ The result type of a comparison operator is always boolean
 * ``<>`` - Does not equal. Returns *false* if the left expression is equal to the right expression, otherwise true.
 * ``<``, ``<=``, ``>=``, ``>``  - performs mathematical comparisons on the left and right values. Both left and right have to evaluate to numbers or lists of numbers.
 * ``exists`` - returns true if the left expression returns a result. This can be further modified with additional keywords.
-  
+
   * ``only`` - the value of left expression exists and is the only attribute with a value in its parent object.
   * ``single`` - the value of expression either has single cardinality or is a list with exactly one value.
   * ``mutiple`` - the value expression has more than 2 results
@@ -647,26 +657,26 @@ Rosetta also has operators that are designed to function on lists
 
 If the contains operator is passed an expression that has single cardinality that expression is treated as a list containing the single element or an empty list if the element is null.
 
-The grammar enforces that the expression for count has multiple cardinality. 
+The grammar enforces that the expression for count has multiple cardinality.
 
 For the comparison operators if either left or right expression has multiple cardinality then either the other side should have multiple cardinality or `all` or `any` should be specified. (At present only `any` is supported for `<>` and `all` for the other comparison operators.
 
 The semantics for list comparisons are as follows:
 
 * ``=``
-  
+
   * if both sides are lists then the lists must contain elements that are ``=`` when compared pairwise in the order
   * if the one side is a list and the other is single and `all` is specified then every element in the list must ``=`` the single value
   * if the one side is a list and the other is single and `any` is specified then at least one element in the list must ``=`` the single value (not implemented yet)
 
 * ``<>``
-  
+
   * if both sides are lists then then true is returned if the lists have different length or every element is ``<>`` to the corresonding element by position
   * if one side is a list and the `any` is specified then true is returned if any element ``<>`` the single element
   * if one side is a list and the `all` is specified then true is returned if all elements ``<>`` the single element (not implemented yet)
 
 * ``<``, ``<=``, ``>=``, ``>``
-  
+
   * if both sides are lists then every element in the first list must be ``>`` the element in the corresponding posistion in the second list
   * if one side is single and `all` is specified then every element in the list must be ``>`` that single value
   * if one side is single and `any` is specified then at least one element in the list must be ``>`` that single value (unimplemented)
@@ -726,7 +736,7 @@ An expression can be a call to a `function <#function-label>`_, that returns the
 
 Syntax
 """"""
-A function call consists of the function name, followed by a comma separated list of arguments enclosed within round brackets ``(...)``. 
+A function call consists of the function name, followed by a comma separated list of arguments enclosed within round brackets ``(...)``.
 
 The arguments list is a list of expressions. The number and type of the expressions must match the inputs defined by the function definition. This will be enforced by the syntax validator.
 
@@ -746,7 +756,7 @@ In the last line of the example below the Max function is called to find the lar
         assign-output r:
             if (a>=b) then a
             else b
-            
+
     func WhichIsBigger:
         inputs:
             a number (1..1)
@@ -893,17 +903,12 @@ The ``only exists`` component is an adaptation of the simple ``exists`` syntax, 
 
 .. code-block:: Haskell
 
- type PriceNotation:
-    price Price (1..1)
-    assetIdentifier AssetIdentifier (0..1)
-
-    condition CurrencyAssetIdentifier:
-       if price -> fixedInterestRate exists
-       then assetIdentifier -> currency only exists
-
-    condition RateOptionAssetIdentifier:
-       if price -> floatingInterestRate exists
-       then assetIdentifier -> rateOption only exists
+func Qualify_AssetClass_InterestRate_Swap:
+  inputs: economicTerms EconomicTerms (1..1)
+  output: is_product boolean (1..1)
+  assign-output is_product:
+    economicTerms -> payout -> interestRatePayout only exists
+      or (economicTerms -> payout -> interestRatePayout,  economicTerms -> payout -> cashflow) only exists
 
 This syntax drastically reduces the condition expression, which would otherwise require to combine one ``exists`` with multiple ``is absent`` (applied to all other attributes). It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for ``is absent``.
 
@@ -984,17 +989,17 @@ Most functions, however, also require inputs, which are also expressed as attrib
        determinationMethod DeterminationMethodEnum (1..1)
     output:
        time TimeZone (1..1)
-       
+
 Inputs and outputs can both have multiple cardinality in which case they will be treated as lists
 
 .. code-block:: Haskell
 
- func UpdateAmountForEachQuantity: 
+ func UpdateAmountForEachQuantity:
    inputs:
-      priceQuantity PriceQuantity (0..*) 
-      amount number (1..1) 
+      priceQuantity PriceQuantity (0..*)
+      amount number (1..1)
    output:
-      updatedPriceQuantity PriceQuantity (0..*) 
+      updatedPriceQuantity PriceQuantity (0..*)
 
 Conditions
 """"""""""
@@ -1175,7 +1180,7 @@ Purpose
 """""""
 The namespace syntax allows model artefacts in a data model to be organised into groups of namespaces. A namespace is an abstract container created to hold a logical grouping of model artefacts. The approach is designed to make it easier for users to understand the model structure and adopt selected components. It also aids the development cycle by insulating groups of components from model restructuring that may occur.  Model artefacts are organised into a directory structure that follows the namespaces’ Group and Artefact structure (a.k.a. “GAV coordinates”). This directory structure is exposed in the model editor.
 
-By convention namespaces are organised into a hierarchy, with layers going from in to out. The hierarchy therefore contains an intrinsic inheritance structure where each layer has access to (“imports”) the layer outside, and is designed to be usable without any of its inner layers. Layers can contain several namespaces (“siblings”), which can also refer to each other. 
+By convention namespaces are organised into a hierarchy, with layers going from in to out. The hierarchy therefore contains an intrinsic inheritance structure where each layer has access to (“imports”) the layer outside, and is designed to be usable without any of its inner layers. Layers can contain several namespaces (“siblings”), which can also refer to each other.
 
 Syntax
 """"""
@@ -1230,7 +1235,7 @@ A synonym source can extend another synonym source. This forms a new synonym sou
 
 Basic Synonym
 """""""""""""
-Synonyms are annotations on attributes of Rosetta types and the enumeration values of Rosetta Enums.  The model does have some legacy synonyms remaining 
+Synonyms are annotations on attributes of Rosetta types and the enumeration values of Rosetta Enums.  The model does have some legacy synonyms remaining
 directly on rosetta types but the location of the synonym in the model has no impact. They can be written inside the definition of the type or they can be specified in a separate file to leave the type definitions simpler.
 
 Inline
@@ -1244,7 +1249,7 @@ An inline synonym consists of '[' followed by the keyword *synonym* and the name
 
 External synonym
 ////////////////
-External synonyms are defined inside the synonym source declaration so the synonym keyword and the synonym source are not required in every synonym. 
+External synonyms are defined inside the synonym source declaration so the synonym keyword and the synonym source are not required in every synonym.
 A synonym is added to an attribute by referencing the type and attribute name and then declaring the synonym to add as the synonym body surrounded by '[]'. The code below removes all the synonyms from the independentAmount attribute of Collateral and then adds in a new synonym ::
 
 	synonym source FpML_5_10 extends FpML
@@ -1325,7 +1330,7 @@ e.g. ::
 		+ currency
 			[value "currency" maps 2 meta "currencyScheme"]
 
-In this example the input attribute "notionalAmount" is matched to the assetIdentifier and the children of "notionalAmount" will be matched against the synonyms for AssetIdentifier. However the input attribute "currency" will also be matched to the assetIdentifier but "currency" is still available to be matched against the synonyms of AssetIdentifier. 
+In this example the input attribute "notionalAmount" is matched to the assetIdentifier and the children of "notionalAmount" will be matched against the synonyms for AssetIdentifier. However the input attribute "currency" will also be matched to the assetIdentifier but "currency" is still available to be matched against the synonyms of AssetIdentifier.
 
 Merging inputs
 """"""""""""""
@@ -1459,8 +1464,8 @@ E.g. ::
 
 Pattern
 """""""
-A synonym can optionally be followed by a the pattern construct. It is only applicable to enums and basic types other than date/times. The keyword `pattern` followed by two quoted strings. The first string is a `regular expression <https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html>`_ 
-used to match against the input value. The second string is a replacement expression used to reformat the matched input before it is processed as usual for the basictype/enum. 
+A synonym can optionally be followed by a the pattern construct. It is only applicable to enums and basic types other than date/times. The keyword `pattern` followed by two quoted strings. The first string is a `regular expression <https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html>`_
+used to match against the input value. The second string is a replacement expression used to reformat the matched input before it is processed as usual for the basictype/enum.
 
 E.g. ::
 
@@ -1646,7 +1651,7 @@ The label is an arbitrary ``string`` and should be aligned with the name of the 
 
 - ``Rule if`` statement
 
-The rule if statement consists of the keyword ``if`` followed by condition that will be evaluated ``return`` followed by a rule. 
+The rule if statement consists of the keyword ``if`` followed by condition that will be evaluated ``return`` followed by a rule.
 If the condition is true then the value of the ``return`` rule is returned.
 Additional conditions and ``return`` rules can be specified with ``else if``. Only the first matching condition's ``return`` will be executed.
 ``else return`` can be used to provide an alternative that will be executed if no conditions match
@@ -1672,7 +1677,7 @@ Filtering and max/min/first/last rules take a collection of input objects and re
 
 - ``filter when`` <FunctionalExpression>
 
-The ``filter when`` keyword takes each input value and uses it as input to a provided test expression The result type of the test expression must be boolean and its input type must be the input type of the filter rule. 
+The ``filter when`` keyword takes each input value and uses it as input to a provided test expression The result type of the test expression must be boolean and its input type must be the input type of the filter rule.
 If the expression returns ``true`` for a given input that value is included in the output.
 The code below selects the PartyContactInformation objects then filters to only the parties that are reportingParties before then returning the partyReferences
 
@@ -1714,7 +1719,7 @@ In the below example, we first apply a filter and extract a ``rate`` attribute. 
 
 - ``maxBy`` / ``minBy``
 
-The syntax also supports selecting values by an ordering based on an attribute using the ``maxBy`` and ``minBy`` keywords. For each input value to the rule the provided test expression or rule is evaluated to give a test result and paired with the input value. 
+The syntax also supports selecting values by an ordering based on an attribute using the ``maxBy`` and ``minBy`` keywords. For each input value to the rule the provided test expression or rule is evaluated to give a test result and paired with the input value.
 When all values have been processes the pair with the highest test result is selected and the associated value is returned by the rule.
 The test expression or rule must return a value of single cardinality and must be of a comparable basic data type
 e.g. date, time, number, string
@@ -1726,8 +1731,74 @@ In the below example, we first apply a filter and extract a ``fixedInterestRate`
    extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate then
    maxBy FixedInterestRate -> rate
 
+- ``join`` statement
+
+The ``join`` syntax filters data by comparing two data sets, and selecting the values that have a matching key.
+
+In the syntax below, the data is first split into two data sets, then the ``join`` statement selects a sublist of the primary data set where the primary key matches the foreign key.
+
+.. code-block:: Haskell
+
+ (
+   extract <PathToPrimaryDataSet>,
+   extract <PathToSecondaryDataSet>
+ ) then
+ join key <PrimaryDataSetPathToKey> foreignKey <SecondaryDataSetPathToForeignKey> then
+ extract <PrimaryDataSetPathToExtract>
+
+In the below example, the ``Trade`` is split into a primary data (i.e., a list of ``Counterparty``) and, a secondary data set (a `BuyerSeller`).  The ``key`` and ``foreignKey`` correspond to attributes of the same type (i.e., ``CounterpartyRoleEnum``) in the primary and secondary data sets respectively.  The ``join`` operation will filter the list of ``Counterparty`` to only the values where the ``Counterparty->role`` matches the ``BuyerSeller -> buyer``.
+
+.. code-block:: Haskell
+
+ (
+   extract Trade -> tradableProduct -> counterparty,
+   extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> optionPayout -> buyerSeller
+ ) then
+ join key Counterparty -> role foreignKey BuyerSeller -> buyer then
+ extract Counterparty -> partyReference
 
 
+Repeatable Rules
+///////////////
+
+The syntax also supports the reporting of repeatable sets of data as required by most regulations.  For example, in the CFTC Part 45 regulations, fields 33-35 require the reporting of a notional quantity schedule. For each quantity schedule step, the notional amount, effective date and end date must be reported.
+
+- ``extract repeatable`` <ExpressionWithMultipleCardinality> ( <ReportingRule1>, <ReportingRule2> ... <ReportingRuleN> )
+
+The ``repeatable`` keyword specifies that the extract expression will be reported as a repeating set of data.  The rules specified in the brackets specify the fields to report for each repeating data set.
+
+In the example below, the ``repeatable`` keyword in reporting rule ``NotionalAmountScheduleLeg1`` specifies that the extracted list of quantity notional schedule steps should be reported as a repeating set of data.  The rules specified within the brackets define the fields that should be reported for each repeating step.
+
+.. code-block:: Haskell
+
+ reporting rule NotionalAmountScheduleLeg1 <"Notional Amount Schedule">
+	[regulatoryReference CFTC Part45 appendix "1" item "33-35" field "Notional Amount Schedule"
+		provision "Fields 33-35 are repeatable and shall be populated in the case of derivatives involving notional amount schedules"]
+    TradeForEvent then
+        InterestRateLeg1 then
+            extract repeatable InterestRatePayout -> payoutQuantity -> quantitySchedule -> stepSchedule -> step then
+            (
+                NotionalAmountScheduleLeg1Amount,
+                NotionalAmountScheduleLeg1EndDate,
+                NotionalAmountScheduleLeg1EffectiveDate
+            )
+
+ reporting rule NotionalAmountScheduleLeg1Amount <"Notional amount in effect on associated effective date of leg 1">
+	[regulatoryReference CFTC Part45 appendix "1" item "33" field "Notional amount in effect on associated effective date of leg 1"]
+		CDENotionalAmountScheduleAmount
+		as "33/35-$ 33 Notional amount leg 1"
+
+ reporting rule NotionalAmountScheduleLeg1EffectiveDate <"Effective date of the notional amount of leg 1">
+	[regulatoryReference CFTC Part45 appendix "1" item "34" field "Effective date of the notional amount of leg 1"]
+		CDENotionalAmountScheduleEffectiveDate
+		as "33/35-$ 34 Effective date leg 1"
+
+ reporting rule NotionalAmountScheduleLeg1EndDate <"End date of the notional amount of leg 1">
+	[regulatoryReference CFTC Part45 appendix "1" item "35" field "End date of the notional amount of leg 1"]
+		CDENotionalAmountScheduleEndDate
+		as "33/35-$ 35 End date leg 1"
+
+Note that the ``-$`` symbol is used in the label to index the repeated groups ensuring that they appear in a logical order in the Reports view of Rosetta.
 
 .. _CamelCase: https://en.wikipedia.org/wiki/Camel_case
 .. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time

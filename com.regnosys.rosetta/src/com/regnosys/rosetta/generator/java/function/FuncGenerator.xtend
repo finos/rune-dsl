@@ -10,22 +10,27 @@ import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
+import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.AssignOutputOperation
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.Operation
+import com.regnosys.rosetta.rosetta.simple.SetOutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RAnnotateType
 import com.regnosys.rosetta.types.RType
@@ -33,8 +38,10 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.RosettaFunction
-
+import com.rosetta.model.lib.mapper.Mapper
 import com.rosetta.model.lib.validation.ModelObjectValidator
+import java.util.Arrays
+import java.util.List
 import java.util.Map
 import java.util.Optional
 import java.util.stream.Collectors
@@ -42,11 +49,8 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
+import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.rosetta.model.lib.mapper.Mapper
-import com.regnosys.rosetta.generator.java.util.ParameterizedType
-import java.util.List
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 
 class FuncGenerator {
 
@@ -58,7 +62,7 @@ class FuncGenerator {
 	@Inject extension RosettaExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
-	@Inject  CardinalityProvider cardinality
+	@Inject CardinalityProvider cardinality
 	@Inject JavaNames.Factory factory
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
@@ -71,6 +75,7 @@ class FuncGenerator {
 			} else {
 				tracImports(func.classBody(func.name, dependencies, javaNames, version, false), func.name)
 			}
+        classBody.addImport(Arrays.name, Arrays.simpleName)
 		val content = '''
 			package «javaNames.packages.model.functions.name»;
 			
@@ -129,7 +134,7 @@ class FuncGenerator {
 					* @return «outputName» «ModelGeneratorUtil.escape(output.definition)»
 				«ENDIF»
 				*/
-				public «outputType.extendedParam» evaluate(«func.inputsAsParameters(names)») {
+				public «IF outNeedsBuilder»«outputType.extendedParam»«ELSE»«outputType»«ENDIF» evaluate(«func.inputsAsParameters(names)») {
 					«IF !func.conditions.empty»
 						// pre-conditions
 						«FOR cond:func.conditions»
@@ -155,7 +160,10 @@ class FuncGenerator {
 				}
 				
 				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
-					«FOR indexed : func.operations.indexed»
+					«FOR indexed : func.operations.filter(AssignOutputOperation).indexed»
+						«indexed.value.assign(aliasOut, names, output)»;
+					«ENDFOR»
+					«FOR indexed : func.operations.filter(SetOutputOperation).indexed»
 						«indexed.value.assign(aliasOut, names, output)»;
 					«ENDFOR»
 					return «outputName»;
@@ -166,8 +174,10 @@ class FuncGenerator {
 				«FOR alias : func.shortcuts»
 					
 					«IF aliasOut.get(alias)»
-						protected «names.shortcutJavaType(alias)» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
-							return «expressionGenerator.javaCode(alias.expression, new ParamMap)».get().toBuilder();
+						«val multi = cardinality.isMulti(alias.expression)»
+						«val returnType = names.shortcutJavaType(alias)»
+						protected «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
+							return toBuilder(«expressionGenerator.javaCode(alias.expression, new ParamMap)»«IF multi».getMulti()«ELSE».get()«ENDIF»);
 						}
 					«ELSE»
 						protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
@@ -178,7 +188,7 @@ class FuncGenerator {
 				public static final class «className»Default extends «className» {
 					@Override
 					protected  «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
-						return «IF output.isMany»List.of()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
+						return «IF output.isMany»Arrays.asList()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
 					}
 				}
 				«IF func.isQualifierFunction()»
@@ -210,9 +220,8 @@ class FuncGenerator {
 			public «outputType.extendedParam» evaluate(«function.inputsAsParameters(names)») {
 				switch («enumParam») {
 					«FOR enumFunc : dispatchingFuncs»
-						«val enumValClass = toTargetClassName(enumFunc).lastSegment»
-						case «enumValClass»:
-							return «enumValClass».evaluate(«function.inputsAsArguments(names)»);
+						case «toEnumClassName(enumFunc).lastSegment»:
+							return «toTargetClassName(enumFunc).lastSegment».evaluate(«function.inputsAsArguments(names)»);
 					«ENDFOR»
 					default:
 						throw new IllegalArgumentException("Enum value not implemented: " + «enumParam»);
@@ -229,11 +238,14 @@ class FuncGenerator {
 	
 	
 	private def QualifiedName toTargetClassName(FunctionDispatch ele) {
-		return QualifiedName.create(ele.name).append(ele.value.value.name)
+		return QualifiedName.create(ele.name).append(ele.value.value.name.toFirstLower + "_") // to avoid name clashes
 	}
 	
-	private def StringConcatenationClient assign(Operation op, Map<ShortcutDeclaration, Boolean> outs,
-		JavaNames names, Attribute type) {
+	private def QualifiedName toEnumClassName(FunctionDispatch ele) {
+		return QualifiedName.create(ele.name).append(formatEnumName(ele.value.value.name))
+	}
+	
+	private def StringConcatenationClient assign(AssignOutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type) {
 		val pathAsList = op.pathAsSegmentList
 		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
@@ -247,8 +259,26 @@ class FuncGenerator {
 				«op.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
 					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«
-					ENDIF»«ENDFOR»
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»
+			'''
+		}
+	}
+	
+	private def StringConcatenationClient assign(SetOutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type) {
+		val pathAsList = op.pathAsSegmentList
+		val ctx = Context.create(names)
+		if (pathAsList.isEmpty)
+			'''
+			«IF needsBuilder(op.assignRoot)»
+				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, ctx, type.isMany)»)
+			«ELSE»
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx, type.isMany)»«ENDIF»'''
+		else {
+			'''
+				«op.assignTarget(outs, names)»
+					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
+					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
+					.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»
 			'''
 		}
 	}
@@ -264,7 +294,7 @@ class FuncGenerator {
 			}
 	}
 	
-	private def StringConcatenationClient assignValue(Operation op, JavaNames names) {
+	private def StringConcatenationClient assignValue(AssignOutputOperation op, JavaNames names) {
 		if(op.assignAsKey) {
 			val metaClass = referenceWithMetaJavaType(op, names)
 			if (cardinality.isMulti(op.expression)) {
@@ -288,6 +318,11 @@ class FuncGenerator {
 		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
 							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
 		}
+	}
+	
+	private def StringConcatenationClient assignValue(SetOutputOperation op, JavaNames names) {
+		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
+							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
 	}
 	
 	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx, boolean isMulti) {
@@ -314,7 +349,7 @@ class FuncGenerator {
 	
 	private def boolean isReference(RosettaNamed ele) {
 		switch(ele) {
-			Annotated: hasMetaDataAnnotations(ele)
+			Annotated: hasMetaDataAnnotations(ele) || hasMetaDataAddress(ele)
 			default:false
 		}
 	}
@@ -343,8 +378,15 @@ class FuncGenerator {
 	
 	private def dispatch StringConcatenationClient lhsExpand(RosettaFeatureCall f) 
 	'''«lhsExpand(f.receiver)».«f.feature.lhsFeature»'''
+	
 	private def dispatch StringConcatenationClient lhsExpand(RosettaCallableCall f) 
 	'''«f.callable.lhsExpand»'''
+	
+	private def dispatch StringConcatenationClient lhsExpand(ShortcutDeclaration f) 
+	'''«f.expression.lhsExpand»'''
+	
+	private def dispatch StringConcatenationClient lhsExpand(ListOperation f) 
+	'''«f.receiver.lhsExpand»'''
 	
 	private def dispatch StringConcatenationClient lhsFeature(RosettaFeature f){
 		throw new IllegalStateException("No implementation for lhsFeature for "+f.class)
@@ -381,7 +423,7 @@ class FuncGenerator {
 	}
 
 	private def StringConcatenationClient inputsAsParameters(extension Function function, extension JavaNames names) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.toListOrSingleJavaType.extendedParam» «input.name»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«IF  input.needsBuilder»«input.toListOrSingleJavaType.extendedParam»«ELSE»«input.toListOrSingleJavaType»«ENDIF» «input.name»«ENDFOR»'''
 	}
 
 	def private StringConcatenationClient shortcutJavaType(JavaNames names, ShortcutDeclaration feature) {

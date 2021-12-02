@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.Mapper.Path;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.mapper.MapperTree;
@@ -153,7 +154,7 @@ public class ExpressionOperators {
 	
 	/**
 	 * DoIf implementation for ComparisonResult.
-	 s*/
+	 */
 	public static ComparisonResult resultDoIf(Mapper<Boolean> test, Supplier<Mapper<Boolean>> ifthen, Supplier<Mapper<Boolean>> elsethen) {
 		boolean testResult = test.getMulti().stream().allMatch(Boolean::booleanValue);
 		if (testResult) {
@@ -293,7 +294,7 @@ public class ExpressionOperators {
 
 	// contains
 	
-	public static <T> ComparisonResult contains(Mapper<T> o1, Mapper<T> o2) {
+	public static <T> ComparisonResult contains(Mapper<? extends T> o1, Mapper<? extends T> o2) {
 		boolean result =  o1.getMulti().containsAll(o2.getMulti());
 		if (result) {
 			return ComparisonResult.success();
@@ -302,6 +303,8 @@ public class ExpressionOperators {
 			return ComparisonResult.failure(formatMultiError(o1) + " does not contain all of " +formatMultiError(o2));
 		}
 	}
+	
+	// disjoint
 	
 	public static <T> ComparisonResult disjoint(Mapper<T> o1, Mapper<T> o2) {
 		List<T> multi2 = o2.getMulti();
@@ -314,6 +317,15 @@ public class ExpressionOperators {
 			Collection<T> common = multi1.stream().filter(multi2::contains).collect(Collectors.toSet());
 			return ComparisonResult.failure(formatMultiError(o1) + " is not disjoint from " +formatMultiError(o2) + "common items are " + common);
 		}
+	}
+	
+	// distinct
+	
+	public static <T> Mapper<T> distinct(Mapper<T> o) {
+		return MapperC.of(o.getMulti()
+				.stream()
+				.distinct()
+				.collect(Collectors.toList()));
 	}
 	
 	public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {

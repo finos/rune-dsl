@@ -3,12 +3,15 @@ package com.rosetta.model.lib.mapper;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
-import com.rosetta.model.lib.RosettaModelObject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import com.rosetta.model.lib.RosettaModelObject;
 
 
 public class MapperS<T> implements MapperBuilder<T> {
@@ -56,6 +59,16 @@ public class MapperS<T> implements MapperBuilder<T> {
 		return new MapperC<>(getMapperItems(item, mappingFunc));
 	}
 
+	@Override
+	public MapperBuilder<T> filterList(Predicate<MapperBuilder<T>> predicate) {
+		throw new IllegalArgumentException("Filter list not supported for single items");
+	}
+	
+	@Override
+	public <F> MapperBuilder<F> mapList(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc) {
+		throw new IllegalArgumentException("Map list not supported for single items");
+	}
+	
 	@Override
 	public T get() {
 		return item.getMappedObject();

@@ -126,7 +126,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 				assign-output attrOut -> action:
 					<|>
 			
-		''' >= #['ActionEnum -> cancel', 'ActionEnum -> correct', 'ActionEnum -> new', 'attrIn', 'attrOut', 'test','"Value"', "(", "<", "[", "empty", "False","if", "True"]
+		''' >= #['ActionEnum -> cancel', 'ActionEnum -> correct', 'ActionEnum -> new', 'attrIn', 'attrOut', 'test', '"Value"', '(', '<', '[', 'empty', 'False', 'if', 'item', 'True']
 	}
 
 	@Test
