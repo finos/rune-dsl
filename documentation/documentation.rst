@@ -581,7 +581,7 @@ The operation will return a subset of the list containing only distinct elements
 Filter
 """"""
 
-The ``filter`` keyword filters the items of a list based on a ``boolean`` expression.  For each list item, a ``boolean`` expression specified in the square brackets is evaluated to determine whether to include or exclude the item.  The resulting list is assigned to output parameter.  Note that filtering a list does not change the item type, e.g. when filtering a list of `Vehicle`, the output list type must also be of `Vehicle`.
+The ``filter`` keyword filters the items of a list based on a ``boolean`` expression.  For each list item, a ``boolean`` expression specified in the square brackets is evaluated to determine whether to include or exclude the item.  The resulting list is assigned to output parameter.  Note that filtering a list does not change the item type, e.g. when filtering a list of ``Vehicle``, the output list type must also be of ``Vehicle``.
 
 The keyword ``item`` is used to refer to the list item in the test expression.
 
