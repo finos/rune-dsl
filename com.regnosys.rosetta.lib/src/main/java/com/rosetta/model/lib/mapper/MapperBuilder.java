@@ -5,11 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.rosetta.model.lib.expression.Converter;
 import com.rosetta.model.lib.meta.FieldWithMeta;
 
 public interface MapperBuilder<T> extends Mapper<T> {
@@ -17,9 +15,7 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	/**
 	 * Helper function to map a value with single cardinality
 	 */
-	default <F> MapperBuilder<F> map(String name, Function<T, F> mappingFunc) {
-		return map(new NamedFunctionImpl<>(name, mappingFunc));
-	}
+	<F> MapperBuilder<F> map(String name, Function<T, F> mappingFunc);
 
 	/**
 	 * Map a value with single cardinality
@@ -29,31 +25,12 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	/**
 	 * Helper function to map a value with multiple cardinality
 	 */
-	default <F> MapperBuilder<F> mapC(String name, Function<T, List<? extends F>> mappingFunc) {
-		return mapC(new NamedFunctionImpl<T, List<? extends F>>(name, mappingFunc));
-	}
+	<F> MapperBuilder<F> mapC(String name, Function<T, List<? extends F>> mappingFunc);
 	
 	/**
 	 * Map a value with multiple cardinality
 	 */
 	<F> MapperBuilder<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc);
-	
-	/**
-	 * Filter items of list based on the given predicate.
-	 * 
-	 * @param predicate - test that determines whether to filter list item. True to include in list, and false to exclude.
-	 * @return filtered list 
-	 */
-	MapperBuilder<T> filterList(Predicate<MapperBuilder<T>> predicate);
-	
-	/**
-	 * Map items of a list based on the given mapping function.
-	 * 
-	 * @param <F>
-	 * @param mappingFunc
-	 * @return mapped list
-	 */
-	<F> MapperBuilder<F> mapList(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc);
 	
 	default <G> MapperGroupByBuilder<T,G> groupBy(Function<MapperItem<T,?>, MapperBuilder<G>> groupByFunc) {
 		Function<MapperItem<T,?>,MapperItem<G, ?>> keyFunction = 
@@ -67,9 +44,9 @@ public interface MapperBuilder<T> extends Mapper<T> {
 		return new MapperGroupByC<>(gbi);
 	}
 
-	default <C> MapperBuilder<C> convert(Class<C> clazz) {
-		return map("Convert to "+clazz.getSimpleName(), i->Converter.convert(clazz, i));
-	}
+//	default <C> MapperBuilder<C> convert(Class<C> clazz) {
+//		return map("Convert to "+clazz.getSimpleName(), i->Converter.convert(clazz, i));
+//	}
 	
 	MapperBuilder<T> unionSame(MapperBuilder<T> other);
 	

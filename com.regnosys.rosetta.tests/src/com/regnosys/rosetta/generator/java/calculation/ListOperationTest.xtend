@@ -82,7 +82,7 @@ class ListOperationTest {
 					
 					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 						filteredFoos = toBuilder(MapperC.of(foos)
-							.filterList(__item -> areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
+							.filterItem(__item -> areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
 						;
 						return filteredFoos;
 					}
@@ -173,7 +173,7 @@ class ListOperationTest {
 					
 					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 						filteredFoos = toBuilder(MapperC.of(foos)
-							.filterList(__fooItem -> areEqual(__fooItem.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
+							.filterItem(__fooItem -> areEqual(__fooItem.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
 						;
 						return filteredFoos;
 					}
@@ -302,8 +302,8 @@ class ListOperationTest {
 					
 					private List<Foo2.Foo2Builder> assignOutput(List<Foo2.Foo2Builder> filteredFoos, List<? extends Foo2> foos) {
 						filteredFoos = toBuilder(MapperC.of(foos)
-							.filterList(__item -> areEqual(__item.<Boolean>map("getInclude", _foo2 -> _foo2.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
-							.filterList(__item -> areEqual(__item.<Boolean>map("getInclude2", _foo2 -> _foo2.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
+							.filterItem(__item -> areEqual(__item.<Boolean>map("getInclude", _foo2 -> _foo2.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
+							.filterItem(__item -> areEqual(__item.<Boolean>map("getInclude2", _foo2 -> _foo2.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti())
 						;
 						return filteredFoos;
 					}
@@ -383,7 +383,7 @@ class ListOperationTest {
 					
 					private List<Boolean> assignOutput(List<Boolean> filteredFoos, List<Boolean> foos) {
 						filteredFoos = MapperC.of(foos)
-							.filterList(__item -> areEqual(__item, MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti();
+							.filterItem(__item -> areEqual(__item, MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti();
 						return filteredFoos;
 					}
 				
@@ -696,7 +696,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperBuilder;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
@@ -732,7 +731,7 @@ class ListOperationTest {
 					
 					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
 						foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-							.mapList(__item -> (MapperBuilder<? extends Foo>)  com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+							.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<? extends Foo>) com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
 							if (areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 								return MapperS.of(create_Foo.evaluate(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()).get(), MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()));
 							}
@@ -985,7 +984,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListItemParameter() {
+	def void shouldGenerateFunctionWithMapList() {
 		val model = '''
 			type Foo:
 				attr string (1..1)
@@ -999,6 +998,87 @@ class ListOperationTest {
 				set strings:
 					foos 
 						map [ item -> attr ]
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Foo;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param foos 
+					* @return strings 
+					*/
+					public List<String> evaluate(List<? extends Foo> foos) {
+						
+						List<String> stringsHolder = doEvaluate(foos);
+						List<String> strings = assignOutput(stringsHolder, foos);
+						
+						return strings;
+					}
+					
+					private List<String> assignOutput(List<String> strings, List<? extends Foo> foos) {
+						strings = MapperC.of(foos)
+							.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getAttr", _foo -> _foo.getAttr())).getMulti();
+						return strings;
+					}
+				
+					protected abstract List<String> doEvaluate(List<? extends Foo> foos);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<String> doEvaluate(List<? extends Foo> foos) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList)
+		assertEquals(3, res.size);
+		assertThat(res, hasItems('a', 'b', 'c'));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithMapList2() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				set strings:
+					foos 
+						map foo [ foo -> attr ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1019,8 +1099,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	@Disabled // code gen / path flattening issue
-	def void shouldGenerateFunctionWithMapListItemParameter2() {
+	def void shouldGenerateFunctionWithMapListOfListThenMapToListOfCounts() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1072,8 +1151,9 @@ class ListOperationTest {
 					
 					private List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
 						fooCounts = MapperC.of(bars)
-							.mapList(__bar -> __bar.<Foo>mapX("getFoos", _bar -> _bar.getFoos()))
-							.mapList(__fooListItem -> MapperS.of(__fooListItem.resultCount())).getMulti();
+							.mapItemToList((/*MapperS<? extends Bar>*/ __bar) -> (MapperC<? extends Foo>) __bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
+							.mapListToItem((/*MapperC<? extends Foo>*/ __fooListItem) -> (MapperS<Integer>) MapperS.of(__fooListItem.resultCount()))
+						.getMulti();
 						return fooCounts;
 					}
 				
@@ -1106,7 +1186,180 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListItemParameter3() {
+	def void shouldGenerateFunctionWithMapListOfListThenMapToListOfCounts2() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					fooCounts int (0..*)
+				
+				set fooCounts:
+					bars 
+						map [ item -> foos ]
+						map [ item count ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		
+		val bar1 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar2 = classes.createBar(ImmutableList.of(foo1, foo2))
+		val bar3 = classes.createBar(ImmutableList.of(foo1))
+		
+		val res = func.invokeFunc(List, ImmutableList.of(bar1, bar2, bar3))
+		assertEquals(3, res.size);
+		assertThat(res, hasItems(3, 2, 1));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithMapListOfListsThenFlatten() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					foos Foo (0..*)
+				
+				set foos:
+					bars 
+						map bar [ bar -> foos ]
+						flatten
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Foo;
+				import com.rosetta.test.model.Foo.FooBuilder;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param bars 
+					* @return foos 
+					*/
+					public List<? extends Foo> evaluate(List<? extends Bar> bars) {
+						
+						List<Foo.FooBuilder> foosHolder = doEvaluate(bars);
+						List<Foo.FooBuilder> foos = assignOutput(foosHolder, bars);
+						
+						if (foos!=null) objectValidator.validateAndFailOnErorr(Foo.class, foos);
+						return foos;
+					}
+					
+					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, List<? extends Bar> bars) {
+						foos = toBuilder(MapperC.of(bars)
+							.mapItemToList((/*MapperS<? extends Bar>*/ __bar) -> (MapperC<? extends Foo>) __bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
+							.flattenList().getMulti())
+						;
+						return foos;
+					}
+				
+					protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		val foo5 = classes.createFoo('e')
+		val foo6 = classes.createFoo('f')
+		
+		val bar1 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar2 = classes.createBar(ImmutableList.of(foo4, foo5))
+		val bar3 = classes.createBar(ImmutableList.of(foo6))
+		
+		val res = func.invokeFunc(List, ImmutableList.of(bar1, bar2, bar3))
+		assertEquals(6, res.size);
+		assertThat(res, hasItems(foo1, foo2, foo3, foo4, foo5, foo6));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithMapListOfListsThenFlatten2() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					foos Foo (0..*)
+				
+				set foos:
+					bars 
+						map [ item -> foos ]
+						flatten
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		val foo5 = classes.createFoo('e')
+		val foo6 = classes.createFoo('f')
+		
+		val bar1 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar2 = classes.createBar(ImmutableList.of(foo4, foo5))
+		val bar3 = classes.createBar(ImmutableList.of(foo6))
+		
+		val res = func.invokeFunc(List, ImmutableList.of(bar1, bar2, bar3))
+		assertEquals(6, res.size);
+		assertThat(res, hasItems(foo1, foo2, foo3, foo4, foo5, foo6));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithMapListCount() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1142,20 +1395,23 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListNamedParameter() {
+	def void shouldGenerateFunctionWithMapListCount2() {
 		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
 			type Foo:
 				attr string (1..1)
 			
 			func FuncFoo:
 			 	inputs:
-			 		foos Foo (0..*)
+			 		bars Bar (0..*)
 				output:
-					strings string (0..*)
+					fooCounts int (0..*)
 				
-				set strings:
-					foos 
-						map fooItem [ fooItem -> attr ]
+				set fooCounts:
+					bars 
+						map bar [ bar -> foos count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1165,14 +1421,13 @@ class ListOperationTest {
 		val foo2 = classes.createFoo('b')
 		val foo3 = classes.createFoo('c')
 		
-		val fooList = newArrayList
-		fooList.add(foo1)
-		fooList.add(foo2)
-		fooList.add(foo3)
+		val bar1 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar2 = classes.createBar(ImmutableList.of(foo1, foo2))
+		val bar3 = classes.createBar(ImmutableList.of(foo1))
 		
-		val res = func.invokeFunc(List, fooList)
+		val res = func.invokeFunc(List, ImmutableList.of(bar1, bar2, bar3))
 		assertEquals(3, res.size);
-		assertThat(res, hasItems('a', 'b', 'c'));
+		assertThat(res, hasItems(3, 2, 1));
 	}
 	
 	@Test
@@ -1243,6 +1498,56 @@ class ListOperationTest {
 
 		'''
 		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Foo;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param foos 
+					* @return newFoos 
+					*/
+					public List<String> evaluate(List<? extends Foo> foos) {
+						
+						List<String> newFoosHolder = doEvaluate(foos);
+						List<String> newFoos = assignOutput(newFoosHolder, foos);
+						
+						return newFoos;
+					}
+					
+					private List<String> assignOutput(List<String> newFoos, List<? extends Foo> foos) {
+						newFoos = MapperC.of(foos)
+							.filterItem(__item -> areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
+							.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getAttr", _foo -> _foo.getAttr())).getMulti();
+						return newFoos;
+					}
+				
+					protected abstract List<String> doEvaluate(List<? extends Foo> foos);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<String> doEvaluate(List<? extends Foo> foos) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
 		val classes = code.compileToClasses
 		val func = classes.createFunc("FuncFoo");
 		

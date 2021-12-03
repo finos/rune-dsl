@@ -51,13 +51,13 @@ import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.expression.CardinalityOperator
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
-import com.rosetta.model.lib.mapper.MapperBuilder
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.mapper.MapperTree
 import java.math.BigDecimal
 import java.util.Arrays
 import java.util.HashMap
+import java.util.List
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
@@ -635,12 +635,35 @@ class ExpressionGenerator {
 			case FILTER: {
 				'''
 				«op.receiver.javaCode(params)»
-					.filterList(«op.firstOrImplicit.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
+					.filterItem(«op.firstOrImplicit.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
 			}
 			case MAP: {
+				val isItemMulti = cardinalityProvider.isClosureParameterMulti(op.firstOrImplicit)
+				val itemType = '''«IF funcExt.needsBuilder(op.receiver)»? extends «ENDIF»«typeProvider.getRType(op.receiver).name.toJavaType»'''
+				val itemName = op.firstOrImplicit.getNameOrDefault.toDecoratedName
+				val isBodyMulti = cardinalityProvider.isMulti(op.body)
+				val bodyType = '''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«typeProvider.getRType(op.body).name.toJavaType»'''
+				val bodyExpr = op.body.javaCode(params)
 				'''
 				«op.receiver.javaCode(params)»
-					.mapList(«op.firstOrImplicit.getNameOrDefault.toDecoratedName» -> («MapperBuilder»<«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«typeProvider.getRType(op.body).name.toJavaType»>)  «op.body.javaCode(params)»)'''
+					«IF isItemMulti»
+						«IF isBodyMulti»
+							.mapListToList((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperC»<«bodyType»>) «bodyExpr»)
+						«ELSE»
+							.mapListToItem((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperS»<«bodyType»>) «bodyExpr»)
+						«ENDIF»
+					«ELSE»
+						«IF isBodyMulti»
+							.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«bodyType»>) «bodyExpr»)
+						«ELSE»
+							.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«bodyType»>) «bodyExpr»)«ENDIF»«ENDIF»'''
+
+			}
+			case FLATTEN: {
+				'''
+				«op.receiver.javaCode(params)»
+					.flattenList()'''
+
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)

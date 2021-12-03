@@ -560,7 +560,7 @@ OptionalClosureParameter returns ClosureParameter:
 ;
 
 enum ListOperationKind:
-	filter | map | sum
+	filter | map | sum | flatten
 ;
 RosettaCalcConditionalExpression returns RosettaExpression:
 	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?

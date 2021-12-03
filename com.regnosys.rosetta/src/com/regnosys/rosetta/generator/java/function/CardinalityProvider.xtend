@@ -25,10 +25,11 @@ import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
-import com.regnosys.rosetta.rosetta.simple.ListOperation
+import org.eclipse.xtext.EcoreUtil2
 
 class CardinalityProvider {
 	
@@ -42,13 +43,20 @@ class CardinalityProvider {
 			}
 			RosettaEnumValue:false
 			WithCardinality: if(obj.card === null) false else obj.card.isIsMany
-			RosettaCallableCall: if(obj.toOne) false else obj.callable.isMulti
+			RosettaCallableCall: {
+				if(obj.toOne) 
+					false 
+				else if (obj.implicitReceiver) 
+					EcoreUtil2.getContainerOfType(obj, ListOperation).firstOrImplicit.isMulti
+				else 
+					obj.callable.isMulti
+			}
 			RosettaCallableWithArgsCall: obj.callable.isMulti
 			Function: if(obj.output === null) false else obj.output.isMulti
 			ShortcutDeclaration: obj.expression.isMulti
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
-			ClosureParameter: obj.operation.receiver.isMulti
+			ClosureParameter: obj.isClosureParameterMulti
 			RosettaGroupByFeatureCall,
 			ListLiteral,
 			ListOperation: true
@@ -80,5 +88,24 @@ class CardinalityProvider {
 			} else
 				lastSegment.attribute.isMulti
 		}
+	}
+	
+	def boolean isClosureParameterMulti(ClosureParameter obj) {
+		val previousOperation = obj.operation.receiver
+		if (previousOperation instanceof ListOperation) {
+			switch(previousOperation.operationKind) {
+				case MAP:
+					return previousOperation.body.isMulti
+				case FILTER:
+					return previousOperation.body.isMulti
+				case FLATTEN:
+					return true
+				default: {
+					println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)
+					return false
+				}
+			}
+		}
+		return false
 	}
 }

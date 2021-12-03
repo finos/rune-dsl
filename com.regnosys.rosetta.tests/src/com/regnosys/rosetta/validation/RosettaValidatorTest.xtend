@@ -1185,6 +1185,52 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ATTRIBUTE, null, "Report attributes with basic type (string) and multiple cardinality is not supported.")
 	}
+	
+	@Test
+	def shouldNotGenerateCountCardinalityError() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					fooCounts int (0..*)
+				
+				set fooCounts:
+					bars 
+						map bar [ bar -> foos ]
+						map foosItem [ foosItem count ]
+		'''.parseRosetta
+		model.assertNoErrors
+	}
+	
+	@Test
+	def shouldNotGenerateCountCardinalityErrorDefaultParameter() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					fooCounts int (0..*)
+				
+				set fooCounts:
+					bars 
+						map [ item -> foos ]
+						map [ item count ]
+		'''.parseRosetta
+		model.assertNoErrors
+	}
 }
 	
 class MyRosettaInjectorProvider extends RosettaInjectorProvider {

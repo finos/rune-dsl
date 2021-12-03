@@ -138,6 +138,7 @@ enum ListOperationKind {
 	filter
 	, map
 	, sum
+	, flatten
 }
 
 class ClosureParameter extends RosettaCallable {
