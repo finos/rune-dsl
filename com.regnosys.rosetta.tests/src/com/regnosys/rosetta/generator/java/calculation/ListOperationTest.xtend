@@ -1562,6 +1562,135 @@ class ListOperationTest {
 		assertThat(res, hasItems(expectedBar1, expectedBar2, expectedBar3));
 	}
 	
+	@Test
+	def void shouldGenerateFunctionWithNestedMaps2() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					updatedBars Bar (0..*)
+				
+				set updatedBars:
+					bars 
+						map bar [ 
+							NewBar( bar -> foos 
+								map foo [ NewFoo( foo -> attr + "_bar" ) ] )
+						]
+			
+			func NewBar:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					bar Bar (1..1)
+				
+				set bar -> foos:
+					foos
+			
+			func NewFoo:
+			 	inputs:
+			 		attr string (1..1)
+				output:
+					foo Foo (0..1)
+				
+				assign-output foo -> attr:
+					attr
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.expression.MapperMaths;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Bar.BarBuilder;
+				import com.rosetta.test.model.Foo;
+				import com.rosetta.test.model.functions.NewBar;
+				import com.rosetta.test.model.functions.NewFoo;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+					
+					// RosettaFunction dependencies
+					//
+					@Inject protected NewBar newBar;
+					@Inject protected NewFoo newFoo;
+				
+					/**
+					* @param bars 
+					* @return updatedBars 
+					*/
+					public List<? extends Bar> evaluate(List<? extends Bar> bars) {
+						
+						List<Bar.BarBuilder> updatedBarsHolder = doEvaluate(bars);
+						List<Bar.BarBuilder> updatedBars = assignOutput(updatedBarsHolder, bars);
+						
+						if (updatedBars!=null) objectValidator.validateAndFailOnErorr(Bar.class, updatedBars);
+						return updatedBars;
+					}
+					
+					private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
+						updatedBars = toBuilder(MapperC.of(bars)
+							.mapItem(/*MapperS<? extends Bar>*/ __bar -> (MapperS<? extends Bar>) MapperS.of(newBar.evaluate(__bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
+								.mapItem(/*MapperS<? extends Foo>*/ __foo -> (MapperS<? extends Foo>) MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(__foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))).getMulti()))).getMulti())
+						;
+						return updatedBars;
+					}
+				
+					protected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		
+		val bar1 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar2 = classes.createBar(ImmutableList.of(foo1, foo2))
+		val bar3 = classes.createBar(ImmutableList.of(foo1))
+		
+		val res = func.invokeFunc(List, ImmutableList.of(bar1, bar2, bar3))
+		assertEquals(3, res.size);
+		
+		val expectedFoo1 = classes.createFoo('a_bar')
+		val expectedFoo2 = classes.createFoo('b_bar')
+		val expectedFoo3 = classes.createFoo('c_bar')
+		
+		val expectedBar1 = classes.createBar(ImmutableList.of(expectedFoo1, expectedFoo2, expectedFoo3))
+		val expectedBar2 = classes.createBar(ImmutableList.of(expectedFoo1, expectedFoo2))
+		val expectedBar3 = classes.createBar(ImmutableList.of(expectedFoo1))
+		
+		assertThat(res, hasItems(expectedBar1, expectedBar2, expectedBar3));
+	}
 	
 	@Test
 	def void shouldGenerateFunctionWithMapListModifyItemFunc() {
