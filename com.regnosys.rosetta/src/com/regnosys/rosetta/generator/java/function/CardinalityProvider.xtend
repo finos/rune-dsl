@@ -38,7 +38,10 @@ class CardinalityProvider {
 		switch obj {
 			RosettaFeatureCall: {
 				if(obj.toOne) false else {
-					if (obj.receiver.isMulti) true else obj.feature.isMulti
+					if (obj.feature.isMulti) 
+						true 
+					else 
+						obj.receiver.isMulti
 				}
 			}
 			RosettaEnumValue:false
@@ -96,10 +99,15 @@ class CardinalityProvider {
 			switch(previousOperation.operationKind) {
 				case MAP:
 					return previousOperation.body.isMulti
-				case FILTER:
-					return previousOperation.body.isMulti
+				case FILTER: {
+					// Filter operation does not change cardinality, so check the next previous operation's cardinality
+					val nextPreviousOperation = previousOperation.receiver
+					return (nextPreviousOperation instanceof ListOperation) ? 
+						nextPreviousOperation.isMulti : 
+						false
+				}	
 				case FLATTEN:
-					return true
+					return false
 				default: {
 					println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)
 					return false

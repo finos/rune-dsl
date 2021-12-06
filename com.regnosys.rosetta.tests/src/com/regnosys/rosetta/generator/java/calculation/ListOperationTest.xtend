@@ -1223,6 +1223,82 @@ class ListOperationTest {
 	}
 	
 	@Test
+	def void shouldGenerateFunctionWithMapListOfListThenFilterOnCount() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					fooCounts int (0..*)
+				
+				set fooCounts:
+					bars 
+						map [ item -> foos ]
+						filter [ item count > 1 ]
+						map [ item count ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		
+		val bar1 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar2 = classes.createBar(ImmutableList.of(foo1, foo2))
+		val bar3 = classes.createBar(ImmutableList.of(foo1))
+		
+		val res = func.invokeFunc(List, ImmutableList.of(bar1, bar2, bar3))
+		assertEquals(2, res.size);
+		assertThat(res, hasItems(3, 2));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithMapListOfListThenFilterOnCount2() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					fooCounts int (0..*)
+				
+				set fooCounts:
+					bars 
+						map a [ a -> foos ]
+						filter b [ b count > 1 ]
+						map c [ c count ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		
+		val bar1 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar2 = classes.createBar(ImmutableList.of(foo1, foo2))
+		val bar3 = classes.createBar(ImmutableList.of(foo1))
+		
+		val res = func.invokeFunc(List, ImmutableList.of(bar1, bar2, bar3))
+		assertEquals(2, res.size);
+		assertThat(res, hasItems(3, 2));
+	}
+	
+	@Test
 	def void shouldGenerateFunctionWithMapListOfListsThenFlatten() {
 		val model = '''
 			type Bar:
@@ -1356,6 +1432,97 @@ class ListOperationTest {
 		val res = func.invokeFunc(List, ImmutableList.of(bar1, bar2, bar3))
 		assertEquals(6, res.size);
 		assertThat(res, hasItems(foo1, foo2, foo3, foo4, foo5, foo6));
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithMapListOfListsThenFlatten3() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					attrs string (0..*)
+				
+				set attrs:
+					bars 
+						map [ item -> foos ]
+						flatten
+						map [ item -> attr ]
+		'''
+		val code = model.generateCode
+				val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Foo;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param bars 
+					* @return attrs 
+					*/
+					public List<String> evaluate(List<? extends Bar> bars) {
+						
+						List<String> attrsHolder = doEvaluate(bars);
+						List<String> attrs = assignOutput(attrsHolder, bars);
+						
+						return attrs;
+					}
+					
+					private List<String> assignOutput(List<String> attrs, List<? extends Bar> bars) {
+						attrs = MapperC.of(bars)
+							.mapItemToList((/*MapperS<? extends Bar>*/ __item) -> (MapperC<? extends Foo>) __item.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
+							.flattenList()
+							.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getAttr", _foo -> _foo.getAttr())).getMulti();
+						return attrs;
+					}
+				
+					protected abstract List<String> doEvaluate(List<? extends Bar> bars);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<String> doEvaluate(List<? extends Bar> bars) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		val foo5 = classes.createFoo('e')
+		val foo6 = classes.createFoo('f')
+		
+		val bar1 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar2 = classes.createBar(ImmutableList.of(foo4, foo5))
+		val bar3 = classes.createBar(ImmutableList.of(foo6))
+		
+		val res = func.invokeFunc(List, ImmutableList.of(bar1, bar2, bar3))
+		assertEquals(6, res.size);
+		assertThat(res, hasItems('a', 'b', 'c', 'd', 'e', 'f'));
 	}
 	
 	@Test

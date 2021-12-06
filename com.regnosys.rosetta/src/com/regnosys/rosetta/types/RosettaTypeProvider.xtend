@@ -273,8 +273,12 @@ class RosettaTypeProvider {
 				switch(expression.operationKind) {
 					case FILTER:
 						expression.firstOrImplicit.safeRType(cycleTracker)
-					default:
+					case MAP:
 						expression.body.safeRType(cycleTracker)
+					case FLATTEN:
+						expression.receiver.safeRType(cycleTracker)
+					default: 
+						RBuiltinType.MISSING
 				}
 			default:
 				RBuiltinType.MISSING

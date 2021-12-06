@@ -629,13 +629,14 @@ class ExpressionGenerator {
 		'''.<«expr.get.attribute.type.name.toJavaClass»>groupBy(g->new «MapperS»<>(g)«FOR ex:exprs»«buildMapFunc(ex.attribute as Attribute, isLast, true)»«ENDFOR»)'''
 	}
 	
-	//
 	def StringConcatenationClient listOperation(ListOperation op, ParamMap params) {
 		switch (op.operationKind) {
 			case FILTER: {
+				val isItemMulti = cardinalityProvider.isClosureParameterMulti(op.firstOrImplicit)
 				'''
 				«op.receiver.javaCode(params)»
-					.filterItem(«op.firstOrImplicit.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
+					«IF isItemMulti».filterList«ELSE».filterItem«ENDIF»(«op.firstOrImplicit.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
+					
 			}
 			case MAP: {
 				val isItemMulti = cardinalityProvider.isClosureParameterMulti(op.firstOrImplicit)
@@ -652,11 +653,11 @@ class ExpressionGenerator {
 						«ELSE»
 							.mapListToItem((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperS»<«bodyType»>) «bodyExpr»)
 						«ENDIF»
-					«ELSE»
-						«IF isBodyMulti»
-							.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«bodyType»>) «bodyExpr»)
 						«ELSE»
-							.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«bodyType»>) «bodyExpr»)«ENDIF»«ENDIF»'''
+							«IF isBodyMulti»
+								.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«bodyType»>) «bodyExpr»)
+							«ELSE»
+								.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«bodyType»>) «bodyExpr»)«ENDIF»«ENDIF»'''
 
 			}
 			case FLATTEN: {
