@@ -30,6 +30,7 @@ import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.RosettaExpression
 
 class CardinalityProvider {
 	
@@ -94,23 +95,25 @@ class CardinalityProvider {
 	}
 	
 	def boolean isClosureParameterMulti(ClosureParameter obj) {
-		val previousOperation = obj.operation.receiver
-		if (previousOperation instanceof ListOperation) {
-			switch(previousOperation.operationKind) {
-				case MAP:
-					return previousOperation.body.isMulti
-				case FILTER: {
-					// Filter operation does not change cardinality, so check the next previous operation's cardinality
-					val nextPreviousOperation = previousOperation.receiver
-					return (nextPreviousOperation instanceof ListOperation) ? 
-						nextPreviousOperation.isMulti : 
-						false
-				}	
-				case FLATTEN:
-					return false
-				default: {
-					println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)
-					return false
+		return obj.operation.isPreviousOperationMulti
+	}
+	
+	def boolean isPreviousOperationMulti(RosettaExpression expr) {
+		if (expr instanceof ListOperation) {
+			val previousOperation = expr.receiver
+			if (previousOperation instanceof ListOperation) {
+				switch(previousOperation.operationKind) {
+					case MAP:
+						return previousOperation.body.isMulti
+					case FILTER: 
+						// Filter operation does not change cardinality, so check the next previous operation's cardinality
+						return previousOperation.isPreviousOperationMulti
+					case FLATTEN:
+						return false
+					default: {
+						println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)
+						return false
+					}
 				}
 			}
 		}

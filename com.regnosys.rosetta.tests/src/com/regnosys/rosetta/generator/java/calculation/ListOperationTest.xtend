@@ -625,15 +625,17 @@ class ListOperationTest {
 			func FuncFoo:
 			 	inputs:
 			 		foos Foo2 (0..*)
-			 		test boolean (1..1)
-			 		test2 boolean (1..1)
+			 		test boolean (0..1)
+			 		test2 boolean (0..1)
+			 		test3 boolean (0..1)
 				output:
 					foo Foo2 (0..1)
 				
 				alias filteredFoos:
 					foos 
-						filter [ if test exists then item -> include = test else True ]
-						filter [ if test2 exists then item -> include2 = test2 else True ]
+						filter a [ if test exists then a -> include = test else True ]
+						filter b [ if test2 exists then b -> include2 = test2 else True ]
+						filter c [ if test3 exists then c -> include2 = test3 else True ]
 				
 				assign-output foo:
 					filteredFoos only-element
@@ -651,7 +653,7 @@ class ListOperationTest {
 		fooList.add(foo2)
 		fooList.add(foo3)
 		
-		val res = func.invokeFunc(RosettaModelObject, fooList, true, true)
+		val res = func.invokeFunc(RosettaModelObject, fooList, true, true, true)
 		assertEquals(foo1, res);
 	}
 	

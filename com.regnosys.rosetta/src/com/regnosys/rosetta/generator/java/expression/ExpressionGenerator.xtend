@@ -635,8 +635,7 @@ class ExpressionGenerator {
 				val isItemMulti = cardinalityProvider.isClosureParameterMulti(op.firstOrImplicit)
 				'''
 				«op.receiver.javaCode(params)»
-					«IF isItemMulti».filterList«ELSE».filterItem«ENDIF»(«op.firstOrImplicit.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
-					
+					.«IF isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.firstOrImplicit.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
 			}
 			case MAP: {
 				val isItemMulti = cardinalityProvider.isClosureParameterMulti(op.firstOrImplicit)
