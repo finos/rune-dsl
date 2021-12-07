@@ -1,6 +1,8 @@
 package com.rosetta.model.lib.expression;
 
 import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperS;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -120,6 +122,10 @@ public class ComparisonResult implements Mapper<Boolean> {
 		return 1;
 	}
 
+	public MapperS<Boolean> asMapper() {
+		return MapperS.of(this.get());
+	}
+	
 	@Override
 	public List<Path> getPaths() {
 		return Collections.emptyList();

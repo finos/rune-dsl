@@ -4,14 +4,10 @@ import static com.rosetta.model.lib.expression.ErrorHelper.formatEqualsCompariso
 
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.rosetta.model.lib.expression.ExpressionOperators.CompareFunction;
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.MapperC;
-import com.rosetta.model.lib.mapper.MapperGroupBy;
 import com.rosetta.model.lib.mapper.MapperS;
 
 class ExpressionEqualityUtil {
@@ -23,71 +19,8 @@ class ExpressionEqualityUtil {
 	 * @param func - areEqual or notEquals (or any other appropriate equality function)
 	 * @return result of equality comparison, with error messages if failure
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, U, G> ComparisonResult evaluate(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o, CompareFunction<Mapper<T>, Mapper<U>> func) {
-		if(m1 instanceof MapperGroupBy && m2 instanceof MapperGroupBy) {
-			return evaluateGroupBy((MapperGroupBy<T, G>) m1, (MapperGroupBy<U, G>) m2, o, func);
-		}
-		else if (m1 instanceof MapperGroupBy) {
-			return evaluateGroupBy((MapperGroupBy<T, G>) m1, m2, o, func);
-		}
-		else if (m2 instanceof MapperGroupBy) {
-			return evaluateGroupBy(m1, (MapperGroupBy<U, G>) m2, o, func);
-		}
-		else {
-			return func.apply(m1, m2, o);
-		}
-	}
-
-	private static <T, U, G> ComparisonResult evaluateGroupBy(MapperGroupBy<T, G> g1, MapperGroupBy<U, G> g2, CardinalityOperator o, CompareFunction<Mapper<T>, Mapper<U>> func) {
-		Map<MapperS<G>, Mapper<T>> map1 = g1.getGroups();
-		Set<MapperS<G>> groupByMappers1 = map1.keySet();
-		Set<G> groupByObjects1 = groupByMappers1.stream()
-				.map(Mapper::get)
-				.collect(Collectors.toSet());
-		
-		Map<MapperS<G>, Mapper<U>> map2 = g2.getGroups();
-		Set<MapperS<G>> groupByMappers2 = map2.keySet();
-		Set<G> groupByObjects2 = groupByMappers2.stream()
-				.map(Mapper::get)
-				.collect(Collectors.toSet());
-		
-		if (!groupByObjects1.equals(groupByObjects2)) {
-			return ComparisonResult.failureEmptyOperand(ErrorHelper.formatGroupByMismatchError(g1, g2));
-		}
-		
-		ComparisonResult result = ComparisonResult.success();
-		for(MapperS<G> key : groupByMappers1) {
-			ComparisonResult newResult = func.apply(map1.get(key), map2.get(key), o);
-			result = result.andIgnoreEmptyOperand(newResult);
-		}
-		return result;
-	}
-	
-	private static <T, U, G> ComparisonResult evaluateGroupBy(MapperGroupBy<T, G> g1, Mapper<U> m2, CardinalityOperator o, CompareFunction<Mapper<T>, Mapper<U>> func) {
-		Map<MapperS<G>, Mapper<T>> map1 = g1.getGroups();
-		Set<MapperS<G>> groupByMappers1 = map1.keySet();
-		
-		ComparisonResult result = ComparisonResult.success();
-		for(MapperS<G> key : groupByMappers1) {
-			ComparisonResult newResult = func.apply(map1.get(key), m2, o);
-			result = result.andIgnoreEmptyOperand(newResult);
-		}
-		
-		return result;
-	}
-	
-	private static <T, U, G> ComparisonResult evaluateGroupBy(Mapper<T> m1, MapperGroupBy<U, G> g2, CardinalityOperator o, CompareFunction<Mapper<T>, Mapper<U>> func) {
-		Map<MapperS<G>, Mapper<U>> map2 = g2.getGroups();
-		Set<MapperS<G>> groupByMappers2 = map2.keySet();
-		
-		ComparisonResult result = ComparisonResult.success();
-		for(MapperS<G> key : groupByMappers2) {
-			ComparisonResult newResult = func.apply(m1, map2.get(key), o);
-			result = result.andIgnoreEmptyOperand(newResult);
-		}
-		
-		return result;
+		return func.apply(m1, m2, o);
 	}
 	
 	/**
@@ -98,6 +31,13 @@ class ExpressionEqualityUtil {
 	 */
 	@SuppressWarnings("unchecked")
 	static <T, U> ComparisonResult areEqual(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
+		if (m1 instanceof ComparisonResult) {
+			m1 = (Mapper<T>) ((ComparisonResult) m1).asMapper();
+		}
+		if (m2 instanceof ComparisonResult) {
+			m2 = (Mapper<U>) ((ComparisonResult) m2).asMapper();
+		}
+					
 		if(m1.getClass().equals(m2.getClass())) {
 			return areEqualSame(m1, (Mapper<T>)m2, o);
 		}

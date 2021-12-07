@@ -6,7 +6,6 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.simple.Operation
 import org.eclipse.emf.ecore.EObject
@@ -37,8 +36,6 @@ class RosettaExpectedTypeProvider {
 			}
 			RosettaConditionalExpression case reference == ROSETTA_CONDITIONAL_EXPRESSION__IF:
 				RBuiltinType.BOOLEAN
-			RosettaGroupByFeatureCall case reference == ROSETTA_GROUP_BY_FEATURE_CALL__CALL:
-				owner.call.RType
 			RosettaCallableWithArgsCall case reference == ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS: {
 				if(idx >= 0 && owner.callable instanceof RosettaExternalFunction) {
 					val fun =  (owner.callable as RosettaExternalFunction)

@@ -1,16 +1,11 @@
 package com.rosetta.model.lib.expression;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
-import java.util.stream.Collectors;
 
 import com.rosetta.model.lib.expression.ExpressionOperators.CompareFunction;
 import com.rosetta.model.lib.mapper.Mapper;
-import com.rosetta.model.lib.mapper.MapperGroupBy;
-import com.rosetta.model.lib.mapper.MapperS;
 
 class ExpressionCompareUtil {
 	
@@ -21,39 +16,8 @@ class ExpressionCompareUtil {
 	 * @param func - any comparsions function
 	 * @return result of equality comparison, with error messages if failure
 	 */
-	@SuppressWarnings("unchecked")
 	static <T extends Comparable<? super T>,X extends Comparable<? super X>,G> ComparisonResult evaluate(Mapper<T> m1, Mapper<X> m2, CardinalityOperator o, CompareFunction<Mapper<T>, Mapper<X>> func) {
-		if(m1 instanceof MapperGroupBy && m2 instanceof MapperGroupBy) {
-			return evaluateGroupBy((MapperGroupBy<T, G>) m1, (MapperGroupBy<X, G>) m2, o, func);
-		}
-		else {
-			return func.apply(m1, m2, o);
-		}
-	}
-
-	private static <G, T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult evaluateGroupBy(MapperGroupBy<T, G> g1, MapperGroupBy<X, G> g2, CardinalityOperator o, CompareFunction<Mapper<T>, Mapper<X>> func) {
-		Map<MapperS<G>, Mapper<T>> map1 = g1.getGroups();
-		Set<MapperS<G>> groupByMappers1 = map1.keySet();
-		Set<G> groupByObjects1 = groupByMappers1.stream()
-				.map(Mapper::get)
-				.collect(Collectors.toSet());
-		
-		Map<MapperS<G>, Mapper<X>> map2 = g2.getGroups();
-		Set<MapperS<G>> groupByMappers2 = map2.keySet();
-		Set<G> groupByObjects2 = groupByMappers2.stream()
-				.map(Mapper::get)
-				.collect(Collectors.toSet());
-		
-		if (!groupByObjects1.equals(groupByObjects2)) {
-			return ComparisonResult.failureEmptyOperand(ErrorHelper.formatGroupByMismatchError(g1, g2));
-		}
-		
-		ComparisonResult result = ComparisonResult.success();
-		for(MapperS<G> key : groupByMappers1) {
-			ComparisonResult newResult = func.apply(map1.get(key), map2.get(key), o);
-			result = result.andIgnoreEmptyOperand(newResult);
-		}
-		return result;
+		return func.apply(m1, m2, o);
 	}
 	
 	// Comparison functions

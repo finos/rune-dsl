@@ -1,7 +1,8 @@
-package com.regnosys.rosetta.generator.java.calculation
+package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
+import com.regnosys.rosetta.generator.java.calculation.FuncGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
@@ -615,7 +616,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithFilterListAliasAndOnlyElement() {
+	def void shouldGenerateFunctionWithMultipleFilterList() {
 		val model = '''
 			type Foo2:
 				include boolean (0..1)
@@ -658,7 +659,50 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithFilterListAliasAndOnlyElement2() {
+	def void shouldGenerateFunctionWithMultipleFilterList2() {
+		val model = '''
+			type Foo2:
+				include boolean (0..1)
+				include2 boolean (0..1)
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo2 (0..*)
+			 		test boolean (0..1)
+			 		test2 boolean (0..1)
+			 		test3 boolean (0..1)
+				output:
+					foo Foo2 (0..1)
+				
+				alias filteredFoos:
+					foos 
+						filter [ if test exists then item -> include = test else True ]
+						filter [ if test2 exists then item -> include2 = test2 else True ]
+						filter [ if test3 exists then item -> include2 = test3 else True ]
+				
+				assign-output foo:
+					filteredFoos only-element
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo2(true, true, 'a')
+		val foo2 = classes.createFoo2(true, false, 'b')
+		val foo3 = classes.createFoo2(false, true, 'c')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(RosettaModelObject, fooList, true, true, true)
+		assertEquals(foo1, res);
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithFilterListAliasAndOnlyElement() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -774,7 +818,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithFilterListAliasAndOnlyElement3() {
+	def void shouldGenerateFunctionWithFilterListAliasAndOnlyElement2() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)

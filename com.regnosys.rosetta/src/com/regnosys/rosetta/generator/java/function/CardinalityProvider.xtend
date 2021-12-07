@@ -11,9 +11,9 @@ import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
@@ -30,7 +30,6 @@ import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.EcoreUtil2
-import com.regnosys.rosetta.rosetta.RosettaExpression
 
 class CardinalityProvider {
 	
@@ -61,7 +60,6 @@ class CardinalityProvider {
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
 			RosettaParenthesisCalcExpression: obj.expression.isMulti
 			ClosureParameter: obj.isClosureParameterMulti
-			RosettaGroupByFeatureCall,
 			ListLiteral,
 			ListOperation: true
 			RosettaLiteral,

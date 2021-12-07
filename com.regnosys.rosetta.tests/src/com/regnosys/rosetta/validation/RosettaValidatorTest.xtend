@@ -1187,7 +1187,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldNotGenerateCountCardinalityError() {
+	def shouldNotGenerateCountCardinalityErrorForMap() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1207,10 +1207,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 						map foosItem [ foosItem count ]
 		'''.parseRosetta
 		model.assertNoErrors
+		model.assertNoIssues
 	}
 	
 	@Test
-	def shouldNotGenerateCountCardinalityErrorDefaultParameter() {
+	def shouldNotGenerateCountCardinalityErrorDefaultParameterForMap() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1230,6 +1231,58 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 						map [ item count ]
 		'''.parseRosetta
 		model.assertNoErrors
+		model.assertNoIssues
+	}
+	
+//	@Test
+//	def shouldNotGenerateCountCardinalityErrorForNestedMap() {
+//		val model = '''
+//			type Bar:
+//				foos Foo (0..*)
+//
+//			type Foo:
+//				amount number (1..1)
+//			
+//			func FuncFoo:
+//			 	inputs:
+//			 		bars Bar (0..*)
+//				output:
+//					fooIsGreaterThanZero boolean (0..*)
+//				
+//				set fooIsGreaterThanZero:
+//					bars 
+//						map bar [ bar -> foos 
+//							map foo [ foo -> amount > 0 ]
+//						]
+//		'''.parseRosetta
+//		model.assertNoErrors
+//		model.assertNoIssues
+//	}
+	
+	@Test
+	def shouldNotGenerateCountCardinalityErrorDefaultParameterForNestedMap() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				amount number (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					result boolean (1..1)
+				
+				alias results:
+					bars -> foos
+						map foo [ foo -> amount > 0 ]
+				
+				assign-output result:
+					results all = True
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
 	}
 }
 	

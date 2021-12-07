@@ -175,29 +175,6 @@ class RosettaExpressionsTest {
 	}
 	
 	@Test
-	def void shoudCodeGenerateAndCompileAccessingMetaWithGroup() {
-		val code = '''
-			type Test:
-				one Foo (1..*)
-					[metadata scheme]
-				two int (1..1)
-
-			type Foo:
-				one string (1..1)
-					[metadata scheme]
-				two int (1..1)
-
-			func TestQualifier:
-				inputs: test Test(1..1)
-				output: is_product boolean (1..1)
-				assign-output is_product:
-					[(test -> one group by two) -> one] = "scheme"
-		'''.generateCode
-
-		code.compileToClasses
-	}
-	
-	@Test
 	def void shoudCodeGenerateAndCompileAccessPastMeta() {
 		val code = '''
 			type Test:

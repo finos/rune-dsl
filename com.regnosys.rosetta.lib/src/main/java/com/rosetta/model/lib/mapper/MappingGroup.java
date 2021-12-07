@@ -3,6 +3,7 @@ package com.rosetta.model.lib.mapper;
 import java.util.List;
 import java.util.function.Function;
 
+// TODO this should be moved to blueprints lib
 public class MappingGroup<A, B>{
 	private final String identifier;
 	private final String uri;
@@ -14,7 +15,6 @@ public class MappingGroup<A, B>{
 	private final List<Function<A, Mapper<B>>> functions;
 	
 	public MappingGroup(String identifier, String uri, List<Function<A, Mapper<B>>> functions) {
-		super();
 		this.identifier = identifier;
 		this.uri = uri;
 		this.functions = functions;
@@ -30,7 +30,5 @@ public class MappingGroup<A, B>{
 
 	public String getUri() {
 		return uri;
-	}
-	
-	 
+	} 
 }

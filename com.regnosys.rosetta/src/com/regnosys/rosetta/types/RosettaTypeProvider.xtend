@@ -21,7 +21,6 @@ import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaMapPath
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
@@ -104,9 +103,6 @@ class RosettaTypeProvider {
 				cycleTracker.put(expression, type)
 				type
 			} 
-			RosettaGroupByFeatureCall: {
-				expression.call.safeRType(cycleTracker).wrapInFeatureCallType(expression)
-			}
 			RosettaFeatureCall: {
 				val feature = expression.feature
 				if(feature === null || feature.eIsProxy) {

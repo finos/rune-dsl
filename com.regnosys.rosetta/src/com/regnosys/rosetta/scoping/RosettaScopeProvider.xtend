@@ -14,8 +14,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalEnum
 import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -23,6 +21,7 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
@@ -48,7 +47,6 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 /**
  * This class contains custom scoping description.
@@ -70,35 +68,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	override getScope(EObject context, EReference reference) {
 		try {
 			switch reference {
-				case ROSETTA_GROUP_BY_EXPRESSION__ATTRIBUTE:
-					if (context instanceof RosettaGroupByFeatureCall) {
-						val featureCall = context.call
-						if (featureCall instanceof RosettaFeatureCall) {
-							val receiverType = typeProvider.getRType(featureCall.feature)
-							val featureScope = receiverType.createFeatureScope
-							if (featureScope !== null)
-								return featureScope
-						}
-						return IScope.NULLSCOPE
-					} else if (context instanceof RosettaGroupByExpression) {
-						val container = context.eContainer
-						if (container instanceof RosettaGroupByFeatureCall) {
-							val featureCall = container.call
-							if (featureCall instanceof RosettaFeatureCall) {
-								val receiverType = typeProvider.getRType(featureCall.feature)
-								val featureScope = receiverType.createFeatureScope
-								if (featureScope !== null)
-									return featureScope
-							}
-						}
-						else if (container instanceof RosettaGroupByExpression) {
-							val parentType = typeProvider.getRType(container.attribute)
-							val featureScope = parentType.createFeatureScope
-								if (featureScope !== null)
-									return featureScope
-						}
-						return IScope.NULLSCOPE
-					}
 				case ROSETTA_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaFeatureCall) {
 						val receiverType = typeProvider.getRType(context.receiver)

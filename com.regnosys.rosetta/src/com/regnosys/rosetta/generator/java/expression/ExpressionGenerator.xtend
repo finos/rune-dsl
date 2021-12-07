@@ -27,8 +27,6 @@ import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
@@ -57,13 +55,11 @@ import com.rosetta.model.lib.mapper.MapperTree
 import java.math.BigDecimal
 import java.util.Arrays
 import java.util.HashMap
-import java.util.List
 import java.util.Optional
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.xtext.util.Wrapper
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
@@ -90,13 +86,6 @@ class ExpressionGenerator {
 	 */
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params, boolean isLast) {
 		switch (expr) {
-			RosettaGroupByFeatureCall : {
-				var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-				if (expr.eContainer!==null && expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-					autoValue=false;
-				}
-				groupByFeatureCall(expr, params, isLast, autoValue)
-			}
 			RosettaFeatureCall : {
 				var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
 				if (expr.eContainer!==null && expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
@@ -216,36 +205,6 @@ class ExpressionGenerator {
 	private def RosettaConditionalExpression childElseThen(RosettaConditionalExpression expr) {
 		if (expr.elsethen instanceof RosettaConditionalExpression)
 			expr.elsethen as RosettaConditionalExpression
-	}
-	
-	/**
-	 * group by only occurs in alias expression and should be deprecated
-	 */
-	private def StringConcatenationClient groupByFeatureCall(RosettaGroupByFeatureCall groupByCall, ParamMap params, boolean isLast, boolean autoValue) {
-		val call = groupByCall.call
-		switch(call) {
-			RosettaFeatureCall: {
-				val feature = call.feature
-				val groupByFeature = groupByCall.groupBy
-				val StringConcatenationClient right =
-				switch (feature) {
-					Attribute: {
-						'''«feature.buildMapFunc(isLast, autoValue)»«IF groupByFeature!==null»«buildGroupBy(groupByFeature, isLast)»«ENDIF»'''
-					}
-					RosettaMetaType: {
-						'''«feature.buildMapFunc(isLast)»«IF groupByFeature!==null»«buildGroupBy(groupByFeature, isLast)»«ENDIF»'''
-					}
-					RosettaEnumValue: 
-						return '''«MapperS».of(«feature.enumeration.toJavaType».«feature.convertValues»)'''
-					default: 
-						throw new UnsupportedOperationException("Unsupported expression type of "+feature?.class?.simpleName)
-				}
-				'''«MapperC».of(«javaCode(call.receiver, params, false)»«right».getMulti())'''
-			}
-			default: {
-				javaCode(groupByCall.call, params)
-			}
-		}
 	}
 	
 	def StringConcatenationClient callableWithArgs(RosettaCallableWithArgsCall expr, ParamMap params) {
@@ -478,13 +437,13 @@ class ExpressionGenerator {
 		collectExpressions(expr, [exprs.add(it)])
 
 		return !exprs.empty && 
-			exprs.stream.allMatch[it instanceof RosettaGroupByFeatureCall ||
-									it instanceof RosettaFeatureCall ||
+			exprs.stream.allMatch[it instanceof RosettaFeatureCall ||
 									it instanceof RosettaCallableCall ||
 									it instanceof RosettaFeatureCall ||
 									it instanceof RosettaCallableWithArgsCall ||
 									it instanceof RosettaLiteral ||
 									it instanceof RosettaConditionalExpression ||
+									it instanceof RosettaCountOperation ||
 									isArithmeticOperation(it)
 			]
 	}
@@ -618,17 +577,6 @@ class ExpressionGenerator {
 		}
 	}
 
-	def StringConcatenationClient buildGroupBy(RosettaGroupByExpression expression, boolean isLast) {
-		val exprs = newArrayList
-		val expr = Wrapper.wrap(expression)
-		exprs.add(expr.get)
-		while (expr.get.right!==null) {
-			expr.set(expr.get.right)
-			exprs.add(expr.get)
-		}
-		'''.<«expr.get.attribute.type.name.toJavaClass»>groupBy(g->new «MapperS»<>(g)«FOR ex:exprs»«buildMapFunc(ex.attribute as Attribute, isLast, true)»«ENDFOR»)'''
-	}
-	
 	def StringConcatenationClient listOperation(ListOperation op, ParamMap params) {
 		switch (op.operationKind) {
 			case FILTER: {
@@ -656,7 +604,7 @@ class ExpressionGenerator {
 							«IF isBodyMulti»
 								.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«bodyType»>) «bodyExpr»)
 							«ELSE»
-								.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«bodyType»>) «bodyExpr»)«ENDIF»«ENDIF»'''
+								.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«bodyType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)«ENDIF»«ENDIF»'''
 
 			}
 			case FLATTEN: {
@@ -727,9 +675,6 @@ class ExpressionGenerator {
 	 */
 	def StringConcatenationClient toNodeLabel(RosettaExpression expr) {
 		switch (expr) {
-			RosettaGroupByFeatureCall : {
-				toNodeLabel(expr.call)
-			}
 			RosettaFeatureCall : {
 				toNodeLabel(expr)
 			}

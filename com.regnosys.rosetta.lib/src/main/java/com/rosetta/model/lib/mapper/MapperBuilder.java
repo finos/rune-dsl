@@ -1,13 +1,11 @@
 package com.rosetta.model.lib.mapper;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.rosetta.model.lib.expression.Converter;
 import com.rosetta.model.lib.meta.FieldWithMeta;
 
 public interface MapperBuilder<T> extends Mapper<T> {
@@ -32,21 +30,9 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	 */
 	<F> MapperBuilder<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc);
 	
-	default <G> MapperGroupByBuilder<T,G> groupBy(Function<MapperItem<T,?>, MapperBuilder<G>> groupByFunc) {
-		Function<MapperItem<T,?>,MapperItem<G, ?>> keyFunction = 
-				i -> groupByFunc.apply(i).getItems().findFirst().get();
-		Function<MapperItem<T,?>,MapperBuilder<T>> identity = MapperS::new;
-		BinaryOperator<MapperBuilder<T>> merger = MapperBuilder<T>::unionSame;
-		Map<MapperItem<G, ?>, MapperBuilder<T>> gbi = getItems()
-				.collect(Collectors.toMap(keyFunction, 
-					identity, 
-					merger));
-		return new MapperGroupByC<>(gbi);
+	default <C> MapperBuilder<C> convert(Class<C> clazz) {
+		return map("Convert to "+clazz.getSimpleName(), i->Converter.convert(clazz, i));
 	}
-
-//	default <C> MapperBuilder<C> convert(Class<C> clazz) {
-//		return map("Convert to "+clazz.getSimpleName(), i->Converter.convert(clazz, i));
-//	}
 	
 	MapperBuilder<T> unionSame(MapperBuilder<T> other);
 	

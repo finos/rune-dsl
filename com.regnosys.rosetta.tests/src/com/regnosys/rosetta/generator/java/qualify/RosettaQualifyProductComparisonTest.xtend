@@ -246,13 +246,6 @@ class RosettaQualifyProductComparisonTest {
 					foo -> bar -> after,
 					foo -> baz -> other
 				]
-			
-			func AliasBeforeGroupByAfter:
-				inputs: foo Foo(1..1)
-				output: result NumberList (1..1)
-				assign-output result -> numbers: [
-						(foo -> bar group by after) -> before
-				]
 
 			'''.generateCode
 		//code.writeClasses("QualifyEventsComparisonTest")

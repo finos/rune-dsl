@@ -34,7 +34,6 @@ import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
@@ -572,10 +571,6 @@ class RosettaBlueprintTypeResolver {
 		return getInput(call.^if);		
 	}
 	
-	def dispatch RosettaType getInput(RosettaGroupByFeatureCall call) {
-		return getInput(call.call);		
-	}
-	
 	def dispatch RosettaType getInput(RosettaOnlyExistsExpression expr) {
 		return getInput(expr.args.get(0))
 	}
@@ -660,10 +655,6 @@ class RosettaBlueprintTypeResolver {
 		return st
 	}
 	
-	def dispatch RosettaType getOutput(RosettaGroupByFeatureCall groupCall) {
-		groupCall.call.output
-	}
-
 	def dispatch RosettaType getOutput(RosettaLiteral literal) {
 		var st = RosettaFactory.eINSTANCE.createRosettaBasicType
 		st.name = literal.getRType.name
