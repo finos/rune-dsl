@@ -31,7 +31,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -216,34 +215,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			if (!actualType.isUseableAs(expectedType))
 				error('''Expected type '«expectedType.name»' but was '«actualType?.name ?: 'null'»'«»''', owner, ref,
 					index, TYPE_ERROR)
-		}
-	}
-
-	@Check
-	def void checkFeatureCallGroupByAttribute(RosettaGroupByFeatureCall featureCallGroupBy) {
-		val groupByExp = featureCallGroupBy.groupBy
-		if (groupByExp !== null) {
-			val featureCall = featureCallGroupBy.call
-			if (featureCall instanceof RosettaFeatureCall) {
-				val feature = featureCall.feature
-				if (feature instanceof RosettaTypedFeature) {
-					val parentType = feature.type
-					switch (parentType) {
-						Data: {
-							// must have single cardinality in group by function
-							var gbe = groupByExp
-							if (cardinality.isMulti(gbe)) {
-								error('''group by expression has multiple cardinality. Group by expressions must be single''',
-										featureCallGroupBy, ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, CARDINALITY_ERROR)	
-							}
-						}
-						default: {
-							error('''Parent of group by «feature.type.name» by must be a type''', featureCallGroupBy,
-								ROSETTA_GROUP_BY_FEATURE_CALL__GROUP_BY, INVALID_TYPE)
-						}
-					}
-				}
-			}
 		}
 	}
 
@@ -922,7 +893,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				val outRef = exprHelper.findOutputRef(expr, trace)
 				if (!outRef.nullOrEmpty) {
 					error('''
-					output '«outRef.head.name»' or alias' on output '«outRef.head.name»' not allowed in condition blocks.
+					output '«outRef.head.name»' or alias on output '«outRef.head.name»' not allowed in condition blocks.
 					«IF !trace.isEmpty»
 					«trace.join(' > ')» > «outRef.head.name»«ENDIF»''', expr, null)
 				}

@@ -180,6 +180,7 @@ ValidID:
 	(ID | 'key' // used in Lib: annotations.rosetta
 		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
 		| 'workflow' //used in the namespace
+		| 'sum' //used in ListOperation
 	)
 ;
 
@@ -403,10 +404,6 @@ RosettaSegment:
  * Expressions 
  */ 
 
-RosettaGroupByExpression:
-	attribute = [Attribute|ValidID] (=>FEATURE_CALL_SEPARATOR right = RosettaGroupByExpression)?
-;
-
 RosettaCallableCall: 
 	callable=[RosettaCallable|QualifiedName]
 	| implicitReceiver ?= 'item'
@@ -520,16 +517,12 @@ RosettaCalcMultiplicative returns RosettaExpression:
 ;
 
 RosettaCalcCountOperation returns RosettaExpression:
-	RosettaGroupByFeatureCall (=> ({RosettaCountOperation.argument=current} 'count'))?
-;
-
-RosettaGroupByFeatureCall returns RosettaExpression:
-	ListOperation ( =>({RosettaGroupByFeatureCall.call=current} 'group' 'by') groupBy=RosettaGroupByExpression)?
+	ListOperation (=> ({RosettaCountOperation.argument=current} 'count'))?
 ;
 
 ListOperation returns RosettaExpression:
 	RosettaCalcAttributeCall
-	( => ({ListOperation.receiver=current}  operationKind = ListOperationKind) parameter = ClosureParameter '['body = RosettaCalcExpression ']')*
+	( => ({ListOperation.receiver=current}  operationKind = ListOperationKind) (((=> parameters += ClosureParameter (',' parameters += ClosureParameter)*) | parameters += OptionalClosureParameter) '['body = RosettaCalcExpression ']')?)*
 ;
 
 RosettaCalcAttributeCall returns RosettaExpression:
@@ -550,12 +543,16 @@ RosettaCalcPrimary returns RosettaExpression:
 ;
 
 ClosureParameter:
-	name = ValidID
+	name = ID
+;
+
+OptionalClosureParameter returns ClosureParameter:
+	name = ID
 	| {ClosureParameter}
 ;
 
 enum ListOperationKind:
-	filter | map
+	filter | map | sum | flatten
 ;
 RosettaCalcConditionalExpression returns RosettaExpression:
 	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?

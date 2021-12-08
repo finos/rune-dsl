@@ -20,7 +20,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	@SafeVarargs
-	public static <T> MapperBuilder<T> of(MapperBuilder<T>... ts) {
+	public static <T> MapperC<T> of(MapperBuilder<T>... ts) {
 		List<MapperItem<T, ?>> items = new ArrayList<>();
 		if (ts != null) {
 			for (MapperBuilder<T> ele : ts) {
@@ -32,24 +32,30 @@ public class MapperC<T> implements MapperBuilder<T> {
 		return new MapperC<T>(items);
 	}
 
-	public static <T> MapperBuilder<T> of(List<T> ts) {
+	public static <T> MapperC<T> of(List<T> ts) {
 		List<MapperItem<T, ?>> items = new ArrayList<>();
 		if (ts != null) {
 			for (T ele : ts) {
 				if (ele == null) {
 					items.add(new MapperItem<>(ele, MapperPath.builder().addNull(), true, Optional.empty()));
+				} else {
+					items.add(new MapperItem<>(ele, MapperPath.builder().addRoot(ele.getClass()), false, Optional.empty()));
 				}
-				items.add(new MapperItem<>(ele, MapperPath.builder().addRoot(ele.getClass()), false, Optional.empty()));
 			}
 		}
 		return new MapperC<T>(items);
+	}
+	
+	@Override
+	public <F> MapperC<F> map(String name, Function<T, F> mappingFunc) {
+		return map(new NamedFunctionImpl<>(name, mappingFunc));
 	}
 	
 	/**
 	 * Maps list parent item to single child item.
 	 */
 	@Override
-	public <F> MapperBuilder<F> map(NamedFunction<T, F> mappingFunc) {
+	public <F> MapperC<F> map(NamedFunction<T, F> mappingFunc) {
 		List<MapperItem<F,?>> results = new ArrayList<>();
 		
 		for (int i=0; i<items.size(); i++) {
@@ -58,11 +64,16 @@ public class MapperC<T> implements MapperBuilder<T> {
 		return new MapperC<>(results);
 	}
 	
+	@Override
+	public <F> MapperC<F> mapC(String name, Function<T, List<? extends F>> mappingFunc) {
+		return mapC(new NamedFunctionImpl<T, List<? extends F>>(name, mappingFunc));
+	}
+	
 	/**
 	 * Maps list parent item to list child item.
 	 */
 	@Override
-	public <F> MapperBuilder<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc) {
+	public <F> MapperC<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc) {
 		List<MapperItem<F,?>> results = new ArrayList<>();
 		
 		for (int i=0; i<items.size(); i++) {
@@ -77,8 +88,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @param predicate - test that determines whether to filter list item. True to include in list, and false to exclude.
 	 * @return filtered list 
 	 */
-	@Override
-	public MapperBuilder<T> filterList(Predicate<MapperBuilder<T>> predicate) {
+	public MapperC<T> filterItem(Predicate<MapperS<T>> predicate) {
 		return new MapperC<>(items.stream()
 				.filter(item -> predicate.test(new MapperS<>(item)))
 				.collect(Collectors.toList()));
@@ -91,10 +101,22 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @param mappingFunc
 	 * @return mapped list
 	 */
-	@Override
-	public <F> MapperBuilder<F> mapList(Function<MapperBuilder<T>, MapperBuilder<F>> mappingFunc) {
+	public <F> MapperC<F> mapItem(Function<MapperS<T>, MapperS<F>> mappingFunc) {
 		return MapperC.of(items.stream()
 				.map(item -> mappingFunc.apply(new MapperS<>(item)).get())
+				.collect(Collectors.toList()));
+	}
+	
+	/**
+	 * Map items of a list based on the given mapping function.
+	 * 
+	 * @param <F>
+	 * @param mappingFunc
+	 * @return mapped list
+	 */
+	public <F> MapperListOfLists<F> mapItemToList(Function<MapperS<T>, MapperC<F>> mappingFunc) {
+		return MapperListOfLists.of(items.stream()
+				.map(item -> mappingFunc.apply(new MapperS<>(item)).getMulti())
 				.collect(Collectors.toList()));
 	}
 	
@@ -175,7 +197,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	@Override
-	public MapperBuilder<T> unionSame(MapperBuilder<T> other) {
+	public MapperC<T> unionSame(MapperBuilder<T> other) {
 		if(other instanceof MapperC) {
 			MapperC<T> otherMapperC = (MapperC<T>) other;
 			List<MapperItem<T,?>> unionItems = new ArrayList<>();
@@ -184,7 +206,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 			return new MapperC<>(unionItems);
 		}
 		else if(other instanceof MapperS) {
-			return other.unionSame(this);
+			return ((MapperS<T>) other).unionSame(this);
 		}
 		else {
 			throw new IllegalArgumentException("Unsupported Mapper type: " + other.getClass().getName());
@@ -192,7 +214,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	@Override
-	public MapperBuilder<Object> unionDifferent(MapperBuilder<?> other) {
+	public MapperC<Object> unionDifferent(MapperBuilder<?> other) {
 		if(other instanceof MapperC) {
 			MapperC<?> otherMapperC = (MapperC<?>) other;
 			List<MapperItem<Object,?>> unionItems = new ArrayList<>();
@@ -201,7 +223,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 			return new MapperC<>(unionItems);
 		}
 		else if(other instanceof MapperS) {
-			return other.unionDifferent(this);
+			return ((MapperC<?>) other).unionDifferent(this);
 		}
 		else {
 			throw new IllegalArgumentException("Unsupported Mapper type: " + other.getClass().getName());

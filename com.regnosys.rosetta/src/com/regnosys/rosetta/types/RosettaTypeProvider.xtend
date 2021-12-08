@@ -21,7 +21,6 @@ import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaMapPath
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
@@ -78,7 +77,7 @@ class RosettaTypeProvider {
 		switch expression {
 			RosettaCallableCall: {
 				if(expression.implicitReceiver)
-					safeRType(EcoreUtil2.getContainerOfType(expression, ListOperation).parameter, cycleTracker).wrapInFeatureCallType(expression)
+					safeRType(EcoreUtil2.getContainerOfType(expression, ListOperation).firstOrImplicit, cycleTracker).wrapInFeatureCallType(expression)
 				else
 					safeRType(expression.callable, cycleTracker).wrapInFeatureCallType(expression)
 			}
@@ -104,9 +103,6 @@ class RosettaTypeProvider {
 				cycleTracker.put(expression, type)
 				type
 			} 
-			RosettaGroupByFeatureCall: {
-				expression.call.safeRType(cycleTracker).wrapInFeatureCallType(expression)
-			}
 			RosettaFeatureCall: {
 				val feature = expression.feature
 				if(feature === null || feature.eIsProxy) {
@@ -272,9 +268,13 @@ class RosettaTypeProvider {
 			ListOperation:
 				switch(expression.operationKind) {
 					case FILTER:
-						expression.parameter.safeRType(cycleTracker)
-					default:
+						expression.firstOrImplicit.safeRType(cycleTracker)
+					case MAP:
 						expression.body.safeRType(cycleTracker)
+					case FLATTEN:
+						expression.receiver.safeRType(cycleTracker)
+					default: 
+						RBuiltinType.MISSING
 				}
 			default:
 				RBuiltinType.MISSING

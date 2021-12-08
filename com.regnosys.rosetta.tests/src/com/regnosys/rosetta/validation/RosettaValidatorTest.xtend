@@ -1185,6 +1185,105 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ATTRIBUTE, null, "Report attributes with basic type (string) and multiple cardinality is not supported.")
 	}
+	
+	@Test
+	def shouldNotGenerateCountCardinalityErrorForMap() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					fooCounts int (0..*)
+				
+				set fooCounts:
+					bars 
+						map bar [ bar -> foos ]
+						map foosItem [ foosItem count ]
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
+	
+	@Test
+	def shouldNotGenerateCountCardinalityErrorDefaultParameterForMap() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					fooCounts int (0..*)
+				
+				set fooCounts:
+					bars 
+						map [ item -> foos ]
+						map [ item count ]
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
+	
+//	@Test
+//	def shouldNotGenerateCountCardinalityErrorForNestedMap() {
+//		val model = '''
+//			type Bar:
+//				foos Foo (0..*)
+//
+//			type Foo:
+//				amount number (1..1)
+//			
+//			func FuncFoo:
+//			 	inputs:
+//			 		bars Bar (0..*)
+//				output:
+//					fooIsGreaterThanZero boolean (0..*)
+//				
+//				set fooIsGreaterThanZero:
+//					bars 
+//						map bar [ bar -> foos 
+//							map foo [ foo -> amount > 0 ]
+//						]
+//		'''.parseRosetta
+//		model.assertNoErrors
+//		model.assertNoIssues
+//	}
+	
+	@Test
+	def shouldNotGenerateCountCardinalityErrorDefaultParameterForNestedMap() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				amount number (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					result boolean (1..1)
+				
+				alias results:
+					bars -> foos
+						map foo [ foo -> amount > 0 ]
+				
+				assign-output result:
+					results all = True
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
 }
 	
 class MyRosettaInjectorProvider extends RosettaInjectorProvider {

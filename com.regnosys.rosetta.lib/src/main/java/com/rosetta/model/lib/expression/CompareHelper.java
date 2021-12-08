@@ -1,6 +1,7 @@
 package com.rosetta.model.lib.expression;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class CompareHelper {
 
@@ -19,9 +20,16 @@ public class CompareHelper {
 	}
 	
 	private static BigDecimal toBigD(Number n) {
-		if (n instanceof BigDecimal) return (BigDecimal)n;
-		if (n instanceof Long) return new BigDecimal(n.longValue());
-		if (n instanceof Integer) return new BigDecimal(n.intValue());
+		if (n instanceof BigDecimal) return setScale((BigDecimal)n);
+		if (n instanceof Long) return setScale(new BigDecimal(n.longValue()));
+		if (n instanceof Integer) return setScale(new BigDecimal(n.intValue()));
 		throw new IllegalArgumentException("can only convert integer and long to bigD");
+	}
+	
+	/*
+	 * Set consistent scale so comparisons work. 
+	 */
+	private static BigDecimal setScale(BigDecimal d) {
+		return d.setScale(9, RoundingMode.HALF_UP);
 	}
 }

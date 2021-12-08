@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaSynonym
@@ -90,9 +89,6 @@ class RosettaExtensions {
 				throw new IllegalArgumentException("Failed to collect root calls: " + callable)
 			}
 		}
-		else if(expr instanceof RosettaGroupByFeatureCall) {
-			expr.call.collectRootCalls(visitor)
-		}
 		else if(expr instanceof RosettaFeatureCall) {
 			// go up to the receiver
 			expr.receiver.collectRootCalls(visitor)
@@ -140,10 +136,6 @@ class RosettaExtensions {
 				throw new IllegalArgumentException("Failed to collect leaf type: " + callableWithArgs)
 			}
 		}
-		
-		else if(expr instanceof RosettaGroupByFeatureCall) {
-			expr.call.collectLeafTypes(visitor)
-		}
 		else if(expr instanceof RosettaTyped) {
 			visitor.apply(expr.type)
 		}
@@ -178,10 +170,7 @@ class RosettaExtensions {
 	 * Collect all expressions
 	 */
 	def void collectExpressions(RosettaExpression expr, (RosettaExpression) => void visitor) {
-		if(expr instanceof RosettaGroupByFeatureCall) {
-			expr.call.collectExpressions(visitor)
-		}
-		else if(expr instanceof RosettaBinaryOperation) {
+		if(expr instanceof RosettaBinaryOperation) {
 			if(expr.operator.equals("or") || expr.operator.equals("and")) {
 				expr.left.collectExpressions(visitor)
 				expr.right.collectExpressions(visitor)

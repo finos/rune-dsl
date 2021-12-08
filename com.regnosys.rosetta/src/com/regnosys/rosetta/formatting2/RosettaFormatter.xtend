@@ -11,6 +11,7 @@ import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -23,7 +24,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonym
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
@@ -47,7 +47,6 @@ import org.eclipse.xtext.formatting2.IFormattableDocument
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatter
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-import com.regnosys.rosetta.rosetta.RosettaDocReference
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -339,9 +338,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 
 	def dispatch void format(RosettaFeatureCall ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword('->').surround(ONE_SPACE)
-	}
-
-	def dispatch void format(RosettaGroupByFeatureCall rosettaGroupByFeatureCall, extension IFormattableDocument document) {
 	}
 
 	def dispatch void format(RosettaExternalSynonymSource externalSynonymSource,

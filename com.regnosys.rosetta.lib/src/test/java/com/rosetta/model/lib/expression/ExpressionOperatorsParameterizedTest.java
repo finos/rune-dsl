@@ -41,11 +41,6 @@ public class ExpressionOperatorsParameterizedTest {
 					Foo::getAttr1), MapperS.of(Integer.valueOf(5)), 
 					CardinalityOperator.All);
 	
-	private static final Function<Bar, ComparisonResult> GREATER_THAN_LIST_GROUP_BY = (bar) -> 
-			greaterThan(MapperS.of(bar).mapC("getFoos1", Bar::getFoos1).groupBy(i->new MapperS<>(i).map("getAttr1",Foo::getAttr1)).map("getAttr2", Foo::getAttr2), 
-						MapperS.of(bar).mapC("getFoos2", Bar::getFoos2).groupBy(i->new MapperS<>(i).map("getAttr1", Foo::getAttr1)).map("getAttr2", Foo::getAttr2), 
-						CardinalityOperator.All);
-	
 			
 	@ParameterizedTest(name = "{0}")
     @MethodSource("evaluateFunctionTestParams")
@@ -85,23 +80,6 @@ public class ExpressionOperatorsParameterizedTest {
 						new Bar(Arrays.asList(new Foo(10), new Foo(3))), 
 						GREATER_THAN_LIST, false, 
 						Collections.singletonList("all elements of paths [Bar->getFoos1[0]->getAttr1, Bar->getFoos1[1]->getAttr1] values [10, 3] are not > than all elements of paths [Integer] values [5]")),
-				Arguments.of("success: ( Bar -> foos1 -> attr2 group by attr1 ) > ( Bar -> foos2 -> attr2 group by attr1 )", 
-						new Bar(Arrays.asList(new Foo(1, 20), new Foo(2, 10)), Arrays.asList(new Foo(1, 15), new Foo(2, 5))), 
-						GREATER_THAN_LIST_GROUP_BY, true, 
-						Collections.emptyList()),
-				Arguments.of("fail1: ( Bar -> foos1 -> attr2 group by attr1 ) > ( Bar -> foos2 -> attr2 group by attr1 )", 
-						new Bar(Arrays.asList(new Foo(1, 20), new Foo(2, 10)), Arrays.asList(new Foo(1, 25), new Foo(2, 5))), 
-						GREATER_THAN_LIST_GROUP_BY, false, 
-						Collections.singletonList("all elements of paths [Bar->getFoos1[0]->getAttr2] values [20] are not > than all elements of paths [Bar->getFoos2[0]->getAttr2] values [25]")),
-				Arguments.of("fail2: ( Bar -> foos1 -> attr2 group by attr1 ) > ( Bar -> foos2 -> attr2 group by attr1 )", 
-						new Bar(Arrays.asList(new Foo(1, 20), new Foo(2, 10)), Arrays.asList(new Foo(1, 25), new Foo(2, 15))), 
-						GREATER_THAN_LIST_GROUP_BY, false, 
-						Arrays.asList("all elements of paths [Bar->getFoos1[1]->getAttr2] values [10] are not > than all elements of paths [Bar->getFoos2[1]->getAttr2] values [15]", 
-								"all elements of paths [Bar->getFoos1[0]->getAttr2] values [20] are not > than all elements of paths [Bar->getFoos2[0]->getAttr2] values [25]")),
-				Arguments.of("fail3: ( Bar -> foos1 -> attr2 group by attr1 ) > ( Bar -> foos2 -> attr2 group by attr1 )", 
-						new Bar(Arrays.asList(new Foo(1, 20), new Foo(2, 10)), Arrays.asList(new Foo(1, 15), new Foo(3, 5))), 
-						GREATER_THAN_LIST_GROUP_BY, false, 
-						Collections.singletonList("Group mismatched: [Bar->getFoos1[0]->getAttr1] [1],[Bar->getFoos1[1]->getAttr1] [2] cannot be compared to [Bar->getFoos2[0]->getAttr1] [1],[Bar->getFoos2[1]->getAttr1] [3]")),
 				Arguments.of("success: ( Foo -> attr ) exists", 
 						new Foo(1, 2), 
 						EXISTS, true, 

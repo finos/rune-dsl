@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class MapperItem<T, P> implements Comparable<MapperItem<?, ?>> {
+public class MapperItem<T, P> extends AbstractMapperItem<P> {
 
 	static <C, P> MapperItem<C, P> getMapperItem(MapperItem<P, ?> parentItem, NamedFunction<P, C> mappingFunc) {
 		if (!parentItem.isError()) {
@@ -51,15 +51,10 @@ public class MapperItem<T, P> implements Comparable<MapperItem<?, ?>> {
 	}
 	
 	private final T mappedObject;
-	private final MapperPath path;
-	private final boolean error;
-	private final Optional<MapperItem<P, ?>> parentItem;
 	
 	MapperItem(T mappedObject, MapperPath path, boolean error, Optional<MapperItem<P, ?>> parentItem) {
+		super(path, error, parentItem);
 		this.mappedObject = mappedObject;
-		this.path = path;
-		this.error = error;
-		this.parentItem = parentItem;
 	}
 
 	// mapped value
@@ -68,37 +63,15 @@ public class MapperItem<T, P> implements Comparable<MapperItem<?, ?>> {
 		return mappedObject;
 	}
 
-	public MapperPath getPath() {
-		return path;
-	}
-
-	public boolean isError() {
-		return error;
-	}
-	
-	// parent
-	
-	public Optional<MapperItem<P, ?>> getParentItem() {
-		return parentItem;
-	}
-	
 	public MapperItem<Object,?> upcast() {
-		return new MapperItem<>(mappedObject, path, error, parentItem);
-	}
-	
-	@Override
-	public String toString() {
-		return "MapperItem [mappedObject=" + mappedObject + ", path=" + path + ", error=" + error + ", parentItem=" + parentItem + "]";
+		return new MapperItem<>(mappedObject, getPath(), isError(), getParentItem());
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (error ? 1231 : 1237);
 		result = prime * result + ((mappedObject == null) ? 0 : mappedObject.hashCode());
-		result = prime * result + ((parentItem == null) ? 0 : parentItem.hashCode());
-		result = prime * result + ((path == null) ? 0 : path.hashCode());
 		return result;
 	}
 
@@ -110,29 +83,17 @@ public class MapperItem<T, P> implements Comparable<MapperItem<?, ?>> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MapperItem<?,?> other = (MapperItem<?,?>) obj;
-		if (error != other.error)
-			return false;
+		MapperItem<?, ?> other = (MapperItem<?, ?>) obj;
 		if (mappedObject == null) {
 			if (other.mappedObject != null)
 				return false;
 		} else if (!mappedObject.equals(other.mappedObject))
 			return false;
-		if (parentItem == null) {
-			if (other.parentItem != null)
-				return false;
-		} else if (!parentItem.equals(other.parentItem))
-			return false;
-		if (path == null) {
-			if (other.path != null)
-				return false;
-		} else if (!path.equals(other.path))
-			return false;
 		return true;
 	}
 
 	@Override
-	public int compareTo(MapperItem<?, ?> other) {
-		return path.compareTo(other.path);
+	public String toString() {
+		return "MapperItem [mappedObject=" + mappedObject + "]";
 	}
 }

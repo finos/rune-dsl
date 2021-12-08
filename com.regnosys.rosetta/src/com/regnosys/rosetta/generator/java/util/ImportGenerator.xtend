@@ -30,8 +30,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaGroupByExpression
-import com.regnosys.rosetta.rosetta.RosettaGroupByFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -158,23 +156,10 @@ class ImportGenerator {
 	}
 
 
-	def void addExpression(RosettaGroupByExpression groupBy) {
-		if (groupBy.attribute === null) return;
-		imports.add(groupBy.attribute.type.fullName)
-		imports.add((groupBy.attribute.eContainer as RosettaType).fullName)
-		if (groupBy.right !== null) {
-			addExpression(groupBy.right)
-		}
-	}
-
 	def void addExpression(RosettaExpression expression) {
 		switch (expression) {
 			RosettaCallableCall: {
 				add(expression.callable)
-			}
-			RosettaGroupByFeatureCall: {
-				addExpression(expression.call)
-				if (expression.groupBy !== null) addExpression(expression.groupBy)
 			}
 			RosettaFeatureCall: {
 				addFeatureCall(expression)

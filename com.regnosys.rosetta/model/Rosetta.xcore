@@ -371,16 +371,6 @@ class RosettaDisjointExpression extends RosettaExpression {
 	contains RosettaExpression disjoint
 }
 
-class RosettaGroupByFeatureCall extends RosettaExpression {
-	contains RosettaExpression call
-	contains RosettaGroupByExpression groupBy
-}
-
-class RosettaGroupByExpression {
-	refers RosettaTypedFeature attribute
-	contains RosettaGroupByExpression right
-}
-
 class RosettaFeatureCall extends RosettaExpression {
 	boolean distinct
 	boolean toOne
