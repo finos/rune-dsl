@@ -89,7 +89,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return filtered list 
 	 */
 	public MapperC<T> filterItem(Predicate<MapperS<T>> predicate) {
-		return new MapperC<>(items.stream()
+		return new MapperC<>(nonErrorItems()
 				.filter(item -> predicate.test(new MapperS<>(item)))
 				.collect(Collectors.toList()));
 	}
@@ -102,7 +102,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return mapped list
 	 */
 	public <F> MapperC<F> mapItem(Function<MapperS<T>, MapperS<F>> mappingFunc) {
-		return MapperC.of(items.stream()
+		return MapperC.of(nonErrorItems()
 				.map(item -> mappingFunc.apply(new MapperS<>(item)).get())
 				.collect(Collectors.toList()));
 	}
@@ -115,7 +115,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return mapped list
 	 */
 	public <F> MapperListOfLists<F> mapItemToList(Function<MapperS<T>, MapperC<F>> mappingFunc) {
-		return MapperListOfLists.of(items.stream()
+		return MapperListOfLists.of(nonErrorItems()
 				.map(item -> mappingFunc.apply(new MapperS<>(item)).getMulti())
 				.collect(Collectors.toList()));
 	}
