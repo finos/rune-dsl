@@ -34,7 +34,7 @@ class DataRuleGeneratorTest {
 					quotePrice QuotePrice (0..1)
 					condition Quote_Price:
 						if quotePrice exists
-						then (quotePrice -> bidPrice or quotePrice -> offerPrice) exists
+						then quotePrice -> bidPrice exists or quotePrice -> offerPrice exists
 				
 				type QuotePrice:
 					bidPrice number (0..1)
@@ -51,13 +51,10 @@ class DataRuleGeneratorTest {
 					condition Quote_Price:
 						if quotePrice exists
 						then (
-							quotePrice -> price1
-								and
-							quotePrice -> price2
-								and
-							quotePrice -> price3
-
-							) exists
+							quotePrice -> price1 exists
+							and quotePrice -> price2 exists
+							and quotePrice -> price3 exists
+						)
 				
 				type QuotePrice:
 					price1 number (0..1)

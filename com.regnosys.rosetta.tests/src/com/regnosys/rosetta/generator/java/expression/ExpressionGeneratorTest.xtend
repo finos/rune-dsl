@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.qualify
+package com.regnosys.rosetta.generator.java.expression
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
@@ -30,11 +30,11 @@ import static org.mockito.Mockito.when
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaExpressionJavaGeneratorTest {
+class ExpressionGeneratorTest {
 	@Inject ExpressionGenerator expressionHandler
 	
 	/**
-	 *  ( Foo -> attr1 ) > 5
+	 *  Foo -> attr1 > 5
 	 */
 	@Test
 	def void shouldGenerateGreaterThanExpression() {
@@ -53,7 +53,7 @@ class RosettaExpressionJavaGeneratorTest {
 	}
 
 	/**
-	 *  ( Foo -> attr1 ) > 5 or ( Foo -> attr2 ) > 5
+	 *  Foo -> attr1 > 5 or Foo -> attr2 > 5
 	 */
 	@Test
 	def void shouldGenerateGreaterThanExpressionsWithOr1() {
@@ -73,78 +73,9 @@ class RosettaExpressionJavaGeneratorTest {
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
 			is('greaterThan(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All).or(greaterThan(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All))'))
 	}
-
-	/**
-	 *  ( Foo -> attr1 or Foo -> attr2 ) > 5
-	 */
-	@Test
-	def void shouldGenerateGreaterThanExpressionsWithOr2() {
-		val mockClass = createData("Foo")
-		
-		val lhsFeatureCall = createFeatureCall(mockClass, "attr1")
-		val rhsFeatureCall = createFeatureCall(mockClass, "attr2")
-		
-		val orOp = createBinaryOperation("or", lhsFeatureCall, rhsFeatureCall)
-		
-		val comparisonOp = createBinaryOperation(">", orOp, createIntLiteral(5))
-		
-		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(mockClass))
-		
-		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)'))
-	}
 	
 	/**
-	 *  ( Foo -> attr1 or ( Foo -> attr2 and Foo -> attr3 ) or Foo -> attr4 ) > 5
-	 */
-	@Test
-	def void shouldGenerateGreaterThanExpressionsWithOrAnd() {
-		val mockClass = createData("Foo")
-		
-		val featureCall1 = createFeatureCall(mockClass, "attr1")
-		val featureCall2 = createFeatureCall(mockClass, "attr2")
-		val featureCall3 = createFeatureCall(mockClass, "attr3")
-		val featureCall4 = createFeatureCall(mockClass, "attr4")
-		
-		val andOp = createBinaryOperation("and", featureCall2, featureCall3)
-		val orOp2 = createBinaryOperation("or", andOp, featureCall4)
-		val orOp1 = createBinaryOperation("or", featureCall1, orOp2)
-		
-		val comparisonOp = createBinaryOperation(">", orOp1, createIntLiteral(5))
-		
-		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(mockClass))
-		
-		assertNotNull(generatedFunction)
-		assertEquals('greaterThan(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr1", _foo -> _foo.getAttr1())), MapperTree.or(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map("getAttr2", _foo -> _foo.getAttr2())), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr3", _foo -> _foo.getAttr3()))), MapperTree.of(MapperS.of(foo).<Foo>map("getAttr4", _foo -> _foo.getAttr4())))), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)',formatGeneratedFunction('''«generatedFunction»'''))
-	}
-	
-	/**
-	 *  ( Foo -> attr1 and Foo -> attr2 ) > ( Foo -> attr3 and Foo -> attr4 )
-	 */
-	@Test
-	def void shouldGenerateGreaterThanExpressionsWithAnd() {
-		val mockClass = createData("Foo")
-		
-		val featureCall1 = createFeatureCall(mockClass, "attr1")
-		val featureCall2 = createFeatureCall(mockClass, "attr2")
-		val featureCall3 = createFeatureCall(mockClass, "attr3")
-		val featureCall4 = createFeatureCall(mockClass, "attr4")
-		
-		val lhsAndOp = createBinaryOperation("and", featureCall1, featureCall2)
-		val rhsAndOp = createBinaryOperation("and", featureCall3, featureCall4)
-		
-		val comparisonOp = createBinaryOperation(">", lhsAndOp, rhsAndOp)
-		
-		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(mockClass))
-		
-		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('greaterThan(MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))), MapperTree.and(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr3\", _foo -> _foo.getAttr3())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr4\", _foo -> _foo.getAttr4()))), CardinalityOperator.All)'))
-	}
-	
-	/**
-	 *  ( Foo -> attr ) exists
+	 *  Foo -> attr exists
 	 */
 	@Test
 	def void shouldGenerateExistsExpression() {
@@ -160,7 +91,7 @@ class RosettaExpressionJavaGeneratorTest {
 	}
 
 	/**
-	 *  ( Foo -> attr1 ) exists or ( Foo -> attr2 ) exists
+	 *  Foo -> attr1 exists or Foo -> attr2 exists
 	 */
 	@Test
 	def void shouldGenerateExistsExpressionsWithOr1() {
@@ -179,27 +110,6 @@ class RosettaExpressionJavaGeneratorTest {
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
 			is('exists(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())).or(exists(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2())))'))
-	}
-	
-	/**
-	 *  ( Foo -> attr1 or Foo -> attr2 ) exists
-	 */
-	@Test
-	def void shouldGenerateExistsExpressionsWithOr2() {
-		val mockClass = createData("Foo")
-		
-		val lhsFeatureCall = createFeatureCall(mockClass, "attr1")
-		val rhsFeatureCall = createFeatureCall(mockClass, "attr2")
-		
-		val orOp = createBinaryOperation("or", lhsFeatureCall, rhsFeatureCall)
-		
-		val existsExpression = createExistsExpression(orOp)
-		
-		val generatedFunction = expressionHandler.javaCode(existsExpression, new ParamMap(mockClass))
-		
-		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
-			is('exists(MapperTree.or(MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())), MapperTree.of(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()))))'))
 	}
 
 	// ( Foo -> attr1 = Foo -> attr2 ) or ( Foo -> attr1 = Foo -> attr2 )

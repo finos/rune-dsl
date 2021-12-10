@@ -51,7 +51,6 @@ import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
-import com.rosetta.model.lib.mapper.MapperTree
 import java.math.BigDecimal
 import java.util.Arrays
 import java.util.HashMap
@@ -374,30 +373,10 @@ class ExpressionGenerator {
 		
 		switch expr.operator {
 			case ("and"): {
-				if (evalulatesToMapper(left)) {
-					// Mappers
-					if(isComparableTypes(expr))
-						'''«MapperTree».and(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
-					else
-						'''«MapperTree».andDifferent(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
-				}
-				else {
-					// ComparisonResults
-					'''«left.javaCode(params)».and(«right.javaCode(params)»)'''
-				}	
+				'''«left.javaCode(params)».and(«right.javaCode(params)»)'''
 			}
 			case ("or"): {
-				if (evalulatesToMapper(left)) {
-					// Mappers
-					if(isComparableTypes(expr))
-						'''«MapperTree».or(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
-					else
-						'''«MapperTree».orDifferent(«left.booleanize(test, params)», «right.booleanize(test, params)»)'''
-				}
-				else {
-					// ComparisonResult
-					'''«left.javaCode(params)».or(«right.javaCode(params)»)''' 
-				}
+				'''«left.javaCode(params)».or(«right.javaCode(params)»)''' 
 			}
 			case ("+"): {
 				'''«MapperMaths».<«resultType.name.toJavaClass», «leftType», «rightType»>add(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
@@ -416,8 +395,7 @@ class ExpressionGenerator {
 			}
 		}
 	}
-	
-	
+
 	private def boolean isLogicalOperation(RosettaExpression expr) {
 		if(expr instanceof RosettaBinaryOperation) return expr.operator == "and" || expr.operator == "or"
 		return false
@@ -483,33 +461,6 @@ class ExpressionGenerator {
 	
 	private def StringConcatenationClient toCardinalityOperator(String cardOp, String defaultOp) {
 		'''«CardinalityOperator».«Optional.ofNullable(cardOp).map[toFirstUpper].orElse(defaultOp)»'''
-	}
-
-	/**
-	 * converts an expression into a boolean result using the test expression pushed down (see exists etc)
-	 */	
-	def StringConcatenationClient booleanize(RosettaExpression expr, RosettaExpression test, ParamMap params) {
-		switch (expr) {
-			RosettaBinaryOperation : {
-				binaryExpr(expr, test, params)
-			}
-			default : {
-				 switch (test) {
-				 	RosettaExistsExpression: {
-						expr.javaCode(params).toMapperTree
-					}
-					RosettaAbsentExpression: {
-						expr.javaCode(params).toMapperTree
-					}
-					case null : {
-						expr.javaCode(params).toMapperTree
-					}
-					default:
-						throw new UnsupportedOperationException(
-							"Unsupported expression type of " + test.class.simpleName)
-				}
-			}
-		}
 	}
 	
 	/**
@@ -741,11 +692,6 @@ class ExpressionGenerator {
 	def StringConcatenationClient toNodeLabel(RosettaBinaryOperation binOp) {
 		'''«binOp.left.toNodeLabel»«binOp.operator»«binOp.right.toNodeLabel»'''
 	}
-	
-	private def StringConcatenationClient toMapperTree(StringConcatenationClient code) {
-		return '''«MapperTree».of(«code»)'''
-	}
-	
 }
 
 @Accessors
