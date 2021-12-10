@@ -152,7 +152,7 @@ class ImportGenerator {
 	}
 
 	def void add(Object call) {
-		println
+		// println
 	}
 
 
