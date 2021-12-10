@@ -1304,6 +1304,33 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
+	
+	@Test
+	def void shouldNotGenerateCardinalityWarning2() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		n1 number (0..1)
+			 		n2 number (0..1)
+			 		n3 number (0..1)
+				output:
+					result boolean (0..1)
+				
+				alias n3Alias:
+					GetNumberList( n3 ) only-element
+				
+				assign-output result:
+					n1 + n2 = n3Alias
+					
+			func GetNumberList:
+				inputs:
+					x number (1..1)
+				output:
+					xs number (0..*)
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
 }
 	
 class MyRosettaInjectorProvider extends RosettaInjectorProvider {
