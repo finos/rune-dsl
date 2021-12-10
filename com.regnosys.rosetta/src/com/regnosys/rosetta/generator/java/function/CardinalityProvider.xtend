@@ -62,8 +62,10 @@ class CardinalityProvider {
 			ClosureParameter: obj.isClosureParameterMulti
 			ListLiteral,
 			ListOperation: true
+			RosettaBinaryOperation: {
+				false // check '+' operator
+			}
 			RosettaLiteral,
-			RosettaBinaryOperation, // check '+' operator
 			RosettaTypedFeature,
 			RosettaFeature,
 			RosettaSynonymValueBase,
