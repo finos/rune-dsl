@@ -175,7 +175,7 @@ class ExpressionGenerator {
 				}
 			«ELSE»
 				else {
-					return «IF cardinalityProvider.isMulti(expr.^if)»«MapperC»«ELSE»«MapperS»«ENDIF».ofNull();
+					return «IF cardinalityProvider.isMulti(expr.ifthen)»«MapperC»«ELSE»«MapperS»«ENDIF».ofNull();
 				}
 			«ENDIF»
 			'''
