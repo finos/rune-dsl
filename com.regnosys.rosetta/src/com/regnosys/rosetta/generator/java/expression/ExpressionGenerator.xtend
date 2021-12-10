@@ -175,7 +175,7 @@ class ExpressionGenerator {
 				}
 			«ELSE»
 				else {
-					return «MapperS».ofNull();
+					return «IF cardinalityProvider.isMulti(expr.ifthen)»«MapperC»«ELSE»«MapperS».ofNull()«ENDIF».ofNull();
 				}
 			«ENDIF»
 			'''
@@ -195,7 +195,7 @@ class ExpressionGenerator {
 				}
 			«ELSEIF next.elsethen === null»
 				else {
-					return «MapperS».ofNull();
+					return «IF cardinalityProvider.isMulti(next.ifthen)»«MapperC»«ELSE»«MapperS».ofNull()«ENDIF».ofNull();
 				}
 			«ENDIF»
 		«ENDIF»
@@ -444,6 +444,7 @@ class ExpressionGenerator {
 									it instanceof RosettaLiteral ||
 									it instanceof RosettaConditionalExpression ||
 									it instanceof RosettaCountOperation ||
+									it instanceof ListOperation ||
 									isArithmeticOperation(it)
 			]
 	}

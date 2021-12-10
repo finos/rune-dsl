@@ -4,6 +4,7 @@ import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -17,6 +18,10 @@ public class MapperC<T> implements MapperBuilder<T> {
 	
 	protected MapperC(List<MapperItem<T,?>> items) {
 		this.items = items;
+	}
+	
+	public static <T> MapperC<T> ofNull() {
+		return new MapperC<>(Collections.emptyList());
 	}
 	
 	@SafeVarargs

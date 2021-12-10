@@ -2536,5 +2536,4 @@ class FuncGeneratorTest {
 		)
 		code.compileToClasses
 	}
-	
 }

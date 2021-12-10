@@ -54,7 +54,12 @@ class CardinalityProvider {
 				else 
 					obj.callable.isMulti
 			}
-			RosettaCallableWithArgsCall: obj.callable.isMulti
+			RosettaCallableWithArgsCall: {
+				if(obj.toOne) 
+					false 
+				else 
+					obj.callable.isMulti
+			}
 			Function: if(obj.output === null) false else obj.output.isMulti
 			ShortcutDeclaration: obj.expression.isMulti
 			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
@@ -62,8 +67,10 @@ class CardinalityProvider {
 			ClosureParameter: obj.isClosureParameterMulti
 			ListLiteral,
 			ListOperation: true
+			RosettaBinaryOperation: {
+				false // check '+' operator
+			}
 			RosettaLiteral,
-			RosettaBinaryOperation, // check '+' operator
 			RosettaTypedFeature,
 			RosettaFeature,
 			RosettaSynonymValueBase,
