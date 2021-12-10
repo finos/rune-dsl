@@ -527,15 +527,12 @@ ListOperation returns RosettaExpression:
 
 RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
-	( =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])? distinct ?= 'distinct'? toOne ?= 'only-element'?)*
+	( =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])?)*
 ;
 
 RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConditionalExpression
-	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|QualifiedName] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' distinct ?= 'distinct'? toOne ?= 'only-element'?
-	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] distinct ?= 'distinct' toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
-	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] distinct ?= 'distinct' // Hack to allow "only-element" only for attribute and alias callables
-	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
+	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|QualifiedName] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')'
 	| RosettaCallableCall
 	| RosettaLiteral
 	| RosettaParenthesisCalcExpression
@@ -552,7 +549,7 @@ OptionalClosureParameter returns ClosureParameter:
 ;
 
 enum ListOperationKind:
-	filter | map | sum | flatten
+	filter | map | sum | flatten | distinct | only_element = "only-element"
 ;
 RosettaCalcConditionalExpression returns RosettaExpression:
 	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?
