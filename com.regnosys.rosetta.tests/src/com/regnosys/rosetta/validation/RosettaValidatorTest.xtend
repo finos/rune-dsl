@@ -1331,6 +1331,44 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
+	
+	@Test
+	def void shouldGenerateListFilterNoExpressionError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (0..*)
+				output:
+					filteredFoo Foo (0..*)
+				
+				assign-output filteredFoo:
+					foo
+						filter
+			
+			type Foo:
+				x string (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List filter must have a boolean expression specified within square brackets.")
+	}
+	
+	@Test
+	def void shouldGenerateListFilterExpressionTypeError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (0..*)
+				output:
+					filteredFoo Foo (0..*)
+				
+				assign-output filteredFoo:
+					foo
+						filter [ item -> x ]
+			
+			type Foo:
+				x string (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List filter expression must evaluate to a boolean.")
+	}
 }
 	
 class MyRosettaInjectorProvider extends RosettaInjectorProvider {

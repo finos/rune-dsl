@@ -89,6 +89,7 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 /**
  * This class contains custom validation rules. 
@@ -1137,6 +1138,29 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				.toSet
 		if (parents.size > 1) {
 			error('''Only exists paths must have a common parent. Found types «parents.join(", ")».''', e, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS)
+		}
+	}
+	
+	@Check
+	def checkListOperation(ListOperation o) {
+		switch (o.operationKind) {
+			case FILTER: {
+				if (o.body === null) {
+					error('''List filter must have a boolean expression specified within square brackets.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
+				else if (o.body.getRType != RBuiltinType.BOOLEAN) {
+					error('''List filter expression must evaluate to a boolean.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
+			}
+			case MAP: {
+				
+			}
+			case SUM: {
+				
+			}
+			case FLATTEN: {
+				
+			}
 		}
 	}
 	
