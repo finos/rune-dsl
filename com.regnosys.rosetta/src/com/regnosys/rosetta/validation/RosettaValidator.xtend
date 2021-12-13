@@ -8,6 +8,7 @@ import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.expression.ListOperationExtensions
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.BlueprintDataJoin
@@ -51,6 +52,7 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
@@ -89,7 +91,6 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 /**
  * This class contains custom validation rules. 
@@ -107,6 +108,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaOperators
+	@Inject extension ListOperationExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject CardinalityProvider cardinality
 	@Inject RosettaGrammarAccess grammar
@@ -1148,21 +1150,64 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				if (o.body === null) {
 					error('''List filter must have a boolean expression specified within square brackets.''', o, LIST_OPERATION__OPERATION_KIND)
 				}
+				else if (o.parameters !== null && o.parameters.size > 1) {
+					error('''List filter must only have 1 named parameter.''', o, LIST_OPERATION__PARAMETERS)
+				}
 				else if (o.body.getRType != RBuiltinType.BOOLEAN) {
-					error('''List filter expression must evaluate to a boolean.''', o, LIST_OPERATION__OPERATION_KIND)
+					error('''List filter expression must evaluate to a boolean.''', o, LIST_OPERATION__BODY)
 				}
 			}
 			case MAP: {
-				
+				if (o.body === null) {
+					error('''List map must have an expression specified within square brackets.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
+				else if (o.parameters !== null && o.parameters.size > 1) {
+					error('''List map must only have 1 named parameter.''', o, LIST_OPERATION__PARAMETERS)
+				}
+				else if (o.isOutputListOfListOfLists) {
+					error('''Each list item («o.firstOrImplicit.name») is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).''', o, LIST_OPERATION__BODY)
+				}
 			}
 			case SUM: {
-				
+				// TODO
 			}
 			case FLATTEN: {
-				
+				if (o.body !== null) {
+					error('''No expression allowed for list flatten.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
+				else if (o.parameters?.size > 0) {
+					error('''No item parameter allowed for list flatten.''', o, LIST_OPERATION__PARAMETERS)
+				}
+				else if (!o.isItemMulti) {
+					error('''List flatten only allowed for list of lists.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
 			}
 		}
 	}
+	
+	@Check
+	def checkAssignOutput(Operation o) {
+		val expr = o?.expression	
+		if (expr instanceof ListOperation) {
+			if (expr !== null && expr.isOutputListOfLists) {
+				error('''Assign expression contains a list of lists, use flatten to create a list.''', o, OPERATION__EXPRESSION)
+			}
+		}
+	}
+	
+	@Check
+	def checkAlias(ShortcutDeclaration o) {
+		val expr = o?.expression	
+		if (expr instanceof ListOperation) {
+			if (expr !== null && expr.isOutputListOfLists) {
+				error('''Alias expression contains a list of lists, use flatten to create a list.''', o, SHORTCUT_DECLARATION__EXPRESSION)
+			}
+		}
+	}
+	
+	// TODO paraethsis check
+	
+	// func input / output cardinality check
 	
 	private def getOnlyExistsParentType(RosettaExpression e) {
 		switch (e) {

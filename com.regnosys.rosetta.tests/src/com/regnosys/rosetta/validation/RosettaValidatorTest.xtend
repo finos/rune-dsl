@@ -1337,12 +1337,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
-			 		foo Foo (0..*)
+			 		foos Foo (0..*)
 				output:
 					filteredFoo Foo (0..*)
 				
 				assign-output filteredFoo:
-					foo
+					foos
 						filter
 			
 			type Foo:
@@ -1352,22 +1352,292 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldGenerateListFilterExpressionTypeError() {
+	def void shouldGenerateListFilterParametersError() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
-			 		foo Foo (0..*)
+			 		foos Foo (0..*)
 				output:
 					filteredFoo Foo (0..*)
 				
 				assign-output filteredFoo:
-					foo
+					foos
+						filter a, b [ a -> attr ]
+			
+			type Foo:
+				attr boolean (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List filter must only have 1 named parameter.")
+	}
+	
+	@Test
+	def void shouldGenerateListFilterExpressionTypeError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					filteredFoo Foo (0..*)
+				
+				assign-output filteredFoo:
+					foos
 						filter [ item -> x ]
 			
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List filter expression must evaluate to a boolean.")
+	}
+	
+	@Test
+	def void shouldGenerateListMapNoExpressionError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				assign-output strings:
+					foos
+						map
+			
+			type Foo:
+				x string (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List map must have an expression specified within square brackets.")
+	}
+	
+	@Test
+	def void shouldGenerateListMapParametersError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				assign-output strings:
+					foos
+						map a, b [ a -> x ]
+			
+			type Foo:
+				x string (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List map must only have 1 named parameter.")
+	}
+	
+	@Test
+	def void shouldNotGenerateListMapExpressionCardinalityError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				assign-output strings:
+					foos
+						map a [ a -> xs ] // list of lists
+						flatten
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
+	
+	@Test
+	def void shouldNotGenerateListMapExpressionCardinalityError2() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				assign-output strings:
+					foos
+						map a [ a -> bars ] // list of list<bar>
+						map bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
+						flatten // list<string>
+			
+			type Foo:
+				bars Bar (0..*)
+			
+			type Bar:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
+	
+	@Test
+	def void shouldGenerateListMapExpressionCardinalityError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				assign-output strings:
+					foos
+						map a [ a -> bars ] // list of list<bar>
+						map bars [ bars -> bazs ] // list of list of list<baz> // not supported (list item to list of lists)
+						map bazs [ bazs -> x ] // list of list<string>
+						flatten // list<string>
+			
+			type Foo:
+				bars Bar (0..*)
+			
+			type Bar:
+				bazs Baz (0..*)
+				
+			type Baz:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "Each list item (bars) is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).")
+	}
+	
+	@Test
+	def void shouldGenerateListFlattenExpressionSpecifiedError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				assign-output strings:
+					foos
+						map a [ a -> xs ] // list of lists
+						flatten [ item ]
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "No expression allowed for list flatten.")
+	}
+	
+	@Test
+	def void shouldGenerateListFlattenParameterSpecifiedError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				assign-output strings:
+					foos
+						map a [ a -> xs ] // list of lists
+						flatten xItem
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "No item parameter allowed for list flatten.")
+	}
+	
+	@Test
+	def void shouldGenerateListFlattenCardinalityError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				assign-output strings:
+					foos
+						map a [ a -> x ] // not a list of lists
+						flatten
+			
+			type Foo:
+				x string (0..1) // single cardinality
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List flatten only allowed for list of lists.")
+	}
+	
+	@Test
+	def void shouldGenerateListFlattenCardinalityError2() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					updatedFoos Foo (0..*)
+				
+				assign-output updatedFoos:
+					foos
+						flatten
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List flatten only allowed for list of lists.")
+	}
+	
+	@Test
+	def void shouldGenerateListUnflattenedAssignOutputError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				assign-output strings:
+					foos
+						map a [ a -> xs ] // list of lists
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(OPERATION, null, "Assign expression contains a list of lists, use flatten to create a list.")
+	}
+	
+	@Test
+	def void shouldGenerateListUnflattenedSetError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				set strings:
+					foos
+						map a [ a -> xs ] // list of lists
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(OPERATION, null, "Assign expression contains a list of lists, use flatten to create a list.")
+	}
+	
+	@Test
+	def void shouldGenerateListUnflattenedAliasError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				alias stringsAlias:
+					foos
+						map a [ a -> xs ] // list of lists
+				
+				assign-output strings:
+					stringsAlias
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(SHORTCUT_DECLARATION, null, "Alias expression contains a list of lists, use flatten to create a list.")
 	}
 }
 	

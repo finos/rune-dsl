@@ -8,6 +8,7 @@ import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
@@ -74,6 +75,8 @@ class ExpressionGenerator {
 	@Inject extension RosettaExtensions
 	@Inject extension ImportManagerExtension
 	@Inject ExpressionHelper exprHelper
+	@Inject extension Util
+	@Inject extension ListOperationExtensions
 	
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		expr.javaCode(params, true);
@@ -312,13 +315,6 @@ class ExpressionGenerator {
 		}
 	}
 	
-	/**
-	 * Prefix name with double underscore to avoid name clashes with model names.
-	 */
-	private def toDecoratedName(String name) {
-		'''__«name»'''
-	}
-	
 	def aliasCallArgs(ShortcutDeclaration alias) {
 		val func = EcoreUtil2.getContainerOfType(alias, Function)
 		val attrs = <String>newArrayList
@@ -532,31 +528,29 @@ class ExpressionGenerator {
 	def StringConcatenationClient listOperation(ListOperation op, ParamMap params) {
 		switch (op.operationKind) {
 			case FILTER: {
-				val isItemMulti = cardinalityProvider.isClosureParameterMulti(op.firstOrImplicit)
 				'''
 				«op.receiver.javaCode(params)»
-					.«IF isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.firstOrImplicit.getNameOrDefault.toDecoratedName» -> «op.body.javaCode(params)».get())'''
+					.«IF op.isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.itemName» -> «op.body.javaCode(params)».get())'''
 			}
 			case MAP: {
-				val isItemMulti = cardinalityProvider.isClosureParameterMulti(op.firstOrImplicit)
-				val itemType = '''«IF funcExt.needsBuilder(op.receiver)»? extends «ENDIF»«typeProvider.getRType(op.receiver).name.toJavaType»'''
-				val itemName = op.firstOrImplicit.getNameOrDefault.toDecoratedName
-				val isBodyMulti = cardinalityProvider.isMulti(op.body)
-				val bodyType = '''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«typeProvider.getRType(op.body).name.toJavaType»'''
+				val itemType =  op.itemType
+				val itemName =  op.itemName
+				val isOutputMulti =  op.outputMulti
+				val outputType =  op.outputType
 				val bodyExpr = op.body.javaCode(params)
 				'''
 				«op.receiver.javaCode(params)»
-					«IF isItemMulti»
-						«IF isBodyMulti»
-							.mapListToList((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperC»<«bodyType»>) «bodyExpr»)
+					«IF op.isItemMulti»
+						«IF isOutputMulti»
+							.mapListToList((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
 						«ELSE»
-							.mapListToItem((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperS»<«bodyType»>) «bodyExpr»)
+							.mapListToItem((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperS»<«outputType»>) «bodyExpr»)
 						«ENDIF»
 						«ELSE»
-							«IF isBodyMulti»
-								.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«bodyType»>) «bodyExpr»)
+							«IF isOutputMulti»
+								.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
 							«ELSE»
-								.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«bodyType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)«ENDIF»«ENDIF»'''
+								.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«outputType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)«ENDIF»«ENDIF»'''
 
 			}
 			case FLATTEN: {
