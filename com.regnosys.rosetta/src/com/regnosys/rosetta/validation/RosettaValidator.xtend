@@ -769,6 +769,14 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			warning('''«binOp.cardOp» is only aplicable when the sides have differing cardinality''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
 		}
 	}
+
+	@Check
+	def checkBinaryParamsRightTypes(RosettaBinaryOperation binOp) {
+		val resultType = binOp.RType
+		if (resultType instanceof RErrorType) {
+			error(resultType.message, binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
+		}
+	}
 	
 	@Check
 	def checkDisjointTypesMatch(RosettaDisjointExpression disjoint) {
@@ -777,14 +785,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		val typesMatch = leftType == rightType //arguable could support leftType.isUsablaAs || rightType.isUsableAs but the generated code doesn't support it
 		if (!typesMatch) {
 			error('''Disjoint must operate on lists of the same type''', disjoint, ROSETTA_DISJOINT_EXPRESSION__DISJOINT)
-		}
-	}
-	
-	@Check
-	def checkBinaryParamsRightTypes(RosettaBinaryOperation binOp) {
-		val resultType = binOp.RType
-		if (resultType instanceof RErrorType) {
-			error(resultType.message, binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
 		}
 	}
 	
@@ -1204,10 +1204,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		}
 	}
-	
-	// TODO paraethsis check
-	
-	// func input / output cardinality check
 	
 	private def getOnlyExistsParentType(RosettaExpression e) {
 		switch (e) {

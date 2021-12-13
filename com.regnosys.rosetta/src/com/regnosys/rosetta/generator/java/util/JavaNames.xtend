@@ -25,7 +25,6 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
-import com.regnosys.rosetta.types.RFeatureCallType
 import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import java.util.List
@@ -100,8 +99,6 @@ class JavaNames {
 				rType.enumeration.toJavaType
 			RDataType:
 				rType.data.toJavaType
-			RFeatureCallType:
-				rType.featureType.toJavaType
 			RRecordType:
 				(rType.record as RosettaType).toJavaType
 			default:

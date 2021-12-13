@@ -21,9 +21,6 @@ class RosettaOperators {
 
 	def RType resultType(String op, RType left, RType right) {
 		if (LOGICAL_OPS.contains(op)) {
-			if(left instanceof RFeatureCallType) {
-				return left
-			}
 			return bothBoolean(left, right, op)
 		}
 		if (left instanceof REnumType && right instanceof REnumType &&
@@ -31,15 +28,10 @@ class RosettaOperators {
 			if (EQUALITY_OPS.contains(op))
 				return RBuiltinType.BOOLEAN
 		}
+		
 		initialize()
 		var leftToCheck = left
 		var rightToCheck = right
-		if (left instanceof RFeatureCallType) {
-			leftToCheck = left.featureType
-		}
-		if (right instanceof RFeatureCallType) {
-			rightToCheck = right.featureType
-		}
 		if ((  leftToCheck instanceof RRecordType
 			|| leftToCheck instanceof RDataType
 		) && leftToCheck == rightToCheck) {
@@ -72,9 +64,9 @@ class RosettaOperators {
 	
 	def private bothBoolean(RType left, RType right, String op) {
 		if (left!=RBuiltinType.BOOLEAN)
-			return new RErrorType('''left hand side of «op» expression must be boolean''')
+			return new RErrorType('''Left hand side of '«op»' expression must be boolean''')
 		if (right!=RBuiltinType.BOOLEAN)
-			return new RErrorType('''left hand side of «op» expression must be boolean''')
+			return new RErrorType('''Right hand side of '«op»' expression must be boolean''')
 		return RBuiltinType.BOOLEAN
 	}
 	

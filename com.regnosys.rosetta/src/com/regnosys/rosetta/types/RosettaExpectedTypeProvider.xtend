@@ -20,20 +20,6 @@ class RosettaExpectedTypeProvider {
 	
 	def RType getExpectedType(EObject owner, EReference reference, int idx) {
 		switch owner {
-			RosettaExistsExpression case reference == ROSETTA_EXISTS_EXPRESSION__ARGUMENT: {
-				if(owner.argument instanceof RosettaMapPathValue) {
-					RBuiltinType.STRING
-				} else {
-					new RFeatureCallType(null)
-				}
-			} 
-			RosettaAbsentExpression case reference == ROSETTA_ABSENT_EXPRESSION__ARGUMENT: {
-				if(owner.argument instanceof RosettaMapPathValue) {
-					RBuiltinType.STRING
-				} else {
-					new RFeatureCallType(null)
-				}
-			}
 			RosettaConditionalExpression case reference == ROSETTA_CONDITIONAL_EXPRESSION__IF:
 				RBuiltinType.BOOLEAN
 			RosettaCallableWithArgsCall case reference == ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS: {

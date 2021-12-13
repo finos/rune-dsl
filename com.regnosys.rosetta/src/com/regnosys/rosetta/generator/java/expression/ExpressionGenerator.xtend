@@ -48,6 +48,7 @@ import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.expression.CardinalityOperator
+import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
 import com.rosetta.model.lib.mapper.MapperC
@@ -369,10 +370,10 @@ class ExpressionGenerator {
 		
 		switch expr.operator {
 			case ("and"): {
-				'''«left.javaCode(params)».and(«right.javaCode(params)»)'''
+				'''«left.toComparisonResult(params)».and(«right.toComparisonResult(params)»)'''
 			}
 			case ("or"): {
-				'''«left.javaCode(params)».or(«right.javaCode(params)»)''' 
+				'''«left.toComparisonResult(params)».or(«right.toComparisonResult(params)»)'''
 			}
 			case ("+"): {
 				'''«MapperMaths».<«resultType.name.toJavaClass», «leftType», «rightType»>add(«expr.left.javaCode(params)», «expr.right.javaCode(params)»)'''
@@ -390,6 +391,11 @@ class ExpressionGenerator {
 				toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''', expr.cardOp)
 			}
 		}
+	}
+
+	private def StringConcatenationClient toComparisonResult(RosettaExpression expr, ParamMap params) {
+		val wrap = expr.evalulatesToMapper
+		'''«IF wrap»«ComparisonResult».of(«ENDIF»«expr.javaCode(params)»«IF wrap»)«ENDIF»'''
 	}
 
 	private def boolean isLogicalOperation(RosettaExpression expr) {
@@ -423,19 +429,6 @@ class ExpressionGenerator {
 			]
 	}
 	
-	/**
-	 * Search leaf node objects to determine whether this is a comparison of matching objects types
-	 */
-	private def isComparableTypes(RosettaBinaryOperation binaryExpr) {
-		// get list of the object type at each leaf node
-		val rosettaTypes = newHashSet
-		collectLeafTypes(binaryExpr, [rosettaTypes.add(it)])
-		
-		// check whether they're all the same type
-		val type = rosettaTypes.stream.filter[it !== null].findAny
-		return type.isPresent && rosettaTypes.stream.filter[it !== null].allMatch[it.equals(type.get)]
-	}
-		
 	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right, String cardOp) {
 		switch operator {
 			case ("="):

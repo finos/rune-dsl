@@ -1639,6 +1639,76 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(SHORTCUT_DECLARATION, null, "Alias expression contains a list of lists, use flatten to create a list.")
 	}
+	
+	@Test
+	def void shouldNotGenerateTypeErrorForExpressionInBrackets() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					result boolean (1..1)
+				
+				assign-output result:
+					( foo -> x1 and foo -> x2 ) 
+					and ( foo -> x4 < 5.0 
+						and ( foo -> x3 is absent or foo -> x6 exists ) )
+			
+			type Foo:
+				x1 boolean (1..1)
+				x2 boolean (1..1)
+				x3 number (1..1)
+				x4 number (1..1)
+				x5 int (1..1)
+				x6 string (1..1)
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
+	
+	@Test
+	def void shouldGenerateTypeErrorForExpressionInBrackets() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					result boolean (1..1)
+				
+				assign-output result:
+					( foo -> x1 and foo -> x2 ) 
+					and ( foo -> x4 // number
+						and ( foo -> x3 is absent or foo -> x6 exists ) )
+			
+			type Foo:
+				x1 boolean (1..1)
+				x2 boolean (1..1)
+				x3 number (1..1)
+				x4 number (1..1)
+				x5 int (1..1)
+				x6 string (1..1)
+		'''.parseRosetta
+		model.assertError(ROSETTA_BINARY_OPERATION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+	}
+	
+	@Test
+	def void shouldNotGenerateTypeErrorForExpressionInBrackets3() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					result boolean (1..1)
+				
+				assign-output result:
+					( foo -> x3 and foo -> x4 ) exists
+			
+			type Foo:
+				x3 number (1..1)
+				x4 number (1..1)
+		'''.parseRosetta
+		model.assertError(ROSETTA_PARENTHESIS_CALC_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+	}
 }
 	
 class MyRosettaInjectorProvider extends RosettaInjectorProvider {

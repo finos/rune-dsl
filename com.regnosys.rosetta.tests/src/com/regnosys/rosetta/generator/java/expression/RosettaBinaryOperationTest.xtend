@@ -17,6 +17,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
+import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -331,6 +332,246 @@ class RosettaBinaryOperationTest {
 		assertResult("FeatureCallNotEqualToLiteral", foo, true)
 		assertResult("FeatureCallListEqualToFeatureCall", foo, false)
 		assertResult("FeatureCallListNotEqualToFeatureCall", foo, true)
+	}
+	
+	@Test
+	def void shouldGenerateBooleanOrComparisonResult() {
+		val model = '''
+			func FuncFoo:
+				inputs: 
+					foo Foo (1..1)
+				output: 
+					result boolean (1..1)
+			
+				assign-output result:
+					foo -> attrBoolean or foo -> attrNumber = 5
+			
+			type Foo:
+				attrBoolean boolean (1..1)
+				attrNumber number (1..1)
+		'''
+		val code = model.generateCode
+		val funcFoo = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.expression.ComparisonResult;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Foo;
+				import java.math.BigDecimal;
+				import java.util.Arrays;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param foo 
+					* @return result 
+					*/
+					public Boolean evaluate(Foo foo) {
+						
+						Boolean resultHolder = doEvaluate(foo);
+						Boolean result = assignOutput(resultHolder, foo);
+						
+						return result;
+					}
+					
+					private Boolean assignOutput(Boolean result, Foo foo) {
+						result = ComparisonResult.of(MapperS.of(foo).<Boolean>map("getAttrBoolean", _foo -> _foo.getAttrBoolean())).or(areEqual(MapperS.of(foo).<BigDecimal>map("getAttrNumber", _foo -> _foo.getAttrNumber()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)).get();
+						return result;
+					}
+				
+					protected abstract Boolean doEvaluate(Foo foo);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  Boolean doEvaluate(Foo foo) {
+							return null;
+						}
+					}
+				}
+			'''.toString,
+			funcFoo
+		)
+		code.compileToClasses
+	}
+
+	@Test
+	def void shouldGenerateBooleanAndComparisonResult() {
+		val model = '''
+			func FuncFoo:
+				inputs: 
+					foo Foo (1..1)
+				output: 
+					result boolean (1..1)
+			
+				assign-output result:
+					foo -> attrBoolean and foo -> attrNumber = 5
+			
+			type Foo:
+				attrBoolean boolean (1..1)
+				attrNumber number (1..1)
+		'''
+		val code = model.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateBooleanAndComparisonResult2() {
+		val model = '''
+			func FuncFoo:
+				inputs: 
+					foo Foo (1..1)
+				output: 
+					result boolean (1..1)
+			
+				assign-output result:
+					foo -> attrNumber = 5 and foo -> attrBoolean
+			
+			type Foo:
+				attrBoolean boolean (1..1)
+				attrNumber number (1..1)
+		'''
+		val code = model.generateCode
+		code.compileToClasses
+	}
+
+	@Test
+	def void shouldGenerateBooleanAndComparisonResult3() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					result boolean (1..1)
+				
+				assign-output result:
+					( foo -> x1 and foo -> x2 ) exists
+			
+			type Foo:
+				x1 boolean (1..1)
+				x2 boolean (1..1)
+		'''
+		val code = model.generateCode
+		val funcFoo = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.expression.ComparisonResult;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Foo;
+				import java.util.Arrays;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param foo 
+					* @return result 
+					*/
+					public Boolean evaluate(Foo foo) {
+						
+						Boolean resultHolder = doEvaluate(foo);
+						Boolean result = assignOutput(resultHolder, foo);
+						
+						return result;
+					}
+					
+					private Boolean assignOutput(Boolean result, Foo foo) {
+						result = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX1", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX2", _foo -> _foo.getX2())))).get();
+						return result;
+					}
+				
+					protected abstract Boolean doEvaluate(Foo foo);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  Boolean doEvaluate(Foo foo) {
+							return null;
+						}
+					}
+				}
+			'''.toString,
+			funcFoo
+		)
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateBooleanAndComparisonResult4() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					result boolean (1..1)
+				
+				assign-output result:
+					( foo -> x1 and foo -> x2 ) exists
+			
+			type Foo:
+				x1 boolean (0..*)
+				x2 boolean (1..1)
+		'''
+		val code = model.generateCode
+		val funcFoo = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.expression.ComparisonResult;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.test.model.Foo;
+				import java.util.Arrays;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param foo 
+					* @return result 
+					*/
+					public Boolean evaluate(Foo foo) {
+						
+						Boolean resultHolder = doEvaluate(foo);
+						Boolean result = assignOutput(resultHolder, foo);
+						
+						return result;
+					}
+					
+					private Boolean assignOutput(Boolean result, Foo foo) {
+						result = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>mapC("getX1", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX2", _foo -> _foo.getX2())))).get();
+						return result;
+					}
+				
+					protected abstract Boolean doEvaluate(Foo foo);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  Boolean doEvaluate(Foo foo) {
+							return null;
+						}
+					}
+				}
+			'''.toString,
+			funcFoo
+		)
+		code.compileToClasses
 	}
 
 	// Util methods

@@ -23,14 +23,6 @@ abstract class RAnnotateType implements RType {
 }
 
 @Data
-class RFeatureCallType implements RType {
-	val RType featureType
-	override getName() {
-		'''featureCall(«featureType?.name»)'''
-	}
-}
-
-@Data
 class RDataType extends RAnnotateType {
 	com.regnosys.rosetta.rosetta.simple.Data data
 

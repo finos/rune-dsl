@@ -1,30 +1,19 @@
 package com.regnosys.rosetta
 
 import com.google.common.base.CaseFormat
-import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaSynonym
-import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Annotated
-import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import java.util.Collection
 import java.util.Set
 import org.eclipse.emf.common.util.URI
@@ -103,69 +92,7 @@ class RosettaExtensions {
 			throw new IllegalArgumentException("Failed to collect root calls: " + expr)
 		}
 	}
-	
-	/**
-	 * Collect all object types at the leaf nodes of the expression tree
-	 */
-	def void collectLeafTypes(RosettaExpression expr, (RosettaType) => void visitor) {
-		if(expr instanceof RosettaBinaryOperation) {
-			expr.left.collectLeafTypes(visitor)
-			expr.right.collectLeafTypes(visitor)
-		}
-		else if(expr instanceof RosettaCallableCall) {
-			val callable = expr.callable
-			if (callable instanceof ShortcutDeclaration) {
-				callable.expression.collectLeafTypes(visitor)
-			}
-			else if(callable instanceof Data) {
-				visitor.apply(callable)
-			}
-			else if(callable instanceof Attribute) {
-				visitor.apply(callable.type)
-			} 
-			else {
-				throw new IllegalArgumentException("Failed to collect leaf type: " + callable)
-			}
-		}
-		else if(expr instanceof RosettaCallableWithArgsCall) {
-			val callableWithArgs = expr.callable
-			if(callableWithArgs instanceof Function) {
-				visitor.apply(callableWithArgs.output.type)
-			} 
-			else {
-				throw new IllegalArgumentException("Failed to collect leaf type: " + callableWithArgs)
-			}
-		}
-		else if(expr instanceof RosettaTyped) {
-			visitor.apply(expr.type)
-		}
-		else if(expr instanceof RosettaFeatureCall) {
-			if (expr.feature instanceof RosettaTyped)
-				visitor.apply((expr.feature as RosettaTyped).type)
-		}
-		else if(expr instanceof RosettaOnlyExistsExpression) {
-			expr.args.forEach[collectLeafTypes(visitor)]
-		}
-		else if(expr instanceof RosettaExistsExpression) {
-			expr.argument.collectLeafTypes(visitor)
-		}
-		else if(expr instanceof RosettaAbsentExpression) {
-			expr.argument.collectLeafTypes(visitor)
-		}
-		else if(expr instanceof RosettaEnumValueReference) {
-			visitor.apply(expr.enumeration)
-		}
-		else if (expr instanceof RosettaParenthesisCalcExpression) {
-			expr.expression.collectLeafTypes(visitor)
-		}
-		else if (expr instanceof RosettaConditionalExpression) {
-			expr.ifthen.collectLeafTypes(visitor)
-		}
-		else {
-			throw new IllegalArgumentException("Failed to collect leaf type: " + expr)
-		}
-	}
-	
+
 	/**
 	 * Collect all expressions
 	 */
