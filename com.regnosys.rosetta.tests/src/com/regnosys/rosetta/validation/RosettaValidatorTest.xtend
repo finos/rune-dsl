@@ -1183,7 +1183,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				a string (0..*)
 					[ruleReference A]
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, null, "Report attributes with basic type (string) and multiple cardinality is not supported.")
+		model.assertError(ATTRIBUTE, null, "Report attributes with non-repeatable basic type (string) and multiple cardinality is not supported.  Try adding 'repeatable' to your rule.")
 	}
 	
 	@Test

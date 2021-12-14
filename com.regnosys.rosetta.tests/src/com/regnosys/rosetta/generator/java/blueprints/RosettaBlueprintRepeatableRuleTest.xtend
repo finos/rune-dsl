@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 
@@ -31,11 +32,14 @@ class RosettaBlueprintRepeatableRuleTest {
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule
-			with fields
-				RepeatableBarFieldList
+			with type FooReport
+			
+			type FooReport:
+			    barFieldList string (0..*)
+			        [ruleReference RepeatableBarFieldList]
 			
 			type Bar:
-				fieldList string (1..*)
+				fieldList string (0..*)
 			
 			eligibility rule FooRule
 				filter when Bar->fieldList exists
@@ -44,7 +48,7 @@ class RosettaBlueprintRepeatableRuleTest {
 				extract repeatable Bar->fieldList then
 				maximum
 		'''
-		.parseRosetta.assertError(ROSETTA_BLUEPRINT_REPORT, null, "Report field from repeatable rule RepeatableBarFieldList should be of multiple cardinality")
+		.parseRosetta.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barFieldList has multiple cardinality whereas the reporting rule RepeatableBarFieldList has single cardinality.")
 	}
 
 	
@@ -56,11 +60,14 @@ class RosettaBlueprintRepeatableRuleTest {
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule
-			with fields
-				RepeatableBarFieldList
+			with type FooReport
+			
+			type FooReport:
+			    barFieldList string (0..*)
+			        [ruleReference RepeatableBarFieldList]
 			
 			type Bar:
-				fieldList string (1..*)
+				fieldList string (0..*)
 			
 			eligibility rule FooRule
 				filter when Bar->fieldList exists
@@ -79,8 +86,11 @@ class RosettaBlueprintRepeatableRuleTest {
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule
-			with fields
-				RepeatableBazFieldList
+			with type BarReport
+			
+			type BarReport:
+			    bazFieldList string (0..*)
+			        [ruleReference RepeatableBazFieldList]
 			
 			type Bar:
 				baz Baz (1..1)
@@ -106,8 +116,11 @@ class RosettaBlueprintRepeatableRuleTest {
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule
-			with fields
-				RepeatableBazFieldList
+			with type BarReport
+			
+			type BarReport:
+			    bazFieldList string (0..*)
+			        [ruleReference RepeatableBazFieldList]
 			
 			type Bar:
 				baz Baz (1..1)
@@ -136,8 +149,11 @@ class RosettaBlueprintRepeatableRuleTest {
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule
-			with fields
-				RepeatableBarBazList
+			with type BarReport
+			
+			type BarReport:
+			    bazFieldList string (0..*)
+			        [ruleReference RepeatableBarBazList]
 			
 			type Bar:
 				bazList Baz (1..*)
@@ -165,8 +181,15 @@ class RosettaBlueprintRepeatableRuleTest {
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule
-			with fields
-				RepeatableBarBazList
+			with type BarReport
+			
+			type BarReport:
+			    bazList BazReport (0..*)
+			        [ruleReference RepeatableBarBazList]
+			
+			type BazReport:
+				field string (1..1)
+					[ruleReference BazField]
 			
 			type Bar:
 				bazList Baz (1..*)
@@ -197,9 +220,17 @@ class RosettaBlueprintRepeatableRuleTest {
 			
 			report TEST_REG MiFIR in T+1
 			when FooRule
-			with fields
-				RepeatableBarBazList
-				BazField
+			with type BarReport
+			
+			type BarReport:
+			    bazList BazReport (0..*)
+			        [ruleReference RepeatableBarBazList]
+			    bazField string (1..1)
+			    	[ruleReference BazField]
+			
+			type BazReport:
+				field string (1..1)
+					[ruleReference BazField]
 			
 			type Bar:
 				bazList Baz (1..*)
@@ -219,7 +250,7 @@ class RosettaBlueprintRepeatableRuleTest {
 			reporting rule BazField
 				extract Baz->field
 		'''
-		.parseRosetta.assertError(ROSETTA_BLUEPRINT_REPORT, null, "Duplicate report field BazField.  Parent report field RepeatableBarBazList already adds BazField to the report.")
+		.parseRosetta.assertError(ROSETTA_RULE_REFERENCE, null, "Duplicate reporting rule BazField")
 	}
 	
 

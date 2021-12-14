@@ -681,8 +681,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 			
 			// check basic type cardinality supported
-			if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
-				val unsupportedWarning = '''Report attributes with basic type («attr.type.name») and multiple cardinality is not supported.'''
+			if (!attrSingle && (attrExt.builtInType || attrExt.enum) && !node.repeatable) {
+				val unsupportedWarning = '''Report attributes with non-repeatable basic type («attr.type.name») and multiple cardinality is not supported.  Try adding 'repeatable' to your rule.'''
 				error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
 			}
 		}
