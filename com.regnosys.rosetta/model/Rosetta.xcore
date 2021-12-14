@@ -453,7 +453,6 @@ class RosettaExternalSynonym {
  
 class RosettaBlueprintReport extends RosettaRootElement {
 	contains RosettaRegulatoryBody regulatoryBody
-	refers RosettaBlueprint[] reportingRules
 	refers Data reportType
 	refers RosettaBlueprint[] eligibilityRules
 	refers RosettaCorpus reportingStandard

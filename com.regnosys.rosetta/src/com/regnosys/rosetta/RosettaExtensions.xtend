@@ -198,11 +198,7 @@ class RosettaExtensions {
 	 */
 	def getAllReportingRules(RosettaBlueprintReport report) {
 		val rules = newHashSet
-		if (report.reportType !== null) {
-			report.reportType.collectReportingRules([rules.add(it)], newHashSet)
-		} else {
-			rules.addAll(report.reportingRules)
-		}
+		report.reportType.collectReportingRules([rules.add(it)], newHashSet)
 		return rules
 	}
 	
