@@ -26,7 +26,6 @@ import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ListOperation
-import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.EcoreUtil2
@@ -34,14 +33,18 @@ import org.eclipse.xtext.EcoreUtil2
 class CardinalityProvider {
 	
 	def boolean isMulti(EObject obj) {
+		isMulti(obj, false)
+	}
+	
+	def boolean isMulti(EObject obj, boolean breakOnClosureParameter) {
 		if(obj === null) return false
 		switch obj {
 			RosettaFeatureCall: {
 				if(obj.toOne) false else {
-					if (obj.feature.isMulti) 
+					if (obj.feature.isMulti(breakOnClosureParameter)) 
 						true 
 					else 
-						obj.receiver.isMulti
+						obj.receiver.isMulti(breakOnClosureParameter)
 				}
 			}
 			RosettaEnumValue:false
@@ -50,21 +53,26 @@ class CardinalityProvider {
 				if(obj.toOne) 
 					false 
 				else if (obj.implicitReceiver) 
-					EcoreUtil2.getContainerOfType(obj, ListOperation).firstOrImplicit.isMulti
+					EcoreUtil2.getContainerOfType(obj, ListOperation).firstOrImplicit.isMulti(breakOnClosureParameter)
 				else 
-					obj.callable.isMulti
+					obj.callable.isMulti(breakOnClosureParameter)
 			}
 			RosettaCallableWithArgsCall: {
 				if(obj.toOne) 
 					false 
 				else 
-					obj.callable.isMulti
+					obj.callable.isMulti(breakOnClosureParameter)
 			}
-			Function: if(obj.output === null) false else obj.output.isMulti
-			ShortcutDeclaration: obj.expression.isMulti
-			RosettaConditionalExpression: obj.ifthen.multi || obj.elsethen.multi
-			RosettaParenthesisCalcExpression: obj.expression.isMulti
-			ClosureParameter: obj.isClosureParameterMulti
+			Function: if(obj.output === null) false else obj.output.isMulti(breakOnClosureParameter)
+			ShortcutDeclaration: obj.expression.isMulti(breakOnClosureParameter)
+			RosettaConditionalExpression: obj.ifthen.isMulti(breakOnClosureParameter) || obj.elsethen.isMulti(breakOnClosureParameter) 
+			RosettaParenthesisCalcExpression: obj.expression.isMulti(breakOnClosureParameter)
+			ClosureParameter: {
+				if (breakOnClosureParameter) 
+					false 
+				else 
+					obj.isClosureParameterMulti
+			}
 			ListLiteral,
 			ListOperation: true
 			RosettaBinaryOperation: {
@@ -87,20 +95,23 @@ class CardinalityProvider {
 		}
 	}
 	
-	def boolean expectedCardinalityMany(Operation op) {
-		return if (op.path === null)
-			op.assignRoot.isMulti
-		else {
-			val lastSegment = op.pathAsSegmentList.last
-			if (lastSegment.index !== null) {
-				false
-			} else
-				lastSegment.attribute.isMulti
-		}
+	/**
+	 * ListOperation.firstOrImplicit (e.g. ClosureParameter) can be null if parameter is implicit
+	 */
+	private def boolean isClosureParameterMulti(ClosureParameter obj) {
+		if (obj === null) {
+			println("CardinalityProvider: ClosureParameter cardinality cannot be determined for null")
+			return false
+		}	
+		return obj.operation.isClosureParameterMulti
 	}
 	
-	def boolean isClosureParameterMulti(ClosureParameter obj) {
-		return obj.operation.isPreviousOperationMulti
+	/**
+	 * ListOperation.firstOrImplicit (e.g. ClosureParameter) can be null if parameter is implicit, so 
+	 * better to determine the cardinality from the previous operation
+	 */
+	def boolean isClosureParameterMulti(ListOperation obj) {
+		return obj.isPreviousOperationMulti
 	}
 	
 	def boolean isPreviousOperationMulti(RosettaExpression expr) {
@@ -109,7 +120,7 @@ class CardinalityProvider {
 			if (previousOperation instanceof ListOperation) {
 				switch(previousOperation.operationKind) {
 					case MAP:
-						return previousOperation.body.isMulti
+						return previousOperation.body.isMulti(false)
 					case FILTER: 
 						// Filter operation does not change cardinality, so check the next previous operation's cardinality
 						return previousOperation.isPreviousOperationMulti

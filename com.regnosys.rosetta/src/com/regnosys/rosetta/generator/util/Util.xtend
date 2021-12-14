@@ -62,4 +62,12 @@ class Util {
 	
 	def static String fullname(RosettaType clazz) '''«clazz.model.name».«clazz.name»'''
 	def static String packageName(RosettaType clazz)  {clazz.model.name}
+	
+	/**
+	 * Prefix code generated variable name with double underscore to avoid name clashes with model names.
+	 * Currently only used for list operation variable names, but should be used everywhere.
+	 */
+	def toDecoratedName(String name) {
+		'''__«name»'''
+	}
 }

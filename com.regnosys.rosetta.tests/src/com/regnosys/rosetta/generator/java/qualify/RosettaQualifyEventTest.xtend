@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaQualifyEventsWhenPresentTest {
+class RosettaQualifyEventTest {
 	
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension QualifyTestHelper
@@ -43,7 +43,7 @@ class RosettaQualifyEventsWhenPresentTest {
 				bazValue number (0..1)
 				other number (0..1)
 			
-			func Qualify_WhenPresentEvent:
+			func Qualify_Event:
 				[qualification BusinessEvent]
 				inputs: foo Foo(1..1)
 				output: is_event boolean (1..1)
@@ -61,7 +61,7 @@ class RosettaQualifyEventsWhenPresentTest {
 
 		// Assert Event
 		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "WhenPresentEvent")
+		val result = getQualifyResult(results, "Event")
 		assertTrue(result.success, 'Unexpected success result')
 		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
@@ -73,7 +73,7 @@ class RosettaQualifyEventsWhenPresentTest {
 
 		// Assert Event
 		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "WhenPresentEvent")
+		val result = getQualifyResult(results, "Event")
 		assertFalse(result.success)
 		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}
@@ -85,7 +85,7 @@ class RosettaQualifyEventsWhenPresentTest {
 
 		// Assert Event
 		val results = createUtilAndGetAllResults(fooInstance)
-		val result = getQualifyResult(results, "WhenPresentEvent")
+		val result = getQualifyResult(results, "Event")
 		assertTrue(result.success, 'Unexpected success result')
 		assertThat('Unexpected number of expressionDataRule results', result.expressionDataRuleResults.size, is(1))
 	}

@@ -784,12 +784,13 @@ class FuncGeneratorTest {
 					top2 Top (1..1)
 				
 				output: result int (1..1)
+				
 				assign-output result:
-					top1-> foo and top2 -> foo
+					top1 -> foo and top2 -> foo
 		'''.parseRosetta
 
 		model.assertError(SimplePackage.Literals.OPERATION, RosettaIssueCodes.TYPE_ERROR,
-			"left hand side of and expression must be boolean")
+			"Left hand side of 'and' expression must be boolean")
 	}
 
 	@Test
@@ -904,7 +905,6 @@ class FuncGeneratorTest {
 			f3
 		)
 		code.compileToClasses
-
 	}
 
 	@Test

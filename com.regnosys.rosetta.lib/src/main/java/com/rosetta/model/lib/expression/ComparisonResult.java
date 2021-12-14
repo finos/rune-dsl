@@ -29,6 +29,10 @@ public class ComparisonResult implements Mapper<Boolean> {
 		return new ComparisonResult(false, true, error);
 	}
 	
+	public static ComparisonResult of(Mapper<Boolean> result) {
+		return new ComparisonResult(result.getMulti().stream().allMatch(r -> r == true), false, null);
+	}
+	
 	private ComparisonResult(boolean result, boolean emptyOperand, String error) {
 		this.result = result;
 		this.emptyOperand = emptyOperand;

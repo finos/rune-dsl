@@ -27,7 +27,6 @@ import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
-import com.regnosys.rosetta.types.RFeatureCallType
 import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -289,8 +288,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				Scopes.scopeFor(receiverType.enumeration.allEnumValues)
 			RRecordType:
 				Scopes.scopeFor(receiverType.record.features)
-			RFeatureCallType:
-				receiverType.featureType.createFeatureScope
 			default:
 				null
 		}

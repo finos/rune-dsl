@@ -77,9 +77,9 @@ class RosettaTypeProvider {
 		switch expression {
 			RosettaCallableCall: {
 				if(expression.implicitReceiver)
-					safeRType(EcoreUtil2.getContainerOfType(expression, ListOperation).firstOrImplicit, cycleTracker).wrapInFeatureCallType(expression)
+					safeRType(EcoreUtil2.getContainerOfType(expression, ListOperation).firstOrImplicit, cycleTracker)
 				else
-					safeRType(expression.callable, cycleTracker).wrapInFeatureCallType(expression)
+					safeRType(expression.callable, cycleTracker)
 			}
 			RosettaCallableWithArgsCall: {
 				if (expression.callable instanceof RosettaExternalFunction) {
@@ -92,7 +92,7 @@ class RosettaTypeProvider {
 						returnType
 					}
 				} else {
-					expression.callable.safeRType(cycleTracker).wrapInFeatureCallType(expression)
+					expression.callable.safeRType(cycleTracker)
 				}
 			}
 			Data:
@@ -111,10 +111,10 @@ class RosettaTypeProvider {
 				switch (feature) {
 					RosettaTypedFeature: {
 						val featureType = if (feature.isTypeInferred) {
-								feature.safeRType(cycleTracker).wrapInFeatureCallType(expression)
+								feature.safeRType(cycleTracker)
 							} else {
 								val type = feature?.type
-								type.safeRType(cycleTracker).wrapInFeatureCallType(expression)
+								type.safeRType(cycleTracker)
 							}
 						if (feature instanceof Annotated) {
 							if (featureType instanceof RAnnotateType) {
@@ -278,30 +278,6 @@ class RosettaTypeProvider {
 				}
 			default:
 				RBuiltinType.MISSING
-		}
-	}
-	
-	
-	private def wrapInFeatureCallType(RType expressionType, RosettaExpression expression) {
-		if (!(expressionType instanceof RFeatureCallType) && isFeatureCallTypeContext(expression))
-			new RFeatureCallType(expressionType)
-		else
-			expressionType
-	}
-
-	private def boolean isFeatureCallTypeContext(EObject expression) {
-		val container = expression.eContainer
-		switch container {
-			RosettaOnlyExistsExpression,
-			RosettaExistsExpression,
-			RosettaAbsentExpression:
-				true
-			RosettaBinaryOperation:
-				container.featureCallTypeContext
-			RosettaParenthesisCalcExpression:
-				container.featureCallTypeContext
-			default:
-				false
 		}
 	}
 	
