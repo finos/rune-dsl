@@ -65,6 +65,7 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
+import com.regnosys.rosetta.rosetta.simple.ListOperationKind
 
 class ExpressionGenerator {
 	
@@ -550,6 +551,10 @@ class ExpressionGenerator {
 				'''
 				«op.receiver.javaCode(params)»
 					.flattenList()'''
+
+			}
+			case DISTINCT, case ONLY_ELEMENT: {
+				distinctOrOnlyElement('''«op.receiver.javaCode(params)»''', op.operationKind === ListOperationKind.DISTINCT, op.operationKind === ListOperationKind.ONLY_ELEMENT)
 
 			}
 			default:

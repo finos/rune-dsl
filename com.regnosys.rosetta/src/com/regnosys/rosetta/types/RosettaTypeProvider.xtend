@@ -274,7 +274,7 @@ class RosettaTypeProvider {
 					case FLATTEN:
 						expression.receiver.safeRType(cycleTracker)
 					case DISTINCT:
-						expression.firstOrImplicit.safeRType(cycleTracker)
+						expression.receiver.safeRType(cycleTracker)
 					case ONLY_ELEMENT:
 						expression.receiver.safeRType(cycleTracker)
 					default: 

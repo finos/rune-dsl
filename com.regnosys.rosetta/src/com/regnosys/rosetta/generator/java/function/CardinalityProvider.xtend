@@ -73,8 +73,19 @@ class CardinalityProvider {
 				else 
 					obj.isClosureParameterMulti
 			}
-			ListLiteral,
-			ListOperation: true
+			ListLiteral: true
+			ListOperation: {
+				switch (obj.operationKind) {
+					case SUM,
+					case ONLY_ELEMENT:
+						false
+					case FILTER,
+					case MAP,
+					case FLATTEN,
+					case DISTINCT:
+						true
+				}
+			}
 			RosettaBinaryOperation: {
 				false // check '+' operator
 			}

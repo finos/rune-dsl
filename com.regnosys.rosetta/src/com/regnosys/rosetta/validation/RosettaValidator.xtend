@@ -156,16 +156,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			error("Attribute is missing after '->'", fCall, ROSETTA_FEATURE_CALL__FEATURE)
 			return
 		}
-		if (fCall.isToOne && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
-			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
-			error("'only-element' can not be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
-		}
-		if (fCall.isDistinct && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
-			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
-			error("'distinct' can not be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
-		}
 	}
-
+	
 	@Check
 	def void checkEnumerationNameStartsWithCapital(RosettaEnumeration enumeration) {
 		if (!Character.isUpperCase(enumeration.name.charAt(0))) {
@@ -1175,11 +1167,19 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				if (o.body !== null) {
 					error('''No expression allowed for list flatten.''', o, LIST_OPERATION__OPERATION_KIND)
 				}
-				else if (o.parameters?.size > 0) {
+				else if (o.parameters.size > 0) {
 					error('''No item parameter allowed for list flatten.''', o, LIST_OPERATION__PARAMETERS)
 				}
 				else if (!o.isItemMulti) {
 					error('''List flatten only allowed for list of lists.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
+			}
+			case DISTINCT,
+			case ONLY_ELEMENT: {
+				val receiver = o.receiver
+				if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
+					error('''«»'«o.operationKind.literal»' can not be used for single cardinality expressions.''', o,
+						LIST_OPERATION__OPERATION_KIND)
 				}
 			}
 		}
