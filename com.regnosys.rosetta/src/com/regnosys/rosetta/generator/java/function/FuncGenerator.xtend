@@ -30,7 +30,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.rosetta.simple.SetOutputOperation
+import com.regnosys.rosetta.rosetta.simple.OutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RAnnotateType
 import com.regnosys.rosetta.types.RType
@@ -163,7 +163,7 @@ class FuncGenerator {
 					«FOR indexed : func.operations.filter(AssignOutputOperation).indexed»
 						«indexed.value.assign(aliasOut, names, output)»;
 					«ENDFOR»
-					«FOR indexed : func.operations.filter(SetOutputOperation).indexed»
+					«FOR indexed : func.operations.filter(OutputOperation).indexed»
 						«indexed.value.assign(aliasOut, names, output)»;
 					«ENDFOR»
 					return «outputName»;
@@ -264,7 +264,7 @@ class FuncGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient assign(SetOutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type) {
+	private def StringConcatenationClient assign(OutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type) {
 		val pathAsList = op.pathAsSegmentList
 		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
@@ -320,7 +320,7 @@ class FuncGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient assignValue(SetOutputOperation op, JavaNames names) {
+	private def StringConcatenationClient assignValue(OutputOperation op, JavaNames names) {
 		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
 							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
 	}

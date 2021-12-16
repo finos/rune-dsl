@@ -123,7 +123,7 @@ PostCondition returns Condition:
 ;
 
 Operation:
-	AssignOutputOperation | SetOutputOperation
+	AssignOutputOperation | OutputOperation
 ;
 
 AssignOutputOperation:
@@ -131,8 +131,8 @@ AssignOutputOperation:
 	expression = RosettaCalcExpression assignAsKey?='as-key'?
 ;
 
-SetOutputOperation:
-	'set' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
+OutputOperation:
+	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
 		expression = ListOperation
 ;
 
