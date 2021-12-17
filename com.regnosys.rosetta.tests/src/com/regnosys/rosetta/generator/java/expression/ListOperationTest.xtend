@@ -339,6 +339,186 @@ class ListOperationTest {
 	}
 	
 	@Test
+	def void shouldGenerateFunctionWithFilterListWithMetaData() {
+		val model = '''
+			type FooWithScheme:
+				attr string (1..1)
+					[metadata scheme]
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos FooWithScheme (0..*)
+				output:
+					filteredFoos FooWithScheme (0..*)
+				
+				set filteredFoos:
+					foos 
+						filter [ item -> attr -> scheme = "foo-scheme" ]
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.model.metafields.FieldWithMetaString;
+				import com.rosetta.test.model.FooWithScheme;
+				import com.rosetta.test.model.FooWithScheme.FooWithSchemeBuilder;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param foos 
+					* @return filteredFoos 
+					*/
+					public List<? extends FooWithScheme> evaluate(List<? extends FooWithScheme> foos) {
+						
+						List<FooWithScheme.FooWithSchemeBuilder> filteredFoosHolder = doEvaluate(foos);
+						List<FooWithScheme.FooWithSchemeBuilder> filteredFoos = assignOutput(filteredFoosHolder, foos);
+						
+						if (filteredFoos!=null) objectValidator.validateAndFailOnErorr(FooWithScheme.class, filteredFoos);
+						return filteredFoos;
+					}
+					
+					private List<FooWithScheme.FooWithSchemeBuilder> assignOutput(List<FooWithScheme.FooWithSchemeBuilder> filteredFoos, List<? extends FooWithScheme> foos) {
+						filteredFoos = toBuilder(MapperC.of(foos)
+							.filterItem(__item -> areEqual(__item.<FieldWithMetaString>map("getAttr", _fooWithScheme -> _fooWithScheme.getAttr()).map("getMeta", a->a.getMeta()).map("getScheme", a->a.getScheme()), MapperS.of("foo-scheme"), CardinalityOperator.All).get()).getMulti())
+						;
+						return filteredFoos;
+					}
+				
+					protected abstract List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFooWithScheme('a', 'foo-scheme')
+		val foo2 = classes.createFooWithScheme('b', 'foo-scheme')
+		val foo3 = classes.createFooWithScheme('c', 'bar-scheme')
+		
+
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList)
+		assertEquals(2, res.size);
+		assertThat(res, hasItems(foo1, foo2));
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateFunctionWithFilterListWithMetaData2() {
+		val model = '''
+			type FooWithScheme:
+				attr string (1..1)
+					[metadata scheme]
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos FooWithScheme (0..*)
+				output:
+					strings string (0..*)
+				
+				set strings:
+					foos 
+						map [ item -> attr ]
+						filter [ item -> scheme = "foo-scheme" ]
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.metafields.FieldWithMetaString;
+				import com.rosetta.test.model.FooWithScheme;
+				import java.util.Arrays;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param foos 
+					* @return strings 
+					*/
+					public List<String> evaluate(List<? extends FooWithScheme> foos) {
+						
+						List<String> stringsHolder = doEvaluate(foos);
+						List<String> strings = assignOutput(stringsHolder, foos);
+						
+						return strings;
+					}
+					
+					private List<String> assignOutput(List<String> strings, List<? extends FooWithScheme> foos) {
+						strings = MapperC.of(foos)
+							.mapItem(/*MapperS<? extends FooWithScheme>*/ __item -> (MapperS<String>) __item.<FieldWithMetaString>map("getAttr", _fooWithScheme -> _fooWithScheme.getAttr()).<String>map("getValue", _f->_f.getValue())).getMulti();
+						return strings;
+					}
+				
+					protected abstract List<String> doEvaluate(List<? extends FooWithScheme> foos);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<String> doEvaluate(List<? extends FooWithScheme> foos) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFooWithScheme('a', 'foo-scheme')
+		val foo2 = classes.createFooWithScheme('b', 'foo-scheme')
+		val foo3 = classes.createFooWithScheme('c', 'bar-scheme')
+		
+
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, fooList)
+		assertEquals(2, res.size);
+		assertThat(res, hasItems(foo1, foo2));
+	}
+
+
+	@Test
 	def void shouldGenerateFunctionWithFilterBuiltInTypeList() {
 		val model = '''			
 			func FuncFoo:
@@ -2041,6 +2221,367 @@ class ListOperationTest {
 	}
 	
 	@Test
+	def void shouldGenerateFunctionWithSameNamespace() {
+		val model = '''
+			namespace ns1
+			
+			type Bar:
+				barAttr string (1..1)
+
+			type Foo:
+				fooAttr string (1..1)
+			
+			func GetFoo:
+				inputs:
+					barAttr string (1..1)
+				output:
+					foo Foo (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					strings string (0..*)
+				
+				set strings:
+					bars 
+						map [ GetFoo( item -> barAttr ) ]
+						map [ item -> fooAttr ]
+		'''
+		val code = model.generateCode
+		val f = code.get("ns1.functions.FuncFoo")
+		assertEquals(
+			'''
+				package ns1.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import java.util.Arrays;
+				import java.util.List;
+				import ns1.Bar;
+				import ns1.Foo;
+				import ns1.functions.GetFoo;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					// RosettaFunction dependencies
+					//
+					@Inject protected GetFoo getFoo;
+				
+					/**
+					* @param bars 
+					* @return strings 
+					*/
+					public List<String> evaluate(List<? extends Bar> bars) {
+						
+						List<String> stringsHolder = doEvaluate(bars);
+						List<String> strings = assignOutput(stringsHolder, bars);
+						
+						return strings;
+					}
+					
+					private List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+						strings = MapperC.of(bars)
+							.mapItem(/*MapperS<? extends Bar>*/ __item -> (MapperS<? extends Foo>) MapperS.of(getFoo.evaluate(__item.<String>map("getBarAttr", _bar -> _bar.getBarAttr()).get())))
+							.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getFooAttr", _foo -> _foo.getFooAttr())).getMulti();
+						return strings;
+					}
+				
+					protected abstract List<String> doEvaluate(List<? extends Bar> bars);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<String> doEvaluate(List<? extends Bar> bars) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithDifferentNamespace() {
+		val model = #['''
+			namespace ns1
+			
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+		''','''
+			namespace ns2
+			
+			import ns1.*
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					strings string (0..*)
+				
+				set strings:
+					bars 
+						map [ item -> foos ] flatten
+						map [ item -> attr ]
+		''']
+		val code = model.generateCode
+		val f = code.get("ns2.functions.FuncFoo")
+		assertEquals(
+			'''
+				package ns2.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import java.util.Arrays;
+				import java.util.List;
+				import ns1.Bar;
+				import ns1.Foo;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param bars 
+					* @return strings 
+					*/
+					public List<String> evaluate(List<? extends Bar> bars) {
+						
+						List<String> stringsHolder = doEvaluate(bars);
+						List<String> strings = assignOutput(stringsHolder, bars);
+						
+						return strings;
+					}
+					
+					private List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+						strings = MapperC.of(bars)
+							.mapItemToList((/*MapperS<? extends Bar>*/ __item) -> (MapperC<? extends Foo>) __item.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
+							.flattenList()
+							.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getAttr", _foo -> _foo.getAttr())).getMulti();
+						return strings;
+					}
+				
+					protected abstract List<String> doEvaluate(List<? extends Bar> bars);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<String> doEvaluate(List<? extends Bar> bars) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithDifferentNamespace2() {
+		val model = #['''
+			namespace ns1
+			
+			type Bar:
+				barAttr string (1..1)
+
+			type Foo:
+				fooAttr string (1..1)
+			
+			func GetFoo:
+				inputs:
+					barAttr string (1..1)
+				output:
+					foo Foo (1..1)
+		''','''
+			namespace ns2
+			
+			import ns1.*
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					strings string (0..*)
+				
+				set strings:
+					bars 
+						map [ GetFoo( item -> barAttr ) ]
+						map [ item -> fooAttr ]
+		''']
+		val code = model.generateCode
+		val f = code.get("ns2.functions.FuncFoo")
+		assertEquals(
+			'''
+				package ns2.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import java.util.Arrays;
+				import java.util.List;
+				import ns1.Bar;
+				import ns1.Foo;
+				import ns1.functions.GetFoo;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					// RosettaFunction dependencies
+					//
+					@Inject protected GetFoo getFoo;
+				
+					/**
+					* @param bars 
+					* @return strings 
+					*/
+					public List<String> evaluate(List<? extends Bar> bars) {
+						
+						List<String> stringsHolder = doEvaluate(bars);
+						List<String> strings = assignOutput(stringsHolder, bars);
+						
+						return strings;
+					}
+					
+					private List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+						strings = MapperC.of(bars)
+							.mapItem(/*MapperS<? extends Bar>*/ __item -> (MapperS<? extends Foo>) MapperS.of(getFoo.evaluate(__item.<String>map("getBarAttr", _bar -> _bar.getBarAttr()).get())))
+							.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getFooAttr", _foo -> _foo.getFooAttr())).getMulti();
+						return strings;
+					}
+				
+					protected abstract List<String> doEvaluate(List<? extends Bar> bars);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<String> doEvaluate(List<? extends Bar> bars) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldGenerateFunctionWithDifferentNamespace3() {
+		val model = #['''
+			namespace ns1
+			
+			type Bar:
+				barAttr string (1..1)
+
+			type Foo:
+				fooAttr string (1..1)
+			
+			type Baz:
+				fooAttr string (1..1)
+			
+			func GetFoo:
+				inputs:
+					baz Baz (1..1)
+				output:
+					foo Foo (1..1)
+			
+			func GetBaz:
+				inputs:
+					attr string (1..1)
+				output:
+					baz Baz (1..1)
+		''','''
+			namespace ns2
+			
+			import ns1.*
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					strings string (0..*)
+				
+				set strings:
+					bars 
+						map [ GetFoo( GetBaz( item -> barAttr ) ) ]
+						map [ item -> fooAttr ]
+		''']
+		val code = model.generateCode
+		val f = code.get("ns2.functions.FuncFoo")
+		assertEquals(
+			'''
+				package ns2.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import java.util.Arrays;
+				import java.util.List;
+				import ns1.Bar;
+				import ns1.Baz;
+				import ns1.Foo;
+				import ns1.functions.GetBaz;
+				import ns1.functions.GetFoo;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					// RosettaFunction dependencies
+					//
+					@Inject protected GetBaz getBaz;
+					@Inject protected GetFoo getFoo;
+				
+					/**
+					* @param bars 
+					* @return strings 
+					*/
+					public List<String> evaluate(List<? extends Bar> bars) {
+						
+						List<String> stringsHolder = doEvaluate(bars);
+						List<String> strings = assignOutput(stringsHolder, bars);
+						
+						return strings;
+					}
+					
+					private List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+						strings = MapperC.of(bars)
+							.mapItem(/*MapperS<? extends Bar>*/ __item -> (MapperS<? extends Foo>) MapperS.of(getFoo.evaluate(MapperS.of(getBaz.evaluate(__item.<String>map("getBarAttr", _bar -> _bar.getBarAttr()).get())).get())))
+							.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getFooAttr", _foo -> _foo.getFooAttr())).getMulti();
+						return strings;
+					}
+				
+					protected abstract List<String> doEvaluate(List<? extends Bar> bars);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<String> doEvaluate(List<? extends Bar> bars) {
+							return Arrays.asList();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+	
+	@Test
 	def void shouldGenerateListWithinIf() {
 		val model = '''
 			type Foo:
@@ -2157,6 +2698,12 @@ class ListOperationTest {
 	private def RosettaModelObject createFoo2(Map<String, Class<?>> classes, boolean include, boolean include2, String attr) {
 		classes.createInstanceUsingBuilder('Foo2', of('include', include, 'include2', include2, 'attr', attr), of()) as RosettaModelObject
 	}
+	
+	private def RosettaModelObject createFooWithScheme(Map<String, Class<?>> classes, String attr, String scheme) {
+		val fieldWithMetaString = classes.createFieldWithMetaString(attr, scheme)
+		classes.createInstanceUsingBuilder('FooWithScheme', of('attr', fieldWithMetaString), of()) as RosettaModelObject
+	}
+	
 	
 	private def RosettaModelObject createBar(Map<String, Class<?>> classes, List<RosettaModelObject> foos) {
 		classes.createInstanceUsingBuilder('Bar', of(), of('foos', foos)) as RosettaModelObject

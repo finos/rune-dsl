@@ -55,7 +55,6 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 class FuncGenerator {
 
 	@Inject ExpressionGenerator expressionGenerator
-	//@Inject ExpressionGeneratorWithBuilder expressionWithBuilder
 	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
@@ -75,7 +74,11 @@ class FuncGenerator {
 			} else {
 				tracImports(func.classBody(func.name, dependencies, javaNames, version, false), func.name)
 			}
+        
         classBody.addImport(Arrays.name, Arrays.simpleName)
+        
+		dependencies.getFuncOutputTypes(javaNames).toSet.forEach[classBody.addImport(it, it)]
+        
 		val content = '''
 			package «javaNames.packages.model.functions.name»;
 			
@@ -448,5 +451,13 @@ class FuncGenerator {
 			Attribute: feature.card.isMany
 			default: throw new IllegalStateException('Unsupported type passed ' + feature?.eClass?.name)
 		}
+	}
+	
+	private def getFuncOutputTypes(List<RosettaCallableWithArgs> dependencies, JavaNames javaNames) {
+		dependencies
+        	.filter[it instanceof Function]
+        	.map[it as Function]
+        	.map[it.output.type]
+        	.map[javaNames.toJavaType(it).name]
 	}
 }

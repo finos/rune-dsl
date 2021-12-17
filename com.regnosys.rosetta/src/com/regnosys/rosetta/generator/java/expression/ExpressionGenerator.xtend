@@ -79,22 +79,18 @@ class ExpressionGenerator {
 	@Inject extension Util
 	@Inject extension ListOperationExtensions
 	
-	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
-		expr.javaCode(params, true);
-	}
-	
 	/**
 	 * convert a rosetta expression to code
 	 * ParamMpa params  - a map keyed by classname or positional index that provides variable names for expression parameters
 	 */
-	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params, boolean isLast) {
+	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		switch (expr) {
 			RosettaFeatureCall : {
 				var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
 				if (expr.eContainer!==null && expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
 					autoValue=false;
 				}
-				featureCall(expr, params, isLast, autoValue)
+				featureCall(expr, params, autoValue)
 			}
 			RosettaOnlyExistsExpression : {
 				onlyExistsExpr(expr, params)
@@ -142,7 +138,7 @@ class ExpressionGenerator {
 				'''«importMethod(ExpressionOperators,"disjoint")»(«expr.container.javaCode(params)», «expr.disjoint.javaCode(params)»)'''
 			}
 			RosettaParenthesisCalcExpression : {
-				expr.expression.javaCode(params, isLast)
+				expr.expression.javaCode(params)
 			}
 			EmptyLiteral : {
 				'''null'''
@@ -301,7 +297,7 @@ class ExpressionGenerator {
 				// The current container (Data) is stored in Params, but we need also look for superTypes
 				// so we could also do: (call.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
 				if(call.eContainer instanceof Data)
-					'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(call, false, true)»'''
+					'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(call, true)»'''
 				else
 					distinctOrOnlyElement('''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)''', expr.distinct, expr.toOne)
 			}
@@ -329,13 +325,13 @@ class ExpressionGenerator {
 	/**
 	 * feature call is a call to get an attribute of an object e.g. Quote->amount
 	 */
-	private def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params, boolean isLast, boolean autoValue) {
+	private def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params, boolean autoValue) {
 		val feature = call.feature
 		val StringConcatenationClient right = switch (feature) {
 			Attribute:
-				feature.buildMapFunc(isLast, autoValue)
+				feature.buildMapFunc(autoValue)
 			RosettaMetaType: 
-				'''«feature.buildMapFunc(isLast)»'''
+				'''«feature.buildMapFunc»'''
 			RosettaEnumValue: 
 				return '''«MapperS».of(«feature.enumeration.toJavaType».«feature.convertValues»)'''
 			RosettaFeature: 
@@ -344,7 +340,7 @@ class ExpressionGenerator {
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.eClass.name)
 		}
 		
-		return distinctOrOnlyElement('''«javaCode(call.receiver, params, false)»«right»''', call.distinct, call.toOne)
+		return distinctOrOnlyElement('''«javaCode(call.receiver, params)»«right»''', call.distinct, call.toOne)
 	}
 	
 	private def StringConcatenationClient distinctOrOnlyElement(StringConcatenationClient code, boolean distinct, boolean toOne) {
@@ -455,7 +451,7 @@ class ExpressionGenerator {
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	def StringConcatenationClient buildMapFunc(Attribute attribute, boolean isLast, boolean autoValue) {
+	def StringConcatenationClient buildMapFunc(Attribute attribute, boolean autoValue) {
 		val mapFunc = attribute.buildMapFuncAttribute
 		if (attribute.card.isIsMany) {
 			if (attribute.metaAnnotations.nullOrEmpty)
@@ -509,7 +505,7 @@ class ExpressionGenerator {
 		return names.toMetaType(attribute, name)
 	}
 	
-	def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, boolean isLast) {
+	def static StringConcatenationClient buildMapFunc(RosettaMetaType meta) {
 		if (meta.name=="reference") {
 			'''.map("get«meta.name.toFirstUpper»", a->a.getGlobalReference())'''
 		}
