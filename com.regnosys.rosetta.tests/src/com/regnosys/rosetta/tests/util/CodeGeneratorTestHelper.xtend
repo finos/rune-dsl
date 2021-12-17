@@ -5,6 +5,7 @@ import com.regnosys.rosetta.generator.RosettaGenerator
 import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.rosetta.RosettaModel
+import com.rosetta.model.lib.meta.FieldWithMeta
 import java.io.File
 import java.lang.reflect.Method
 import java.nio.file.Files
@@ -107,6 +108,17 @@ class CodeGeneratorTestHelper {
 			]
 		]
 		return rosettaClassBuilderInstance.class.getMethod('build').invoke(rosettaClassBuilderInstance);
+	}
+
+	def FieldWithMeta<String> createFieldWithMetaString(Map<String, Class<?>> classes, String value, String scheme) {
+		val metaFieldsBuilder = classes.get('com.rosetta.model.metafields.MetaFields').getMethod("builder").invoke(null);
+		metaFieldsBuilder.class.getMatchingMethod('setScheme', #[scheme.class]).invoke(metaFieldsBuilder, scheme);
+		
+		val fieldWithMetaStringBuilder = classes.get('com.rosetta.model.metafields.FieldWithMetaString').getMethod("builder").invoke(null);
+		fieldWithMetaStringBuilder.class.getMatchingMethod('setValue', #[value.class]).invoke(fieldWithMetaStringBuilder, value);
+		fieldWithMetaStringBuilder.class.getMatchingMethod('setMeta', #[metaFieldsBuilder.class]).invoke(fieldWithMetaStringBuilder, metaFieldsBuilder);
+		
+		return fieldWithMetaStringBuilder.class.getMethod('build').invoke(fieldWithMetaStringBuilder) as FieldWithMeta<String>;
 	}
 
 	def Method getMatchingMethod(Class<?> clazz, String name, List<Class<?>> values) {
