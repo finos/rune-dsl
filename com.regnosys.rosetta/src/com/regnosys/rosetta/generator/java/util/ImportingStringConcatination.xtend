@@ -1,12 +1,12 @@
 package com.regnosys.rosetta.generator.java.util
 
 import java.lang.reflect.Method
+import java.util.List
+import java.util.Map
 import java.util.Set
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtend2.lib.StringConcatenation
 import org.eclipse.xtext.naming.QualifiedName
-import java.util.Map
-import java.util.List
 
 class ImportingStringConcatination extends StringConcatenation {
 	@Accessors(PUBLIC_GETTER)
@@ -99,7 +99,7 @@ class ImportingStringConcatination extends StringConcatenation {
 	}
 	
 	def getImports() {
-		imports.values.map[toString].sortBy[it]
+		imports.values.toSet.map[toString].sortBy[it]
 	}
 	def getImports(String... excluding) {
 		val exQ = excluding.map[QualifiedName.create(split('\\.'))] 
