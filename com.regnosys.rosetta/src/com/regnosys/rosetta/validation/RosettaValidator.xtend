@@ -160,6 +160,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
 			error("List only-element cannot be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
 		}
+		if (fCall.receiver !== null && !fCall.receiver.eIsProxy && fCall.receiver instanceof ListOperation) {
+			error("Blah blah.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
+		}
 	}
 	
 	@Check
