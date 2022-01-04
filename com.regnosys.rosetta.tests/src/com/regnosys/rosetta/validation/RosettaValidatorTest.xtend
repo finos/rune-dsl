@@ -18,6 +18,8 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import org.eclipse.xtext.diagnostics.Diagnostic
+import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -1284,6 +1286,75 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
+	}
+
+	@Test
+	def shouldNotGenerateErrorForMapListOperation() {
+		val model = '''
+			type Bar:
+				foo Foo (1..1)
+
+			type Foo:
+				amount number (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					result number (1..1)
+				
+				assign-output result:
+					bars 
+						map [ item -> foo ]
+						map [ item -> amount ]
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
+	
+	@Test
+	def shouldGenerateErrorForFeatureCallAfterListOperation() {
+		val model = '''
+			type Bar:
+				foo Foo (1..1)
+
+			type Foo:
+				amount number (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					result number (1..1)
+				
+				assign-output result:
+					bars map [ item -> foo ] distinct only-element -> amount
+		'''.parseRosetta
+		model.assertError(ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'") // is it possible to generate a better error message?
+	}
+	
+	@Test
+	@Disabled
+	def shouldGenerateErrorForFeatureCallAfterListOperation2() {
+		val model = '''
+			type Bar:
+				foo Foo (1..1)
+
+			type Foo:
+				amount number (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					result number (1..1)
+				
+				assign-output result:
+					if bars exists
+					then bars map [ item -> foo ] distinct only-element -> amount
+		'''.parseRosetta
+		// then clause should generate syntax error (see test above shouldGenerateErrorForFeatureCallAfterListOperation)
+		model.assertError(ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'")
 	}
 
 	@Test
