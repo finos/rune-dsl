@@ -1053,7 +1053,6 @@ class ListOperationTest {
 	}
 	
 	@Test
-	@Disabled // Add syntax support
 	def void shouldGenerateFunctionWithFilterListAndOnlyElement() {
 		val model = '''
 			type Foo:
@@ -1089,7 +1088,6 @@ class ListOperationTest {
 	}
 	
 	@Test
-	@Disabled // Add syntax support
 	def void shouldGenerateFunctionWithFilterListAndDistinct() {
 		val model = '''
 			type Foo:
@@ -1123,7 +1121,7 @@ class ListOperationTest {
 		fooList.add(foo4)
 		
 		val res = func.invokeFunc(List, fooList)
-		assertEquals(1, res.size);
+		assertEquals(2, res.size);
 		assertThat(res, hasItems(foo2));
 	}
 	

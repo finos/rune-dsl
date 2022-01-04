@@ -156,16 +156,19 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			error("Attribute is missing after '->'", fCall, ROSETTA_FEATURE_CALL__FEATURE)
 			return
 		}
-		if (fCall.isToOne && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
+		if (fCall.onlyElement && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
 			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
-			error("'only-element' can not be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
-		}
-		if (fCall.isDistinct && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
-			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
-			error("'distinct' can not be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
+			error("List only-element cannot be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
 		}
 	}
-
+	
+	@Check
+	def void checkCallableCall(RosettaCallableCall cCall) {
+		if (cCall.callable !== null && cCall.onlyElement && !cCall.callable.eIsProxy && !cardinality.isMulti(cCall.callable)) {
+			error("List only-element cannot be used for single cardinality expressions.", cCall, ROSETTA_CALLABLE_CALL__CALLABLE)
+		}
+	}
+	
 	@Check
 	def void checkEnumerationNameStartsWithCapital(RosettaEnumeration enumeration) {
 		if (!Character.isUpperCase(enumeration.name.charAt(0))) {
@@ -249,11 +252,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					error('''Overriding attribute '«name»' must have a type that overrides its parent attribute type of «parentAttr.type.name»''',
 						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
 				}
-
 			]
 		]
 	}
-	
 	
 	protected def void checkNonOverridingAttributeNamesAreUnique( Iterable<Attribute> attrFromClazzes, Iterable<Attribute> attrFromSuperClasses, String name) {
 		val messageExtension = if (attrFromSuperClasses.empty) '' else ' (extends ' + attrFromSuperClasses.attributeTypeNames + ')'
@@ -1168,20 +1169,29 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					error('''Each list item («o.firstOrImplicit.name») is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).''', o, LIST_OPERATION__BODY)
 				}
 			}
-			case SUM: {
-				// TODO
-			}
 			case FLATTEN: {
 				if (o.body !== null) {
 					error('''No expression allowed for list flatten.''', o, LIST_OPERATION__OPERATION_KIND)
 				}
-				else if (o.parameters?.size > 0) {
+				else if (o.parameters.size > 0) {
 					error('''No item parameter allowed for list flatten.''', o, LIST_OPERATION__PARAMETERS)
 				}
 				else if (!o.isItemMulti) {
 					error('''List flatten only allowed for list of lists.''', o, LIST_OPERATION__OPERATION_KIND)
 				}
 			}
+			case SUM: {
+				// TODO
+			}
+			default: {
+				// Do nothing
+			}
+		}
+		
+		// Applies to all list operations
+		val receiver = o.receiver
+		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
+			error('''List «o.operationKind.literal» cannot be used for single cardinality expressions.''', o, LIST_OPERATION__OPERATION_KIND)
 		}
 	}
 	

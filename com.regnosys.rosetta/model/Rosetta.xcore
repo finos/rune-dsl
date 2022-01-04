@@ -240,8 +240,7 @@ abstract class RosettaExpression {
 }
 
 class RosettaCallableCall extends RosettaExpression {
-	boolean distinct
-	boolean toOne
+	boolean onlyElement
 	boolean implicitReceiver
 	refers RosettaCallable callable
 }
@@ -372,8 +371,7 @@ class RosettaDisjointExpression extends RosettaExpression {
 }
 
 class RosettaFeatureCall extends RosettaExpression {
-	boolean distinct
-	boolean toOne
+	boolean onlyElement
 	contains RosettaExpression receiver
 	refers RosettaFeature feature
 }
@@ -389,8 +387,7 @@ class RosettaConditionalExpression extends RosettaExpression {
 }
 
 class RosettaCallableWithArgsCall extends RosettaExpression {
-	boolean distinct
-	boolean toOne
+	boolean onlyElement
 	refers RosettaCallableWithArgs callable
 	contains RosettaExpression[] args
 }

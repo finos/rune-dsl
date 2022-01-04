@@ -1893,7 +1893,7 @@ class FuncGeneratorTest {
 			
 		'''.parseRosetta
 		model.assertError(ROSETTA_FEATURE_CALL, null,
-			"'only-element' can not be used for single cardinality expressions.")
+			"List only-element cannot be used for single cardinality expressions.")
 	}
 
 	@Test

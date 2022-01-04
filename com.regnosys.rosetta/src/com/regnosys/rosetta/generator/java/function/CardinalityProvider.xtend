@@ -40,7 +40,7 @@ class CardinalityProvider {
 		if(obj === null) return false
 		switch obj {
 			RosettaFeatureCall: {
-				if(obj.toOne) false else {
+				if(obj.onlyElement) false else {
 					if (obj.feature.isMulti(breakOnClosureParameter)) 
 						true 
 					else 
@@ -50,7 +50,7 @@ class CardinalityProvider {
 			RosettaEnumValue:false
 			WithCardinality: if(obj.card === null) false else obj.card.isIsMany
 			RosettaCallableCall: {
-				if(obj.toOne) 
+				if(obj.onlyElement) 
 					false 
 				else if (obj.implicitReceiver) 
 					EcoreUtil2.getContainerOfType(obj, ListOperation).firstOrImplicit.isMulti(breakOnClosureParameter)
@@ -58,7 +58,7 @@ class CardinalityProvider {
 					obj.callable.isMulti(breakOnClosureParameter)
 			}
 			RosettaCallableWithArgsCall: {
-				if(obj.toOne) 
+				if(obj.onlyElement) 
 					false 
 				else 
 					obj.callable.isMulti(breakOnClosureParameter)
@@ -73,8 +73,19 @@ class CardinalityProvider {
 				else 
 					obj.isClosureParameterMulti
 			}
-			ListLiteral,
-			ListOperation: true
+			ListLiteral: true
+			ListOperation: {
+				switch (obj.operationKind) {
+					case SUM,
+					case ONLY_ELEMENT:
+						false
+					case FILTER,
+					case MAP,
+					case FLATTEN,
+					case DISTINCT:
+						true
+				}
+			}
 			RosettaBinaryOperation: {
 				false // check '+' operator
 			}
@@ -111,24 +122,29 @@ class CardinalityProvider {
 	 * better to determine the cardinality from the previous operation
 	 */
 	def boolean isClosureParameterMulti(ListOperation obj) {
-		return obj.isPreviousOperationMulti
+		return obj.isPreviousOperationBodyMulti
 	}
 	
-	def boolean isPreviousOperationMulti(RosettaExpression expr) {
+	/**
+	 * Does the body of the previous list operation result
+	 */
+	def boolean isPreviousOperationBodyMulti(RosettaExpression expr) {
 		if (expr instanceof ListOperation) {
 			val previousOperation = expr.receiver
 			if (previousOperation instanceof ListOperation) {
-				switch(previousOperation.operationKind) {
-					case MAP:
-						return previousOperation.body.isMulti(false)
-					case FILTER: 
-						// Filter operation does not change cardinality, so check the next previous operation's cardinality
-						return previousOperation.isPreviousOperationMulti
-					case FLATTEN:
-						return false
-					default: {
-						println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)
-						return false
+				// ignore list operations with no body
+				if (previousOperation.body !== null) {
+					// determine cardinality of map and filter
+					switch(previousOperation.operationKind) {
+						case MAP:
+							return previousOperation.body.isMulti(false)
+						case FILTER: 
+							// Filter operation does not change cardinality, so check the next previous operation's cardinality
+							return previousOperation.isPreviousOperationBodyMulti
+						default: {
+							println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)
+							return false
+						}
 					}
 				}
 			}

@@ -273,6 +273,10 @@ class RosettaTypeProvider {
 						expression.body.safeRType(cycleTracker)
 					case FLATTEN:
 						expression.receiver.safeRType(cycleTracker)
+					case DISTINCT:
+						expression.receiver.safeRType(cycleTracker)
+					case ONLY_ELEMENT:
+						expression.receiver.safeRType(cycleTracker)
 					default: 
 						RBuiltinType.MISSING
 				}
