@@ -47,9 +47,7 @@ class AnnotationRef {
 }
 
 abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
-	// FIXME remove  both attributes below. LisOperation should be used instead
-	boolean distinct
-	boolean toOne
+	boolean onlyElement
 }
 
 

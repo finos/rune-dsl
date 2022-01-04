@@ -300,11 +300,11 @@ class ExpressionGenerator {
 				if(call.eContainer instanceof Data)
 					'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(call, true)»'''
 				else
-					distinctOrOnlyElement('''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)''', expr.distinct, expr.toOne)
+					distinctOrOnlyElement('''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)''', false, expr.onlyElement)
 			}
 			ShortcutDeclaration : {
 				val multi = cardinalityProvider.isMulti(call)
-				distinctOrOnlyElement('''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)''', expr.distinct, expr.toOne)
+				distinctOrOnlyElement('''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)''', false, expr.onlyElement)
 			}
 			RosettaEnumeration: '''«call.toJavaType»'''
 			ClosureParameter: '''«call.getNameOrDefault.toDecoratedName»'''
@@ -341,11 +341,11 @@ class ExpressionGenerator {
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.eClass.name)
 		}
 		
-		return distinctOrOnlyElement('''«javaCode(call.receiver, params)»«right»''', call.distinct, call.toOne)
+		return distinctOrOnlyElement('''«javaCode(call.receiver, params)»«right»''', false, call.onlyElement)
 	}
 	
-	private def StringConcatenationClient distinctOrOnlyElement(StringConcatenationClient code, boolean distinct, boolean toOne) {
-		return '''«IF toOne»«MapperS».of(«ENDIF»«IF distinct»«importWildCard(ExpressionOperators)»distinct(«ENDIF»«code»«IF distinct»)«ENDIF»«IF toOne».get())«ENDIF»'''
+	private def StringConcatenationClient distinctOrOnlyElement(StringConcatenationClient code, boolean distinct, boolean onlyElement) {
+		return '''«IF onlyElement»«MapperS».of(«ENDIF»«IF distinct»«importWildCard(ExpressionOperators)»distinct(«ENDIF»«code»«IF distinct»)«ENDIF»«IF onlyElement».get())«ENDIF»'''
 	}
 	
 	def private RosettaType containerType(RosettaFeature feature) {
