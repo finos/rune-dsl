@@ -1581,6 +1581,83 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void shouldGenerateListSingleCardinalityError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					s string (1..1)
+				
+				assign-output s:
+					foo
+						map [ item -> x ]
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List map cannot be used for single cardinality expressions.")
+	}
+	
+	@Test
+	def void shouldGenerateListSingleCardinalityError2() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					onlyFoo Foo (1..1)
+				
+				assign-output onlyFoo:
+					foo
+						only-element
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(ROSETTA_CALLABLE_CALL, null, "List only-element cannot be used for single cardinality expressions.")
+	}
+	
+	@Test
+	def void shouldGenerateListSingleCardinalityError3() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					s string (1..1)
+				
+				assign-output s:
+					foo -> x
+						only-element
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(ROSETTA_FEATURE_CALL, null, "List only-element cannot be used for single cardinality expressions.")
+	}
+	
+	@Test
+	def void shouldGenerateListSingleCardinalityError4() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					s string (1..1)
+				
+				assign-output s:
+					foos
+						only-element
+						map [ item -> x ]
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List map cannot be used for single cardinality expressions.")
+	}
+	
+	@Test
 	def void shouldGenerateListUnflattenedAssignOutputError() {
 		val model = '''
 			func FuncFoo:

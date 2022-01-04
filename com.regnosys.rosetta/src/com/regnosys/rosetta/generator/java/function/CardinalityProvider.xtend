@@ -126,25 +126,25 @@ class CardinalityProvider {
 	}
 	
 	/**
-	 * 
+	 * Does the body of the previous list operation result
 	 */
 	def boolean isPreviousOperationBodyMulti(RosettaExpression expr) {
 		if (expr instanceof ListOperation) {
 			val previousOperation = expr.receiver
 			if (previousOperation instanceof ListOperation) {
-				switch(previousOperation.operationKind) {
-					case MAP:
-						return previousOperation.body.isMulti(false)
-					case FILTER: 
-						// Filter operation does not change cardinality, so check the next previous operation's cardinality
-						return previousOperation.isPreviousOperationBodyMulti
-					case FLATTEN,
-					case DISTINCT,
-					case ONLY_ELEMENT:
-						return false
-					default: {
-						println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)
-						return false
+				// ignore list operations with no body
+				if (previousOperation.body !== null) {
+					// determine cardinality of map and filter
+					switch(previousOperation.operationKind) {
+						case MAP:
+							return previousOperation.body.isMulti(false)
+						case FILTER: 
+							// Filter operation does not change cardinality, so check the next previous operation's cardinality
+							return previousOperation.isPreviousOperationBodyMulti
+						default: {
+							println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)
+							return false
+						}
 					}
 				}
 			}
