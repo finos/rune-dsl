@@ -45,10 +45,18 @@ class ListOperationExtensions {
 	}
 	
 	/**
-	 * List MAP/FILTER operations can handle a list of lists, but nothing more!
+	 * List MAP/FILTER operations cannot handle a list of list of list
 	 */
 	def isOutputListOfListOfLists(ListOperation op) {
 		op.isItemMulti && op.body !== null && op.isBodyExpressionMulti
+	}
+	
+	def getPreviousListOperation(ListOperation op) {
+		val previousOperation = op.receiver
+		if (previousOperation instanceof ListOperation) {
+			return previousOperation
+		}
+		return null
 	}
 	
 	/**

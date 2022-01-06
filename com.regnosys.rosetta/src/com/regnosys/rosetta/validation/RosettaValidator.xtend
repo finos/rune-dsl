@@ -140,7 +140,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		def Diagnostic createDiagnostic(String message, State state) {
 			new FeatureBasedDiagnostic(Diagnostic.ERROR, message, state.currentObject, null, -1, state.currentCheckType, null, null)
 		}
-		
 	}
 	
 	@Check
@@ -160,15 +159,19 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
 			error("List only-element cannot be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
 		}
-		if (fCall.receiver !== null && !fCall.receiver.eIsProxy && fCall.receiver instanceof ListOperation) {
-			error("Blah blah.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
-		}
 	}
 	
 	@Check
 	def void checkCallableCall(RosettaCallableCall cCall) {
 		if (cCall.callable !== null && cCall.onlyElement && !cCall.callable.eIsProxy && !cardinality.isMulti(cCall.callable)) {
 			error("List only-element cannot be used for single cardinality expressions.", cCall, ROSETTA_CALLABLE_CALL__CALLABLE)
+		}
+	}
+	
+	@Check
+	def void checkFunctionNameStartsWithCapital(Function enumeration) {
+		if (!Character.isUpperCase(enumeration.name.charAt(0))) {
+			warning("Function name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
 	
@@ -1183,11 +1186,11 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					error('''List flatten only allowed for list of lists.''', o, LIST_OPERATION__OPERATION_KIND)
 				}
 			}
-			case SUM: {
-				// TODO
-			}
 			default: {
-				// Do nothing
+				val previousOp = o.previousListOperation
+				if (previousOp !== null && previousOp.isOutputListOfLists) {
+					error('''List must be flattened before «o.operationKind» operation.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
 			}
 		}
 		

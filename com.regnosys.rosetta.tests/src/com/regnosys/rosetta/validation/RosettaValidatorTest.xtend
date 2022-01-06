@@ -1789,6 +1789,46 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void shouldGenerateListOnlyElementUnflattenedError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res string (0..1)
+				
+				assign-output res:
+					foos
+						map a [ a -> xs ] // list of lists
+						only-element
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List must be flattened before only-element operation.")
+	}
+	
+	@Test
+	def void shouldGenerateListDistinctUnflattenedError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res string (0..*)
+				
+				assign-output res:
+					foos
+						map a [ a -> xs ] // list of lists
+						distinct
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List must be flattened before distinct operation.")
+	}
+	
+	@Test
 	def void shouldNotGenerateTypeErrorForExpressionInBrackets() {
 		val model = '''
 			func FuncFoo:
