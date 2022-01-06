@@ -3,6 +3,7 @@ package com.rosetta.model.lib.mapper;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -76,8 +77,8 @@ public class MapperS<T> implements MapperBuilder<T> {
 	@Override
 	public List<T> getMulti() {
 		return Optional.ofNullable(get())
-				.map(Collections::singletonList)
-				.orElse(Collections.emptyList());
+				.map(Arrays::asList)
+				.orElseGet(ArrayList::new);
 	}
 	
 	@Override
@@ -90,8 +91,8 @@ public class MapperS<T> implements MapperBuilder<T> {
 	public List<?> getParentMulti() {
 		return findParent(item)
 				.map(MapperItem::getMappedObject)
-				.map(Collections::singletonList)
-				.orElse(Collections.emptyList());
+				.map(Arrays::asList)
+				.orElseGet(ArrayList::new);
 	}
 
 	@Override

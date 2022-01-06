@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.calculation.FuncGeneratorHelper
+import com.regnosys.rosetta.generator.java.function.FuncGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
@@ -363,7 +363,6 @@ class RosettaBinaryOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import java.math.BigDecimal;
-				import java.util.Arrays;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -384,6 +383,7 @@ class RosettaBinaryOperationTest {
 					
 					private Boolean assignOutput(Boolean result, Foo foo) {
 						result = ComparisonResult.of(MapperS.of(foo).<Boolean>map("getAttrBoolean", _foo -> _foo.getAttrBoolean())).or(areEqual(MapperS.of(foo).<BigDecimal>map("getAttrNumber", _foo -> _foo.getAttrNumber()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)).get();
+						
 						return result;
 					}
 				
@@ -469,7 +469,6 @@ class RosettaBinaryOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
-				import java.util.Arrays;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -490,6 +489,7 @@ class RosettaBinaryOperationTest {
 					
 					private Boolean assignOutput(Boolean result, Foo foo) {
 						result = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX1", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX2", _foo -> _foo.getX2())))).get();
+						
 						return result;
 					}
 				
@@ -535,7 +535,6 @@ class RosettaBinaryOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
-				import java.util.Arrays;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -556,6 +555,7 @@ class RosettaBinaryOperationTest {
 					
 					private Boolean assignOutput(Boolean result, Foo foo) {
 						result = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>mapC("getX1", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX2", _foo -> _foo.getX2())))).get();
+						
 						return result;
 					}
 				

@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.calculation
+package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
@@ -57,7 +57,6 @@ class CalculationFuncGeneratorTest {
 				import com.rosetta.test.model.Period;
 				import com.rosetta.test.model.PeriodEnum;
 				import java.math.BigDecimal;
-				import java.util.Arrays;
 				
 				
 				/**
@@ -95,6 +94,7 @@ class CalculationFuncGeneratorTest {
 						
 						private BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
 							out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(BigDecimal.valueOf(30.0))).get();
+							
 							return out;
 						}
 					
@@ -137,7 +137,6 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
-			import java.util.Arrays;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -157,6 +156,7 @@ class CalculationFuncGeneratorTest {
 				
 				private Integer assignOutput(Integer out, Integer one) {
 					out = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(oneA(one).get()), MapperS.of(oneA(one).get())).get();
+					
 					return out;
 				}
 			
@@ -201,7 +201,6 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
-			import java.util.Arrays;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -222,6 +221,7 @@ class CalculationFuncGeneratorTest {
 				
 				private Integer assignOutput(Integer res, Integer arg1, Integer arg2) {
 					res = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(a1(arg1, arg2).get()), MapperMaths.<Integer, Integer, Integer>multiply(MapperS.of(a2(arg1, arg2).get()), MapperS.of(Integer.valueOf(215)))).get();
+					
 					return res;
 				}
 			
@@ -286,7 +286,6 @@ class CalculationFuncGeneratorTest {
 		import com.rosetta.test.model.FoncOut.FoncOutBuilder;
 		import com.rosetta.test.model.FuncIn;
 		import java.time.LocalTime;
-		import java.util.Arrays;
 		
 		
 		@ImplementedBy(Calc.CalcDefault.class)
@@ -309,11 +308,11 @@ class CalculationFuncGeneratorTest {
 			
 			private FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder res, FuncIn funIn) {
 				res
-					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get())
-				;
+					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+				
 				res
-					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get())
-				;
+					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+				
 				return res;
 			}
 		
@@ -380,7 +379,6 @@ class CalculationFuncGeneratorTest {
 		import com.rosetta.test.model.FuncOut;
 		import com.rosetta.test.model.FuncOut.FuncOutBuilder;
 		import java.time.LocalTime;
-		import java.util.Arrays;
 		
 		
 		@ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
@@ -403,11 +401,11 @@ class CalculationFuncGeneratorTest {
 			
 			private FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder out, FuncIn funcIn) {
 				out
-					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get())
-				;
+					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
+				
 				out
-					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get())
-				;
+					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
+				
 				return out;
 			}
 		
@@ -470,7 +468,6 @@ class CalculationFuncGeneratorTest {
 				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
-				import java.util.Arrays;
 				import java.util.Optional;
 
 				
@@ -500,8 +497,8 @@ class CalculationFuncGeneratorTest {
 										.map(m -> m.getGlobalKey())
 										.orElse(null)
 								).build()
-							)
-						;
+							);
+						
 						out
 							.addAttrMulti(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperS.of(withMeta).get())
@@ -509,8 +506,8 @@ class CalculationFuncGeneratorTest {
 										.map(m -> m.getGlobalKey())
 										.orElse(null)
 								).build()
-							, 1)
-						;
+							, 1);
+						
 						out
 							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperS.of(withMeta).get())
@@ -518,8 +515,8 @@ class CalculationFuncGeneratorTest {
 										.map(m -> m.getGlobalKey())
 										.orElse(null)
 								).build()
-							)
-						;
+							);
+						
 						return out;
 					}
 				
@@ -568,7 +565,6 @@ class CalculationFuncGeneratorTest {
 				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
-				import java.util.Arrays;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -598,8 +594,8 @@ class CalculationFuncGeneratorTest {
 							.getItems().map(
 									(item) -> ReferenceWithMetaWithMeta.builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
 								).collect(Collectors.toList())
-							)
-						;
+							);
+						
 						out
 							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setGlobalReference(
 									Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
@@ -607,8 +603,8 @@ class CalculationFuncGeneratorTest {
 										.map(m -> m.getGlobalKey())
 										.orElse(null)
 								).build()
-							)
-						;
+							);
+						
 						return out;
 					}
 				
@@ -647,8 +643,7 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.functions.AddOne;
-			import java.util.Arrays;
-
+			
 			
 			@ImplementedBy(Adder.AdderDefault.class)
 			public abstract class Adder implements RosettaFunction {
@@ -670,6 +665,7 @@ class CalculationFuncGeneratorTest {
 				
 				private Integer assignOutput(Integer res) {
 					res = MapperS.of(arg1().get()).get();
+					
 					return res;
 				}
 			
@@ -736,7 +732,6 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.test.model.MathInput;
 			import com.rosetta.test.model.functions.AddOne;
 			import com.rosetta.test.model.functions.SubOne;
-			import java.util.Arrays;
 			
 			
 			/**
@@ -781,6 +776,7 @@ class CalculationFuncGeneratorTest {
 					
 					private String assignOutput(String arg1, Math in1, MathInput in2) {
 						arg1 = MapperS.of(addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+						
 						return arg1;
 					}
 				
@@ -816,6 +812,7 @@ class CalculationFuncGeneratorTest {
 					
 					private String assignOutput(String arg1, Math in1, MathInput in2) {
 						arg1 = MapperS.of(subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+						
 						return arg1;
 					}
 				
@@ -855,8 +852,7 @@ class CalculationFuncGeneratorTest {
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.functions.AddOne;
-			import java.util.Arrays;
-
+			
 			
 			@ImplementedBy(Adder.AdderDefault.class)
 			public abstract class Adder implements RosettaFunction {
@@ -879,6 +875,7 @@ class CalculationFuncGeneratorTest {
 				
 				private Integer assignOutput(Integer res, Integer arg1) {
 					res = MapperS.of(addedOne(arg1).get()).get();
+					
 					return res;
 				}
 			

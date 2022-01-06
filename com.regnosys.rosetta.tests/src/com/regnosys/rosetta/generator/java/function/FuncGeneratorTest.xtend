@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.calculation
+package com.regnosys.rosetta.generator.java.function
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
@@ -20,6 +20,8 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
+import com.rosetta.model.lib.RosettaModelObject
+import java.util.Map
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -46,7 +48,6 @@ class FuncGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
-				import java.util.Arrays;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -99,7 +100,7 @@ class FuncGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				
@@ -128,7 +129,7 @@ class FuncGeneratorTest {
 					public static final class FuncFooDefault extends FuncFoo {
 						@Override
 						protected  List<String> doEvaluate(String name, String name2) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -154,7 +155,7 @@ class FuncGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import java.math.BigDecimal;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				
@@ -183,7 +184,7 @@ class FuncGeneratorTest {
 					public static final class FuncFooDefault extends FuncFoo {
 						@Override
 						protected  List<BigDecimal> doEvaluate(String name, String name2) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -208,7 +209,7 @@ class FuncGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				
@@ -237,7 +238,7 @@ class FuncGeneratorTest {
 					public static final class FuncFooDefault extends FuncFoo {
 						@Override
 						protected  List<Integer> doEvaluate(String name, String name2) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -263,7 +264,7 @@ class FuncGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.records.Date;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				
@@ -292,7 +293,7 @@ class FuncGeneratorTest {
 					public static final class FuncFooDefault extends FuncFoo {
 						@Override
 						protected  List<Date> doEvaluate(String name, String name2) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -864,7 +865,6 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.records.Date;
 				import com.rosetta.test.model.functions.F1;
 				import com.rosetta.test.model.functions.F2;
-				import java.util.Arrays;
 				
 				
 				@ImplementedBy(F3.F3Default.class)
@@ -889,6 +889,7 @@ class FuncGeneratorTest {
 					
 					private Date assignOutput(Date f3Output, Date f3Input) {
 						f3Output = MapperS.of(f2.evaluate(MapperC.of(f1.evaluate(MapperS.of(f3Input).get())).getMulti())).get();
+						
 						return f3Output;
 					}
 				
@@ -933,7 +934,7 @@ class FuncGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.records.Date;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				
@@ -961,7 +962,7 @@ class FuncGeneratorTest {
 					public static final class F1Default extends F1 {
 						@Override
 						protected  List<Date> doEvaluate(Date f1Input) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -976,7 +977,6 @@ class FuncGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.records.Date;
-				import java.util.Arrays;
 				import java.util.List;
 				
 				
@@ -1025,7 +1025,6 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.records.Date;
 				import com.rosetta.test.model.functions.F1;
 				import com.rosetta.test.model.functions.F2;
-				import java.util.Arrays;
 				
 				
 				@ImplementedBy(F3.F3Default.class)
@@ -1050,6 +1049,7 @@ class FuncGeneratorTest {
 					
 					private Date assignOutput(Date f3Output, Date f3Input) {
 						f3Output = MapperS.of(f2.evaluate(MapperC.of(f1OutList(f3Input).getMulti()).getMulti())).get();
+						
 						return f3Output;
 					}
 				
@@ -1414,7 +1414,7 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -1436,6 +1436,7 @@ class FuncGeneratorTest {
 					
 					private List<Integer> assignOutput(List<Integer> res, Foo foo) {
 						res = distinct(MapperS.of(foo).<Integer>mapC("getN", _foo -> _foo.getN())).getMulti();
+						
 						return res;
 					}
 				
@@ -1444,7 +1445,7 @@ class FuncGeneratorTest {
 					public static final class DistinctFuncDefault extends DistinctFunc {
 						@Override
 						protected  List<Integer> doEvaluate(Foo foo) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -1483,7 +1484,7 @@ class FuncGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -1505,6 +1506,7 @@ class FuncGeneratorTest {
 					
 					private List<Integer> assignOutput(List<Integer> res, List<Integer> n) {
 						res = distinct(MapperC.of(n)).getMulti();
+						
 						return res;
 					}
 				
@@ -1513,7 +1515,7 @@ class FuncGeneratorTest {
 					public static final class DistinctFuncDefault extends DistinctFunc {
 						@Override
 						protected  List<Integer> doEvaluate(List<Integer> n) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -1607,7 +1609,7 @@ class FuncGeneratorTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -1631,8 +1633,8 @@ class FuncGeneratorTest {
 					}
 					
 					private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, Foo foo) {
-						res = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti())
-						;
+						res = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti());
+						
 						return res;
 					}
 				
@@ -1641,7 +1643,7 @@ class FuncGeneratorTest {
 					public static final class DistinctFuncDefault extends DistinctFunc {
 						@Override
 						protected  List<Bar.BarBuilder> doEvaluate(Foo foo) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -1700,7 +1702,7 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -1724,8 +1726,8 @@ class FuncGeneratorTest {
 					}
 					
 					private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, List<? extends Bar> barList) {
-						res = toBuilder(distinct(MapperC.of(barList)).getMulti())
-						;
+						res = toBuilder(distinct(MapperC.of(barList)).getMulti());
+						
 						return res;
 					}
 				
@@ -1734,7 +1736,7 @@ class FuncGeneratorTest {
 					public static final class DistinctFuncDefault extends DistinctFunc {
 						@Override
 						protected  List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -2017,7 +2019,6 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import java.util.Arrays;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -2047,6 +2048,7 @@ class FuncGeneratorTest {
 							return MapperS.of(t2);
 						}
 						}).get();
+						
 						return result;
 					}
 				
@@ -2092,7 +2094,7 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -2123,6 +2125,7 @@ class FuncGeneratorTest {
 							return MapperC.of(t2);
 						}
 						}).getMulti();
+						
 						return result;
 					}
 				
@@ -2131,7 +2134,7 @@ class FuncGeneratorTest {
 					public static final class FuncFooDefault extends FuncFoo {
 						@Override
 						protected  List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -2168,7 +2171,6 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.math.BigDecimal;
-				import java.util.Arrays;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -2198,6 +2200,7 @@ class FuncGeneratorTest {
 							return MapperS.of(t2);
 						}
 						}).get();
+						
 						return result;
 					}
 				
@@ -2244,7 +2247,7 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.math.BigDecimal;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -2275,6 +2278,7 @@ class FuncGeneratorTest {
 							return MapperC.of(t2);
 						}
 						}).getMulti();
+						
 						return result;
 					}
 				
@@ -2283,7 +2287,7 @@ class FuncGeneratorTest {
 					public static final class FuncFooDefault extends FuncFoo {
 						@Override
 						protected  List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -2326,7 +2330,6 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
-				import java.util.Arrays;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -2358,8 +2361,8 @@ class FuncGeneratorTest {
 						else {
 							return MapperS.of(b2);
 						}
-						}).get())
-						;
+						}).get());
+						
 						return result;
 					}
 				
@@ -2412,7 +2415,7 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
-				import java.util.Arrays;
+				import java.util.ArrayList;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -2445,8 +2448,8 @@ class FuncGeneratorTest {
 						else {
 							return MapperC.of(b2);
 						}
-						}).getMulti())
-						;
+						}).getMulti());
+						
 						return result;
 					}
 				
@@ -2455,7 +2458,7 @@ class FuncGeneratorTest {
 					public static final class FuncFooDefault extends FuncFoo {
 						@Override
 						protected  List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-							return Arrays.asList();
+							return new ArrayList<>();
 						}
 					}
 				}
@@ -2493,7 +2496,6 @@ class FuncGeneratorTest {
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
-				import java.util.Arrays;
 				import java.util.List;
 				
 				
@@ -2517,8 +2519,8 @@ class FuncGeneratorTest {
 					
 					private Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
 						foo
-							.setOutList(MapperC.of(inList).getMulti())
-						;
+								.setOutList(MapperC.of(inList).getMulti());
+						
 						return foo;
 					}
 				
@@ -2535,5 +2537,541 @@ class FuncGeneratorTest {
 			f
 		)
 		code.compileToClasses
+	}
+
+	@Test
+	def void shouldAddList() {
+		val model = '''
+			type Foo:
+				outList string (0..*)
+			
+			func FuncFoo:
+			 	inputs:
+			 		inList string (0..*)
+				output:
+					foo Foo (1..1)
+				
+				add foo -> outList:
+					inList
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Foo;
+				import com.rosetta.test.model.Foo.FooBuilder;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param inList 
+					* @return foo 
+					*/
+					public Foo evaluate(List<String> inList) {
+						
+						Foo.FooBuilder fooHolder = doEvaluate(inList);
+						Foo.FooBuilder foo = assignOutput(fooHolder, inList);
+						
+						if (foo!=null) objectValidator.validateAndFailOnErorr(Foo.class, foo);
+						return foo;
+					}
+					
+					private Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
+						foo
+								.addOutList(MapperC.of(inList).getMulti());
+						
+						return foo;
+					}
+				
+					protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  Foo.FooBuilder doEvaluate(List<String> inList) {
+							return Foo.builder();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+	
+	@Test
+	def void shouldMergeComplexTypeList() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		newFoo Foo (1..1) <"Add single Foo">
+				output:
+					mergedFoos Foo (0..*)
+				
+				set mergedFoos:
+					foos
+				
+				add mergedFoos:
+					newFoo
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		val foo1 = classes.createFoo("1")
+		val foo2 = classes.createFoo("2")
+		val newFoo = classes.createFoo("3")
+		val res = func.invokeFunc(List, newArrayList(foo1, foo2), newFoo)
+		assertEquals(3, res.size);
+		assertThat(res, hasItems(foo1, foo2, newFoo));
+	}
+	
+	@Test
+	def void shouldMergeComplexTypeList2() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		newFoo Foo (1..1) <"Add single Foo">
+				output:
+					mergedFoos Foo (0..*)
+				
+				add mergedFoos:
+					foos
+				
+				add mergedFoos:
+					newFoo
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		val foo1 = classes.createFoo("1")
+		val foo2 = classes.createFoo("2")
+		val newFoo = classes.createFoo("3")
+		val res = func.invokeFunc(List, newArrayList(foo1, foo2), newFoo)
+		assertEquals(3, res.size);
+		assertThat(res, hasItems(foo1, foo2, newFoo));
+	}
+	
+	@Test
+	def void shouldMergeComplexTypeList3() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		newFoos Foo (0..*) <"Add Foo list">
+				output:
+					mergedFoos Foo (0..*)
+				
+				add mergedFoos:
+					foos
+				
+				add mergedFoos:
+					newFoos
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		val foo1 = classes.createFoo("1")
+		val foo2 = classes.createFoo("2")
+		val foo3 = classes.createFoo("3")
+		val foo4 = classes.createFoo("4")
+		val res = func.invokeFunc(List, newArrayList(foo1, foo2), newArrayList(foo3, foo4))
+		assertEquals(4, res.size);
+		assertThat(res, hasItems(foo1, foo2, foo3, foo4));
+	}
+	
+	@Test
+	def void shouldMergeBasicTypeList() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos string (0..*)
+			 		newFoo string (1..1) <"Add single Foo">
+				output:
+					mergedFoos string (0..*)
+				
+				set mergedFoos:
+					foos
+				
+				add mergedFoos:
+					newFoo
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		val res = func.invokeFunc(List, newArrayList("1", "2"), "3")
+		assertEquals(3, res.size);
+		assertThat(res, hasItems("1", "2", "3"));
+	}
+	
+	@Test
+	def void shouldMergeBasicTypeList2() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos string (0..*)
+			 		newFoo string (1..1) <"Add single Foo">
+				output:
+					mergedFoos string (0..*)
+				
+				add mergedFoos:
+					foos
+				
+				add mergedFoos:
+					newFoo
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		val res = func.invokeFunc(List, newArrayList("1", "2"), "3")
+		assertEquals(3, res.size);
+		assertThat(res, hasItems("1", "2", "3"));
+	}
+	
+	@Test
+	def void shouldMergeBasicTypeList3() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos string (0..*)
+			 		newFoos string (0..*) <"Add Foo list">
+				output:
+					mergedFoos string (0..*)
+				
+				add mergedFoos:
+					foos
+				
+				add mergedFoos:
+					newFoos
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		val res = func.invokeFunc(List, newArrayList("1", "2"), newArrayList("3", "4"))
+		assertEquals(4, res.size);
+		assertThat(res, hasItems("1", "2", "3", "4"));
+	}
+	
+	@Test
+	def void shouldAddComplexTypeList() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bar Bar (1..1)
+			 		newFoo Foo (1..1) <"Add single Foo">
+				output:
+					updatedBar Bar (1..1)
+				
+				set updatedBar:
+					bar
+				
+				add updatedBar -> foos:
+					newFoo
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo("1")
+		val foo2 = classes.createFoo("2")
+		val bar = classes.createBar(newArrayList(foo1, foo2))
+		val newFoo = classes.createFoo("3")
+		
+		val res = func.invokeFunc(RosettaModelObject, bar, newFoo)
+		
+		// reflective Bar.getFoos()
+		val foos = res.class.getMethod("getFoos").invoke(res) as List<RosettaModelObject>;
+		
+		assertEquals(3, foos.size);
+		assertThat(foos, hasItems(foo1, foo2, newFoo)); // appends to existing list
+	}
+	
+	@Test
+	def void shouldAddComplexTypeList2() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bar Bar (1..1)
+			 		newFoos Foo (0..*) <"Add Foo list">
+				output:
+					updatedBar Bar (1..1)
+				
+				set updatedBar:
+					bar
+				
+				add updatedBar -> foos:
+					newFoos
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo("1")
+		val foo2 = classes.createFoo("2")
+		val bar = classes.createBar(newArrayList(foo1, foo2))
+		val foo3 = classes.createFoo("3")
+		val foo4 = classes.createFoo("4")
+		
+		val res = func.invokeFunc(RosettaModelObject, bar, newArrayList(foo3, foo4))
+		
+		// reflective Bar.getFoos()
+		val foos = res.class.getMethod("getFoos").invoke(res) as List<RosettaModelObject>;
+		
+		assertEquals(4, foos.size);
+		assertThat(foos, hasItems(foo1, foo2, foo3, foo4)); // appends to existing list
+	}
+	
+	@Test
+	def void shouldSetComplexTypeList() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bar Bar (1..1)
+			 		newFoo Foo (1..1) <"Add single Foo">
+				output:
+					updatedBar Bar (1..1)
+				
+				set updatedBar:
+					bar
+				
+				set updatedBar -> foos:
+					newFoo
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo("1")
+		val foo2 = classes.createFoo("2")
+		val bar = classes.createBar(newArrayList(foo1, foo2))
+		val newFoo = classes.createFoo("3")
+		
+		val res = func.invokeFunc(RosettaModelObject, bar, newFoo)
+		
+		// reflective Bar.getFoos()
+		val foos = res.class.getMethod("getFoos").invoke(res) as List<RosettaModelObject>;
+		
+		assertEquals(1, foos.size);
+		assertThat(foos, hasItems(newFoo)); // overwrites existing list
+	}
+	
+	@Test
+	def void shouldSetComplexTypeList2() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bar Bar (1..1)
+			 		newFoos Foo (0..*) <"Add Foo list">
+				output:
+					updatedBar Bar (1..1)
+				
+				set updatedBar:
+					bar
+				
+				set updatedBar -> foos:
+					newFoos
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo("1")
+		val foo2 = classes.createFoo("2")
+		val bar = classes.createBar(newArrayList(foo1, foo2))
+		val foo3 = classes.createFoo("3")
+		val foo4 = classes.createFoo("4")
+		
+		val res = func.invokeFunc(RosettaModelObject, bar, newArrayList(foo3, foo4))
+		
+		// reflective Bar.getFoos()
+		val foos = res.class.getMethod("getFoos").invoke(res) as List<RosettaModelObject>;
+		
+		assertEquals(2, foos.size);
+		assertThat(foos, hasItems(foo3, foo4)); // overwrites existing list
+	}
+	
+	@Test
+	def void shouldAddBasicTypeList() {
+		val model = '''
+			type Baz:
+				attrList string (0..*)
+			
+			func FuncFoo:
+			 	inputs:
+			 		baz Baz (1..1)
+			 		s string (1..1) <"Add single">
+				output:
+					updatedBaz Baz (1..1)
+				
+				set updatedBaz:
+					baz
+				
+				add updatedBaz -> attrList:
+					s
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		val baz = classes.createBaz(newArrayList("1", "2"))
+		val res = func.invokeFunc(RosettaModelObject, baz, "3")
+		
+		// reflective Baz.getAttrList()
+		val attrList = res.class.getMethod("getAttrList").invoke(res) as List<String>;
+		
+		assertEquals(3, attrList.size);
+		assertThat(attrList, hasItems("1", "2", "3")); // appends to existing list
+	}
+	
+	@Test
+	def void shouldAddBasicTypeList2() {
+		val model = '''
+			type Baz:
+				attrList string (0..*)
+			
+			func FuncFoo:
+			 	inputs:
+			 		baz Baz (1..1)
+			 		sList string (0..*) <"Add list">
+				output:
+					updatedBaz Baz (1..1)
+				
+				set updatedBaz:
+					baz
+				
+				add updatedBaz -> attrList:
+					sList
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		val baz = classes.createBaz(newArrayList("1", "2"))
+		val res = func.invokeFunc(RosettaModelObject, baz, newArrayList("3", "4"))
+		
+		// reflective Baz.getAttrList()
+		val attrList = res.class.getMethod("getAttrList").invoke(res) as List<String>;
+		
+		assertEquals(4, attrList.size);
+		assertThat(attrList, hasItems("1", "2", "3", "4")); // appends to existing list
+	}
+	
+	@Test
+	def void shouldSetBasicTypeList() {
+		val model = '''
+			type Baz:
+				attrList string (0..*)
+			
+			func FuncFoo:
+			 	inputs:
+			 		baz Baz (1..1)
+			 		s string (1..1) <"Add single">
+				output:
+					updatedBaz Baz (1..1)
+				
+				set updatedBaz:
+					baz
+				
+				set updatedBaz -> attrList:
+					s
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		val baz = classes.createBaz(newArrayList("1", "2"))
+		val res = func.invokeFunc(RosettaModelObject, baz, "3")
+		
+		// reflective Baz.getAttrList()
+		val attrList = res.class.getMethod("getAttrList").invoke(res) as List<String>;
+		
+		assertEquals(1, attrList.size);
+		assertThat(attrList, hasItems("3")); // overwrites existing list
+	}
+	
+	@Test
+	def void shouldSetBasicTypeList2() {
+		val model = '''
+			type Baz:
+				attrList string (0..*)
+			
+			func FuncFoo:
+			 	inputs:
+			 		baz Baz (1..1)
+			 		sList string (0..*) <"Add list">
+				output:
+					updatedBaz Baz (1..1)
+				
+				set updatedBaz:
+					baz
+				
+				set updatedBaz -> attrList:
+					sList
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		val baz = classes.createBaz(newArrayList("1", "2"))
+		val res = func.invokeFunc(RosettaModelObject, baz, newArrayList("3", "4"))
+		
+		// reflective Baz.getAttrList()
+		val attrList = res.class.getMethod("getAttrList").invoke(res) as List<String>;
+		
+		assertEquals(2, attrList.size);
+		assertThat(attrList, hasItems("3", "4")); // overwrites existing list
+	}
+	
+	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {
+		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of()) as RosettaModelObject
+	}
+	
+	private def RosettaModelObject createBar(Map<String, Class<?>> classes, List<RosettaModelObject> foos) {
+		classes.createInstanceUsingBuilder('Bar', of(), of('foos', foos)) as RosettaModelObject
+	}
+	
+	private def RosettaModelObject createBaz(Map<String, Class<?>> classes, List<String> attrList) {
+		classes.createInstanceUsingBuilder('Baz', of(), of('attrList', attrList)) as RosettaModelObject
 	}
 }

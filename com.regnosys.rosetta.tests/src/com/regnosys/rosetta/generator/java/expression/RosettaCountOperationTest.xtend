@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.calculation.FuncGeneratorHelper
+import com.regnosys.rosetta.generator.java.function.FuncGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject

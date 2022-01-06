@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.function
 import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.expression.Context
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -40,7 +39,7 @@ import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.mapper.Mapper
 import com.rosetta.model.lib.validation.ModelObjectValidator
-import java.util.Arrays
+import java.util.ArrayList
 import java.util.List
 import java.util.Map
 import java.util.Optional
@@ -63,6 +62,7 @@ class FuncGenerator {
 	@Inject extension ImportManagerExtension
 	@Inject CardinalityProvider cardinality
 	@Inject JavaNames.Factory factory
+	@Inject extension Util
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = javaNames.packages.model.functions.directoryName + '/' + func.name + '.java'
@@ -75,9 +75,7 @@ class FuncGenerator {
 				tracImports(func.classBody(func.name, dependencies, javaNames, version, false), func.name)
 			}
         
-        classBody.addImport(Arrays.name, Arrays.simpleName)
-        
-		dependencies.getFuncOutputTypes(javaNames).toSet.forEach[classBody.addImport(it, it)]
+        dependencies.getFuncOutputTypes(javaNames).toSet.forEach[classBody.addImport(it, it)]
         
 		val content = '''
 			package «javaNames.packages.model.functions.name»;
@@ -164,10 +162,12 @@ class FuncGenerator {
 				
 				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
 					«FOR indexed : func.operations.filter(AssignOutputOperation).indexed»
-						«indexed.value.assign(aliasOut, names, output)»;
+						«indexed.value.assign(aliasOut, names, output)»
+						
 					«ENDFOR»
 					«FOR indexed : func.operations.filter(OutputOperation).indexed»
-						«indexed.value.assign(aliasOut, names, output)»;
+						«indexed.value.assign(aliasOut, names, output, indexed.key)»
+						
 					«ENDFOR»
 					return «outputName»;
 				}
@@ -191,7 +191,7 @@ class FuncGenerator {
 				public static final class «className»Default extends «className» {
 					@Override
 					protected  «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
-						return «IF output.isMany»Arrays.asList()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
+						return «IF output.isMany»new «ArrayList»<>()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
 					}
 				}
 				«IF func.isQualifierFunction()»
@@ -250,38 +250,56 @@ class FuncGenerator {
 	
 	private def StringConcatenationClient assign(AssignOutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type) {
 		val pathAsList = op.pathAsSegmentList
-		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, ctx, type.isMany)»)
+				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, type.isMany)»);
 			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx, type.isMany)»«ENDIF»'''
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, type.isMany)»;«ENDIF»'''
 		else {
 			'''
 				«op.assignTarget(outs, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
 					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»;
 			'''
 		}
 	}
 	
-	private def StringConcatenationClient assign(OutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type) {
+	private def StringConcatenationClient assign(OutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type, int index) {
 		val pathAsList = op.pathAsSegmentList
-		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
-			'''
-			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, ctx, type.isMany)»)
-			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx, type.isMany)»«ENDIF»'''
+			if (op.add) {
+				val addVarName = ("addVar" + index).toDecoratedName
+				'''
+				«IF needsBuilder(op.assignRoot)»
+					«type.toBuilderType(names)» «addVarName» = toBuilder(«assignPlainValue(op, type.isMany)»);
+				«ELSE»
+					«type.toBuilderType(names)» «addVarName» = «assignPlainValue(op, type.isMany)»;«ENDIF»
+				«op.assignTarget(outs, names)».addAll(«addVarName»);'''	
+			} else {
+				'''
+				«IF needsBuilder(op.assignRoot)»
+					«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, type.isMany)»);
+				«ELSE»
+					«op.assignTarget(outs, names)» = «assignPlainValue(op, type.isMany)»;«ENDIF»'''	
+			}
 		else {
 			'''
 				«op.assignTarget(outs, names)»
-					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
-					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
-					.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»
+					«FOR seg : pathAsList»
+						«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
+						«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»
+						«ELSE»
+							«IF op.add»
+								.add«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignPlainValue(true)»);
+							«ELSEIF seg.attribute.many»
+								.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignPlainValue(true)»);
+							«ELSE»
+								.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignValue(names)»);
+							«ENDIF»
+						«ENDIF»
+					«ENDFOR»
 			'''
 		}
 	}
@@ -324,11 +342,12 @@ class FuncGenerator {
 	}
 	
 	private def StringConcatenationClient assignValue(OutputOperation op, JavaNames names) {
+		// TODO figure out assignAsKey
 		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
 							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
 	}
 	
-	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx, boolean isMulti) {
+	private def StringConcatenationClient assignPlainValue(Operation operation, boolean isMulti) {
 		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
 	}
 	
