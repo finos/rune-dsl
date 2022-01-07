@@ -178,7 +178,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    in1 TypeToUse (1..1)
 			  output: result TypeToUse (1..1)
-			  assign-output result -> attr:
+			  set result -> attr:
 			     in1 as-key
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'WithKey' but was 'TypeToUse'")
@@ -572,7 +572,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    in0 WithKey (1..1)
 			  output: result TypeToUse (1..1)
-			  assign-output result -> attr:
+			  set result -> attr:
 			     in0 as-key
 		'''.parseRosetta
 		model.assertNoErrors
@@ -594,7 +594,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			    in0 WithKey (1..1)
 			    in1 TypeToUse (1..1)
 			  output: result TypeToUse (1..1)
-			  assign-output result -> attr2:
+			  set result -> attr2:
 			     in1 as-key
 		'''.parseRosetta
 		model.assertError(SEGMENT, null,
@@ -628,11 +628,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    in0 WithKey (1..1)
 			  output: result WithKey (1..1)
-			  assign-output result:
+			  set result:
 			     in0 as-key
 		'''.parseRosetta
 		model.assertError(OPERATION, null,
-			"'as-key' can only be used when assigning an attribute. Example: \"assign-output out -> attribute: value as-key\"")
+			"'as-key' can only be used when assigning an attribute. Example: \"set out -> attribute: value as-key\"")
 	}
 	
 	@Test

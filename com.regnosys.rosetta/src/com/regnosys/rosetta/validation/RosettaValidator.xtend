@@ -936,9 +936,19 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
-	def checkListElementAccess(Segment ele) {
-		if (ele.index !== null && !ele.attribute.card.isIsMany)
-			error('''Element access only possible for multiple cardinality.''', ele, SEGMENT__NEXT)
+	def checkAsKeyUsage(OutputOperation ele) {
+		if (!ele.assignAsKey) {
+			return
+		}
+		if(ele.path === null) {
+			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used when assigning an attribute. Example: "set out -> attribute: value as-key"''', ele, OUTPUT_OPERATION__ASSIGN_AS_KEY)
+			return
+		}
+		val segments = ele.path?.asSegmentList(ele.path)
+		val attr =  segments?.last?.attribute
+		if(!attr.hasReferenceAnnotation) {
+			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
+		}
 	}
 	
 	@Check

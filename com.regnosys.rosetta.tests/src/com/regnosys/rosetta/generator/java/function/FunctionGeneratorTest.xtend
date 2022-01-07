@@ -524,7 +524,7 @@ class FunctionGeneratorTest {
 						agreement Agreement (1..1)
 				
 					set agreement -> id: id
-					assign-output agreement -> party: party as-key
+					set agreement -> party: party as-key
 				
 			'''
 		].generateCode
@@ -1056,10 +1056,10 @@ class FunctionGeneratorTest {
 				
 					protected abstract Date doEvaluate(Date f3Input);
 					
-					
 					protected Mapper<Date> f1OutList(Date f3Input) {
 						return MapperC.of(f1.evaluate(MapperS.of(f3Input).get()));
 					}
+					
 					public static final class F3Default extends F3 {
 						@Override
 						protected  Date doEvaluate(Date f3Input) {
@@ -2588,7 +2588,7 @@ class FunctionGeneratorTest {
 					
 					private Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
 						foo
-								.setOutList(MapperC.of(inList).getMulti());
+							.setOutList(MapperC.of(inList).getMulti());
 						
 						return foo;
 					}
@@ -2659,7 +2659,7 @@ class FunctionGeneratorTest {
 					
 					private Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
 						foo
-								.addOutList(MapperC.of(inList).getMulti());
+							.addOutList(MapperC.of(inList).getMulti());
 						
 						return foo;
 					}

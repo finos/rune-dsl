@@ -126,7 +126,7 @@ Operation:
 	AssignOutputOperation | OutputOperation
 ;
 
-// deprecated
+// deprecated - to be deleted once all models updated
 AssignOutputOperation:
 	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
 	expression = RosettaCalcExpression assignAsKey?='as-key'?
@@ -134,11 +134,11 @@ AssignOutputOperation:
 
 OutputOperation:
 	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
-		expression = RosettaCalcExpression
+		expression = RosettaCalcExpression assignAsKey?='as-key'?
 ;
 
 Segment:
-	FEATURE_CALL_SEPARATOR attribute = [Attribute|ValidID] ('['index = INT']')?(next = Segment)?;
+	FEATURE_CALL_SEPARATOR attribute = [Attribute|ValidID] (next = Segment)?;
 
 EnumValueReference returns RosettaEnumValueReference:
 	enumeration=[RosettaEnumeration|QualifiedName] FEATURE_CALL_SEPARATOR value=[RosettaEnumValue|ValidID]
