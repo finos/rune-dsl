@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.function.FuncGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
@@ -18,13 +17,14 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
+import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaCountOperationTest {
 	
 	@Inject extension CodeGeneratorTestHelper
-	@Inject extension FuncGeneratorHelper
+	@Inject extension FunctionGeneratorHelper
 	
 	Map<String, Class<?>> classes
 	
@@ -45,32 +45,32 @@ class RosettaCountOperationTest {
 			func BranchNodeCountComparisonToLiteral:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> baz count = 2
 			
 			func BranchAndLeafNodeCountComparisonToLiterals:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> baz count = 1
 					and foo -> bar -> qux count = 1
 			
 			func LeafNodeCountComparisonToLiteral:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> qux count = 2
 			
 			func BranchNodeCountComparisonToFeatureCall:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> baz count = foo -> corge
 			
 			func LeafNodeCountComparisonToFeatureCall:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> qux count = foo -> corge
 		'''.generateCode
 		//println(code)

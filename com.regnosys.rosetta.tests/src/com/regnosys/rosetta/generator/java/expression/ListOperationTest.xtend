@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.function.FuncGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
@@ -18,12 +17,13 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class ListOperationTest {
 
-	@Inject extension FuncGeneratorHelper
+	@Inject extension FunctionGeneratorHelper
 	@Inject extension CodeGeneratorTestHelper
 	
 	@Test
@@ -643,7 +643,7 @@ class ListOperationTest {
 				output:
 					filteredFoosCount int (1..1)
 				
-				assign-output filteredFoosCount:
+				set filteredFoosCount:
 					foos 
 						filter fooItem [ fooItem -> include = True ] 
 						count
@@ -819,7 +819,7 @@ class ListOperationTest {
 						filter b [ if test2 exists then b -> include2 = test2 else True ]
 						filter c [ if test3 exists then c -> include2 = test3 else True ]
 				
-				assign-output foo:
+				set foo:
 					filteredFoos only-element
 		'''
 		val code = model.generateCode
@@ -862,7 +862,7 @@ class ListOperationTest {
 						filter [ if test2 exists then item -> include2 = test2 else True ]
 						filter [ if test3 exists then item -> include2 = test3 else True ]
 				
-				assign-output foo:
+				set foo:
 					filteredFoos only-element
 		'''
 		val code = model.generateCode
@@ -909,8 +909,8 @@ class ListOperationTest {
 				output:
 					foo Foo (1..1)
 				
-				assign-output foo -> include: include
-				assign-output foo -> attr: attr
+				set foo -> include: include
+				set foo -> attr: attr
 		'''
 		val code = model.generateCode
 		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -1014,7 +1014,7 @@ class ListOperationTest {
 				output:
 					updatedBar Bar (1..1)
 				
-				assign-output updatedBar -> foos:
+				add updatedBar -> foos:
 					bar -> foos 
 						map [ if item -> include = True then Create_Foo( item -> include, Create_Attr( item -> attr, "_bar" ) ) else item ]
 			
@@ -1025,8 +1025,8 @@ class ListOperationTest {
 				output:
 					foo Foo (1..1)
 				
-				assign-output foo -> include: include
-				assign-output foo -> attr: attr
+				set foo -> include: include
+				set foo -> attr: attr
 			
 			func Create_Attr:
 				inputs:
@@ -1034,7 +1034,7 @@ class ListOperationTest {
 					s2 string (1..1)
 				output:
 					out string (1..1)
-				assign-output out:
+				set out:
 					s1 + s2
 		'''
 		val code = model.generateCode
@@ -1066,7 +1066,7 @@ class ListOperationTest {
 				output:
 					filteredFoosOnlyElement Foo (0..1)
 				
-				assign-output filteredFoosOnlyElement:
+				set filteredFoosOnlyElement:
 					foos 
 						filter fooItem [ fooItem -> include = True ]
 						only-element
@@ -1862,7 +1862,7 @@ class ListOperationTest {
 				output:
 					foo Foo (0..1)
 				
-				assign-output foo -> attr:
+				set foo -> attr:
 					attr
 		'''
 		val code = model.generateCode
@@ -1994,7 +1994,7 @@ class ListOperationTest {
 				output:
 					foo Foo (0..1)
 				
-				assign-output foo -> attr:
+				set foo -> attr:
 					attr
 		'''
 		val code = model.generateCode
@@ -2109,7 +2109,7 @@ class ListOperationTest {
 				output:
 					foo Foo (0..1)
 				
-				assign-output foo -> attr:
+				set foo -> attr:
 					attr
 		'''
 		val code = model.generateCode

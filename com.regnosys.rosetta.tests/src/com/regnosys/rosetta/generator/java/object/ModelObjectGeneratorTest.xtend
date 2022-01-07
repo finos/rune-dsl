@@ -454,7 +454,7 @@ class ModelObjectGeneratorTest {
 				[qualification Product]
 				inputs: foo Foo (1..1)
 				output: is_product boolean (1..1)
-				assign-output is_product:
+				set is_product:
 					foo -> attr = Enum -> A
 		'''.generateCode
 

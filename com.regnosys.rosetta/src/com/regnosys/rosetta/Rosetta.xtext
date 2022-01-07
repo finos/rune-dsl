@@ -126,6 +126,7 @@ Operation:
 	AssignOutputOperation | OutputOperation
 ;
 
+// deprecated
 AssignOutputOperation:
 	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
 	expression = RosettaCalcExpression assignAsKey?='as-key'?
@@ -133,7 +134,7 @@ AssignOutputOperation:
 
 OutputOperation:
 	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
-		expression = ListOperation
+		expression = RosettaCalcExpression
 ;
 
 Segment:

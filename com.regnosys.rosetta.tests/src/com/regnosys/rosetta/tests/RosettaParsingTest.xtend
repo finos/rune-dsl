@@ -526,7 +526,7 @@ class RosettaParsingTest {
 			func testListIndex:
 				inputs: in1 string (1..1)
 				output: out DataFoo (1..1)
-				assign-output out -> multipleAttribute[2]:
+				set out -> multipleAttribute[2]:
 					out
 		'''.parseRosettaWithNoErrors
 	}

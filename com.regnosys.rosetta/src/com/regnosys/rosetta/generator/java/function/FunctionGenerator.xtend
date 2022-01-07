@@ -51,10 +51,10 @@ import org.eclipse.xtext.naming.QualifiedName
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
-class FuncGenerator {
+class FunctionGenerator {
 
 	@Inject ExpressionGenerator expressionGenerator
-	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
+	@Inject FunctionDependencyProvider functionDependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaExtensions
@@ -161,13 +161,14 @@ class FuncGenerator {
 				}
 				
 				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
-					«FOR indexed : func.operations.filter(AssignOutputOperation).indexed»
-						«indexed.value.assign(aliasOut, names, output)»
-						
-					«ENDFOR»
-					«FOR indexed : func.operations.filter(OutputOperation).indexed»
-						«indexed.value.assign(aliasOut, names, output, indexed.key)»
-						
+					«FOR indexed : func.operations.filter(Operation).indexed»
+						«IF indexed.value instanceof AssignOutputOperation»
+							«assign(indexed.value as AssignOutputOperation, aliasOut, names, output)»
+							
+						«ELSEIF indexed.value instanceof OutputOperation»
+							«assign(indexed.value as OutputOperation, aliasOut, names, output, indexed.key)»
+							
+						«ENDIF»
 					«ENDFOR»
 					return «outputName»;
 				}
@@ -286,20 +287,20 @@ class FuncGenerator {
 			}
 		else {
 			'''
-				«op.assignTarget(outs, names)»
-					«FOR seg : pathAsList»
-						«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
-						«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»
+			«op.assignTarget(outs, names)»
+				«FOR seg : pathAsList»
+					«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
+					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»
+					«ELSE»
+						«IF op.add»
+							.add«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignPlainValue(true)»);
+						«ELSEIF seg.attribute.many»
+							.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignPlainValue(true)»);
 						«ELSE»
-							«IF op.add»
-								.add«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignPlainValue(true)»);
-							«ELSEIF seg.attribute.many»
-								.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignPlainValue(true)»);
-							«ELSE»
-								.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignValue(names)»);
-							«ENDIF»
+							.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignValue(names)»);
 						«ENDIF»
-					«ENDFOR»
+					«ENDIF»
+				«ENDFOR»
 			'''
 		}
 	}

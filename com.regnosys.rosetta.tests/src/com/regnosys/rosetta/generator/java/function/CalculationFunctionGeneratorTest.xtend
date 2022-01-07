@@ -12,9 +12,9 @@ import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class CalculationFuncGeneratorTest {
+class CalculationFunctionGeneratorTest {
 
-	@Inject extension FuncGeneratorHelper
+	@Inject extension FunctionGeneratorHelper
 	@Inject extension CodeGeneratorTestHelper
 	
 	@Test
@@ -31,7 +31,7 @@ class CalculationFuncGeneratorTest {
 				inputs: in2 Period( 1..1 )
 				output: res number (1..1)
 				alias p: PeriodEnumFunc(in2 -> periodEnum, in2)
-				assign-output res: p / 360
+				set res: p / 360
 				
 			func PeriodEnumFunc :
 				inputs:
@@ -41,7 +41,7 @@ class CalculationFuncGeneratorTest {
 			
 			func PeriodEnumFunc(in1: PeriodEnum -> MONTH ):
 				alias i: in2 -> frequency
-				assign-output out: i * 30.0
+				set out: i * 30.0
 		'''.generateCode.get("com.rosetta.test.model.functions.PeriodEnumFunc")
 
 		assertEquals(
@@ -127,7 +127,7 @@ class CalculationFuncGeneratorTest {
 					one int (1..1)
 				output: out int (1..1)
 				alias oneA : 1
-				assign-output out: oneA + oneA
+				set out: oneA + oneA
 		'''.assertToGeneratedCalculation(
 			'''
 			package com.rosetta.test.model.functions;
@@ -189,7 +189,7 @@ class CalculationFuncGeneratorTest {
 				alias a1 : Min(1,2)
 				alias a2 :  Max(1,2)
 			
-				assign-output res: a1 + a2 * 215
+				set res: a1 + a2 * 215
 		'''.assertToGeneratedCalculation(
 			'''
 			package com.rosetta.test.model.functions;
@@ -265,8 +265,8 @@ class CalculationFuncGeneratorTest {
 					res FoncOut(1..1)
 				alias arg1: funIn-> val1
 				alias arg2: funIn-> val2
-				assign-output res -> res1:  arg1 + arg2 
-				assign-output res -> res2:  arg1 + arg2 
+				set res -> res1:  arg1 + arg2 
+				set res -> res2:  arg1 + arg2 
 		'''.generateCode
 		val calcJava = calculation.get("com.rosetta.test.model.functions.Calc")
 		//RosettaBlueprintTest.writeOutClasses(calculation, "testDateTimeAdd")
@@ -308,10 +308,10 @@ class CalculationFuncGeneratorTest {
 			
 			private FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder res, FuncIn funIn) {
 				res
-					.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+						.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
 				
 				res
-					.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+						.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
 				
 				return res;
 			}
@@ -357,8 +357,8 @@ class CalculationFuncGeneratorTest {
 				alias linkId: funcIn -> valS
 				alias tradeDate: funcIn -> val1
 				alias tradeTime: funcIn -> val2
-				assign-output out -> transactionReferenceNumber: "SPH"+linkId
-				assign-output out -> tradingDateTime:
+				set out -> transactionReferenceNumber: "SPH"+linkId
+				set out -> tradingDateTime:
 					tradeDate + tradeTime
 		'''.generateCode
 		val calcJava = calculation.get("com.rosetta.test.model.functions.RTS_22_Fields")
@@ -401,10 +401,10 @@ class CalculationFuncGeneratorTest {
 			
 			private FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder out, FuncIn funcIn) {
 				out
-					.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
+						.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
 				
 				out
-					.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
+						.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
 				
 				return out;
 			}
@@ -628,7 +628,7 @@ class CalculationFuncGeneratorTest {
 			func Adder:
 				output: res int (1..1)
 				alias arg1 : AddOne( 1 )
-				assign-output res : arg1
+				set res : arg1
 			
 			func AddOne:
 				inputs:  arg int (1..1)
@@ -714,10 +714,10 @@ class CalculationFuncGeneratorTest {
 				output: arg1 string (1..1)
 			
 			func MathFunc (in1 : Math -> INCR ):
-				assign-output arg1: AddOne(in2 -> mathInput)
+				set arg1: AddOne(in2 -> mathInput)
 				
 			func MathFunc (in1 : Math -> DECR ):
-				assign-output arg1: SubOne(in2 -> mathInput)
+				set arg1: SubOne(in2 -> mathInput)
 		'''.generateCode
 		.get("com.rosetta.test.model.functions.MathFunc")
 		assertEquals(
@@ -837,7 +837,7 @@ class CalculationFuncGeneratorTest {
 				output: res int (1..1)
 				
 				alias addedOne: AddOne( 1 )
-				assign-output res: addedOne
+				set res: addedOne
 			
 			func AddOne:
 				inputs: arg int (1..1)

@@ -2128,7 +2128,7 @@ class RosettaBlueprintTest {
 					foo number (0..1)
 				output: 
 					bar number (1..1)
-				assign-output bar:
+				set bar:
 					foo + 1
 				
 			'''.parseRosettaWithNoErrors
@@ -2159,7 +2159,7 @@ class RosettaBlueprintTest {
 					foo number (0..1)
 				output: 
 					bar number (1..1)
-				assign-output bar:
+				set bar:
 					foo + 1
 				
 			'''.parseRosettaWithNoErrors
@@ -2187,7 +2187,7 @@ class RosettaBlueprintTest {
 					b number (0..1)
 				output: 
 					r number (1..1)
-				assign-output r:
+				set r:
 					a + b
 				
 			'''.parseRosetta
@@ -2217,7 +2217,7 @@ class RosettaBlueprintTest {
 					foo number (0..1)
 				output: 
 					result boolean (1..1)
-				assign-output result:
+				set result:
 					foo > 1
 			
 			'''.parseRosettaWithNoErrors
@@ -2248,7 +2248,7 @@ class RosettaBlueprintTest {
 					foo number (0..1)
 				output: 
 					result number (1..1)
-				assign-output result:
+				set result:
 					foo + 1
 			
 			'''.parseRosetta
@@ -2278,7 +2278,7 @@ class RosettaBlueprintTest {
 					bar Bar (0..1)
 				output: 
 					result number (1..1)
-				assign-output result:
+				set result:
 					bar->val + 1
 			
 			'''.parseRosettaWithNoErrors
@@ -2309,7 +2309,7 @@ class RosettaBlueprintTest {
 					bar Bar (0..1)
 				output: 
 					result number (1..1)
-				assign-output result:
+				set result:
 					bar->val + 1
 			
 			'''.parseRosettaWithNoErrors

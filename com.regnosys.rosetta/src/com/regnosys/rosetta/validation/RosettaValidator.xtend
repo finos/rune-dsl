@@ -91,6 +91,8 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.simple.OutputOperation
+import com.regnosys.rosetta.rosetta.RosettaFeature
 
 /**
  * This class contains custom validation rules. 
@@ -1208,6 +1210,24 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			if (expr !== null && expr.isOutputListOfLists) {
 				error('''Assign expression contains a list of lists, use flatten to create a list.''', o, OPERATION__EXPRESSION)
 			}
+		}
+	}
+	
+	@Check
+	def checkOutputOperation(OutputOperation o) {
+		val isList = o.path !== null ? o.pathAsSegmentList.last.attribute.isFeatureMulti : cardinality.isMulti(o.assignRoot)
+		if (o.add && !isList) {
+			error('''Add must be used with a list.''', o, OPERATION__ASSIGN_ROOT)
+		}
+		if (!o.add && isList) {
+			info('''Set used with a list. Any existing list items will be overwritten.  Use Add to append items to existing list.''', o, OPERATION__ASSIGN_ROOT)
+		}
+	}
+	
+	private def isFeatureMulti(RosettaFeature feature) {
+		switch (feature) {
+			Attribute: feature.card.isMany
+			default: throw new IllegalStateException('Unsupported type passed ' + feature?.eClass?.name)
 		}
 	}
 	

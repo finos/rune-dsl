@@ -136,10 +136,10 @@ class RosettaFormattingTest {
 			namespace "test"
 			version "test"
 			type Type: foo string (1..1) func Execute2:[ metadata  scheme ] inputs:		product string (1..1) <"">[synonym FpML value "CalculationPeriod"] 		quantity string (1..1) 	output:
-					execution Type (1..1) <""> condition Foo: product assign-output execution -> foo:
-					"sdf"assign-output execution:
+					execution Type (1..1) <""> condition Foo: product set execution -> foo:
+					"sdf"set execution:
 					execution
-			assign-output execution:
+			set execution:
 			execution
 			post-condition:
 			execution -> foo is absent
@@ -159,11 +159,11 @@ class RosettaFormattingTest {
 				output:
 					execution Type (1..1) <"">
 				condition Foo: product
-				assign-output execution -> foo:
+				set execution -> foo:
 					"sdf"
-				assign-output execution:
+				set execution:
 					execution
-				assign-output execution:
+				set execution:
 					execution
 				post-condition:
 					execution -> foo is absent
@@ -349,7 +349,7 @@ class RosettaFormattingTest {
 			func Foo:
 				inputs: in1 Type (1..1)
 				output: out Type (1..1)
-				assign-output out -> other: [   
+				add out -> other: [   
 				in1
 				,in1
 				,in1,
@@ -365,7 +365,7 @@ class RosettaFormattingTest {
 			func Foo:
 				inputs: in1 Type (1..1)
 				output: out Type (1..1)
-				assign-output out -> other: [
+				add out -> other: [
 						in1, in1, in1,
 						in1
 				]
