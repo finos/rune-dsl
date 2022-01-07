@@ -5,7 +5,6 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
-import com.regnosys.rosetta.generator.java.function.RosettaFunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
@@ -55,6 +54,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
@@ -63,7 +63,7 @@ class BlueprintGenerator {
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension ExpressionGenerator
 	@Inject CardinalityProvider cardinality
-	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
+	@Inject FunctionDependencyProvider functionDependencyProvider
 	@Inject extension RosettaExtensions
 
 	/**

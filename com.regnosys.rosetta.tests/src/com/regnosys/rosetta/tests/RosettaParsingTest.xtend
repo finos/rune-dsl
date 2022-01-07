@@ -514,20 +514,4 @@ class RosettaParsingTest {
 			}
 		'''.parseRosettaWithNoErrors
 	}
-	
-	@Test
-	def void listAccessTest() {
-	'''
-			type DataFoo: <"A sample data">
-				stringAttribute string (1..1)
-				intAttribute int (1..1)
-				multipleAttribute DataFoo (1..*)
-			
-			func testListIndex:
-				inputs: in1 string (1..1)
-				output: out DataFoo (1..1)
-				assign-output out -> multipleAttribute[2]:
-					out
-		'''.parseRosettaWithNoErrors
-	}
 }

@@ -40,7 +40,7 @@ class RosettaExpressionsTest {
 			func TestQualifier:
 				inputs: test Test (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					test -> one + test -> two = 42
 		'''.parseRosettaWithNoErrors
 	}
@@ -55,7 +55,7 @@ class RosettaExpressionsTest {
 			func TestQualifier:
 				inputs: test Test (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					test -> one - test -> two = 42
 		'''.parseRosettaWithNoErrors.assertNoIssues
 	}
@@ -71,7 +71,7 @@ class RosettaExpressionsTest {
 			func TestQualifier:
 				inputs: test Test (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					test -> one + test -> two = 42
 		'''.parseRosetta.assertError(ROSETTA_BINARY_OPERATION, RosettaIssueCodes.TYPE_ERROR, "Incompatible types: cannot use operator '+' with date and date.")
 	}
@@ -90,7 +90,7 @@ class RosettaExpressionsTest {
 			func TestQualifier:
 				inputs: test Test (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					test -> one - test -> two = 42
 		'''.generateCode
 
@@ -109,7 +109,7 @@ class RosettaExpressionsTest {
 			func TestQualifier:
 				inputs: test Test (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					test -> one - test -> two = 42
 		'''.generateCode
 		
@@ -127,7 +127,7 @@ class RosettaExpressionsTest {
 			func TestQualifier:
 				inputs: test Test (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					test -> one + test -> two = 42
 		'''.generateCode
 
@@ -145,7 +145,7 @@ class RosettaExpressionsTest {
 			func TestQualifier:
 				inputs: test Test (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					test -> one -> scheme = "scheme"
 		'''.generateCode
 		code.compileToClasses
@@ -167,7 +167,7 @@ class RosettaExpressionsTest {
 			func TestQualifier:
 				inputs: test Test(1..1)
 				output: is_product boolean (1..1)
-				assign-output is_product:
+				set is_product:
 					test -> one -> scheme = "scheme"
 		'''.generateCode
 
@@ -190,7 +190,7 @@ class RosettaExpressionsTest {
 			func TestQualifier:
 				inputs: test Test(1..1)
 				output: is_product boolean (1..1)
-				assign-output is_product:
+				set is_product:
 					test -> one -> one = "scheme"
 		'''.generateCode
 

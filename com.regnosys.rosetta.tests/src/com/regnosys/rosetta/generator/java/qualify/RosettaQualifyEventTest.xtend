@@ -47,7 +47,7 @@ class RosettaQualifyEventTest {
 				[qualification BusinessEvent]
 				inputs: foo Foo(1..1)
 				output: is_event boolean (1..1)
-				assign-output is_event:
+				set is_event:
 					(foo -> baz -> bazValue is absent or foo -> baz -> bazValue = 15)
 			'''.generateCode
 		//println(code)

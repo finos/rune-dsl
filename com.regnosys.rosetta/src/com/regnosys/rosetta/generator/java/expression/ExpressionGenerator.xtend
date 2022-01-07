@@ -43,6 +43,7 @@ import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ListOperation
+import com.regnosys.rosetta.rosetta.simple.ListOperationKind
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -57,15 +58,12 @@ import java.math.BigDecimal
 import java.util.Arrays
 import java.util.HashMap
 import java.util.Optional
-import org.eclipse.xtend.lib.annotations.Accessors
-import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
-import com.regnosys.rosetta.rosetta.simple.ListOperationKind
 
 class ExpressionGenerator {
 	
@@ -679,15 +677,5 @@ class ExpressionGenerator {
 	
 	def StringConcatenationClient toNodeLabel(RosettaBinaryOperation binOp) {
 		'''«binOp.left.toNodeLabel»«binOp.operator»«binOp.right.toNodeLabel»'''
-	}
-}
-
-@Accessors
-@FinalFieldsConstructor
-class Context {
-	final JavaNames names
-	boolean inFunctionCall
-	static def create(JavaNames names) {
-		new Context(names)
 	}
 }

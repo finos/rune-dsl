@@ -21,7 +21,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	public static <T> MapperC<T> ofNull() {
-		return new MapperC<>(Collections.emptyList());
+		return new MapperC<>(new ArrayList<>());
 	}
 	
 	@SafeVarargs

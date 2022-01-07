@@ -26,7 +26,7 @@ import com.regnosys.rosetta.rosetta.simple.ListLiteral
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
  */
-class RosettaFunctionDependencyProvider {
+class FunctionDependencyProvider {
 
 
 	def Iterable<RosettaCallableWithArgs> functionDependencies(EObject object) {

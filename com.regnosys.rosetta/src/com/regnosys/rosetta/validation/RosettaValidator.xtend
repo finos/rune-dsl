@@ -30,6 +30,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
+import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
@@ -54,7 +55,7 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.rosetta.simple.Segment
+import com.regnosys.rosetta.rosetta.simple.OutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.RBuiltinType
@@ -140,7 +141,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		def Diagnostic createDiagnostic(String message, State state) {
 			new FeatureBasedDiagnostic(Diagnostic.ERROR, message, state.currentObject, null, -1, state.currentCheckType, null, null)
 		}
-		
 	}
 	
 	@Check
@@ -160,15 +160,19 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
 			error("List only-element cannot be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
 		}
-		if (fCall.receiver !== null && !fCall.receiver.eIsProxy && fCall.receiver instanceof ListOperation) {
-			error("Blah blah.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
-		}
 	}
 	
 	@Check
 	def void checkCallableCall(RosettaCallableCall cCall) {
 		if (cCall.callable !== null && cCall.onlyElement && !cCall.callable.eIsProxy && !cardinality.isMulti(cCall.callable)) {
 			error("List only-element cannot be used for single cardinality expressions.", cCall, ROSETTA_CALLABLE_CALL__CALLABLE)
+		}
+	}
+	
+	@Check
+	def void checkFunctionNameStartsWithCapital(Function enumeration) {
+		if (!Character.isUpperCase(enumeration.name.charAt(0))) {
+			warning("Function name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
 	
@@ -931,9 +935,19 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	@Check
-	def checkListElementAccess(Segment ele) {
-		if (ele.index !== null && !ele.attribute.card.isIsMany)
-			error('''Element access only possible for multiple cardinality.''', ele, SEGMENT__NEXT)
+	def checkAsKeyUsage(OutputOperation ele) {
+		if (!ele.assignAsKey) {
+			return
+		}
+		if(ele.path === null) {
+			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used when assigning an attribute. Example: "set out -> attribute: value as-key"''', ele, OUTPUT_OPERATION__ASSIGN_AS_KEY)
+			return
+		}
+		val segments = ele.path?.asSegmentList(ele.path)
+		val attr =  segments?.last?.attribute
+		if(!attr.hasReferenceAnnotation) {
+			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
+		}
 	}
 	
 	@Check
@@ -1183,11 +1197,11 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					error('''List flatten only allowed for list of lists.''', o, LIST_OPERATION__OPERATION_KIND)
 				}
 			}
-			case SUM: {
-				// TODO
-			}
 			default: {
-				// Do nothing
+				val previousOp = o.previousListOperation
+				if (previousOp !== null && previousOp.isOutputListOfLists) {
+					error('''List must be flattened before «o.operationKind» operation.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
 			}
 		}
 		
@@ -1205,6 +1219,24 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			if (expr !== null && expr.isOutputListOfLists) {
 				error('''Assign expression contains a list of lists, use flatten to create a list.''', o, OPERATION__EXPRESSION)
 			}
+		}
+	}
+	
+	@Check
+	def checkOutputOperation(OutputOperation o) {
+		val isList = o.path !== null ? o.pathAsSegmentList.last.attribute.isFeatureMulti : cardinality.isMulti(o.assignRoot)
+		if (o.add && !isList) {
+			error('''Add must be used with a list.''', o, OPERATION__ASSIGN_ROOT)
+		}
+		if (!o.add && isList) {
+			info('''Set used with a list. Any existing list items will be overwritten.  Use Add to append items to existing list.''', o, OPERATION__ASSIGN_ROOT)
+		}
+	}
+	
+	private def isFeatureMulti(RosettaFeature feature) {
+		switch (feature) {
+			Attribute: feature.card.isMany
+			default: throw new IllegalStateException('Unsupported type passed ' + feature?.eClass?.name)
 		}
 	}
 	

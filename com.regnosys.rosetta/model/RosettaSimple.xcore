@@ -117,6 +117,7 @@ class AssignOutputOperation extends Operation {
 
 class OutputOperation extends Operation {
 	boolean add
+	boolean assignAsKey
 	refers AssignPathRoot input
 }
 
@@ -155,8 +156,6 @@ class ClosureParameter extends RosettaCallable {
 
 
 class Segment {
-	
-	Integer index
 	refers Attribute attribute
 	contains Segment next opposite prev
 	container Segment prev opposite next

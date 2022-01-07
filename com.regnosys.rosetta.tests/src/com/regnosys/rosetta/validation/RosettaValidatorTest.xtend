@@ -8,18 +8,18 @@ import com.regnosys.rosetta.RosettaRuntimeModule
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
+import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.service.SingletonBinding
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.xtext.validation.Check
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import org.eclipse.xtext.diagnostics.Diagnostic
-import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -140,7 +140,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			func Test:
 				inputs: in0 Foo (0..1)
 				output: out Foo (0..1)
-				assign-output out:
+				set out:
 					"not a Foo"
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'Foo' but was 'string'")
@@ -157,7 +157,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			func Test:
 				inputs: in0 Foo (0..1)
 				output: out Foo (0..1)
-				assign-output out -> id:
+				set out -> id:
 					"not a boolean"
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'boolean' but was 'string'")
@@ -178,7 +178,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    in1 TypeToUse (1..1)
 			  output: result TypeToUse (1..1)
-			  assign-output result -> attr:
+			  set result -> attr:
 			     in1 as-key
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'WithKey' but was 'TypeToUse'")
@@ -211,7 +211,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			func Funcy:
 				inputs: in0 Type (0..1)
 				output: out string (0..1)
-				assign-output out: in0->other
+				set out: in0->other
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'string' but was 'int'")
 	}
@@ -550,7 +550,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    timestamp date (1..1)
 			  output: result boolean (1..1)
-			  assign-output result:
+			  set result:
 			     Foo(timestamp) = timestamp
 			
 		'''.parseRosetta
@@ -572,7 +572,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    in0 WithKey (1..1)
 			  output: result TypeToUse (1..1)
-			  assign-output result -> attr:
+			  set result -> attr:
 			     in0 as-key
 		'''.parseRosetta
 		model.assertNoErrors
@@ -594,7 +594,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			    in0 WithKey (1..1)
 			    in1 TypeToUse (1..1)
 			  output: result TypeToUse (1..1)
-			  assign-output result -> attr2:
+			  set result -> attr2:
 			     in1 as-key
 		'''.parseRosetta
 		model.assertError(SEGMENT, null,
@@ -628,11 +628,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    in0 WithKey (1..1)
 			  output: result WithKey (1..1)
-			  assign-output result:
+			  set result:
 			     in0 as-key
 		'''.parseRosetta
 		model.assertError(OPERATION, null,
-			"'as-key' can only be used when assigning an attribute. Example: \"assign-output out -> attribute: value as-key\"")
+			"'as-key' can only be used when assigning an attribute. Example: \"set out -> attribute: value as-key\"")
 	}
 	
 	@Test
@@ -1203,7 +1203,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					fooCounts int (0..*)
 				
-				set fooCounts:
+				add fooCounts:
 					bars 
 						map bar [ bar -> foos ]
 						map foosItem [ foosItem count ]
@@ -1227,7 +1227,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					fooCounts int (0..*)
 				
-				set fooCounts:
+				add fooCounts:
 					bars 
 						map [ item -> foos ]
 						map [ item count ]
@@ -1255,7 +1255,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					bars -> foos
 						map [ item -> amount > 0 ]
 				
-				assign-output result:
+				set result:
 					results all = True
 		'''.parseRosetta
 		model.assertNoErrors
@@ -1281,7 +1281,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					bars -> foos
 						map foo [ foo -> amount > 0 ]
 				
-				assign-output result:
+				set result:
 					results all = True
 		'''.parseRosetta
 		model.assertNoErrors
@@ -1303,10 +1303,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result number (1..1)
 				
-				assign-output result:
+				set result:
 					bars 
 						map [ item -> foo ]
 						map [ item -> amount ]
+						distinct 
+						only-element
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -1327,7 +1329,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result number (1..1)
 				
-				assign-output result:
+				set result:
 					bars map [ item -> foo ] distinct only-element -> amount
 		'''.parseRosetta
 		model.assertError(ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'") // is it possible to generate a better error message?
@@ -1349,7 +1351,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result number (1..1)
 				
-				assign-output result:
+				set result:
 					if bars exists
 					then bars map [ item -> foo ] distinct only-element -> amount
 		'''.parseRosetta
@@ -1368,7 +1370,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result boolean (0..1)
 				
-				assign-output result:
+				set result:
 					if n1 exists and n2 exists and n3 exists
 					then n1 + n2 = n3
 		'''.parseRosetta
@@ -1390,7 +1392,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				alias n3Alias:
 					GetNumberList( n3 ) only-element
 				
-				assign-output result:
+				set result:
 					n1 + n2 = n3Alias
 					
 			func GetNumberList:
@@ -1412,7 +1414,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					filteredFoo Foo (0..*)
 				
-				assign-output filteredFoo:
+				add filteredFoo:
 					foos
 						filter
 			
@@ -1431,7 +1433,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					filteredFoo Foo (0..*)
 				
-				assign-output filteredFoo:
+				add filteredFoo:
 					foos
 						filter a, b [ a -> attr ]
 			
@@ -1450,7 +1452,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					filteredFoo Foo (0..*)
 				
-				assign-output filteredFoo:
+				add filteredFoo:
 					foos
 						filter [ item -> x ]
 			
@@ -1469,7 +1471,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map
 			
@@ -1488,7 +1490,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a, b [ a -> x ]
 			
@@ -1507,7 +1509,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
 						flatten
@@ -1528,7 +1530,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> bars ] // list of list<bar>
 						map bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
@@ -1553,7 +1555,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> bars ] // list of list<bar>
 						map bars [ bars -> bazs ] // list of list of list<baz> // not supported (list item to list of lists)
@@ -1581,7 +1583,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
 						flatten [ item ]
@@ -1601,7 +1603,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
 						flatten xItem
@@ -1621,7 +1623,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> x ] // not a list of lists
 						flatten
@@ -1641,7 +1643,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					updatedFoos Foo (0..*)
 				
-				assign-output updatedFoos:
+				add updatedFoos:
 					foos
 						flatten
 			
@@ -1660,7 +1662,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					s string (1..1)
 				
-				assign-output s:
+				set s:
 					foo
 						map [ item -> x ]
 			
@@ -1679,7 +1681,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					onlyFoo Foo (1..1)
 				
-				assign-output onlyFoo:
+				set onlyFoo:
 					foo
 						only-element
 			
@@ -1698,7 +1700,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					s string (1..1)
 				
-				assign-output s:
+				set s:
 					foo -> x
 						only-element
 			
@@ -1717,7 +1719,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					s string (1..1)
 				
-				assign-output s:
+				set s:
 					foos
 						only-element
 						map [ item -> x ]
@@ -1737,7 +1739,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
 			
@@ -1756,7 +1758,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				set strings:
+				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
 			
@@ -1779,13 +1781,53 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					foos
 						map a [ a -> xs ] // list of lists
 				
-				assign-output strings:
+				add strings:
 					stringsAlias
 			
 			type Foo:
 				xs string (0..*)
 		'''.parseRosetta
 		model.assertError(SHORTCUT_DECLARATION, null, "Alias expression contains a list of lists, use flatten to create a list.")
+	}
+	
+	@Test
+	def void shouldGenerateListOnlyElementUnflattenedError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res string (0..1)
+				
+				set res:
+					foos
+						map a [ a -> xs ] // list of lists
+						only-element
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List must be flattened before only-element operation.")
+	}
+	
+	@Test
+	def void shouldGenerateListDistinctUnflattenedError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res string (0..*)
+				
+				add res:
+					foos
+						map a [ a -> xs ] // list of lists
+						distinct
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List must be flattened before distinct operation.")
 	}
 	
 	@Test
@@ -1797,7 +1839,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result boolean (1..1)
 				
-				assign-output result:
+				set result:
 					( foo -> x1 and foo -> x2 ) 
 					and ( foo -> x4 < 5.0 
 						and ( foo -> x3 is absent or foo -> x6 exists ) )
@@ -1823,7 +1865,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result boolean (1..1)
 				
-				assign-output result:
+				set result:
 					( foo -> x1 and foo -> x2 ) 
 					and ( foo -> x4 // number
 						and ( foo -> x3 is absent or foo -> x6 exists ) )
@@ -1848,7 +1890,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result boolean (1..1)
 				
-				assign-output result:
+				set result:
 					( foo -> x3 and foo -> x4 ) exists
 			
 			type Foo:

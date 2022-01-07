@@ -173,6 +173,7 @@ class RosettaExtensions {
 		return cond.conditionName(func.name, func.conditions)
 	}
 	
+	
 	//Name convention: <type name>(<condition name>|<condition type><#>) where condition type should be 'choice' or 'oneof'.
 	private def String conditionName(Condition cond, String containerName, Collection<Condition> conditions) {
 		val name = if (!cond.name.nullOrEmpty)

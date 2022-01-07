@@ -39,7 +39,7 @@ class RosettaTypeProviderTest {
 				[qualification Product]
 				inputs: prodType ProdType (1..1)
 				output: is_product boolean (1..1)
-				assign-output is_product:
+				set is_product:
 					prodType -> attrEx = Enumerate -> X
 		'''.parseRosettaWithNoErrors
 	}
@@ -58,21 +58,21 @@ class RosettaTypeProviderTest {
 				[qualification BusinessEvent]
 				inputs: foo Foo (1..1)
 				output: is_event boolean (1..1)
-				assign-output is_event:
+				set is_event:
 					[foo -> nBar, foo -> nBuz] contains 4.0
 			
 			func Qualify_MixedNumber:
 				[qualification BusinessEvent]
 				inputs: foo Foo (1..1)
 				output: is_event boolean (1..1)
-				assign-output is_event:
+				set is_event:
 					[foo -> nBar, foo -> iBar] contains 4.0
 			
 			func Qualify_IntOnly:
 				[qualification BusinessEvent]
 				inputs: foo Foo (1..1)
 				output: is_event boolean (1..1)
-				assign-output is_event:
+				set is_event:
 					foo -> iBar = 4.0
 		'''.parseRosettaWithNoErrors.elements.filter(Function)
 		
