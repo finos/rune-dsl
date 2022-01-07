@@ -7,8 +7,10 @@ import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
+import com.rosetta.model.lib.RosettaModelObject
 import java.util.Arrays
 import java.util.List
+import java.util.Map
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
@@ -20,8 +22,6 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
-import com.rosetta.model.lib.RosettaModelObject
-import java.util.Map
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

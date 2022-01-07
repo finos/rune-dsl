@@ -2,6 +2,7 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
+import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
@@ -17,7 +18,6 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
-import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
