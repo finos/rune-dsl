@@ -819,9 +819,9 @@ class FunctionGeneratorTest {
 				inputs: 
 					top1 Top (1..1)
 				output: 
-					result Foo (1..1)
+					result Foo (0..*)
 				alias foos: top1 -> foo
-				set result: // TODO shouldn't this generate an error due to setting a list of foos to single result?
+				set result:
 					foos
 			
 			func ExtractBar: <"tries returning list of basic">
