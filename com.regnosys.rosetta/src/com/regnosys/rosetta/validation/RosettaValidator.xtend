@@ -1231,6 +1231,9 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		if (!o.add && isList) {
 			info('''Set used with a list. Any existing list items will be overwritten.  Use Add to append items to existing list.''', o, OPERATION__ASSIGN_ROOT)
 		}
+		if (!isList && cardinality.isMulti(o.expression)) {
+			error('''Cardinality mismatch - cannot assign list to a single value.''', o, OPERATION__ASSIGN_ROOT)
+		}
 	}
 	
 	private def isFeatureMulti(RosettaFeature feature) {
