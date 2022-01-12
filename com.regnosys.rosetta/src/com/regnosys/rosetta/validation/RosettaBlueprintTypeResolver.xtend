@@ -56,6 +56,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 class RosettaBlueprintTypeResolver {
 	
@@ -593,6 +594,10 @@ class RosettaBlueprintTypeResolver {
 	
 	def dispatch RosettaType getInput(RosettaParenthesisCalcExpression expr) {
 		return getInput(expr.expression)
+	}
+	
+	def dispatch RosettaType getInput(ListOperation expr) {
+		return getInput(expr.receiver)
 	}
 	
 	def dispatch RosettaType getInput(RosettaCallableWithArgsCall expr) {
