@@ -551,6 +551,15 @@ class ExpressionGenerator {
 				distinctOrOnlyElement('''«op.receiver.javaCode(params)»''', op.operationKind === ListOperationKind.DISTINCT, op.operationKind === ListOperationKind.ONLY_ELEMENT)
 
 			}
+			case REDUCE: {
+				val item1 = op.parameters.head.name.toDecoratedName
+				val item2 = op.parameters.last.name.toDecoratedName
+				val outputType =  op.outputRawType
+				val bodyExpr = op.body.javaCode(params)
+				'''
+				«op.receiver.javaCode(params)»
+					.<«outputType»>reduce((«item1», «item2») -> («MapperS»<«outputType»>) «bodyExpr»)'''
+			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)
 		}

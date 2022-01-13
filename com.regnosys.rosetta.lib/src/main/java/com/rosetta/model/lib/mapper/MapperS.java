@@ -17,9 +17,19 @@ import com.rosetta.model.lib.RosettaModelObject;
 public class MapperS<T> implements MapperBuilder<T> {
 
 	private final MapperItem<T,?> item;
+	private final boolean identity;
 	
 	public MapperS(MapperItem<T,?> item) {
+		this(item, false);
+	}
+	
+	public MapperS(MapperItem<T,?> item, boolean identity) {
 		this.item = item;
+		this.identity = identity;
+	}
+	
+	public static <T> MapperS<T> identity() {
+		return new MapperS<>(new MapperItem<>(null, MapperPath.builder().addNull(), true, Optional.empty()), true);
 	}
 	
 	public static <T> MapperS<T> ofNull() {
@@ -98,6 +108,10 @@ public class MapperS<T> implements MapperBuilder<T> {
 	@Override
 	public int resultCount() {
 		return item.getMappedObject()!=null?1:0;
+	}
+	
+	public boolean isIdentity() {
+		return identity;
 	}
 	
 	/* (non-Javadoc)

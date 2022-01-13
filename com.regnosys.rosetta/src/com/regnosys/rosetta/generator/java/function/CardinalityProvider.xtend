@@ -77,7 +77,8 @@ class CardinalityProvider {
 			ListOperation: {
 				switch (obj.operationKind) {
 					case SUM,
-					case ONLY_ELEMENT:
+					case ONLY_ELEMENT,
+					case REDUCE:
 						false
 					case FILTER,
 					case MAP,

@@ -33,8 +33,12 @@ class ListOperationExtensions {
 		cardinalityProvider.isMulti(op.body)
 	}
 	
+	def getOutputRawType(ListOperation op) {
+		'''«typeProvider.getRType(op.body).name.toJavaType»'''
+	}
+	
 	def getOutputType(ListOperation op) {
-		'''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«typeProvider.getRType(op.body).name.toJavaType»'''
+		'''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«op.outputRawType»'''
 	}
 	
 	/**
