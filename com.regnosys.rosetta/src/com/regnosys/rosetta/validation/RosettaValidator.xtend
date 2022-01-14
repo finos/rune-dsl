@@ -92,6 +92,7 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.simple.ListOperationKind
 
 /**
  * This class contains custom validation rules. 
@@ -1163,6 +1164,24 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	
 	@Check
 	def checkListOperation(ListOperation o) {
+		val receiver = o.receiver
+		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
+			// previous step must be single cardinality except when it is a MAP following a ListOperation (such as REDUCE)
+			val currentOperationIsMap = o.operationKind === ListOperationKind.MAP
+			val previousOperationWasListOperation = receiver instanceof ListOperation
+			val previousOperationWasOnlyElement = receiver instanceof RosettaCallableCall && (receiver as RosettaCallableCall).onlyElement
+			if (!(currentOperationIsMap && (previousOperationWasListOperation || previousOperationWasOnlyElement))) {
+				error('''List «o.operationKind.literal» cannot be used for single cardinality expressions.''', o, LIST_OPERATION__OPERATION_KIND)
+			}
+		}
+		
+		if (o.operationKind !== ListOperationKind.MAP && o.operationKind !== ListOperationKind.FILTER && o.operationKind !== ListOperationKind.FLATTEN)  {
+			val previousOp = o.previousListOperation
+			if (previousOp !== null && previousOp.isOutputListOfLists) {
+				error('''List must be flattened before «o.operationKind» operation.''', o, LIST_OPERATION__OPERATION_KIND)
+			}
+		}
+		
 		switch (o.operationKind) {
 			case FILTER: {
 				if (o.body === null) {
@@ -1197,18 +1216,23 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					error('''List flatten only allowed for list of lists.''', o, LIST_OPERATION__OPERATION_KIND)
 				}
 			}
-			default: {
-				val previousOp = o.previousListOperation
-				if (previousOp !== null && previousOp.isOutputListOfLists) {
-					error('''List must be flattened before «o.operationKind» operation.''', o, LIST_OPERATION__OPERATION_KIND)
+			case REDUCE: {
+				if (o.body === null) {
+					error('''List reduce must have an expression specified within square brackets.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
+				else if (o.parameters !== null && o.parameters.size != 2) {
+					error('''List reduce must have 2 named parameters.''', o, LIST_OPERATION__PARAMETERS)
+				}
+				else if (o.itemRawType != o.outputRawType) {
+					error('''List reduce expresssion must evaluate to the same type as the input «o.itemRawType» «o.outputRawType».''', o, LIST_OPERATION__BODY)
+				}
+				else if (o.isBodyExpressionMulti) {
+					error('''List reduce expresssion must evaluate to single cardinality.''', o, LIST_OPERATION__BODY)
 				}
 			}
-		}
-		
-		// Applies to all list operations
-		val receiver = o.receiver
-		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
-			error('''List «o.operationKind.literal» cannot be used for single cardinality expressions.''', o, LIST_OPERATION__OPERATION_KIND)
+			default: {
+				// Do nothing
+			}
 		}
 	}
 	

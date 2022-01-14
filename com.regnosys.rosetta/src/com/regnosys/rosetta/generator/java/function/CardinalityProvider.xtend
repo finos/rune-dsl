@@ -81,10 +81,15 @@ class CardinalityProvider {
 					case REDUCE:
 						false
 					case FILTER,
-					case MAP,
 					case FLATTEN,
 					case DISTINCT:
 						true
+					case MAP: {
+						if (obj.body.isMulti(breakOnClosureParameter)) 
+							true 
+						else 
+							obj.receiver.isMulti(breakOnClosureParameter)
+					}
 				}
 			}
 			RosettaBinaryOperation: {
@@ -142,6 +147,8 @@ class CardinalityProvider {
 						case FILTER: 
 							// Filter operation does not change cardinality, so check the next previous operation's cardinality
 							return previousOperation.isPreviousOperationBodyMulti
+						case REDUCE:
+							return false 
 						default: {
 							println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)
 							return false

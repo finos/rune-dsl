@@ -21,46 +21,16 @@ class ListOperationExtensions {
 		cardinalityProvider.isClosureParameterMulti(op)
 	}
 	
-	def getItemType(ListOperation op) {
-		'''«IF funcExt.needsBuilder(op.receiver)»? extends «ENDIF»«typeProvider.getRType(op.receiver).name.toJavaType»'''
+	def String getItemRawType(ListOperation op) {
+		typeProvider.getRType(op.receiver).name.toJavaType
 	}
 	
-	def getItemName(ListOperation op) {
+	def String getItemType(ListOperation op) {
+		'''«IF funcExt.needsBuilder(op.receiver)»? extends «ENDIF»«op.itemRawType»'''
+	}
+	
+	def String getItemName(ListOperation op) {
 		op.firstOrImplicit.getNameOrDefault.toDecoratedName
-	}
-
-	def isOutputMulti(ListOperation op) {
-		cardinalityProvider.isMulti(op.body)
-	}
-	
-	def getOutputRawType(ListOperation op) {
-		'''«typeProvider.getRType(op.body).name.toJavaType»'''
-	}
-	
-	def getOutputType(ListOperation op) {
-		'''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«op.outputRawType»'''
-	}
-	
-	/**
-	 * List MAP/FILTER operations can handle a list of lists, however it cannot be handled anywhere else (e.g. a list of list cannot be assigned to a func output or alias)
-	 */
-	def isOutputListOfLists(ListOperation op) {
-		!op.isItemMulti && op.body !== null && op.isBodyExpressionMulti
-	}
-	
-	/**
-	 * List MAP/FILTER operations cannot handle a list of list of list
-	 */
-	def isOutputListOfListOfLists(ListOperation op) {
-		op.isItemMulti && op.body !== null && op.isBodyExpressionMulti
-	}
-	
-	def getPreviousListOperation(ListOperation op) {
-		val previousOperation = op.receiver
-		if (previousOperation instanceof ListOperation) {
-			return previousOperation
-		}
-		return null
 	}
 	
 	/**
@@ -70,7 +40,47 @@ class ListOperationExtensions {
 	 * - from single to list, or from list to list of lists, would return true.
 	 * - from single to single, or from list to list, or from list to single, would return false.
 	 */
-	private def isBodyExpressionMulti(ListOperation op) {
+	def isBodyExpressionMulti(ListOperation op) {
 		cardinalityProvider.isMulti(op.body, true)
+	}
+	
+	def String getOutputRawType(ListOperation op) {
+		typeProvider.getRType(op.body).name.toJavaType
+	}
+	
+	def String getOutputType(ListOperation op) {
+		'''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«op.outputRawType»'''
+	}
+	
+	def isPreviousOperationMulti(ListOperation op) {
+		cardinalityProvider.isMulti(op.receiver)
+	}
+	
+	/**
+	 * List MAP/FILTER operations can handle a list of lists, however it cannot be handled anywhere else (e.g. a list of list cannot be assigned to a func output or alias)
+	 */
+	def isOutputListOfLists(ListOperation op) {
+		!op.isItemMulti && op.body !== null && op.isBodyExpressionMulti && op.isPreviousOperationMulti
+	}
+	
+	/**
+	 * Nothing handles a list of list of list
+	 */
+	def isOutputListOfListOfLists(ListOperation op) {
+		op.isItemMulti && op.body !== null && op.isBodyExpressionMulti && op.isPreviousOperationMulti
+	}
+	
+	
+	
+	def getPreviousListOperation(ListOperation op) {
+		val previousOperation = op.receiver
+		if (previousOperation instanceof ListOperation) {
+			return previousOperation
+		}
+		return null
+	}
+	
+	def isOutputMulti(ListOperation op) {
+		 cardinalityProvider.isMulti(op)
 	}
 }

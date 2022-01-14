@@ -2827,7 +2827,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateListReduceMax() {
+	def void shouldGenerateListReduceMaxNumber() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2855,7 +2855,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateListReduceMin() {
+	def void shouldGenerateListReduceMinNumber() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2865,7 +2865,16 @@ class ListOperationTest {
 				
 				set total:
 					numberList
-						reduce a, b [ if a > b then b else a ]
+						reduce a, b [ Min( a, b ) ]
+			
+			func Min:
+				inputs:
+					a int (1..1)
+					b int (1..1)
+				output:
+					min int (1..1)
+				set min:
+					if a > b then b else a
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -2984,6 +2993,97 @@ class ListOperationTest {
 		assertEquals("abcde", attr);
 	}
 	
+	@Test
+	def void shouldGenerateListReduceThenMapSingle() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					fooCount int (1..1)
+				
+				set fooCount:
+					bars
+						reduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ]
+						map [ item -> foos count ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		
+		val bar1 = classes.createBar(ImmutableList.of(foo1))
+		val bar2 = classes.createBar(ImmutableList.of(foo1, foo2))
+		val bar3 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar4 = classes.createBar(ImmutableList.of(foo2, foo2, foo3, foo4))
+		
+		val barList = newArrayList
+		barList.add(bar1)
+		barList.add(bar2)
+		barList.add(bar3)
+		barList.add(bar4)
+		
+		val res = func.invokeFunc(Integer, barList)
+		assertEquals(4, res);
+	}
+	
+	@Test
+	def void shouldGenerateListReduceThenMapList() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					attrs string (0..*)
+				
+				set attrs:
+					bars
+						reduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ] // max by foo count
+						map [ item -> foos ]
+						flatten
+						map [ item -> attr ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		
+		val bar1 = classes.createBar(ImmutableList.of(foo1))
+		val bar2 = classes.createBar(ImmutableList.of(foo1, foo2))
+		val bar3 = classes.createBar(ImmutableList.of(foo1, foo2, foo3))
+		val bar4 = classes.createBar(ImmutableList.of(foo1, foo2, foo3, foo4))
+		
+		val barList = newArrayList
+		barList.add(bar1)
+		barList.add(bar2)
+		barList.add(bar3)
+		barList.add(bar4)
+		
+		val res = func.invokeFunc(List, barList)
+		assertEquals(4, res.size);
+		assertThat(res, hasItems('a', 'b', 'c', 'd'));
+	}
+
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {
 		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of()) as RosettaModelObject
 	}
@@ -3000,7 +3100,6 @@ class ListOperationTest {
 		val fieldWithMetaString = classes.createFieldWithMetaString(attr, scheme)
 		classes.createInstanceUsingBuilder('FooWithScheme', of('attr', fieldWithMetaString), of()) as RosettaModelObject
 	}
-	
 	
 	private def RosettaModelObject createBar(Map<String, Class<?>> classes, List<RosettaModelObject> foos) {
 		classes.createInstanceUsingBuilder('Bar', of(), of('foos', foos)) as RosettaModelObject
