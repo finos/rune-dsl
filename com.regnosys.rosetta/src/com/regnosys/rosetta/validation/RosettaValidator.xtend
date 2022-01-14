@@ -1224,10 +1224,10 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					error('''List reduce must have 2 named parameters.''', o, LIST_OPERATION__PARAMETERS)
 				}
 				else if (o.itemRawType != o.outputRawType) {
-					error('''List reduce expresssion must evaluate to the same type as the input «o.itemRawType» «o.outputRawType».''', o, LIST_OPERATION__BODY)
+					error('''List reduce expression must evaluate to the same type as the input.  Found types «o.itemRawType» and «o.outputRawType».''', o, LIST_OPERATION__BODY)
 				}
 				else if (o.isBodyExpressionMulti) {
-					error('''List reduce expresssion must evaluate to single cardinality.''', o, LIST_OPERATION__BODY)
+					error('''List reduce expression must evaluate to single cardinality.''', o, LIST_OPERATION__BODY)
 				}
 			}
 			default: {
