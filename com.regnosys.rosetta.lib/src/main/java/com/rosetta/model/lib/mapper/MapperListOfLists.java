@@ -34,7 +34,7 @@ public class MapperListOfLists<T> {
 	 * @param predicate - test that determines whether to filter list item. True to include in list, and false to exclude.
 	 * @return filtered list 
 	 */
-	public MapperListOfLists<T> filterList(Predicate<Mapper<T>> predicate) {
+	public MapperListOfLists<T> filterList(Predicate<MapperC<T>> predicate) {
 		return new MapperListOfLists<>(items.stream()
 				.filter(item -> predicate.test(MapperC.of(item.getMappedObjects())))
 				.collect(Collectors.toList()));
@@ -47,10 +47,10 @@ public class MapperListOfLists<T> {
 	 * @param mappingFunc
 	 * @return mapped list
 	 */
-	public <F> MapperC<F> mapListToItem(Function<MapperC<T>, Mapper<F>> mappingFunc) {
+	public <F> MapperC<F> mapListToItem(Function<MapperC<T>, MapperS<F>> mappingFunc) {
 		return MapperC.of(items.stream()
 				.map(item -> mappingFunc.apply(MapperC.of(item.getMappedObjects())))
-				.map(Mapper::get)
+				.map(MapperS::get)
 				.collect(Collectors.toList()));
 	}
 	
@@ -61,10 +61,10 @@ public class MapperListOfLists<T> {
 	 * @param mappingFunc
 	 * @return mapped list
 	 */
-	public <F> MapperListOfLists<F> mapListToList(Function<MapperC<T>, Mapper<F>> mappingFunc) {
+	public <F> MapperListOfLists<F> mapListToList(Function<MapperC<T>, MapperC<F>> mappingFunc) {
 		return MapperListOfLists.of(items.stream()
 				.map(item -> mappingFunc.apply(MapperC.of(item.getMappedObjects())))
-				.map(Mapper::getMulti)
+				.map(MapperC::getMulti)
 				.collect(Collectors.toList()));
 	}
 	
