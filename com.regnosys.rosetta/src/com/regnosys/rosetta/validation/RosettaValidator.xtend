@@ -54,6 +54,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ListOperation
+import com.regnosys.rosetta.rosetta.simple.ListOperationKind
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.OutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
@@ -92,7 +93,6 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.simple.ListOperationKind
 
 /**
  * This class contains custom validation rules. 
