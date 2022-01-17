@@ -10,16 +10,17 @@ import com.rosetta.model.lib.mapper.Mapper
 import com.rosetta.model.lib.mapper.MapperS
 
 class MapperMaths {
-	def static <R, A, B> Mapper<R> add(Mapper<A> in1, Mapper<B> in2) {
+	
+	def static <R, A, B> MapperS<R> add(Mapper<A> in1, Mapper<B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
 			return MapperS.of((arg1 + arg2) as R)
 		}
-		return null;
+		return MapperS.ofNull;
 	}
 	
-	def static <R, A, B> Mapper<R> subtract(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> subtract(Mapper<A> in1, Mapper<B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
@@ -27,22 +28,22 @@ class MapperMaths {
 		}
 		return null;
 	}
-	def static <R, A, B> Mapper<R> multiply(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> multiply(Mapper<A> in1, Mapper<B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
 			return MapperS.of((arg1 * arg2) as R)
 		}
-		return null;
+		return MapperS.ofNull;
 	}
 	
-	def static <R, A, B> Mapper<R> divide(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> divide(Mapper<A> in1, Mapper<B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
 			return MapperS.of((arg1 / arg2) as R)
 		}
-		return null;
+		return MapperS.ofNull;
 	}
 	
 	// Plus

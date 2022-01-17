@@ -523,22 +523,28 @@ class ExpressionGenerator {
 			case MAP: {
 				val itemType =  op.itemType
 				val itemName =  op.itemName
-				val isOutputMulti =  op.outputMulti
+				val isBodyMulti =  op.isBodyExpressionMulti
 				val outputType =  op.outputType
 				val bodyExpr = op.body.javaCode(params)
 				'''
 				«op.receiver.javaCode(params)»
+					«IF !op.isPreviousOperationMulti»
+						«IF isBodyMulti»
+							.mapSingleToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
+						«ELSE»
+							.mapSingleToItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«outputType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)«ENDIF»
+					«ELSE»
 					«IF op.isItemMulti»
-						«IF isOutputMulti»
+						«IF isBodyMulti»
 							.mapListToList((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
 						«ELSE»
 							.mapListToItem((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperS»<«outputType»>) «bodyExpr»)
 						«ENDIF»
+					«ELSE»
+						«IF isBodyMulti»
+							.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
 						«ELSE»
-							«IF isOutputMulti»
-								.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
-							«ELSE»
-								.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«outputType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)«ENDIF»«ENDIF»'''
+							.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«outputType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)«ENDIF»«ENDIF»«ENDIF»'''
 
 			}
 			case FLATTEN: {
@@ -550,6 +556,15 @@ class ExpressionGenerator {
 			case DISTINCT, case ONLY_ELEMENT: {
 				distinctOrOnlyElement('''«op.receiver.javaCode(params)»''', op.operationKind === ListOperationKind.DISTINCT, op.operationKind === ListOperationKind.ONLY_ELEMENT)
 
+			}
+			case REDUCE: {
+				val item1 = op.parameters.head.name.toDecoratedName
+				val item2 = op.parameters.last.name.toDecoratedName
+				val outputType =  op.outputRawType
+				val bodyExpr = op.body.javaCode(params)
+				'''
+				«op.receiver.javaCode(params)»
+					.<«outputType»>reduce((«item1», «item2») -> («MapperS»<«outputType»>) «bodyExpr»)'''
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)

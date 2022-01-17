@@ -142,6 +142,7 @@ enum ListOperationKind {
 	, flatten
 	, only_element as "only-element"
 	, distinct
+	, reduce
 }
 
 class ClosureParameter extends RosettaCallable {

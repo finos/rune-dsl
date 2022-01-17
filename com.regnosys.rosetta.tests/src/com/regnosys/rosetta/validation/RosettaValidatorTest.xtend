@@ -1711,7 +1711,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldGenerateListSingleCardinalityError4() {
+	def void shouldNotGenerateListSingleCardinalityError4() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -1727,7 +1727,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List map cannot be used for single cardinality expressions.")
+		model.assertNoErrors
+		model.assertNoIssues
 	}
 	
 	@Test
@@ -1898,6 +1899,70 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x4 number (1..1)
 		'''.parseRosetta
 		model.assertError(ROSETTA_PARENTHESIS_CALC_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+	}
+	
+	@Test
+	def void shouldGenerateReduceParametersError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res string (1..1)
+				
+				set res:
+					foos
+						reduce a [ a -> x ]
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List reduce must have 2 named parameters.")
+	}
+	
+	@Test
+	def void shouldGenerateReduceTypeError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res string (1..1)
+				
+				set res:
+					foos
+						reduce a, b [ a -> x ]
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List reduce expression must evaluate to the same type as the input.  Found types Foo and String.")
+	}
+	
+	@Test
+	def void shouldGenerateReduceCardinalityError() {
+		val model = '''
+			type Foo:
+				x string (0..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res Foo (1..1)
+				
+				set res:
+					foos
+						reduce a, b [ GetFooList( a, b ) ]
+			
+			func GetFooList:
+			 	inputs:
+			 		foo1 Foo (1..1)
+			 		foo2 Foo (1..1)
+				output:
+					foos Foo (0..*)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List reduce expression must evaluate to single cardinality.")
 	}
 }
 	

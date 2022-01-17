@@ -4,9 +4,9 @@ import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -123,6 +123,27 @@ public class MapperC<T> implements MapperBuilder<T> {
 		return MapperListOfLists.of(nonErrorItems()
 				.map(item -> mappingFunc.apply(new MapperS<>(item)).getMulti())
 				.collect(Collectors.toList()));
+	}
+
+	/**
+	 * Reduce list items to single item based on the given reduce function.
+	 * 
+	 * @param <F>
+	 * @param reduceFunc
+	 * @return reduced item
+	 */
+	@SuppressWarnings("unchecked")
+	public <F> MapperS<F> reduce(BinaryOperator<MapperS<F>> reduceFunc) {
+		return nonErrorItems()
+				.map(item -> new MapperS<>((MapperItem<F, ?>) item))
+				.reduce(MapperS.identity(), (m1, m2) -> {
+						if (m1.isIdentity())
+							return m2;
+						else if (m2.isIdentity())
+							return m1;
+						else
+							return reduceFunc.apply(m1, m2);
+					});
 	}
 	
 	protected Stream<MapperItem<T,?>> nonErrorItems() {

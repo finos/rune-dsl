@@ -269,6 +269,7 @@ class RosettaTypeProvider {
 				switch(expression.operationKind) {
 					case FILTER:
 						expression.firstOrImplicit.safeRType(cycleTracker)
+					case REDUCE,
 					case MAP:
 						expression.body.safeRType(cycleTracker)
 					case FLATTEN:
