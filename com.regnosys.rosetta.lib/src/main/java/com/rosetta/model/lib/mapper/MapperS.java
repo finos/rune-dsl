@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.rosetta.model.lib.RosettaModelObject;
@@ -116,7 +115,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 	}
 	
 	/**
-	 * Map single item as a list based on the given mapping function.
+	 * Map a single value into an item of a list based on the given mapping function.
 	 * 
 	 * @param <F>
 	 * @param mappingFunc
@@ -127,7 +126,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 	}
 	
 	/**
-	 * Map items of a list based on the given mapping function.
+	 * Map a single value into an item of a list based on the given mapping function.
 	 * 
 	 * @param <F>
 	 * @param mappingFunc

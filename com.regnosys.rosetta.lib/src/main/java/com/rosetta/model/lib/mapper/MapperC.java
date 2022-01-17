@@ -6,7 +6,6 @@ import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
