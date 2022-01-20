@@ -3083,7 +3083,42 @@ class ListOperationTest {
 		assertEquals(4, res.size);
 		assertThat(res, hasItems('a', 'b', 'c', 'd'));
 	}
-
+	
+	@Test
+	def void shouldGenerateListSort() {
+		val model = '''
+			func SortNumbers: 
+				inputs:
+					numbers number (0..*)
+				output:
+					sortedNumbers number (0..*)
+			
+				set sortedNumbers:
+					numbers sort // sort items
+		'''
+		val code = model.generateCode
+		assertNotNull(code)  // TODO check generated function
+	}
+	
+	@Test
+	def void shouldGenerateListSortWithAttribute() {
+		val model = '''
+			type Foo:
+				attr string (1..*)
+			
+			func SortFooOnAttr:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				set sortedFoos:
+					foos sort [item -> attr]// sort based on item attribute
+		'''
+		val code = model.generateCode // FIXME com.regnosys.rosetta.generator.java.expression.ListOperationExtensions.isOutputListOfLists(ListOperation) doesn't work properly
+		assertNotNull(code) // TODO check generated function
+	}
+	
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {
 		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of()) as RosettaModelObject
 	}

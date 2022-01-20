@@ -267,6 +267,7 @@ class RosettaTypeProvider {
 			}
 			ListOperation:
 				switch(expression.operationKind) {
+					case SORT,
 					case FILTER:
 						expression.firstOrImplicit.safeRType(cycleTracker)
 					case REDUCE,

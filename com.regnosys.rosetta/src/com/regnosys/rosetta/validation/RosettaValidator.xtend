@@ -1175,7 +1175,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 		}
 		
-		if (o.operationKind !== ListOperationKind.MAP && o.operationKind !== ListOperationKind.FILTER && o.operationKind !== ListOperationKind.FLATTEN)  {
+		if (o.operationKind !== ListOperationKind.MAP && o.operationKind !== ListOperationKind.SORT && o.operationKind !== ListOperationKind.FILTER && o.operationKind !== ListOperationKind.FLATTEN)  {
 			val previousOp = o.previousListOperation
 			if (previousOp !== null && previousOp.isOutputListOfLists) {
 				error('''List must be flattened before «o.operationKind» operation.''', o, LIST_OPERATION__OPERATION_KIND)
