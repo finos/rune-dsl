@@ -66,11 +66,11 @@ class ListOperationExtensions {
 		}
 		else if (op.operationKind == ListOperationKind.MAP) {
 			!op.isItemMulti && op.body !== null && op.isBodyExpressionMulti && op.isPreviousOperationMulti
-		} else {
+		} 
+		else {
 			val previousListOp = op.previousListOperation
 			previousListOp !== null && previousListOp.isOutputListOfLists
 		}
-		
 	}
 
 	/**
@@ -80,7 +80,8 @@ class ListOperationExtensions {
 		if (op.operationKind == ListOperationKind.MAP) {
 			val previousListOp = op.previousListOperation
 			previousListOp !== null && previousListOp.isOutputListOfLists && op.isBodyExpressionMulti
-		} else {
+		} 
+		else {
 			false
 		}
 	}
