@@ -3115,7 +3115,7 @@ class ListOperationTest {
 				set sortedFoos:
 					foos sort [item -> attr] // sort based on item attribute
 		'''
-		val code = model.generateCode // FIXME com.regnosys.rosetta.generator.java.expression.ListOperationExtensions.isOutputListOfLists(ListOperation) doesn't work properly
+		val code = model.generateCode
 		assertNotNull(code) // TODO check generated function
 	}
 	
@@ -3123,7 +3123,7 @@ class ListOperationTest {
 	def void shouldGenerateListSortWithAttribute2() {
 		val model = '''
 			type Foo:
-				attrList string (1..*)
+				attrList string (1..*) // list
 			
 			func SortFooOnAttr:
 				inputs:
@@ -3132,9 +3132,9 @@ class ListOperationTest {
 					sortedFoos Foo (0..*)
 			
 				set sortedFoos:
-					foos sort [item -> attrList count]// sort based on item attrList count
+					foos sort [item -> attrList] // sort based on item attrList (validation required)
 		'''
-		val code = model.generateCode // FIXME com.regnosys.rosetta.generator.java.expression.ListOperationExtensions.isOutputListOfLists(ListOperation) doesn't work properly
+		val code = model.generateCode
 		assertNotNull(code) // TODO check generated function
 	}
 	
