@@ -159,6 +159,9 @@ class ImportGenerator {
 
 	def void addExpression(RosettaExpression expression) {
 		switch (expression) {
+			case null: {
+				// do nothing
+			}	
 			RosettaCallableCall: {
 				add(expression.callable)
 			}
