@@ -9,7 +9,6 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
@@ -136,11 +135,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 	}
 	
 	private def void formatDefinition(Definable ele, extension IFormattableDocument document) {
-		if (ele.definition !== null)
-			ele.regionFor.keyword('>').append(NEW_LINE)
-	}
-	
-	private def void formatDefinition(RosettaDefinable ele, extension IFormattableDocument document) {
 		if (ele.definition !== null)
 			ele.regionFor.keyword('>').append(NEW_LINE)
 	}

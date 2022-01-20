@@ -82,6 +82,7 @@ class CardinalityProvider {
 						false
 					case FILTER,
 					case FLATTEN,
+					case SORT,
 					case DISTINCT:
 						true
 					case MAP: {
