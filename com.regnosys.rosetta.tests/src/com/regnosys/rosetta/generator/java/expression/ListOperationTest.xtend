@@ -3100,11 +3100,11 @@ class ListOperationTest {
 		assertNotNull(code)  // TODO check generated function
 	}
 	
-	@Test
+		@Test
 	def void shouldGenerateListSortWithAttribute() {
 		val model = '''
 			type Foo:
-				attr string (1..*)
+				attr string (1..1) // single
 			
 			func SortFooOnAttr:
 				inputs:
@@ -3113,7 +3113,26 @@ class ListOperationTest {
 					sortedFoos Foo (0..*)
 			
 				set sortedFoos:
-					foos sort [item -> attr]// sort based on item attribute
+					foos sort [item -> attr] // sort based on item attribute
+		'''
+		val code = model.generateCode // FIXME com.regnosys.rosetta.generator.java.expression.ListOperationExtensions.isOutputListOfLists(ListOperation) doesn't work properly
+		assertNotNull(code) // TODO check generated function
+	}
+	
+	@Test
+	def void shouldGenerateListSortWithAttribute2() {
+		val model = '''
+			type Foo:
+				attrList string (1..*)
+			
+			func SortFooOnAttr:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				set sortedFoos:
+					foos sort [item -> attrList count]// sort based on item attrList count
 		'''
 		val code = model.generateCode // FIXME com.regnosys.rosetta.generator.java.expression.ListOperationExtensions.isOutputListOfLists(ListOperation) doesn't work properly
 		assertNotNull(code) // TODO check generated function
