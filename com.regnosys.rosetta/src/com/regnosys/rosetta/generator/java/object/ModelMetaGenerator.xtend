@@ -64,7 +64,7 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
-						«FOR d : c.allSuperTypes»
+						«FOR d : c.allSuperTypes SEPARATOR ","»
 							«FOR r : conditionRules(d, d.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
 								factory.create(«javaNames.packages.model.dataRule.name».«r.ruleName.toConditionJavaType».class)
 							«ENDFOR»
@@ -75,7 +75,7 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> choiceRuleValidators() {
 					return Arrays.asList(
-						«FOR d : c.allSuperTypes»
+						«FOR d : c.allSuperTypes SEPARATOR ","»
 							«FOR r : conditionRules(d, d.conditions)[isChoiceRuleCondition] SEPARATOR ','»
 								new «javaNames.packages.model.choiceRule.name».«r.ruleName.toConditionJavaType»()
 							«ENDFOR»
