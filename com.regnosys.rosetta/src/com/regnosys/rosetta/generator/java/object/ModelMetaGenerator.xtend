@@ -56,6 +56,8 @@ class ModelMetaGenerator {
 	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version, Set<RosettaModel> models) {
 		val dataClass = javaNames.toJavaType(c)
 		val qualifierFuncs = qualifyFuncs(c, javaNames, models)
+		val dataRules = c.allSuperTypes.map[it.conditionRules(it.conditions)[!isChoiceRuleCondition]].flatten
+		val choiceRules = c.allSuperTypes.map[it.conditionRules(it.conditions)[isChoiceRuleCondition]].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -64,10 +66,8 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
-						«FOR d : c.allSuperTypes SEPARATOR ","»
-							«FOR r : conditionRules(d, d.conditions)[!isChoiceRuleCondition] SEPARATOR ','»
-								factory.create(«javaNames.packages.model.dataRule.name».«r.ruleName.toConditionJavaType».class)
-							«ENDFOR»
+						«FOR r : dataRules SEPARATOR ','»
+							factory.create(«javaNames.packages.model.dataRule.name».«r.ruleName.toConditionJavaType».class)
 						«ENDFOR»
 					);
 				}
@@ -75,10 +75,8 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> choiceRuleValidators() {
 					return Arrays.asList(
-						«FOR d : c.allSuperTypes SEPARATOR ","»
-							«FOR r : conditionRules(d, d.conditions)[isChoiceRuleCondition] SEPARATOR ','»
-								new «javaNames.packages.model.choiceRule.name».«r.ruleName.toConditionJavaType»()
-							«ENDFOR»
+						«FOR r : choiceRules SEPARATOR ','»
+							new «javaNames.packages.model.choiceRule.name».«r.ruleName.toConditionJavaType»()
 						«ENDFOR»
 					);
 				}

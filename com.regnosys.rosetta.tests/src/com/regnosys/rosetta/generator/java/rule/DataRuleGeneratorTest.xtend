@@ -212,21 +212,25 @@ class DataRuleGeneratorTest {
 		val code = '''
 			type Foo:
 				x string (0..1)
-			
-			type Bar extends Foo:
 				y string (0..1)
 				
 				condition:
 					x exists
+			
+			type Bar extends Foo:
+				z string (0..1)
+				
+				condition:
+					y exists
 		'''.generateCode
 		
 		val classes = code.compileToClasses
 
-		val bar1 = classes.createInstanceUsingBuilder('Bar', of('y', 'v1'), of())
+		val bar1 = classes.createInstanceUsingBuilder('Bar', of('z', 'v1'), of())
 		val result1 = classes.runDataRule(bar1, 'BarDataRule0')
 		assertFalse(result1.isSuccess)
 		
-		val bar2 = classes.createInstanceUsingBuilder('Bar', of('x', 'v1', 'y', 'v2'), of())
+		val bar2 = classes.createInstanceUsingBuilder('Bar', of('y', 'v1', 'z', 'v2'), of())
 		val result2 = classes.runDataRule(bar2, 'BarDataRule0')
 		assertTrue(result2.isSuccess)
 	}
@@ -236,22 +240,25 @@ class DataRuleGeneratorTest {
 		val code = '''
 			type Foo:
 				x string (0..1)
+				y string (0..1)
 				
 				condition:
 					x exists
 			
 			type Bar extends Foo:
-				y string (0..1)
-
+				z string (0..1)
+				
+				condition:
+					y exists
 		'''.generateCode
 		
 		val classes = code.compileToClasses
 
-		val bar1 = classes.createInstanceUsingBuilder('Bar', of('y', 'v1'), of())
+		val bar1 = classes.createInstanceUsingBuilder('Bar', of('z', 'v1'), of())
 		val result1 = classes.runDataRule(bar1, 'FooDataRule0')
 		assertFalse(result1.isSuccess)
 		
-		val bar2 = classes.createInstanceUsingBuilder('Bar', of('x', 'v1', 'y', 'v2'), of())
+		val bar2 = classes.createInstanceUsingBuilder('Bar', of('x', 'v1', 'y', 'v2', 'z', 'v3'), of())
 		val result2 = classes.runDataRule(bar2, 'FooDataRule0')
 		assertTrue(result2.isSuccess)
 	}
