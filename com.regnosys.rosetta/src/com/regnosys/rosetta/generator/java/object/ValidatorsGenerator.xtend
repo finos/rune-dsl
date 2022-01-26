@@ -4,10 +4,12 @@ import com.google.common.base.Strings
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
 import com.google.inject.Inject
+import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.expression.ExpressionOperators
@@ -17,7 +19,6 @@ import com.rosetta.model.lib.validation.ValidationResult
 import com.rosetta.model.lib.validation.ValidationResult.ValidationType
 import com.rosetta.model.lib.validation.Validator
 import com.rosetta.model.lib.validation.ValidatorWithArg
-import java.util.List
 import java.util.Map
 import java.util.Set
 import java.util.stream.Collectors
@@ -29,6 +30,7 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 class ValidatorsGenerator {
 
 	@Inject extension ImportManagerExtension
+	@Inject extension RosettaExtensions
 
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version) {
 		fsa.generateFile(names.packages.model.typeValidation.directoryName + '/' + data.name + 'Validator.java',
@@ -38,7 +40,7 @@ class ValidatorsGenerator {
 	}
 
 	private def generatClass(JavaNames names, Data d, String version) {
-		val classBody = tracImports(d.classBody(names, version, d.getExpandedAttributes(false)))
+		val classBody = tracImports(d.classBody(names, version, d.allAttributes))
 		'''
 			package «names.packages.model.typeValidation.name»;
 			
@@ -54,7 +56,7 @@ class ValidatorsGenerator {
 	}
 
 	private def generateOnlyExistsValidator(JavaNames names, Data d, String version) {
-		val classBody = tracImports(d.onlyExistsClassBody(names, version))
+		val classBody = tracImports(d.onlyExistsClassBody(names, version, d.allAttributes))
 		'''
 			package «names.packages.model.existsValidation.name»;
 			
@@ -69,7 +71,7 @@ class ValidatorsGenerator {
 		'''
 	}
 
-	def private StringConcatenationClient classBody(Data c, JavaNames names, String version, List<ExpandedAttribute> attributes) '''
+	def private StringConcatenationClient classBody(Data c, JavaNames names, String version, Iterable<Attribute> attributes) '''
 		public class «c.name»Validator implements «Validator»<«names.toJavaType(c)»> {
 		
 			@Override
@@ -77,7 +79,7 @@ class ValidatorsGenerator {
 				String error = 
 					«Lists».<«ComparisonResult»>newArrayList(
 						«FOR attr : attributes SEPARATOR ","»
-							«checkCardinality(attr)»
+							«checkCardinality(attr.toExpandedAttribute)»
 						«ENDFOR»
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«Collectors.importMethod("joining")»("; "));
 				
@@ -94,13 +96,13 @@ class ValidatorsGenerator {
 		return c.name + 'OnlyExistsValidator'
 	}
 
-	def private StringConcatenationClient onlyExistsClassBody(Data c, JavaNames names, String version) '''
+	def private StringConcatenationClient onlyExistsClassBody(Data c, JavaNames names, String version, Iterable<Attribute> attributes) '''
 		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaType(c)», «Set»<String>> {
 		
 			@Override
 			public <T2 extends «c.name»> «ValidationResult»<«c.name»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
 				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
-						«FOR attr : c.attributes»
+						«FOR attr : attributes»
 							.put("«attr.name»", «ExistenceChecker».isSet(o.get«attr.name?.toFirstUpper»()))
 						«ENDFOR»
 						.build();

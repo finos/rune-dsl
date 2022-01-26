@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*
 class RosettaConditionTest {
 	
 	@Inject extension CodeGeneratorTestHelper
-	@Inject extension ConditionHelper
+	@Inject extension ConditionTestHelper
 	
 	Map<String, Class<?>> classes
 	
