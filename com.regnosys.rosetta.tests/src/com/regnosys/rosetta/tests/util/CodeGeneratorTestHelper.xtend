@@ -4,6 +4,7 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.generator.RosettaGenerator
 import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.rosetta.model.lib.meta.FieldWithMeta
 import java.io.File
@@ -88,12 +89,19 @@ class CodeGeneratorTestHelper {
 	}
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, String className, Map<String, Object> itemsToSet) {
-		createInstanceUsingBuilder(classes, className, itemsToSet, of())
+		classes.createInstanceUsingBuilder(rootPackage, className, itemsToSet)
 	}
 
-	def createInstanceUsingBuilder(Map<String, Class<?>> classes, String className, Map<String, Object> itemsToSet,
-		Map<String, List<?>> itemsToAddToList) {
-		val rosettaClassBuilderInstance = classes.get(rootPackage.name + '.' + className).getMethod(
+	def createInstanceUsingBuilder(Map<String, Class<?>> classes, RootPackage namespace, String className, Map<String, Object> itemsToSet) {
+		classes.createInstanceUsingBuilder(namespace, className, itemsToSet, of())
+	}
+
+	def createInstanceUsingBuilder(Map<String, Class<?>> classes, String className, Map<String, Object> itemsToSet, Map<String, List<?>> itemsToAddToList) {
+		classes.createInstanceUsingBuilder(rootPackage, className, itemsToSet, itemsToAddToList)
+	}
+
+	def createInstanceUsingBuilder(Map<String, Class<?>> classes, RootPackage namespace, String className, Map<String, Object> itemsToSet, Map<String, List<?>> itemsToAddToList) {
+		val rosettaClassBuilderInstance = classes.get(namespace.name + '.' + className).getMethod(
 			"builder").invoke(null);
 		itemsToSet.forEach [ name, value |
 			rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value.class]).invoke(

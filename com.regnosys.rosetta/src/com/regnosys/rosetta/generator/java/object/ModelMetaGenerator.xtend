@@ -26,6 +26,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.rosetta.model.lib.validation.ValidatorFactory
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 
 class ModelMetaGenerator {
 
@@ -67,7 +68,7 @@ class ModelMetaGenerator {
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
 						«FOR r : dataRules SEPARATOR ','»
-							factory.create(«javaNames.packages.model.dataRule.name».«r.ruleName.toConditionJavaType».class)
+							factory.create(«r.containingClassNamespace.dataRule.name».«r.ruleName.toConditionJavaType».class)
 						«ENDFOR»
 					);
 				}
@@ -76,7 +77,7 @@ class ModelMetaGenerator {
 				public «List»<«Validator»<? super «dataClass»>> choiceRuleValidators() {
 					return Arrays.asList(
 						«FOR r : choiceRules SEPARATOR ','»
-							new «javaNames.packages.model.choiceRule.name».«r.ruleName.toConditionJavaType»()
+							new «r.containingClassNamespace.choiceRule.name».«r.ruleName.toConditionJavaType»()
 						«ENDFOR»
 					);
 				}
@@ -116,12 +117,14 @@ class ModelMetaGenerator {
 	}
 	
 	private def List<ClassRule> conditionRules(Data d, List<Condition> elements, (Condition)=>boolean filter) {
-		return elements.filter(filter).map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(d))].toList
+		val dataNamespace = new RootPackage(d.model)
+		return elements.filter(filter).map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(d), dataNamespace)].toList
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data
 	static class ClassRule {
-		String className;
-		String ruleName;
+		String className
+		String ruleName
+		RootPackage containingClassNamespace
 	}
 }
