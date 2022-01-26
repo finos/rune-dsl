@@ -207,6 +207,54 @@ class DataRuleGeneratorTest {
 		assertTrue(validationResult.isSuccess)
 	}
 	
+	@Test
+	def void shouldCheckConditionWithInheritedAttribute() {
+		val code = '''
+			type Foo:
+				x string (0..1)
+			
+			type Bar extends Foo:
+				y string (0..1)
+				
+				condition:
+					x exists
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+
+		val bar1 = classes.createInstanceUsingBuilder('Bar', of('y', 'v1'), of())
+		val result1 = classes.runDataRule(bar1, 'BarDataRule0')
+		assertFalse(result1.isSuccess)
+		
+		val bar2 = classes.createInstanceUsingBuilder('Bar', of('x', 'v1', 'y', 'v2'), of())
+		val result2 = classes.runDataRule(bar2, 'BarDataRule0')
+		assertTrue(result2.isSuccess)
+	}
+	
+	@Test
+	def void shouldCheckInheritedCondition() {
+		val code = '''
+			type Foo:
+				x string (0..1)
+				
+				condition:
+					x exists
+			
+			type Bar extends Foo:
+				y string (0..1)
+
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+
+		val bar1 = classes.createInstanceUsingBuilder('Bar', of('y', 'v1'), of())
+		val result1 = classes.runDataRule(bar1, 'FooDataRule0')
+		assertFalse(result1.isSuccess)
+		
+		val bar2 = classes.createInstanceUsingBuilder('Bar', of('x', 'v1', 'y', 'v2'), of())
+		val result2 = classes.runDataRule(bar2, 'FooDataRule0')
+		assertTrue(result2.isSuccess)
+	}
 		
 	@Deprecated
 	/**

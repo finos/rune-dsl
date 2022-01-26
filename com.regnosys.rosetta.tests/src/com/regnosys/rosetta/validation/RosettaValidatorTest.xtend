@@ -441,6 +441,21 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(DATA, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE, 'Type Foo has both choice condition and one-of condition.')
 	}
 
+	@Test
+	def void shouldNoGenerateErrorsForConditionWithInheritedAttributeExists() {
+		val model = '''
+			type Foo:
+				x string (0..1)
+			
+			type Bar extends Foo:
+				y string (0..1)
+				
+				condition:
+					x exists
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
 
  	@Test
 	def checkMappingMultipleSetToWithoutWhenCases() {
