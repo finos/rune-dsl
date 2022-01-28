@@ -15,11 +15,11 @@ public interface Date extends Comparable<Date> {
 	
 	LocalDate toLocalDate();
 	
-	static Date of(int year, int month, int dayOfMonth) {
+	public static Date of(int year, int month, int dayOfMonth) {
 		return new DateImpl(year,  month,  dayOfMonth);
 	}
 	
-	static Date of(LocalDate localDate) {
+	public static Date of(LocalDate localDate) {
 		return of(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
 	}
 	
@@ -33,11 +33,11 @@ public interface Date extends Comparable<Date> {
      * @return the parsed local date, not null
      * @throws DateTimeParseException if the text cannot be parsed
      */
-	static Date parse(String text) {
+	public static Date parse(String text) {
 		return of(LocalDate.parse(text));
 	}
 	
-	static LocalDateTime of(Date date, LocalTime time) {
+	public static LocalDateTime of(Date date, LocalTime time) {
 		return LocalDateTime.of(date.toLocalDate(), time);
 	}
 }
