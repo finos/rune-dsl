@@ -14,12 +14,13 @@ public class DateImpl implements Date {
 		this.day = day;
 	}
 	
-	protected DateImpl(LocalDate localDate) {
+	// TODO change to protected
+	public DateImpl(LocalDate localDate) {
 		this.year = localDate.getYear();
 		this.month = localDate.getMonthValue();
 		this.day = localDate.getDayOfMonth();
 	}
-
+	
 	@Override
 	public int getDay() {
 		return day;
