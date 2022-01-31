@@ -77,4 +77,8 @@ public class DateImpl implements Date {
 	public int compareTo(Date o) {
 		return toLocalDate().compareTo(o.toLocalDate());
 	}
+	
+	public static Date of(int year, int month, int dayOfMonth) {
+		return new DateImpl(year,  month,  dayOfMonth);
+	}
 }
