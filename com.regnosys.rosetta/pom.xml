@@ -167,7 +167,7 @@
 						<artifactId>org.eclipse.emf.ecore.xcore</artifactId>
 						<version>${org.eclipse.emf.ecore.xcore-version}</version>
 					</dependency>
-			</dependencies>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.eclipse.xtend</groupId>

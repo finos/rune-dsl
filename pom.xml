@@ -21,18 +21,18 @@ See the Apache License Version 2.0 for the specific language governing permissio
 	<packaging>pom</packaging>
 
 	<properties>
-		<xtextVersion>2.23.0</xtextVersion>
-		<mwe2Version>2.11.3</mwe2Version>
-		<org.eclipse.emf.codegen.ecore.xtext-version>1.5.0</org.eclipse.emf.codegen.ecore.xtext-version>
-		<org.eclipse.emf.ecore.xcore.lib-version>1.5.0</org.eclipse.emf.ecore.xcore.lib-version>
-		<org.eclipse.emf.ecore.xcore-version>1.16.0</org.eclipse.emf.ecore.xcore-version>
-		<org.eclipse.emf.ecore-version>2.23.0</org.eclipse.emf.ecore-version>
+		<xtextVersion>2.25.0</xtextVersion>
+		<mwe2Version>2.12.1</mwe2Version>
+		<org.eclipse.emf.codegen.ecore.xtext-version>1.6.0</org.eclipse.emf.codegen.ecore.xtext-version>
+		<org.eclipse.emf.ecore.xcore.lib-version>1.6.0</org.eclipse.emf.ecore.xcore.lib-version>
+		<org.eclipse.emf.ecore.xcore-version>1.19.0</org.eclipse.emf.ecore.xcore-version>
+		<org.eclipse.emf.ecore-version>2.25.0</org.eclipse.emf.ecore-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.release>8</maven.compiler.release>
 		<!-- Tycho settings -->
-		<tycho-version>2.2.0</tycho-version>
+		<tycho-version>2.5.0</tycho-version>
 		<!-- Define overridable properties for tycho-surefire-plugin IMPORTANT THESE PROPERTIES ARE SOMETIMES OVERRIDEN BUT NEED TO BE BLANK OTHERWISE -->
 		<platformSystemProperties></platformSystemProperties>
 		<moduleProperties></moduleProperties>
@@ -66,7 +66,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 			<dependency>
 				<groupId>org.antlr</groupId>
 				<artifactId>antlr-runtime</artifactId>
-				<version>3.2</version>
+				<version>3.2.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
