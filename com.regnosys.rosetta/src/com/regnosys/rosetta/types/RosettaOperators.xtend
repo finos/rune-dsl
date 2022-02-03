@@ -79,7 +79,7 @@ class RosettaOperators {
 		return binaryTypeMap.containsKey(new BinaryOperation(COMPARISON_OPS.get(0), type.convertToBuiltIn, type.convertToBuiltIn));
 	}
 
-//	@Inject
+	@Inject
 	def private synchronized void initialize() {
 		if (!binaryTypeMap.empty) {
 			return
