@@ -7,27 +7,28 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="src" path="src/">
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
+	<classpathentry kind="src" path="src">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="src-gen/">
+	<classpathentry kind="src" path="src-gen">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="xtend-gen/">
+	<classpathentry kind="src" path="xtend-gen">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="src-test/java/">
+	<classpathentry kind="src" path="src-test/java">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="test-resources/">
+	<classpathentry kind="src" path="test-resources">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
