@@ -174,12 +174,7 @@
 				<artifactId>maven-clean-plugin</artifactId>
 				<configuration>
 					<filesets combine.children="append">
-						<fileset>
-							<directory>${basedir}/../com.regnosys.rosetta/emf-gen/</directory>
-							<includes>
-								<include>**/*</include>
-							</includes>
-						</fileset>
+						<!-- com.regnosys.rosetta -->
 						<fileset>
 							<directory>${basedir}/../com.regnosys.rosetta/src-gen/</directory>
 							<includes>
@@ -187,11 +182,18 @@
 							</includes>
 						</fileset>
 						<fileset>
-							<directory>${basedir}/../com.regnosys.rosetta.tests/src-gen/</directory>
+							<directory>${basedir}/../com.regnosys.rosetta/xtend-gen/</directory>
 							<includes>
 								<include>**/*</include>
 							</includes>
 						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta/emf-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<!-- com.regnosys.rosetta.ide -->
 						<fileset>
 							<directory>${basedir}/../com.regnosys.rosetta.ide/src-gen/</directory>
 							<includes>
@@ -199,13 +201,65 @@
 							</includes>
 						</fileset>
 						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.ide/xtend-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<!-- com.regnosys.rosetta.lib -->
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.lib/xtend-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<!-- com.regnosys.rosetta.tests -->
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.tests/src-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.tests/xtend-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.tests/src-test/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.tests/test-resources/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<!-- com.regnosys.rosetta.ui -->
+						<fileset>
 							<directory>${basedir}/../com.regnosys.rosetta.ui/src-gen/</directory>
 							<includes>
 								<include>**/*</include>
 							</includes>
 						</fileset>
 						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.ui/xtend-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<!-- com.regnosys.rosetta.ui.tests -->
+						<fileset>
 							<directory>${basedir}/../com.regnosys.rosetta.ui.tests/src-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.ui.tests/xtend-gen/</directory>
 							<includes>
 								<include>**/*</include>
 							</includes>
@@ -228,15 +282,9 @@
 							<pluginExecutions>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											exec-maven-plugin
-										</artifactId>
-										<versionRange>
-											1.2.1
-										</versionRange>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>exec-maven-plugin</artifactId>
+										<versionRange>1.2.1</versionRange>
 										<goals>
 											<goal>java</goal>
 										</goals>
