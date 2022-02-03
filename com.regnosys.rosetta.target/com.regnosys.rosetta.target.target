@@ -21,6 +21,7 @@
 			<unit id="org.eclipse.pde.feature.group" version="3.14.1000.v20211124-1800"/>
 			<unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
 			<unit id="org.eclipse.xtext.sdk.feature.group" version="2.25.0.v20210301-1429"/>
+ 			<unit id="org.eclipse.xtext.xbase.feature.group" version="2.25.0.v20210301-1429"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 			<repository location="http://boothen.github.io/Json-Eclipse-Plugin/"/>
