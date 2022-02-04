@@ -9,6 +9,14 @@
 	<artifactId>com.regnosys.rosetta.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
 
+	<dependencies>
+		<dependency>
+		    <groupId>aopalliance</groupId>
+		    <artifactId>aopalliance</artifactId>
+		    <version>1.0</version>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -63,7 +71,6 @@
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
-				<version>${tycho-version}</version>
 				<executions>
 					<execution>
 						<id>default-test</id>
