@@ -249,7 +249,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 			return new MapperC<>(unionItems);
 		}
 		else if(other instanceof MapperS) {
-			return ((MapperC<?>) other).unionDifferent(this);
+			return ((MapperS<?>) other).unionDifferent(this);
 		}
 		else {
 			throw new IllegalArgumentException("Unsupported Mapper type: " + other.getClass().getName());
