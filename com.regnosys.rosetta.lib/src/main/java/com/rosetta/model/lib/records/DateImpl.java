@@ -3,22 +3,24 @@ package com.rosetta.model.lib.records;
 import java.time.LocalDate;
 
 public class DateImpl implements Date {
+	
 	private final int day;
 	private final int month;
 	private final int year;
 	
-	public DateImpl(int day, int month, int year) {
-		this.day = day;
-		this.month = month;
+	protected DateImpl(int year, int month, int day) {
 		this.year = year;
+		this.month = month;
+		this.day = day;
 	}
 	
-	public DateImpl(LocalDate date) {
-		this.day = date.getDayOfMonth();
-		this.month = date.getMonthValue();
-		this.year = date.getYear();
+	// TODO change to protected
+	public DateImpl(LocalDate localDate) {
+		this.year = localDate.getYear();
+		this.month = localDate.getMonthValue();
+		this.day = localDate.getDayOfMonth();
 	}
-
+	
 	@Override
 	public int getDay() {
 		return day;
@@ -64,7 +66,7 @@ public class DateImpl implements Date {
 
 	@Override
 	public String toString() {
-		return year + "-" + month + "-" + day;
+		return toLocalDate().toString();
 	}
 
 	@Override
@@ -76,11 +78,8 @@ public class DateImpl implements Date {
 	public int compareTo(Date o) {
 		return toLocalDate().compareTo(o.toLocalDate());
 	}
-	static final public Date of(int year, int month, int dayOfMonth) {
-		return new DateImpl(dayOfMonth,  month,  year);
-	}
 	
-	static final public Date of(LocalDate localDate) {
-		return new DateImpl(localDate.getDayOfMonth(), localDate.getMonthValue(), localDate.getYear());
+	public static Date of(int year, int month, int dayOfMonth) {
+		return new DateImpl(year,  month,  dayOfMonth);
 	}
 }

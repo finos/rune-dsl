@@ -41,6 +41,9 @@ class RosettaAttributeExtensions {
 		attribute.cardinalityIsSingleValue != true
 	}
 	
+	/**
+	 * Note that these methods will add a "meta" attribute if the data type has annotations
+	 */
 	static def List<ExpandedAttribute> getExpandedAttributes(Data data, boolean sort) {
 		val attrs = (data.attributes.map[toExpandedAttribute()].toList + data.additionalAttributes)
 		return if(sort)attrs.sortBy[ExpandedAttribute a|a.name] else attrs.toList
