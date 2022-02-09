@@ -144,6 +144,7 @@ enum ListOperationKind {
 	, distinct
 	, reduce
 	, sort
+	, reverse_sort as "reverse-sort"
 }
 
 class ClosureParameter extends RosettaCallable {

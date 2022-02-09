@@ -93,6 +93,7 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.types.RRecordType
 
 /**
  * This class contains custom validation rules. 
@@ -1230,9 +1231,41 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					error('''List reduce expression must evaluate to single cardinality.''', o, LIST_OPERATION__BODY)
 				}
 			}
+			case SORT,
+			case REVERSE_SORT: {
+				if (o.parameters !== null && o.parameters.size > 1) {
+					error('''List sort must only have 1 named parameter.''', o, LIST_OPERATION__PARAMETERS)
+				}
+				else if (o.body !== null) {
+					if (o.isBodyExpressionMulti) {
+						error('''List sort only supports single cardinality attributes.''', o, LIST_OPERATION__BODY)
+					}
+					val outputRType = o.body.getRType
+					if (!outputRType.isComparable) {
+						error('''List sort only supports comparable types (string, int, string, date). Found type «outputRType.name».''', o, LIST_OPERATION__BODY)
+					}
+						
+				}
+				else if (o.body === null) {
+					val inputRType = o.receiver.getRType
+					if (!inputRType.isComparable) {
+						error('''List sort only supports comparable types (string, int, string, date). Found type «inputRType.name».''', o, LIST_OPERATION__BODY)
+					}
+				}
+			}
 			default: {
 				// Do nothing
 			}
+		}
+	}
+	
+	def boolean isComparable(RType rType) {
+		switch (rType) {
+			RBuiltinType,
+			RRecordType:
+				return true
+			default:
+				false
 		}
 	}
 	

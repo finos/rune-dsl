@@ -6,6 +6,7 @@ import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.records.Date
 import java.util.List
 import java.util.Map
 import org.eclipse.xtext.testing.InjectWith
@@ -15,8 +16,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.google.common.collect.ImmutableMap.*
+import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.assertThat
-import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
@@ -3085,28 +3086,105 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateListSort() {
+	def void shouldGenerateIntListSort() {
 		val model = '''
-			func SortNumbers: 
+			func FuncFoo: 
 				inputs:
-					numbers number (0..*)
+					numbers int (0..*)
 				output:
-					sortedNumbers number (0..*)
+					sortedNumbers int (0..*)
 			
 				set sortedNumbers:
 					numbers sort // sort items
 		'''
 		val code = model.generateCode
-		assertNotNull(code)  // TODO check generated function
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import java.util.ArrayList;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param numbers 
+					* @return sortedNumbers 
+					*/
+					public List<Integer> evaluate(List<Integer> numbers) {
+						
+						List<Integer> sortedNumbersHolder = doEvaluate(numbers);
+						List<Integer> sortedNumbers = assignOutput(sortedNumbersHolder, numbers);
+						
+						return sortedNumbers;
+					}
+					
+					private List<Integer> assignOutput(List<Integer> sortedNumbers, List<Integer> numbers) {
+						sortedNumbers = MapperC.of(numbers)
+							.sort().getMulti();
+						
+						return sortedNumbers;
+					}
+				
+					protected abstract List<Integer> doEvaluate(List<Integer> numbers);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<Integer> doEvaluate(List<Integer> numbers) {
+							return new ArrayList<>();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val res = func.invokeFunc(List, ImmutableList.of(4, 2, 3, 1))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(1, 2, 3, 4), res);
 	}
 	
-		@Test
+	@Test
+	def void shouldGenerateDateListSort() {
+		val model = '''
+			func FuncFoo: 
+				inputs:
+					dates date (0..*)
+				output:
+					sortedDates date (0..*)
+			
+				set sortedDates:
+					dates sort // sort items
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val date1 = Date.of(2000, 1, 1)
+		val date2 = Date.of(2000, 1, 2)
+		val date3 = Date.of(2000, 2, 1)
+		val date4 = Date.of(2001, 1, 1)
+		
+		val res = func.invokeFunc(List, ImmutableList.of(date4, date1, date2, date3))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(date1, date2, date3, date4), res);
+	}
+	
+	@Test
 	def void shouldGenerateListSortWithAttribute() {
 		val model = '''
 			type Foo:
 				attr string (1..1) // single
 			
-			func SortFooOnAttr:
+			func FuncFoo:
 				inputs:
 					foos Foo (0..*)
 				output:
@@ -3116,26 +3194,159 @@ class ListOperationTest {
 					foos sort [item -> attr] // sort based on item attribute
 		'''
 		val code = model.generateCode
-		assertNotNull(code) // TODO check generated function
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Foo;
+				import com.rosetta.test.model.Foo.FooBuilder;
+				import java.util.ArrayList;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param foos 
+					* @return sortedFoos 
+					*/
+					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
+						
+						List<Foo.FooBuilder> sortedFoosHolder = doEvaluate(foos);
+						List<Foo.FooBuilder> sortedFoos = assignOutput(sortedFoosHolder, foos);
+						
+						if (sortedFoos!=null) objectValidator.validateAndFailOnErorr(Foo.class, sortedFoos);
+						return sortedFoos;
+					}
+					
+					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> sortedFoos, List<? extends Foo> foos) {
+						sortedFoos = toBuilder(MapperC.of(foos)
+							.sort(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getAttr", _foo -> _foo.getAttr())).getMulti());
+						
+						return sortedFoos;
+					}
+				
+					protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+							return new ArrayList<>();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		
+		val fooList = newArrayList
+		fooList.add(foo4)
+		fooList.add(foo2)
+		fooList.add(foo1)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, ImmutableList.of(foo4, foo2, foo3, foo1))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(foo1, foo2, foo3, foo4), res);
 	}
 	
 	@Test
-	def void shouldGenerateListSortWithAttribute2() {
+	def void shouldGenerateIntListReverseSort() {
+		val model = '''
+			func FuncFoo: 
+				inputs:
+					numbers int (0..*)
+				output:
+					sortedNumbers int (0..*)
+			
+				set sortedNumbers:
+					numbers reverse-sort // sort items
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val res = func.invokeFunc(List, ImmutableList.of(4, 2, 3, 1))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(4, 3, 2, 1), res);
+	}
+	
+	@Test
+	def void shouldGenerateDateListReverseSort() {
+		val model = '''
+			func FuncFoo: 
+				inputs:
+					dates date (0..*)
+				output:
+					sortedDates date (0..*)
+			
+				set sortedDates:
+					dates reverse-sort // sort items
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val date1 = Date.of(2000, 1, 1)
+		val date2 = Date.of(2000, 1, 2)
+		val date3 = Date.of(2000, 2, 1)
+		val date4 = Date.of(2001, 1, 1)
+		
+		val res = func.invokeFunc(List, ImmutableList.of(date4, date1, date2, date3))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(date4, date3, date2, date1), res);
+	}
+	
+	@Test
+	def void shouldGenerateListReverseSortWithAttribute() {
 		val model = '''
 			type Foo:
-				attrList string (1..*) // list
+				attr string (1..1) // single
 			
-			func SortFooOnAttr:
+			func FuncFoo:
 				inputs:
 					foos Foo (0..*)
 				output:
 					sortedFoos Foo (0..*)
 			
 				set sortedFoos:
-					foos sort [item -> attrList] // sort based on item attrList (validation required)
+					foos reverse-sort [item -> attr] // sort based on item attribute
 		'''
 		val code = model.generateCode
-		assertNotNull(code) // TODO check generated function
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		
+		val fooList = newArrayList
+		fooList.add(foo4)
+		fooList.add(foo2)
+		fooList.add(foo1)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, ImmutableList.of(foo4, foo2, foo3, foo1))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(foo4, foo3, foo2, foo1), res);
 	}
 	
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {

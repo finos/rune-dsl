@@ -4,6 +4,8 @@ import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
@@ -144,6 +146,58 @@ public class MapperC<T> implements MapperBuilder<T> {
 						else
 							return reduceFunc.apply(m1, m2);
 					});
+	}
+	
+	/**
+	 * Sort list of comparable items.
+	 * 
+	 * @return sorted list
+	 */
+	public MapperC<T> sort() {
+		return MapperC.of(nonErrorItems()
+				.map(MapperItem::getMappedObject)
+				.sorted()
+				.collect(Collectors.toList()));
+	}
+	
+	/**
+	 * Sort list of items based on comparable attribute.
+	 * 
+	 * @param <F> comparable type
+	 * @param mappingFunc to get comparable item to sort by
+	 * @return sorted list
+	 */
+	public <F extends Comparable<F>> MapperC<T> sort(Function<MapperS<T>, MapperS<F>> mappingFunc) {
+		return MapperC.of(nonErrorItems()
+				.sorted(Comparator.comparing(item -> mappingFunc.apply(new MapperS<>(item)).get()))
+				.map(MapperItem::getMappedObject)
+				.collect(Collectors.toList()));
+	}
+	
+	/**
+	 * Sort list of comparable items in reverse order.
+	 * 
+	 * @return sorted list
+	 */
+	public MapperC<T> reverseSort() {
+		return MapperC.of(nonErrorItems()
+				.map(MapperItem::getMappedObject)
+				.sorted(Collections.reverseOrder())
+				.collect(Collectors.toList()));
+	}
+	
+	/**
+	 * Sort list of items based on comparable attribute in reverse order.
+	 * 
+	 * @param <F> comparable type
+	 * @param mappingFunc to get comparable item to sort by
+	 * @return sorted list
+	 */
+	public <F extends Comparable<F>> MapperC<T> reverseSort(Function<MapperS<T>, MapperS<F>> mappingFunc) {
+		return MapperC.of(nonErrorItems()
+				.sorted(Comparator.comparing(item -> mappingFunc.apply(new MapperS<>(item)).get(), Collections.reverseOrder()))
+				.map(MapperItem::getMappedObject)
+				.collect(Collectors.toList()));
 	}
 	
 	protected Stream<MapperItem<T,?>> nonErrorItems() {

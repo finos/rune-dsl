@@ -551,11 +551,9 @@ class ExpressionGenerator {
 				'''
 				«op.receiver.javaCode(params)»
 					.flattenList()'''
-
 			}
 			case DISTINCT, case ONLY_ELEMENT: {
 				distinctOrOnlyElement('''«op.receiver.javaCode(params)»''', op.operationKind === ListOperationKind.DISTINCT, op.operationKind === ListOperationKind.ONLY_ELEMENT)
-
 			}
 			case REDUCE: {
 				val item1 = op.parameters.head.name.toDecoratedName
@@ -565,6 +563,12 @@ class ExpressionGenerator {
 				'''
 				«op.receiver.javaCode(params)»
 					.<«outputType»>reduce((«item1», «item2») -> («MapperS»<«outputType»>) «bodyExpr»)'''
+			}
+			case SORT,
+			case REVERSE_SORT: {
+				'''
+				«op.receiver.javaCode(params)»
+					.«IF op.operationKind == ListOperationKind.SORT»sort«ELSE»reverseSort«ENDIF»(«IF op.body !== null»/*«MapperS»<«op.itemType»>*/ «op.itemName» -> («MapperS»<«op.outputType»>) «op.body.javaCode(params)»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»«ENDIF»)'''
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)

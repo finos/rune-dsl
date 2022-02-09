@@ -1979,6 +1979,64 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List reduce expression must evaluate to single cardinality.")
 	}
+	
+	@Test
+	def void shouldGenerateListSortCardinalityError() {
+		val model = '''
+			type Foo:
+				attrList string (1..*) // list
+			
+			func SortFooOnAttr:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				add sortedFoos:
+					foos sort [item -> attrList] // sort based on multi-cardinality
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List sort only supports single cardinality attributes.")
+	}
+	
+	@Test
+	def void shouldGenerateListSortTypeError() {
+		val model = '''
+			type Foo:
+				attrList string (1..*) // list
+			
+			func SortFooOnAttr:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				add sortedFoos:
+					foos sort // sort based on Foo
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
+	}
+	
+	@Test
+	def void shouldGenerateListSortTypeError2() {
+		val model = '''
+			type Bar:
+				foo Foo (1..1)
+			
+			type Foo:
+				attr string (1..1)
+			
+			func SortBarOnFoo:
+				inputs:
+					bars Bar (0..*)
+				output:
+					sortedBars Bar (0..*)
+			
+				add sortedBars:
+					bars 
+						sort x [ x -> foo ] // sort based on Foo
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
+	}
 }
 	
 class MyRosettaInjectorProvider extends RosettaInjectorProvider {

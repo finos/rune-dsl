@@ -267,16 +267,15 @@ class RosettaTypeProvider {
 			}
 			ListOperation:
 				switch(expression.operationKind) {
-					case SORT,
 					case FILTER:
 						expression.firstOrImplicit.safeRType(cycleTracker)
 					case REDUCE,
 					case MAP:
 						expression.body.safeRType(cycleTracker)
-					case FLATTEN:
-						expression.receiver.safeRType(cycleTracker)
-					case DISTINCT:
-						expression.receiver.safeRType(cycleTracker)
+					case SORT,
+					case REVERSE_SORT,
+					case FLATTEN,
+					case DISTINCT,
 					case ONLY_ELEMENT:
 						expression.receiver.safeRType(cycleTracker)
 					default: 
