@@ -1231,8 +1231,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					error('''List reduce expression must evaluate to single cardinality.''', o, LIST_OPERATION__BODY)
 				}
 			}
-			case SORT,
-			case REVERSE_SORT: {
+			case SORT: {
 				if (o.parameters !== null && o.parameters.size > 1) {
 					error('''List sort must only have 1 named parameter.''', o, LIST_OPERATION__PARAMETERS)
 				}
@@ -1251,6 +1250,14 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 					if (!inputRType.isComparable) {
 						error('''List sort only supports comparable types (string, int, string, date). Found type «inputRType.name».''', o, LIST_OPERATION__BODY)
 					}
+				}
+			}
+			case REVERSE: {
+				if (o.body !== null) {
+					error('''No expression allowed for list reverse.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
+				else if (o.parameters.size > 0) {
+					error('''No item parameter allowed for list reverse.''', o, LIST_OPERATION__PARAMETERS)
 				}
 			}
 			default: {

@@ -81,7 +81,7 @@ class CardinalityProvider {
 					case REDUCE:
 						false
 					case SORT,
-					case REVERSE_SORT,
+					case REVERSE,
 					case FILTER,
 					case FLATTEN,
 					case DISTINCT:
@@ -147,7 +147,7 @@ class CardinalityProvider {
 						case MAP:
 							return previousOperation.body.isMulti(false)
 						case SORT,
-						case REVERSE_SORT,
+						case REVERSE,
 						case FILTER: 
 							// Filter operation does not change cardinality, so check the next previous operation's cardinality
 							return previousOperation.isPreviousOperationBodyMulti

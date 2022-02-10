@@ -564,11 +564,15 @@ class ExpressionGenerator {
 				«op.receiver.javaCode(params)»
 					.<«outputType»>reduce((«item1», «item2») -> («MapperS»<«outputType»>) «bodyExpr»)'''
 			}
-			case SORT,
-			case REVERSE_SORT: {
+			case SORT: {
 				'''
 				«op.receiver.javaCode(params)»
-					.«IF op.operationKind == ListOperationKind.SORT»sort«ELSE»reverseSort«ENDIF»(«IF op.body !== null»/*«MapperS»<«op.itemType»>*/ «op.itemName» -> («MapperS»<«op.outputType»>) «op.body.javaCode(params)»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»«ENDIF»)'''
+					.sort(«IF op.body !== null»/*«MapperS»<«op.itemType»>*/ «op.itemName» -> («MapperS»<«op.outputType»>) «op.body.javaCode(params)»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»«ENDIF»)'''
+			}
+			case REVERSE: {
+				'''
+				«op.receiver.javaCode(params)»
+					.reverse()'''
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)

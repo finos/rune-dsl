@@ -273,7 +273,7 @@ class RosettaTypeProvider {
 					case MAP:
 						expression.body.safeRType(cycleTracker)
 					case SORT,
-					case REVERSE_SORT,
+					case REVERSE,
 					case FLATTEN,
 					case DISTINCT,
 					case ONLY_ELEMENT:
