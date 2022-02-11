@@ -7,6 +7,7 @@ import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.records.Date
+import java.math.BigDecimal
 import java.util.List
 import java.util.Map
 import org.eclipse.xtext.testing.InjectWith
@@ -1379,8 +1380,7 @@ class ListOperationTest {
 					private List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
 						fooCounts = MapperC.of(bars)
 							.mapItemToList((/*MapperS<? extends Bar>*/ __bar) -> (MapperC<? extends Foo>) __bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
-							.mapListToItem((/*MapperC<? extends Foo>*/ __fooListItem) -> (MapperS<Integer>) MapperS.of(__fooListItem.resultCount()))
-						.getMulti();
+							.mapListToItem((/*MapperC<? extends Foo>*/ __fooListItem) -> (MapperS<Integer>) MapperS.of(__fooListItem.resultCount())).getMulti();
 						
 						return fooCounts;
 					}
@@ -1915,8 +1915,7 @@ class ListOperationTest {
 						updatedBars = toBuilder(MapperC.of(bars)
 							.mapItemToList((/*MapperS<? extends Bar>*/ __bar) -> (MapperC<? extends Foo>) __bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
 								.mapItem(/*MapperS<? extends Foo>*/ __foo -> (MapperS<? extends Foo>) MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(__foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))))
-							.mapListToItem((/*MapperC<? extends Foo>*/ __updatedFoos) -> (MapperS<? extends Bar>) MapperS.of(newBar.evaluate(__updatedFoos.getMulti())))
-						.getMulti());
+							.mapListToItem((/*MapperC<? extends Foo>*/ __updatedFoos) -> (MapperS<? extends Bar>) MapperS.of(newBar.evaluate(__updatedFoos.getMulti()))).getMulti());
 						
 						return updatedBars;
 					}
@@ -2697,6 +2696,62 @@ class ListOperationTest {
 	}
 	
 	@Test
+	def void shouldGenerateListJoin() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		stringList string (0..*)
+				output:
+					concatenatedString string (1..1)
+				
+				set concatenatedString:
+					stringList
+						join
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val stringList = newArrayList
+		stringList.add("a")
+		stringList.add("b")
+		stringList.add("c")
+		stringList.add("d")
+		stringList.add("e")
+		
+		val res = func.invokeFunc(String, stringList)
+		assertEquals("abcde", res);
+	}
+	
+	@Test
+	def void shouldGenerateListJoinWithDelimiter() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		stringList string (0..*)
+				output:
+					concatenatedString string (1..1)
+				
+				set concatenatedString:
+					stringList
+						join [ "_" ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val stringList = newArrayList
+		stringList.add("a")
+		stringList.add("b")
+		stringList.add("c")
+		stringList.add("d")
+		stringList.add("e")
+		
+		val res = func.invokeFunc(String, stringList)
+		assertEquals("a_b_c_d_e", res);
+	}
+	
+	@Test
 	def void shouldGenerateListReduceString() {
 		val model = '''
 			func FuncFoo:
@@ -2769,6 +2824,62 @@ class ListOperationTest {
 		
 		val res = func.invokeFunc(String, stringList)
 		assertEquals("abcde", res);
+	}
+	
+	@Test
+	def void shouldGenerateListSumInt() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		intList int (0..*)
+				output:
+					total int (1..1)
+				
+				set total:
+					intList
+						sum
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val intList = newArrayList
+		intList.add(1)
+		intList.add(3)
+		intList.add(5)
+		intList.add(7)
+		intList.add(11)
+		
+		val res = func.invokeFunc(Integer, intList)
+		assertEquals(27, res);
+	}
+	
+	@Test
+	def void shouldGenerateListSumBigDecimal() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		numberList number (0..*)
+				output:
+					total number (1..1)
+				
+				set total:
+					numberList
+						sum
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val numberList = newArrayList
+		numberList.add(BigDecimal.valueOf(1.1))
+		numberList.add(BigDecimal.valueOf(3.1))
+		numberList.add(BigDecimal.valueOf(5.1))
+		numberList.add(BigDecimal.valueOf(7.1))
+		numberList.add(BigDecimal.valueOf(11.1))
+		
+		val res = func.invokeFunc(BigDecimal, numberList)
+		assertEquals(BigDecimal.valueOf(27.5), res);
 	}
 	
 	@Test
@@ -2930,8 +3041,8 @@ class ListOperationTest {
 					a int (1..1)
 					b int (1..1)
 				output:
-					min int (1..1)
-				set min:
+					result int (1..1)
+				set result:
 					if a > b then b else a
 		'''
 		val code = model.generateCode
@@ -3140,6 +3251,136 @@ class ListOperationTest {
 		val res = func.invokeFunc(List, barList)
 		assertEquals(4, res.size);
 		assertThat(res, hasItems('a', 'b', 'c', 'd'));
+	}
+	
+	@Test
+	def void shouldGenerateListMaxInt() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		intList int (0..*)
+				output:
+					result int (0..1)
+				
+				set result:
+					intList
+						max
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val intList = newArrayList
+		intList.add(1)
+		intList.add(2)
+		intList.add(3)
+		intList.add(4)
+		intList.add(5)
+		
+		val res = func.invokeFunc(Integer, intList)
+		assertEquals(5, res);
+	}
+	
+	@Test
+	def void shouldGenerateListMaxComplexType() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					foo Foo (0..1)
+				
+				set foo:
+					foos
+						max [ item -> attr ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		val foo5 = classes.createFoo('e')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		fooList.add(foo4)
+		fooList.add(foo5)
+		
+		val res = func.invokeFunc(RosettaModelObject, fooList)
+		assertEquals(foo5, res);
+	}
+	
+	@Test
+	def void shouldGenerateListMinBigDecimal() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		numberList number (0..*)
+				output:
+					result number (0..1)
+				
+				set result:
+					numberList
+						min
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val numberList = newArrayList
+		numberList.add(BigDecimal.valueOf(1.1))
+		numberList.add(BigDecimal.valueOf(1.2))
+		numberList.add(BigDecimal.valueOf(1.3))
+		numberList.add(BigDecimal.valueOf(1.4))
+		numberList.add(BigDecimal.valueOf(1.5))
+		
+		val res = func.invokeFunc(BigDecimal, numberList)
+		assertEquals(BigDecimal.valueOf(1.1), res);
+	}
+	
+	@Test
+	def void shouldGenerateListMinComplexType() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					foo Foo (0..1)
+				
+				set foo:
+					foos
+						min [ item -> attr ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		val foo5 = classes.createFoo('e')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		fooList.add(foo4)
+		fooList.add(foo5)
+		
+		val res = func.invokeFunc(RosettaModelObject, fooList)
+		assertEquals(foo1, res);
 	}
 	
 	@Test

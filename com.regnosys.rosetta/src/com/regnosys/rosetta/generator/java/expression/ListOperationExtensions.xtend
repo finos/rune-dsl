@@ -4,11 +4,11 @@ import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.simple.ListOperation
+import com.regnosys.rosetta.rosetta.simple.ListOperationKind
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import javax.inject.Inject
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
-import com.regnosys.rosetta.rosetta.simple.ListOperationKind
 
 class ListOperationExtensions {
 	
@@ -18,20 +18,20 @@ class ListOperationExtensions {
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension Util
 	
-	def isItemMulti(ListOperation op) {
-		cardinalityProvider.isClosureParameterMulti(op)
-	}
-	
-	def String getItemRawType(ListOperation op) {
+	def String getInputRawType(ListOperation op) {
 		typeProvider.getRType(op.receiver).name.toJavaType
 	}
 	
-	def String getItemType(ListOperation op) {
-		'''«IF funcExt.needsBuilder(op.receiver)»? extends «ENDIF»«op.itemRawType»'''
+	def String getInputType(ListOperation op) {
+		'''«IF funcExt.needsBuilder(op.receiver)»? extends «ENDIF»«op.inputRawType»'''
 	}
 	
 	def String getItemName(ListOperation op) {
 		op.firstOrImplicit.getNameOrDefault.toDecoratedName
+	}
+	
+	def isItemMulti(ListOperation op) {
+		cardinalityProvider.isClosureParameterMulti(op)
 	}
 	
 	/**

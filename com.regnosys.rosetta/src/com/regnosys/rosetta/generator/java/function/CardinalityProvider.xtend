@@ -76,9 +76,12 @@ class CardinalityProvider {
 			ListLiteral: true
 			ListOperation: {
 				switch (obj.operationKind) {
-					case SUM,
 					case ONLY_ELEMENT,
-					case REDUCE:
+					case REDUCE,
+					case SUM,
+					case JOIN,
+					case MIN,
+					case MAX:
 						false
 					case SORT,
 					case REVERSE,
@@ -151,7 +154,11 @@ class CardinalityProvider {
 						case FILTER: 
 							// Filter operation does not change cardinality, so check the next previous operation's cardinality
 							return previousOperation.isPreviousOperationBodyMulti
-						case REDUCE:
+						case REDUCE,
+						case SUM,
+						case JOIN,
+						case MIN,
+						case MAX:
 							return false 
 						default: {
 							println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)

@@ -3,6 +3,7 @@ package com.rosetta.model.lib.mapper;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -110,7 +111,9 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	public <F> MapperC<F> mapItem(Function<MapperS<T>, MapperS<F>> mappingFunc) {
 		return MapperC.of(nonErrorItems()
-				.map(item -> mappingFunc.apply(new MapperS<>(item)).get())
+				.map(item -> new MapperS<>(item))
+				.map(m -> mappingFunc.apply(m))
+				.map(MapperS::get)
 				.collect(Collectors.toList()));
 	}
 	
@@ -123,7 +126,9 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	public <F> MapperListOfLists<F> mapItemToList(Function<MapperS<T>, MapperC<F>> mappingFunc) {
 		return MapperListOfLists.of(nonErrorItems()
-				.map(item -> mappingFunc.apply(new MapperS<>(item)).getMulti())
+				.map(item -> new MapperS<>(item))
+				.map(m -> mappingFunc.apply(m))
+				.map(MapperC::getMulti)
 				.collect(Collectors.toList()));
 	}
 
@@ -134,11 +139,22 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @param reduceFunc
 	 * @return reduced item
 	 */
-	@SuppressWarnings("unchecked")
 	public <F> MapperS<F> reduce(BinaryOperator<MapperS<F>> reduceFunc) {
+		return reduce(MapperS.identity(), reduceFunc);
+	}
+	
+	/**
+	 * Reduce list items to single item based on the given reduce function.
+	 * 
+	 * @param <F>
+	 * @param reduceFunc
+	 * @return reduced item
+	 */
+	@SuppressWarnings("unchecked")
+	public <F> MapperS<F> reduce(MapperS<F> initial, BinaryOperator<MapperS<F>> reduceFunc) {
 		return nonErrorItems()
 				.map(item -> new MapperS<>((MapperItem<F, ?>) item))
-				.reduce(MapperS.identity(), (m1, m2) -> {
+				.reduce(initial, (m1, m2) -> {
 						if (m1.isIdentity())
 							return m2;
 						else if (m2.isIdentity())
@@ -146,6 +162,89 @@ public class MapperC<T> implements MapperBuilder<T> {
 						else
 							return reduceFunc.apply(m1, m2);
 					});
+	}
+	
+	/**
+	 * Sum list of integers.
+	 * 
+	 * @return total of summed integers.
+	 */
+	public MapperS<Integer> sumInteger() {
+		return MapperS.of(nonErrorItems()
+				.map(MapperItem::getMappedObject)
+				.map(Integer.class::cast)
+				.reduce(0, Integer::sum));
+	}
+	
+	/**
+	 * Sum list of numbers.
+	 * 
+	 * @return total of summed numbers.
+	 */
+	public MapperS<BigDecimal> sumBigDecimal() {
+		return MapperS.of(nonErrorItems()
+				.map(MapperItem::getMappedObject)
+				.map(BigDecimal.class::cast)
+				.reduce(BigDecimal.ZERO, BigDecimal::add));
+	}
+	
+	/**
+	 * Concatenate list of strings, separating each item with delimiter.
+	 * 
+	 * @param delimiter - item separator
+	 * @return concatenated string
+	 */
+	public MapperS<String> join(MapperS<String> delimiter) {
+		return MapperS.of(nonErrorItems()
+				.map(MapperItem::getMappedObject)
+				.map(String.class::cast)
+				.collect(Collectors.joining(delimiter.getOrDefault(""))));
+	}
+	
+	/**
+	 * Get minimum item from a list of comparable items.
+	 * 
+	 * @return minimum
+	 */
+	@SuppressWarnings("unchecked")
+	public <F extends Comparable<F>> MapperS<T> min() {
+		return min(x -> (MapperS<F>) x);
+	}
+	
+	/**
+	 * Get item from list based on minimum item attribute (provided by mappingFunc)
+	 * 
+	 * @param <F>
+	 * @param mappingFunc - getter for comparable attribute
+	 * @return minimum
+	 */
+	public <F extends Comparable<F>> MapperS<T> min(Function<MapperS<T>, MapperS<F>> mappingFunc) {
+		return new MapperS<>(nonErrorItems()
+				.min(Comparator.comparing(item -> mappingFunc.apply(new MapperS<>(item)).get()))
+				.orElse(null));
+	}
+
+	/**
+	 * Get maximum item from a list of comparable items.
+	 * 
+	 * @return maximum
+	 */
+	@SuppressWarnings("unchecked")
+	public <F extends Comparable<F>> MapperS<T> max() {
+		return max(x -> (MapperS<F>) x);
+	}
+	
+	/**
+	 * Get item from list based on maximum item attribute (provided by mappingFunc)
+	 * 
+	 * @param <F>
+	 * @param mappingFunc - getter for comparable attribute
+	 * @return maximum
+	 */
+	public <F extends Comparable<F>> MapperS<T> max(Function<MapperS<T>, MapperS<F>> mappingFunc) {
+		return new MapperS<>(nonErrorItems()
+				.max(Comparator.comparing(item -> mappingFunc.apply(new MapperS<>(item)).get()))
+				.orElse(null));
 	}
 	
 	/**
@@ -199,6 +298,11 @@ public class MapperC<T> implements MapperBuilder<T> {
 				.map(i->i.getMappedObject())
 				.collect(Collectors.toList());
 		return collect.size()!=1 ? null : collect.get(0);
+	}
+	
+	@Override
+	public T getOrDefault(T defaultValue) {
+		return Optional.ofNullable(get()).orElse(defaultValue);
 	}
 	
 	@Override

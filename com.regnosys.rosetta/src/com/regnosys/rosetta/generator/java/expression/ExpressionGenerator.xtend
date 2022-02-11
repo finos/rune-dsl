@@ -521,39 +521,61 @@ class ExpressionGenerator {
 					.«IF op.isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.itemName» -> «op.body.javaCode(params)».get())'''
 			}
 			case MAP: {
-				val itemType =  op.itemType
+				val itemType =  op.inputType
 				val itemName =  op.itemName
 				val isBodyMulti =  op.isBodyExpressionMulti
 				val outputType =  op.outputType
 				val bodyExpr = op.body.javaCode(params)
-				'''
-				«op.receiver.javaCode(params)»
-					«IF !op.isPreviousOperationMulti»
-						«IF isBodyMulti»
-							.mapSingleToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
-						«ELSE»
-							.mapSingleToItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«outputType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)«ENDIF»
-					«ELSE»
-					«IF op.isItemMulti»
-						«IF isBodyMulti»
-							.mapListToList((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
-						«ELSE»
-							.mapListToItem((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperS»<«outputType»>) «bodyExpr»)
-						«ENDIF»
-					«ELSE»
-						«IF isBodyMulti»
-							.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
-						«ELSE»
-							.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«outputType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)«ENDIF»«ENDIF»«ENDIF»'''
-
+				
+				if (!op.isPreviousOperationMulti) {
+					if (isBodyMulti) {
+						'''
+						«op.receiver.javaCode(params)»
+							.mapSingleToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)'''
+					} else {
+						buildSingleItemListOperationOptionalBody(op, "mapSingleToItem", params)
+					}
+				} else {
+					if (op.isItemMulti) {
+						if (isBodyMulti) {
+							'''
+							«op.receiver.javaCode(params)»
+								.mapListToList((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)'''
+						} else {
+							'''
+							«op.receiver.javaCode(params)»
+								.mapListToItem((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperS»<«outputType»>) «bodyExpr»)'''
+						}
+					} else {
+						if (isBodyMulti) {
+							'''
+							«op.receiver.javaCode(params)»
+								.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)'''
+						} else {
+							buildSingleItemListOperationOptionalBody(op, "mapItem", params)
+						}
+					}
+				}
 			}
 			case FLATTEN: {
-				'''
-				«op.receiver.javaCode(params)»
-					.flattenList()'''
+				buildListOperationNoBody(op, "flattenList", params)
 			}
 			case DISTINCT, case ONLY_ELEMENT: {
 				distinctOrOnlyElement('''«op.receiver.javaCode(params)»''', op.operationKind === ListOperationKind.DISTINCT, op.operationKind === ListOperationKind.ONLY_ELEMENT)
+			}
+			case SUM: {
+				buildListOperationNoBody(op, "sum" + op.inputRawType, params)
+			}
+			case MIN, 
+			case MAX: {
+				val opName = op.operationKind == ListOperationKind.MIN ? "min" : "max"
+				buildSingleItemListOperationOptionalBody(op, opName, params)
+			}
+			case SORT: {
+				buildSingleItemListOperationOptionalBody(op, "sort", params)
+			}
+			case REVERSE: {
+				buildListOperationNoBody(op, "reverse", params)
 			}
 			case REDUCE: {
 				val item1 = op.parameters.head.name.toDecoratedName
@@ -564,19 +586,38 @@ class ExpressionGenerator {
 				«op.receiver.javaCode(params)»
 					.<«outputType»>reduce((«item1», «item2») -> («MapperS»<«outputType»>) «bodyExpr»)'''
 			}
-			case SORT: {
+			case JOIN: {
 				'''
 				«op.receiver.javaCode(params)»
-					.sort(«IF op.body !== null»/*«MapperS»<«op.itemType»>*/ «op.itemName» -> («MapperS»<«op.outputType»>) «op.body.javaCode(params)»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»«ENDIF»)'''
-			}
-			case REVERSE: {
-				'''
-				«op.receiver.javaCode(params)»
-					.reverse()'''
+					.join(«IF op.body !== null»«op.body.javaCode(params)»«ELSE»«MapperS».of("")«ENDIF»)'''
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)
 		}
+	}
+	
+	private def StringConcatenationClient buildListOperationNoBody(ListOperation op, String name, ParamMap params) {
+		'''
+		«op.receiver.javaCode(params)»
+			.«name»()'''	
+	}
+	
+	private def StringConcatenationClient buildSingleItemListOperationOptionalBody(ListOperation op, String name, ParamMap params) {
+		if (op.body === null) {
+			buildListOperationNoBody(op, name, params)
+		} else {
+			buildSingleItemListOperation(op, name, params)
+		}
+	}
+	
+	private def StringConcatenationClient buildSingleItemListOperation(ListOperation op, String name, ParamMap params) {
+		val itemType =  op.inputType
+		val itemName =  op.itemName
+		val outputType = op.outputType
+		val bodyExpr = op.body.javaCode(params)
+		'''
+		«op.receiver.javaCode(params)»
+			.«name»(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«outputType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)'''	
 	}
 	
 	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute) {

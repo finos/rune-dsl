@@ -138,13 +138,16 @@ class ListOperation extends RosettaExpression {
 enum ListOperationKind {
 	filter
 	, map
-	, sum
 	, flatten
 	, only_element as "only-element"
 	, distinct
 	, reduce
 	, sort
 	, reverse
+	, join
+	, sum
+	, min
+	, max
 }
 
 class ClosureParameter extends RosettaCallable {

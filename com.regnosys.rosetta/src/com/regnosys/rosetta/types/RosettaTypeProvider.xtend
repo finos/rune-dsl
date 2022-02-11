@@ -276,8 +276,13 @@ class RosettaTypeProvider {
 					case REVERSE,
 					case FLATTEN,
 					case DISTINCT,
-					case ONLY_ELEMENT:
+					case ONLY_ELEMENT,
+					case SUM,
+					case JOIN,
+					case MIN,
+					case MAX: {
 						expression.receiver.safeRType(cycleTracker)
+					}	
 					default: 
 						RBuiltinType.MISSING
 				}

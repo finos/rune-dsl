@@ -1224,11 +1224,48 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				else if (o.parameters !== null && o.parameters.size != 2) {
 					error('''List reduce must have 2 named parameters.''', o, LIST_OPERATION__PARAMETERS)
 				}
-				else if (o.itemRawType != o.outputRawType) {
-					error('''List reduce expression must evaluate to the same type as the input.  Found types «o.itemRawType» and «o.outputRawType».''', o, LIST_OPERATION__BODY)
+				else if (o.inputRawType != o.outputRawType) {
+					error('''List reduce expression must evaluate to the same type as the input.  Found types «o.inputRawType» and «o.outputRawType».''', o, LIST_OPERATION__BODY)
 				}
 				else if (o.isBodyExpressionMulti) {
 					error('''List reduce expression must evaluate to single cardinality.''', o, LIST_OPERATION__BODY)
+				}
+			}
+			case SUM: {
+				if (o.body !== null) {
+					error('''No expression allowed for list sum.''', o, LIST_OPERATION__OPERATION_KIND)
+				}
+				else if (o.parameters.size > 0) {
+					error('''No item parameter allowed for list sum.''', o, LIST_OPERATION__PARAMETERS)
+				}
+				// TODO check input type is int or number
+			}
+			case JOIN: {
+				if (o.parameters !== null && o.parameters.size > 1) {
+					error('''List join must only have 1 named parameter.''', o, LIST_OPERATION__PARAMETERS)
+				}
+				// TODO check input type is string	
+				// TODO check body (delimiter) is string
+			}
+			case MIN,
+			case MAX: {
+				if (o.parameters !== null && o.parameters.size > 1) {
+					error('''List min/max must only have 1 named parameter.''', o, LIST_OPERATION__PARAMETERS)
+				}
+				else if (o.body !== null) {
+					if (o.isBodyExpressionMulti) {
+						error('''List min/max only supports single cardinality expressions.''', o, LIST_OPERATION__BODY)
+					}
+					val bodyRType = o.body.getRType
+					if (!bodyRType.isComparable) {
+						error('''List min/max only supports comparable types (string, int, string, date). Found type «bodyRType.name».''', o, LIST_OPERATION__BODY)
+					}
+				}
+				else if (o.body === null) {
+					val inputRType = o.receiver.getRType
+					if (!inputRType.isComparable) {
+						error('''List min/max only supports comparable types (string, int, string, date). Found type «inputRType.name».''', o, LIST_OPERATION__BODY)
+					}
 				}
 			}
 			case SORT: {
@@ -1237,13 +1274,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				}
 				else if (o.body !== null) {
 					if (o.isBodyExpressionMulti) {
-						error('''List sort only supports single cardinality attributes.''', o, LIST_OPERATION__BODY)
+						error('''List sort only supports single cardinality expressions.''', o, LIST_OPERATION__BODY)
 					}
-					val outputRType = o.body.getRType
-					if (!outputRType.isComparable) {
-						error('''List sort only supports comparable types (string, int, string, date). Found type «outputRType.name».''', o, LIST_OPERATION__BODY)
+					val bodyRType = o.body.getRType
+					if (!bodyRType.isComparable) {
+						error('''List sort only supports comparable types (string, int, string, date). Found type «bodyRType.name».''', o, LIST_OPERATION__BODY)
 					}
-						
 				}
 				else if (o.body === null) {
 					val inputRType = o.receiver.getRType
