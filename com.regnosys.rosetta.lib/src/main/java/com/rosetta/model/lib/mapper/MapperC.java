@@ -215,12 +215,12 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * Get item from list based on minimum item attribute (provided by mappingFunc)
 	 * 
 	 * @param <F>
-	 * @param mappingFunc - getter for comparable attribute
+	 * @param comparableGetter - getter for comparable attribute
 	 * @return minimum
 	 */
-	public <F extends Comparable<F>> MapperS<T> min(Function<MapperS<T>, MapperS<F>> mappingFunc) {
+	public <F extends Comparable<F>> MapperS<T> min(Function<MapperS<T>, MapperS<F>> comparableGetter) {
 		return new MapperS<>(nonErrorItems()
-				.min(Comparator.comparing(item -> mappingFunc.apply(new MapperS<>(item)).get()))
+				.min(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get()))
 				.orElse(null));
 	}
 
@@ -238,12 +238,12 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * Get item from list based on maximum item attribute (provided by mappingFunc)
 	 * 
 	 * @param <F>
-	 * @param mappingFunc - getter for comparable attribute
+	 * @param comparableGetter - getter for comparable attribute
 	 * @return maximum
 	 */
-	public <F extends Comparable<F>> MapperS<T> max(Function<MapperS<T>, MapperS<F>> mappingFunc) {
+	public <F extends Comparable<F>> MapperS<T> max(Function<MapperS<T>, MapperS<F>> comparableGetter) {
 		return new MapperS<>(nonErrorItems()
-				.max(Comparator.comparing(item -> mappingFunc.apply(new MapperS<>(item)).get()))
+				.max(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get()))
 				.orElse(null));
 	}
 	
@@ -263,14 +263,49 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * Sort list of items based on comparable attribute.
 	 * 
 	 * @param <F> comparable type
-	 * @param mappingFunc to get comparable item to sort by
+	 * @param comparableGetter to get comparable item to sort by
 	 * @return sorted list
 	 */
-	public <F extends Comparable<F>> MapperC<T> sort(Function<MapperS<T>, MapperS<F>> mappingFunc) {
-		return MapperC.of(nonErrorItems()
-				.sorted(Comparator.comparing(item -> mappingFunc.apply(new MapperS<>(item)).get()))
-				.map(MapperItem::getMappedObject)
+	public <F extends Comparable<F>> MapperC<T> sort(Function<MapperS<T>, MapperS<F>> comparableGetter) {
+		return new MapperC<>(nonErrorItems()
+				.sorted(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get()))
 				.collect(Collectors.toList()));
+	}
+	
+	/**
+	 * Sort list of comparable items.
+	 * 
+	 * @return sorted list
+	 */
+	public MapperS<T> first() {
+		return new MapperS<>(nonErrorItems()
+				.findFirst()
+				.orElse(null));
+	}
+	
+	/**
+	 * Sort list of comparable items.
+	 * 
+	 * @return sorted list
+	 */
+	public MapperS<T> last() {
+		return new MapperS<>(nonErrorItems()
+				.reduce((first, second) -> second)
+				.orElse(null));
+	}
+	
+	/**
+	 * Sort list of comparable items.
+	 * 
+	 * @return sorted list
+	 */
+	public MapperS<T> index(MapperS<Integer> indexGetter) {
+		List<MapperItem<T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
+		Integer index = indexGetter.get();
+		if (index != null && index < nonErrorItems.size()) {
+			return new MapperS<>(nonErrorItems.get(index));
+		}
+		return MapperS.ofNull();
 	}
 	
 	/**

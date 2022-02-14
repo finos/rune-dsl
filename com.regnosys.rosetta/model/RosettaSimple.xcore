@@ -148,6 +148,9 @@ enum ListOperationKind {
 	, sum
 	, min
 	, max
+	, first
+	, last
+	, index
 }
 
 class ClosureParameter extends RosettaCallable {

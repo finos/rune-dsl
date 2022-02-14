@@ -1435,8 +1435,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Foo:
 				x string (1..1)
-		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List filter must have a boolean expression specified within square brackets.")
+		'''.parseRosetta		model.assertError(LIST_OPERATION, null, "List filter must have an expression specified within square brackets.")
+
 	}
 	
 	@Test
@@ -1455,7 +1455,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				attr boolean (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List filter must only have 1 named parameter.")
+		model.assertError(LIST_OPERATION, null, "List filter must have 1 named parameter.")
 	}
 	
 	@Test
@@ -1512,7 +1512,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List map must only have 1 named parameter.")
+		model.assertError(LIST_OPERATION, null, "List map must have 1 named parameter.")
 	}
 	
 	@Test
@@ -1977,7 +1977,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					foos Foo (0..*)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List reduce expression must evaluate to single cardinality.")
+		model.assertError(LIST_OPERATION, null, "List reduce only supports single cardinality expressions.")
 	}
 	
 	@Test
@@ -1995,7 +1995,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				add sortedFoos:
 					foos sort [item -> attrList] // sort based on multi-cardinality
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List sort only supports single cardinality attributes.")
+		model.assertError(LIST_OPERATION, null, "List sort only supports single cardinality expressions.")
 	}
 	
 	@Test
@@ -2036,6 +2036,44 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 						sort x [ x -> foo ] // sort based on Foo
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
+	}
+	
+	@Test
+	def void shouldGenerateListIndexNoItemExpression() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					indexFoo Foo (0..*)
+				
+				add indexFoo:
+					foos
+						index [ item -> attr ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List index does not allow expressions, a int must be specified.")
+	}
+	
+	@Test
+	def void shouldGenerateListJoinNoItemExpression() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		stringList string (0..*)
+				output:
+					joined string (0..*)
+				
+				add joined:
+					joined
+						join [ item ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List join does not allow expressions, a string must be specified.")
 	}
 }
 	

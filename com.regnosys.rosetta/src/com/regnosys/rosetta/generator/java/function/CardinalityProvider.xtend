@@ -81,7 +81,10 @@ class CardinalityProvider {
 					case SUM,
 					case JOIN,
 					case MIN,
-					case MAX:
+					case MAX,
+					case FIRST,
+					case LAST,
+					case INDEX:
 						false
 					case SORT,
 					case REVERSE,
@@ -158,7 +161,10 @@ class CardinalityProvider {
 						case SUM,
 						case JOIN,
 						case MIN,
-						case MAX:
+						case MAX,
+						case FIRST,
+						case LAST,
+						case INDEX:
 							return false 
 						default: {
 							println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)

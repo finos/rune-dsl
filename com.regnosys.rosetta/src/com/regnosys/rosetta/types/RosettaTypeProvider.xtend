@@ -280,7 +280,10 @@ class RosettaTypeProvider {
 					case SUM,
 					case JOIN,
 					case MIN,
-					case MAX: {
+					case MAX,
+					case FIRST,
+					case LAST,
+					case INDEX: {
 						expression.receiver.safeRType(cycleTracker)
 					}	
 					default: 

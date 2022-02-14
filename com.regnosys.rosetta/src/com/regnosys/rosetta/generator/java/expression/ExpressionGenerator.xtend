@@ -566,10 +566,11 @@ class ExpressionGenerator {
 			case SUM: {
 				buildListOperationNoBody(op, "sum" + op.inputRawType, params)
 			}
-			case MIN, 
+			case MIN: {
+				buildSingleItemListOperationOptionalBody(op, "min", params)
+			}
 			case MAX: {
-				val opName = op.operationKind == ListOperationKind.MIN ? "min" : "max"
-				buildSingleItemListOperationOptionalBody(op, opName, params)
+				buildSingleItemListOperationOptionalBody(op, "max", params)
 			}
 			case SORT: {
 				buildSingleItemListOperationOptionalBody(op, "sort", params)
@@ -590,6 +591,17 @@ class ExpressionGenerator {
 				'''
 				«op.receiver.javaCode(params)»
 					.join(«IF op.body !== null»«op.body.javaCode(params)»«ELSE»«MapperS».of("")«ENDIF»)'''
+			}
+			case FIRST: {
+				buildListOperationNoBody(op, "first", params)
+			}
+			case LAST: {
+				buildListOperationNoBody(op, "last", params)
+			}
+			case INDEX: {
+				'''
+				«op.receiver.javaCode(params)»
+					.index(«op.body.javaCode(params)»)'''
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)
