@@ -94,6 +94,8 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.RosettaLiteral
+import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 
 /**
  * This class contains custom validation rules. 
@@ -1330,15 +1332,22 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	}
 	
 	private def void checkBodyExpressionDoesNotUseClosureParameter(ListOperation o) {
-		if (o.body !== null && o.body.containsImplicitReceiver) {
+		if (o.body !== null && !o.body.allowedExpressionDoesNotContainClosureParameter) {
 			error('''List «o.operationKind.literal» does not allow expressions using an item or named parameter.''', o, LIST_OPERATION__BODY)
 		}
 	}
 	
-	private def containsImplicitReceiver(RosettaExpression expr) {
+	/**
+	 * Only RosettaLiteral, RosettaCallableCall or RosettaFeatureCall that do not contain closure parameter are allowed.
+	 */
+	private def boolean allowedExpressionDoesNotContainClosureParameter(RosettaExpression expr) {
 		switch (expr) {
+			RosettaLiteral:
+				true
 			RosettaCallableCall:
-				return expr.implicitReceiver
+				!expr.implicitReceiver && !(expr.callable instanceof ClosureParameter)
+			RosettaFeatureCall:
+				expr.receiver.allowedExpressionDoesNotContainClosureParameter
 			default:
 				false
 		}

@@ -2058,6 +2058,25 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void shouldGenerateListIndexNoNamedExpression() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					indexFoo Foo (0..1)
+				
+				set indexFoo:
+					foos
+						get-index x [ x -> attr ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List get-index does not allow expressions using an item or named parameter.")
+	}
+	
+	@Test
 	def void shouldGenerateListIndexNoItemExpression2() {
 		val model = '''
 			func FuncFoo:
