@@ -2978,6 +2978,30 @@ class ListOperationTest {
 	}
 	
 	@Test
+	def void shouldGenerateListFirstComplexTypeEmptyList() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		fooList Foo (0..*)
+				output:
+					firstFoo Foo (1..1)
+				
+				set firstFoo:
+					fooList
+						first
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val res = func.invokeFunc(RosettaModelObject, newArrayList)
+		assertNull(res);
+	}
+	
+	@Test
 	def void shouldGenerateListLastInt() {
 		val model = '''
 			func FuncFoo:
@@ -3107,34 +3131,42 @@ class ListOperationTest {
 		assertEquals(foo4, res);
 	}
 	
-//	@Test
-//	def void shouldGenerateListReduceSumBaseValue() {
-//		val model = '''
-//			func FuncFoo:
-//			 	inputs:
-//			 		intList int (0..*)
-//				output:
-//					total int (1..1)
-//				
-//				set total:
-//					intList
-//						reduce a, b [ 5 | a + b ]
-//		'''
-//		val code = model.generateCode
-//		val classes = code.compileToClasses
-//		val func = classes.createFunc("FuncFoo");
-//		
-//		val intList = newArrayList
-//		intList.add(1)
-//		intList.add(3)
-//		intList.add(5)
-//		intList.add(7)
-//		intList.add(11)
-//		
-//		val res = func.invokeFunc(Integer, intList)
-//		assertEquals(27, res);
-//	}
-	
+	@Test
+	def void shouldGenerateListIndexOutOfBounds() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		fooList Foo (0..*)
+				output:
+					indexFoo Foo (1..1)
+				
+				set indexFoo:
+					fooList
+						index [ 5 ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		val foo5 = classes.createFoo('e')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		fooList.add(foo4)
+		fooList.add(foo5)
+		
+		val res = func.invokeFunc(RosettaModelObject, fooList)
+		assertNull(res);
+	}
 	
 	@Test
 	def void shouldGenerateListReduceSubtract() {

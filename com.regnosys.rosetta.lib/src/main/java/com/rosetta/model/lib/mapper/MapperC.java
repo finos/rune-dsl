@@ -219,9 +219,11 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return minimum
 	 */
 	public <F extends Comparable<F>> MapperS<T> min(Function<MapperS<T>, MapperS<F>> comparableGetter) {
-		return new MapperS<>(nonErrorItems()
+		return nonErrorItems()
 				.min(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get()))
-				.orElse(null));
+				.map(MapperS::new)
+				.orElse(MapperS.ofNull());
+				
 	}
 
 	/**
@@ -242,9 +244,10 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return maximum
 	 */
 	public <F extends Comparable<F>> MapperS<T> max(Function<MapperS<T>, MapperS<F>> comparableGetter) {
-		return new MapperS<>(nonErrorItems()
+		return nonErrorItems()
 				.max(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get()))
-				.orElse(null));
+				.map(MapperS::new)
+				.orElse(MapperS.ofNull());
 	}
 	
 	/**
@@ -278,9 +281,10 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return sorted list
 	 */
 	public MapperS<T> first() {
-		return new MapperS<>(nonErrorItems()
+		return nonErrorItems()
 				.findFirst()
-				.orElse(null));
+				.map(MapperS::new)
+				.orElse(MapperS.ofNull());
 	}
 	
 	/**
@@ -289,9 +293,10 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return sorted list
 	 */
 	public MapperS<T> last() {
-		return new MapperS<>(nonErrorItems()
+		return nonErrorItems()
 				.reduce((first, second) -> second)
-				.orElse(null));
+				.map(MapperS::new)
+				.orElse(MapperS.ofNull());
 	}
 	
 	/**
