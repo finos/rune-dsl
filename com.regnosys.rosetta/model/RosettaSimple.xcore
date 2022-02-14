@@ -150,7 +150,7 @@ enum ListOperationKind {
 	, max
 	, first
 	, last
-	, index
+	, get_index as "get-index"
 }
 
 class ClosureParameter extends RosettaCallable {

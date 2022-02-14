@@ -3077,7 +3077,7 @@ class ListOperationTest {
 				
 				set intIndex:
 					intList
-						index [ 3 ]
+						get-index [ 3 ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -3108,7 +3108,7 @@ class ListOperationTest {
 				
 				set indexFoo:
 					fooList
-						index [ 3 ]
+						get-index [ 3 ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -3145,7 +3145,7 @@ class ListOperationTest {
 				
 				set indexFoo:
 					fooList
-						index [ 5 ]
+						get-index [ 5 ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses

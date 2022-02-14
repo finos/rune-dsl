@@ -94,7 +94,6 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.RosettaLiteral
 
 /**
  * This class contains custom validation rules. 
@@ -1219,9 +1218,11 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 			case JOIN: {
 				// body is optional
-				checkOptionalNamedParameter(o)
+				//checkNoParameters(o)
 				checkInputType(o, RBuiltinType.STRING)	
-				checkBodyExpressionIsLiteral(o, RBuiltinType.STRING)
+				checkBodyIsSingleCardinality(o)
+				checkBodyExpressionDoesNotUseClosureParameter(o)
+				checkBodyType(o, RBuiltinType.STRING)
 			}
 			case MIN,
 			case MAX: {
@@ -1251,11 +1252,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				checkBodyIsAbsent(o)
 				checkNoParameters(o)
 			}
-			case INDEX: {
+			case GET_INDEX: {
 				checkBodyExists(o)
-				checkOptionalNamedParameter(o)
+				//checkNoParameters(o)
 				checkBodyIsSingleCardinality(o)
-				checkBodyExpressionIsLiteral(o, RBuiltinType.INT)
+				checkBodyExpressionDoesNotUseClosureParameter(o)
+				checkBodyType(o, RBuiltinType.INT)
 			}
 			default: {
 				// Do nothing
@@ -1327,9 +1329,18 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 	}
 	
-	private def void checkBodyExpressionIsLiteral(ListOperation o, RType type) {
-		if (o.body !== null && !(o.body instanceof RosettaLiteral && o.body.getRType == type)) {
-			error('''List «o.operationKind.literal» does not allow expressions, a «type.name» must be specified.''', o, LIST_OPERATION__BODY)
+	private def void checkBodyExpressionDoesNotUseClosureParameter(ListOperation o) {
+		if (o.body !== null && o.body.containsImplicitReceiver) {
+			error('''List «o.operationKind.literal» does not allow expressions using an item or named parameter.''', o, LIST_OPERATION__BODY)
+		}
+	}
+	
+	private def containsImplicitReceiver(RosettaExpression expr) {
+		switch (expr) {
+			RosettaCallableCall:
+				return expr.implicitReceiver
+			default:
+				false
 		}
 	}
 	

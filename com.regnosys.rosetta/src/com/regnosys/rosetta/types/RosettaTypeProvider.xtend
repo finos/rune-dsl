@@ -283,7 +283,7 @@ class RosettaTypeProvider {
 					case MAX,
 					case FIRST,
 					case LAST,
-					case INDEX: {
+					case GET_INDEX: {
 						expression.receiver.safeRType(cycleTracker)
 					}	
 					default: 

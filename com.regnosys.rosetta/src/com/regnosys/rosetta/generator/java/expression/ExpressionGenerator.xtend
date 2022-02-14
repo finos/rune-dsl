@@ -598,7 +598,7 @@ class ExpressionGenerator {
 			case LAST: {
 				buildListOperationNoBody(op, "last", params)
 			}
-			case INDEX: {
+			case GET_INDEX: {
 				'''
 				«op.receiver.javaCode(params)»
 					.index(«op.body.javaCode(params)»)'''

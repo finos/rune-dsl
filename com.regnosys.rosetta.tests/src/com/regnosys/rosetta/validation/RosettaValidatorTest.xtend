@@ -2045,16 +2045,36 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			 	inputs:
 			 		foos Foo (0..*)
 				output:
-					indexFoo Foo (0..*)
+					indexFoo Foo (0..1)
 				
-				add indexFoo:
+				set indexFoo:
 					foos
-						index [ item -> attr ]
+						get-index [ item -> attr ]
 			
 			type Foo:
 				attr int (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List index does not allow expressions, a int must be specified.")
+		model.assertError(LIST_OPERATION, null, "List get-index does not allow expressions using an item or named parameter.")
+	}
+	
+	@Test
+	def void shouldGenerateListIndexNoItemExpression2() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		index int (1..1)
+				output:
+					indexFoo Foo (0..1)
+				
+				set indexFoo:
+					foos
+						get-index [ index ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertNoErrors()
 	}
 	
 	@Test
@@ -2064,16 +2084,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			 	inputs:
 			 		stringList string (0..*)
 				output:
-					joined string (0..*)
+					joined string (1..1)
 				
-				add joined:
-					joined
+				set joined:
+					stringList
 						join [ item ]
 			
 			type Foo:
 				attr int (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List join does not allow expressions, a string must be specified.")
+		model.assertError(LIST_OPERATION, null, "List join does not allow expressions using an item or named parameter.")
 	}
 }
 	
