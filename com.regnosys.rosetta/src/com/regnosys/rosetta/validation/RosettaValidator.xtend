@@ -1220,7 +1220,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 			case JOIN: {
 				// body is optional
-				//checkNoParameters(o)
 				checkInputType(o, RBuiltinType.STRING)	
 				checkBodyIsSingleCardinality(o)
 				checkBodyExpressionDoesNotUseClosureParameter(o)
@@ -1256,7 +1255,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			}
 			case GET_INDEX: {
 				checkBodyExists(o)
-				//checkNoParameters(o)
 				checkBodyIsSingleCardinality(o)
 				checkBodyExpressionDoesNotUseClosureParameter(o)
 				checkBodyType(o, RBuiltinType.INT)

@@ -1435,7 +1435,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Foo:
 				x string (1..1)
-		'''.parseRosetta		model.assertError(LIST_OPERATION, null, "List filter must have an expression specified within square brackets.")
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List filter must have an expression specified within square brackets.")
 
 	}
 	
