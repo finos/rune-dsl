@@ -19,6 +19,8 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import java.util.List
 
 class RosettaExtensions {
 	
@@ -39,6 +41,21 @@ class RosettaExtensions {
 	
 	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {
 		doGetSuperEnumerations(e, newLinkedHashSet)
+	}
+	
+	 def List<Attribute>allNonOverridesAttributes(Data data) {
+		val atts = newArrayList;
+		atts.addAll(data.attributes)
+		if (data.hasSuperType) {
+			atts.addAll(data.superType.allNonOverridesAttributes
+				.filter[superAttr| !atts.exists[extendedAttr|					
+					superAttr.name == extendedAttr.name && 
+					superAttr.type == extendedAttr.type && 
+					superAttr.card.inf == extendedAttr.card.inf &&
+					superAttr.card.sup == extendedAttr.card.sup
+				]].toList)
+		}
+		return atts
 	}
 	
 	private def Set<RosettaEnumeration> doGetSuperEnumerations(RosettaEnumeration e, Set<RosettaEnumeration> seenEnums) {
@@ -211,7 +228,7 @@ class RosettaExtensions {
 	 * Recursively collects all reporting rules for all attributes
 	 */
 	def void collectReportingRules(Data dataType, (RosettaBlueprint) => void visitor, Set<Data> collectedTypes) {
-		dataType.allAttributes.forEach[attr|
+		dataType.allNonOverridesAttributes.forEach[attr|
 			val attrType = attr.type
 			val attrEx = attr.toExpandedAttribute
 			if (attrEx.builtInType || attrEx.enum) {

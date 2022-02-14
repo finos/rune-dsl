@@ -55,7 +55,15 @@ class RosettaAttributeExtensions {
 	
 	static def List<ExpandedAttribute> expandedAttributesPlus(Data data) {
 		val atts = data.expandedAttributes;
-		if (data.hasSuperType) atts.addAll(data.superType.expandedAttributesPlus)
+		if (data.hasSuperType) {
+			atts.addAll(data.superType.expandedAttributesPlus
+				.filter[superAttr| !atts.exists[extendedAttr|					
+					superAttr.name == extendedAttr.name && 
+					superAttr.type == extendedAttr.type && 
+					superAttr.inf == extendedAttr.inf && 
+					superAttr.sup == extendedAttr.sup
+				]].toList)
+		}
 		return atts
 	}
 	

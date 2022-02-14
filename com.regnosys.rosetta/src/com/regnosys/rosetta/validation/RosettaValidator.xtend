@@ -267,9 +267,13 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	protected def void checkNonOverridingAttributeNamesAreUnique( Iterable<Attribute> attrFromClazzes, Iterable<Attribute> attrFromSuperClasses, String name) {
 		val messageExtension = if (attrFromSuperClasses.empty) '' else ' (extends ' + attrFromSuperClasses.attributeTypeNames + ')'
 		
-		attrFromClazzes.filter[!override].forEach [
-			error('''Duplicate attribute '«name»'«messageExtension»''', it, ROSETTA_NAMED__NAME,
-				DUPLICATE_ATTRIBUTE)
+		attrFromClazzes.filter[!override].forEach [ childAttr |
+			attrFromSuperClasses.forEach [ parentAttr |
+				if (childAttr.type !== parentAttr.type && childAttr.card !== parentAttr.card) {
+					error('''Overriding attribute '«name»' must have a type that overrides its parent attribute type of «parentAttr.type.name»''',
+						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
+				}
+			]
 		]
 	}
 	
