@@ -4,22 +4,20 @@ import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import com.regnosys.rosetta.rosetta.RosettaCallable
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExpression
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import java.util.Collection
+import java.util.List
 import java.util.Set
 import org.eclipse.emf.common.util.URI
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 
 class RosettaExtensions {
 	
@@ -42,6 +40,21 @@ class RosettaExtensions {
 		doGetSuperEnumerations(e, newLinkedHashSet)
 	}
 	
+	 def List<Attribute>allNonOverridesAttributes(Data data) {
+		val atts = newArrayList;
+		atts.addAll(data.attributes)
+		if (data.hasSuperType) {
+			atts.addAll(data.superType.allNonOverridesAttributes
+				.filter[superAttr| !atts.exists[extendedAttr|					
+					superAttr.name == extendedAttr.name && 
+					superAttr.type == extendedAttr.type && 
+					superAttr.card.inf == extendedAttr.card.inf &&
+					superAttr.card.sup == extendedAttr.card.sup
+				]].toList)
+		}
+		return atts
+	}
+	
 	private def Set<RosettaEnumeration> doGetSuperEnumerations(RosettaEnumeration e, Set<RosettaEnumeration> seenEnums) {
 		if(e !== null && seenEnums.add(e)) 
 			doGetSuperEnumerations(e.superType, seenEnums)
@@ -60,45 +73,6 @@ class RosettaExtensions {
 		if(s !== null && seenSynonyms.add(s)) 
 			doGetSynonyms(s, seenSynonyms)
 		return seenSynonyms		
-	}
-	
-	/**
-	 * Collect all callable objects at the root nodes
-	 */
-	def void collectRootCalls(RosettaExpression expr, (RosettaCallable)=>boolean visitor) {
-		if(expr instanceof RosettaBinaryOperation) {
-			expr.left.collectRootCalls(visitor)
-			expr.right.collectRootCalls(visitor)
-		}
-		else if(expr instanceof RosettaCallableCall) {
-			val callable = expr.callable
-			if(callable instanceof Data 
-				|| callable instanceof RosettaEnumeration) {
-				visitor.apply(callable)
-			}
-			else {
-				throw new IllegalArgumentException("Failed to collect root calls: " + callable)
-			}
-		}
-		else if(expr instanceof RosettaFeatureCall) {
-			// go up to the receiver
-			expr.receiver.collectRootCalls(visitor)
-		}
-		else if(expr instanceof Data) {
-			visitor.apply(expr)
-		}
-		else if(expr instanceof RosettaEnumeration) {
-			visitor.apply(expr)
-		}
-		else if(expr instanceof ClosureParameter) {
-			visitor.apply(expr)
-		}
-		else if(expr instanceof Function) {
-			expr.inputs.forEach[visitor.apply(it)]
-		}
-		else {
-			throw new IllegalArgumentException("Failed to collect root calls: " + expr)
-		}
 	}
 
 	/**
@@ -219,7 +193,7 @@ class RosettaExtensions {
 	 * Recursively collects all reporting rules for all attributes
 	 */
 	def void collectReportingRules(Data dataType, (RosettaBlueprint) => void visitor, Set<Data> collectedTypes) {
-		dataType.allAttributes.forEach[attr|
+		dataType.allNonOverridesAttributes.forEach[attr|
 			val attrType = attr.type
 			val attrEx = attr.toExpandedAttribute
 			if (attrEx.builtInType || attrEx.enum) {
