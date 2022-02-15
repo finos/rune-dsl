@@ -389,7 +389,7 @@ class ModelObjectGeneratorTest {
 			type Bar extends Foo:
 				a string (0..1)
 		'''.generateCode
-		code.writeClasses('shouldExtendATypeWithSameAttribute')
+		//code.writeClasses('shouldExtendATypeWithSameAttribute')
 		val classes = code.compileToClasses
 	}
 	
