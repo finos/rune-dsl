@@ -244,14 +244,26 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				val attrFromClazzes = attrByName.filter[eContainer == clazz]
 				val attrFromSuperClasses = attrByName.filter[eContainer != clazz]
 				
-				attrFromClazzes.checkNonOverridingAttributeNamesAreUnique(attrFromSuperClasses, name)				
-				attrFromClazzes.checkOverridingTypeAttributeMustHaveSameTypeAsParent(attrFromSuperClasses, name)
-				attrFromClazzes.checkOverridingAttributeCardinalityMatchSuper(attrFromSuperClasses, name)
+				attrFromClazzes.checkOverridingTypeAttributeMustHaveSameOrExtendedTypeAsParent(attrFromSuperClasses, name)
+				attrFromClazzes.checkTypeAttributeMustHaveSameTypeAsParent(attrFromSuperClasses, name)
+				attrFromClazzes.checkAttributeCardinalityMatchSuper(attrFromSuperClasses, name)
 			}
 		}
 	}
 	
-	protected def void checkOverridingTypeAttributeMustHaveSameTypeAsParent(Iterable<Attribute> attrFromClazzes,
+	protected def void checkTypeAttributeMustHaveSameTypeAsParent(Iterable<Attribute> attrFromClazzes,
+		Iterable<Attribute> attrFromSuperClasses, String name) {
+		attrFromClazzes.filter[!override].forEach [ childAttr |
+			attrFromSuperClasses.forEach [ parentAttr |
+				if (childAttr.type !== parentAttr.type) {
+					error('''Overriding attribute '«name»' with type («childAttr.type.name») must match the type of the attribute it overrides («parentAttr.type.name»)''',
+						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)					
+				}
+			]
+		]
+	}
+	
+	protected def void checkOverridingTypeAttributeMustHaveSameOrExtendedTypeAsParent(Iterable<Attribute> attrFromClazzes,
 		Iterable<Attribute> attrFromSuperClasses, String name) {
 		attrFromClazzes.filter[override].forEach [ childAttr |
 			attrFromSuperClasses.forEach [ parentAttr |
@@ -264,21 +276,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		]
 	}
 	
-	protected def void checkNonOverridingAttributeNamesAreUnique( Iterable<Attribute> attrFromClazzes, Iterable<Attribute> attrFromSuperClasses, String name) {
-		val messageExtension = if (attrFromSuperClasses.empty) '' else ' (extends ' + attrFromSuperClasses.attributeTypeNames + ')'
-		
-		attrFromClazzes.filter[!override].forEach [ childAttr |
-			attrFromSuperClasses.forEach [ parentAttr |
-				if (childAttr.type !== parentAttr.type && childAttr.card !== parentAttr.card) {
-					error('''Overriding attribute '«name»' must have a type that overrides its parent attribute type of «parentAttr.type.name»''',
-						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
-				}
-			]
-		]
-	}
-	
-	protected def void checkOverridingAttributeCardinalityMatchSuper(Iterable<Attribute> attrFromClazzes, Iterable<Attribute> attrFromSuperClasses, String name) {
-		attrFromClazzes.filter[override].forEach [ childAttr |
+	protected def void checkAttributeCardinalityMatchSuper(Iterable<Attribute> attrFromClazzes, Iterable<Attribute> attrFromSuperClasses, String name) {
+		attrFromClazzes.forEach [ childAttr |
 			attrFromSuperClasses.forEach [ parentAttr |
 				if (childAttr.card.inf !== parentAttr.card.inf || childAttr.card.sup !== parentAttr.card.sup || childAttr.card.isMany !== parentAttr.card.isMany) {
 					error('''Overriding attribute '«name»' with cardinality («childAttr.cardinality») must match the cardinality of the attribute it overrides («parentAttr.cardinality»)''',

@@ -276,9 +276,46 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (1..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, 'Duplicate attribute')
+		model.assertNoErrors
 	}
 	
+	@Test
+	def void testDuplicateAttributeNotAllowedWithDiffCard1() {
+		val model = '''
+			type Foo:
+				i int (1..1)
+			
+			type Bar extends Foo:
+				i int (0..1)
+		'''.parseRosetta
+		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (0..1) must match the cardinality of the attribute it overrides (1..1)")
+	}
+	
+	@Test
+	def void testDuplicateAttributeNotAllowedWithDiffCard2() {
+		val model = '''
+			type Foo:
+				i int (1..1)
+			
+			type Bar extends Foo:
+				i int (1..*)
+		'''.parseRosetta
+		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (1..*) must match the cardinality of the attribute it overrides (1..1)")
+	}
+	
+	@Test
+	def void testDuplicateAttributeNotAllowedWithDiffType() {
+		val model = '''
+			type Foo:
+				i int (1..1)
+			
+			type Bar extends Foo:
+				i string (1..1)
+		'''.parseRosetta
+		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type (string) must match the type of the attribute it overrides (int)")
+	}
+	
+
 	@Test
 	def void testDuplicateAttributeWithOverride() {
 		val model = '''
