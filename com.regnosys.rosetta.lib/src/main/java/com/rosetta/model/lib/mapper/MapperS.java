@@ -85,6 +85,11 @@ public class MapperS<T> implements MapperBuilder<T> {
 	}
 	
 	@Override
+	public T getOrDefault(T defaultValue) {
+		return Optional.ofNullable(item.getMappedObject()).orElse(defaultValue);
+	}
+	
+	@Override
 	public List<T> getMulti() {
 		return Optional.ofNullable(get())
 				.map(Arrays::asList)

@@ -39,7 +39,13 @@ public class ComparisonResult implements Mapper<Boolean> {
 		this.error = error;
 	}
 	
+	@Override
 	public Boolean get() {
+		return result;
+	}
+	
+	@Override
+	public Boolean getOrDefault(Boolean defaultValue) {
 		return result;
 	}
 	

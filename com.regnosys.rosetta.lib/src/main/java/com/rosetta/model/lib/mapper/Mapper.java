@@ -7,6 +7,8 @@ public interface Mapper<T> {
 	
 	T get();
 
+	T getOrDefault(T defaultValue);
+	
 	List<T> getMulti();
 	
 	Optional<?> getParent();

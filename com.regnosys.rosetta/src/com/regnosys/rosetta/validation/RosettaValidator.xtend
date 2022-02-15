@@ -61,6 +61,7 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
+import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaOperators
@@ -93,6 +94,7 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.RosettaLiteral
 
 /**
  * This class contains custom validation rules. 
@@ -1187,55 +1189,156 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		
 		switch (o.operationKind) {
 			case FILTER: {
-				if (o.body === null) {
-					error('''List filter must have a boolean expression specified within square brackets.''', o, LIST_OPERATION__OPERATION_KIND)
-				}
-				else if (o.parameters !== null && o.parameters.size > 1) {
-					error('''List filter must only have 1 named parameter.''', o, LIST_OPERATION__PARAMETERS)
-				}
-				else if (o.body.getRType != RBuiltinType.BOOLEAN) {
-					error('''List filter expression must evaluate to a boolean.''', o, LIST_OPERATION__BODY)
-				}
+				checkBodyExists(o)
+				checkOptionalNamedParameter(o)
+				checkBodyType(o, RBuiltinType.BOOLEAN)
 			}
 			case MAP: {
-				if (o.body === null) {
-					error('''List map must have an expression specified within square brackets.''', o, LIST_OPERATION__OPERATION_KIND)
-				}
-				else if (o.parameters !== null && o.parameters.size > 1) {
-					error('''List map must only have 1 named parameter.''', o, LIST_OPERATION__PARAMETERS)
-				}
-				else if (o.isOutputListOfListOfLists) {
+				checkBodyExists(o)
+				checkOptionalNamedParameter(o)
+				if (o.isOutputListOfListOfLists) {
 					error('''Each list item («o.firstOrImplicit.name») is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).''', o, LIST_OPERATION__BODY)
 				}
 			}
 			case FLATTEN: {
-				if (o.body !== null) {
-					error('''No expression allowed for list flatten.''', o, LIST_OPERATION__OPERATION_KIND)
-				}
-				else if (o.parameters.size > 0) {
-					error('''No item parameter allowed for list flatten.''', o, LIST_OPERATION__PARAMETERS)
-				}
-				else if (!o.isItemMulti) {
+				checkBodyIsAbsent(o)
+				checkNoParameters(o)
+				if (!o.isItemMulti) {
 					error('''List flatten only allowed for list of lists.''', o, LIST_OPERATION__OPERATION_KIND)
 				}
 			}
 			case REDUCE: {
+				checkBodyExists(o)
+				checkNumberOfMandatoryNamedParameters(o, 2)
+				if (o.inputRawType != o.outputRawType) {
+					error('''List reduce expression must evaluate to the same type as the input.  Found types «o.inputRawType» and «o.outputRawType».''', o, LIST_OPERATION__BODY)
+				}
+				checkBodyIsSingleCardinality(o)
+			}
+			case SUM: {
+				checkBodyIsAbsent(o)
+				checkNoParameters(o)
+				checkInputType(o, RBuiltinType.INT, RBuiltinType.NUMBER)
+			}
+			case JOIN: {
+				// body is optional
+				checkInputType(o, RBuiltinType.STRING)	
+				checkBodyIsSingleCardinality(o)
+				checkBodyExpressionTypeIsRosettaLiteral(o)
+				checkBodyType(o, RBuiltinType.STRING)
+			}
+			case MIN,
+			case MAX: {
+				// body is optional
+				checkOptionalNamedParameter(o)
+				checkBodyIsSingleCardinality(o)
+				checkBodyIsComparable(o)
 				if (o.body === null) {
-					error('''List reduce must have an expression specified within square brackets.''', o, LIST_OPERATION__OPERATION_KIND)
+					checkInputIsComparable(o)
 				}
-				else if (o.parameters !== null && o.parameters.size != 2) {
-					error('''List reduce must have 2 named parameters.''', o, LIST_OPERATION__PARAMETERS)
+			}
+			case SORT: {
+				// body is optional
+				checkOptionalNamedParameter(o)
+				checkBodyIsSingleCardinality(o)
+				checkBodyIsComparable(o)
+				if (o.body === null) {
+					checkInputIsComparable(o)
 				}
-				else if (o.itemRawType != o.outputRawType) {
-					error('''List reduce expression must evaluate to the same type as the input.  Found types «o.itemRawType» and «o.outputRawType».''', o, LIST_OPERATION__BODY)
-				}
-				else if (o.isBodyExpressionMulti) {
-					error('''List reduce expression must evaluate to single cardinality.''', o, LIST_OPERATION__BODY)
-				}
+			}
+			case REVERSE: {
+				checkBodyIsAbsent(o)
+				checkNoParameters(o)
+			}
+			case FIRST,
+			case LAST: {
+				checkBodyIsAbsent(o)
+				checkNoParameters(o)
 			}
 			default: {
 				// Do nothing
 			}
+		}
+	}
+	
+	private def void checkNoParameters(ListOperation o) {
+		if (o.parameters.size > 0) {
+			error('''No item parameter allowed for list «o.operationKind.literal».''', o, LIST_OPERATION__PARAMETERS)
+		}
+	}
+	
+	private def void checkOptionalNamedParameter(ListOperation o) {
+		if (o.parameters !== null && o.parameters.size !== 0 && o.parameters.size !== 1) {
+			error('''List «o.operationKind.literal» must have 1 named parameter.''', o, LIST_OPERATION__PARAMETERS)
+		}
+	}
+	
+	private def void checkNumberOfMandatoryNamedParameters(ListOperation o, int max) {
+		if (o.parameters === null || o.parameters.size !== max) {
+			error('''List «o.operationKind.literal» must have «max» named parameter«IF max > 1»s«ENDIF».''', o, LIST_OPERATION__PARAMETERS)
+		}
+	}
+	
+	private def void checkInputType(ListOperation o, RType... type) {
+		if (!type.contains(o.receiver.getRType)) {
+			error('''List «o.operationKind.literal» input type must be a «type.map[name].join(" or ")».''', o, LIST_OPERATION__BODY)
+		}
+	}
+	
+	private def void checkInputIsComparable(ListOperation o) {
+		val inputRType = o.receiver.getRType
+		if (!inputRType.isComparable) {
+			error('''List «o.operationKind.literal» only supports comparable types (string, int, string, date). Found type «inputRType.name».''', o, LIST_OPERATION__BODY)
+		}
+	}
+	
+	private def void checkBodyIsAbsent(ListOperation o) {
+		if (o.body !== null) {
+			error('''No expression allowed for list «o.operationKind.literal».''', o, LIST_OPERATION__OPERATION_KIND)
+		}
+	}
+	
+	private def void checkBodyExists(ListOperation o) {
+		if (o.body === null) {
+			error('''List «o.operationKind.literal» must have an expression specified within square brackets.''', o, LIST_OPERATION__OPERATION_KIND)
+		}
+	}
+	
+	private def void checkBodyIsSingleCardinality(ListOperation o) {
+	 	if (o.body !== null && o.isBodyExpressionMulti) {
+			error('''List «o.operationKind.literal» only supports single cardinality expressions.''', o, LIST_OPERATION__BODY)
+		}
+	}
+	
+	private def void checkBodyType(ListOperation o, RType type) {
+		if (o.body !== null && o.body.getRType != type) {
+			error('''List «o.operationKind.literal» expression must evaluate to a «type.name».''', o, LIST_OPERATION__BODY)
+		}
+	}
+	
+	private def void checkBodyIsComparable(ListOperation o) {
+		if (o.body !== null) {
+			val bodyRType = o.body.getRType
+			if (!bodyRType.isComparable) {
+				error('''List «o.operationKind.literal» only supports comparable types (string, int, string, date). Found type «bodyRType.name».''', o, LIST_OPERATION__BODY)
+			}			
+		}
+	}
+	
+	private def void checkBodyExpressionTypeIsRosettaLiteral(ListOperation o) {
+		if (o.body !== null && !(o.body instanceof RosettaLiteral)) {
+			error('''List «o.operationKind.literal» does not allow expressions.''', o, LIST_OPERATION__BODY)
+		}
+	}
+
+	
+	private def boolean isComparable(RType rType) {
+		switch (rType) {
+			RBuiltinType,
+			RRecordType:
+				return true
+			default:
+				false
 		}
 	}
 	

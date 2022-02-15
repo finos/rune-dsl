@@ -1473,7 +1473,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List filter must have a boolean expression specified within square brackets.")
+		model.assertError(LIST_OPERATION, null, "List filter must have an expression specified within square brackets.")
 	}
 	
 	@Test
@@ -1492,7 +1492,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				attr boolean (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List filter must only have 1 named parameter.")
+		model.assertError(LIST_OPERATION, null, "List filter must have 1 named parameter.")
 	}
 	
 	@Test
@@ -1549,7 +1549,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List map must only have 1 named parameter.")
+		model.assertError(LIST_OPERATION, null, "List map must have 1 named parameter.")
 	}
 	
 	@Test
@@ -2014,7 +2014,166 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					foos Foo (0..*)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List reduce expression must evaluate to single cardinality.")
+		model.assertError(LIST_OPERATION, null, "List reduce only supports single cardinality expressions.")
+	}
+	
+	@Test
+	def void shouldGenerateListSortCardinalityError() {
+		val model = '''
+			type Foo:
+				attrList string (1..*) // list
+			
+			func SortFooOnAttr:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				add sortedFoos:
+					foos sort [item -> attrList] // sort based on multi-cardinality
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List sort only supports single cardinality expressions.")
+	}
+	
+	@Test
+	def void shouldGenerateListSortTypeError() {
+		val model = '''
+			type Foo:
+				attrList string (1..*) // list
+			
+			func SortFooOnAttr:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				add sortedFoos:
+					foos sort // sort based on Foo
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
+	}
+	
+	@Test
+	def void shouldGenerateListSortTypeError2() {
+		val model = '''
+			type Bar:
+				foo Foo (1..1)
+			
+			type Foo:
+				attr string (1..1)
+			
+			func SortBarOnFoo:
+				inputs:
+					bars Bar (0..*)
+				output:
+					sortedBars Bar (0..*)
+			
+				add sortedBars:
+					bars 
+						sort x [ x -> foo ] // sort based on Foo
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateListIndexNoItemExpression() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					indexFoo Foo (0..1)
+				
+				set indexFoo:
+					foos
+						get-item [ item -> attr ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List get-item does not allow expressions using an item or named parameter.")
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateListIndexNoNamedExpression() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					indexFoo Foo (0..1)
+				
+				set indexFoo:
+					foos
+						get-item x [ x -> attr ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List get-item does not allow expressions using an item or named parameter.")
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateListIndexNoItemExpression2() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		index int (1..1)
+				output:
+					indexFoo Foo (0..1)
+				
+				set indexFoo:
+					foos
+						get-item [ index ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertNoErrors()
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateListIndexNoItemExpression3() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		index int (1..1)
+				output:
+					removeLast Foo (0..1)
+				
+				set removeLast:
+					foos
+						remove-index [ foos count - 1 ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertNoErrors()
+	}
+	
+	@Test
+	def void shouldGenerateListJoinNoItemExpression() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		stringList string (0..*)
+				output:
+					joined string (1..1)
+				
+				set joined:
+					stringList
+						join [ item ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List join does not allow expressions.")
 	}
 }
 	

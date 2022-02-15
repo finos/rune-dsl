@@ -6,6 +6,8 @@ import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.records.Date
+import java.math.BigDecimal
 import java.util.List
 import java.util.Map
 import org.eclipse.xtext.testing.InjectWith
@@ -15,8 +17,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.google.common.collect.ImmutableMap.*
+import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.assertThat
-import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
@@ -1378,8 +1380,7 @@ class ListOperationTest {
 					private List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
 						fooCounts = MapperC.of(bars)
 							.mapItemToList((/*MapperS<? extends Bar>*/ __bar) -> (MapperC<? extends Foo>) __bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
-							.mapListToItem((/*MapperC<? extends Foo>*/ __fooListItem) -> (MapperS<Integer>) MapperS.of(__fooListItem.resultCount()))
-						.getMulti();
+							.mapListToItem((/*MapperC<? extends Foo>*/ __fooListItem) -> (MapperS<Integer>) MapperS.of(__fooListItem.resultCount())).getMulti();
 						
 						return fooCounts;
 					}
@@ -1914,8 +1915,7 @@ class ListOperationTest {
 						updatedBars = toBuilder(MapperC.of(bars)
 							.mapItemToList((/*MapperS<? extends Bar>*/ __bar) -> (MapperC<? extends Foo>) __bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
 								.mapItem(/*MapperS<? extends Foo>*/ __foo -> (MapperS<? extends Foo>) MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(__foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))))
-							.mapListToItem((/*MapperC<? extends Foo>*/ __updatedFoos) -> (MapperS<? extends Bar>) MapperS.of(newBar.evaluate(__updatedFoos.getMulti())))
-						.getMulti());
+							.mapListToItem((/*MapperC<? extends Foo>*/ __updatedFoos) -> (MapperS<? extends Bar>) MapperS.of(newBar.evaluate(__updatedFoos.getMulti()))).getMulti());
 						
 						return updatedBars;
 					}
@@ -2696,6 +2696,62 @@ class ListOperationTest {
 	}
 	
 	@Test
+	def void shouldGenerateListJoin() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		stringList string (0..*)
+				output:
+					concatenatedString string (1..1)
+				
+				set concatenatedString:
+					stringList
+						join
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val stringList = newArrayList
+		stringList.add("a")
+		stringList.add("b")
+		stringList.add("c")
+		stringList.add("d")
+		stringList.add("e")
+		
+		val res = func.invokeFunc(String, stringList)
+		assertEquals("abcde", res);
+	}
+	
+	@Test
+	def void shouldGenerateListJoinWithDelimiter() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		stringList string (0..*)
+				output:
+					concatenatedString string (1..1)
+				
+				set concatenatedString:
+					stringList
+						join [ "_" ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val stringList = newArrayList
+		stringList.add("a")
+		stringList.add("b")
+		stringList.add("c")
+		stringList.add("d")
+		stringList.add("e")
+		
+		val res = func.invokeFunc(String, stringList)
+		assertEquals("a_b_c_d_e", res);
+	}
+	
+	@Test
 	def void shouldGenerateListReduceString() {
 		val model = '''
 			func FuncFoo:
@@ -2769,9 +2825,282 @@ class ListOperationTest {
 		val res = func.invokeFunc(String, stringList)
 		assertEquals("abcde", res);
 	}
+
+
+	
+	@Test
+	def void shouldGenerateListSumInt() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		intList int (0..*)
+				output:
+					total int (1..1)
+				
+				set total:
+					intList
+						sum
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val intList = newArrayList
+		intList.add(1)
+		intList.add(3)
+		intList.add(5)
+		intList.add(7)
+		intList.add(11)
+		
+		val res = func.invokeFunc(Integer, intList)
+		assertEquals(27, res);
+	}
+	
+	@Test
+	def void shouldGenerateListSumBigDecimal() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		numberList number (0..*)
+				output:
+					total number (1..1)
+				
+				set total:
+					numberList
+						sum
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val numberList = newArrayList
+		numberList.add(BigDecimal.valueOf(1.1))
+		numberList.add(BigDecimal.valueOf(3.1))
+		numberList.add(BigDecimal.valueOf(5.1))
+		numberList.add(BigDecimal.valueOf(7.1))
+		numberList.add(BigDecimal.valueOf(11.1))
+		
+		val res = func.invokeFunc(BigDecimal, numberList)
+		assertEquals(BigDecimal.valueOf(27.5), res);
+	}
 	
 	@Test
 	def void shouldGenerateListReduceSum() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		intList int (0..*)
+				output:
+					total int (1..1)
+				
+				set total:
+					intList
+						reduce a, b [ a + b ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val intList = newArrayList
+		intList.add(1)
+		intList.add(3)
+		intList.add(5)
+		intList.add(7)
+		intList.add(11)
+		
+		val res = func.invokeFunc(Integer, intList)
+		assertEquals(27, res);
+	}
+	
+	@Test
+	def void shouldGenerateListFirstInt() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		intList int (0..*)
+				output:
+					firstInt int (1..1)
+				
+				set firstInt:
+					intList
+						first
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val intList = newArrayList
+		intList.add(1)
+		intList.add(2)
+		intList.add(3)
+		intList.add(4)
+		intList.add(5)
+		
+		val res = func.invokeFunc(Integer, intList)
+		assertEquals(1, res);
+	}
+	
+	@Test
+	def void shouldGenerateListFirstComplexType() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		fooList Foo (0..*)
+				output:
+					firstFoo Foo (1..1)
+				
+				set firstFoo:
+					fooList
+						first
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		val foo5 = classes.createFoo('e')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		fooList.add(foo4)
+		fooList.add(foo5)
+		
+		val res = func.invokeFunc(RosettaModelObject, fooList)
+		assertEquals(foo1, res);
+	}
+	
+	@Test
+	def void shouldGenerateListFirstComplexTypeEmptyList() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		fooList Foo (0..*)
+				output:
+					firstFoo Foo (1..1)
+				
+				set firstFoo:
+					fooList
+						first
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val res = func.invokeFunc(RosettaModelObject, newArrayList)
+		assertNull(res);
+	}
+	
+	@Test
+	def void shouldGenerateListLastInt() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		intList int (0..*)
+				output:
+					lastInt int (1..1)
+				
+				set lastInt:
+					intList
+						last
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val intList = newArrayList
+		intList.add(1)
+		intList.add(2)
+		intList.add(3)
+		intList.add(4)
+		intList.add(5)
+		
+		val res = func.invokeFunc(Integer, intList)
+		assertEquals(5, res);
+	}
+	
+	@Test
+	def void shouldGenerateListLastComplexType() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		fooList Foo (0..*)
+				output:
+					lastFoo Foo (1..1)
+				
+				set lastFoo:
+					fooList
+						last
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		val foo5 = classes.createFoo('e')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		fooList.add(foo4)
+		fooList.add(foo5)
+		
+		val res = func.invokeFunc(RosettaModelObject, fooList)
+		assertEquals(foo5, res);
+	}
+	@Test
+	def void shouldGenerateListReduceSubtract() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		intList int (0..*)
+				output:
+					total int (1..1)
+				
+				set total:
+					intList
+						reduce a, b [ a - b ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val intList = newArrayList
+		intList.add(10)
+		intList.add(7)
+		intList.add(1)
+		
+		val res = func.invokeFunc(Integer, intList)
+		assertEquals(2, res);
+		
+		val intList2 = newArrayList
+		intList2.add(1)
+		intList2.add(7)
+		intList2.add(10)
+		
+		val res2 = func.invokeFunc(Integer, intList2)
+		assertEquals(-16, res2);
+	}
+	
+	@Test
+	def void shouldGenerateEmptyListReduceSum() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2788,14 +3117,9 @@ class ListOperationTest {
 		val func = classes.createFunc("FuncFoo");
 		
 		val intList = newArrayList
-		intList.add(1)
-		intList.add(3)
-		intList.add(5)
-		intList.add(7)
-		intList.add(11)
 		
 		val res = func.invokeFunc(Integer, intList)
-		assertEquals(27, res);
+		assertNull(res);
 	}
 	
 	@Test
@@ -2872,8 +3196,8 @@ class ListOperationTest {
 					a int (1..1)
 					b int (1..1)
 				output:
-					min int (1..1)
-				set min:
+					result int (1..1)
+				set result:
 					if a > b then b else a
 		'''
 		val code = model.generateCode
@@ -3083,7 +3407,442 @@ class ListOperationTest {
 		assertEquals(4, res.size);
 		assertThat(res, hasItems('a', 'b', 'c', 'd'));
 	}
-
+	
+	@Test
+	def void shouldGenerateListMaxInt() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		intList int (0..*)
+				output:
+					result int (0..1)
+				
+				set result:
+					intList
+						max
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val intList = newArrayList
+		intList.add(1)
+		intList.add(2)
+		intList.add(3)
+		intList.add(4)
+		intList.add(5)
+		
+		val res = func.invokeFunc(Integer, intList)
+		assertEquals(5, res);
+	}
+	
+	@Test
+	def void shouldGenerateListMaxComplexType() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					foo Foo (0..1)
+				
+				set foo:
+					foos
+						max [ item -> attr ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		val foo5 = classes.createFoo('e')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		fooList.add(foo4)
+		fooList.add(foo5)
+		
+		val res = func.invokeFunc(RosettaModelObject, fooList)
+		assertEquals(foo5, res);
+	}
+	
+	@Test
+	def void shouldGenerateListMinBigDecimal() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		numberList number (0..*)
+				output:
+					result number (0..1)
+				
+				set result:
+					numberList
+						min
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val numberList = newArrayList
+		numberList.add(BigDecimal.valueOf(1.1))
+		numberList.add(BigDecimal.valueOf(1.2))
+		numberList.add(BigDecimal.valueOf(1.3))
+		numberList.add(BigDecimal.valueOf(1.4))
+		numberList.add(BigDecimal.valueOf(1.5))
+		
+		val res = func.invokeFunc(BigDecimal, numberList)
+		assertEquals(BigDecimal.valueOf(1.1), res);
+	}
+	
+	@Test
+	def void shouldGenerateListMinComplexType() {
+		val model = '''
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					foo Foo (0..1)
+				
+				set foo:
+					foos
+						min [ item -> attr ]
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		val foo5 = classes.createFoo('e')
+		
+		val fooList = newArrayList
+		fooList.add(foo1)
+		fooList.add(foo2)
+		fooList.add(foo3)
+		fooList.add(foo4)
+		fooList.add(foo5)
+		
+		val res = func.invokeFunc(RosettaModelObject, fooList)
+		assertEquals(foo1, res);
+	}
+	
+	@Test
+	def void shouldGenerateIntListSort() {
+		val model = '''
+			func FuncFoo: 
+				inputs:
+					numbers int (0..*)
+				output:
+					sortedNumbers int (0..*)
+			
+				set sortedNumbers:
+					numbers sort // sort items
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import java.util.ArrayList;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+				
+					/**
+					* @param numbers 
+					* @return sortedNumbers 
+					*/
+					public List<Integer> evaluate(List<Integer> numbers) {
+						
+						List<Integer> sortedNumbersHolder = doEvaluate(numbers);
+						List<Integer> sortedNumbers = assignOutput(sortedNumbersHolder, numbers);
+						
+						return sortedNumbers;
+					}
+					
+					private List<Integer> assignOutput(List<Integer> sortedNumbers, List<Integer> numbers) {
+						sortedNumbers = MapperC.of(numbers)
+							.sort().getMulti();
+						
+						return sortedNumbers;
+					}
+				
+					protected abstract List<Integer> doEvaluate(List<Integer> numbers);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<Integer> doEvaluate(List<Integer> numbers) {
+							return new ArrayList<>();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val res = func.invokeFunc(List, ImmutableList.of(4, 2, 3, 1))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(1, 2, 3, 4), res);
+	}
+	
+	@Test
+	def void shouldGenerateDateListSort() {
+		val model = '''
+			func FuncFoo: 
+				inputs:
+					dates date (0..*)
+				output:
+					sortedDates date (0..*)
+			
+				set sortedDates:
+					dates sort // sort items
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val date1 = Date.of(2000, 1, 1)
+		val date2 = Date.of(2000, 1, 2)
+		val date3 = Date.of(2000, 2, 1)
+		val date4 = Date.of(2001, 1, 1)
+		
+		val res = func.invokeFunc(List, ImmutableList.of(date4, date1, date2, date3))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(date1, date2, date3, date4), res);
+	}
+	
+	@Test
+	def void shouldGenerateListSortWithAttribute() {
+		val model = '''
+			type Foo:
+				attr string (1..1) // single
+			
+			func FuncFoo:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				set sortedFoos:
+					foos sort [item -> attr] // sort based on item attribute
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.functions;
+				
+				import com.google.inject.ImplementedBy;
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.RosettaFunction;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.test.model.Foo;
+				import com.rosetta.test.model.Foo.FooBuilder;
+				import java.util.ArrayList;
+				import java.util.List;
+				
+				
+				@ImplementedBy(FuncFoo.FuncFooDefault.class)
+				public abstract class FuncFoo implements RosettaFunction {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param foos 
+					* @return sortedFoos 
+					*/
+					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
+						
+						List<Foo.FooBuilder> sortedFoosHolder = doEvaluate(foos);
+						List<Foo.FooBuilder> sortedFoos = assignOutput(sortedFoosHolder, foos);
+						
+						if (sortedFoos!=null) objectValidator.validateAndFailOnErorr(Foo.class, sortedFoos);
+						return sortedFoos;
+					}
+					
+					private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> sortedFoos, List<? extends Foo> foos) {
+						sortedFoos = toBuilder(MapperC.of(foos)
+							.sort(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getAttr", _foo -> _foo.getAttr())).getMulti());
+						
+						return sortedFoos;
+					}
+				
+					protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
+					
+					public static final class FuncFooDefault extends FuncFoo {
+						@Override
+						protected  List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+							return new ArrayList<>();
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		
+		val fooList = newArrayList
+		fooList.add(foo4)
+		fooList.add(foo2)
+		fooList.add(foo1)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, ImmutableList.of(foo4, foo2, foo3, foo1))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(foo1, foo2, foo3, foo4), res);
+	}
+	
+	@Test
+	def void shouldGenerateIntListReverse() {
+		val model = '''
+			func FuncFoo: 
+				inputs:
+					numbers int (0..*)
+				output:
+					sortedNumbers int (0..*)
+			
+				set sortedNumbers:
+					numbers
+						reverse // reverse (no sort)
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val res = func.invokeFunc(List, ImmutableList.of(4, 2, 3, 1))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(1, 3, 2, 4), res);
+	}
+	
+	@Test
+	def void shouldGenerateDateListSortThenReverse() {
+		val model = '''
+			func FuncFoo: 
+				inputs:
+					dates date (0..*)
+				output:
+					sortedDates date (0..*)
+			
+				set sortedDates:
+					dates 
+						sort // sort items
+						reverse
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val date1 = Date.of(2000, 1, 1)
+		val date2 = Date.of(2000, 1, 2)
+		val date3 = Date.of(2000, 2, 1)
+		val date4 = Date.of(2001, 1, 1)
+		
+		val res = func.invokeFunc(List, ImmutableList.of(date4, date1, date2, date3))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(date4, date3, date2, date1), res);
+	}
+	
+	@Test
+	def void shouldGenerateListSortWithAttributeThenReverse() {
+		val model = '''
+			type Foo:
+				attr string (1..1) // single
+			
+			func FuncFoo:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				set sortedFoos:
+					foos 
+						sort [item -> attr] // sort based on item attribute
+						reverse
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		
+		val fooList = newArrayList
+		fooList.add(foo4)
+		fooList.add(foo2)
+		fooList.add(foo1)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, ImmutableList.of(foo4, foo2, foo3, foo1))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(foo4, foo3, foo2, foo1), res);
+	}
+	
+	@Test
+	def void shouldGenerateListReverseComplexType() {
+		val model = '''
+			type Foo:
+				attr string (1..1) // single
+			
+			func FuncFoo:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				set sortedFoos:
+					foos 
+						reverse
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo('a')
+		val foo2 = classes.createFoo('b')
+		val foo3 = classes.createFoo('c')
+		val foo4 = classes.createFoo('d')
+		
+		val fooList = newArrayList
+		fooList.add(foo4)
+		fooList.add(foo2)
+		fooList.add(foo1)
+		fooList.add(foo3)
+		
+		val res = func.invokeFunc(List, ImmutableList.of(foo4, foo2, foo3, foo1))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(foo1, foo3, foo2, foo4), res);
+	}
+	
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {
 		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of()) as RosettaModelObject
 	}
