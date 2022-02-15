@@ -19,6 +19,7 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 
 class RosettaExtensions {
 	
@@ -64,14 +65,15 @@ class RosettaExtensions {
 	/**
 	 * Collect all callable objects at the root nodes
 	 */
-	def void collectRootCalls(RosettaExpression expr, (RosettaCallable)=>void visitor) {
+	def void collectRootCalls(RosettaExpression expr, (RosettaCallable)=>boolean visitor) {
 		if(expr instanceof RosettaBinaryOperation) {
 			expr.left.collectRootCalls(visitor)
 			expr.right.collectRootCalls(visitor)
 		}
 		else if(expr instanceof RosettaCallableCall) {
 			val callable = expr.callable
-			if(callable instanceof Data|| callable instanceof RosettaEnumeration) {
+			if(callable instanceof Data 
+				|| callable instanceof RosettaEnumeration) {
 				visitor.apply(callable)
 			}
 			else {
@@ -87,6 +89,12 @@ class RosettaExtensions {
 		}
 		else if(expr instanceof RosettaEnumeration) {
 			visitor.apply(expr)
+		}
+		else if(expr instanceof ClosureParameter) {
+			visitor.apply(expr)
+		}
+		else if(expr instanceof Function) {
+			expr.inputs.forEach[visitor.apply(it)]
 		}
 		else {
 			throw new IllegalArgumentException("Failed to collect root calls: " + expr)

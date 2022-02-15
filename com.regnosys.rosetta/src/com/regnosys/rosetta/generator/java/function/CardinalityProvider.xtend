@@ -83,8 +83,7 @@ class CardinalityProvider {
 					case MIN,
 					case MAX,
 					case FIRST,
-					case LAST,
-					case GET_INDEX:
+					case LAST:
 						false
 					case SORT,
 					case REVERSE,
@@ -140,37 +139,20 @@ class CardinalityProvider {
 	}
 	
 	/**
-	 * Does the body of the previous list operation result
+	 * Does the body of the previous list operation result in a list.
 	 */
 	def boolean isPreviousOperationBodyMulti(RosettaExpression expr) {
 		if (expr instanceof ListOperation) {
 			val previousOperation = expr.receiver
 			if (previousOperation instanceof ListOperation) {
-				// ignore list operations with no body
-				if (previousOperation.body !== null) {
-					// determine cardinality of map and filter
-					switch(previousOperation.operationKind) {
-						case MAP:
-							return previousOperation.body.isMulti(false)
-						case SORT,
-						case REVERSE,
-						case FILTER: 
-							// Filter operation does not change cardinality, so check the next previous operation's cardinality
-							return previousOperation.isPreviousOperationBodyMulti
-						case REDUCE,
-						case SUM,
-						case JOIN,
-						case MIN,
-						case MAX,
-						case FIRST,
-						case LAST,
-						case GET_INDEX:
-							return false 
-						default: {
-							println("CardinalityProviderisClosureParameterMulti: Cardinality not defined for operationKind: " + previousOperation.operationKind)
-							return false
-						}
-					}
+				// only map can increase a closure parameter's cardinality
+				switch (previousOperation.operationKind) {
+					case MAP:
+						return previousOperation.body.isMulti(false)
+					case FLATTEN:
+						return false
+					default:
+						return previousOperation.isPreviousOperationBodyMulti
 				}
 			}
 		}

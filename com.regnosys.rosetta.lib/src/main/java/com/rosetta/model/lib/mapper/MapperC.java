@@ -212,7 +212,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	/**
-	 * Get item from list based on minimum item attribute (provided by mappingFunc)
+	 * Get item from list based on minimum item attribute (provided by comparableGetter)
 	 * 
 	 * @param <F>
 	 * @param comparableGetter - getter for comparable attribute
@@ -237,7 +237,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	/**
-	 * Get item from list based on maximum item attribute (provided by mappingFunc)
+	 * Get item from list based on maximum item attribute (provided by comparableGetter)
 	 * 
 	 * @param <F>
 	 * @param comparableGetter - getter for comparable attribute
@@ -276,9 +276,20 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	/**
-	 * Sort list of comparable items.
+	 * Reverse items of a list.
 	 * 
-	 * @return sorted list
+	 * @return reversed list
+	 */
+	public MapperC<T> reverse() {
+		List<MapperItem<T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
+		Collections.reverse(nonErrorItems);
+		return new MapperC<>(nonErrorItems);
+	}
+	
+	/**
+	 * Gets first item of the list.
+	 * 
+	 * @return first list item
 	 */
 	public MapperS<T> first() {
 		return nonErrorItems()
@@ -288,9 +299,9 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	/**
-	 * Sort list of comparable items.
+	 * Gets last item of the list.
 	 * 
-	 * @return sorted list
+	 * @return last list item
 	 */
 	public MapperS<T> last() {
 		return nonErrorItems()
@@ -300,11 +311,11 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	/**
-	 * Sort list of comparable items.
+	 * Get item at specified index, returns null if index out of bounds.
 	 * 
-	 * @return sorted list
+	 * @return list item at index
 	 */
-	public MapperS<T> index(MapperS<Integer> indexGetter) {
+	public MapperS<T> getItem(MapperS<Integer> indexGetter) {
 		List<MapperItem<T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
 		Integer index = indexGetter.get();
 		if (index != null && index < nonErrorItems.size()) {
@@ -314,13 +325,16 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	/**
-	 * Reverse items of a list.
+	 * Remove item at specified index, returns list without removed item.
 	 * 
-	 * @return reversed list
+	 * @return list without specified item
 	 */
-	public MapperC<T> reverse() {
+	public MapperC<T> removeItem(MapperS<Integer> indexGetter) {
 		List<MapperItem<T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
-		Collections.reverse(nonErrorItems);
+		Integer index = indexGetter.get();
+		if (index != null && index < nonErrorItems.size()) {
+			nonErrorItems.remove(index.intValue());
+		}
 		return new MapperC<>(nonErrorItems);
 	}
 	

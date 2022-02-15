@@ -598,11 +598,6 @@ class ExpressionGenerator {
 			case LAST: {
 				buildListOperationNoBody(op, "last", params)
 			}
-			case GET_INDEX: {
-				'''
-				«op.receiver.javaCode(params)»
-					.index(«op.body.javaCode(params)»)'''
-			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)
 		}

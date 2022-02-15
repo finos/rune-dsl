@@ -95,7 +95,6 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import com.regnosys.rosetta.rosetta.RosettaLiteral
-import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 
 /**
  * This class contains custom validation rules. 
@@ -1222,7 +1221,7 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 				// body is optional
 				checkInputType(o, RBuiltinType.STRING)	
 				checkBodyIsSingleCardinality(o)
-				checkBodyExpressionDoesNotUseClosureParameter(o)
+				checkBodyExpressionTypeIsRosettaLiteral(o)
 				checkBodyType(o, RBuiltinType.STRING)
 			}
 			case MIN,
@@ -1252,12 +1251,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			case LAST: {
 				checkBodyIsAbsent(o)
 				checkNoParameters(o)
-			}
-			case GET_INDEX: {
-				checkBodyExists(o)
-				checkBodyIsSingleCardinality(o)
-				checkBodyExpressionDoesNotUseClosureParameter(o)
-				checkBodyType(o, RBuiltinType.INT)
 			}
 			default: {
 				// Do nothing
@@ -1329,27 +1322,12 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 		}
 	}
 	
-	private def void checkBodyExpressionDoesNotUseClosureParameter(ListOperation o) {
-		if (o.body !== null && !o.body.allowedExpressionDoesNotContainClosureParameter) {
-			error('''List «o.operationKind.literal» does not allow expressions using an item or named parameter.''', o, LIST_OPERATION__BODY)
+	private def void checkBodyExpressionTypeIsRosettaLiteral(ListOperation o) {
+		if (o.body !== null && !(o.body instanceof RosettaLiteral)) {
+			error('''List «o.operationKind.literal» does not allow expressions.''', o, LIST_OPERATION__BODY)
 		}
 	}
-	
-	/**
-	 * Only RosettaLiteral, RosettaCallableCall or RosettaFeatureCall that do not contain closure parameter are allowed.
-	 */
-	private def boolean allowedExpressionDoesNotContainClosureParameter(RosettaExpression expr) {
-		switch (expr) {
-			RosettaLiteral:
-				true
-			RosettaCallableCall:
-				!expr.implicitReceiver && !(expr.callable instanceof ClosureParameter)
-			RosettaFeatureCall:
-				expr.receiver.allowedExpressionDoesNotContainClosureParameter
-			default:
-				false
-		}
-	}
+
 	
 	private def boolean isComparable(RType rType) {
 		switch (rType) {

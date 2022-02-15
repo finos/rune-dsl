@@ -1437,7 +1437,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x string (1..1)
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List filter must have an expression specified within square brackets.")
-
 	}
 	
 	@Test
@@ -2040,6 +2039,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	@Disabled
 	def void shouldGenerateListIndexNoItemExpression() {
 		val model = '''
 			func FuncFoo:
@@ -2050,15 +2050,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set indexFoo:
 					foos
-						get-index [ item -> attr ]
+						get-item [ item -> attr ]
 			
 			type Foo:
 				attr int (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List get-index does not allow expressions using an item or named parameter.")
+		model.assertError(LIST_OPERATION, null, "List get-item does not allow expressions using an item or named parameter.")
 	}
 	
 	@Test
+	@Disabled
 	def void shouldGenerateListIndexNoNamedExpression() {
 		val model = '''
 			func FuncFoo:
@@ -2069,15 +2070,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set indexFoo:
 					foos
-						get-index x [ x -> attr ]
+						get-item x [ x -> attr ]
 			
 			type Foo:
 				attr int (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List get-index does not allow expressions using an item or named parameter.")
+		model.assertError(LIST_OPERATION, null, "List get-item does not allow expressions using an item or named parameter.")
 	}
 	
 	@Test
+	@Disabled
 	def void shouldGenerateListIndexNoItemExpression2() {
 		val model = '''
 			func FuncFoo:
@@ -2089,7 +2091,28 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set indexFoo:
 					foos
-						get-index [ index ]
+						get-item [ index ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertNoErrors()
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateListIndexNoItemExpression3() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		index int (1..1)
+				output:
+					removeLast Foo (0..1)
+				
+				set removeLast:
+					foos
+						remove-index [ foos count - 1 ]
 			
 			type Foo:
 				attr int (1..1)
@@ -2113,7 +2136,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				attr int (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List join does not allow expressions using an item or named parameter.")
+		model.assertError(LIST_OPERATION, null, "List join does not allow expressions.")
 	}
 }
 	
