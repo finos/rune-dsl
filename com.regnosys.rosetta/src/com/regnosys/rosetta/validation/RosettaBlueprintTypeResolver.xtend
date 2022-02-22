@@ -43,6 +43,7 @@ import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
@@ -56,7 +57,6 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 class RosettaBlueprintTypeResolver {
 	
@@ -473,6 +473,7 @@ class RosettaBlueprintTypeResolver {
 				nodeType.genericName = expected.genericName
 			}
 			else if (!isAssignableTo(expected, nodeType)){
+				val blah = isAssignableTo(expected, nodeType)
 				BlueprintUnresolvedTypeException.error('''«fieldName» type of «expected.either» is not assignable from type «nodeType.either» of previous node «node.name»''',
 					node, BLUEPRINT_NODE__INPUT, RosettaIssueCodes.TYPE_ERROR)
 			}
@@ -610,7 +611,7 @@ class RosettaBlueprintTypeResolver {
 	def dispatch RosettaType getInput(Void typed) {
 		return null
 	}
-
+	
 	def dispatch RosettaType getOutput(RosettaExpression expr) {
 		var st = RosettaFactory.eINSTANCE.createRosettaBasicType
 		st.name = expr.getRType.name
@@ -668,6 +669,17 @@ class RosettaBlueprintTypeResolver {
 
 	def dispatch RosettaType getOutput(RosettaTyped typed) {
 		return typed.type
+	}
+	
+	def dispatch RosettaType getOutput(ListOperation op) {
+		switch (op.operationKind) {
+			case MAP: {
+				return op.body.output
+			}
+			default: {
+				return op.receiver.output
+			}
+		}
 	}
 
 	def dispatch RosettaType getOutput(RosettaFeatureCall call) {

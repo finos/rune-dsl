@@ -494,16 +494,24 @@ class CalculationFunctionGeneratorTest {
 						out
 							.addAttrMulti(MapperC.of(withMeta)
 								.getItems()
-								.map(_item -> ReferenceWithMetaWithMeta.builder().setGlobalReference(_item.getMappedObject().getMeta().getGlobalKey()).build())
+								.map(_item -> ReferenceWithMetaWithMeta.builder()
+									.setExternalReference(_item.getMappedObject().getMeta().getExternalKey())
+									.setGlobalReference(_item.getMappedObject().getMeta().getGlobalKey())
+									.build())
 								.collect(Collectors.toList())
 							);
 						
 						out
-							.setAttrSingle(ReferenceWithMetaWithMeta.builder().setGlobalReference(
-								Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
+							.setAttrSingle(ReferenceWithMetaWithMeta.builder()
+								.setGlobalReference(Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
 									.map(_r -> _r.getMeta())
 									.map(_m -> _m.getGlobalKey())
-									.orElse(null)).build()
+									.orElse(null))
+								.setExternalReference(Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
+									.map(_r -> _r.getMeta())
+									.map(_m -> _m.getExternalKey())
+									.orElse(null))
+								.build()
 							);
 						
 						return out;

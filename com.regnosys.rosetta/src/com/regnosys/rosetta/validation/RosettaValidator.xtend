@@ -1210,8 +1210,8 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 			case REDUCE: {
 				checkBodyExists(o)
 				checkNumberOfMandatoryNamedParameters(o, 2)
-				if (o.inputRawType != o.outputRawType) {
-					error('''List reduce expression must evaluate to the same type as the input.  Found types «o.inputRawType» and «o.outputRawType».''', o, LIST_OPERATION__BODY)
+				if (o.inputRawType != o.bodyRawType) {
+					error('''List reduce expression must evaluate to the same type as the input.  Found types «o.inputRawType» and «o.bodyRawType».''', o, LIST_OPERATION__BODY)
 				}
 				checkBodyIsSingleCardinality(o)
 			}
