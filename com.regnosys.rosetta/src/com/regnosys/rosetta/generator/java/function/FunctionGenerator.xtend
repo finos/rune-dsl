@@ -320,16 +320,24 @@ class FunctionGenerator {
 				'''
 					«expressionGenerator.javaCode(op.expression, new ParamMap)»
 						.getItems()
-						.map(_item -> «metaClass».builder().setGlobalReference(_item.getMappedObject().getMeta().getGlobalKey()).build())
+						.map(_item -> «metaClass».builder()
+							.setExternalReference(_item.getMappedObject().getMeta().getExternalKey())
+							.setGlobalReference(_item.getMappedObject().getMeta().getGlobalKey())
+							.build())
 						.collect(«Collectors».toList())
 				'''
 			} else {
 				'''
-					«metaClass».builder().setGlobalReference(
-						«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
+					«metaClass».builder()
+						.setGlobalReference(«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
 							.map(_r -> _r.getMeta())
 							.map(_m -> _m.getGlobalKey())
-							.orElse(null)).build()
+							.orElse(null))
+						.setExternalReference(«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
+							.map(_r -> _r.getMeta())
+							.map(_m -> _m.getExternalKey())
+							.orElse(null))
+						.build()
 				'''
 			}
 		} else {

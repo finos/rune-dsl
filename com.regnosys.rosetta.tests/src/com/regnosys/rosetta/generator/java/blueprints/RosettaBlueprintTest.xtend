@@ -2775,6 +2775,44 @@ class RosettaBlueprintTest {
 			
 	}
 	
+	@Test
+	def void shouldTypeResolutionForListOperation() {
+		var blueprint = '''
+		type Foo:
+			bar Bar (0..*)
+		
+		type Bar:
+			attr string (1..1)
+		
+		reporting rule FooRule
+			extract Foo -> bar 
+				max [ item -> attr ] then
+			extract Bar -> attr
+		
+		'''.generateCode
+		blueprint.compileToClasses
+	}
+	
+	@Test
+	def void shouldTypeResolutionForListOperation2() {
+		var blueprint = '''
+		type Foo:
+			bar Bar (0..*)
+		
+		type Bar:
+			baz Baz (1..1)
+		
+		type Baz:
+			attr string (1..1)
+		
+		reporting rule FooRule
+			extract Foo -> bar 
+				map [ item -> baz ] then
+			extract Baz -> attr
+		
+		'''.generateCode
+		blueprint.compileToClasses
+	}
 	
 	@Test
 	@Disabled // we don't currently support hand written blueprint nodes

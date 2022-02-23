@@ -45,12 +45,12 @@ class ListOperationExtensions {
 		cardinalityProvider.isMulti(op.body, true)
 	}
 	
-	def String getOutputRawType(ListOperation op) {
+	def String getBodyRawType(ListOperation op) {
 		typeProvider.getRType(op.body).name.toJavaType
 	}
 	
-	def String getOutputType(ListOperation op) {
-		'''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«op.outputRawType»'''
+	def String getBodyType(ListOperation op) {
+		'''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«op.bodyRawType»'''
 	}
 	
 	def isPreviousOperationMulti(ListOperation op) {
