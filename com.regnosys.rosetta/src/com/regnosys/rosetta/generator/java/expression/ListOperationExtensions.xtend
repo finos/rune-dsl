@@ -49,7 +49,7 @@ class ListOperationExtensions {
 		typeProvider.getRType(op.body).name.toJavaType
 	}
 	
-	def String getBodyType(ListOperation op) {
+	def String getOutputType(ListOperation op) {
 		'''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«op.bodyRawType»'''
 	}
 	

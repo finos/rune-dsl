@@ -524,7 +524,7 @@ class ExpressionGenerator {
 				val itemType =  op.inputType
 				val itemName =  op.itemName
 				val isBodyMulti =  op.isBodyExpressionMulti
-				val outputType =  op.bodyType
+				val outputType =  op.outputType
 				val bodyExpr = op.body.javaCode(params)
 				
 				if (!op.isPreviousOperationMulti) {
@@ -620,7 +620,7 @@ class ExpressionGenerator {
 	private def StringConcatenationClient buildSingleItemListOperation(ListOperation op, String name, ParamMap params) {
 		val itemType =  op.inputType
 		val itemName =  op.itemName
-		val outputType = op.bodyType
+		val outputType = op.outputType
 		val bodyExpr = op.body.javaCode(params)
 		'''
 		«op.receiver.javaCode(params)»
