@@ -473,7 +473,6 @@ class RosettaBlueprintTypeResolver {
 				nodeType.genericName = expected.genericName
 			}
 			else if (!isAssignableTo(expected, nodeType)){
-				val blah = isAssignableTo(expected, nodeType)
 				BlueprintUnresolvedTypeException.error('''«fieldName» type of «expected.either» is not assignable from type «nodeType.either» of previous node «node.name»''',
 					node, BLUEPRINT_NODE__INPUT, RosettaIssueCodes.TYPE_ERROR)
 			}
