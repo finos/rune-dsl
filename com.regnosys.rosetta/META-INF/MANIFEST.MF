@@ -21,7 +21,8 @@ Require-Bundle: com.google.guava,
  org.eclipse.xtext.util,
  org.eclipse.xtext.xbase,
  org.eclipse.xtext.xbase.lib;bundle-version="2.25.0",
- org.eclipse.xtext
+ org.eclipse.xtext,
+ org.eclipse.xsemantics.runtime;bundle-version="1.20.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Import-Package: org.apache.log4j,
  com.rosetta.util

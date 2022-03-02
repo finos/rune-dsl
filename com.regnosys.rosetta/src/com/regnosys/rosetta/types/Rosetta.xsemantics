@@ -1,0 +1,3 @@
+system com.regnosys.rosetta.typing.RosettaTyping
+
+validatorExtends com.regnosys.rosetta.validation.RosettaValidator
