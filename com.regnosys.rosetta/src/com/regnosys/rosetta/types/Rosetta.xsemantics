@@ -1,3 +1,31 @@
 system com.regnosys.rosetta.typing.RosettaTyping
 
 validatorExtends com.regnosys.rosetta.validation.AbstractRosettaValidator
+
+import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.types.RListType
+import com.regnosys.rosetta.types.TypeFactory
+import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
+import com.regnosys.rosetta.rosetta.RosettaStringLiteral
+import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
+import com.regnosys.rosetta.rosetta.RosettaIntLiteral
+import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
+
+inject extension TypeFactory typeFactory
+
+judgments {
+	inferType |- RosettaExpression expression : output RListType
+		error "Cannot type " + stringRep(expression) + "."
+		source expression
+}
+
+axiom BooleanLiteral
+	G |- RosettaBooleanLiteral bool : singleBoolean
+axiom StringLiteral
+	G |- RosettaStringLiteral str : singleString
+axiom NumberLiteral
+	G |- RosettaBigDecimalLiteral num : singleNumber
+axiom IntLiteral
+	G |- RosettaIntLiteral i : singleInt
+axiom EmptyLiteral
+	G |- EmptyLiteral emp : emptyNothing

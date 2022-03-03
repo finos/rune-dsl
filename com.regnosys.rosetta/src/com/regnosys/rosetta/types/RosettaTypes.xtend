@@ -68,6 +68,8 @@ class RBuiltinType extends RAnnotateType {
 	public static val MISSING = new RBuiltinType('missing')
 	public static val VOID = new RBuiltinType('void')
 	
+	public static val NOTHING = new RBuiltinType('nothing')
+	
 	val String name
 }
 
