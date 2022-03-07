@@ -13,24 +13,14 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="src-gen/">
+	<classpathentry kind="src" path="src-gen">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="xtend-gen/">
+	<classpathentry kind="src" path="xtend-gen">
 		<attributes>
 			<attribute name="ignore_optional_problems" value="true"/>
-			<attribute name="test" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" path="src-test/java/">
-		<attributes>
-			<attribute name="test" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" path="test-resources/">
-		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>

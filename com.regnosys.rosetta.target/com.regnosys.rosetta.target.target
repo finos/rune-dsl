@@ -38,5 +38,17 @@
 			<unit id="org.slf4j.api" version="1.7.2.v20121108-1250"/>
 			<unit id="org.slf4j.binding.simple.source" version="1.7.30.v20200204-2150"/>
 		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/xsemantics/milestones/"/>
+			<unit id="org.eclipse.xsemantics.doc.feature.feature.group" version="1.20.0.v20210401-0731"/>
+			<unit id="org.eclipse.xsemantics.examples.feature.feature.group" version="1.20.0.v20210401-0731"/>
+			<unit id="org.eclipse.xsemantics.feature.feature.group" version="1.20.0.v20210401-0731"/>
+			<unit id="org.eclipse.xsemantics.feature.source.feature.group" version="1.20.0.v20210401-0731"/>
+			<unit id="org.eclipse.xsemantics.implemented.examples.feature.feature.group" version="1.20.0.v20210401-0731"/>
+			<unit id="org.eclipse.xsemantics.runtime.feature.feature.group" version="1.20.0.v20210401-0731"/>
+			<unit id="org.eclipse.xsemantics.runtime.feature.source.feature.group" version="1.20.0.v20210401-0731"/>
+			<unit id="org.eclipse.xsemantics.sdk.feature.group" version="1.20.0.v20210401-0731"/>
+			<unit id="org.eclipse.xsemantics.sdk.source.feature.group" version="1.20.0.v20210401-0731"/>
+		</location>
 	</locations>
 </target>
