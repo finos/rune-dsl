@@ -232,7 +232,7 @@ public class ExpressionOperators {
 	
 	// distinct
 	
-	public static <T> Mapper<T> distinct(Mapper<T> o) {
+	public static <T> MapperC<T> distinct(Mapper<T> o) {
 		return MapperC.of(o.getMulti()
 				.stream()
 				.distinct()

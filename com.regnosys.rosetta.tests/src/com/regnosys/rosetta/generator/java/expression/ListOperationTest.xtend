@@ -3605,6 +3605,29 @@ class ListOperationTest {
 		assertEquals(ImmutableList.of(1, 2, 3, 4), res);
 	}
 	
+		@Test
+	def void shouldGenerateDistinctIntListSort() {
+		val model = '''
+			func FuncFoo: 
+				inputs:
+					numbers int (0..*)
+				output:
+					sortedNumbers int (0..*)
+			
+				set sortedNumbers:
+					numbers 
+						distinct
+						sort
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val res = func.invokeFunc(List, ImmutableList.of(4, 2, 2, 4, 3, 1, 1, 3))
+		assertEquals(4, res.size);
+		assertEquals(ImmutableList.of(1, 2, 3, 4), res);
+	}
+	
 	@Test
 	def void shouldGenerateDateListSort() {
 		val model = '''
