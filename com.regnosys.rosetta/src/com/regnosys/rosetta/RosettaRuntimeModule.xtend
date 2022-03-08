@@ -19,6 +19,8 @@ import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory
 import com.regnosys.rosetta.types.TypeFactory
+import com.regnosys.rosetta.typing.validation.RosettaTypingValidator
+import com.regnosys.rosetta.validation.RosettaStandaloneTypingValidator
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -53,5 +55,8 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	def Class<? extends TypeFactory> bindTypeFactory() {
 		TypeFactory
+	}
+	def Class<? extends RosettaTypingValidator> bindRosettaTypingValidator() {
+		RosettaStandaloneTypingValidator
 	}
 }

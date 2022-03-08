@@ -4,8 +4,8 @@ import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 
 public class TypeFactory {
-	private final RosettaCardinality single;
-	private final RosettaCardinality empty;
+	public final RosettaCardinality single;
+	public final RosettaCardinality empty;
 	
 	public final RListType singleBoolean;
 	public final RListType singleString;
@@ -14,18 +14,37 @@ public class TypeFactory {
 	public final RListType emptyNothing;
 	
 	public TypeFactory() {
-		this.single = RosettaFactory.eINSTANCE.createRosettaCardinality();
-		this.single.setInf(1);
-		this.single.setSup(1);
+		this.single = createConstraint(1, 1);
 		
-		this.empty = RosettaFactory.eINSTANCE.createRosettaCardinality();
-		this.empty.setInf(0);
-		this.empty.setSup(0);
+		this.empty = createConstraint(0, 0);
 		
-		this.singleBoolean = new RListType(RBuiltinType.BOOLEAN, single);
-		this.singleString = new RListType(RBuiltinType.STRING, single);
-		this.singleNumber = new RListType(RBuiltinType.NUMBER, single);
-		this.singleInt = new RListType(RBuiltinType.INT, single);
-		this.emptyNothing = new RListType(RBuiltinType.NOTHING, empty);
+		this.singleBoolean = createListType(RBuiltinType.BOOLEAN, single);
+		this.singleString = createListType(RBuiltinType.STRING, single);
+		this.singleNumber = createListType(RBuiltinType.NUMBER, single);
+		this.singleInt = createListType(RBuiltinType.INT, single);
+		this.emptyNothing = createListType(RBuiltinType.NOTHING, empty);
+	}
+	
+	public RosettaCardinality createConstraint(int inf, int sup) {
+		RosettaCardinality c = RosettaFactory.eINSTANCE.createRosettaCardinality();
+		c.setInf(inf);
+		c.setSup(sup);
+		return c;
+	}
+	public RosettaCardinality createConstraint(int inf) {
+		RosettaCardinality c = RosettaFactory.eINSTANCE.createRosettaCardinality();
+		c.setInf(inf);
+		c.setUnbounded(true);
+		return c;
+	}
+	
+	public RListType createListType(RType itemType, RosettaCardinality constraint) {
+		return new RListType(itemType, constraint);
+	}
+	public RListType createListType(RType itemType, int inf, int sup) {
+		return createListType(itemType, createConstraint(inf, sup));
+	}
+	public RListType createListType(RType itemType, int inf) {
+		return createListType(itemType, createConstraint(inf));
 	}
 }

@@ -95,14 +95,15 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import com.regnosys.rosetta.rosetta.RosettaLiteral
-import com.regnosys.rosetta.typing.validation.RosettaTypingValidator
+import org.eclipse.xtext.validation.ComposedChecks
 
 /**
  * This class contains custom validation rules. 
  * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
-class RosettaValidator extends RosettaTypingValidator implements RosettaIssueCodes {
+@ComposedChecks(validators = RosettaStandaloneTypingValidator)
+class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueCodes {
 
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaExpectedTypeProvider
@@ -219,6 +220,10 @@ class RosettaValidator extends RosettaTypingValidator implements RosettaIssueCod
 	private def checkType(RType expectedType, EObject object, EObject owner, EReference ref, int index) {
 		val actualType = object.RType
 		if (actualType === null || actualType == RBuiltinType.ANY) {
+			return
+		}
+		if (!super.validate(owner, null, null)) { // Temporary hack while implementing Nouga's type system
+			info("Preventing old type error", owner, ref, index)
 			return
 		}
 		if (actualType instanceof RErrorType)

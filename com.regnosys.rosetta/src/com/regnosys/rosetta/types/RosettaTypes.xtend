@@ -5,12 +5,14 @@ import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import org.eclipse.xtend.lib.annotations.Data
 
-interface RType {
+abstract class RType {
 	def String getName()
 	def boolean hasMeta() { false }
+	
+	override String toString() { name }
 }
 
-abstract class RAnnotateType implements RType {
+abstract class RAnnotateType extends RType {
 	boolean meta = false
 
 	def void setWithMeta(boolean meta) {
@@ -29,6 +31,9 @@ class RDataType extends RAnnotateType {
 	override getName() {
 		data.name
 	}
+	
+	// prevent @Data annotation from overriding `toString`
+	override String toString() { super.toString }
 }
 
 @Data
@@ -38,6 +43,9 @@ class REnumType extends RAnnotateType {
 	override getName() {
 		enumeration.name
 	}
+	
+	// prevent @Data annotation from overriding `toString`
+	override String toString() { super.toString }
 }
 
 
@@ -49,6 +57,8 @@ class RRecordType extends RAnnotateType {
 		(record as RosettaNamed).name
 	}
 	
+	// prevent @Data annotation from overriding `toString`
+	override String toString() { super.toString }
 }
 
 @Data
@@ -71,6 +81,9 @@ class RBuiltinType extends RAnnotateType {
 	public static val NOTHING = new RBuiltinType('nothing')
 	
 	val String name
+	
+	// prevent @Data annotation from overriding `toString`
+	override String toString() { super.toString }
 }
 
 
@@ -81,6 +94,9 @@ class RQualifiedType extends RBuiltinType {
 	public static val EVENT_TYPE = new RQualifiedType('string', 'eventType')
 
 	val String qualifiedType
+	
+	// prevent @Data annotation from overriding `toString`
+	override String toString() { super.toString }
 }
 
 @Data
@@ -88,6 +104,9 @@ class RCalculationType extends RBuiltinType {
 	public static val CALCULATION = new RCalculationType('string', 'calculation')
 	
 	val String calculationType
+	
+	// prevent @Data annotation from overriding `toString`
+	override String toString() { super.toString }
 }
 
 @Data
@@ -100,10 +119,13 @@ class RNumberType extends RBuiltinType {
 		else
 			t0
 	}
+	
+	// prevent @Data annotation from overriding `toString`
+	override String toString() { super.toString }
 }
 
 @Data
-class RUnionType implements RType {
+class RUnionType extends RType {
 	val RType from
 	val RType to
 	val String name
@@ -121,14 +143,20 @@ class RUnionType implements RType {
 	def String getToName() {
 		if (to instanceof RUnionType) to.toName else to.name
 	}
+	
+	// prevent @Data annotation from overriding `toString`
+	override String toString() { super.toString }
 }
 
 @Data
-class RErrorType implements RType {
+class RErrorType extends RType {
 
 	val String message
 
 	override getName() {
 		message
 	}
+	
+	// prevent @Data annotation from overriding `toString`
+	override String toString() { super.toString }
 }
