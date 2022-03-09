@@ -102,7 +102,7 @@ import org.eclipse.xtext.validation.ComposedChecks
  * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
-@ComposedChecks(validators = RosettaStandaloneTypingValidator)
+@ComposedChecks(validators = #[RosettaStandaloneTypingValidator])
 class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueCodes {
 
 	@Inject extension RosettaExtensions
@@ -220,10 +220,6 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 	private def checkType(RType expectedType, EObject object, EObject owner, EReference ref, int index) {
 		val actualType = object.RType
 		if (actualType === null || actualType == RBuiltinType.ANY) {
-			return
-		}
-		if (!super.validate(owner, null, null)) { // Temporary hack while implementing Nouga's type system
-			info("Preventing old type error", owner, ref, index)
 			return
 		}
 		if (actualType instanceof RErrorType)
