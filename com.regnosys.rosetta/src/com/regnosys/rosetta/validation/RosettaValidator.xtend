@@ -33,6 +33,7 @@ import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
+import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -94,7 +95,6 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.RosettaLiteral
 
 /**
  * This class contains custom validation rules. 
@@ -476,6 +476,29 @@ class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueC
 							ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, callerIdx)
 					}
 				]
+			}
+		}
+	}
+	
+	@Check
+	def void checkMergeSynonymAttributeCardinality(Attribute attribute) {
+		for (syn : attribute.synonyms) {
+			val multi = attribute.card.isMany
+			if (syn.body?.merge !== null && !multi) {
+				error("Merge synonym can only be specified on an attribute with multiple cardinality.", syn.body, ROSETTA_SYNONYM_BODY__MERGE)
+			}
+		}
+	}
+	
+	@Check
+	def void checkMergeSynonymAttributeCardinality(RosettaExternalRegularAttribute attribute) {
+		val att = attribute.attributeRef
+		if (att instanceof Attribute) {
+			for (syn : attribute.externalSynonyms) {
+				val multi = att.card.isMany
+				if (syn.body?.merge !== null && !multi) {
+					error("Merge synonym can only be specified on an attribute with multiple cardinality.", syn.body, ROSETTA_SYNONYM_BODY__MERGE)
+				}
 			}
 		}
 	}
