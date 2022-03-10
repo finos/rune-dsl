@@ -2,6 +2,7 @@ package com.regnosys.rosetta.generator.object
 
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaMapping
+import com.regnosys.rosetta.rosetta.RosettaMergeSynonymValue
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -93,6 +94,7 @@ final class ExpandedSynonym {
 	List<RosettaSynonymSource> sources
 	List<ExpandedSynonymValue> values
 	List<String> hints
+	RosettaMergeSynonymValue merge
 	List<ExpandedSynonymValue> metaValues
 	RosettaMapping mappingLogic
 	String mapperName
