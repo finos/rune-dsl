@@ -48,7 +48,6 @@ Export-Package: com.regnosys.rosetta,
  com.regnosys.rosetta.services,
  com.regnosys.rosetta.types,
  com.regnosys.rosetta.typing,
- com.regnosys.rosetta.typing.validation,
  com.regnosys.rosetta.utils,
  com.regnosys.rosetta.validation
 

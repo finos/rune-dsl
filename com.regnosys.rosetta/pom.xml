@@ -105,7 +105,7 @@
 				<version>${xtextVersion}</version>
 				<executions>
 					<execution>
-						<id>xcore-generator</id>
+						<id>xcore-and-xsemantics-generator</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>
@@ -116,6 +116,14 @@
 					<!-- Disable APT : Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=487421 -->
 					<compilerTargetLevel>1.8 -proc:none</compilerTargetLevel>
 					<languages>
+						<language>
+							<setup>org.eclipse.xsemantics.dsl.XsemanticsStandaloneSetup</setup>
+							<outputConfigurations>
+								<outputConfiguration>
+									<outputDirectory>xsemantics-gen</outputDirectory>
+								</outputConfiguration>
+							</outputConfigurations>
+						</language>
 						<language>
 							<setup>org.eclipse.xtext.ecore.EcoreSupport</setup>
 						</language>
@@ -132,7 +140,10 @@
 						</language>
 					</languages>
 					<sourceRoots>
-						<root>${basedir}/model/</root>
+						<root>${basedir}/model</root>
+						<root>${basedir}/src</root>
+						<root>${basedir}/src-gen</root>
+						<root>${basedir}/emf-gen</root>
 					</sourceRoots>
 					<classPathLookupFilter>.*?(xtext|emf|rosetta).*</classPathLookupFilter>
 				</configuration>
@@ -162,6 +173,11 @@
 						<artifactId>org.eclipse.emf.ecore.xcore</artifactId>
 						<version>${org.eclipse.emf.ecore.xcore-version}</version>
 					</dependency>
+					<dependency>
+						<groupId>org.eclipse.xsemantics</groupId>
+						<artifactId>org.eclipse.xsemantics.dsl</artifactId>
+						<version>${xsemantics.version}</version>
+					</dependency>
 				</dependencies>
 			</plugin>
 			<plugin>
@@ -189,6 +205,12 @@
 						</fileset>
 						<fileset>
 							<directory>${basedir}/../com.regnosys.rosetta/emf-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta/xsemantics-gen/</directory>
 							<includes>
 								<include>**/*</include>
 							</includes>

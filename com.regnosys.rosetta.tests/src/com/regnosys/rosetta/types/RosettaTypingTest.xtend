@@ -105,4 +105,19 @@ class RosettaTypingTest {
 			.parseExpression
 			.assertError(null, "Expected argument types to be either both `string` or both a subtype of `number`, but got `string` and `int` instead.")
 	}
+	
+	@Test
+	def void testComparisonOperationTypeInference() {
+		'1 < 2'.assertIsValidWithType(singleBoolean)
+		'3 > 3.14'.assertIsValidWithType(singleBoolean)
+		'-5.1 <= 42'.assertIsValidWithType(singleBoolean)
+		'-3.14 >= 3.14'.assertIsValidWithType(singleBoolean)
+		
+		// TODO: test `any` and `all`
+	}
+	
+	@Test
+	def void testComparisonOperationTypeChecking() {
+		
+	}
 }

@@ -15,11 +15,11 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtext.Constants
 import com.google.inject.name.Named
 import com.regnosys.rosetta.validation.AbstractRosettaValidator
-import com.regnosys.rosetta.typing.validation.RosettaTypingValidator
+import com.regnosys.rosetta.validation.StandaloneRosettaTypingValidator
 
 class ExpressionValidationHelper {
 	@Inject
-	extension RosettaTypingValidator // TODO: replace this with RosettaValidator once old type system has been removed
+	extension StandaloneRosettaTypingValidator // TODO: replace this with RosettaValidator once old type system has been removed
 	@Inject@Named(Constants.LANGUAGE_NAME) 
 	String languageName;
 	

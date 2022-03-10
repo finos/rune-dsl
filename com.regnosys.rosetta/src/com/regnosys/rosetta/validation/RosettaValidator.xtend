@@ -96,13 +96,14 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import org.eclipse.xtext.validation.ComposedChecks
+import com.regnosys.rosetta.validation.StandaloneRosettaTypingValidator
 
 /**
  * This class contains custom validation rules. 
  * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
-@ComposedChecks(validators = #[RosettaStandaloneTypingValidator])
+@ComposedChecks(validators = #[StandaloneRosettaTypingValidator])
 class RosettaValidator extends AbstractRosettaValidator implements RosettaIssueCodes {
 
 	@Inject extension RosettaExtensions
