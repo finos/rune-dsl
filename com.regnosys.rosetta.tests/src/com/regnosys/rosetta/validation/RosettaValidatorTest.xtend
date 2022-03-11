@@ -494,6 +494,30 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoIssues
 	}
 
+	@Test
+	def checkMergeSynonymErrorOnSingleCardinality() {
+		val model = '''
+			synonym source FpML
+			
+			type Foo:
+				attr int (0..1)
+					[synonym FpML merge "bar"]
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYNONYM_BODY, null, "Merge synonym can only be specified on an attribute with multiple cardinality.")
+	}
+	
+	@Test
+	def checkMergeSynonymNoErrorOnMultiCardinality() {
+		val model = '''
+			synonym source FpML
+						
+			type Foo:
+				attr int (0..*)
+					[synonym FpML merge "bar"]
+		'''.parseRosetta
+		model.assertNoErrors()
+	}
+
  	@Test
 	def checkMappingMultipleSetToWithoutWhenCases() {
 		val model = '''

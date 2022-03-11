@@ -280,6 +280,7 @@ RosettaSynonym:
 RosettaSynonymBody:
 	( 'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? ('meta' (metaValues += STRING ',')* metaValues += STRING)? 
 		| 'hint' (hints+=STRING ',')* hints+=STRING
+		| 'merge' merge=RosettaMergeSynonymValue
 		| mappingLogic=RosettaMappingSetTo 
 		| 'meta' (metaValues += STRING ',')* metaValues += STRING)
 	
@@ -298,6 +299,9 @@ RosettaMetaSynonymValue  returns RosettaSynonymValueBase :
 	name = STRING (refType=RosettaSynonymRef value=INT)?
 	('path' path = STRING)? 
 	('maps' maps=INT)?
+;
+RosettaMergeSynonymValue :
+	name = STRING ('when' 'path' '<>' excludePath=STRING)?
 ;
 
 RosettaEnumSynonym:

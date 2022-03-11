@@ -207,12 +207,18 @@ class RosettaSynonymBody extends RosettaSynonymBase {
 	contains RosettaSynonymValueBase[] values
 	contains RosettaMapping mappingLogic
 	String[] hints
+	contains RosettaMergeSynonymValue merge
 	String[] metaValues
 	String mapper
 	String format
 	String patternMatch
 	String patternReplace
 	boolean removeHtml
+}
+
+class RosettaMergeSynonymValue {
+	String name
+	String excludePath
 }
 
 class RosettaEnumSynonym extends RosettaSynonymBase, RosettaDefinable {
