@@ -1,13 +1,14 @@
 package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.typing.RosettaTyping
 import com.regnosys.rosetta.rosetta.RosettaExpression
-import static org.junit.jupiter.api.Assertions.*
-import org.eclipse.xtext.parser.IParser
 import com.regnosys.rosetta.services.RosettaGrammarAccess
-import org.eclipse.xtext.parser.IParseResult
+import com.regnosys.rosetta.typing.RosettaTyping
 import java.io.StringReader
+import org.eclipse.xtext.parser.IParseResult
+import org.eclipse.xtext.parser.IParser
+
+import static org.junit.jupiter.api.Assertions.*
 
 class TypeTestUtil {
 	@Inject

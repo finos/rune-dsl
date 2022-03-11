@@ -1,21 +1,21 @@
 package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaExpression
-import org.eclipse.emf.common.util.BasicDiagnostic
-import org.eclipse.xtext.validation.IDiagnosticConverter
-import java.util.List
-import org.eclipse.xtext.validation.Issue
-import org.eclipse.emf.common.util.Diagnostic
-import org.eclipse.xtext.util.IAcceptor
-import static com.google.common.collect.Iterables.isEmpty
-import static org.junit.jupiter.api.Assertions.*
-import org.eclipse.xtext.diagnostics.Severity
-import org.eclipse.emf.ecore.EClass
-import org.eclipse.xtext.Constants
 import com.google.inject.name.Named
+import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.validation.AbstractRosettaValidator
 import com.regnosys.rosetta.validation.StandaloneRosettaTypingValidator
+import java.util.List
+import org.eclipse.emf.common.util.BasicDiagnostic
+import org.eclipse.emf.common.util.Diagnostic
+import org.eclipse.xtext.Constants
+import org.eclipse.xtext.diagnostics.Severity
+import org.eclipse.xtext.util.IAcceptor
+import org.eclipse.xtext.validation.IDiagnosticConverter
+import org.eclipse.xtext.validation.Issue
+
+import static com.google.common.collect.Iterables.isEmpty
+import static org.junit.jupiter.api.Assertions.*
 
 class ExpressionValidationHelper {
 	@Inject
