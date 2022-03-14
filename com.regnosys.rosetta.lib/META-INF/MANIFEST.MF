@@ -15,7 +15,10 @@ Require-Bundle: org.eclipse.xtext,
  org.mockito,
  net.bytebuddy.byte-buddy,
  org.objenesis,
- com.google.guava
+ com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.rosetta.lib.postprocess,
  com.rosetta.model.lib,
