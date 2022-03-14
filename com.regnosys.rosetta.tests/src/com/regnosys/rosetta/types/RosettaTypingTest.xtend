@@ -113,11 +113,19 @@ class RosettaTypingTest {
 		'-5.1 <= 42'.assertIsValidWithType(singleBoolean)
 		'-3.14 >= 3.14'.assertIsValidWithType(singleBoolean)
 		
-		// TODO: test `any` and `all`
+		// TODO: test `any` and `all`, and plural cardinality?
 	}
 	
 	@Test
 	def void testComparisonOperationTypeChecking() {
-		
+		//		'[1, 2] < 3' TODO
+//			.parseExpression
+//			.assertError(null, "")
+		'empty > 3'
+			.parseExpression
+			.assertError(null, "Expected constraint `(1..1)`, but was `(0..0)`.")
+		'1.5 <= False'
+			.parseExpression
+			.assertError(null, "Expected a subtype of `number`, but was `boolean`.")
 	}
 }
