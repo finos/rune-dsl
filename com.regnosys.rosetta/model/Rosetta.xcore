@@ -134,17 +134,6 @@ class RosettaCardinality {
 	derived boolean isMany get {
 		unbounded || sup > 1 || sup != 1 // ??? sup of 0 is counted as multiple
 	}
-	derived boolean isOptional get{
-		inf == 0
-	}
-	
-	/**
-	 * The (0..0) cardinality reflects the fact that there is no object available.
-	 * This is expected to change once the CDM scope is extended to the pre-execution space.
-	 */
-	derived boolean isHidden get{
-		inf == 0 && sup == 0
-	}
 	
 	op String toConstraintString() {
 		if (this.unbounded) {
@@ -173,6 +162,19 @@ class RosettaCardinality {
 	op boolean isSubconstraintOf(RosettaCardinality superConstraint) {
 		return this.getInf() >= superConstraint.getInf() &&
 				(superConstraint.isUnbounded() || !this.isUnbounded() && this.getSup() <= superConstraint.getSup());
+	}
+	
+	derived boolean empty get {
+		!unbounded && sup == 0
+	}
+	derived boolean optional get {
+		return !unbounded && inf == 0 && sup == 1
+	}
+	derived boolean singular get {
+		return !unbounded && inf == 1 && sup == 1
+	}
+	derived boolean plural get {
+		return unbounded || sup > 1
 	}
 }
 

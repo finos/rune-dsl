@@ -47,10 +47,10 @@ class RosettaTypingTest {
 	def void testLogicalOperationTypeChecking() {
 		'1 or False'
 			.parseExpression
-			.assertError(null, "Expected list type `boolean (1..1)`, but was `int (1..1)`.")
+			.assertError(null, "Expected type `boolean`, but got `int` instead.")
 		'True or 3.14'
 			.parseExpression
-			.assertError(null, "Expected list type `boolean (1..1)`, but was `number (1..1)`.")
+			.assertError(null, "Expected type `boolean`, but got `number` instead.")
 	}
 	
 	@Test
@@ -69,7 +69,7 @@ class RosettaTypingTest {
 	def void testEqualityOperationTypeChecking() {
 		'1 = True'
 			.parseExpression
-			.assertError(null, "List types `int (1..1)` and `boolean (1..1)` are not comparable.")
+			.assertError(null, "Types `int` and `boolean` are not comparable.")
 		// TODO: write tests for list comparability + comparability with `all`/`any`
 	}
 	
@@ -97,10 +97,10 @@ class RosettaTypingTest {
 //			.assertError(null, "")
 		'empty - 3'
 			.parseExpression
-			.assertError(null, "Expected constraint `(1..1)`, but was `(0..0)`.")
+			.assertError(null, "Expected a single value, but got an empty value instead.")
 		'1.5 * False'
 			.parseExpression
-			.assertError(null, "Expected a subtype of `number`, but was `boolean`.")
+			.assertError(null, "Expected type `number`, but got `boolean` instead.")
 		'"ab" + 3'
 			.parseExpression
 			.assertError(null, "Expected argument types to be either both `string` or both a subtype of `number`, but got `string` and `int` instead.")
@@ -123,9 +123,9 @@ class RosettaTypingTest {
 //			.assertError(null, "")
 		'empty > 3'
 			.parseExpression
-			.assertError(null, "Expected constraint `(1..1)`, but was `(0..0)`.")
+			.assertError(null, "Expected a single value, but got an empty value instead.")
 		'1.5 <= False'
 			.parseExpression
-			.assertError(null, "Expected a subtype of `number`, but was `boolean`.")
+			.assertError(null, "Expected type `number`, but got `boolean` instead.")
 	}
 }

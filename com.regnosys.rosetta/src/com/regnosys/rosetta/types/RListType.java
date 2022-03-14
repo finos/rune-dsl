@@ -18,6 +18,19 @@ public class RListType {
 		return this.constraint;
 	}
 	
+	public boolean isEmpty() {
+		return this.constraint.isEmpty();
+	}
+	public boolean isOptional() {
+		return this.constraint.isOptional();
+	}
+	public boolean isSingular() {
+		return this.constraint.isSingular();
+	}
+	public boolean isPlural() {
+		return this.constraint.isPlural();
+	}
+	
 	@Override
 	public String toString() {
 		return this.itemType.toString() + " " + constraint.toConstraintString();

@@ -20,8 +20,10 @@ import com.regnosys.rosetta.rosetta.EqualityOperation
 import com.regnosys.rosetta.rosetta.LogicalOperation
 import com.regnosys.rosetta.rosetta.ComparisonOperation
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
+import com.regnosys.rosetta.types.TypeValidationUtil
 
 inject extension TypeFactory typeFactory
+inject extension TypeValidationUtil util
 
 auxiliary {
 	comparable(RType t1, RType t2)
@@ -54,6 +56,8 @@ auxiliary comparable(RType t1, RType t2) {
 	empty |- t1 <: t2
 	or
 	empty |- t2 <: t1
+	or
+	return false
 }
 auxiliary overlap(RosettaCardinality c1, RosettaCardinality c2) {
 	(c1.unbounded || c1.sup >= c2.inf) && (c2.unbounded || c2.sup >= c1.inf)
@@ -70,7 +74,7 @@ auxiliary listTypeCheck(RosettaExpression sourceObject, RListType expected) {
 	if (expected !== null && actual !== null) {
 		expected.equals(actual)
 		or
-		fail error "Expected list type `" + expected.toString() + "`, but was `" + actual.toString() + "`."
+		fail error unequalListTypesMessage(expected, actual)
 			source sourceObject
 	}
 }
@@ -80,23 +84,23 @@ auxiliary typeCheck(RosettaExpression sourceObject, RType expected) {
 	if (expected !== null && actual !== null) {
 		expected.equals(actual.itemType)
 		or
-		fail error "Expected item type `" + expected.toString() + "`, but was `" + actual.itemType.toString() + "`."
+		fail error unequalTypesMessage(expected, actual.itemType)
 			source sourceObject
 	}
 }
 auxiliary listSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
 	var RListType actual
 	empty |- sourceObject : actual or actual = null
-	if (expected !== null && actual !== null && !{ empty |- actual <| expected }) {
-		fail error "Expected a list subtype of `" + expected.toString() + "`, but was `" + actual.toString() + "`."
+	if (expected !== null && actual !== null && !{empty |- actual <| expected}) {
+		fail error notAListSubtypeMessage(expected, actual)
 			source sourceObject
 	}	
 }
 auxiliary subtypeCheck(RosettaExpression sourceObject, RType expected) {
 	var RListType actual
 	empty |- sourceObject : actual or actual = null
-	if (expected !== null && actual !== null && !{ empty |- actual.itemType <: expected }) {
-		fail error "Expected a subtype of `" + expected.toString() + "`, but was `" + actual.itemType.toString() + "`."
+	if (expected !== null && actual !== null && !{empty |- actual.itemType <: expected}) {
+		fail error notASubtypeMessage(expected, actual.itemType)
 			source sourceObject
 	}	
 }
@@ -108,7 +112,7 @@ auxiliary comparableListTypeCheck(RosettaBinaryOperation sourceObject) {
 	if (tl !== null && tr !== null) {
 		tl.listComparable(tr)
 		or
-		fail error "List types `" + tl.toString() + "` and `" + tr.toString() + "` are not comparable."
+		fail error notListComparableMessage(tl, tr)
 			source sourceObject
 	}
 }
@@ -120,7 +124,7 @@ auxiliary comparableTypeCheck(RosettaBinaryOperation sourceObject) {
 	if (tl !== null && tr !== null) {
 		tl.itemType.comparable(tr.itemType)
 		or
-		fail error "Types `" + tl.itemType.toString() + "` and `" + tr.itemType.toString + "` are not comparable."
+		fail error notComparableMessage(tl.itemType, tr.itemType)
 			source sourceObject
 	}
 }
@@ -130,7 +134,7 @@ auxiliary constraintCheck(RosettaExpression sourceObject, RosettaCardinality exp
 	if (expected !== null && actual !== null) {
 		expected.constraintEquals(actual.constraint)
 		or
-		fail error "Expected constraint `" + expected.toConstraintString + "`, but was `" + actual.constraint.toConstraintString + "`."
+		fail error notConstraintMessage(expected, actual)
 			source sourceObject
 	}
 }
@@ -140,7 +144,7 @@ auxiliary notConstraintCheck(RosettaExpression sourceObject, RosettaCardinality 
 	if (notExpected !== null && actual !== null) {
 		!notExpected.constraintEquals(actual.constraint)
 		or
-		fail error "Cardinality constraint may not be `" + notExpected.toConstraintString + "`."
+		fail error wrongConstraintMessage(notExpected, actual)
 			source sourceObject
 	}
 }
@@ -150,7 +154,7 @@ auxiliary isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardina
 	if (expected !== null && actual !== null) {
 		expected.isSubconstraintOf(actual.constraint)
 		or
-		fail error "Expected constraint to include `" + expected.toConstraintString + "`, but was `" + actual.constraint.toConstraintString + "`."
+		fail error notLooserConstraintMessage(expected, actual)
 			source sourceObject
 	}
 }
