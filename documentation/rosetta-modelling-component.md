@@ -40,7 +40,7 @@ The definition of a type starts with the keyword `type`, followed by the type na
 
 The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names need to be unique across a [namespace](#namespace-component). All those requirements are controlled by the Rosetta DSL grammar.
 
-The first component of the definition is a plain-text description of the type.
+The first component of the definition is a plain-text description of the type, as a string enclosed within angle brackets: `<"..">`.
 
 After the description come any further [meta-data annotations](#meta-data-component) that are applied to this type. Meta-data are enclosed within square brackets `[...]`.
 
@@ -52,10 +52,10 @@ type VehicleOwnership: <"Representative record of vehicle ownership">
 
 Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
 
-- name -Required - Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
-- type -Required - Each attribute can be specified either as a [basic type](#basic-types), [record type](#record-types), data type or [enumeration type](#enumeration).
-- cardinality -Required - see [Cardinality](#cardinality)
-- description - Optional but recommended) - A description of the attribute using the same \<\"\...\"\> syntax as the type description
+- name - Required - Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
+- type - Required - Each attribute can be specified either as a [basic type](#basic-types), [record type](#record-types), data type or [enumeration type](#enumeration).
+- cardinality - Required - see [Cardinality](#cardinality)
+- description - Optional but recommended) - A description of the attribute using the same angle bracket `<"..">` syntax as the type description
 - annotations - Optional - Annotations such as [synonyms](#basic-mappings) or metadata can be applied to attributes
 
 ``` Haskell
@@ -185,7 +185,13 @@ There are 3 syntax components to define the hierarchy of document references:
 
 A body refers to an entity that is the author, publisher or owner of a document. Examples of bodies include regulatory authorities or trade associations.
 
-The syntax to define a body is: `body` \<Type\> \<Name\> \<Description\>. Some examples of bodies, with their corresponding types, are given below.
+The syntax to define a body is:
+
+```
+body <Type> <Name> <Description>
+```
+
+Some examples of bodies, with their corresponding types, are given below.
 
 ``` Haskell
 body Organisation ISDA
@@ -200,7 +206,13 @@ body Authority MAS
 
 A corpus refers to a document set that contains the textual provision that is being referenced. For example, regulatory rules can be specified according to different levels of detail, including laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations).
 
-The syntax to define a corpus is: `corpus` \<Type\> \<Body\> \<Alias\> \<Name\> \<Description\>. While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known.
+The syntax to define a corpus is:
+
+```
+corpus <Type> <Body> <"Alias"> <Name> <"Description">
+```
+
+While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known.
 
 Some examples of corpuses, with their corresponding types, are given below. In those cases, the aliases refer to the official numbering of document by the relevant authority.
 
@@ -214,7 +226,7 @@ corpus Act MAS "289" SFA
 
 Corpuses are typically large sets of documents which can contain many rule specifications. The Rosetta DSL provides the concept of segment to allow to refer to a specific section in a given document.
 
-The syntax to define a segment is: `segment` \<Type\>. Below are some examples of segment types, as are often found in trade association and regulatory texts.
+The syntax to define a segment is: `segment <Type>`. Below are some examples of segment types, as are often found in trade association and regulatory texts.
 
 ``` Haskell
 segment article
@@ -238,7 +250,8 @@ A document reference is created using the `docReference` syntax. This `docRefere
 [docReference <Body> <Corpus>
   <Segment1>
   <Segment2>
-  <SegmentN...>
+  <...>
+  <SegmentN>
   provision <"ProvisionText">]
 ```
 
@@ -246,9 +259,9 @@ In some instances, a model type may have a different naming convention based on 
 
 ``` Haskell
 type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
-     [docReference ICMA GMRA
-       namingConvention "seller"
-       provision "As defined in the GRMA Seller party ..."]
+    [docReference ICMA GMRA
+        namingConvention "seller"
+        provision "As defined in the GRMA Seller party ..."]
 ```
 
 A `docReference` can also be added to an attribute of a type:
@@ -290,14 +303,14 @@ annotation rootType: <"Mark a type as a root of the rosetta model">
 annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
 ```
 
-An annotation can be added to a Rosetta Type or attribute by enclosing the name of the annotation in square brackets
+An annotation can be added to a Rosetta Type or attribute by enclosing the name of the annotation in square brackets.
 
 ## Meta-Data and Reference
 
 ### Purpose
 
 
-The `metadata` annotation allows the declaration of a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations
+The `metadata` annotation allows the declaration of a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations.
 
 ``` Haskell
 annotation metadata:
@@ -318,9 +331,9 @@ Each attribute of the `metadata` annotation corresponds to a qualifier that can 
 
 ### Referencing
 
-Referencing allows an attribute in rosetta to refer to a rosetta object in a different location. A reference consists of a metadata ID associated with an object and elsewhere an attribute that instead of having a normal value has that id as a reference metadata field. E.g. the example below has a Party with \"globalKey\" (see below) acting as an identifier and later on a reference to that party using the \"globalReference\" (see below also):
+Referencing allows an attribute in rosetta to refer to a rosetta object in a different location. A reference consists of a metadata ID associated with an object and elsewhere an attribute that instead of having a normal value has that id as a reference metadata field. E.g. the example below has a Party with `globalKey` (see below) acting as an identifier and later on a reference to that party using the `globalReference` (see below also):
 
-```
+``` JSON
 "party" : {
   "meta" : {
     "globalKey" : "3fa8e998",
@@ -628,7 +641,7 @@ func FindOwnersWithinPenaltyPointLimit: <"Find all owners within penalty point l
 
 ### Map
 
-The `map` keyword has been added to modify the items of a list based on an expression. For each list item, the expression specified in the square brackets is invoked to modify the item. The resulting list is assigned to output parameter. The `map` keyword was chosen as it is the most widely used terms for this use-case, used in languages such as Java, Python, Scala, Perl, Clojure, Erlang, F#, Haskell, Javascript, PHP, and Ruby.
+The `map` keyword has been added to modify the items of a list based on an expression. For each list item, the expression specified in the square brackets is invoked to modify the item. The resulting list is assigned to output parameter.
 
 ``` Haskell
 func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
@@ -642,6 +655,10 @@ func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
             filter [ item -> firstName exists and item -> surname exists ]
             map [ item -> firstName + " " + item -> surname ]
 ```
+
+{{< notice info "Note" >}}
+The `map` keyword was chosen as it is the most widely used term for this use-case - for instance in languages such as Java, Python, Scala, Perl, Clojure, Erlang, F#, Haskell, Javascript, PHP, and Ruby.
+{{< /notice >}}
 
 ## Constant Expressions
 
@@ -708,16 +725,16 @@ The result type of a comparison operator is always boolean
 
 Rosetta also has operators that are designed to function on lists
 
-- `contains` - every element in the right hand expression is = to an element in the left hand expression
-- `disjoint` - true if no element in the left side expression is equal to anu element in the right side expression
+- `contains` - returns true if every element in the right hand expression is equal to an element in the left hand expression
+- `disjoint` - returns true if no element in the left side expression is equal to anu element in the right side expression
 - `count` - returns the number of elements in the expression to its left
-- `(all\any) = (<>, < etc)`
+- (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc) - compares a list to a single element or another list
 
-If the contains operator is passed an expression that has single cardinality that expression is treated as a list containing the single element or an empty list if the element is null.
+If the `contains` operator is passed an expression that has single cardinality, that expression is treated as a list containing the single element or an empty list if the element is null.
 
-The grammar enforces that the expression for count has multiple cardinality.
+The grammar enforces that the expression for `count` has multiple cardinality.
 
-For the comparison operators if either left or right expression has multiple cardinality then either the other side should have multiple cardinality or `all` or `any` should be specified. (At present only `any` is supported for `\<\>` and `all` for the other comparison operators.
+For the comparison operators, if either left or right expression has multiple cardinality then either the other side should have multiple cardinality. Otherwise if one side's expression has single cardinality, `all` or `any` should be used to qualify the list on the other side. At present only `any` is supported for `<` and `>` and only `all` for the other comparison operators.
 
 The semantics for list comparisons are as follows:
 
@@ -740,12 +757,12 @@ An expression that is expected to return multiple cardinality that returns null 
 
 If one or more expressions being passed to an operator is of single cardinality but is null (not present) the behavior is as follows
 
-- null = *any value* returns false
-- null \<\> *any value* returns true
-- null \> *any value* returns false
-- null \>= *any value* returns false
+- null `=` *any value* returns false
+- null `<>` *any value* returns true
+- null `>` *any value* returns false
+- null `>=` *any value* returns false
 
-*any value* here includes null. The behaviour is symmetric - if the null appears on the either side of the expression the result is the same. if the null value is of multiple cardinality then it is treated as an empty list.
+*any value* here includes null. The behaviour is symmetric - if the null appears on either side of the expression the result is the same. if the null value is of multiple cardinality then it is treated as an empty list.
 
 ### Boolean Operators
 
@@ -764,17 +781,17 @@ Rosetta supports basic arithmetic operators
 
 Expressions are evaluated in Rosetta in the following order (See [Operator Precedence](https://en.wikipedia.org/wiki/Order_of_operations)). Higher are evaluated first.
 
-1. RosettaPathExpressions - e.g. \'Lineage -\> executionReference\'
-1. Brackets - e.g. \'(1+2)\'
-1. if-then-else - e.g. \'if (1=2) then 3\'
-1. only-element - e.g. \'Lineage -\> executionReference only-element\'
-1. count - e.g. \'Lineage -\> executionReference count\'
-1. Multiplicative operators \'*\',\'/\' - e.g. \'3*4\'
-1. Additive operators \'+\'.\'-\' - e.g. \'3-4\'
-1. Comparison operators \'\>=\', \'\<=\',\'\>\',\'\<\' - e.g. \'3\>4
-1. Existence operators \'exists\',\'is absent\',\'contains\',\'disjoint\' - e.g. \'Lineage -\> executionReference exists\'
-1. and - e.g. \'5\>6 and true\'
-1. or - e.g. \'5\>6 or true\'
+1. RosettaPathExpressions - e.g. `Lineage -> executionReference`
+1. Brackets - e.g. `(1+2)`
+1. if-then-else - e.g. `if (1=2) then 3`
+1. only-element - e.g. `Lineage -> executionReference only-element`
+1. count - e.g. `Lineage -> executionReference count`
+1. Multiplicative operators `*`, `/` - e.g. `3*4`
+1. Additive operators `+`, `-` - e.g. `3-4`
+1. Comparison operators `>=`, `<=`, `>`, `<` - e.g. `3>4`
+1. Existence operators `exists`,`is absent`, `contains`, `disjoint` - e.g. `Lineage -> executionReference exists`
+1. and - e.g. `5>6 and true`
+1. or - e.g. `5>6 or true`
 
 ## Function calls
 
@@ -824,7 +841,7 @@ The validation components associated to a data type generate executable code des
 
 ## Cardinality
 
-Cardinality is a data integrity mechanism to control how many of each attribute an object of a given type can contain. The Rosetta DSL borrows from XML and specifies cardinality as a lower and upper bound in between `(` `..` `)` brackets.
+Cardinality is a data integrity mechanism to control how many of each attribute an object of a given type can contain. The Rosetta DSL borrows from XML and specifies cardinality as a lower and upper bound in between brackets `(..)`.
 
 ``` Haskell
 type Address:
@@ -844,7 +861,7 @@ A validation rule is generated for each attribute\'s cardinality constraint, so 
 
 ### Purpose
 
-*Conditions* are logic [expressions](expressions.html) associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False As part of validation all the conditions are evaluated and if any evaluate to false then the validation fails.
+*Conditions* are logic [expressions](#expression-component) associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False As part of validation all the conditions are evaluated and if any evaluate to false then the validation fails.
 
 ### Syntax
 
@@ -853,7 +870,7 @@ Condition statements are included in the definition of the type that they are as
 The definition of a condition starts with the `condition` keyword, followed by the name of the condition and a colon `:` punctuation. The condition\'s name must be unique in the context of the type that it applies to (but does not need to be unique across all data types of a given model). The rest of the condition definition comprises:
 
 - a plain-text description (optional)
-- a boolean-type [expression](expressions.html) that applies to the the type\'s attributes
+- a boolean-type [expression](#expression-component) that applies to the the type\'s attributes
 
 ``` Haskell
 type ActualPrice:
@@ -944,11 +961,11 @@ type PeriodRange:
 The `only exists` component is an adaptation of the simple `exists` syntax, that verifies that the attribute exists but also that no other attribute of the type does.
 
 ``` Haskell
-```
-
 func Qualify_AssetClass_InterestRate_Swap:
-
-:   inputs: economicTerms EconomicTerms (1..1) output: is_product boolean (1..1) assign-output is_product: economicTerms -\> payout -\> interestRatePayout only exists or (economicTerms -\> payout -\> interestRatePayout, economicTerms -\> payout -\> cashflow) only exists
+  inputs: economicTerms EconomicTerms (1..1)
+  output: is_product boolean (1..1)
+  assign-output is_product: economicTerms -> payout -> interestRatePayout only exists or (economicTerms -> payout -> interestRatePayout, economicTerms -> payout -> cashflow) only exists
+```
 
 This syntax drastically reduces the condition expression, which would otherwise require to combine one `exists` with multiple `is absent` (applied to all other attributes). It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for `is absent`.
 
@@ -1029,7 +1046,7 @@ func ResolveTimeZoneFromTimeType: <"Function to resolve a TimeType into a TimeZo
       time TimeZone (1..1)
 ```
 
-Inputs and outputs can both have multiple cardinality in which case they will be treated as lists
+Inputs and outputs can both have multiple cardinality in which case they will be treated as lists.
 
 ``` Haskell
 func UpdateAmountForEachQuantity:
@@ -1049,7 +1066,7 @@ Condition statements in a function can represent either:
 - a **pre-condition**, using the `condition` keyword, applicable to inputs only and evaluated prior to executing the function, or
 - a **post-condition**, using the `post-condition` keyword, applicable to inputs and output and evaluated after executing the function (once the output is known)
 
-Each type of condition keyword is followed by a [boolean expression](expressions.html) which is evaluated to check the correctness of the function inputs and result.
+Each type of condition keyword is followed by a [boolean expression](#expression-component) which is evaluated to check the correctness of the function inputs and result.
 
 Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the constraints that implementors of this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
@@ -1065,10 +1082,8 @@ func Create_VehicleOwnership: <"Creation of a vehicle ownership record file">
 
     condition: <"Driving licence must not be expired">
         drivingLicence -> dateOfRenewal all > dateOfPurchase
-
     condition: <"Vehicle classification allowed by the driving licence needs to encompass the vehicle classification of the considered vehicle">
         drivingLicence->vehicleEntitlement contains vehicle-> vehicleClassification
-
     post-condition: <"The owner's driving license(s) must be contained in the vehicle ownership records.">
         vehicleOwnership -> drivingLicence contains drivingLicence
 ```
@@ -1244,7 +1259,7 @@ By convention namespaces are organised into a hierarchy, with layers going from 
 
 ### Syntax
 
-The definition of a namespace starts with the `namespace` keyword, followed by the location of the namespace in the directory structure. :
+The definition of a namespace starts with the `namespace` keyword, followed by the location of the namespace in the directory structure:
 
 ```
 namespace cdm.product.common
@@ -1252,7 +1267,7 @@ namespace cdm.product.common
 
 The names of all components must be unique within a given namespace. Components can refer to other components in the same namespace using just their name. Components can refer to components outside their namespace either by giving the *fully qualified name* e.g. `cdm.base.datetime.AdjustableDate` or by importing the namespace into the current file.
 
-To gain access to model components contained within another namespace the `import` keyword is used. :
+To gain access to model components contained within another namespace the `import` keyword is used.
 
 ```
 import cdm.product.asset.*
@@ -1275,7 +1290,7 @@ In the example above all model components contained within the layers of the `cd
 
 ## Purpose
 
-Mapping in Rosetta provides a mechanism for specifying how documents in other formats (e.g. FpML or ISDACreate json) should be transformed into Rosetta documents. Mappings are specified as *synonym* annotations in the model.
+Mapping in Rosetta provides a mechanism for specifying how documents in other formats (e.g. FpML or ISDACreate) should be transformed into Rosetta documents. Mappings are specified as *synonym* annotations in the model.
 
 Synonyms added throughout the model are combined to map the data tree of an input document into the output Rosetta document. The synonyms can be used to generate an *Ingestion Environment*, a java library which, given an input document, will output the resulting Rosetta document.
 
@@ -1287,7 +1302,7 @@ Basic mappings specify how a value from the input document can be directly mappe
 
 ### Synonym Source
 
-First a *synonym source* is created. This can optionally extend a different synonym source `synonym source FpML_5_10 extends FpML` This defines a set of synonyms that are used to ingest a category of input document, in this case FpML_5\_10 documents
+First a *synonym source* is created. This can optionally extend a different synonym source `synonym source FpML_5_10 extends FpML` This defines a set of synonyms that are used to ingest a category of input document, in this case `FpML_5_10` documents.
 
 #### Extends
 
@@ -1299,7 +1314,13 @@ Synonyms are annotations on attributes of Rosetta types and the enumeration valu
 
 #### Inline
 
-An inline synonym consists of \'\[\' followed by the keyword *synonym* and the name of the synonym source followed by the body of the synonym and an \'\]\' :
+An inline synonym can be expressed next to the attribute being mapped as follows:
+
+```
+[synonym <SynonymSource> <SynonymBody>]
+```
+
+E.g.
 
 ```
 type Collateral:
@@ -1309,7 +1330,7 @@ type Collateral:
 
 #### External synonym
 
-External synonyms are defined inside the synonym source declaration so the synonym keyword and the synonym source are not required in every synonym. A synonym is added to an attribute by referencing the type and attribute name and then declaring the synonym to add as the synonym body surrounded by \'\[\]\'. The code below removes all the synonyms from the independentAmount attribute of Collateral and then adds in a new synonym :
+External synonyms are defined inside the synonym source declaration so the synonym keyword and the synonym source are not required in every synonym. A synonym is added to an attribute by referencing the type and attribute name and then declaring the synonym to add as the synonym body enclosed in square brackets `[..]`. The code below removes all the synonyms from the `independentAmount` attribute of `Collateral` and then adds in a new synonym:
 
 ```
 synonym source FpML_5_10 extends FpML
@@ -1329,7 +1350,13 @@ The simplest synonym consists of a single value `[value "independentAmount"]`. T
 
 #### Path
 
-The value of a synonym can be followed with a path declaration. E.g. `[value "initialFixingDate" path "resetDates"]`. This allows a path of input document elements to be matched to a single Rosetta attribute. In the example the contents of the xml path \"resetDates.initialFixingDate\" will be mapped to the Rosetta attribute. Note that the path is applied as a suffix to the synonym value.
+The value of a synonym can be followed with a path declaration. E.g.:
+
+```
+[synonym FpML_5_10 value "initialFixingDate" path "resetDates"]
+```
+
+This allows a path of input document elements to be matched to a single Rosetta attribute. In the example the contents of the xml path `resetDates.initialFixingDate` will be mapped to the Rosetta attribute. Note that the path is applied as a suffix to the synonym value.
 
 #### Maps 2
 
@@ -1337,7 +1364,7 @@ Mappings are expected to be one-to-one with each input value mapping to one Rose
 
 #### meta
 
-The *meta* keyword inside a synonym is used to map to Rosetta [metadata](#meta-data-and-reference). E.g. :
+The `meta` keyword inside a synonym is used to map to Rosetta [metadata](#meta-data-and-reference). E.g. :
 
 ```
 issuer string (0..1)
@@ -1554,7 +1581,7 @@ E.g. :
 
 ## Motivation
 
-**One of the applications of the Rosetta DSL is to facilitate the process of complying with, and supervising, financial regulation** -- in particular, the large body of data reporting obligations that industry participants are subject to.
+**One of the applications of the Rosetta DSL is to facilitate the process of complying with, and supervising, financial regulation** - in particular, the large body of data reporting obligations that industry participants are subject to.
 
 The current industry processes to implement those rules are costly and inefficient. They involve translating pages of legal language, in which the rules are originally written, into business requirements which firms then have to code into their systems to support the regulatory data collection. This leads to a duplication of effort across a large number of industry participants and to inconsistencies in how each individual firm applies the rules, in turn generating data of poor quality and comparability for regulators.
 
@@ -1580,9 +1607,9 @@ A report consists of an inter-connected set of regulatory obligations, which a r
 
 Generically, the Rosetta DSL allows to specify any report using 3 types of rules:
 
-- timing -- when to report,
-- eligibility -- whether to report, and
-- field -- what to report.
+- timing - when to report,
+- eligibility - whether to report, and
+- field - what to report.
 
 A report is associated to an authoritative body and to the corpus(es) in which those rules are specified. Usually but not necessarily, the authority that mandates the rules also supervises their application and collects the data. Timing, eligibility and field rules translate into obligations of "timing, completeness and accuracy" of reporting, as often referred to by supervisors.
 
