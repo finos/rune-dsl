@@ -2,6 +2,7 @@ package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -11,7 +12,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

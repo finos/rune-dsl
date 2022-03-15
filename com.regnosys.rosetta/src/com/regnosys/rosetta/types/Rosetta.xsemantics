@@ -1,3 +1,316 @@
 system com.regnosys.rosetta.typing.RosettaTyping
 
-validatorExtends com.regnosys.rosetta.validation.RosettaValidator
+validatorExtends AbstractDeclarativeValidator
+
+import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.types.RListType
+import com.regnosys.rosetta.types.TypeFactory
+import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
+import com.regnosys.rosetta.rosetta.RosettaStringLiteral
+import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
+import com.regnosys.rosetta.rosetta.RosettaIntLiteral
+import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
+import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.rosetta.RosettaCardinality
+import static extension com.regnosys.rosetta.types.RBuiltinType.*
+import com.regnosys.rosetta.types.RBuiltinType
+import com.regnosys.rosetta.rosetta.ArithmeticOperation
+import com.regnosys.rosetta.rosetta.EqualityOperation
+import com.regnosys.rosetta.rosetta.LogicalOperation
+import com.regnosys.rosetta.rosetta.ComparisonOperation
+import org.eclipse.xtext.validation.AbstractDeclarativeValidator
+import com.regnosys.rosetta.types.TypeValidationUtil
+
+inject extension TypeFactory typeFactory
+inject extension TypeValidationUtil util
+
+auxiliary {
+	comparable(RType t1, RType t2)
+	overlap(RosettaCardinality c1, RosettaCardinality c2)
+	listComparable(RListType t1, RListType t2)
+	
+	listTypeCheck(RosettaExpression sourceObject, RListType expected)
+	typeCheck(RosettaExpression sourceObject, RType expected)
+	listSubtypeCheck(RosettaExpression sourceObject, RListType expected)
+	subtypeCheck(RosettaExpression sourceObject, RType expected)
+	comparableListTypeCheck(RosettaBinaryOperation sourceObject)
+	comparableTypeCheck(RosettaBinaryOperation sourceObject)
+	constraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
+	notConstraintCheck(RosettaExpression sourceObject, RosettaCardinality notExpected)
+	isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
+}
+
+judgments {
+	inferType |- RosettaExpression expression : output RListType
+		error "Cannot type " + stringRep(expression) + "."
+		source expression
+	subtype |- RType subtype <: RType supertype
+		error subtype + " is not a subtype of " + supertype
+	listSubtype |- RListType subtype <| RListType supertype
+		error subtype + " is not a list subtype of " + supertype
+}
+
+/****** AUXILIARY DEFINITIONS *******/
+auxiliary comparable(RType t1, RType t2) {
+	empty |- t1 <: t2
+	or
+	empty |- t2 <: t1
+	or
+	return false
+}
+auxiliary overlap(RosettaCardinality c1, RosettaCardinality c2) {
+	(c1.unbounded || c1.sup >= c2.inf) && (c2.unbounded || c2.sup >= c1.inf)
+}
+auxiliary listComparable(RListType t1, RListType t2) {
+	comparable(t1.itemType, t2.itemType)
+	overlap(t1.constraint, t2.constraint)
+}
+
+/****** TYPE VALIDATION UTILITIES *******/
+auxiliary listTypeCheck(RosettaExpression sourceObject, RListType expected) {
+	var RListType actual
+	empty |- sourceObject : actual or actual = null
+	if (expected !== null && actual !== null) {
+		expected.equals(actual)
+		or
+		fail error unequalListTypesMessage(expected, actual)
+			source sourceObject
+	}
+}
+auxiliary typeCheck(RosettaExpression sourceObject, RType expected) {
+	var RListType actual
+	empty |- sourceObject : actual or actual = null
+	if (expected !== null && actual !== null) {
+		expected.equals(actual.itemType)
+		or
+		fail error unequalTypesMessage(expected, actual.itemType)
+			source sourceObject
+	}
+}
+auxiliary listSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
+	var RListType actual
+	empty |- sourceObject : actual or actual = null
+	if (expected !== null && actual !== null && !{empty |- actual <| expected}) {
+		fail error notAListSubtypeMessage(expected, actual)
+			source sourceObject
+	}	
+}
+auxiliary subtypeCheck(RosettaExpression sourceObject, RType expected) {
+	var RListType actual
+	empty |- sourceObject : actual or actual = null
+	if (expected !== null && actual !== null && !{empty |- actual.itemType <: expected}) {
+		fail error notASubtypeMessage(expected, actual.itemType)
+			source sourceObject
+	}	
+}
+auxiliary comparableListTypeCheck(RosettaBinaryOperation sourceObject) {
+	var RListType tl
+	var RListType tr
+	empty |- sourceObject.left : tl or tl = null
+	empty |- sourceObject.right : tr or tr = null
+	if (tl !== null && tr !== null) {
+		tl.listComparable(tr)
+		or
+		fail error notListComparableMessage(tl, tr)
+			source sourceObject
+	}
+}
+auxiliary comparableTypeCheck(RosettaBinaryOperation sourceObject) {
+	var RListType tl
+	var RListType tr
+	empty |- sourceObject.left : tl or tl = null
+	empty |- sourceObject.right : tr or tr = null
+	if (tl !== null && tr !== null) {
+		tl.itemType.comparable(tr.itemType)
+		or
+		fail error notComparableMessage(tl.itemType, tr.itemType)
+			source sourceObject
+	}
+}
+auxiliary constraintCheck(RosettaExpression sourceObject, RosettaCardinality expected) {
+	var RListType actual
+	empty |- sourceObject : actual or actual = null
+	if (expected !== null && actual !== null) {
+		expected.constraintEquals(actual.constraint)
+		or
+		fail error notConstraintMessage(expected, actual)
+			source sourceObject
+	}
+}
+auxiliary notConstraintCheck(RosettaExpression sourceObject, RosettaCardinality notExpected) {
+	var RListType actual
+	empty |- sourceObject : actual or actual = null
+	if (notExpected !== null && actual !== null) {
+		!notExpected.constraintEquals(actual.constraint)
+		or
+		fail error wrongConstraintMessage(notExpected, actual)
+			source sourceObject
+	}
+}
+auxiliary isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected) {
+	var RListType actual
+	empty |- sourceObject : actual or actual = null
+	if (expected !== null && actual !== null) {
+		expected.isSubconstraintOf(actual.constraint)
+		or
+		fail error notLooserConstraintMessage(expected, actual)
+			source sourceObject
+	}
+}
+
+/*** SUBTYPING **/
+rule SBuiltIn // SA-Refl, SA-Num, SA-Nothing
+	G |- RBuiltinType t1 <: RBuiltinType t2
+from {
+	{
+		t1 == t2
+	} or
+	{
+		t1 == INT
+		t2 == NUMBER
+	} or {
+		t1 == NOTHING
+	}
+}
+
+rule SNothing // SA-Nothing
+	G |- RBuiltinType t1 <: RType t2
+from {
+	t1 == NOTHING
+}
+
+/*** LIST SUBTYPING ***/
+rule SList // SA-List
+	G |- RListType s <| RListType t
+from {
+	G |- s.itemType <: t.itemType
+	s.constraint.isSubconstraintOf(t.constraint)
+}
+
+
+/*** TYPING ***/
+axiom TBoolean
+	G |- RosettaBooleanLiteral bool : singleBoolean
+axiom TString
+	G |- RosettaStringLiteral str : singleString
+axiom TNumber
+	G |- RosettaBigDecimalLiteral num : singleNumber
+axiom TInt
+	G |- RosettaIntLiteral i : singleInt
+axiom TEmpty
+	G |- EmptyLiteral emp : emptyNothing
+
+rule TArithmetic
+	G |- ArithmeticOperation op : RListType lt
+from {
+	if (op.operator == '/') {
+		lt = singleNumber
+	} else {
+		G |- op.left : var RListType t1
+		G |- op.right : var RListType t2
+		if (op.operator == '+' && (t1.equals(singleString) || t2.equals(singleString))) {
+			lt = singleString
+		} else if (t1.equals(singleNumber) || t2.equals(singleNumber)) {
+			lt = singleNumber
+		} else {
+			lt = singleInt
+		}
+	}
+}
+
+axiom TEquality
+	G |- EqualityOperation op : singleBoolean
+axiom TLogical
+	G |- LogicalOperation op : singleBoolean
+axiom TComparison
+	G |- ComparisonOperation op : singleBoolean
+
+/****** CHECK RULES ********/
+checkrule CheckLeftArithmetic for
+	ArithmeticOperation op
+from {
+	constraintCheck(op.left, single)
+	if (op.operator == '+') {
+		{
+			typeCheck(op.left, STRING)
+		} or {
+			subtypeCheck(op.left, NUMBER)
+		}
+	} else {
+		subtypeCheck(op.left, NUMBER)
+	}
+}
+checkrule CheckRightArithmetic for
+	ArithmeticOperation op
+from {
+	constraintCheck(op.right, single)
+	if (op.operator == '+') {
+		{
+			typeCheck(op.right, STRING)
+		} or {
+			subtypeCheck(op.right, NUMBER)
+		}
+	} else {
+		subtypeCheck(op.right, NUMBER)
+	}
+}
+checkrule CheckAddition for
+	ArithmeticOperation op
+from {
+	if (op.operator == '+') {
+		var RListType tl
+		var RListType tr
+		empty |- op.left : tl or tl = null
+		empty |- op.right : tr or tr = null
+		if (tl !== null && tr !== null) {
+			{
+				tl.itemType == STRING
+				tr.itemType == STRING
+			}
+			or
+			{
+				empty |- tl.itemType <: NUMBER
+				empty |- tr.itemType <: NUMBER
+			}
+			or 
+				fail error "Expected argument types to be either both `string` or both a subtype of `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
+					source op
+		}		
+	}
+}
+
+checkrule CheckEqualityOperation for
+	EqualityOperation op
+from {
+	if (op.cardOp == 'all' || op.cardOp == 'any') {
+		constraintCheck(op.right, single)
+		comparableTypeCheck(op)
+	} else {
+		comparableListTypeCheck(op)
+	}
+}
+
+checkrule CheckLeftLogical for
+	LogicalOperation op
+from {
+	listTypeCheck(op.left, singleBoolean)
+}
+checkrule CheckRightLogical for
+	LogicalOperation op
+from {
+	listTypeCheck(op.right, singleBoolean)
+}
+
+checkrule CheckLeftComparison for
+	ComparisonOperation op
+from {
+	constraintCheck(op.left, single)
+	subtypeCheck(op.left, NUMBER)
+}
+checkrule CheckRightComparison for
+	ComparisonOperation op
+from {
+	constraintCheck(op.right, single)
+	subtypeCheck(op.right, NUMBER)
+}
