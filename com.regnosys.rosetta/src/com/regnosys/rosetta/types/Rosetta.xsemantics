@@ -21,6 +21,8 @@ import com.regnosys.rosetta.rosetta.LogicalOperation
 import com.regnosys.rosetta.rosetta.ComparisonOperation
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import com.regnosys.rosetta.types.TypeValidationUtil
+import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -29,6 +31,9 @@ auxiliary {
 	comparable(RType t1, RType t2)
 	overlap(RosettaCardinality c1, RosettaCardinality c2)
 	listComparable(RListType t1, RListType t2)
+	join(RType t1, RType t2) : RType
+	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
+	listJoin(RListType t1, RListType t2) : RListType
 	
 	listTypeCheck(RosettaExpression sourceObject, RListType expected)
 	typeCheck(RosettaExpression sourceObject, RType expected)
@@ -65,6 +70,39 @@ auxiliary overlap(RosettaCardinality c1, RosettaCardinality c2) {
 auxiliary listComparable(RListType t1, RListType t2) {
 	comparable(t1.itemType, t2.itemType)
 	overlap(t1.constraint, t2.constraint)
+}
+auxiliary join(RBuiltinType t1, RBuiltinType t2) {
+	if (t1 == t2) {
+		return t1
+	} else if (t1 == INT && t2 == NUMBER) {
+		return t2
+	} else if (t1 == NUMBER && t2 == INT) {
+		return t1
+	} else if (t1 == NOTHING) {
+		return t2
+	} else if (t2 == NOTHING) {
+		return t1
+	}
+}
+auxiliary join(RBuiltinType t1, RType t2) {
+	t1 == NOTHING
+	return t2
+}
+auxiliary join(RType t1, RBuiltinType t2) {
+	t2 == NOTHING
+	return t1
+}
+auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
+	if (c1.unbounded || c2.unbounded) {
+		return createConstraint(Math.min(c1.inf, c2.inf))
+	} else {
+		return createConstraint(Math.min(c1.inf, c2.inf), Math.max(c1.sup, c2.sup))
+	}
+}
+auxiliary listJoin(RListType t1, RListType t2) {
+	val sup = join(t1.itemType, t2.itemType);
+	sup !== null
+	return createListType(sup, union(t1.constraint, t2.constraint))
 }
 
 /****** TYPE VALIDATION UTILITIES *******/
@@ -226,6 +264,47 @@ axiom TLogical
 axiom TComparison
 	G |- ComparisonOperation op : singleBoolean
 
+rule TIf
+	G |- RosettaConditionalExpression e : RListType t
+from {
+	var RListType tthen
+	var RListType telse
+	empty |- e.ifthen : tthen or tthen = null
+	empty |- e.elsethen : telse or telse = null
+	if (tthen !== null && telse !== null) {
+		t = listJoin(tthen, telse)
+	}
+}
+
+rule TList
+	G |- ListLiteral e : RListType t
+from {
+	val telems = newArrayList
+	if (e.elements.forall[
+		var RListType telem
+		empty |- it : telem or telem = null
+		if (telem === null) {
+			false
+		} else {
+			telems.add(telem)
+			true
+		}
+	]) {
+		t = telems.fold(emptyNothing, [ RListType acc, RListType telem |
+			if (acc === null) {
+				null
+			} else {
+				val sup = join(telem.itemType, acc.itemType);
+				if (sup === null) {
+					null
+				} else {
+					createListType(sup, telem.constraint + acc.constraint)
+				}
+			}
+		])
+	}
+}
+
 /****** CHECK RULES ********/
 checkrule CheckLeftArithmetic for
 	ArithmeticOperation op
@@ -274,7 +353,7 @@ from {
 				empty |- tr.itemType <: NUMBER
 			}
 			or 
-				fail error "Expected argument types to be either both `string` or both a subtype of `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
+				fail error "Expected arguments to be either both a `string` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
 					source op
 		}		
 	}
@@ -313,4 +392,54 @@ checkrule CheckRightComparison for
 from {
 	constraintCheck(op.right, single)
 	subtypeCheck(op.right, NUMBER)
+}
+
+checkrule CheckIfConditionalExpression for
+	RosettaConditionalExpression e
+from {
+	listTypeCheck(e.^if, singleBoolean)
+}
+checkrule CheckBodyConditionalExpression for
+	RosettaConditionalExpression e
+from {
+	var RListType tthen
+	var RListType telse
+	empty |- e.ifthen : tthen or tthen = null
+	empty |- e.elsethen : telse or telse = null
+	if (tthen !== null && telse !== null) {
+		listJoin(tthen, telse)
+		or
+		fail error "Types `" + tthen.itemType + "` and `" + telse.itemType + "` do not have a common supertype."
+	}
+}
+
+checkrule CheckListLiteral for
+	ListLiteral e
+from {
+	val telems = newArrayList
+	if (e.elements.forall[
+		var RListType telem
+		empty |- it : telem or telem = null
+		if (telem === null) {
+			false
+		} else {
+			telems.add(telem)
+			true
+		}
+	]) {
+		telems.fold(emptyNothing, [ RListType acc, RListType telem |
+			if (acc === null) {
+				null
+			} else {
+				val sup = join(telem.itemType, acc.itemType);
+				if (sup === null) {
+					null
+				} else {
+					createListType(sup, telem.constraint + acc.constraint)
+				}
+			}
+		]) !== null
+		or
+		fail error "Elements do not have a common supertype: " + telems.join(', ')["`" + it.itemType + "`"] + "."
+	}
 }

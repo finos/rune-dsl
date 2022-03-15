@@ -30,6 +30,7 @@ class RosettaTypingTest {
 		'empty'.assertIsValidWithType(emptyNothing)
 	}
 	
+	// TODO: test auxiliary functions
 	@Test
 	def void testSubtyping() {
 		val t1 = createListType(INT, 1, 3);
@@ -92,9 +93,9 @@ class RosettaTypingTest {
 	
 	@Test
 	def void testArithemticOperationTypeChecking() {
-//		'[1, 2] + 3' TODO
-//			.parseExpression
-//			.assertError(null, "")
+		'[1, 2] + 3'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
 		'empty - 3'
 			.parseExpression
 			.assertError(null, "Expected a single value, but got an empty value instead.")
@@ -102,8 +103,8 @@ class RosettaTypingTest {
 			.parseExpression
 			.assertError(null, "Expected type `number`, but got `boolean` instead.")
 		'"ab" + 3'
-			.parseExpression
-			.assertError(null, "Expected argument types to be either both `string` or both a subtype of `number`, but got `string` and `int` instead.")
+			.parseExpression // TODO: could this message be made less verbose?
+			.assertError(null, "Expected arguments to be either both a `string` or both a `number`, but got `string` and `int` instead.")
 	}
 	
 	@Test
@@ -118,14 +119,50 @@ class RosettaTypingTest {
 	
 	@Test
 	def void testComparisonOperationTypeChecking() {
-		//		'[1, 2] < 3' TODO
-//			.parseExpression
-//			.assertError(null, "")
+		'[1, 2] < 3'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
+// TODO: support date, zonedDateTime and `time`?
 		'empty > 3'
 			.parseExpression
 			.assertError(null, "Expected a single value, but got an empty value instead.")
 		'1.5 <= False'
 			.parseExpression
 			.assertError(null, "Expected type `number`, but got `boolean` instead.")
+	}
+
+	@Test
+	def void testConditionalExpressionTypeInference() {
+		 'if True then [1, 2] else [3.0, 4.0, 5.0, 6.0]'.assertIsValidWithType(createListType(NUMBER, 2, 4));
+	}
+	
+	@Test
+	def void testConditionalExpressionTypeChecking() {
+		'if [True, False] then 1 else 2'
+			.parseExpression
+			.assertError(null, "Expected a single `boolean`, but got a list of `boolean`s with 2 items instead.")
+		'if empty then 1 else 2'
+			.parseExpression
+			.assertError(null, "Expected a single `boolean`, but got an empty value instead.")
+		'if True then 1 else False'
+			.parseExpression // TODO: could this message be made less technical?
+			.assertError(null, "Types `int` and `boolean` do not have a common supertype.")
+		'if True then [1, 2, 3] else [False, True]'
+			.parseExpression
+			.assertError(null, "Types `int` and `boolean` do not have a common supertype.")
+	}
+	
+	@Test
+	def void testListLiteralTypeInference() {
+//		'[]'.assertIsValidWithType(emptyNothing); TODO
+		'[2, 4.5, 7, -3.14]'.assertIsValidWithType(createListType(NUMBER, 4, 4));
+		'[2, [1, 2], -3.14]'.assertIsValidWithType(createListType(NUMBER, 4, 4));
+	}
+	
+	@Test
+	def void testListLiteralTypeChecking() {
+		'[1, True]'
+			.parseExpression // TODO: could this message be made less technical?
+			.assertError(null, "Elements do not have a common supertype: `int`, `boolean`.")
 	}
 }

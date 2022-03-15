@@ -9,20 +9,20 @@ class TypeValidationUtil {
 	extension RosettaTyping
 	
 	def String unequalListTypesMessage(RListType expected, RListType actual) {
-		if (expected.itemType != actual.itemType) {
-			unequalTypesMessage(expected.itemType, actual.itemType)
-		} else {
+		if (expected.itemType == actual.itemType || !expected.constraint.constraintEquals(actual.constraint) && !(expected.isPlural && actual.isPlural)) {
 			'''Expected «expected.toCompleteDescription», but got «actual.toCompleteDescription» instead.'''
+		} else {
+			unequalTypesMessage(expected.itemType, actual.itemType)
 		}
 	}
 	def String unequalTypesMessage(RType expected, RType actual) {
 		'''Expected type `«expected»`, but got `«actual»` instead.'''
 	}
 	def String notAListSubtypeMessage(RListType expected, RListType actual) {
-		if (!actual.itemType.subtype(expected.itemType).value) {
-			notASubtypeMessage(expected.itemType, actual.itemType)
-		} else {
+		if (actual.itemType.subtype(expected.itemType).value || !actual.constraint.isSubconstraintOf(expected.constraint) && !(expected.isPlural && actual.isPlural)) {
 			'''Expected «expected.toCompleteDescription», but got «actual.toCompleteDescription» instead.'''
+		} else {
+			notASubtypeMessage(expected.itemType, actual.itemType)
 		}
 	}
 	def String notASubtypeMessage(RType expected, RType actual) {
@@ -54,7 +54,11 @@ class TypeValidationUtil {
 	
 	def CharSequence toShortDescription(RListType t) {
 		if (t.isEmpty) {
-			'''an empty value of type `«t.itemType»`'''
+			if (t.itemType == RBuiltinType.NOTHING) {
+				'''an empty value'''
+			} else {
+				'''an empty value of type `«t.itemType»`'''
+			}
 		} else if (t.isOptional) {
 			'''an optional `«t.itemType»`'''
 		} else if (t.isSingular) {
