@@ -19,7 +19,7 @@ weight: 2
 - Mapping (or *synonym*)
 - Reporting
 
-This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. Examples from the Demonstration Model will be used to illustrate each of those features..
+This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. Examples from the Demonstration Model will be used to illustrate each of those features.
 
 # Data Component
 
@@ -167,7 +167,7 @@ Plain-text descriptions can be associated to any model component. Although not g
 
 ### Syntax
 
-The syntax to add a description uses quotation marks in between angle brackets `<"...">`. There are several examples throughout this document.
+The syntax to add a description uses quotation marks in between angle brackets `<"..">`. There are several examples throughout this document.
 
 ## Document Reference
 
@@ -563,7 +563,7 @@ The keyword `distinct` can appear after an attribute with multiple cardinality i
 quantity -> unitOfAmount -> currency distinct
 ```
 
-The operation will return a subset of the list containing only distinct elements. It's useful for removing duplicate elements from a list, and can be combined with other syntax features such as `count` to determine if all elements of a list are equal. :
+The operation will return a subset of the list containing only distinct elements. It's useful for removing duplicate elements from a list, and can be combined with other syntax features such as `count` to determine if all elements of a list are equal.
 
 ```
 payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
@@ -571,9 +571,9 @@ payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQua
 
 ### Filter
 
-The `filter` keyword filters the items of a list based on a `boolean` expression. For each list item, a `boolean` expression specified in the square brackets is evaluated to determine whether to include or exclude the item. The resulting list is assigned to output parameter. Note that filtering a list does not change the item type, e.g. when filtering a list of `Vehicle`, the output list type must also be of `Vehicle`.
+The `filter` keyword filters the items of a list based on a `boolean` expression. For each list item, a boolean expression specified in square brackets `[..]` is evaluated to determine whether to include (if true) or exclude (if false) the item, and the resulting filtered list is assigned to the output. By default, the keyword `item` is used to refer to the list item in the test expression.
 
-The keyword `item` is used to refer to the list item in the test expression.
+Note that filtering a list does not change the item type, e.g. when filtering a list of `Vehicle`, the output list type must also be of `Vehicle`.
 
 ``` {.Haskell emphasize-lines="10"}
 func FindVehiclesByEngineType: <"Find all vehicles with given engine type.">
@@ -588,7 +588,7 @@ func FindVehiclesByEngineType: <"Find all vehicles with given engine type.">
             filter [ item -> specification -> engine -> engineType = engineType ]
 ```
 
-Alternatively, the list item can be a named parameter.
+Alternatively, the list item can be a named parameter, such as `vehicle` in the below example.
 
 ``` {.Haskell emphasize-lines="10"}
 func FindDriversWithMaximumZeroTo60: <"Find all vehicles with given maximum 0 - 60 mph.">
@@ -641,7 +641,7 @@ func FindOwnersWithinPenaltyPointLimit: <"Find all owners within penalty point l
 
 ### Map
 
-The `map` keyword has been added to modify the items of a list based on an expression. For each list item, the expression specified in the square brackets is invoked to modify the item. The resulting list is assigned to output parameter.
+The `map` keyword allows to modify the items of a list based on an expression. For each list item, the expression specified in the square brackets is invoked to modify the item. The resulting list is assigned to the output.
 
 ``` Haskell
 func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
