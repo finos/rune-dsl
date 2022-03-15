@@ -1,7 +1,7 @@
 ---
 title: "Rosetta DSL Overview"
 date: 2022-02-09T00:38:25+09:00
-description: "Rosetta is a Domain-Specific Language (DSL) designed for the financial industry, which purpose is to consolidate market standards and operational practices into a cohesive *domain model* (or simply model)"
+description: "Rosetta is a Domain-Specific Language (DSL) designed for the financial industry, which purpose is to consolidate market standards and operational practices into a cohesive domain model (or simply model)"
 draft: false
 weight: 1
 ---
