@@ -492,11 +492,35 @@ The type of an expression is the type of the result that it will evaluate to. E.
 
 The below sections detail the different types of Rosetta expressions and how they are used.
 
-## Rosetta Path Expression
+## Constant Expression
 
 ### Purpose
 
-A Rosetta path expression is used to return the value of an attribute inside a Rosetta object.
+An expression can be a [basic type](#basic-types) constant such as 2.0, True or \"USD\". Constant expressions are useful for comparisons to more complex expressions.
+
+### Enumeration Constant
+
+An expression can refer to a Rosetta Enumeration value using the name of the enumeration type followed by `->` and the name of the enumeration value. E.g. :
+
+```
+DayOfWeekEnum -> SAT
+```
+
+### List Constant
+
+Constants can also be declared as lists using a comma separated list of expressions enclosed within square brackets `[...]`. E.g. :
+
+```
+[1,2]
+["A",B"]
+[DayOfWeekEnum->SAT, DayOfWeekEnum->SUN]
+```
+
+## Path Expression
+
+### Purpose
+
+A path expression is used to return the value of an attribute inside a Rosetta object.
 
 ### Syntax
 
@@ -659,30 +683,6 @@ func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
 {{< notice info "Note" >}}
 The `map` keyword was chosen as it is the most widely used term for this use-case - for instance in languages such as Java, Python, Scala, Perl, Clojure, Erlang, F#, Haskell, Javascript, PHP, and Ruby.
 {{< /notice >}}
-
-## Constant Expressions
-
-### Purpose
-
-An expression can be a [basic type](#basic-types) constant such as 2.0, True or \"USD\". Constant expressions are useful for comparisons to more complex expressions.
-
-### Enumeration Constant
-
-An expression can refer to a Rosetta Enumeration value using the name of the enumeration type followed by `->` and the name of the enumeration value. E.g. :
-
-```
-DayOfWeekEnum -> SAT
-```
-
-### List Constant
-
-Constants can also be declared as lists using a comma separated list of expressions enclosed within square brackets `[...]`. E.g. :
-
-```
-[1,2]
-["A",B"]
-[DayOfWeekEnum->SAT, DayOfWeekEnum->SUN]
-```
 
 ## Operators
 
