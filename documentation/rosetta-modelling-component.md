@@ -522,7 +522,7 @@ In situations where the context of the object in which the Rosetta path expressi
 
 ## List
 
-A list is an ordered collection of items. A Rosetta path expression that refers to an attribute with multiple [cardinality](documentation.html#cardinality_label) will result in a list of values. If a chained Rosetta path expression has multiple links with multiple cardinality then the result is a flattened list. For example (as extracted from the `Qualify_CashTransfer` function). :
+A list is an ordered collection of items. A Rosetta path expression that refers to an attribute with multiple [cardinality](documentation.html#cardinality_label) will result in a list of values. If a chained Rosetta path expression has multiple links with multiple cardinality then the result is a flattened list. For example (as extracted from the `Qualify_CashTransfer` function):
 
 ```
 businessEvent -> primitives -> transfer -> cashTransfer
@@ -534,7 +534,7 @@ An expression that has the potential to return a value with *multiple cardinalit
 
 ### Only element
 
-The `only-element` keyword can appear after an attribute name in a Rosetta path. :
+The `only-element` keyword can appear after an attribute name in a Rosetta path:
 
 ```
 observationEvent -> primitives only-element -> observation
@@ -544,7 +544,7 @@ This imposes a constraint that the evaluation of the path up to this point retur
 
 ### Distinct
 
-The keyword `distinct` can appear after an attribute with multiple cardinality in a Rosetta path. :
+The keyword `distinct` can appear after an attribute with multiple cardinality in a Rosetta path:
 
 ```
 quantity -> unitOfAmount -> currency distinct
@@ -677,7 +677,7 @@ Rosetta supports operators that combine expressions into more complicated expres
 - comparison operators: `=`, `<>`, `<`, `<=`, `>=`, `>`
 - list comparison operator: `exists`, `is absent`, `contains`, `count`
 - boolean operators: `and`, `or`
-- arithmetic operators: `+``, ``-`
+- arithmetic operators: `+`, `-`
 
 ### Conditional Statement
 
@@ -1054,28 +1054,23 @@ Each type of condition keyword is followed by a [boolean expression](expressions
 Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the constraints that implementors of this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
 ``` Haskell
-func EquityPriceObservation: <"Function specification for the observation of an equity price, based on the attributes of the 'EquityValuation' class.">
-   inputs:
-      equity Equity (1..1)
-      valuationDate AdjustableOrRelativeDate (1..1)
-      valuationTime BusinessCenterTime (0..1)
-      timeType TimeTypeEnum (0..1)
-      determinationMethod DeterminationMethodEnum (1..1)
-   output:
-      observation ObservationPrimitive (1..1)
+func Create_VehicleOwnership: <"Creation of a vehicle ownership record file">
+    inputs: 
+        drivingLicence DrivingLicence (0..*)
+        vehicle Vehicle (1..1)
+        dateOfPurchase date (1..1)
+        isFirstHand boolean (1..1)
+    output: 
+        vehicleOwnership VehicleOwnership (1..1)
 
-   condition: <"Optional choice between directly passing a time or a timeType, which has to be resolved into a time based on the determination method.">
-      if valuationTime exists then timeType is absent
-      else if timeType exists then valuationTime is absent
-      else False
+    condition: <"Driving licence must not be expired">
+        drivingLicence -> dateOfRenewal all > dateOfPurchase
 
-   post-condition: <"The date and time must be properly resolved as attributes on the output.">
-      observation -> date = ResolveAdjustableDate(valuationDate)
-      and if valuationTime exists then observation -> time = TimeZoneFromBusinessCenterTime(valuationTime)
-         else observation -> time = ResolveTimeZoneFromTimeType(timeType, determinationMethod)
+    condition: <"Vehicle classification allowed by the driving licence needs to encompass the vehicle classification of the considered vehicle">
+        drivingLicence->vehicleEntitlement contains vehicle-> vehicleClassification
 
-   post-condition: <"The number recorded in the observation must match the number fetched from the source.">
-      observation -> observation = EquitySpot(equity, observation -> date, observation -> time)
+    post-condition: <"The owner's driving license(s) must be contained in the vehicle ownership records.">
+        vehicleOwnership -> drivingLicence contains drivingLicence
 ```
 
 {{< notice info "Note" >}}
@@ -1084,57 +1079,87 @@ The function syntax intentionally mimics the type syntax in the Rosetta DSL rega
 
 ## Function Definition
 
-**The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function\'s API. The creation of valid output objects can be fully or partially defined as part of a function specification, or completely left to the implementor. The parts of a function definition that have been fully defined as [Rosetta Expression](expressions.html) will be be translated into functional code which don\'t require further implementation.
+**The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function\'s API. Because the Rosetta DSL only provides a limited set of language features, it is not always possible to fully define that logic in the DSL. The creation of valid output object can be fully or partially defined as part of a function specification, or completely left to the implementor.
 
-The return object or individual attributes of the return object can be set by the function definition using the assign-output syntax; the keyword `assign-output` is followed by a [Rosetta Path](#rosetta-path-expression) , a `:` and then an [expression](expressions.html) used to calculate the value from the inputs
+- **A function is fully defined** when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the code generated from the function expressed in the Rosetta DSL is fully functional and can be used in an implementation without any further coding.
+- **A function is partially defined** when the output object\'s validation constraints are only partially satisfied. In this case, implementors will need to extend the generated code, using the features of the corresponding programming language to assign the remaining values on the output object.
 
-- A function is **fully defined** when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the generated code is directly usable in an implementation.
-- A function is **partially defined** when the output object\'s validation constraints are only partially satisfied. In this case, implementors will need to extend the generated code and assign the remaining values on the output object.
+{{< notice info "Note" >}}
+For instance in Java, a function specification that is only partially defined generates an *interface* that needs to be extended to be executable.
+{{< /notice >}}
 
-A function must be applied to a specific use case in order to determine whether it is fully *defined* or *partially defined*. There are a number of fully defined function cases explained in further detail below.
-
-The Rosetta DSL only provides a limited set of language features. To build the complete processing logic for a *partially defined* function, model implementors are meant to extend the code generated from the Rosetta DSL once it is expressed in a fully featured programming language. For instance in Java, a function specification generates an *interface* that needs to be extended to be executable.
-
-The output object will be systematically validated when invoking a function, so all functions require the output object to be fully valid as part of any model implementation.
+A function must be applied to a specific use case to determine whether it is *fully defined* or *partially defined*. The output object will be systematically validated when invoking a function, so all functions require the output object to be fully valid as part of any model implementation.
 
 ### Output Construction
 
-In the `EquityPriceObservation` example above, the `post-condition` statements assert whether the observation\'s date and value are correctly populated according to the output of other, sub-functions, but delegates the construction of that output to implementors of the function.
+In the `Create_VehicleOwnership` example above, the `post-condition` statement asserts whether the vehicle ownership output is correctly populated by checking whether it contains the list of driving licenses passed as inputs. However, it does not directly populate that output, instead delegating its construction to implementors of the function. In that case the function is only *specified* but not *fully defined*.
 
-In practice, implementors of the function can be expected to re-use those sub-functions (`ResolveAdjustableDate` and `EquitySpot`) to construct the output. The drawback is that those sub-functions are likely to be executed twice: once to build the output and once to run the validation.
+Alternatively, the output can be built by directly assigning it a value using the `set` keyword. Function implementors do not have to build this output themselves, so the corresponding `post-condition` is redundant and can be removed. The syntax works as follows:
 
-For efficiency, the function syntax in the Rosetta DSL allows to directly build the output by assigning its values. Function implementors do not have to build those values themselves, because the function already provides them by default, so the corresponding post-conditions are redundant and can be removed.
-
-The example above could be rewritten as follows:
-
-``` Haskell
-func EquityPriceObservation:
-   inputs:
-      equity Equity (1..1)
-      valuationDate AdjustableOrRelativeDate (1..1)
-      valuationTime BusinessCenterTime (0..1)
-      timeType TimeTypeEnum (0..1)
-      determinationMethod DeterminationMethodEnum (1..1)
-   output:
-      observation ObservationPrimitive (1..1)
-
-   condition:
-      if valuationTime exists then timeType is absent
-      else if timeType exists then valuationTime is absent
-      else False
-
-   assign-output observation -> date:
-      ResolveAdjustableDate(valuationDate)
-
-   assign-output observation -> time:
-      if valuationTime exists then TimeZoneFromBusinessCenterTime(valuationTime)
-      else ResolveTimeZoneFromTimeType(timeType, determinationMethod)
-
-   assign-output observation -> observation:
-      EquitySpot(equity, observation -> date, observation -> time)
+```
+set <RosettaPathExpression>: <RosettaExpression>
 ```
 
-**The Rosetta DSL also supports a number of fully defined function cases**, where the output is being built up to a valid state:
+The [`<RosettaPathExpression>`](#rosetta-path-expression) can be used to set individual attributes of the return object , while [`<RosettaExpression>`](#expression-component) allows to calculate the output value from the inputs.
+
+The `Create_VehicleOwnership` example could be rewritten as follows:
+
+``` Haskell
+func Create_VehicleOwnership: <"Creation of a vehicle ownership record file">
+    inputs: 
+        drivingLicence DrivingLicence (0..*)
+        vehicle Vehicle (1..1)
+        dateOfPurchase date (1..1)
+        isFirstHand boolean (1..1)
+    output: 
+        vehicleOwnership VehicleOwnership (1..1)
+
+    set vehicleOwnership -> drivingLicence: 
+        drivingLicence
+    set vehicleOwnership -> vehicle: 
+        vehicle
+    set vehicleOwnership -> dateOfPurchase: 
+        dateOfPurchase
+    set vehicleOwnership -> isFirstHand: 
+        isFirstHand
+```
+
+When the output is a list, `set` will override the entire list with the value returned by the `<RosettaExpression>` (which also needs to be a list). Alternatively, the `add` keyword allows to append an element to a list instead of overriding it.
+
+``` Haskell
+func AddDrivingLicenceToVehicleOwnership: <"Add new driving licence to vehicle owner.">
+    inputs:
+        vehicleOwnership VehicleOwnership (1..1)
+        newDrivingLicence DrivingLicence (1..1)
+    output:
+        updatedVehicleOwnership VehicleOwnership (1..1)
+
+    set updatedVehicleOwnership: 
+        vehicleOwnership
+    add updatedVehicleOwnership -> drivingLicence: <"Add newDrivingLicence to existing list of driving licences">
+        newDrivingLicence
+```
+
+If the value of the `<RosettaExpression>` is itself a list instead of a single element, the `add` keyword will append that list to the output.
+
+``` Haskell
+func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
+    inputs:
+        drivingLicences DrivingLicence (0..*)
+    output:
+        ownersName string (0..*)
+
+    add ownersName: <"Filter lists to only include drivers with first and last names, then use 'map' to convert driving licences into list of names.">
+        drivingLicences
+            filter [ item -> firstName exists and item -> surname exists ]
+            map [ item -> firstName + " " + item -> surname ]
+```
+            
+{{< notice info "Note" >}}
+The `assign-output` keyword also exists as an alternative to `set` and can be used with the same syntax. However, the `assign-output` keyword does not consistently treat single-cardinality (overrides the value) and list (appends the value) objects. It is therefore being phased out in favour of `set` and `add` that clearly separate those two cases.
+{{< /notice >}}
+
+**The Rosetta DSL supports a number of fully defined function cases**, where the output is being built up to a valid state:
 
 - Object qualification
 - Calculation
