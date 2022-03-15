@@ -520,7 +520,7 @@ Constants can also be declared as lists using a comma separated list of expressi
 
 ### Purpose
 
-A path expression is used to return the value of an attribute inside a Rosetta object.
+A path expression is used to return the value of an attribute inside a Rosetta object. Path expressions can be chained in order to refer to attributes located further down inside that Rosetta object.
 
 ### Syntax
 
@@ -536,7 +536,7 @@ type ContractFormationPrimitive:
       if before exists ....
 ```
 
-Attribute names can be chained together using `->` in order to recursively refer to attributes further down inside that Rosetta object. In the example below, the `security` of the `product` contained in a `Confirmation` object is checked for [existence](#comparison-operators).
+The `->` operator allows to return an attribute located inside an attribute, and so on recursively. In the example below, the `security` of the `product` contained in a `Confirmation` object is checked for [existence](#comparison-operators).
 
 ``` {.Haskell emphasize-lines="10"}
 type Confirmation: <"A class to specify a trade confirmation.">
@@ -557,41 +557,104 @@ If a Rosetta path is applied to an attribute that does not have a value in the o
 In situations where the context of the object in which the Rosetta path expression should be evaluated is not already specified (e.g. reporting rules or conditional mapping), the Rosetta path should begin with the data type name e.g. `WorkflowStep -> eventIdentifier`. where applicable, this requirement is enforced by syntax validation in the Rosetta DSL.
 {{< /notice >}}
 
-## List
+## Operator
 
-A list is an ordered collection of items. A Rosetta path expression that refers to an attribute with multiple [cardinality](documentation.html#cardinality_label) will result in a list of values. If a chained Rosetta path expression has multiple links with multiple cardinality then the result is a flattened list. For example (as extracted from the `Qualify_CashTransfer` function):
+### Purpose
+
+Rosetta supports operators that combine expressions into more complicated expressions. The language emulates the basic logic available in usual programming languages:
+
+- conditional statements: `if`, `then`, `else`
+- comparison operators: `=`, `<>`, `<`, `<=`, `>=`, `>`
+- boolean operators: `and`, `or`
+- arithmetic operators: `+`, `-`, `*`, `/`
+
+### Conditional Statement
+
+Conditional statements consist of:
+
+- an *if clause* with the keyword `if` followed by a boolean expression,
+- a *then clause* with the keyword `then` followed by any expression and
+- an optional *else clause* with the keyword `else` followed by any expression
+
+If the *if clause* evaluates to True, the result of the *then clause* is returned by the conditional expression. If it evaluates to False, the result of the *else clause* is returned if present, else *null* is returned.
+
+The type of the expression is the type of the expression contained in the *then clause*. The Rosetta DSL enforces that the type of the *else clause* matches the *then clause*. Multiple *else clauses* can be added by combining `else if` statements ending with a final `else`.
+
+### Comparison Operator
+
+The result type of a comparison operator is always boolean
+
+- `=` - Equals. Returns *true* if the left expression is equal to the right expression, otherwise false. Basic types are equal if their values are equal. Two complex rosetta types are equal if all of their attributes are equal, recursing down until all basic typed attributes are compared.
+- `<>` - Does not equal. Returns *false* if the left expression is equal to the right expression, otherwise true.
+- `<`, `<=`, `>=`, `>` - performs mathematical comparisons on the left and right values. Both left and right have to evaluate to numbers or lists of numbers.
+- `exists` - returns true if the left expression returns a result. This can be further modified with additional keywords.
+  - `only` - the value of left expression exists and is the only attribute with a value in its parent object.
+  - `single` - the value of expression either has single cardinality or is a list with exactly one value.
+  - `mutiple` - the value expression has more than 2 results
+- `is absent` - returns true if the left expression does not return a result.
+
+### Comparison Operator and Null
+
+If one or more expressions being passed to an operator is of single cardinality but is null (not present) the behavior is as follows
+
+- null `=` *any value* returns false
+- null `<>` *any value* returns true
+- null `>` *any value* returns false
+- null `>=` *any value* returns false
+
+*any value* here includes null. The behaviour is symmetric - if the null appears on either side of the expression the result is the same. if the null value is of multiple cardinality then it is treated as an empty list.
+
+### Boolean Operator
+
+`and` and `or` can be used to logically combine boolean typed expressions.
+
+`(` and `)` can be used to group logical expressions. Expressions inside brackets are evaluated first.
+
+### Arithmetic Operator
+
+Rosetta supports basic arithmetic operators
+
+- `+` can take either two numerical types or two string typed expressions. The result is the sum of two numerical types or the concatenation of two string types
+- `-`, `*`, `/` take two numerical types and respectively subtract, multiply and divide them to give a number result.
+
+### Operator Precedence
+
+Expressions are evaluated in Rosetta in the following order (See [Operator Precedence](https://en.wikipedia.org/wiki/Order_of_operations)). Higher are evaluated first.
+
+1. RosettaPathExpressions - e.g. `Lineage -> executionReference`
+1. Brackets - e.g. `(1+2)`
+1. if-then-else - e.g. `if (1=2) then 3`
+1. only-element - e.g. `Lineage -> executionReference only-element`
+1. count - e.g. `Lineage -> executionReference count`
+1. Multiplicative operators `*`, `/` - e.g. `3*4`
+1. Additive operators `+`, `-` - e.g. `3-4`
+1. Comparison operators `>=`, `<=`, `>`, `<` - e.g. `3>4`
+1. Existence operators `exists`,`is absent`, `contains`, `disjoint` - e.g. `Lineage -> executionReference exists`
+1. and - e.g. `5>6 and true`
+1. or - e.g. `5>6 or true`
+
+## List Operator
+
+### List
+
+A list is an ordered collection of items. A path expression that refers to an attribute with multiple [cardinality](#cardinality) will result in a list of values. If a chained path expression contains multiple attributes with multiple cardinality, the result is a flattened list. For example (as extracted from the `Qualify_CashTransfer` function):
 
 ```
 businessEvent -> primitives -> transfer -> cashTransfer
 ```
 
-gets all the `cashTransferComponent` from all the `primitive` attributes as a single list.
+gets all the `cashTransferComponent` from all the `primitives` attributes as a single list.
 
 An expression that has the potential to return a value with *multiple cardinality* will always evaluate to a list of zero or more elements, regardless of whether the result contains a single or multiple elements.
 
-### Only element
+To manipulate elements of a list, the Rosetta DSL provides a number of list operators that feature in usual programming languages:
 
-The `only-element` keyword can appear after an attribute name in a Rosetta path:
+- Filter
+- Map
+- Reduce
+- Compare
 
-```
-observationEvent -> primitives only-element -> observation
-```
-
-This imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to [null](#comparison-operators-and-null), an empty list or a list with more than one value then the expression result will be null.
-
-### Distinct
-
-The keyword `distinct` can appear after an attribute with multiple cardinality in a Rosetta path:
-
-```
-quantity -> unitOfAmount -> currency distinct
-```
-
-The operation will return a subset of the list containing only distinct elements. It's useful for removing duplicate elements from a list, and can be combined with other syntax features such as `count` to determine if all elements of a list are equal.
-
-```
-payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
-```
+The following sections details the syntax and usage and these list operator features.
 
 ### Filter
 
@@ -663,6 +726,20 @@ func FindOwnersWithinPenaltyPointLimit: <"Find all owners within penalty point l
             ]
 ```
 
+### Distinct
+
+The `distinct` operator is a special filtering feature that returns a subset of a list containing only distinct elements of that list.
+
+```
+quantity -> unitOfAmount -> currency distinct
+```
+
+This operatoer is useful to remove duplicate elements from a list. It can be combined with other syntax features such as `count` to determine if all elements of a list are equal.
+
+```
+payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
+```
+
 ### Map
 
 The `map` keyword allows to modify the items of a list based on an expression. For each list item, the expression specified in the square brackets is invoked to modify the item. The resulting list is assigned to the output.
@@ -684,55 +761,33 @@ func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
 The `map` keyword was chosen as it is the most widely used term for this use-case - for instance in languages such as Java, Python, Scala, Perl, Clojure, Erlang, F#, Haskell, Javascript, PHP, and Ruby.
 {{< /notice >}}
 
-## Operators
+### Reduce
 
-### Purpose
+Reduction consists of a set of operations that returns a single value based on elements of a list.
 
-Rosetta supports operators that combine expressions into more complicated expressions. The language emulates the basic logic available in usual programming languages:
+- `count` - returns the number of elements in a list
+- `only-element` - provided that a list contains one and only one element, returns that element
+- `sum` - returns the sum of the elements of a list of numbers
+- `max`, `min` - returns the minimum or maximum of a list of numbers
+- `join` - returns the concatenated values of a list of strings
 
-- conditional statements: `if`, `then`, `else`
-- comparison operators: `=`, `<>`, `<`, `<=`, `>=`, `>`
-- list comparison operator: `exists`, `is absent`, `contains`, `count`
-- boolean operators: `and`, `or`
-- arithmetic operators: `+`, `-`
+The syntax enforces that the expression before `count` has multiple cardinality.
 
-### Conditional Statement
+The `only-element` keyword imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to [null](#comparison-operator-and-null), an empty list or a list with more than one value, then the expression result will be null:
 
-Conditional statements consist of:
+```
+observationEvent -> primitives only-element -> observation
+```
 
-- an *if clause* with the keyword `if` followed by a boolean expression,
-- a *then clause* with the keyword `then` followed by any expression and
-- an optional *else clause* with the keyword `else` followed by any expression
-
-If the *if clause* evaluates to True, the result of the *then clause* is returned by the conditional expression. If it evaluates to False, the result of the *else clause* is returned if present, else *null* is returned.
-
-The type of the expression is the type of the expression contained in the *then clause*. The Rosetta DSL enforces that the type of the *else clause* matches the *then clause*. Multiple *else clauses* can be added by combining `else if` statements ending with a final `else`.
-
-### Comparison Operators
-
-The result type of a comparison operator is always boolean
-
-- `=` - Equals. Returns *true* if the left expression is equal to the right expression, otherwise false. Basic types are equal if their values are equal. Two complex rosetta types are equal if all of their attributes are equal, recursing down until all basic typed attributes are compared.
-- `<>` - Does not equal. Returns *false* if the left expression is equal to the right expression, otherwise true.
-- `<`, `<=`, `>=`, `>` - performs mathematical comparisons on the left and right values. Both left and right have to evaluate to numbers or lists of numbers.
-- `exists` - returns true if the left expression returns a result. This can be further modified with additional keywords.
-  - `only` - the value of left expression exists and is the only attribute with a value in its parent object.
-  - `single` - the value of expression either has single cardinality or is a list with exactly one value.
-  - `mutiple` - the value expression has more than 2 results
-- `is absent` - returns true if the left expression does not return a result.
-
-### List Comparison Operators
+### List Comparison Operator
 
 Rosetta also has operators that are designed to function on lists
 
 - `contains` - returns true if every element in the right hand expression is equal to an element in the left hand expression
-- `disjoint` - returns true if no element in the left side expression is equal to anu element in the right side expression
-- `count` - returns the number of elements in the expression to its left
+- `disjoint` - returns true if no element in the left side expression is equal to any element in the right side expression
 - (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc) - compares a list to a single element or another list
 
 If the `contains` operator is passed an expression that has single cardinality, that expression is treated as a list containing the single element or an empty list if the element is null.
-
-The grammar enforces that the expression for `count` has multiple cardinality.
 
 For the comparison operators, if either left or right expression has multiple cardinality then either the other side should have multiple cardinality. Otherwise if one side's expression has single cardinality, `all` or `any` should be used to qualify the list on the other side. At present only `any` is supported for `<` and `>` and only `all` for the other comparison operators.
 
@@ -752,46 +807,6 @@ The semantics for list comparisons are as follows:
   - if one side is single and `any` is specified then at least one element in the list must be `>` that single value (unimplemented)
 
 An expression that is expected to return multiple cardinality that returns null is considered to be equivalent to an empty list
-
-### Comparison Operators and Null
-
-If one or more expressions being passed to an operator is of single cardinality but is null (not present) the behavior is as follows
-
-- null `=` *any value* returns false
-- null `<>` *any value* returns true
-- null `>` *any value* returns false
-- null `>=` *any value* returns false
-
-*any value* here includes null. The behaviour is symmetric - if the null appears on either side of the expression the result is the same. if the null value is of multiple cardinality then it is treated as an empty list.
-
-### Boolean Operators
-
-`and` and `or` can be used to logically combine boolean typed expressions.
-
-`(` and `)` can be used to group logical expressions. Expressions inside brackets are evaluated first.
-
-### Arithmetic Operators
-
-Rosetta supports basic arithmetic operators
-
-- `+` can take either two numerical types or two string typed expressions. The result is the sum of two numerical types or the concatenation of two string types
-- `-`, `*`, `/` take two numerical types and respectively subtract, multiply and divide them to give a number result.
-
-### Operator Precedence
-
-Expressions are evaluated in Rosetta in the following order (See [Operator Precedence](https://en.wikipedia.org/wiki/Order_of_operations)). Higher are evaluated first.
-
-1. RosettaPathExpressions - e.g. `Lineage -> executionReference`
-1. Brackets - e.g. `(1+2)`
-1. if-then-else - e.g. `if (1=2) then 3`
-1. only-element - e.g. `Lineage -> executionReference only-element`
-1. count - e.g. `Lineage -> executionReference count`
-1. Multiplicative operators `*`, `/` - e.g. `3*4`
-1. Additive operators `+`, `-` - e.g. `3-4`
-1. Comparison operators `>=`, `<=`, `>`, `<` - e.g. `3>4`
-1. Existence operators `exists`,`is absent`, `contains`, `disjoint` - e.g. `Lineage -> executionReference exists`
-1. and - e.g. `5>6 and true`
-1. or - e.g. `5>6 or true`
 
 ## Function calls
 
