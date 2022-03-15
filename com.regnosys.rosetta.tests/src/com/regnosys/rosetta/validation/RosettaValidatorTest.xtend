@@ -815,14 +815,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			"Pattern to match must be a valid regular expression")
 	}
 	
+	@Disabled
 	@Test
 	def void testFishIsAShark() {//This test tests that when a check throws an exception it is translated into a validation error - see ExceptionValidator below
-	val model='''
+		val model='''
 			type MyFish:
 				foo int (0..1)
 				[synonym TEST_Base value "bar" path "baz" pattern "([A-Z)" "$1"]
 			synonym source TEST_Base
-
+			
 		'''.parseRosetta
 		model.assertError(ROSETTA_TYPE, null,
 			"checkForSharks")
