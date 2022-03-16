@@ -32,7 +32,7 @@ This documentation details the purpose and features of each type of model compon
 
 ### Purpose
 
-A *type* describes an *entity* (also sometimes referred to as an *object* or a *class*) in the model and is defined by a plain-text description and a set of *attributes* (also sometimes referred to as fields). Attributes specify the granular elements composing the entity.
+A *type* describes a logical concept of the business domain being modelled - also sometimes referred to as an *entity*, *object* or *class*. It is specified by a plain-text description and a set of *attributes* defining the granular elements composing the entity - also sometimes referred to as *fields*.
 
 ### Syntax
 
@@ -53,10 +53,10 @@ type VehicleOwnership: <"Representative record of vehicle ownership">
 Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
 
 - name - Required - Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
-- type - Required - Each attribute can be specified either as a [basic type](#basic-types), [record type](#record-types), data type or [enumeration type](#enumeration).
+- type - Required - Each attribute can be specified as either a [basic type](#basic-type), [record type](#record-type), [data type] or [enumeration](#enumeration).
 - cardinality - Required - see [Cardinality](#cardinality)
 - description - Optional but recommended) - A description of the attribute using the same angle bracket `<"..">` syntax as the type description
-- annotations - Optional - Annotations such as [synonyms](#basic-mappings) or metadata can be applied to attributes
+- annotations - Optional - Annotations such as [synonyms](#mapping-component) or metadata can be applied to attributes
 
 ``` Haskell
 type Engine: <"Description of the engine.">
@@ -88,6 +88,8 @@ For clarity purposes, the documentation snippets omit the synonyms and definitio
 
 ## Built-in type
 
+Rosetta includes a number of built-in types that are defined at the language level and do not need to be redefined with each model. By contrast, the types that are not built-in and which a model defines are often referred to as *complex types*.
+
 ### Basic Type
 
 Rosetta defines five fundamental data types. The set of basic types available in the Rosetta DSL are controlled at the language level by the `basicType` definition:
@@ -100,16 +102,19 @@ Rosetta defines five fundamental data types. The set of basic types available in
 
 ### Record Type
 
-Rosetta defines two record types `date` and `zonedDateTime`. The set of record types available in the Rosetta DSL are controlled at the language level by the `recordType` definition.
+Rosetta defines two additional types known as *record types*:
+
+- `date`
+- `zonedDateTime`
+
+The set of record types available in the Rosetta DSL are controlled at the language level by the `recordType` definition.
 
 Record types are simplified data types:
 
 - Record types are pure data definitions and do not allow specification of validation logic in a [condition](#condition-statement).
 - Record types are handled specially in the code-generators and so form part of the Rosetta DSL rather than any specifc model.
 
-### Time
-
-The `zonedDateTime` record type unambiguously refers to a single instant of time.
+The `zonedDateTime` is a special record type that unambiguously refers to a single instant of time.
 
 Alternatively, a model could define a data type `BusinessCenterTime`, where a simple `time` \"5:00:00\" is specified alongside a business center. The simple time should be interpreted with the time-zone information of the associated business centre.
 
@@ -135,7 +140,7 @@ enum PeriodEnum: <"The enumerated values to specify the period, e.g. day, week."
 
 Enumeration names must be unique across a [namespace](#namespace-component). The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase). In addition the enumeration name should end with the suffix Enum. The Enumeration values cannot start with a numerical digit, and the only special character that can be associated with them is the underscore `_`.
 
-In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a **display name** to any enumeration value. For those enumeration values, special characters are replaced with `_` while the `displayName` entry corresponds to the actual value.
+In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a *display name* to any enumeration value. For those enumeration values, special characters are replaced with `_` while the `displayName` entry corresponds to the actual value.
 
 An example is the day count fraction scheme for interest rate calculation, which includes values such as `ACT/365.FIXED` and `30/360`. These are associated as `displayName` to the `ACT_365_FIXED` and `_30_360` enumeration values, respectively.
 
@@ -356,19 +361,19 @@ Referencing allows an attribute in rosetta to refer to a rosetta object in a dif
 
 Rosetta currently supports 3 different mechanisms for references with different scopes. It is intended that these will all be migrated to a single mechanism.
 
-#### Global References
+#### Global Reference
 
 The `key` and `id` metadata annotations cause a globally unique key to be generated for the rosetta object or attribute. The value of the key corresponds to a hash code to be generated by the model implementation. The implementation provided in the Rosetta DSL is a *deep hash* that uses the complete set of attribute values that compose the type and its attributes, recursively.
 
 The `reference` metadata annotation denotes that an attribute can be either a direct value like any other attribute or can be replaces with a `reference` to a global key defined elsewhere. The key need not be defined in the current document but can instead be a reference to an external document.
 
-#### External References
+#### External Reference
 
 Attributes and types that have the `key` or `id` annotation additionally have an `externalKey` attached to them. This is used to store keys that are read from an external source e.g. FpML id metadata attribute.
 
 Attributes with the `reference` keyword have a corresponding externalReference field which is used to store references from external sources. The reference resolver processor can be used to link up the references.
 
-#### Templates
+#### Template
 
 When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
 
@@ -376,7 +381,7 @@ Other than the new annotation, data templates do not have any impact on the mode
 
 {{< notice info "Note" >}}
 Some annotations, such as this metadata qualification, may be provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
-{{</notice>}}
+{{< /notice >}}
 
 ### Syntax
 
@@ -401,7 +406,7 @@ type Identifier:
   assignedIdentifier AssignedIdentifier (1..*)
 ```
 
-A `key` qualifier is associated to the `Party` type, which means it is referenceable. In the `Identifier` type, the `reference` qualifier, which is associated to the `issuerReference` attribute of type `Party`, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the [synonym](#basic-mappings) of the documentation.
+A `key` qualifier is associated to the `Party` type, which means it is referenceable. In the `Identifier` type, the `reference` qualifier, which is associated to the `issuerReference` attribute of type `Party`, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the [synonym](#basic-mapping) of the documentation.
 
 When a data type is annotated as a `template`, the designation applies to all encapsulated types in that data type. In the example below, the designation of template eligibility for `ContractualProduct` also applies to `EconomicTerms`, which is an encapsulated type in `ContractualProduct`, and likewise applies to all encapsulated types in `EconomicTerms`.
 
@@ -421,7 +426,7 @@ The Rosetta DSL provides for some special types called *qualified types*, which 
 - Calculation - `calculation`
 - Object qualification - `productType` `eventType`
 
-Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model. The logic is being captured by specific types of functions that are detailed in the [Function Definition Section](#function-component).
+Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model. The logic is being captured by specific types of functions that are detailed in the [Object Qualification](#object-qualification-function) section.
 
 ### Calculation
 
@@ -468,13 +473,13 @@ The qualified type feature in the Rosetta DSL is under evaluation and may be rep
 
 # Expression Component
 
-**The Rosetta DSL offers a restricted set of language features to express simple logic**, such as simple operations and comparisons. The language is designed to be unambiguous and understandable by domain experts who are not software engineers while minimising unintentional behaviour. Simple expressions can be built up using [operators](#operators) to form more complex expressions.
+**The Rosetta DSL offers a restricted set of language features to express simple logic**, such as simple operations and comparisons. The language is designed to be unambiguous and understandable by domain experts who are not software engineers while minimising unintentional behaviour. Simple expressions can be built up using operators to form more complex expressions.
 
 {{< notice info "Note" >}}
 The Rosetta DSL is not a *Turing-complete* language: e.g. it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations.
 {{< /notice >}}
 
-Logical expressions are used within the following model components:
+Logical expressions are used within the following modelling components:
 
 - [Functions](#function-component),
 - [Data type validation conditions](#condition-statement),
@@ -483,7 +488,7 @@ Logical expressions are used within the following model components:
 
 Expressions are evaluated within the context of a Rosetta object to return a result. The result of an expression can be either:
 
-- a single [basic type](#basic-types) value: e.g. 2.0, True, \"USD\",
+- a single [basic type](#basic-type) value: e.g. 2.0, True, \"USD\",
 - a single Rosetta object (data type or enumeration): e.g. a `Party` object or
 - a [list](#list) of results, all of the same type (basic type or Rosetta object).
 
@@ -495,7 +500,7 @@ The below sections detail the different types of Rosetta expressions and how the
 
 ### Purpose
 
-An expression can be a [basic type](#basic-types) constant such as 2.0, True or \"USD\". Constant expressions are useful for comparisons to more complex expressions.
+An expression can be a [basic type](#basic-type) constant such as 2.0, True or \"USD\". Constant expressions are useful for comparisons to more complex expressions.
 
 ### Enumeration Constant
 
@@ -523,7 +528,7 @@ A path expression is used to return the value of an attribute inside an object. 
 
 ### Syntax
 
-The simplest path expression is just the name of an attribute. In the example below, the `before` attribute of a `ContractFormationPrimitive` object is checked for [existence](#comparison-operators) inside a [condition](#condition-statement) associated to that data type.
+The simplest path expression is just the name of an attribute. In the example below, the `before` attribute of a `ContractFormationPrimitive` object is checked for [existence](#comparison-operator) inside a [condition](#condition-statement) associated to that data type.
 
 ``` {.Haskell emphasize-lines="7"}
 type ContractFormationPrimitive:
@@ -535,7 +540,7 @@ type ContractFormationPrimitive:
       if before exists ....
 ```
 
-The `->` operator allows to return an attribute located inside an attribute, and so on recursively. In the example below, the `security` of the `product` contained in a `Confirmation` object is checked for [existence](#comparison-operators).
+The `->` operator allows to return an attribute located inside an attribute, and so on recursively. In the example below, the `security` of the `product` contained in a `Confirmation` object is checked for [existence](#comparison-operator).
 
 ``` {.Haskell emphasize-lines="10"}
 type Confirmation: <"A class to specify a trade confirmation.">
@@ -630,7 +635,7 @@ Rosetta supports basic arithmetic operators
 
 ### Operator Precedence
 
-Expressions are evaluated in Rosetta in the following order (See [Operator Precedence](https://en.wikipedia.org/wiki/Order_of_operations)). Higher are evaluated first.
+Expressions are evaluated in Rosetta in the following order, from first to last - see [Operator Precedence](https://en.wikipedia.org/wiki/Order_of_operations)).
 
 1. RosettaPathExpressions - e.g. `Lineage -> executionReference`
 1. Brackets - e.g. `(1+2)`
@@ -916,7 +921,7 @@ A validation rule is generated for each attribute\'s cardinality constraint, so 
 
 ### Purpose
 
-*Conditions* are logic [expressions](#expression-component) associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False As part of validation all the conditions are evaluated and if any evaluate to false then the validation fails.
+*Conditions* are logic [expressions](#expression-component) associated to a data type. They are predicates on attributes of objects of that type that evaluate to True or False. As part of the object validation process, all the conditions are evaluated and if any evaluates to false then the validation fails.
 
 ### Syntax
 
@@ -925,7 +930,7 @@ Condition statements are included in the definition of the type that they are as
 The definition of a condition starts with the `condition` keyword, followed by the name of the condition and a colon `:` punctuation. The condition\'s name must be unique in the context of the type that it applies to (but does not need to be unique across all data types of a given model). The rest of the condition definition comprises:
 
 - a plain-text description (optional)
-- a boolean-type [expression](#expression-component) that applies to the the type\'s attributes
+- a boolean [operator](#operator) that applies to the the type\'s attributes
 
 ``` Haskell
 type ActualPrice:
@@ -1102,9 +1107,9 @@ A function\'s inputs and output can be constrained using *conditions*.
 Condition statements in a function can represent either:
 
 - a **pre-condition**, using the `condition` keyword, applicable to inputs only and evaluated prior to executing the function, or
-- a **post-condition**, using the `post-condition` keyword, applicable to inputs and output and evaluated after executing the function (once the output is known)
+- a **post-condition**, using the `post-condition` keyword, applicable to inputs and output and evaluated after executing the function (once the output is known).
 
-Each type of condition keyword is followed by a [boolean expression](#expression-component) which is evaluated to check the correctness of the function inputs and result.
+Each type of condition keyword is followed by a [condition statement](#condition-statement) which is evaluated to check the correctness of the function's inputs and output.
 
 Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the constraints that implementors of this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
@@ -1478,11 +1483,11 @@ NaturalPersonRoleEnum:
 
 ## Advanced Mapping
 
-The algorithm starts by *binding* the root of the input document to a pre-defined Rosetta [root type](#roottype-label)
+The algorithm starts by *binding* the root of the input document to a pre-defined [root type](#annotation) in the model.
 
 It then [recursively](https://en.wikipedia.org/wiki/Recursion_(computer_science)) traverses the input document.
 
-Each step of the algorithm starts with the current attribute in the input document *bound* to a set of Rosetta objects in the output Rosetta document.
+Each step of the algorithm starts with the current attribute in the input document *bound* to a set of Rosetta objects in the output.
 
 For each child attribute of the current input attribute, the rosetta attributes of the type of all Rosetta objects *bound* to the current attribute are checked for synonyms that match that child attribute. For each matching attribute a new Rosetta object instance is created and *bound* to that child attribute. The algorithm then recurses with the current child becoming the current input attribute.
 
@@ -1604,18 +1609,18 @@ discountingType DiscountingTypeEnum (1..1) <"The discounting method that is appl
   [synonym FpML_5_10 value fraDiscounting set when "fraDiscounting" <> "NONE"]
 ```
 
-#### Path Expression
+#### Input Path Expression
 
-A Path expression checks the path through the rosetta document that leads to the current rosetta object. The path provided can only be the direct path from the level about in the document; in order for the condition to be true then the current path has to be the given path.:
+A input path expression checks the path through the input document that leads to the current value. The path provided can only be the direct path from the level above the current value in the input document. The condition avlauates to true when the current path is the given path:
 
 ```
 role PartyRoleEnum (1..1) <"The party role.">;`
   [synonym FpML_5_10 set to PartyRoleEnum.DeterminingParty when path = "trade.determiningParty"]
 ```
 
-#### RosettaPath Expression
+#### Output Path Expression
 
-A rosettaPath expression checks the path through the rosetta document that leads to the current rosetta object. The path provided can start from any level in the document; in order for the condition to be true then the current path has to end with the given path.
+An output path expression checks the path through the rosetta output object that leads to the current value. The path provided can start from any level in the output object. The condition evaluates to true when the current path ends with the given path.
 
 e.g. :
 
@@ -1638,7 +1643,7 @@ When the ingestion is run a class called CounterPartyMappingProcessor will be lo
 
 ### Format
 
-A date/time synonym can be followed by a format construct. The keyword `format` should be followed by a string. The string should be a [Date format](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html)
+A date/time synonym can be followed by a format construct. The keyword `format` should be followed by a string. The string should follow a standardised [date format](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html)
 
 E.g. :
 
@@ -1676,7 +1681,7 @@ One of the first challenges of expressing regulatory rules for the financial dom
 
 ### Syntax
 
-To organise such regulatory content within a model, the Rosetta DSL supports a number of syntax components that allow to refer to specific documents, their content and who owns them as direct model components. Those components are defined in the [document reference hierarchy](#syntax-document-hierarchy) section.
+To organise such regulatory content within a model, the Rosetta DSL supports a number of syntax components that allow to refer to specific documents, their content and who owns them as direct model components. Those components are defined in the [document reference hierarchy](#document-hierarchy) section.
 
 ## Report Definition
 
@@ -1747,7 +1752,7 @@ The syntax of reporting field rules is as follows:
   <FunctionalExpression>
 ```
 
-The \<RuleType\> can be either `reporting` or `eligibility`. The `regulatoryReference` syntax is the same as the `docReference` syntax documented in the [document reference](#syntax-document-reference) section. However it can only be applied to regulatory rules.
+The \<RuleType\> can be either `reporting` or `eligibility`. The `regulatoryReference` syntax is the same as the `docReference` syntax documented in the [document reference](#document-reference) section. However it can only be applied to regulatory rules.
 
 The functional expression of reporting rules uses the same syntax components that are already available to express logical statements in other modelling components, such as the condition statements that support data validation.
 
