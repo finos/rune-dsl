@@ -487,11 +487,11 @@ RosettaCalcExpression returns RosettaExpression:
 ;
 
 RosettaCalcOr returns RosettaExpression:
-	RosettaCalcAnd ( =>({RosettaBinaryOperation.left=current} operator=('or')) right=RosettaCalcAnd)*
+	RosettaCalcAnd ( =>({LogicalOperation.left=current} operator=('or')) right=RosettaCalcAnd)*
 ;
 
 RosettaCalcAnd returns RosettaExpression:
-	RosettaCalcExists ( =>({RosettaBinaryOperation.left=current} operator=('and')) right=RosettaCalcExists)*
+	RosettaCalcExists ( =>({LogicalOperation.left=current} operator=('and')) right=RosettaCalcExists)*
 ;
 
 RosettaCalcExists returns RosettaExpression:
@@ -506,19 +506,19 @@ RosettaCalcExists returns RosettaExpression:
 ;
 
 RosettaCalcEquality returns RosettaExpression:
-	RosettaCalcComparison ( =>({RosettaBinaryOperation.left=current} (cardOp=('all'|'any'))? operator=('='|'<>')) right=RosettaCalcComparison)*
+	RosettaCalcComparison ( =>({EqualityOperation.left=current} (cardOp=('all'|'any'))? operator=('='|'<>')) right=RosettaCalcComparison)*
 ;
 	
 RosettaCalcComparison returns RosettaExpression:
-	RosettaCalcAdditive ( =>({RosettaBinaryOperation.left=current} (cardOp=('all'|'any'))? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
+	RosettaCalcAdditive ( =>({ComparisonOperation.left=current} (cardOp=('all'|'any'))? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
 ;
 
 RosettaCalcAdditive returns RosettaExpression:
-	RosettaCalcMultiplicative ( =>({RosettaBinaryOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*
+	RosettaCalcMultiplicative ( =>({ArithmeticOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*
 ;
 
 RosettaCalcMultiplicative returns RosettaExpression:
-	RosettaCalcCountOperation ( =>({RosettaBinaryOperation.left=current} operator=('*'|'/')) right=RosettaCalcCountOperation)*
+	RosettaCalcCountOperation ( =>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcCountOperation)*
 ;
 
 RosettaCalcCountOperation returns RosettaExpression:

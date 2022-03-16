@@ -22,6 +22,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 
 	<properties>
 		<xtextVersion>2.25.0</xtextVersion>
+		<xsemantics.version>1.20.0-SNAPSHOT</xsemantics.version>
 		<mwe2Version>2.12.1</mwe2Version>
 		<org.eclipse.emf.ecore.xcore-version>1.19.0</org.eclipse.emf.ecore.xcore-version>
 		<org.eclipse.emf.ecore.xcore.lib-version>1.6.0</org.eclipse.emf.ecore.xcore.lib-version>
@@ -356,6 +357,44 @@ See the Apache License Version 2.0 for the specific language governing permissio
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<!-- we also need this one because this is an eclipse project, so it needs to
+				resolve xsemantics runtime dependencies from the p2 repository -->
+			<id>Xsemantics</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/xsemantics/milestones/</url>
+		</repository>
+		<repository>
+			<id>eclipse</id>
+			<layout>p2</layout>
+			<url>https://download.eclipse.org/releases/2021-12</url>
+		</repository>
+		<repository>
+			<id>Xtext Update Site</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/${xtextVersion}</url>
+		</repository>
+		<repository>
+			<id>sonatype_releases</id>
+			<url>https://oss.sonatype.org/content/repositories/releases/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
+		<repository>
+			<id>sonatype_snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
@@ -367,6 +406,27 @@ See the Apache License Version 2.0 for the specific language governing permissio
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>sonatype_releases</id>
+			<url>https://oss.sonatype.org/content/repositories/releases/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+
+		<pluginRepository>
+			<id>sonatype_snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
