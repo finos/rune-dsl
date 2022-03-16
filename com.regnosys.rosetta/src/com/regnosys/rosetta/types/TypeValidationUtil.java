@@ -2,23 +2,27 @@ package com.regnosys.rosetta.types;
 
 import com.google.inject.Inject;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
-import com.regnosys.rosetta.typing.RosettaTyping;
 
 public class TypeValidationUtil {
 	@Inject
-	RosettaTyping typing;
+	TypeSystem typing;
+	@Inject
+	TypeFactory fac;
 	
-	public String unequalListTypesMessage(RListType expected, RListType actual) {
-		if (expected.getItemType().equals(actual.getItemType()) || !expected.getConstraint().constraintEquals(actual.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
-			return new StringBuilder()
-					.append("Expected ")
-					.append(toCompleteDescription(expected))
-					.append(", but got ")
-					.append(toCompleteDescription(actual))
-					.append(" instead.")
-					.toString();
+	public String unequalListTypesMessage(RListType expected, RListType actual) {		
+		if (!expected.getItemType().equals(actual.getItemType())) {
+			if (!expected.getConstraint().constraintEquals(actual.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
+				return new StringBuilder()
+						.append("Expected ")
+						.append(toCompleteDescription(expected))
+						.append(", but got ")
+						.append(toCompleteDescription(actual))
+						.append(" instead.")
+						.toString();
+			}
+			return notASubtypeMessage(expected.getItemType(), actual.getItemType());
 		}
-		return unequalTypesMessage(expected.getItemType(), actual.getItemType());
+		return notLooserConstraintMessage(expected.getConstraint(), actual);
 	}
 	public String unequalTypesMessage(RType expected, RType actual) {
 		return new StringBuilder()
@@ -30,16 +34,19 @@ public class TypeValidationUtil {
 				.toString();
 	}
 	public String notAListSubtypeMessage(RListType expected, RListType actual) {
-		if (typing.subtype(actual.getItemType(), expected.getItemType()).getValue() || !actual.getConstraint().isSubconstraintOf(expected.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
-			return new StringBuilder()
-					.append("Expected ")
-					.append(toCompleteDescription(expected))
-					.append(", but got ")
-					.append(toCompleteDescription(actual))
-					.append(" instead.")
-					.toString();
+		if (!typing.isSubtype(actual.getItemType(), expected.getItemType())) {
+			if (!actual.getConstraint().isSubconstraintOf(expected.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
+				return new StringBuilder()
+						.append("Expected ")
+						.append(toCompleteDescription(expected))
+						.append(", but got ")
+						.append(toCompleteDescription(actual))
+						.append(" instead.")
+						.toString();
+			}
+			return notASubtypeMessage(expected.getItemType(), actual.getItemType());
 		}
-		return notASubtypeMessage(expected.getItemType(), actual.getItemType());
+		return notLooserConstraintMessage(expected.getConstraint(), actual);
 	}
 	public String notASubtypeMessage(RType expected, RType actual) {
 		return new StringBuilder()
@@ -51,7 +58,7 @@ public class TypeValidationUtil {
 				.toString();
 	}
 	public String notListComparableMessage(RListType left, RListType right) {
-		if (!typing.comparable(left.getItemType(), right.getItemType())) {
+		if (!typing.isComparable(left.getItemType(), right.getItemType())) {
 			return notComparableMessage(left.getItemType(), right.getItemType());
 		}
 		StringBuilder b = new StringBuilder()
@@ -72,6 +79,15 @@ public class TypeValidationUtil {
 				.append("` and `")
 				.append(right)
 				.append("` are not comparable.")
+				.toString();
+	}
+	public String notRightIsSingularButLeftIsMessage(RListType actual) {
+		return new StringBuilder()
+				.append("Expected ")
+				.append(toConstraintDescription(fac.single))
+				.append(", but got ")
+				.append(toConstraintDescription(actual.getConstraint()))
+				.append(" instead. Perhaps you meant to swap the left and right operands?")
 				.toString();
 	}
 	public String notConstraintMessage(RosettaCardinality expected, RListType actual) {

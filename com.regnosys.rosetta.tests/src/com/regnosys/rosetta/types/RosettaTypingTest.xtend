@@ -36,6 +36,12 @@ class RosettaTypingTest {
 		val t1 = createListType(INT, 1, 3);
 		val t2 = createListType(NUMBER, 1, 5);
 		t1.assertListSubtype(t2)
+		
+		val t3 = createListType(BOOLEAN, 1, 3);
+		t1.assertNotListSubtype(t3);
+		
+		val t4 = createListType(INT, 1, 2);
+		t1.assertNotListSubtype(t4);
 	}
 	
 	@Test
@@ -85,7 +91,7 @@ class RosettaTypingTest {
 		'[1, 2] all = empty'
 			.parseExpression
 			.assertError(null, "Expected a single value, but got an empty value instead.")
-		'empty all = empty'
+		'empty any = empty'
 			.parseExpression
 			.assertError(null, "Expected a single value, but got an empty value instead.")
 		'[1, 2] all = [1, 2]'
@@ -93,7 +99,7 @@ class RosettaTypingTest {
 			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
 		'5 any <> [1, 2]'
 			.parseExpression
-			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
+			.assertError(null, "Expected a single value, but got a list with 2 items instead. Perhaps you meant to swap the left and right operands?")
 	}
 	
 	@Test
@@ -136,23 +142,37 @@ class RosettaTypingTest {
 		'-5.1 <= 42'.assertIsValidWithType(singleBoolean)
 		'-3.14 >= 3.14'.assertIsValidWithType(singleBoolean)
 		
-		// TODO: test `any` and `all`, and plural cardinality?
+		'[1, 2] any < 5'.assertIsValidWithType(singleBoolean)
+		'empty all > 5'.assertIsValidWithType(singleBoolean)
 	}
 	
 	@Test
 	def void testComparisonOperationTypeChecking() {
+		// TODO: support date, zonedDateTime and `time`?
 		'[1, 2] < 3'
 			.parseExpression
 			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
-// TODO: support date, zonedDateTime and `time`?
 		'empty > 3'
 			.parseExpression
 			.assertError(null, "Expected a single value, but got an empty value instead.")
 		'1.5 <= False'
 			.parseExpression
 			.assertError(null, "Expected type `number`, but got `boolean` instead.")
+			
+		'[1, 2] all >= empty'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got an empty value instead.")
+		'empty any < empty'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got an empty value instead.")
+		'[1, 2] all > [1, 2]'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
+		'5 any <= [1, 2]'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead. Perhaps you meant to swap the left and right operands?")
 	}
-
+	
 	@Test
 	def void testConditionalExpressionTypeInference() {
 		 'if True then [1, 2] else [3.0, 4.0, 5.0, 6.0]'.assertIsValidWithType(createListType(NUMBER, 2, 4));
@@ -162,7 +182,7 @@ class RosettaTypingTest {
 	def void testConditionalExpressionTypeChecking() {
 		'if [True, False] then 1 else 2'
 			.parseExpression
-			.assertError(null, "Expected a single `boolean`, but got a list of `boolean`s with 2 items instead.")
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
 		'if empty then 1 else 2'
 			.parseExpression
 			.assertError(null, "Expected a single `boolean`, but got an empty value instead.")
