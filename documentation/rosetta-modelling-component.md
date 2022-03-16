@@ -39,10 +39,10 @@ Rosetta includes a number of built-in types that are defined at the language lev
 
 Rosetta defines five *basic types*. The set of basic types available in the Rosetta DSL are controlled by defining them as `basicType` at the language level.
 
-- `string` - text
 - `int` - integer numbers
 - `number` - decimal numbers
 - `boolean` - logical true of false
+- `string` - text
 - `time` - simple time values, e.g. \"05:00:00\"
 
 ### Record Type
@@ -582,15 +582,14 @@ Conditional statements consist of:
 
 If the *if clause* evaluates to True, the result of the *then clause* is returned by the conditional expression. If it evaluates to False, the result of the *else clause* is returned if present, else *null* is returned.
 
-The type of the expression is the type of the expression contained in the *then clause*. The Rosetta DSL enforces that the type of the *else clause* matches the *then clause*. Multiple *else clauses* can be added by combining `else if` statements ending with a final `else`.
+The type and cardinality of a conditional statement expression is the type and cardinality of the expression contained in the *then clause*. The Rosetta DSL enforces that the type of the *else clause* matches the *then clause*. Multiple *else clauses* can be added by combining `else if` statements ending with a final `else`.
 
 ### Comparison Operator
 
 The result type of a comparison operator is always a boolean.
 
-- `=` - Equals. Returns *true* if the left expression is equal to the right expression, otherwise false. Basic types are equal if their values are equal. Two complex rosetta types are equal if all of their attributes are equal, recursing down until all basic typed attributes are compared.
-- `<>` - Does not equal. Returns *false* if the left expression is equal to the right expression, otherwise true.
-- `<`, `<=`, `>=`, `>` - performs mathematical comparisons on the left and right values. Both left and right have to evaluate to numbers or lists of numbers.
+- `=`, `<>` - equals or not equals. Equals returns true if the left expression is equal to the right expression, otherwise false, and conversely for not equals. Built-in types are equal if their values are equal. Complex types are equal if all of their attributes are equal, recursing down until all basic typed attributes are compared.
+- `<`, `<=`, `>=`, `>` - performs mathematical comparisons on the left and right values of [comparable types](#comparable-type).
 - `exists` - returns true if the left expression returns a result. This operator can be further modified with qualifying keywords:
   - `only` - the value of left expression exists and is the only attribute with a value in its parent object.
   - `single` - the value of expression either has single cardinality or is a list with exactly one value.
@@ -608,6 +607,14 @@ economicTerms -> payout -> interestRatePayout only exists or (economicTerms -> p
 {{< notice info "Note" >}}
 This condition is typically applied to attributes of a type that implements a [`one-of`](#one-of) condition. In this case, the `only` qualifier is redundant with the `one-of` condition because only one of the attributes can exist. However, `only` makes the condition expression more explicit, and also robust to potential lifting of the `one-of` condition.
 {{< /notice >}}
+
+### Comparable Type
+
+All the following built-in types are *comparable*, which means that they can be used with mathematical comparison operators as long as both sides are of the same type:
+- `int`
+- `number`
+- `date`
+- `string`
 
 ### Comparison Operator and Null
 
@@ -766,8 +773,9 @@ The `map` keyword was chosen as it is the most widely used term for this use-cas
 Reduction consists of a set of operations that returns a single value based on elements of a list.
 
 - `sum` - returns the sum of the elements of a list of `int` or `number`
-- `min`, `max` - returns the minimum or maximum of a list of comparable elements (`int`, `number`, `date` and `string`)
+- `min`, `max` - returns the minimum or maximum of a list of [comparable](#comparable-type) elements
 - `join` - returns the concatenated values of a list of `string`
+- `reduce` - generic reduction operator, which requires to specify the operation to merge two elements.
 
 Some examples of usage are given below.
 
@@ -820,7 +828,7 @@ func FindVehicleWithMaxPower: <"Returns the vehicle with the highest power engin
             max [ item -> specification -> engine -> power ]
 ```
 
-Reduction works by performing an operation to merge two adjacent elements of a list into one, and so on recursively until there is only one single element left. All the reduction operators above are therefore short-hand special cases of the generic `reduce` operator that works as follows:
+Reduction works by performing an operation to merge two adjacent elements of a list into one, and so on recursively until there is only one single element left. All the reduction operators above are short-hand special cases of the generic `reduce` operator that works as follows:
 
 ``` Haskell
 func FindVehicleWithMaxPowerUsingReduce: <"Returns the vehicle with the highest power engine, using the reduce keyword.">
@@ -930,7 +938,7 @@ Condition statements are included in the definition of the type that they are as
 The definition of a condition starts with the `condition` keyword, followed by the name of the condition and a colon `:` punctuation. The condition\'s name must be unique in the context of the type that it applies to (but does not need to be unique across all data types of a given model). The rest of the condition definition comprises:
 
 - a plain-text description (optional)
-- a boolean [operator](#operator) that applies to the the type\'s attributes
+- an [operator](#operator) that applies to the the type\'s attributes and returns a `boolean` type.
 
 ``` Haskell
 type ActualPrice:
@@ -1869,7 +1877,7 @@ reporting rule IsInterestRatePayout
 
 - `maximum` / `minimum`
 
-The `maximum` and `minimum` keywords return only a single value (for a given key). The value returned will be the highest or lowest value. The input type to the rule must be of a comparable basic data type e.g. date, time, number, string In the below example, we first apply a filter and extract a `rate` attribute. There could be multiple rate values, so we select the highest one.
+The `maximum` and `minimum` keywords return only a single value (for a given key). The value returned will be the highest or lowest value. The input type to the rule must be of a [comparable type](#comparable-type). In the below example, we first apply a filter and extract a `rate` attribute. There could be multiple rate values, so we select the highest one.
 
 ``` Haskell
 filter when rule IsFixedFloat then
@@ -1879,7 +1887,7 @@ filter when rule IsFixedFloat then
 
 - `maxBy` / `minBy`
 
-The syntax also supports selecting values by an ordering based on an attribute using the `maxBy` and `minBy` keywords. For each input value to the rule the provided test expression or rule is evaluated to give a test result and paired with the input value. When all values have been processes the pair with the highest test result is selected and the associated value is returned by the rule. The test expression or rule must return a value of single cardinality and must be of a comparable basic data type e.g. date, time, number, string In the below example, we first apply a filter and extract a `fixedInterestRate` attribute. There could be multiple attribute values, so we select the one with the highest rate and return that FixedInterestRate object.
+The syntax also supports selecting values by an ordering based on an attribute using the `maxBy` and `minBy` keywords. For each input value to the rule the provided test expression or rule is evaluated to give a test result and paired with the input value. When all values have been processes the pair with the highest test result is selected and the associated value is returned by the rule. The test expression or rule must return a value of single cardinality and must be of a [comparable type](#comparable-type). In the below example, we first apply a filter and extract a `fixedInterestRate` attribute. There could be multiple attribute values, so we select the one with the highest rate and return that FixedInterestRate object.
 
 ``` Haskell
 filter when rule IsFixedFloat then
