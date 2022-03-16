@@ -70,33 +70,6 @@ type Engine: <"Description of the engine.">
 The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as `type`, so the start of a new definition marks the end of the previous one. For readability more generally, the Rosetta DSL looks to eliminate all the delimiters that are often used in traditional programming languages (such as curly braces `{` `}` or semi-colon `;`).
 {{< /notice >}}
 
-## Built in types
-
-### Basic Types
-
-Rosetta defines five fundamental data types. The set of basic types available in the Rosetta DSL are controlled at the language level by the `basicType` definition:
-
-- `string` - Text
-- `int` - integer numbers
-- `number` - decimal numbers
-- `boolean` - logical true of false
-- `time` - simple time values (e.g. \"05:00:00\")
-
-### Record Types
-
-Rosetta defines two record types `date` and `zonedDateTime`. The set of record types available in the Rosetta DSL are controlled at the language level by the `recordType` definition.
-
-Record types are simplified data types:
-
-- Record types are pure data definitions and do not allow specification of validation logic in `conditions`.
-- Record types are handled specially in the code-generators as so form part of the Rosetta DSL, rather than any Rosetta base domain model.
-
-### Time
-
-The `zonedDateTime` record type unambiguously refers to a single instant of time.
-
-Alternatively, a model could define a data type `BusinessCenterTime`, where a simple `time` \"5:00:00\" is specified alongside a business center. The simple time should be interpreted with the time-zone information of the associated business centre.
-
 ### Inheritance
 
 **The Rosetta DSL supports an inheritance mechanism**, when a type inherits its definition and behaviour (and therefore all of its attributes) from another type and adds its own set of attributes on top. Inheritance is supported by the `extends` keyword next to the type name.
@@ -112,6 +85,33 @@ type Vehicle extends VehicleFeature:
 {{< notice info "Note" >}}
 For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet is to highlight some of those features.
 {{< /notice >}}
+
+## Built-in type
+
+### Basic Type
+
+Rosetta defines five fundamental data types. The set of basic types available in the Rosetta DSL are controlled at the language level by the `basicType` definition:
+
+- `string` - Text
+- `int` - integer numbers
+- `number` - decimal numbers
+- `boolean` - logical true of false
+- `time` - simple time values (e.g. \"05:00:00\")
+
+### Record Type
+
+Rosetta defines two record types `date` and `zonedDateTime`. The set of record types available in the Rosetta DSL are controlled at the language level by the `recordType` definition.
+
+Record types are simplified data types:
+
+- Record types are pure data definitions and do not allow specification of validation logic in a [condition](#condition-statement).
+- Record types are handled specially in the code-generators and so form part of the Rosetta DSL rather than any specifc model.
+
+### Time
+
+The `zonedDateTime` record type unambiguously refers to a single instant of time.
+
+Alternatively, a model could define a data type `BusinessCenterTime`, where a simple `time` \"5:00:00\" is specified alongside a business center. The simple time should be interpreted with the time-zone information of the associated business centre.
 
 ## Enumeration
 
@@ -175,7 +175,7 @@ The syntax to add a description uses quotation marks in between angle brackets `
 
 A document reference is a type of meta-data description that can associate information published in a separate document to model components. The Rosetta DSL allows to define those specific documents, who owns them and their content as direct model components, and to associate them to any other [data](#data-component) or [function](#function-component) components.
 
-### Syntax (Document Hierarchy)
+### Document Hierarchy
 
 There are 3 syntax components to define the hierarchy of document references:
 
@@ -242,9 +242,9 @@ Once a segment type is defined, it can be associated to an identifier (i.e some 
 article "26" paragraph "2"
 ```
 
-### Syntax (Document Reference)
+### Document Reference
 
-A document reference is created using the `docReference` syntax. This `docReference` must be associated to a `corpus` and `segment` defined according to the [document reference hierarchy](#syntax-document-hierarchy) section. The document reference can copy the actual text being referred to using the `provision` syntax.
+A document reference is created using the `docReference` syntax. This `docReference` must be associated to a `corpus` and `segment` defined according to the [document reference hierarchy](#document-hierarchy) section. The document reference can copy the actual text being referred to using the `provision` syntax.
 
 ``` Haskell
 [docReference <Body> <Corpus>
@@ -308,7 +308,6 @@ An annotation can be added to a Rosetta Type or attribute by enclosing the name 
 ## Meta-Data and Reference
 
 ### Purpose
-
 
 The `metadata` annotation allows the declaration of a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations.
 
