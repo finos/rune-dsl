@@ -209,7 +209,7 @@ RosettaRecordFeature returns RosettaTypedFeature:
 ;
 
 RosettaParameter:
-	RosettaNamed RosettaTyped isArray?='[]'?
+	RosettaNamed RosettaTyped (isArray?='[' ']')?
 ;
 
 RosettaLibraryFunction returns RosettaExternalFunction:

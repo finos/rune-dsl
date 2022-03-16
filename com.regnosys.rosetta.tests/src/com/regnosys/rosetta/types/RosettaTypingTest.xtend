@@ -154,7 +154,7 @@ class RosettaTypingTest {
 	
 	@Test
 	def void testListLiteralTypeInference() {
-//		'[]'.assertIsValidWithType(emptyNothing); TODO
+		'[]'.assertIsValidWithType(emptyNothing);
 		'[2, 4.5, 7, -3.14]'.assertIsValidWithType(createListType(NUMBER, 4, 4));
 		'[2, [1, 2], -3.14]'.assertIsValidWithType(createListType(NUMBER, 4, 4));
 	}

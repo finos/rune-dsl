@@ -420,12 +420,10 @@ from {
 	if (e.elements.forall[
 		var RListType telem
 		empty |- it : telem or telem = null
-		if (telem === null) {
-			false
-		} else {
+		if (telem !== null) {
 			telems.add(telem)
-			true
 		}
+		telem !== null
 	]) {
 		telems.fold(emptyNothing, [ RListType acc, RListType telem |
 			if (acc === null) {
