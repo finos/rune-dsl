@@ -582,16 +582,28 @@ The type of the expression is the type of the expression contained in the *then 
 
 ### Comparison Operator
 
-The result type of a comparison operator is always boolean
+The result type of a comparison operator is always a boolean
 
 - `=` - Equals. Returns *true* if the left expression is equal to the right expression, otherwise false. Basic types are equal if their values are equal. Two complex rosetta types are equal if all of their attributes are equal, recursing down until all basic typed attributes are compared.
 - `<>` - Does not equal. Returns *false* if the left expression is equal to the right expression, otherwise true.
 - `<`, `<=`, `>=`, `>` - performs mathematical comparisons on the left and right values. Both left and right have to evaluate to numbers or lists of numbers.
-- `exists` - returns true if the left expression returns a result. This can be further modified with additional keywords.
+- `exists` - returns true if the left expression returns a result. This operator can be further modified with qualifying keywords:
   - `only` - the value of left expression exists and is the only attribute with a value in its parent object.
   - `single` - the value of expression either has single cardinality or is a list with exactly one value.
   - `mutiple` - the value expression has more than 2 results
 - `is absent` - returns true if the left expression does not return a result.
+
+The `only exists` syntax drastically reduces the condition expression, which would otherwise require to combine one `exists` with multiple `is absent` applied to all other attributes. It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for `is absent`.
+
+As shown in the below example, the `only exists` operator can apply to a composite set of attributes enclosed within brackets `(..)`. In this case, the operator returns true when all the attribues in the set have a value, and no other attribute in the parent object does.
+
+``` Haskell
+economicTerms -> payout -> interestRatePayout only exists or (economicTerms -> payout -> interestRatePayout, economicTerms -> payout -> cashflow) only exists
+```
+
+{{< notice info "Note" >}}
+This condition is typically applied to attributes of a type that implements a [`one-of`](#one-of) condition. In this case, the `only` qualifier is redundant with the `one-of` condition because only one of the attributes can exist. However, `only` makes the condition expression more explicit, and also robust to potential lifting of the `one-of` condition.
+{{< /notice >}}
 
 ### Comparison Operator and Null
 
@@ -779,7 +791,7 @@ observationEvent -> primitives only-element -> observation
 
 ### List Comparison Operator
 
-Rosetta also has operators that are designed to function on lists
+Rosetta also has comparison operators that are designed to function on lists and that always return a boolean:
 
 - `contains` - returns true if every element in the right hand expression is equal to an element in the left hand expression
 - `disjoint` - returns true if no element in the left side expression is equal to any element in the right side expression
@@ -873,18 +885,18 @@ type ConstituentWeight:
 Conditions are included in the definition of the data type that they are associated to, so they are \"aware\" of the context of that data type. This is why attributes of that data type can be directly used to express the validation logic, without the need to refer to the type itself.
 {{< /notice >}}
 
-## Special Syntax
+## Choice Rule
 
-Some specific language features have been introduced in the Rosetta DSL, to handle validation cases where the basic boolean logic components would create unnecessarily verbose, and therefore less readable, expressions. Those use-cases were deemed frequent enough to justify developing a specific syntax for them.
+Some language features called *choice rules* have been introduced in the Rosetta DSL to handle the correlated existence or absence of attributes in regards to other attributes. Those use-cases were deemed frequent enough and handling them through basic boolean logic components would have create unnecessarily verbose, and therefore less readable, expressions.
 
 ### Choice
 
-Choice rules define a choice constraint between the set of attributes of a type in the Rosetta DSL. They allow a simple and robust construct to translate the XML *xsd:choicesyntax*, although their usage is not limited to those XML use cases.
+A choice rules defines a mutual exclusion constraint between the set of attributes of a type in the Rosetta DSL. They allow a simple and robust construct to translate the XML *xsd:choicesyntax*, although their usage is not limited to those XML use cases.
 
 The choice constraint can be either:
 
-- **optional**, represented by the `optional choice` syntax, when at most one of the attributes needs to be present, or
-- **required**, represented by the `required choice` syntax, when exactly one of the attributes needs to be present
+- *optional*, represented by the `optional choice` syntax, when at most one of the attributes needs to be present, or
+- *required*, represented by the `required choice` syntax, when exactly one of the attributes needs to be present
 
 ``` Haskell
 type NaturalPerson: <"A class to represent the attributes that are specific to a natural person.">
@@ -919,9 +931,9 @@ While most of the choice rules have two attributes, there is no limit to the num
 Members of a choice rule need to have their lower cardinality set to 0, something which is enforced by a validation rule.
 {{< /notice >}}
 
-### One-of (as complement to choice rule)
+### One-of
 
-In the case where all the attributes of a given type are subject to a required choice logic that results in one and only one of them being present in any instance of that type, the Rosetta DSL allows to associate a `one-of` condition to the type, as short-hand to by-pass the implementation of the corresponding choice rule.
+The Rosetta DSL supports the special case where a required choice logic applies to all the attributes of a given type, resulting in one and only one of them being present in any instance of that type. In this case, the `one-of` syntax provides a short-hand to by-pass the implementation of the corresponding choice rule.
 
 This feature is illustrated below:
 
@@ -931,23 +943,6 @@ type PeriodRange:
   upperBound PeriodBound (0..1)
   condition: one-of
 ```
-
-### Only Exists
-
-The `only exists` component is an adaptation of the simple `exists` syntax, that verifies that the attribute exists but also that no other attribute of the type does.
-
-``` Haskell
-func Qualify_AssetClass_InterestRate_Swap:
-  inputs: economicTerms EconomicTerms (1..1)
-  output: is_product boolean (1..1)
-  assign-output is_product: economicTerms -> payout -> interestRatePayout only exists or (economicTerms -> payout -> interestRatePayout, economicTerms -> payout -> cashflow) only exists
-```
-
-This syntax drastically reduces the condition expression, which would otherwise require to combine one `exists` with multiple `is absent` (applied to all other attributes). It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for `is absent`.
-
-{{< notice info "Note" >}}
-This condition is typically applied to attributes of objects whose type implements a `one-of` condition. In this case, the `only` qualifier is redundant with the `one-of` condition because only one of the attributes can exist. However, `only` makes the condition expression more explicit, and also robust to potential lifting of the `one-of` condition.
-{{< /notice >}}
 
 # Function Component
 
@@ -1091,7 +1086,7 @@ Alternatively, the output can be built by directly assigning it a value using th
 set <RosettaPathExpression>: <RosettaExpression>
 ```
 
-The [`<RosettaPathExpression>`](#rosetta-path-expression) can be used to set individual attributes of the return object , while [`<RosettaExpression>`](#expression-component) allows to calculate the output value from the inputs.
+The [`<RosettaPathExpression>`](#path-expression) can be used to set individual attributes of the return object , while [`<RosettaExpression>`](#expression-component) allows to calculate the output value from the inputs.
 
 The `Create_VehicleOwnership` example could be rewritten as follows:
 
