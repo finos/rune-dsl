@@ -520,11 +520,11 @@ Constants can also be declared as lists using a comma separated list of expressi
 
 ### Purpose
 
-A path expression is used to return the value of an attribute inside a Rosetta object. Path expressions can be chained in order to refer to attributes located further down inside that Rosetta object.
+A path expression is used to return the value of an attribute inside an object. Path expressions can be chained in order to refer to attributes located further down inside that object.
 
 ### Syntax
 
-The simplest Rosetta path expression is just the name of an attribute. In the example below, the `before` attribute of a `ContractFormationPrimitive` object is checked for [existence](#comparison-operators) inside a [condition](#condition-statement) associated to that data type.
+The simplest path expression is just the name of an attribute. In the example below, the `before` attribute of a `ContractFormationPrimitive` object is checked for [existence](#comparison-operators) inside a [condition](#condition-statement) associated to that data type.
 
 ``` {.Haskell emphasize-lines="7"}
 type ContractFormationPrimitive:
@@ -551,10 +551,10 @@ type Confirmation: <"A class to specify a trade confirmation.">
         if lineage -> executionReference -> tradableProduct -> product -> security exists
 ```
 
-If a Rosetta path is applied to an attribute that does not have a value in the object it is being evaluated against, the result is *null* - i.e. there is no value. If an attribute of that non-existant object is further evaluated, the result is still *null*. In the above example, if `executionReference` is *null*, the final `security` attribute will also evaluate to *null*.
+If a path expression is applied to an attribute that does not have a value in the object it is being evaluated against, the result is *null* - i.e. there is no value. If an attribute of that non-existant object is further evaluated, the result is still *null*. In the above example, if `executionReference` is *null*, the final `security` attribute will also evaluate to *null*.
 
 {{< notice info "Note" >}}
-In situations where the context of the object in which the Rosetta path expression should be evaluated is not already specified (e.g. reporting rules or conditional mapping), the Rosetta path should begin with the data type name e.g. `WorkflowStep -> eventIdentifier`. where applicable, this requirement is enforced by syntax validation in the Rosetta DSL.
+In situations where the context of the object in which the path expression should be evaluated is not already specified (e.g. reporting rules or conditional mapping), the path should begin with the data type name e.g. `WorkflowStep -> eventIdentifier`. where applicable, this requirement is enforced by syntax validation in the Rosetta DSL.
 {{< /notice >}}
 
 ## Operator
@@ -765,13 +765,11 @@ The `map` keyword was chosen as it is the most widely used term for this use-cas
 
 Reduction consists of a set of operations that returns a single value based on elements of a list.
 
-- `count` - returns the number of elements in a list
 - `only-element` - provided that a list contains one and only one element, returns that element
+- `count` - returns the number of elements in a list (and the syntax enforces that the expression before `count` has multiple cardinality)
 - `sum` - returns the sum of the elements of a list of numbers
 - `max`, `min` - returns the minimum or maximum of a list of numbers
 - `join` - returns the concatenated values of a list of strings
-
-The syntax enforces that the expression before `count` has multiple cardinality.
 
 The `only-element` keyword imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to [null](#comparison-operator-and-null), an empty list or a list with more than one value, then the expression result will be null:
 
@@ -807,43 +805,6 @@ The semantics for list comparisons are as follows:
   - if one side is single and `any` is specified then at least one element in the list must be `>` that single value (unimplemented)
 
 An expression that is expected to return multiple cardinality that returns null is considered to be equivalent to an empty list
-
-## Function calls
-
-### Purpose
-
-An expression can be a call to a [function](#function-component), that returns the output of that function evaluation.
-
-### Syntax
-
-A function call consists of the function name, followed by a comma separated list of arguments enclosed within round brackets `(...)`.
-
-The arguments list is a list of expressions. The number and type of the expressions must match the inputs defined by the function definition. This will be enforced by the syntax validator.
-
-The type of a Function call expression is the type of the output of the called function.
-
-In the last line of the example below the Max function is called to find the larger of the two WhichIsBigger function arguments, which is then compared to the first argument. The if expression surrounding this will then return \"A\" if the first argument was larger, \"B\" if the second was larger.
-
-``` {.Haskell emphasize-lines="18"}
-func Max:
-    inputs:
-        a number (1..1)
-        b number (1..1)
-    output:
-        r number (1..1)
-    assign-output r:
-        if (a>=b) then a
-        else b
-
-func WhichIsBigger:
-    inputs:
-        a number (1..1)
-        b number (1..1)
-    output:
-        r string (1..1)
-    assign-output r:
-        if Max(a,b)=a then "A" else "B"
-```
 
 # Data Validation Component
 
@@ -1247,7 +1208,7 @@ The above example builds an interest rate calculation using aliases to define th
 
 ### Short-Hand Function
 
-Short-hand functions are functions which are designed to provide a compact syntax for operations that need to be frequently invoked in the model - for instance, model indirections when the corresponding model expression may be deemed too long or cumbersome:
+Short-hand functions are functions that provide a compact syntax for operations that need to be frequently invoked in a model - for instance, model indirections where the corresponding path expression may be deemed too long or cumbersome:
 
 ``` Haskell
 func PaymentDate:
@@ -1256,10 +1217,51 @@ func PaymentDate:
   assign-output result: economicTerms -> payout -> interestRatePayout only-element -> paymentDate -> adjustedDate
 ```
 
-which could be invoked as part of multiple other functions that use the `EconomicTerms` object by simply stating:
+which could be invoked as part of multiple other functions that use the `EconomicTerms` object by simply writing:
 
 ``` Haskell
 PaymentDate( EconomicTerms )
+```
+
+## Function Call
+
+### Purpose
+
+The Rosetta DSL allows to express a function call that returns the output of that function evaluation.
+
+### Syntax
+
+A function call consists of the function name, followed by a comma-separated list of arguments enclosed within round brackets `(...)`:
+
+```
+<FunctionName>( <Argument1>, <Argument2>, ...)
+```
+
+The arguments list is a list of expressions. The number and type of the expressions must match the inputs defined by the function definition. This will be enforced by the syntax validator.
+
+The type of a function call expression is the type of the output of the called function.
+
+In the last line of the example below, the `Max` function is called to find the larger of the two `WhichIsBigger` function arguments, which is then compared to the first argument. The if expression surrounding this will then return \"A\" if the first argument was larger, \"B\" if the second was larger.
+
+``` {.Haskell emphasize-lines="18"}
+func Max:
+    inputs:
+        a number (1..1)
+        b number (1..1)
+    output:
+        r number (1..1)
+    assign-output r:
+        if (a>=b) then a
+        else b
+
+func WhichIsBigger:
+    inputs:
+        a number (1..1)
+        b number (1..1)
+    output:
+        r string (1..1)
+    assign-output r:
+        if Max(a,b)=a then "A" else "B"
 ```
 
 # Namespace Component
