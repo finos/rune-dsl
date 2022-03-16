@@ -483,9 +483,9 @@ The Rosetta DSL is not a *Turing-complete* language: e.g. it does not support lo
 Logical expressions are used within the following modelling components:
 
 - [Functions](#function-component),
-- [Data type validation conditions](#condition-statement),
+- [Validation conditions](#condition-statement),
 - [Conditional mappings](#when-clause) and
-- [Report Rules](#rule-definition)
+- [Reporting rules](#rule-definition)
 
 Expressions are evaluated within the context of a Rosetta object to return a result. The result of an expression can be either:
 
@@ -1531,11 +1531,11 @@ interestRatePayout InterestRatePayout (0..*)
 
 ### Conditional Mappings
 
-Conditional mappings allow more complicated mappings to be done. Conditional mappings come in two types, [Set To](#set-to-mapping) and [Set When](#set-when-mapping).
+Conditional mappings allow more complicated mappings to be done. Conditional mappings come in two types: set-to and set-when.
 
 #### Set To Mapping
 
-Set To mappings are used to set the value of the Rosetta attribute to a constant value. They don\'t attempt to use any data from the input document as the value for the attribute and a synonym value must not be given. The type of the constant must be convertible to the type of the attribute. The constant value can be given as a string (converted as necessary) or an enum.
+Set-to mappings are used to set the value of the Rosetta attribute to a constant value. They don\'t attempt to use any data from the input document as the value for the attribute and a synonym value must not be given. The type of the constant must be convertible to the type of the attribute. The constant value can be given as a string (converted as necessary) or an enum.
 
 e.g. :
 
@@ -1546,7 +1546,7 @@ itemName string (1..1) <"In this ....">;
   [synonym DTCC_11_0 set to "comment"]
 ```
 
-A set to mapping can be conditional on a [when clause](#when-clauses)
+A set to mapping can be conditional on a [when clause](#when-clause)
 
 e.g. :
 
