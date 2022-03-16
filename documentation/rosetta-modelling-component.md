@@ -23,24 +23,59 @@ This documentation details the purpose and features of each type of model compon
 
 # Data Component
 
-**The Rosetta DSL provides two data definition components** that are used to model data:
+**The Rosetta DSL provides three components to represent data** in a model:
 
-- [Type](#type)
+- [Built-in type](#built-in-type)
+- [Data type](#data-type)
 - [Enumeration](#enumeration)
 
-## Type
+Those three components are often collectively referred to as *types*.
+
+## Built-in Type
+
+Rosetta includes a number of built-in types that are defined at the language level. Those built-in types are deemed fundamental and applicable to any model.
+
+### Basic Type
+
+Rosetta defines five *basic types*. The set of basic types available in the Rosetta DSL are controlled by defining them as `basicType` at the language level.
+
+- `string` - text
+- `int` - integer numbers
+- `number` - decimal numbers
+- `boolean` - logical true of false
+- `time` - simple time values, e.g. \"05:00:00\"
+
+### Record Type
+
+Rosetta defines two additional built-in types known as *record types*. The list is controlled by defining them as `recordType` at the language level.
+
+- `date` - specified by combining a day, month and year
+- `zonedDateTime` - combines a `date`, simple `time` and time-zone `string` specification to unambiguously refer to a single instant in time
+
+Record types are simplified data types because:
+
+- they are pure data definitions and do not allow specification of validation logic in a [condition](#condition-statement).
+- they are handled specially in the code-generators and so form part of the Rosetta DSL rather than any specific model.
+
+{{< notice info "Note" >}}
+As an alternative to `zonedDateTime`, a model may define a business centre time, where a simple `time` \"5:00:00\" is specified alongside a business centre. The simple time should be interpreted with the time-zone information of the associated business centre.
+{{< /notice >}}
+
+## Data Type
 
 ### Purpose
 
-A *type* describes a logical concept of the business domain being modelled - also sometimes referred to as an *entity*, *object* or *class*. It is specified by a plain-text description and a set of *attributes* defining the granular elements composing the entity - also sometimes referred to as *fields*.
+A *data type* describes a logical concept of the business domain being modelled - also sometimes referred to as an *entity*, *object* or *class*. It is specified through a set of *attributes* defining the granular elements composing that concept - also sometimes referred to as *fields*.
+
+By contrast with the built-in types, the data types that are defined in the model are also often referred to as *complex types*.
 
 ### Syntax
 
 The definition of a type starts with the keyword `type`, followed by the type name. A colon `:` punctuation introduces the rest of the definition.
 
-The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names need to be unique across a [namespace](#namespace-component). All those requirements are controlled by the Rosetta DSL grammar.
+The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names need to be unique across a [namespace](#namespace-component). All those requirements are enforced by the Rosetta DSL syntax validation.
 
-The first component of the definition is a plain-text description of the type, as a string enclosed within angle brackets: `<"..">`.
+The first component of the definition is a plain-text [description](#description) of the type, as a string enclosed within angle brackets: `<"..">`.
 
 After the description come any further [meta-data annotations](#meta-data-component) that are applied to this type. Meta-data are enclosed within square brackets `[...]`.
 
@@ -52,11 +87,11 @@ type VehicleOwnership: <"Representative record of vehicle ownership">
 
 Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
 
-- name - Required - Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
-- type - Required - Each attribute can be specified as either a [basic type](#basic-type), [record type](#record-type), [data type] or [enumeration](#enumeration).
-- cardinality - Required - see [Cardinality](#cardinality)
-- description - Optional but recommended) - A description of the attribute using the same angle bracket `<"..">` syntax as the type description
-- annotations - Optional - Annotations such as [synonyms](#mapping-component) or metadata can be applied to attributes
+- name - Required. Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
+- type - Required. Each attribute can be specified as either a [built-in type](#built-in-type), [data type](#data-type) or [enumeration](#enumeration).
+- cardinality - Required. See [Cardinality](#cardinality).
+- description - Optional, recommended. A plain-text [description](#description) enclosed within angle bracket `<"..">`.
+- annotations - Optional. Annotations such as [synonyms](#mapping-component) or [metadata](#meta-data-component) can be applied to attributes.
 
 ``` Haskell
 type Engine: <"Description of the engine.">
@@ -86,43 +121,11 @@ type Vehicle extends VehicleFeature:
 For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet is to highlight some of those features.
 {{< /notice >}}
 
-## Built-in type
-
-Rosetta includes a number of built-in types that are defined at the language level and do not need to be redefined with each model. By contrast, the types that are not built-in and which a model defines are often referred to as *complex types*.
-
-### Basic Type
-
-Rosetta defines five fundamental data types. The set of basic types available in the Rosetta DSL are controlled at the language level by the `basicType` definition:
-
-- `string` - Text
-- `int` - integer numbers
-- `number` - decimal numbers
-- `boolean` - logical true of false
-- `time` - simple time values (e.g. \"05:00:00\")
-
-### Record Type
-
-Rosetta defines two additional types known as *record types*:
-
-- `date`
-- `zonedDateTime`
-
-The set of record types available in the Rosetta DSL are controlled at the language level by the `recordType` definition.
-
-Record types are simplified data types:
-
-- Record types are pure data definitions and do not allow specification of validation logic in a [condition](#condition-statement).
-- Record types are handled specially in the code-generators and so form part of the Rosetta DSL rather than any specifc model.
-
-The `zonedDateTime` is a special record type that unambiguously refers to a single instant of time.
-
-Alternatively, a model could define a data type `BusinessCenterTime`, where a simple `time` \"5:00:00\" is specified alongside a business center. The simple time should be interpreted with the time-zone information of the associated business centre.
-
 ## Enumeration
 
 ### Purpose
 
-**Enumeration is the mechanism through which an attribute may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled (or enumeration) values.
+**Enumeration is the mechanism through which an attribute may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled values.
 
 This mimics the *scheme* concept, whose values may be specified as part of an existing standard and can be represented through an enumeration in the Rosetta DSL. Typically, a scheme with no defined values is represented as a basic `string` type.
 
@@ -162,9 +165,9 @@ enum DayCountFractionEnum:
 
 # Meta-Data Component
 
-Meta-data are key parts of the syntax allowing rich definitions to all model components including the [data](#data-component), [reporting](#reporting-component) and [function](#function-component) components.
+Meta-data are syntax features that allow to associate rich definitions to all other model components, including data and functions.
 
-## Descriptions
+## Description
 
 ### Purpose
 
@@ -178,9 +181,9 @@ The syntax to add a description uses quotation marks in between angle brackets `
 
 ### Purpose
 
-A document reference is a type of meta-data description that can associate information published in a separate document to model components. The Rosetta DSL allows to define those specific documents, who owns them and their content as direct model components, and to associate them to any other [data](#data-component) or [function](#function-component) components.
+A document reference is a type of meta-data description that can associate information published in a separate document to model components. The Rosetta DSL allows to define those specific documents, who owns them and their content as direct model components, and to associate them to any other model components such as data or functions.
 
-### Document Hierarchy
+### Hierarchy Syntax
 
 There are 3 syntax components to define the hierarchy of document references:
 
@@ -247,9 +250,9 @@ Once a segment type is defined, it can be associated to an identifier (i.e some 
 article "26" paragraph "2"
 ```
 
-### Document Reference
+### Reference Syntax
 
-A document reference is created using the `docReference` syntax. This `docReference` must be associated to a `corpus` and `segment` defined according to the [document reference hierarchy](#document-hierarchy) section. The document reference can copy the actual text being referred to using the `provision` syntax.
+A document reference is created using the `docReference` syntax. This `docReference` must be associated to a `corpus` and `segment` defined according to the document hierarchy. The document reference can copy the actual text being referred to using the `provision` syntax.
 
 ``` Haskell
 [docReference <Body> <Corpus>
@@ -260,7 +263,7 @@ A document reference is created using the `docReference` syntax. This `docRefere
   provision <"ProvisionText">]
 ```
 
-In some instances, a model type may have a different naming convention based on the context in which it is being used, for example a legal definition may refer to the data type with a different name. The `docReference` syntax allows a type to be annotated using the naming convention `segment` with the `body` and `corpus` that define it.
+In some instances, a model type may have a different naming convention based on the context in which it is being used: for example, a legal definition may refer to the data type with a different name. The `docReference` syntax allows a type to be annotated using the naming convention `segment` with the `body` and `corpus` that define it.
 
 ``` Haskell
 type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
@@ -284,7 +287,7 @@ type PayerReceiver: <"Specifies the parties responsible for making and receiving
 
 ### Purpose
 
-Annotations are a mechanism that allow additional meta-data components to be to specified in a model (beyond the ones already provided by the Rosetta DSL, such as decriptions or documemnt references). Those meta-data components can be then associated to model components to serve a number of purposes:
+Annotations allow to specify additional meta-data components in a model, beyond the decription and document reference already provided by the Rosetta DSL. Those annotation components can be then associated to model components to serve a number of purposes:
 
 - to add constraints to a model that may be enforced by syntax validation
 - to modify the actual behaviour of a model in generated code
@@ -296,10 +299,6 @@ Examples of annotations and their usage for different purposes are illustrated b
 
 Annotations are defined in the same way as other model components. The definition of an annotation starts with the `annotation` keyword, followed by the annotation name. A colon `:` punctuation introduces the rest of the definition, starting with a plain-text description of the annotation.
 
-Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase.
-
-It is possible to associate attributes to an annotation (see [metadata](#meta-data-and-reference) example), even though some annotations may not require any further attribute. For instance:
-
 <a id='roottype-label'></a>
 
 ``` Haskell
@@ -308,7 +307,9 @@ annotation rootType: <"Mark a type as a root of the rosetta model">
 annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
 ```
 
-An annotation can be added to a Rosetta Type or attribute by enclosing the name of the annotation in square brackets.
+Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase. It is also possible to associate attributes to an annotation: see [metadata](#meta-data-and-reference) example.
+
+Once an annotation is defined, model components can be annotated with its name and chosen attribute, if any, in between square brackets `[..]`.
 
 ## Meta-Data and Reference
 
@@ -385,7 +386,7 @@ Some annotations, such as this metadata qualification, may be provided as standa
 
 ### Syntax
 
-Once an annotation is defined, its name and chosen attribute, if any, are used in between square brackets `[` `]` to annotate model components. The below `Party` and `Identifier` types illustrate how meta-data annotations and their relevant attributes can be used in a model:
+The below `Party` and `Identifier` types illustrate how meta-data annotations and their relevant attributes can be used in a model:
 
 ``` Haskell
 type Party:
@@ -483,16 +484,15 @@ Logical expressions are used within the following modelling components:
 
 - [Functions](#function-component),
 - [Data type validation conditions](#condition-statement),
-- [Conditional mappings](#when-clauses) and
+- [Conditional mappings](#when-clause) and
 - [Report Rules](#rule-definition)
 
 Expressions are evaluated within the context of a Rosetta object to return a result. The result of an expression can be either:
 
-- a single [basic type](#basic-type) value: e.g. 2.0, True, \"USD\",
-- a single Rosetta object (data type or enumeration): e.g. a `Party` object or
-- a [list](#list) of results, all of the same type (basic type or Rosetta object).
+- a single value, which can itself be either of the available types: [built-in](#built-in-type), [complex](#data-type) or [enumeration](#enumeration)
+- a [list](#list) of values, all of the same type from the above
 
-The type of an expression is the type of the result that it will evaluate to. E.g. an expression that evaluates to True or False is of type boolean, an expression that evaluates to a list of `Party` is of type `List of Party`.
+The type of an expression is the type of the result that it will evaluate to. E.g. an expression that evaluates to True or False is of type `boolean`, an expression that evaluates to a `Party` is of type `Party`, etc.
 
 The below sections detail the different types of Rosetta expressions and how they are used.
 
@@ -500,11 +500,11 @@ The below sections detail the different types of Rosetta expressions and how the
 
 ### Purpose
 
-An expression can be a [basic type](#basic-type) constant such as 2.0, True or \"USD\". Constant expressions are useful for comparisons to more complex expressions.
+An expression can be a [built-in-type](#built-in-type) constant - e.g. 2.0, True or \"USD\". Constant expressions are useful for comparisons to more complex expressions.
 
 ### Enumeration Constant
 
-An expression can refer to a Rosetta Enumeration value using the name of the enumeration type followed by `->` and the name of the enumeration value. E.g. :
+An expression can refer to an enumeration value using the name of the enumeration type followed by `->` and the name of the enumeration value. E.g. :
 
 ```
 DayOfWeekEnum -> SAT
@@ -1043,9 +1043,9 @@ This concept of combining and reusing small components is also consistent with a
 
 ### Purpose
 
-**Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function\'s inputs and/or output through their *types* (or *enumerations*) in the data model. This amounts to specifying the [API](https://en.wikipedia.org/wiki/Application_programming_interface) that implementors should conform to when building the function that supports the corresponding process.
+**Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function\'s inputs and/or output through their types in the data model. This amounts to specifying the [API](https://en.wikipedia.org/wiki/Application_programming_interface) that implementors should conform to when building the function that supports the corresponding process.
 
-Standardising those APIs guarantees the integrity, inter-operability and consistency of the automated processes supported by the domain model.
+Standardising those guarantees the integrity, inter-operability and consistency of the automated processes supported by the domain model.
 
 ### Syntax
 
@@ -1137,7 +1137,7 @@ The function syntax intentionally mimics the type syntax in the Rosetta DSL rega
 
 ## Function Definition
 
-**The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function\'s API. Because the Rosetta DSL only provides a limited set of language features, it is not always possible to fully define that logic in the DSL. The creation of valid output object can be fully or partially defined as part of a function specification, or completely left to the implementor.
+**The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function\'s inputs and output. Because the Rosetta DSL only provides a limited set of language features, it is not always possible to fully define that logic in the DSL. The creation of valid output object can be fully or partially defined as part of a function specification, or completely left to the implementor.
 
 - **A function is fully defined** when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the code generated from the function expressed in the Rosetta DSL is fully functional and can be used in an implementation without any further coding.
 - **A function is partially defined** when the output object\'s validation constraints are only partially satisfied. In this case, implementors will need to extend the generated code, using the features of the corresponding programming language to assign the remaining values on the output object.
@@ -1460,18 +1460,18 @@ the input value associated with \"issuer\" will be mapped to the value of the at
 
 ### Enumerations
 
-A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the fpml value \'Broker\' will be mapped to the Rosetta enum value *NaturalPersonRoleEnum.Broker* :
+A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the FpML value `Broker` will be mapped to the enumeration value `NaturalPersonRoleEnum.Broker` in Rosetta:
 
 ```
 enum NaturalPersonRoleEnum: <"The enumerated values for the natural person's role.">
 
-Broker <"The person who arranged with a client to execute the trade.">
-  [synonym FpML_5_10 value "Broker"]
+  Broker <"The person who arranged with a client to execute the trade.">
+    [synonym FpML_5_10 value "Broker"]
 ```
 
 #### External enumeration synonyms
 
-In an external synonym file `enum` synonyms are defined in a block after the type attribute synonyms, preceded by the keyword *enums* :
+In an external synonym file `enum` synonyms are defined in a block after the type attribute synonyms, preceded by the keyword `enums` :
 
 ```
 enums
@@ -1483,7 +1483,7 @@ NaturalPersonRoleEnum:
 
 ## Advanced Mapping
 
-The algorithm starts by *binding* the root of the input document to a pre-defined [root type](#annotation) in the model.
+The algorithm starts by *binding* the root of the input document to a pre-defined [root type](#roottype-label) in the model.
 
 It then [recursively](https://en.wikipedia.org/wiki/Recursion_(computer_science)) traverses the input document.
 
@@ -1522,7 +1522,7 @@ interestRatePayout InterestRatePayout (0..*)
   [synonym FpML_5_10 value generalTerms]
 ```
 
-will produce two InterestRatePayout objects. In order to create a single InterestRatePayout with values from the FpML feeLeg and generalTerms the synonym merging syntax should be used:
+will produce two InterestRatePayout objects. In order to create a single InterestRatePayout with values from the FpML `feeLeg` and `generalTerms` the synonym merging syntax should be used:
 
 ```
 interestRatePayout InterestRatePayout (0..*)
@@ -1531,9 +1531,9 @@ interestRatePayout InterestRatePayout (0..*)
 
 ### Conditional Mappings
 
-Conditional mappings allow more complicated mappings to be done. Conditional mappings come in two types, [Set To](#set-to-mapping) and [Set When](#set-when-mappings).
+Conditional mappings allow more complicated mappings to be done. Conditional mappings come in two types, [Set To](#set-to-mapping) and [Set When](#set-when-mapping).
 
-#### Set To Mappings
+#### Set To Mapping
 
 Set To mappings are used to set the value of the Rosetta attribute to a constant value. They don\'t attempt to use any data from the input document as the value for the attribute and a synonym value must not be given. The type of the constant must be convertible to the type of the attribute. The constant value can be given as a string (converted as necessary) or an enum.
 
@@ -1567,7 +1567,7 @@ xField string (1..1);
     set to "DEFAULT"]
 ```
 
-#### Set When mappings
+#### Set When mapping
 
 A set when mapping is used to set an attribute to a value derived from the input document if a given when clause is met
 
@@ -1586,9 +1586,9 @@ e.g. :
 [synonym Bank_A value e path "b.c" default to "DEFAULT"]
 ```
 
-### When clauses
+### When clause
 
-There are three types of when clause; Test expression, Path expression or RosettaPath expression.
+There are three types of `when` clauses: test expression, input path expression and output path expression.
 
 #### Test Expression
 
@@ -1681,7 +1681,7 @@ One of the first challenges of expressing regulatory rules for the financial dom
 
 ### Syntax
 
-To organise such regulatory content within a model, the Rosetta DSL supports a number of syntax components that allow to refer to specific documents, their content and who owns them as direct model components. Those components are defined in the [document reference hierarchy](#document-hierarchy) section.
+To organise such regulatory content within a model, the Rosetta DSL supports a number of syntax components that allow to refer to specific documents, their content and who owns them as direct model components. Those components are defined in the [document reference hierarchy](#hierarchy-syntax) section.
 
 ## Report Definition
 
