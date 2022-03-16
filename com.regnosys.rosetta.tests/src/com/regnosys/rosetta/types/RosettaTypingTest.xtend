@@ -64,6 +64,7 @@ class RosettaTypingTest {
 		'empty all <> 5.0'.assertIsValidWithType(singleBoolean)
 		'[1, 3] any = 5.0'.assertIsValidWithType(singleBoolean)
 		'[3.0] any <> 5'.assertIsValidWithType(singleBoolean)
+		'5 any <> 5'.assertIsValidWithType(singleBoolean)
 	}
 	
 	@Test
@@ -71,7 +72,28 @@ class RosettaTypingTest {
 		'1 = True'
 			.parseExpression
 			.assertError(null, "Types `int` and `boolean` are not comparable.")
-		// TODO: write tests for list comparability + comparability with `all`/`any`
+		'empty = True'
+			.parseExpression
+			.assertError(null, "Cannot compare an empty value to a single `boolean`, as they cannot be of the same length. Perhaps you forgot to write `all` or `any` in front of the operator?")
+		'[1, 2] = [3, 4, 5]'
+			.parseExpression
+			.assertError(null, "Cannot compare a list of `int`s with 2 items to a list of `int`s with 3 items, as they cannot be of the same length.")
+		'[1, 2] <> [True, False, False]'
+			.parseExpression
+			.assertError(null, "Types `int` and `boolean` are not comparable.")
+		
+		'[1, 2] all = empty'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got an empty value instead.")
+		'empty all = empty'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got an empty value instead.")
+		'[1, 2] all = [1, 2]'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
+		'5 any <> [1, 2]'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
 	}
 	
 	@Test
