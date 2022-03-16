@@ -15,7 +15,7 @@ public class TypeValidationUtil {
 					.append(toCompleteDescription(expected))
 					.append(", but got ")
 					.append(toCompleteDescription(actual))
-					.append("instead.")
+					.append(" instead.")
 					.toString();
 		}
 		return unequalTypesMessage(expected.getItemType(), actual.getItemType());
@@ -36,7 +36,7 @@ public class TypeValidationUtil {
 					.append(toCompleteDescription(expected))
 					.append(", but got ")
 					.append(toCompleteDescription(actual))
-					.append("instead.")
+					.append(" instead.")
 					.toString();
 		}
 		return notASubtypeMessage(expected.getItemType(), actual.getItemType());
@@ -103,6 +103,9 @@ public class TypeValidationUtil {
 	public CharSequence toShortDescription(RListType t) {
 		StringBuilder b = new StringBuilder();
 		if (t.isEmpty()) {
+			if (t.getItemType().equals(RBuiltinType.NOTHING)) {
+				return "an empty value";
+			}
 			b.append("an empty value of type");
 		} else if (t.isOptional()) {
 			b.append("an optional");
@@ -134,7 +137,7 @@ public class TypeValidationUtil {
 				} else {
 					b.append("an unbounded list with at least ")
 						.append(c.getInf())
-						.append("item")
+						.append(" item")
 						.append(pluralS(c.getInf()));
 				}
 			} else {
@@ -146,7 +149,7 @@ public class TypeValidationUtil {
 						.append(" to ")
 						.append(c.getSup());
 				}
-				b.append("item")
+				b.append(" item")
 					.append(pluralS(c.getSup()));
 			}
 			return b.toString();
@@ -169,7 +172,7 @@ public class TypeValidationUtil {
 						.append(pluralS(c.getInf()));
 				}
 			} else {
-				b.append("an list of `")
+				b.append("a list of `")
 					.append(t.getItemType())
 					.append("`s with ");
 				if (c.getInf() == c.getSup()) {
