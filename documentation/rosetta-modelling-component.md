@@ -760,9 +760,76 @@ The `map` keyword was chosen as it is the most widely used term for this use-cas
 
 Reduction consists of a set of operations that returns a single value based on elements of a list.
 
-- `sum` - returns the sum of the elements of a list of numbers
-- `min`, `max` - returns the minimum or maximum of a list of numbers
-- `join` - returns the concatenated values of a list of strings
+- `sum` - returns the sum of the elements of a list of `int` or `number`
+- `min`, `max` - returns the minimum or maximum of a list of comparable elements (`int`, `number`, `date` and `string`)
+- `join` - returns the concatenated values of a list of `string`
+
+Some examples of usage are given below.
+
+``` Haskell
+func SumNumbers: <"Returns the sum of the given list of numbers.">
+    inputs:
+        numbers number (0..*)
+    output:
+        total number (1..1)
+
+    set total:
+        numbers sum
+```
+
+``` Haskell
+func FindMaxNumber: <"Returns the highest number from the given list of numbers, using the reduce keyword.">
+    inputs:
+        numbers number (0..*)
+    output:
+        result number (1..1)
+
+    set result:
+        numbers max
+```
+
+For `join`, the operator can (optionally) specify a delimiter to insert in-between each string element:
+
+``` Haskell
+func JoinStrings: <"Concatenates the list of strings, separating each element with the given delimiter, using the join keyword.">
+    inputs:
+        strings string (0..*)
+    output:
+        result string (1..1)
+
+    set result:
+        strings join [ ", " ]
+```
+
+The `min`/`max` keyword can also operate on complex, non-comparable types, provided that they include comparable attributes. In this case, the operator must specify an expression on which to perform the comparison. Note that the `min`/`max` operator returns the corresponding complex element, rather than the value on which the comparison is made.
+
+``` Haskell
+func FindVehicleWithMaxPower: <"Returns the vehicle with the highest power engine.">
+    inputs:
+        vehicles Vehicle (0..*)
+    output:
+        vehicleWithMaxPower Vehicle (1..1)
+
+    set vehicleWithMaxPower:
+        vehicles
+            max [ item -> specification -> engine -> power ]
+```
+
+Reduction works by performing an operation to merge two adjacent elements of a list into one, and so on recursively until there is only one single element left. All the reduction operators above are therefore short-hand special cases of the generic `reduce` operator that works as follows:
+
+``` Haskell
+func FindVehicleWithMaxPowerUsingReduce: <"Returns the vehicle with the highest power engine, using the reduce keyword.">
+    inputs:
+        vehicles Vehicle (0..*)
+    output:
+        vehicleWithMaxPower Vehicle (1..1)
+
+    set vehicleWithMaxPower:
+        vehicles
+            reduce v1, v2 [
+                if v1 -> specification -> engine -> power > v2 -> specification -> engine -> power then v1 else v2
+                ]
+```
 
 ### List Comparison
 
@@ -789,7 +856,7 @@ The semantics for list comparisons are as follows:
 - `<`, `<=`, `>=`, `>`
   - if both sides are lists then every element in the first list must be `>` the element in the corresponding position in the second list
   - if one side is single and `all` is specified then every element in the list must be `>` that single value
-  - if one side is single and `any` is specified then at least one element in the list must be `>` that single value (unimplemented)
+  - if one side is single and `any` is specified then at least one element in the list must be `>` that single value (not implemented yet)
 
 ### Other List Operator
 
