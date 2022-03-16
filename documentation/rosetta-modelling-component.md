@@ -582,7 +582,7 @@ The type of the expression is the type of the expression contained in the *then 
 
 ### Comparison Operator
 
-The result type of a comparison operator is always a boolean
+The result type of a comparison operator is always a boolean.
 
 - `=` - Equals. Returns *true* if the left expression is equal to the right expression, otherwise false. Basic types are equal if their values are equal. Two complex rosetta types are equal if all of their attributes are equal, recursing down until all basic typed attributes are compared.
 - `<>` - Does not equal. Returns *false* if the left expression is equal to the right expression, otherwise true.
@@ -645,11 +645,9 @@ Expressions are evaluated in Rosetta in the following order (See [Operator Prece
 1. and - e.g. `5>6 and true`
 1. or - e.g. `5>6 or true`
 
-## List Operator
+## List
 
-### List
-
-A list is an ordered collection of items. A path expression that refers to an attribute with multiple [cardinality](#cardinality) will result in a list of values. If a chained path expression contains multiple attributes with multiple cardinality, the result is a flattened list. For example (as extracted from the `Qualify_CashTransfer` function):
+A list is an ordered collection of items of the same data type (basic, complex or enumeration). A path expression that refers to an attribute with multiple [cardinality](#cardinality) will result in a list of values. If a chained [path expression](#path-expression) contains multiple attributes with multiple cardinality, the result is a flattened list. For example (as extracted from the `Qualify_CashTransfer` function):
 
 ```
 businessEvent -> primitives -> transfer -> cashTransfer
@@ -657,9 +655,9 @@ businessEvent -> primitives -> transfer -> cashTransfer
 
 gets all the `cashTransferComponent` from all the `primitives` attributes as a single list.
 
-An expression that has the potential to return a value with *multiple cardinality* will always evaluate to a list of zero or more elements, regardless of whether the result contains a single or multiple elements.
+An expression that is expected to return a value with *multiple cardinality* will always evaluate to a list of zero or more elements, regardless of whether the result value contains a single or multiple elements. An expression that is expected to return multiple cardinality that returns null is considered to be equivalent to an empty list.
 
-To manipulate elements of a list, the Rosetta DSL provides a number of list operators that feature in usual programming languages:
+The Rosetta DSL provides a number of list operators that feature in usual programming languages:
 
 - Filter
 - Map
@@ -738,20 +736,6 @@ func FindOwnersWithinPenaltyPointLimit: <"Find all owners within penalty point l
             ]
 ```
 
-### Distinct
-
-The `distinct` operator is a special filtering feature that returns a subset of a list containing only distinct elements of that list.
-
-```
-quantity -> unitOfAmount -> currency distinct
-```
-
-This operatoer is useful to remove duplicate elements from a list. It can be combined with other syntax features such as `count` to determine if all elements of a list are equal.
-
-```
-payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
-```
-
 ### Map
 
 The `map` keyword allows to modify the items of a list based on an expression. For each list item, the expression specified in the square brackets is invoked to modify the item. The resulting list is assigned to the output.
@@ -777,21 +761,13 @@ The `map` keyword was chosen as it is the most widely used term for this use-cas
 
 Reduction consists of a set of operations that returns a single value based on elements of a list.
 
-- `only-element` - provided that a list contains one and only one element, returns that element
-- `count` - returns the number of elements in a list (and the syntax enforces that the expression before `count` has multiple cardinality)
 - `sum` - returns the sum of the elements of a list of numbers
-- `max`, `min` - returns the minimum or maximum of a list of numbers
+- `min`, `max` - returns the minimum or maximum of a list of numbers
 - `join` - returns the concatenated values of a list of strings
 
-The `only-element` keyword imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to [null](#comparison-operator-and-null), an empty list or a list with more than one value, then the expression result will be null:
+### List Comparison
 
-```
-observationEvent -> primitives only-element -> observation
-```
-
-### List Comparison Operator
-
-Rosetta also has comparison operators that are designed to function on lists and that always return a boolean:
+[Comparison operators](#comparison-operator) are operators that always return a boolean value. Rosetta provides syntax features to support those comparison operators to function on lists:
 
 - `contains` - returns true if every element in the right hand expression is equal to an element in the left hand expression
 - `disjoint` - returns true if no element in the left side expression is equal to any element in the right side expression
@@ -816,7 +792,32 @@ The semantics for list comparisons are as follows:
   - if one side is single and `all` is specified then every element in the list must be `>` that single value
   - if one side is single and `any` is specified then at least one element in the list must be `>` that single value (unimplemented)
 
-An expression that is expected to return multiple cardinality that returns null is considered to be equivalent to an empty list
+### Other List Operator
+
+Rosetta provides number of other list operators that are not captured by the above categories. For all these operators, the syntax enforces that the expression being operated on has multiple cardinality.
+
+- `only-element` - provided that a list contains one and only one element, returns that element
+- `count` - returns the number of elements in a list
+- `first`, `last` - returns the first or last element of a list
+- `flatten` - merges list elements into one single list, when those list elements are lists themeselves (and the syntax enforces that the expression being operated on is a list of a list)
+- `sort` - for a list of comparable elements (`int`, `number`, `date` and `string`), returns a list of those elements in sorted order
+- `distinct` - returns a subset of a list containing only distinct elements (i.e. where the `<>` operator return true) of that list
+
+The `only-element` keyword imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to [null](#comparison-operator-and-null), an empty list or a list with more than one value, then the expression result will be null:
+
+```
+observationEvent -> primitives only-element -> observation
+```
+
+The `distinct` operator is useful to remove duplicate elements from a list. It can be combined with other syntax features such as `count` to determine if all elements of a list are equal.
+
+```
+quantity -> unitOfAmount -> currency distinct
+```
+
+```
+payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
+```
 
 # Data Validation Component
 
