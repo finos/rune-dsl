@@ -879,8 +879,8 @@ Rosetta provides number of other list operators that are not captured by the abo
 - `count` - returns the number of elements in a list
 - `first`, `last` - returns the first or last element of a list
 - `flatten` - merges list elements into one single list, when those list elements are lists themeselves (and the syntax enforces that the expression being operated on is a list of a list)
-- `sort` - for a list of comparable elements (`int`, `number`, `date` and `string`), returns a list of those elements in sorted order
-- `distinct` - returns a subset of a list containing only distinct elements (i.e. where the `<>` operator return true) of that list
+- `sort` - for a list of [comparable](#comparable-type) elements, returns a list of those elements in sorted order
+- `distinct` - returns a subset of a list containing only distinct elements (i.e. where the `<>` operator returns true) of that list
 
 The `only-element` keyword imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to [null](#comparison-operator-and-null), an empty list or a list with more than one value, then the expression result will be null:
 
