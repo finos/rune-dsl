@@ -8,7 +8,7 @@ weight: 2
 
 # Rosetta Modelling Components
 
-**The Rosetta syntax can express eight types of model components**:
+**The Rosetta DSL can express eight types of model components**:
 
 - Data
 - Meta-Data
@@ -19,7 +19,7 @@ weight: 2
 - Mapping (or *synonym*)
 - Reporting
 
-This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. Examples from the Demonstration Model will be used to illustrate each of those features.
+This documentation details the purpose and features of each type of model component and highlights their relationships. Examples drawn from the [Demonstration Model](https://github.com/rosetta-models/demo), a sandbox model of the "vehicle" domain, will be used to illustrate each of those features.
 
 ## Data Component
 
@@ -71,13 +71,23 @@ By contrast with the built-in types, the data types that are defined in the mode
 
 #### Syntax
 
-The definition of a type starts with the keyword `type`, followed by the type name. A colon `:` punctuation introduces the rest of the definition.
+A data type is defined by the keyword `type` as follows:
 
-The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names need to be unique across a [namespace](#namespace-component). All those requirements are enforced by the Rosetta DSL syntax validation.
+``` Haskell
+type <TypeName>: <"Description">
+  [<annotation1>]
+  [<annotation2>]
+  [...]
+  <attribute1>
+  <attribute2>
+  <...>
+```
 
-The first component of the definition is a plain-text [description](#description) of the type, as a string enclosed within angle brackets: `<"..">`.
+The Rosetta DSL convention is that data type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names need to be unique across a [namespace](#namespace-component). All those requirements are enforced by syntax validation.
 
-After the description come any further [meta-data annotations](#meta-data-component) that are applied to this type. Meta-data are enclosed within square brackets `[...]`.
+The [description](#description) (optional) should be a plain-text definition of the concept represented by the data type. All descriptions in the Rosetta DSL must be written as a string enclosed within angle brackets: `<"..">`.
+
+The annotations are [meta-data components](#meta-data-component) that apply to this data type. All annotations in the Rosetta DSL must be enclosed within square brackets `[...]`.
 
 ``` Haskell
 type VehicleOwnership: <"Representative record of vehicle ownership">
@@ -85,13 +95,22 @@ type VehicleOwnership: <"Representative record of vehicle ownership">
   [rootType]
 ```
 
-Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
+Then the data type definition lists the attributes that compose this data type. Attributes are optional, so it is possible to model empty data types. When they are present, each attribute is defined by five components (three required and two optional):
 
 - name - Required. Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
 - type - Required. Each attribute can be specified as either a [built-in type](#built-in-type), [data type](#data-type) or [enumeration](#enumeration).
-- cardinality - Required. See [Cardinality](#cardinality).
-- description - Optional, recommended. A plain-text [description](#description) enclosed within angle bracket `<"..">`.
+- cardinality - Required. Specifies the minimum and maximum allowed number of attributes of that type - see [cardinality](#cardinality).
+- description - Optional, recommended. A plain-text [description](#description) of the attribute, in the context of the data type where it is used.
 - annotations - Optional. Annotations such as [synonyms](#mapping-component) or [metadata](#meta-data-component) can be applied to attributes.
+
+The syntax is:
+
+``` Haskell
+<attributeName> <AttributeType> (x..y) <"Description">
+  [annotation1]
+  [annotation2]
+  [...]
+```
 
 ``` Haskell
 type Engine: <"Description of the engine.">
@@ -107,7 +126,13 @@ The Rosetta DSL does not use any delimiter to end definitions. All model definit
 
 #### Inheritance
 
-**The Rosetta DSL supports an inheritance mechanism**, when a type inherits its definition and behaviour (and therefore all of its attributes) from another type and adds its own set of attributes on top. Inheritance is supported by the `extends` keyword next to the type name.
+**The Rosetta DSL supports an inheritance mechanism**, when a data type (known as a *sub-type*) inherits all its behaviour and attributes from another data type (known as a *super-type*) and adds its own behaviour and set of attributes on top. Inheritance is supported by the `extends` keyword:
+
+``` Haskell
+type <SubType> extends <SuperType>
+```
+
+In the example below, `Vehicle` inherits all the attributes from the `VehicleFeature` data type and adds four other attributes to it:
 
 ``` Haskell
 type Vehicle extends VehicleFeature:
@@ -118,20 +143,29 @@ type Vehicle extends VehicleFeature:
 ```
 
 {{< notice info "Note" >}}
-For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet is to highlight some of those features.
+For clarity purposes, the documentation snippets omit the annotations and definitions that are associated with the data types and attributes, unless the purpose of the snippet is to highlight some of those features.
 {{< /notice >}}
 
 ### Enumeration
 
 #### Purpose
 
-**Enumeration is the mechanism through which an attribute may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled values.
+**Enumeration is the mechanism through which a type may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled values.
 
-This mimics the *scheme* concept, whose values may be specified as part of an existing standard and can be represented through an enumeration in the Rosetta DSL. Typically, a scheme with no defined values is represented as a basic `string` type.
+This mimics the *scheme* concept, whose values may be specified as part of another standard and can be represented through an enumeration in the Rosetta DSL. Typically, a scheme with no defined values is represented as a basic `string` type.
 
 #### Syntax
 
-Enumerations are very simple modelling containers, which are defined in the same way as other model components. The definition of an enumeration starts with the `enum` keyword, followed by the enumeration name. A colon `:` punctuation introduces the rest of the definition, which contains a plain-text description of the enumeration and the list of enumeration values.
+Enumerations are very simple containers defined by the `enum` keyword.
+
+``` Haskell
+enum <EnumerationName>: <"Description">
+  <Value1> <"Description">
+  <Value2> <"Description">
+  <...>
+```
+
+which are defined in the same way as other model components. The definition of an enumeration starts with the `enum` keyword, followed by the enumeration name. A colon `:` punctuation introduces the rest of the definition, which contains a plain-text description of the enumeration and the list of enumeration values.
 
 ``` Haskell
 enum PeriodEnum: <"The enumerated values to specify the period, e.g. day, week.">
@@ -181,60 +215,46 @@ The syntax to add a description uses quotation marks in between angle brackets `
 
 #### Purpose
 
-A document reference is a type of meta-data description that can associate information published in a separate document to model components. The Rosetta DSL allows to define those specific documents, who owns them and their content as direct model components, and to associate them to any other model components such as data or functions.
+A document reference is a type of meta-data description that allows to associate model components to textual information published in a separate document. The Rosetta DSL allows to define those specific documents, who owns them and their content as model components, and to associate them to any other model components such as data types or functions.
+
+This feature provides any model behaviour with an audit trail back to the documented, plain-text information that drives it. As such behaviour may eventually be translated into an operational process run by software, this mechanism provides a form of self-documentation for that software.
+
+Document references have two levels: hierarchy and content.
 
 #### Hierarchy Syntax
 
-There are 3 syntax components to define the hierarchy of document references:
+There are three syntax components to define the hierarchy of document references:
 
-1. Body
-1. Corpus
-1. Segment
+1. `body` - an entity that is the author, publisher or owner of the referenced document
+1. `corpus` - a document set that contains the referenced information
+1. `segment` - the specific section in the document containing the information being referenced
 
-A body refers to an entity that is the author, publisher or owner of a document. Examples of bodies include regulatory authorities or trade associations.
-
-The syntax to define a body is:
-
-```
-body <Type> <Name> <Description>
-```
-
-Some examples of bodies, with their corresponding types, are given below.
+The syntax to define a body, corpus and segment is, respectively:
 
 ``` Haskell
-body Organisation ISDA
-  <"Since 1985, the International Swaps and Derivatives Association has worked to make the global derivatives markets safer and more efficient">
-
-body Authority ESMA
-  <"ESMA is an independent EU Authority that contributes to safeguarding the stability of the European Union's financial system by enhancing the protection of investors and promoting stable and orderly financial markets.">
-
-body Authority MAS
-  <"The Monetary Authority of Singapore (MAS) is Singapore’s central bank and integrated financial regulator. MAS also works with the financial industry to develop Singapore as a dynamic international financial centre.">
+body <BodyType> <BodyName> <"Description">
+corpus <CorpusType> <Body (optional)> <"Alias"> <CorpusName> <"Description">
+segment <segmentType>
 ```
 
-A corpus refers to a document set that contains the textual provision that is being referenced. For example, regulatory rules can be specified according to different levels of detail, including laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations).
+Examples of bodies include regulatory authorities or trade associations.
 
-The syntax to define a corpus is:
+``` Haskell
+body Authority EuropeanCommission <"European Commission (ec.europa.eu).">
+```
 
-```
-corpus <Type> <Body> <"Alias"> <Name> <"Description">
-```
+Examples of corpuses include rules and regulations, which may be specified according to different levels of detail such as directives and laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations). In each case that `corpus` could be associated to the relevant `body` as a model component.
 
 While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known.
 
-Some examples of corpuses, with their corresponding types, are given below. In those cases, the aliases refer to the official numbering of document by the relevant authority.
+In the below case, the alias refer to the official numbering of the document by the relevant authority.
 
 ``` Haskell
-corpus Regulation ESMA "600/2014" MiFIR
-  <"Regulation (EU) No 600/2014 of the European Parliament and of the Council of 15 May 2014 on markets in financial instruments and amending Regulation (EU) No 648/2012 Text with EEA relevance">
-
-corpus Act MAS "289" SFA
-  <"The Securities And Futures Act relates to the regulation of activities and institutions in the securities and derivatives industry, including leveraged foreign exchange trading, of financial benchmarks and of clearing facilities, and for matters connected therewith.">
+corpus Directive "93/59/EC" StandardEmissionsEuro1
+    <"COUNCIL DIRECTIVE 93 /59/EEC of 28 June 1993 amending Directive 70/220/EEC on the approximation of the laws of the Member States relating to measures to be taken against air pollution by emissions from motor vehicles https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX%3A31993L0059">
 ```
 
-Corpuses are typically large sets of documents which can contain many rule specifications. The Rosetta DSL provides the concept of segment to allow to refer to a specific section in a given document.
-
-The syntax to define a segment is: `segment <Type>`. Below are some examples of segment types, as are often found in trade association and regulatory texts.
+Corpuses are typically large document sets which may contain many provisions, clauses etc, so segments are used to refer to a specific section in a given document. Below are some examples of segment types, as are often found in regulatory texts or trade associations' best practices.
 
 ``` Haskell
 segment article
@@ -252,18 +272,15 @@ article "26" paragraph "2"
 
 #### Reference Syntax
 
-A document reference is created using the `docReference` syntax. This `docReference` must be associated to a `corpus` and `segment` defined according to the document hierarchy. The document reference can copy the actual text being referred to using the `provision` syntax.
+A document reference is created using the `docReference` syntax. This `docReference` must be associated to a `corpus` and `segment` defined according to the document hierarchy. The `provision` syntax allows to copy the textual information being referenced from the document.
 
 ``` Haskell
 [docReference <Body> <Corpus>
-  <Segment1>
-  <Segment2>
-  <...>
-  <SegmentN>
+  <Segment1> <Segment2> <...>
   provision <"ProvisionText">]
 ```
 
-In some instances, a model type may have a different naming convention based on the context in which it is being used: for example, a legal definition may refer to the data type with a different name. The `docReference` syntax allows a type to be annotated using the naming convention `segment` with the `body` and `corpus` that define it.
+In some instances, a data type may have a different naming convention based on the context in which it is being used: for example, a legal definition may refer to the data type with a different name. The `docReference` syntax allows such data type to be annotated with a `namingConvention` segment and the corresponding `corpus` and `body` that define it.
 
 ``` Haskell
 type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
@@ -272,7 +289,7 @@ type PayerReceiver: <"Specifies the parties responsible for making and receiving
         provision "As defined in the GRMA Seller party ..."]
 ```
 
-A `docReference` can also be added to an attribute of a type:
+A `docReference` can also be added to an attribute of a data type:
 
 ``` Haskell
 type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
@@ -297,19 +314,29 @@ Examples of annotations and their usage for different purposes are illustrated b
 
 #### Syntax
 
-Annotations are defined in the same way as other model components. The definition of an annotation starts with the `annotation` keyword, followed by the annotation name. A colon `:` punctuation introduces the rest of the definition, starting with a plain-text description of the annotation.
+Annotations are defined with the `annotation` keyword:
+
+``` Haskell
+annotation <annotationName>: <"Description">
+    <attribute1>
+    <attribute2>
+    <...>
+```
+
+Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase. Attributes are optional and many annotations will not require any.
 
 <a id='roottype-label'></a>
 
 ``` Haskell
 annotation rootType: <"Mark a type as a root of the rosetta model">
-
 annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
 ```
 
-Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase. It is also possible to associate attributes to an annotation: see [metadata](#meta-data-and-reference) example.
-
 Once an annotation is defined, model components can be annotated with its name and chosen attribute, if any, in between square brackets `[..]`.
+
+{{< notice info "Note" >}}
+Some annotations may be provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
+{{< /notice >}}
 
 ### Meta-Data and Reference
 
@@ -331,8 +358,8 @@ annotation metadata:
 Each attribute of the `metadata` annotation corresponds to a qualifier that can be applied to a rosetta type or attribute:
 
 - The `scheme` meta-data qualifier specifies a mechanism to control the set of values that an attribute can take. The relevant scheme reference may be specified as meta-information in the attribute\'s data source, so that no originating information is disregarded.
-- The `template` meta-data qualifier indicates that a type is eligible to be used as a data template. Data templates provide a way to store data which may be duplicated across multiple objects into a single template, to be referenced by all these objects.
-- the other metadata annotations above are used in referencing.
+- The `template` meta-data qualifier indicates that a data type is eligible to be used as a data template. Data templates provide a way to store data which may be duplicated across multiple objects into a single template, to be referenced by all these objects.
+- the other metadata annotations are used in referencing.
 
 #### Referencing
 
@@ -360,7 +387,7 @@ Referencing allows an attribute in rosetta to refer to a rosetta object in a dif
   }
 ```
 
-Rosetta currently supports 3 different mechanisms for references with different scopes. It is intended that these will all be migrated to a single mechanism.
+Rosetta currently supports three different mechanisms for references with different scopes. It is intended that these will all be migrated to a single mechanism.
 
 ##### Global Reference
 
@@ -370,19 +397,9 @@ The `reference` metadata annotation denotes that an attribute can be either a di
 
 ##### External Reference
 
-Attributes and types that have the `key` or `id` annotation additionally have an `externalKey` attached to them. This is used to store keys that are read from an external source e.g. FpML id metadata attribute.
+Attributes and types that have the `key` or `id` annotation additionally have an `externalKey` attached to them. This is used to store keys that are read from an external source - e.g. the FpML `id` metadata attribute.
 
-Attributes with the `reference` keyword have a corresponding externalReference field which is used to store references from external sources. The reference resolver processor can be used to link up the references.
-
-#### Template
-
-When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
-
-Other than the new annotation, data templates do not have any impact on the model, i.e. no new types, attributes, or conditions.
-
-{{< notice info "Note" >}}
-Some annotations, such as this metadata qualification, may be provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
-{{< /notice >}}
+Attributes with the `reference` keyword have a corresponding externalReference field which is used to store references from external sources. A reference resolver processor can be used to link up the references.
 
 ##### Syntax
 
@@ -420,9 +437,15 @@ type ContractualProduct:
   economicTerms EconomicTerms (1..1)
 ```
 
+#### Template
+
+When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
+
+Other than the new annotation, data templates do not have any impact on the model, i.e. no new types, attributes, or conditions.
+
 ### Qualified Type
 
-The Rosetta DSL provides for some special types called *qualified types*, which are specific to its application in the financial domain:
+The Rosetta DSL provides some special types called *qualified types*, which are specific to its main application in the financial domain:
 
 - Calculation - `calculation`
 - Object qualification - `productType` `eventType`
@@ -448,7 +471,7 @@ annotation calculation: <"Marks a function as fully implemented calculation.">
 
 #### Object Qualification
 
-Similarly, `productType` and `eventType` represent the outcome of qualification logic to infer the type of an object (financial product or event) in the model. See the `productQualifier` attribute, alongside other identifier attributes in the `ProductIdentification` type:
+Similarly, `productType` and `eventType` represent the outcome of qualification logic to infer the type of an object (financial product or event) in the model. See the `productQualifier` attribute, alongside other identifier attributes in the `ProductIdentification` data type:
 
 ``` Haskell
 type ProductIdentification: <" A class to combine the CDM product qualifier with other product qualifiers, such as the FpML ones. While the CDM product qualifier is derived by the CDM from the product payout features, the other product identification elements are assigned by some external sources and correspond to values specified by other data representation protocols.">
@@ -504,7 +527,13 @@ An expression can be a [built-in-type](#built-in-type) constant - e.g. 2.0, True
 
 #### Enumeration Constant
 
-An expression can refer to an enumeration value using the name of the enumeration type followed by `->` and the name of the enumeration value. E.g. :
+An expression can refer to an enumeration value as follows:
+
+```
+<EnumName> -> <EnumValue>
+```
+
+E.g. :
 
 ```
 DayOfWeekEnum -> SAT
@@ -512,7 +541,13 @@ DayOfWeekEnum -> SAT
 
 #### List Constant
 
-Constants can also be declared as lists using a comma separated list of expressions enclosed within square brackets `[...]`. E.g. :
+Constants can also be declared as lists:
+
+```
+[ <item1>, <item2>, <...>]
+```
+
+E.g.:
 
 ```
 [1,2]
@@ -540,26 +575,27 @@ type ContractFormationPrimitive:
       if before exists ....
 ```
 
-The `->` operator allows to return an attribute located inside an attribute, and so on recursively. In the example below, the `security` of the `product` contained in a `Confirmation` object is checked for [existence](#comparison-operator).
+The `->` operator allows to return an attribute located inside an attribute, and so on recursively.
 
-``` {.Haskell emphasize-lines="10"}
-type Confirmation: <"A class to specify a trade confirmation.">
-
-    identifier Identifier (1..*)
-    party Party (1..*)
-    partyRole PartyRole (1..*)
-    lineage Lineage (0..1)
-    status ConfirmationStatusEnum (1..1)
-
-    condition BothBuyerAndSellerPartyRolesMustExist:
-        if lineage -> executionReference -> tradableProduct -> product -> security exists
+```
+<attribute1> -> <attribute2> -> <...>
 ```
 
-If a path expression is applied to an attribute that does not have a value in the object it is being evaluated against, the result is *null* - i.e. there is no value. If an attribute of that non-existant object is further evaluated, the result is still *null*. In the above example, if `executionReference` is *null*, the final `security` attribute will also evaluate to *null*.
+In the example below, the penalty points of a vehicle owner's driving license is being extracted:
+
+``` Haskell
+owner -> drivingLicence -> penaltyPoints
+```
 
 {{< notice info "Note" >}}
-In situations where the context of the object in which the path expression should be evaluated is not already specified (e.g. reporting rules or conditional mapping), the path should begin with the data type name e.g. `WorkflowStep -> eventIdentifier`. where applicable, this requirement is enforced by syntax validation in the Rosetta DSL.
+In situations where the context of the object in which the path expression should be evaluated is not already specified (e.g. reporting rules or conditional mapping), the path should begin with the data type name e.g. `Owner -> drivingLicence`. Where applicable, this requirement is enforced by syntax validation in the Rosetta DSL.
 {{< /notice >}}
+
+#### Null
+
+If a path expression is applied to an attribute that does not have a value in the object it is being evaluated against, the result is *null* - i.e. there is no value. If an attribute of that non-existant object is further evaluated, the result is still *null*.
+
+In the above example, if `drivingLicense` is *null*, the final `penaltyPoints` attribute will also evaluate to *null*.
 
 ### Operator
 
@@ -618,7 +654,7 @@ All the following built-in types are *comparable*, which means that they can be 
 
 ##### Comparison Operator and Null
 
-If one or more expressions being passed to an operator is of single cardinality but is null (not present) the behavior is as follows
+If one or more expressions being passed to an operator is of single cardinality but is [null](#null) the behavior is as follows:
 
 - null `=` *any value* returns false
 - null `<>` *any value* returns true
@@ -658,15 +694,19 @@ Expressions are evaluated in Rosetta in the following order, from first to last 
 
 ### List
 
-A list is an ordered collection of items of the same data type (basic, complex or enumeration). A path expression that refers to an attribute with multiple [cardinality](#cardinality) will result in a list of values. If a chained [path expression](#path-expression) contains multiple attributes with multiple cardinality, the result is a flattened list. For example (as extracted from the `Qualify_CashTransfer` function):
-
-```
-businessEvent -> primitives -> transfer -> cashTransfer
-```
-
-gets all the `cashTransferComponent` from all the `primitives` attributes as a single list.
+A list is an ordered collection of items of the same data type (basic, complex or enumeration). A path expression that refers to an attribute with multiple [cardinality](#cardinality) will result in a list of values.
 
 An expression that is expected to return a value with *multiple cardinality* will always evaluate to a list of zero or more elements, regardless of whether the result value contains a single or multiple elements. An expression that is expected to return multiple cardinality that returns null is considered to be equivalent to an empty list.
+
+If a chained [path expression](#path-expression) contains multiple attributes with multiple cardinality, the result is a flattened list.
+
+For example:
+
+```
+owner -> drivingLicence -> vehicleEntitlement
+```
+
+returns all the vehicle entitlements from all the owner's driving licenses into a single list.
 
 The Rosetta DSL provides a number of list operators that feature in usual programming languages:
 
