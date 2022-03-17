@@ -374,6 +374,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/${xtextVersion}</url>
 		</repository>
+
 		<repository>
 			<id>sonatype_releases</id>
 			<url>https://oss.sonatype.org/content/repositories/releases/</url>

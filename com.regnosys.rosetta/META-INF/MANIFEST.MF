@@ -47,6 +47,5 @@ Export-Package: com.regnosys.rosetta,
  com.regnosys.rosetta.serializer,
  com.regnosys.rosetta.services,
  com.regnosys.rosetta.types,
- com.regnosys.rosetta.typing,
  com.regnosys.rosetta.utils,
  com.regnosys.rosetta.validation
