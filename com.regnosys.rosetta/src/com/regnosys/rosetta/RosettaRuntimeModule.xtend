@@ -51,11 +51,4 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	def Class<? extends Provider<ExternalGenerators>> provideExternalGenerators() {
 		EmptyExternalGeneratorsProvider
 	}
-	
-	def Class<? extends TypeFactory> bindTypeFactory() {
-		TypeFactory
-	}
-	def Class<? extends TypeValidationUtil> bindTypeValidationUtil() {
-		TypeValidationUtil
-	}
 }

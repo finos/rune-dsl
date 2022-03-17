@@ -149,7 +149,7 @@ EmptyLiteral:
 ;
 
 ListLiteral:
-	'[' elements += RosettaCalcExpression (',' elements += RosettaCalcExpression )* ']';
+	{ListLiteral} '[' (elements += RosettaCalcExpression (',' elements += RosettaCalcExpression )*)? ']';
 
 // old stuff
 RosettaRootElement:
@@ -209,7 +209,7 @@ RosettaRecordFeature returns RosettaTypedFeature:
 ;
 
 RosettaParameter:
-	RosettaNamed RosettaTyped isArray?='[]'?
+	RosettaNamed RosettaTyped (isArray?='[' ']')?
 ;
 
 RosettaLibraryFunction returns RosettaExternalFunction:

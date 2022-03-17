@@ -1,24 +1,29 @@
 package com.regnosys.rosetta.types;
 
 import com.google.inject.Inject;
+import com.regnosys.rosetta.rosetta.RosettaBinaryOperation;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
-import com.regnosys.rosetta.typing.RosettaTyping;
 
 public class TypeValidationUtil {
 	@Inject
-	RosettaTyping typing;
+	TypeSystem typing;
+	@Inject
+	TypeFactory fac;
 	
-	public String unequalListTypesMessage(RListType expected, RListType actual) {
+	public String unequalListTypesMessage(RListType expected, RListType actual) {		
 		if (!expected.getItemType().equals(actual.getItemType())) {
-			return unequalTypesMessage(expected.getItemType(), actual.getItemType());
+			if (!expected.getConstraint().constraintEquals(actual.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
+				return new StringBuilder()
+						.append("Expected ")
+						.append(toCompleteDescription(expected))
+						.append(", but got ")
+						.append(toCompleteDescription(actual))
+						.append(" instead.")
+						.toString();
+			}
+			return notASubtypeMessage(expected.getItemType(), actual.getItemType());
 		}
-		return new StringBuilder()
-				.append("Expected ")
-				.append(toCompleteDescription(expected))
-				.append(", but got ")
-				.append(toCompleteDescription(actual))
-				.append("instead.")
-				.toString();
+		return notLooserConstraintMessage(expected.getConstraint(), actual);
 	}
 	public String unequalTypesMessage(RType expected, RType actual) {
 		return new StringBuilder()
@@ -30,16 +35,19 @@ public class TypeValidationUtil {
 				.toString();
 	}
 	public String notAListSubtypeMessage(RListType expected, RListType actual) {
-		if (!typing.subtype(actual.getItemType(), expected.getItemType()).getValue()) {
+		if (!typing.isSubtype(actual.getItemType(), expected.getItemType())) {
+			if (!actual.getConstraint().isSubconstraintOf(expected.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
+				return new StringBuilder()
+						.append("Expected ")
+						.append(toCompleteDescription(expected))
+						.append(", but got ")
+						.append(toCompleteDescription(actual))
+						.append(" instead.")
+						.toString();
+			}
 			return notASubtypeMessage(expected.getItemType(), actual.getItemType());
 		}
-		return new StringBuilder()
-				.append("Expected ")
-				.append(toCompleteDescription(expected))
-				.append(", but got ")
-				.append(toCompleteDescription(actual))
-				.append("instead.")
-				.toString();
+		return notLooserConstraintMessage(expected.getConstraint(), actual);
 	}
 	public String notASubtypeMessage(RType expected, RType actual) {
 		return new StringBuilder()
@@ -51,7 +59,7 @@ public class TypeValidationUtil {
 				.toString();
 	}
 	public String notListComparableMessage(RListType left, RListType right) {
-		if (!typing.comparable(left.getItemType(), right.getItemType())) {
+		if (!typing.isComparable(left.getItemType(), right.getItemType())) {
 			return notComparableMessage(left.getItemType(), right.getItemType());
 		}
 		StringBuilder b = new StringBuilder()
@@ -72,6 +80,22 @@ public class TypeValidationUtil {
 				.append("` and `")
 				.append(right)
 				.append("` are not comparable.")
+				.toString();
+	}
+	public String bothAreSingularMessage(RosettaBinaryOperation op) {
+		return new StringBuilder()
+				.append("The cardinality operator `")
+				.append(op.getCardOp())
+				.append("` is redundant when comparing two single values.")
+				.toString();
+	}
+	public String notRightIsSingularButLeftIsMessage(RListType actual) {
+		return new StringBuilder()
+				.append("Expected ")
+				.append(toConstraintDescription(fac.single))
+				.append(", but got ")
+				.append(toConstraintDescription(actual.getConstraint()))
+				.append(" instead. Perhaps you meant to swap the left and right operands?")
 				.toString();
 	}
 	public String notConstraintMessage(RosettaCardinality expected, RListType actual) {
@@ -103,6 +127,9 @@ public class TypeValidationUtil {
 	public CharSequence toShortDescription(RListType t) {
 		StringBuilder b = new StringBuilder();
 		if (t.isEmpty()) {
+			if (t.getItemType().equals(RBuiltinType.NOTHING)) {
+				return "an empty value";
+			}
 			b.append("an empty value of type");
 		} else if (t.isOptional()) {
 			b.append("an optional");
@@ -134,7 +161,7 @@ public class TypeValidationUtil {
 				} else {
 					b.append("an unbounded list with at least ")
 						.append(c.getInf())
-						.append("item")
+						.append(" item")
 						.append(pluralS(c.getInf()));
 				}
 			} else {
@@ -146,7 +173,7 @@ public class TypeValidationUtil {
 						.append(" to ")
 						.append(c.getSup());
 				}
-				b.append("item")
+				b.append(" item")
 					.append(pluralS(c.getSup()));
 			}
 			return b.toString();
@@ -169,7 +196,7 @@ public class TypeValidationUtil {
 						.append(pluralS(c.getInf()));
 				}
 			} else {
-				b.append("an list of `")
+				b.append("a list of `")
 					.append(t.getItemType())
 					.append("`s with ");
 				if (c.getInf() == c.getSup()) {
