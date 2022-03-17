@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.types;
 
 import com.google.inject.Inject;
+import com.regnosys.rosetta.rosetta.RosettaBinaryOperation;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 
 public class TypeValidationUtil {
@@ -79,6 +80,13 @@ public class TypeValidationUtil {
 				.append("` and `")
 				.append(right)
 				.append("` are not comparable.")
+				.toString();
+	}
+	public String bothAreSingularMessage(RosettaBinaryOperation op) {
+		return new StringBuilder()
+				.append("The cardinality operator `")
+				.append(op.getCardOp())
+				.append("` is redundant when comparing two single values.")
 				.toString();
 	}
 	public String notRightIsSingularButLeftIsMessage(RListType actual) {

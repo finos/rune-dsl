@@ -69,8 +69,6 @@ class RosettaTypingTest {
 		'[1, 3] all = 5.0'.assertIsValidWithType(singleBoolean)
 		'empty all <> 5.0'.assertIsValidWithType(singleBoolean)
 		'[1, 3] any = 5.0'.assertIsValidWithType(singleBoolean)
-		'[3.0] any <> 5'.assertIsValidWithType(singleBoolean)
-		'5 any <> 5'.assertIsValidWithType(singleBoolean)
 	}
 	
 	@Test
@@ -100,6 +98,9 @@ class RosettaTypingTest {
 		'5 any <> [1, 2]'
 			.parseExpression
 			.assertError(null, "Expected a single value, but got a list with 2 items instead. Perhaps you meant to swap the left and right operands?")
+		'[3.0] any <> 5'
+			.parseExpression
+			.assertError(null, "The cardinality operator `any` is redundant when comparing two single values.")
 	}
 	
 	@Test
@@ -131,7 +132,7 @@ class RosettaTypingTest {
 			.parseExpression
 			.assertError(null, "Expected type `number`, but got `boolean` instead.")
 		'"ab" + 3'
-			.parseExpression // TODO: could this message be made less verbose?
+			.parseExpression
 			.assertError(null, "Expected arguments to be either both a `string` or both a `number`, but got `string` and `int` instead.")
 	}
 	
@@ -171,6 +172,9 @@ class RosettaTypingTest {
 		'5 any <= [1, 2]'
 			.parseExpression
 			.assertError(null, "Expected a single value, but got a list with 2 items instead. Perhaps you meant to swap the left and right operands?")
+		'5 all >= 1'
+			.parseExpression
+			.assertError(null, "The cardinality operator `all` is redundant when comparing two single values.")
 	}
 	
 	@Test
@@ -187,7 +191,7 @@ class RosettaTypingTest {
 			.parseExpression
 			.assertError(null, "Expected a single `boolean`, but got an empty value instead.")
 		'if True then 1 else False'
-			.parseExpression // TODO: could this message be made less technical?
+			.parseExpression
 			.assertError(null, "Types `int` and `boolean` do not have a common supertype.")
 		'if True then [1, 2, 3] else [False, True]'
 			.parseExpression
@@ -204,7 +208,7 @@ class RosettaTypingTest {
 	@Test
 	def void testListLiteralTypeChecking() {
 		'[1, True]'
-			.parseExpression // TODO: could this message be made less technical?
+			.parseExpression
 			.assertError(null, "Elements do not have a common supertype: `int`, `boolean`.")
 	}
 }

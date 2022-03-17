@@ -23,6 +23,7 @@ import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import com.regnosys.rosetta.types.TypeValidationUtil
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import com.regnosys.rosetta.rosetta.RosettaPackage
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -41,7 +42,7 @@ auxiliary {
 	subtypeCheck(RosettaExpression sourceObject, RType expected)
 	comparableListTypeCheck(RosettaBinaryOperation sourceObject)
 	comparableTypeCheck(RosettaBinaryOperation sourceObject)
-	rightIsSingularCheck(RosettaBinaryOperation sourceObject)
+	onlyRightIsSingularCheck(RosettaBinaryOperation sourceObject)
 	constraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
 	notConstraintCheck(RosettaExpression sourceObject, RosettaCardinality notExpected)
 	isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
@@ -167,18 +168,24 @@ auxiliary comparableTypeCheck(RosettaBinaryOperation sourceObject) {
 			source sourceObject
 	}
 }
-auxiliary rightIsSingularCheck(RosettaBinaryOperation sourceObject) {
+auxiliary onlyRightIsSingularCheck(RosettaBinaryOperation sourceObject) {
+	var RListType tl
 	var RListType tr
+	empty |- sourceObject.left : tl or tl = null
 	empty |- sourceObject.right : tr or tr = null
-	if (tr !== null) {
-		tr.constraint.constraintEquals(single)
+	if (tl !== null && tr !== null) {
+		!tl.constraint.constraintEquals(single) && tr.constraint.constraintEquals(single)
 		or
 		{
-			var RListType tl
-			empty |- sourceObject.left : tl or tl = null
-			if (tl !== null && tl.constraint.constraintEquals(single)) {
-				fail error notRightIsSingularButLeftIsMessage(tr)
-					source sourceObject.right
+			if (tl.constraint.constraintEquals(single)) {
+				if (tr.constraint.constraintEquals(single)) {
+					fail error bothAreSingularMessage(sourceObject)
+						source sourceObject
+						feature RosettaPackage.Literals.ROSETTA_BINARY_OPERATION__CARD_OP
+				} else {
+					fail error notRightIsSingularButLeftIsMessage(tr)
+						source sourceObject.right
+				}
 			} else {
 				fail error notConstraintMessage(single, tr)
 					source sourceObject.right
@@ -383,7 +390,7 @@ from {
 	if (op.cardOp === null) {
 		comparableListTypeCheck(op)
 	} else {
-		rightIsSingularCheck(op)
+		onlyRightIsSingularCheck(op)
 		comparableTypeCheck(op)
 	}
 }
@@ -421,7 +428,7 @@ checkrule CheckComparison for
 	ComparisonOperation op
 from {
 	if (op.cardOp !== null) {
-		rightIsSingularCheck(op)
+		onlyRightIsSingularCheck(op)
 	}
 }
 
