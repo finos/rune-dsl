@@ -30,11 +30,18 @@ class RosettaTypingTest {
 		'empty'.assertIsValidWithType(emptyNothing)
 	}
 	
+	// TODO: test auxiliary functions
 	@Test
 	def void testSubtyping() {
 		val t1 = createListType(INT, 1, 3);
 		val t2 = createListType(NUMBER, 1, 5);
 		t1.assertListSubtype(t2)
+		
+		val t3 = createListType(BOOLEAN, 1, 3);
+		t1.assertNotListSubtype(t3);
+		
+		val t4 = createListType(INT, 1, 2);
+		t1.assertNotListSubtype(t4);
 	}
 	
 	@Test
@@ -62,7 +69,6 @@ class RosettaTypingTest {
 		'[1, 3] all = 5.0'.assertIsValidWithType(singleBoolean)
 		'empty all <> 5.0'.assertIsValidWithType(singleBoolean)
 		'[1, 3] any = 5.0'.assertIsValidWithType(singleBoolean)
-		'[3.0] any <> 5'.assertIsValidWithType(singleBoolean)
 	}
 	
 	@Test
@@ -70,7 +76,31 @@ class RosettaTypingTest {
 		'1 = True'
 			.parseExpression
 			.assertError(null, "Types `int` and `boolean` are not comparable.")
-		// TODO: write tests for list comparability + comparability with `all`/`any`
+		'empty = True'
+			.parseExpression
+			.assertError(null, "Cannot compare an empty value to a single `boolean`, as they cannot be of the same length. Perhaps you forgot to write `all` or `any` in front of the operator?")
+		'[1, 2] = [3, 4, 5]'
+			.parseExpression
+			.assertError(null, "Cannot compare a list of `int`s with 2 items to a list of `int`s with 3 items, as they cannot be of the same length.")
+		'[1, 2] <> [True, False, False]'
+			.parseExpression
+			.assertError(null, "Types `int` and `boolean` are not comparable.")
+		
+		'[1, 2] all = empty'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got an empty value instead.")
+		'empty any = empty'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got an empty value instead.")
+		'[1, 2] all = [1, 2]'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
+		'5 any <> [1, 2]'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead. Perhaps you meant to swap the left and right operands?")
+		'[3.0] any <> 5'
+			.parseExpression
+			.assertError(null, "The cardinality operator `any` is redundant when comparing two single values.")
 	}
 	
 	@Test
@@ -92,9 +122,9 @@ class RosettaTypingTest {
 	
 	@Test
 	def void testArithemticOperationTypeChecking() {
-//		'[1, 2] + 3' TODO
-//			.parseExpression
-//			.assertError(null, "")
+		'[1, 2] + 3'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
 		'empty - 3'
 			.parseExpression
 			.assertError(null, "Expected a single value, but got an empty value instead.")
@@ -103,7 +133,7 @@ class RosettaTypingTest {
 			.assertError(null, "Expected type `number`, but got `boolean` instead.")
 		'"ab" + 3'
 			.parseExpression
-			.assertError(null, "Expected argument types to be either both `string` or both a subtype of `number`, but got `string` and `int` instead.")
+			.assertError(null, "Expected arguments to be either both a `string` or both a `number`, but got `string` and `int` instead.")
 	}
 	
 	@Test
@@ -113,19 +143,72 @@ class RosettaTypingTest {
 		'-5.1 <= 42'.assertIsValidWithType(singleBoolean)
 		'-3.14 >= 3.14'.assertIsValidWithType(singleBoolean)
 		
-		// TODO: test `any` and `all`, and plural cardinality?
+		'[1, 2] any < 5'.assertIsValidWithType(singleBoolean)
+		'empty all > 5'.assertIsValidWithType(singleBoolean)
 	}
 	
 	@Test
 	def void testComparisonOperationTypeChecking() {
-		//		'[1, 2] < 3' TODO
-//			.parseExpression
-//			.assertError(null, "")
+		// TODO: support date, zonedDateTime and `time`?
+		'[1, 2] < 3'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
 		'empty > 3'
 			.parseExpression
 			.assertError(null, "Expected a single value, but got an empty value instead.")
 		'1.5 <= False'
 			.parseExpression
 			.assertError(null, "Expected type `number`, but got `boolean` instead.")
+			
+		'[1, 2] all >= empty'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got an empty value instead.")
+		'empty any < empty'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got an empty value instead.")
+		'[1, 2] all > [1, 2]'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
+		'5 any <= [1, 2]'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead. Perhaps you meant to swap the left and right operands?")
+		'5 all >= 1'
+			.parseExpression
+			.assertError(null, "The cardinality operator `all` is redundant when comparing two single values.")
+	}
+	
+	@Test
+	def void testConditionalExpressionTypeInference() {
+		 'if True then [1, 2] else [3.0, 4.0, 5.0, 6.0]'.assertIsValidWithType(createListType(NUMBER, 2, 4));
+	}
+	
+	@Test
+	def void testConditionalExpressionTypeChecking() {
+		'if [True, False] then 1 else 2'
+			.parseExpression
+			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
+		'if empty then 1 else 2'
+			.parseExpression
+			.assertError(null, "Expected a single `boolean`, but got an empty value instead.")
+		'if True then 1 else False'
+			.parseExpression
+			.assertError(null, "Types `int` and `boolean` do not have a common supertype.")
+		'if True then [1, 2, 3] else [False, True]'
+			.parseExpression
+			.assertError(null, "Types `int` and `boolean` do not have a common supertype.")
+	}
+	
+	@Test
+	def void testListLiteralTypeInference() {
+		'[]'.assertIsValidWithType(emptyNothing);
+		'[2, 4.5, 7, -3.14]'.assertIsValidWithType(createListType(NUMBER, 4, 4));
+		'[2, [1, 2], -3.14]'.assertIsValidWithType(createListType(NUMBER, 4, 4));
+	}
+	
+	@Test
+	def void testListLiteralTypeChecking() {
+		'[1, True]'
+			.parseExpression
+			.assertError(null, "Elements do not have a common supertype: `int`, `boolean`.")
 	}
 }

@@ -163,6 +163,19 @@ class RosettaCardinality {
 		return this.getInf() >= superConstraint.getInf() &&
 				(superConstraint.isUnbounded() || !this.isUnbounded() && this.getSup() <= superConstraint.getSup());
 	}
+	op RosettaCardinality add(RosettaCardinality other) {
+		val c = RosettaFactory.eINSTANCE.createRosettaCardinality
+		c.inf = inf + other.inf
+		if (unbounded || other.unbounded) {
+			c.unbounded = true
+		} else {
+			c.sup = sup + other.sup
+		}
+		return c
+	}
+	op RosettaCardinality operator_plus(RosettaCardinality other) {
+		return this.add(other)
+	}
 	
 	derived boolean empty get {
 		!unbounded && sup == 0

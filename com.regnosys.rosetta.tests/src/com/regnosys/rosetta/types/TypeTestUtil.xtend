@@ -3,7 +3,6 @@ package com.regnosys.rosetta.types
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.services.RosettaGrammarAccess
-import com.regnosys.rosetta.typing.RosettaTyping
 import java.io.StringReader
 import org.eclipse.xtext.parser.IParseResult
 import org.eclipse.xtext.parser.IParser
@@ -12,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*
 
 class TypeTestUtil {
 	@Inject
-	extension RosettaTyping
+	extension TypeSystem
 	
 	@Inject
 	extension ExpressionValidationHelper
@@ -30,9 +29,9 @@ class TypeTestUtil {
 		return getType(expr.parseExpression);
 	}
 	def RListType getType(RosettaExpression expr) {
-		val res = expr.inferType();
-		assertFalse(res.failed);
-		return res.value;
+		val res = expr.inferType
+		assertNotNull(res);
+		return res;
 	}
 	
 	def void assertIsValidWithType(CharSequence expr, RListType expected) {
@@ -43,9 +42,9 @@ class TypeTestUtil {
 	}
 	
 	def void assertListSubtype(RListType a, RListType b) {
-		assertTrue(listSubtype(a, b).value)
+		assertTrue(isListSubtype(a, b))
 	}
 	def void assertNotListSubtype(RListType a, RListType b) {
-		assertFalse(listSubtype(a, b).value)
+		assertFalse(isListSubtype(a, b))
 	}
 }
