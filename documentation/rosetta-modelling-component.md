@@ -1,7 +1,7 @@
 ---
 title: "Rosetta Modelling Components"
 date: 2022-02-09T00:38:25+09:00
-description: "This documentation details the purpose and features of each type of model component and highlights their relationships. Examples drawn from the Demonstration Model, a sandbox model of the "vehicle" domain, will be used to illustrate each of those features."
+description: "This documentation details the purpose and features of each type of model component and highlights their relationships. Examples drawn from the Demonstration Model, a sandbox model of the 'vehicle' domain, will be used to illustrate each of those features."
 draft: false
 weight: 2
 ---
