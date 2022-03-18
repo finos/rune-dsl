@@ -1682,7 +1682,7 @@ To organise such regulatory content within a model, the Rosetta DSL supports a n
 
 A report consists of an inter-connected set of regulatory obligations, which a regulated entity must implement to produce data as required by the relevant regulator.
 
-Generically, the Rosetta DSL allows to specify any report using 3 types of rules:
+Generically, the Rosetta DSL allows to specify any report using three types of rules:
 
 - timing - when to report,
 - eligibility - whether to report, and
@@ -1697,23 +1697,47 @@ A report is specified using the following syntax:
 ``` Haskell
 report <Authority> <Corpus1> <Corpus2> <...> in <TimingRule>
   when <EligibilityRule1> and <EligibilityRule2> and <...>
-  with fields <FieldRule1> <FieldRule2> <...>
+  with type <ReportType>
+```
+
+The report type is istelf defined as a [data type](#data-type) component whose attributes are the reportable fields. Each attribute can be associated to a reporting rule containing the logic for extracting or calculating that field, using the `ruleReference` keyword:
+
+``` Haskell
+type <ReportType>:
+  <field1> <Type1> (x..y)
+    [ ruleReference <RuleName1> ]
+  <...>
 ```
 
 An example is given below.
 
 ``` Haskell
-report MAS SFA MAS_2013 in T+2
-  when ReportableProduct and NexusCompliant
-  with fields
-    UniqueTransactionIdentifier
-    UniqueProductIdentifier
-    PriorUniqueTransactionIdentifier
-    Counterparty1
-    Counterparty2
+report EuropeanParliament EmissionPerformanceStandardsEU in real-time
+    when EuroStandardsCoverage 
+    with type EmissionPerformanceStandardsReport
 ```
 
-To ensure a model's regulatory framework integrity, the authority, corpus and all the rules referred to in a report definition must exist as model components in the model's regulatory hierarchy. A report simply assembles all those existing components into a *recipe*, which firms can directly implement to comply with the reporting obligation and provide the data as required.
+``` Haskell
+type EmissionPerformanceStandardsReport:
+    vehicleRegistrationID string (1..1)
+        [ruleReference VehicleRegistrationID]
+    firstRegistrationDate date (1..1)
+        [ruleReference FirstRegistrationDate]
+    vehicleClassificationType VehicleClassificationEnum (1..1)
+        [ruleReference VehicleClassificationType]
+    engineType EngineTypeEnum (1..1)
+        [ruleReference EngineType]
+    euroEmissionStandard string (1..1)
+        [ruleReference EuroEmissionStandard]
+    carbonMonoxide int (1..1)
+        [ruleReference CarbonMonoxide]
+```
+
+{{< notice info "Note" >}}
+An earlier version of the report definition syntax allows to specify the reportable fields directly using `with fields`, instead of specifying a data type for the report using `with type`. This earlier version was deemed not robust enough and is being deprecated, because the report output was an un-typed set of key-value pairs rather than a model component itself.
+{{< /notice >}}
+
+To ensure a model's regulatory framework integrity, the authority, corpus and all the rules referred to in a report definition must exist as model components in the model's regulatory hierarchy. A report assembles all those components into a recipe, which firms can directly implement to comply with the data reporting requirement.
 
 The next section describes how to define reporting rules as model components.
 
@@ -1721,14 +1745,14 @@ The next section describes how to define reporting rules as model components.
 
 #### Purpose
 
-The Rosetta DSL applies a functional approach to the process of regulatory reporting. A regulatory rule is a functional model component (`F`) that processes an input (`X`) through a set of logical instructions and returns an output (`Y`), such that `Y = F( X )`. A function `F` can sometimes also be referred to as a *projection*. Using this terminology, the reported data (`Y`) are viewed as projections of the business data (`X`).
+The Rosetta DSL applies a functional approach to the process of regulatory reporting. A regulatory rule is a functional model component (*f*) that processes an input (*x*) through a set of logical instructions and returns an output (*y*), such that *y = f( x )*. A function can sometimes also be referred to as a *projection*. Using this terminology, the reported data (*y*) are considered projections of the business data (*x*).
 
-For field rules, the output `Y` consists of the data point to be reported. For eligibility rules, this output is a Boolean that returns True when the input is eligible for reporting.
+For field rules, the output consists of the data to be reported. For eligibility rules, this output is a boolean that returns True when the input is eligible for reporting.
 
 To provide transparency and auditability to the reporting process, the Rosetta DSL supports the development of reporting rules in both human-readable and machine-executable form.
 
-- The functional expression of the reporting rules is designed to be readable by professionals with domain knowledge (e.g. regulatory analysts). It consists of a limited set of logical instructions, supported by the compact Rosetta DSL syntax.
-- The machine-executable form is derived from this functional expression of the reporting logic using the Rosetta DSL code generators, which directly translate it into executable code.
+- The functional expression of the reporting rules is designed to be readable by professionals with domain knowledge (e.g. regulatory analysts). It consists of a limited set of logical instructions, supported by a compact syntax.
+- The machine-executable form is derived from this functional expression of the reporting logic using code generators, which directly translate it into executable code.
 - In addition, the functional expression is explicitly tied to regulatory references, using the regulatory hierarchy concepts of body, corpus and segment to point to specific text provisions that support the reporting logic. This mechanism, coupled with the automatic generation of executable code, ensures that a reporting process that uses that code is fully auditable back to any applicable text.
 
 #### Syntax
@@ -1736,7 +1760,7 @@ To provide transparency and auditability to the reporting process, the Rosetta D
 The syntax of reporting field rules is as follows:
 
 ``` Haskell
-<RuleType> rule <Name>
+<ruleType> rule <RuleName>
   [regulatoryReference <Body> <Corpus>
     <Segment1>
     <Segment2>
@@ -1745,22 +1769,24 @@ The syntax of reporting field rules is as follows:
   <FunctionalExpression>
 ```
 
-The \<RuleType\> can be either `reporting` or `eligibility`. The `regulatoryReference` syntax is the same as the `docReference` syntax documented in the [document reference](#document-reference) section. However it can only be applied to regulatory rules.
+The \<ruleType\> can be either `reporting` or `eligibility`. The `regulatoryReference` syntax is the same as the `docReference` syntax documented in the [document reference](#document-reference) section. However it can only be applied to regulatory rules.
 
 The functional expression of reporting rules uses the same syntax components that are already available to express logical statements in other modelling components, such as the condition statements that support data validation.
 
-Functional expressions are composable, so a rule can also call another rule. When multiple rules may need to be applied for a single field or eligibility criteria, those rules can be specified in brackets separated by a comma. An example is given below for the *Nexus* eligibility rule under the Singapore reporting regime, where `BookedInSingapore` and `TradedInSingapore` are themselves eligibility rules.
+Functional expressions are composable, so a rule can also call another rule. When multiple rules may need to be applied for a single field or eligibility criteria, those rules can be specified in brackets separated by a comma, as illustrated below. Each of `Euro1Standard`, ..., `Euro6Standard` are themselves reporting rules.
 
 ``` Haskell
-eligibility rule NexusCompliant
-  [regulatoryReference MAS SFA MAS_2013
-     part "1"
-     section "Citation and commencement"
-     provision "In these Regulations, unless the context otherwise requires; Booked in Singapore, Traded in Singapore"]
-  (
-    BookedInSingapore,
-    TradedInSingapore
-  )
+reporting rule EuroEmissionStandard
+   [regulatoryReference EuropeanCommission StandardEmissionsEuro6 article "1"  
+    provision "Regulation (EC) No 715/2007 is amended as follows:"]
+    ( 
+        Euro1Standard as "Emission Standards",
+        Euro2Standard as "Emission Standards",
+        Euro3Standard as "Emission Standards",
+        Euro4Standard as "Emission Standards",
+        Euro5Standard as "Emission Standards",
+        Euro6Standard as "Emission Standards"
+    )
 ```
 
 In addition to those existing functional features, the Rosetta DSL provides other syntax components that are specifically designed for reporting applications. Those components are:
