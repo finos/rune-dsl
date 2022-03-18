@@ -719,182 +719,129 @@ The following sections details the syntax and usage and these list operator feat
 
 #### Filter
 
-The `filter` keyword filters the items of a list based on a `boolean` expression. For each list item, a boolean expression specified in square brackets `[..]` is evaluated to determine whether to include (if true) or exclude (if false) the item, and the resulting filtered list is assigned to the output. By default, the keyword `item` is used to refer to the list item in the test expression.
-
-Note that filtering a list does not change the item type, e.g. when filtering a list of `Vehicle`, the output list type must also be of `Vehicle`.
-
-``` {.Haskell emphasize-lines="10"}
-func FindVehiclesByEngineType: <"Find all vehicles with given engine type.">
-    inputs:
-        vehicles Vehicle (0..*)
-        engineType EngineTypeEnum (1..1)
-    output:
-        vehiclesWithEngineType Vehicle (0..*)
-
-    set vehiclesWithEngineType: <"Filter each list 'item' with the given test.">
-        vehicles
-            filter [ item -> specification -> engine -> engineType = engineType ]
-```
-
-Alternatively, the list item can be a named parameter, such as `vehicle` in the below example.
-
-``` {.Haskell emphasize-lines="10"}
-func FindDriversWithMaximumZeroTo60: <"Find all vehicles with given maximum 0 - 60 mph.">
-   inputs:
-       vehicles Vehicle (0..*)
-       zeroTo60 number (1..1)
-   output:
-       vehiclesWithMaximumZeroTo60 Vehicle (0..*)
-
-   set vehiclesWithMaximumZeroTo60: <"Each list 'item' can have a name specified.">
-       vehicles
-           filter vehicle [ vehicle -> specification -> zeroTo60 < zeroTo60 ]
-```
-
-List operations, such as `filter`, can contain expressions (e.g. if / else statements), call other functions, and also be chained together, as in the example below.
+The `filter` keyword filters the items of a list based on a specified filtering criteria provided as a bolean expression. The syntax is:
 
 ``` Haskell
-func FindVehiclesWithinEmissionLimits: <"Find all vehicles within given emissions metrics.">
-    inputs:
-        vehicles Vehicle (0..*)
-        carbonMonoxideCOLimit int (0..1)
-        nitrogenOxydeNOXLimit int (0..1)
-        particulateMatterPMLimit int (0..1)
-    output:
-        vehiclesWithinEmissionLimits Vehicle (0..*)
-
-    set vehiclesWithinEmissionLimits: <"Filter (and other list operations) can contain expressions, and can be chained together.">
-        vehicles
-            filter [ if carbonMonoxideCOLimit exists then item -> specification -> engine -> emissionMetrics -> carbonMonoxideCO <= carbonMonoxideCOLimit else True ]
-            filter [ if nitrogenOxydeNOXLimit exists then item -> specification -> engine -> emissionMetrics -> nitrogenOxydeNOX <= nitrogenOxydeNOXLimit else True ]
-            filter [ if particulateMatterPMLimit exists then item -> specification -> engine -> emissionMetrics -> particulateMatterPM <= particulateMatterPMLimit else True ]
+<list> filter (optional <itemName>) [ <booleanExpression> ]
 ```
 
-List operations can also be nested within other list operations.
+For each list item, the boolean expression is evaluated to determine whether to include (if true) or exclude (if false) the item. The resulting filtered list is assigned as the value of the `filter` expression. By default, the keyword `item` is used to refer to the list item in the boolean expression.
+
+Filtering a list does not change the item type - e.g. when filtering a list of `Vehicle`, the output list type is also of type `Vehicle`. The example below finds the subset of all vehicles with a given engine type:
 
 ``` Haskell
-func FindOwnersWithinPenaltyPointLimit: <"Find all owners within penalty point limits on any driver licence (owners can have multiple licences, issued by different countries).">
-    inputs:
-       owners VehicleOwnership (0..*)
-       maximumPenaltyPoints int (1..1)
-    output:
-       ownersWithinPenaltyPointLimit VehicleOwnership (0..*)
+vehicles
+    filter [ item -> specification -> engine -> engineType = engineType ]
+```
 
-    set ownersWithinPenaltyPointLimit: <"Nested filter required to determine if all owner's licences do not exceed the penalty point limit.">
-        owners
-            filter owner [ owner -> drivingLicence
-                filter licence [ licence -> penaltyPoints > maximumPenaltyPoints ] count = 0
-            ]
+Alternatively, the list item name can be a parameter, e.g. `vehicle` instead of `item`. The example below finds all vehicles with a maximum 0-60 mph (provided as a `zeroTo60` number):
+
+``` Haskell
+vehicles
+    filter vehicle [ vehicle -> specification -> zeroTo60 < zeroTo60 ]
+```
+
+All list operations can contain expressions (e.g. if / else statements), call functions and also be chained together. The example below finds all vehicles within given emissions metrics:
+
+``` Haskell
+vehicles
+    filter [ if carbonMonoxideCOLimit exists then item -> specification -> engine -> emissionMetrics -> carbonMonoxideCO <= carbonMonoxideCOLimit else True ]
+    filter [ if nitrogenOxydeNOXLimit exists then item -> specification -> engine -> emissionMetrics -> nitrogenOxydeNOX <= nitrogenOxydeNOXLimit else True ]
+    filter [ if particulateMatterPMLimit exists then item -> specification -> engine -> emissionMetrics -> particulateMatterPM <= particulateMatterPMLimit else True ]
+```
+
+List operations can also be nested within other list operations. The example below finds all vehicle owners within a maximum penalty point limit on any driver licence. Owners can have multiple licences issued by different countries.
+
+``` Haskell
+owners
+    filter owner [ owner -> drivingLicence
+        filter licence [ licence -> penaltyPoints > maximumPenaltyPoints ] count = 0
+        ]
 ```
 
 #### Map
 
-The `map` keyword allows to modify the items of a list based on an expression. For each list item, the expression specified in the square brackets is invoked to modify the item. The resulting list is assigned to the output.
+The `map` keyword allows to modify the items of a list based on an expression. The syntax is:
 
 ``` Haskell
-func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
-    inputs:
-        drivingLicences DrivingLicence (0..*)
-    output:
-        ownersName string (0..*)
+<list> map (optional <itemName>) [ <expression> ]
+```
 
-    set ownersName: <"Filter lists to only include drivers with first and last names, then use 'map' to convert driving licences into list of names.">
-        drivingLicences
-            filter [ item -> firstName exists and item -> surname exists ]
-            map [ item -> firstName + " " + item -> surname ]
+For each list item, the expression is invoked to modify the item. The resulting list is assigned as the value of the `map` expression. The example below filters a list of driving licenses to include only drivers with first and last names, then converts those driving licences into a list of names.
+
+``` Haskell
+drivingLicences
+    filter [ item -> firstName exists and item -> surname exists ]
+    map [ item -> firstName + " " + item -> surname ]
 ```
 
 {{< notice info "Note" >}}
-The `map` keyword was chosen as it is the most widely used term for this use-case - for instance in languages such as Java, Python, Scala, Perl, Clojure, Erlang, F#, Haskell, Javascript, PHP, and Ruby.
+The `map` keyword was chosen as it is the most widely used term in programming languages for this use-case - for instance in Java, Python, Scala, Perl, Clojure, Erlang, F#, Haskell, Javascript, PHP, and Ruby.
 {{< /notice >}}
 
 #### Reduce
 
-Reduction consists of a set of operations that returns a single value based on elements of a list.
+Reduction is an operation that returns a single value based on elements of a list. The general syntax is:
 
-- `sum` - returns the sum of the elements of a list of `int` or `number`
+``` Haskell
+<list> <reduceOperator> (optional <itemName>) (optional [ <operationExpression> ])
+```
+
+The Rosetta DSL implements the following set set of reduce operators:
+
+- `sum` - returns the sum of the elements of a list of `int` or `number` elements
 - `min`, `max` - returns the minimum or maximum of a list of [comparable](#comparable-type) elements
 - `join` - returns the concatenated values of a list of `string`
 - `reduce` - generic reduction operator, which requires to specify the operation to merge two elements.
 
-Some examples of usage are given below.
+The two examples below return, respectively, the sum and the highest number of a given list of numbers. They do not specify any expression parameter. In each case the output is a single number.
+
 
 ``` Haskell
-func SumNumbers: <"Returns the sum of the given list of numbers.">
-    inputs:
-        numbers number (0..*)
-    output:
-        total number (1..1)
-
-    set total:
-        numbers sum
+numbers sum
 ```
 
 ``` Haskell
-func FindMaxNumber: <"Returns the highest number from the given list of numbers, using the reduce keyword.">
-    inputs:
-        numbers number (0..*)
-    output:
-        result number (1..1)
-
-    set result:
-        numbers max
+numbers max
 ```
 
-For `join`, the operator can (optionally) specify a delimiter to insert in-between each string element:
+The `min` and `max` keywords can also operate on complex, non-comparable types, provided that they include comparable attributes. In this case, the operator must specify an expression on which to perform the comparison. The `min` and `max` operators return the corresponding complex element, rather than the value on which the comparison is made.
+
+The example below returns the vehicle with the highest power engine.
 
 ``` Haskell
-func JoinStrings: <"Concatenates the list of strings, separating each element with the given delimiter, using the join keyword.">
-    inputs:
-        strings string (0..*)
-    output:
-        result string (1..1)
-
-    set result:
-        strings join [ ", " ]
+vehicles
+    max [ item -> specification -> engine -> power ]
 ```
 
-The `min`/`max` keyword can also operate on complex, non-comparable types, provided that they include comparable attributes. In this case, the operator must specify an expression on which to perform the comparison. Note that the `min`/`max` operator returns the corresponding complex element, rather than the value on which the comparison is made.
+For `join`, the operator can (optionally) specify a delimiter expression to insert in-between each string element. The below example concatenates a list of strings, separating each element with the given delimiter:
 
 ``` Haskell
-func FindVehicleWithMaxPower: <"Returns the vehicle with the highest power engine.">
-    inputs:
-        vehicles Vehicle (0..*)
-    output:
-        vehicleWithMaxPower Vehicle (1..1)
-
-    set vehicleWithMaxPower:
-        vehicles
-            max [ item -> specification -> engine -> power ]
+strings join [ ", " ]
 ```
 
-Reduction works by performing an operation to merge two adjacent elements of a list into one, and so on recursively until there is only one single element left. All the reduction operators above are short-hand special cases of the generic `reduce` operator that works as follows:
+Reduction works by performing an operation to merge two adjacent elements of a list into one, and so on recursively until there is only one single element left. All the reduction operators above are therefore short-hand special cases of the generic `reduce` operator. The `reduce` operator must specify an expression that operates on two list elements.
+
+The above example returning the vehicle with the highest power engine can be re-written as:
 
 ``` Haskell
-func FindVehicleWithMaxPowerUsingReduce: <"Returns the vehicle with the highest power engine, using the reduce keyword.">
-    inputs:
-        vehicles Vehicle (0..*)
-    output:
-        vehicleWithMaxPower Vehicle (1..1)
-
-    set vehicleWithMaxPower:
-        vehicles
-            reduce v1, v2 [
-                if v1 -> specification -> engine -> power > v2 -> specification -> engine -> power then v1 else v2
-                ]
+vehicles
+    reduce v1, v2 [
+        if v1 -> specification -> engine -> power > v2 -> specification -> engine -> power then v1 else v2
+        ]
 ```
 
 #### List Comparison
 
-[Comparison operators](#comparison-operator) are operators that always return a boolean value. Rosetta provides syntax features to support those comparison operators to function on lists:
+The Rosetta DSL supports [comparison operators](#comparison-operator) to function on lists. Comparison operators are operators that always return a boolean value. The additional keywords that operate on lists are:
 
 - `contains` - returns true if every element in the right hand expression is equal to an element in the left hand expression
 - `disjoint` - returns true if no element in the left side expression is equal to any element in the right side expression
-- (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc) - compares a list to a single element or another list
+- (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc.) - compares a list to a single element or another list
 
 If the `contains` operator is passed an expression that has single cardinality, that expression is treated as a list containing the single element or an empty list if the element is null.
 
-For the comparison operators, if either left or right expression has multiple cardinality then either the other side should have multiple cardinality. Otherwise if one side's expression has single cardinality, `all` or `any` should be used to qualify the list on the other side. At present only `any` is supported for `<` and `>` and only `all` for the other comparison operators.
+For the comparison operators, if either the left or right expression has multiple cardinality then the other side should have multiple cardinality. Otherwise if one side's expression has single cardinality, `all` or `any` should be used to qualify the list on the other side. At present only `any` is supported for `<` and `>` and only `all` for the other comparison operators.
 
 The semantics for list comparisons are as follows:
 
@@ -913,7 +860,7 @@ The semantics for list comparisons are as follows:
 
 #### Other List Operator
 
-Rosetta provides number of other list operators that are not captured by the above categories. For all these operators, the syntax enforces that the expression being operated on has multiple cardinality.
+Rosetta provides a number of additional operators that are specific to lists. For all these operators, the syntax enforces that the expression being operated on has multiple cardinality.
 
 - `only-element` - provided that a list contains one and only one element, returns that element
 - `count` - returns the number of elements in a list
@@ -922,7 +869,7 @@ Rosetta provides number of other list operators that are not captured by the abo
 - `sort` - for a list of [comparable](#comparable-type) elements, returns a list of those elements in sorted order
 - `distinct` - returns a subset of a list containing only distinct elements (i.e. where the `<>` operator returns true) of that list
 
-The `only-element` keyword imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to [null](#comparison-operator-and-null), an empty list or a list with more than one value, then the expression result will be null:
+The `only-element` keyword imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to [null](#null), an empty list or a list with more than one value, then the expression result will be null:
 
 ```
 observationEvent -> primitives only-element -> observation
