@@ -1757,21 +1757,21 @@ To provide transparency and auditability to the reporting process, the Rosetta D
 
 #### Syntax
 
-The syntax of reporting field rules is as follows:
+The syntax of a reporting rule is as follows:
 
 ``` Haskell
 <ruleType> rule <RuleName>
-  [regulatoryReference <Body> <Corpus>
+  [ regulatoryReference <Body> <Corpus>
     <Segment1>
     <Segment2>
     <SegmentN...>
-    provision <"ProvisionText">]
+    provision <"ProvisionText"> ]
   <FunctionalExpression>
 ```
 
-The \<ruleType\> can be either `reporting` or `eligibility`. The `regulatoryReference` syntax is the same as the `docReference` syntax documented in the [document reference](#document-reference) section. However it can only be applied to regulatory rules.
+The `<ruleType>` can be either `reporting` or `eligibility` (in which case it must return a boolean). The `regulatoryReference` syntax is the same as the `docReference` syntax documented in the [document reference](#document-reference) section. However it can only be applied to regulatory rules.
 
-The functional expression of reporting rules uses the same syntax components that are already available to express logical statements in other modelling components, such as the condition statements that support data validation.
+The functional expression of reporting rules uses the same [logical expression](#expression-component) components that are already available to define other modelling components, such as data validation or functions.
 
 Functional expressions are composable, so a rule can also call another rule. When multiple rules may need to be applied for a single field or eligibility criteria, those rules can be specified in brackets separated by a comma, as illustrated below. Each of `Euro1Standard`, ..., `Euro6Standard` are themselves reporting rules.
 
@@ -1789,21 +1789,42 @@ reporting rule EuroEmissionStandard
     )
 ```
 
-In addition to those existing functional features, the Rosetta DSL provides other syntax components that are specifically designed for reporting applications. Those components are:
+In addition to those existing functional features, the Rosetta DSL provides specific reporting instruction components:
 
-- `extract` \<Expression\>
+- extract
+- filter
+- reduce
+- repeat
 
-When defining a reporting rule, the `extract` keyword defines a value to be reported, or to be used as input into a subsequent statement or another rule. The full expressional syntax of the Rosetta DSL can be used in the expression that defines the value to be extracted, including conditional statement such as `if` / `else` / `or` / `exists`.
+Those components are documented in the next sections.
 
-An example is given below, that uses a mix of Boolean statements. This example looks at the fixed and floating rate specification of an InterestRatePayout and if there is one of each returns true
+##### Extract Instruction
+
+An extraction instruction defines a value to be either reported or used as input into another rule or instruction. The extraction keywords comprise:
+
+- `extract`
+- `then`
+- `as`
+
+The extraction syntax is:
 
 ``` Haskell
-reporting rule IsFixedFloat
-  extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> fixedRate count = 1
-  and Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> floatingRate count = 1
+extract <Expression1>
+then extract <Expression2>
+<...>
+(optional: as <"Label">)
 ```
 
-The extracted value may be coming from a data attribute in the model, as above, or may be directly specified as a value, such as a `string` in the below example.
+The expressions may use any type of [expression component](#expression-component) available in the Rosetta DSL, from simple path expressions or constants to more complex conditional statements, as illustrated below:
+
+``` Haskell
+extract Vehicle -> specification -> dateOfFirstRegistration
+```
+
+``` Haskell
+extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> fixedRate count = 1
+   and Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> floatingRate count = 1
+```
 
 ``` Haskell
 extract if WorkflowStep -> businessEvent -> primitives -> execution exists
@@ -1812,26 +1833,22 @@ extract if WorkflowStep -> businessEvent -> primitives -> execution exists
     then "NEWT"
 ```
 
-- \<ReportExpression1\> `then` \<ReportExpression2\>
+Extraction instructions can be chained using the keyword `then`, which means that extraction continues from the previous point. The syntax provides type safety when chaining extraction instructions: the output type of the preceding instruction must be equal to the input type of the following instruction.
 
-Report statements can be chained using the keyword `then`, which means that extraction continues from the previous point.
-
-The syntax provides type safety when chaining rules, whereby the output type of the preceding rule must be equal to the input type of the following rule. The example below uses the TradeForEvent rule to find the Trade object and `then` extracts the termination date from that trade
+The example below defines the `TradeForEvent` rule that returns an object of type `Trade`, and then uses that rule as a starting point in another rule to extract the `terminationDate` attribute of that `Trade`.
 
 ``` Haskell
-reporting rule MaturityDate <"Date of maturity of the financial instrument. Field only applies to debt instruments with defined maturity">
-   TradeForEvent then extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> terminationDate -> adjustableDate -> unadjustedDate
-
 reporting rule TradeForEvent
    extract
        if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade only exists
    then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
        else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
+       
+reporting rule MaturityDate <"Date of maturity of the financial instrument. Field only applies to debt instruments with defined maturity">
+   TradeForEvent then extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> terminationDate -> adjustableDate -> unadjustedDate
 ```
 
-- `as` \<FieldName\>
-
-Any report statement can be follows by `as` This sets a label under which the value will appear in a report, as in the below example.
+An extraction instruction followed by `as` sets a label onto the value to appear as the column name in a computed report. The label is an arbitrary, non-functional string and should generally be aligned with the name of the reportable field as per the regulation.
 
 ``` Haskell
 reporting rule RateSpecification
@@ -1839,11 +1856,7 @@ reporting rule RateSpecification
   as "Rate Specification"
 ```
 
-The label is an arbitrary `string` and should be aligned with the name of the reportable field as per the regulation. This field name will be used as column name when displaying computed reports, but is otherwise not functionally usable.
-
-- `Rule if` statement
-
-The rule if statement consists of the keyword `if` followed by condition that will be evaluated `return` followed by a rule. If the condition is true then the value of the `return` rule is returned. Additional conditions and `return` rules can be specified with `else if`. Only the first matching condition\'s `return` will be executed. `else return` can be used to provide an alternative that will be executed if no conditions match In the below example we first extract the Payout from a Trade then we try to find the appropriate asset class. If there is a ForwardPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" If there is an OptionPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" otherwise the asset class is null
+The `rule if` statement consists of the keyword `if` followed by condition that will be evaluated `return` followed by a rule. If the condition is true then the value of the `return` rule is returned. Additional conditions and `return` rules can be specified with `else if`. Only the first matching condition\'s `return` will be executed. `else return` can be used to provide an alternative that will be executed if no conditions match In the below example we first extract the Payout from a Trade then we try to find the appropriate asset class. If there is a ForwardPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" If there is an OptionPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" otherwise the asset class is null.
 
 ``` Haskell
 extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout then
@@ -1855,13 +1868,17 @@ if filter when Payout -> forwardPayout -> underlier -> underlyingProduct -> fore
   endif
 ```
 
-##### Filtering Rules
+##### Filter Instruction
 
-Filtering and max/min/first/last rules take a collection of input objects and return a subset of them. The output type of the rule is always the same as the input.
+A filter instruction takes a list of input objects and return a subset of them. The output type of the rule is always the same as the input, and of multipler cardinality. The syntax is:
 
-- `filter when` \<FunctionalExpression\>
+``` Haskell
+filter when <FunctionalExpression>
+```
 
-The `filter when` keyword takes each input value and uses it as input to a provided test expression The result type of the test expression must be boolean and its input type must be the input type of the filter rule. If the expression returns `true` for a given input that value is included in the output. The code below selects the PartyContactInformation objects then filters to only the parties that are reportingParties before then returning the partyReferences
+The `filter when` keyword takes each input value and uses it as input to a provided test expression. The result type of the test expression must be boolean and its input type must be the input type of the filter rule. If the expression returns true for a given input that value is included in the output.
+
+The example below selects the `PartyContactInformation` object then filters to only the parties that are `ReportingParty` before returning the `partyReference`.
 
 ``` Haskell
 reporting rule ReportingParty <"Identifier of reporting entity">
@@ -1870,23 +1887,31 @@ reporting rule ReportingParty <"Identifier of reporting entity">
   extract PartyContractInformation -> partyReference
 ```
 
-The functional expression can be either a direct Boolean expression as above, or the output of another rule, in which case the syntax is: `filter when rule` \<RuleName\>, as in the below example. This example filters all the input trades to return only the ones that InterestRatePayouts and then extracts the fixed interest rate for them.
+The functional expression can be either a direct boolean expression or the output of another rule, in which case the syntax is:
 
 ``` Haskell
-reporting rule FixedFloatRateLeg1 <"Fixed Float Price">
-  filter when rule IsInterestRatePayout then
-  TradeForEvent then extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate as "II.1.9 Rate leg 1"
+filter when rule <RuleName>
 ```
 
-And the filtering rule is defined as:
+The below example creates a reporting rule called `IsInterestRatePayout` that returns a boolean, and uses it in a filter instruction in another rule.
 
 ``` Haskell
 reporting rule IsInterestRatePayout
   TradeForEvent then
   extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only exists
+  
+reporting rule FixedFloatRateLeg1 <"Fixed Float Price">
+  filter when rule IsInterestRatePayout then
+  TradeForEvent then extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate as "II.1.9 Rate leg 1"
 ```
 
+##### Reduce Instruction
+
+A reduction instructions takes an input with multiple cardinality and applies some merging operation to reduce it to a single element. The available reduction keywords are:
+
 - `maximum` / `minimum`
+- `maxBy` / `minBy`
+- `join`
 
 The `maximum` and `minimum` keywords return only a single value (for a given key). The value returned will be the highest or lowest value. The input type to the rule must be of a [comparable type](#comparable-type). In the below example, we first apply a filter and extract a `rate` attribute. There could be multiple rate values, so we select the highest one.
 
@@ -1896,8 +1921,6 @@ filter when rule IsFixedFloat then
   maximum
 ```
 
-- `maxBy` / `minBy`
-
 The syntax also supports selecting values by an ordering based on an attribute using the `maxBy` and `minBy` keywords. For each input value to the rule the provided test expression or rule is evaluated to give a test result and paired with the input value. When all values have been processes the pair with the highest test result is selected and the associated value is returned by the rule. The test expression or rule must return a value of single cardinality and must be of a [comparable type](#comparable-type). In the below example, we first apply a filter and extract a `fixedInterestRate` attribute. There could be multiple attribute values, so we select the one with the highest rate and return that FixedInterestRate object.
 
 ``` Haskell
@@ -1906,11 +1929,7 @@ filter when rule IsFixedFloat then
   maxBy FixedInterestRate -> rate
 ```
 
-- `join` statement
-
-The `join` syntax filters data by comparing two data sets, and selecting the values that have a matching key.
-
-In the syntax below, the data is first split into two data sets, then the `join` statement selects a sublist of the primary data set where the primary key matches the foreign key.
+The `join` syntax filters data by comparing two data sets, and selecting the values that have a matching key. The syntax is:
 
 ``` Haskell
 (
@@ -1932,13 +1951,17 @@ join key Counterparty -> role foreignKey BuyerSeller -> buyer then
 extract Counterparty -> partyReference
 ```
 
-##### Repeatable Rules
+##### Repeat Instruction
 
-The syntax also supports the reporting of repeatable sets of data as required by most regulations. For example, in the CFTC Part 45 regulations, fields 33-35 require the reporting of a notional quantity schedule. For each quantity schedule step, the notional amount, effective date and end date must be reported.
+The syntax also supports the reporting of *repeatable* fields, when such fields can be of multiple, variable cardinality depending on the scenario. The `repeatable` keyword specifies that a set of extract instruction must be reported as a repeatable set of fields, based on a starting point with multiple cardinality.
 
-- `extract repeatable` \<ExpressionWithMultipleCardinality\> ( \<ReportingRule1\>, \<ReportingRule2\> \... \<ReportingRuleN\> )
+The syntax is:
 
-The `repeatable` keyword specifies that the extract expression will be reported as a repeating set of data. The rules specified in the brackets specify the fields to report for each repeating data set.
+``` Haskell
+extract repeatable <ExpressionWithMultipleCardinality> then ( <ExtractInstruction1>, <ExtractInstructuction2>, <...> )
+```
+
+For example, in the CFTC Part 45 regulations, fields 33-35 require the reporting of a notional quantity schedule. For each quantity schedule step, the notional amount, effective date and end date must be reported.
 
 In the example below, the `repeatable` keyword in reporting rule `NotionalAmountScheduleLeg1` specifies that the extracted list of quantity notional schedule steps should be reported as a repeating set of data. The rules specified within the brackets define the fields that should be reported for each repeating step.
 
@@ -1971,4 +1994,6 @@ reporting rule NotionalAmountScheduleLeg1EndDate <"End date of the notional amou
        as "33/35-$ 35 End date leg 1"
 ```
 
-Note that the `-$` symbol is used in the label to index the repeated groups ensuring that they appear in a logical order in the Reports view of Rosetta.
+{{< notice info "Note" >}}
+The `-$` symbol in the label is used to index the repeatable group, to ensure that they appear in logical order in the report.
+{{< /notice >}}
