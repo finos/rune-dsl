@@ -593,9 +593,11 @@ In situations where the context of the object in which the path expression shoul
 
 #### Null
 
-If a path expression is applied to an attribute that does not have a value in the object it is being evaluated against, the result is *null* - i.e. there is no value. If an attribute of that non-existant object is further evaluated, the result is still *null*.
+If a path expression is applied to an attribute that does not have a value in the object it is being evaluated against, the result is *null* - i.e. there is no value. If an attribute of that non-existant object is further evaluated, the result is still null.
 
-In the above example, if `drivingLicense` is *null*, the final `penaltyPoints` attribute will also evaluate to *null*.
+In the above example, if `drivingLicense` is null, the final `penaltyPoints` attribute also evaluates to null.
+
+A null value for an expression with multiple cardinality is treated as an empty [list](#list).
 
 ### Operator
 
@@ -654,14 +656,14 @@ All the following built-in types are *comparable*, which means that they can be 
 
 ##### Comparison Operator and Null
 
-If one or more expressions being passed to an operator is of single cardinality but is [null](#null) the behavior is as follows:
+If an expression passed to an operator is of single cardinality and [null](#null), the behavior is as follows:
 
 - null `=` *any value* returns false
 - null `<>` *any value* returns true
 - null `>` *any value* returns false
 - null `>=` *any value* returns false
 
-*any value* here includes null. The behaviour is symmetric - if the null appears on either side of the expression the result is the same. if the null value is of multiple cardinality then it is treated as an empty list.
+*Any value* here includes null. The behaviour is symmetric: if null appears on either side of the expression the result is the same.
 
 #### Boolean Operator
 
@@ -833,11 +835,11 @@ vehicles
 
 #### List Comparison
 
-The Rosetta DSL supports [comparison operators](#comparison-operator) to function on lists. Comparison operators are operators that always return a boolean value. The additional keywords that operate on lists are:
+The Rosetta DSL supports [comparison operators](#comparison-operator) to function on lists. Comparison operators are operators that always return a boolean value. The additional keywords needed to operate on lists are:
 
 - `contains` - returns true if every element in the right hand expression is equal to an element in the left hand expression
 - `disjoint` - returns true if no element in the left side expression is equal to any element in the right side expression
-- (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc.) - compares a list to a single element or another list
+- (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc.) - compares a list to a single element
 
 If the `contains` operator is passed an expression that has single cardinality, that expression is treated as a list containing the single element or an empty list if the element is null.
 
@@ -846,17 +848,17 @@ For the comparison operators, if either the left or right expression has multipl
 The semantics for list comparisons are as follows:
 
 - `=`
-  - if both sides are lists then the lists must contain elements that are `=` when compared pairwise in the order
-  - if the one side is a list and the other is single and `all` is specified then every element in the list must `=` the single value
-  - if the one side is a list and the other is single and `any` is specified then at least one element in the list must `=` the single value (not implemented yet)
+  - if both sides are lists, returns true if all items are equal when e
+  - if one side is single and `all` is specified, returns true if all items in the list are equal to the single value
+  - if one side is single and `any` is specified, returns true if any Item in the list is equal to the single value (not implemented yet)
 - `<>`
-  - if both sides are lists then then true is returned if the lists have different length or every element is `<>` to the corresponding element by position
-  - if one side is a list and the `any` is specified then true is returned if any element `<>` the single element
-  - if one side is a list and the `all` is specified then true is returned if all elements `<>` the single element (not implemented yet)
+  - if both sides are lists, returns true if the lists have different lengths or all items are different when compared pairwise in the order of the lists
+  - if one side is single and `any` is specified, returns true if any item in the list is different from the single value
+  - if one side is single and `all` is specified, returns true if all items in the list are different from the single value (not implemented yet)
 - `<`, `<=`, `>=`, `>`
-  - if both sides are lists then every element in the first list must be `>` the element in the corresponding position in the second list
-  - if one side is single and `all` is specified then every element in the list must be `>` that single value
-  - if one side is single and `any` is specified then at least one element in the list must be `>` that single value (not implemented yet)
+  - if both sides are lists, returns true if the comparison returns true for every item when compared pairwise in the order of the lists
+  - if one side is single and `all` is specified, returns true if the comparison returns true for all items in the list when compared to that single value
+  - if one side is single and `any` is specified, returns true if the comparison returns true for any item in the list when compared to that single value (not implemented yet)
 
 #### Other List Operator
 
@@ -877,12 +879,8 @@ observationEvent -> primitives only-element -> observation
 
 The `distinct` operator is useful to remove duplicate elements from a list. It can be combined with other syntax features such as `count` to determine if all elements of a list are equal.
 
-```
-quantity -> unitOfAmount -> currency distinct
-```
-
-```
-payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
+``` Haskell
+owner -> drivingLicense -> countryofIssuance distinct count = 1
 ```
 
 ## Data Validation Component
