@@ -49,12 +49,12 @@ Rosetta defines five *basic types*. The set of basic types available in the Rose
 
 #### Record Type
 
-Rosetta defines two additional built-in types known as *record types*. The list is controlled by defining them as `recordType` at the language level.
+Rosetta defines two additional built-in types known as *record types*, that are simplified data types. The list is controlled by defining them as `recordType` at the language level.
 
 - `date` - specified by combining a day, month and year
 - `zonedDateTime` - combines a `date`, simple `time` and time-zone `string` specification to unambiguously refer to a single instant in time
 
-Record types are simplified data types because:
+Record types are different from more complex data types in that:
 
 - they are pure data definitions and do not allow specification of validation logic in a [condition](#condition-statement).
 - they are handled specially in the code-generators and so form part of the Rosetta DSL rather than any specific model.
@@ -69,7 +69,7 @@ As an alternative to `zonedDateTime`, a model may define a business centre time,
 
 A *data type* describes a logical concept of the business domain being modelled - also sometimes referred to as an *entity*, *object* or *class*. It is specified through a set of *attributes* defining the granular elements composing that concept - also sometimes referred to as *fields*.
 
-By contrast with the built-in types, the data types that are defined in the model are also often referred to as *complex types*.
+By contrast with the basic types, those model-specific data types are often referred to as *complex types*.
 
 #### Syntax
 
@@ -89,7 +89,7 @@ The Rosetta DSL convention is that data type names use the *PascalCase* (startin
 
 The [description](#description) (optional) should be a plain-text definition of the concept represented by the data type. All descriptions in the Rosetta DSL must be written as a string enclosed within angle brackets: `<"..">`.
 
-The annotations are [meta-data components](#meta-data-component) that apply to this data type. All annotations in the Rosetta DSL must be enclosed within square brackets `[...]`.
+The [annotations](#annotation) are meta-data components that apply to this data type. All annotations in the Rosetta DSL are enclosed within square brackets `[...]`.
 
 ``` Haskell
 type VehicleOwnership: <"Representative record of vehicle ownership">
@@ -203,7 +203,7 @@ enum DayCountFractionEnum:
 
 ## Meta-Data Component
 
-Meta-data are syntax features that allow to associate rich definitions to all other model components, including data and functions.
+Meta-data allow to associate rich definitions to other model components such as data types, attributes or functions.
 
 ### Description
 
@@ -284,7 +284,7 @@ A document reference is created using the `docReference` keyword. This documeent
 
 ``` Haskell
 [docReference <Body> <Corpus>
-  <Segment1> <Segment2> <...>
+  <segment1> <segment2> <...>
   provision <"ProvisionText">]
 ```
 
@@ -1817,7 +1817,7 @@ Functional expressions are composable, so a rule can also call another rule. Whe
 ``` Haskell
 reporting rule EuroEmissionStandard
    [regulatoryReference EuropeanCommission StandardEmissionsEuro6 article "1"  
-    provision "Regulation (EC) No 715/2007 is amended as follows:"]
+    provision "Regulation (EC) No 715/2007 is amended as follows:..."]
     ( 
         Euro1Standard as "Emission Standards",
         Euro2Standard as "Emission Standards",
@@ -1861,38 +1861,35 @@ extract Vehicle -> specification -> dateOfFirstRegistration
 ```
 
 ``` Haskell
-extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> fixedRate count = 1
-   and Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> floatingRate count = 1
-```
-
-``` Haskell
-extract if WorkflowStep -> businessEvent -> primitives -> execution exists
-  or WorkflowStep -> businessEvent -> primitives -> contractFormation exists
-  or WorkflowStep -> businessEvent -> primitives -> quantityChange exists
-    then "NEWT"
+extract if
+    Vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> N1I_Commercial
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> N1II_Commercial
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> N1III_Commercial
+  then
+    "MOrN1"
 ```
 
 Extraction instructions can be chained using the keyword `then`, which means that extraction continues from the previous point. The syntax provides type safety when chaining extraction instructions: the output type of the preceding instruction must be equal to the input type of the following instruction.
 
-The example below defines the `TradeForEvent` rule that returns an object of type `Trade`, and then uses that rule as a starting point in another rule to extract the `terminationDate` attribute of that `Trade`.
-
 ``` Haskell
-reporting rule TradeForEvent
-   extract
-       if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade only exists
-   then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
-       else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
-       
-reporting rule MaturityDate <"Date of maturity of the financial instrument. Field only applies to debt instruments with defined maturity">
-   TradeForEvent then extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> terminationDate -> adjustableDate -> unadjustedDate
+reporting rule VehicleForOwner
+    extract VehicleOwnership -> vehicle
+
+reporting rule VehicleClassification
+    VehicleForOwner then extract Vehicle -> vehicleClassification
+    // This is equivalent to writing directly:
+    // extract VehicleOwnership -> vehicle -> vehicleClassification
 ```
 
 An extraction instruction followed by `as` sets a label onto the value to appear as the column name in a computed report. The label is an arbitrary, non-functional string and should generally be aligned with the name of the reportable field as per the regulation.
 
 ``` Haskell
-reporting rule RateSpecification
-  extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification
-  as "Rate Specification"
+reporting rule FirstRegistrationDate <"Date of first registration of the vehicle">
+   extract VehicleOwnership -> vehicle -> specification -> dateOfFirstRegistration
+    as "First Registration Date"
 ```
 
 The `rule if` statement consists of the keyword `if` followed by condition that will be evaluated `return` followed by a rule. If the condition is true then the value of the `return` rule is returned. Additional conditions and `return` rules can be specified with `else if`. Only the first matching condition\'s `return` will be executed. `else return` can be used to provide an alternative that will be executed if no conditions match In the below example we first extract the Payout from a Trade then we try to find the appropriate asset class. If there is a ForwardPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" If there is an OptionPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" otherwise the asset class is null.
@@ -1915,33 +1912,40 @@ A filter instruction takes a list of input objects and return a subset of them. 
 filter when <FunctionalExpression>
 ```
 
-The `filter when` keyword takes each input value and uses it as input to a provided test expression. The result type of the test expression must be boolean and its input type must be the input type of the filter rule. If the expression returns true for a given input that value is included in the output.
+The `filter when` keyword takes each input value and uses it as input to a provided test expression. The result type of the test expression must be boolean and its input type must be the input type of the filter rule. If the expression returns true for a given input, that value is included in the output.
 
-The example below selects the `PartyContactInformation` object then filters to only the parties that are `ReportingParty` before returning the `partyReference`.
-
-``` Haskell
-reporting rule ReportingParty <"Identifier of reporting entity">
-  TradeForEvent then extract Trade -> partyContractInformation then
-  filter when PartyContractInformation -> relatedParty -> role = PartyRoleEnum -> ReportingParty then
-  extract PartyContractInformation -> partyReference
-```
-
-The functional expression can be either a direct boolean expression or the output of another rule, in which case the syntax is:
+The functional expression can be either a direct boolean expression or the output of another rule whose output is a boolean, in which case the syntax is:
 
 ``` Haskell
 filter when rule <RuleName>
 ```
 
-The below example creates a reporting rule called `IsInterestRatePayout` that returns a boolean, and uses it in a filter instruction in another rule.
+Filter expressions can be combined with extraction expressions. The example below extracts the date of first registration for a list of passenger-type vehicles only:
 
 ``` Haskell
-reporting rule IsInterestRatePayout
-  TradeForEvent then
-  extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only exists
-  
-reporting rule FixedFloatRateLeg1 <"Fixed Float Price">
-  filter when rule IsInterestRatePayout then
-  TradeForEvent then extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate as "II.1.9 Rate leg 1"
+extract VehicleOwnership -> vehicle
+filter when Vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+extract Vehicle -> specification -> dateOfFirstRegistration
+```
+
+That example can be rewritten as:
+
+``` Haskell
+extract VehicleOwnership -> vehicle
+filter when rule VehicleIsM
+extract Vehicle -> specification -> dateOfFirstRegistration
+```
+
+where the filtering rule itself is defined as:
+
+``` Haskell
+reporting rule VehicleIsM
+  extract
+    Vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+      or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+      or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
 ```
 
 ##### Reduce Instruction
@@ -1952,20 +1956,23 @@ A reduction instructions takes an input with multiple cardinality and applies so
 - `maxBy` / `minBy`
 - `join`
 
-The `maximum` and `minimum` keywords return only a single value (for a given key). The value returned will be the highest or lowest value. The input type to the rule must be of a [comparable type](#comparable-type). In the below example, we first apply a filter and extract a `rate` attribute. There could be multiple rate values, so we select the highest one.
+The `maximum` and `minimum` keywords return only a single value (for a given key) - the value returned will be the highest or lowest value. The input of the rule must be of a [comparable type](#comparable-type).
+
+In the below example, we extract the highest 0-60 mph of a list of vehicles:
 
 ``` Haskell
-filter when rule IsFixedFloat then
-  extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate then
-  maximum
+extract VehicleOwnership -> vehicle -> specification -> zeroTo60 then
+    maximum
 ```
 
-The syntax also supports selecting values by an ordering based on an attribute using the `maxBy` and `minBy` keywords. For each input value to the rule the provided test expression or rule is evaluated to give a test result and paired with the input value. When all values have been processes the pair with the highest test result is selected and the associated value is returned by the rule. The test expression or rule must return a value of single cardinality and must be of a [comparable type](#comparable-type). In the below example, we first apply a filter and extract a `fixedInterestRate` attribute. There could be multiple attribute values, so we select the one with the highest rate and return that FixedInterestRate object.
+The `maxBy` and `minBy` keywords allow to select a value by ordering based on an attribute. For each input value, a test expression or rule is evaluated to give a test result that is paired with the input value. When all values have been processes, the pair with the highest or lowest test value is selected and the associated value is returned by the rule. The test expression must return a value of single cardinality and must be of a [comparable type](#comparable-type).
+
+In the below example, we extract the registration date of the vehicle with the highest 0-60 mph specification:
 
 ``` Haskell
-filter when rule IsFixedFloat then
-  extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate then
-  maxBy FixedInterestRate -> rate
+extract VehicleOwnership -> vehicle -> specification then
+maxBy Specification -> zeroTo60 then
+extract Specification -> dateOfFirstRegistration
 ```
 
 The `join` syntax filters data by comparing two data sets, and selecting the values that have a matching key. The syntax is:
