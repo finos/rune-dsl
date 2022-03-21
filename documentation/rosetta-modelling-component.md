@@ -23,13 +23,14 @@ This documentation details the purpose and features of each type of model compon
 
 ## Data Component
 
-**The Rosetta DSL provides three components to represent data** in a model:
+**The Rosetta DSL provides four components to represent data** in a model:
 
 - [Built-in type](#built-in-type)
 - [Data type](#data-type)
 - [Enumeration](#enumeration)
+- [Qualified type](#qualified-type)
 
-Those three components are often collectively referred to as *types*.
+Those four components are often collectively referred to as *types*.
 
 ### Built-in Type
 
@@ -218,6 +219,47 @@ enum FloatingRateIndexEnum: <"The enumerated values to specify the list of float
     <...>
 ```
 
+### Qualified Type
+
+The Rosetta DSL provides some special types called *qualified types*, which are specific to its main application in the financial domain:
+
+- Calculation - `calculation`
+- Object qualification - `productType` `eventType`
+
+Those special types are designed to flag attributes which result from running some functional logic, such that model implementations can identify where to stamp the output of these functions in the model.
+
+#### Calculation
+
+The `calculation` qualified type, when specified instead of the type for the attribute, represents the outcome of a calculation. An attribute with the `calculation` type is meant to be associated to a [calculation function](#calculation-function), so that the attribute\'s type is implied by the function output.
+
+An example usage is the conversion from clean price to dirty price for a bond:
+
+``` Haskell
+type CleanPrice:
+  cleanPrice number (1..1)
+  accruals number (0..1)
+  dirtyPrice calculation (0..1)
+```
+
+#### Object Qualification
+
+Similarly, `productType` and `eventType` represent the outcome of qualification logic to infer the type of an object in a model. Attributes of these types are meant to be associated to an [object qualification function](#object-qualification-function).
+
+For example:
+
+``` Haskell
+type ProductIdentification:
+  productQualifier productType (0..1) <"The CDM product qualifier, which corresponds to the outcome of the isProduct qualification logic. This value is derived by the CDM from the product payout features.">
+  primaryAssetdata AssetClassEnum (0..1)
+  secondaryAssetdata AssetClassEnum (0..*)
+  productType string (0..*)
+  productId string (0..*)
+```
+
+{{< notice info "Note" >}}
+The qualified type feature in the Rosetta DSL is under evaluation and may be replaced by a different mechanism in future.
+{{< /notice >}}
+
 ## Meta-Data Component
 
 Meta-data are specific components that enrich other model components such as data types, attributes or functions.
@@ -270,8 +312,28 @@ The Rosetta DSL naming convention uses a (lower) camelCase for annotation names,
 
 ``` Haskell
 annotation rootType: <"Mark a type as a root of the rosetta model">
-annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
 ```
+
+<a id='calculation-label'></a>
+
+``` Haskell
+annotation calculation: <"Marks a function as fully implemented calculation.">
+```
+
+<a id='qualification-label'></a>
+
+The following annotation has an attribute to specify which type of object (product or business event) is being qualified:
+
+``` Haskell
+annotation qualification: <"Annotation that describes a func that is used for event and product Qualification">
+  [prefix Qualify]
+  Product boolean (0..1)
+  BusinessEvent boolean (0..1)
+```
+
+{{< notice info "Note" >}}
+Some annotations are provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
+{{< /notice >}}
 
 Once an annotation is defined, model components can be annotated with its name and chosen attribute, if any, using the following syntax:
 
@@ -279,13 +341,9 @@ Once an annotation is defined, model components can be annotated with its name a
 [<annotationName> (optional: <annotationAttribute>)]
 ```
 
-{{< notice info "Note" >}}
-Some annotations are provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
-{{< /notice >}}
-
 #### Meta-Data Annotation
 
-The `metadata` annotation defines a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations:
+The `metadata` annotation defines a set attributes that are used to qualify data types and attributes. By default Rosetta includes several metadata annotations:
 
 ``` Haskell
 annotation metadata:
@@ -473,58 +531,6 @@ type Identifier:
 ```
 
 A `key` qualifier is associated to the `Party` type, which means it is referenceable. In the `Identifier` type, the `reference` qualifier, which is associated to the `issuerReference` attribute of type `Party`, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the [synonym](#basic-mapping) of the documentation.
-
-### Qualified Type
-
-The Rosetta DSL provides some special types called *qualified types*, which are specific to its main application in the financial domain:
-
-- Calculation - `calculation`
-- Object qualification - `productType` `eventType`
-
-Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model. The logic is being captured by specific types of functions that are detailed in the [Object Qualification](#object-qualification-function) section.
-
-#### Calculation
-
-The `calculation` qualified type, when specified instead of the type for the attribute, represents the outcome of a calculation. An example usage is the conversion from clean price to dirty price for a bond.
-
-``` Haskell
-type CleanPrice:
-  cleanPrice number (1..1)
-  accruals number (0..1)
-  dirtyPrice calculation (0..1)
-```
-
-An attribute with the `calculation` type is meant to be associated to a function tagged with the `calculation` annotation. The attribute\'s type is implied by the function output.
-
-``` Haskell
-annotation calculation: <"Marks a function as fully implemented calculation.">
-```
-
-#### Object Qualification
-
-Similarly, `productType` and `eventType` represent the outcome of qualification logic to infer the type of an object (financial product or event) in the model. See the `productQualifier` attribute, alongside other identifier attributes in the `ProductIdentification` data type:
-
-``` Haskell
-type ProductIdentification: <" A class to combine the CDM product qualifier with other product qualifiers, such as the FpML ones. While the CDM product qualifier is derived by the CDM from the product payout features, the other product identification elements are assigned by some external sources and correspond to values specified by other data representation protocols.">
-  productQualifier productType (0..1) <"The CDM product qualifier, which corresponds to the outcome of the isProduct qualification logic. This value is derived by the CDM from the product payout features.">
-  primaryAssetdata AssetClassEnum (0..1)
-  secondaryAssetdata AssetClassEnum (0..*)
-  productType string (0..*)
-  productId string (0..*)
-```
-
-Attributes of these types are meant to be associated to an object qualification function tagged with the `qualification` annotation. The annotation has an attribute to specify which type of object (like `Product` or `BusinessEvent`) is being qualified.
-
-``` Haskell
-annotation qualification: <"Annotation that describes a func that is used for event and product Qualification">
-  [prefix Qualify]
-  Product boolean (0..1)
-  BusinessEvent boolean (0..1)
-```
-
-{{< notice info "Note" >}}
-The qualified type feature in the Rosetta DSL is under evaluation and may be replaced by a mechanism that is purely based on these function annotations in the future.
-{{< /notice >}}
 
 ## Expression Component
 
@@ -1282,9 +1288,9 @@ Those functions are typically associated to an annotation, as described in the [
 
 Object qualification functions evaluate a combination of assertions that uniquely characterise an input object according to a chosen classification. Each function is associated to a qualification name (a `string` from that classification) and returns a boolean. This boolean evaluates to True when the input satisfies all the criteria to be identified according to that qualification name.
 
-Object qualification functions are associated to a `qualification` annotation that specifies the type of object being qualified. The function name start with the `Qualify` prefix, followed by an underscore `_`. The naming convention is to have an upper [CamelCase](https://en.wikipedia.org/wiki/Camel_case) (PascalCase) word, using `_` to append granular qualification names where the classification may use other types of separators (like space or colon `:`).
+Object qualification functions are associated to a [`qualification` annotation](#qualification-label) that specifies the type of object being qualified. The function name must start with the `Qualify` prefix, followed by an underscore `_`. The naming convention is to have an upper [CamelCase](https://en.wikipedia.org/wiki/Camel_case) (PascalCase) word, using `_` to append granular qualification names where the classification may use other types of separators (like space or colon `:`).
 
-Syntax validation logic based on the `qualification` annotation is in place to enforce this.
+Syntax validation logic based on the qualification annotation is in place to enforce this.
 
 ``` Haskell
 func Qualify_InterestRate_IRSwap_FixedFloat_PlainVanilla:
@@ -1297,7 +1303,7 @@ func Qualify_InterestRate_IRSwap_FixedFloat_PlainVanilla:
 
 Calculation functions define a calculation output that is often, though not exclusively, of type `number`. They must end with an `assign-output` statement that fully defines the calculation result.
 
-Calculation functions are associated to the `calculation` annotation.
+Calculation functions are associated to a [`calculation` annotation](#calculation-label).
 
 ``` Haskell
 func FixedAmount:
@@ -1497,7 +1503,7 @@ This allows a path of input document elements to be matched to a single Rosetta 
 
 Mappings are expected to be one-to-one with each input value mapping to one Rosetta value. By default if a single input value is mapped to multiple Rosetta output values this is considered an error. However by adding the \"maps 2\" keyword this can be overridden allowing the input value to map to many output Rosetta values.
 
-##### meta
+##### Meta
 
 The `meta` keyword inside a synonym is used to map to Rosetta [metadata](#meta-data-and-reference). E.g. :
 
