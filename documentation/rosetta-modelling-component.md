@@ -50,7 +50,7 @@ Rosetta defines five *basic types*. The set of basic types available in the Rose
 
 #### Record Type
 
-Rosetta defines two additional built-in types known as *record types*, that are simplified data types. The list is controlled by defining them as `recordType` at the language level.
+Rosetta defines two additional built-in types that are simple composites known as *record types*. The list is controlled by defining them as `recordType` at the language level.
 
 - `date` - specified by combining a day, month and year
 - `zonedDateTime` - combines a `date`, simple `time` and time-zone `string` specification to unambiguously refer to a single instant in time
@@ -70,11 +70,15 @@ As an alternative to `zonedDateTime`, a model may define a business centre time,
 
 A *data type* describes a logical concept of the business domain being modelled - also sometimes referred to as an *entity*, *object* or *class*. It is specified through a set of *attributes* defining the granular elements composing that concept - also sometimes referred to as *fields*.
 
-By contrast with the basic types, those model-specific data types are often referred to as *complex types*.
+Those model-specific data types are often referred to as *complex types* by contrast with the basic types.
 
 #### Syntax
 
-A data type is defined by the keyword `type` as follows:
+A data type is defined using the keyword `type` and comprises:
+- name - Required. By convention, uses the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names must be unique across a [namespace](#namespace-component). All those requirements are enforced by syntax validation.
+- [description](#description) - Optional, recommended. A plain-text definition of the concept represented by the data type. All descriptions in the Rosetta DSL must be written as a string enclosed within angle brackets: `<"..">`.
+- [annotations](#annotation) - Optional. Meta-data components that apply to the data type. All annotations in the Rosetta DSL are enclosed within square brackets `[...]`.
+- attributes - Optional.
 
 ``` Haskell
 type <TypeName>: <"Description">
@@ -86,11 +90,7 @@ type <TypeName>: <"Description">
   <...>
 ```
 
-The Rosetta DSL convention is that data type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names need to be unique across a [namespace](#namespace-component). All those requirements are enforced by syntax validation.
-
-The [description](#description) (optional) should be a plain-text definition of the concept represented by the data type. All descriptions in the Rosetta DSL must be written as a string enclosed within angle brackets: `<"..">`.
-
-The [annotations](#annotation) are meta-data components that apply to this data type. All annotations in the Rosetta DSL are enclosed within square brackets `[...]`.
+For example:
 
 ``` Haskell
 type VehicleOwnership: <"Representative record of vehicle ownership">
@@ -98,7 +98,7 @@ type VehicleOwnership: <"Representative record of vehicle ownership">
   [rootType]
 ```
 
-#### Attribute Syntax
+#### Attribute
 
 A data type definition lists the attributes that compose this data type. Attributes are optional, so it is possible to model empty data types. When they are present, each attribute is defined by five components (three required and two optional):
 
@@ -116,6 +116,8 @@ The syntax is:
   [<annotation2>]
   [...]
 ```
+
+For example:
 
 ``` Haskell
 type Engine: <"Description of the engine.">
@@ -159,7 +161,7 @@ For clarity purposes, the documentation snippets omit the annotations and defini
 
 #### Syntax
 
-Enumerations are very simple containers defined by the `enum` keyword, in similar way as other model components. The definition contains a plain-text description of the enumeration and the list of enumeration values.
+Enumerations are very simple containers defined using the `enum` keyword, in similar way as other model components. The definition contains a plain-text description of the enumeration and the list of enumeration values.
 
 ``` Haskell
 enum <EnumerationName>: <"Description">
@@ -200,9 +202,9 @@ enum DayCountFractionEnum:
 
 #### External Reference Data
 
-In some cases, a model may rely on an enumeration whose values are already defined as a static dataset in some other technical specification, data model or schema. To avoid duplicating that information and risk it becoming stale, it is possible to annotate such enumeration with the source of the reference data, using the [document reference](#document-reference) mechanism. This ensures that the enumeration information is kept up-to-date in the model with the information at the source.
+In some cases, a model may rely on an enumeration whose values are already defined as a static dataset in some other data model, schema or technical specification. To avoid duplicating that information and risk it becoming stale, it is possible to annotate such enumeration with the source of the reference data, using the [document reference](#document-reference) mechanism. This ensures that the enumeration information in the model is kept up-to-date with information at the source.
 
-This source information will usually be accessible as a scheme under some URL. The document reference uses the `schemeLocation` segment to specify that URL, which instructs a model processor to import the enumeration values from that scheme. The syntax is:
+This source information is usually accessible as a scheme under some URL. The document reference uses the `schemeLocation` segment to specify that URL, which instructs a model processor to import the enumeration values from that scheme. The syntax is:
 
 ``` Haskell
 [docReference <Body> <Corpus> schemeLocation <"URL">]
@@ -221,16 +223,16 @@ enum FloatingRateIndexEnum: <"The enumerated values to specify the list of float
 
 ### Qualified Type
 
-The Rosetta DSL provides some special types called *qualified types*, which are specific to its main application in the financial domain:
+The Rosetta DSL features some special types called *qualified types*, which are specific to its main application in the financial domain:
 
 - Calculation - `calculation`
 - Object qualification - `productType` `eventType`
 
-Those special types are designed to flag attributes which result from running some functional logic, such that model implementations can identify where to stamp the output of these functions in the model.
+Qualified types are designed to flag attributes that are the result of some functional logic. This enables a model implementation to identify where to stamp the output when running these functions in the model.
 
 #### Calculation
 
-The `calculation` qualified type, when specified instead of the type for the attribute, represents the outcome of a calculation. An attribute with the `calculation` type is meant to be associated to a [calculation function](#calculation-function), so that the attribute\'s type is implied by the function output.
+The `calculation` type represents the outcome of a calculation. An attribute with the `calculation` type is meant to be associated to a [calculation function](#calculation-function), so that the attribute\'s type is implied by the function output.
 
 An example usage is the conversion from clean price to dirty price for a bond:
 
@@ -243,7 +245,7 @@ type CleanPrice:
 
 #### Object Qualification
 
-Similarly, `productType` and `eventType` represent the outcome of qualification logic to infer the type of an object in a model. Attributes of these types are meant to be associated to an [object qualification function](#object-qualification-function).
+Similarly, `productType` and `eventType` represent the outcome of some qualification logic to infer the type of an object (product or event) in a model. Attributes of these types are meant to be associated to an [object qualification function](#object-qualification-function).
 
 For example:
 
@@ -256,13 +258,9 @@ type ProductIdentification:
   productId string (0..*)
 ```
 
-{{< notice info "Note" >}}
-The qualified type feature in the Rosetta DSL is under evaluation and may be replaced by a different mechanism in future.
-{{< /notice >}}
-
 ## Meta-Data Component
 
-Meta-data are specific components that enrich other model components such as data types, attributes or functions.
+Meta-data are components that are designed to enrich other model components such as data types, attributes or functions.
 
 ### Description
 
@@ -343,7 +341,7 @@ Once an annotation is defined, model components can be annotated with its name a
 
 #### Meta-Data Annotation
 
-The `metadata` annotation defines a set attributes that are used to qualify data types and attributes. By default Rosetta includes several metadata annotations:
+The `metadata` annotation defines a set qualifiers that can be applied to a data type or attribute. By default Rosetta includes several metadata annotations:
 
 ``` Haskell
 annotation metadata:
@@ -356,17 +354,17 @@ annotation metadata:
   address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere">
 ```
 
-Each attribute of the `metadata` annotation corresponds to a qualifier that can be applied to a data type or attribute:
+Each attribute of the `metadata` annotation corresponds to a different qualifier:
 
-- The `scheme` meta-data qualifier specifies a mechanism to control the set of values that an attribute can take, without having to define this attribute as an enumeration. Typically, such attribute is represented as a basic `string` type. The relevant scheme reference may be specified as meta-information when [mapping](#mapping-component) that attribute so that no source information is disregarded.
-- The `template` meta-data qualifier indicates that a data type is eligible to be used as a [data template](#data-template). Data templates provide a way to store data which may be duplicated across multiple objects into a single template, to be referenced by all these objects.
-- the other metadata annotations are used in [cross-referencing](#cross-referencing).
+- The `scheme` qualifier specifies a mechanism to control the set of values that an attribute can take, without having to define this attribute as an enumeration in the model. Typically, such attribute is represented as a basic `string` type. The relevant scheme information may be sourced when [mapping](#mapping-component) that attribute.
+- The `template` qualifier indicates that a data type is eligible to be used as a [data template](#data-template). Data templates provide a way to store data which may be duplicated across multiple objects into a single template, to be referenced by all these objects.
+- the other metadata annotations are used for [cross-referencing](#cross-referencing).
 
 ### Document Reference
 
 #### Purpose
 
-A document reference is a specific type of annotation that links model components to external information published in a separate document. The Rosetta DSL allows to define any such external document, who owns it and some of its content as model components, and to associate those to other model components such as data types or functions.
+A document reference is a specific type of annotation that links model components to external information published in a separate document. The Rosetta DSL allows to define any such external document, who owns it and some of its content as model components, and to associate this information to other model components such as data types or functions.
 
 The external information may be published in text format, in which case this feature effectively associates a plain-text documentation trail to any model behaviour. As such behaviour may eventually be translated into an operational process run by software, this mechanism provides a form of self-documentation for that software.
 
@@ -435,9 +433,9 @@ A reference to specific document content is created using the `docReference` key
   provision <"ProvisionText">]
 ```
 
-In some instances, a data type may have a different naming convention based on the context in which it is being used: for example, a legal definition may be associated to a data type but with a different name. A document reference allows such data type to be annotated with a naming convention segment and the corresponding corpus and body that define it.
+In some instances, a data type may have a different naming convention based on the context in which it is being used: for example, a legal definition may be associated to a data type but with a different name. A document reference allows such data type to be annotated with a special `namingConvention` segment and the corresponding corpus and body that define it.
 
-A document reference may be associated to the data type itself or to any of its attributes.
+Such document reference may be associated to the data type itself or to any of its attributes.
 
 ``` Haskell
 type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
@@ -450,11 +448,11 @@ type PayerReceiver: <"Specifies the parties responsible for making and receiving
 
 ### Data Template
 
-When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
+When a data type is annotated as a template, it is possible to specify a reference to a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
 
 Other than the annotation itself, data templates do not have any impact on the model: they do not introduce any new type, attribute, or condition.
 
-When a data type is annotated as a `template`, the designation applies to all encapsulated types in that data type. In the example below, the designation of template eligibility for `ContractualProduct` also applies to `EconomicTerms`, which is an encapsulated type in `ContractualProduct`, and likewise applies to all encapsulated types in `EconomicTerms`.
+When a data type is annotated as a template, the designation applies to all encapsulated types in that data type. In the example below, the designation of template eligibility for `ContractualProduct` also applies to `EconomicTerms`, which is an encapsulated type in `ContractualProduct`, and likewise applies to all encapsulated types in `EconomicTerms`.
 
 ``` Haskell
 type ContractualProduct:
@@ -467,49 +465,17 @@ type ContractualProduct:
 
 ### Cross-Referencing
 
-Cross-referencing allows an attribute to refer to an object in a different location. A cross reference consists of a metadata id associated with an object. Elsewhere an attribute, instead of having a normal value, can have that id as a reference metadata field.
+#### Purpose
 
-E.g. the example below has a Party with `globalKey` (see below) acting as an identifier and later on a reference to that party using the `globalReference` (see below also):
-
-``` JSON
-"party" : {
-  "meta" : {
-    "globalKey" : "3fa8e998",
-    "externalKey" : "f845ge"
-  },
-  "name" : {
-    "value" : "XYZ Bank"
-  },
-  "partyId" : [ {
-    "value" : "XYZBICXXX",
-    "meta" : {
-      "scheme" : "http://www.fpml.org/coding-scheme/external/iso9362"
-    }
-  } ]
-}
-
-"partyReference" : {
-        "globalReference" : "3d9e6ab8"
-  }
-```
-
-Rosetta currently supports three different mechanisms for references with different scopes. It is intended that these will all be migrated to a single mechanism.
-
-#### Global Reference
-
-The `key` and `id` metadata annotations cause a globally unique key to be generated for the rosetta object or attribute. The value of the key corresponds to a hash code to be generated by the model implementation. The implementation provided in the Rosetta DSL is a *deep hash* that uses the complete set of attribute values that compose the type and its attributes, recursively.
-
-The `reference` metadata annotation denotes that an attribute can be either a direct value like any other attribute or can be replaces with a `reference` to a global key defined elsewhere. The key need not be defined in the current document but can instead be a reference to an external document.
-
-#### External Reference
-
-Attributes and types that have the `key` or `id` annotation additionally have an `externalKey` attached to them. This is used to store keys that are read from an external source - e.g. the FpML `id` metadata attribute.
-
-Attributes with the `reference` keyword have a corresponding externalReference field which is used to store references from external sources. A reference resolver processor can be used to link up the references.
+Cross-referencing allows an attribute to refer to an object in a different location. A cross reference consists of a metadata identifier associated with an object. Elsewhere an attribute, instead of having a normal value, can hold that identifier as a reference metadata field.
 
 #### Syntax
 
-The below `Party` and `Identifier` types illustrate how meta-data annotations and their relevant attributes can be used in a model:
+The `key` and `id` metadata annotations allow a key to be associated, respectively, to the object and attribute being annotated. `id` is needed to annotate basic type attributes, since there is no data type that could be annotated.
+
+An attribute annotated with the `reference` metadata can be either a direct value like any other attribute, or replaced with a reference to a global key defined elsewhere.
+
+The below `Party` and `Identifier` types illustrate how cross-reference annotations and their relevant attributes can be used:
 
 ``` Haskell
 type Party:
@@ -530,7 +496,45 @@ type Identifier:
   assignedIdentifier AssignedIdentifier (1..*)
 ```
 
-A `key` qualifier is associated to the `Party` type, which means it is referenceable. In the `Identifier` type, the `reference` qualifier, which is associated to the `issuerReference` attribute of type `Party`, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the [synonym](#basic-mapping) of the documentation.
+The `key` qualifier associated to the `Party` type indicates that it is referenceable. In the `Identifier` type, the `reference` qualifier
+associated to the `issuerReference` attribute indicates that it can be provided as a reference via a key instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the [synonym](#basic-mapping) section of the documentation.
+
+Rosetta currently supports two different mechanisms for references, each with a different scope.
+
+#### Global Reference
+
+The `key` and `id` metadata annotations force a globally unique key to be generated for the type being annotated. The value of the key corresponds to a hash code to be generated by the model implementation. For the attribute annotated with a `reference`, the key need not be defined in the current object but can instead be a reference to an external object.
+
+The global key and reference fields are called, respectively, `globalKey` and `globalReference` in the default implementation in Rosetta. The value of 
+the key is a *deep hash* that uses the complete set of attribute values that compose the data type and its attributes, recursively.
+
+#### External Reference
+
+Objects that are annotated with `key` or `id` can additionally be associated to a key that may be read from an external source - e.g. the FpML `id` metadata attribute. Attributes annotated with the `reference` keyword can store a reference from an external source. A reference resolver processor can be used to link up the references.
+
+The example below features a `party` object with both a `globalKey` acting as a global identifier and an `externalKey` extracted from another source as meta-data. It also contains a `globalReference` which would resolve to that `party`.
+
+``` JSON
+"party" : {
+  "meta" : {
+    "globalKey" : "3fa8e998",
+    "externalKey" : "f845ge"
+  },
+  "name" : {
+    "value" : "XYZ Bank"
+  },
+  "partyId" : [ {
+    "value" : "XYZBICXXX",
+    "meta" : {
+      "scheme" : "http://www.fpml.org/coding-scheme/external/iso9362"
+    }
+  } ]
+}
+
+"partyReference" : {
+        "globalReference" : "3fa8e998"
+  }
+```
 
 ## Expression Component
 
@@ -1003,7 +1007,7 @@ Conditions are included in the definition of the data type that they are associa
 
 ### Choice Condition
 
-The Rosetta DSL support language features to handle the correlated existence or absence of attributes with regards to other attributes. Those use-cases were deemed frequent enough and handling them through basic boolean logic components would have created unnecessarily verbose, and therefore less readable, expressions.
+The Rosetta DSL provides language features to handle the correlated existence or absence of attributes with regards to other attributes. Those use-cases were deemed frequent enough and handling them through basic boolean logic components would have created unnecessarily verbose, and therefore less readable, expressions.
 
 #### Choice
 
@@ -1280,7 +1284,7 @@ The `assign-output` keyword also exists as an alternative to `set` and can be us
 - Calculation
 - Short-hand function
 
-Those functions are typically associated to an annotation, as described in the [Qualified Type Section](#qualified-type), to instruct code generators to create concrete functions.
+Those functions are typically associated to an annotation to instruct code generators to create concrete functions.
 
 #### Object Qualification Function
 
@@ -1297,31 +1301,6 @@ func Qualify_InterestRate_IRSwap_FixedFloat_PlainVanilla:
   [qualification Product]
   inputs: economicTerms EconomicTerms (1..1)
   output: is_product boolean (1..1)
-```
-
-#### Calculation Function
-
-Calculation functions define a calculation output that is often, though not exclusively, of type `number`. They must end with an `assign-output` statement that fully defines the calculation result.
-
-Calculation functions are associated to a [`calculation` annotation](#calculation-label).
-
-``` Haskell
-func FixedAmount:
-  [calculation]
-  inputs:
-    interestRatePayout InterestRatePayout (1..1)
-    fixedRate FixedInterestRate (1..1)
-    quantity NonNegativeQuantity (1..1)
-    date date (1..1)
-  output:
-    fixedAmount number (1..1)
-
-  alias calculationAmount: quantity -> amount
-  alias fixedRateAmount: fixedRate -> rate
-  alias dayCountFraction: DayCountFraction(interestRatePayout, interestRatePayout -> dayCountFraction, date)
-
-  assign-output fixedAmount:
-    calculationAmount * fixedRateAmount * dayCountFraction
 ```
 
 #### Alias
@@ -1437,7 +1416,7 @@ Synonyms added throughout the model are combined to map the data tree of an inpu
 
 Synonyms are specified on the attributes of data type and the values of enum types.
 
-### Basic Mappings
+### Basic Mapping
 
 Basic mappings specify how a value from the input document can be directly mapped to a value in the resulting Rosetta document.
 
@@ -1515,7 +1494,7 @@ issuer string (0..1)
 
 the input value associated with \"issuer\" will be mapped to the value of the attribute issuer and the value of \"issuerIdScheme\" will be mapped to the scheme metadata attribute.
 
-#### Enumerations
+#### Enumeration
 
 A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the FpML value `Broker` will be mapped to the enumeration value `NaturalPersonRoleEnum.Broker` in Rosetta:
 
@@ -1526,9 +1505,9 @@ enum NaturalPersonRoleEnum: <"The enumerated values for the natural person's rol
     [synonym FpML_5_10 value "Broker"]
 ```
 
-##### External enumeration synonyms
+##### External Enumeration Synonym
 
-In an external synonym file `enum` synonyms are defined in a block after the type attribute synonyms, preceded by the keyword `enums` :
+In an external synonym file, enumeration synonyms are defined in a block after the type attribute synonyms, preceded by the keyword `enums` :
 
 ```
 enums
