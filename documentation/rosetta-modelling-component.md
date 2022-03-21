@@ -156,20 +156,20 @@ For clarity purposes, the documentation snippets omit the annotations and defini
 
 **Enumeration is the mechanism through which a type may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled values.
 
-This mimics the *scheme* concept, whose values may be specified as part of another standard and can be represented through an enumeration in the Rosetta DSL. Typically, a scheme with no defined values is represented as a basic `string` type.
+This mimics the *scheme* concept, whose values may be specified as part of another data model and can be represented through an enumeration in the Rosetta DSL. Typically, a scheme with no defined values is represented as a basic `string` type.
 
 #### Syntax
 
-Enumerations are very simple containers defined by the `enum` keyword.
+Enumerations are very simple containers defined by the `enum` keyword, in similar way as other model components. The definition contains a plain-text description of the enumeration and the list of enumeration values.
 
 ``` Haskell
 enum <EnumerationName>: <"Description">
-  <Value1> <"Description">
+  <Value1> (optional: displayName <"DisplayName">) <"Description">
   <Value2> <"Description">
   <...>
 ```
 
-which are defined in the same way as other model components. The definition of an enumeration starts with the `enum` keyword, followed by the enumeration name. A colon `:` punctuation introduces the rest of the definition, which contains a plain-text description of the enumeration and the list of enumeration values.
+Enumeration names must be unique across a [namespace](#namespace-component). The Rosetta DSL naming convention uses the same upper CamelCase (PascalCase) as for data types. In addition the enumeration name should end with the suffix Enum. E.g.:
 
 ``` Haskell
 enum PeriodEnum: <"The enumerated values to specify the period, e.g. day, week.">
@@ -179,9 +179,7 @@ enum PeriodEnum: <"The enumerated values to specify the period, e.g. day, week."
   Y <"Year">
 ```
 
-Enumeration names must be unique across a [namespace](#namespace-component). The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase). In addition the enumeration name should end with the suffix Enum. The Enumeration values cannot start with a numerical digit, and the only special character that can be associated with them is the underscore `_`.
-
-In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a *display name* to any enumeration value. For those enumeration values, special characters are replaced with `_` while the `displayName` entry corresponds to the actual value.
+Enumeration values cannot start with a numerical digit, and the only special character that can be associated with them is the underscore `_`. In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a *display name* to any enumeration value. For those enumeration values, special characters are replaced with `_` while the `displayName` entry corresponds to the actual value.
 
 An example is the day count fraction scheme for interest rate calculation, which includes values such as `ACT/365.FIXED` and `30/360`. These are associated as `displayName` to the `ACT_365_FIXED` and `_30_360` enumeration values, respectively.
 
@@ -201,33 +199,105 @@ enum DayCountFractionEnum:
   _30_360 displayName "30/360"
 ```
 
+#### External Reference Data
+
+In some cases, a model may rely on an enumeration that already exists as a static reference dataset in some other technical specification, data model or schema. To avoid duplicating that information and risk it becoming stale, it is possible to annotate such enumeration with the source of the reference data, using the [document reference](#document-reference) mechanism. This ensures that the enumeration information is kept up-to-date in the model with the information at the source.
+
+The source information will usually be accessible as a scheme under some URL. The document reference uses the `schemeLocation` segment to specify that URL, which instructs a model processor to import the enumeration values from that scheme. The syntax is:
+
+``` Haskell
+[docReference <Body> <Corpus> schemeLocation <"URL">]
+```
+
+For example, the set of floating rate indices maintained as part of the FpML standard can be referenced as follows:
+
+``` Haskell
+enum FloatingRateIndexEnum: <"The enumerated values to specify the list of floating rate index.">
+    [docReference ISDA FpML_Coding_Scheme schemeLocation "http://www.fpml.org/coding-scheme/floating-rate-index-3-2"]
+    
+    // Those enumeration values are imported from the source scheme
+    AED_EBOR_Reuters displayName "AED-EBOR-Reuters"
+    <...>
+```
+
 ## Meta-Data Component
 
-Meta-data allow to associate rich definitions to other model components such as data types, attributes or functions.
+Meta-data are specific components that enrich other model components such as data types, attributes or functions.
 
 ### Description
 
 #### Purpose
 
-Plain-text descriptions can be associated to any model component. Although not generating any executable code, descriptions are first-class meta-data components of any model. As modelling best practice, a description ought to exist for every model component and be clear and comprehensive.
+Plain-text descriptions can be associated to most model components. Although not generating any executable code, descriptions are first-class meta-data components of any model. As modelling best practice, a description ought to exist for every model component and be clear and comprehensive.
 
 #### Syntax
 
-The syntax to add a description uses quotation marks in between angle brackets `<"..">`. There are several examples throughout this document.
+The syntax to add a text description to a model component is to insert that description in quotation marks and in between angle brackets: `<"..">`.
+
+Descriptions can be added to almost any model component such as:
+- a data type, its attributes and its conditions,
+- a function, its inputs and output, its conditions and its business logic,
+- a reporting rule,
+- a namespace,
+- etc.
+
+There are many examples throughout this documentation where the description has been included for the purpose of illustrating its use.
+
+### Annotation
+
+#### Purpose
+
+Annotations allow to specify additional meta-data for model components beyond a simple decription. Those annotation can serve several purposes:
+
+- to add constraints to a model that may be enforced by syntax validation
+- to modify the actual behaviour of a model in generated code
+- purely syntactic, to provide additional guidance when navigating model components
+
+Examples of annotations and their usage for different purposes are illustrated below.
+
+#### Syntax
+
+Annotations are defined with the `annotation` keyword:
+
+``` Haskell
+annotation <annotationName>: <"Description">
+    <attribute1>
+    <attribute2>
+    <...>
+```
+
+The Rosetta DSL naming convention uses a (lower) camelCase for annotation names, which must be unique across a model. Attributes are optional and many annotations will not require any.
+
+<a id='roottype-label'></a>
+
+``` Haskell
+annotation rootType: <"Mark a type as a root of the rosetta model">
+annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
+```
+
+Once an annotation is defined, model components can be annotated with its name and chosen attribute, if any, using the following syntax:
+
+``` Haskell
+[<annotationName> (optional: <annotationAttribute>)]
+```
+
+{{< notice info "Note" >}}
+Some annotations may be provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
+{{< /notice >}}
 
 ### Document Reference
 
 #### Purpose
 
-A document reference is a type of meta-data description that allows to associate model components to textual information published in a separate document. The Rosetta DSL allows to define those specific documents, who owns them and their content as model components, and to associate them to any other model components such as data types or functions.
+A document reference is a specific type of annotation that links model components to external information published in a separate document. The Rosetta DSL allows to define any such external document, who owns it and some of its content as model components, and to associate those to other model components such as data types or functions.
 
-This feature provides any model behaviour with an audit trail back to the documented, plain-text information that drives it. As such behaviour may eventually be translated into an operational process run by software, this mechanism provides a form of self-documentation for that software.
+The external information may be published in text format, in which case this feature effectively associates a plain-text documentation trail to any model behaviour. As such behaviour may eventually be translated into an operational process run by software, this mechanism provides a form of self-documentation for that software.
 
-Document references have two levels: hierarchy and content.
+Document references have two components: hierarchy and content.
 
-#### Hierarchy Syntax
+#### Document Hierarchy Syntax
 
-There are three syntax components to define the hierarchy of document references:
+There are three keyword to define the hierarchy of document references:
 
 1. `body` - an entity that is the author, publisher or owner of the referenced document
 1. `corpus` - a document set that contains the referenced information
@@ -278,9 +348,9 @@ Segments can be combine to point to a specific section in a document. For instan
 article "26" paragraph "2"
 ```
 
-#### Reference Syntax
+#### Document Content Syntax
 
-A document reference is created using the `docReference` keyword. This documeent reference must be associated to a corpus and segment defined according to the document hierarchy. The `provision` keyword allows to copy the textual information being referenced from the document.
+A reference to specific document content is created using the `docReference` keyword. This documeent reference must be associated to a corpus and segment defined according to the above document hierarchy. The `provision` keyword allows to copy the textual information being referenced from the document.
 
 ``` Haskell
 [docReference <Body> <Corpus>
@@ -288,67 +358,18 @@ A document reference is created using the `docReference` keyword. This documeent
   provision <"ProvisionText">]
 ```
 
-In some instances, a data type may have a different naming convention based on the context in which it is being used: for example, a legal definition may refer to the data type with a different name. A document reference allows such data type to be annotated with a naming convention segment and the corresponding corpus and body that define it.
+In some instances, a data type may have a different naming convention based on the context in which it is being used: for example, a legal definition may be associated to a data type but with a different name. A document reference allows such data type to be annotated with a naming convention segment and the corresponding corpus and body that define it.
+
+A document reference may be associated to the data type itself or to any of its attributes.
 
 ``` Haskell
 type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
-    [docReference ICMA GMRA
-        namingConvention "seller"
-        provision "As defined in the GRMA Seller party ..."]
-```
-
-A document reference can also be added to an attribute of a data type:
-
-``` Haskell
-type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
-     ...
      payer CounterpartyRoleEnum (1..1)
        [docReference ICMA GMRA
          namingConvention "seller"
          provision "As defined in the GRMA Seller party ..."]
+     <...>
 ```
-
-### Annotation
-
-#### Purpose
-
-Annotations allow to specify additional meta-data components beyond the decription and document reference already provided by the Rosetta DSL. Those annotation components can be then associated to model components to serve a number of purposes:
-
-- to add constraints to a model that may be enforced by syntax validation
-- to modify the actual behaviour of a model in generated code
-- purely syntactic, to provide additional guidance when navigating model components
-
-Examples of annotations and their usage for different purposes are illustrated below.
-
-#### Syntax
-
-Annotations are defined with the `annotation` keyword:
-
-``` Haskell
-annotation <annotationName>: <"Description">
-    <attribute1>
-    <attribute2>
-    <...>
-```
-
-Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase. Attributes are optional and many annotations will not require any.
-
-<a id='roottype-label'></a>
-
-``` Haskell
-annotation rootType: <"Mark a type as a root of the rosetta model">
-annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
-```
-
-Once an annotation is defined, model components can be annotated with its name and chosen attribute, if any, using the following syntax:
-
-``` Haskell
-[<annotationName> (optional: <annotationAttribute>)]
-```
-
-{{< notice info "Note" >}}
-Some annotations may be provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
-{{< /notice >}}
 
 ### Meta-Data and Reference
 
