@@ -111,8 +111,8 @@ The syntax is:
 
 ``` Haskell
 <attributeName> <AttributeType> (x..y) <"Description">
-  [annotation1]
-  [annotation2]
+  [<annotation1>]
+  [<annotation2>]
   [...]
 ```
 
@@ -154,9 +154,7 @@ For clarity purposes, the documentation snippets omit the annotations and defini
 
 #### Purpose
 
-**Enumeration is the mechanism through which a type may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled values.
-
-This mimics the *scheme* concept, whose values may be specified as part of another data model and can be represented through an enumeration in the Rosetta DSL. Typically, a scheme with no defined values is represented as a basic `string` type.
+**Enumeration is the mechanism through which a type may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled values. An enumeration is sometimes also known as a *scheme*.
 
 #### Syntax
 
@@ -201,9 +199,9 @@ enum DayCountFractionEnum:
 
 #### External Reference Data
 
-In some cases, a model may rely on an enumeration that already exists as a static reference dataset in some other technical specification, data model or schema. To avoid duplicating that information and risk it becoming stale, it is possible to annotate such enumeration with the source of the reference data, using the [document reference](#document-reference) mechanism. This ensures that the enumeration information is kept up-to-date in the model with the information at the source.
+In some cases, a model may rely on an enumeration whose values are already defined as a static dataset in some other technical specification, data model or schema. To avoid duplicating that information and risk it becoming stale, it is possible to annotate such enumeration with the source of the reference data, using the [document reference](#document-reference) mechanism. This ensures that the enumeration information is kept up-to-date in the model with the information at the source.
 
-The source information will usually be accessible as a scheme under some URL. The document reference uses the `schemeLocation` segment to specify that URL, which instructs a model processor to import the enumeration values from that scheme. The syntax is:
+This source information will usually be accessible as a scheme under some URL. The document reference uses the `schemeLocation` segment to specify that URL, which instructs a model processor to import the enumeration values from that scheme. The syntax is:
 
 ``` Haskell
 [docReference <Body> <Corpus> schemeLocation <"URL">]
@@ -282,8 +280,29 @@ Once an annotation is defined, model components can be annotated with its name a
 ```
 
 {{< notice info "Note" >}}
-Some annotations may be provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
+Some annotations are provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
 {{< /notice >}}
+
+#### Meta-Data Annotation
+
+The `metadata` annotation defines a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations:
+
+``` Haskell
+annotation metadata:
+  id string (0..1)
+  key string (0..1)
+  scheme string (0..1)
+  reference string (0..1)
+  template string (0..1)
+  location string (0..1) <"Specifies this is the target of an internal reference">
+  address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere">
+```
+
+Each attribute of the `metadata` annotation corresponds to a qualifier that can be applied to a data type or attribute:
+
+- The `scheme` meta-data qualifier specifies a mechanism to control the set of values that an attribute can take, without having to define this attribute as an enumeration. Typically, such attribute is represented as a basic `string` type. The relevant scheme reference may be specified as meta-information when [mapping](#mapping-component) that attribute so that no source information is disregarded.
+- The `template` meta-data qualifier indicates that a data type is eligible to be used as a [data template](#data-template). Data templates provide a way to store data which may be duplicated across multiple objects into a single template, to be referenced by all these objects.
+- the other metadata annotations are used in [cross-referencing](#cross-referencing).
 
 ### Document Reference
 
@@ -371,32 +390,28 @@ type PayerReceiver: <"Specifies the parties responsible for making and receiving
      <...>
 ```
 
-### Meta-Data and Reference
+### Data Template
 
-#### Purpose
+When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
 
-The `metadata` annotation allows the declaration of a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations.
+Other than the annotation itself, data templates do not have any impact on the model: they do not introduce any new type, attribute, or condition.
+
+When a data type is annotated as a `template`, the designation applies to all encapsulated types in that data type. In the example below, the designation of template eligibility for `ContractualProduct` also applies to `EconomicTerms`, which is an encapsulated type in `ContractualProduct`, and likewise applies to all encapsulated types in `EconomicTerms`.
 
 ``` Haskell
-annotation metadata:
-  id string (0..1)
-  key string (0..1)
-  scheme string (0..1)
-  reference string (0..1)
-  template string (0..1)
-  location string (0..1) <"Specifies this is the target of an internal reference">
-  address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere">
+type ContractualProduct:
+  [metadata key]
+  [metadata template]
+  productIdentification ProductIdentification (0..1)
+  productTaxonomy ProductTaxonomy (0..*)
+  economicTerms EconomicTerms (1..1)
 ```
 
-Each attribute of the `metadata` annotation corresponds to a qualifier that can be applied to a rosetta type or attribute:
+### Cross-Referencing
 
-- The `scheme` meta-data qualifier specifies a mechanism to control the set of values that an attribute can take. The relevant scheme reference may be specified as meta-information in the attribute\'s data source, so that no originating information is disregarded.
-- The `template` meta-data qualifier indicates that a data type is eligible to be used as a data template. Data templates provide a way to store data which may be duplicated across multiple objects into a single template, to be referenced by all these objects.
-- the other metadata annotations are used in referencing.
+Cross-referencing allows an attribute to refer to an object in a different location. A cross reference consists of a metadata id associated with an object. Elsewhere an attribute, instead of having a normal value, can have that id as a reference metadata field.
 
-#### Referencing
-
-Referencing allows an attribute in rosetta to refer to a rosetta object in a different location. A reference consists of a metadata ID associated with an object and elsewhere an attribute that instead of having a normal value has that id as a reference metadata field. E.g. the example below has a Party with `globalKey` (see below) acting as an identifier and later on a reference to that party using the `globalReference` (see below also):
+E.g. the example below has a Party with `globalKey` (see below) acting as an identifier and later on a reference to that party using the `globalReference` (see below also):
 
 ``` JSON
 "party" : {
@@ -422,19 +437,19 @@ Referencing allows an attribute in rosetta to refer to a rosetta object in a dif
 
 Rosetta currently supports three different mechanisms for references with different scopes. It is intended that these will all be migrated to a single mechanism.
 
-##### Global Reference
+#### Global Reference
 
 The `key` and `id` metadata annotations cause a globally unique key to be generated for the rosetta object or attribute. The value of the key corresponds to a hash code to be generated by the model implementation. The implementation provided in the Rosetta DSL is a *deep hash* that uses the complete set of attribute values that compose the type and its attributes, recursively.
 
 The `reference` metadata annotation denotes that an attribute can be either a direct value like any other attribute or can be replaces with a `reference` to a global key defined elsewhere. The key need not be defined in the current document but can instead be a reference to an external document.
 
-##### External Reference
+#### External Reference
 
 Attributes and types that have the `key` or `id` annotation additionally have an `externalKey` attached to them. This is used to store keys that are read from an external source - e.g. the FpML `id` metadata attribute.
 
 Attributes with the `reference` keyword have a corresponding externalReference field which is used to store references from external sources. A reference resolver processor can be used to link up the references.
 
-##### Syntax
+#### Syntax
 
 The below `Party` and `Identifier` types illustrate how meta-data annotations and their relevant attributes can be used in a model:
 
@@ -458,23 +473,6 @@ type Identifier:
 ```
 
 A `key` qualifier is associated to the `Party` type, which means it is referenceable. In the `Identifier` type, the `reference` qualifier, which is associated to the `issuerReference` attribute of type `Party`, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the [synonym](#basic-mapping) of the documentation.
-
-When a data type is annotated as a `template`, the designation applies to all encapsulated types in that data type. In the example below, the designation of template eligibility for `ContractualProduct` also applies to `EconomicTerms`, which is an encapsulated type in `ContractualProduct`, and likewise applies to all encapsulated types in `EconomicTerms`.
-
-``` Haskell
-type ContractualProduct:
-  [metadata key]
-  [metadata template]
-  productIdentification ProductIdentification (0..1)
-  productTaxonomy ProductTaxonomy (0..*)
-  economicTerms EconomicTerms (1..1)
-```
-
-#### Template
-
-When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
-
-Other than the new annotation, data templates do not have any impact on the model, i.e. no new types, attributes, or conditions.
 
 ### Qualified Type
 
