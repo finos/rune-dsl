@@ -78,7 +78,7 @@ A data type is defined using the keyword `type` and comprises:
 - name - Required. By convention, uses the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names must be unique across a [namespace](#namespace-component). All those requirements are enforced by syntax validation.
 - [description](#description) - Optional, recommended. A plain-text definition of the concept represented by the data type. All descriptions in the Rosetta DSL must be written as a string enclosed within angle brackets: `<"..">`.
 - [annotations](#annotation) - Optional. Meta-data components that apply to the data type. All annotations in the Rosetta DSL are enclosed within square brackets `[...]`.
-- attributes - Optional.
+- [attributes](#attribute) - Optional.
 
 ``` Haskell
 type <TypeName>: <"Description">
@@ -408,7 +408,7 @@ article "26" paragraph "2"
 
 #### Document Content Syntax
 
-A reference to specific document content is created using the `docReference` keyword. This documeent reference must be associated to a corpus and segment defined according to the above document hierarchy. The `provision` keyword allows to copy the textual information being referenced from the document.
+A reference to specific document content is created using the `docReference` keyword. This document reference must be associated to a corpus and segment defined according to the above document hierarchy. The `provision` keyword allows to copy the textual information being referenced from the document.
 
 ``` Haskell
 [docReference <Body> <Corpus>
@@ -1087,7 +1087,7 @@ Standardising those guarantees the integrity, inter-operability and consistency 
 Functions are defined in a similar way as other model components and use the following:
 
 - name
-- plain-text descriptions
+- plain-text description
 - input and output attributes (the latter is mandatory)
 - condition statements on inputs and output
 - output construction statements
@@ -1119,7 +1119,7 @@ Look for occurrences of text descriptions in the snippets below.
 
 #### Inputs and Output
 
-Inputs and output are the function\'s equivalent of a type\'s attributes, and are defined using the same [attribute syntax](#attribute-syntax) with a name, type and cardinality.
+Inputs and output are the function\'s equivalent of a type\'s attributes, and are defined using the same [attribute](#attribute) syntax with a name, type and cardinality.
 
 Inputs are optional but at minimum, a function must specify its output attribute.
 
@@ -1203,7 +1203,7 @@ Alternatively, the output can be built by directly assigning it a value. In this
 set <PathExpression>: <Expression>
 ```
 
-The [`<PathExpression>`](#path-expression) can be used to set individual attributes of the ouput object, while [`<Expression>`](#expression-component) allows to calculate that output value from the inputs.
+The letft-hand side [path expression](#path-expression) can be used to set individual attributes of the ouput object. The right-hand side [expression](#expression-component) allows to calculate that output value from the inputs.
 
 The `Create_VehicleOwnership` example could be rewritten as follows:
 
