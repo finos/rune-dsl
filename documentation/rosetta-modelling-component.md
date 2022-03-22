@@ -70,7 +70,7 @@ As an alternative to `zonedDateTime`, a model may define a business centre time,
 
 A *data type* describes a logical concept of the business domain being modelled - also sometimes referred to as an *entity*, *object* or *class*. It is specified through a set of *attributes* defining the granular elements composing that concept - also sometimes referred to as *fields*.
 
-Those model-specific data types are often referred to as *complex types* by contrast with the basic types.
+Those model-specific data types are sometimes referred to as *complex types* by contrast with the basic types.
 
 #### Syntax
 
@@ -102,9 +102,9 @@ type VehicleOwnership: <"Representative record of vehicle ownership">
 
 A data type definition lists the attributes that compose this data type. Attributes are optional, so it is possible to model empty data types. When they are present, each attribute is defined by five components (three required and two optional):
 
-- name - Required. Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
-- type - Required. Each attribute can be specified as either a [built-in type](#built-in-type), [data type](#data-type) or [enumeration](#enumeration).
-- cardinality - Required. Specifies the minimum and maximum allowed number of attributes of that type - see [cardinality](#cardinality).
+- name - Required. Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase). Attribute names must be unique within a data type.
+- type - Required. Each attribute can be specified as either of the [data component](#data-component) types.
+- cardinality - Required. Specifies the minimum and maximum allowed number of that attribute - see [cardinality](#cardinality).
 - description - Optional, recommended. A plain-text [description](#description) of the attribute, in the context of the data type where it is used.
 - annotations - Optional. Annotations such as [synonyms](#mapping-component) or [metadata](#meta-data-component) can be applied to attributes.
 
@@ -225,7 +225,7 @@ enum FloatingRateIndexEnum: <"The enumerated values to specify the list of float
 
 The Rosetta DSL features some special types called *meta-types*, which are useful for its main application in the financial domain. Meta-types are designed to flag attributes that result from some functional logic. This enables a model implementation to identify where to stamp the output when running the corresponding functions.
 
-There are two types or meta-types that are declared at the language level:
+There are two types of meta-types that are declared at the language level:
 
 - `calculationType`: `calculation`, for calculation functions
 - `qualifiedType`: `productType` and `eventType`, for object qualification functions
@@ -339,7 +339,7 @@ annotation metadata:
 
 Each attribute of the `metadata` annotation corresponds to a different qualifier:
 
-- The `scheme` qualifier specifies a mechanism to control the set of values that an attribute can take, without having to define this attribute as an enumeration in the model. Typically, such attribute is represented as a basic `string` type. The relevant scheme information may be sourced when [mapping](#mapping-component) that attribute.
+- The `scheme` qualifier specifies a mechanism to control the set of values that an attribute can take, without having to define this attribute as an [enumeration](#enumeration) in the model. Typically, an attribute associated with a scheme is represented as a basic `string` type. The annotation indicates that the relevant scheme information should be sourced when populating the attribute.
 - The `template` qualifier indicates that a data type is eligible to be used as a [data template](#data-template). Data templates provide a way to store data which may be duplicated across multiple objects into a single template, to be referenced by all these objects.
 - the other metadata annotations are used for [cross-referencing](#cross-referencing).
 
@@ -450,15 +450,29 @@ type ContractualProduct:
 
 #### Purpose
 
-Cross-referencing allows an attribute to refer to an object in a different location. A cross reference consists of a metadata identifier associated with an object. Elsewhere an attribute, instead of having a normal value, can hold that identifier as a reference metadata field.
+Cross-referencing allows an attribute to refer to an object in a different location. A cross reference consists of a metadata identifier associated with an object (the *source*). Elsewhere an attribute (the *target*), instead of having a normal value, can hold that identifier as a reference metadata field.
 
 #### Syntax
 
-The `key` and `id` metadata annotations allow a key to be associated, respectively, to the object and attribute being annotated. `id` is needed to annotate basic type attributes, since there is no data type that could be annotated.
+Cross-referencing uses the `key` (or `id`) / `reference` metadata pair. The `key` or `id` metadata annotations allow a key to be associated, respectively, to the source type or attribute being annotated. `id` is needed to annotate built-in types at the attribute level, since there is no data type to annotate.
 
-An attribute annotated with the `reference` metadata can be either a direct value like any other attribute, or replaced with a reference to a global key defined elsewhere.
+In turn, a target attribute annotated with the `reference` metadata can be either a direct value like any other attribute, or replaced with a reference using a key. Syntax validation enforces that an attribute annotated as a reference is of a data type annotated with a key.
 
-The below `Party` and `Identifier` types illustrate how cross-reference annotations and their relevant attributes can be used:
+The syntax is:
+
+``` Haskell
+<SourceType>
+  [metadata key]
+
+// For built-in types only:
+<sourceAttribute>
+  [metadata id]
+  
+<targetAttribute>
+  [metadata reference]
+```
+
+The below `Party` and `Identifier` types illustrate how cross-reference annotations and their relevant attributes can be used. The `key` qualifier associated to the `Party` type indicates that it is referenceable. In the `Identifier` type, the `reference` qualifier associated to the `issuerReference` attribute indicates that it can be provided as a reference via a key instead of a copy.
 
 ``` Haskell
 type Party:
@@ -479,10 +493,7 @@ type Identifier:
   assignedIdentifier AssignedIdentifier (1..*)
 ```
 
-The `key` qualifier associated to the `Party` type indicates that it is referenceable. In the `Identifier` type, the `reference` qualifier
-associated to the `issuerReference` attribute indicates that it can be provided as a reference via a key instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the [synonym](#basic-mapping) section of the documentation.
-
-Rosetta currently supports two different mechanisms for references, each with a different scope.
+Rosetta currently supports three different mechanisms for references, each with a different scope.
 
 #### Global Reference
 
@@ -518,6 +529,24 @@ The example below features a `party` object with both a `globalKey` acting as a 
         "globalReference" : "3fa8e998"
   }
 ```
+
+#### Address and Location Reference
+
+In some cases, an attribute may be used as a variable to be populated with different values to create different objects while other attributes are kept constant. This allows to reduce the storage of large, reusable objects which may have identical values for most of their attributes except for a few variable ones. A single object could be created that is parameterised by these variable attributes. Every individual instance only needs to specify the values of these parameters and does not need to copy the entire object.
+
+The Rosetta DSL supports this use case with a cross-referencing mechanism that is based on pairing an address (for the placeholder containing the variable attribute in the object, i.e. the target) and a location (where the value of this attribute is specified, i.e. the source). The syntax uses the `address` / `location` metadata pair as follows:
+
+``` Haskell
+<targetAttribute>
+  [metadata address "pointsTo"=<sourceAttribute>]
+  
+<sourceAttribute>
+  [metadata location]
+```
+
+{{< notice info "Note" >}}
+The global referencing mechanism cannot be applied to this use case because in that construct, a global key is uniquely associated to an object based on the set of values taken by its attributes. Here by contrast, the same unique key (the variable's address) needs to be used regardless of the value taken by that variable.
+{{< /notice >}}
 
 ## Expression Component
 
@@ -1499,15 +1528,15 @@ Mappings are expected to be one-to-one with each input value mapping to one Rose
 
 ##### Meta
 
-The `meta` keyword inside a synonym is used to map to Rosetta [metadata](#meta-data-and-reference). E.g. :
+The `meta` keyword inside a synonym is used to map [metadata](#meta-data-annotation).
+
+In the below example, the value of the "issuer" input will be mapped to the value of the `issuer` attribute and the value of the "issuerIdScheme" metadata associated to "issuer" will be mapped to the `scheme` metadata attribute.
 
 ```
 issuer string (0..1)
   [metadata scheme]
   [synonym FpML_5_10 value "issuer" meta "issuerIdScheme"]
 ```
-
-the input value associated with \"issuer\" will be mapped to the value of the attribute issuer and the value of \"issuerIdScheme\" will be mapped to the scheme metadata attribute.
 
 #### Enumeration
 
