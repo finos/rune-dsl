@@ -28,7 +28,7 @@ This documentation details the purpose and features of each type of model compon
 - [Built-in type](#built-in-type)
 - [Data type](#data-type)
 - [Enumeration](#enumeration)
-- [Qualified type](#qualified-type)
+- [Meta-type](#meta-type)
 
 Those four components are often collectively referred to as *types*.
 
@@ -221,14 +221,14 @@ enum FloatingRateIndexEnum: <"The enumerated values to specify the list of float
     <...>
 ```
 
-### Qualified Type
+### Meta-Type
 
-The Rosetta DSL features some special types called *qualified types*, which are specific to its main application in the financial domain:
+The Rosetta DSL features some special types called *meta-types*, which are useful for its main application in the financial domain. Meta-types are designed to flag attributes that result from some functional logic. This enables a model implementation to identify where to stamp the output when running the corresponding functions.
 
-- Calculation - `calculation`
-- Object qualification - `productType` `eventType`
+There are two types or meta-types that are declared at the language level:
 
-Qualified types are designed to flag attributes that are the result of some functional logic. This enables a model implementation to identify where to stamp the output when running these functions in the model.
+- `calculationType`: `calculation`, for calculation functions
+- `qualifiedType`: `productType` and `eventType`, for object qualification functions
 
 #### Calculation
 
@@ -245,7 +245,7 @@ type CleanPrice:
 
 #### Object Qualification
 
-Similarly, `productType` and `eventType` represent the outcome of some qualification logic to infer the type of an object (product or event) in a model. Attributes of these types are meant to be associated to an [object qualification function](#object-qualification-function).
+Similarly, `productType` and `eventType` represent the outcome of some qualification logic to classify an object (product or event) according to some taxonomy. Attributes of these types are meant to be associated to an [object qualification function](#object-qualification-function).
 
 For example:
 
@@ -312,23 +312,6 @@ The Rosetta DSL naming convention uses a (lower) camelCase for annotation names,
 annotation rootType: <"Mark a type as a root of the rosetta model">
 ```
 
-<a id='calculation-label'></a>
-
-``` Haskell
-annotation calculation: <"Marks a function as fully implemented calculation.">
-```
-
-<a id='qualification-label'></a>
-
-The following annotation has an attribute to specify which type of object (product or business event) is being qualified:
-
-``` Haskell
-annotation qualification: <"Annotation that describes a func that is used for event and product Qualification">
-  [prefix Qualify]
-  Product boolean (0..1)
-  BusinessEvent boolean (0..1)
-```
-
 {{< notice info "Note" >}}
 Some annotations are provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
 {{< /notice >}}
@@ -341,7 +324,7 @@ Once an annotation is defined, model components can be annotated with its name a
 
 #### Meta-Data Annotation
 
-The `metadata` annotation defines a set qualifiers that can be applied to a data type or attribute. By default Rosetta includes several metadata annotations:
+The `metadata` annotation includes attributes that define a set qualifiers that can be applied to a data type or attribute. By default Rosetta includes several metadata annotations:
 
 ``` Haskell
 annotation metadata:
@@ -1288,19 +1271,51 @@ Those functions are typically associated to an annotation to instruct code gener
 
 #### Object Qualification Function
 
-**The Rosetta DSL supports the qualification of financial objects from their underlying components** according to a given classification taxonomy, in order to support a composable model for those objects (e.g. financial products, legal agreements or their associated lifecycle events).
+**The Rosetta DSL supports the qualification of objects from their underlying components** according to a given classification taxonomy. This provides support for a composable model for those objects, which can be built based on re-usable components and classified accordingly.
 
-Object qualification functions evaluate a combination of assertions that uniquely characterise an input object according to a chosen classification. Each function is associated to a qualification name (a `string` from that classification) and returns a boolean. This boolean evaluates to True when the input satisfies all the criteria to be identified according to that qualification name.
+An object qualification function evaluates a combination of assertions that uniquely characterise an input object according to a chosen classification. Each function is associated to a qualification name (a `string` from that classification) and returns a boolean. This boolean evaluates to True when the input satisfies all the criteria to be identified according to that qualification name.
 
-Object qualification functions are associated to a [`qualification` annotation](#qualification-label) that specifies the type of object being qualified. The function name must start with the `Qualify` prefix, followed by an underscore `_`. The naming convention is to have an upper [CamelCase](https://en.wikipedia.org/wiki/Camel_case) (PascalCase) word, using `_` to append granular qualification names where the classification may use other types of separators (like space or colon `:`).
+Object qualification functions are associated to a `qualification` [annotation](#annotation), which has an attribute to specify which type of object is being qualified - e.g. product or business event in the example below.
 
-Syntax validation logic based on the qualification annotation is in place to enforce this.
+``` Haskell
+annotation qualification: <"Annotation that describes a func that is used for event and product Qualification">
+  [prefix Qualify]
+  Product boolean (0..1)
+  BusinessEvent boolean (0..1)
+```
+
+The naming convention for a qualification function is: `Qualify_<QualificationName>`, where the qualification name uses the upper [CamelCase](https://en.wikipedia.org/wiki/Camel_case) (PascalCase). Where the qualification name may use other types of separators (like space or colon), they should be replaced by an underscore `_`. Syntax validation logic based on the qualification annotation is in place to enforce this.
 
 ``` Haskell
 func Qualify_InterestRate_IRSwap_FixedFloat_PlainVanilla:
   [qualification Product]
   inputs: economicTerms EconomicTerms (1..1)
   output: is_product boolean (1..1)
+```
+
+#### Calculation Function
+
+A calculation function defines a calculation output that is often, though not exclusively, of type `number`. It must end with a `set` (or `assign-output`) instruction that fully defines the calculation result.
+
+Calculation functions are associated to the `calculation` [annotation](#annotation).
+
+``` Haskell
+func FixedAmount:
+  [calculation]
+  inputs:
+    interestRatePayout InterestRatePayout (1..1)
+    fixedRate FixedInterestRate (1..1)
+    quantity NonNegativeQuantity (1..1)
+    date date (1..1)
+  output:
+    fixedAmount number (1..1)
+
+  alias calculationAmount: quantity -> amount
+  alias fixedRateAmount: fixedRate -> rate
+  alias dayCountFraction: DayCountFraction(interestRatePayout, interestRatePayout -> dayCountFraction, date)
+
+  assign-output fixedAmount:
+    calculationAmount * fixedRateAmount * dayCountFraction
 ```
 
 #### Alias
