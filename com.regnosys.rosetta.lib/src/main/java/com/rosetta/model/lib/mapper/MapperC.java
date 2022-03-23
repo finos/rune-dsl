@@ -220,8 +220,9 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	public <F extends Comparable<F>> MapperS<T> min(Function<MapperS<T>, MapperS<F>> comparableGetter) {
 		return nonErrorItems()
-				.min(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get()))
-				.map(MapperS::new)
+				.map(item -> new MapperS<>(item))
+				.filter(item -> comparableGetter.apply(item).get() != null)
+				.min(Comparator.comparing(item -> comparableGetter.apply(item).get()))
 				.orElse(MapperS.ofNull());
 				
 	}
@@ -245,8 +246,9 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	public <F extends Comparable<F>> MapperS<T> max(Function<MapperS<T>, MapperS<F>> comparableGetter) {
 		return nonErrorItems()
-				.max(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get()))
-				.map(MapperS::new)
+				.map(item -> new MapperS<>(item))
+				.filter(item -> comparableGetter.apply(item).get() != null)
+				.max(Comparator.comparing(item -> comparableGetter.apply(item).get()))
 				.orElse(MapperS.ofNull());
 	}
 	
