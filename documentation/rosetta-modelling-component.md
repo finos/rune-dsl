@@ -1,14 +1,14 @@
 ---
 title: "Rosetta Modelling Components"
 date: 2022-02-09T00:38:25+09:00
-description: "This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those."
+description: "This documentation details the purpose and features of each type of model component and highlights their relationships. Examples drawn from the Demonstration Model, a sandbox model of the 'vehicle' domain, will be used to illustrate each of those features."
 draft: false
 weight: 2
 ---
 
 # Rosetta Modelling Components
 
-**The Rosetta syntax can express eight types of model components**:
+**The Rosetta DSL can express eight types of model components**:
 
 - Data
 - Meta-Data
@@ -19,21 +19,24 @@ weight: 2
 - Mapping (or *synonym*)
 - Reporting
 
-This documentation details the purpose and features of each type of model component and highlights the relationships that exist among those. Examples from the Demonstration Model will be used to illustrate each of those features.
+This documentation details the purpose and features of each type of model component and highlights their relationships. Examples drawn from the [Demonstration Model](https://github.com/rosetta-models/demo), a sandbox model of the "vehicle" domain, will be used to illustrate each of those features.
 
 ## Data Component
 
-**The Rosetta DSL provides three components to represent data** in a model:
+**The Rosetta DSL provides four components to represent data** in a model:
 
 - [Built-in type](#built-in-type)
 - [Data type](#data-type)
 - [Enumeration](#enumeration)
+- [Meta-type](#meta-type)
 
-Those three components are often collectively referred to as *types*.
+Those four components are often collectively referred to as *types*.
 
 ### Built-in Type
 
-Rosetta includes a number of built-in types that are defined at the language level. Those built-in types are deemed fundamental and applicable to any model.
+Rosetta includes a number of built-in types that are deemed fundamental and applicable to any model. Those types are defined at the language level. There are two types of built-in types:
+- basic type
+- record type
 
 #### Basic Type
 
@@ -47,12 +50,12 @@ Rosetta defines five *basic types*. The set of basic types available in the Rose
 
 #### Record Type
 
-Rosetta defines two additional built-in types known as *record types*. The list is controlled by defining them as `recordType` at the language level.
+Rosetta defines two additional built-in types that are simple composites known as *record types*. The list is controlled by defining them as `recordType` at the language level.
 
 - `date` - specified by combining a day, month and year
 - `zonedDateTime` - combines a `date`, simple `time` and time-zone `string` specification to unambiguously refer to a single instant in time
 
-Record types are simplified data types because:
+Record types are different from more complex data types in that:
 
 - they are pure data definitions and do not allow specification of validation logic in a [condition](#condition-statement).
 - they are handled specially in the code-generators and so form part of the Rosetta DSL rather than any specific model.
@@ -67,17 +70,27 @@ As an alternative to `zonedDateTime`, a model may define a business centre time,
 
 A *data type* describes a logical concept of the business domain being modelled - also sometimes referred to as an *entity*, *object* or *class*. It is specified through a set of *attributes* defining the granular elements composing that concept - also sometimes referred to as *fields*.
 
-By contrast with the built-in types, the data types that are defined in the model are also often referred to as *complex types*.
+Those model-specific data types are sometimes referred to as *complex types* by contrast with the basic types.
 
 #### Syntax
 
-The definition of a type starts with the keyword `type`, followed by the type name. A colon `:` punctuation introduces the rest of the definition.
+A data type is defined using the keyword `type` and comprises:
+- name - Required. By convention, uses the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names must be unique across a [namespace](#namespace-component). All those requirements are enforced by syntax validation.
+- [description](#description) - Optional, recommended. A plain-text definition of the concept represented by the data type. All descriptions in the Rosetta DSL must be written as a string enclosed within angle brackets: `<"..">`.
+- [annotations](#annotation) - Optional. Meta-data components that apply to the data type. All annotations in the Rosetta DSL are enclosed within square brackets `[...]`.
+- [attributes](#attribute) - Optional.
 
-The Rosetta DSL convention is that type names use the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names need to be unique across a [namespace](#namespace-component). All those requirements are enforced by the Rosetta DSL syntax validation.
+``` Haskell
+type <TypeName>: <"Description">
+  [<annotation1>]
+  [<annotation2>]
+  [...]
+  <attribute1>
+  <attribute2>
+  <...>
+```
 
-The first component of the definition is a plain-text [description](#description) of the type, as a string enclosed within angle brackets: `<"..">`.
-
-After the description come any further [meta-data annotations](#meta-data-component) that are applied to this type. Meta-data are enclosed within square brackets `[...]`.
+For example:
 
 ``` Haskell
 type VehicleOwnership: <"Representative record of vehicle ownership">
@@ -85,13 +98,26 @@ type VehicleOwnership: <"Representative record of vehicle ownership">
   [rootType]
 ```
 
-Then the definition of the type lists its component attributes. Each attribute is defined by three required components, and two optional components, syntactically ordered as:
+#### Attribute
 
-- name - Required. Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase).
-- type - Required. Each attribute can be specified as either a [built-in type](#built-in-type), [data type](#data-type) or [enumeration](#enumeration).
-- cardinality - Required. See [Cardinality](#cardinality).
-- description - Optional, recommended. A plain-text [description](#description) enclosed within angle bracket `<"..">`.
+A data type definition lists the attributes that compose this data type. Attributes are optional, so it is possible to model empty data types. When they are present, each attribute is defined by five components (three required and two optional):
+
+- name - Required. Attribute names use the *camelCase* (starting with a lower case letter, also referred to as the *lower* camelCase). Attribute names must be unique within a data type.
+- type - Required. Each attribute can be specified as either of the [data component](#data-component) types.
+- cardinality - Required. Specifies the minimum and maximum allowed number of that attribute - see [cardinality](#cardinality).
+- description - Optional, recommended. A plain-text [description](#description) of the attribute, in the context of the data type where it is used.
 - annotations - Optional. Annotations such as [synonyms](#mapping-component) or [metadata](#meta-data-component) can be applied to attributes.
+
+The syntax is:
+
+``` Haskell
+<attributeName> <AttributeType> (x..y) <"Description">
+  [<annotation1>]
+  [<annotation2>]
+  [...]
+```
+
+For example:
 
 ``` Haskell
 type Engine: <"Description of the engine.">
@@ -107,7 +133,13 @@ The Rosetta DSL does not use any delimiter to end definitions. All model definit
 
 #### Inheritance
 
-**The Rosetta DSL supports an inheritance mechanism**, when a type inherits its definition and behaviour (and therefore all of its attributes) from another type and adds its own set of attributes on top. Inheritance is supported by the `extends` keyword next to the type name.
+**The Rosetta DSL supports an inheritance mechanism**, when a data type (known as a *sub-type*) inherits all its behaviour and attributes from another data type (known as a *super-type*) and adds its own behaviour and set of attributes on top. Inheritance is supported by the `extends` keyword:
+
+``` Haskell
+type <SubType> extends <SuperType>
+```
+
+In the example below, `Vehicle` inherits all the attributes from the `VehicleFeature` data type and adds four other attributes to it:
 
 ``` Haskell
 type Vehicle extends VehicleFeature:
@@ -118,20 +150,27 @@ type Vehicle extends VehicleFeature:
 ```
 
 {{< notice info "Note" >}}
-For clarity purposes, the documentation snippets omit the synonyms and definitions that are associated with the classes and attributes, unless the purpose of the snippet is to highlight some of those features.
+For clarity purposes, the documentation snippets omit the annotations and definitions that are associated with the data types and attributes, unless the purpose of the snippet is to highlight some of those features.
 {{< /notice >}}
 
 ### Enumeration
 
 #### Purpose
 
-**Enumeration is the mechanism through which an attribute may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled values.
-
-This mimics the *scheme* concept, whose values may be specified as part of an existing standard and can be represented through an enumeration in the Rosetta DSL. Typically, a scheme with no defined values is represented as a basic `string` type.
+**Enumeration is the mechanism through which a type may only take some specific controlled values**. An *enumeration* is the container for the corresponding set of controlled values. An enumeration is sometimes also known as a *scheme*.
 
 #### Syntax
 
-Enumerations are very simple modelling containers, which are defined in the same way as other model components. The definition of an enumeration starts with the `enum` keyword, followed by the enumeration name. A colon `:` punctuation introduces the rest of the definition, which contains a plain-text description of the enumeration and the list of enumeration values.
+Enumerations are very simple containers defined using the `enum` keyword, in similar way as other model components. The definition contains a plain-text description of the enumeration and the list of enumeration values.
+
+``` Haskell
+enum <EnumerationName>: <"Description">
+  <Value1> (optional: displayName <"DisplayName">) <"Description">
+  <Value2> <"Description">
+  <...>
+```
+
+Enumeration names must be unique across a [namespace](#namespace-component). The Rosetta DSL naming convention uses the same upper CamelCase (PascalCase) as for data types. In addition the enumeration name should end with the suffix Enum. E.g.:
 
 ``` Haskell
 enum PeriodEnum: <"The enumerated values to specify the period, e.g. day, week.">
@@ -141,9 +180,7 @@ enum PeriodEnum: <"The enumerated values to specify the period, e.g. day, week."
   Y <"Year">
 ```
 
-Enumeration names must be unique across a [namespace](#namespace-component). The Rosetta DSL naming convention is the same as for types and must use the upper CamelCase (PascalCase). In addition the enumeration name should end with the suffix Enum. The Enumeration values cannot start with a numerical digit, and the only special character that can be associated with them is the underscore `_`.
-
-In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a *display name* to any enumeration value. For those enumeration values, special characters are replaced with `_` while the `displayName` entry corresponds to the actual value.
+Enumeration values cannot start with a numerical digit, and the only special character that can be associated with them is the underscore `_`. In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a *display name* to any enumeration value. For those enumeration values, special characters are replaced with `_` while the `displayName` entry corresponds to the actual value.
 
 An example is the day count fraction scheme for interest rate calculation, which includes values such as `ACT/365.FIXED` and `30/360`. These are associated as `displayName` to the `ACT_365_FIXED` and `_30_360` enumeration values, respectively.
 
@@ -163,131 +200,92 @@ enum DayCountFractionEnum:
   _30_360 displayName "30/360"
 ```
 
+#### External Reference Data
+
+In some cases, a model may rely on an enumeration whose values are already defined as a static dataset in some other data model, schema or technical specification. To avoid duplicating that information and risk it becoming stale, it is possible to annotate such enumeration with the source of the reference data, using the [document reference](#document-reference) mechanism. This ensures that the enumeration information in the model is kept up-to-date with information at the source.
+
+This source information is usually accessible as a scheme under some URL. The document reference uses the `schemeLocation` segment to specify that URL, which instructs a model processor to import the enumeration values from that scheme. The syntax is:
+
+``` Haskell
+[docReference <Body> <Corpus> schemeLocation <"URL">]
+```
+
+For example, the set of floating rate indices maintained as part of the FpML standard can be referenced as follows:
+
+``` Haskell
+enum FloatingRateIndexEnum: <"The enumerated values to specify the list of floating rate index.">
+    [docReference ISDA FpML_Coding_Scheme schemeLocation "http://www.fpml.org/coding-scheme/floating-rate-index-3-2"]
+    
+    // Those enumeration values are imported from the source scheme
+    AED_EBOR_Reuters displayName "AED-EBOR-Reuters"
+    <...>
+```
+
+### Meta-Type
+
+The Rosetta DSL features some special types called *meta-types*, which are useful for its main application in the financial domain. Meta-types are designed to flag attributes that result from some functional logic. This enables a model implementation to identify where to stamp the output when running the corresponding functions.
+
+There are two types of meta-types that are declared at the language level:
+
+- `calculationType`: `calculation`, for calculation functions
+- `qualifiedType`: `productType` and `eventType`, for object qualification functions
+
+#### Calculation
+
+The `calculation` type represents the outcome of a calculation. An attribute with the `calculation` type is meant to be associated to a [calculation function](#calculation-function), so that the attribute\'s type is implied by the function output.
+
+An example usage is the conversion from clean price to dirty price for a bond:
+
+``` Haskell
+type CleanPrice:
+  cleanPrice number (1..1)
+  accruals number (0..1)
+  dirtyPrice calculation (0..1)
+```
+
+#### Object Qualification
+
+Similarly, `productType` and `eventType` represent the outcome of some qualification logic to classify an object (product or event) according to some taxonomy. Attributes of these types are meant to be associated to an [object qualification function](#object-qualification-function).
+
+For example:
+
+``` Haskell
+type ProductIdentification:
+  productQualifier productType (0..1) <"The CDM product qualifier, which corresponds to the outcome of the isProduct qualification logic. This value is derived by the CDM from the product payout features.">
+  primaryAssetdata AssetClassEnum (0..1)
+  secondaryAssetdata AssetClassEnum (0..*)
+  productType string (0..*)
+  productId string (0..*)
+```
+
 ## Meta-Data Component
 
-Meta-data are syntax features that allow to associate rich definitions to all other model components, including data and functions.
+Meta-data are components that are designed to enrich other model components such as data types, attributes or functions.
 
 ### Description
 
 #### Purpose
 
-Plain-text descriptions can be associated to any model component. Although not generating any executable code, descriptions are first-class meta-data components of any model. As modelling best practice, a description ought to exist for every model component and be clear and comprehensive.
+Plain-text descriptions can be associated to most model components. Although not generating any executable code, descriptions are first-class meta-data components of any model. As modelling best practice, a description ought to exist for every model component and be clear and comprehensive.
 
 #### Syntax
 
-The syntax to add a description uses quotation marks in between angle brackets `<"..">`. There are several examples throughout this document.
+The syntax to add a text description to a model component is to insert that description in quotation marks and in between angle brackets: `<"..">`.
 
-### Document Reference
+Descriptions can be added to almost any model component such as:
+- a data type, its attributes and its conditions,
+- a function, its inputs and output, its conditions and its business logic,
+- a reporting rule,
+- a namespace,
+- etc.
 
-#### Purpose
-
-A document reference is a type of meta-data description that can associate information published in a separate document to model components. The Rosetta DSL allows to define those specific documents, who owns them and their content as direct model components, and to associate them to any other model components such as data or functions.
-
-#### Hierarchy Syntax
-
-There are 3 syntax components to define the hierarchy of document references:
-
-1. Body
-1. Corpus
-1. Segment
-
-A body refers to an entity that is the author, publisher or owner of a document. Examples of bodies include regulatory authorities or trade associations.
-
-The syntax to define a body is:
-
-```
-body <Type> <Name> <Description>
-```
-
-Some examples of bodies, with their corresponding types, are given below.
-
-``` Haskell
-body Organisation ISDA
-  <"Since 1985, the International Swaps and Derivatives Association has worked to make the global derivatives markets safer and more efficient">
-
-body Authority ESMA
-  <"ESMA is an independent EU Authority that contributes to safeguarding the stability of the European Union's financial system by enhancing the protection of investors and promoting stable and orderly financial markets.">
-
-body Authority MAS
-  <"The Monetary Authority of Singapore (MAS) is Singapore’s central bank and integrated financial regulator. MAS also works with the financial industry to develop Singapore as a dynamic international financial centre.">
-```
-
-A corpus refers to a document set that contains the textual provision that is being referenced. For example, regulatory rules can be specified according to different levels of detail, including laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations).
-
-The syntax to define a corpus is:
-
-```
-corpus <Type> <Body> <"Alias"> <Name> <"Description">
-```
-
-While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known.
-
-Some examples of corpuses, with their corresponding types, are given below. In those cases, the aliases refer to the official numbering of document by the relevant authority.
-
-``` Haskell
-corpus Regulation ESMA "600/2014" MiFIR
-  <"Regulation (EU) No 600/2014 of the European Parliament and of the Council of 15 May 2014 on markets in financial instruments and amending Regulation (EU) No 648/2012 Text with EEA relevance">
-
-corpus Act MAS "289" SFA
-  <"The Securities And Futures Act relates to the regulation of activities and institutions in the securities and derivatives industry, including leveraged foreign exchange trading, of financial benchmarks and of clearing facilities, and for matters connected therewith.">
-```
-
-Corpuses are typically large sets of documents which can contain many rule specifications. The Rosetta DSL provides the concept of segment to allow to refer to a specific section in a given document.
-
-The syntax to define a segment is: `segment <Type>`. Below are some examples of segment types, as are often found in trade association and regulatory texts.
-
-``` Haskell
-segment article
-segment whereas
-segment annex
-segment table
-segment namingConvention
-```
-
-Once a segment type is defined, it can be associated to an identifier (i.e some free text representing either the segment number or name) and combined with other segment types to point to a specific section in a document. For instance:
-
-``` Haskell
-article "26" paragraph "2"
-```
-
-#### Reference Syntax
-
-A document reference is created using the `docReference` syntax. This `docReference` must be associated to a `corpus` and `segment` defined according to the document hierarchy. The document reference can copy the actual text being referred to using the `provision` syntax.
-
-``` Haskell
-[docReference <Body> <Corpus>
-  <Segment1>
-  <Segment2>
-  <...>
-  <SegmentN>
-  provision <"ProvisionText">]
-```
-
-In some instances, a model type may have a different naming convention based on the context in which it is being used: for example, a legal definition may refer to the data type with a different name. The `docReference` syntax allows a type to be annotated using the naming convention `segment` with the `body` and `corpus` that define it.
-
-``` Haskell
-type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
-    [docReference ICMA GMRA
-        namingConvention "seller"
-        provision "As defined in the GRMA Seller party ..."]
-```
-
-A `docReference` can also be added to an attribute of a type:
-
-``` Haskell
-type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
-     ...
-     payer CounterpartyRoleEnum (1..1)
-       [docReference ICMA GMRA
-         namingConvention "seller"
-         provision "As defined in the GRMA Seller party ..."]
-```
+There are many examples throughout this documentation where the description has been included for the purpose of illustrating its use.
 
 ### Annotation
 
 #### Purpose
 
-Annotations allow to specify additional meta-data components in a model, beyond the decription and document reference already provided by the Rosetta DSL. Those annotation components can be then associated to model components to serve a number of purposes:
+Annotations allow to specify additional meta-data for model components beyond a simple decription. Those annotation can serve several purposes:
 
 - to add constraints to a model that may be enforced by syntax validation
 - to modify the actual behaviour of a model in generated code
@@ -297,25 +295,36 @@ Examples of annotations and their usage for different purposes are illustrated b
 
 #### Syntax
 
-Annotations are defined in the same way as other model components. The definition of an annotation starts with the `annotation` keyword, followed by the annotation name. A colon `:` punctuation introduces the rest of the definition, starting with a plain-text description of the annotation.
+Annotations are defined with the `annotation` keyword:
+
+``` Haskell
+annotation <annotationName>: <"Description">
+    <attribute1>
+    <attribute2>
+    <...>
+```
+
+The Rosetta DSL naming convention uses a (lower) camelCase for annotation names, which must be unique across a model. Attributes are optional and many annotations will not require any.
 
 <a id='roottype-label'></a>
 
 ``` Haskell
 annotation rootType: <"Mark a type as a root of the rosetta model">
-
-annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
 ```
 
-Annotation names must be unique across a model. The Rosetta DSL naming convention is to use a (lower) camelCase. It is also possible to associate attributes to an annotation: see [metadata](#meta-data-and-reference) example.
+{{< notice info "Note" >}}
+Some annotations are provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
+{{< /notice >}}
 
-Once an annotation is defined, model components can be annotated with its name and chosen attribute, if any, in between square brackets `[..]`.
+Once an annotation is defined, model components can be annotated with its name and chosen attribute, if any, using the following syntax:
 
-### Meta-Data and Reference
+``` Haskell
+[<annotationName> (optional: <annotationAttribute>)]
+```
 
-#### Purpose
+#### Meta-Data Annotation
 
-The `metadata` annotation allows the declaration of a set of meta-data qualifiers that can be applied to types and attributes. By default Rosetta includes several metadata annotations.
+The `metadata` annotation includes attributes that define a set qualifiers that can be applied to a data type or attribute. By default Rosetta includes several metadata annotations:
 
 ``` Haskell
 annotation metadata:
@@ -328,65 +337,142 @@ annotation metadata:
   address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere">
 ```
 
-Each attribute of the `metadata` annotation corresponds to a qualifier that can be applied to a rosetta type or attribute:
+Each attribute of the `metadata` annotation corresponds to a different qualifier:
 
-- The `scheme` meta-data qualifier specifies a mechanism to control the set of values that an attribute can take. The relevant scheme reference may be specified as meta-information in the attribute\'s data source, so that no originating information is disregarded.
-- The `template` meta-data qualifier indicates that a type is eligible to be used as a data template. Data templates provide a way to store data which may be duplicated across multiple objects into a single template, to be referenced by all these objects.
-- the other metadata annotations above are used in referencing.
+- The `scheme` qualifier specifies a mechanism to control the set of values that an attribute can take, without having to define this attribute as an [enumeration](#enumeration) in the model. Typically, an attribute associated with a scheme is represented as a basic `string` type. The annotation indicates that the relevant scheme information should be sourced when populating the attribute.
+- The `template` qualifier indicates that a data type is eligible to be used as a [data template](#data-template). Data templates provide a way to store data which may be duplicated across multiple objects into a single template, to be referenced by all these objects.
+- the other metadata annotations are used for [cross-referencing](#cross-referencing).
 
-#### Referencing
+### Document Reference
 
-Referencing allows an attribute in rosetta to refer to a rosetta object in a different location. A reference consists of a metadata ID associated with an object and elsewhere an attribute that instead of having a normal value has that id as a reference metadata field. E.g. the example below has a Party with `globalKey` (see below) acting as an identifier and later on a reference to that party using the `globalReference` (see below also):
+#### Purpose
 
-``` JSON
-"party" : {
-  "meta" : {
-    "globalKey" : "3fa8e998",
-    "externalKey" : "f845ge"
-  },
-  "name" : {
-    "value" : "XYZ Bank"
-  },
-  "partyId" : [ {
-    "value" : "XYZBICXXX",
-    "meta" : {
-      "scheme" : "http://www.fpml.org/coding-scheme/external/iso9362"
-    }
-  } ]
-}
+A document reference is a specific type of annotation that links model components to external information published in a separate document. The Rosetta DSL allows to define any such external document, who owns it and some of its content as model components, and to associate this information to other model components such as data types or functions.
 
-"partyReference" : {
-        "globalReference" : "3d9e6ab8"
-  }
+The external information may be published in text format, in which case this feature effectively associates a plain-text documentation trail to any model behaviour. As such behaviour may eventually be translated into an operational process run by software, this mechanism provides a form of self-documentation for that software.
+
+Document references have two components: hierarchy and content.
+
+#### Document Hierarchy Syntax
+
+There are three keyword to define the hierarchy of document references:
+
+1. `body` - an entity that is the author, publisher or owner of the referenced document
+1. `corpus` - a document set that contains the referenced information
+1. `segment` - the specific section in the document containing the information being referenced
+
+The syntax to define a body, corpus and segment is, respectively:
+
+``` Haskell
+body <BodyType> <BodyName> (optional: <"Description">)
+corpus <CorpusType> (optional: <Body>) (optional: <"Alias">) <CorpusName> (optional: <"Description">)
+segment <segmentType>
 ```
 
-Rosetta currently supports 3 different mechanisms for references with different scopes. It is intended that these will all be migrated to a single mechanism.
+Examples of bodies include regulatory authorities or trade associations.
 
-##### Global Reference
+``` Haskell
+body Authority EuropeanCommission <"European Commission (ec.europa.eu).">
+```
 
-The `key` and `id` metadata annotations cause a globally unique key to be generated for the rosetta object or attribute. The value of the key corresponds to a hash code to be generated by the model implementation. The implementation provided in the Rosetta DSL is a *deep hash* that uses the complete set of attribute values that compose the type and its attributes, recursively.
+Examples of corpuses include rules and regulations, which may be specified according to different levels of detail such as directives and laws (as voted by lawmakers), regulatory texts and technical standards (as published by regulators), or best practice and guidance (as published by trade associations). In each case that corpus could be associated to the relevant body, itself defined as a model component.
 
-The `reference` metadata annotation denotes that an attribute can be either a direct value like any other attribute or can be replaces with a `reference` to a global key defined elsewhere. The key need not be defined in the current document but can instead be a reference to an external document.
+While the name of a corpus provides a mechanism to refer to such corpus as a model component in other parts of a model, an alias provides an alternative identifier by which a given corpus may be known. In the below example, the alias refer to the official numbering of the document by the relevant authority.
 
-##### External Reference
+``` Haskell
+corpus Directive "93/59/EC" StandardEmissionsEuro1
+    <"COUNCIL DIRECTIVE 93 /59/EEC of 28 June 1993 amending Directive 70/220/EEC on the approximation of the laws of the Member States relating to measures to be taken against air pollution by emissions from motor vehicles https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX%3A31993L0059">
+```
 
-Attributes and types that have the `key` or `id` annotation additionally have an `externalKey` attached to them. This is used to store keys that are read from an external source e.g. FpML id metadata attribute.
+Corpuses are typically large document sets which may contain many provisions, clauses etc, so segments are used to refer to a specific section in a given document. Below are some examples of segment types, as are often found in regulatory texts or trade associations' best practices.
 
-Attributes with the `reference` keyword have a corresponding externalReference field which is used to store references from external sources. The reference resolver processor can be used to link up the references.
+``` Haskell
+segment article
+segment whereas
+segment annex
+segment table
+segment namingConvention
+```
 
-#### Template
+A segment is then invoked by associating some free-text name or number to identify that specifc segment:
 
-When a type is annotated as a template, it is possible to specify a template reference that cross-references a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
+``` Haskell
+<segmentType> <"SegmentID">
+```
 
-Other than the new annotation, data templates do not have any impact on the model, i.e. no new types, attributes, or conditions.
+Segments can be combine to point to a specific section in a document. For instance:
 
-{{< notice info "Note" >}}
-Some annotations, such as this metadata qualification, may be provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
-{{< /notice >}}
+``` Haskell
+article "26" paragraph "2"
+```
 
-##### Syntax
+#### Document Content Syntax
 
-The below `Party` and `Identifier` types illustrate how meta-data annotations and their relevant attributes can be used in a model:
+A reference to specific document content is created using the `docReference` keyword. This document reference must be associated to a corpus and segment defined according to the above document hierarchy. The `provision` keyword allows to copy the textual information being referenced from the document.
+
+``` Haskell
+[docReference <Body> <Corpus>
+  <segment1> <segment2> <...>
+  provision <"ProvisionText">]
+```
+
+In some instances, a data type may have a different naming convention based on the context in which it is being used: for example, a legal definition may be associated to a data type but with a different name. A document reference allows such data type to be annotated with a special `namingConvention` segment and the corresponding corpus and body that define it.
+
+Such document reference may be associated to the data type itself or to any of its attributes.
+
+``` Haskell
+type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
+     payer CounterpartyRoleEnum (1..1)
+       [docReference ICMA GMRA
+         namingConvention "seller"
+         provision "As defined in the GRMA Seller party ..."]
+     <...>
+```
+
+### Data Template
+
+When a data type is annotated as a template, it is possible to specify a reference to a template object. The template object, as well as any object that references it, are typically *incomplete* model objects that should not be validated individually. Once a template reference has been resolved, it is necessary to merge the template data to form a single fully populated object. Validation should only be performed once the template reference has been resolved and the objects merged together.
+
+Other than the annotation itself, data templates do not have any impact on the model: they do not introduce any new type, attribute, or condition.
+
+When a data type is annotated as a template, the designation applies to all encapsulated types in that data type. In the example below, the designation of template eligibility for `ContractualProduct` also applies to `EconomicTerms`, which is an encapsulated type in `ContractualProduct`, and likewise applies to all encapsulated types in `EconomicTerms`.
+
+``` Haskell
+type ContractualProduct:
+  [metadata key]
+  [metadata template]
+  productIdentification ProductIdentification (0..1)
+  productTaxonomy ProductTaxonomy (0..*)
+  economicTerms EconomicTerms (1..1)
+```
+
+### Cross-Referencing
+
+#### Purpose
+
+Cross-referencing allows an attribute to refer to an object in a different location. A cross reference consists of a metadata identifier associated with an object (the *source*). Elsewhere an attribute (the *target*), instead of having a normal value, can hold that identifier as a reference metadata field.
+
+#### Syntax
+
+Cross-referencing uses the `key` (or `id`) / `reference` metadata pair. The `key` or `id` metadata annotations allow a key to be associated, respectively, to the source type or attribute being annotated. `id` is needed to annotate built-in types at the attribute level, since there is no data type to annotate.
+
+In turn, a target attribute annotated with the `reference` metadata can be either a direct value like any other attribute, or replaced with a reference using a key. Syntax validation enforces that an attribute annotated as a reference is of a data type annotated with a key.
+
+The syntax is:
+
+``` Haskell
+<SourceType>
+  [metadata key]
+
+// For built-in types only:
+<sourceAttribute>
+  [metadata id]
+  
+<targetAttribute>
+  [metadata reference]
+```
+
+The below `Party` and `Identifier` types illustrate how cross-reference annotations and their relevant attributes can be used. The `key` qualifier associated to the `Party` type indicates that it is referenceable. In the `Identifier` type, the `reference` qualifier associated to the `issuerReference` attribute indicates that it can be provided as a reference via a key instead of a copy.
 
 ``` Haskell
 type Party:
@@ -407,69 +493,59 @@ type Identifier:
   assignedIdentifier AssignedIdentifier (1..*)
 ```
 
-A `key` qualifier is associated to the `Party` type, which means it is referenceable. In the `Identifier` type, the `reference` qualifier, which is associated to the `issuerReference` attribute of type `Party`, indicates that this attribute can be provided as a reference (via its associated key) instead of a copy. An example implementation of this cross-referencing mechanism for these types can be found in the [synonym](#basic-mapping) of the documentation.
+Rosetta currently supports three different mechanisms for references, each with a different scope.
 
-When a data type is annotated as a `template`, the designation applies to all encapsulated types in that data type. In the example below, the designation of template eligibility for `ContractualProduct` also applies to `EconomicTerms`, which is an encapsulated type in `ContractualProduct`, and likewise applies to all encapsulated types in `EconomicTerms`.
+#### Global Reference
 
-``` Haskell
-type ContractualProduct:
-  [metadata key]
-  [metadata template]
-  productIdentification ProductIdentification (0..1)
-  productTaxonomy ProductTaxonomy (0..*)
-  economicTerms EconomicTerms (1..1)
+The `key` and `id` metadata annotations force a globally unique key to be generated for the type being annotated. The value of the key corresponds to a hash code to be generated by the model implementation. For the attribute annotated with a `reference`, the key need not be defined in the current object but can instead be a reference to an external object.
+
+The global key and reference fields are called, respectively, `globalKey` and `globalReference` in the default implementation in Rosetta. The value of 
+the key is a *deep hash* that uses the complete set of attribute values that compose the data type and its attributes, recursively.
+
+#### External Reference
+
+Objects that are annotated with `key` or `id` can additionally be associated to a key that may be read from an external source - e.g. the FpML `id` metadata attribute. Attributes annotated with the `reference` keyword can store a reference from an external source. A reference resolver processor can be used to link up the references.
+
+The example below features a `party` object with both a `globalKey` acting as a global identifier and an `externalKey` extracted from another source as meta-data. It also contains a `globalReference` which would resolve to that `party`.
+
+``` JSON
+"party" : {
+  "meta" : {
+    "globalKey" : "3fa8e998",
+    "externalKey" : "f845ge"
+  },
+  "name" : {
+    "value" : "XYZ Bank"
+  },
+  "partyId" : [ {
+    "value" : "XYZBICXXX",
+    "meta" : {
+      "scheme" : "http://www.fpml.org/coding-scheme/external/iso9362"
+    }
+  } ]
+}
+
+"partyReference" : {
+        "globalReference" : "3fa8e998"
+  }
 ```
 
-### Qualified Type
+#### Address and Location Reference
 
-The Rosetta DSL provides for some special types called *qualified types*, which are specific to its application in the financial domain:
+In some cases, an attribute may be used as a variable to be populated with different values to create different objects while other attributes are kept constant. This allows to reduce the storage of large, reusable objects which may have identical values for most of their attributes except for a few variable ones. A single object could be created that is parameterised by these variable attributes. Every individual instance only needs to specify the values of these parameters and does not need to copy the entire object.
 
-- Calculation - `calculation`
-- Object qualification - `productType` `eventType`
-
-Those special types are designed to flag attributes which result from running some logic, such that model implementations can identify where to stamp the output in the model. The logic is being captured by specific types of functions that are detailed in the [Object Qualification](#object-qualification-function) section.
-
-#### Calculation
-
-The `calculation` qualified type, when specified instead of the type for the attribute, represents the outcome of a calculation. An example usage is the conversion from clean price to dirty price for a bond.
+The Rosetta DSL supports this use case with a cross-referencing mechanism that is based on pairing an address (for the placeholder containing the variable attribute in the object, i.e. the target) and a location (where the value of this attribute is specified, i.e. the source). The syntax uses the `address` / `location` metadata pair as follows:
 
 ``` Haskell
-type CleanPrice:
-  cleanPrice number (1..1)
-  accruals number (0..1)
-  dirtyPrice calculation (0..1)
-```
-
-An attribute with the `calculation` type is meant to be associated to a function tagged with the `calculation` annotation. The attribute\'s type is implied by the function output.
-
-``` Haskell
-annotation calculation: <"Marks a function as fully implemented calculation.">
-```
-
-#### Object Qualification
-
-Similarly, `productType` and `eventType` represent the outcome of qualification logic to infer the type of an object (financial product or event) in the model. See the `productQualifier` attribute, alongside other identifier attributes in the `ProductIdentification` type:
-
-``` Haskell
-type ProductIdentification: <" A class to combine the CDM product qualifier with other product qualifiers, such as the FpML ones. While the CDM product qualifier is derived by the CDM from the product payout features, the other product identification elements are assigned by some external sources and correspond to values specified by other data representation protocols.">
-  productQualifier productType (0..1) <"The CDM product qualifier, which corresponds to the outcome of the isProduct qualification logic. This value is derived by the CDM from the product payout features.">
-  primaryAssetdata AssetClassEnum (0..1)
-  secondaryAssetdata AssetClassEnum (0..*)
-  productType string (0..*)
-  productId string (0..*)
-```
-
-Attributes of these types are meant to be associated to an object qualification function tagged with the `qualification` annotation. The annotation has an attribute to specify which type of object (like `Product` or `BusinessEvent`) is being qualified.
-
-``` Haskell
-annotation qualification: <"Annotation that describes a func that is used for event and product Qualification">
-  [prefix Qualify]
-  Product boolean (0..1)
-  BusinessEvent boolean (0..1)
+<targetAttribute>
+  [metadata address "pointsTo"=<sourceAttribute>]
+  
+<sourceAttribute>
+  [metadata location]
 ```
 
 {{< notice info "Note" >}}
-The qualified type feature in the Rosetta DSL is under evaluation and may be replaced by a mechanism that is purely based on these function annotations in the future.
+The global referencing mechanism cannot be applied to this use case because in that construct, a global key is uniquely associated to an object based on the set of values taken by its attributes. Here by contrast, the same unique key (the variable's address) needs to be used regardless of the value taken by that variable.
 {{< /notice >}}
 
 ## Expression Component
@@ -498,13 +574,24 @@ The below sections detail the different types of Rosetta expressions and how the
 
 ### Constant Expression
 
-#### Purpose
+#### Basic Type Constant
 
-An expression can be a [built-in-type](#built-in-type) constant - e.g. 2.0, True or \"USD\". Constant expressions are useful for comparisons to more complex expressions.
+An expression can be a [basic type](#basic-type) constant - e.g.:
+- 2.0
+- `True`
+- "USD"
+
+Such constant expressions are useful for comparisons to more complex expressions.
 
 #### Enumeration Constant
 
-An expression can refer to an enumeration value using the name of the enumeration type followed by `->` and the name of the enumeration value. E.g. :
+An expression can refer to an enumeration value as follows:
+
+```
+<EnumName> -> <EnumValue>
+```
+
+E.g. :
 
 ```
 DayOfWeekEnum -> SAT
@@ -512,7 +599,13 @@ DayOfWeekEnum -> SAT
 
 #### List Constant
 
-Constants can also be declared as lists using a comma separated list of expressions enclosed within square brackets `[...]`. E.g. :
+Constants can also be declared as lists:
+
+```
+[ <item1>, <item2>, <...>]
+```
+
+E.g.:
 
 ```
 [1,2]
@@ -540,26 +633,29 @@ type ContractFormationPrimitive:
       if before exists ....
 ```
 
-The `->` operator allows to return an attribute located inside an attribute, and so on recursively. In the example below, the `security` of the `product` contained in a `Confirmation` object is checked for [existence](#comparison-operator).
+The `->` operator allows to return an attribute located inside an attribute, and so on recursively.
 
-``` {.Haskell emphasize-lines="10"}
-type Confirmation: <"A class to specify a trade confirmation.">
-
-    identifier Identifier (1..*)
-    party Party (1..*)
-    partyRole PartyRole (1..*)
-    lineage Lineage (0..1)
-    status ConfirmationStatusEnum (1..1)
-
-    condition BothBuyerAndSellerPartyRolesMustExist:
-        if lineage -> executionReference -> tradableProduct -> product -> security exists
+```
+<attribute1> -> <attribute2> -> <...>
 ```
 
-If a path expression is applied to an attribute that does not have a value in the object it is being evaluated against, the result is *null* - i.e. there is no value. If an attribute of that non-existant object is further evaluated, the result is still *null*. In the above example, if `executionReference` is *null*, the final `security` attribute will also evaluate to *null*.
+In the example below, the penalty points of a vehicle owner's driving license is being extracted:
+
+``` Haskell
+owner -> drivingLicence -> penaltyPoints
+```
 
 {{< notice info "Note" >}}
-In situations where the context of the object in which the path expression should be evaluated is not already specified (e.g. reporting rules or conditional mapping), the path should begin with the data type name e.g. `WorkflowStep -> eventIdentifier`. where applicable, this requirement is enforced by syntax validation in the Rosetta DSL.
+In situations where the context of the object in which the path expression should be evaluated is not already specified (e.g. reporting rules or conditional mapping), the path should begin with the data type name e.g. `Owner -> drivingLicence`. Where applicable, this requirement is enforced by syntax validation in the Rosetta DSL.
 {{< /notice >}}
+
+#### Null
+
+If a path expression is applied to an attribute that does not have a value in the object it is being evaluated against, the result is *null* - i.e. there is no value. If an attribute of that non-existant object is further evaluated, the result is still null.
+
+In the above example, if `drivingLicense` is null, the final `penaltyPoints` attribute also evaluates to null.
+
+A null value for an expression with multiple cardinality is treated as an empty [list](#list).
 
 ### Operator
 
@@ -596,12 +692,13 @@ The result type of a comparison operator is always a boolean.
   - `mutiple` - the value expression has more than 2 results
 - `is absent` - returns true if the left expression does not return a result.
 
-The `only exists` syntax drastically reduces the condition expression, which would otherwise require to combine one `exists` with multiple `is absent` applied to all other attributes. It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for `is absent`.
+The `only exists` syntax drastically reduces conditional expressions that check the exclusive existence of certain attributes, which would otherwise require to combine one `exists` with multiple `is absent` applied to all other attributes. It also makes the logic more robust to future model changes, where newly introduced attributes would need to be tested for `is absent`.
 
 As shown in the below example, the `only exists` operator can apply to a composite set of attributes enclosed within brackets `(..)`. In this case, the operator returns true when all the attribues in the set have a value, and no other attribute in the parent object does.
 
 ``` Haskell
-economicTerms -> payout -> interestRatePayout only exists or (economicTerms -> payout -> interestRatePayout, economicTerms -> payout -> cashflow) only exists
+economicTerms -> payout -> interestRatePayout only exists
+or (economicTerms -> payout -> interestRatePayout, economicTerms -> payout -> cashflow) only exists
 ```
 
 {{< notice info "Note" >}}
@@ -618,14 +715,14 @@ All the following built-in types are *comparable*, which means that they can be 
 
 ##### Comparison Operator and Null
 
-If one or more expressions being passed to an operator is of single cardinality but is null (not present) the behavior is as follows
+If an expression passed to an operator is of single cardinality and [null](#null), the behavior is as follows:
 
 - null `=` *any value* returns false
 - null `<>` *any value* returns true
 - null `>` *any value* returns false
 - null `>=` *any value* returns false
 
-*any value* here includes null. The behaviour is symmetric - if the null appears on either side of the expression the result is the same. if the null value is of multiple cardinality then it is treated as an empty list.
+*Any value* here includes null. The behaviour is symmetric: if null appears on either side of the expression the result is the same.
 
 #### Boolean Operator
 
@@ -658,15 +755,19 @@ Expressions are evaluated in Rosetta in the following order, from first to last 
 
 ### List
 
-A list is an ordered collection of items of the same data type (basic, complex or enumeration). A path expression that refers to an attribute with multiple [cardinality](#cardinality) will result in a list of values. If a chained [path expression](#path-expression) contains multiple attributes with multiple cardinality, the result is a flattened list. For example (as extracted from the `Qualify_CashTransfer` function):
-
-```
-businessEvent -> primitives -> transfer -> cashTransfer
-```
-
-gets all the `cashTransferComponent` from all the `primitives` attributes as a single list.
+A list is an ordered collection of items of the same data type (basic, complex or enumeration). A path expression that refers to an attribute with multiple [cardinality](#cardinality) will result in a list of values.
 
 An expression that is expected to return a value with *multiple cardinality* will always evaluate to a list of zero or more elements, regardless of whether the result value contains a single or multiple elements. An expression that is expected to return multiple cardinality that returns null is considered to be equivalent to an empty list.
+
+If a chained [path expression](#path-expression) contains multiple attributes with multiple cardinality, the result is a flattened list.
+
+For example:
+
+```
+owner -> drivingLicence -> vehicleEntitlement
+```
+
+returns all the vehicle entitlements from all the owner's driving licenses into a single list.
 
 The Rosetta DSL provides a number of list operators that feature in usual programming languages:
 
@@ -679,201 +780,148 @@ The following sections details the syntax and usage and these list operator feat
 
 #### Filter
 
-The `filter` keyword filters the items of a list based on a `boolean` expression. For each list item, a boolean expression specified in square brackets `[..]` is evaluated to determine whether to include (if true) or exclude (if false) the item, and the resulting filtered list is assigned to the output. By default, the keyword `item` is used to refer to the list item in the test expression.
-
-Note that filtering a list does not change the item type, e.g. when filtering a list of `Vehicle`, the output list type must also be of `Vehicle`.
-
-``` {.Haskell emphasize-lines="10"}
-func FindVehiclesByEngineType: <"Find all vehicles with given engine type.">
-    inputs:
-        vehicles Vehicle (0..*)
-        engineType EngineTypeEnum (1..1)
-    output:
-        vehiclesWithEngineType Vehicle (0..*)
-
-    set vehiclesWithEngineType: <"Filter each list 'item' with the given test.">
-        vehicles
-            filter [ item -> specification -> engine -> engineType = engineType ]
-```
-
-Alternatively, the list item can be a named parameter, such as `vehicle` in the below example.
-
-``` {.Haskell emphasize-lines="10"}
-func FindDriversWithMaximumZeroTo60: <"Find all vehicles with given maximum 0 - 60 mph.">
-   inputs:
-       vehicles Vehicle (0..*)
-       zeroTo60 number (1..1)
-   output:
-       vehiclesWithMaximumZeroTo60 Vehicle (0..*)
-
-   set vehiclesWithMaximumZeroTo60: <"Each list 'item' can have a name specified.">
-       vehicles
-           filter vehicle [ vehicle -> specification -> zeroTo60 < zeroTo60 ]
-```
-
-List operations, such as `filter`, can contain expressions (e.g. if / else statements), call other functions, and also be chained together, as in the example below.
+The `filter` keyword filters the items of a list based on a specified filtering criteria provided as a bolean expression. The syntax is:
 
 ``` Haskell
-func FindVehiclesWithinEmissionLimits: <"Find all vehicles within given emissions metrics.">
-    inputs:
-        vehicles Vehicle (0..*)
-        carbonMonoxideCOLimit int (0..1)
-        nitrogenOxydeNOXLimit int (0..1)
-        particulateMatterPMLimit int (0..1)
-    output:
-        vehiclesWithinEmissionLimits Vehicle (0..*)
-
-    set vehiclesWithinEmissionLimits: <"Filter (and other list operations) can contain expressions, and can be chained together.">
-        vehicles
-            filter [ if carbonMonoxideCOLimit exists then item -> specification -> engine -> emissionMetrics -> carbonMonoxideCO <= carbonMonoxideCOLimit else True ]
-            filter [ if nitrogenOxydeNOXLimit exists then item -> specification -> engine -> emissionMetrics -> nitrogenOxydeNOX <= nitrogenOxydeNOXLimit else True ]
-            filter [ if particulateMatterPMLimit exists then item -> specification -> engine -> emissionMetrics -> particulateMatterPM <= particulateMatterPMLimit else True ]
+<list> filter (optional <itemName>) [ <booleanExpression> ]
 ```
 
-List operations can also be nested within other list operations.
+For each list item, the boolean expression is evaluated to determine whether to include (if true) or exclude (if false) the item. The resulting filtered list is assigned as the value of the `filter` expression. By default, the keyword `item` is used to refer to the list item in the boolean expression.
+
+Filtering a list does not change the item type - e.g. when filtering a list of `Vehicle`, the output list type is also of type `Vehicle`. The example below finds the subset of all vehicles with a given engine type:
 
 ``` Haskell
-func FindOwnersWithinPenaltyPointLimit: <"Find all owners within penalty point limits on any driver licence (owners can have multiple licences, issued by different countries).">
-    inputs:
-       owners VehicleOwnership (0..*)
-       maximumPenaltyPoints int (1..1)
-    output:
-       ownersWithinPenaltyPointLimit VehicleOwnership (0..*)
+vehicles
+    filter [ item -> specification -> engine -> engineType = engineType ]
+```
 
-    set ownersWithinPenaltyPointLimit: <"Nested filter required to determine if all owner's licences do not exceed the penalty point limit.">
-        owners
-            filter owner [ owner -> drivingLicence
-                filter licence [ licence -> penaltyPoints > maximumPenaltyPoints ] count = 0
-            ]
+Alternatively, the list item name can be a parameter, e.g. `vehicle` instead of `item`. The example below finds all vehicles with a maximum 0-60 mph (provided as a `zeroTo60` number):
+
+``` Haskell
+vehicles
+    filter vehicle [ vehicle -> specification -> zeroTo60 < zeroTo60 ]
+```
+
+All list operations can contain expressions (e.g. if / else statements), call functions and also be chained together. The example below finds all vehicles within given emissions metrics:
+
+``` Haskell
+vehicles
+    filter [ if carbonMonoxideCOLimit exists then item -> specification -> engine -> emissionMetrics -> carbonMonoxideCO <= carbonMonoxideCOLimit else True ]
+    filter [ if nitrogenOxydeNOXLimit exists then item -> specification -> engine -> emissionMetrics -> nitrogenOxydeNOX <= nitrogenOxydeNOXLimit else True ]
+    filter [ if particulateMatterPMLimit exists then item -> specification -> engine -> emissionMetrics -> particulateMatterPM <= particulateMatterPMLimit else True ]
+```
+
+List operations can also be nested within other list operations. The example below finds all vehicle owners within a maximum penalty point limit on any driver licence. Owners can have multiple licences issued by different countries.
+
+``` Haskell
+owners
+    filter owner [ owner -> drivingLicence
+        filter licence [ licence -> penaltyPoints > maximumPenaltyPoints ] count = 0
+        ]
 ```
 
 #### Map
 
-The `map` keyword allows to modify the items of a list based on an expression. For each list item, the expression specified in the square brackets is invoked to modify the item. The resulting list is assigned to the output.
+The `map` keyword allows to modify the items of a list based on an expression. The syntax is:
 
 ``` Haskell
-func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
-    inputs:
-        drivingLicences DrivingLicence (0..*)
-    output:
-        ownersName string (0..*)
+<list> map (optional <itemName>) [ <expression> ]
+```
 
-    set ownersName: <"Filter lists to only include drivers with first and last names, then use 'map' to convert driving licences into list of names.">
-        drivingLicences
-            filter [ item -> firstName exists and item -> surname exists ]
-            map [ item -> firstName + " " + item -> surname ]
+For each list item, the expression is invoked to modify the item. The resulting list is assigned as the value of the `map` expression. The example below filters a list of driving licenses to include only drivers with first and last names, then converts those driving licences into a list of names.
+
+``` Haskell
+drivingLicences
+    filter [ item -> firstName exists and item -> surname exists ]
+    map [ item -> firstName + " " + item -> surname ]
 ```
 
 {{< notice info "Note" >}}
-The `map` keyword was chosen as it is the most widely used term for this use-case - for instance in languages such as Java, Python, Scala, Perl, Clojure, Erlang, F#, Haskell, Javascript, PHP, and Ruby.
+The `map` keyword was chosen as it is the most widely used term in programming languages for this use-case - for instance in Java, Python, Scala, Perl, Clojure, Erlang, F#, Haskell, Javascript, PHP, and Ruby.
 {{< /notice >}}
 
 #### Reduce
 
-Reduction consists of a set of operations that returns a single value based on elements of a list.
+Reduction is an operation that returns a single value based on elements of a list. The general syntax is:
 
-- `sum` - returns the sum of the elements of a list of `int` or `number`
+``` Haskell
+<list> <reduceOperator> (optional <itemName>) (optional [ <operationExpression> ])
+```
+
+The Rosetta DSL implements the following set set of reduce operators:
+
+- `sum` - returns the sum of the elements of a list of `int` or `number` elements
 - `min`, `max` - returns the minimum or maximum of a list of [comparable](#comparable-type) elements
 - `join` - returns the concatenated values of a list of `string`
 - `reduce` - generic reduction operator, which requires to specify the operation to merge two elements.
 
-Some examples of usage are given below.
+The two examples below return, respectively, the sum and the highest number of a given list of numbers. They do not specify any expression parameter. In each case the output is a single number.
+
 
 ``` Haskell
-func SumNumbers: <"Returns the sum of the given list of numbers.">
-    inputs:
-        numbers number (0..*)
-    output:
-        total number (1..1)
-
-    set total:
-        numbers sum
+numbers sum
 ```
 
 ``` Haskell
-func FindMaxNumber: <"Returns the highest number from the given list of numbers, using the reduce keyword.">
-    inputs:
-        numbers number (0..*)
-    output:
-        result number (1..1)
-
-    set result:
-        numbers max
+numbers max
 ```
 
-For `join`, the operator can (optionally) specify a delimiter to insert in-between each string element:
+The `min` and `max` keywords can also operate on complex, non-comparable types, provided that they include comparable attributes. In this case, the operator must specify an expression on which to perform the comparison. The `min` and `max` operators return the corresponding complex element, rather than the value on which the comparison is made.
+
+The example below returns the vehicle with the highest power engine.
 
 ``` Haskell
-func JoinStrings: <"Concatenates the list of strings, separating each element with the given delimiter, using the join keyword.">
-    inputs:
-        strings string (0..*)
-    output:
-        result string (1..1)
-
-    set result:
-        strings join [ ", " ]
+vehicles
+    max [ item -> specification -> engine -> power ]
 ```
 
-The `min`/`max` keyword can also operate on complex, non-comparable types, provided that they include comparable attributes. In this case, the operator must specify an expression on which to perform the comparison. Note that the `min`/`max` operator returns the corresponding complex element, rather than the value on which the comparison is made.
+For `join`, the operator can (optionally) specify a delimiter expression to insert in-between each string element. The below example concatenates a list of strings, separating each element with the given delimiter:
 
 ``` Haskell
-func FindVehicleWithMaxPower: <"Returns the vehicle with the highest power engine.">
-    inputs:
-        vehicles Vehicle (0..*)
-    output:
-        vehicleWithMaxPower Vehicle (1..1)
-
-    set vehicleWithMaxPower:
-        vehicles
-            max [ item -> specification -> engine -> power ]
+strings join [ ", " ]
 ```
 
-Reduction works by performing an operation to merge two adjacent elements of a list into one, and so on recursively until there is only one single element left. All the reduction operators above are short-hand special cases of the generic `reduce` operator that works as follows:
+Reduction works by performing an operation to merge two adjacent elements of a list into one, and so on recursively until there is only one single element left. All the reduction operators above are therefore short-hand special cases of the generic `reduce` operator. The `reduce` operator must specify an expression that operates on two list elements.
+
+The above example returning the vehicle with the highest power engine can be re-written as:
 
 ``` Haskell
-func FindVehicleWithMaxPowerUsingReduce: <"Returns the vehicle with the highest power engine, using the reduce keyword.">
-    inputs:
-        vehicles Vehicle (0..*)
-    output:
-        vehicleWithMaxPower Vehicle (1..1)
-
-    set vehicleWithMaxPower:
-        vehicles
-            reduce v1, v2 [
-                if v1 -> specification -> engine -> power > v2 -> specification -> engine -> power then v1 else v2
-                ]
+vehicles
+    reduce v1, v2 [
+        if v1 -> specification -> engine -> power > v2 -> specification -> engine -> power then v1 else v2
+        ]
 ```
 
 #### List Comparison
 
-[Comparison operators](#comparison-operator) are operators that always return a boolean value. Rosetta provides syntax features to support those comparison operators to function on lists:
+The Rosetta DSL supports [comparison operators](#comparison-operator) to function on lists. Comparison operators are operators that always return a boolean value. The additional keywords needed to operate on lists are:
 
 - `contains` - returns true if every element in the right hand expression is equal to an element in the left hand expression
 - `disjoint` - returns true if no element in the left side expression is equal to any element in the right side expression
-- (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc) - compares a list to a single element or another list
+- (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc.) - compares a list to a single element
 
 If the `contains` operator is passed an expression that has single cardinality, that expression is treated as a list containing the single element or an empty list if the element is null.
 
-For the comparison operators, if either left or right expression has multiple cardinality then either the other side should have multiple cardinality. Otherwise if one side's expression has single cardinality, `all` or `any` should be used to qualify the list on the other side. At present only `any` is supported for `<` and `>` and only `all` for the other comparison operators.
+For the comparison operators, if either the left or right expression has multiple cardinality then the other side should have multiple cardinality. Otherwise if one side's expression has single cardinality, `all` or `any` should be used to qualify the list on the other side. At present only `any` is supported for `<` and `>` and only `all` for the other comparison operators.
 
 The semantics for list comparisons are as follows:
 
 - `=`
-  - if both sides are lists then the lists must contain elements that are `=` when compared pairwise in the order
-  - if the one side is a list and the other is single and `all` is specified then every element in the list must `=` the single value
-  - if the one side is a list and the other is single and `any` is specified then at least one element in the list must `=` the single value (not implemented yet)
+  - if both sides are lists, returns true if all items are equal when e
+  - if one side is single and `all` is specified, returns true if all items in the list are equal to the single value
+  - if one side is single and `any` is specified, returns true if any Item in the list is equal to the single value (not implemented yet)
 - `<>`
-  - if both sides are lists then then true is returned if the lists have different length or every element is `<>` to the corresponding element by position
-  - if one side is a list and the `any` is specified then true is returned if any element `<>` the single element
-  - if one side is a list and the `all` is specified then true is returned if all elements `<>` the single element (not implemented yet)
+  - if both sides are lists, returns true if the lists have different lengths or all items are different when compared pairwise in the order of the lists
+  - if one side is single and `any` is specified, returns true if any item in the list is different from the single value
+  - if one side is single and `all` is specified, returns true if all items in the list are different from the single value (not implemented yet)
 - `<`, `<=`, `>=`, `>`
-  - if both sides are lists then every element in the first list must be `>` the element in the corresponding position in the second list
-  - if one side is single and `all` is specified then every element in the list must be `>` that single value
-  - if one side is single and `any` is specified then at least one element in the list must be `>` that single value (not implemented yet)
+  - if both sides are lists, returns true if the comparison returns true for every item when compared pairwise in the order of the lists
+  - if one side is single and `all` is specified, returns true if the comparison returns true for all items in the list when compared to that single value
+  - if one side is single and `any` is specified, returns true if the comparison returns true for any item in the list when compared to that single value (not implemented yet)
 
 #### Other List Operator
 
-Rosetta provides number of other list operators that are not captured by the above categories. For all these operators, the syntax enforces that the expression being operated on has multiple cardinality.
+Rosetta provides a number of additional operators that are specific to lists. For all these operators, the syntax enforces that the expression being operated on has multiple cardinality.
 
 - `only-element` - provided that a list contains one and only one element, returns that element
 - `count` - returns the number of elements in a list
@@ -882,7 +930,7 @@ Rosetta provides number of other list operators that are not captured by the abo
 - `sort` - for a list of [comparable](#comparable-type) elements, returns a list of those elements in sorted order
 - `distinct` - returns a subset of a list containing only distinct elements (i.e. where the `<>` operator returns true) of that list
 
-The `only-element` keyword imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to [null](#comparison-operator-and-null), an empty list or a list with more than one value, then the expression result will be null:
+The `only-element` keyword imposes a constraint that the evaluation of the path up to this point returns exactly one value. If it evaluates to [null](#null), an empty list or a list with more than one value, then the expression result will be null:
 
 ```
 observationEvent -> primitives only-element -> observation
@@ -890,12 +938,8 @@ observationEvent -> primitives only-element -> observation
 
 The `distinct` operator is useful to remove duplicate elements from a list. It can be combined with other syntax features such as `count` to determine if all elements of a list are equal.
 
-```
-quantity -> unitOfAmount -> currency distinct
-```
-
-```
-payout -> interestRatePayout -> payoutQuantity -> quantitySchedule -> initialQuantity -> unitOfAmount -> currency distinct count = 1
+``` Haskell
+owner -> drivingLicense -> countryofIssuance distinct count = 1
 ```
 
 ## Data Validation Component
@@ -909,7 +953,11 @@ The validation components associated to a data type generate executable code des
 
 ### Cardinality
 
-Cardinality is a data integrity mechanism to control how many of each attribute an object of a given type can contain. The Rosetta DSL borrows from XML and specifies cardinality as a lower and upper bound in between brackets `(..)`.
+Cardinality is a data integrity mechanism to control how many of each attribute an object of a given type can contain. The Rosetta DSL borrows from other modelling languages that typically specify cardinality as `(x..y)`,  where `x` denotes the lower bound and `y` the upper bound for that attribute's number.
+
+The lower and upper bounds can both be any integer number. A `0` lower bound means attribute is optional. A `*` upper bound means an unbounded attribute. `(1..1)` represents that there must be one and only one attribute of this type. When the upper bound is greater than 1, the attribute will be considered as a list, to be handled as such in any generated code.
+
+For example:
 
 ``` Haskell
 type Address:
@@ -921,8 +969,6 @@ type Address:
   postalCode string (1..1)
 ```
 
-The lower and upper bounds can both be any integer number. A 0 lower bound means attribute is optional. A `*` upper bound means an unbounded attribute. `(1..1)` represents that there must be one and only one attribute of this type. When the upper bound is greater than 1, the attribute will be considered as a list, to be handled as such in any generated code.
-
 A validation rule is generated for each attribute\'s cardinality constraint, so if the cardinality of the attribute does not match the requirement an error will be associated with that attribute by the validation process.
 
 ### Condition Statement
@@ -933,12 +979,18 @@ A validation rule is generated for each attribute\'s cardinality constraint, so 
 
 #### Syntax
 
-Condition statements are included in the definition of the type that they are associated to and are usually appended after the definition of the type\'s attributes.
+Condition statements are included in the definition of the type that they are associated to. They are usually appended after the definition of the type\'s attributes. The condition is defined by:
 
-The definition of a condition starts with the `condition` keyword, followed by the name of the condition and a colon `:` punctuation. The condition\'s name must be unique in the context of the type that it applies to (but does not need to be unique across all data types of a given model). The rest of the condition definition comprises:
+- a name
+- a plain-text description - optional
+- an [operator](#operator) that applies to the the type\'s attributes and returns a boolean.
 
-- a plain-text description (optional)
-- an [operator](#operator) that applies to the the type\'s attributes and returns a `boolean` type.
+``` Haskell
+condition <ConditionName>: (optional: <"Description">)
+  <booleanOperator>
+```
+
+The condition\'s name must be unique in the context of the type that it applies to, but it does not need to be unique across all data types of a given model.
 
 ``` Haskell
 type ActualPrice:
@@ -962,21 +1014,27 @@ type ConstituentWeight:
 ```
 
 {{< notice info "Note" >}}
-Conditions are included in the definition of the data type that they are associated to, so they are \"aware\" of the context of that data type. This is why attributes of that data type can be directly used to express the validation logic, without the need to refer to the type itself.
+Conditions are included in the definition of the data type that they are associated to, so they are aware of the context of that data type. This is why attributes of that data type can be directly used to express the validation logic, without the need to refer to the type itself.
 {{< /notice >}}
 
-### Choice Rule
+### Choice Condition
 
-Some language features called *choice rules* have been introduced in the Rosetta DSL to handle the correlated existence or absence of attributes in regards to other attributes. Those use-cases were deemed frequent enough and handling them through basic boolean logic components would have create unnecessarily verbose, and therefore less readable, expressions.
+The Rosetta DSL provides language features to handle the correlated existence or absence of attributes with regards to other attributes. Those use-cases were deemed frequent enough and handling them through basic boolean logic components would have created unnecessarily verbose, and therefore less readable, expressions.
 
 #### Choice
 
-A choice rules defines a mutual exclusion constraint between the set of attributes of a type in the Rosetta DSL. They allow a simple and robust construct to translate the XML *xsd:choicesyntax*, although their usage is not limited to those XML use cases.
+A choice rule defines a mutual exclusion constraint between the set of attributes of a data type. A choice rule can be either:
 
-The choice constraint can be either:
+- *optional*, represented by the `optional` keyword, when at most one of the attributes needs to be present, or
+- *required*, represented by the `required` keyword, when exactly one of the attributes needs to be present
 
-- *optional*, represented by the `optional choice` syntax, when at most one of the attributes needs to be present, or
-- *required*, represented by the `required choice` syntax, when exactly one of the attributes needs to be present
+The syntax is:
+
+``` Haskell
+<choiceType> choice <attribute1>, <attribute2>, <...>
+```
+
+While a lot of choice rules may have two attributes, there is no limit to the number of attributes associated with it, within the limit of the number of attributes associated with the type. Members of a choice rule need to have their lower cardinality set to 0, which is enforced by syntax validation.
 
 ``` Haskell
 type NaturalPerson: <"A class to represent the attributes that are specific to a natural person.">
@@ -1005,15 +1063,13 @@ type AdjustableOrRelativeDate:
     required choice adjustableDate, relativeDate
 ```
 
-While most of the choice rules have two attributes, there is no limit to the number of attributes associated with it, within the limit of the number of attributes associated with the type.
-
 {{< notice info "Note" >}}
-Members of a choice rule need to have their lower cardinality set to 0, something which is enforced by a validation rule.
+Choice rules allow a simple and robust construct to translate the XML *xsd:choicesyntax*, although their usage is not limited to those XML use cases.
 {{< /notice >}}
 
 #### One-of
 
-The Rosetta DSL supports the special case where a required choice logic applies to all the attributes of a given type, resulting in one and only one of them being present in any instance of that type. In this case, the `one-of` syntax provides a short-hand to by-pass the implementation of the corresponding choice rule.
+The Rosetta DSL supports the special case where a required choice logic applies to *all* the attributes of a given type, resulting in one and only one of them being present in any instance of that type. In this case, the `one-of` syntax provides a short-hand to by-pass the implementation of the corresponding choice rule.
 
 This feature is illustrated below:
 
@@ -1057,16 +1113,32 @@ Standardising those guarantees the integrity, inter-operability and consistency 
 
 #### Syntax
 
-Functions are defined in the same way as other model components. The syntax of a function specification starts with the keyword `func` followed by the function name. A colon `:` punctuation introduces the rest of the definition.
+Functions are defined in a similar way as other model components and use the following:
 
-The Rosetta DSL convention for a function name is to use a PascalCase (upper [CamelCase](https://en.wikipedia.org/wiki/Camel_case)) word. The function name needs to be unique across all types of functions in a model and validation logic is in place to enforce this.
-
-The rest of the function specification supports the following components:
-
-- plain-text descriptions
+- name
+- plain-text description
 - input and output attributes (the latter is mandatory)
 - condition statements on inputs and output
 - output construction statements
+
+``` Haskell
+func <FunctionName>: (optional: <"Description">)
+  inputs:
+    <attribute1>
+    <attribute2>
+    <...>
+  output:
+    <returnAttribute>
+    
+  (optional: <conditions>)
+  (optional: <outputConstruction>)
+```
+
+The Rosetta DSL convention for a function name is to use a PascalCase (upper [CamelCase](https://en.wikipedia.org/wiki/Camel_case)) word. Function names need to be unique across all types of functions in a model and syntax validation is in place to enforce this.
+
+{{< notice info "Note" >}}
+The function syntax intentionally mimics the type syntax in the Rosetta DSL regarding the use of descriptions, attributes (inputs and output) and conditions, to provide consistency in the expression of model definitions.
+{{< /notice >}}
 
 #### Description
 
@@ -1076,9 +1148,9 @@ Look for occurrences of text descriptions in the snippets below.
 
 #### Inputs and Output
 
-Inputs and output are a function\'s equivalent of a type\'s attributes. As in a `type`, each `func` attribute is defined by a name, data type (as either a `type`, `enum` or `basicType`) and cardinality.
+Inputs and output are the function\'s equivalent of a type\'s attributes, and are defined using the same [attribute](#attribute) syntax with a name, type and cardinality.
 
-At minimum, a function must specify its output attribute, using the `output` keyword also followed by a colon `:`.
+Inputs are optional but at minimum, a function must specify its output attribute.
 
 ``` Haskell
 func GetBusinessDate: <"Provides the business date from the underlying system implementation.">
@@ -1086,7 +1158,7 @@ func GetBusinessDate: <"Provides the business date from the underlying system im
      businessDate date (1..1) <"The provided business date.">
 ```
 
-Most functions, however, also require inputs, which are also expressed as attributes, using the `inputs` keyword. `inputs` is plural whereas `output` is singular, because a function may only return one type of output but may take several types of inputs.
+Most functions, however, also require inputs.
 
 ``` Haskell
 func ResolveTimeZoneFromTimeType: <"Function to resolve a TimeType into a TimeZone based on a determination method.">
@@ -1097,7 +1169,7 @@ func ResolveTimeZoneFromTimeType: <"Function to resolve a TimeType into a TimeZo
       time TimeZone (1..1)
 ```
 
-Inputs and outputs can both have multiple cardinality in which case they will be treated as lists.
+`inputs` is plural whereas `output` is singular, because a function may take several inputs but may only return one output. Inputs and outputs can both have multiple cardinality, in which case they will be treated as lists.
 
 ``` Haskell
 func UpdateAmountForEachQuantity:
@@ -1110,14 +1182,12 @@ func UpdateAmountForEachQuantity:
 
 #### Condition
 
-A function\'s inputs and output can be constrained using *conditions*.
-
-Condition statements in a function can represent either:
+A function\'s inputs and output can be constrained using condition statements. A condition statement in a function can represent either:
 
 - a **pre-condition**, using the `condition` keyword, applicable to inputs only and evaluated prior to executing the function, or
 - a **post-condition**, using the `post-condition` keyword, applicable to inputs and output and evaluated after executing the function (once the output is known).
 
-Each type of condition keyword is followed by a [condition statement](#condition-statement) which is evaluated to check the correctness of the function's inputs and output.
+Each type of condition is expressed as a [condition statement](#condition-statement) evaluated against the function's inputs and/or output.
 
 Conditions are an essential feature of the definition of a function. By constraining the inputs and output, they define the constraints that implementors of this function must satisfy, so that it can be safely used for its intended purpose as part of a process.
 
@@ -1139,34 +1209,30 @@ func Create_VehicleOwnership: <"Creation of a vehicle ownership record file">
         vehicleOwnership -> drivingLicence contains drivingLicence
 ```
 
-{{< notice info "Note" >}}
-The function syntax intentionally mimics the type syntax in the Rosetta DSL regarding the use of descriptions, attributes (inputs and output) and conditions, to provide consistency in the expression of model definitions.
-{{< /notice >}}
-
 ### Function Definition
 
 **The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function\'s inputs and output. Because the Rosetta DSL only provides a limited set of language features, it is not always possible to fully define that logic in the DSL. The creation of valid output object can be fully or partially defined as part of a function specification, or completely left to the implementor.
 
-- **A function is fully defined** when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the code generated from the function expressed in the Rosetta DSL is fully functional and can be used in an implementation without any further coding.
-- **A function is partially defined** when the output object\'s validation constraints are only partially satisfied. In this case, implementors will need to extend the generated code, using the features of the corresponding programming language to assign the remaining values on the output object.
+- A function is *fully defined* when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the code generated from the function expressed in the Rosetta DSL is fully functional and can be used in an implementation without any further coding.
+- A function is *partially defined* when the output object\'s validation constraints are only partially satisfied. In this case, implementors will need to extend the generated code, using the features of the corresponding programming language to assign the remaining values on the output object.
+
+A function must be applied to a specific use case to determine whether it is *fully* defined or only *partially* defined. The output object will be systematically validated when invoking a function, so all functions require the output object to be fully valid as part of any model implementation.
 
 {{< notice info "Note" >}}
 For instance in Java, a function specification that is only partially defined generates an *interface* that needs to be extended to be executable.
 {{< /notice >}}
 
-A function must be applied to a specific use case to determine whether it is *fully defined* or *partially defined*. The output object will be systematically validated when invoking a function, so all functions require the output object to be fully valid as part of any model implementation.
-
 #### Output Construction
 
-In the `Create_VehicleOwnership` example above, the `post-condition` statement asserts whether the vehicle ownership output is correctly populated by checking whether it contains the list of driving licenses passed as inputs. However, it does not directly populate that output, instead delegating its construction to implementors of the function. In that case the function is only *specified* but not *fully defined*.
+In the `Create_VehicleOwnership` example above, the `post-condition` statement asserts whether the vehicle ownership output is correctly populated by checking whether it contains the list of driving licenses passed as inputs. However, it does not directly populate that output, instead delegating its construction to implementors of the function. In that case the function is only specified but not fully defined.
 
-Alternatively, the output can be built by directly assigning it a value using the `set` keyword. Function implementors do not have to build this output themselves, so the corresponding `post-condition` is redundant and can be removed. The syntax works as follows:
+Alternatively, the output can be built by directly assigning it a value. In this case, function implementors do not have to build this output themselves, so the corresponding `post-condition` is redundant and can be removed. The syntax to assign the output uses the `set` keyword as follows:
 
 ```
-set <RosettaPathExpression>: <RosettaExpression>
+set <PathExpression>: <Expression>
 ```
 
-The [`<RosettaPathExpression>`](#path-expression) can be used to set individual attributes of the return object , while [`<RosettaExpression>`](#expression-component) allows to calculate the output value from the inputs.
+The letft-hand side [path expression](#path-expression) can be used to set individual attributes of the ouput object. The right-hand side [expression](#expression-component) allows to calculate that output value from the inputs.
 
 The `Create_VehicleOwnership` example could be rewritten as follows:
 
@@ -1190,7 +1256,8 @@ func Create_VehicleOwnership: <"Creation of a vehicle ownership record file">
         isFirstHand
 ```
 
-When the output is a list, `set` will override the entire list with the value returned by the `<RosettaExpression>` (which also needs to be a list). Alternatively, the `add` keyword allows to append an element to a list instead of overriding it.
+When the output is a list, `set` will override the entire list with the value returned by the expression, which also needs to be a list. The alternative `add` keyword allows to append an element to a list instead of overriding it. If the value of the expression is itself a list instead of a single element, the `add` keyword will append that list to the output.
+
 
 ``` Haskell
 func AddDrivingLicenceToVehicleOwnership: <"Add new driving licence to vehicle owner.">
@@ -1205,8 +1272,6 @@ func AddDrivingLicenceToVehicleOwnership: <"Add new driving licence to vehicle o
     add updatedVehicleOwnership -> drivingLicence: <"Add newDrivingLicence to existing list of driving licences">
         newDrivingLicence
 ```
-
-If the value of the `<RosettaExpression>` is itself a list instead of a single element, the `add` keyword will append that list to the output.
 
 ``` Haskell
 func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
@@ -1231,20 +1296,27 @@ The `assign-output` keyword also exists as an alternative to `set` and can be us
 - Calculation
 - Short-hand function
 
-Those functions are typically associated to an annotation, as described in the [Qualified Type Section](#qualified-type), to instruct code generators to create concrete functions.
+Those functions are typically associated to an annotation to instruct code generators to create concrete functions.
 
 #### Object Qualification Function
 
-**The Rosetta DSL supports the qualification of financial objects from their underlying components** according to a given classification taxonomy, in order to support a composable model for those objects (e.g. financial products, legal agreements or their associated lifecycle events).
+**The Rosetta DSL supports the qualification of objects from their underlying components** according to a given classification taxonomy. This provides support for a composable model for those objects, which can be built based on re-usable components and classified accordingly.
 
-Object qualification functions evaluate a combination of assertions that uniquely characterise an input object according to a chosen classification. Each function is associated to a qualification name (a `string` from that classification) and returns a boolean. This boolean evaluates to True when the input satisfies all the criteria to be identified according to that qualification name.
+An object qualification function evaluates a combination of assertions that uniquely characterise an input object according to a chosen classification. Each function is associated to a qualification name (a `string` from that classification) and returns a boolean. This boolean evaluates to True when the input satisfies all the criteria to be identified according to that qualification name.
 
-Object qualification functions are associated to a `qualification` annotation that specifies the type of object being qualified. The function name start with the `Qualify` prefix, followed by an underscore `_`. The naming convention is to have an upper [CamelCase](https://en.wikipedia.org/wiki/Camel_case) (PascalCase) word, using `_` to append granular qualification names where the classification may use other types of separators (like space or colon `:`).
-
-Syntax validation logic based on the `qualification` annotation is in place to enforce this.
+Object qualification functions are associated to a `qualification` [annotation](#annotation), which has an attribute to specify which type of object is being qualified - e.g. product or business event in the example below.
 
 ``` Haskell
-func Qualify_InterestRate_IRSwap_FixedFloat_PlainVanilla: <"This product qualification doesn't represent the exact terms of the ISDA Taxonomomy V2.0 for the plain vanilla swaps, as some of those cannot be represented as part of the CDM syntax (e.g. the qualification that there is no provision for early termination which uses an off-market valuation), while some other are deemed missing in the ISDA taxonomy and have been added as part of the CDM (absence of cross-currency settlement provision, absence of fixed rate and notional step schedule, absence of stub). ">
+annotation qualification: <"Annotation that describes a func that is used for event and product Qualification">
+  [prefix Qualify]
+  Product boolean (0..1)
+  BusinessEvent boolean (0..1)
+```
+
+The naming convention for a qualification function is: `Qualify_<QualificationName>`, where the qualification name uses the upper [CamelCase](https://en.wikipedia.org/wiki/Camel_case) (PascalCase). Where the qualification name may use other types of separators (like space or colon), they should be replaced by an underscore `_`. Syntax validation logic based on the qualification annotation is in place to enforce this.
+
+``` Haskell
+func Qualify_InterestRate_IRSwap_FixedFloat_PlainVanilla:
   [qualification Product]
   inputs: economicTerms EconomicTerms (1..1)
   output: is_product boolean (1..1)
@@ -1252,9 +1324,9 @@ func Qualify_InterestRate_IRSwap_FixedFloat_PlainVanilla: <"This product qualifi
 
 #### Calculation Function
 
-Calculation functions define a calculation output that is often, though not exclusively, of type `number`. They must end with an `assign-output` statement that fully defines the calculation result.
+A calculation function defines a calculation output that is often, though not exclusively, of type `number`. It must end with a `set` (or `assign-output`) instruction that fully defines the calculation result.
 
-Calculation functions are associated to the `calculation` annotation.
+Calculation functions are associated to the `calculation` [annotation](#annotation).
 
 ``` Haskell
 func FixedAmount:
@@ -1388,7 +1460,7 @@ Synonyms added throughout the model are combined to map the data tree of an inpu
 
 Synonyms are specified on the attributes of data type and the values of enum types.
 
-### Basic Mappings
+### Basic Mapping
 
 Basic mappings specify how a value from the input document can be directly mapped to a value in the resulting Rosetta document.
 
@@ -1454,9 +1526,11 @@ This allows a path of input document elements to be matched to a single Rosetta 
 
 Mappings are expected to be one-to-one with each input value mapping to one Rosetta value. By default if a single input value is mapped to multiple Rosetta output values this is considered an error. However by adding the \"maps 2\" keyword this can be overridden allowing the input value to map to many output Rosetta values.
 
-##### meta
+##### Meta
 
-The `meta` keyword inside a synonym is used to map to Rosetta [metadata](#meta-data-and-reference). E.g. :
+The `meta` keyword inside a synonym is used to map [metadata](#meta-data-annotation).
+
+In the below example, the value of the "issuer" input will be mapped to the value of the `issuer` attribute and the value of the "issuerIdScheme" metadata associated to "issuer" will be mapped to the `scheme` metadata attribute.
 
 ```
 issuer string (0..1)
@@ -1464,9 +1538,7 @@ issuer string (0..1)
   [synonym FpML_5_10 value "issuer" meta "issuerIdScheme"]
 ```
 
-the input value associated with \"issuer\" will be mapped to the value of the attribute issuer and the value of \"issuerIdScheme\" will be mapped to the scheme metadata attribute.
-
-#### Enumerations
+#### Enumeration
 
 A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the FpML value `Broker` will be mapped to the enumeration value `NaturalPersonRoleEnum.Broker` in Rosetta:
 
@@ -1477,9 +1549,9 @@ enum NaturalPersonRoleEnum: <"The enumerated values for the natural person's rol
     [synonym FpML_5_10 value "Broker"]
 ```
 
-##### External enumeration synonyms
+##### External Enumeration Synonym
 
-In an external synonym file `enum` synonyms are defined in a block after the type attribute synonyms, preceded by the keyword `enums` :
+In an external synonym file, enumeration synonyms are defined in a block after the type attribute synonyms, preceded by the keyword `enums` :
 
 ```
 enums
@@ -1697,7 +1769,7 @@ To organise such regulatory content within a model, the Rosetta DSL supports a n
 
 A report consists of an inter-connected set of regulatory obligations, which a regulated entity must implement to produce data as required by the relevant regulator.
 
-Generically, the Rosetta DSL allows to specify any report using 3 types of rules:
+Generically, the Rosetta DSL allows to specify any report using three types of rules:
 
 - timing - when to report,
 - eligibility - whether to report, and
@@ -1712,23 +1784,47 @@ A report is specified using the following syntax:
 ``` Haskell
 report <Authority> <Corpus1> <Corpus2> <...> in <TimingRule>
   when <EligibilityRule1> and <EligibilityRule2> and <...>
-  with fields <FieldRule1> <FieldRule2> <...>
+  with type <ReportType>
+```
+
+The report type is istelf defined as a [data type](#data-type) component whose attributes are the reportable fields. Each attribute can be associated to a reporting rule containing the logic for extracting or calculating that field, using the `ruleReference` keyword:
+
+``` Haskell
+type <ReportType>:
+  <field1> <Type1> (x..y)
+    [ ruleReference <RuleName1> ]
+  <...>
 ```
 
 An example is given below.
 
 ``` Haskell
-report MAS SFA MAS_2013 in T+2
-  when ReportableProduct and NexusCompliant
-  with fields
-    UniqueTransactionIdentifier
-    UniqueProductIdentifier
-    PriorUniqueTransactionIdentifier
-    Counterparty1
-    Counterparty2
+report EuropeanParliament EmissionPerformanceStandardsEU in real-time
+    when EuroStandardsCoverage 
+    with type EmissionPerformanceStandardsReport
 ```
 
-To ensure a model's regulatory framework integrity, the authority, corpus and all the rules referred to in a report definition must exist as model components in the model's regulatory hierarchy. A report simply assembles all those existing components into a *recipe*, which firms can directly implement to comply with the reporting obligation and provide the data as required.
+``` Haskell
+type EmissionPerformanceStandardsReport:
+    vehicleRegistrationID string (1..1)
+        [ruleReference VehicleRegistrationID]
+    firstRegistrationDate date (1..1)
+        [ruleReference FirstRegistrationDate]
+    vehicleClassificationType VehicleClassificationEnum (1..1)
+        [ruleReference VehicleClassificationType]
+    engineType EngineTypeEnum (1..1)
+        [ruleReference EngineType]
+    euroEmissionStandard string (1..1)
+        [ruleReference EuroEmissionStandard]
+    carbonMonoxide int (1..1)
+        [ruleReference CarbonMonoxide]
+```
+
+{{< notice info "Note" >}}
+An earlier version of the report definition syntax allows to specify the reportable fields directly using `with fields`, instead of specifying a data type for the report using `with type`. This earlier version was deemed not robust enough and is being deprecated, because the report output was an un-typed set of key-value pairs rather than a model component itself.
+{{< /notice >}}
+
+To ensure a model's regulatory framework integrity, the authority, corpus and all the rules referred to in a report definition must exist as model components in the model's regulatory hierarchy. A report assembles all those components into a recipe, which firms can directly implement to comply with the data reporting requirement.
 
 The next section describes how to define reporting rules as model components.
 
@@ -1736,103 +1832,115 @@ The next section describes how to define reporting rules as model components.
 
 #### Purpose
 
-The Rosetta DSL applies a functional approach to the process of regulatory reporting. A regulatory rule is a functional model component (`F`) that processes an input (`X`) through a set of logical instructions and returns an output (`Y`), such that `Y = F( X )`. A function `F` can sometimes also be referred to as a *projection*. Using this terminology, the reported data (`Y`) are viewed as projections of the business data (`X`).
+The Rosetta DSL applies a functional approach to the process of regulatory reporting. A regulatory rule is a functional model component (*f*) that processes an input (*x*) through a set of logical instructions and returns an output (*y*), such that *y = f( x )*. A function can sometimes also be referred to as a *projection*. Using this terminology, the reported data (*y*) are considered projections of the business data (*x*).
 
-For field rules, the output `Y` consists of the data point to be reported. For eligibility rules, this output is a Boolean that returns True when the input is eligible for reporting.
+For field rules, the output consists of the data to be reported. For eligibility rules, this output is a boolean that returns True when the input is eligible for reporting.
 
 To provide transparency and auditability to the reporting process, the Rosetta DSL supports the development of reporting rules in both human-readable and machine-executable form.
 
-- The functional expression of the reporting rules is designed to be readable by professionals with domain knowledge (e.g. regulatory analysts). It consists of a limited set of logical instructions, supported by the compact Rosetta DSL syntax.
-- The machine-executable form is derived from this functional expression of the reporting logic using the Rosetta DSL code generators, which directly translate it into executable code.
+- The functional expression of the reporting rules is designed to be readable by professionals with domain knowledge (e.g. regulatory analysts). It consists of a limited set of logical instructions, supported by a compact syntax.
+- The machine-executable form is derived from this functional expression of the reporting logic using code generators, which directly translate it into executable code.
 - In addition, the functional expression is explicitly tied to regulatory references, using the regulatory hierarchy concepts of body, corpus and segment to point to specific text provisions that support the reporting logic. This mechanism, coupled with the automatic generation of executable code, ensures that a reporting process that uses that code is fully auditable back to any applicable text.
 
 #### Syntax
 
-The syntax of reporting field rules is as follows:
+The syntax of a reporting rule is as follows:
 
 ``` Haskell
-<RuleType> rule <Name>
-  [regulatoryReference <Body> <Corpus>
+<ruleType> rule <RuleName>
+  [ regulatoryReference <Body> <Corpus>
     <Segment1>
     <Segment2>
     <SegmentN...>
-    provision <"ProvisionText">]
+    provision <"ProvisionText"> ]
   <FunctionalExpression>
 ```
 
-The \<RuleType\> can be either `reporting` or `eligibility`. The `regulatoryReference` syntax is the same as the `docReference` syntax documented in the [document reference](#document-reference) section. However it can only be applied to regulatory rules.
+The `<ruleType>` can be either `reporting` or `eligibility` (in which case it must return a boolean). The `regulatoryReference` syntax is the same as the `docReference` syntax documented in the [document reference](#document-reference) section. However it can only be applied to regulatory rules.
 
-The functional expression of reporting rules uses the same syntax components that are already available to express logical statements in other modelling components, such as the condition statements that support data validation.
+The functional expression of reporting rules uses the same [logical expression](#expression-component) components that are already available to define other modelling components, such as data validation or functions.
 
-Functional expressions are composable, so a rule can also call another rule. When multiple rules may need to be applied for a single field or eligibility criteria, those rules can be specified in brackets separated by a comma. An example is given below for the *Nexus* eligibility rule under the Singapore reporting regime, where `BookedInSingapore` and `TradedInSingapore` are themselves eligibility rules.
-
-``` Haskell
-eligibility rule NexusCompliant
-  [regulatoryReference MAS SFA MAS_2013
-     part "1"
-     section "Citation and commencement"
-     provision "In these Regulations, unless the context otherwise requires; Booked in Singapore, Traded in Singapore"]
-  (
-    BookedInSingapore,
-    TradedInSingapore
-  )
-```
-
-In addition to those existing functional features, the Rosetta DSL provides other syntax components that are specifically designed for reporting applications. Those components are:
-
-- `extract` \<Expression\>
-
-When defining a reporting rule, the `extract` keyword defines a value to be reported, or to be used as input into a subsequent statement or another rule. The full expressional syntax of the Rosetta DSL can be used in the expression that defines the value to be extracted, including conditional statement such as `if` / `else` / `or` / `exists`.
-
-An example is given below, that uses a mix of Boolean statements. This example looks at the fixed and floating rate specification of an InterestRatePayout and if there is one of each returns true
+Functional expressions are composable, so a rule can also call another rule. When multiple rules may need to be applied for a single field or eligibility criteria, those rules can be specified in brackets separated by a comma, as illustrated below. Each of `Euro1Standard`, ..., `Euro6Standard` are themselves reporting rules.
 
 ``` Haskell
-reporting rule IsFixedFloat
-  extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> fixedRate count = 1
-  and Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification -> floatingRate count = 1
+reporting rule EuroEmissionStandard
+   [regulatoryReference EuropeanCommission StandardEmissionsEuro6 article "1"  
+    provision "Regulation (EC) No 715/2007 is amended as follows:..."]
+    ( 
+        Euro1Standard as "Emission Standards",
+        Euro2Standard as "Emission Standards",
+        Euro3Standard as "Emission Standards",
+        Euro4Standard as "Emission Standards",
+        Euro5Standard as "Emission Standards",
+        Euro6Standard as "Emission Standards"
+    )
 ```
 
-The extracted value may be coming from a data attribute in the model, as above, or may be directly specified as a value, such as a `string` in the below example.
+In addition to those existing functional features, the Rosetta DSL provides specific reporting instruction components:
+
+- extract
+- filter
+- reduce
+- repeat
+
+Those components are documented in the next sections.
+
+##### Extract Instruction
+
+An extraction instruction defines a value to be either reported or used as input into another rule or instruction. The extraction keywords comprise:
+
+- `extract`
+- `then`
+- `as`
+
+The extraction syntax is:
 
 ``` Haskell
-extract if WorkflowStep -> businessEvent -> primitives -> execution exists
-  or WorkflowStep -> businessEvent -> primitives -> contractFormation exists
-  or WorkflowStep -> businessEvent -> primitives -> quantityChange exists
-    then "NEWT"
+extract <Expression1>
+then extract <Expression2>
+<...>
+(optional: as <"Label">)
 ```
 
-- \<ReportExpression1\> `then` \<ReportExpression2\>
-
-Report statements can be chained using the keyword `then`, which means that extraction continues from the previous point.
-
-The syntax provides type safety when chaining rules, whereby the output type of the preceding rule must be equal to the input type of the following rule. The example below uses the TradeForEvent rule to find the Trade object and `then` extracts the termination date from that trade
+The expressions may use any type of [expression component](#expression-component) available in the Rosetta DSL, from simple path expressions or constants to more complex conditional statements, as illustrated below:
 
 ``` Haskell
-reporting rule MaturityDate <"Date of maturity of the financial instrument. Field only applies to debt instruments with defined maturity">
-   TradeForEvent then extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> terminationDate -> adjustableDate -> unadjustedDate
-
-reporting rule TradeForEvent
-   extract
-       if WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade only exists
-   then WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
-       else WorkflowStep -> businessEvent -> primitives -> contractFormation -> after -> trade
+extract Vehicle -> specification -> dateOfFirstRegistration
 ```
-
-- `as` \<FieldName\>
-
-Any report statement can be follows by `as` This sets a label under which the value will appear in a report, as in the below example.
 
 ``` Haskell
-reporting rule RateSpecification
-  extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout -> rateSpecification
-  as "Rate Specification"
+extract if
+    Vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> N1I_Commercial
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> N1II_Commercial
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> N1III_Commercial
+  then
+    "MOrN1"
 ```
 
-The label is an arbitrary `string` and should be aligned with the name of the reportable field as per the regulation. This field name will be used as column name when displaying computed reports, but is otherwise not functionally usable.
+Extraction instructions can be chained using the keyword `then`, which means that extraction continues from the previous point. The syntax provides type safety when chaining extraction instructions: the output type of the preceding instruction must be equal to the input type of the following instruction.
 
-- `Rule if` statement
+``` Haskell
+reporting rule VehicleForOwner
+    extract VehicleOwnership -> vehicle
 
-The rule if statement consists of the keyword `if` followed by condition that will be evaluated `return` followed by a rule. If the condition is true then the value of the `return` rule is returned. Additional conditions and `return` rules can be specified with `else if`. Only the first matching condition\'s `return` will be executed. `else return` can be used to provide an alternative that will be executed if no conditions match In the below example we first extract the Payout from a Trade then we try to find the appropriate asset class. If there is a ForwardPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" If there is an OptionPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" otherwise the asset class is null
+reporting rule VehicleClassification
+    VehicleForOwner then extract Vehicle -> vehicleClassification
+    // This is equivalent to writing directly:
+    // extract VehicleOwnership -> vehicle -> vehicleClassification
+```
+
+An extraction instruction followed by `as` sets a label onto the value to appear as the column name in a computed report. The label is an arbitrary, non-functional string and should generally be aligned with the name of the reportable field as per the regulation.
+
+``` Haskell
+reporting rule FirstRegistrationDate <"Date of first registration of the vehicle">
+   extract VehicleOwnership -> vehicle -> specification -> dateOfFirstRegistration
+    as "First Registration Date"
+```
+
+The `rule if` statement consists of the keyword `if` followed by condition that will be evaluated `return` followed by a rule. If the condition is true then the value of the `return` rule is returned. Additional conditions and `return` rules can be specified with `else if`. Only the first matching condition\'s `return` will be executed. `else return` can be used to provide an alternative that will be executed if no conditions match In the below example we first extract the Payout from a Trade then we try to find the appropriate asset class. If there is a ForwardPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" If there is an OptionPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" otherwise the asset class is null.
 
 ``` Haskell
 extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout then
@@ -1844,62 +1952,78 @@ if filter when Payout -> forwardPayout -> underlier -> underlyingProduct -> fore
   endif
 ```
 
-##### Filtering Rules
+##### Filter Instruction
 
-Filtering and max/min/first/last rules take a collection of input objects and return a subset of them. The output type of the rule is always the same as the input.
-
-- `filter when` \<FunctionalExpression\>
-
-The `filter when` keyword takes each input value and uses it as input to a provided test expression The result type of the test expression must be boolean and its input type must be the input type of the filter rule. If the expression returns `true` for a given input that value is included in the output. The code below selects the PartyContactInformation objects then filters to only the parties that are reportingParties before then returning the partyReferences
+A filter instruction takes a list of input objects and return a subset of them. The output type of the rule is always the same as the input, and of multiple cardinality. The syntax is:
 
 ``` Haskell
-reporting rule ReportingParty <"Identifier of reporting entity">
-  TradeForEvent then extract Trade -> partyContractInformation then
-  filter when PartyContractInformation -> relatedParty -> role = PartyRoleEnum -> ReportingParty then
-  extract PartyContractInformation -> partyReference
+filter when <FunctionalExpression>
 ```
 
-The functional expression can be either a direct Boolean expression as above, or the output of another rule, in which case the syntax is: `filter when rule` \<RuleName\>, as in the below example. This example filters all the input trades to return only the ones that InterestRatePayouts and then extracts the fixed interest rate for them.
+The `filter when` keyword takes each input value and uses it as input to a provided test expression. The result type of the test expression must be boolean and its input type must be the input type of the filter rule. If the expression returns true for a given input, that value is included in the output.
+
+The functional expression can be either a direct boolean expression or the output of another rule whose output is a boolean, in which case the syntax is:
 
 ``` Haskell
-reporting rule FixedFloatRateLeg1 <"Fixed Float Price">
-  filter when rule IsInterestRatePayout then
-  TradeForEvent then extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate as "II.1.9 Rate leg 1"
+filter when rule <RuleName>
 ```
 
-And the filtering rule is defined as:
+Filter expressions can be combined with extraction expressions. The example below extracts the date of first registration for a list of passenger-type vehicles only:
 
 ``` Haskell
-reporting rule IsInterestRatePayout
-  TradeForEvent then
-  extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout -> interestRatePayout only exists
+extract VehicleOwnership -> vehicle
+filter when Vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+extract Vehicle -> specification -> dateOfFirstRegistration
 ```
+
+That example can be rewritten as:
+
+``` Haskell
+extract VehicleOwnership -> vehicle
+filter when rule VehicleIsM
+extract Vehicle -> specification -> dateOfFirstRegistration
+```
+
+where the filtering rule itself is defined as:
+
+``` Haskell
+reporting rule VehicleIsM
+  extract
+    Vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+      or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+      or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+```
+
+##### Reduce Instruction
+
+A reduction instructions takes an input with multiple cardinality and applies some merging operation to reduce it to a single element. The available reduction keywords are:
 
 - `maximum` / `minimum`
-
-The `maximum` and `minimum` keywords return only a single value (for a given key). The value returned will be the highest or lowest value. The input type to the rule must be of a [comparable type](#comparable-type). In the below example, we first apply a filter and extract a `rate` attribute. There could be multiple rate values, so we select the highest one.
-
-``` Haskell
-filter when rule IsFixedFloat then
-  extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate -> rate then
-  maximum
-```
-
 - `maxBy` / `minBy`
+- `join`
 
-The syntax also supports selecting values by an ordering based on an attribute using the `maxBy` and `minBy` keywords. For each input value to the rule the provided test expression or rule is evaluated to give a test result and paired with the input value. When all values have been processes the pair with the highest test result is selected and the associated value is returned by the rule. The test expression or rule must return a value of single cardinality and must be of a [comparable type](#comparable-type). In the below example, we first apply a filter and extract a `fixedInterestRate` attribute. There could be multiple attribute values, so we select the one with the highest rate and return that FixedInterestRate object.
+The `maximum` and `minimum` keywords return only a single value (for a given key) - the value returned will be the highest or lowest value. The input of the rule must be of a [comparable type](#comparable-type).
+
+In the below example, we extract the highest 0-60 mph of a list of vehicles:
 
 ``` Haskell
-filter when rule IsFixedFloat then
-  extract Trade -> tradableProduct -> priceNotation -> price -> fixedInterestRate then
-  maxBy FixedInterestRate -> rate
+extract VehicleOwnership -> vehicle -> specification -> zeroTo60 then
+    maximum
 ```
 
-- `join` statement
+The `maxBy` and `minBy` keywords allow to select a value by ordering based on an attribute. For each input value, a test expression or rule is evaluated to give a test result that is paired with the input value. When all values have been processes, the pair with the highest or lowest test value is selected and the associated value is returned by the rule. The test expression must return a value of single cardinality and must be of a [comparable type](#comparable-type).
 
-The `join` syntax filters data by comparing two data sets, and selecting the values that have a matching key.
+In the below example, we extract the registration date of the vehicle with the highest 0-60 mph specification:
 
-In the syntax below, the data is first split into two data sets, then the `join` statement selects a sublist of the primary data set where the primary key matches the foreign key.
+``` Haskell
+extract VehicleOwnership -> vehicle -> specification then
+maxBy Specification -> zeroTo60 then
+extract Specification -> dateOfFirstRegistration
+```
+
+The `join` syntax filters data by comparing two data sets, and selecting the values that have a matching key. The syntax is:
 
 ``` Haskell
 (
@@ -1921,13 +2045,17 @@ join key Counterparty -> role foreignKey BuyerSeller -> buyer then
 extract Counterparty -> partyReference
 ```
 
-##### Repeatable Rules
+##### Repeat Instruction
 
-The syntax also supports the reporting of repeatable sets of data as required by most regulations. For example, in the CFTC Part 45 regulations, fields 33-35 require the reporting of a notional quantity schedule. For each quantity schedule step, the notional amount, effective date and end date must be reported.
+The syntax also supports the reporting of *repeatable* fields, when such fields can be of multiple, variable cardinality depending on the scenario. The `repeatable` keyword specifies that a set of extract instruction must be reported as a repeatable set of fields, based on a starting point with multiple cardinality.
 
-- `extract repeatable` \<ExpressionWithMultipleCardinality\> ( \<ReportingRule1\>, \<ReportingRule2\> \... \<ReportingRuleN\> )
+The syntax is:
 
-The `repeatable` keyword specifies that the extract expression will be reported as a repeating set of data. The rules specified in the brackets specify the fields to report for each repeating data set.
+``` Haskell
+extract repeatable <ExpressionWithMultipleCardinality> then ( <ExtractInstruction1>, <ExtractInstructuction2>, <...> )
+```
+
+For example, in the CFTC Part 45 regulations, fields 33-35 require the reporting of a notional quantity schedule. For each quantity schedule step, the notional amount, effective date and end date must be reported.
 
 In the example below, the `repeatable` keyword in reporting rule `NotionalAmountScheduleLeg1` specifies that the extracted list of quantity notional schedule steps should be reported as a repeating set of data. The rules specified within the brackets define the fields that should be reported for each repeating step.
 
@@ -1960,4 +2088,6 @@ reporting rule NotionalAmountScheduleLeg1EndDate <"End date of the notional amou
        as "33/35-$ 35 End date leg 1"
 ```
 
-Note that the `-$` symbol is used in the label to index the repeated groups ensuring that they appear in a logical order in the Reports view of Rosetta.
+{{< notice info "Note" >}}
+The `-$` symbol in the label is used to index the repeatable group, to ensure that they appear in logical order in the report.
+{{< /notice >}}
