@@ -1123,12 +1123,12 @@ Conditions are an essential feature of the definition of a function. By constrai
 
 ``` Haskell
 func Create_VehicleOwnership: <"Creation of a vehicle ownership record file">
-    inputs: 
+    inputs:
         drivingLicence DrivingLicence (0..*)
         vehicle Vehicle (1..1)
         dateOfPurchase date (1..1)
         isFirstHand boolean (1..1)
-    output: 
+    output:
         vehicleOwnership VehicleOwnership (1..1)
 
     condition: <"Driving licence must not be expired">
@@ -1172,21 +1172,21 @@ The `Create_VehicleOwnership` example could be rewritten as follows:
 
 ``` Haskell
 func Create_VehicleOwnership: <"Creation of a vehicle ownership record file">
-    inputs: 
+    inputs:
         drivingLicence DrivingLicence (0..*)
         vehicle Vehicle (1..1)
         dateOfPurchase date (1..1)
         isFirstHand boolean (1..1)
-    output: 
+    output:
         vehicleOwnership VehicleOwnership (1..1)
 
-    set vehicleOwnership -> drivingLicence: 
+    set vehicleOwnership -> drivingLicence:
         drivingLicence
-    set vehicleOwnership -> vehicle: 
+    set vehicleOwnership -> vehicle:
         vehicle
-    set vehicleOwnership -> dateOfPurchase: 
+    set vehicleOwnership -> dateOfPurchase:
         dateOfPurchase
-    set vehicleOwnership -> isFirstHand: 
+    set vehicleOwnership -> isFirstHand:
         isFirstHand
 ```
 
@@ -1200,7 +1200,7 @@ func AddDrivingLicenceToVehicleOwnership: <"Add new driving licence to vehicle o
     output:
         updatedVehicleOwnership VehicleOwnership (1..1)
 
-    set updatedVehicleOwnership: 
+    set updatedVehicleOwnership:
         vehicleOwnership
     add updatedVehicleOwnership -> drivingLicence: <"Add newDrivingLicence to existing list of driving licences">
         newDrivingLicence
@@ -1220,7 +1220,7 @@ func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
             filter [ item -> firstName exists and item -> surname exists ]
             map [ item -> firstName + " " + item -> surname ]
 ```
-            
+
 {{< notice info "Note" >}}
 The `assign-output` keyword also exists as an alternative to `set` and can be used with the same syntax. However, the `assign-output` keyword does not consistently treat single-cardinality (overrides the value) and list (appends the value) objects. It is therefore being phased out in favour of `set` and `add` that clearly separate those two cases.
 {{< /notice >}}
@@ -1829,20 +1829,6 @@ reporting rule RateSpecification
 ```
 
 The label is an arbitrary `string` and should be aligned with the name of the reportable field as per the regulation. This field name will be used as column name when displaying computed reports, but is otherwise not functionally usable.
-
-- `Rule if` statement
-
-The rule if statement consists of the keyword `if` followed by condition that will be evaluated `return` followed by a rule. If the condition is true then the value of the `return` rule is returned. Additional conditions and `return` rules can be specified with `else if`. Only the first matching condition\'s `return` will be executed. `else return` can be used to provide an alternative that will be executed if no conditions match In the below example we first extract the Payout from a Trade then we try to find the appropriate asset class. If there is a ForwardPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" If there is an OptionPayout with a foreignExchange underlier then \"CU\" is returned as the \"2.2 Asset Class\" otherwise the asset class is null
-
-``` Haskell
-extract Trade -> tradableProduct -> product -> contractualProduct -> economicTerms -> payout then
-if filter when Payout -> forwardPayout -> underlier -> underlyingProduct -> foreignExchange exists
-      do return "CU" as "2.2 Asset Class"
-    else if filter when Payout -> optionPayout -> underlier -> underlyingProduct -> foreignExchange exists
-      do return "CU" as "2.2 Asset Class",
-      do return "null" as "2.2 Asset Class"
-  endif
-```
 
 ##### Filtering Rules
 
