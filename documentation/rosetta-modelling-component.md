@@ -1611,13 +1611,11 @@ interestRatePayout InterestRatePayout (0..*)
 
 #### Conditional Mappings
 
-Conditional mappings allow more complicated mappings to be done. Conditional mappings come in two types: set-to and set-when.
+Conditional mappings allow to build more complex mappings. Conditional mappings come in two types: `set to` and `set when`.
 
 ##### Set To Mapping
 
-Set-to mappings are used to set the value of the Rosetta attribute to a constant value. They don\'t attempt to use any data from the input document as the value for the attribute and a synonym value must not be given. The type of the constant must be convertible to the type of the attribute. The constant value can be given as a string (converted as necessary) or an enum.
-
-e.g. :
+Set-to mappings are used to set the value of the Rosetta attribute to a constant value. They don\'t attempt to use any data from the input document as the value for the attribute and a synonym value must not be given. The type of the constant must be convertible to the type of the attribute. The constant value can be given as a string (converted as necessary) or an enum - e.g. :
 
 ```
 period PeriodEnum (1..1)
@@ -1626,18 +1624,14 @@ itemName string (1..1) <"In this ....">;
   [synonym DTCC_11_0 set to "comment"]
 ```
 
-A set to mapping can be conditional on a [when clause](#when-clause)
-
-e.g. :
+A `set to` mapping can be conditional on a [when clause](#when-clause) - e.g. :
 
 ```
 itemName string (1..1) <"In this ....">;
   [synonym DTCC_11_0 set to "comment" when path = "PartyWorkflowFields.comment"]
 ```
 
-multiple Set Tos can be combined in one synonym. They will be evaluated in the order specified with the first matching value used
-
-e.g. :
+Multiple `set to` can be combined in one synonym. They will be evaluated in the order specified with the first matching value used - e.g. :
 
 ```
 xField string (1..1);
@@ -1649,18 +1643,14 @@ xField string (1..1);
 
 ##### Set When Mapping
 
-A set when mapping is used to set an attribute to a value derived from the input document if a given when clause is met
-
-e.g. :
+A `set when` mapping is used to set an attribute to a value derived from the input document if a given when clause is met -  e.g. :
 
 ```
 execution Execution (0..1) <"The execution ...">;
   [synonym CME_SubmissionIRS_1_0 value TrdCaptRpt set when "TrdCaptRpt.VenuTyp" exists]
 ```
 
-A Set when synonym can include a default. Default mappings can be used to set an attribute to a constant value when no other value was applicable
-
-e.g. :
+A set when synonym can include a default to set an attribute to a constant value when no other value was applicable - e.g. :
 
 ```
 [synonym Bank_A value e path "b.c" default to "DEFAULT"]
@@ -1723,9 +1713,7 @@ When the ingestion is run a class called CounterPartyMappingProcessor will be lo
 
 #### Format
 
-A date/time synonym can be followed by a format construct. The keyword `format` should be followed by a string. The string should follow a standardised [date format](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html)
-
-E.g. :
+A date/time synonym can be followed by a format construct. The keyword `format` should be followed by a string. The string should follow a standardised [date format](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) - e.g. :
 
 ```
 [value "bar" path "baz" format "MM/dd/yy"]
@@ -1761,7 +1749,7 @@ One of the first challenges of expressing regulatory rules for the financial dom
 
 #### Syntax
 
-To organise such regulatory content within a model, the Rosetta DSL supports a number of syntax components that allow to refer to specific documents, their content and who owns them as direct model components. Those components are defined in the [document reference hierarchy](#hierarchy-syntax) section.
+To organise such regulatory content within a model, the Rosetta DSL supports a number of syntax components that allow to refer to specific documents, their content and who owns them as direct model components. Those components are defined in the [document reference hierarchy](#document-hierarchy-syntax) section.
 
 ### Report Definition
 
