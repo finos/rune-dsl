@@ -8,11 +8,13 @@ import com.regnosys.rosetta.RosettaRuntimeModule
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
+import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.service.SingletonBinding
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.xtext.validation.Check
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -138,7 +140,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			func Test:
 				inputs: in0 Foo (0..1)
 				output: out Foo (0..1)
-				assign-output out:
+				set out:
 					"not a Foo"
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'Foo' but was 'string'")
@@ -155,7 +157,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			func Test:
 				inputs: in0 Foo (0..1)
 				output: out Foo (0..1)
-				assign-output out -> id:
+				set out -> id:
 					"not a boolean"
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'boolean' but was 'string'")
@@ -176,7 +178,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    in1 TypeToUse (1..1)
 			  output: result TypeToUse (1..1)
-			  assign-output result -> attr:
+			  set result -> attr:
 			     in1 as-key
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'WithKey' but was 'TypeToUse'")
@@ -209,7 +211,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			func Funcy:
 				inputs: in0 Type (0..1)
 				output: out string (0..1)
-				assign-output out: in0->other
+				set out: in0->other
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'string' but was 'int'")
 	}
@@ -274,9 +276,46 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (1..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, 'Duplicate attribute')
+		model.assertNoErrors
 	}
 	
+	@Test
+	def void testDuplicateAttributeNotAllowedWithDiffCard1() {
+		val model = '''
+			type Foo:
+				i int (1..1)
+			
+			type Bar extends Foo:
+				i int (0..1)
+		'''.parseRosetta
+		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (0..1) must match the cardinality of the attribute it overrides (1..1)")
+	}
+	
+	@Test
+	def void testDuplicateAttributeNotAllowedWithDiffCard2() {
+		val model = '''
+			type Foo:
+				i int (1..1)
+			
+			type Bar extends Foo:
+				i int (1..*)
+		'''.parseRosetta
+		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (1..*) must match the cardinality of the attribute it overrides (1..1)")
+	}
+	
+	@Test
+	def void testDuplicateAttributeNotAllowedWithDiffType() {
+		val model = '''
+			type Foo:
+				i int (1..1)
+			
+			type Bar extends Foo:
+				i string (1..1)
+		'''.parseRosetta
+		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type (string) must match the type of the attribute it overrides (int)")
+	}
+	
+
 	@Test
 	def void testDuplicateAttributeWithOverride() {
 		val model = '''
@@ -439,6 +478,45 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(DATA, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE, 'Type Foo has both choice condition and one-of condition.')
 	}
 
+	@Test
+	def void shouldNoGenerateErrorsForConditionWithInheritedAttributeExists() {
+		val model = '''
+			type Foo:
+				x string (0..1)
+			
+			type Bar extends Foo:
+				y string (0..1)
+				
+				condition:
+					x exists
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
+
+	@Test
+	def checkMergeSynonymErrorOnSingleCardinality() {
+		val model = '''
+			synonym source FpML
+			
+			type Foo:
+				attr int (0..1)
+					[synonym FpML merge "bar"]
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYNONYM_BODY, null, "Merge synonym can only be specified on an attribute with multiple cardinality.")
+	}
+	
+	@Test
+	def checkMergeSynonymNoErrorOnMultiCardinality() {
+		val model = '''
+			synonym source FpML
+						
+			type Foo:
+				attr int (0..*)
+					[synonym FpML merge "bar"]
+		'''.parseRosetta
+		model.assertNoErrors()
+	}
 
  	@Test
 	def checkMappingMultipleSetToWithoutWhenCases() {
@@ -548,7 +626,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    timestamp date (1..1)
 			  output: result boolean (1..1)
-			  assign-output result:
+			  set result:
 			     Foo(timestamp) = timestamp
 			
 		'''.parseRosetta
@@ -570,7 +648,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    in0 WithKey (1..1)
 			  output: result TypeToUse (1..1)
-			  assign-output result -> attr:
+			  set result -> attr:
 			     in0 as-key
 		'''.parseRosetta
 		model.assertNoErrors
@@ -592,7 +670,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			    in0 WithKey (1..1)
 			    in1 TypeToUse (1..1)
 			  output: result TypeToUse (1..1)
-			  assign-output result -> attr2:
+			  set result -> attr2:
 			     in1 as-key
 		'''.parseRosetta
 		model.assertError(SEGMENT, null,
@@ -626,11 +704,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  inputs:
 			    in0 WithKey (1..1)
 			  output: result WithKey (1..1)
-			  assign-output result:
+			  set result:
 			     in0 as-key
 		'''.parseRosetta
 		model.assertError(OPERATION, null,
-			"'as-key' can only be used when assigning an attribute. Example: \"assign-output out -> attribute: value as-key\"")
+			"'as-key' can only be used when assigning an attribute. Example: \"set out -> attribute: value as-key\"")
 	}
 	
 	@Test
@@ -737,14 +815,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			"Pattern to match must be a valid regular expression")
 	}
 	
+	@Disabled
 	@Test
 	def void testFishIsAShark() {//This test tests that when a check throws an exception it is translated into a validation error - see ExceptionValidator below
-	val model='''
+		val model='''
 			type MyFish:
 				foo int (0..1)
 				[synonym TEST_Base value "bar" path "baz" pattern "([A-Z)" "$1"]
 			synonym source TEST_Base
-
+			
 		'''.parseRosetta
 		model.assertError(ROSETTA_TYPE, null,
 			"checkForSharks")
@@ -1183,7 +1262,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				a string (0..*)
 					[ruleReference A]
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, null, "Report attributes with non-repeatable basic type (string) and multiple cardinality is not supported.  Try adding 'repeatable' to your rule.")
+		model.assertError(ATTRIBUTE, null, "Report attributes with basic type (string) and multiple cardinality is not supported.")
 	}
 	
 	@Test
@@ -1201,7 +1280,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					fooCounts int (0..*)
 				
-				set fooCounts:
+				add fooCounts:
 					bars 
 						map bar [ bar -> foos ]
 						map foosItem [ foosItem count ]
@@ -1225,7 +1304,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					fooCounts int (0..*)
 				
-				set fooCounts:
+				add fooCounts:
 					bars 
 						map [ item -> foos ]
 						map [ item count ]
@@ -1253,7 +1332,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					bars -> foos
 						map [ item -> amount > 0 ]
 				
-				assign-output result:
+				set result:
 					results all = True
 		'''.parseRosetta
 		model.assertNoErrors
@@ -1279,11 +1358,82 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					bars -> foos
 						map foo [ foo -> amount > 0 ]
 				
-				assign-output result:
+				set result:
 					results all = True
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
+	}
+
+	@Test
+	def shouldNotGenerateErrorForMapListOperation() {
+		val model = '''
+			type Bar:
+				foo Foo (1..1)
+
+			type Foo:
+				amount number (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					result number (1..1)
+				
+				set result:
+					bars 
+						map [ item -> foo ]
+						map [ item -> amount ]
+						distinct 
+						only-element
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
+	}
+	
+	@Test
+	def shouldGenerateErrorForFeatureCallAfterListOperation() {
+		val model = '''
+			type Bar:
+				foo Foo (1..1)
+
+			type Foo:
+				amount number (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					result number (1..1)
+				
+				set result:
+					bars map [ item -> foo ] distinct only-element -> amount
+		'''.parseRosetta
+		model.assertError(ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'") // is it possible to generate a better error message?
+	}
+	
+	@Test
+	@Disabled
+	def shouldGenerateErrorForFeatureCallAfterListOperation2() {
+		val model = '''
+			type Bar:
+				foo Foo (1..1)
+
+			type Foo:
+				amount number (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		bars Bar (0..*)
+				output:
+					result number (1..1)
+				
+				set result:
+					if bars exists
+					then bars map [ item -> foo ] distinct only-element -> amount
+		'''.parseRosetta
+		// then clause should generate syntax error (see test above shouldGenerateErrorForFeatureCallAfterListOperation)
+		model.assertError(ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'")
 	}
 
 	@Test
@@ -1297,7 +1447,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result boolean (0..1)
 				
-				assign-output result:
+				set result:
 					if n1 exists and n2 exists and n3 exists
 					then n1 + n2 = n3
 		'''.parseRosetta
@@ -1319,7 +1469,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				alias n3Alias:
 					GetNumberList( n3 ) only-element
 				
-				assign-output result:
+				set result:
 					n1 + n2 = n3Alias
 					
 			func GetNumberList:
@@ -1341,14 +1491,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					filteredFoo Foo (0..*)
 				
-				assign-output filteredFoo:
+				add filteredFoo:
 					foos
 						filter
 			
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List filter must have a boolean expression specified within square brackets.")
+		model.assertError(LIST_OPERATION, null, "List filter must have an expression specified within square brackets.")
 	}
 	
 	@Test
@@ -1360,14 +1510,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					filteredFoo Foo (0..*)
 				
-				assign-output filteredFoo:
+				add filteredFoo:
 					foos
 						filter a, b [ a -> attr ]
 			
 			type Foo:
 				attr boolean (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List filter must only have 1 named parameter.")
+		model.assertError(LIST_OPERATION, null, "List filter must have 1 named parameter.")
 	}
 	
 	@Test
@@ -1379,7 +1529,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					filteredFoo Foo (0..*)
 				
-				assign-output filteredFoo:
+				add filteredFoo:
 					foos
 						filter [ item -> x ]
 			
@@ -1398,7 +1548,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map
 			
@@ -1417,14 +1567,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a, b [ a -> x ]
 			
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List map must only have 1 named parameter.")
+		model.assertError(LIST_OPERATION, null, "List map must have 1 named parameter.")
 	}
 	
 	@Test
@@ -1436,7 +1586,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
 						flatten
@@ -1457,7 +1607,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> bars ] // list of list<bar>
 						map bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
@@ -1482,7 +1632,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> bars ] // list of list<bar>
 						map bars [ bars -> bazs ] // list of list of list<baz> // not supported (list item to list of lists)
@@ -1510,7 +1660,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
 						flatten [ item ]
@@ -1530,7 +1680,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
 						flatten xItem
@@ -1550,7 +1700,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> x ] // not a list of lists
 						flatten
@@ -1570,7 +1720,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					updatedFoos Foo (0..*)
 				
-				assign-output updatedFoos:
+				add updatedFoos:
 					foos
 						flatten
 			
@@ -1578,6 +1728,84 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x string (0..1)
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List flatten only allowed for list of lists.")
+	}
+	
+	@Test
+	def void shouldGenerateListSingleCardinalityError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					s string (1..1)
+				
+				set s:
+					foo
+						map [ item -> x ]
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List map cannot be used for single cardinality expressions.")
+	}
+	
+	@Test
+	def void shouldGenerateListSingleCardinalityError2() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					onlyFoo Foo (1..1)
+				
+				set onlyFoo:
+					foo
+						only-element
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(ROSETTA_CALLABLE_CALL, null, "List only-element cannot be used for single cardinality expressions.")
+	}
+	
+	@Test
+	def void shouldGenerateListSingleCardinalityError3() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foo Foo (1..1)
+				output:
+					s string (1..1)
+				
+				set s:
+					foo -> x
+						only-element
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(ROSETTA_FEATURE_CALL, null, "List only-element cannot be used for single cardinality expressions.")
+	}
+	
+	@Test
+	def void shouldNotGenerateListSingleCardinalityError4() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					s string (1..1)
+				
+				set s:
+					foos
+						only-element
+						map [ item -> x ]
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertNoErrors
+		model.assertNoIssues
 	}
 	
 	@Test
@@ -1589,7 +1817,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				assign-output strings:
+				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
 			
@@ -1608,7 +1836,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					strings string (0..*)
 				
-				set strings:
+				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
 			
@@ -1631,13 +1859,53 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					foos
 						map a [ a -> xs ] // list of lists
 				
-				assign-output strings:
+				add strings:
 					stringsAlias
 			
 			type Foo:
 				xs string (0..*)
 		'''.parseRosetta
 		model.assertError(SHORTCUT_DECLARATION, null, "Alias expression contains a list of lists, use flatten to create a list.")
+	}
+	
+	@Test
+	def void shouldGenerateListOnlyElementUnflattenedError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res string (0..1)
+				
+				set res:
+					foos
+						map a [ a -> xs ] // list of lists
+						only-element
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List must be flattened before only-element operation.")
+	}
+	
+	@Test
+	def void shouldGenerateListDistinctUnflattenedError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res string (0..*)
+				
+				add res:
+					foos
+						map a [ a -> xs ] // list of lists
+						distinct
+			
+			type Foo:
+				xs string (0..*)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List must be flattened before distinct operation.")
 	}
 	
 	@Test
@@ -1649,7 +1917,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result boolean (1..1)
 				
-				assign-output result:
+				set result:
 					( foo -> x1 and foo -> x2 ) 
 					and ( foo -> x4 < 5.0 
 						and ( foo -> x3 is absent or foo -> x6 exists ) )
@@ -1675,7 +1943,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result boolean (1..1)
 				
-				assign-output result:
+				set result:
 					( foo -> x1 and foo -> x2 ) 
 					and ( foo -> x4 // number
 						and ( foo -> x3 is absent or foo -> x6 exists ) )
@@ -1700,7 +1968,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result boolean (1..1)
 				
-				assign-output result:
+				set result:
 					( foo -> x3 and foo -> x4 ) exists
 			
 			type Foo:
@@ -1708,6 +1976,229 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x4 number (1..1)
 		'''.parseRosetta
 		model.assertError(ROSETTA_PARENTHESIS_CALC_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+	}
+	
+	@Test
+	def void shouldGenerateReduceParametersError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res string (1..1)
+				
+				set res:
+					foos
+						reduce a [ a -> x ]
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List reduce must have 2 named parameters.")
+	}
+	
+	@Test
+	def void shouldGenerateReduceTypeError() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res string (1..1)
+				
+				set res:
+					foos
+						reduce a, b [ a -> x ]
+			
+			type Foo:
+				x string (0..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List reduce expression must evaluate to the same type as the input.  Found types Foo and String.")
+	}
+	
+	@Test
+	def void shouldGenerateReduceCardinalityError() {
+		val model = '''
+			type Foo:
+				x string (0..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					res Foo (1..1)
+				
+				set res:
+					foos
+						reduce a, b [ GetFooList( a, b ) ]
+			
+			func GetFooList:
+			 	inputs:
+			 		foo1 Foo (1..1)
+			 		foo2 Foo (1..1)
+				output:
+					foos Foo (0..*)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List reduce only supports single cardinality expressions.")
+	}
+	
+	@Test
+	def void shouldGenerateListSortCardinalityError() {
+		val model = '''
+			type Foo:
+				attrList string (1..*) // list
+			
+			func SortFooOnAttr:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				add sortedFoos:
+					foos sort [item -> attrList] // sort based on multi-cardinality
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List sort only supports single cardinality expressions.")
+	}
+	
+	@Test
+	def void shouldGenerateListSortTypeError() {
+		val model = '''
+			type Foo:
+				attrList string (1..*) // list
+			
+			func SortFooOnAttr:
+				inputs:
+					foos Foo (0..*)
+				output:
+					sortedFoos Foo (0..*)
+			
+				add sortedFoos:
+					foos sort // sort based on Foo
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
+	}
+	
+	@Test
+	def void shouldGenerateListSortTypeError2() {
+		val model = '''
+			type Bar:
+				foo Foo (1..1)
+			
+			type Foo:
+				attr string (1..1)
+			
+			func SortBarOnFoo:
+				inputs:
+					bars Bar (0..*)
+				output:
+					sortedBars Bar (0..*)
+			
+				add sortedBars:
+					bars 
+						sort x [ x -> foo ] // sort based on Foo
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateListIndexNoItemExpression() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					indexFoo Foo (0..1)
+				
+				set indexFoo:
+					foos
+						get-item [ item -> attr ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List get-item does not allow expressions using an item or named parameter.")
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateListIndexNoNamedExpression() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					indexFoo Foo (0..1)
+				
+				set indexFoo:
+					foos
+						get-item x [ x -> attr ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List get-item does not allow expressions using an item or named parameter.")
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateListIndexNoItemExpression2() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		index int (1..1)
+				output:
+					indexFoo Foo (0..1)
+				
+				set indexFoo:
+					foos
+						get-item [ index ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertNoErrors()
+	}
+	
+	@Test
+	@Disabled
+	def void shouldGenerateListIndexNoItemExpression3() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+			 		index int (1..1)
+				output:
+					removeLast Foo (0..1)
+				
+				set removeLast:
+					foos
+						remove-index [ foos count - 1 ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertNoErrors()
+	}
+	
+	@Test
+	def void shouldGenerateListJoinNoItemExpression() {
+		val model = '''
+			func FuncFoo:
+			 	inputs:
+			 		stringList string (0..*)
+				output:
+					joined string (1..1)
+				
+				set joined:
+					stringList
+						join [ item ]
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertError(LIST_OPERATION, null, "List join does not allow expressions.")
 	}
 }
 	

@@ -9,7 +9,6 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
-import com.regnosys.rosetta.generator.java.function.FuncGenerator
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
@@ -37,6 +36,7 @@ import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import com.regnosys.rosetta.generator.util.BackwardCompatibilityGenerator
+import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 
 /**
  * Generates code from your model files on save.
@@ -61,7 +61,7 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
-	@Inject FuncGenerator funcGenerator
+	@Inject FunctionGenerator funcGenerator
 	@Inject BackwardCompatibilityGenerator backwardCompatibilityGenerator
 
 	@Inject

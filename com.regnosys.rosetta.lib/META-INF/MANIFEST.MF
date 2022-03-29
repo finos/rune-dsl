@@ -7,14 +7,18 @@ Bundle-Version: 0.0.0.master
 Bundle-Vendor: REGnosys
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
- org.junit.jupiter.api;bundle-version="5.7.0",
- org.junit.jupiter.params;bundle-version="5.7.0",
- org.junit.platform.commons;bundle-version="1.7.0",
- org.opentest4j;bundle-version="1.0.0",
+ org.junit.jupiter.api;bundle-version="5.8.1",
+ org.junit.jupiter.params;bundle-version="5.8.1",
+ org.junit.platform.commons;bundle-version="1.8.1",
+ org.opentest4j;bundle-version="1.2.0",
  org.hamcrest.core,
  org.mockito,
  net.bytebuddy.byte-buddy,
- org.objenesis
+ org.objenesis,
+ com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.rosetta.lib.postprocess,
  com.rosetta.model.lib,

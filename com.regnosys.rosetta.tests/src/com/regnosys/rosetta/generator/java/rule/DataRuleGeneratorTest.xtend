@@ -19,13 +19,14 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class DataRuleGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper
-	@Inject extension ConditionHelper
+	@Inject extension ConditionTestHelper
 
 	@Test
 	def void quoteExists() {
@@ -207,6 +208,96 @@ class DataRuleGeneratorTest {
 		assertTrue(validationResult.isSuccess)
 	}
 	
+	@Test
+	def void shouldCheckConditionWithInheritedAttribute() {
+		val code = '''
+			type Foo:
+				x string (0..1)
+				y string (0..1)
+				
+				condition:
+					x exists
+			
+			type Bar extends Foo:
+				z string (0..1)
+				
+				condition:
+					y exists
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+
+		val bar1 = classes.createInstanceUsingBuilder('Bar', of('z', 'v1'))
+		val result1 = classes.runDataRule(bar1, 'BarDataRule0')
+		assertFalse(result1.isSuccess)
+		
+		val bar2 = classes.createInstanceUsingBuilder('Bar', of('y', 'v1', 'z', 'v2'))
+		val result2 = classes.runDataRule(bar2, 'BarDataRule0')
+		assertTrue(result2.isSuccess)
+	}
+	
+	@Test
+	def void shouldCheckConditionWithInheritedAttribute2() {
+		val code = #['''
+			namespace ns1
+			
+			type Foo:
+				x string (0..1)
+				y string (0..1)
+				
+				condition:
+					x exists
+			''','''
+			namespace ns2
+			
+			import ns1.*
+			
+			type Bar extends Foo:
+				z string (0..1)
+				
+				condition:
+					y exists
+		'''].generateCode
+		
+		val classes = code.compileToClasses
+
+		val namespace = new RootPackage('ns2')
+		val bar1 = classes.createInstanceUsingBuilder(namespace, 'Bar', of('z', 'v1'))
+		val result1 = classes.runDataRule(namespace, bar1, 'BarDataRule0')
+		assertFalse(result1.isSuccess)
+		
+		val bar2 = classes.createInstanceUsingBuilder(namespace, 'Bar', of('y', 'v1', 'z', 'v2'))
+		val result2 = classes.runDataRule(namespace, bar2, 'BarDataRule0')
+		assertTrue(result2.isSuccess)
+	}
+	
+	@Test
+	def void shouldCheckInheritedCondition() {
+		val code = '''
+			type Foo:
+				x string (0..1)
+				y string (0..1)
+				
+				condition:
+					x exists
+			
+			type Bar extends Foo:
+				z string (0..1)
+				
+				condition:
+					y exists
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+
+		val bar1 = classes.createInstanceUsingBuilder('Bar', of('z', 'v1'))
+		val result1 = classes.runDataRule(bar1, 'FooDataRule0')
+		assertFalse(result1.isSuccess)
+		
+		val bar2 = classes.createInstanceUsingBuilder('Bar', of('x', 'v1', 'y', 'v2', 'z', 'v3'))
+		val result2 = classes.runDataRule(bar2, 'FooDataRule0')
+		assertTrue(result2.isSuccess)
+	}
 		
 	@Deprecated
 	/**

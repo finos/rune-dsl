@@ -1951,7 +1951,7 @@ class RosettaBlueprintTest {
 					foo number (0..1)
 				output: 
 					bar number (1..1)
-				assign-output bar:
+				set bar:
 					foo + 1
 				
 			'''.parseRosettaWithNoErrors
@@ -1982,7 +1982,7 @@ class RosettaBlueprintTest {
 					foo number (0..1)
 				output: 
 					bar number (1..1)
-				assign-output bar:
+				set bar:
 					foo + 1
 				
 			'''.parseRosettaWithNoErrors
@@ -2010,7 +2010,7 @@ class RosettaBlueprintTest {
 					b number (0..1)
 				output: 
 					r number (1..1)
-				assign-output r:
+				set r:
 					a + b
 				
 			'''.parseRosetta
@@ -2040,7 +2040,7 @@ class RosettaBlueprintTest {
 					foo number (0..1)
 				output: 
 					result boolean (1..1)
-				assign-output result:
+				set result:
 					foo > 1
 			
 			'''.parseRosettaWithNoErrors
@@ -2071,7 +2071,7 @@ class RosettaBlueprintTest {
 					foo number (0..1)
 				output: 
 					result number (1..1)
-				assign-output result:
+				set result:
 					foo + 1
 			
 			'''.parseRosetta
@@ -2101,7 +2101,7 @@ class RosettaBlueprintTest {
 					bar Bar (0..1)
 				output: 
 					result number (1..1)
-				assign-output result:
+				set result:
 					bar->val + 1
 			
 			'''.parseRosettaWithNoErrors
@@ -2132,7 +2132,7 @@ class RosettaBlueprintTest {
 					bar Bar (0..1)
 				output: 
 					result number (1..1)
-				assign-output result:
+				set result:
 					bar->val + 1
 			
 			'''.parseRosettaWithNoErrors
@@ -2471,6 +2471,172 @@ class RosettaBlueprintTest {
 		blueprint.compileToClasses
 	}
 
+	@Test
+	def void shouldGenerateDataTypeThatExtendsAndOverrides() {
+		val blueprint = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport2
+			
+			eligibility rule FooRule
+				filter when Bar->barA exists
+			
+			reporting rule Aa
+				extract Bar->barA as "A"
+
+			reporting rule Aa2
+				extract Bar->barA2 as "A"
+
+			
+			type Bar:
+				barA string (0..1)
+				barA2 string (0..1)
+
+			
+			type BarReport:
+				aa string (1..1)
+					[ruleReference Aa]
+			
+			type BarReport2 extends BarReport:
+				aa string (1..1)
+					[ruleReference Aa2]
+
+		'''.generateCode
+		blueprint.compileToClasses
+		
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		
+		val expected = '''
+			@Override
+				public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() { 
+					return 
+						startsWith(actionFactory, getFooRule())
+						.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>and(actionFactory,
+							startsWith(actionFactory, getAa2())
+							)
+						)
+						.addDataItemReportBuilder(new BarReport2_DataItemReportBuilder())
+						.toBlueprint(getURI(), getName());
+				}
+			'''
+			assertTrue(blueprintJava.contains(expected), '''Expected string containing «expected» but was «blueprintJava»''')
+	}
+	
+	
+	@Test
+	def void shouldGenerateDataTypeThatExtendsAndOverridesMultipleTypes() {
+		val blueprint = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport2
+			
+			eligibility rule FooRule
+				filter when Bar->barA exists
+			
+			reporting rule Aa
+				extract Bar->barA as "A"
+
+			reporting rule Aa2
+				extract Bar->barA2 as "A"
+			
+			reporting rule Bb
+				extract Bar->barB as "B"
+				
+			reporting rule Cc
+				extract Bar->barC as "C"
+
+			
+			type Bar:
+				barA string (0..1)
+				barA2 string (0..1)
+				barB int (0..1)
+				barC BazEnum (0..1)
+
+			enum BazEnum:
+				X
+				Y
+				Z
+			
+			type BarReport:
+				aa string (1..1)
+					[ruleReference Aa]
+				bb int (1..1)
+					[ruleReference Bb]
+				cc BazEnum (1..1)
+					[ruleReference Cc]
+			
+			type BarReport2 extends BarReport:
+				aa string (1..1)
+					[ruleReference Aa2]
+
+		'''.generateCode
+		blueprint.compileToClasses
+		
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		
+		val expected = '''
+			@Override
+				public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() { 
+					return 
+						startsWith(actionFactory, getFooRule())
+						.then(BlueprintBuilder.<Bar, Object, INKEY, INKEY>and(actionFactory,
+							startsWith(actionFactory, getAa2()),
+							startsWith(actionFactory, getBb()),
+							startsWith(actionFactory, getCc())
+							)
+						)
+						.addDataItemReportBuilder(new BarReport2_DataItemReportBuilder())
+						.toBlueprint(getURI(), getName());
+				}'''
+			assertTrue(blueprintJava.contains(expected), '''Expected string containing «expected» but was «blueprintJava»''')
+			
+	}
+	
+	@Test
+	def void shouldTypeResolutionForListOperation() {
+		var blueprint = '''
+		type Foo:
+			bar Bar (0..*)
+		
+		type Bar:
+			attr string (1..1)
+		
+		reporting rule FooRule
+			extract Foo -> bar 
+				max [ item -> attr ] then
+			extract Bar -> attr
+		
+		'''.generateCode
+		blueprint.compileToClasses
+	}
+	
+	@Test
+	def void shouldTypeResolutionForListOperation2() {
+		var blueprint = '''
+		type Foo:
+			bar Bar (0..*)
+		
+		type Bar:
+			baz Baz (1..1)
+		
+		type Baz:
+			attr string (1..1)
+		
+		reporting rule FooRule
+			extract Foo -> bar 
+				map [ item -> baz ] then
+			extract Baz -> attr
+		
+		'''.generateCode
+		blueprint.compileToClasses
+	}
+	
 	@Test
 	@Disabled // we don't currently support hand written blueprint nodes
 	def void custom() {

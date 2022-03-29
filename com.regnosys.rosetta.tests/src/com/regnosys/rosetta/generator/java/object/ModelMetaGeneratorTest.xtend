@@ -60,14 +60,14 @@ class ModelMetaGeneratorTest {
 				[qualification BusinessEvent]
 				inputs: foo Foo (1..1)
 				output: is_event boolean (1..1)
-				assign-output is_event:
+				set is_event:
 					foo -> a exists
 			
 			func Qualify_AEqualsSomeValue:
 				[qualification BusinessEvent]
 				inputs: foo Foo (1..1)
 				output: is_event boolean (1..1)
-				assign-output is_event:
+				set is_event:
 					foo -> a = "someValue"
 		'''.generateCode
 		//code.writeClasses("shouldGenerateGetQualiifyFunctions")

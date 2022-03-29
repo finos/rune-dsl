@@ -46,6 +46,7 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -158,6 +159,9 @@ class ImportGenerator {
 
 	def void addExpression(RosettaExpression expression) {
 		switch (expression) {
+			case null: {
+				// do nothing
+			}	
 			RosettaCallableCall: {
 				add(expression.callable)
 			}
@@ -213,6 +217,10 @@ class ImportGenerator {
 			}
 			RosettaParenthesisCalcExpression : {
 				addExpression(expression.expression)
+			}
+			ListOperation: {
+				addExpression(expression.receiver)
+				addExpression(expression.body)
 			}
 			default:
 				LOGGER.warn("Unsupported expression type of " + expression.class.simpleName)

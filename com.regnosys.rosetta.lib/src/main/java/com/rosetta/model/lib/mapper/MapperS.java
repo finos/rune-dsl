@@ -3,6 +3,7 @@ package com.rosetta.model.lib.mapper;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -16,9 +17,19 @@ import com.rosetta.model.lib.RosettaModelObject;
 public class MapperS<T> implements MapperBuilder<T> {
 
 	private final MapperItem<T,?> item;
+	private final boolean identity;
 	
 	public MapperS(MapperItem<T,?> item) {
+		this(item, false);
+	}
+	
+	public MapperS(MapperItem<T,?> item, boolean identity) {
 		this.item = item;
+		this.identity = identity;
+	}
+	
+	public static <T> MapperS<T> identity() {
+		return new MapperS<>(new MapperItem<>(null, MapperPath.builder().addNull(), true, Optional.empty()), true);
 	}
 	
 	public static <T> MapperS<T> ofNull() {
@@ -74,10 +85,15 @@ public class MapperS<T> implements MapperBuilder<T> {
 	}
 	
 	@Override
+	public T getOrDefault(T defaultValue) {
+		return Optional.ofNullable(item.getMappedObject()).orElse(defaultValue);
+	}
+	
+	@Override
 	public List<T> getMulti() {
 		return Optional.ofNullable(get())
-				.map(Collections::singletonList)
-				.orElse(Collections.emptyList());
+				.map(Arrays::asList)
+				.orElseGet(ArrayList::new);
 	}
 	
 	@Override
@@ -90,13 +106,39 @@ public class MapperS<T> implements MapperBuilder<T> {
 	public List<?> getParentMulti() {
 		return findParent(item)
 				.map(MapperItem::getMappedObject)
-				.map(Collections::singletonList)
-				.orElse(Collections.emptyList());
+				.map(Arrays::asList)
+				.orElseGet(ArrayList::new);
 	}
 
 	@Override
 	public int resultCount() {
 		return item.getMappedObject()!=null?1:0;
+	}
+	
+	public boolean isIdentity() {
+		return identity;
+	}
+	
+	/**
+	 * Map a single value into an item of a list based on the given mapping function.
+	 * 
+	 * @param <F>
+	 * @param mappingFunc
+	 * @return mapped list
+	 */
+	public <F> MapperC<F> mapSingleToItem(Function<MapperS<T>, MapperS<F>> mappingFunc) {
+		return MapperC.of(mappingFunc.apply(this).getMulti());
+	}
+	
+	/**
+	 * Map a single value into an item of a list based on the given mapping function.
+	 * 
+	 * @param <F>
+	 * @param mappingFunc
+	 * @return mapped list
+	 */
+	public <F> MapperListOfLists<F> mapSingleToList(Function<MapperS<T>, MapperC<F>> mappingFunc) {
+		return MapperListOfLists.of(Arrays.asList(mappingFunc.apply(this).getMulti()));
 	}
 	
 	/* (non-Javadoc)

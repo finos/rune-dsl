@@ -15,6 +15,7 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -53,6 +54,7 @@ class RosettaBlueprintRepeatableRuleTest {
 
 	
 	@Test
+	@Disabled
 	def void shouldParseReportWithSingleRepeatableBasicTypeRule() {
 		'''
 			body Authority TEST_REG
@@ -79,6 +81,7 @@ class RosettaBlueprintRepeatableRuleTest {
 	}
 	
 	@Test
+	@Disabled
 	def void shouldParseReportWithExtractThenRepeatableBasicTypeRule() {
 		'''
 			body Authority TEST_REG
@@ -109,6 +112,7 @@ class RosettaBlueprintRepeatableRuleTest {
 	}
 	
 	@Test
+	@Disabled
 	def void shouldParseReportWithExtractRuleThenRepeatableBasicTypeRule() {
 		'''
 			body Authority TEST_REG
@@ -142,6 +146,7 @@ class RosettaBlueprintRepeatableRuleTest {
 	}
 	
 	@Test
+	@Disabled
 	def void shouldParseReportWithRepeatableComplexTypeRuleThenExtract() {
 		'''
 			body Authority TEST_REG

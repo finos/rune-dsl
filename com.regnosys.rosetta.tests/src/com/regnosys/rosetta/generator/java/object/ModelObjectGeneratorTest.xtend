@@ -380,6 +380,20 @@ class ModelObjectGeneratorTest {
 	}
 
 	@Test
+	def shouldExtendATypeWithSameAttribute() {
+		val code = '''
+			type Foo:
+				a string (0..1)
+				b string (0..1)
+			
+			type Bar extends Foo:
+				a string (0..1)
+		'''.generateCode
+		//code.writeClasses('shouldExtendATypeWithSameAttribute')
+		val classes = code.compileToClasses
+	}
+	
+	@Test
 	def shouldGenerateRosettaQualifiedAnnotationForEventType() {
 		val code = '''
 			isEvent root Foo;
@@ -454,7 +468,7 @@ class ModelObjectGeneratorTest {
 				[qualification Product]
 				inputs: foo Foo (1..1)
 				output: is_product boolean (1..1)
-				assign-output is_product:
+				set is_product:
 					foo -> attr = Enum -> A
 		'''.generateCode
 

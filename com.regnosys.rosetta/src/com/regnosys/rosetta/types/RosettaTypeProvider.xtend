@@ -269,10 +269,22 @@ class RosettaTypeProvider {
 				switch(expression.operationKind) {
 					case FILTER:
 						expression.firstOrImplicit.safeRType(cycleTracker)
+					case REDUCE,
 					case MAP:
 						expression.body.safeRType(cycleTracker)
-					case FLATTEN:
+					case SORT,
+					case REVERSE,
+					case FLATTEN,
+					case DISTINCT,
+					case ONLY_ELEMENT,
+					case SUM,
+					case JOIN,
+					case MIN,
+					case MAX,
+					case FIRST,
+					case LAST: {
 						expression.receiver.safeRType(cycleTracker)
+					}	
 					default: 
 						RBuiltinType.MISSING
 				}

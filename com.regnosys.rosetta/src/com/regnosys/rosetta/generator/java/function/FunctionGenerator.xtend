@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.function
 import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.expression.Context
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -30,7 +29,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.rosetta.simple.SetOutputOperation
+import com.regnosys.rosetta.rosetta.simple.OutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RAnnotateType
 import com.regnosys.rosetta.types.RType
@@ -40,7 +39,7 @@ import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.mapper.Mapper
 import com.rosetta.model.lib.validation.ModelObjectValidator
-import java.util.Arrays
+import java.util.ArrayList
 import java.util.List
 import java.util.Map
 import java.util.Optional
@@ -52,11 +51,10 @@ import org.eclipse.xtext.naming.QualifiedName
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
-class FuncGenerator {
+class FunctionGenerator {
 
 	@Inject ExpressionGenerator expressionGenerator
-	//@Inject ExpressionGeneratorWithBuilder expressionWithBuilder
-	@Inject RosettaFunctionDependencyProvider functionDependencyProvider
+	@Inject FunctionDependencyProvider functionDependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaExtensions
@@ -64,6 +62,7 @@ class FuncGenerator {
 	@Inject extension ImportManagerExtension
 	@Inject CardinalityProvider cardinality
 	@Inject JavaNames.Factory factory
+	@Inject extension Util
 
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = javaNames.packages.model.functions.directoryName + '/' + func.name + '.java'
@@ -75,7 +74,9 @@ class FuncGenerator {
 			} else {
 				tracImports(func.classBody(func.name, dependencies, javaNames, version, false), func.name)
 			}
-        classBody.addImport(Arrays.name, Arrays.simpleName)
+        
+        dependencies.getFuncOutputTypes(javaNames).toSet.forEach[classBody.addImport(it, it)]
+        
 		val content = '''
 			package «javaNames.packages.model.functions.name»;
 			
@@ -103,7 +104,6 @@ class FuncGenerator {
 
 	private def StringConcatenationClient classBody(Function func, String className,
 		Iterable<? extends RosettaCallableWithArgs> dependencies, extension JavaNames names, String version, boolean isStatic) {
-//		val isAbstract = func.hasCalculationAnnotation
 		val output = getOutput(func)
 		val inputs = getInputs(func)
 		val outputName = output?.name
@@ -160,11 +160,14 @@ class FuncGenerator {
 				}
 				
 				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
-					«FOR indexed : func.operations.filter(AssignOutputOperation).indexed»
-						«indexed.value.assign(aliasOut, names, output)»;
-					«ENDFOR»
-					«FOR indexed : func.operations.filter(SetOutputOperation).indexed»
-						«indexed.value.assign(aliasOut, names, output)»;
+					«FOR indexed : func.operations.filter(Operation).indexed»
+						«IF indexed.value instanceof AssignOutputOperation»
+							«assign(indexed.value as AssignOutputOperation, aliasOut, names, output)»
+							
+						«ELSEIF indexed.value instanceof OutputOperation»
+							«assign(indexed.value as OutputOperation, aliasOut, names, output, indexed.key)»
+							
+						«ENDIF»
 					«ENDFOR»
 					return «outputName»;
 				}
@@ -172,23 +175,24 @@ class FuncGenerator {
 				protected abstract «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
 				
 				«FOR alias : func.shortcuts»
-					
 					«IF aliasOut.get(alias)»
 						«val multi = cardinality.isMulti(alias.expression)»
 						«val returnType = names.shortcutJavaType(alias)»
 						protected «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
 							return toBuilder(«expressionGenerator.javaCode(alias.expression, new ParamMap)»«IF multi».getMulti()«ELSE».get()«ENDIF»);
 						}
+						
 					«ELSE»
 						protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
 							return «expressionGenerator.javaCode(alias.expression, new ParamMap)»;
 						}
+						
 					«ENDIF»
 				«ENDFOR»
 				public static final class «className»Default extends «className» {
 					@Override
 					protected  «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
-						return «IF output.isMany»Arrays.asList()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
+						return «IF output.isMany»new «ArrayList»<>()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
 					}
 				}
 				«IF func.isQualifierFunction()»
@@ -247,38 +251,49 @@ class FuncGenerator {
 	
 	private def StringConcatenationClient assign(AssignOutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type) {
 		val pathAsList = op.pathAsSegmentList
-		val ctx = Context.create(names)
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, ctx, type.isMany)»)
+				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, type.isMany)»);
 			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx, type.isMany)»«ENDIF»'''
+				«op.assignTarget(outs, names)» = «assignPlainValue(op, type.isMany)»;«ENDIF»'''
 		else {
 			'''
 				«op.assignTarget(outs, names)»
-					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
+					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»0«ENDIF»)
 					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
-					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»
+					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(op.assignAsKey, names)»)«ENDIF»«ENDFOR»;
 			'''
 		}
 	}
 	
-	private def StringConcatenationClient assign(SetOutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type) {
+	private def StringConcatenationClient assign(OutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type, int index) {
 		val pathAsList = op.pathAsSegmentList
-		val ctx = Context.create(names)
-		if (pathAsList.isEmpty)
+		
+		if (pathAsList.isEmpty) {
+			// assign function output object
+			if (op.add) {
+				val addVarName = ("addVar" + index).toDecoratedName
+				'''
+				«IF needsBuilder(op.assignRoot)»
+					«type.toBuilderType(names)» «addVarName» = toBuilder(«assignPlainValue(op, type.isMany)»);
+				«ELSE»
+					«type.toBuilderType(names)» «addVarName» = «assignPlainValue(op, type.isMany)»;«ENDIF»
+				«op.assignTarget(outs, names)».addAll(«addVarName»);'''	
+			} else {
+				'''
+				«IF needsBuilder(op.assignRoot)»
+					«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, type.isMany)»);
+				«ELSE»
+					«op.assignTarget(outs, names)» = «assignPlainValue(op, type.isMany)»;«ENDIF»'''	
+			}
+		} else { // assign an attribute of the function output object
 			'''
-			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(op, ctx, type.isMany)»)
-			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(op, ctx, type.isMany)»«ENDIF»'''
-		else {
-			'''
-				«op.assignTarget(outs, names)»
-					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»«seg.index?:0»«ENDIF»)
-					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
-					.set«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference»Value«ENDIF»(«op.assignValue(names)»«IF op.useIdx», «op.idx»«ENDIF»)«ENDIF»«ENDFOR»
+			«op.assignTarget(outs, names)»
+				«FOR seg : pathAsList»
+					«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.many»0«ENDIF»)«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»
+					«ELSE».«IF op.add»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(op.assignAsKey, names, seg.attribute.many)»);«ENDIF»
+				«ENDFOR»
 			'''
 		}
 	}
@@ -294,39 +309,44 @@ class FuncGenerator {
 			}
 	}
 	
-	private def StringConcatenationClient assignValue(AssignOutputOperation op, JavaNames names) {
-		if(op.assignAsKey) {
+	private def StringConcatenationClient assignValue(Operation op, boolean assignAsKey, JavaNames names) {
+		assignValue(op, assignAsKey, names, cardinality.isMulti(op.expression))
+	}
+	
+	private def StringConcatenationClient assignValue(Operation op, boolean assignAsKey, JavaNames names, boolean isAssigneeMulti) {
+		if (assignAsKey) {
 			val metaClass = referenceWithMetaJavaType(op, names)
 			if (cardinality.isMulti(op.expression)) {
 				'''
-				«expressionGenerator.javaCode(op.expression, new ParamMap)»
-				.getItems().map(
-						(item) -> «metaClass».builder().setGlobalReference(item.getMappedObject().getMeta().getGlobalKey()).build()
-					).collect(«Collectors».toList())
+					«expressionGenerator.javaCode(op.expression, new ParamMap)»
+						.getItems()
+						.map(_item -> «metaClass».builder()
+							.setExternalReference(_item.getMappedObject().getMeta().getExternalKey())
+							.setGlobalReference(_item.getMappedObject().getMeta().getGlobalKey())
+							.build())
+						.collect(«Collectors».toList())
 				'''
 			} else {
 				'''
-				«metaClass».builder().setGlobalReference(
-						«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
-							.map(r -> r.getMeta())
-							.map(m -> m.getGlobalKey())
-							.orElse(null)
-					).build()
+					«metaClass».builder()
+						.setGlobalReference(«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
+							.map(_r -> _r.getMeta())
+							.map(_m -> _m.getGlobalKey())
+							.orElse(null))
+						.setExternalReference(«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, new ParamMap)».get())
+							.map(_r -> _r.getMeta())
+							.map(_m -> _m.getExternalKey())
+							.orElse(null))
+						.build()
 				'''
 			}
 		} else {
-		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
-							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
+			assignPlainValue(op, isAssigneeMulti)
 		}
 	}
 	
-	private def StringConcatenationClient assignValue(SetOutputOperation op, JavaNames names) {
-		'''«expressionGenerator.javaCode(op.expression, new ParamMap)»«
-							IF cardinality.isMulti(op.expression)».getMulti()«ELSE».get()«ENDIF»'''
-	}
-	
-	private def StringConcatenationClient assignPlainValue(Operation operation, Context ctx, boolean isMulti) {
-		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
+	private def StringConcatenationClient assignPlainValue(Operation operation, boolean isAssigneeMulti) {
+		'''«expressionGenerator.javaCode(operation.expression,  new ParamMap)»«IF isAssigneeMulti».getMulti()«ELSE».get()«ENDIF»'''
 	}
 	
 	def boolean hasMeta(RType type) {
@@ -335,16 +355,6 @@ class FuncGenerator {
 		}
 		
 		false
-	}
-	
-	private def boolean useIdx(Operation operation) {
-		if (operation.pathAsSegmentList.nullOrEmpty)
-			return false
-		return operation.idx !== null
-	}
-	
-	private def idx(Operation operation) {
-		operation.pathAsSegmentList.last.index
 	}
 	
 	private def boolean isReference(RosettaNamed ele) {
@@ -448,5 +458,13 @@ class FuncGenerator {
 			Attribute: feature.card.isMany
 			default: throw new IllegalStateException('Unsupported type passed ' + feature?.eClass?.name)
 		}
+	}
+	
+	private def getFuncOutputTypes(List<RosettaCallableWithArgs> dependencies, JavaNames javaNames) {
+		dependencies
+        	.filter[it instanceof Function]
+        	.map[it as Function]
+        	.map[it.output.type]
+        	.map[javaNames.toJavaType(it).name]
 	}
 }

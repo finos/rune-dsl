@@ -123,7 +123,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 			func test:
 				inputs: attrIn Quote (0..1)
 				output: attrOut Quote (0..1)
-				assign-output attrOut -> action:
+				set attrOut -> action:
 					<|>
 			
 		''' >= #['ActionEnum -> cancel', 'ActionEnum -> correct', 'ActionEnum -> new', 'attrIn', 'attrOut', 'test', '"Value"', '(', '<', '[', 'empty', 'False', 'if', 'item', 'True']

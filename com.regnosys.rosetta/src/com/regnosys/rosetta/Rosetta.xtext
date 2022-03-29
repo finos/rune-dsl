@@ -123,21 +123,22 @@ PostCondition returns Condition:
 ;
 
 Operation:
-	AssignOutputOperation | SetOutputOperation
+	AssignOutputOperation | OutputOperation
 ;
 
+// deprecated - to be deleted once all models updated
 AssignOutputOperation:
 	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
 	expression = RosettaCalcExpression assignAsKey?='as-key'?
 ;
 
-SetOutputOperation:
-	'set' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
-		expression = ListOperation
+OutputOperation:
+	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
+		expression = RosettaCalcExpression assignAsKey?='as-key'?
 ;
 
 Segment:
-	FEATURE_CALL_SEPARATOR attribute = [Attribute|ValidID] ('['index = INT']')?(next = Segment)?;
+	FEATURE_CALL_SEPARATOR attribute = [Attribute|ValidID] (next = Segment)?;
 
 EnumValueReference returns RosettaEnumValueReference:
 	enumeration=[RosettaEnumeration|QualifiedName] FEATURE_CALL_SEPARATOR value=[RosettaEnumValue|ValidID]
@@ -148,7 +149,7 @@ EmptyLiteral:
 ;
 
 ListLiteral:
-	'[' elements += RosettaCalcExpression (',' elements += RosettaCalcExpression )* ']';
+	{ListLiteral} '[' (elements += RosettaCalcExpression (',' elements += RosettaCalcExpression )*)? ']';
 
 // old stuff
 RosettaRootElement:
@@ -208,7 +209,7 @@ RosettaRecordFeature returns RosettaTypedFeature:
 ;
 
 RosettaParameter:
-	RosettaNamed RosettaTyped isArray?='[]'?
+	RosettaNamed RosettaTyped (isArray?='[' ']')?
 ;
 
 RosettaLibraryFunction returns RosettaExternalFunction:
@@ -279,6 +280,7 @@ RosettaSynonym:
 RosettaSynonymBody:
 	( 'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? ('meta' (metaValues += STRING ',')* metaValues += STRING)? 
 		| 'hint' (hints+=STRING ',')* hints+=STRING
+		| 'merge' merge=RosettaMergeSynonymValue
 		| mappingLogic=RosettaMappingSetTo 
 		| 'meta' (metaValues += STRING ',')* metaValues += STRING)
 	
@@ -297,6 +299,9 @@ RosettaMetaSynonymValue  returns RosettaSynonymValueBase :
 	name = STRING (refType=RosettaSynonymRef value=INT)?
 	('path' path = STRING)? 
 	('maps' maps=INT)?
+;
+RosettaMergeSynonymValue :
+	name = STRING ('when' 'path' '<>' excludePath=STRING)?
 ;
 
 RosettaEnumSynonym:
@@ -482,11 +487,11 @@ RosettaCalcExpression returns RosettaExpression:
 ;
 
 RosettaCalcOr returns RosettaExpression:
-	RosettaCalcAnd ( =>({RosettaBinaryOperation.left=current} operator=('or')) right=RosettaCalcAnd)*
+	RosettaCalcAnd ( =>({LogicalOperation.left=current} operator=('or')) right=RosettaCalcAnd)*
 ;
 
 RosettaCalcAnd returns RosettaExpression:
-	RosettaCalcExists ( =>({RosettaBinaryOperation.left=current} operator=('and')) right=RosettaCalcExists)*
+	RosettaCalcExists ( =>({LogicalOperation.left=current} operator=('and')) right=RosettaCalcExists)*
 ;
 
 RosettaCalcExists returns RosettaExpression:
@@ -501,19 +506,19 @@ RosettaCalcExists returns RosettaExpression:
 ;
 
 RosettaCalcEquality returns RosettaExpression:
-	RosettaCalcComparison ( =>({RosettaBinaryOperation.left=current} (cardOp=('all'|'any'))? operator=('='|'<>')) right=RosettaCalcComparison)*
+	RosettaCalcComparison ( =>({EqualityOperation.left=current} (cardOp=('all'|'any'))? operator=('='|'<>')) right=RosettaCalcComparison)*
 ;
 	
 RosettaCalcComparison returns RosettaExpression:
-	RosettaCalcAdditive ( =>({RosettaBinaryOperation.left=current} (cardOp=('all'|'any'))? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
+	RosettaCalcAdditive ( =>({ComparisonOperation.left=current} (cardOp=('all'|'any'))? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
 ;
 
 RosettaCalcAdditive returns RosettaExpression:
-	RosettaCalcMultiplicative ( =>({RosettaBinaryOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*
+	RosettaCalcMultiplicative ( =>({ArithmeticOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*
 ;
 
 RosettaCalcMultiplicative returns RosettaExpression:
-	RosettaCalcCountOperation ( =>({RosettaBinaryOperation.left=current} operator=('*'|'/')) right=RosettaCalcCountOperation)*
+	RosettaCalcCountOperation ( =>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcCountOperation)*
 ;
 
 RosettaCalcCountOperation returns RosettaExpression:
@@ -527,15 +532,13 @@ ListOperation returns RosettaExpression:
 
 RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
-	( =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])? distinct ?= 'distinct'? toOne ?= 'only-element'?)*
+	( =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])? onlyElement ?= 'only-element'?)*
 ;
 
 RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConditionalExpression
-	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|QualifiedName] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' distinct ?= 'distinct'? toOne ?= 'only-element'?
-	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] distinct ?= 'distinct' toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
-	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] distinct ?= 'distinct' // Hack to allow "only-element" only for attribute and alias callables
-	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] toOne ?= 'only-element' // Hack to allow "only-element" only for attribute and alias callables
+	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|QualifiedName] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' onlyElement ?= 'only-element'?
+	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] onlyElement ?= 'only-element'
 	| RosettaCallableCall
 	| RosettaLiteral
 	| RosettaParenthesisCalcExpression
@@ -552,7 +555,20 @@ OptionalClosureParameter returns ClosureParameter:
 ;
 
 enum ListOperationKind:
-	filter | map | sum | flatten
+	filter 
+	| map 
+	| flatten 
+	| distinct 
+	| only_element = "only-element" 
+	| reduce 
+	| sort 
+	| reverse 
+	| join 
+	| sum 
+	| min 
+	| max 
+	| first
+	| last
 ;
 RosettaCalcConditionalExpression returns RosettaExpression:
 	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?

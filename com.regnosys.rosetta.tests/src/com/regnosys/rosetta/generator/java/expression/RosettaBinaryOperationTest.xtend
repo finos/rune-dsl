@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.calculation.FuncGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
@@ -18,13 +17,14 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaBinaryOperationTest {
 	
 	@Inject extension CodeGeneratorTestHelper
-	@Inject extension FuncGeneratorHelper
+	@Inject extension FunctionGeneratorHelper
 	
 	Map<String, Class<?>> classes
 	
@@ -50,49 +50,49 @@ class RosettaBinaryOperationTest {
 			func FeatureCallEqualToLiteral:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> before = 5
 			
 			func FeatureCallNotEqualToLiteral:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> before <> 5
 			
 			func FeatureCallEqualToFeatureCall:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> before = foo -> bar -> after
 			
 			func FeatureCallListEqualToFeatureCall:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> before = foo -> baz -> other
 			
 			func FeatureCallNotEqualToFeatureCall:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> before <> foo -> bar -> after
 			
 			func FeatureCallListNotEqualToFeatureCall:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> before <> foo -> baz -> other
 			
 			func FeatureCallsEqualToLiteralOr:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> before = 5 or foo -> baz -> other = 5
 			
 			func FeatureCallsEqualToLiteralAnd:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> before = 5 and foo -> bar -> after = 5
 			
 			««« TODO tests compilation only, add unit test
@@ -101,7 +101,7 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				alias values : [foo -> bar -> before, foo -> baz -> other]
-				assign-output result:
+				set result:
 					values contains foo -> bar -> after
 						or values contains foo -> baz -> bazValue
 
@@ -110,7 +110,7 @@ class RosettaBinaryOperationTest {
 			func MultipleAndFeatureCallsEqualToMultipleOrFeatureCalls:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 				//	(foo -> bar -> before and foo -> baz -> other) = (foo -> bar -> after and foo -> baz -> bazValue)
 				[foo -> bar -> before,  foo -> baz -> other] = [foo -> bar -> after, foo -> baz -> bazValue]
 
@@ -119,7 +119,7 @@ class RosettaBinaryOperationTest {
 			func FeatureCallComparisonOr:
 				inputs: foo Foo(1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					(foo -> bar -> before = foo -> baz -> other) or (foo -> bar -> after = foo -> baz -> bazValue)
 
 			««« TODO tests compilation only, add unit test
@@ -127,7 +127,7 @@ class RosettaBinaryOperationTest {
 			func FeatureCallComparisonAnd:
 				inputs: foo Foo(1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					(foo -> bar -> before = foo -> baz -> other) and (foo -> bar -> after = foo -> baz -> bazValue)
 			
 			««« TODO tests compilation only, add unit test
@@ -135,7 +135,7 @@ class RosettaBinaryOperationTest {
 			func MultipleOrFeatureCallEqualToLiteral:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					//		(foo -> bar -> before or foo -> bar -> after or foo -> baz -> other) = 5.0
 					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] contains 5.0
 			
@@ -144,7 +144,7 @@ class RosettaBinaryOperationTest {
 			func MultipleAndFeatureCallEqualToLiteral:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					// (foo -> bar -> before and foo -> bar -> after and foo -> baz -> other) = 5.0
 					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] = 5.0
 			
@@ -153,7 +153,7 @@ class RosettaBinaryOperationTest {
 			func AliasFeatureCallEqualToLiteral:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					AliasBefore(foo) -> numbers = 5
 			
 			««« TODO tests compilation only, add unit test
@@ -161,7 +161,7 @@ class RosettaBinaryOperationTest {
 			func AliasFeatureCallEqualToFeatureCall:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					AliasBefore(foo) = AliasAfter(foo)
 
 			««« TODO tests compilation only, add unit test
@@ -169,7 +169,7 @@ class RosettaBinaryOperationTest {
 			func AliasFeatureCallsEqualToLiteralOr:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					AliasBefore(foo) -> numbers = 5 or  AliasOther(foo) -> numbers = 5
 			
 			««« TODO tests compilation only, add unit test
@@ -177,7 +177,7 @@ class RosettaBinaryOperationTest {
 			func AliasFeatureCallsEqualToLiteralAnd:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					AliasBefore(foo) -> numbers = 5 and AliasOther(foo) -> numbers = 5
 			
 			««« TODO tests compilation only, add unit test
@@ -185,7 +185,7 @@ class RosettaBinaryOperationTest {
 			func AliasMultipleOrFeatureCallsEqualToMultipleOrFeatureCalls:
 				inputs: foo Foo(1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					(AliasBefore(foo) -> numbers exists
 					or AliasOther(foo) -> numbers exists) =
 					(AliasAfter(foo) -> numbers contains foo -> baz -> bazValue)
@@ -195,7 +195,7 @@ class RosettaBinaryOperationTest {
 			func AliasMultipleOrs:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					AliasBeforeOrAfterOrOther(foo) -> numbers contains 5.0
 			
 			««« TODO tests compilation only, add unit test
@@ -203,7 +203,7 @@ class RosettaBinaryOperationTest {
 			func MultipleGreaterThanComparisonsWithOrAnd:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> before > 5 
 						or ( foo -> baz -> other > 10 and foo -> bar -> after > 15 )
 						or foo -> baz -> bazValue > 20
@@ -211,7 +211,7 @@ class RosettaBinaryOperationTest {
 			func FeatureCallGreatherThan:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
-				assign-output result:
+				set result:
 					foo -> bar -> before > foo -> bar2 -> before
 			
 			««« Aliases
@@ -219,23 +219,23 @@ class RosettaBinaryOperationTest {
 			func AliasBefore:
 				inputs: foo Foo (1..1)
 				output: result NumberList (1..1)
-				assign-output result -> numbers: foo -> bar -> before
+				set result -> numbers: foo -> bar -> before
 			
 			func AliasAfter:
 				inputs: foo Foo (1..1)
 				output: result NumberList (1..1)
-				assign-output result -> numbers : foo -> bar -> after
+				set result -> numbers : foo -> bar -> after
 			
 			func AliasOther:
 				inputs: foo Foo (1..1)
 				output: result NumberList (1..1)
-				assign-output result -> numbers : foo -> baz -> other
+				set result -> numbers : foo -> baz -> other
 			
 			
 			func AliasBeforeOrAfterOrOther:
 				inputs: foo Foo (1..1)
 				output: result NumberList (1..1)
-				assign-output result -> numbers : [
+				set result -> numbers : [
 					foo -> bar -> before,
 					foo -> bar -> after,
 					foo -> baz -> other
@@ -343,7 +343,7 @@ class RosettaBinaryOperationTest {
 				output: 
 					result boolean (1..1)
 			
-				assign-output result:
+				set result:
 					foo -> attrBoolean or foo -> attrNumber = 5
 			
 			type Foo:
@@ -363,7 +363,6 @@ class RosettaBinaryOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import java.math.BigDecimal;
-				import java.util.Arrays;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -384,6 +383,7 @@ class RosettaBinaryOperationTest {
 					
 					private Boolean assignOutput(Boolean result, Foo foo) {
 						result = ComparisonResult.of(MapperS.of(foo).<Boolean>map("getAttrBoolean", _foo -> _foo.getAttrBoolean())).or(areEqual(MapperS.of(foo).<BigDecimal>map("getAttrNumber", _foo -> _foo.getAttrNumber()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)).get();
+						
 						return result;
 					}
 				
@@ -411,7 +411,7 @@ class RosettaBinaryOperationTest {
 				output: 
 					result boolean (1..1)
 			
-				assign-output result:
+				set result:
 					foo -> attrBoolean and foo -> attrNumber = 5
 			
 			type Foo:
@@ -431,7 +431,7 @@ class RosettaBinaryOperationTest {
 				output: 
 					result boolean (1..1)
 			
-				assign-output result:
+				set result:
 					foo -> attrNumber = 5 and foo -> attrBoolean
 			
 			type Foo:
@@ -451,7 +451,7 @@ class RosettaBinaryOperationTest {
 				output:
 					result boolean (1..1)
 				
-				assign-output result:
+				set result:
 					( foo -> x1 and foo -> x2 ) exists
 			
 			type Foo:
@@ -469,7 +469,6 @@ class RosettaBinaryOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
-				import java.util.Arrays;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -490,6 +489,7 @@ class RosettaBinaryOperationTest {
 					
 					private Boolean assignOutput(Boolean result, Foo foo) {
 						result = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX1", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX2", _foo -> _foo.getX2())))).get();
+						
 						return result;
 					}
 				
@@ -517,7 +517,7 @@ class RosettaBinaryOperationTest {
 				output:
 					result boolean (1..1)
 				
-				assign-output result:
+				set result:
 					( foo -> x1 and foo -> x2 ) exists
 			
 			type Foo:
@@ -535,7 +535,6 @@ class RosettaBinaryOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
-				import java.util.Arrays;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -556,6 +555,7 @@ class RosettaBinaryOperationTest {
 					
 					private Boolean assignOutput(Boolean result, Foo foo) {
 						result = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>mapC("getX1", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX2", _foo -> _foo.getX2())))).get();
+						
 						return result;
 					}
 				

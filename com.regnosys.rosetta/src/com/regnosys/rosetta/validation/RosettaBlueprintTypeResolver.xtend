@@ -43,6 +43,7 @@ import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
@@ -595,6 +596,10 @@ class RosettaBlueprintTypeResolver {
 		return getInput(expr.expression)
 	}
 	
+	def dispatch RosettaType getInput(ListOperation expr) {
+		return getInput(expr.receiver)
+	}
+	
 	def dispatch RosettaType getInput(RosettaCallableWithArgsCall expr) {
 		if (expr.args.size==0) return null
 		val inputs = expr.args.map[getInput]
@@ -605,7 +610,7 @@ class RosettaBlueprintTypeResolver {
 	def dispatch RosettaType getInput(Void typed) {
 		return null
 	}
-
+	
 	def dispatch RosettaType getOutput(RosettaExpression expr) {
 		var st = RosettaFactory.eINSTANCE.createRosettaBasicType
 		st.name = expr.getRType.name
@@ -663,6 +668,17 @@ class RosettaBlueprintTypeResolver {
 
 	def dispatch RosettaType getOutput(RosettaTyped typed) {
 		return typed.type
+	}
+	
+	def dispatch RosettaType getOutput(ListOperation op) {
+		switch (op.operationKind) {
+			case MAP: {
+				return op.body.output
+			}
+			default: {
+				return op.receiver.output
+			}
+		}
 	}
 
 	def dispatch RosettaType getOutput(RosettaFeatureCall call) {

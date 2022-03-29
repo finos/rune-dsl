@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
-import com.regnosys.rosetta.generator.java.function.RosettaFunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
@@ -23,12 +22,13 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
+import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
 
 class DataRuleGenerator {
 	@Inject ExpressionGenerator expressionHandler
 	@Inject extension RosettaExtensions
 	@Inject extension ImportManagerExtension
-	@Inject RosettaFunctionDependencyProvider funcDependencies
+	@Inject FunctionDependencyProvider funcDependencies
 	
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, Condition ele, String version) {
 		val classBody = tracImports(ele.dataRuleClassBody(data, names, version))

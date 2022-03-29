@@ -43,6 +43,7 @@ import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ListOperation
+import com.regnosys.rosetta.rosetta.simple.ListOperationKind
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -57,8 +58,6 @@ import java.math.BigDecimal
 import java.util.Arrays
 import java.util.HashMap
 import java.util.Optional
-import org.eclipse.xtend.lib.annotations.Accessors
-import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
@@ -79,22 +78,18 @@ class ExpressionGenerator {
 	@Inject extension Util
 	@Inject extension ListOperationExtensions
 	
-	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
-		expr.javaCode(params, true);
-	}
-	
 	/**
 	 * convert a rosetta expression to code
 	 * ParamMpa params  - a map keyed by classname or positional index that provides variable names for expression parameters
 	 */
-	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params, boolean isLast) {
+	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		switch (expr) {
 			RosettaFeatureCall : {
 				var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
 				if (expr.eContainer!==null && expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
 					autoValue=false;
 				}
-				featureCall(expr, params, isLast, autoValue)
+				featureCall(expr, params, autoValue)
 			}
 			RosettaOnlyExistsExpression : {
 				onlyExistsExpr(expr, params)
@@ -142,7 +137,7 @@ class ExpressionGenerator {
 				'''«importMethod(ExpressionOperators,"disjoint")»(«expr.container.javaCode(params)», «expr.disjoint.javaCode(params)»)'''
 			}
 			RosettaParenthesisCalcExpression : {
-				expr.expression.javaCode(params, isLast)
+				expr.expression.javaCode(params)
 			}
 			EmptyLiteral : {
 				'''null'''
@@ -301,13 +296,13 @@ class ExpressionGenerator {
 				// The current container (Data) is stored in Params, but we need also look for superTypes
 				// so we could also do: (call.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
 				if(call.eContainer instanceof Data)
-					'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(call, false, true)»'''
+					'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(call, true)»'''
 				else
-					distinctOrOnlyElement('''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)''', expr.distinct, expr.toOne)
+					distinctOrOnlyElement('''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)''', false, expr.onlyElement)
 			}
 			ShortcutDeclaration : {
 				val multi = cardinalityProvider.isMulti(call)
-				distinctOrOnlyElement('''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)''', expr.distinct, expr.toOne)
+				distinctOrOnlyElement('''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)''', false, expr.onlyElement)
 			}
 			RosettaEnumeration: '''«call.toJavaType»'''
 			ClosureParameter: '''«call.getNameOrDefault.toDecoratedName»'''
@@ -329,13 +324,13 @@ class ExpressionGenerator {
 	/**
 	 * feature call is a call to get an attribute of an object e.g. Quote->amount
 	 */
-	private def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params, boolean isLast, boolean autoValue) {
+	private def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params, boolean autoValue) {
 		val feature = call.feature
 		val StringConcatenationClient right = switch (feature) {
 			Attribute:
-				feature.buildMapFunc(isLast, autoValue)
+				feature.buildMapFunc(autoValue)
 			RosettaMetaType: 
-				'''«feature.buildMapFunc(isLast)»'''
+				'''«feature.buildMapFunc»'''
 			RosettaEnumValue: 
 				return '''«MapperS».of(«feature.enumeration.toJavaType».«feature.convertValues»)'''
 			RosettaFeature: 
@@ -344,11 +339,11 @@ class ExpressionGenerator {
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.eClass.name)
 		}
 		
-		return distinctOrOnlyElement('''«javaCode(call.receiver, params, false)»«right»''', call.distinct, call.toOne)
+		return distinctOrOnlyElement('''«javaCode(call.receiver, params)»«right»''', false, call.onlyElement)
 	}
 	
-	private def StringConcatenationClient distinctOrOnlyElement(StringConcatenationClient code, boolean distinct, boolean toOne) {
-		return '''«IF toOne»«MapperS».of(«ENDIF»«IF distinct»«importWildCard(ExpressionOperators)»distinct(«ENDIF»«code»«IF distinct»)«ENDIF»«IF toOne».get())«ENDIF»'''
+	private def StringConcatenationClient distinctOrOnlyElement(StringConcatenationClient code, boolean distinct, boolean onlyElement) {
+		return '''«IF onlyElement»«MapperS».of(«ENDIF»«IF distinct»«importWildCard(ExpressionOperators)»distinct(«ENDIF»«code»«IF distinct»)«ENDIF»«IF onlyElement».get())«ENDIF»'''
 	}
 	
 	def private RosettaType containerType(RosettaFeature feature) {
@@ -455,7 +450,7 @@ class ExpressionGenerator {
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	def StringConcatenationClient buildMapFunc(Attribute attribute, boolean isLast, boolean autoValue) {
+	def StringConcatenationClient buildMapFunc(Attribute attribute, boolean autoValue) {
 		val mapFunc = attribute.buildMapFuncAttribute
 		if (attribute.card.isIsMany) {
 			if (attribute.metaAnnotations.nullOrEmpty)
@@ -509,7 +504,7 @@ class ExpressionGenerator {
 		return names.toMetaType(attribute, name)
 	}
 	
-	def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, boolean isLast) {
+	def static StringConcatenationClient buildMapFunc(RosettaMetaType meta) {
 		if (meta.name=="reference") {
 			'''.map("get«meta.name.toFirstUpper»", a->a.getGlobalReference())'''
 		}
@@ -526,35 +521,110 @@ class ExpressionGenerator {
 					.«IF op.isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.itemName» -> «op.body.javaCode(params)».get())'''
 			}
 			case MAP: {
-				val itemType =  op.itemType
+				val itemType =  op.inputType
 				val itemName =  op.itemName
-				val isOutputMulti =  op.outputMulti
+				val isBodyMulti =  op.isBodyExpressionMulti
 				val outputType =  op.outputType
+				val bodyExpr = op.body.javaCode(params)
+				
+				if (!op.isPreviousOperationMulti) {
+					if (isBodyMulti) {
+						'''
+						«op.receiver.javaCode(params)»
+							.mapSingleToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)'''
+					} else {
+						buildSingleItemListOperationOptionalBody(op, "mapSingleToItem", params)
+					}
+				} else {
+					if (op.isItemMulti) {
+						if (isBodyMulti) {
+							'''
+							«op.receiver.javaCode(params)»
+								.mapListToList((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)'''
+						} else {
+							'''
+							«op.receiver.javaCode(params)»
+								.mapListToItem((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperS»<«outputType»>) «bodyExpr»)'''
+						}
+					} else {
+						if (isBodyMulti) {
+							'''
+							«op.receiver.javaCode(params)»
+								.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)'''
+						} else {
+							buildSingleItemListOperationOptionalBody(op, "mapItem", params)
+						}
+					}
+				}
+			}
+			case FLATTEN: {
+				buildListOperationNoBody(op, "flattenList", params)
+			}
+			case DISTINCT, case ONLY_ELEMENT: {
+				distinctOrOnlyElement('''«op.receiver.javaCode(params)»''', op.operationKind === ListOperationKind.DISTINCT, op.operationKind === ListOperationKind.ONLY_ELEMENT)
+			}
+			case SUM: {
+				buildListOperationNoBody(op, "sum" + op.inputRawType, params)
+			}
+			case MIN: {
+				buildSingleItemListOperationOptionalBody(op, "min", params)
+			}
+			case MAX: {
+				buildSingleItemListOperationOptionalBody(op, "max", params)
+			}
+			case SORT: {
+				buildSingleItemListOperationOptionalBody(op, "sort", params)
+			}
+			case REVERSE: {
+				buildListOperationNoBody(op, "reverse", params)
+			}
+			case REDUCE: {
+				val item1 = op.parameters.head.name.toDecoratedName
+				val item2 = op.parameters.last.name.toDecoratedName
+				val outputType =  op.bodyRawType
 				val bodyExpr = op.body.javaCode(params)
 				'''
 				«op.receiver.javaCode(params)»
-					«IF op.isItemMulti»
-						«IF isOutputMulti»
-							.mapListToList((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
-						«ELSE»
-							.mapListToItem((/*«MapperC»<«itemType»>*/ «itemName») -> («MapperS»<«outputType»>) «bodyExpr»)
-						«ENDIF»
-						«ELSE»
-							«IF isOutputMulti»
-								.mapItemToList((/*«MapperS»<«itemType»>*/ «itemName») -> («MapperC»<«outputType»>) «bodyExpr»)
-							«ELSE»
-								.mapItem(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«outputType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)«ENDIF»«ENDIF»'''
-
+					.<«outputType»>reduce((«item1», «item2») -> («MapperS»<«outputType»>) «bodyExpr»)'''
 			}
-			case FLATTEN: {
+			case JOIN: {
 				'''
 				«op.receiver.javaCode(params)»
-					.flattenList()'''
-
+					.join(«IF op.body !== null»«op.body.javaCode(params)»«ELSE»«MapperS».of("")«ENDIF»)'''
+			}
+			case FIRST: {
+				buildListOperationNoBody(op, "first", params)
+			}
+			case LAST: {
+				buildListOperationNoBody(op, "last", params)
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported operationKind of " + op.operationKind)
 		}
+	}
+	
+	private def StringConcatenationClient buildListOperationNoBody(ListOperation op, String name, ParamMap params) {
+		'''
+		«op.receiver.javaCode(params)»
+			.«name»()'''	
+	}
+	
+	private def StringConcatenationClient buildSingleItemListOperationOptionalBody(ListOperation op, String name, ParamMap params) {
+		if (op.body === null) {
+			buildListOperationNoBody(op, name, params)
+		} else {
+			buildSingleItemListOperation(op, name, params)
+		}
+	}
+	
+	private def StringConcatenationClient buildSingleItemListOperation(ListOperation op, String name, ParamMap params) {
+		val itemType =  op.inputType
+		val itemName =  op.itemName
+		val outputType = op.outputType
+		val bodyExpr = op.body.javaCode(params)
+		'''
+		«op.receiver.javaCode(params)»
+			.«name»(/*«MapperS»<«itemType»>*/ «itemName» -> («MapperS»<«outputType»>) «bodyExpr»«IF !op.body.evalulatesToMapper».asMapper()«ENDIF»)'''	
 	}
 	
 	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute) {
@@ -653,6 +723,9 @@ class ExpressionGenerator {
 			RosettaCallableWithArgsCall :{
 				'''«expr.callable.name»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)'''
 			}
+			RosettaCallableCall : {
+				'''«expr.callable.name»'''
+			}
 
 			default :
 				'''Unsupported expression type of «expr.class.simpleName»'''
@@ -678,15 +751,5 @@ class ExpressionGenerator {
 	
 	def StringConcatenationClient toNodeLabel(RosettaBinaryOperation binOp) {
 		'''«binOp.left.toNodeLabel»«binOp.operator»«binOp.right.toNodeLabel»'''
-	}
-}
-
-@Accessors
-@FinalFieldsConstructor
-class Context {
-	final JavaNames names
-	boolean inFunctionCall
-	static def create(JavaNames names) {
-		new Context(names)
 	}
 }

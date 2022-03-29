@@ -47,8 +47,7 @@ class AnnotationRef {
 }
 
 abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
-	boolean distinct
-	boolean toOne
+	boolean onlyElement
 }
 
 
@@ -116,7 +115,9 @@ class AssignOutputOperation extends Operation {
 	boolean assignAsKey
 }
 
-class SetOutputOperation extends Operation {
+class OutputOperation extends Operation {
+	boolean add
+	boolean assignAsKey
 	refers AssignPathRoot input
 }
 
@@ -137,8 +138,18 @@ class ListOperation extends RosettaExpression {
 enum ListOperationKind {
 	filter
 	, map
-	, sum
 	, flatten
+	, only_element as "only-element"
+	, distinct
+	, reduce
+	, sort
+	, reverse
+	, join
+	, sum
+	, min
+	, max
+	, first
+	, last
 }
 
 class ClosureParameter extends RosettaCallable {
@@ -153,8 +164,6 @@ class ClosureParameter extends RosettaCallable {
 
 
 class Segment {
-	
-	Integer index
 	refers Attribute attribute
 	contains Segment next opposite prev
 	container Segment prev opposite next

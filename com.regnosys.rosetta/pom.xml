@@ -9,6 +9,13 @@
 	<artifactId>com.regnosys.rosetta</artifactId>
 	<packaging>eclipse-plugin</packaging>
 
+	<dependencies>
+		<dependency>
+            <groupId>org.eclipse.xsemantics</groupId>
+            <artifactId>org.eclipse.xsemantics.runtime</artifactId>
+            <version>${xsemantics.version}</version>
+        </dependency>
+	</dependencies>
 	<build>
 		<resources>
 			<!-- Make sure the .xcore file is part of the produced JAR. -->
@@ -105,7 +112,7 @@
 				<version>${xtextVersion}</version>
 				<executions>
 					<execution>
-						<id>xcore-generator</id>
+						<id>xcore-and-xsemantics-generator</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>
@@ -116,6 +123,14 @@
 					<!-- Disable APT : Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=487421 -->
 					<compilerTargetLevel>1.8 -proc:none</compilerTargetLevel>
 					<languages>
+						<language>
+							<setup>org.eclipse.xsemantics.dsl.XsemanticsStandaloneSetup</setup>
+							<outputConfigurations>
+								<outputConfiguration>
+									<outputDirectory>xsemantics-gen</outputDirectory>
+								</outputConfiguration>
+							</outputConfigurations>
+						</language>
 						<language>
 							<setup>org.eclipse.xtext.ecore.EcoreSupport</setup>
 						</language>
@@ -132,16 +147,14 @@
 						</language>
 					</languages>
 					<sourceRoots>
-						<root>${basedir}/model/</root>
+						<root>${basedir}/model</root>
+						<root>${basedir}/src</root>
+						<root>${basedir}/src-gen</root>
+						<root>${basedir}/emf-gen</root>
 					</sourceRoots>
 					<classPathLookupFilter>.*?(xtext|emf|rosetta).*</classPathLookupFilter>
 				</configuration>
 				<dependencies>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore</artifactId>
-						<version>${org.eclipse.emf.ecore-version}</version>
-					</dependency>
 					<dependency>
 						<groupId>org.eclipse.emf</groupId>
 						<artifactId>org.eclipse.emf.ecore.xmi</artifactId>
@@ -150,7 +163,7 @@
 					<dependency>
 						<groupId>org.eclipse.emf</groupId>
 						<artifactId>org.eclipse.emf.codegen.ecore</artifactId>
-						<version>${org.eclipse.emf.ecore-version}</version>
+						<version>${org.eclipse.emf.codegen.ecore-version}</version>
 					</dependency>
 					<dependency>
 						<groupId>org.eclipse.emf</groupId>
@@ -167,7 +180,12 @@
 						<artifactId>org.eclipse.emf.ecore.xcore</artifactId>
 						<version>${org.eclipse.emf.ecore.xcore-version}</version>
 					</dependency>
-			</dependencies>
+					<dependency>
+						<groupId>org.eclipse.xsemantics</groupId>
+						<artifactId>org.eclipse.xsemantics.dsl</artifactId>
+						<version>${xsemantics.version}</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.eclipse.xtend</groupId>
@@ -179,12 +197,7 @@
 				<artifactId>maven-clean-plugin</artifactId>
 				<configuration>
 					<filesets combine.children="append">
-						<fileset>
-							<directory>${basedir}/../com.regnosys.rosetta/emf-gen/</directory>
-							<includes>
-								<include>**/*</include>
-							</includes>
-						</fileset>
+						<!-- com.regnosys.rosetta -->
 						<fileset>
 							<directory>${basedir}/../com.regnosys.rosetta/src-gen/</directory>
 							<includes>
@@ -192,11 +205,24 @@
 							</includes>
 						</fileset>
 						<fileset>
-							<directory>${basedir}/../com.regnosys.rosetta.tests/src-gen/</directory>
+							<directory>${basedir}/../com.regnosys.rosetta/xtend-gen/</directory>
 							<includes>
 								<include>**/*</include>
 							</includes>
 						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta/emf-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta/xsemantics-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<!-- com.regnosys.rosetta.ide -->
 						<fileset>
 							<directory>${basedir}/../com.regnosys.rosetta.ide/src-gen/</directory>
 							<includes>
@@ -204,13 +230,65 @@
 							</includes>
 						</fileset>
 						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.ide/xtend-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<!-- com.regnosys.rosetta.lib -->
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.lib/xtend-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<!-- com.regnosys.rosetta.tests -->
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.tests/src-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.tests/xtend-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.tests/src-test/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.tests/test-resources/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<!-- com.regnosys.rosetta.ui -->
+						<fileset>
 							<directory>${basedir}/../com.regnosys.rosetta.ui/src-gen/</directory>
 							<includes>
 								<include>**/*</include>
 							</includes>
 						</fileset>
 						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.ui/xtend-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<!-- com.regnosys.rosetta.ui.tests -->
+						<fileset>
 							<directory>${basedir}/../com.regnosys.rosetta.ui.tests/src-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../com.regnosys.rosetta.ui.tests/xtend-gen/</directory>
 							<includes>
 								<include>**/*</include>
 							</includes>
@@ -233,15 +311,9 @@
 							<pluginExecutions>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											exec-maven-plugin
-										</artifactId>
-										<versionRange>
-											1.2.1
-										</versionRange>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>exec-maven-plugin</artifactId>
+										<versionRange>1.2.1</versionRange>
 										<goals>
 											<goal>java</goal>
 										</goals>

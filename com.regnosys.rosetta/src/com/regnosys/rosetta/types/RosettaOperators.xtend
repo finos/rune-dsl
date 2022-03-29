@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import com.google.inject.Singleton
 import java.util.List
 import java.util.Map
-import org.eclipse.xtend.lib.annotations.Data
 
 @Singleton
 class RosettaOperators {
@@ -144,10 +143,4 @@ class RosettaOperators {
 	def private void =>(BinaryOperation operation, RType result) {
 		binaryTypeMap.put(operation, result)
 	}
-}
-@Data
-package class BinaryOperation {
-	String operator
-	RBuiltinType left
-	RBuiltinType right
 }

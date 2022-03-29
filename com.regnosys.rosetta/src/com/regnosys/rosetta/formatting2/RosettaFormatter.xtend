@@ -9,7 +9,6 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
@@ -47,6 +46,7 @@ import org.eclipse.xtext.formatting2.IFormattableDocument
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatter
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -54,6 +54,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 	static val Procedure1<? super IHiddenRegionFormatter> NO_SPACE_PRESERVE_NEW_LINE = [setNewLines(0, 0, 1);noSpace]
 	static val Procedure1<? super IHiddenRegionFormatter> NO_SPACE_LOW_PRIO = [noSpace; lowPriority]
 	static val Procedure1<? super IHiddenRegionFormatter> ONE_SPACE = [oneSpace]
+	static val Procedure1<? super IHiddenRegionFormatter> ONE_SPACE_LOW_PRIO = [oneSpace; lowPriority]
 	static val Procedure1<? super IHiddenRegionFormatter> ONE_SPACE_PRESERVE_NEWLINE = [setNewLines(0, 0, 1); oneSpace]
 	static val Procedure1<? super IHiddenRegionFormatter> NEW_LINE = [setNewLines(1, 1, 2)]
 	
@@ -134,11 +135,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 	}
 	
 	private def void formatDefinition(Definable ele, extension IFormattableDocument document) {
-		if (ele.definition !== null)
-			ele.regionFor.keyword('>').append(NEW_LINE)
-	}
-	
-	private def void formatDefinition(RosettaDefinable ele, extension IFormattableDocument document) {
 		if (ele.definition !== null)
 			ele.regionFor.keyword('>').append(NEW_LINE)
 	}
@@ -371,6 +367,20 @@ class RosettaFormatter extends AbstractFormatter2 {
 		externalEnumValue.regionFor.keyword('+').append[oneSpace].prepend[newLine]
 		externalEnumValue.surround[indent]
 		formatChild(externalEnumValue.externalEnumSynonyms, document)
+	}
+	def dispatch void format(ListOperation operation,
+		extension IFormattableDocument document) {
+		operation.receiver.format
+		operation.regionFor.assignment(listOperationAccess.operationKindAssignment_1_0_0_1).surround(ONE_SPACE_PRESERVE_NEWLINE)
+		operation.parameters.forEach[format]
+		interior(
+			operation.regionFor.keyword('[').prepend(ONE_SPACE_LOW_PRIO).append(NO_SPACE_PRESERVE_NEW_LINE),
+			operation.regionFor.keyword(']').prepend(NO_SPACE_PRESERVE_NEW_LINE),
+			INDENT
+		)
+		operation.regionFor.keywords(',').forEach[prepend(NO_SPACE).append(ONE_SPACE_PRESERVE_NEWLINE)]
+		operation.body.format
+		
 	}
 	
 	

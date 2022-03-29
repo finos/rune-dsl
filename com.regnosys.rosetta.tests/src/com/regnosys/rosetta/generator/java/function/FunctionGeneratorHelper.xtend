@@ -1,7 +1,6 @@
-package com.regnosys.rosetta.generator.java.calculation
+package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.function.FuncGenerator
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -20,9 +19,9 @@ import java.util.Map
 import com.rosetta.model.lib.functions.RosettaFunction
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 
-class FuncGeneratorHelper {
+class FunctionGeneratorHelper {
 
-	@Inject FuncGenerator generator
+	@Inject FunctionGenerator generator
 	@Inject extension ModelHelper
 	@Inject extension CodeGeneratorTestHelper
 	@Inject RegisteringFileSystemAccess fsa
