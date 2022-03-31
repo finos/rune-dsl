@@ -1808,10 +1808,6 @@ type EmissionPerformanceStandardsReport:
         [ruleReference CarbonMonoxide]
 ```
 
-{{< notice info "Note" >}}
-An earlier version of the report definition syntax allows to specify the reportable fields directly using `with fields`, instead of specifying a data type for the report using `with type`. This earlier version was deemed not robust enough and is being deprecated, because the report output was an un-typed set of key-value pairs rather than a model component itself.
-{{< /notice >}}
-
 To ensure a model's regulatory framework integrity, the authority, corpus and all the rules referred to in a report definition must exist as model components in the model's regulatory hierarchy. A report assembles all those components into a recipe, which firms can directly implement to comply with the data reporting requirement.
 
 The next section describes how to define reporting rules as model components.
