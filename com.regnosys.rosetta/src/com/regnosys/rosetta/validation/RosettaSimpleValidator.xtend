@@ -630,12 +630,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 		else if (reduce.reduceBP!==null) {
 			val node = buildTypeGraph(reduce.reduceBP.blueprint.nodes, reduce.reduceBP.output)
-			if (!checkSingle(node, false)) {
+			if (!checkBPNodeSingle(node, false)) {
 				error('''The expression for maxBy must return a single value but the rule «reduce.reduceBP.blueprint.name» can return multiple values''', reduce, BLUEPRINT_REDUCE__REDUCE_BP)
 			}
 		}
 	}
-	
+
 	@Check
 	def void checkBlueprintFilter(BlueprintFilter filter) {
 		if (filter.filter!==null) {
@@ -643,92 +643,52 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			if (exrType!==RBuiltinType.BOOLEAN) {
 				error('''The expression for Filter must return a boolean the current expression returns «exrType.name»''', filter, BLUEPRINT_FILTER__FILTER, TYPE_ERROR)
 			}
-			
+
 			val multi = cardinality.isMulti(filter.filter)
 			if (multi) {
 				error('''The expression for Filter must return a single value the current expression can return multiple values''', filter, BLUEPRINT_FILTER__FILTER)
 			}
-			
+
 		}
 		else if (filter.filterBP!==null) {
 			val node = buildTypeGraph(filter.filterBP.blueprint.nodes, filter.filterBP.output)
-			if (!checkSingle(node, false)) {
+			if (!checkBPNodeSingle(node, false)) {
 				error('''The expression for Filter must return a single value but the rule «filter.filterBP.blueprint.name» can return multiple values''', filter, BLUEPRINT_FILTER__FILTER_BP)
 			}
 		}
 	}
-	
+
 	@Check
 	def void checkReport(RosettaBlueprintReport report) {
-		var index = 0
-		for (bp: report.reportingRules) {
-			try {
-				val node = buildTypeGraph(bp.nodes, bp.output)
-				
-				// check cardinality
-				if (node.repeatable) {
-					if (checkSingle(node, false)) {
-						error("Report field from repeatable rule "+ bp.name +" should be of multiple cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
-					}
-				} else {
-					if (!checkSingle(node, false)) {
-						warning("Report field from rule "+ bp.name +" should be of single cardinality", report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
-					}
-				}
-				// check duplicate report fields
-				checkDuplicateReportFields(bp.name, node, report)
-				
-			} catch (BlueprintUnresolvedTypeException e) {
-				error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
-			}
-			index++
-		}
-			
 		if (report.reportType !== null) {
 			checkReportDuplicateRules(report.reportType, newHashSet, newHashSet)
 		}
 	}
-	
-	def boolean checkSingle(TypedBPNode node, boolean isAlreadyMultiple) {
-		val multiple = switch(node.cardinality.get(0)) {
-			case UNCHANGED: {isAlreadyMultiple}
-			case EXPAND: {
-				true
-			}
-			case REDUCE: {
-				false
-			}
-		}
-		
-		if (node.next!==null) {
-			return checkSingle(node.next, multiple)
-		}
-		else {
-			return !multiple
-		}
-	}
-	
-	/**
-	 * Checks if report blueprint descendant rules are also included in the report.
-	 */
-	def void checkDuplicateReportFields(String initialBpName, TypedBPNode node, RosettaBlueprintReport report) {
-		// if node contains an andNode check that it is not in the list of reporting rules
-		node.andNodes.forEach[
-			val andNode = it.node
-			if (andNode instanceof BlueprintRef) {
-				val bp = andNode.blueprint
-				val index = report.reportingRules.indexOf(bp)
-				if (index != -1)
-					error("Duplicate report field " + bp.name + ".  Parent report field " + initialBpName + " already adds " + bp.name + " to the report.", 
-						report, ROSETTA_BLUEPRINT_REPORT__REPORTING_RULES, index)
-			}
-		]
-		// check descendant node
-		if (node.next !== null) {
-			checkDuplicateReportFields(initialBpName, node.next, report)
-		}	
-	}
-	
+
+    /**
+     * Recursively check all report attributes
+     */
+    private def void checkReportDuplicateRules(Data dataType, Set<RosettaBlueprint> rules, Set<Data> types) {
+        val attrs = dataType.allAttributes
+        attrs.forEach[attr|
+            val ruleRef = attr.ruleReference
+            if(ruleRef !== null) {
+                val bp = ruleRef.reportingRule
+                // check duplicates
+                if (!rules.add(bp)) {
+                    error("Duplicate reporting rule " + bp.name, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+                }
+            }
+            // check nested report attributes types
+            val attrType = attr.type
+            if (attrType instanceof Data) {
+                if (!types.contains(attrType)) {
+                    attrType.checkReportDuplicateRules(rules, types)
+                }
+            }
+        ]
+    }
+
 	/**
 	 * Check all report attribute type and cardinality match the associated reporting rules
 	 */
@@ -738,11 +698,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if(ruleRef !== null) {
 			val bp = ruleRef.reportingRule
 			val node = buildTypeGraph(bp.nodes, bp.output)
-			
+
 			val attrExt = attr.toExpandedAttribute
 			val attrSingle = attrExt.cardinalityIsSingleValue
-			val ruleSingle = checkSingle(node, false)
-			
+			val ruleSingle = checkBPNodeSingle(node, false)
+
 			// check cardinality
 			if (attrSingle != ruleSingle) {
 				val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
@@ -757,7 +717,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 					'''whereas the reporting rule «bp.name» has type «IF bpType !== null»«bpType»«ELSEIF bpGenericType !== null»«bpGenericType»«ELSE»unknown«ENDIF».'''
 				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
-			
+
 			// check basic type cardinality supported
 			if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
 				val unsupportedWarning = '''Report attributes with basic type («attr.type.name») and multiple cardinality is not supported.'''
@@ -765,32 +725,26 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}
 		}
 	}
-	
-	
-	/**
-	 * Recursively check all report attributes 
-	 */
-	private def void checkReportDuplicateRules(Data dataType, Set<RosettaBlueprint> rules, Set<Data> types) {
-		val attrs = dataType.allAttributes
-		attrs.forEach[attr|
-			val ruleRef = attr.ruleReference
-			if(ruleRef !== null) {
-				val bp = ruleRef.reportingRule
-				// check duplicates
-				if (!rules.add(bp)) {
-					error("Duplicate reporting rule " + bp.name, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
-				}
+
+	def boolean checkBPNodeSingle(TypedBPNode node, boolean isAlreadyMultiple) {
+		val multiple = switch(node.cardinality.get(0)) {
+			case UNCHANGED: {isAlreadyMultiple}
+			case EXPAND: {
+				true
 			}
-			// check nested report attributes types
-			val attrType = attr.type
-			if (attrType instanceof Data) {
-				if (!types.contains(attrType)) {
-					attrType.checkReportDuplicateRules(rules, types)
-				}
+			case REDUCE: {
+				false
 			}
-		]
+		}
+
+		if (node.next!==null) {
+			return checkBPNodeSingle(node.next, multiple)
+		}
+		else {
+			return !multiple
+		}
 	}
-	
+
 	@Check
 	def checkExpressionCardinality(RosettaBinaryOperation binOp) {
 		val leftCard = cardinality.isMulti(binOp.left)

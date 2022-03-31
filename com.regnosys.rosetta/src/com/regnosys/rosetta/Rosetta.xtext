@@ -654,7 +654,7 @@ RosettaBlueprintReport:
 	'when'
 	eligibilityRules+=[RosettaBlueprint] ( 'and' eligibilityRules+=[RosettaBlueprint])*
 	('using' 'standard' reportingStandard=[RosettaCorpus])?
-	'with' ('fields' reportingRules += [RosettaBlueprint]* | 'type' reportType=[Data|QualifiedName])
+	'with' 'type' reportType=[Data|QualifiedName]
 ;
 
 
