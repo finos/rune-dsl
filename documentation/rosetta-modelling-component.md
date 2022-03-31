@@ -1524,7 +1524,7 @@ This allows a path of input document elements to be matched to a single Rosetta 
 
 ##### Maps 2
 
-Mappings are expected to be one-to-one with each input value mapping to one Rosetta value. By default if a single input value is mapped to multiple Rosetta output values this is considered an error. However by adding the \"maps 2\" keyword this can be overridden allowing the input value to map to many output Rosetta values.
+Mappings are expected to be one-to-one with each input value mapping to one Rosetta value. By default if a single input value is mapped to multiple Rosetta output values this is considered an error. However by adding the `maps 2` keyword this can be overridden allowing the input value to map to many output Rosetta values.
 
 ##### Meta
 
@@ -1611,11 +1611,11 @@ interestRatePayout InterestRatePayout (0..*)
 
 #### Conditional Mappings
 
-Conditional mappings allow to build more complex mappings. Conditional mappings come in two types: `set to` and `set when`.
+Conditional mappings allow to build more complex mappings. Conditional mappings come in two types: *set to* and *set when*.
 
 ##### Set To Mapping
 
-Set-to mappings are used to set the value of the Rosetta attribute to a constant value. They don\'t attempt to use any data from the input document as the value for the attribute and a synonym value must not be given. The type of the constant must be convertible to the type of the attribute. The constant value can be given as a string (converted as necessary) or an enum - e.g. :
+A set to mapping is used to set the value of an attribute to a constant value. They don\'t attempt to use any data from the input document as the value for the attribute and a synonym value must not be given. The type of the constant must be convertible to the type of the attribute. The constant value can be given as a string (converted as necessary) or an enum - e.g. :
 
 ```
 period PeriodEnum (1..1)
@@ -1624,14 +1624,14 @@ itemName string (1..1) <"In this ....">;
   [synonym DTCC_11_0 set to "comment"]
 ```
 
-A `set to` mapping can be conditional on a [when clause](#when-clause) - e.g. :
+A set to mapping can be conditional on a [when clause](#when-clause) - e.g.:
 
 ```
 itemName string (1..1) <"In this ....">;
   [synonym DTCC_11_0 set to "comment" when path = "PartyWorkflowFields.comment"]
 ```
 
-Multiple `set to` can be combined in one synonym. They will be evaluated in the order specified with the first matching value used - e.g. :
+Multiple set to mappings can be combined in one synonym. They will be evaluated in the order specified with the first matching value used - e.g. :
 
 ```
 xField string (1..1);
@@ -1643,7 +1643,7 @@ xField string (1..1);
 
 ##### Set When Mapping
 
-A `set when` mapping is used to set an attribute to a value derived from the input document if a given when clause is met -  e.g. :
+A set when mapping is used to set an attribute to a value derived from the input document if a given when clause is met -  e.g. :
 
 ```
 execution Execution (0..1) <"The execution ...">;
@@ -1658,7 +1658,7 @@ A set when synonym can include a default to set an attribute to a constant value
 
 #### When Clause
 
-There are three types of `when` clauses: test expression, input path expression and output path expression.
+There are three types of *when* clauses: test expression, input path expression and output path expression.
 
 ##### Test Expression
 
