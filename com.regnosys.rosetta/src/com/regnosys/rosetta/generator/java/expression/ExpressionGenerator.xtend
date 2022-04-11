@@ -728,22 +728,27 @@ class ExpressionGenerator {
 			}
 
 			default :
-				'''Unsupported expression type of «expr.class.simpleName»'''
+				'''Unsupported expression type of «expr?.class?.simpleName»'''
 		}
 	}
 	
 	def StringConcatenationClient toNodeLabel(RosettaFeatureCall call) {
 		val feature = call.feature
 		val right = switch feature {
-			RosettaMetaType, Attribute, RosettaEnumValue: feature.name
-			default: throw new UnsupportedOperationException("Unsupported expression type "+feature.getClass)
+			RosettaMetaType, 
+			Attribute, 
+			RosettaEnumValue: 
+				feature.name
+			default: throw new UnsupportedOperationException("Unsupported expression type (feature) " + feature?.getClass)
 		}
 		
 		val receiver = call.receiver
 		val left = switch receiver {
-			RosettaCallableCall: '''''' //(receiver.callable as RosettaClass).name
-			RosettaFeatureCall: toNodeLabel(receiver)
-			default: throw new UnsupportedOperationException("Unsupported expression type")
+			RosettaCallableCall, 
+			RosettaCallableWithArgsCall, 
+			RosettaFeatureCall: 
+				toNodeLabel(receiver)
+			default: throw new UnsupportedOperationException("Unsupported expression type (receiver) " + receiver?.getClass)
 		}
 		
 		'''«left»->«right»'''
