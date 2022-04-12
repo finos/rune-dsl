@@ -1,7 +1,7 @@
 ---
 title: "Rosetta DSL Overview"
 date: 2022-02-09T00:38:25+09:00
-description: "Rosetta is a Domain-Specific Language (DSL) designed for the financial industry. Its purpose is to support the modelling of the industry's various operational processes (data formats, business logic, validation rules, etc.) to promote the consistency and inter-operability of their implementations."
+description: "Rosetta is a Domain-Specific Language (DSL) that supports the modelling of operational processes for the financial markets' industry. Its purpose is to promote consistency and inter-operability between the various implementations of these processes."
 draft: false
 weight: 1
 ---
@@ -14,18 +14,19 @@ weight: 1
 
 ## What is the Rosetta DSL
 
-*Rosetta* is a Domain-Specific Language (DSL) designed for the financial industry. It is designed to support the modelling of the industry's various operational processes (data formats, business logic, validation rules, etc.) to promote the consistency and inter-operability of their implementations. In software engineering, a [domain model](https://en.wikipedia.org/wiki/Domain_model) is a conceptual model of the domain that incorporates both *data* and *behaviour* (i.e. rules and processes).
+*Rosetta* is a Domain-Specific Language (DSL) that supports the modelling of operational processes for the financial markets' industry. Its purpose is to promote consistency and inter-operability between the various implementations of these processes. In software engineering, a [domain model](https://olegchursin.medium.com/a-brief-introduction-to-domain-modeling-862a30b38353) is a conceptual model of a business domain that incorporates both *data* and *logic* (i.e. rules and processes).
 
-The key idea behind the Rosetta DSL is that, whilst financial markets' operational infrastructure is largely electronified, the current technology implementation has two unappealing characteristics:
+The key idea behind the Rosetta DSL is that, whilst financial markets' operational infrastructure is largely electronified, many of its underlying implementations tend to operate in silos.
 
-- **Variety of data representations**. The plurality of data standards (the main ones being FIX, FpML, ISO 20022 and EFET) is compounded by the many variations in the implementation of those, to which we need to add a wide range of proprietary data representations.
-- **Limited availability of native digital tools** that would allow those data representations to be directly translated into executable code. Even the protocols that have a native digital representation (e.g. FpML and FIXML, which are available in the form of XML schemas) have associated specifications artefacts which require further manual specification and/or coding in order to result in a complete executable solution. In FpML, this is the case of the associated validation rules. In FIX, an example of such are the Recommended Practices/Guidelines, which are only available in the form of PDF documents.
+For instance, the same data are often represented differently between different applications - usually a reasonable choice when considering the respective purpose of each application. But without any formalised translation between them, data cannot easily flow from one application to another and the overall architecture looses cohesiveness. Applications also tend to mix the specification of their business logic with its technical implementation. Once buried in code, an application's logic is hard to extract and must usually be documented separately, with no guarantee of consistency.
 
-**The Rosetta DSL addresses those shortcomings by enabling the representation of data and business logic** to be consolidated into cohesive domain models (hence the naming reference to the Rosetta Stone). A model expressed in the Rosetta DSL provides more than a technical specification: it is automatically translated into executable code using code generators, so it can directly be used as part of an implementation. Both the Rosetta DSL and associated code generators are available in open source.
+**The Rosetta DSL allows to represent data and business logic in a system- and technology-agnostic way** into a cohesive domain model. By supporting a shared, formalised understanding of the financial markets' domain, it enables different technology implementations to "talk" to each other in the same native language (hence the naming reference to the Rosetta Stone).
 
-The ISDA Common Domain Model (CDM) is the first live application of the Rosetta DSL. It provides a blueprint for the lifecycle events and processes of derivative transactions. The CDM is available in open source (subject to an ISDA licence) to all industry participants, hence the name *common*. It is openly accessible through the [Rosetta SDK](#the-rosetta-sdk), where users can view, edit, test and contribute to it, or the [CDM Portal](https://portal.cdm.rosetta-technology.io).
+A model expressed in the Rosetta DSL provides more than a technical specification: it automatically generates executable code, to be used directly in an implementation. Both the Rosetta DSL and associated code generators are available in open source.
 
-For more details, please consult the [ISDA CDM documentation](https://cdm.docs.rosetta-technology.io) or contact ISDA directly at <marketinfrastructureandtechnology@isda.org>.
+**One important application of the Rosetta DSL concerns regulatory reporting**. While many financial institutions share the same reporting obligations, they usually implement their logic in slightly different ways because of siloed technology approaches. This exposes firms to non-compliance risk and fines and degrades the quality and comparability of the data that regulators collect.
+
+Instead, Rosetta empowers many contributors within firms to take part in interpreting and codifying reporting rules, without the risk of loss-in-translation once they get implemented in IT systems. The language itself is designed to be human-readable, so that domain experts without programming experience (e.g. operations or compliance professionals) can write fully functional regulatory logic directly – a bit like in Excel.
 
 ## Rosetta DSL Components
 
