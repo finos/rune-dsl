@@ -84,7 +84,6 @@ import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.xtext.validation.Check
-import org.eclipse.xtext.validation.EValidatorRegistrar
 import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
@@ -119,10 +118,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/Rosetta"));
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaSimple"));
 		return result;
-	}
-	
-	override register(EValidatorRegistrar registrar) {
-		// implement empty register method to prevent ComposedChecks functionality causing duplicate error messages
 	}
 	
 	protected override MethodWrapper createMethodWrapper(AbstractDeclarativeValidator instanceToUse, Method method) {
