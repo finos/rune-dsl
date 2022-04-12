@@ -14,7 +14,11 @@ weight: 1
 
 ## What is the Rosetta DSL
 
-*Rosetta* is a Domain-Specific Language (DSL) that supports the modelling of operational processes for the financial markets' industry. Its purpose is to promote consistency and inter-operability between the various implementations of these processes. In software engineering, a [domain model](https://olegchursin.medium.com/a-brief-introduction-to-domain-modeling-862a30b38353) is a conceptual model of a business domain that incorporates both *data* and *logic* (i.e. rules and processes).
+*Rosetta* is a Domain-Specific Language (DSL) that supports the modelling of operational processes for the financial markets' industry. Its purpose is to promote consistency and inter-operability between the various implementations of these processes.
+
+{{< notice info "Note" >}}
+In software engineering, a [domain model](https://olegchursin.medium.com/a-brief-introduction-to-domain-modeling-862a30b38353) is a conceptual model of a business domain that incorporates both *data* and *logic* (i.e. rules and processes).
+{{< /notice >}}
 
 The key idea behind the Rosetta DSL is that, whilst financial markets' operational infrastructure is largely electronified, many of its underlying implementations tend to operate in silos.
 
