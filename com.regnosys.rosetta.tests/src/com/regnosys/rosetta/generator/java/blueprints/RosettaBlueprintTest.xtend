@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
@@ -1573,64 +1574,44 @@ class RosettaBlueprintTest {
 		'''
 		blueprint.compileToClasses
 		assertEquals(expected, blueprintJava)
-
 	}
 
 	@Test
-	def void oneOf() {
-		val blueprint = '''
-			reporting rule FixedFloat
-				if extract Foo -> fixed = "Wood" do extract Foo -> floating
-					else if extract Foo -> fixed do extract Foo -> sinking
-					else do extract Foo -> swimming
-				endif
-					
-			
-			type Foo:
-				fixed string (0..*)
-				floating string (0..*)
-				sinking string (1..1)
-				swimming string (1..1)
-			
-		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.FixedFloatRule")
-		// writeOutClasses(blueprint, "blueprintOneOf");
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
-		blueprint.compileToClasses
-
-	}
-	
-	@Test
-	@Disabled // does not work due to different if and else if return types (e.g. String and List<String>)
 	def void expressionIf() {
 		val blueprint = '''
 			reporting rule FixedFloat
-				extract if Foo -> fixed = "Wood" then Foo -> floating
-					else if Foo -> fixed = "Steel" then Foo -> sinking
-					
+				extract 
+					if Foo -> fixed = "Wood" then
+						Foo -> floating
+					else if Foo -> fixed = "Steel" then
+						Foo -> sinking
+					else 
+						Foo -> swimming
 			
 			type Foo:
-				fixed string (0..*)
-				floating string (0..*)
+				fixed string (1..1)
+				floating string (1..1)
 				sinking string (1..1)
 				swimming string (1..1)
 			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.FixedFloatRule")
-		// writeOutClasses(blueprint, "blueprintOneOf");
+		// writeOutClasses(blueprint, "expressionIf");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		blueprint.compileToClasses
-
 	}
-
+	
 	@Test
 	def void maxBy() {
 		val blueprint = '''
 			reporting rule IsFixedFloat
-			maxBy Foo->order
+				extract Foo -> bars 
+					max [ item -> order ]
 			
 			type Foo:
-				fixed string (0..*)
+				bars Bar (0..*)
+			
+			type Bar:
 				order int (0..1)
 			
 		'''.generateCode
@@ -1639,279 +1620,59 @@ class RosettaBlueprintTest {
 	}
 	
 	@Test
-	def void maxByRule() {
+	@Disabled
+	def void maxBy2() {
 		val blueprint = '''
 			reporting rule IsFixedFloat
-			maxBy rule MinFixed
-			
-			reporting rule MinFixed
-				extract Foo->fixed then
-				minimum
+				extract Foo -> bars then
+				extract Bar max [ item -> order ] // should this work?
 			
 			type Foo:
-				fixed string (0..*)
+				bars Bar (0..*)
+			
+			type Bar:
+				order int (0..1)
+			
+		'''.generateCode
+		// writeOutClasses(blueprint, "maxBy");
+		blueprint.compileToClasses
+	}
+	
+	@Test
+	def void maxBy3() {
+		val blueprint = '''
+			reporting rule IsFixedFloat
+				extract Foo -> bars -> order max
+			
+			type Foo:
+				bars Bar (0..*)
+			
+			type Bar:
+				order int (0..1)
+			
+		'''.generateCode
+		// writeOutClasses(blueprint, "maxBy");
+		blueprint.compileToClasses
+	}
+	
+	@Test
+	def void maxByBrokenType() {
+		val model = '''
+			reporting rule IsFixedFloat
+				extract Foo -> bars 
+					max [ item ]
+			
+			type Foo:
+				bars Bar (0..*)
+			
+			type Bar:
 				order int (0..1)
 			
 		'''.parseRosetta
-		val code=blueprint.generateCode
-		//writeClasses(code, "maxByRule");
-		code.compileToClasses
-	}
-	
-	@Test
-	def void maxByBrokenTypeAndCardinality() {
-		val model = '''
-			reporting rule IsFixedFloat
-			maxBy Foo->order
-			
-			type Bar:
-				thing int (1..1)
-			
-			type Foo:
-				fixed string (0..*)
-				order Bar (0..*)
-			
-		'''.parseRosetta
-		model.assertError(BLUEPRINT_REDUCE, RosettaIssueCodes.TYPE_ERROR,
-			"The expression for maxBy must return a comparable type (e.g. number or date) the current expression returns Bar")
-		model.assertError(BLUEPRINT_REDUCE, null,
-			"The expression for maxBy must return a single value the current expression can return multiple values")
-	}
-	
-	@Test
-	def void maxByRuleBrokenTypeAndCardinality() {
-		val model = '''
-			reporting rule IsFixedFloat
-			maxBy rule MinFixed
-			
-			reporting rule MinFixed
-				extract Foo->fixed
-			
-			type Foo:
-				fixed Bar (0..*)
-				order int (0..1)
-			
-			type Bar:
-				val string (1..1)
-			
-		'''.parseRosetta
-		model.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
-			"output type of node Bar does not match required type of Comparable")
-		model.assertError(BLUEPRINT_REDUCE, null,
-			"The expression for maxBy must return a single value but the rule MinFixed can return multiple values")
+		model.assertError(LIST_OPERATION, null,
+			"List max only supports comparable types (string, int, string, date). Found type Bar.")
 	}
 
-	@Test
-	def void group() {
-		val blueprint = '''
-			reporting rule SimpleBlueprint 
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				groupby Input->traderef
-									
-			type Input:
-				traderef string (1..1)
-			
-		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
-		// writeOutClasses(blueprint, "group");
-		blueprint.compileToClasses
-		try {
-			assertThat(blueprintJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.rosetta.model.lib.mapper.MapperS;
-				import javax.inject.Inject;
-				// manual imports
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.test.model.Input;
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
-				/**
-				 * @version test
-				 */
-				public class SimpleBlueprintRule<INKEY> implements Blueprint<Input, Input, INKEY, String> {
-					
-					private final RosettaActionFactory actionFactory;
-					
-					@Inject
-					public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
-					@Override
-					public String getName() {
-						return "SimpleBlueprint"; 
-					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Input, Input, INKEY, String> blueprint() { 
-						return 
-							startsWith(actionFactory, actionFactory.<Input, INKEY, String>newRosettaGrouper("__synthetic1.rosetta#//@elements.0/@nodes/@node", "group by Input->traderef", null, input -> MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef())))
-							.toBlueprint(getURI(), getName());
-					}
-				}
-			'''
-			assertEquals(expected, blueprintJava)
-		} finally {
-		}
-	}
-
-	@Test
-	def void join() {
-		val blueprint = '''
-			reporting rule SimpleBlueprint 
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				join key Input2->keyVal foreignKey Input1->foreign
-									
-			type Input1:
-				foreign string (1..*)
-			
-			type Input2:
-				keyVal string (1..1)
-			
-		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
-		// writeOutClasses(blueprint, "join");
-		try {
-			assertThat(blueprintJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.rosetta.model.lib.mapper.MapperS;
-				import javax.inject.Inject;
-				// manual imports
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.test.model.Input1;
-				import com.rosetta.test.model.Input2;
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
-				/**
-				 * @version test
-				 */
-				public class SimpleBlueprintRule<INKEY> implements Blueprint<Object, Input2, INKEY, INKEY> {
-					
-					private final RosettaActionFactory actionFactory;
-					
-					@Inject
-					public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
-					@Override
-					public String getName() {
-						return "SimpleBlueprint"; 
-					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Object, Input2, INKEY, INKEY> blueprint() { 
-						return 
-							startsWith(actionFactory, actionFactory.<Input2, Input1, INKEY, String>newRosettaDataJoin("__synthetic1.rosetta#//@elements.0/@nodes/@node", "joinInput2", null, input2 -> MapperS.of(input2).<String>map("getKeyVal", _input2 -> _input2.getKeyVal()),
-									input1 -> MapperS.of(input1).<String>mapC("getForeign", _input1 -> _input1.getForeign()),
-									Input2.class, Input1.class))
-							.toBlueprint(getURI(), getName());
-					}
-				}
-			'''
-			assertEquals(expected, blueprintJava)
-		} finally {
-		}
-		blueprint.compileToClasses
-	}
-
-	@Test
-	def void selfJoin() {
-		val blueprint = '''
-			reporting rule SimpleBlueprint 
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				(
-					LoaderBlueprint,
-					LoaderBlueprint
-				) then
-				join key Input->keyVal foreignKey Input->foreign
-			
-			reporting rule LoaderBlueprint
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				extract Top->input
-			
-			type Input:
-				foreign string (1..*)
-				keyVal string (1..1)
-			
-			type Top:
-				input Input (1..1)
-			
-		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
-		 //writeOutClasses(blueprint, "selfJoin");
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
-		blueprint.compileToClasses
-	}
-	
-	@Test
-	def void selfJoinBasic() {
-		val blueprint = '''
-			type MyType:
-				singleString string (1..1)
-				singleInt int (1..1)
-			
-				multiString string (0..*)
-				multiInt int (0..*)
-			
-			type MyType2:
-					multiInt int (0..*)
-				
-			reporting rule Rule1
-				join key MyType->singleInt foreignKey MyType->multiInt'''
-		.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Rule1Rule")
-		//writeClasses(blueprint, "selfJoinBasic");
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
-		blueprint.compileToClasses
-	}
-	
-	@Test
-	def void joinKeyMismatch() {
-		val model = '''
-			type MyType:
-				singleString string (1..1)
-				singleInt int (1..1)
-			
-				multiString string (0..*)
-				multiInt int (0..*)
-				
-			reporting rule Rule1
-				join key MyType->multiInt foreignKey MyType->singleString'''
-		.parseRosetta
-		model.assertError(BLUEPRINT_DATA_JOIN, RosettaIssueCodes.TYPE_ERROR,
-			"Type of Key (int) and ForeignKey (string) do not match")
-		model.assertError(BLUEPRINT_DATA_JOIN, null,
-			"Key expression must have single cardinality")
-	}
-
-	
 	@Test
 	def void expressionBadTypes() {
 		 ''' 
@@ -1926,7 +1687,6 @@ class RosettaBlueprintTest {
 			'''.parseRosetta
 			.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR,
 			"Input types must be the same but were Foo and Bar")
-			
 	}
 
 	@Test
@@ -2080,68 +1840,6 @@ class RosettaBlueprintTest {
 	}
 	
 	@Test
-	def void functionCallFromMaxBy() {
-		val blueprint = ''' 
-			type Foo:
-				bar Bar (1..1)
-			
-			type Bar:
-				val number (1..1)
-			
-			reporting rule Rule1
-				return MyFunc1() then
-				maxBy MyFunc(Foo->bar)
-			
-			func MyFunc1: 
-				output:
-					foo Foo (1..1)
-			
-			func MyFunc:
-				inputs: 
-					bar Bar (0..1)
-				output: 
-					result number (1..1)
-				set result:
-					bar->val + 1
-			
-			'''.parseRosettaWithNoErrors
-			.generateCode
-			//blueprint.writeClasses("functionCallFromMaxBy")
-			blueprint.compileToClasses
-	}
-	
-	@Test
-	def void functionCallFromMinBy() {
-		val blueprint = ''' 
-			type Foo:
-				bar Bar (1..1)
-			
-			type Bar:
-				val number (1..1)
-			
-			reporting rule Rule1
-				return MyFunc1() then
-				minBy MyFunc(Foo->bar)
-			
-			func MyFunc1: 
-				output:
-					foo Foo (1..1)
-			
-			func MyFunc:
-				inputs: 
-					bar Bar (0..1)
-				output: 
-					result number (1..1)
-				set result:
-					bar->val + 1
-			
-			'''.parseRosettaWithNoErrors
-			.generateCode
-			//blueprint.writeClasses("functionCallFromMaxBy")
-			blueprint.compileToClasses
-	}
-	
-	@Test
 	def void shouldUseBlueprintFromDifferentNS() {
 		val code = #['''
 			namespace ns1
@@ -2289,12 +1987,8 @@ class RosettaBlueprintTest {
 		.replace('\r', "")
 		.generateCode
 		//blueprint.writeClasses("longNestedIfElseWithReturn0");
-			
-		
 		blueprint.compileToClasses
-		
 	}
-
 
 	@Test
 	def void longNestedIfElseWithNoReturn() {
@@ -2340,13 +2034,10 @@ class RosettaBlueprintTest {
 					else if Foo -> bar = Bar -> Z then "Z"
 			
 		'''.toString
-		.replace('\r', "")
-		.generateCode
-		//blueprint.writeClasses("longNestedIfElseWithNoReturn");
-			
-		
+			.replace('\r', "")
+			.generateCode
+			//blueprint.writeClasses("longNestedIfElseWithNoReturn");
 		blueprint.compileToClasses
-		
 	}
 
 	@Test
@@ -2635,195 +2326,6 @@ class RosettaBlueprintTest {
 		
 		'''.generateCode
 		blueprint.compileToClasses
-	}
-	
-	@Test
-	@Disabled // we don't currently support hand written blueprint nodes
-	def void custom() {
-		val blueprint = '''
-			reporting rule SimpleBlueprint 
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-			
-				Fish <string, string, string, string>
-		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
-		// writeOutClasses(blueprint, "custom")
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
-		blueprint.compileToClasses
-	}
-
-	@Test
-	@Disabled
-	def void genSimpleMerge() {
-		val blueprint = '''
-			reporting rule SimpleBlueprint 
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				merge output Output 
-				output Output
-			
-			type Input:
-				traderef string (1..1)
-			
-			type Output:
-				transactionReferenceNumber string (1..1)
-				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
-		// writeOutClasses(blueprint, "genSimpleMerge");
-		try {
-			assertThat(blueprintJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.Merger;
-				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.RosettaIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.rosetta.model.lib.functions.Converter;
-				import com.rosetta.test.model.Output;
-				import java.util.HashMap;
-				import java.util.Map;
-				import java.util.function.BiConsumer;
-				import java.util.function.Function;
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
-				public abstract class SimpleBlueprint<IN, INKEY extends Comparable<INKEY>> implements Blueprint<IN, Output, INKEY, INKEY> {
-					@Override
-					public String getName() {
-						return "SimpleBlueprint"; 
-					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#SimpleBlueprint";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<IN, Output, INKEY, INKEY> blueprint() { 
-						return 
-							startsWith(new Merger<>("__synthetic1.rosetta#//@elements.0/@nodes/@node", "Create Output", mergeOutput(), this::mergeOutputSupplier, Output.OutputBuilder::build, 
-												new StringIdentifier("Output"), false))
-							.toBlueprint(getURI(), getName());
-					}
-					
-					protected abstract Function<DataIdentifier, BiConsumer<Output.OutputBuilder, ? extends IN>> mergeOutput();
-					
-					protected Map<DataIdentifier, BiConsumer<Output.OutputBuilder, ? extends IN>> simpleMergeOutput() {
-						Map<DataIdentifier, BiConsumer<Output.OutputBuilder, ? extends IN>> result = new HashMap<>();
-						result.put(new RosettaIdentifier("annex 1 table2 #28"), (builder, input) -> builder.setTransactionReferenceNumber(Converter.convert(String.class, input)));
-						result.put(new StringIdentifier("transactionReferenceNumber"), (builder, input) -> builder.setTransactionReferenceNumber(Converter.convert(String.class, input)));
-						return result;
-					}
-					
-					protected abstract Output.OutputBuilder mergeOutputSupplier(INKEY k);
-				}
-			'''
-			blueprint.compileToClasses
-			assertEquals(expected, blueprintJava)
-		} finally {
-		}
-	}
-
-	@Test
-	@Disabled
-	def void genMappingGroup() {
-		val blueprint = '''
-			blueprint SimpleBlueprint 
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-			{
-				SimpleMapping input Input then
-				merge output Output 
-				output Output
-			}
-			
-			type Input:
-				traderef string (1..1)
-						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-			
-			type Output:
-				transactionReferenceNumber string (1..1)
-				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
-			
-		'''.generateCode
-
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
-		// writeOutClasses(blueprint, "genMappingGroup");
-		try {
-			assertThat(blueprintJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.Merger;
-				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.RosettaIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.rosetta.model.lib.functions.Converter;
-				import com.rosetta.model.lib.functions.Mapper;
-				import com.rosetta.model.lib.functions.MapperS;
-				import com.rosetta.model.lib.functions.MappingGroup;
-				import com.rosetta.test.model.Input;
-				import com.rosetta.test.model.Output;
-				import java.util.Collection;
-				import java.util.HashMap;
-				import java.util.List;
-				import java.util.Map;
-				import java.util.function.BiConsumer;
-				import java.util.function.Function;
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
-				public abstract class SimpleBlueprint<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Output, INKEY, INKEY> {
-					@Override
-					public String getName() {
-						return "SimpleBlueprint"; 
-					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#SimpleBlueprint";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Input, Output, INKEY, INKEY> blueprint() { 
-						return 
-							startsWith(BlueprintBuilder.<Input, INKEY>doSimpleMappings("__synthetic1.rosetta#//@elements.0/@nodes/@node", "simpleMappingsInput", simpleMappingsInput()))
-							.then(new Merger<>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "Create Output", mergeOutput(), this::mergeOutputSupplier, Output.OutputBuilder::build, 
-												new StringIdentifier("Output"), false))
-							.toBlueprint(getURI(), getName());
-					}
-					
-					protected Collection<MappingGroup<Input, ?>> simpleMappingsInput() {
-						return Blueprint.of(
-						new MappingGroup<>("annex 1 table2 #28", "__synthetic1.rosetta#//@elements.0/@nodes/@node", ANNEX_1_TABLE2_28_MAPPINGS));
-					}
-					
-					protected abstract Function<DataIdentifier, BiConsumer<Output.OutputBuilder, ?>> mergeOutput();
-					
-					protected Map<DataIdentifier, BiConsumer<Output.OutputBuilder, ?>> simpleMergeOutput() {
-						Map<DataIdentifier, BiConsumer<Output.OutputBuilder, ?>> result = new HashMap<>();
-						result.put(new RosettaIdentifier("annex 1 table2 #28"), (builder, input) -> builder.setTransactionReferenceNumber(Converter.convert(String.class, input)));
-						result.put(new StringIdentifier("transactionReferenceNumber"), (builder, input) -> builder.setTransactionReferenceNumber(Converter.convert(String.class, input)));
-						return result;
-					}
-					
-					private static final List<Function<Input, Mapper<String>>> ANNEX_1_TABLE2_28_MAPPINGS = Blueprint.of(
-						i -> MapperS.of(i).map("getTraderef", Input::getTraderef)
-					);
-					
-					protected abstract Output.OutputBuilder mergeOutputSupplier(INKEY k);
-				}
-			'''
-			blueprint.compileToClasses
-			assertEquals(expected, blueprintJava)
-		} finally {
-		}
 	}
 
 	@Test

@@ -26,6 +26,7 @@ class RosettaBlueprintRepeatableRuleTest {
 	@Inject extension ValidationTestHelper
 
 	@Test
+	@Disabled
 	def void shouldParseReportAndGenerateRepeatableRuleCardinalityErrors() {
 		'''
 			body Authority TEST_REG

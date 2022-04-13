@@ -11,7 +11,6 @@ class TypedBPNode {
 	public BindableType outputKey = new BindableType
 
 	public List<TypedBPNode> andNodes = newArrayList
-	public List<TypedBPNode> ifNodes = newArrayList
 	public boolean repeatable = false
 
 	public TypedBPNode next

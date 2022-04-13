@@ -3,22 +3,15 @@ package com.regnosys.rosetta.validation
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
-import com.regnosys.rosetta.rosetta.BlueprintAnd
-import com.regnosys.rosetta.rosetta.BlueprintCustomNode
-import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
-import com.regnosys.rosetta.rosetta.BlueprintGroup
 import com.regnosys.rosetta.rosetta.BlueprintLookup
-import com.regnosys.rosetta.rosetta.BlueprintMerge
 import com.regnosys.rosetta.rosetta.BlueprintNode
 import com.regnosys.rosetta.rosetta.BlueprintNodeExp
-import com.regnosys.rosetta.rosetta.BlueprintOneOf
-import com.regnosys.rosetta.rosetta.BlueprintReduce
+import com.regnosys.rosetta.rosetta.BlueprintOr
 import com.regnosys.rosetta.rosetta.BlueprintRef
 import com.regnosys.rosetta.rosetta.BlueprintReturn
 import com.regnosys.rosetta.rosetta.BlueprintSource
-import com.regnosys.rosetta.rosetta.BlueprintValidate
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
@@ -49,7 +42,6 @@ import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.validation.TypedBPNode.BPCardinality
-import java.util.ArrayList
 import java.util.HashSet
 import java.util.List
 import java.util.Set
@@ -138,10 +130,6 @@ class RosettaBlueprintTypeResolver {
 		val result = new TypedBPNode
 		// get the input type for this node
 		switch (node) {
-			BlueprintMerge: {
-				result.output.type = node.output
-				result.cardinality.set(0, BPCardinality.UNCHANGED)
-			}
 			BlueprintExtract: {
 				// extract defines both the input and output types
 				result.input.type = getInput(node.call)
@@ -159,35 +147,10 @@ class RosettaBlueprintTypeResolver {
 			BlueprintRef: {
 				result.output.type = node.output
 			}
-			BlueprintValidate: {
-				result.input.type = node.input
-				result.cardinality.set(0, BPCardinality.UNCHANGED)
-			}
 			BlueprintFilter: {
 				if(node.filter!==null) {
 					result.input.type = getInput(node.filter)
 				}
-				result.cardinality.set(0, BPCardinality.UNCHANGED)
-			}
-			BlueprintGroup: {
-				result.input.type = getInput(node.key as RosettaFeatureCall)
-				result.outputKey.type = getOutput(node.key as RosettaFeatureCall)
-				//Cardinality is a difficult concept if you go changing the keys
-				result.cardinality.set(0, BPCardinality.UNCHANGED)
-			}
-			BlueprintDataJoin: {
-				result.output.type = getInput(node.key as RosettaFeatureCall)
-				val in1 = new TypedBPNode
-				val in2 = new TypedBPNode
-				in1.output.type = getInput(node.key as RosettaFeatureCall)
-				in2.output.type = getInput(node.foreign)
-				val unifiedInput = new TypedBPNode
-				getUnionType(#[in1, in2, new TypedBPNode], unifiedInput)
-				//Unless we implement proper type unions (e.g. MyClass1 OR MyClass2) the input type of a data join is always object
-				//unifiedInput.output.setGenericName("Object")
-				
-				result.input.type = unifiedInput.output.type
-				result.input.genericName = unifiedInput.output.genericName
 				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintSource: {
@@ -198,29 +161,12 @@ class RosettaBlueprintTypeResolver {
 				//not sure about this cardinality but this node type is unused
 				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
-			BlueprintCustomNode: {
-				result.input.type = node.input
-				result.output.type = node.output
-				result.inputKey.type = node.inputKey
-				result.outputKey.type = node.outputKey
-				//Cardinality depends on the implementation - but it isn't used
-				result.cardinality.set(0, BPCardinality.UNCHANGED)
-			}
 			BlueprintLookup : {
 				result.output.type = node.output
 				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
-			BlueprintAnd: {
+			BlueprintOr: {
 				result.cardinality.set(0, BPCardinality.EXPAND)
-			}
-			BlueprintOneOf: {
-				result.cardinality.set(0, BPCardinality.UNCHANGED)
-			}
-			BlueprintReduce: {
-				if (node.expression!==null) {
-					result.input.type = getInput(node.expression)
-				}
-				result.cardinality.set(0, BPCardinality.REDUCE)
 			}
 			default: {
 				throw new UnsupportedOperationException("Trying to compute inputs of unknown node type " + node.class)
@@ -237,9 +183,6 @@ class RosettaBlueprintTypeResolver {
 		}*/
 		visited.add(node)
 		switch (node) {
-			BlueprintMerge: {
-				tNode.outputKey = tNode.inputKey
-			}
 			BlueprintExtract, BlueprintReturn: {
 				// extract doesn't change the key
 				tNode.outputKey = tNode.inputKey
@@ -247,7 +190,7 @@ class RosettaBlueprintTypeResolver {
 			BlueprintLookup: {
 				tNode.outputKey = tNode.inputKey
 			}
-			BlueprintAnd: {
+			BlueprintOr: {
 
 				// if all the inner nodes are producing the same output then the output of the and node is that output
 				var allPassThroughInput = true
@@ -302,41 +245,6 @@ class RosettaBlueprintTypeResolver {
 					tNode.andNodes.add(TypedBPNode.combine(bpOut, bpIn).invert)
 				}
 			}
-			BlueprintOneOf: {
-				var allPassThroughInput = true
-				var allPassThroughKey = true
-				val outputs = newArrayList
-				val inputs = newArrayList
-				val allThens = new ArrayList(node.bps.map[thenNode])
-				if (node.elseNode!==null) allThens.add(node.elseNode)
-				for (var i=0;i<allThens.size;i++) {
-					val bpIn = new TypedBPNode
-					val bpOut = new TypedBPNode
-					bpIn.output = tNode.input
-					bpIn.outputKey = tNode.inputKey
-					tNode.andNodes.add(bindTypes(allThens.get(i), bpIn, bpOut, visited))
-					if (i<node.bps.size) {
-						tNode.ifNodes.add(bindTypes(node.bps.get(i).ifNode, bpIn, new TypedBPNode, visited))//the output type of the if's can be anything (null or boolean false==false)
-					}
-					if (bpIn.output !== bpOut.input) {
-						allPassThroughInput = false
-					}
-					if (bpIn.outputKey !== bpOut.inputKey) {
-						allPassThroughInput = false
-					}
-					outputs.add(bpOut.invert)
-					inputs.add(bpIn.invert)
-				}
-				if (allPassThroughInput) {
-					tNode.output = tNode.input
-				}
-				if (allPassThroughKey) {
-					tNode.outputKey = tNode.inputKey
-				}
-
-				getUnionType(outputs, tNode)
-				getBaseType(inputs, tNode, node)
-			}
 			BlueprintRef: {
 				val bpIn = new TypedBPNode
 				val bpOut = new TypedBPNode
@@ -357,42 +265,8 @@ class RosettaBlueprintTypeResolver {
 				tNode.output = bpOut.input
 				tNode.outputKey = bpOut.inputKey
 			}
-			BlueprintValidate: {
-				tNode.output = tNode.input
-				tNode.outputKey = tNode.inputKey
-			}
-			BlueprintReduce: {
-				tNode.output = tNode.input
-				tNode.outputKey = tNode.inputKey
-				if (node.reduceBP!==null) {
-					val bpIn = new TypedBPNode
-					val bpOut = new TypedBPNode
-					bpIn.output=tNode.input;
-					bpIn.outputKey = tNode.input
-					bpIn.inputKey = tNode.inputKey;
-					bpOut.input.genericName  ="Comparable"
-					bpOut.inputKey = tNode.input
-					//check the called node meets type expectations
-					try {
-						bindTypes(node.reduceBP.blueprint.nodes, bpIn, bpOut, visited)
-					} catch (BlueprintUnresolvedTypeException e) {
-						// we found an that the types don't match further down the stack - we want to report it as an error with this call
-						BlueprintUnresolvedTypeException.error(e.message, node.reduceBP, BLUEPRINT_REF__BLUEPRINT, e.code)
-					}
-					tNode.andNodes.add(TypedBPNode.combine(bpOut, bpIn).invert)
-				}
-			}
-			BlueprintGroup: {
-				tNode.output = tNode.input
-			}
-			BlueprintDataJoin: {
-				tNode.outputKey = tNode.inputKey
-			}
 			BlueprintSource: {
 				// binds everything
-			}
-			BlueprintCustomNode: {
-				// Custom nodes have to bind everything
 			}
 			default: {
 				throw new UnsupportedOperationException("Trying to compute linkages of unknown node type " + node.class)
