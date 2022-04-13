@@ -20,7 +20,7 @@ weight: 1
 In software engineering, a [domain model](https://olegchursin.medium.com/a-brief-introduction-to-domain-modeling-862a30b38353) is a conceptual model of a business domain that incorporates both *data* and *logic* (i.e. rules and processes).
 {{< /notice >}}
 
-The key idea behind the Rosetta DSL is that, whilst financial markets' operational infrastructure is largely electronified, many of its underlying implementations tend to operate in silos.
+The key idea behind the Rosetta DSL is that, whilst financial markets' operational infrastructure is largely electronified, many of its underlying IT systems tend to operate in silos.
 
 For instance, the same data are often represented differently between different applications - usually a reasonable choice when considering the respective purpose of each application. But without any formalised translation between them, data cannot easily flow from one application to another and the overall architecture looses cohesiveness. Applications also tend to mix the specification of their business logic with its technical implementation. Once buried in code, an application's logic is hard to extract and must usually be documented separately, with no guarantee of consistency.
 
@@ -30,7 +30,7 @@ A model expressed in the Rosetta DSL provides more than a technical specificatio
 
 **One important application of the Rosetta DSL concerns regulatory reporting**. While many financial institutions share the same reporting obligations, they usually implement their logic in slightly different ways because of siloed technology approaches. This exposes firms to non-compliance risk and fines and degrades the quality and comparability of the data that regulators collect.
 
-Instead, Rosetta empowers many contributors within firms to take part in interpreting and codifying reporting rules, without the risk of loss-in-translation once they get implemented in IT systems. The language itself is designed to be human-readable, so that domain experts without programming experience (e.g. operations or compliance professionals) can write fully functional regulatory logic directly – a bit like in Excel.
+Instead, Rosetta empowers many users within firms to take part in interpreting and codifying reporting rules, without the risk of loss-in-translation once they get implemented in IT systems. The language itself is designed to be human-readable, so that domain experts without programming experience (e.g. operations or compliance professionals) can write fully functional regulatory logic directly – a bit like in Excel.
 
 ## Rosetta DSL Components
 
