@@ -10,7 +10,7 @@ class TypedBPNode {
 	public BindableType output = new BindableType
 	public BindableType outputKey = new BindableType
 
-	public List<TypedBPNode> andNodes = newArrayList
+	public List<TypedBPNode> orNodes = newArrayList
 	public boolean repeatable = false
 
 	public TypedBPNode next

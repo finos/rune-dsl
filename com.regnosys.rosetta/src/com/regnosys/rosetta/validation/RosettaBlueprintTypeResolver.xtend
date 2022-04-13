@@ -202,7 +202,7 @@ class RosettaBlueprintTypeResolver {
 					val bpOut = new TypedBPNode
 					bpIn.output = tNode.input
 					bpIn.outputKey = tNode.inputKey
-					tNode.andNodes.add(bindTypes(child, bpIn, bpOut, visited))
+					tNode.orNodes.add(bindTypes(child, bpIn, bpOut, visited))
 
 					if (bpIn.output !== bpOut.input) {
 						allPassThroughInput = false
@@ -242,7 +242,7 @@ class RosettaBlueprintTypeResolver {
 						BlueprintUnresolvedTypeException.error(e.message,
 						node.filterBP, BLUEPRINT_REF__BLUEPRINT, e.code)
 					}
-					tNode.andNodes.add(TypedBPNode.combine(bpOut, bpIn).invert)
+					tNode.orNodes.add(TypedBPNode.combine(bpOut, bpIn).invert)
 				}
 			}
 			BlueprintRef: {

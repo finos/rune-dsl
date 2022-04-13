@@ -378,7 +378,7 @@ class BlueprintGenerator {
 		«IF !andNode.bps.isEmpty»
 			BlueprintBuilder.<«andTyped.outFullS»>and(actionFactory,
 				«FOR bp:andNode.bps.indexed  SEPARATOR ","»
-				startsWith(actionFactory, «bp.value.buildGraph(andTyped.andNodes.get(bp.key), context)»)
+				startsWith(actionFactory, «bp.value.buildGraph(andTyped.orNodes.get(bp.key), context)»)
 				«ENDFOR»
 				)
 			«ENDIF»
@@ -570,7 +570,7 @@ class BlueprintGenerator {
 		}
 		
 		def dispatch addBPRef(BlueprintFilter ref, TypedBPNode node) {
-			bpRefs.put(ref.filterBP.blueprint.name, node.andNodes.get(0))
+			bpRefs.put(ref.filterBP.blueprint.name, node.orNodes.get(0))
 			imports.addBPRef(ref.filterBP.blueprint)
 		}
 		
