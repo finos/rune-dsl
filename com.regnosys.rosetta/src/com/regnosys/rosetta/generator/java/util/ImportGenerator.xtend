@@ -2,16 +2,9 @@ package com.regnosys.rosetta.generator.java.util
 
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator.RegdOutputField
-import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
-import com.regnosys.rosetta.rosetta.BlueprintGroup
-import com.regnosys.rosetta.rosetta.BlueprintMerge
-import com.regnosys.rosetta.rosetta.BlueprintOneOf
-import com.regnosys.rosetta.rosetta.BlueprintReduce
 import com.regnosys.rosetta.rosetta.BlueprintSource
-import com.regnosys.rosetta.rosetta.BlueprintValidate
 import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
@@ -39,6 +32,7 @@ import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.validation.TypedBPNode
 import java.util.Comparator
 import org.apache.log4j.Logger
@@ -46,7 +40,6 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -79,21 +72,7 @@ class ImportGenerator {
 		'''«packages.blueprintLib.name».runner.nodes.SinkNode''',
 		'''«packages.blueprintLib.name».runner.nodes.SourceNode''')
 	}
-
-	def void addSimpleMerger(BlueprintMerge merge, Iterable<RegdOutputField> outRefs) {
-		val extraImport2 = outRefs.map[it.attrib.type].map[fullName()].filter[isImportable]
-		imports.addAll(extraImport2)
-		imports.add('''«packages.model.name».«merge.output.name»''')
-		imports.addAll('java.util.function.BiConsumer',
-			'java.util.Map', '''«packages.blueprintLib.name».runner.actions.Merger''', '''«packages.blueprintLib.name».runner.data.RosettaIdentifier''', '''«packages.blueprintLib.name».runner.data.StringIdentifier''', '''«packages.blueprintLib.name».runner.data.DataIdentifier''', '''java.util.function.Function''', '''«packages.defaultLib.name».functions.Converter''',
-			'java.util.HashMap')
-	}
 	
-	def void addIfThen(BlueprintOneOf oneOf) {
-		imports.addAll(
-		'''«packages.blueprintLib.name».BlueprintIfThen''')
-	}
-
 	def void addSingleMapping(BlueprintExtract extract) {
 		addMappingImport
 		addExpression(extract.call)
@@ -261,10 +240,6 @@ class ImportGenerator {
 			type.name.toJavaFullType
 	}
 
-	def addValidate(BlueprintValidate validate) {
-		imports.add(validate.input.fullName)
-	}
-
 	def addFilter(BlueprintFilter filter) {
 		if (filter.filter!==null) {
 			addExpression(filter.filter);
@@ -273,23 +248,6 @@ class ImportGenerator {
 		if (filter.filterBP!==null) {
 			imports.add(packages.blueprintLib.name + ".runner.actions.FilterByRule")
 		}
-	}
-	
-	def addReduce(BlueprintReduce reduce) {
-		imports.add(packages.blueprintLib.name + ".runner.actions.ReduceParent")
-		if (reduce.expression!==null) {
-			addExpression(reduce.expression);
-			imports.add(packages.blueprintLib.name + ".runner.actions.ReduceBy")
-		}
-		else if (reduce.reduceBP!==null) {
-			imports.add(packages.blueprintLib.name + ".runner.actions.ReduceByRule")
-		}
-		else
-			imports.add(packages.blueprintLib.name + ".runner.actions.ReduceBySelf")
-	}
-
-	def addGrouper(BlueprintGroup group) {
-		addFeatureCall(group.key as RosettaFeatureCall)
 	}
 
 	def addQualifyClass(RosettaExpression expr,
@@ -310,11 +268,6 @@ class ImportGenerator {
 	def addSource(BlueprintSource source, TypedBPNode typed) {
 		imports.add('''«packages.blueprintLib.name».runner.nodes.SourceNode''')
 		addTypes(typed)
-	}
-
-	def addJoin(BlueprintDataJoin join) {
-		addExpression(join.foreign)
-		addExpression(join.key);
 	}
 		
 	def addBPRef(RosettaBlueprint blueprint) {

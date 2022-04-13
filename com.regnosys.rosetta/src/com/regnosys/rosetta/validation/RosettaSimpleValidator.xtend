@@ -8,10 +8,8 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.expression.ListOperationExtensions
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
-import com.regnosys.rosetta.rosetta.BlueprintReduce
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
@@ -597,41 +595,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			val multi = cardinality.isMulti(extract.call)
 			if (!multi) {
 				error("Repeatable keyword must extract multiple cardinality", extract, BLUEPRINT_EXTRACT__REPEATABLE)
-			}
-		}
-	}
-	
-	@Check
-	def void checkDataJoinType(BlueprintDataJoin join) {
-		val keyType = join.key.RType
-		val fkType = join.foreign.RType
-		if (keyType!=fkType) {
-			error('''Type of key («keyType.name») and foreignKey («fkType.name») do not match''', join, null, TYPE_ERROR)
-		}		
-		val multi = cardinality.isMulti(join.key)
-		if (multi) {
-			error('''Key expression must have single cardinality''', join, BLUEPRINT_DATA_JOIN__KEY)
-		}
-	}
-	
-	@Check
-	def void checkBlueprintReduce(BlueprintReduce reduce) {
-		if (reduce.expression!==null) {
-			val exrType = reduce.expression.RType
-			if (!exrType.isSelfComparable) {
-				error('''The expression for «reduce.action» must return a comparable type (e.g. number or date) the current expression returns «exrType.name»''', reduce, BLUEPRINT_REDUCE__EXPRESSION, TYPE_ERROR)
-			}
-			
-			val multi = cardinality.isMulti(reduce.expression)
-			if (multi) {
-				error('''The expression for «reduce.action» must return a single value the current expression can return multiple values''', reduce, BLUEPRINT_REDUCE__EXPRESSION)
-			}
-			
-		}
-		else if (reduce.reduceBP!==null) {
-			val node = buildTypeGraph(reduce.reduceBP.blueprint.nodes, reduce.reduceBP.output)
-			if (!checkBPNodeSingle(node, false)) {
-				error('''The expression for maxBy must return a single value but the rule «reduce.reduceBP.blueprint.name» can return multiple values''', reduce, BLUEPRINT_REDUCE__REDUCE_BP)
 			}
 		}
 	}
