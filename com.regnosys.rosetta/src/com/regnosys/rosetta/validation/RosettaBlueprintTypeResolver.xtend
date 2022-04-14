@@ -312,7 +312,7 @@ class RosettaBlueprintTypeResolver {
 		else if (inputTypes.forall[it !== null && (it.name == "int" || it.name == "number")])
 			tNode.input.setGenericName("Integer")
 		else
-			BlueprintUnresolvedTypeException.error('''input types of andNode «inputTypes.map[name]» are not compatible''', node, BLUEPRINT_NODE__INPUT,
+			BlueprintUnresolvedTypeException.error('''input types of orNode «inputTypes.map[name]» are not compatible''', node, BLUEPRINT_NODE__INPUT,
 				RosettaIssueCodes.TYPE_ERROR)
 
 		// now for keys
@@ -323,7 +323,7 @@ class RosettaBlueprintTypeResolver {
 		else if (inputKeyTypes.forall[it !== null && (it.name == "int" || it.name == "number")])
 			tNode.inputKey.setGenericName("Integer")
 		else
-			BlueprintUnresolvedTypeException.error('''inputKey types of andNode «inputKeyTypes.map[name]» are not compatible''', node,
+			BlueprintUnresolvedTypeException.error('''inputKey types of orNode «inputKeyTypes.map[name]» are not compatible''', node,
 				BLUEPRINT_NODE__INPUT_KEY, RosettaIssueCodes.TYPE_ERROR)
 	}
 

@@ -162,7 +162,7 @@ class RosettaBlueprintTest {
 					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() { 
 						return 
 							startsWith(actionFactory, getFooRule())
-							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>and(actionFactory,
+							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
 								startsWith(actionFactory, getBarBarOne()),
 								startsWith(actionFactory, getBarBarTwo()),
 								startsWith(actionFactory, getBarBaz()),
@@ -872,8 +872,11 @@ class RosettaBlueprintTest {
 		'''
 			reporting rule Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				( extract Input->traderef , extract Input2->colour)
-						
+				(
+					extract Input->traderef,
+					extract Input2->colour
+				)
+			
 			type Input:
 				traderef string (1..1)
 			
@@ -889,7 +892,7 @@ class RosettaBlueprintTest {
 		val model = '''
 			reporting rule Blueprint1
 				extract Input->traderef * Input2->colour
-						
+			
 			type Input:
 				traderef int (1..1)
 			
@@ -906,7 +909,7 @@ class RosettaBlueprintTest {
 		val model = '''
 			reporting rule Blueprint1
 				extract Input->traderef * Input->colour
-						
+			
 			type Input:
 				traderef int (1..1)
 				colour int (1..1)
@@ -916,12 +919,15 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
-	def void andInputTypesExtends() {
+	def void orInputTypesExtends() {
 		val code = '''
 			reporting rule Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				( extract Input->traderef , extract Input2->colour)
-						
+				(
+					extract Input->traderef,
+					extract Input2->colour
+				)
+			
 			type Input:
 				traderef string (1..1)
 			
@@ -933,19 +939,22 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
-	def void complexAnd() {
+	def void complexOr() {
 		val blueprint = '''
 			reporting rule Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				(filter when Input->traderef="3" then extract Input->traderef , extract Input->colour)
-						
+				(
+					filter when Input->traderef="3" then extract Input->traderef, 
+					extract Input->colour
+				)
+			
 			type Input:
 				traderef string (1..1)
 				colour string (1..1)
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
-		 //writeOutClasses(blueprint, "complexAnd");
+		 //writeOutClasses(blueprint, "complexOr");
 		try {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -994,7 +1003,7 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Input, String, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(actionFactory, BlueprintBuilder.<Input, String, INKEY, INKEY>and(actionFactory,
+							startsWith(actionFactory, BlueprintBuilder.<Input, String, INKEY, INKEY>or(actionFactory,
 								startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "Input->traderef=\"3\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("3"), CardinalityOperator.All).get(), null))
 								.then(actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@next/@node", "Input->traderef", new RuleIdentifier("Input->traderef", getClass()), input -> MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()))),
 								startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "Input->colour", new RuleIdentifier("Input->colour", getClass()), input -> MapperS.of(input).<String>map("getColour", _input -> _input.getColour())))
@@ -1011,19 +1020,22 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
-	def void numberAnd() {
+	def void numberOr() {
 		val blueprint = '''
 			reporting rule Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				(extract Input->a , extract Input->b)
-						
+				(
+					extract Input->a , 
+					extract Input->b
+				)
+			
 			type Input:
 				a int (1..1)
 				b number (1..1)
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
-		// writeOutClasses(blueprint, "numberAnd");
+		// writeOutClasses(blueprint, "numberOr");
 		try {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -1071,7 +1083,7 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Input, Number, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(actionFactory, BlueprintBuilder.<Input, Number, INKEY, INKEY>and(actionFactory,
+							startsWith(actionFactory, BlueprintBuilder.<Input, Number, INKEY, INKEY>or(actionFactory,
 								startsWith(actionFactory, actionFactory.<Input, Integer, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "Input->a", new RuleIdentifier("Input->a", getClass()), input -> MapperS.of(input).<Integer>map("getA", _input -> _input.getA()))),
 								startsWith(actionFactory, actionFactory.<Input, BigDecimal, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "Input->b", new RuleIdentifier("Input->b", getClass()), input -> MapperS.of(input).<BigDecimal>map("getB", _input -> _input.getB())))
 								)
@@ -1087,7 +1099,7 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
-	def void complexAnd2() {
+	def void complexOr2() {
 		val blueprint = '''
 			reporting rule Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
@@ -1112,7 +1124,7 @@ class RosettaBlueprintTest {
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
-		// writeOutClasses(blueprint, "complexAnd2");
+		// writeOutClasses(blueprint, "complexOr2");
 		try {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -1162,7 +1174,7 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Input, Object, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(actionFactory, BlueprintBuilder.<Input, Object, INKEY, INKEY>and(actionFactory,
+							startsWith(actionFactory, BlueprintBuilder.<Input, Object, INKEY, INKEY>or(actionFactory,
 								startsWith(actionFactory, actionFactory.<Input, Foo, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "Input->foo", new RuleIdentifier("Input->foo", getClass()), input -> MapperS.of(input).<Foo>map("getFoo", _input -> _input.getFoo()))),
 								startsWith(actionFactory, actionFactory.<Input, Bar, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "Input->bar", new RuleIdentifier("Input->bar", getClass()), input -> MapperS.of(input).<Bar>map("getBar", _input -> _input.getBar())))
 								)
@@ -1178,7 +1190,7 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
-	def void complexAnd3() {
+	def void complexOr3() {
 		val blueprint = '''
 			reporting rule Blueprint1
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
@@ -1198,7 +1210,7 @@ class RosettaBlueprintTest {
 		'''.generateCode
 
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
-		// writeOutClasses(blueprint, "complexAnd3");
+		// writeOutClasses(blueprint, "complexOr3");
 		try {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -1246,7 +1258,7 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Input1, String, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(actionFactory, BlueprintBuilder.<Input1, Input2, INKEY, INKEY>and(actionFactory,
+							startsWith(actionFactory, BlueprintBuilder.<Input1, Input2, INKEY, INKEY>or(actionFactory,
 								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "Input1->i1", new RuleIdentifier("Input1->i1", getClass()), input1 -> MapperS.of(input1).<Input2>map("getI1", _input1 -> _input1.getI1()))),
 								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "Input1->i2", new RuleIdentifier("Input1->i2", getClass()), input1 -> MapperS.of(input1).<Input2>map("getI2", _input1 -> _input1.getI2())))
 								)
@@ -2205,7 +2217,7 @@ class RosettaBlueprintTest {
 				public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() { 
 					return 
 						startsWith(actionFactory, getFooRule())
-						.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>and(actionFactory,
+						.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
 							startsWith(actionFactory, getAa2())
 							)
 						)
@@ -2276,7 +2288,7 @@ class RosettaBlueprintTest {
 				public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() { 
 					return 
 						startsWith(actionFactory, getFooRule())
-						.then(BlueprintBuilder.<Bar, Object, INKEY, INKEY>and(actionFactory,
+						.then(BlueprintBuilder.<Bar, Object, INKEY, INKEY>or(actionFactory,
 							startsWith(actionFactory, getAa2()),
 							startsWith(actionFactory, getBb()),
 							startsWith(actionFactory, getCc())
@@ -2753,7 +2765,7 @@ class RosettaBlueprintTest {
 					@Override
 					public BlueprintInstance<Input, Output, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(BlueprintBuilder.<Input, String, INKEY, INKEY>and(
+							startsWith(BlueprintBuilder.<Input, String, INKEY, INKEY>or(
 								startsWith(getRosettaActionFactory().<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->traderef", new StringIdentifier("->traderef"), input -> MapperS.of(input).map("getTraderef", Input::getTraderef))),
 								startsWith(getRosettaActionFactory().<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->input2->colour", new StringIdentifier("->input2->colour"), input -> MapperS.of(input).map("getInput2", Input::getInput2).map("getColour", Input2::getColour)))
 								)

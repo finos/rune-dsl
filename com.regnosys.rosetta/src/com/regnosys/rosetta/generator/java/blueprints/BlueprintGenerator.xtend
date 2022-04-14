@@ -115,9 +115,9 @@ class BlueprintGenerator {
 		]
 		
 		if (!node.bps.empty) {
-			val andNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
-			andNodeExpr.node = node
-			currentNodeExpr.next = andNodeExpr			
+			val orNodeExpr = RosettaFactory.eINSTANCE.createBlueprintNodeExp
+			orNodeExpr.node = node
+			currentNodeExpr.next = orNodeExpr			
 		}
 			
 		return firstNodeExpr
@@ -297,7 +297,7 @@ class BlueprintGenerator {
 			
 			}
 			BlueprintOr : {
-				node.andNode(typedNode, context, id)
+				node.orNode(typedNode, context, id)
 			}
 			BlueprintRef : {
 				context.addBPRef(typedNode)
@@ -373,12 +373,12 @@ class BlueprintGenerator {
 		}
 	}
 	
-	def StringConcatenationClient andNode(BlueprintOr andNode, TypedBPNode andTyped, Context context, CharSequence id) {
+	def StringConcatenationClient orNode(BlueprintOr orNode, TypedBPNode orTyped, Context context, CharSequence id) {
 		'''
-		«IF !andNode.bps.isEmpty»
-			BlueprintBuilder.<«andTyped.outFullS»>and(actionFactory,
-				«FOR bp:andNode.bps.indexed  SEPARATOR ","»
-				startsWith(actionFactory, «bp.value.buildGraph(andTyped.orNodes.get(bp.key), context)»)
+		«IF !orNode.bps.isEmpty»
+			BlueprintBuilder.<«orTyped.outFullS»>or(actionFactory,
+				«FOR bp:orNode.bps.indexed  SEPARATOR ","»
+				startsWith(actionFactory, «bp.value.buildGraph(orTyped.orNodes.get(bp.key), context)»)
 				«ENDFOR»
 				)
 			«ENDIF»
