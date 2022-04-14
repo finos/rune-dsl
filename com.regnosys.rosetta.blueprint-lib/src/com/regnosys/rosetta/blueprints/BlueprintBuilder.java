@@ -62,8 +62,8 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		return new BlueprintBuilder<>(actionFactory, Collections.emptyList(), of(source), of(), of(source), null);
 	}
 	
-	public static <I, O, K> BlueprintBuilder<I,O,K, K> startsWith(RosettaActionFactory actionFactory, ExpanderNode<I,O,K> exporNode) {
-		StreamExpander<I, O, K> expand = new StreamExpander<>(exporNode);
+	public static <I, O, K> BlueprintBuilder<I,O,K, K> startsWith(RosettaActionFactory actionFactory, ExpanderNode<I,O,K> expandNode) {
+		StreamExpander<I, O, K> expand = new StreamExpander<>(expandNode);
 		return new BlueprintBuilder<>(actionFactory, of(expand), of(expand), of(), of(), null);
 	}
 
@@ -80,8 +80,8 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		return bpb;
 	}
 
-	public <O2> BlueprintBuilder<I, O2, K1, K2> then(ExpanderNode<? super O,O2,K2> exporNode) {
-		StreamExpander<O, O2, K2> expand = new StreamExpander<>(exporNode);
+	public <O2> BlueprintBuilder<I, O2, K1, K2> then(ExpanderNode<? super O,O2,K2> expandNode) {
+		StreamExpander<O, O2, K2> expand = new StreamExpander<>(expandNode);
 		//add new node downstream of existing tails
 		for (Upstream<? extends O, K2> up: tails) {
 			up.addDownstreams(expand);
