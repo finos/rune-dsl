@@ -18,6 +18,7 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 
 class RosettaExtensions {
 	
@@ -87,6 +88,10 @@ class RosettaExtensions {
 			else {
 				visitor.apply(expr)
 			}	
+		}
+		if(expr instanceof RosettaConditionalExpression) {
+			expr.ifthen.collectExpressions(visitor)
+			expr.elsethen.collectExpressions(visitor)
 		}
 		else {
 			visitor.apply(expr)
