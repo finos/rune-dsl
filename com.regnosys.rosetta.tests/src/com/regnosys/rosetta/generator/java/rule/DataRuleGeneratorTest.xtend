@@ -127,6 +127,113 @@ class DataRuleGeneratorTest {
 	}
 
 	@Test
+	def void shouldGenerateConditionWithNestedIfElseIf() {
+		val model = '''
+			type Foo:
+				bar string (0..1)
+				baz string (0..1)
+			
+			    condition:
+			    	if bar exists then
+				        if bar="Y" then baz exists
+				        else if (bar="I" or bar="N") then baz is absent
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.validation.datarule.FooDataRule0")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.validation.datarule;
+				
+				import com.rosetta.model.lib.annotations.RosettaDataRule;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.expression.ComparisonResult;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.path.RosettaPath;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.model.lib.validation.ValidationResult;
+				import com.rosetta.model.lib.validation.Validator;
+				import com.rosetta.test.model.Foo;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperators.notExists;
+				
+				/**
+				 * @version test
+				 */
+				@RosettaDataRule("FooDataRule0")
+				public class FooDataRule0 implements Validator<Foo> {
+					
+					private static final String NAME = "FooDataRule0";
+					private static final String DEFINITION = "if bar exists then if bar=\"Y\" then baz exists else if (bar=\"I\" or bar=\"N\") then baz is absent";
+					
+					
+					@Override
+					public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+						ComparisonResult result = executeDataRule(foo);
+						if (result.get()) {
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
+						}
+						
+						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, result.getError());
+					}
+					
+					private ComparisonResult executeDataRule(Foo foo) {
+						
+						try {
+							ComparisonResult result = com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							if (exists(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar())).get()) {
+								return com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+								if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
+									return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
+								}
+								else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).get()) {
+									return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
+								}
+								else {
+									return MapperS.ofNull().ofNull();
+								}
+								}));
+							}
+							else {
+								return MapperS.ofNull().ofNull();
+							}
+							}));
+							return result.get() == null ? ComparisonResult.success() : result;
+						}
+						catch (ModelObjectValidator.ModelObjectValidationException ex) {
+							return ComparisonResult.failure(ex.getErrors());
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		val classes = code.compileToClasses
+
+		val foo1 = classes.createInstanceUsingBuilder('Foo', of('bar', 'Y', 'baz', 'a'))
+		assertTrue(classes.runDataRule(foo1, 'FooDataRule0').isSuccess)
+
+		val foo2 = classes.createInstanceUsingBuilder('Foo', of('bar', 'Y'))
+		assertFalse(classes.runDataRule(foo2, 'FooDataRule0').isSuccess)
+
+		val foo3 = classes.createInstanceUsingBuilder('Foo', of('bar', 'I'))
+		assertTrue(classes.runDataRule(foo3, 'FooDataRule0').isSuccess)
+
+		val foo4 = classes.createInstanceUsingBuilder('Foo', of('bar', 'I', 'baz', 'a'))
+		assertFalse(classes.runDataRule(foo4, 'FooDataRule0').isSuccess)
+
+		val foo5 = classes.createInstanceUsingBuilder('Foo', of('bar', 'N'))
+		assertTrue(classes.runDataRule(foo5, 'FooDataRule0').isSuccess)
+		
+		val foo6 = classes.createInstanceUsingBuilder('Foo', of('bar', 'N', 'baz', 'a'))
+		assertFalse(classes.runDataRule(foo6, 'FooDataRule0').isSuccess)
+		
+		val foo7 = classes.createInstanceUsingBuilder('Foo', of())
+		assertTrue(classes.runDataRule(foo7, 'FooDataRule0').isSuccess)
+	}
+
+
+	@Test
 	def void quoteExists() {
 		val code = '''
 				type Quote:

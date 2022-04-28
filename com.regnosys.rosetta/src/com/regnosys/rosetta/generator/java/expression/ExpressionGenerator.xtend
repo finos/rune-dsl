@@ -417,7 +417,6 @@ class ExpressionGenerator {
 									it instanceof RosettaFeatureCall ||
 									it instanceof RosettaCallableWithArgsCall ||
 									it instanceof RosettaLiteral ||
-									it instanceof RosettaConditionalExpression ||
 									it instanceof RosettaCountOperation ||
 									it instanceof ListOperation ||
 									isArithmeticOperation(it)
