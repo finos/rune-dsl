@@ -285,7 +285,7 @@ There are many examples throughout this documentation where the description has 
 
 #### Purpose
 
-Annotations allow to specify additional meta-data for model components beyond a simple decription. Those annotation can serve several purposes:
+Annotations allow to specify additional meta-data for model components beyond a simple description. Those annotation can serve several purposes:
 
 - to add constraints to a model that may be enforced by syntax validation
 - to modify the actual behaviour of a model in generated code
