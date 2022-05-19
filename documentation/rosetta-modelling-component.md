@@ -1232,7 +1232,7 @@ Alternatively, the output can be built by directly assigning it a value. In this
 set <PathExpression>: <Expression>
 ```
 
-The letft-hand side [path expression](#path-expression) can be used to set individual attributes of the ouput object. The right-hand side [expression](#expression-component) allows to calculate that output value from the inputs.
+The left-hand side [path expression](#path-expression) can be used to set individual attributes of the ouput object. The right-hand side [expression](#expression-component) allows to calculate that output value from the inputs.
 
 The `Create_VehicleOwnership` example could be rewritten as follows:
 
