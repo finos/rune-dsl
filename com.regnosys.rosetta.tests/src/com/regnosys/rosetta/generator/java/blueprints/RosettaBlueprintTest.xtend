@@ -1763,6 +1763,29 @@ class RosettaBlueprintTest {
 			blueprint.compileToClasses
 	}
 
+	@Test
+	def void functionCallsWithLiteralInputFromExtract() {
+		val blueprint = ''' 
+			reporting rule FooRule
+				extract 
+					if FooFunc( Foo -> a, "x" ) then "Y"
+					else "Z"
+			
+			type Foo:
+				a string (1..1)
+			
+			func FooFunc:
+				inputs:
+					a string (1..1)
+					b string (1..1)
+				output:
+					result boolean (1..1)
+			'''.parseRosettaWithNoErrors
+			.generateCode
+			//blueprint.writeClasses("functionCallsFromExtract")
+			blueprint.compileToClasses
+	}
+
 	
 	@Test
 	def void functionCallFromExtractBadTypes() {
