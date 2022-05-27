@@ -3132,6 +3132,92 @@ class FunctionGeneratorTest {
 		assertThat(attrList, hasItems("3", "4")); // overwrites existing list
 	}
 	
+	@Test
+	def void shouldCallFuncTwiceInCondition() {
+		val model = '''
+			type Foo:
+				test boolean (1..1)
+				attr string (1..1)
+				
+				condition Bar:
+					if test = True then
+						FuncFoo( attr, "x" )
+					else
+						FuncFoo( attr, "y" )
+			
+			func FuncFoo:
+			 	inputs:
+			 		a string (1..1)
+			 		b string (1..1)
+				output:
+					result boolean (1..1)
+
+		'''
+		val code = model.generateCode
+		val f = code.get("com.rosetta.test.model.validation.datarule.FooBar")
+		assertEquals(
+			'''
+				package com.rosetta.test.model.validation.datarule;
+				
+				import com.google.inject.Inject;
+				import com.rosetta.model.lib.annotations.RosettaDataRule;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.expression.ComparisonResult;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.path.RosettaPath;
+				import com.rosetta.model.lib.validation.ModelObjectValidator;
+				import com.rosetta.model.lib.validation.ValidationResult;
+				import com.rosetta.model.lib.validation.Validator;
+				import com.rosetta.test.model.Foo;
+				import com.rosetta.test.model.functions.FuncFoo;
+				
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				
+				/**
+				 * @version test
+				 */
+				@RosettaDataRule("FooBar")
+				public class FooBar implements Validator<Foo> {
+					
+					private static final String NAME = "FooBar";
+					private static final String DEFINITION = "if test = True then FuncFoo( attr, \"x\" ) else FuncFoo( attr, \"y\" )";
+					
+					@Inject protected FuncFoo funcFoo;
+					
+					@Override
+					public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+						ComparisonResult result = executeDataRule(foo);
+						if (result.get()) {
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
+						}
+						
+						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, result.getError());
+					}
+					
+					private ComparisonResult executeDataRule(Foo foo) {
+						
+						try {
+							ComparisonResult result = com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+								return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("x").get()));
+							}
+							else {
+								return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("y").get()));
+							}
+							}));
+							return result.get() == null ? ComparisonResult.success() : result;
+						}
+						catch (ModelObjectValidator.ModelObjectValidationException ex) {
+							return ComparisonResult.failure(ex.getErrors());
+						}
+					}
+				}
+			'''.toString,
+			f
+		)
+		code.compileToClasses
+	}
+	
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {
 		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of()) as RosettaModelObject
 	}
