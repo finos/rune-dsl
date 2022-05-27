@@ -17,11 +17,12 @@ import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ListOperation
+import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
 import static com.regnosys.rosetta.generator.util.Util.*
-import com.regnosys.rosetta.rosetta.simple.ListLiteral
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -29,15 +30,16 @@ import com.regnosys.rosetta.rosetta.simple.ListLiteral
 class FunctionDependencyProvider {
 
 
-	def Iterable<RosettaCallableWithArgs> functionDependencies(EObject object) {
+	def Set<RosettaCallableWithArgs> functionDependencies(EObject object) {
 		switch object {
 			RosettaBinaryOperation: {
-				functionDependencies(object.left) + functionDependencies(object.right)
+				newHashSet(functionDependencies(object.left) + functionDependencies(object.right))
 			}
 			RosettaConditionalExpression: {
-				functionDependencies(object.^if) +
-				functionDependencies(object.ifthen) +
-				functionDependencies(object.elsethen)
+				newHashSet(
+					functionDependencies(object.^if) +
+					functionDependencies(object.ifthen) +
+					functionDependencies(object.elsethen))
 			}
 			RosettaOnlyExistsExpression: {
 				functionDependencies(object.args)
@@ -48,10 +50,10 @@ class FunctionDependencyProvider {
 			RosettaFeatureCall:
 				functionDependencies(object.receiver)
 			RosettaCallableWithArgsCall: {
-				functionDependencies(object.callable) + functionDependencies(object.args)
+				newHashSet(functionDependencies(object.callable) + functionDependencies(object.args))
 			}
 			Function: {
-				newArrayList(object)
+				newHashSet(object)
 			}
 			RosettaParenthesisCalcExpression: {
 				functionDependencies(object.expression)
@@ -60,34 +62,34 @@ class FunctionDependencyProvider {
 				functionDependencies(object.argument)
 			}
 			RosettaContainsExpression: {
-				functionDependencies(object.contained) + functionDependencies(object.container)
+				newHashSet(functionDependencies(object.contained) + functionDependencies(object.container))
 			}
 			
 			RosettaDisjointExpression: {
-				functionDependencies(object.disjoint) + functionDependencies(object.container)
+				newHashSet(functionDependencies(object.disjoint) + functionDependencies(object.container))
 			}
 			RosettaCountOperation: {
 				functionDependencies(object.argument)
 			}
 			ListOperation: {
-				functionDependencies(object.body) + functionDependencies(object.receiver)
+				newHashSet(functionDependencies(object.body) + functionDependencies(object.receiver))
 			}
 			ListLiteral: {
-				newArrayList(object.elements.flatMap[functionDependencies])
+				newHashSet(object.elements.flatMap[functionDependencies])
 			},
 			RosettaExternalFunction,
 			RosettaEnumValueReference,
 			RosettaLiteral,
 			RosettaCallableCall:
-				emptyList()
+				emptySet()
 			default:
 				if(object !== null)
 					throw new IllegalArgumentException('''«object?.eClass?.name» is not covered yet.''')
-				else emptyList()
+				else emptySet()
 		}
 	}
 	
-	def Iterable<RosettaCallableWithArgs> functionDependencies(Iterable<? extends EObject> objects) {
-		distinctBy(objects.map[object | functionDependencies(object)].flatten, [f|f.name]);
+	def Set<RosettaCallableWithArgs> functionDependencies(Iterable<? extends EObject> objects) {
+		distinctBy(objects.map[object | functionDependencies(object)].flatten, [f|f.name]).toSet;
 	}
 }

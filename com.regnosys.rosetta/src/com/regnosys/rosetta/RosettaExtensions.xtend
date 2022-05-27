@@ -4,6 +4,7 @@ import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
+import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaSynonym
@@ -18,7 +19,6 @@ import java.util.Set
 import org.eclipse.emf.common.util.URI
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 
 class RosettaExtensions {
 	
