@@ -98,7 +98,7 @@ ShortcutDeclaration:
 
 Condition:
 	'condition' RosettaNamed? ':' Definable?
-		->(Annotations)? // conflicts with ListLiteral as RosettaCalcExpression
+		->(References|Annotations)* // conflicts with ListLiteral as RosettaCalcExpression
 		( constraint = OneOf
 		| constraint = Constraint
 		| expression = RosettaCalcExpression)
