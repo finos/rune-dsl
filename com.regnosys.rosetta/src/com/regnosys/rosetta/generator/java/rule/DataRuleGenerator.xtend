@@ -78,7 +78,7 @@ class DataRuleGenerator {
 				private ComparisonResult executeDataRule(«rosettaClass.name» «rosettaClass.name.toFirstLower») {
 					
 					try {
-						«ComparisonResult» result = com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(«expressionHandler.javaCode(rule.expression, new ParamMap(rosettaClass))»);
+						«ComparisonResult» result = «expressionHandler.toComparisonResult(rule.expression, new ParamMap(rosettaClass))»;
 						return result.get() == null ? ComparisonResult.success() : result;
 					}
 					catch («ModelObjectValidator».ModelObjectValidationException ex) {

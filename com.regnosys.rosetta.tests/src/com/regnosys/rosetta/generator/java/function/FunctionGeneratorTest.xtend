@@ -3197,7 +3197,7 @@ class FunctionGeneratorTest {
 					private ComparisonResult executeDataRule(Foo foo) {
 						
 						try {
-							ComparisonResult result = com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							ComparisonResult result = ComparisonResult.of(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 							if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 								return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("x").get()));
 							}

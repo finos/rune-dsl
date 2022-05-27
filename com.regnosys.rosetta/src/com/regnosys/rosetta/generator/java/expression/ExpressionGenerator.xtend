@@ -388,7 +388,7 @@ class ExpressionGenerator {
 		}
 	}
 
-	private def StringConcatenationClient toComparisonResult(RosettaExpression expr, ParamMap params) {
+	def StringConcatenationClient toComparisonResult(RosettaExpression expr, ParamMap params) {
 		val wrap = expr.evalulatesToMapper
 		'''«IF wrap»«ComparisonResult».of(«ENDIF»«expr.javaCode(params)»«IF wrap»)«ENDIF»'''
 	}
