@@ -169,7 +169,9 @@ class FunctionGenerator {
 							
 						«ENDIF»
 					«ENDFOR»
-					return «outputName»;
+					return «IF !needsBuilder(output)»«outputName»«ELSE»«Optional».ofNullable(«outputName»)
+						.map(«IF output.isMany»o -> o.stream().map(i -> i.prune()).collect(«Collectors».toList())«ELSE»o -> o.prune()«ENDIF»)
+						.orElse(null)«ENDIF»;
 				}
 
 				protected abstract «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
