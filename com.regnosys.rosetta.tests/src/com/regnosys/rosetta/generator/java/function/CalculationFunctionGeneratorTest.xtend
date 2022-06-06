@@ -286,6 +286,7 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.test.model.FoncOut.FoncOutBuilder;
 			import com.rosetta.test.model.FuncIn;
 			import java.time.LocalTime;
+			import java.util.Optional;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -313,7 +314,9 @@ class CalculationFunctionGeneratorTest {
 					res
 						.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
 					
-					return res;
+					return Optional.ofNullable(res)
+						.map(o -> o.prune())
+						.orElse(null);
 				}
 			
 				protected abstract FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn);
@@ -379,6 +382,7 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.test.model.FuncOut;
 			import com.rosetta.test.model.FuncOut.FuncOutBuilder;
 			import java.time.LocalTime;
+			import java.util.Optional;
 			
 			
 			@ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
@@ -406,7 +410,9 @@ class CalculationFunctionGeneratorTest {
 					out
 						.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
 					
-					return out;
+					return Optional.ofNullable(out)
+						.map(o -> o.prune())
+						.orElse(null);
 				}
 			
 				protected abstract FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn);
@@ -514,7 +520,9 @@ class CalculationFunctionGeneratorTest {
 								.build()
 							);
 						
-						return out;
+						return Optional.ofNullable(out)
+							.map(o -> o.prune())
+							.orElse(null);
 					}
 				
 					protected abstract OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta);

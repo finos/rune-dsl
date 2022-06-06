@@ -98,6 +98,7 @@ class ModelObjectGenerator {
 					return «pt.typeArgs.get(0).type».class;
 				}
 			«ENDFOR»
+			
 			«d.processMethod(names)»
 			
 			interface «names.toJavaType(d)»Builder extends «d.name», «IF d.hasSuperType»«names.toJavaType(d.superType).toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
@@ -132,6 +133,8 @@ class ModelObjectGenerator {
 				«ENDFOR»
 				
 				«d.builderProcessMethod(names)»
+				
+				«names.toJavaType(d).toBuilderType» prune();
 			}
 			
 «««			This line reserves this name as a name SO any class imported with the smae name will automatically be fully qualified

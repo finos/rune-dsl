@@ -1612,6 +1612,8 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
 				import java.util.List;
+				import java.util.Optional;
+				import java.util.stream.Collectors;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -1637,7 +1639,9 @@ class FunctionGeneratorTest {
 						List<Bar.BarBuilder> __addVar0 = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti());
 						res.addAll(__addVar0);
 						
-						return res;
+						return Optional.ofNullable(res)
+							.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+							.orElse(null);
 					}
 				
 					protected abstract List<Bar.BarBuilder> doEvaluate(Foo foo);
@@ -1706,6 +1710,8 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
 				import java.util.List;
+				import java.util.Optional;
+				import java.util.stream.Collectors;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -1731,7 +1737,9 @@ class FunctionGeneratorTest {
 						List<Bar.BarBuilder> __addVar0 = toBuilder(distinct(MapperC.of(barList)).getMulti());
 						res.addAll(__addVar0);
 						
-						return res;
+						return Optional.ofNullable(res)
+							.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+							.orElse(null);
 					}
 				
 					protected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList);
@@ -2335,6 +2343,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
+				import java.util.Optional;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -2368,7 +2377,9 @@ class FunctionGeneratorTest {
 						}
 						}).get());
 						
-						return result;
+						return Optional.ofNullable(result)
+							.map(o -> o.prune())
+							.orElse(null);
 					}
 				
 					protected abstract Bar.BarBuilder doEvaluate(Boolean test, Bar b1, Bar b2);
@@ -2422,6 +2433,8 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
 				import java.util.List;
+				import java.util.Optional;
+				import java.util.stream.Collectors;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -2456,7 +2469,9 @@ class FunctionGeneratorTest {
 						}).getMulti());
 						result.addAll(__addVar0);
 						
-						return result;
+						return Optional.ofNullable(result)
+							.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+							.orElse(null);
 					}
 				
 					protected abstract List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2);
@@ -2566,6 +2581,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.List;
+				import java.util.Optional;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -2590,7 +2606,9 @@ class FunctionGeneratorTest {
 						foo
 							.setOutList(MapperC.of(inList).getMulti());
 						
-						return foo;
+						return Optional.ofNullable(foo)
+							.map(o -> o.prune())
+							.orElse(null);
 					}
 				
 					protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
@@ -2637,6 +2655,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.List;
+				import java.util.Optional;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -2661,7 +2680,9 @@ class FunctionGeneratorTest {
 						foo
 							.addOutList(MapperC.of(inList).getMulti());
 						
-						return foo;
+						return Optional.ofNullable(foo)
+							.map(o -> o.prune())
+							.orElse(null);
 					}
 				
 					protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
