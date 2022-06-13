@@ -44,7 +44,7 @@ A [demonstration model](https://github.com/rosetta-models/demo), also available 
 
 ### Code Generator
 
-Code generators remove the need for software developers to translate the model specifications into executable code while while ensuring the inter-operability of different implementations. The Rosetta DSL repository provides one default code generator, for [Java](https://www.oracle.com/java/).
+Code generators remove the need for software developers to translate the model specifications into executable code while ensuring the inter-operability of different implementations. The Rosetta DSL repository provides one default code generator, for [Java](https://www.oracle.com/java/).
 
 To make models agnostic to the technology platform in which they are being implemented, other code generators have been provided in a variety of languages. A separate [code generator repository](https://github.com/REGnosys/rosetta-code-generators), also open source, allows the community to create and share code generators in potentially any software language.
 
