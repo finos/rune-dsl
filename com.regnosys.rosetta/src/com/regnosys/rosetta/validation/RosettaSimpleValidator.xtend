@@ -91,6 +91,9 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import java.util.Iterator
+import org.eclipse.emf.ecore.EClassifier
+import com.regnosys.rosetta.rosetta.RosettaRootElement
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -1200,6 +1203,33 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}
 		}
 	}
+	
+	@Check
+	def checkImport(RosettaModel model) {
+
+		var importable = newArrayList
+		for (content : model.eAllContents.toList) {
+			if (content instanceof RosettaRootElement) {
+				importable.add(content)
+			}
+			for (crossReference : content.eCrossReferences.toList) {
+				if (crossReference instanceof RosettaRootElement) {
+					importable.add(crossReference)
+				}
+			}
+		}
+		var usedNamespaces = importable
+			.map[eContainer]
+			.map[it as RosettaModel]
+			.map[name]
+			
+		for (ns : model.imports) {
+			if (!usedNamespaces.contains(ns.importedNamespace.replace('.*', ''))) {
+				warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
+			}
+		}
+	}
+	
 	
 	private def void checkNoParameters(ListOperation o) {
 		if (o.parameters.size > 0) {
