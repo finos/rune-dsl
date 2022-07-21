@@ -33,6 +33,7 @@ import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -91,9 +92,6 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import java.util.Iterator
-import org.eclipse.emf.ecore.EClassifier
-import com.regnosys.rosetta.rosetta.RosettaRootElement
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -151,6 +149,15 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void checkClassNameStartsWithCapital(Data classe) {
 		if (!Character.isUpperCase(classe.name.charAt(0))) {
 			warning("Type name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
+		}
+	}
+	
+	@Check
+	def void checkConditionName(Condition condition) {
+		if (condition.name === null) {
+			warning("Condition name should be specified", ROSETTA_NAMED__NAME, MISSING_ATTRIBUTE)
+		} else if (!Character.isUpperCase(condition.name.charAt(0))) {
+			warning("Condition name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
 	
