@@ -487,7 +487,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				condition:
 					x exists
 		'''.parseRosetta
-		model.assertWarning(CONDITION, MISSING_ATTRIBUTE,
+		model.assertWarning(CONDITION, INVALID_NAME,
 			"Condition name should be specified")
 	}
 	

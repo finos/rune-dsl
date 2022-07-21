@@ -7,6 +7,7 @@ public interface RosettaIssueCodes {
 	static final String DUPLICATE_ATTRIBUTE = PREFIX + "duplicateAttribute" ;
 	static final String DUPLICATE_ENUM_VALUE = PREFIX + "duplicateEnumValue";
 	static final String DUPLICATE_ELEMENT_NAME = PREFIX + "duplicateName" ;
+	static final String INVALID_NAME = PREFIX + "invalidName";
 	static final String INVALID_CASE = PREFIX + "invalidCase";
 	static final String MISSING_ATTRIBUTE = PREFIX + "missingAttribute";
 	static final String TYPE_ERROR = PREFIX + "typeError";
