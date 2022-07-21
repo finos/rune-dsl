@@ -159,6 +159,17 @@ class FunctionGenerator {
 				}
 			
 				protected abstract «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
+			«FOR alias : func.shortcuts»
+				«IF aliasOut.get(alias)»
+					«val multi = cardinality.isMulti(alias.expression)»
+					«val returnType = names.shortcutJavaType(alias)»
+				
+					protected abstract «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF»);
+				«ELSE»
+				
+					protected abstract «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)»);
+				«ENDIF»
+			«ENDFOR»
 			
 				public static final class «className»Default extends «className» {
 					@Override
@@ -186,11 +197,13 @@ class FunctionGenerator {
 							«val multi = cardinality.isMulti(alias.expression)»
 							«val returnType = names.shortcutJavaType(alias)»
 							
+							@Override
 							protected «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
 								return toBuilder(«expressionGenerator.javaCode(alias.expression, new ParamMap)»«IF multi».getMulti()«ELSE».get()«ENDIF»);
 							}
 						«ELSE»
-						
+							
+							@Override
 							protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
 								return «expressionGenerator.javaCode(alias.expression, new ParamMap)»;
 							}

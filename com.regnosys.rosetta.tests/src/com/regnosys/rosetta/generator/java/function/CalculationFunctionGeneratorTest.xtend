@@ -93,6 +93,8 @@ class CalculationFunctionGeneratorTest {
 					
 						protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
 					
+						protected abstract Mapper<Integer> i(PeriodEnum in1, Period in2);
+					
 						public static final class mONTH_Default extends mONTH_ {
 							@Override
 							protected  BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
@@ -106,9 +108,10 @@ class CalculationFunctionGeneratorTest {
 								return out;
 							}
 							
-								protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
-									return MapperS.of(in2).<Integer>map("getFrequency", _period -> _period.getFrequency());
-								}
+							@Override
+							protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
+								return MapperS.of(in2).<Integer>map("getFrequency", _period -> _period.getFrequency());
+							}
 						}
 					}
 				}
@@ -155,6 +158,8 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract Integer doEvaluate(Integer one);
 			
+				protected abstract Mapper<Integer> oneA(Integer one);
+			
 				public static final class CalcDefault extends Calc {
 					@Override
 					protected  Integer doEvaluate(Integer one) {
@@ -168,9 +173,10 @@ class CalculationFunctionGeneratorTest {
 						return out;
 					}
 					
-						protected Mapper<Integer> oneA(Integer one) {
-							return MapperS.of(Integer.valueOf(1));
-						}
+					@Override
+					protected Mapper<Integer> oneA(Integer one) {
+						return MapperS.of(Integer.valueOf(1));
+					}
 				}
 			}
 			'''
@@ -220,6 +226,10 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract Integer doEvaluate(Integer arg1, Integer arg2);
 			
+				protected abstract Mapper<Integer> a1(Integer arg1, Integer arg2);
+			
+				protected abstract Mapper<Integer> a2(Integer arg1, Integer arg2);
+			
 				public static final class CalcDefault extends Calc {
 					@Override
 					protected  Integer doEvaluate(Integer arg1, Integer arg2) {
@@ -233,13 +243,15 @@ class CalculationFunctionGeneratorTest {
 						return res;
 					}
 					
-						protected Mapper<Integer> a1(Integer arg1, Integer arg2) {
-							return MapperS.of(new Min().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
-						}
+					@Override
+					protected Mapper<Integer> a1(Integer arg1, Integer arg2) {
+						return MapperS.of(new Min().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
+					}
 					
-						protected Mapper<Integer> a2(Integer arg1, Integer arg2) {
-							return MapperS.of(new Max().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
-						}
+					@Override
+					protected Mapper<Integer> a2(Integer arg1, Integer arg2) {
+						return MapperS.of(new Max().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
+					}
 				}
 			}
 			'''
@@ -308,6 +320,10 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn);
 			
+				protected abstract Mapper<Date> arg1(FuncIn funIn);
+			
+				protected abstract Mapper<LocalTime> arg2(FuncIn funIn);
+			
 				public static final class CalcDefault extends Calc {
 					@Override
 					protected  FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
@@ -327,13 +343,15 @@ class CalculationFunctionGeneratorTest {
 							.orElse(null);
 					}
 					
-						protected Mapper<Date> arg1(FuncIn funIn) {
-							return MapperS.of(funIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
-						}
+					@Override
+					protected Mapper<Date> arg1(FuncIn funIn) {
+						return MapperS.of(funIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
+					}
 					
-						protected Mapper<LocalTime> arg2(FuncIn funIn) {
-							return MapperS.of(funIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
-						}
+					@Override
+					protected Mapper<LocalTime> arg2(FuncIn funIn) {
+						return MapperS.of(funIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
+					}
 				}
 			}
 			'''
@@ -404,6 +422,12 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn);
 			
+				protected abstract Mapper<String> linkId(FuncIn funcIn);
+			
+				protected abstract Mapper<Date> tradeDate(FuncIn funcIn);
+			
+				protected abstract Mapper<LocalTime> tradeTime(FuncIn funcIn);
+			
 				public static final class RTS_22_FieldsDefault extends RTS_22_Fields {
 					@Override
 					protected  FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
@@ -423,17 +447,20 @@ class CalculationFunctionGeneratorTest {
 							.orElse(null);
 					}
 					
-						protected Mapper<String> linkId(FuncIn funcIn) {
-							return MapperS.of(funcIn).<String>map("getValS", _funcIn -> _funcIn.getValS());
-						}
+					@Override
+					protected Mapper<String> linkId(FuncIn funcIn) {
+						return MapperS.of(funcIn).<String>map("getValS", _funcIn -> _funcIn.getValS());
+					}
 					
-						protected Mapper<Date> tradeDate(FuncIn funcIn) {
-							return MapperS.of(funcIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
-						}
+					@Override
+					protected Mapper<Date> tradeDate(FuncIn funcIn) {
+						return MapperS.of(funcIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
+					}
 					
-						protected Mapper<LocalTime> tradeTime(FuncIn funcIn) {
-							return MapperS.of(funcIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
-						}
+					@Override
+					protected Mapper<LocalTime> tradeTime(FuncIn funcIn) {
+						return MapperS.of(funcIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
+					}
 				}
 			}
 			'''
@@ -581,6 +608,8 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract Integer doEvaluate();
 			
+				protected abstract Mapper<Integer> arg1();
+			
 				public static final class AdderDefault extends Adder {
 					@Override
 					protected  Integer doEvaluate() {
@@ -594,9 +623,10 @@ class CalculationFunctionGeneratorTest {
 						return res;
 					}
 					
-						protected Mapper<Integer> arg1() {
-							return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
-						}
+					@Override
+					protected Mapper<Integer> arg1() {
+						return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
+					}
 				}
 			}
 			'''
@@ -791,6 +821,8 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract Integer doEvaluate(Integer arg1);
 			
+				protected abstract Mapper<Integer> addedOne(Integer arg1);
+			
 				public static final class AdderDefault extends Adder {
 					@Override
 					protected  Integer doEvaluate(Integer arg1) {
@@ -804,9 +836,10 @@ class CalculationFunctionGeneratorTest {
 						return res;
 					}
 					
-						protected Mapper<Integer> addedOne(Integer arg1) {
-							return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
-						}
+					@Override
+					protected Mapper<Integer> addedOne(Integer arg1) {
+						return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
+					}
 				}
 			}
 			'''

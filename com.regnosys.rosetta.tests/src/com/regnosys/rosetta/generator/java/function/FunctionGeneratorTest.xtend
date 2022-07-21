@@ -1049,6 +1049,8 @@ class FunctionGeneratorTest {
 				
 					protected abstract Date doEvaluate(Date f3Input);
 				
+					protected abstract Mapper<Date> f1OutList(Date f3Input);
+				
 					public static final class F3Default extends F3 {
 						@Override
 						protected  Date doEvaluate(Date f3Input) {
@@ -1062,9 +1064,10 @@ class FunctionGeneratorTest {
 							return f3Output;
 						}
 						
-							protected Mapper<Date> f1OutList(Date f3Input) {
-								return MapperC.of(f1.evaluate(MapperS.of(f3Input).get()));
-							}
+						@Override
+						protected Mapper<Date> f1OutList(Date f3Input) {
+							return MapperC.of(f1.evaluate(MapperS.of(f3Input).get()));
+						}
 					}
 				}
 			'''.toString,
