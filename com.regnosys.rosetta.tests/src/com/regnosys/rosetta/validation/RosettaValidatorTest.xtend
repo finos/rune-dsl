@@ -479,6 +479,32 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 
 	@Test
+	def void shouldGenerateNoConditionNameWarning() {
+		val model = '''
+			type Foo:
+				x string (0..1)
+				
+				condition:
+					x exists
+		'''.parseRosetta
+		model.assertWarning(CONDITION, INVALID_NAME,
+			"Condition name should be specified")
+	}
+	
+	@Test
+	def void shouldGenerateConditionNameInvalidCaseWarning() {
+		val model = '''
+			type Foo:
+				x string (0..1)
+				
+				condition xExists:
+					x exists
+		'''.parseRosetta
+		model.assertWarning(CONDITION, INVALID_CASE,
+			"Condition name should start with a capital")
+	}
+
+	@Test
 	def void shouldNoGenerateErrorsForConditionWithInheritedAttributeExists() {
 		val model = '''
 			type Foo:
@@ -487,7 +513,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				y string (0..1)
 				
-				condition:
+				condition XExists:
 					x exists
 		'''.parseRosetta
 		model.assertNoErrors
