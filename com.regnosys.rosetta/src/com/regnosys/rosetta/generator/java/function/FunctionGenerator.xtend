@@ -35,9 +35,11 @@ import com.regnosys.rosetta.types.RAnnotateType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
+import com.rosetta.model.lib.functions.ConditionValidator
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.mapper.Mapper
+import com.rosetta.model.lib.validation.ModelObjectValidator
 import java.util.ArrayList
 import java.util.List
 import java.util.Map
@@ -49,7 +51,6 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.rosetta.model.lib.functions.FunctionValidator
 
 class FunctionGenerator {
 
@@ -113,9 +114,13 @@ class FunctionGenerator {
 		'''
 			@«ImplementedBy»(«className».«className»Default.class)
 			public «IF isStatic»static «ENDIF»abstract class «className» implements «RosettaFunction»«IF func.isQualifierFunction()», «IQualifyFunctionExtension»<«inputs.head.toListOrSingleJavaType»>«ENDIF» {
-				«IF outNeedsBuilder || !func.conditions.empty || !func.postConditions.empty»
+				«IF !func.conditions.empty || !func.postConditions.empty»
 					
-					@«Inject» protected «FunctionValidator» validator;
+					@«Inject» protected «ConditionValidator» conditionValidator;
+				«ENDIF»
+				«IF outNeedsBuilder»
+					
+					@«Inject» protected «ModelObjectValidator» objectValidator;
 				«ENDIF»
 				«IF !dependencies.empty»
 					
@@ -154,7 +159,7 @@ class FunctionGenerator {
 					«ENDIF»
 					«IF outNeedsBuilder»
 					if («outputName» != null) {
-						validator.validate(«names.toJavaType(output.type)».class, «outputName»);
+						objectValidator.validate(«names.toJavaType(output.type)».class, «outputName»);
 					}
 					«ENDIF»
 					return «outputName»;
@@ -430,7 +435,7 @@ class FunctionGenerator {
 	
 	private def StringConcatenationClient contributeCondition(Condition condition) {
 		'''
-			validator.validateCondition(() -> «expressionGenerator.javaCode(condition.expression, null)», "«condition.definition»");
+			conditionValidator.validate(() -> «expressionGenerator.javaCode(condition.expression, null)», "«condition.definition»");
 		'''
 	}
 

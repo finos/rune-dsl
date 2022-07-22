@@ -3,12 +3,14 @@ package com.regnosys.rosetta.generator.java.qualify
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.rosetta.model.lib.RosettaModelObject
-import com.rosetta.model.lib.functions.FunctionValidator
-import com.rosetta.model.lib.functions.NoOpFunctionValidator
+import com.rosetta.model.lib.functions.ConditionValidator
+import com.rosetta.model.lib.functions.NoOpConditionValidator
 import com.rosetta.model.lib.meta.RosettaMetaDataBuilder
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory
 import com.rosetta.model.lib.qualify.QualifyResult
 import com.rosetta.model.lib.qualify.QualifyResultsExtractor
+import com.rosetta.model.lib.validation.ModelObjectValidator
+import com.rosetta.model.lib.validation.NoOpModelObjectValidator
 import java.util.List
 
 import static org.hamcrest.MatcherAssert.*
@@ -23,7 +25,8 @@ class QualifyTestHelper {
 		funcFactory = Guice.createInjector(new AbstractModule() {
 
 			override protected configure() {
-				bind(FunctionValidator).toInstance(new NoOpFunctionValidator)
+				bind(ConditionValidator).toInstance(new NoOpConditionValidator)
+				bind(ModelObjectValidator).toInstance(new NoOpModelObjectValidator)
 			}
 		}).getInstance(QualifyFunctionFactory.Default)
 	}
