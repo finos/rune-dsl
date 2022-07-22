@@ -143,18 +143,17 @@ class FunctionGenerator {
 					«IF !func.conditions.empty»
 						// pre-conditions
 						«FOR cond:func.conditions»
-						
 							«cond.contributeCondition»
+							
 						«ENDFOR»
 					«ENDIF»
-					
 					«output.toBuilderType(names)» «outputName» = doEvaluate(«func.inputsAsArguments(names)»);
 					
 					«IF !func.postConditions.empty»
 						// post-conditions
 						«FOR cond:func.postConditions»
-
 							«cond.contributeCondition»
+							
 						«ENDFOR»
 					«ENDIF»
 					«IF outNeedsBuilder»

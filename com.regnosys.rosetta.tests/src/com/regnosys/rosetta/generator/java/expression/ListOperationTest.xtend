@@ -77,7 +77,6 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						
 						List<Foo.FooBuilder> filteredFoos = doEvaluate(foos);
 						
 						if (filteredFoos != null) {
@@ -174,7 +173,6 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						
 						List<Foo.FooBuilder> filteredFoos = doEvaluate(foos);
 						
 						if (filteredFoos != null) {
@@ -309,7 +307,6 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo2> evaluate(List<? extends Foo2> foos) {
-						
 						List<Foo2.Foo2Builder> filteredFoos = doEvaluate(foos);
 						
 						if (filteredFoos != null) {
@@ -408,7 +405,6 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends FooWithScheme> evaluate(List<? extends FooWithScheme> foos) {
-						
 						List<FooWithScheme.FooWithSchemeBuilder> filteredFoos = doEvaluate(foos);
 						
 						if (filteredFoos != null) {
@@ -500,7 +496,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends FooWithScheme> foos) {
-						
 						List<String> stringsHolder = doEvaluate(foos);
 						List<String> strings = assignOutput(stringsHolder, foos);
 						
@@ -581,7 +576,6 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<Boolean> evaluate(List<Boolean> foos) {
-						
 						List<Boolean> filteredFoos = doEvaluate(foos);
 						
 						return filteredFoos;
@@ -976,7 +970,6 @@ class ListOperationTest {
 					* @return foos 
 					*/
 					public List<? extends Foo> evaluate(Bar bar) {
-						
 						List<Foo.FooBuilder> foos = doEvaluate(bar);
 						
 						if (foos != null) {
@@ -1279,7 +1272,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Foo> foos) {
-						
 						List<String> strings = doEvaluate(foos);
 						
 						return strings;
@@ -1400,7 +1392,6 @@ class ListOperationTest {
 					* @return fooCounts 
 					*/
 					public List<Integer> evaluate(List<? extends Bar> bars) {
-						
 						List<Integer> fooCounts = doEvaluate(bars);
 						
 						return fooCounts;
@@ -1607,7 +1598,6 @@ class ListOperationTest {
 					* @return foos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Bar> bars) {
-						
 						List<Foo.FooBuilder> foos = doEvaluate(bars);
 						
 						if (foos != null) {
@@ -1743,7 +1733,6 @@ class ListOperationTest {
 					* @return attrs 
 					*/
 					public List<String> evaluate(List<? extends Bar> bars) {
-						
 						List<String> attrs = doEvaluate(bars);
 						
 						return attrs;
@@ -1941,7 +1930,6 @@ class ListOperationTest {
 					* @return updatedBars 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> bars) {
-						
 						List<Bar.BarBuilder> updatedBars = doEvaluate(bars);
 						
 						if (updatedBars != null) {
@@ -2078,7 +2066,6 @@ class ListOperationTest {
 					* @return updatedBars 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> bars) {
-						
 						List<Bar.BarBuilder> updatedBars = doEvaluate(bars);
 						
 						if (updatedBars != null) {
@@ -2227,7 +2214,6 @@ class ListOperationTest {
 					* @return newFoos 
 					*/
 					public List<String> evaluate(List<? extends Foo> foos) {
-						
 						List<String> newFoos = doEvaluate(foos);
 						
 						return newFoos;
@@ -2329,7 +2315,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Bar> bars) {
-						
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2409,7 +2394,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Bar> bars) {
-						
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2502,7 +2486,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Bar> bars) {
-						
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2606,7 +2589,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Bar> bars) {
-						
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2685,7 +2667,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Foo> foos, String test) {
-						
 						List<String> strings = doEvaluate(foos, test);
 						
 						return strings;
@@ -2834,7 +2815,6 @@ class ListOperationTest {
 					* @return concatenatedString 
 					*/
 					public String evaluate(List<String> stringList) {
-						
 						String concatenatedString = doEvaluate(stringList);
 						
 						return concatenatedString;
@@ -3321,7 +3301,6 @@ class ListOperationTest {
 					* @return foo 
 					*/
 					public Foo evaluate(List<? extends Foo> foos) {
-						
 						Foo.FooBuilder foo = doEvaluate(foos);
 						
 						if (foo != null) {
@@ -3624,7 +3603,6 @@ class ListOperationTest {
 					* @return sortedNumbers 
 					*/
 					public List<Integer> evaluate(List<Integer> numbers) {
-						
 						List<Integer> sortedNumbers = doEvaluate(numbers);
 						
 						return sortedNumbers;
@@ -3752,7 +3730,6 @@ class ListOperationTest {
 					* @return sortedFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						
 						List<Foo.FooBuilder> sortedFoos = doEvaluate(foos);
 						
 						if (sortedFoos != null) {
