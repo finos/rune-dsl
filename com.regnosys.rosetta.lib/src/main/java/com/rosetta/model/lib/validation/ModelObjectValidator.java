@@ -7,26 +7,28 @@ import com.rosetta.model.lib.RosettaModelObject;
 public interface ModelObjectValidator {
 
 	/**
-	 * Runs validation and collects errors. Throws an exception if validation fails
+	 * Runs validation and collects errors. Implementation may throw an exception if validation fails.
 	 * 
 	 * @param <T>
-	 * @param topClass
-	 * @param modelObject
-	 * @throws RuntimeException if validation fails
+	 * @param clazz
+	 * @param object
+	 * @throws ModelObjectValidationException if validation fails
 	 */
-	<T extends RosettaModelObject> void validateAndFailOnErorr(Class<T> topClass, T modelObject);
+	<T extends RosettaModelObject> void validate(Class<T> clazz, T object);
 
 	/**
-	 * Runs validation and collects errors. Throws an exception if validation fails
+	 * Runs validation and collects errors. Implementation may throw an exception if validation fails.
 	 * 
 	 * @param <T>
-	 * @param topClass
-	 * @param modelObjects
-	 * @throws RuntimeException if validation fails
+	 * @param clazz
+	 * @param objects
+	 * @throws ModelObjectValidationException if validation fails
 	 */
-	<T extends RosettaModelObject> void validateAndFailOnErorr(Class<T> topClass, List<? extends T> modelObjects);
+	<T extends RosettaModelObject> void validate(Class<T> clazz, List<? extends T> objects);
+	
 	
 	class ModelObjectValidationException extends RuntimeException {
+		
 		private final String errors;
 
 		public ModelObjectValidationException(String errors) {
@@ -38,5 +40,4 @@ public interface ModelObjectValidator {
 			return errors;
 		}
 	}
-
 }

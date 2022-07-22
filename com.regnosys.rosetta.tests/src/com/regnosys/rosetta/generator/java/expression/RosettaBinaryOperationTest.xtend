@@ -374,7 +374,6 @@ class RosettaBinaryOperationTest {
 					* @return result 
 					*/
 					public Boolean evaluate(Foo foo) {
-						
 						Boolean result = doEvaluate(foo);
 						
 						return result;
@@ -480,7 +479,6 @@ class RosettaBinaryOperationTest {
 					* @return result 
 					*/
 					public Boolean evaluate(Foo foo) {
-						
 						Boolean result = doEvaluate(foo);
 						
 						return result;
@@ -546,7 +544,6 @@ class RosettaBinaryOperationTest {
 					* @return result 
 					*/
 					public Boolean evaluate(Foo foo) {
-						
 						Boolean result = doEvaluate(foo);
 						
 						return result;

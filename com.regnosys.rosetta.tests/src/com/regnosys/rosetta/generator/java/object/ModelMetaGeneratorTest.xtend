@@ -6,11 +6,12 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
-import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.functions.ConditionValidator
+import com.rosetta.model.lib.functions.NoOpConditionValidator
 import com.rosetta.model.lib.meta.RosettaMetaData
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory
 import com.rosetta.model.lib.validation.ModelObjectValidator
-import java.util.List
+import com.rosetta.model.lib.validation.NoOpModelObjectValidator
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
@@ -33,14 +34,8 @@ class ModelMetaGeneratorTest {
 		funcFactory = Guice.createInjector(new AbstractModule() {
 
 			override protected configure() {
-				bind(ModelObjectValidator).toInstance(new ModelObjectValidator() {
-					
-					override <T extends RosettaModelObject> validateAndFailOnErorr(Class<T> topClass, T modelObject) {
-					}
-					override <T extends RosettaModelObject> validateAndFailOnErorr(Class<T> topClass,
-						List<? extends T> modelObjects) {
-					}
-				})
+				bind(ConditionValidator).toInstance(new NoOpConditionValidator)
+				bind(ModelObjectValidator).toInstance(new NoOpModelObjectValidator)
 			}
 		}).getInstance(QualifyFunctionFactory.Default)
 	}

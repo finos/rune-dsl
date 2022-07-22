@@ -85,7 +85,6 @@ class CalculationFunctionGeneratorTest {
 						* @return out 
 						*/
 						public BigDecimal evaluate(PeriodEnum in1, Period in2) {
-							
 							BigDecimal out = doEvaluate(in1, in2);
 							
 							return out;
@@ -150,7 +149,6 @@ class CalculationFunctionGeneratorTest {
 				* @return out 
 				*/
 				public Integer evaluate(Integer one) {
-					
 					Integer out = doEvaluate(one);
 					
 					return out;
@@ -218,7 +216,6 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public Integer evaluate(Integer arg1, Integer arg2) {
-					
 					Integer res = doEvaluate(arg1, arg2);
 					
 					return res;
@@ -311,10 +308,11 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public FoncOut evaluate(FuncIn funIn) {
-					
 					FoncOut.FoncOutBuilder res = doEvaluate(funIn);
 					
-					if (res!=null) objectValidator.validateAndFailOnErorr(FoncOut.class, res);
+					if (res != null) {
+						objectValidator.validate(FoncOut.class, res);
+					}
 					return res;
 				}
 			
@@ -413,10 +411,11 @@ class CalculationFunctionGeneratorTest {
 				* @return out 
 				*/
 				public FuncOut evaluate(FuncIn funcIn) {
-					
 					FuncOut.FuncOutBuilder out = doEvaluate(funcIn);
 					
-					if (out!=null) objectValidator.validateAndFailOnErorr(FuncOut.class, out);
+					if (out != null) {
+						objectValidator.validate(FuncOut.class, out);
+					}
 					return out;
 				}
 			
@@ -515,10 +514,11 @@ class CalculationFunctionGeneratorTest {
 					* @return out 
 					*/
 					public OtherType evaluate(List<? extends WithMeta> withMeta) {
-						
 						OtherType.OtherTypeBuilder out = doEvaluate(withMeta);
 						
-						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
+						if (out != null) {
+							objectValidator.validate(OtherType.class, out);
+						}
 						return out;
 					}
 				
@@ -600,7 +600,6 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public Integer evaluate() {
-					
 					Integer res = doEvaluate();
 					
 					return res;
@@ -714,7 +713,6 @@ class CalculationFunctionGeneratorTest {
 					* @return arg1 
 					*/
 					public String evaluate(Math in1, MathInput in2) {
-						
 						String arg1 = doEvaluate(in1, in2);
 						
 						return arg1;
@@ -750,7 +748,6 @@ class CalculationFunctionGeneratorTest {
 					* @return arg1 
 					*/
 					public String evaluate(Math in1, MathInput in2) {
-						
 						String arg1 = doEvaluate(in1, in2);
 						
 						return arg1;
@@ -813,7 +810,6 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public Integer evaluate(Integer arg1) {
-					
 					Integer res = doEvaluate(arg1);
 					
 					return res;

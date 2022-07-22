@@ -77,10 +77,11 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						
 						List<Foo.FooBuilder> filteredFoos = doEvaluate(foos);
 						
-						if (filteredFoos!=null) objectValidator.validateAndFailOnErorr(Foo.class, filteredFoos);
+						if (filteredFoos != null) {
+							objectValidator.validate(Foo.class, filteredFoos);
+						}
 						return filteredFoos;
 					}
 				
@@ -172,10 +173,11 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						
 						List<Foo.FooBuilder> filteredFoos = doEvaluate(foos);
 						
-						if (filteredFoos!=null) objectValidator.validateAndFailOnErorr(Foo.class, filteredFoos);
+						if (filteredFoos != null) {
+							objectValidator.validate(Foo.class, filteredFoos);
+						}
 						return filteredFoos;
 					}
 				
@@ -305,10 +307,11 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo2> evaluate(List<? extends Foo2> foos) {
-						
 						List<Foo2.Foo2Builder> filteredFoos = doEvaluate(foos);
 						
-						if (filteredFoos!=null) objectValidator.validateAndFailOnErorr(Foo2.class, filteredFoos);
+						if (filteredFoos != null) {
+							objectValidator.validate(Foo2.class, filteredFoos);
+						}
 						return filteredFoos;
 					}
 				
@@ -402,10 +405,11 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends FooWithScheme> evaluate(List<? extends FooWithScheme> foos) {
-						
 						List<FooWithScheme.FooWithSchemeBuilder> filteredFoos = doEvaluate(foos);
 						
-						if (filteredFoos!=null) objectValidator.validateAndFailOnErorr(FooWithScheme.class, filteredFoos);
+						if (filteredFoos != null) {
+							objectValidator.validate(FooWithScheme.class, filteredFoos);
+						}
 						return filteredFoos;
 					}
 				
@@ -492,7 +496,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends FooWithScheme> foos) {
-						
 						List<String> stringsHolder = doEvaluate(foos);
 						List<String> strings = assignOutput(stringsHolder, foos);
 						
@@ -573,7 +576,6 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<Boolean> evaluate(List<Boolean> foos) {
-						
 						List<Boolean> filteredFoos = doEvaluate(foos);
 						
 						return filteredFoos;
@@ -968,10 +970,11 @@ class ListOperationTest {
 					* @return foos 
 					*/
 					public List<? extends Foo> evaluate(Bar bar) {
-						
 						List<Foo.FooBuilder> foos = doEvaluate(bar);
 						
-						if (foos!=null) objectValidator.validateAndFailOnErorr(Foo.class, foos);
+						if (foos != null) {
+							objectValidator.validate(Foo.class, foos);
+						}
 						return foos;
 					}
 				
@@ -987,12 +990,12 @@ class ListOperationTest {
 						private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
 							foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
 								.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<? extends Foo>) com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
-								if (areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-									return MapperS.of(create_Foo.evaluate(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()).get(), MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()));
-								}
-								else {
-									return __item;
-								}
+									if (areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+										return MapperS.of(create_Foo.evaluate(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()).get(), MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()));
+									}
+									else {
+										return __item;
+									}
 								})).getMulti());
 							
 							return Optional.ofNullable(foos)
@@ -1269,7 +1272,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Foo> foos) {
-						
 						List<String> strings = doEvaluate(foos);
 						
 						return strings;
@@ -1390,7 +1392,6 @@ class ListOperationTest {
 					* @return fooCounts 
 					*/
 					public List<Integer> evaluate(List<? extends Bar> bars) {
-						
 						List<Integer> fooCounts = doEvaluate(bars);
 						
 						return fooCounts;
@@ -1597,10 +1598,11 @@ class ListOperationTest {
 					* @return foos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Bar> bars) {
-						
 						List<Foo.FooBuilder> foos = doEvaluate(bars);
 						
-						if (foos!=null) objectValidator.validateAndFailOnErorr(Foo.class, foos);
+						if (foos != null) {
+							objectValidator.validate(Foo.class, foos);
+						}
 						return foos;
 					}
 				
@@ -1731,7 +1733,6 @@ class ListOperationTest {
 					* @return attrs 
 					*/
 					public List<String> evaluate(List<? extends Bar> bars) {
-						
 						List<String> attrs = doEvaluate(bars);
 						
 						return attrs;
@@ -1929,10 +1930,11 @@ class ListOperationTest {
 					* @return updatedBars 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> bars) {
-						
 						List<Bar.BarBuilder> updatedBars = doEvaluate(bars);
 						
-						if (updatedBars!=null) objectValidator.validateAndFailOnErorr(Bar.class, updatedBars);
+						if (updatedBars != null) {
+							objectValidator.validate(Bar.class, updatedBars);
+						}
 						return updatedBars;
 					}
 				
@@ -2064,10 +2066,11 @@ class ListOperationTest {
 					* @return updatedBars 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> bars) {
-						
 						List<Bar.BarBuilder> updatedBars = doEvaluate(bars);
 						
-						if (updatedBars!=null) objectValidator.validateAndFailOnErorr(Bar.class, updatedBars);
+						if (updatedBars != null) {
+							objectValidator.validate(Bar.class, updatedBars);
+						}
 						return updatedBars;
 					}
 				
@@ -2211,7 +2214,6 @@ class ListOperationTest {
 					* @return newFoos 
 					*/
 					public List<String> evaluate(List<? extends Foo> foos) {
-						
 						List<String> newFoos = doEvaluate(foos);
 						
 						return newFoos;
@@ -2313,7 +2315,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Bar> bars) {
-						
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2393,7 +2394,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Bar> bars) {
-						
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2486,7 +2486,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Bar> bars) {
-						
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2590,7 +2589,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Bar> bars) {
-						
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2669,7 +2667,6 @@ class ListOperationTest {
 					* @return strings 
 					*/
 					public List<String> evaluate(List<? extends Foo> foos, String test) {
-						
 						List<String> strings = doEvaluate(foos, test);
 						
 						return strings;
@@ -2686,21 +2683,21 @@ class ListOperationTest {
 						
 						private List<String> assignOutput(List<String> strings, List<? extends Foo> foos, String test) {
 							strings = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
-							if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).get()) {
-								return MapperC.of(foos)
-									.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_a")));
-							}
-							else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).get()) {
-								return MapperC.of(foos)
-									.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_b")));
-							}
-							else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).get()) {
-								return MapperC.of(foos)
-									.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_c")));
-							}
-							else {
-								return MapperC.ofNull();
-							}
+								if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).get()) {
+									return MapperC.of(foos)
+										.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_a")));
+								}
+								else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).get()) {
+									return MapperC.of(foos)
+										.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_b")));
+								}
+								else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).get()) {
+									return MapperC.of(foos)
+										.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_c")));
+								}
+								else {
+									return MapperC.ofNull();
+								}
 							}).getMulti();
 							
 							return strings;
@@ -2818,7 +2815,6 @@ class ListOperationTest {
 					* @return concatenatedString 
 					*/
 					public String evaluate(List<String> stringList) {
-						
 						String concatenatedString = doEvaluate(stringList);
 						
 						return concatenatedString;
@@ -3305,10 +3301,11 @@ class ListOperationTest {
 					* @return foo 
 					*/
 					public Foo evaluate(List<? extends Foo> foos) {
-						
 						Foo.FooBuilder foo = doEvaluate(foos);
 						
-						if (foo!=null) objectValidator.validateAndFailOnErorr(Foo.class, foo);
+						if (foo != null) {
+							objectValidator.validate(Foo.class, foo);
+						}
 						return foo;
 					}
 				
@@ -3606,7 +3603,6 @@ class ListOperationTest {
 					* @return sortedNumbers 
 					*/
 					public List<Integer> evaluate(List<Integer> numbers) {
-						
 						List<Integer> sortedNumbers = doEvaluate(numbers);
 						
 						return sortedNumbers;
@@ -3734,10 +3730,11 @@ class ListOperationTest {
 					* @return sortedFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						
 						List<Foo.FooBuilder> sortedFoos = doEvaluate(foos);
 						
-						if (sortedFoos!=null) objectValidator.validateAndFailOnErorr(Foo.class, sortedFoos);
+						if (sortedFoos != null) {
+							objectValidator.validate(Foo.class, sortedFoos);
+						}
 						return sortedFoos;
 					}
 				
