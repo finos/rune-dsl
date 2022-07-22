@@ -2053,12 +2053,12 @@ class FunctionGeneratorTest {
 						
 						private String assignOutput(String result, Boolean test, String t1, String t2) {
 							result = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
-							if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-								return MapperS.of(t1);
-							}
-							else {
-								return MapperS.of(t2);
-							}
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+									return MapperS.of(t1);
+								}
+								else {
+									return MapperS.of(t2);
+								}
 							}).get();
 							
 							return result;
@@ -2129,12 +2129,12 @@ class FunctionGeneratorTest {
 						
 						private List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
 							List<String> __addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
-							if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-								return MapperC.of(t1);
-							}
-							else {
-								return MapperC.of(t2);
-							}
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+									return MapperC.of(t1);
+								}
+								else {
+									return MapperC.of(t2);
+								}
 							}).getMulti();
 							result.addAll(__addVar0);
 							
@@ -2204,12 +2204,12 @@ class FunctionGeneratorTest {
 						
 						private BigDecimal assignOutput(BigDecimal result, Boolean test, BigDecimal t1, BigDecimal t2) {
 							result = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
-							if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-								return MapperS.of(t1);
-							}
-							else {
-								return MapperS.of(t2);
-							}
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+									return MapperS.of(t1);
+								}
+								else {
+									return MapperS.of(t2);
+								}
 							}).get();
 							
 							return result;
@@ -2281,12 +2281,12 @@ class FunctionGeneratorTest {
 						
 						private List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
 							List<BigDecimal> __addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
-							if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-								return MapperC.of(t1);
-							}
-							else {
-								return MapperC.of(t2);
-							}
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+									return MapperC.of(t1);
+								}
+								else {
+									return MapperC.of(t2);
+								}
 							}).getMulti();
 							result.addAll(__addVar0);
 							
@@ -2368,12 +2368,12 @@ class FunctionGeneratorTest {
 						
 						private Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
 							result = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
-							if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-								return MapperS.of(b1);
-							}
-							else {
-								return MapperS.of(b2);
-							}
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+									return MapperS.of(b1);
+								}
+								else {
+									return MapperS.of(b2);
+								}
 							}).get());
 							
 							return Optional.ofNullable(result)
@@ -2460,12 +2460,12 @@ class FunctionGeneratorTest {
 						
 						private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
 							List<Bar.BarBuilder> __addVar0 = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
-							if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-								return MapperC.of(b1);
-							}
-							else {
-								return MapperC.of(b2);
-							}
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+									return MapperC.of(b1);
+								}
+								else {
+									return MapperC.of(b2);
+								}
 							}).getMulti());
 							result.addAll(__addVar0);
 							
@@ -3211,12 +3211,12 @@ class FunctionGeneratorTest {
 						
 						try {
 							ComparisonResult result = ComparisonResult.of(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
-							if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-								return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("x").get()));
-							}
-							else {
-								return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("y").get()));
-							}
+								if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+									return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("x").get()));
+								}
+								else {
+									return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("y").get()));
+								}
 							}));
 							return result.get() == null ? ComparisonResult.success() : result;
 						}

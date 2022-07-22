@@ -434,7 +434,9 @@ class FunctionGenerator {
 	
 	private def StringConcatenationClient contributeCondition(Condition condition) {
 		'''
-			conditionValidator.validate(() -> «expressionGenerator.javaCode(condition.expression, null)», "«condition.definition»");
+			conditionValidator.validate(() -> 
+				«expressionGenerator.javaCode(condition.expression, null)», 
+					"«condition.definition»");
 		'''
 	}
 

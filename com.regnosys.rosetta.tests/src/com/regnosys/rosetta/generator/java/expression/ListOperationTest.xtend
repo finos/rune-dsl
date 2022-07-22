@@ -990,12 +990,12 @@ class ListOperationTest {
 						private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
 							foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
 								.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<? extends Foo>) com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
-								if (areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-									return MapperS.of(create_Foo.evaluate(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()).get(), MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()));
-								}
-								else {
-									return __item;
-								}
+									if (areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+										return MapperS.of(create_Foo.evaluate(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()).get(), MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()));
+									}
+									else {
+										return __item;
+									}
 								})).getMulti());
 							
 							return Optional.ofNullable(foos)
@@ -2683,21 +2683,21 @@ class ListOperationTest {
 						
 						private List<String> assignOutput(List<String> strings, List<? extends Foo> foos, String test) {
 							strings = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
-							if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).get()) {
-								return MapperC.of(foos)
-									.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_a")));
-							}
-							else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).get()) {
-								return MapperC.of(foos)
-									.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_b")));
-							}
-							else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).get()) {
-								return MapperC.of(foos)
-									.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_c")));
-							}
-							else {
-								return MapperC.ofNull();
-							}
+								if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).get()) {
+									return MapperC.of(foos)
+										.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_a")));
+								}
+								else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).get()) {
+									return MapperC.of(foos)
+										.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_b")));
+								}
+								else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).get()) {
+									return MapperC.of(foos)
+										.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_c")));
+								}
+								else {
+									return MapperC.ofNull();
+								}
 							}).getMulti();
 							
 							return strings;
