@@ -3,6 +3,8 @@ package com.regnosys.rosetta.generator.java.qualify
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.functions.FunctionValidator
+import com.rosetta.model.lib.functions.NoOpFunctionValidator
 import com.rosetta.model.lib.meta.RosettaMetaDataBuilder
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory
 import com.rosetta.model.lib.qualify.QualifyResult
@@ -11,7 +13,6 @@ import java.util.List
 
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
-import com.rosetta.model.lib.validation.ModelObjectValidator
 
 class QualifyTestHelper {
 
@@ -22,14 +23,7 @@ class QualifyTestHelper {
 		funcFactory = Guice.createInjector(new AbstractModule() {
 
 			override protected configure() {
-				bind(ModelObjectValidator).toInstance(new ModelObjectValidator() {
-					
-					override <T extends RosettaModelObject> validateAndFailOnErorr(Class<T> topClass, T modelObject) {
-					}
-					override <T extends RosettaModelObject> validateAndFailOnErorr(Class<T> topClass,
-						List<? extends T> modelObjects) {
-					}
-				})
+				bind(FunctionValidator).toInstance(new NoOpFunctionValidator)
 			}
 		}).getInstance(QualifyFunctionFactory.Default)
 	}

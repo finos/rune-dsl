@@ -1607,9 +1607,9 @@ class FunctionGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.FunctionValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
@@ -1623,7 +1623,7 @@ class FunctionGeneratorTest {
 				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
 				public abstract class DistinctFunc implements RosettaFunction {
 					
-					@Inject protected ModelObjectValidator objectValidator;
+					@Inject protected FunctionValidator validator;
 				
 					/**
 					* @param foo 
@@ -1633,7 +1633,9 @@ class FunctionGeneratorTest {
 						
 						List<Bar.BarBuilder> res = doEvaluate(foo);
 						
-						if (res!=null) objectValidator.validateAndFailOnErorr(Bar.class, res);
+						if (res != null) {
+							validator.validate(Bar.class, res);
+						}
 						return res;
 					}
 				
@@ -1706,9 +1708,9 @@ class FunctionGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.FunctionValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
@@ -1721,7 +1723,7 @@ class FunctionGeneratorTest {
 				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
 				public abstract class DistinctFunc implements RosettaFunction {
 					
-					@Inject protected ModelObjectValidator objectValidator;
+					@Inject protected FunctionValidator validator;
 				
 					/**
 					* @param barList 
@@ -1731,7 +1733,9 @@ class FunctionGeneratorTest {
 						
 						List<Bar.BarBuilder> res = doEvaluate(barList);
 						
-						if (res!=null) objectValidator.validateAndFailOnErorr(Bar.class, res);
+						if (res != null) {
+							validator.validate(Bar.class, res);
+						}
 						return res;
 					}
 				
@@ -2341,9 +2345,9 @@ class FunctionGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.FunctionValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.Optional;
@@ -2353,7 +2357,7 @@ class FunctionGeneratorTest {
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
 					
-					@Inject protected ModelObjectValidator objectValidator;
+					@Inject protected FunctionValidator validator;
 				
 					/**
 					* @param test 
@@ -2365,7 +2369,9 @@ class FunctionGeneratorTest {
 						
 						Bar.BarBuilder result = doEvaluate(test, b1, b2);
 						
-						if (result!=null) objectValidator.validateAndFailOnErorr(Bar.class, result);
+						if (result != null) {
+							validator.validate(Bar.class, result);
+						}
 						return result;
 					}
 				
@@ -2428,10 +2434,10 @@ class FunctionGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.FunctionValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
@@ -2444,7 +2450,7 @@ class FunctionGeneratorTest {
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
 					
-					@Inject protected ModelObjectValidator objectValidator;
+					@Inject protected FunctionValidator validator;
 				
 					/**
 					* @param test 
@@ -2456,7 +2462,9 @@ class FunctionGeneratorTest {
 						
 						List<Bar.BarBuilder> result = doEvaluate(test, b1, b2);
 						
-						if (result!=null) objectValidator.validateAndFailOnErorr(Bar.class, result);
+						if (result != null) {
+							validator.validate(Bar.class, result);
+						}
 						return result;
 					}
 				
@@ -2578,9 +2586,9 @@ class FunctionGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.FunctionValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.List;
@@ -2590,7 +2598,7 @@ class FunctionGeneratorTest {
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
 					
-					@Inject protected ModelObjectValidator objectValidator;
+					@Inject protected FunctionValidator validator;
 				
 					/**
 					* @param inList 
@@ -2600,7 +2608,9 @@ class FunctionGeneratorTest {
 						
 						Foo.FooBuilder foo = doEvaluate(inList);
 						
-						if (foo!=null) objectValidator.validateAndFailOnErorr(Foo.class, foo);
+						if (foo != null) {
+							validator.validate(Foo.class, foo);
+						}
 						return foo;
 					}
 				
@@ -2652,9 +2662,9 @@ class FunctionGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.FunctionValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.List;
@@ -2664,7 +2674,7 @@ class FunctionGeneratorTest {
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
 					
-					@Inject protected ModelObjectValidator objectValidator;
+					@Inject protected FunctionValidator validator;
 				
 					/**
 					* @param inList 
@@ -2674,7 +2684,9 @@ class FunctionGeneratorTest {
 						
 						Foo.FooBuilder foo = doEvaluate(inList);
 						
-						if (foo!=null) objectValidator.validateAndFailOnErorr(Foo.class, foo);
+						if (foo != null) {
+							validator.validate(Foo.class, foo);
+						}
 						return foo;
 					}
 				
@@ -3189,7 +3201,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.model.lib.validation.ValidationResult;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
@@ -3231,8 +3242,8 @@ class FunctionGeneratorTest {
 							}));
 							return result.get() == null ? ComparisonResult.success() : result;
 						}
-						catch (ModelObjectValidator.ModelObjectValidationException ex) {
-							return ComparisonResult.failure(ex.getErrors());
+						catch (Exception ex) {
+							return ComparisonResult.failure(ex.getMessage());
 						}
 					}
 				}

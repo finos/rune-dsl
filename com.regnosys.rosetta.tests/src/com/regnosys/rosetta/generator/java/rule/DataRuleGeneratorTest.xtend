@@ -50,7 +50,6 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.model.lib.validation.ValidationResult;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
@@ -94,8 +93,8 @@ class DataRuleGeneratorTest {
 							}));
 							return result.get() == null ? ComparisonResult.success() : result;
 						}
-						catch (ModelObjectValidator.ModelObjectValidationException ex) {
-							return ComparisonResult.failure(ex.getErrors());
+						catch (Exception ex) {
+							return ComparisonResult.failure(ex.getMessage());
 						}
 					}
 				}
@@ -149,7 +148,6 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.model.lib.validation.ValidationResult;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
@@ -200,8 +198,8 @@ class DataRuleGeneratorTest {
 							}));
 							return result.get() == null ? ComparisonResult.success() : result;
 						}
-						catch (ModelObjectValidator.ModelObjectValidationException ex) {
-							return ComparisonResult.failure(ex.getErrors());
+						catch (Exception ex) {
+							return ComparisonResult.failure(ex.getMessage());
 						}
 					}
 				}

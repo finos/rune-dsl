@@ -1,23 +1,22 @@
 package com.regnosys.rosetta.generator.java.function
 
+import com.google.inject.AbstractModule
+import com.google.inject.Guice
 import com.google.inject.Inject
+import com.google.inject.Injector
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
+import com.rosetta.model.lib.functions.FunctionValidator
+import com.rosetta.model.lib.functions.NoOpFunctionValidator
+import com.rosetta.model.lib.functions.RosettaFunction
+import java.util.Map
 import java.util.function.Consumer
 import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static org.junit.jupiter.api.Assertions.*
-import com.google.inject.Injector
-import com.google.inject.Guice
-import com.google.inject.AbstractModule
-import com.rosetta.model.lib.validation.ModelObjectValidator
-import com.rosetta.model.lib.RosettaModelObject
-import java.util.List
-import java.util.Map
-import com.rosetta.model.lib.functions.RosettaFunction
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 
 class FunctionGeneratorHelper {
 
@@ -32,12 +31,7 @@ class FunctionGeneratorHelper {
 	new() {
 		injector = Guice.createInjector(new AbstractModule() {
 			override protected configure() {
-				bind(ModelObjectValidator).toInstance(new ModelObjectValidator() {
-					override <T extends RosettaModelObject> validateAndFailOnErorr(Class<T> topClass, T modelObject) {
-					}
-					override <T extends RosettaModelObject> validateAndFailOnErorr(Class<T> topClass, List<? extends T> modelObjects) {
-					}
-				})
+				bind(FunctionValidator).toInstance(new NoOpFunctionValidator)
 			}
 		})
 	}

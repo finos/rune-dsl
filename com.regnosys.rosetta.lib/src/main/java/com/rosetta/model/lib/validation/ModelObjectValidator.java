@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.rosetta.model.lib.RosettaModelObject;
 
+@Deprecated
 public interface ModelObjectValidator {
 
 	/**
@@ -26,6 +27,7 @@ public interface ModelObjectValidator {
 	 */
 	<T extends RosettaModelObject> void validateAndFailOnErorr(Class<T> topClass, List<? extends T> modelObjects);
 	
+	@Deprecated
 	class ModelObjectValidationException extends RuntimeException {
 		private final String errors;
 

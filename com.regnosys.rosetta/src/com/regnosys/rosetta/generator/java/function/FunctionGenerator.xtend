@@ -38,7 +38,6 @@ import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.mapper.Mapper
-import com.rosetta.model.lib.validation.ModelObjectValidator
 import java.util.ArrayList
 import java.util.List
 import java.util.Map
@@ -50,6 +49,7 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.rosetta.model.lib.functions.FunctionValidator
 
 class FunctionGenerator {
 
@@ -113,9 +113,9 @@ class FunctionGenerator {
 		'''
 			@«ImplementedBy»(«className».«className»Default.class)
 			public «IF isStatic»static «ENDIF»abstract class «className» implements «RosettaFunction»«IF func.isQualifierFunction()», «IQualifyFunctionExtension»<«inputs.head.toListOrSingleJavaType»>«ENDIF» {
-				«IF outNeedsBuilder»
-				
-				@«Inject» protected «ModelObjectValidator» objectValidator;
+				«IF outNeedsBuilder || !func.conditions.empty || !func.postConditions.empty»
+					
+					@«Inject» protected «FunctionValidator» validator;
 				«ENDIF»
 				«IF !dependencies.empty»
 					
@@ -153,7 +153,9 @@ class FunctionGenerator {
 						«ENDFOR»
 					«ENDIF»
 					«IF outNeedsBuilder»
-					if («outputName»!=null) objectValidator.validateAndFailOnErorr(«names.toJavaType(output.type)».class, «outputName»);
+					if («outputName» != null) {
+						validator.validate(«names.toJavaType(output.type)».class, «outputName»);
+					}
 					«ENDIF»
 					return «outputName»;
 				}
@@ -428,9 +430,7 @@ class FunctionGenerator {
 	
 	private def StringConcatenationClient contributeCondition(Condition condition) {
 		'''
-			assert
-				«expressionGenerator.javaCode(condition.expression, null)».get()
-				: "«condition.definition»";
+			validator.validateCondition(() -> «expressionGenerator.javaCode(condition.expression, null)», "«condition.definition»");
 		'''
 	}
 

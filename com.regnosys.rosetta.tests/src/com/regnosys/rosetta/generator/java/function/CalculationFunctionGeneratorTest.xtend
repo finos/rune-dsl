@@ -289,11 +289,11 @@ class CalculationFunctionGeneratorTest {
 			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
 			import com.rosetta.model.lib.expression.MapperMaths;
+			import com.rosetta.model.lib.functions.FunctionValidator;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.records.Date;
-			import com.rosetta.model.lib.validation.ModelObjectValidator;
 			import com.rosetta.test.model.FoncOut;
 			import com.rosetta.test.model.FoncOut.FoncOutBuilder;
 			import com.rosetta.test.model.FuncIn;
@@ -304,7 +304,7 @@ class CalculationFunctionGeneratorTest {
 			@ImplementedBy(Calc.CalcDefault.class)
 			public abstract class Calc implements RosettaFunction {
 				
-				@Inject protected ModelObjectValidator objectValidator;
+				@Inject protected FunctionValidator validator;
 			
 				/**
 				* @param funIn 
@@ -314,7 +314,9 @@ class CalculationFunctionGeneratorTest {
 					
 					FoncOut.FoncOutBuilder res = doEvaluate(funIn);
 					
-					if (res!=null) objectValidator.validateAndFailOnErorr(FoncOut.class, res);
+					if (res != null) {
+						validator.validate(FoncOut.class, res);
+					}
 					return res;
 				}
 			
@@ -391,11 +393,11 @@ class CalculationFunctionGeneratorTest {
 			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
 			import com.rosetta.model.lib.expression.MapperMaths;
+			import com.rosetta.model.lib.functions.FunctionValidator;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.records.Date;
-			import com.rosetta.model.lib.validation.ModelObjectValidator;
 			import com.rosetta.test.model.FuncIn;
 			import com.rosetta.test.model.FuncOut;
 			import com.rosetta.test.model.FuncOut.FuncOutBuilder;
@@ -406,7 +408,7 @@ class CalculationFunctionGeneratorTest {
 			@ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
 			public abstract class RTS_22_Fields implements RosettaFunction {
 				
-				@Inject protected ModelObjectValidator objectValidator;
+				@Inject protected FunctionValidator validator;
 			
 				/**
 				* @param funcIn 
@@ -416,7 +418,9 @@ class CalculationFunctionGeneratorTest {
 					
 					FuncOut.FuncOutBuilder out = doEvaluate(funcIn);
 					
-					if (out!=null) objectValidator.validateAndFailOnErorr(FuncOut.class, out);
+					if (out != null) {
+						validator.validate(FuncOut.class, out);
+					}
 					return out;
 				}
 			
@@ -492,10 +496,10 @@ class CalculationFunctionGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.FunctionValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.OtherType;
 				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
@@ -508,7 +512,7 @@ class CalculationFunctionGeneratorTest {
 				@ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
 				public abstract class asKeyUsage implements RosettaFunction {
 					
-					@Inject protected ModelObjectValidator objectValidator;
+					@Inject protected FunctionValidator validator;
 				
 					/**
 					* @param withMeta 
@@ -518,7 +522,9 @@ class CalculationFunctionGeneratorTest {
 						
 						OtherType.OtherTypeBuilder out = doEvaluate(withMeta);
 						
-						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
+						if (out != null) {
+							validator.validate(OtherType.class, out);
+						}
 						return out;
 					}
 				
