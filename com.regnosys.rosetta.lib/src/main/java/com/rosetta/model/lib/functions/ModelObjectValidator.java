@@ -5,6 +5,9 @@ import java.util.List;
 import com.google.inject.ImplementedBy;
 import com.rosetta.model.lib.RosettaModelObject;
 
+/**
+ * Validates model objects in functions.
+ */
 @ImplementedBy(NoOpModelObjectValidator.class)
 public interface ModelObjectValidator {
 
