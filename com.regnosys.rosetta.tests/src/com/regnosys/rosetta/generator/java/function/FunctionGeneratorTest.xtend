@@ -1596,9 +1596,9 @@ class FunctionGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
@@ -1696,9 +1696,9 @@ class FunctionGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
@@ -2328,9 +2328,9 @@ class FunctionGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.Optional;
@@ -2416,10 +2416,10 @@ class FunctionGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
@@ -2566,9 +2566,9 @@ class FunctionGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.List;
@@ -2641,9 +2641,9 @@ class FunctionGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.List;

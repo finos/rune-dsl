@@ -10,10 +10,10 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.functions.ConditionValidator
-import com.rosetta.model.lib.functions.NoOpConditionValidator
+import com.rosetta.model.lib.functions.DefaultConditionValidator
+import com.rosetta.model.lib.functions.ModelObjectValidator
+import com.rosetta.model.lib.functions.NoOpModelObjectValidator
 import com.rosetta.model.lib.functions.RosettaFunction
-import com.rosetta.model.lib.validation.ModelObjectValidator
-import com.rosetta.model.lib.validation.NoOpModelObjectValidator
 import java.util.Map
 import java.util.function.Consumer
 import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
@@ -33,7 +33,7 @@ class FunctionGeneratorHelper {
 	new() {
 		injector = Guice.createInjector(new AbstractModule() {
 			override protected configure() {
-				bind(ConditionValidator).toInstance(new NoOpConditionValidator)
+				bind(ConditionValidator).toInstance(new DefaultConditionValidator)
 				bind(ModelObjectValidator).toInstance(new NoOpModelObjectValidator)
 			}
 		})
