@@ -26,6 +26,17 @@ public interface ModelObjectValidator {
 	 */
 	<T extends RosettaModelObject> void validate(Class<T> clazz, List<? extends T> objects);
 	
+	// for backward compatibility (remove when all models are up to 2.174.0)
+	@Deprecated
+	default <T extends RosettaModelObject> void validateAndFailOnErorr(Class<T> topClass, T modelObject) {
+		// do nothing
+	}
+	
+	// for backward compatibility (remove when all models are up to 2.174.0)
+	@Deprecated
+	default <T extends RosettaModelObject> void validateAndFailOnErorr(Class<T> topClass, List<? extends T> modelObjects) {
+		// do nothing
+	}
 	
 	class ModelObjectValidationException extends RuntimeException {
 		
