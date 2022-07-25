@@ -2,8 +2,10 @@ package com.rosetta.model.lib.functions;
 
 import java.util.function.Supplier;
 
+import com.google.inject.ImplementedBy;
 import com.rosetta.model.lib.expression.ComparisonResult;
 
+@ImplementedBy(DefaultConditionValidator.class)
 public interface ConditionValidator {
 
 	/**
