@@ -4,6 +4,11 @@ import java.util.List;
 
 import com.rosetta.model.lib.RosettaModelObject;
 
+/**
+ * Deprecated - use version in package com.rosetta.model.lib.functions instead.
+ * 
+ * @see com.rosetta.model.lib.functions.ModelObjectValidator
+ */
 @Deprecated
 public interface ModelObjectValidator {
 
