@@ -381,14 +381,14 @@ class RosettaBinaryOperationTest {
 				
 					protected abstract Boolean doEvaluate(Foo foo);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  Boolean doEvaluate(Foo foo) {
+						protected Boolean doEvaluate(Foo foo) {
 							Boolean result = null;
 							return assignOutput(result, foo);
 						}
 						
-						private Boolean assignOutput(Boolean result, Foo foo) {
+						protected Boolean assignOutput(Boolean result, Foo foo) {
 							result = ComparisonResult.of(MapperS.of(foo).<Boolean>map("getAttrBoolean", _foo -> _foo.getAttrBoolean())).or(areEqual(MapperS.of(foo).<BigDecimal>map("getAttrNumber", _foo -> _foo.getAttrNumber()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)).get();
 							
 							return result;
@@ -486,14 +486,14 @@ class RosettaBinaryOperationTest {
 				
 					protected abstract Boolean doEvaluate(Foo foo);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  Boolean doEvaluate(Foo foo) {
+						protected Boolean doEvaluate(Foo foo) {
 							Boolean result = null;
 							return assignOutput(result, foo);
 						}
 						
-						private Boolean assignOutput(Boolean result, Foo foo) {
+						protected Boolean assignOutput(Boolean result, Foo foo) {
 							result = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX1", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX2", _foo -> _foo.getX2())))).get();
 							
 							return result;
@@ -551,14 +551,14 @@ class RosettaBinaryOperationTest {
 				
 					protected abstract Boolean doEvaluate(Foo foo);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  Boolean doEvaluate(Foo foo) {
+						protected Boolean doEvaluate(Foo foo) {
 							Boolean result = null;
 							return assignOutput(result, foo);
 						}
 						
-						private Boolean assignOutput(Boolean result, Foo foo) {
+						protected Boolean assignOutput(Boolean result, Foo foo) {
 							result = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>mapC("getX1", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX2", _foo -> _foo.getX2())))).get();
 							
 							return result;

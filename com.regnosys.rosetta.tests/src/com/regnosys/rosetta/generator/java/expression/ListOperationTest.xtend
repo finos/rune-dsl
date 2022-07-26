@@ -87,14 +87,14 @@ class ListOperationTest {
 				
 					protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+						protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
 							List<Foo.FooBuilder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
-						private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
+						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 							filteredFoos = toBuilder(MapperC.of(foos)
 								.filterItem(__item -> areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti());
 							
@@ -183,14 +183,14 @@ class ListOperationTest {
 				
 					protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+						protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
 							List<Foo.FooBuilder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
-						private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
+						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 							filteredFoos = toBuilder(MapperC.of(foos)
 								.filterItem(__fooItem -> areEqual(__fooItem.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti());
 							
@@ -317,14 +317,14 @@ class ListOperationTest {
 				
 					protected abstract List<Foo2.Foo2Builder> doEvaluate(List<? extends Foo2> foos);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Foo2.Foo2Builder> doEvaluate(List<? extends Foo2> foos) {
+						protected List<Foo2.Foo2Builder> doEvaluate(List<? extends Foo2> foos) {
 							List<Foo2.Foo2Builder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
-						private List<Foo2.Foo2Builder> assignOutput(List<Foo2.Foo2Builder> filteredFoos, List<? extends Foo2> foos) {
+						protected List<Foo2.Foo2Builder> assignOutput(List<Foo2.Foo2Builder> filteredFoos, List<? extends Foo2> foos) {
 							filteredFoos = toBuilder(MapperC.of(foos)
 								.filterItem(__item -> areEqual(__item.<Boolean>map("getInclude", _foo2 -> _foo2.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
 								.filterItem(__item -> areEqual(__item.<Boolean>map("getInclude2", _foo2 -> _foo2.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti());
@@ -415,14 +415,14 @@ class ListOperationTest {
 				
 					protected abstract List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos) {
+						protected List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos) {
 							List<FooWithScheme.FooWithSchemeBuilder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
-						private List<FooWithScheme.FooWithSchemeBuilder> assignOutput(List<FooWithScheme.FooWithSchemeBuilder> filteredFoos, List<? extends FooWithScheme> foos) {
+						protected List<FooWithScheme.FooWithSchemeBuilder> assignOutput(List<FooWithScheme.FooWithSchemeBuilder> filteredFoos, List<? extends FooWithScheme> foos) {
 							filteredFoos = toBuilder(MapperC.of(foos)
 								.filterItem(__item -> areEqual(__item.<FieldWithMetaString>map("getAttr", _fooWithScheme -> _fooWithScheme.getAttr()).map("getMeta", a->a.getMeta()).map("getScheme", a->a.getScheme()), MapperS.of("foo-scheme"), CardinalityOperator.All).get()).getMulti());
 							
@@ -510,9 +510,9 @@ class ListOperationTest {
 				
 					protected abstract List<String> doEvaluate(List<? extends FooWithScheme> foos);
 					
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(List<? extends FooWithScheme> foos) {
+						protected List<String> doEvaluate(List<? extends FooWithScheme> foos) {
 							return new ArrayList<>();
 						}
 					}
@@ -583,14 +583,14 @@ class ListOperationTest {
 				
 					protected abstract List<Boolean> doEvaluate(List<Boolean> foos);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Boolean> doEvaluate(List<Boolean> foos) {
+						protected List<Boolean> doEvaluate(List<Boolean> foos) {
 							List<Boolean> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
-						private List<Boolean> assignOutput(List<Boolean> filteredFoos, List<Boolean> foos) {
+						protected List<Boolean> assignOutput(List<Boolean> filteredFoos, List<Boolean> foos) {
 							filteredFoos = MapperC.of(foos)
 								.filterItem(__item -> areEqual(__item, MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti();
 							
@@ -980,14 +980,14 @@ class ListOperationTest {
 				
 					protected abstract List<Foo.FooBuilder> doEvaluate(Bar bar);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Foo.FooBuilder> doEvaluate(Bar bar) {
+						protected List<Foo.FooBuilder> doEvaluate(Bar bar) {
 							List<Foo.FooBuilder> foos = new ArrayList<>();
 							return assignOutput(foos, bar);
 						}
 						
-						private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
+						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
 							foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
 								.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<? extends Foo>) com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
 									if (areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
@@ -1279,14 +1279,14 @@ class ListOperationTest {
 				
 					protected abstract List<String> doEvaluate(List<? extends Foo> foos);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(List<? extends Foo> foos) {
+						protected List<String> doEvaluate(List<? extends Foo> foos) {
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, foos);
 						}
 						
-						private List<String> assignOutput(List<String> strings, List<? extends Foo> foos) {
+						protected List<String> assignOutput(List<String> strings, List<? extends Foo> foos) {
 							strings = MapperC.of(foos)
 								.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getAttr", _foo -> _foo.getAttr())).getMulti();
 							
@@ -1399,14 +1399,14 @@ class ListOperationTest {
 				
 					protected abstract List<Integer> doEvaluate(List<? extends Bar> bars);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Integer> doEvaluate(List<? extends Bar> bars) {
+						protected List<Integer> doEvaluate(List<? extends Bar> bars) {
 							List<Integer> fooCounts = new ArrayList<>();
 							return assignOutput(fooCounts, bars);
 						}
 						
-						private List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
+						protected List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
 							fooCounts = MapperC.of(bars)
 								.mapItemToList((/*MapperS<? extends Bar>*/ __bar) -> (MapperC<? extends Foo>) __bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
 								.mapListToItem((/*MapperC<? extends Foo>*/ __fooListItem) -> (MapperS<Integer>) MapperS.of(__fooListItem.resultCount())).getMulti();
@@ -1608,14 +1608,14 @@ class ListOperationTest {
 				
 					protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars) {
+						protected List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars) {
 							List<Foo.FooBuilder> foos = new ArrayList<>();
 							return assignOutput(foos, bars);
 						}
 						
-						private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, List<? extends Bar> bars) {
+						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, List<? extends Bar> bars) {
 							foos = toBuilder(MapperC.of(bars)
 								.mapItemToList((/*MapperS<? extends Bar>*/ __bar) -> (MapperC<? extends Foo>) __bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
 								.flattenList().getMulti());
@@ -1740,14 +1740,14 @@ class ListOperationTest {
 				
 					protected abstract List<String> doEvaluate(List<? extends Bar> bars);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(List<? extends Bar> bars) {
+						protected List<String> doEvaluate(List<? extends Bar> bars) {
 							List<String> attrs = new ArrayList<>();
 							return assignOutput(attrs, bars);
 						}
 						
-						private List<String> assignOutput(List<String> attrs, List<? extends Bar> bars) {
+						protected List<String> assignOutput(List<String> attrs, List<? extends Bar> bars) {
 							attrs = MapperC.of(bars)
 								.mapItemToList((/*MapperS<? extends Bar>*/ __item) -> (MapperC<? extends Foo>) __item.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
 								.flattenList()
@@ -1940,14 +1940,14 @@ class ListOperationTest {
 				
 					protected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
+						protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
 							List<Bar.BarBuilder> updatedBars = new ArrayList<>();
 							return assignOutput(updatedBars, bars);
 						}
 						
-						private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
+						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
 							updatedBars = toBuilder(MapperC.of(bars)
 								.mapItemToList((/*MapperS<? extends Bar>*/ __bar) -> (MapperC<? extends Foo>) __bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
 									.mapItem(/*MapperS<? extends Foo>*/ __foo -> (MapperS<? extends Foo>) MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(__foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))))
@@ -2076,14 +2076,14 @@ class ListOperationTest {
 				
 					protected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
+						protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
 							List<Bar.BarBuilder> updatedBars = new ArrayList<>();
 							return assignOutput(updatedBars, bars);
 						}
 						
-						private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
+						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
 							updatedBars = toBuilder(MapperC.of(bars)
 								.mapItem(/*MapperS<? extends Bar>*/ __bar -> (MapperS<? extends Bar>) MapperS.of(newBar.evaluate(__bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
 									.mapItem(/*MapperS<? extends Foo>*/ __foo -> (MapperS<? extends Foo>) MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(__foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))).getMulti()))).getMulti());
@@ -2221,14 +2221,14 @@ class ListOperationTest {
 				
 					protected abstract List<String> doEvaluate(List<? extends Foo> foos);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(List<? extends Foo> foos) {
+						protected List<String> doEvaluate(List<? extends Foo> foos) {
 							List<String> newFoos = new ArrayList<>();
 							return assignOutput(newFoos, foos);
 						}
 						
-						private List<String> assignOutput(List<String> newFoos, List<? extends Foo> foos) {
+						protected List<String> assignOutput(List<String> newFoos, List<? extends Foo> foos) {
 							newFoos = MapperC.of(foos)
 								.filterItem(__item -> areEqual(__item.<Boolean>map("getInclude", _foo -> _foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
 								.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getAttr", _foo -> _foo.getAttr())).getMulti();
@@ -2322,14 +2322,14 @@ class ListOperationTest {
 				
 					protected abstract List<String> doEvaluate(List<? extends Bar> bars);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(List<? extends Bar> bars) {
+						protected List<String> doEvaluate(List<? extends Bar> bars) {
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
 						
-						private List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
 							strings = MapperC.of(bars)
 								.mapItem(/*MapperS<? extends Bar>*/ __item -> (MapperS<? extends Foo>) MapperS.of(getFoo.evaluate(__item.<String>map("getBarAttr", _bar -> _bar.getBarAttr()).get())))
 								.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getFooAttr", _foo -> _foo.getFooAttr())).getMulti();
@@ -2401,14 +2401,14 @@ class ListOperationTest {
 				
 					protected abstract List<String> doEvaluate(List<? extends Bar> bars);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(List<? extends Bar> bars) {
+						protected List<String> doEvaluate(List<? extends Bar> bars) {
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
 						
-						private List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
 							strings = MapperC.of(bars)
 								.mapItemToList((/*MapperS<? extends Bar>*/ __item) -> (MapperC<? extends Foo>) __item.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
 								.flattenList()
@@ -2493,14 +2493,14 @@ class ListOperationTest {
 				
 					protected abstract List<String> doEvaluate(List<? extends Bar> bars);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(List<? extends Bar> bars) {
+						protected List<String> doEvaluate(List<? extends Bar> bars) {
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
 						
-						private List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
 							strings = MapperC.of(bars)
 								.mapItem(/*MapperS<? extends Bar>*/ __item -> (MapperS<? extends Foo>) MapperS.of(getFoo.evaluate(__item.<String>map("getBarAttr", _bar -> _bar.getBarAttr()).get())))
 								.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getFooAttr", _foo -> _foo.getFooAttr())).getMulti();
@@ -2596,14 +2596,14 @@ class ListOperationTest {
 				
 					protected abstract List<String> doEvaluate(List<? extends Bar> bars);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(List<? extends Bar> bars) {
+						protected List<String> doEvaluate(List<? extends Bar> bars) {
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
 						
-						private List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
 							strings = MapperC.of(bars)
 								.mapItem(/*MapperS<? extends Bar>*/ __item -> (MapperS<? extends Foo>) MapperS.of(getFoo.evaluate(MapperS.of(getBaz.evaluate(__item.<String>map("getBarAttr", _bar -> _bar.getBarAttr()).get())).get())))
 								.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getFooAttr", _foo -> _foo.getFooAttr())).getMulti();
@@ -2674,14 +2674,14 @@ class ListOperationTest {
 				
 					protected abstract List<String> doEvaluate(List<? extends Foo> foos, String test);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(List<? extends Foo> foos, String test) {
+						protected List<String> doEvaluate(List<? extends Foo> foos, String test) {
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, foos, test);
 						}
 						
-						private List<String> assignOutput(List<String> strings, List<? extends Foo> foos, String test) {
+						protected List<String> assignOutput(List<String> strings, List<? extends Foo> foos, String test) {
 							strings = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).get()) {
 									return MapperC.of(foos)
@@ -2822,14 +2822,14 @@ class ListOperationTest {
 				
 					protected abstract String doEvaluate(List<String> stringList);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  String doEvaluate(List<String> stringList) {
+						protected String doEvaluate(List<String> stringList) {
 							String concatenatedString = null;
 							return assignOutput(concatenatedString, stringList);
 						}
 						
-						private String assignOutput(String concatenatedString, List<String> stringList) {
+						protected String assignOutput(String concatenatedString, List<String> stringList) {
 							concatenatedString = MapperC.of(stringList)
 								.<String>reduce((__a, __b) -> (MapperS<String>) MapperMaths.<String, String, String>add(__a, __b)).get();
 							
@@ -3311,14 +3311,14 @@ class ListOperationTest {
 				
 					protected abstract Foo.FooBuilder doEvaluate(List<? extends Foo> foos);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  Foo.FooBuilder doEvaluate(List<? extends Foo> foos) {
+						protected Foo.FooBuilder doEvaluate(List<? extends Foo> foos) {
 							Foo.FooBuilder foo = Foo.builder();
 							return assignOutput(foo, foos);
 						}
 						
-						private Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<? extends Foo> foos) {
+						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<? extends Foo> foos) {
 							foo = toBuilder(MapperC.of(foos)
 								.<Foo>reduce((__foo1, __foo2) -> (MapperS<Foo>) MapperS.of(create_Foo.evaluate(MapperMaths.<String, String, String>add(__foo1.<String>map("getAttr", _foo -> _foo.getAttr()), __foo2.<String>map("getAttr", _foo -> _foo.getAttr())).get()))).get());
 							
@@ -3610,14 +3610,14 @@ class ListOperationTest {
 				
 					protected abstract List<Integer> doEvaluate(List<Integer> numbers);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Integer> doEvaluate(List<Integer> numbers) {
+						protected List<Integer> doEvaluate(List<Integer> numbers) {
 							List<Integer> sortedNumbers = new ArrayList<>();
 							return assignOutput(sortedNumbers, numbers);
 						}
 						
-						private List<Integer> assignOutput(List<Integer> sortedNumbers, List<Integer> numbers) {
+						protected List<Integer> assignOutput(List<Integer> sortedNumbers, List<Integer> numbers) {
 							sortedNumbers = MapperC.of(numbers)
 								.sort().getMulti();
 							
@@ -3740,14 +3740,14 @@ class ListOperationTest {
 				
 					protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+						protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
 							List<Foo.FooBuilder> sortedFoos = new ArrayList<>();
 							return assignOutput(sortedFoos, foos);
 						}
 						
-						private List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> sortedFoos, List<? extends Foo> foos) {
+						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> sortedFoos, List<? extends Foo> foos) {
 							sortedFoos = toBuilder(MapperC.of(foos)
 								.sort(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) __item.<String>map("getAttr", _foo -> _foo.getAttr())).getMulti());
 							

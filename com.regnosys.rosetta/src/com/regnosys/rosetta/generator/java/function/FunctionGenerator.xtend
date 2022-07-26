@@ -177,14 +177,14 @@ class FunctionGenerator {
 				«ENDIF»
 			«ENDFOR»
 			
-				public static final class «className»Default extends «className» {
+				public static class «className»Default extends «className» {
 					@Override
-					protected  «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
+					protected «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
 						«output.toBuilderType(names)» «outputName» = «IF output.isMany»new «ArrayList»<>()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
 						return assignOutput(«outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
 					}
 					
-					private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
+					protected «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
 						«FOR indexed : func.operations.filter(Operation).indexed»
 							«IF indexed.value instanceof AssignOutputOperation»
 								«assign(indexed.value as AssignOutputOperation, aliasOut, names, output)»
