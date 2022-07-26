@@ -33,7 +33,7 @@ class ModelObjectBoilerPlate {
 	val identity = [String s|s]
 
 	def StringConcatenationClient builderBoilerPlate(Data c, JavaNames names) {
-		val attrs = c.expandedAttributes.filter[name != 'eventEffect'].toList
+		val attrs = c.expandedAttributes.toList
 		'''
 			«c.contributeEquals(attrs, [t|names.toJavaType(t).toBuilderType])»
 			«c.contributeHashCode(attrs)»
@@ -86,10 +86,10 @@ class ModelObjectBoilerPlate {
 	}
 
 	def StringConcatenationClient boilerPlate(Data c, JavaNames names) {
-		val attributesNoEventEffect = c.expandedAttributes.filter[name != 'eventEffect'].toList
+		val attributes = c.expandedAttributes.toList
 		'''
-			«c.contributeEquals(attributesNoEventEffect, [t|names.toJavaType(t)])»
-			«c.contributeHashCode(attributesNoEventEffect)»
+			«c.contributeEquals(attributes, [t|names.toJavaType(t)])»
+			«c.contributeHashCode(attributes)»
 			«c.contributeToString(identity)»
 		'''
 	} 
@@ -108,8 +108,6 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	// the eventEffect attribute should not contribute to the hashcode. The EventEffect must first take the hash from Event, 
-	// but once stamped onto EventEffect, this will change the hash for Event. 
 	private def contributeHashCode(Data c, List<ExpandedAttribute> attributes) '''
 		@Override
 		public int hashCode() {
@@ -133,8 +131,6 @@ class ModelObjectBoilerPlate {
 		}
 	'''
 
-	// the eventEffect attribute should not contribute to the hashcode. The EventEffect must first take the hash from Event, 
-	// but once stamped onto EventEffect, this will change the hash for Event. TODO: Have generic way of excluding attributes from the hash
 	private def StringConcatenationClient contributeEquals(Data c, List<ExpandedAttribute> attributes, (Data)=>JavaType classNameFunc) '''
 		@Override
 		public boolean equals(Object o) {
