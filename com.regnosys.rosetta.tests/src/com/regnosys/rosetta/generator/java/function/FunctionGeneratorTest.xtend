@@ -66,14 +66,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract String doEvaluate(String name, String name2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  String doEvaluate(String name, String name2) {
+						protected String doEvaluate(String name, String name2) {
 							String result = null;
 							return assignOutput(result, name, name2);
 						}
 						
-						private String assignOutput(String result, String name, String name2) {
+						protected String assignOutput(String result, String name, String name2) {
 							return result;
 						}
 					}
@@ -119,14 +119,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<String> doEvaluate(String name, String name2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(String name, String name2) {
+						protected List<String> doEvaluate(String name, String name2) {
 							List<String> result = new ArrayList<>();
 							return assignOutput(result, name, name2);
 						}
 						
-						private List<String> assignOutput(List<String> result, String name, String name2) {
+						protected List<String> assignOutput(List<String> result, String name, String name2) {
 							return result;
 						}
 					}
@@ -173,14 +173,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<BigDecimal> doEvaluate(String name, String name2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<BigDecimal> doEvaluate(String name, String name2) {
+						protected List<BigDecimal> doEvaluate(String name, String name2) {
 							List<BigDecimal> result = new ArrayList<>();
 							return assignOutput(result, name, name2);
 						}
 						
-						private List<BigDecimal> assignOutput(List<BigDecimal> result, String name, String name2) {
+						protected List<BigDecimal> assignOutput(List<BigDecimal> result, String name, String name2) {
 							return result;
 						}
 					}
@@ -226,14 +226,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<Integer> doEvaluate(String name, String name2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Integer> doEvaluate(String name, String name2) {
+						protected List<Integer> doEvaluate(String name, String name2) {
 							List<Integer> result = new ArrayList<>();
 							return assignOutput(result, name, name2);
 						}
 						
-						private List<Integer> assignOutput(List<Integer> result, String name, String name2) {
+						protected List<Integer> assignOutput(List<Integer> result, String name, String name2) {
 							return result;
 						}
 					}
@@ -280,14 +280,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<Date> doEvaluate(String name, String name2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Date> doEvaluate(String name, String name2) {
+						protected List<Date> doEvaluate(String name, String name2) {
 							List<Date> result = new ArrayList<>();
 							return assignOutput(result, name, name2);
 						}
 						
-						private List<Date> assignOutput(List<Date> result, String name, String name2) {
+						protected List<Date> assignOutput(List<Date> result, String name, String name2) {
 							return result;
 						}
 					}
@@ -883,14 +883,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract Date doEvaluate(Date f3Input);
 				
-					public static final class F3Default extends F3 {
+					public static class F3Default extends F3 {
 						@Override
-						protected  Date doEvaluate(Date f3Input) {
+						protected Date doEvaluate(Date f3Input) {
 							Date f3Output = null;
 							return assignOutput(f3Output, f3Input);
 						}
 						
-						private Date assignOutput(Date f3Output, Date f3Input) {
+						protected Date assignOutput(Date f3Output, Date f3Input) {
 							f3Output = MapperS.of(f2.evaluate(MapperC.of(f1.evaluate(MapperS.of(f3Input).get())).getMulti())).get();
 							
 							return f3Output;
@@ -948,14 +948,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<Date> doEvaluate(Date f1Input);
 				
-					public static final class F1Default extends F1 {
+					public static class F1Default extends F1 {
 						@Override
-						protected  List<Date> doEvaluate(Date f1Input) {
+						protected List<Date> doEvaluate(Date f1Input) {
 							List<Date> f1OutputList = new ArrayList<>();
 							return assignOutput(f1OutputList, f1Input);
 						}
 						
-						private List<Date> assignOutput(List<Date> f1OutputList, Date f1Input) {
+						protected List<Date> assignOutput(List<Date> f1OutputList, Date f1Input) {
 							return f1OutputList;
 						}
 					}
@@ -989,14 +989,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract Date doEvaluate(List<Date> f2InputList);
 				
-					public static final class F2Default extends F2 {
+					public static class F2Default extends F2 {
 						@Override
-						protected  Date doEvaluate(List<Date> f2InputList) {
+						protected Date doEvaluate(List<Date> f2InputList) {
 							Date f2Output = null;
 							return assignOutput(f2Output, f2InputList);
 						}
 						
-						private Date assignOutput(Date f2Output, List<Date> f2InputList) {
+						protected Date assignOutput(Date f2Output, List<Date> f2InputList) {
 							return f2Output;
 						}
 					}
@@ -1042,14 +1042,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract Mapper<Date> f1OutList(Date f3Input);
 				
-					public static final class F3Default extends F3 {
+					public static class F3Default extends F3 {
 						@Override
-						protected  Date doEvaluate(Date f3Input) {
+						protected Date doEvaluate(Date f3Input) {
 							Date f3Output = null;
 							return assignOutput(f3Output, f3Input);
 						}
 						
-						private Date assignOutput(Date f3Output, Date f3Input) {
+						protected Date assignOutput(Date f3Output, Date f3Input) {
 							f3Output = MapperS.of(f2.evaluate(MapperC.of(f1OutList(f3Input).getMulti()).getMulti())).get();
 							
 							return f3Output;
@@ -1429,14 +1429,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<Integer> doEvaluate(Foo foo);
 				
-					public static final class DistinctFuncDefault extends DistinctFunc {
+					public static class DistinctFuncDefault extends DistinctFunc {
 						@Override
-						protected  List<Integer> doEvaluate(Foo foo) {
+						protected List<Integer> doEvaluate(Foo foo) {
 							List<Integer> res = new ArrayList<>();
 							return assignOutput(res, foo);
 						}
 						
-						private List<Integer> assignOutput(List<Integer> res, Foo foo) {
+						protected List<Integer> assignOutput(List<Integer> res, Foo foo) {
 							res = distinct(MapperS.of(foo).<Integer>mapC("getN", _foo -> _foo.getN())).getMulti();
 							
 							return res;
@@ -1498,14 +1498,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<Integer> doEvaluate(List<Integer> n);
 				
-					public static final class DistinctFuncDefault extends DistinctFunc {
+					public static class DistinctFuncDefault extends DistinctFunc {
 						@Override
-						protected  List<Integer> doEvaluate(List<Integer> n) {
+						protected List<Integer> doEvaluate(List<Integer> n) {
 							List<Integer> res = new ArrayList<>();
 							return assignOutput(res, n);
 						}
 						
-						private List<Integer> assignOutput(List<Integer> res, List<Integer> n) {
+						protected List<Integer> assignOutput(List<Integer> res, List<Integer> n) {
 							res = distinct(MapperC.of(n)).getMulti();
 							
 							return res;
@@ -1629,14 +1629,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<Bar.BarBuilder> doEvaluate(Foo foo);
 				
-					public static final class DistinctFuncDefault extends DistinctFunc {
+					public static class DistinctFuncDefault extends DistinctFunc {
 						@Override
-						protected  List<Bar.BarBuilder> doEvaluate(Foo foo) {
+						protected List<Bar.BarBuilder> doEvaluate(Foo foo) {
 							List<Bar.BarBuilder> res = new ArrayList<>();
 							return assignOutput(res, foo);
 						}
 						
-						private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, Foo foo) {
+						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, Foo foo) {
 							List<Bar.BarBuilder> __addVar0 = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti());
 							res.addAll(__addVar0);
 							
@@ -1728,14 +1728,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList);
 				
-					public static final class DistinctFuncDefault extends DistinctFunc {
+					public static class DistinctFuncDefault extends DistinctFunc {
 						@Override
-						protected  List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList) {
+						protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList) {
 							List<Bar.BarBuilder> res = new ArrayList<>();
 							return assignOutput(res, barList);
 						}
 						
-						private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, List<? extends Bar> barList) {
+						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, List<? extends Bar> barList) {
 							List<Bar.BarBuilder> __addVar0 = toBuilder(distinct(MapperC.of(barList)).getMulti());
 							res.addAll(__addVar0);
 							
@@ -2044,14 +2044,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract String doEvaluate(Boolean test, String t1, String t2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  String doEvaluate(Boolean test, String t1, String t2) {
+						protected String doEvaluate(Boolean test, String t1, String t2) {
 							String result = null;
 							return assignOutput(result, test, t1, t2);
 						}
 						
-						private String assignOutput(String result, Boolean test, String t1, String t2) {
+						protected String assignOutput(String result, Boolean test, String t1, String t2) {
 							result = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(t1);
@@ -2120,14 +2120,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2) {
+						protected List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2) {
 							List<String> result = new ArrayList<>();
 							return assignOutput(result, test, t1, t2);
 						}
 						
-						private List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
+						protected List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
 							List<String> __addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.of(t1);
@@ -2195,14 +2195,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract BigDecimal doEvaluate(Boolean test, BigDecimal t1, BigDecimal t2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  BigDecimal doEvaluate(Boolean test, BigDecimal t1, BigDecimal t2) {
+						protected BigDecimal doEvaluate(Boolean test, BigDecimal t1, BigDecimal t2) {
 							BigDecimal result = null;
 							return assignOutput(result, test, t1, t2);
 						}
 						
-						private BigDecimal assignOutput(BigDecimal result, Boolean test, BigDecimal t1, BigDecimal t2) {
+						protected BigDecimal assignOutput(BigDecimal result, Boolean test, BigDecimal t1, BigDecimal t2) {
 							result = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(t1);
@@ -2272,14 +2272,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+						protected List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
 							List<BigDecimal> result = new ArrayList<>();
 							return assignOutput(result, test, t1, t2);
 						}
 						
-						private List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+						protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
 							List<BigDecimal> __addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.of(t1);
@@ -2359,14 +2359,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract Bar.BarBuilder doEvaluate(Boolean test, Bar b1, Bar b2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  Bar.BarBuilder doEvaluate(Boolean test, Bar b1, Bar b2) {
+						protected Bar.BarBuilder doEvaluate(Boolean test, Bar b1, Bar b2) {
 							Bar.BarBuilder result = Bar.builder();
 							return assignOutput(result, test, b1, b2);
 						}
 						
-						private Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
+						protected Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
 							result = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(b1);
@@ -2451,14 +2451,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
+						protected List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
 							List<Bar.BarBuilder> result = new ArrayList<>();
 							return assignOutput(result, test, b1, b2);
 						}
 						
-						private List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
+						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
 							List<Bar.BarBuilder> __addVar0 = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.of(b1);
@@ -2523,14 +2523,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract BigDecimal doEvaluate(BigDecimal n1, BigDecimal n2);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  BigDecimal doEvaluate(BigDecimal n1, BigDecimal n2) {
+						protected BigDecimal doEvaluate(BigDecimal n1, BigDecimal n2) {
 							BigDecimal res = null;
 							return assignOutput(res, n1, n2);
 						}
 						
-						private BigDecimal assignOutput(BigDecimal res, BigDecimal n1, BigDecimal n2) {
+						protected BigDecimal assignOutput(BigDecimal res, BigDecimal n1, BigDecimal n2) {
 							res = MapperMaths.<BigDecimal, BigDecimal, BigDecimal>multiply(MapperS.of(n1), MapperS.of(n2)).get();
 							
 							return res;
@@ -2595,14 +2595,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  Foo.FooBuilder doEvaluate(List<String> inList) {
+						protected Foo.FooBuilder doEvaluate(List<String> inList) {
 							Foo.FooBuilder foo = Foo.builder();
 							return assignOutput(foo, inList);
 						}
 						
-						private Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
+						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
 							foo
 								.setOutList(MapperC.of(inList).getMulti());
 							
@@ -2670,14 +2670,14 @@ class FunctionGeneratorTest {
 				
 					protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
 				
-					public static final class FuncFooDefault extends FuncFoo {
+					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected  Foo.FooBuilder doEvaluate(List<String> inList) {
+						protected Foo.FooBuilder doEvaluate(List<String> inList) {
 							Foo.FooBuilder foo = Foo.builder();
 							return assignOutput(foo, inList);
 						}
 						
-						private Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
+						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
 							foo
 								.addOutList(MapperC.of(inList).getMulti());
 							
