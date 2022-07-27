@@ -99,7 +99,7 @@ class ModelObjectGenerator {
 			
 			«d.processMethod(names)»
 			
-			interface «names.toJavaType(d)»Builder extends «d.name», «IF d.hasSuperType»«names.toJavaType(d.superType).toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
+			interface «names.toJavaType(d)»Builder extends «IF d.hasSuperType»«names.toJavaType(d.superType).toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
 «««				Get or create methods will create a builder instance of an object for you if it does not exist
 				«FOR attribute : d.expandedAttributes»
 					«IF attribute.isDataType || attribute.hasMetas»
