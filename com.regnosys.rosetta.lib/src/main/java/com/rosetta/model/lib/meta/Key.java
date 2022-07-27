@@ -33,9 +33,6 @@ public interface Key extends RosettaModelObject{
 	public String getScope();
 	public String getKeyValue();
 	
-	Key build();
-	KeyBuilder toBuilder();
-	
 	final static KeyMeta meta = new KeyMeta();
 	@Override
 	default RosettaMetaData<? extends RosettaModelObject> metaData() {
@@ -83,10 +80,7 @@ public interface Key extends RosettaModelObject{
 			key.setScope(scope);
 			return key;
 		}
-		
-		public Key build() {
-			return this;
-		}
+
 		@Override
 		public int hashCode() {
 			final int prime = 31;

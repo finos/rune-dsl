@@ -171,7 +171,6 @@ class ModelObjectBoilerPlate {
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
 				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
 			«ENDFOR»
-			
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 			«ENDFOR»
@@ -185,11 +184,9 @@ class ModelObjectBoilerPlate {
 			«IF c.hasSuperType»
 				«names.toJavaType(c.superType).toBuilderType».super.process(path, processor);
 			«ENDIF»
-			
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
 				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
 			«ENDFOR»
-			
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
 				processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle(names)».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 			«ENDFOR»

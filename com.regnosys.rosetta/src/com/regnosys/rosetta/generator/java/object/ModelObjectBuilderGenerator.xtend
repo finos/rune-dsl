@@ -43,14 +43,8 @@ class ModelObjectBuilderGenerator {
 				«qualificationSetter(c)»
 			«ENDIF»
 			
-			@Override
-			public «c.name» build() {
+			public «names.toJavaType(c).toImplType» build() {
 				return new «names.toJavaType(c).toImplType»(this);
-			}
-			
-			@Override
-			public «names.toJavaType(c).toBuilderType» toBuilder() {
-				return this;
 			}
 		
 			@SuppressWarnings("unchecked")

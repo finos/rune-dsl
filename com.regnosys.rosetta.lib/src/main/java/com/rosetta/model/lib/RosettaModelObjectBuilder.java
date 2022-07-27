@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
+
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.model.lib.process.BuilderMerger;
@@ -14,7 +15,9 @@ import com.rosetta.model.lib.process.BuilderProcessor;
  *
  * @param <T>
  */
-public interface RosettaModelObjectBuilder extends RosettaModelObject {
+public interface RosettaModelObjectBuilder {
+	
+	<T extends RosettaModelObject> T build();
 	
 	/**
 	 * Recursively removes object that have no field set from the object tree
@@ -31,6 +34,7 @@ public interface RosettaModelObjectBuilder extends RosettaModelObject {
 		boolean processFurther = processor.processRosetta(path, clazz, child, this, metas);
 		if (child!=null && processFurther) child.process(path, processor);
 	}
+	
 	default <R extends RosettaModelObjectBuilder> void processRosetta(RosettaPath path, BuilderProcessor processor, Class<R> clazz, List<? extends R> children, AttributeMeta... metas) {
 		processor.processRosetta(path, clazz, children, this, metas);
 		if (children!=null)  {

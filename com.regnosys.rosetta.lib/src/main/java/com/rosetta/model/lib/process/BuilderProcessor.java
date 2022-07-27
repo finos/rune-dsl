@@ -3,7 +3,6 @@ package com.rosetta.model.lib.process;
 import java.util.Collection;
 import java.util.List;
 
-import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.path.RosettaPath;
 
@@ -30,7 +29,7 @@ public interface BuilderProcessor {
      * 
      * returns true if this processor is interested in processing the objects fields
      */
-    <R extends RosettaModelObject> boolean processRosetta(RosettaPath path, Class<R> rosettaType, 
+    <R extends RosettaModelObjectBuilder> boolean processRosetta(RosettaPath path, Class<R> rosettaType, 
     		RosettaModelObjectBuilder builder, RosettaModelObjectBuilder parent, AttributeMeta... metas);
     /**
      * Processes a list of Rosetta objects - allows new values to be added or removed from the list
@@ -40,7 +39,7 @@ public interface BuilderProcessor {
      * @param parent the RosettaModelObjectbuilder which contains these object as an attribute
      * @param metas Flags indicating meta information about the attribute
      */
-    <R extends RosettaModelObject> boolean processRosetta(RosettaPath path, Class<R> rosettaType, 
+    <R extends RosettaModelObjectBuilder> boolean processRosetta(RosettaPath path, Class<R> rosettaType, 
     		List<? extends RosettaModelObjectBuilder> builders, RosettaModelObjectBuilder parent, AttributeMeta... metas);
 
     /**

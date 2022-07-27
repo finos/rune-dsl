@@ -22,9 +22,9 @@ import com.rosetta.model.lib.process.Processor;
  *         for inside that TradeableProduct
  */
 public interface Reference extends RosettaModelObject {
-	Reference build();
-
-	ReferenceBuilder toBuilder();
+//	Reference build();
+//
+//	ReferenceBuilder toBuilder();
 
 	String getScope();
 
@@ -130,11 +130,6 @@ public interface Reference extends RosettaModelObject {
 
 		@Override
 		public void process(RosettaPath path, Processor processor) {
-		}
-
-		@Override
-		public Reference build() {
-			return this;
 		}
 	}
 

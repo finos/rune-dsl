@@ -5,8 +5,10 @@ import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.meta.RosettaMetaData
 import com.rosetta.model.lib.path.RosettaPath
+import com.rosetta.model.lib.validation.ValidationResult
 import com.rosetta.model.lib.validation.Validator
 import java.util.Map
 import org.eclipse.xtext.testing.InjectWith
@@ -19,7 +21,6 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
-import com.rosetta.model.lib.validation.ValidationResult
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -63,7 +64,7 @@ class OneOfRuleGeneratorTest {
 	def void shouldPassRuleAsOneAttributeSet() {
 		val foo = getInstance('Foo', of('attr1', 'attr1 value'))
 		
-		val result = doValidate(TEST_PATH, getOneOfRule('Foo'), foo.toBuilder)
+		val result = doValidate(TEST_PATH, getOneOfRule('Foo'), foo.build)
 		
 		assertTrue(result.success)
 		assertFalse(result.failureReason.present)
@@ -73,7 +74,7 @@ class OneOfRuleGeneratorTest {
 	def void shouldFailRuleAsNeitherAttributesAreSet() {
 		val foo = getInstance('Foo', of())
 		
-		val result = doValidate(TEST_PATH, getOneOfRule('Foo'), foo.toBuilder)
+		val result = doValidate(TEST_PATH, getOneOfRule('Foo'), foo.build)
 		
 		assertFalse(result.success)
 		assertThat(result.failureReason.orElse(''), is("One and only one field must be set of 'attr1', 'attr2'. No fields are set."))
@@ -83,14 +84,14 @@ class OneOfRuleGeneratorTest {
 	def void shouldFailRuleAsBothAttributesAreSet() {
 		val foo = getInstance('Foo', of('attr1', 'attr1 value', 'attr2', 'attr2 value'))
 		
-		val result = doValidate(TEST_PATH, getOneOfRule('Foo'), foo.toBuilder)
+		val result = doValidate(TEST_PATH, getOneOfRule('Foo'), foo.build)
 		
 		assertFalse(result.success)
 		assertThat(result.failureReason.orElse(''), is("One and only one field must be set of 'attr1', 'attr2'. Set fields are 'attr1', 'attr2'."))
 	}
 	
 	private def getInstance(String className, Map<String, Object> itemsToSet) {
-		classes.createInstanceUsingBuilder(className, itemsToSet) as RosettaModelObject
+		classes.createInstanceUsingBuilder(className, itemsToSet) as RosettaModelObjectBuilder
 	}
 	
 	private def Validator<? extends RosettaModelObject> getOneOfRule(String className) {

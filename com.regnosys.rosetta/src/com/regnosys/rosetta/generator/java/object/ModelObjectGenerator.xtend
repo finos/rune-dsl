@@ -68,17 +68,15 @@ class ModelObjectGenerator {
 		«IF d.hasQualifiedAttribute»
 			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.getQualifiedClass).name».class)
 		«ENDIF»
-		
 		public interface «names.toJavaType(d)» extends «IF d.hasSuperType»«names.toJavaType(d.superType)»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
-			«d.name» build();
-			«names.toJavaType(d).toBuilderType» toBuilder();
-			
 			«FOR attribute : d.expandedAttributes»
+				
 				«javadoc(attribute.definition, attribute.docReferences, null)»
 				«attribute.toJavaType(names)» get«attribute.name.toFirstUpper»();
 			«ENDFOR»
+			
 			«val metaType = names.createJavaType(names.packages.model.meta, d.name+'Meta')»
-			final static «metaType» metaData = new «metaType»();
+			«metaType» metaData = new «metaType»();
 			
 			@Override
 			default «RosettaMetaData»<? extends «d.name»> metaData() {
@@ -215,12 +213,7 @@ class ModelObjectGenerator {
 			}
 			
 		«ENDFOR»
-		@Override
-		public «c.name» build() {
-			return this;
-		}
 
-		@Override
 		public «names.toJavaType(c).toBuilderType» toBuilder() {
 			«names.toJavaType(c).toBuilderType» builder = builder();
 			setBuilderFields(builder);

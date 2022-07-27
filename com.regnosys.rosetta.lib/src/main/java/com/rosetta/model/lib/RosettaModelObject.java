@@ -10,9 +10,8 @@ import java.util.List;
 
 public interface RosettaModelObject {
 
-	RosettaModelObjectBuilder toBuilder();
-	RosettaModelObject build();
-
+	<T extends RosettaModelObjectBuilder> T toBuilder();
+	
 	/**
 	 * @return The MetaData {@link RosettaMetaData} object for this class providing access to things like validation
 	 */
