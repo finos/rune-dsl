@@ -94,6 +94,7 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import org.eclipse.emf.ecore.EPackage
+import org.eclipse.xtext.validation.EValidatorRegistrar
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension RosettaExtensions
@@ -118,6 +119,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/Rosetta"));
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaSimple"));
 		return result;
+	}
+	
+	override void register(EValidatorRegistrar registrar) {
 	}
 	
 	protected override MethodWrapper createMethodWrapper(AbstractDeclarativeValidator instanceToUse, Method method) {
