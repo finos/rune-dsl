@@ -206,6 +206,12 @@ public class ExpressionOperators {
 	// contains
 	
 	public static <T> ComparisonResult contains(Mapper<? extends T> o1, Mapper<? extends T> o2) {
+		if (o1.getMulti().isEmpty()) {
+			return ComparisonResult.failure("Empty list does not contain all of " +formatMultiError(o2));
+		}
+		if (o2.getMulti().isEmpty()) {
+			return ComparisonResult.failure(formatMultiError(o1) + " does not contain empty list");
+		}
 		boolean result =  o1.getMulti().containsAll(o2.getMulti());
 		if (result) {
 			return ComparisonResult.success();

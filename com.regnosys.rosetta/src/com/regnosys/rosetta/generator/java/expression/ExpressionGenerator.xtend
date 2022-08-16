@@ -155,7 +155,7 @@ class ExpressionGenerator {
 
 	private def StringConcatenationClient genConditionalMapper(RosettaConditionalExpression expr, ParamMap params)'''
 		«IF !expr.ifthen.evalulatesToMapper»com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(«ENDIF»com.rosetta.model.lib.mapper.MapperUtils.«IF funcExt.needsBuilder(expr.ifthen)»fromDataType«ELSE»fromBuiltInType«ENDIF»(() -> {
-		«expr.genConditional(params)»
+			«expr.genConditional(params)»
 		})«IF !expr.ifthen.evalulatesToMapper»)«ENDIF»'''
 
 
@@ -388,7 +388,7 @@ class ExpressionGenerator {
 		}
 	}
 
-	private def StringConcatenationClient toComparisonResult(RosettaExpression expr, ParamMap params) {
+	def StringConcatenationClient toComparisonResult(RosettaExpression expr, ParamMap params) {
 		val wrap = expr.evalulatesToMapper
 		'''«IF wrap»«ComparisonResult».of(«ENDIF»«expr.javaCode(params)»«IF wrap»)«ENDIF»'''
 	}
@@ -417,7 +417,6 @@ class ExpressionGenerator {
 									it instanceof RosettaFeatureCall ||
 									it instanceof RosettaCallableWithArgsCall ||
 									it instanceof RosettaLiteral ||
-									it instanceof RosettaConditionalExpression ||
 									it instanceof RosettaCountOperation ||
 									it instanceof ListOperation ||
 									isArithmeticOperation(it)
@@ -723,24 +722,32 @@ class ExpressionGenerator {
 			RosettaCallableWithArgsCall :{
 				'''«expr.callable.name»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)'''
 			}
+			RosettaCallableCall : {
+				'''«expr.callable.name»'''
+			}
 
 			default :
-				'''Unsupported expression type of «expr.class.simpleName»'''
+				'''Unsupported expression type of «expr?.class?.simpleName»'''
 		}
 	}
 	
 	def StringConcatenationClient toNodeLabel(RosettaFeatureCall call) {
 		val feature = call.feature
 		val right = switch feature {
-			RosettaMetaType, Attribute, RosettaEnumValue: feature.name
-			default: throw new UnsupportedOperationException("Unsupported expression type "+feature.getClass)
+			RosettaMetaType, 
+			Attribute, 
+			RosettaEnumValue: 
+				feature.name
+			default: throw new UnsupportedOperationException("Unsupported expression type (feature) " + feature?.getClass)
 		}
 		
 		val receiver = call.receiver
 		val left = switch receiver {
-			RosettaCallableCall: '''''' //(receiver.callable as RosettaClass).name
-			RosettaFeatureCall: toNodeLabel(receiver)
-			default: throw new UnsupportedOperationException("Unsupported expression type")
+			RosettaCallableCall, 
+			RosettaCallableWithArgsCall, 
+			RosettaFeatureCall: 
+				toNodeLabel(receiver)
+			default: throw new UnsupportedOperationException("Unsupported expression type (receiver) " + receiver?.getClass)
 		}
 		
 		'''«left»->«right»'''

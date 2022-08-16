@@ -98,7 +98,7 @@ ShortcutDeclaration:
 
 Condition:
 	'condition' RosettaNamed? ':' Definable?
-		->(Annotations)? // conflicts with ListLiteral as RosettaCalcExpression
+		->(References|Annotations)* // conflicts with ListLiteral as RosettaCalcExpression
 		( constraint = OneOf
 		| constraint = Constraint
 		| expression = RosettaCalcExpression)
@@ -118,7 +118,7 @@ OneOf returns Constraint :
 ;
 
 PostCondition returns Condition:
-	postCondition ?= 'post-condition' ':' Definable?
+	postCondition ?= 'post-condition'  RosettaNamed? ':' Definable?
 	expression     = RosettaCalcExpression
 ;
 
@@ -654,7 +654,7 @@ RosettaBlueprintReport:
 	'when'
 	eligibilityRules+=[RosettaBlueprint] ( 'and' eligibilityRules+=[RosettaBlueprint])*
 	('using' 'standard' reportingStandard=[RosettaCorpus])?
-	'with' ('fields' reportingRules += [RosettaBlueprint]* | 'type' reportType=[Data|QualifiedName])
+	'with' 'type' reportType=[Data|QualifiedName]
 ;
 
 
@@ -677,42 +677,20 @@ BlueprintNode:
 	(
 		BlueprintRef |
 		BlueprintFilter |
-		BlueprintValidate |
-		BlueprintAnd |
-		BlueprintMerge |
-		BlueprintExpander |
+		BlueprintOr |
 		BlueprintExtract |
 		BlueprintReturn | 
-		BlueprintGroup |
-		BlueprintDataJoin |
-		BlueprintCustomNode |
-		BlueprintLookup |
-		BlueprintReduce |
-		BlueprintOneOf
+		BlueprintLookup
 	)
 	('as' identifier=STRING)?
-;
-
-
-BlueprintExpander returns UnimplementedNode:
-	'expand' name=ID
-;
-
-BlueprintValidate :
-	'validate' 'as' input=[RosettaType]
 ;
 
 BlueprintFilter :
 	'filter' 'when' (filter = RosettaCalcExpression | 'rule' filterBP = BlueprintRef)
 ;
 
-// RENAME THIS TO BlueprintOr
-BlueprintAnd:
+BlueprintOr:
 	'(' bps+=BlueprintNodeExp ( ',' bps+=BlueprintNodeExp)* ')'
-;
-
-BlueprintMerge :
-	'merge' 'output' output=[Data]
 ;
 
 BlueprintRef:
@@ -727,44 +705,6 @@ BlueprintReturn:
 	'return' expression = RosettaCalcExpression
 ;
 
-BlueprintGroup:
-	'groupby' key=RosettaCalcExpression 
-;
-
-BlueprintDataJoin:
-	'join' 'key' key=RosettaClassAttributeCall 'foreignKey' foreign=RosettaClassAttributeCall
-;
-
 BlueprintLookup:
 	'lookup' name=ID output=[RosettaType]
 ;
-
-// Stuff we dont need (yet)
-BlueprintCustomNode:
-	name=ID '<' input=[RosettaType] ',' output=[RosettaType] ',' inputKey=[RosettaType] ',' outputKey = [RosettaType] '>'
-;
-
-BlueprintReduce :
-	(
-		action=('first'| 'last')
-		|
-		action=('maxBy'| 'minBy') (expression=RosettaCalcAdditive | 'rule' reduceBP = BlueprintRef )
-		|
-		action=('minimum' | 'maximum')
-	)
-;
-
-BlueprintOneOf :
-	'if' 
-		bps+=BlueprintIfThen 
-		(=>'else' 'if' bps+=BlueprintIfThen)*
-		(=>'else' 'do' elseNode = BlueprintNodeExp)?
-	'endif'
-;
-
-BlueprintIfThen :
-	ifNode=BlueprintNodeExp (=>'do' thenNode=BlueprintNodeExp)
-	
-;
-
-

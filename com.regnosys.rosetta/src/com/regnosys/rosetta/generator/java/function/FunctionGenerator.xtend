@@ -35,10 +35,11 @@ import com.regnosys.rosetta.types.RAnnotateType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
+import com.rosetta.model.lib.functions.ConditionValidator
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
+import com.rosetta.model.lib.functions.ModelObjectValidator
 import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.mapper.Mapper
-import com.rosetta.model.lib.validation.ModelObjectValidator
 import java.util.ArrayList
 import java.util.List
 import java.util.Map
@@ -113,9 +114,13 @@ class FunctionGenerator {
 		'''
 			@«ImplementedBy»(«className».«className»Default.class)
 			public «IF isStatic»static «ENDIF»abstract class «className» implements «RosettaFunction»«IF func.isQualifierFunction()», «IQualifyFunctionExtension»<«inputs.head.toListOrSingleJavaType»>«ENDIF» {
+				«IF !func.conditions.empty || !func.postConditions.empty»
+					
+					@«Inject» protected «ConditionValidator» conditionValidator;
+				«ENDIF»
 				«IF outNeedsBuilder»
-				
-				@«Inject» protected «ModelObjectValidator» objectValidator;
+					
+					@«Inject» protected «ModelObjectValidator» objectValidator;
 				«ENDIF»
 				«IF !dependencies.empty»
 					
@@ -138,62 +143,78 @@ class FunctionGenerator {
 					«IF !func.conditions.empty»
 						// pre-conditions
 						«FOR cond:func.conditions»
-						
 							«cond.contributeCondition»
+							
 						«ENDFOR»
 					«ENDIF»
-					
-					«output.toBuilderType(names)» «outputName»Holder = doEvaluate(«func.inputsAsArguments(names)»);
-					«output.toBuilderType(names)» «outputName» = assignOutput(«outputName»Holder«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
+					«output.toBuilderType(names)» «outputName» = doEvaluate(«func.inputsAsArguments(names)»);
 					
 					«IF !func.postConditions.empty»
 						// post-conditions
 						«FOR cond:func.postConditions»
-
 							«cond.contributeCondition»
+							
 						«ENDFOR»
 					«ENDIF»
 					«IF outNeedsBuilder»
-					if («outputName»!=null) objectValidator.validateAndFailOnErorr(«names.toJavaType(output.type)».class, «outputName»);
+					if («outputName» != null) {
+						objectValidator.validate(«names.toJavaType(output.type)».class, «outputName»);
+					}
 					«ENDIF»
 					return «outputName»;
 				}
+			
+				protected abstract «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
+			«FOR alias : func.shortcuts»
+				«IF aliasOut.get(alias)»
+					«val multi = cardinality.isMulti(alias.expression)»
+					«val returnType = names.shortcutJavaType(alias)»
 				
-				private «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
-					«FOR indexed : func.operations.filter(Operation).indexed»
-						«IF indexed.value instanceof AssignOutputOperation»
-							«assign(indexed.value as AssignOutputOperation, aliasOut, names, output)»
+					protected abstract «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF»);
+				«ELSE»
+				
+					protected abstract «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)»);
+				«ENDIF»
+			«ENDFOR»
+			
+				public static class «className»Default extends «className» {
+					@Override
+					protected «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
+						«output.toBuilderType(names)» «outputName» = «IF output.isMany»new «ArrayList»<>()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
+						return assignOutput(«outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(names)»);
+					}
+					
+					protected «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «outputName»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(names)») {
+						«FOR indexed : func.operations.filter(Operation).indexed»
+							«IF indexed.value instanceof AssignOutputOperation»
+								«assign(indexed.value as AssignOutputOperation, aliasOut, names, output)»
+								
+							«ELSEIF indexed.value instanceof OutputOperation»
+								«assign(indexed.value as OutputOperation, aliasOut, names, output, indexed.key)»
+								
+							«ENDIF»
+						«ENDFOR»
+						return «IF !needsBuilder(output)»«outputName»«ELSE»«Optional».ofNullable(«outputName»)
+							.map(«IF output.isMany»o -> o.stream().map(i -> i.prune()).collect(«Collectors».toList())«ELSE»o -> o.prune()«ENDIF»)
+							.orElse(null)«ENDIF»;
+					}
+					«FOR alias : func.shortcuts»
+						«IF aliasOut.get(alias)»
+							«val multi = cardinality.isMulti(alias.expression)»
+							«val returnType = names.shortcutJavaType(alias)»
 							
-						«ELSEIF indexed.value instanceof OutputOperation»
-							«assign(indexed.value as OutputOperation, aliasOut, names, output, indexed.key)»
+							@Override
+							protected «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
+								return toBuilder(«expressionGenerator.javaCode(alias.expression, new ParamMap)»«IF multi».getMulti()«ELSE».get()«ENDIF»);
+							}
+						«ELSE»
 							
+							@Override
+							protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
+								return «expressionGenerator.javaCode(alias.expression, new ParamMap)»;
+							}
 						«ENDIF»
 					«ENDFOR»
-					return «outputName»;
-				}
-
-				protected abstract «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)»);
-				
-				«FOR alias : func.shortcuts»
-					«IF aliasOut.get(alias)»
-						«val multi = cardinality.isMulti(alias.expression)»
-						«val returnType = names.shortcutJavaType(alias)»
-						protected «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «alias.name»(«output.toBuilderType(names)» «outputName», «IF !inputs.empty»«func.inputsAsParameters(names)»«ENDIF») {
-							return toBuilder(«expressionGenerator.javaCode(alias.expression, new ParamMap)»«IF multi».getMulti()«ELSE».get()«ENDIF»);
-						}
-						
-					«ELSE»
-						protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(names)») {
-							return «expressionGenerator.javaCode(alias.expression, new ParamMap)»;
-						}
-						
-					«ENDIF»
-				«ENDFOR»
-				public static final class «className»Default extends «className» {
-					@Override
-					protected  «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(names)») {
-						return «IF output.isMany»new «ArrayList»<>()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
-					}
 				}
 				«IF func.isQualifierFunction()»
 				
@@ -413,9 +434,9 @@ class FunctionGenerator {
 	
 	private def StringConcatenationClient contributeCondition(Condition condition) {
 		'''
-			assert
-				«expressionGenerator.javaCode(condition.expression, null)».get()
-				: "«condition.definition»";
+			conditionValidator.validate(() -> 
+				«expressionGenerator.javaCode(condition.expression, null)», 
+					"«condition.definition»");
 		'''
 	}
 

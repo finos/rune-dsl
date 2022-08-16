@@ -85,29 +85,31 @@ class CalculationFunctionGeneratorTest {
 						* @return out 
 						*/
 						public BigDecimal evaluate(PeriodEnum in1, Period in2) {
-							
-							BigDecimal outHolder = doEvaluate(in1, in2);
-							BigDecimal out = assignOutput(outHolder, in1, in2);
-							
-							return out;
-						}
-						
-						private BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
-							out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(BigDecimal.valueOf(30.0))).get();
+							BigDecimal out = doEvaluate(in1, in2);
 							
 							return out;
 						}
 					
 						protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
-						
-						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
-							return MapperS.of(in2).<Integer>map("getFrequency", _period -> _period.getFrequency());
-						}
-						
-						public static final class mONTH_Default extends mONTH_ {
+					
+						protected abstract Mapper<Integer> i(PeriodEnum in1, Period in2);
+					
+						public static class mONTH_Default extends mONTH_ {
 							@Override
-							protected  BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
-								return null;
+							protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
+								BigDecimal out = null;
+								return assignOutput(out, in1, in2);
+							}
+							
+							protected BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
+								out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(BigDecimal.valueOf(30.0))).get();
+								
+								return out;
+							}
+							
+							@Override
+							protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
+								return MapperS.of(in2).<Integer>map("getFrequency", _period -> _period.getFrequency());
 							}
 						}
 					}
@@ -147,29 +149,31 @@ class CalculationFunctionGeneratorTest {
 				* @return out 
 				*/
 				public Integer evaluate(Integer one) {
-					
-					Integer outHolder = doEvaluate(one);
-					Integer out = assignOutput(outHolder, one);
-					
-					return out;
-				}
-				
-				private Integer assignOutput(Integer out, Integer one) {
-					out = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(oneA(one).get()), MapperS.of(oneA(one).get())).get();
+					Integer out = doEvaluate(one);
 					
 					return out;
 				}
 			
 				protected abstract Integer doEvaluate(Integer one);
-				
-				protected Mapper<Integer> oneA(Integer one) {
-					return MapperS.of(Integer.valueOf(1));
-				}
-				
-				public static final class CalcDefault extends Calc {
+			
+				protected abstract Mapper<Integer> oneA(Integer one);
+			
+				public static class CalcDefault extends Calc {
 					@Override
-					protected  Integer doEvaluate(Integer one) {
-						return null;
+					protected Integer doEvaluate(Integer one) {
+						Integer out = null;
+						return assignOutput(out, one);
+					}
+					
+					protected Integer assignOutput(Integer out, Integer one) {
+						out = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(oneA(one).get()), MapperS.of(oneA(one).get())).get();
+						
+						return out;
+					}
+					
+					@Override
+					protected Mapper<Integer> oneA(Integer one) {
+						return MapperS.of(Integer.valueOf(1));
 					}
 				}
 			}
@@ -212,33 +216,38 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public Integer evaluate(Integer arg1, Integer arg2) {
-					
-					Integer resHolder = doEvaluate(arg1, arg2);
-					Integer res = assignOutput(resHolder, arg1, arg2);
-					
-					return res;
-				}
-				
-				private Integer assignOutput(Integer res, Integer arg1, Integer arg2) {
-					res = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(a1(arg1, arg2).get()), MapperMaths.<Integer, Integer, Integer>multiply(MapperS.of(a2(arg1, arg2).get()), MapperS.of(Integer.valueOf(215)))).get();
+					Integer res = doEvaluate(arg1, arg2);
 					
 					return res;
 				}
 			
 				protected abstract Integer doEvaluate(Integer arg1, Integer arg2);
-				
-				protected Mapper<Integer> a1(Integer arg1, Integer arg2) {
-					return MapperS.of(new Min().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
-				}
-				
-				protected Mapper<Integer> a2(Integer arg1, Integer arg2) {
-					return MapperS.of(new Max().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
-				}
-				
-				public static final class CalcDefault extends Calc {
+			
+				protected abstract Mapper<Integer> a1(Integer arg1, Integer arg2);
+			
+				protected abstract Mapper<Integer> a2(Integer arg1, Integer arg2);
+			
+				public static class CalcDefault extends Calc {
 					@Override
-					protected  Integer doEvaluate(Integer arg1, Integer arg2) {
-						return null;
+					protected Integer doEvaluate(Integer arg1, Integer arg2) {
+						Integer res = null;
+						return assignOutput(res, arg1, arg2);
+					}
+					
+					protected Integer assignOutput(Integer res, Integer arg1, Integer arg2) {
+						res = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(a1(arg1, arg2).get()), MapperMaths.<Integer, Integer, Integer>multiply(MapperS.of(a2(arg1, arg2).get()), MapperS.of(Integer.valueOf(215)))).get();
+						
+						return res;
+					}
+					
+					@Override
+					protected Mapper<Integer> a1(Integer arg1, Integer arg2) {
+						return MapperS.of(new Min().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
+					}
+					
+					@Override
+					protected Mapper<Integer> a2(Integer arg1, Integer arg2) {
+						return MapperS.of(new Max().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
 					}
 				}
 			}
@@ -277,15 +286,16 @@ class CalculationFunctionGeneratorTest {
 			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
 			import com.rosetta.model.lib.expression.MapperMaths;
+			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.records.Date;
-			import com.rosetta.model.lib.validation.ModelObjectValidator;
 			import com.rosetta.test.model.FoncOut;
 			import com.rosetta.test.model.FoncOut.FoncOutBuilder;
 			import com.rosetta.test.model.FuncIn;
 			import java.time.LocalTime;
+			import java.util.Optional;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -298,38 +308,47 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public FoncOut evaluate(FuncIn funIn) {
+					FoncOut.FoncOutBuilder res = doEvaluate(funIn);
 					
-					FoncOut.FoncOutBuilder resHolder = doEvaluate(funIn);
-					FoncOut.FoncOutBuilder res = assignOutput(resHolder, funIn);
-					
-					if (res!=null) objectValidator.validateAndFailOnErorr(FoncOut.class, res);
-					return res;
-				}
-				
-				private FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder res, FuncIn funIn) {
-					res
-						.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
-					
-					res
-						.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
-					
+					if (res != null) {
+						objectValidator.validate(FoncOut.class, res);
+					}
 					return res;
 				}
 			
 				protected abstract FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn);
-				
-				protected Mapper<Date> arg1(FuncIn funIn) {
-					return MapperS.of(funIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
-				}
-				
-				protected Mapper<LocalTime> arg2(FuncIn funIn) {
-					return MapperS.of(funIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
-				}
-				
-				public static final class CalcDefault extends Calc {
+			
+				protected abstract Mapper<Date> arg1(FuncIn funIn);
+			
+				protected abstract Mapper<LocalTime> arg2(FuncIn funIn);
+			
+				public static class CalcDefault extends Calc {
 					@Override
-					protected  FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
-						return FoncOut.builder();
+					protected FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
+						FoncOut.FoncOutBuilder res = FoncOut.builder();
+						return assignOutput(res, funIn);
+					}
+					
+					protected FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder res, FuncIn funIn) {
+						res
+							.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+						
+						res
+							.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+						
+						return Optional.ofNullable(res)
+							.map(o -> o.prune())
+							.orElse(null);
+					}
+					
+					@Override
+					protected Mapper<Date> arg1(FuncIn funIn) {
+						return MapperS.of(funIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
+					}
+					
+					@Override
+					protected Mapper<LocalTime> arg2(FuncIn funIn) {
+						return MapperS.of(funIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
 					}
 				}
 			}
@@ -370,15 +389,16 @@ class CalculationFunctionGeneratorTest {
 			import com.google.inject.ImplementedBy;
 			import com.google.inject.Inject;
 			import com.rosetta.model.lib.expression.MapperMaths;
+			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.records.Date;
-			import com.rosetta.model.lib.validation.ModelObjectValidator;
 			import com.rosetta.test.model.FuncIn;
 			import com.rosetta.test.model.FuncOut;
 			import com.rosetta.test.model.FuncOut.FuncOutBuilder;
 			import java.time.LocalTime;
+			import java.util.Optional;
 			
 			
 			@ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
@@ -391,42 +411,54 @@ class CalculationFunctionGeneratorTest {
 				* @return out 
 				*/
 				public FuncOut evaluate(FuncIn funcIn) {
+					FuncOut.FuncOutBuilder out = doEvaluate(funcIn);
 					
-					FuncOut.FuncOutBuilder outHolder = doEvaluate(funcIn);
-					FuncOut.FuncOutBuilder out = assignOutput(outHolder, funcIn);
-					
-					if (out!=null) objectValidator.validateAndFailOnErorr(FuncOut.class, out);
-					return out;
-				}
-				
-				private FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder out, FuncIn funcIn) {
-					out
-						.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
-					
-					out
-						.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
-					
+					if (out != null) {
+						objectValidator.validate(FuncOut.class, out);
+					}
 					return out;
 				}
 			
 				protected abstract FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn);
-				
-				protected Mapper<String> linkId(FuncIn funcIn) {
-					return MapperS.of(funcIn).<String>map("getValS", _funcIn -> _funcIn.getValS());
-				}
-				
-				protected Mapper<Date> tradeDate(FuncIn funcIn) {
-					return MapperS.of(funcIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
-				}
-				
-				protected Mapper<LocalTime> tradeTime(FuncIn funcIn) {
-					return MapperS.of(funcIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
-				}
-				
-				public static final class RTS_22_FieldsDefault extends RTS_22_Fields {
+			
+				protected abstract Mapper<String> linkId(FuncIn funcIn);
+			
+				protected abstract Mapper<Date> tradeDate(FuncIn funcIn);
+			
+				protected abstract Mapper<LocalTime> tradeTime(FuncIn funcIn);
+			
+				public static class RTS_22_FieldsDefault extends RTS_22_Fields {
 					@Override
-					protected  FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
-						return FuncOut.builder();
+					protected FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
+						FuncOut.FuncOutBuilder out = FuncOut.builder();
+						return assignOutput(out, funcIn);
+					}
+					
+					protected FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder out, FuncIn funcIn) {
+						out
+							.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
+						
+						out
+							.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
+						
+						return Optional.ofNullable(out)
+							.map(o -> o.prune())
+							.orElse(null);
+					}
+					
+					@Override
+					protected Mapper<String> linkId(FuncIn funcIn) {
+						return MapperS.of(funcIn).<String>map("getValS", _funcIn -> _funcIn.getValS());
+					}
+					
+					@Override
+					protected Mapper<Date> tradeDate(FuncIn funcIn) {
+						return MapperS.of(funcIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
+					}
+					
+					@Override
+					protected Mapper<LocalTime> tradeTime(FuncIn funcIn) {
+						return MapperS.of(funcIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
 					}
 				}
 			}
@@ -459,10 +491,10 @@ class CalculationFunctionGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.google.inject.Inject;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.validation.ModelObjectValidator;
 				import com.rosetta.test.model.OtherType;
 				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
@@ -482,47 +514,50 @@ class CalculationFunctionGeneratorTest {
 					* @return out 
 					*/
 					public OtherType evaluate(List<? extends WithMeta> withMeta) {
+						OtherType.OtherTypeBuilder out = doEvaluate(withMeta);
 						
-						OtherType.OtherTypeBuilder outHolder = doEvaluate(withMeta);
-						OtherType.OtherTypeBuilder out = assignOutput(outHolder, withMeta);
-						
-						if (out!=null) objectValidator.validateAndFailOnErorr(OtherType.class, out);
-						return out;
-					}
-					
-					private OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder out, List<? extends WithMeta> withMeta) {
-						out
-							.addAttrMulti(MapperC.of(withMeta)
-								.getItems()
-								.map(_item -> ReferenceWithMetaWithMeta.builder()
-									.setExternalReference(_item.getMappedObject().getMeta().getExternalKey())
-									.setGlobalReference(_item.getMappedObject().getMeta().getGlobalKey())
-									.build())
-								.collect(Collectors.toList())
-							);
-						
-						out
-							.setAttrSingle(ReferenceWithMetaWithMeta.builder()
-								.setGlobalReference(Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
-									.map(_r -> _r.getMeta())
-									.map(_m -> _m.getGlobalKey())
-									.orElse(null))
-								.setExternalReference(Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
-									.map(_r -> _r.getMeta())
-									.map(_m -> _m.getExternalKey())
-									.orElse(null))
-								.build()
-							);
-						
+						if (out != null) {
+							objectValidator.validate(OtherType.class, out);
+						}
 						return out;
 					}
 				
 					protected abstract OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta);
-					
-					public static final class asKeyUsageDefault extends asKeyUsage {
+				
+					public static class asKeyUsageDefault extends asKeyUsage {
 						@Override
-						protected  OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta) {
-							return OtherType.builder();
+						protected OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta) {
+							OtherType.OtherTypeBuilder out = OtherType.builder();
+							return assignOutput(out, withMeta);
+						}
+						
+						protected OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder out, List<? extends WithMeta> withMeta) {
+							out
+								.addAttrMulti(MapperC.of(withMeta)
+									.getItems()
+									.map(_item -> ReferenceWithMetaWithMeta.builder()
+										.setExternalReference(_item.getMappedObject().getMeta().getExternalKey())
+										.setGlobalReference(_item.getMappedObject().getMeta().getGlobalKey())
+										.build())
+									.collect(Collectors.toList())
+								);
+							
+							out
+								.setAttrSingle(ReferenceWithMetaWithMeta.builder()
+									.setGlobalReference(Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
+										.map(_r -> _r.getMeta())
+										.map(_m -> _m.getGlobalKey())
+										.orElse(null))
+									.setExternalReference(Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
+										.map(_r -> _r.getMeta())
+										.map(_m -> _m.getExternalKey())
+										.orElse(null))
+									.build()
+								);
+							
+							return Optional.ofNullable(out)
+								.map(o -> o.prune())
+								.orElse(null);
 						}
 					}
 				}
@@ -565,29 +600,31 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public Integer evaluate() {
-					
-					Integer resHolder = doEvaluate();
-					Integer res = assignOutput(resHolder);
-					
-					return res;
-				}
-				
-				private Integer assignOutput(Integer res) {
-					res = MapperS.of(arg1().get()).get();
+					Integer res = doEvaluate();
 					
 					return res;
 				}
 			
 				protected abstract Integer doEvaluate();
-				
-				protected Mapper<Integer> arg1() {
-					return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
-				}
-				
-				public static final class AdderDefault extends Adder {
+			
+				protected abstract Mapper<Integer> arg1();
+			
+				public static class AdderDefault extends Adder {
 					@Override
-					protected  Integer doEvaluate() {
-						return null;
+					protected Integer doEvaluate() {
+						Integer res = null;
+						return assignOutput(res);
+					}
+					
+					protected Integer assignOutput(Integer res) {
+						res = MapperS.of(arg1().get()).get();
+						
+						return res;
+					}
+					
+					@Override
+					protected Mapper<Integer> arg1() {
+						return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
 					}
 				}
 			}
@@ -676,25 +713,24 @@ class CalculationFunctionGeneratorTest {
 					* @return arg1 
 					*/
 					public String evaluate(Math in1, MathInput in2) {
-						
-						String arg1Holder = doEvaluate(in1, in2);
-						String arg1 = assignOutput(arg1Holder, in1, in2);
-						
-						return arg1;
-					}
-					
-					private String assignOutput(String arg1, Math in1, MathInput in2) {
-						arg1 = MapperS.of(addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+						String arg1 = doEvaluate(in1, in2);
 						
 						return arg1;
 					}
 				
 					protected abstract String doEvaluate(Math in1, MathInput in2);
-					
-					public static final class iNCR_Default extends iNCR_ {
+				
+					public static class iNCR_Default extends iNCR_ {
 						@Override
-						protected  String doEvaluate(Math in1, MathInput in2) {
-							return null;
+						protected String doEvaluate(Math in1, MathInput in2) {
+							String arg1 = null;
+							return assignOutput(arg1, in1, in2);
+						}
+						
+						protected String assignOutput(String arg1, Math in1, MathInput in2) {
+							arg1 = MapperS.of(addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+							
+							return arg1;
 						}
 					}
 				}
@@ -712,25 +748,24 @@ class CalculationFunctionGeneratorTest {
 					* @return arg1 
 					*/
 					public String evaluate(Math in1, MathInput in2) {
-						
-						String arg1Holder = doEvaluate(in1, in2);
-						String arg1 = assignOutput(arg1Holder, in1, in2);
-						
-						return arg1;
-					}
-					
-					private String assignOutput(String arg1, Math in1, MathInput in2) {
-						arg1 = MapperS.of(subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+						String arg1 = doEvaluate(in1, in2);
 						
 						return arg1;
 					}
 				
 					protected abstract String doEvaluate(Math in1, MathInput in2);
-					
-					public static final class dECR_Default extends dECR_ {
+				
+					public static class dECR_Default extends dECR_ {
 						@Override
-						protected  String doEvaluate(Math in1, MathInput in2) {
-							return null;
+						protected String doEvaluate(Math in1, MathInput in2) {
+							String arg1 = null;
+							return assignOutput(arg1, in1, in2);
+						}
+						
+						protected String assignOutput(String arg1, Math in1, MathInput in2) {
+							arg1 = MapperS.of(subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+							
+							return arg1;
 						}
 					}
 				}
@@ -775,29 +810,31 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public Integer evaluate(Integer arg1) {
-					
-					Integer resHolder = doEvaluate(arg1);
-					Integer res = assignOutput(resHolder, arg1);
-					
-					return res;
-				}
-				
-				private Integer assignOutput(Integer res, Integer arg1) {
-					res = MapperS.of(addedOne(arg1).get()).get();
+					Integer res = doEvaluate(arg1);
 					
 					return res;
 				}
 			
 				protected abstract Integer doEvaluate(Integer arg1);
-				
-				protected Mapper<Integer> addedOne(Integer arg1) {
-					return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
-				}
-				
-				public static final class AdderDefault extends Adder {
+			
+				protected abstract Mapper<Integer> addedOne(Integer arg1);
+			
+				public static class AdderDefault extends Adder {
 					@Override
-					protected  Integer doEvaluate(Integer arg1) {
-						return null;
+					protected Integer doEvaluate(Integer arg1) {
+						Integer res = null;
+						return assignOutput(res, arg1);
+					}
+					
+					protected Integer assignOutput(Integer res, Integer arg1) {
+						res = MapperS.of(addedOne(arg1).get()).get();
+						
+						return res;
+					}
+					
+					@Override
+					protected Mapper<Integer> addedOne(Integer arg1) {
+						return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
 					}
 				}
 			}

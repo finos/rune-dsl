@@ -479,6 +479,32 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 
 	@Test
+	def void shouldGenerateNoConditionNameWarning() {
+		val model = '''
+			type Foo:
+				x string (0..1)
+				
+				condition:
+					x exists
+		'''.parseRosetta
+		model.assertWarning(CONDITION, INVALID_NAME,
+			"Condition name should be specified")
+	}
+	
+	@Test
+	def void shouldGenerateConditionNameInvalidCaseWarning() {
+		val model = '''
+			type Foo:
+				x string (0..1)
+				
+				condition xExists:
+					x exists
+		'''.parseRosetta
+		model.assertWarning(CONDITION, INVALID_CASE,
+			"Condition name should start with a capital")
+	}
+
+	@Test
 	def void shouldNoGenerateErrorsForConditionWithInheritedAttributeExists() {
 		val model = '''
 			type Foo:
@@ -487,7 +513,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				y string (0..1)
 				
-				condition:
+				condition XExists:
 					x exists
 		'''.parseRosetta
 		model.assertNoErrors
@@ -2199,6 +2225,120 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				attr int (1..1)
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List join does not allow expressions.")
+	}
+	
+	@Test
+	def void shouldWarnNonUsedImportsForData() {
+		val model = '''
+
+			import foo.bar.*
+			
+			
+			type Foo:
+				attr int (1..1)
+		'''.parseRosetta
+		model.assertWarning(IMPORT, UNUSED_IMPORT, "Unused import foo.bar.*")
+	}
+	
+	
+	@Test
+	def void shouldNotWarnForValidDataImports() {
+		val models = newArrayList('''
+			namespace test.one
+			
+			type Foo:
+				attr int (1..1)
+		''',
+		'''
+			namespace test.two
+			import test.one.*
+			
+			
+			type Bar:
+				attr Foo (1..1)
+		''').parseRosetta
+		
+		models.forEach[assertNoIssues]
+	}
+	
+	@Test
+	def void shouldNotWarnForValidEnumImports() {
+		val models = newArrayList('''
+			namespace test.one
+			
+			enum Foo:
+				A B C
+		''',
+		'''
+			namespace test.two
+			import test.one.*
+			
+			
+			type Bar:
+				attr Foo (1..1)
+		''').parseRosetta
+		
+		models.forEach[assertNoIssues]
+	}
+	
+	@Test
+	def void shouldNotWarnForValidFuncImports() {
+		val models = newArrayList('''
+			namespace test.one
+			
+			type Foo1:
+				attr int (1..1)
+		''',
+		'''
+			namespace test.two
+			
+			type Foo2:
+				attr int (1..1)
+		''',
+		'''
+			namespace test.three
+			import test.one.*
+			import test.two.*
+			
+			func Bar:
+				inputs:
+					foo1 Foo1 (1..1)
+				output:
+					foo2 Foo2 (1..1)
+		''').parseRosetta
+		
+		models.forEach[assertNoIssues]
+	}
+	
+	@Test
+	def void shouldNotWarnForValidFuncAlias() {
+		val models = newArrayList('''
+			namespace test.one
+			
+			type Foo1:
+				attr int (1..1)
+		''',
+		'''
+			namespace test.two
+			import test.one.*
+			
+			type Foo2:
+				attr Foo1 (1..1)
+		''',
+		'''
+			namespace test.three
+			import test.one.*
+			
+			func Bar:
+				inputs:
+					foo1 Foo1 (1..1)
+				output:
+					foo1x Foo1 (1..1)
+				
+				alias a: foo1 -> attr
+		''').parseRosetta
+		
+		models.forEach[assertNoIssues]
 	}
 }
 	

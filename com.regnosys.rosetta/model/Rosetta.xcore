@@ -509,7 +509,6 @@ class RosettaExternalSynonym {
  
 class RosettaBlueprintReport extends RosettaRootElement {
 	contains RosettaRegulatoryBody regulatoryBody
-	refers RosettaBlueprint[] reportingRules
 	refers Data reportType
 	refers RosettaBlueprint[] eligibilityRules
 	refers RosettaCorpus reportingStandard
@@ -543,35 +542,8 @@ abstract class BlueprintNode {
 
 class BlueprintSource extends BlueprintNode{}
 
-class BlueprintValidate extends BlueprintNode{}
-
-class BlueprintAnd extends BlueprintNode{
+class BlueprintOr extends BlueprintNode {
 	contains BlueprintNodeExp[] bps
-}
-
-class BlueprintMerge extends BlueprintNode {
-}
-
-class BlueprintCustomNode extends BlueprintNode {
-}
-
-class BlueprintReduce extends BlueprintNode {
-	String action
-	contains RosettaExpression expression
-	contains BlueprintRef reduceBP
-}
-
-class BlueprintOneOf extends BlueprintNode {
-	contains BlueprintIfThen[] bps
-	contains BlueprintNodeExp elseNode
-}
-
-class BlueprintIfThen {
-	contains BlueprintNodeExp ifNode
-	contains BlueprintNodeExp thenNode
-}
-
-class UnimplementedNode extends BlueprintNode {
 }
 
 class BlueprintRef extends BlueprintNode {
@@ -590,15 +562,6 @@ class BlueprintExtract extends BlueprintNode {
 
 class BlueprintReturn extends BlueprintNode {
 	contains RosettaExpression expression
-}
-
-class BlueprintGroup extends BlueprintNode {
-	contains RosettaExpression key
-}
-
-class BlueprintDataJoin extends BlueprintNode {
-	contains RosettaExpression key
-	contains RosettaExpression foreign
 }
 
 class BlueprintLookup extends BlueprintNode {
