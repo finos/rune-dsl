@@ -27,10 +27,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
-
+	
 	@Test
 	def void testLowerCaseClass() {
-		val model = '''
+		val model =
+		'''
 			synonym source FIX
 			synonym source FpML
 			
@@ -39,22 +40,26 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[synonym FIX value "PartyID" tag 448]
 					[synonym FpML value "partyId"]
 		'''.parseRosettaWithNoErrors
-		model.assertWarning(DATA, INVALID_CASE, "Type name should start with a capital")
+		model.assertWarning(DATA, INVALID_CASE,
+            "Type name should start with a capital")
 	}
-
+	
 	@Test
 	def void testLowerCaseEnumeration() {
-		val model = '''
+		val model =
+		'''
 			enum quoteRejectReasonEnum: <"">
 				UnknownSymbol
 				Other
 		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_ENUMERATION, INVALID_CASE, "Enumeration name should start with a capital")
+		model.assertWarning(ROSETTA_ENUMERATION, INVALID_CASE,
+            "Enumeration name should start with a capital")
 	}
-
+	
 	@Test
 	def void testUpperCaseAttribute() {
-		val model = '''
+		val model =
+		'''
 			synonym source FIX
 			synonym source FpML
 			type PartyIdentifier: <"">
@@ -62,12 +67,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 						[synonym FIX value "PartyID" tag 448]
 						[synonym FpML value "partyId"]
 		'''.parseRosettaWithNoErrors
-		model.assertWarning(ATTRIBUTE, INVALID_CASE, "Attribute name should start with a lower case")
+		model.assertWarning(ATTRIBUTE, INVALID_CASE,
+            "Attribute name should start with a lower case")
 	}
-
+		
 	@Test
 	def void testTypeExpectation() {
-		val model = '''
+		val model =
+		'''
 			type Foo:
 				id int (1..1)
 			
@@ -75,10 +82,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					if id = True
 					then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR,
+		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, 
 			"Incompatible types: cannot use operator '=' with int and boolean.")
 	}
-
+	
 	@Test
 	def void testTypeExpectationMagicType() {
 		'''
@@ -92,10 +99,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				then val < 1
 		'''.parseRosettaWithNoErrors
 	}
-
+	
 	@Test
 	def void testTypeExpectationNoError() {
-		val model = '''
+		val model =
+		'''
 			type Foo:
 				id int (1..1)
 			
@@ -105,23 +113,24 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosettaWithNoErrors
 		model.assertNoError(TYPE_ERROR)
 	}
-
+	
 	@Test
 	def void testTypeExpectationError() {
-		val model = '''
+		val model =
+		'''
 			type Foo:
 				id boolean (1..1)
 			condition R:
 				if id = True
 				then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR,
-			"Incompatible types: cannot use operator '<' with boolean and int.")
+		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, "Incompatible types: cannot use operator '<' with boolean and int.")
 	}
-
+	
 	@Test
 	def void testTypeErrorAssignment_01() {
-		val model = '''
+		val model =
+		'''
 			namespace "test"
 			version "test"
 			
@@ -136,10 +145,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'Foo' but was 'string'")
 	}
-
+	
+	
 	@Test
 	def void testTypeErrorAssignment_02() {
-		val model = '''
+		val model =
+		'''
 			type Foo:
 				id boolean (1..1)
 			
@@ -151,10 +162,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'boolean' but was 'string'")
 	}
-
+	
 	@Test
 	def void testTypeErrorAssignment_03() {
-		val model = '''
+		val model =
+		'''
 			type WithKey:
 				[metadata key]
 			
@@ -171,15 +183,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'WithKey' but was 'TypeToUse'")
 	}
-
+	
 	@Test
 	def void testTypeErrorAssignment_04() {
-		val model = '''
+		val model =
+		'''
 			enum Enumerate : X Y Z
-			
+
 			type Type:
 				other Enumerate (0..1)
-			
+
 			func Funcy:
 				inputs: in0 Type (0..1)
 				output: out string (0..1)
@@ -187,13 +200,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertNoErrors
 	}
-
+	
 	@Test
 	def void testTypeErrorAssignment_05() {
-		val model = '''
+		val model =
+		'''
 			type Type:
 				other int (0..1)
-			
+
 			func Funcy:
 				inputs: in0 Type (0..1)
 				output: out string (0..1)
@@ -201,7 +215,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'string' but was 'int'")
 	}
-
+	
 	@Test
 	def void testAttributesWithLocationBadTarget() {
 		'''
@@ -213,13 +227,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[metadata address "pointsTo"=Foo->foo]
 			
 		'''.parseRosetta
-	// TODO work out how to assert linking error
-	// model.assertError(ROSETTA_CALLABLE_CALL, null, "Couldn't resolve reference to RosettaCallable 'Foo' on RosettaCallableCall")
+		//TODO work out how to assert linking error
+		//model.assertError(ROSETTA_CALLABLE_CALL, null, "Couldn't resolve reference to RosettaCallable 'Foo' on RosettaCallableCall")
 	}
-
+	
 	@Test
 	def void testAttributesWithLocationAndNoAddress() {
-		val model = '''
+		val model ='''
 			metaType scheme string
 			metaType reference string
 			
@@ -233,13 +247,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ANNOTATION_QUALIFIER, null, "Target of address must be annotated with metadata location")
 	}
-
+	
 	@Test
 	def void testAttributesWithLocationAndAddressWrongType() {
-		val model = '''
+		val model ='''
 			metaType scheme string
 			metaType reference string
-			
+
 			type Foo:
 				foo int (1..1) 
 					[metadata location]
@@ -251,6 +265,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ANNOTATION_QUALIFIER, TYPE_ERROR, "Expected address target type of 'string' but was 'int'")
 	}
+	
 
 	@Test
 	def void testDuplicateAttribute() {
@@ -263,7 +278,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertNoErrors
 	}
-
+	
 	@Test
 	def void testDuplicateAttributeNotAllowedWithDiffCard1() {
 		val model = '''
@@ -273,10 +288,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (0..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, CARDINALITY_ERROR,
-			"Overriding attribute 'i' with cardinality (0..1) must match the cardinality of the attribute it overrides (1..1)")
+		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (0..1) must match the cardinality of the attribute it overrides (1..1)")
 	}
-
+	
 	@Test
 	def void testDuplicateAttributeNotAllowedWithDiffCard2() {
 		val model = '''
@@ -286,10 +300,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (1..*)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, CARDINALITY_ERROR,
-			"Overriding attribute 'i' with cardinality (1..*) must match the cardinality of the attribute it overrides (1..1)")
+		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (1..*) must match the cardinality of the attribute it overrides (1..1)")
 	}
-
+	
 	@Test
 	def void testDuplicateAttributeNotAllowedWithDiffType() {
 		val model = '''
@@ -299,9 +312,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i string (1..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE,
-			"Overriding attribute 'i' with type (string) must match the type of the attribute it overrides (int)")
+		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type (string) must match the type of the attribute it overrides (int)")
 	}
+	
 
 	@Test
 	def void testDuplicateAttributeWithOverride() {
@@ -323,7 +336,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertNoErrors
 	}
-
+	
 	@Test
 	def void testDuplicateAttributeWithOverrideBadTypes() {
 		val model = '''
@@ -336,7 +349,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type A3 :
 				j int (1..1)
-			
+
 			
 			type Foo:
 				f A1 (1..1)
@@ -344,10 +357,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				override f A3 (1..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE,
-			DUPLICATE_ATTRIBUTE, '''Overriding attribute 'f' must have a type that overrides its parent attribute type of A1''')
+		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, '''Overriding attribute 'f' must have a type that overrides its parent attribute type of A1''')
 	}
-
+	
 	@Test
 	def void testDuplicateBasicTypeAttributeWithOverrideBadTypes() {
 		val model = '''
@@ -357,9 +369,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				override i string (1..1)
 		'''.parseRosetta
-
-		model.assertError(ATTRIBUTE,
-			DUPLICATE_ATTRIBUTE, '''Overriding attribute 'i' must have a type that overrides its parent attribute type of int''')
+		
+		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, '''Overriding attribute 'i' must have a type that overrides its parent attribute type of int''')
 	}
 
 	@Test
@@ -377,11 +388,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				override f A2 (0..1)
 		'''.parseRosetta
-
-		model.assertError(ATTRIBUTE,
-			CARDINALITY_ERROR, '''Overriding attribute 'f' with cardinality (0..1) must match the cardinality of the attribute it overrides (1..1)''')
+			
+		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, '''Overriding attribute 'f' with cardinality (0..1) must match the cardinality of the attribute it overrides (1..1)''')
 	}
 
+		
 	@Test
 	def void testDuplicateAttributeWithOverrideWithUnboundedCardinality() {
 		val model = '''
@@ -397,11 +408,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				override f A2 (1..1)
 		'''.parseRosetta
-
-		model.assertError(ATTRIBUTE,
-			CARDINALITY_ERROR, '''Overriding attribute 'f' with cardinality (1..1) must match the cardinality of the attribute it overrides (1..*)''')
+			
+		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, '''Overriding attribute 'f' with cardinality (1..1) must match the cardinality of the attribute it overrides (1..*)''')
 	}
-
+		
 	@Test
 	def void testDuplicateEnumLiteral() {
 		val model = '''
@@ -410,8 +420,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_ENUM_VALUE, DUPLICATE_ENUM_VALUE, 'Duplicate enum value')
 	}
-
-	@Test
+	
+	@Test 
 	def void testDuplicateType() {
 		val model = '''
 			type Bar:
@@ -422,7 +432,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_TYPE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
 	}
-
+		
 	@Test
 	def void testDuplicateChoiceRuleAttribute_thisOne() {
 		val model = '''
@@ -437,7 +447,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(CONDITION, DUPLICATE_CHOICE_RULE_ATTRIBUTE, 'Duplicate attribute')
 	}
-
+	
 	@Test
 	def void testDuplicateChoiceRuleAttribute_thatOne() {
 		val model = '''
@@ -451,7 +461,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(CONDITION, DUPLICATE_CHOICE_RULE_ATTRIBUTE, 'Duplicate attribute')
 	}
-
+	
 	@Test
 	def void testClassWithChoiceRuleAndOneOfRule() {
 		val model = '''
@@ -465,8 +475,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					required choice
 						attribute1, attribute2
 		'''.parseRosetta
-		model.assertError(DATA, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE,
-			'Type Foo has both choice condition and one-of condition.')
+		model.assertError(DATA, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE, 'Type Foo has both choice condition and one-of condition.')
 	}
 
 	@Test
@@ -478,9 +487,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				condition:
 					x exists
 		'''.parseRosetta
-		model.assertWarning(CONDITION, INVALID_NAME, "Condition name should be specified")
+		model.assertWarning(CONDITION, INVALID_NAME,
+			"Condition name should be specified")
 	}
-
+	
 	@Test
 	def void shouldGenerateConditionNameInvalidCaseWarning() {
 		val model = '''
@@ -490,7 +500,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				condition xExists:
 					x exists
 		'''.parseRosetta
-		model.assertWarning(CONDITION, INVALID_CASE, "Condition name should start with a capital")
+		model.assertWarning(CONDITION, INVALID_CASE,
+			"Condition name should start with a capital")
 	}
 
 	@Test
@@ -518,10 +529,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				attr int (0..1)
 					[synonym FpML merge "bar"]
 		'''.parseRosetta
-		model.assertError(ROSETTA_SYNONYM_BODY, null,
-			"Merge synonym can only be specified on an attribute with multiple cardinality.")
+		model.assertError(ROSETTA_SYNONYM_BODY, null, "Merge synonym can only be specified on an attribute with multiple cardinality.")
 	}
-
+	
 	@Test
 	def checkMergeSynonymNoErrorOnMultiCardinality() {
 		val model = '''
@@ -534,7 +544,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors()
 	}
 
-	@Test
+ 	@Test
 	def checkMappingMultipleSetToWithoutWhenCases() {
 		val model = '''
 			type Quote:
@@ -545,7 +555,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_MAPPING, null, "Only one set to with no when clause allowed.")
 	}
-
+	
 	@Test
 	def checkMappingMultipleSetToOrdering() {
 		val model = '''
@@ -557,7 +567,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_MAPPING, null, "Set to without when case must be ordered last.")
 	}
-
+	
 	@Test
 	def checkMappingSetToTypeCheck() {
 		val model = '''
@@ -571,13 +581,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_MAPPING, null, "Set to constant type does not match type of field.")
 	}
-
+	
 	@Test
 	def checkMappingSetToEnumTypeCheck() {
 		val model = '''
 			enum Foo: ONE
 			
-			
+
 			enum Bar: BAR
 			
 			type Quote:
@@ -587,7 +597,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_MAPPING, null, "Set to constant type does not match type of field.")
 	}
-
+	
 	@Test
 	def checkMappingSetToWhenTypeCheck() {
 		val model = '''
@@ -601,7 +611,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertNoErrors
 	}
-
+	
 	@Test
 	def checkOperationTypes() {
 		val model = '''
@@ -625,8 +635,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 						and 0.2 >= 0.1
 		'''.parseRosetta
 		model.assertNoErrors
-	}
-
+	}	
+	
 	@Test
 	def checkDateZonedDateTypes() {
 		val model = '''
@@ -646,9 +656,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			     Foo(timestamp) = timestamp
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_CALLABLE_WITH_ARGS_CALL, TYPE_ERROR, "Expected type 'zonedDateTime' but was 'date'")
+		model.assertError(ROSETTA_CALLABLE_WITH_ARGS_CALL, TYPE_ERROR, 
+			"Expected type 'zonedDateTime' but was 'date'")
 	}
-
+	
 	@Test
 	def checkAsKeyUsage_01() {
 		val model = '''
@@ -668,7 +679,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertNoErrors
 	}
-
+	
 	@Test
 	def checkAsKeyUsage_02() {
 		val model = '''
@@ -691,7 +702,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(SEGMENT, null,
 			"'as-key' can only be used with attributes annotated with [metadata reference] annotation.")
 	}
-
+	
 	@Test
 	def checkAsKeyUsage_03() {
 		val model = '''
@@ -704,7 +715,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertWarning(ATTRIBUTE, null,
 			"WithKey must be annotated with [metadata key] as reference annotation is used")
 	}
-
+	
 	@Test
 	def checkAsKeyUsage_04() {
 		val model = '''
@@ -725,7 +736,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(OPERATION, null,
 			"'as-key' can only be used when assigning an attribute. Example: \"set out -> attribute: value as-key\"")
 	}
-
+	
 	@Test
 	def checkSynonymPathSyntax_01() {
 		val model = '''
@@ -760,12 +771,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					required choice
 					attribute1
 		'''.parseRosetta
-		model.assertError(CONSTRAINT, null, "At least two attributes must be passed to a choice rule.")
+		model.assertError(CONSTRAINT, null,
+			"At least two attributes must be passed to a choice rule.")
 	}
-
+	
+	
+	
 	@Test
 	def void externalSynonymWithFormatShouldOnlyOnDate() {
-		val model = '''
+	val model='''
 			type Foo:
 				foo int (0..1)
 			
@@ -778,12 +792,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 						[value "bar" path "baz" dateFormat "MM/dd/yy"]
 			}
 		'''.parseRosetta
-		model.assertError(ROSETTA_SYNONYM_BODY, null, "Format can only be applied to date/time types")
+		model.assertError(ROSETTA_SYNONYM_BODY, null,
+			"Format can only be applied to date/time types")
 	}
-
+	
 	@Test
 	def void externalSynonymWithFormatValid() {
-		val model = '''
+	val model='''
 			type Foo:
 				foo time (0..1)
 			
@@ -799,47 +814,50 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(ROSETTA_SYNONYM_BODY, null,
 			"Format must be a valid date/time format - Unknown pattern letter: B")
 	}
-
+	
 	@Test
 	def void internalSynonymWithFormatShouldOnlyBeOnDate() {
-		val model = '''
+	val model='''
 			type Foo:
 				foo int (0..1)
 				[synonym TEST_Base value "bar" path "baz" dateFormat "MM/dd/yy"]
 			synonym source TEST_Base
-			
-		'''.parseRosetta
-		model.assertError(ROSETTA_SYNONYM_BODY, null, "Format can only be applied to date/time types")
-	}
 
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYNONYM_BODY, null,
+			"Format can only be applied to date/time types")
+	}
+	
 	@Test
 	def void internalSynonymWithPatternShouldBeValid() {
-		val model = '''
+	val model='''
 			type Foo:
 				foo int (0..1)
 				[synonym TEST_Base value "bar" path "baz" pattern "([A-Z)" "$1"]
 			synonym source TEST_Base
-			
-		'''.parseRosetta
-		model.assertError(ROSETTA_SYNONYM_BODY, null, "Pattern to match must be a valid regular expression")
-	}
 
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYNONYM_BODY, null,
+			"Pattern to match must be a valid regular expression")
+	}
+	
 	@Disabled
 	@Test
-	def void testFishIsAShark() { // This test tests that when a check throws an exception it is translated into a validation error - see ExceptionValidator below
-		val model = '''
+	def void testFishIsAShark() {//This test tests that when a check throws an exception it is translated into a validation error - see ExceptionValidator below
+		val model='''
 			type MyFish:
 				foo int (0..1)
 				[synonym TEST_Base value "bar" path "baz" pattern "([A-Z)" "$1"]
 			synonym source TEST_Base
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_TYPE, null, "checkForSharks")
+		model.assertError(ROSETTA_TYPE, null,
+			"checkForSharks")
 	}
-
+	
 	@Test
 	def void enumSynonymWithPatternShouldBeValid() {
-		val model = '''
+	val model='''
 			enum Enumerate : X Y Z
 			
 			synonym source TEST_Base
@@ -851,11 +869,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					+ x
 						[value "bar" pattern "([A-Z)" "$1"]
 			}
-			
-		'''.parseRosetta
-		model.assertError(ROSETTA_ENUM_SYNONYM, null, "Pattern to match must be a valid regular expression")
-	}
 
+		'''.parseRosetta
+		model.assertError(ROSETTA_ENUM_SYNONYM, null,
+			"Pattern to match must be a valid regular expression")
+	}
+	
 	@Test
 	def shouldGenerateRuleCardinalityWarning() {
 		val model = '''
@@ -879,8 +898,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				aa string (1..1)
 					[ruleReference Aa]
 		'''.parseRosetta
-		model.assertWarning(ROSETTA_RULE_REFERENCE, null,
-			"Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
 	}
 
 	@Test
@@ -898,16 +916,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			reporting rule Aa
 				extract Bar->barA as "A"
-			
+
 			reporting rule Bb
 				extract Bar->barB as "B"
 				
 			reporting rule Cc
 				extract Bar->barC as "C"
-			
+
 			reporting rule Dd
 				extract Bar->barD as "D"
-			
+
 			reporting rule Ee
 				extract Bar->barE as "E"
 				
@@ -921,7 +939,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				barD int (0..1)
 				barE number (0..1)
 				barF BazEnum (0..1)
-			
+
 			enum BazEnum:
 				X
 				Y
@@ -942,20 +960,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[ruleReference Ff]
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Type mismatch - report field aa has type string whereas the reporting rule Aa has type date.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Type mismatch - report field bb has type string whereas the reporting rule Bb has type time.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Type mismatch - report field cc has type string whereas the reporting rule Cc has type zonedDateTime.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Type mismatch - report field dd has type string whereas the reporting rule Dd has type int.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Type mismatch - report field ee has type string whereas the reporting rule Ee has type number.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Type mismatch - report field ff has type string whereas the reporting rule Ff has type BazEnum.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type date.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field bb has type string whereas the reporting rule Bb has type time.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field cc has type string whereas the reporting rule Cc has type zonedDateTime.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field dd has type string whereas the reporting rule Dd has type int.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field ee has type string whereas the reporting rule Ee has type number.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field ff has type string whereas the reporting rule Ff has type BazEnum.")
 	}
-
+	
 	@Test
 	def shouldGenerateRuleTypeError2() {
 		val model = '''
@@ -984,12 +996,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[ruleReference Aa]
 			
 		'''.parseRosetta
-		model.assertWarning(ROSETTA_RULE_REFERENCE, null,
-			"Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Type mismatch - report field aa has type string whereas the reporting rule Aa has type Object.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type Object.")
 	}
-
+	
 	@Test
 	def shouldNotGenerateRuleTypeErrorUsingReturn() {
 		val model = '''
@@ -1048,10 +1058,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 		'''.parseRosetta
 		model.assertNoErrors
-		model.assertWarning(ROSETTA_RULE_REFERENCE, null,
-			"Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
 	}
-
+	
 	@Test
 	def void shouldNotGenerateTypeValidationError2() {
 		val model = '''
@@ -1082,10 +1091,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 		'''.parseRosetta
 		model.assertNoErrors
-		model.assertWarning(ROSETTA_RULE_REFERENCE, null,
-			"Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
 	}
-
+	
 	@Test
 	def void shouldNotGenerateTypeValidationError3() {
 		val model = '''
@@ -1116,10 +1124,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 		'''.parseRosetta
 		model.assertNoErrors
-		model.assertWarning(ROSETTA_RULE_REFERENCE, null,
-			"Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
 	}
-
+	
 	@Test
 	def void shouldNotGenerateTypeValidationError4() {
 		val model = '''
@@ -1150,8 +1157,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 		'''.parseRosetta
 		model.assertNoErrors
-		model.assertWarning(ROSETTA_RULE_REFERENCE, null,
-			"Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
 	}
 
 	@Test
@@ -1187,10 +1193,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 		'''.parseRosetta
 		model.assertNoErrors
-		model.assertWarning(ROSETTA_RULE_REFERENCE, null,
-			"Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
 	}
-
+	
 	@Test
 	def void shouldGenerateTypeValidationErrorDifferentDataType() {
 		val model = '''
@@ -1226,11 +1231,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[ruleReference BarBarOne]
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Type mismatch - report field barBarOne has type Baz whereas the reporting rule BarBarOne has type Object.")
-		model.assertWarning(ROSETTA_RULE_REFERENCE, null,
-			"Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field barBarOne has type Baz whereas the reporting rule BarBarOne has type Object.")
+		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
 	}
+
 
 	@Test
 	def shouldGenerateDuplicateRuleError() {
@@ -1260,7 +1264,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_RULE_REFERENCE, null, "Duplicate reporting rule A")
 	}
-
+	
 	@Test
 	def shouldGenerateUnsupportedCardinalityError() {
 		val model = '''
@@ -1284,16 +1288,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				a string (0..*)
 					[ruleReference A]
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, null,
-			"Report attributes with basic type (string) and multiple cardinality is not supported.")
+		model.assertError(ATTRIBUTE, null, "Report attributes with basic type (string) and multiple cardinality is not supported.")
 	}
-
+	
 	@Test
 	def shouldNotGenerateCountCardinalityErrorForMap() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
-			
+
 			type Foo:
 				attr string (1..1)
 			
@@ -1311,13 +1314,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
-
+	
 	@Test
 	def shouldNotGenerateCountCardinalityErrorDefaultParameterForMap() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
-			
+
 			type Foo:
 				attr string (1..1)
 			
@@ -1335,13 +1338,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
-
+	
 	@Test
 	def shouldNotGenerateCountCardinalityErrorForNestedMap() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
-			
+
 			type Foo:
 				amount number (1..1)
 			
@@ -1361,13 +1364,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
-
+	
 	@Test
 	def shouldNotGenerateCountCardinalityErrorDefaultParameterForNestedMap() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
-			
+
 			type Foo:
 				amount number (1..1)
 			
@@ -1393,7 +1396,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		val model = '''
 			type Bar:
 				foo Foo (1..1)
-			
+
 			type Foo:
 				amount number (1..1)
 			
@@ -1413,13 +1416,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
-
+	
 	@Test
 	def shouldGenerateErrorForFeatureCallAfterListOperation() {
 		val model = '''
 			type Bar:
 				foo Foo (1..1)
-			
+
 			type Foo:
 				amount number (1..1)
 			
@@ -1434,14 +1437,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'") // is it possible to generate a better error message?
 	}
-
+	
 	@Test
 	@Disabled
 	def shouldGenerateErrorForFeatureCallAfterListOperation2() {
 		val model = '''
 			type Bar:
 				foo Foo (1..1)
-			
+
 			type Foo:
 				amount number (1..1)
 			
@@ -1477,7 +1480,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
-
+	
 	@Test
 	def void shouldNotGenerateCardinalityWarning2() {
 		val model = '''
@@ -1504,7 +1507,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
-
+	
 	@Test
 	def void shouldGenerateListFilterNoExpressionError() {
 		val model = '''
@@ -1523,7 +1526,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List filter must have an expression specified within square brackets.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListFilterParametersError() {
 		val model = '''
@@ -1542,7 +1545,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List filter must have 1 named parameter.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListFilterExpressionTypeError() {
 		val model = '''
@@ -1561,7 +1564,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List filter expression must evaluate to a boolean.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListMapNoExpressionError() {
 		val model = '''
@@ -1580,7 +1583,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List map must have an expression specified within square brackets.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListMapParametersError() {
 		val model = '''
@@ -1599,7 +1602,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List map must have 1 named parameter.")
 	}
-
+	
 	@Test
 	def void shouldNotGenerateListMapExpressionCardinalityError() {
 		val model = '''
@@ -1620,7 +1623,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
-
+	
 	@Test
 	def void shouldNotGenerateListMapExpressionCardinalityError2() {
 		val model = '''
@@ -1645,7 +1648,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
-
+	
 	@Test
 	def void shouldGenerateListMapExpressionCardinalityError() {
 		val model = '''
@@ -1671,10 +1674,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Baz:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null,
-			"Each list item (bars) is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).")
+		model.assertError(LIST_OPERATION, null, "Each list item (bars) is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).")
 	}
-
+	
 	@Test
 	def void shouldGenerateListFlattenExpressionSpecifiedError() {
 		val model = '''
@@ -1694,7 +1696,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "No expression allowed for list flatten.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListFlattenParameterSpecifiedError() {
 		val model = '''
@@ -1714,7 +1716,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "No item parameter allowed for list flatten.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListFlattenCardinalityError() {
 		val model = '''
@@ -1734,7 +1736,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List flatten only allowed for list of lists.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListFlattenCardinalityError2() {
 		val model = '''
@@ -1753,7 +1755,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List flatten only allowed for list of lists.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListSingleCardinalityError() {
 		val model = '''
@@ -1772,7 +1774,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List map cannot be used for single cardinality expressions.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListSingleCardinalityError2() {
 		val model = '''
@@ -1789,10 +1791,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_CALLABLE_CALL, null,
-			"List only-element cannot be used for single cardinality expressions.")
+		model.assertError(ROSETTA_CALLABLE_CALL, null, "List only-element cannot be used for single cardinality expressions.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListSingleCardinalityError3() {
 		val model = '''
@@ -1809,10 +1810,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_FEATURE_CALL, null,
-			"List only-element cannot be used for single cardinality expressions.")
+		model.assertError(ROSETTA_FEATURE_CALL, null, "List only-element cannot be used for single cardinality expressions.")
 	}
-
+	
 	@Test
 	def void shouldNotGenerateListSingleCardinalityError4() {
 		val model = '''
@@ -1833,7 +1833,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
-
+	
 	@Test
 	def void shouldGenerateListUnflattenedAssignOutputError() {
 		val model = '''
@@ -1852,7 +1852,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(OPERATION, null, "Assign expression contains a list of lists, use flatten to create a list.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListUnflattenedSetError() {
 		val model = '''
@@ -1871,7 +1871,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(OPERATION, null, "Assign expression contains a list of lists, use flatten to create a list.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListUnflattenedAliasError() {
 		val model = '''
@@ -1891,10 +1891,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				xs string (0..*)
 		'''.parseRosetta
-		model.assertError(SHORTCUT_DECLARATION, null,
-			"Alias expression contains a list of lists, use flatten to create a list.")
+		model.assertError(SHORTCUT_DECLARATION, null, "Alias expression contains a list of lists, use flatten to create a list.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListOnlyElementUnflattenedError() {
 		val model = '''
@@ -1914,7 +1913,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List must be flattened before only-element operation.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListDistinctUnflattenedError() {
 		val model = '''
@@ -1934,7 +1933,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List must be flattened before distinct operation.")
 	}
-
+	
 	@Test
 	def void shouldNotGenerateTypeErrorForExpressionInBrackets() {
 		val model = '''
@@ -1960,7 +1959,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertNoErrors
 		model.assertNoIssues
 	}
-
+	
 	@Test
 	def void shouldGenerateTypeErrorForExpressionInBrackets() {
 		val model = '''
@@ -1985,7 +1984,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_BINARY_OPERATION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
 	}
-
+	
 	@Test
 	def void shouldNotGenerateTypeErrorForExpressionInBrackets3() {
 		val model = '''
@@ -2002,10 +2001,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x3 number (1..1)
 				x4 number (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_EXISTS_EXPRESSION, TYPE_ERROR,
-			"Left hand side of 'and' expression must be boolean")
+		model.assertError(ROSETTA_EXISTS_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
 	}
-
+	
 	@Test
 	def void shouldGenerateReduceParametersError() {
 		val model = '''
@@ -2024,7 +2022,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List reduce must have 2 named parameters.")
 	}
-
+	
 	@Test
 	def void shouldGenerateReduceTypeError() {
 		val model = '''
@@ -2041,10 +2039,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null,
-			"List reduce expression must evaluate to the same type as the input.  Found types Foo and String.")
+		model.assertError(LIST_OPERATION, null, "List reduce expression must evaluate to the same type as the input.  Found types Foo and String.")
 	}
-
+	
 	@Test
 	def void shouldGenerateReduceCardinalityError() {
 		val model = '''
@@ -2070,7 +2067,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List reduce only supports single cardinality expressions.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListSortCardinalityError() {
 		val model = '''
@@ -2088,7 +2085,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List sort only supports single cardinality expressions.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListSortTypeError() {
 		val model = '''
@@ -2104,10 +2101,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				add sortedFoos:
 					foos sort // sort based on Foo
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null,
-			"List sort only supports comparable types (string, int, string, date). Found type Foo.")
+		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
 	}
-
+	
 	@Test
 	def void shouldGenerateListSortTypeError2() {
 		val model = '''
@@ -2127,10 +2123,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					bars 
 						sort x [ x -> foo ] // sort based on Foo
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null,
-			"List sort only supports comparable types (string, int, string, date). Found type Foo.")
+		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
 	}
-
+	
 	@Test
 	@Disabled
 	def void shouldGenerateListIndexNoItemExpression() {
@@ -2148,10 +2143,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				attr int (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null,
-			"List get-item does not allow expressions using an item or named parameter.")
+		model.assertError(LIST_OPERATION, null, "List get-item does not allow expressions using an item or named parameter.")
 	}
-
+	
 	@Test
 	@Disabled
 	def void shouldGenerateListIndexNoNamedExpression() {
@@ -2169,10 +2163,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				attr int (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null,
-			"List get-item does not allow expressions using an item or named parameter.")
+		model.assertError(LIST_OPERATION, null, "List get-item does not allow expressions using an item or named parameter.")
 	}
-
+	
 	@Test
 	@Disabled
 	def void shouldGenerateListIndexNoItemExpression2() {
@@ -2193,7 +2186,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertNoErrors()
 	}
-
+	
 	@Test
 	@Disabled
 	def void shouldGenerateListIndexNoItemExpression3() {
@@ -2214,7 +2207,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertNoErrors()
 	}
-
+	
 	@Test
 	def void shouldGenerateListJoinNoItemExpression() {
 		val model = '''
@@ -2233,11 +2226,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(LIST_OPERATION, null, "List join does not allow expressions.")
 	}
-
+	
 	@Test
 	def void shouldWarnNonUsedImportsForData() {
 		val model = '''
-			
+
 			import foo.bar.*
 			
 			
@@ -2246,7 +2239,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertWarning(IMPORT, UNUSED_IMPORT, "Unused import foo.bar.*")
 	}
-
+	
+	
 	@Test
 	def void shouldNotWarnForValidDataImports() {
 		val models = newArrayList('''
@@ -2254,7 +2248,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Foo:
 				attr int (1..1)
-		''', '''
+		''',
+		'''
 			namespace test.two
 			import test.one.*
 			
@@ -2262,10 +2257,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar:
 				attr Foo (1..1)
 		''').parseRosetta
-
+		
 		models.forEach[assertNoIssues]
 	}
-
+	
 	@Test
 	def void shouldNotWarnForValidEnumImports() {
 		val models = newArrayList('''
@@ -2273,7 +2268,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			enum Foo:
 				A B C
-		''', '''
+		''',
+		'''
 			namespace test.two
 			import test.one.*
 			
@@ -2281,10 +2277,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar:
 				attr Foo (1..1)
 		''').parseRosetta
-
+		
 		models.forEach[assertNoIssues]
 	}
-
+	
 	@Test
 	def void shouldNotWarnForValidFuncImports() {
 		val models = newArrayList('''
@@ -2292,12 +2288,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Foo1:
 				attr int (1..1)
-		''', '''
+		''',
+		'''
 			namespace test.two
 			
 			type Foo2:
 				attr int (1..1)
-		''', '''
+		''',
+		'''
 			namespace test.three
 			import test.one.*
 			import test.two.*
@@ -2308,10 +2306,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					foo2 Foo2 (1..1)
 		''').parseRosetta
-
+		
 		models.forEach[assertNoIssues]
 	}
-
+	
 	@Test
 	def void shouldNotWarnForValidFuncAlias() {
 		val models = newArrayList('''
@@ -2319,13 +2317,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Foo1:
 				attr int (1..1)
-		''', '''
+		''',
+		'''
 			namespace test.two
 			import test.one.*
 			
 			type Foo2:
 				attr Foo1 (1..1)
-		''', '''
+		''',
+		'''
 			namespace test.three
 			import test.one.*
 			
@@ -2337,18 +2337,19 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				alias a: foo1 -> attr
 		''').parseRosetta
-
+		
 		models.forEach[assertNoIssues]
 	}
 }
-
+	
 class MyRosettaInjectorProvider extends RosettaInjectorProvider {
 	override createRuntimeModule() {
-		return new RosettaRuntimeModule() {
+		return new RosettaRuntimeModule(){
 			override bindClassLoaderToInstance() {
-				return MyRosettaInjectorProvider.getClassLoader();
+				return MyRosettaInjectorProvider
+						.getClassLoader();
 			}
-
+			
 			@SingletonBinding(eager=true)
 			override Class<? extends RosettaValidator> bindRosettaValidator() {
 				return ExceptionValidator
@@ -2357,10 +2358,10 @@ class MyRosettaInjectorProvider extends RosettaInjectorProvider {
 	}
 }
 
-class ExceptionValidator extends RosettaValidator {
+class ExceptionValidator extends RosettaValidator{
 	@Check
 	def checkForSharks(Data ele) {
-		if(ele.name.contains("Fish")) throw new Exception("SHARK!")
-
+		if (ele.name.contains("Fish")) throw new Exception("SHARK!")
+		
 	}
 }
