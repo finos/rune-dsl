@@ -33,7 +33,6 @@ import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -135,9 +134,6 @@ class ExpressionGenerator {
 			}
 			RosettaDisjointExpression : {
 				'''«importMethod(ExpressionOperators,"disjoint")»(«expr.container.javaCode(params)», «expr.disjoint.javaCode(params)»)'''
-			}
-			RosettaParenthesisCalcExpression : {
-				expr.expression.javaCode(params)
 			}
 			EmptyLiteral : {
 				'''null'''
@@ -253,7 +249,6 @@ class ExpressionGenerator {
 	def RosettaBinaryOperation findBinaryOperation(RosettaExpression expression) {
 		switch(expression) {
 			RosettaBinaryOperation: expression
-			RosettaParenthesisCalcExpression: expression.expression.findBinaryOperation
 			default: null
 		}
 	}
@@ -715,9 +710,6 @@ class ExpressionGenerator {
 			}
 			RosettaContainsExpression : {
 				'''«expr.container.toNodeLabel» contains «expr.contained.toNodeLabel»'''
-			}
-			RosettaParenthesisCalcExpression : {
-				'''(«expr.expression.toNodeLabel»)'''
 			}
 			RosettaCallableWithArgsCall :{
 				'''«expr.callable.name»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)'''

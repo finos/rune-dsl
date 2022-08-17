@@ -27,7 +27,6 @@ import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -193,9 +192,6 @@ class ImportGenerator {
 			RosettaCallable:{}
 			RosettaCallableWithArgsCall: {
 				addCallableWithArgs(expression.callable)
-			}
-			RosettaParenthesisCalcExpression : {
-				addExpression(expression.expression)
 			}
 			ListOperation: {
 				addExpression(expression.receiver)

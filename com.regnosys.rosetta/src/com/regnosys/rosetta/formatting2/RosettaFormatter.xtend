@@ -25,7 +25,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaPackage
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -229,6 +228,12 @@ class RosettaFormatter extends AbstractFormatter2 {
 			INDENT
 		)
 		ele.expression.format
+		
+		// Format parentheses
+		ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.leftParenthesisKeyword_5_0)
+			.forEach[append(NO_SPACE_PRESERVE_NEW_LINE)]
+	    ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.rightParenthesisKeyword_5_2)
+			.forEach[prepend(NO_SPACE_PRESERVE_NEW_LINE)]
 	}
 
 	def dispatch void format(RosettaDocReference rosettaRegulatoryReference,
@@ -294,11 +299,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.left.format
 		ele.regionFor.feature(RosettaPackage.Literals.ROSETTA_BINARY_OPERATION__OPERATOR).surround(ONE_SPACE_PRESERVE_NEWLINE)
 		ele.right.format
-	}
-	def dispatch void format(RosettaParenthesisCalcExpression ele, extension IFormattableDocument document) {
-		ele.regionFor.keyword('(').append(NO_SPACE_PRESERVE_NEW_LINE)
-		ele.regionFor.keyword(')').prepend(NO_SPACE_PRESERVE_NEW_LINE)
-		ele.expression.format
 	}
 	
 	def dispatch void format(RosettaCallableWithArgsCall ele, extension IFormattableDocument document) {

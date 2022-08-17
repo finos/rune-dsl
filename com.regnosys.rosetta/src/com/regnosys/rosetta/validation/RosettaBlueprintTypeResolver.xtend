@@ -29,7 +29,6 @@ import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
@@ -464,10 +463,6 @@ class RosettaBlueprintTypeResolver {
 	
 	def dispatch RosettaType getInput(RosettaEnumValueReference expr) {
 		return null
-	}
-	
-	def dispatch RosettaType getInput(RosettaParenthesisCalcExpression expr) {
-		return getInput(expr.expression)
 	}
 	
 	def dispatch RosettaType getInput(ListOperation expr) {

@@ -210,9 +210,6 @@ Package rosetta <http://www.rosetta-model.com/Rosetta>
     Attribute value : EString
     Operation stringValue() : EString
 
-  Class RosettaParenthesisCalcExpression -> RosettaExpression
-    Reference expression : RosettaExpression
-
   Class RosettaDataRule -> RosettaRootElement, RosettaNamed, RosettaDefinable
     Reference references : RosettaRegulatoryReference<<0..*>>
     Reference marketPractice : RosettaMarketPractice<<0..*>>

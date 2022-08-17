@@ -26,7 +26,6 @@ import com.regnosys.rosetta.rosetta.RosettaMapPath
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapRosettaPath
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
@@ -227,8 +226,6 @@ class RosettaTypeProvider {
 									NodeModelUtils.findActualNodeFor(expression)?.text + "'")
 				}
 			}
-			RosettaParenthesisCalcExpression:
-				expression.expression.safeRType(cycleTracker)
 			RosettaConditionalExpression: {
 				val ifT = expression.ifthen.safeRType(cycleTracker)
 				if (expression.elsethen === null) {

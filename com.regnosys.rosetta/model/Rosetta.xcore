@@ -335,9 +335,6 @@ class RosettaIntLiteral extends RosettaLiteral {
 	}
 }
 
-class RosettaParenthesisCalcExpression extends RosettaExpression{
-	contains RosettaExpression expression
-}
 
 /**********************************************************************
  * Mappings
