@@ -294,6 +294,9 @@ class RosettaTypeProvider {
 	}
 	
 	private def listType(List<RosettaExpression> exp) {
+		if (exp.length == 0) {
+			return RBuiltinType.ANY;
+		}
 		val types = exp.map[RType]
 		val result = types.reduce[p1, p2| parent(p1,p2)]
 		if (result===null) return new RErrorType(types.groupBy[name].keySet.join(', '));
