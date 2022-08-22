@@ -8,7 +8,6 @@ import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.RosettaModelObject
-import com.rosetta.model.lib.annotations.RosettaQualified
 import com.rosetta.model.lib.records.Date
 import java.math.BigDecimal
 import java.time.LocalTime
@@ -360,27 +359,7 @@ class ModelObjectGeneratorTest {
 	}
 
 	@Test
-	def shouldGenerateRosettaQualifiedAnnotationForProductType() {
-		val code = '''
-			isProduct root Foo;
-			
-			type Foo:
-				a string (0..1)
-			
-			type Bar:
-				b productType (0..1)
-		'''.generateCode
-		val classes = code.compileToClasses
-		val testClass = classes.get(rootPackage.name + '.Bar')
-		val annotation = testClass.getAnnotation(RosettaQualified)
-
-		assertNotNull(annotation)
-		assertThat(annotation.attribute, is('b'))
-		assertThat(annotation.qualifiedClass.simpleName, is('Foo'))
-	}
-
-	@Test
-	def shouldExtendATypeWithSameAttribute() {
+	def void shouldExtendATypeWithSameAttribute() {
 		val code = '''
 			type Foo:
 				a string (0..1)
@@ -390,27 +369,7 @@ class ModelObjectGeneratorTest {
 				a string (0..1)
 		'''.generateCode
 		//code.writeClasses('shouldExtendATypeWithSameAttribute')
-		val classes = code.compileToClasses
-	}
-	
-	@Test
-	def shouldGenerateRosettaQualifiedAnnotationForEventType() {
-		val code = '''
-			isEvent root Foo;
-			
-			type Foo:
-				a string (0..1)
-			
-			type Bar:
-				b eventType (0..1)
-		'''.generateCode
-		val classes = code.compileToClasses
-		val testClass = classes.get(rootPackage.name + '.Bar')
-		val annotation = testClass.getAnnotation(RosettaQualified)
-
-		assertNotNull(annotation)
-		assertThat(annotation.attribute, is('b'))
-		assertThat(annotation.qualifiedClass.simpleName, is('Foo'))
+		code.compileToClasses
 	}
 
 	@Test
