@@ -4,12 +4,10 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
-import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.meta.Key
-import com.rosetta.util.BreadthFirstSearch
+import com.rosetta.model.lib.process.BuilderMerger
 import java.util.ArrayList
 import java.util.List
 import java.util.function.Consumer
@@ -17,7 +15,6 @@ import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.rosetta.model.lib.process.BuilderMerger
 
 class ModelObjectBuilderGenerator {
 	
@@ -39,9 +36,6 @@ class ModelObjectBuilderGenerator {
 			«c.expandedAttributes.builderGetters(names)»
 		
 			«c.setters(names)»
-			«IF c.name=="ContractualProduct" || c.name=="BusinessEvent"»
-				«qualificationSetter(c)»
-			«ENDIF»
 			
 			@Override
 			public «c.name» build() {
@@ -74,39 +68,6 @@ class ModelObjectBuilderGenerator {
 			«c.builderBoilerPlate(names)»
 		}
 	'''
-
-	private def qualificationSetter(Data clazz) {
-		val attr =  BreadthFirstSearch.search(null as Attribute, [ att |
-			if (att === null)
-				clazz.attributes
-			else
-				att.type.eContents.filter(Attribute).toList
-		], [att | att?.type instanceof RosettaQualifiedType])
-		
-		if (attr !== null) {
-			'''
-			public void setQualification(String qualification) {
-				this«attr.pathToSetter»
-			}
-			'''
-		}
-	}
-	
-	private def String pathToSetter(List<Attribute> path) {
-		val result = new StringBuilder
-		for (var i=1;i<path.size-1;i++) {
-			val att = path.get(i);
-			result.append('''.getOrCreate«att.name.toFirstUpper»(«IF att.card.isIsMany»0«ENDIF»)''')
-		}
-		val last = path.last
-		if (last.card.isIsMany) {
-			result.append(".add"+last.name.toFirstUpper+"(qualification);")
-		}
-		else {
-			result.append(".set"+last.name.toFirstUpper+"(qualification);")
-		}
-		result.toString()
-	}
 
 	private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RosettaType type, boolean hasSuperType, JavaNames names) {
 		val builderName = names.toJavaType(type).toBuilderType
