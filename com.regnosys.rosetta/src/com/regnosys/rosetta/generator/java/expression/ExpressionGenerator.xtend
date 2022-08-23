@@ -54,7 +54,6 @@ import com.rosetta.model.lib.expression.MapperMaths
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
 import java.math.BigDecimal
-import java.util.Arrays
 import java.util.HashMap
 import java.util.Optional
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -228,7 +227,7 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient onlyExistsExpr(RosettaOnlyExistsExpression onlyExists, ParamMap params) {
-		'''«importWildCard(ExpressionOperators)»onlyExists(«Arrays».asList(«FOR arg : onlyExists.args SEPARATOR ', '»«arg.javaCode(params)»«ENDFOR»))'''
+		'''«importWildCard(ExpressionOperators)»onlyExists(«onlyExists.parent.javaCode(params)», «FOR field : onlyExists.attributes SEPARATOR ', '»«field»«ENDFOR»)'''
 	}
 	
 	def StringConcatenationClient existsExpr(RosettaExistsExpression exists, ParamMap params) {

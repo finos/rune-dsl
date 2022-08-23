@@ -1114,13 +1114,15 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
-	def checkOnlyExistsPathsHaveCommonParent(RosettaOnlyExistsExpression e) {
-		val parents = e.args
-				.map[onlyExistsParentType]
-				.filter[it !== null]
-				.toSet
-		if (parents.size > 1) {
-			error('''Only exists paths must have a common parent. Found types «parents.join(", ")».''', e, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS)
+	def checkOnlyExistsAttributesAreUnique(RosettaOnlyExistsExpression e) {
+		for (i : 0 ..< e.attributes.size) {
+			val a = e.attributes.get(i);
+			for (j : i+1 ..< e.attributes.size) {
+				val b = e.attributes.get(j);
+				if (a.name == b.name) {
+					error('''Attributes must be unique.''', e, ROSETTA_ONLY_EXISTS_EXPRESSION__ATTRIBUTES, j);
+				}
+			}
 		}
 	}
 	

@@ -526,13 +526,18 @@ RosettaCalcCountOperation returns RosettaExpression:
 ;
 
 ListOperation returns RosettaExpression:
-	RosettaCalcAttributeCall
+	RosettaCalcOnlyExists
 	( => ({ListOperation.receiver=current}  operationKind = ListOperationKind) (((=> parameters += ClosureParameter (',' parameters += ClosureParameter)*) | parameters += OptionalClosureParameter) '['body = RosettaCalcExpression ']')?)*
+;
+
+RosettaCalcOnlyExists returns RosettaExpression:
+	RosettaCalcAttributeCall (=>({RosettaOnlyExistsExpression.parent=current} FEATURE_CALL_SEPARATOR (attributes+=[RosettaFeature|ValidID] | ('(' attributes+=[RosettaFeature|ValidID] (',' attributes+=[RosettaFeature|ValidID])* ')')) ('only' 'exists')))?
+// 	| {RosettaOnlyExistsExpression} (attributes+=[RosettaFeature|ValidID] | ('(' attributes+=[RosettaFeature|ValidID] (',' attributes+=[RosettaFeature|ValidID])* ')')) 'only' 'exists'
 ;
 
 RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
-	( =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])? onlyElement ?= 'only-element'?)*
+	({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID] onlyElement?='only-element'?)*
 ;
 
 RosettaCalcPrimary returns RosettaExpression:
@@ -542,7 +547,6 @@ RosettaCalcPrimary returns RosettaExpression:
 	| RosettaCallableCall
 	| RosettaLiteral
 	| '(' RosettaCalcExpression ')'
-	| RosettaCalcOnlyExists
 ;
 
 ClosureParameter:
@@ -572,10 +576,6 @@ enum ListOperationKind:
 ;
 RosettaCalcConditionalExpression returns RosettaExpression:
 	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?
-;
-
-RosettaCalcOnlyExists returns RosettaExpression:
-	{RosettaOnlyExistsExpression} (args+=RosettaClassAttributeCall | ('(' args+=RosettaClassAttributeCall (',' args+=RosettaClassAttributeCall)* ')')) 'only' 'exists'
 ;
 
 /*****************************************

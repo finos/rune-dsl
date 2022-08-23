@@ -29,6 +29,63 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void identicalAttributesInOnlyExistsError() {
+		val model =
+		'''
+			type A:
+			  i int (0..1)
+			
+			func Foo:
+			  inputs: a A (1..1)
+			  output: result boolean (1..1)
+			  set result: a -> (i, i) only exists
+		'''.parseRosetta
+		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
+			"TODO")
+	}
+	
+	@Test
+	def void noParentInOnlyExistsError() {
+		val model =
+		'''
+			type A:
+			  i int (0..1)
+			
+			func Foo:
+			  inputs: a A (0..1)
+			  output: result boolean (1..1)
+			  set result: a only exists
+		'''.parseRosetta
+		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
+			"TODO")
+	}
+	
+	@Test
+	def void implicitParentInOnlyExists() {
+		val model =
+		'''
+			type A:
+			  i int (0..1)
+			  
+			  condition OnlyExistsTest:
+			    i only exists
+		'''.parseRosetta
+		model.assertNoIssues
+	}
+	
+	@Test
+	def void primitiveTypeInOnlyExistsError() {
+		val model =
+		'''
+			func Foo:
+			  output: result boolean (1..1)
+			  set result: True only exists
+		'''.parseRosetta
+		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
+			"TODO")
+	}
+	
+	@Test
 	def void testLowerCaseClass() {
 		val model =
 		'''

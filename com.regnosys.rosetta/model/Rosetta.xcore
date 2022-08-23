@@ -403,7 +403,8 @@ class ComparisonOperation extends RosettaBinaryOperation {
 }
 
 class RosettaOnlyExistsExpression extends RosettaExpression {
-	contains RosettaExpression[] args
+	contains RosettaExpression parent
+	refers RosettaFeature[] attributes
 }
 
 class RosettaExistsExpression extends RosettaExpression {

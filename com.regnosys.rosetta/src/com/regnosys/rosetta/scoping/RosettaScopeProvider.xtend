@@ -46,6 +46,7 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 
 /**
  * This class contains custom scoping description.
@@ -91,6 +92,19 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 									}
 								}
 							}
+						}
+						return new SimpleScope(allPosibilities)
+					}
+					return IScope.NULLSCOPE
+				}
+				case ROSETTA_ONLY_EXISTS_EXPRESSION__ATTRIBUTES: {
+					if (context instanceof RosettaOnlyExistsExpression) {
+						val parentType = typeProvider.getRType(context.parent)
+						val featureScope = parentType.createFeatureScope
+						var allPosibilities = newArrayList
+						
+						if (featureScope!==null) {
+							allPosibilities.addAll(featureScope.allElements);
 						}
 						return new SimpleScope(allPosibilities)
 					}

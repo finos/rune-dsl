@@ -446,7 +446,7 @@ class RosettaBlueprintTypeResolver {
 	}
 	
 	def dispatch RosettaType getInput(RosettaOnlyExistsExpression expr) {
-		return getInput(expr.args.get(0))
+		return getInput(expr.parent)
 	}
 	
 	def dispatch RosettaType getInput(RosettaExistsExpression expr) {

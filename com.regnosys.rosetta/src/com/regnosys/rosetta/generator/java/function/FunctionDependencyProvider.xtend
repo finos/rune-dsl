@@ -41,7 +41,7 @@ class FunctionDependencyProvider {
 					functionDependencies(object.elsethen))
 			}
 			RosettaOnlyExistsExpression: {
-				functionDependencies(object.args)
+				functionDependencies(object.parent)
 			}
 			RosettaExistsExpression: {
 				functionDependencies(object.argument)
