@@ -185,8 +185,6 @@ class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable, Assi
 	contains RosettaExpression expression
 }
 
-class EmptyLiteral extends RosettaLiteral {}
-
 class ListLiteral extends RosettaLiteral {
 	contains RosettaExpression[] elements
 }

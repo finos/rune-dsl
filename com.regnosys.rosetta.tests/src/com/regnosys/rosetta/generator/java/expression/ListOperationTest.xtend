@@ -2696,7 +2696,7 @@ class ListOperationTest {
 										.mapItem(/*MapperS<? extends Foo>*/ __item -> (MapperS<String>) MapperMaths.<String, String, String>add(__item.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_c")));
 								}
 								else {
-									return MapperC.ofNull();
+									return MapperC.of();
 								}
 							}).getMulti();
 							

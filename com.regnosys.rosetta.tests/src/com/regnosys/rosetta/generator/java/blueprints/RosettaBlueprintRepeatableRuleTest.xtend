@@ -319,7 +319,7 @@ class RosettaBlueprintRepeatableRuleTest {
 					@Override
 					public BlueprintInstance<Foo, Integer, INKEY, INKEY> blueprint() { 
 						return 
-							startsWith(actionFactory, actionFactory.<Foo, Integer, INKEY>newRosettaRepeatableMapper("__synthetic1.rosetta#//@elements.1/@nodes/@node", "Foo->listAttr", new RuleIdentifier("Repeating Value", getClass()), foo -> MapperS.of(foo).<Integer>mapC("getListAttr", _foo -> _foo.getListAttr())))
+							startsWith(actionFactory, actionFactory.<Foo, Integer, INKEY>newRosettaRepeatableMapper("__synthetic1.rosetta#/0/@elements.1/@nodes/@node", "Foo->listAttr", new RuleIdentifier("Repeating Value", getClass()), foo -> MapperS.of(foo).<Integer>mapC("getListAttr", _foo -> _foo.getListAttr())))
 							.toBlueprint(getURI(), getName());
 					}
 				}

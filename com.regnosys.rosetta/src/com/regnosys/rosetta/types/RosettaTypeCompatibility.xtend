@@ -28,7 +28,11 @@ class RosettaTypeCompatibility {
 	}
 
 	def dispatch boolean isUseableAs(RBuiltinType t0, RBuiltinType t1) {
-		t0.name == t1.name
+		t0 == RBuiltinType.NOTHING || t0 == t1
+	}
+	
+	def dispatch boolean isUseableAs(RBuiltinType t0, RType t1) {
+		t0 == RBuiltinType.NOTHING
 	}
 
 	def dispatch boolean isUseableAs(RUnionType t0, RType t1) {

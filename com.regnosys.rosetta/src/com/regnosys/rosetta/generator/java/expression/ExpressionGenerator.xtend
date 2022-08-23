@@ -38,7 +38,6 @@ import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ListOperation
@@ -134,9 +133,6 @@ class ExpressionGenerator {
 			RosettaDisjointExpression : {
 				'''«importMethod(ExpressionOperators,"disjoint")»(«expr.container.javaCode(params)», «expr.disjoint.javaCode(params)»)'''
 			}
-			EmptyLiteral : {
-				'''null'''
-			}
 			ListLiteral : {
 				'''«MapperC».of(«FOR ele: expr.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
 			}
@@ -223,7 +219,7 @@ class ExpressionGenerator {
 	}
 	
 	private def StringConcatenationClient arg(RosettaExpression expr, ParamMap params) {
-		'''«expr.javaCode(params)»«IF !(expr instanceof EmptyLiteral)»«IF cardinalityProvider.isMulti(expr)».getMulti()«ELSE».get()«ENDIF»«ENDIF»'''
+		'''«expr.javaCode(params)»«IF cardinalityProvider.isMulti(expr)».getMulti()«ELSE».get()«ENDIF»'''
 	}
 	
 	def StringConcatenationClient onlyExistsExpr(RosettaOnlyExistsExpression onlyExists, ParamMap params) {

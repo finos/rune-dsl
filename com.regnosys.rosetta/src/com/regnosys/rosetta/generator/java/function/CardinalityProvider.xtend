@@ -71,7 +71,7 @@ class CardinalityProvider {
 				else 
 					obj.isClosureParameterMulti
 			}
-			ListLiteral: true
+			ListLiteral: obj.elements.size > 0 // TODO: the type system is currently not strong enough to implement this completely right
 			ListOperation: {
 				switch (obj.operationKind) {
 					case ONLY_ELEMENT,

@@ -35,7 +35,6 @@ import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ListOperation
@@ -169,8 +168,6 @@ class RosettaTypeProvider {
 				RBuiltinType.INT
 			RosettaBigDecimalLiteral:
 				RBuiltinType.NUMBER
-			EmptyLiteral:
-				RBuiltinType.ANY
 			ListLiteral:
 				listType(expression.elements)
 			RosettaExternalFunction: {
@@ -292,7 +289,7 @@ class RosettaTypeProvider {
 	
 	private def listType(List<RosettaExpression> exp) {
 		if (exp.length == 0) {
-			return RBuiltinType.ANY;
+			return RBuiltinType.NOTHING;
 		}
 		val types = exp.map[RType]
 		val result = types.reduce[p1, p2| parent(p1,p2)]

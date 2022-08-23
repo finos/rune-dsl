@@ -16,7 +16,12 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
+import static extension org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
+import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
+import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 
 /**
  * A set of tests for all instances of RosettaExpression i.e. RosettaAdditiveExpression
@@ -28,7 +33,27 @@ class RosettaExpressionsTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper 
+	@Inject EqualityHelper eqHelper;
 	
+	
+	@Test
+	def void absentElseBranchShouldBeSyntacticSugarForEmptyListLiteral() {
+		val model = '''
+			func AbsentElseSyntacticSugar:
+				output: result int (0..1)
+				set result:
+					if True then 0
+		'''.parseRosettaWithNoErrors
+		
+		model => [
+			((elements.last as Function)
+			  .operations.head.expression as RosettaConditionalExpression) => [
+			  	isFull.assertFalse;
+			  	elsethen.assertNotNull;
+			  	eqHelper.equals(elsethen, SimpleFactory.eINSTANCE.createListLiteral).assertTrue
+			  ]
+		]
+	}
 	
 	@Test
 	def void shouldParseQualifierWithAdditiveExpression() {

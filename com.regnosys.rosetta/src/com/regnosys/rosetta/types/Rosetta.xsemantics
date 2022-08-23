@@ -9,7 +9,6 @@ import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
-import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.rosetta.RosettaCardinality
@@ -263,8 +262,6 @@ axiom TNumber
 	G |- RosettaBigDecimalLiteral num : singleNumber
 axiom TInt
 	G |- RosettaIntLiteral i : singleInt
-axiom TEmpty
-	G |- EmptyLiteral emp : emptyNothing
 
 rule TArithmetic
 	G |- ArithmeticOperation op : RListType lt

@@ -441,6 +441,8 @@ class RosettaConditionalExpression extends RosettaExpression {
 	contains RosettaExpression ^if
 	contains RosettaExpression ifthen
 	contains RosettaExpression elsethen
+	
+	boolean full // whether the conditional expression has an explicit `else` branch.
 }
 
 class RosettaCallableWithArgsCall extends RosettaExpression {

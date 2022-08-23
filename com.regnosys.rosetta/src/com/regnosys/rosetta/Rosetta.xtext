@@ -144,8 +144,8 @@ EnumValueReference returns RosettaEnumValueReference:
 	enumeration=[RosettaEnumeration|QualifiedName] FEATURE_CALL_SEPARATOR value=[RosettaEnumValue|ValidID]
 ;
 
-EmptyLiteral:
-	{EmptyLiteral} 'empty'
+EmptyLiteral returns RosettaExpression:
+	{ListLiteral} 'empty'
 ;
 
 ListLiteral:
@@ -414,7 +414,7 @@ RosettaCallableCall:
 	| implicitReceiver ?= 'item'
 ;
 
-RosettaLiteral:
+RosettaLiteral returns RosettaExpression:
 	RosettaBooleanLiteral
 	| RosettaStringLiteral
 	| RosettaBigDecimalLiteral
@@ -575,7 +575,7 @@ enum ListOperationKind:
 	| last
 ;
 RosettaCalcConditionalExpression returns RosettaExpression:
-	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>'else' elsethen=RosettaCalcExpression)?
+	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>full?='else' elsethen=RosettaCalcExpression)?
 ;
 
 /*****************************************

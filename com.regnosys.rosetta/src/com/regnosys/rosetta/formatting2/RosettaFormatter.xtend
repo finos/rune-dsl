@@ -314,7 +314,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 			append(ONE_SPACE_PRESERVE_NEWLINE)
 		]
 		ele.regionFor.keywords(
-			rosettaCalcConditionalExpressionAccess.elseKeyword_5_0,
+			rosettaCalcConditionalExpressionAccess.fullElseKeyword_5_0_0,
 			rosettaCalcConditionalExpressionAccess.thenKeyword_3
 		).forEach [
 			prepend(ONE_SPACE_PRESERVE_NEWLINE)
