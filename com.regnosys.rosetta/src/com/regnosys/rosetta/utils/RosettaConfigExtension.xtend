@@ -4,14 +4,12 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaQualifiableConfiguration
 import com.regnosys.rosetta.rosetta.RosettaQualifiableType
+import com.regnosys.rosetta.rosetta.RosettaType
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
-import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.resource.IResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.RosettaType
 
 class RosettaConfigExtension {
 
@@ -19,18 +17,8 @@ class RosettaConfigExtension {
 	@Inject extension RosettaExtensions
 
 
-	def boolean isEventRootClass(IEObjectDescription eObjDesc, EObject ctx) {
-		if (eObjDesc.EClass == DATA) {
-			return ctx.findEventRootName?.name == eObjDesc.name.toString
-		}
-		false
-	}
-
-	def boolean isProductRootClass(IEObjectDescription eObjDesc, EObject ctx) {
-		if (eObjDesc.EClass == DATA) {
-			return ctx.findProductRootName?.name == eObjDesc.name.toString
-		}
-		false
+	def isRootEventOrProduct(RosettaType type) {
+		type.name !== null && (type == findEventRootName(type) || type == findProductRootName(type))
 	}
 
 	def findProductRootName(EObject ctx) {
@@ -62,10 +50,6 @@ class RosettaConfigExtension {
 			if (!eObj.eIsProxy && type === (eObj as RosettaQualifiableConfiguration).QType)
 				(eObj as RosettaQualifiableConfiguration).rosettaClass
 		].filterNull.head
-	}
-	
-	def isRootEventOrProduct(RosettaType type) {
-		type.name !== null && (type == findEventRootName(type) || type == findProductRootName(type))
 	}
 
 }

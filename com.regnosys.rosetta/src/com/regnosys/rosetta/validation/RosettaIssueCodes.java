@@ -17,7 +17,6 @@ public interface RosettaIssueCodes {
 	static final String MULIPLE_CLASS_REFERENCES_DEFINED_FOR_DATA_RULE = PREFIX + "MulipleClassReferencesDefinedForDataRule";
 	static final String MAPPING_RULE_INVALID = PREFIX + "MappingRuleInvalid";
 	static final String MAPPING_RULE_NOT_USED = PREFIX + "MappingRuleNotUsed";
-	static final String MULIPLE_CLASS_REFERENCES_DEFINED_FOR_ROSETTA_QUALIFIABLE = PREFIX + "MulipleClassReferencesDefinedForRosettaQualifiable";
 	static final String MISSING_ENUM_VALUE = PREFIX + "MissingEnumValue";
 	static final String MISSING_BLUEPRINT_REGREF=PREFIX +"missingRegRef";
 	static final String CARDINALITY_ERROR=PREFIX +"cardinalityError";

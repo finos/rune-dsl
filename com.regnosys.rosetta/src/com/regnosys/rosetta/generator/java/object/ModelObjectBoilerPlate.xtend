@@ -8,9 +8,12 @@ import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.GlobalKey.GlobalKeyBuilder
+import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.Templatable
 import com.rosetta.model.lib.Templatable.TemplatableBuilder
 import com.rosetta.model.lib.path.RosettaPath
+import com.rosetta.model.lib.process.AttributeMeta
+import com.rosetta.model.lib.process.BuilderProcessor
 import com.rosetta.model.lib.process.Processor
 import com.rosetta.model.lib.qualify.Qualified
 import com.rosetta.util.ListEquals
@@ -20,9 +23,6 @@ import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.rosetta.model.lib.process.BuilderProcessor
-import com.rosetta.model.lib.process.AttributeMeta
-import com.rosetta.model.lib.RosettaModelObject
 
 class ModelObjectBoilerPlate {
 
@@ -57,9 +57,6 @@ class ModelObjectBoilerPlate {
 			interfaces.add('''«GlobalKeyBuilder»''')
 		if(d.hasTemplateAnnotation)
 			interfaces.add('''«TemplatableBuilder»''')
-		if (d.name == "ContractualProduct" || d.name == "BusinessEvent") {
-			interfaces.add('''«Qualified»''')
-		}
 		if(interfaces.empty) null else ''', «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
 	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names) {

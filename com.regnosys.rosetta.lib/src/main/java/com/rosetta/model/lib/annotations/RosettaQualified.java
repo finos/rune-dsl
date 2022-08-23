@@ -8,6 +8,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Deprecated // remove once all model off version 4.42.1
 public @interface RosettaQualified {
 	
 	String attribute();
