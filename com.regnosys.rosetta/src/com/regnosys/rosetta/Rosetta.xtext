@@ -522,7 +522,11 @@ RosettaCalcMultiplicative returns RosettaExpression:
 ;
 
 RosettaCalcCountOperation returns RosettaExpression:
-	ListOperation (=> ({RosettaCountOperation.argument=current} 'count'))?
+	RosettaCalcOnlyElement (=> ({RosettaCountOperation.argument=current} 'count'))?
+;
+
+RosettaCalcOnlyElement returns RosettaExpression:
+	ListOperation (=>({RosettaOnlyElement.argument=current} 'only-element'))?
 ;
 
 ListOperation returns RosettaExpression:
@@ -537,13 +541,13 @@ RosettaCalcOnlyExists returns RosettaExpression:
 
 RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
-	({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID] onlyElement?='only-element'?)*
+	({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID])*
 ;
 
 RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConditionalExpression
-	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|QualifiedName] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')' onlyElement ?= 'only-element'?
-	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID] onlyElement ?= 'only-element'
+	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|QualifiedName] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')'
+	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID]
 	| RosettaCallableCall
 	| RosettaLiteral
 	| '(' RosettaCalcExpression ')'
@@ -563,7 +567,6 @@ enum ListOperationKind:
 	| map 
 	| flatten 
 	| distinct 
-	| only_element = "only-element" 
 	| reduce 
 	| sort 
 	| reverse 

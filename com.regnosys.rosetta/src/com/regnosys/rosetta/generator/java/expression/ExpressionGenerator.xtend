@@ -61,6 +61,7 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 
 class ExpressionGenerator {
 	
@@ -105,6 +106,9 @@ class ExpressionGenerator {
 			}
 			RosettaCallableCall : {
 				callableCall(expr, params) 
+			}
+			RosettaOnlyElement : {
+				onlyElement(expr, params)
 			}
 			RosettaCallableWithArgsCall: {
 				callableWithArgs(expr, params)
@@ -288,17 +292,21 @@ class ExpressionGenerator {
 				if(call.eContainer instanceof Data)
 					'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(call, true)»'''
 				else
-					distinctOrOnlyElement('''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)''', false, expr.onlyElement)
+					'''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)'''
 			}
 			ShortcutDeclaration : {
 				val multi = cardinalityProvider.isMulti(call)
-				distinctOrOnlyElement('''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)''', false, expr.onlyElement)
+				'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
 			}
 			RosettaEnumeration: '''«call.toJavaType»'''
 			ClosureParameter: '''«call.getNameOrDefault.toDecoratedName»'''
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable type of " + call?.class?.simpleName)
 		}
+	}
+	
+	protected def StringConcatenationClient onlyElement(RosettaOnlyElement expr, ParamMap params) {
+		return '''«MapperS».of(«expr.argument.javaCode(params)».get())'''
 	}
 	
 	def aliasCallArgs(ShortcutDeclaration alias) {
@@ -329,7 +337,7 @@ class ExpressionGenerator {
 				throw new UnsupportedOperationException("Unsupported expression type of " + feature.eClass.name)
 		}
 		
-		return distinctOrOnlyElement('''«javaCode(call.receiver, params)»«right»''', false, call.onlyElement)
+		return '''«javaCode(call.receiver, params)»«right»'''
 	}
 	
 	private def StringConcatenationClient distinctOrOnlyElement(StringConcatenationClient code, boolean distinct, boolean onlyElement) {
@@ -549,8 +557,8 @@ class ExpressionGenerator {
 			case FLATTEN: {
 				buildListOperationNoBody(op, "flattenList", params)
 			}
-			case DISTINCT, case ONLY_ELEMENT: {
-				distinctOrOnlyElement('''«op.receiver.javaCode(params)»''', op.operationKind === ListOperationKind.DISTINCT, op.operationKind === ListOperationKind.ONLY_ELEMENT)
+			case DISTINCT: {
+				distinctOrOnlyElement('''«op.receiver.javaCode(params)»''', true, false)
 			}
 			case SUM: {
 				buildListOperationNoBody(op, "sum" + op.inputRawType, params)

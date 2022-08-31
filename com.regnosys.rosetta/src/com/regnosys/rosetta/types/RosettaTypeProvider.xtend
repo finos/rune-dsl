@@ -46,6 +46,7 @@ import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 
 class RosettaTypeProvider {
 
@@ -126,6 +127,9 @@ class RosettaTypeProvider {
 					default:
 						RBuiltinType.ANY
 				}
+			}
+			RosettaOnlyElement: {
+				safeRType(expression.argument, cycleTracker)
 			}
 			RosettaRecordType:
 				new RRecordType(expression)
@@ -270,7 +274,6 @@ class RosettaTypeProvider {
 					case REVERSE,
 					case FLATTEN,
 					case DISTINCT,
-					case ONLY_ELEMENT,
 					case SUM,
 					case JOIN,
 					case MIN,

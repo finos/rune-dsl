@@ -174,17 +174,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			error("Attribute is missing after '->'", fCall, ROSETTA_FEATURE_CALL__FEATURE)
 			return
 		}
-		if (fCall.onlyElement && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
-			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
-			error("List only-element cannot be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
-		}
-	}
-	
-	@Check
-	def void checkCallableCall(RosettaCallableCall cCall) {
-		if (cCall.callable !== null && cCall.onlyElement && !cCall.callable.eIsProxy && !cardinality.isMulti(cCall.callable)) {
-			error("List only-element cannot be used for single cardinality expressions.", cCall, ROSETTA_CALLABLE_CALL__CALLABLE)
-		}
 	}
 	
 	@Check
@@ -1133,8 +1122,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			// previous step must be single cardinality except when it is a MAP following a ListOperation (such as REDUCE)
 			val currentOperationIsMap = o.operationKind === ListOperationKind.MAP
 			val previousOperationWasListOperation = receiver instanceof ListOperation
-			val previousOperationWasOnlyElement = receiver instanceof RosettaCallableCall && (receiver as RosettaCallableCall).onlyElement
-			if (!(currentOperationIsMap && (previousOperationWasListOperation || previousOperationWasOnlyElement))) {
+			if (!(currentOperationIsMap && previousOperationWasListOperation)) {
 				error('''List «o.operationKind.literal» cannot be used for single cardinality expressions.''', o, LIST_OPERATION__OPERATION_KIND)
 			}
 		}

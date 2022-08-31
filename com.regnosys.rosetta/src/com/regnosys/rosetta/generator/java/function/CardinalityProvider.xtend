@@ -28,6 +28,7 @@ import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 
 class CardinalityProvider {
 	
@@ -39,28 +40,24 @@ class CardinalityProvider {
 		if(obj === null) return false
 		switch obj {
 			RosettaFeatureCall: {
-				if(obj.onlyElement) false else {
-					if (obj.feature.isMulti(breakOnClosureParameter)) 
-						true 
-					else 
-						obj.receiver.isMulti(breakOnClosureParameter)
-				}
+				if (obj.feature.isMulti(breakOnClosureParameter)) 
+					true 
+				else 
+					obj.receiver.isMulti(breakOnClosureParameter)
 			}
 			RosettaEnumValue:false
 			WithCardinality: if(obj.card === null) false else obj.card.isIsMany
 			RosettaCallableCall: {
-				if(obj.onlyElement) 
-					false 
-				else if (obj.implicitReceiver) 
+				if (obj.implicitReceiver) 
 					EcoreUtil2.getContainerOfType(obj, ListOperation).firstOrImplicit.isMulti(breakOnClosureParameter)
 				else 
 					obj.callable.isMulti(breakOnClosureParameter)
 			}
+			RosettaOnlyElement: {
+				false
+			}
 			RosettaCallableWithArgsCall: {
-				if(obj.onlyElement) 
-					false 
-				else 
-					obj.callable.isMulti(breakOnClosureParameter)
+				obj.callable.isMulti(breakOnClosureParameter)
 			}
 			Function: if(obj.output === null) false else obj.output.isMulti(breakOnClosureParameter)
 			ShortcutDeclaration: obj.expression.isMulti(breakOnClosureParameter)
@@ -74,7 +71,6 @@ class CardinalityProvider {
 			ListLiteral: obj.elements.size > 0 // TODO: the type system is currently not strong enough to implement this completely right
 			ListOperation: {
 				switch (obj.operationKind) {
-					case ONLY_ELEMENT,
 					case REDUCE,
 					case SUM,
 					case JOIN,
