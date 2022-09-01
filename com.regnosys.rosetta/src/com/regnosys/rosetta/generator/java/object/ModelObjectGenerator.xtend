@@ -3,19 +3,15 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.types.RQualifiedType
-import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.annotations.RosettaClass
-import com.rosetta.model.lib.annotations.RosettaQualified
 import com.rosetta.model.lib.meta.RosettaMetaData
 import java.util.Collection
 import java.util.Collections
@@ -30,11 +26,10 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class ModelObjectGenerator {
-	@Inject extension RosettaExtensions
+	
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
-	@Inject extension RosettaConfigExtension
 
 	def generate(JavaNames javaNames, IFileSystemAccess2 fsa, Data data, String version) {
 		fsa.generateFile(javaNames.packages.model.directoryName + '/' + data.name + '.java',
@@ -65,10 +60,6 @@ class ModelObjectGenerator {
 	def StringConcatenationClient classBody(Data d, JavaNames names, String version, Collection<Object> interfaces) '''
 		«javadoc(d, version)»
 		@«RosettaClass»
-		«IF d.hasQualifiedAttribute»
-			@«RosettaQualified»(attribute="«d.qualifiedAttribute»",qualifiedClass=«names.toJavaType(d.getQualifiedClass).name».class)
-		«ENDIF»
-		
 		public interface «names.toJavaType(d)» extends «IF d.hasSuperType»«names.toJavaType(d.superType)»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
 			«d.name» build();
 			«names.toJavaType(d).toBuilderType» toBuilder();
@@ -98,6 +89,7 @@ class ModelObjectGenerator {
 					return «pt.typeArgs.get(0).type».class;
 				}
 			«ENDFOR»
+			
 			«d.processMethod(names)»
 			
 			interface «names.toJavaType(d)»Builder extends «d.name», «IF d.hasSuperType»«names.toJavaType(d.superType).toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
@@ -132,6 +124,8 @@ class ModelObjectGenerator {
 				«ENDFOR»
 				
 				«d.builderProcessMethod(names)»
+				
+				«names.toJavaType(d).toBuilderType» prune();
 			}
 			
 «««			This line reserves this name as a name SO any class imported with the smae name will automatically be fully qualified
@@ -161,32 +155,6 @@ class ModelObjectGenerator {
 
 	def boolean globalKeyRecursive(Data class1) {
 		return class1.globalKey || (class1.superType !== null && class1.superType.globalKeyRecursive)
-	}
-
-	def private hasQualifiedAttribute(Data c) {
-		c.qualifiedAttribute !== null && c.qualifiedClass !== null
-	}
-
-	def private getQualifiedAttribute(Data c) {
-		c.allSuperTypes.flatMap[expandedAttributes].findFirst[qualified]?.name
-	}
-
-	def private getQualifiedClass(Data c) {
-		val allExpandedAttributes = c.allSuperTypes.flatMap[expandedAttributes].toList
-		if(!allExpandedAttributes.stream.anyMatch[qualified])
-			return null
-
-		val qualifiedClassType = allExpandedAttributes.findFirst[qualified].type.name
-		var qualifiedRootClassType = switch qualifiedClassType {
-			case RQualifiedType.PRODUCT_TYPE.qualifiedType: c.findProductRootName
-			case RQualifiedType.EVENT_TYPE.qualifiedType: c.findEventRootName
-			default: throw new IllegalArgumentException("Unknown qualifiedType " + qualifiedClassType)
-		}
-
-		if(qualifiedRootClassType === null)
-			throw new IllegalArgumentException("QualifiedType " + qualifiedClassType + " must have qualifiable root class")
-
-		return qualifiedRootClassType
 	}
 
 	private def StringConcatenationClient rosettaClass(Data c, JavaNames names) {

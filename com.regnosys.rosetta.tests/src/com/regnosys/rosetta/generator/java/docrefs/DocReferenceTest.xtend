@@ -131,5 +131,24 @@ class DocReferenceTest {
 
 		'''.parseRosettaWithNoErrors
 	}
+	
+	@Test
+	def void conditionsCanHaveDocRef() {
+		'''
+			body Organisation Org1
+			corpus Agreement Org1 "Agreement 1" Agr1
+			
+			segment name
+			
+			type Foo:
+				a int (1..1)
+				
+				condition:
+					[docReference Org1 Agr1 name "something"]
+					a > 0
+			
+			
+		'''.parseRosettaWithNoErrors
+	}
 }
 

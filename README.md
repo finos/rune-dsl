@@ -49,7 +49,7 @@ A [demonstration model](https://github.com/rosetta-models/demo), also available 
 
 ### Code Generator
 
-Code generators remove the need for software developers to translate the model specifications into executable code while while ensuring the inter-operability of different implementations. The Rosetta DSL repository provides one default code generator, for [Java](https://www.oracle.com/java/).
+Code generators remove the need for software developers to translate the model specifications into executable code while ensuring the inter-operability of different implementations. The Rosetta DSL repository provides one default code generator, for [Java](https://www.oracle.com/java/).
 
 To make models agnostic to the technology platform in which they are being implemented, other code generators have been provided in a variety of languages. A separate [code generator repository](https://github.com/REGnosys/rosetta-code-generators), also open source, allows the community to create and share code generators in potentially any software language.
 
@@ -59,6 +59,6 @@ The [Code Generator documentation](https://docs.rosetta-technology.io/rosetta/ro
 
 A complete *Software Development Kit (SDK)* also called [Rosetta](https://ui.rosetta-technology.io/) is provided to help industry participants to create, edit or extend models using the Rosetta DSL. Rosetta also provides integration tools designed to facilitate firms' adoption and implementation of models within their own technology architecture.
 
-Much like how software engineers use programming languages and tools to build and test software, it is useful to think of Rosetta as a platform with a set of tools to build and test a domain model using the Rosetta DSL. The [Rosetta products documentation](https://docs.rosetta-technology.io/rosetta/rosetta-products/) details the various tools and producs that are available in the Rosetta platform.
+Much like how software engineers use programming languages and tools to build and test software, it is useful to think of Rosetta as a platform with a set of tools to build and test a domain model using the Rosetta DSL. The [Rosetta products documentation](https://docs.rosetta-technology.io/rosetta/rosetta-products/) details the various tools and products that are available in the Rosetta platform.
 
 In order to facilitate the use of the Rosetta DSL by industry members, a *Community Edition* of Rosetta that already features many of the platform's functionalities is available as a free web application. Through Rosetta, users can also access a number of open-source [modelling projects](https://docs.rosetta-technology.io/rosetta/projects/) that are based on the Rosetta DSL, allowing them to use, edit or extend those models.

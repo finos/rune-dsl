@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.xtext.validation.EValidatorRegistrar;
 
 import com.regnosys.rosetta.typing.validation.RosettaTypingValidator;
 
@@ -14,5 +15,9 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingValidator {
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/Rosetta"));
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaSimple"));
 		return result;
+	}
+	
+	@Override
+	public void register(EValidatorRegistrar registrar) {
 	}
 }

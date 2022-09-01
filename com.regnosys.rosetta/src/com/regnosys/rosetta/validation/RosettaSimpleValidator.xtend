@@ -8,10 +8,8 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.expression.ListOperationExtensions
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.BlueprintDataJoin
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
-import com.regnosys.rosetta.rosetta.BlueprintReduce
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
@@ -35,6 +33,7 @@ import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -84,7 +83,6 @@ import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.xtext.validation.Check
-import org.eclipse.xtext.validation.EValidatorRegistrar
 import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
@@ -94,6 +92,10 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+
+import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
+import org.eclipse.xtext.validation.EValidatorRegistrar
+
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -121,8 +123,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		return result;
 	}
 	
-	override register(EValidatorRegistrar registrar) {
-		// implement empty register method to prevent ComposedChecks functionality causing duplicate error messages
+	override void register(EValidatorRegistrar registrar) {
 	}
 	
 	protected override MethodWrapper createMethodWrapper(AbstractDeclarativeValidator instanceToUse, Method method) {
@@ -155,6 +156,15 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void checkClassNameStartsWithCapital(Data classe) {
 		if (!Character.isUpperCase(classe.name.charAt(0))) {
 			warning("Type name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
+		}
+	}
+	
+	@Check
+	def void checkConditionName(Condition condition) {
+		if (condition.name === null && !condition.choiceRuleCondition) {
+			warning("Condition name should be specified", ROSETTA_NAMED__NAME, INVALID_NAME)
+		} else if (!Character.isUpperCase(condition.name.charAt(0))) {
+			warning("Condition name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
 	
@@ -602,41 +612,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			val multi = cardinality.isMulti(extract.call)
 			if (!multi) {
 				error("Repeatable keyword must extract multiple cardinality", extract, BLUEPRINT_EXTRACT__REPEATABLE)
-			}
-		}
-	}
-	
-	@Check
-	def void checkDataJoinType(BlueprintDataJoin join) {
-		val keyType = join.key.RType
-		val fkType = join.foreign.RType
-		if (keyType!=fkType) {
-			error('''Type of key («keyType.name») and foreignKey («fkType.name») do not match''', join, null, TYPE_ERROR)
-		}		
-		val multi = cardinality.isMulti(join.key)
-		if (multi) {
-			error('''Key expression must have single cardinality''', join, BLUEPRINT_DATA_JOIN__KEY)
-		}
-	}
-	
-	@Check
-	def void checkBlueprintReduce(BlueprintReduce reduce) {
-		if (reduce.expression!==null) {
-			val exrType = reduce.expression.RType
-			if (!exrType.isSelfComparable) {
-				error('''The expression for «reduce.action» must return a comparable type (e.g. number or date) the current expression returns «exrType.name»''', reduce, BLUEPRINT_REDUCE__EXPRESSION, TYPE_ERROR)
-			}
-			
-			val multi = cardinality.isMulti(reduce.expression)
-			if (multi) {
-				error('''The expression for «reduce.action» must return a single value the current expression can return multiple values''', reduce, BLUEPRINT_REDUCE__EXPRESSION)
-			}
-			
-		}
-		else if (reduce.reduceBP!==null) {
-			val node = buildTypeGraph(reduce.reduceBP.blueprint.nodes, reduce.reduceBP.output)
-			if (!checkBPNodeSingle(node, false)) {
-				error('''The expression for maxBy must return a single value but the rule «reduce.reduceBP.blueprint.name» can return multiple values''', reduce, BLUEPRINT_REDUCE__REDUCE_BP)
 			}
 		}
 	}
@@ -1242,6 +1217,33 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}
 		}
 	}
+	
+	@Check
+	def checkImport(RosettaModel model) {
+
+		var importable = newArrayList
+		for (content : model.eAllContents.toList) {
+			if (content instanceof RosettaRootElement) {
+				importable.add(content)
+			}
+			for (crossReference : content.eCrossReferences.toList) {
+				if (crossReference instanceof RosettaRootElement) {
+					importable.add(crossReference)
+				}
+			}
+		}
+		var usedNamespaces = importable
+			.map[eContainer]
+			.map[it as RosettaModel]
+			.map[name]
+			
+		for (ns : model.imports) {
+			if (!usedNamespaces.contains(ns.importedNamespace.replace('.*', ''))) {
+				warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
+			}
+		}
+	}
+	
 	
 	private def void checkNoParameters(ListOperation o) {
 		if (o.parameters.size > 0) {

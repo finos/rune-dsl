@@ -4,6 +4,7 @@ import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
+import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaSynonym
@@ -87,6 +88,10 @@ class RosettaExtensions {
 			else {
 				visitor.apply(expr)
 			}	
+		}
+		if(expr instanceof RosettaConditionalExpression) {
+			expr.ifthen.collectExpressions(visitor)
+			expr.elsethen.collectExpressions(visitor)
 		}
 		else {
 			visitor.apply(expr)
