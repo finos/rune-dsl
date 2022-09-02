@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Disabled
 class RosettaContentAssistTest extends AbstractContentAssistTest {
 
 	@Test
-	@Disabled
 	def void testInheritedAttributesDataRule() {
 		'''
 		namespace "test"
@@ -49,7 +48,6 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	}
 
 	@Test
-	@Disabled
 	def void testDataRuleAfterArrow2() {
 		'''
 			namespace "test"

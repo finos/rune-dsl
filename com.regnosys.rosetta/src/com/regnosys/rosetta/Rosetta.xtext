@@ -534,7 +534,7 @@ ListOperation returns RosettaExpression:
 
 RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
-	(=>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID]))*
+	(=>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])?)*
 ;
 
 RosettaCalcPrimary returns RosettaExpression:

@@ -95,7 +95,7 @@ public class ExpressionOperators {
 			.map(p -> validateOnlyExists(p, fields))
 			.reduce(ComparisonResult.success(), (a, b) -> a.and(b));
 	}
-	
+
 	/**
 	 * @return attributeName - get the attribute name which is the path leaf node, unless attribute has metadata (scheme/reference etc), where it is the paths penultimate node. 
 	 */
