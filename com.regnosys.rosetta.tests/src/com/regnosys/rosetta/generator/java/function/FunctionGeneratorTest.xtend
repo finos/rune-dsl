@@ -1899,7 +1899,7 @@ class FunctionGeneratorTest {
 				set res: t1->t->num only-element
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_FEATURE_CALL, null,
+		model.assertError(ROSETTA_ONLY_ELEMENT, null,
 			"List only-element cannot be used for single cardinality expressions.")
 	}
 

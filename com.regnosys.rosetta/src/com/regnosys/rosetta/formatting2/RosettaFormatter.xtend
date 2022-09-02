@@ -371,7 +371,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 	def dispatch void format(ListOperation operation,
 		extension IFormattableDocument document) {
 		operation.receiver.format
-		operation.regionFor.assignment(listOperationAccess.operationKindAssignment_1_0_0_1).surround(ONE_SPACE_PRESERVE_NEWLINE)
+		operation.regionFor.assignment(listOperationAccess.operationKindAssignment_1_0_0_0_1).surround(ONE_SPACE_PRESERVE_NEWLINE)
 		operation.parameters.forEach[format]
 		interior(
 			operation.regionFor.keyword('[').prepend(ONE_SPACE_LOW_PRIO).append(NO_SPACE_PRESERVE_NEW_LINE),

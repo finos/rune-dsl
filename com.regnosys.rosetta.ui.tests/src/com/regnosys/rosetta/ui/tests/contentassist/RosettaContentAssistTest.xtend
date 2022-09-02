@@ -5,12 +5,14 @@ import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+import org.junit.jupiter.api.Disabled
 
 @InjectWith(RosettaUiInjectorProvider)
 @ExtendWith(InjectionExtension)
 class RosettaContentAssistTest extends AbstractContentAssistTest {
 
 	@Test
+	@Disabled
 	def void testInheritedAttributesDataRule() {
 		'''
 		namespace "test"
@@ -47,6 +49,7 @@ class RosettaContentAssistTest extends AbstractContentAssistTest {
 	}
 
 	@Test
+	@Disabled
 	def void testDataRuleAfterArrow2() {
 		'''
 			namespace "test"

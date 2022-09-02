@@ -87,7 +87,6 @@ import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
@@ -95,7 +94,7 @@ import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import org.eclipse.xtext.validation.EValidatorRegistrar
-
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -1116,12 +1115,25 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
+	def checkOnlyElement(RosettaOnlyElement e) {
+		val receiver = e.argument
+		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
+			error('''List only-element cannot be used for single cardinality expressions.''', e, ROSETTA_ONLY_ELEMENT__ARGUMENT)
+		}
+		
+		val previousOp = (e.argument instanceof ListOperation ? e.argument : null) as ListOperation
+		if (previousOp !== null && previousOp.isOutputListOfLists) {
+			error('''List must be flattened before only-element operation.''', e, ROSETTA_ONLY_ELEMENT__ARGUMENT)
+		}
+	}
+	
+	@Check
 	def checkListOperation(ListOperation o) {
 		val receiver = o.receiver
 		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
 			// previous step must be single cardinality except when it is a MAP following a ListOperation (such as REDUCE)
 			val currentOperationIsMap = o.operationKind === ListOperationKind.MAP
-			val previousOperationWasListOperation = receiver instanceof ListOperation
+			val previousOperationWasListOperation = receiver instanceof ListOperation || receiver instanceof RosettaOnlyElement
 			if (!(currentOperationIsMap && previousOperationWasListOperation)) {
 				error('''List «o.operationKind.literal» cannot be used for single cardinality expressions.''', o, LIST_OPERATION__OPERATION_KIND)
 			}

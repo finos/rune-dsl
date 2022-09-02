@@ -522,16 +522,14 @@ RosettaCalcMultiplicative returns RosettaExpression:
 ;
 
 RosettaCalcCountOperation returns RosettaExpression:
-	RosettaCalcOnlyElement (=> ({RosettaCountOperation.argument=current} 'count'))?
-;
-
-RosettaCalcOnlyElement returns RosettaExpression:
-	ListOperation (=>({RosettaOnlyElement.argument=current} 'only-element'))?
+	ListOperation (=> ({RosettaCountOperation.argument=current} 'count'))?
 ;
 
 ListOperation returns RosettaExpression:
 	RosettaCalcOnlyExists
-	( => ({ListOperation.receiver=current}  operationKind = ListOperationKind) (((=> parameters += ClosureParameter (',' parameters += ClosureParameter)*) | parameters += OptionalClosureParameter) '['body = RosettaCalcExpression ']')?)*
+	(=>({ListOperation.receiver=current} operationKind=ListOperationKind) (((=> parameters += ClosureParameter (',' parameters += ClosureParameter)*) | parameters += OptionalClosureParameter) '['body = RosettaCalcExpression ']')?
+	|(=>({RosettaOnlyElement.argument=current} 'only-element'))
+	)*
 ;
 
 RosettaCalcOnlyExists returns RosettaExpression:
