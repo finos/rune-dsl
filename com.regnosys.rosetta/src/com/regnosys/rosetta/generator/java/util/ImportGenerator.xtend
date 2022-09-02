@@ -147,7 +147,7 @@ class ImportGenerator {
 				addFeatureCall(expression)
 			}
 			RosettaOnlyExistsExpression: {
-				addExpression(expression.parent)
+				expression.args.forEach[addExpression]
 			}
 			RosettaExistsExpression: {
 				addExpression(expression.argument)

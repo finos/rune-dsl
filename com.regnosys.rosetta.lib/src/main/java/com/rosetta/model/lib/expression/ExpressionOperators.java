@@ -1,17 +1,17 @@
 package com.rosetta.model.lib.expression;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.MapperC;
+import com.rosetta.model.lib.mapper.Mapper.Path;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.validation.ValidationResult;
@@ -66,13 +66,52 @@ public class ExpressionOperators {
 	}
 	
 	// onlyExists
-	public static <T extends RosettaModelObject> ComparisonResult onlyExists(Mapper<T> o, String... fields) {
-		T parent = o.get();
+	
+	public static ComparisonResult onlyExists(List<? extends Mapper<?>> o) {
+		// Validation rule checks that all parents match
+		Set<RosettaModelObject> parents = o.stream()
+				.map(Mapper::getParentMulti)
+				.flatMap(Collection::stream)
+				.map(RosettaModelObject.class::cast)
+			    .collect(Collectors.toSet());
+		
+		if (parents.size() == 0) {
+			return ComparisonResult.failure("No fields set.");
+		}
+
+		// Find attributes to check
+		Set<String> fields = o.stream()
+				.flatMap(m -> Stream.concat(m.getPaths().stream(), m.getErrorPaths().stream()))
+				.map(ExpressionOperators::getAttributeName)
+				.collect(Collectors.toSet());
+		
+		// The number of attributes to check, should equal the number of mappers
+		if (fields.size() != o.size()) {
+			return ComparisonResult.failure("All required fields not set.");
+		}
+		
+		// Run validation then and results together 
+		return parents.stream()
+			.map(p -> validateOnlyExists(p, fields))
+			.reduce(ComparisonResult.success(), (a, b) -> a.and(b));
+	}
+	
+	/**
+	 * @return attributeName - get the attribute name which is the path leaf node, unless attribute has metadata (scheme/reference etc), where it is the paths penultimate node. 
+	 */
+	private static String getAttributeName(Path p) {
+		String attr = p.getLastName();
+		return "value".equals(attr) || "reference".equals(attr) || "globalReference".equals(attr) ? 
+				p.getNames().get(p.getNames().size() - 2) : 
+				attr;
+	}
+	
+	private static <T extends RosettaModelObject> ComparisonResult validateOnlyExists(T parent, Set<String> fields) {
 		@SuppressWarnings("unchecked")
 		RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
 		ValidatorWithArg<? super T, Set<String>> onlyExistsValidator = meta.onlyExistsValidator();
 		if (onlyExistsValidator != null) {
-			ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, new HashSet<>(Arrays.asList(fields)));
+			ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
 			// Translate validationResult into comparisonResult
 			return validationResult.isSuccess() ? 
 					ComparisonResult.success() : 

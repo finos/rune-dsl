@@ -406,8 +406,7 @@ class ComparisonOperation extends RosettaBinaryOperation {
 }
 
 class RosettaOnlyExistsExpression extends RosettaExpression {
-	contains RosettaExpression parent
-	refers RosettaFeature[] attributes
+	contains RosettaExpression[] args
 }
 
 class RosettaExistsExpression extends RosettaExpression {

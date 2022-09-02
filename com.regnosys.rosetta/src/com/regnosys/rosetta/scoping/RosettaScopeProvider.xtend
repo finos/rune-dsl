@@ -97,19 +97,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					}
 					return IScope.NULLSCOPE
 				}
-				case ROSETTA_ONLY_EXISTS_EXPRESSION__ATTRIBUTES: {
-					if (context instanceof RosettaOnlyExistsExpression) {
-						val parentType = typeProvider.getRType(context.parent)
-						val featureScope = parentType.createFeatureScope
-						var allPosibilities = newArrayList
-						
-						if (featureScope!==null) {
-							allPosibilities.addAll(featureScope.allElements);
-						}
-						return new SimpleScope(allPosibilities)
-					}
-					return IScope.NULLSCOPE
-				}
 				case OPERATION__ASSIGN_ROOT: {
 					if (context instanceof Operation) {
 						val outAndAliases = newArrayList

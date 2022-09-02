@@ -62,6 +62,7 @@ import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.con
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import com.regnosys.rosetta.rosetta.RosettaOnlyElement
+import java.util.Arrays
 
 class ExpressionGenerator {
 	
@@ -227,7 +228,7 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient onlyExistsExpr(RosettaOnlyExistsExpression onlyExists, ParamMap params) {
-		'''«importWildCard(ExpressionOperators)»onlyExists(«onlyExists.parent.javaCode(params)», «FOR field : onlyExists.attributes SEPARATOR ', '»«field»«ENDFOR»)'''
+		'''«importWildCard(ExpressionOperators)»onlyExists(«Arrays».asList(«FOR arg : onlyExists.args SEPARATOR ', '»«arg.javaCode(params)»«ENDFOR»))'''
 	}
 	
 	def StringConcatenationClient existsExpr(RosettaExistsExpression exists, ParamMap params) {
