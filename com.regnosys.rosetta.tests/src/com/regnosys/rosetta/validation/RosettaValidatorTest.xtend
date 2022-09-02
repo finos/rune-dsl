@@ -1972,7 +1972,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				xs string (0..*)
 		'''.parseRosetta
-		model.assertError(ROSETTA_ONLY_ELEMENT, null, "List must be flattened before only-element operation.")
+		model.assertError(ROSETTA_ONLY_ELEMENT, null, 194, 12, "List must be flattened before only-element operation.")
 	}
 	
 	@Test

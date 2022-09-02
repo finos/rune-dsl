@@ -95,6 +95,8 @@ import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import org.eclipse.xtext.validation.EValidatorRegistrar
 import com.regnosys.rosetta.rosetta.RosettaOnlyElement
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import org.eclipse.xtext.Keyword
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -1118,12 +1120,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def checkOnlyElement(RosettaOnlyElement e) {
 		val receiver = e.argument
 		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
-			error('''List only-element cannot be used for single cardinality expressions.''', e, ROSETTA_ONLY_ELEMENT__ARGUMENT)
+			errorKeyword('''List only-element cannot be used for single cardinality expressions.''', e, grammar.listOperationAccess.onlyElementKeyword_1_1_0_1)
 		}
 		
 		val previousOp = (e.argument instanceof ListOperation ? e.argument : null) as ListOperation
 		if (previousOp !== null && previousOp.isOutputListOfLists) {
-			error('''List must be flattened before only-element operation.''', e, ROSETTA_ONLY_ELEMENT__ARGUMENT)
+			errorKeyword('''List must be flattened before only-element operation.''', e, grammar.listOperationAccess.onlyElementKeyword_1_1_0_1)
 		}
 	}
 	
@@ -1367,6 +1369,23 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				error('''Alias expression contains a list of lists, use flatten to create a list.''', o, SHORTCUT_DECLARATION__EXPRESSION)
 			}
 		}
+	}
+	
+	private def errorKeyword(String message, EObject o, Keyword keyword) {
+		val node = NodeModelUtils.findActualNodeFor(o)
+
+        for (n : node.asTreeIterable) {
+            val ge = n.grammarElement
+            if (ge instanceof Keyword && ge == keyword) {
+                messageAcceptor.acceptError(
+                    message,
+                    o,
+                    n.offset,
+                    n.length,
+                    null
+                )
+            }
+        }
 	}
 	
 	private def getOnlyExistsParentType(RosettaExpression e) {
