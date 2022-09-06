@@ -41,7 +41,6 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ListOperation
-import com.regnosys.rosetta.rosetta.simple.ListOperationKind
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -332,10 +331,8 @@ class ExpressionGenerator {
 				'''«feature.buildMapFunc»'''
 			RosettaEnumValue: 
 				return '''«MapperS».of(«feature.enumeration.toJavaType».«feature.convertValues»)'''
-			RosettaFeature: 
+			default: 
 				'''.map("get«feature.name.toFirstUpper»", «feature.containerType.toJavaType»::get«feature.name.toFirstUpper»)'''
-			default:
-				throw new UnsupportedOperationException("Unsupported expression type of " + feature.eClass.name)
 		}
 		
 		return '''«javaCode(call.receiver, params)»«right»'''

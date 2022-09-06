@@ -94,7 +94,7 @@ class OneOfRuleGeneratorTest {
 	}
 	
 	private def Validator<? extends RosettaModelObject> getOneOfRule(String className) {
-		val metaClass = classes.get(rootPackage.meta.name + '.' + className + 'Meta').newInstance as RosettaMetaData<? extends RosettaModelObject>
+		val metaClass = classes.get(rootPackage.meta.name + '.' + className + 'Meta').declaredConstructor.newInstance as RosettaMetaData<? extends RosettaModelObject>
 		val choiceRules = metaClass.choiceRuleValidators
 		
 		assertThat(choiceRules.size, is(1))

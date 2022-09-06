@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Disabled
 
 @InjectWith(RosettaUiInjectorProvider)
 @ExtendWith(InjectionExtension)
-class RosettaContentAssistTest extends AbstractContentAssistTest {
+class RosettaContentAssistTest extends ContentAssistTestHelper {
 
 	@Disabled
 	@Test

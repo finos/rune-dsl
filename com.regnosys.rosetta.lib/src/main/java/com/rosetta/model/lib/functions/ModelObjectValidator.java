@@ -33,6 +33,7 @@ public interface ModelObjectValidator {
 
 
 	class ModelObjectValidationException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
 		
 		private final String errors;
 

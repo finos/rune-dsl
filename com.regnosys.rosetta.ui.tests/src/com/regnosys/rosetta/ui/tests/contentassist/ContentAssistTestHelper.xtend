@@ -18,7 +18,7 @@ import org.eclipse.xtext.ui.editor.IDirtyStateManager
 import org.eclipse.xtext.ui.editor.IDirtyResource
 import org.eclipse.xtext.resource.IResourceDescription
 
-class AbstractContentAssistTest {
+class ContentAssistTestHelper {
 
 	@Inject protected extension TestExtensions
 	@Inject Injector injector
@@ -131,7 +131,7 @@ class TestBuilder extends ContentAssistProcessorTestBuilder {
 }
 
 class TestExtensions {
-	@Inject AbstractContentAssistTest builderProvider
+	@Inject ContentAssistTestHelper builderProvider
 
 	/**
 	 * Creates a CA test builder and asserts expected proposals contains in the proposal list at cursor &lt;|&gt;

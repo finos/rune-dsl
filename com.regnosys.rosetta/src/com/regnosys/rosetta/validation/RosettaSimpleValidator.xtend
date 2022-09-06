@@ -108,7 +108,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension RosettaFunctionExtensions
-	@Inject extension RosettaOperators
 	@Inject extension ListOperationExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject CardinalityProvider cardinality
@@ -296,11 +295,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	protected def cardinality(Attribute attr)
 		'''«attr.card.inf»..«IF attr.card.isMany»*«ELSE»«attr.card.sup»«ENDIF»'''
-	
-	
-	private def attributeTypeNames(Iterable<Attribute> attrs) {
-		return attrs.map[(eContainer as RosettaNamed).name].join(', ')
-	}
 	
 	private def isChildOf(Data child, RosettaType parent) {
 		return child.allSuperTypes.contains(parent)

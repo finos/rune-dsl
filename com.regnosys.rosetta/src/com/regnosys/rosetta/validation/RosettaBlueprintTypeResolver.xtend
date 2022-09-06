@@ -635,7 +635,11 @@ class RosettaBlueprintTypeResolver {
 			return true
 		}
 		else if (type2.genericName=="Comparable") {
-			return type1.type?.RType?.isSelfComparable
+			val t = type1.type?.RType
+			if (t === null) {
+				return false;
+			}
+			return t.isSelfComparable
 		}
 		else if (type2.genericName!==null) {
 			return type2.genericName==type1.either

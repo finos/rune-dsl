@@ -16,7 +16,6 @@ import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeProvider
-import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.jface.text.contentassist.ICompletionProposal
@@ -43,7 +42,6 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 	@Inject extension RosettaTypeProvider
 	@Inject extension RosettaExpectedTypeProvider
 	@Inject extension RosettaExtensions
-	@Inject extension RosettaConfigExtension
 	
 	@Inject IQualifiedNameProvider qNames
 	@Inject RosettaGrammarAccess grammar
