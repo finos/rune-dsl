@@ -21,7 +21,7 @@ public interface ConditionValidator {
     class ConditionException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 
-		public ConditionException(String message) {
+        public ConditionException(String message) {
             super(message);
         }
 
