@@ -338,8 +338,8 @@ class ExpressionGenerator {
 		return '''«javaCode(call.receiver, params)»«right»'''
 	}
 	
-	private def StringConcatenationClient distinctOrOnlyElement(StringConcatenationClient code, boolean distinct, boolean onlyElement) {
-		return '''«IF onlyElement»«MapperS».of(«ENDIF»«IF distinct»«importWildCard(ExpressionOperators)»distinct(«ENDIF»«code»«IF distinct»)«ENDIF»«IF onlyElement».get())«ENDIF»'''
+	private def StringConcatenationClient distinct(StringConcatenationClient code) {
+		return '''«importWildCard(ExpressionOperators)»distinct(«code»)'''
 	}
 	
 	def private RosettaType containerType(RosettaFeature feature) {
@@ -556,7 +556,7 @@ class ExpressionGenerator {
 				buildListOperationNoBody(op, "flattenList", params)
 			}
 			case DISTINCT: {
-				distinctOrOnlyElement('''«op.receiver.javaCode(params)»''', true, false)
+				distinct(op.receiver.javaCode(params))
 			}
 			case SUM: {
 				buildListOperationNoBody(op, "sum" + op.inputRawType, params)
