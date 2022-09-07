@@ -1479,7 +1479,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldGenerateErrorForFeatureCallAfterListOperation() {
+	def shouldGenerateNoErrorForFeatureCallAfterListOperation() {
 		val model = '''
 			type Bar:
 				foo Foo (1..1)
@@ -1496,7 +1496,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				set result:
 					bars map [ item -> foo ] distinct only-element -> amount
 		'''.parseRosetta
-		model.assertError(ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'") // is it possible to generate a better error message?
+		model.assertNoErrors
+		model.assertNoIssues
 	}
 	
 	@Test

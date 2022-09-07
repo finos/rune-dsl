@@ -499,8 +499,8 @@ RosettaCalcExists returns RosettaExpression:
 		->(
 			{RosettaExistsExpression.argument=current} (single?='single' | multiple?='multiple')? 'exists'
 			| {RosettaAbsentExpression.argument=current} 'is' 'absent'
-			| {RosettaContainsExpression.container=current} 'contains' contained=RosettaCalcAttributeCall
-			| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaCalcAttributeCall
+			| {RosettaContainsExpression.container=current} 'contains' contained=RosettaCalcEquality
+			| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaCalcEquality
 		)
 	)?
 ;
@@ -526,15 +526,12 @@ RosettaCalcCountOperation returns RosettaExpression:
 ;
 
 ListOperation returns RosettaExpression:
-	RosettaCalcAttributeCall
-	(=>({ListOperation.receiver=current} operationKind=ListOperationKind) (((=> parameters += ClosureParameter (',' parameters += ClosureParameter)*) | parameters += OptionalClosureParameter) '['body = RosettaCalcExpression ']')?
-	|(=>({RosettaOnlyElement.argument=current} 'only-element'))
-	)*
-;
-
-RosettaCalcAttributeCall returns RosettaExpression:
 	RosettaCalcPrimary
-	(=>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])?)*
+	(
+		=>({ListOperation.receiver=current} operationKind=ListOperationKind) (((=> parameters += ClosureParameter (',' parameters += ClosureParameter)*) | parameters += OptionalClosureParameter) '['body = RosettaCalcExpression ']')?
+	   |=>({RosettaOnlyElement.argument=current} 'only-element')
+	   |=>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])?
+	)*
 ;
 
 RosettaCalcPrimary returns RosettaExpression:
