@@ -23,6 +23,18 @@ import com.regnosys.rosetta.types.TypeValidationUtil
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.RosettaPackage
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaRecordType
+import com.regnosys.rosetta.rosetta.RosettaQualifiedType
+import com.regnosys.rosetta.rosetta.RosettaCalculationType
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.rosetta.RosettaBuiltinType
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.types.REnumType
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -45,6 +57,9 @@ auxiliary {
 	constraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
 	notConstraintCheck(RosettaExpression sourceObject, RosettaCardinality notExpected)
 	isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
+	
+	// TODO: Functions I need temporarily during transition from old to new type system
+	rosettaTypeToRType(RosettaType rt): RType
 }
 
 judgments {
@@ -223,6 +238,33 @@ auxiliary isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardina
 	}
 }
 
+auxiliary rosettaTypeToRType(Data d) {
+    return new RDataType(d)
+}
+auxiliary rosettaTypeToRType(RosettaBuiltinType t) {
+    return switch t.name {
+        case 'boolean':
+            RBuiltinType.BOOLEAN
+        case 'string':
+            RBuiltinType.STRING
+        case 'int':
+            RBuiltinType.INT
+        case 'number':
+            RBuiltinType.NUMBER
+        case 'time':
+            RBuiltinType.TIME
+        case 'date':
+            RBuiltinType.DATE
+        case 'dateTime':
+            RBuiltinType.DATE_TIME
+        case 'zonedDateTime':
+            RBuiltinType.ZONED_DATE_TIME        
+    }
+}
+auxiliary rosettaTypeToRType(RosettaEnumeration t) {
+    return new REnumType(t)
+}
+
 /*** SUBTYPING **/
 rule SBuiltIn // SA-Refl, SA-Num, SA-Nothing
 	G |- RBuiltinType t1 <: RBuiltinType t2
@@ -327,6 +369,29 @@ from {
 			}
 		])
 	}
+}
+
+rule TFunc // TA-Func
+    G |- RosettaCallableWithArgsCall e : RListType t
+from {
+    val f = e.callable
+    switch f {
+        RosettaRecordType: {
+            fail
+        }
+        RosettaQualifiedType: {
+            fail
+        }
+        RosettaCalculationType: {
+            fail
+        }
+        RosettaExternalFunction: {
+            t = createListType(rosettaTypeToRType(f.type), 1, 1)
+        }
+        Function: {
+            t = createListType(rosettaTypeToRType(f.^output.type), f.^output.card)
+        }
+    }
 }
 
 /****** CHECK RULES ********/
