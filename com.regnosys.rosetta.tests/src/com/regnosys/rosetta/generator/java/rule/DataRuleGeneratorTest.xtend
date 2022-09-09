@@ -48,7 +48,6 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.annotations.RosettaDataRule;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.ComparisonResult;
-				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
@@ -89,7 +88,7 @@ class DataRuleGeneratorTest {
 									return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 								}
 								else {
-									return MapperC.of();
+									return MapperS.ofNull();
 								}
 							}));
 							return result.get() == null ? ComparisonResult.success() : result;
@@ -147,7 +146,6 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.annotations.RosettaDataRule;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.ComparisonResult;
-				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
@@ -190,12 +188,12 @@ class DataRuleGeneratorTest {
 											return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 										}
 										else {
-											return MapperC.of();
+											return MapperS.ofNull();
 										}
 									}));
 								}
 								else {
-									return MapperC.of();
+									return MapperS.ofNull();
 								}
 							}));
 							return result.get() == null ? ComparisonResult.success() : result;
