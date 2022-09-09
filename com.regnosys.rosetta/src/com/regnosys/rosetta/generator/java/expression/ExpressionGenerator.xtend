@@ -734,7 +734,9 @@ class ExpressionGenerator {
 			RosettaCallableCall : {
 				'''«expr.callable.name»'''
 			}
-
+			RosettaOnlyElement : {
+				toNodeLabel(expr.argument)
+			}
 			default :
 				'''Unsupported expression type of «expr?.class?.simpleName»'''
 		}
@@ -754,8 +756,12 @@ class ExpressionGenerator {
 		val left = switch receiver {
 			RosettaCallableCall, 
 			RosettaCallableWithArgsCall, 
-			RosettaFeatureCall: 
+			RosettaFeatureCall: {
 				toNodeLabel(receiver)
+			}
+			RosettaOnlyElement : {
+				toNodeLabel(receiver.argument)
+			}
 			default: throw new UnsupportedOperationException("Unsupported expression type (receiver) " + receiver?.getClass)
 		}
 		
