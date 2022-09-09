@@ -15,7 +15,6 @@ import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.process.AttributeMeta
 import com.rosetta.model.lib.process.BuilderProcessor
 import com.rosetta.model.lib.process.Processor
-import com.rosetta.model.lib.qualify.Qualified
 import com.rosetta.util.ListEquals
 import java.util.Collection
 import java.util.List

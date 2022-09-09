@@ -27,7 +27,6 @@ import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -40,6 +39,7 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -194,12 +194,12 @@ class ImportGenerator {
 			RosettaCallableWithArgsCall: {
 				addCallableWithArgs(expression.callable)
 			}
-			RosettaParenthesisCalcExpression : {
-				addExpression(expression.expression)
-			}
 			ListOperation: {
 				addExpression(expression.receiver)
 				addExpression(expression.body)
+			}
+			RosettaOnlyElement: {
+				addExpression(expression.argument)
 			}
 			default:
 				LOGGER.warn("Unsupported expression type of " + expression.class.simpleName)

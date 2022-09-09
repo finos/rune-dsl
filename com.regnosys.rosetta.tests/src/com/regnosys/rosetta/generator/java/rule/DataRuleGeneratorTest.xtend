@@ -88,7 +88,7 @@ class DataRuleGeneratorTest {
 									return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 								}
 								else {
-									return MapperS.ofNull().ofNull();
+									return MapperS.ofNull();
 								}
 							}));
 							return result.get() == null ? ComparisonResult.success() : result;
@@ -188,12 +188,12 @@ class DataRuleGeneratorTest {
 											return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 										}
 										else {
-											return MapperS.ofNull().ofNull();
+											return MapperS.ofNull();
 										}
 									}));
 								}
 								else {
-									return MapperS.ofNull().ofNull();
+									return MapperS.ofNull();
 								}
 							}));
 							return result.get() == null ? ComparisonResult.success() : result;

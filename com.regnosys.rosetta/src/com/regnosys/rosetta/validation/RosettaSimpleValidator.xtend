@@ -87,7 +87,6 @@ import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
@@ -95,7 +94,9 @@ import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import org.eclipse.xtext.validation.EValidatorRegistrar
-
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import org.eclipse.xtext.Keyword
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -107,7 +108,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension RosettaFunctionExtensions
-	@Inject extension RosettaOperators
 	@Inject extension ListOperationExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject CardinalityProvider cardinality
@@ -173,17 +173,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if (fCall.feature === null) {
 			error("Attribute is missing after '->'", fCall, ROSETTA_FEATURE_CALL__FEATURE)
 			return
-		}
-		if (fCall.onlyElement && fCall.receiver !== null && !fCall.receiver.eIsProxy && !fCall.feature.eIsProxy &&
-			!(cardinality.isMulti(fCall.feature) || cardinality.isMulti(fCall.receiver))) {
-			error("List only-element cannot be used for single cardinality expressions.", fCall, ROSETTA_FEATURE_CALL__FEATURE)
-		}
-	}
-	
-	@Check
-	def void checkCallableCall(RosettaCallableCall cCall) {
-		if (cCall.callable !== null && cCall.onlyElement && !cCall.callable.eIsProxy && !cardinality.isMulti(cCall.callable)) {
-			error("List only-element cannot be used for single cardinality expressions.", cCall, ROSETTA_CALLABLE_CALL__CALLABLE)
 		}
 	}
 	
@@ -306,11 +295,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	protected def cardinality(Attribute attr)
 		'''«attr.card.inf»..«IF attr.card.isMany»*«ELSE»«attr.card.sup»«ENDIF»'''
-	
-	
-	private def attributeTypeNames(Iterable<Attribute> attrs) {
-		return attrs.map[(eContainer as RosettaNamed).name].join(', ')
-	}
 	
 	private def isChildOf(Data child, RosettaType parent) {
 		return child.allSuperTypes.contains(parent)
@@ -1125,14 +1109,26 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
+	def checkOnlyElement(RosettaOnlyElement e) {
+		val receiver = e.argument
+		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
+			errorKeyword('''List only-element cannot be used for single cardinality expressions.''', e, grammar.listOperationAccess.onlyElementKeyword_1_1_0_1)
+		}
+		
+		val previousOp = (e.argument instanceof ListOperation ? e.argument : null) as ListOperation
+		if (previousOp !== null && previousOp.isOutputListOfLists) {
+			errorKeyword('''List must be flattened before only-element operation.''', e, grammar.listOperationAccess.onlyElementKeyword_1_1_0_1)
+		}
+	}
+	
+	@Check
 	def checkListOperation(ListOperation o) {
 		val receiver = o.receiver
 		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
 			// previous step must be single cardinality except when it is a MAP following a ListOperation (such as REDUCE)
 			val currentOperationIsMap = o.operationKind === ListOperationKind.MAP
-			val previousOperationWasListOperation = receiver instanceof ListOperation
-			val previousOperationWasOnlyElement = receiver instanceof RosettaCallableCall && (receiver as RosettaCallableCall).onlyElement
-			if (!(currentOperationIsMap && (previousOperationWasListOperation || previousOperationWasOnlyElement))) {
+			val previousOperationWasListOperation = receiver instanceof ListOperation || receiver instanceof RosettaOnlyElement
+			if (!(currentOperationIsMap && previousOperationWasListOperation)) {
 				error('''List «o.operationKind.literal» cannot be used for single cardinality expressions.''', o, LIST_OPERATION__OPERATION_KIND)
 			}
 		}
@@ -1365,6 +1361,23 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				error('''Alias expression contains a list of lists, use flatten to create a list.''', o, SHORTCUT_DECLARATION__EXPRESSION)
 			}
 		}
+	}
+	
+	private def errorKeyword(String message, EObject o, Keyword keyword) {
+		val node = NodeModelUtils.findActualNodeFor(o)
+
+        for (n : node.asTreeIterable) {
+            val ge = n.grammarElement
+            if (ge instanceof Keyword && ge == keyword) {
+                messageAcceptor.acceptError(
+                    message,
+                    o,
+                    n.offset,
+                    n.length,
+                    null
+                )
+            }
+        }
 	}
 	
 	private def getOnlyExistsParentType(RosettaExpression e) {

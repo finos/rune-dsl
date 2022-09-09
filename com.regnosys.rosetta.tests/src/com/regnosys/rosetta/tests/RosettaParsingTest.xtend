@@ -18,6 +18,25 @@ class RosettaParsingTest {
 	@Inject extension ModelHelper modelHelper
 	
 	@Test
+	def void testOnlyElementInsidePath() {
+	    '''
+	           type A:
+	               b B (0..*)
+	           type B:
+	               c C (1..1)
+	           type C:
+	           
+	           func Test:
+	               inputs:
+	                   a A (1..1)
+	               output:
+	                   c C (1..1)
+	               set c:
+	                   a -> b only-element -> c
+	    '''.parseRosettaWithNoErrors
+	}
+	
+	@Test
 	def void testClass() {
 	'''
 			synonym source FpML

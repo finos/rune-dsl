@@ -52,8 +52,7 @@ public class ExpressionOperatorsParameterizedTest {
 			assertThat(result.getError(), containsString(errorMessagePart));
 	}
 	
-	@SuppressWarnings("unused")
-    private static Stream<Arguments> evaluateFunctionTestParams() {
+	private static Stream<Arguments> evaluateFunctionTestParams() {
 		List<Arguments> args = Arrays.asList(
 				Arguments.of("success: ( Foo -> attr1 ) > 5", 
 						new Foo(10, 20), 
@@ -139,6 +138,7 @@ public class ExpressionOperatorsParameterizedTest {
 			return foos1;
 		}
 		
+		@SuppressWarnings("unused")
 		public List<Foo> getFoos2() {
 			return foos2;
 		}

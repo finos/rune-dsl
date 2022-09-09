@@ -47,7 +47,6 @@ class AnnotationRef {
 }
 
 abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
-	boolean onlyElement
 }
 
 
@@ -139,7 +138,6 @@ enum ListOperationKind {
 	filter
 	, map
 	, flatten
-	, only_element as "only-element"
 	, distinct
 	, reduce
 	, sort
@@ -184,8 +182,6 @@ class Segment {
 class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable, AssignPathRoot {
 	contains RosettaExpression expression
 }
-
-class EmptyLiteral extends RosettaLiteral {}
 
 class ListLiteral extends RosettaLiteral {
 	contains RosettaExpression[] elements

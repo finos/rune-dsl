@@ -68,10 +68,10 @@ class ModelMetaGeneratorTest {
 		//code.writeClasses("shouldGenerateGetQualiifyFunctions")
 		val classes = code.compileToClasses
 
-		val fooMeta = RosettaMetaData.cast(classes.get(rootPackage.meta.name + '.FooMeta').newInstance)
+		val fooMeta = RosettaMetaData.cast(classes.get(rootPackage.meta.name + '.FooMeta').declaredConstructor.newInstance)
 		assertThat(fooMeta.getQualifyFunctions(funcFactory).size, is(2))
 		
-		val barMeta = RosettaMetaData.cast(classes.get(rootPackage.meta.name + '.BarMeta').newInstance)
+		val barMeta = RosettaMetaData.cast(classes.get(rootPackage.meta.name + '.BarMeta').declaredConstructor.newInstance)
 		assertThat(barMeta.getQualifyFunctions(funcFactory).size, is(0))
 		
 	}

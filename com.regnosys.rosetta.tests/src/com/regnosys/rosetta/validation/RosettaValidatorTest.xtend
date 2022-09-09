@@ -29,6 +29,67 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	@Disabled
+	def void identicalAttributesInOnlyExistsError() {
+		val model =
+		'''
+			type A:
+			  i int (0..1)
+			
+			func Foo:
+			  inputs: a A (1..1)
+			  output: result boolean (1..1)
+			  set result: a -> (i, i) only exists
+		'''.parseRosetta
+		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
+			"TODO")
+	}
+	
+	@Test
+	@Disabled
+	def void noParentInOnlyExistsError() {
+		val model =
+		'''
+			type A:
+			  i int (0..1)
+			
+			func Foo:
+			  inputs: a A (0..1)
+			  output: result boolean (1..1)
+			  set result: a only exists
+		'''.parseRosetta
+		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
+			"TODO")
+	}
+	
+	@Test
+	@Disabled
+	def void implicitParentInOnlyExists() {
+		val model =
+		'''
+			type A:
+			  i int (0..1)
+			  
+			  condition OnlyExistsTest:
+			    i only exists
+		'''.parseRosetta
+		model.assertNoIssues
+	}
+	
+	@Test
+	@Disabled
+	def void primitiveTypeInOnlyExistsError() {
+		val model =
+		'''
+			func Foo:
+			  output: result boolean (1..1)
+			  set result: True only exists
+		'''.parseRosetta
+		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
+			"TODO")
+	}
+	
+	@Test
 	def void testLowerCaseClass() {
 		val model =
 		'''
@@ -1418,7 +1479,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldGenerateErrorForFeatureCallAfterListOperation() {
+	def shouldGenerateNoErrorForFeatureCallAfterListOperation() {
 		val model = '''
 			type Bar:
 				foo Foo (1..1)
@@ -1435,7 +1496,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				set result:
 					bars map [ item -> foo ] distinct only-element -> amount
 		'''.parseRosetta
-		model.assertError(ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'") // is it possible to generate a better error message?
+		model.assertNoErrors
+		model.assertNoIssues
 	}
 	
 	@Test
@@ -1791,7 +1853,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_CALLABLE_CALL, null, "List only-element cannot be used for single cardinality expressions.")
+		model.assertError(ROSETTA_ONLY_ELEMENT, null, "List only-element cannot be used for single cardinality expressions.")
 	}
 	
 	@Test
@@ -1810,7 +1872,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_FEATURE_CALL, null, "List only-element cannot be used for single cardinality expressions.")
+		model.assertError(ROSETTA_ONLY_ELEMENT, null, "List only-element cannot be used for single cardinality expressions.")
 	}
 	
 	@Test
@@ -1911,7 +1973,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				xs string (0..*)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List must be flattened before only-element operation.")
+		model.assertError(ROSETTA_ONLY_ELEMENT, null, "List must be flattened before only-element operation.")
 	}
 	
 	@Test
@@ -2001,7 +2063,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x3 number (1..1)
 				x4 number (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_PARENTHESIS_CALC_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(ROSETTA_EXISTS_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test

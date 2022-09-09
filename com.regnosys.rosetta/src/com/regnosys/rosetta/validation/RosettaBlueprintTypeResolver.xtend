@@ -29,7 +29,6 @@ import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
@@ -49,6 +48,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 
 class RosettaBlueprintTypeResolver {
 	
@@ -442,6 +442,10 @@ class RosettaBlueprintTypeResolver {
 			"Unexpected input parsing rosetta callable " + callable.class.simpleName)
 	}
 	
+	def dispatch RosettaType getInput(RosettaOnlyElement expr) {
+		return getInput(expr.argument)
+	}
+	
 	def dispatch RosettaType getInput(RosettaConditionalExpression call) {
 		return getInput(call.^if);		
 	}
@@ -464,10 +468,6 @@ class RosettaBlueprintTypeResolver {
 	
 	def dispatch RosettaType getInput(RosettaEnumValueReference expr) {
 		return null
-	}
-	
-	def dispatch RosettaType getInput(RosettaParenthesisCalcExpression expr) {
-		return getInput(expr.expression)
 	}
 	
 	def dispatch RosettaType getInput(ListOperation expr) {
@@ -574,6 +574,11 @@ class RosettaBlueprintTypeResolver {
 		throw new UnsupportedOperationException("Unexpected input parsing rosetta feature call feature of type " +
 			feature.class.simpleName)
 	}
+	
+	def dispatch RosettaType getOutput(RosettaOnlyElement expr) {
+		return getOutput(expr.argument)
+	}
+	
 	def dispatch RosettaType getOutput(Void typed) {
 		return null
 	}
@@ -640,7 +645,11 @@ class RosettaBlueprintTypeResolver {
 			return true
 		}
 		else if (type2.genericName=="Comparable") {
-			return type1.type?.RType?.isSelfComparable
+			val t = type1.type?.RType
+			if (t === null) {
+				return false;
+			}
+			return t.isSelfComparable
 		}
 		else if (type2.genericName!==null) {
 			return type2.genericName==type1.either
