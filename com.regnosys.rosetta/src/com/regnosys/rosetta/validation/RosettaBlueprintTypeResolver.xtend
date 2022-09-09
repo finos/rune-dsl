@@ -48,6 +48,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 
 class RosettaBlueprintTypeResolver {
 	
@@ -441,6 +442,10 @@ class RosettaBlueprintTypeResolver {
 			"Unexpected input parsing rosetta callable " + callable.class.simpleName)
 	}
 	
+	def dispatch RosettaType getInput(RosettaOnlyElement expr) {
+		return getInput(expr.argument)
+	}
+	
 	def dispatch RosettaType getInput(RosettaConditionalExpression call) {
 		return getInput(call.^if);		
 	}
@@ -569,6 +574,11 @@ class RosettaBlueprintTypeResolver {
 		throw new UnsupportedOperationException("Unexpected input parsing rosetta feature call feature of type " +
 			feature.class.simpleName)
 	}
+	
+	def dispatch RosettaType getOutput(RosettaOnlyElement expr) {
+		return getOutput(expr.argument)
+	}
+	
 	def dispatch RosettaType getOutput(Void typed) {
 		return null
 	}
