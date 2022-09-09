@@ -756,8 +756,12 @@ class ExpressionGenerator {
 		val left = switch receiver {
 			RosettaCallableCall, 
 			RosettaCallableWithArgsCall, 
-			RosettaFeatureCall: 
+			RosettaFeatureCall: {
 				toNodeLabel(receiver)
+			}
+			RosettaOnlyElement : {
+				toNodeLabel(receiver.argument)
+			}
 			default: throw new UnsupportedOperationException("Unsupported expression type (receiver) " + receiver?.getClass)
 		}
 		
