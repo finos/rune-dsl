@@ -734,7 +734,9 @@ class ExpressionGenerator {
 			RosettaCallableCall : {
 				'''«expr.callable.name»'''
 			}
-
+			RosettaOnlyElement : {
+				toNodeLabel(expr.argument)
+			}
 			default :
 				'''Unsupported expression type of «expr?.class?.simpleName»'''
 		}
