@@ -3231,6 +3231,84 @@ class FunctionGeneratorTest {
 		code.compileToClasses
 	}
 	
+	@Test
+    def void canUseNestedIfThenElseInsideFunctionCall() {
+        val model = '''
+            func A:
+                inputs:
+                    a boolean (1..1)
+                output:
+                    result boolean (1..1)
+            
+            func B:
+                output:
+                    result boolean (1..1)
+                
+                set result:
+                    A(if True then True else if False then True)
+
+        '''
+        val code = model.generateCode
+        val f = code.get("com.rosetta.test.model.functions.B")
+        assertEquals(
+            '''
+                package com.rosetta.test.model.functions;
+                
+                import com.google.inject.ImplementedBy;
+                import com.google.inject.Inject;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.test.model.functions.A;
+                
+                
+                @ImplementedBy(B.BDefault.class)
+                public abstract class B implements RosettaFunction {
+                	
+                	// RosettaFunction dependencies
+                	//
+                	@Inject protected A a;
+                
+                	/**
+                	* @return result 
+                	*/
+                	public Boolean evaluate() {
+                		Boolean result = doEvaluate();
+                		
+                		return result;
+                	}
+                
+                	protected abstract Boolean doEvaluate();
+                
+                	public static class BDefault extends B {
+                		@Override
+                		protected Boolean doEvaluate() {
+                			Boolean result = null;
+                			return assignOutput(result);
+                		}
+                		
+                		protected Boolean assignOutput(Boolean result) {
+                			result = MapperS.of(a.evaluate(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+                				if (MapperS.of(Boolean.valueOf(true)).get()) {
+                					return MapperS.of(Boolean.valueOf(true));
+                				}
+                				else if (MapperS.of(Boolean.valueOf(false)).get()) {
+                					return MapperS.of(Boolean.valueOf(true));
+                				}
+                				else {
+                					return MapperS.ofNull();
+                				}
+                			}).get())).get();
+                			
+                			return result;
+                		}
+                	}
+                }
+            '''.toString,
+            f
+        )
+        code.compileToClasses
+    }
+	
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {
 		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of()) as RosettaModelObject
 	}

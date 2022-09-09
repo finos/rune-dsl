@@ -427,7 +427,7 @@ class ExpressionGenerator {
 			exprs.stream.allMatch[it instanceof RosettaFeatureCall ||
 									it instanceof RosettaCallableCall ||
 									it instanceof RosettaCallableWithArgsCall ||
-									it instanceof RosettaLiteral && !it.isEmpty ||
+									it instanceof RosettaLiteral && !(it.isEmpty && !(it.eContainer instanceof RosettaConditionalExpression)) ||
 									it instanceof RosettaCountOperation ||
 									it instanceof ListOperation ||
 									it instanceof RosettaOnlyElement ||
