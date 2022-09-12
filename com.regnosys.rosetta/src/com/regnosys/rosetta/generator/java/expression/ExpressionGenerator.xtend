@@ -138,7 +138,7 @@ class ExpressionGenerator {
 				'''«importMethod(ExpressionOperators,"disjoint")»(«expr.container.javaCode(params)», «expr.disjoint.javaCode(params)»)'''
 			}
 			ListLiteral : {
-				'''«MapperC».of(«FOR ele: expr.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
+				listLiteral(expr, params)
 			}
 			ListOperation : {
 				listOperation(expr, params)
@@ -146,6 +146,22 @@ class ExpressionGenerator {
 			default: 
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
 		}
+	}
+	
+	def StringConcatenationClient listLiteral(ListLiteral e, ParamMap params) {
+	    if (e.isEmpty) {
+	        '''null'''
+	    } else {
+	       '''«MapperC».of(«FOR ele: e.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
+	    }
+	}
+	
+	private def boolean isEmpty(RosettaExpression e) { // TODO: temporary workaround while transitioning from old to new type system
+	    if (e instanceof ListLiteral) {
+	        e.elements.size === 0
+	    } else {
+	        false
+	    }
 	}
 
 	private def StringConcatenationClient genConditionalMapper(RosettaConditionalExpression expr, ParamMap params)'''
@@ -162,13 +178,13 @@ class ExpressionGenerator {
 			}
 			«IF expr.childElseThen !== null»
 				«expr.childElseThen.genElseIf(params)»
-			«ELSEIF expr.elsethen !== null»
+			«ELSEIF !expr.elsethen.isEmpty»
 				else {
 					return «expr.elsethen.javaCode(params)»;
 				}
 			«ELSE»
 				else {
-					return «IF cardinalityProvider.isMulti(expr.ifthen)»«MapperC»«ELSE»«MapperS».ofNull()«ENDIF».ofNull();
+					return «IF cardinalityProvider.isMulti(expr.ifthen)»«MapperC»«ELSE»«MapperS»«ENDIF».ofNull();
 				}
 			«ENDIF»
 			'''
@@ -182,13 +198,13 @@ class ExpressionGenerator {
 			}
 			«IF next.childElseThen !== null»
 				«next.childElseThen.genElseIf(params)»
-			«ELSEIF next.elsethen !== null»
+			«ELSEIF !next.elsethen.isEmpty»
 				else {
 					return «next.elsethen.javaCode(params)»;
 				}
-			«ELSEIF next.elsethen === null»
+			«ELSE»
 				else {
-					return «IF cardinalityProvider.isMulti(next.ifthen)»«MapperC»«ELSE»«MapperS».ofNull()«ENDIF».ofNull();
+					return «IF cardinalityProvider.isMulti(next.ifthen)»«MapperC»«ELSE»«MapperS»«ENDIF».ofNull();
 				}
 			«ENDIF»
 		«ENDIF»
@@ -223,7 +239,7 @@ class ExpressionGenerator {
 	}
 	
 	private def StringConcatenationClient arg(RosettaExpression expr, ParamMap params) {
-		'''«expr.javaCode(params)»«IF cardinalityProvider.isMulti(expr)».getMulti()«ELSE».get()«ENDIF»'''
+		'''«expr.javaCode(params)»«IF expr.evalulatesToMapper»«IF cardinalityProvider.isMulti(expr)».getMulti()«ELSE».get()«ENDIF»«ENDIF»'''
 	}
 	
 	def StringConcatenationClient onlyExistsExpr(RosettaOnlyExistsExpression onlyExists, ParamMap params) {
@@ -403,18 +419,18 @@ class ExpressionGenerator {
 	/**
 	 * Collects all expressions down the tree, and checks that they're all either FeatureCalls or CallableCalls (or anything that resolves to a Mapper)
 	 */
-	private def boolean evalulatesToMapper(RosettaExpression expr) {
+	private def boolean evalulatesToMapper(RosettaExpression expr) { // TODO: this function is faulty, I think
 		val exprs = newHashSet
 		collectExpressions(expr, [exprs.add(it)])
 
 		return !exprs.empty && 
 			exprs.stream.allMatch[it instanceof RosettaFeatureCall ||
 									it instanceof RosettaCallableCall ||
-									it instanceof RosettaFeatureCall ||
 									it instanceof RosettaCallableWithArgsCall ||
-									it instanceof RosettaLiteral ||
+									it instanceof RosettaLiteral && !(it.isEmpty && !(it.eContainer instanceof RosettaConditionalExpression)) ||
 									it instanceof RosettaCountOperation ||
 									it instanceof ListOperation ||
+									it instanceof RosettaOnlyElement ||
 									isArithmeticOperation(it)
 			]
 	}
@@ -718,7 +734,9 @@ class ExpressionGenerator {
 			RosettaCallableCall : {
 				'''«expr.callable.name»'''
 			}
-
+			RosettaOnlyElement : {
+				toNodeLabel(expr.argument)
+			}
 			default :
 				'''Unsupported expression type of «expr?.class?.simpleName»'''
 		}
@@ -738,8 +756,12 @@ class ExpressionGenerator {
 		val left = switch receiver {
 			RosettaCallableCall, 
 			RosettaCallableWithArgsCall, 
-			RosettaFeatureCall: 
+			RosettaFeatureCall: {
 				toNodeLabel(receiver)
+			}
+			RosettaOnlyElement : {
+				toNodeLabel(receiver.argument)
+			}
 			default: throw new UnsupportedOperationException("Unsupported expression type (receiver) " + receiver?.getClass)
 		}
 		

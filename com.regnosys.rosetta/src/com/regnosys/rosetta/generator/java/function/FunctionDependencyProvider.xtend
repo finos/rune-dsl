@@ -22,6 +22,7 @@ import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
 import static com.regnosys.rosetta.generator.util.Util.*
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -70,6 +71,9 @@ class FunctionDependencyProvider {
 			ListOperation: {
 				newHashSet(functionDependencies(object.body) + functionDependencies(object.receiver))
 			}
+			RosettaOnlyElement: {
+                functionDependencies(object.argument)
+            }
 			ListLiteral: {
 				newHashSet(object.elements.flatMap[functionDependencies])
 			},
