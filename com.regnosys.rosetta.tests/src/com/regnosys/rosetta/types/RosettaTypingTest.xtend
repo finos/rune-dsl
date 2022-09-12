@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.types.RBuiltinType.*
+import com.regnosys.rosetta.tests.util.ModelHelper
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -20,6 +23,9 @@ class RosettaTypingTest {
 	
 	@Inject
 	extension ExpressionValidationHelper
+	
+	@Inject
+	extension ModelHelper
 	
 	@Test
 	def void testLiteralTypeInference() {
@@ -223,5 +229,66 @@ class RosettaTypingTest {
 		'[1, True]'
 			.parseExpression
 			.assertError(null, "Elements do not have a common supertype: `int`, `boolean`.")
+	}
+	
+	@Test
+	def void testFunctionCallTypeInference() {
+		val model = '''
+		namespace test
+		
+		func SomeFunc:
+			inputs:
+				a int (1..1)
+				b boolean (2..4)
+			output: result number (3..5)
+			add result:
+				[1.0, 2.0, 3.0]
+		
+		func Test:
+			output: result number (3..5)
+			add result:
+				SomeFunc(42, [True, False, True])
+		'''.parseRosettaWithNoIssues
+		val expression = (model.elements.last as Function).operations.head.expression;
+		expression.assertHasType(createListType(NUMBER, 3, 5));
+	}
+	
+	@Test
+	def void testFunctionCallTypeChecking() {
+		val model = '''
+		namespace test
+		
+		func SomeFunc:
+			inputs:
+			    a int (1..1)
+			    b boolean (2..4)
+			output: result int (1..1)
+			set result:
+				42
+		
+		func TestParamNumber:
+			output: result int (1..1)
+			set result:
+				SomeFunc(1, [False, True], True)
+		
+		func TestParamType:
+		    output: result int (1..1)
+		    set result:
+		        SomeFunc(1, [2, 3])
+		
+		func TestParamCardinality:
+		    output: result int (1..1)
+		    set result:
+		        SomeFunc(1, [False, True, False, False, True])
+		'''.parseRosetta
+		
+		val expr1 = (model.elements.get(1) as Function).operations.head.expression;
+		expr1.assertError(null, "Expected 2 arguments, but got 3 instead.");
+		
+		val expr2 = (model.elements.get(2) as Function).operations.head.expression;
+		expr2.assertError(null, "Expected type `boolean`, but got `int` instead.");
+		
+		val expr3 = (model.elements.get(3) as Function).operations.head.expression;
+		expr3.assertError(null, "Expected a list with 2 to 4 items, but got a list with 5 items instead.");
 	}
 }

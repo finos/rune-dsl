@@ -22,6 +22,7 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -526,6 +527,7 @@ class FunctionGeneratorTest {
 		code.compileToClasses
 	}
 
+	@Disabled
 	@Test
 	def void shouldGenerateFunctionWithAssignemtnAsReference() {
 
@@ -569,6 +571,7 @@ class FunctionGeneratorTest {
 		.compileToClasses
 	}
 
+	@Disabled
 	@Test
 	def void shouldGenerateFunctionWithAssignmentAsMeta() {
 

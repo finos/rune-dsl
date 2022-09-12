@@ -35,6 +35,7 @@ import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -63,6 +64,7 @@ auxiliary {
 	
 	// TODO: Functions I need temporarily during transition from old to new type system
 	rosettaTypeToRType(RosettaType rt): RType
+	attributeListType(Attribute a): RListType
 }
 
 judgments {
@@ -85,6 +87,8 @@ auxiliary comparable(RType t1, RType t2) {
 }
 auxiliary overlap(RosettaCardinality c1, RosettaCardinality c2) {
 	(c1.unbounded || c1.sup >= c2.inf) && (c2.unbounded || c2.sup >= c1.inf)
+	or
+	return false
 }
 auxiliary listComparable(RListType t1, RListType t2) {
 	comparable(t1.itemType, t2.itemType)
@@ -166,7 +170,7 @@ auxiliary listSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
 auxiliary looseListSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
     var RListType actual
     empty |- sourceObject : actual or actual = null
-    if (expected !== null && actual !== null && !({empty |- actual.itemType <: expected.itemType} && expected.constraint.isSubconstraintOf(actual.constraint))) {
+    if (expected !== null && actual !== null && !({empty |- actual.itemType <: expected.itemType} && expected.constraint.overlap(actual.constraint))) {
         fail error notAListSubtypeMessage(expected, actual)
             source sourceObject
     }
@@ -311,6 +315,10 @@ auxiliary rosettaTypeToRType(RosettaEnumeration t) {
     return new REnumType(t)
 }
 
+auxiliary attributeListType(Attribute a) {
+	return createListType(rosettaTypeToRType(a.type), a.card)
+}
+
 /*** SUBTYPING **/
 rule SBuiltIn // SA-Refl, SA-Num, SA-Nothing
 	G |- RBuiltinType t1 <: RBuiltinType t2
@@ -330,6 +338,12 @@ rule SNothing // SA-Nothing
 	G |- RBuiltinType t1 <: RType t2
 from {
 	t1 == NOTHING
+}
+
+rule SRefl
+	G |- RType t1 <: RType t2
+from {
+	t1 == t2
 }
 
 /*** LIST SUBTYPING ***/
@@ -586,4 +600,42 @@ from {
 		or
 		fail error "Elements do not have a common supertype: " + telems.join(', ')["`" + it.itemType + "`"] + "."
 	}
+}
+
+checkrule CheckCallableWithArgsCall for RosettaCallableWithArgsCall e from {
+	val f = e.callable
+    switch f {
+        RosettaRecordType: {
+            fail
+        }
+        RosettaQualifiedType: {
+            fail
+        }
+        RosettaCalculationType: {
+            fail
+        }
+        RosettaExternalFunction: {
+        	f.parameters.head
+        	{
+				f.parameters.size() == e.args.size()
+				or
+				fail error "Expected " + f.parameters.size() + " argument" + (if (f.parameters.size() === 1) "" else "s") + ", but got " + e.args.size() + " instead."
+			}
+			(0..<e.args.size).forall[idx |
+				val param = f.parameters.get(idx)
+				val paramType = if (param.isArray) createListType(rosettaTypeToRType(param.type), 0) else createListType(rosettaTypeToRType(param.type), 1, 1)
+				looseListSubtypeCheck(e.args.get(idx), paramType)
+			]
+        }
+        Function: {
+            {
+				f.inputs.size() == e.args.size()
+				or
+				fail error "Expected " + f.inputs.size() + " argument" + (if (f.inputs.size() === 1) "" else "s") + ", but got " + e.args.size() + " instead."
+			}
+			(0..<e.args.size).forall[idx |
+				looseListSubtypeCheck(e.args.get(idx), f.inputs.get(idx).attributeListType)
+			]
+        }
+    }
 }

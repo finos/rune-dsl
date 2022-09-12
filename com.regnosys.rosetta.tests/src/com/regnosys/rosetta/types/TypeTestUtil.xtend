@@ -37,6 +37,10 @@ class TypeTestUtil {
 	def void assertIsValidWithType(CharSequence expr, RListType expected) {
 		val e = expr.parseExpression
 		e.assertNoIssues
+		e.assertHasType(expected)
+	}
+	
+	def void assertHasType(RosettaExpression e, RListType expected) {
 		val t = e.type
 		assertEquals(expected, t)
 	}
