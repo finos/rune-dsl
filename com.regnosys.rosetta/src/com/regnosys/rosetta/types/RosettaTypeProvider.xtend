@@ -26,7 +26,6 @@ import com.regnosys.rosetta.rosetta.RosettaMapPath
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapRosettaPath
 import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
@@ -36,7 +35,6 @@ import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ListOperation
@@ -48,6 +46,7 @@ import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 
 class RosettaTypeProvider {
 
@@ -129,6 +128,9 @@ class RosettaTypeProvider {
 						RBuiltinType.ANY
 				}
 			}
+			RosettaOnlyElement: {
+				safeRType(expression.argument, cycleTracker)
+			}
 			RosettaRecordType:
 				new RRecordType(expression)
 			RosettaEnumValueReference: {
@@ -170,8 +172,6 @@ class RosettaTypeProvider {
 				RBuiltinType.INT
 			RosettaBigDecimalLiteral:
 				RBuiltinType.NUMBER
-			EmptyLiteral:
-				RBuiltinType.ANY
 			ListLiteral:
 				listType(expression.elements)
 			RosettaExternalFunction: {
@@ -227,8 +227,6 @@ class RosettaTypeProvider {
 									NodeModelUtils.findActualNodeFor(expression)?.text + "'")
 				}
 			}
-			RosettaParenthesisCalcExpression:
-				expression.expression.safeRType(cycleTracker)
 			RosettaConditionalExpression: {
 				val ifT = expression.ifthen.safeRType(cycleTracker)
 				if (expression.elsethen === null) {
@@ -276,7 +274,6 @@ class RosettaTypeProvider {
 					case REVERSE,
 					case FLATTEN,
 					case DISTINCT,
-					case ONLY_ELEMENT,
 					case SUM,
 					case JOIN,
 					case MIN,
@@ -294,6 +291,9 @@ class RosettaTypeProvider {
 	}
 	
 	private def listType(List<RosettaExpression> exp) {
+		if (exp.length == 0) {
+			return RBuiltinType.NOTHING;
+		}
 		val types = exp.map[RType]
 		val result = types.reduce[p1, p2| parent(p1,p2)]
 		if (result===null) return new RErrorType(types.groupBy[name].keySet.join(', '));

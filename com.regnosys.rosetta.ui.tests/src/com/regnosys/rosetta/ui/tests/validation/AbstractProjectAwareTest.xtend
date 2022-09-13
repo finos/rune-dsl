@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.AfterAll
 
-class AbstractProjectAwareTest {
+abstract class AbstractProjectAwareTest {
 
 	@Inject IWorkspace workspace
 	@Inject IResourceSetProvider resourceSetProvider

@@ -25,7 +25,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaPackage
-import com.regnosys.rosetta.rosetta.RosettaParenthesisCalcExpression
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -229,6 +228,12 @@ class RosettaFormatter extends AbstractFormatter2 {
 			INDENT
 		)
 		ele.expression.format
+		
+		// Format parentheses
+		ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.leftParenthesisKeyword_5_0)
+			.forEach[append(NO_SPACE_PRESERVE_NEW_LINE)]
+	    ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.rightParenthesisKeyword_5_2)
+			.forEach[prepend(NO_SPACE_PRESERVE_NEW_LINE)]
 	}
 
 	def dispatch void format(RosettaDocReference rosettaRegulatoryReference,
@@ -295,11 +300,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.regionFor.feature(RosettaPackage.Literals.ROSETTA_BINARY_OPERATION__OPERATOR).surround(ONE_SPACE_PRESERVE_NEWLINE)
 		ele.right.format
 	}
-	def dispatch void format(RosettaParenthesisCalcExpression ele, extension IFormattableDocument document) {
-		ele.regionFor.keyword('(').append(NO_SPACE_PRESERVE_NEW_LINE)
-		ele.regionFor.keyword(')').prepend(NO_SPACE_PRESERVE_NEW_LINE)
-		ele.expression.format
-	}
 	
 	def dispatch void format(RosettaCallableWithArgsCall ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword('(').append(NO_SPACE_PRESERVE_NEW_LINE)
@@ -314,7 +314,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 			append(ONE_SPACE_PRESERVE_NEWLINE)
 		]
 		ele.regionFor.keywords(
-			rosettaCalcConditionalExpressionAccess.elseKeyword_5_0,
+			rosettaCalcConditionalExpressionAccess.fullElseKeyword_5_0_0,
 			rosettaCalcConditionalExpressionAccess.thenKeyword_3
 		).forEach [
 			prepend(ONE_SPACE_PRESERVE_NEWLINE)
@@ -371,7 +371,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 	def dispatch void format(ListOperation operation,
 		extension IFormattableDocument document) {
 		operation.receiver.format
-		operation.regionFor.assignment(listOperationAccess.operationKindAssignment_1_0_0_1).surround(ONE_SPACE_PRESERVE_NEWLINE)
+		operation.regionFor.assignment(listOperationAccess.operationKindAssignment_1_0_0_0_1).surround(ONE_SPACE_PRESERVE_NEWLINE)
 		operation.parameters.forEach[format]
 		interior(
 			operation.regionFor.keyword('[').prepend(ONE_SPACE_LOW_PRIO).append(NO_SPACE_PRESERVE_NEW_LINE),

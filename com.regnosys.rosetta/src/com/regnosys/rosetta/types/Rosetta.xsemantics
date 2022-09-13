@@ -9,7 +9,6 @@ import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.RosettaIntLiteral
-import com.regnosys.rosetta.rosetta.simple.EmptyLiteral
 import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.rosetta.RosettaCardinality
@@ -37,12 +36,15 @@ auxiliary {
 	listJoin(RListType t1, RListType t2) : RListType
 	
 	listTypeCheck(RosettaExpression sourceObject, RListType expected)
+	looseListTypeCheck(RosettaExpression sourceObject, RListType expected)
 	typeCheck(RosettaExpression sourceObject, RType expected)
 	listSubtypeCheck(RosettaExpression sourceObject, RListType expected)
+	looseListSubtypeCheck(RosettaExpression sourceObject, RListType expected)
 	subtypeCheck(RosettaExpression sourceObject, RType expected)
 	comparableListTypeCheck(RosettaBinaryOperation sourceObject)
 	comparableTypeCheck(RosettaBinaryOperation sourceObject)
 	onlyRightIsSingularCheck(RosettaBinaryOperation sourceObject)
+	looseOnlyRightIsSingularCheck(RosettaBinaryOperation sourceObject)
 	constraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
 	notConstraintCheck(RosettaExpression sourceObject, RosettaCardinality notExpected)
 	isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
@@ -118,6 +120,16 @@ auxiliary listTypeCheck(RosettaExpression sourceObject, RListType expected) {
 			source sourceObject
 	}
 }
+auxiliary looseListTypeCheck(RosettaExpression sourceObject, RListType expected) {
+    var RListType actual
+    empty |- sourceObject : actual or actual = null
+    if (expected !== null && actual !== null) {
+        expected.itemType.equals(actual.itemType) && expected.constraint.isSubconstraintOf(actual.constraint)
+        or
+        fail error unequalListTypesMessage(expected, actual)
+            source sourceObject
+    }
+}
 auxiliary typeCheck(RosettaExpression sourceObject, RType expected) {
 	var RListType actual
 	empty |- sourceObject : actual or actual = null
@@ -135,6 +147,14 @@ auxiliary listSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
 		fail error notAListSubtypeMessage(expected, actual)
 			source sourceObject
 	}
+}
+auxiliary looseListSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
+    var RListType actual
+    empty |- sourceObject : actual or actual = null
+    if (expected !== null && actual !== null && !({empty |- actual.itemType <: expected.itemType} && expected.constraint.isSubconstraintOf(actual.constraint))) {
+        fail error notAListSubtypeMessage(expected, actual)
+            source sourceObject
+    }
 }
 auxiliary subtypeCheck(RosettaExpression sourceObject, RType expected) {
 	var RListType actual
@@ -170,28 +190,53 @@ auxiliary comparableTypeCheck(RosettaBinaryOperation sourceObject) {
 }
 auxiliary onlyRightIsSingularCheck(RosettaBinaryOperation sourceObject) {
 	var RListType tl
-	var RListType tr
-	empty |- sourceObject.left : tl or tl = null
-	empty |- sourceObject.right : tr or tr = null
-	if (tl !== null && tr !== null) {
-		!tl.constraint.constraintEquals(single) && tr.constraint.constraintEquals(single)
-		or
-		{
-			if (tl.constraint.constraintEquals(single)) {
-				if (tr.constraint.constraintEquals(single)) {
-					fail error bothAreSingularMessage(sourceObject)
-						source sourceObject
-						feature RosettaPackage.Literals.ROSETTA_BINARY_OPERATION__CARD_OP
-				} else {
-					fail error notRightIsSingularButLeftIsMessage(tr)
-						source sourceObject.right
-				}
-			} else {
-				fail error notConstraintMessage(single, tr)
-					source sourceObject.right
-			}
-		}
-	}
+    var RListType tr
+    empty |- sourceObject.left : tl or tl = null
+    empty |- sourceObject.right : tr or tr = null
+    if (tl !== null && tr !== null) {
+        !tl.constraint.constraintEquals(single) && tr.constraint.constraintEquals(single)
+        or
+        {
+            if (tl.constraint.constraintEquals(single)) {
+                if (tr.constraint.constraintEquals(single)) {
+                    fail error bothAreSingularMessage(sourceObject)
+                        source sourceObject
+                        feature RosettaPackage.Literals.ROSETTA_BINARY_OPERATION__CARD_OP
+                } else {
+                    fail error notRightIsSingularButLeftIsMessage(tr)
+                        source sourceObject.right
+                }
+            } else {
+                fail error notConstraintMessage(single, tr)
+                    source sourceObject.right
+            }
+        }
+    }
+}
+auxiliary looseOnlyRightIsSingularCheck(RosettaBinaryOperation sourceObject) {
+    var RListType tl
+    var RListType tr
+    empty |- sourceObject.left : tl or tl = null
+    empty |- sourceObject.right : tr or tr = null
+    if (tl !== null && tr !== null) {
+        !tl.constraint.constraintEquals(single) && single.isSubconstraintOf(tr.constraint)
+        or
+        {
+            if (tl.constraint.constraintEquals(single)) {
+                if (single.isSubconstraintOf(tr.constraint)) {
+                    fail error bothAreSingularMessage(sourceObject)
+                        source sourceObject
+                        feature RosettaPackage.Literals.ROSETTA_BINARY_OPERATION__CARD_OP
+                } else {
+                    fail error notRightIsSingularButLeftIsMessage(tr)
+                        source sourceObject.right
+                }
+            } else {
+                fail error notConstraintMessage(single, tr)
+                    source sourceObject.right
+            }
+        }
+    }
 }
 auxiliary constraintCheck(RosettaExpression sourceObject, RosettaCardinality expected) {
 	var RListType actual
@@ -263,8 +308,6 @@ axiom TNumber
 	G |- RosettaBigDecimalLiteral num : singleNumber
 axiom TInt
 	G |- RosettaIntLiteral i : singleInt
-axiom TEmpty
-	G |- EmptyLiteral emp : emptyNothing
 
 rule TArithmetic
 	G |- ArithmeticOperation op : RListType lt
@@ -338,12 +381,12 @@ checkrule CheckLeftArithmetic for
 from {
 	if (op.operator == '+') {
 		{
-			listTypeCheck(op.left, singleString)
+			looseListTypeCheck(op.left, singleString)
 		} or {
-			listSubtypeCheck(op.left, singleNumber)
+			looseListSubtypeCheck(op.left, singleNumber)
 		}
 	} else {
-		listSubtypeCheck(op.left, singleNumber)
+		looseListSubtypeCheck(op.left, singleNumber)
 	}
 }
 checkrule CheckRightArithmetic for
@@ -351,12 +394,12 @@ checkrule CheckRightArithmetic for
 from {
 	if (op.operator == '+') {
 		{
-			listTypeCheck(op.right, singleString)
+			looseListTypeCheck(op.right, singleString)
 		} or {
-			listSubtypeCheck(op.right, singleNumber)
+			looseListSubtypeCheck(op.right, singleNumber)
 		}
 	} else {
-		listSubtypeCheck(op.right, singleNumber)
+		looseListSubtypeCheck(op.right, singleNumber)
 	}
 }
 checkrule CheckAddition for
@@ -390,7 +433,7 @@ from {
 	if (op.cardOp === null) {
 		comparableListTypeCheck(op)
 	} else {
-		onlyRightIsSingularCheck(op)
+		looseOnlyRightIsSingularCheck(op)
 		comparableTypeCheck(op)
 	}
 }
@@ -398,19 +441,19 @@ from {
 checkrule CheckLeftLogical for
 	LogicalOperation op
 from {
-	listTypeCheck(op.left, singleBoolean)
+	looseListTypeCheck(op.left, singleBoolean)
 }
 checkrule CheckRightLogical for
 	LogicalOperation op
 from {
-	listTypeCheck(op.right, singleBoolean)
+	looseListTypeCheck(op.right, singleBoolean)
 }
 
 checkrule CheckLeftComparison for
 	ComparisonOperation op
 from {
 	if (op.cardOp === null) {
-		listSubtypeCheck(op.left, singleNumber)
+		looseListSubtypeCheck(op.left, singleNumber)
 	} else {
 		subtypeCheck(op.left, NUMBER)
 	}
@@ -419,7 +462,7 @@ checkrule CheckRightComparison for
 	ComparisonOperation op
 from {
 	if (op.cardOp === null) {
-		listSubtypeCheck(op.right, singleNumber)
+		looseListSubtypeCheck(op.right, singleNumber)
 	} else {
 		subtypeCheck(op.right, NUMBER)
 	}
@@ -428,14 +471,14 @@ checkrule CheckComparison for
 	ComparisonOperation op
 from {
 	if (op.cardOp !== null) {
-		onlyRightIsSingularCheck(op)
+		looseOnlyRightIsSingularCheck(op)
 	}
 }
 
 checkrule CheckIfConditionalExpression for
 	RosettaConditionalExpression e
 from {
-	listTypeCheck(e.^if, singleBoolean)
+	looseListTypeCheck(e.^if, singleBoolean)
 }
 checkrule CheckBodyConditionalExpression for
 	RosettaConditionalExpression e

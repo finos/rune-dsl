@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
-class RosettaEnumHelperTest {
+class EnumGeneratorTest {
     
     @Inject extension CodeGeneratorTestHelper
     @Inject extension ModelHelper
@@ -25,9 +25,9 @@ class RosettaEnumHelperTest {
     def void shouldGenerateAnnotationForEnumSynonyms() {
         val code = '''
         	synonym source FpML
-            enum TestEnum:
-            	one <"Some description"> [synonym FpML value "oneSynonym"]
-            	two <"Some other description"> [synonym FpML value "twoSynonym"]
+        	enum TestEnum:
+        		one <"Some description"> [synonym FpML value "oneSynonym"]
+        		two <"Some other description"> [synonym FpML value "twoSynonym"]
         '''.generateCode
 
         val testEnumCode = code.get(rootPackage.name + ".TestEnum")

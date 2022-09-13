@@ -289,8 +289,11 @@ class RosettaSegment extends RosettaRootElement, RosettaNamed {
 abstract class RosettaExpression {
 }
 
+class RosettaOnlyElement extends RosettaExpression {
+	contains RosettaExpression argument
+}
+
 class RosettaCallableCall extends RosettaExpression {
-	boolean onlyElement
 	boolean implicitReceiver
 	refers RosettaCallable callable
 }
@@ -335,9 +338,6 @@ class RosettaIntLiteral extends RosettaLiteral {
 	}
 }
 
-class RosettaParenthesisCalcExpression extends RosettaExpression{
-	contains RosettaExpression expression
-}
 
 /**********************************************************************
  * Mappings
@@ -430,7 +430,6 @@ class RosettaDisjointExpression extends RosettaExpression {
 }
 
 class RosettaFeatureCall extends RosettaExpression {
-	boolean onlyElement
 	contains RosettaExpression receiver
 	refers RosettaFeature feature
 }
@@ -443,10 +442,11 @@ class RosettaConditionalExpression extends RosettaExpression {
 	contains RosettaExpression ^if
 	contains RosettaExpression ifthen
 	contains RosettaExpression elsethen
+	
+	boolean full // whether the conditional expression has an explicit `else` branch.
 }
 
 class RosettaCallableWithArgsCall extends RosettaExpression {
-	boolean onlyElement
 	refers RosettaCallableWithArgs callable
 	contains RosettaExpression[] args
 }

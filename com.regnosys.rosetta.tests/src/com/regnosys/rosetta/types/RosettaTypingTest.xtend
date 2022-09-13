@@ -48,6 +48,9 @@ class RosettaTypingTest {
 	def void testLogicalOperationTypeInference() {
 		'True or False'.assertIsValidWithType(singleBoolean)
 		'True and False'.assertIsValidWithType(singleBoolean)
+		
+		// Test loosened version
+		'(if False then True else [True, False]) and False'.assertIsValidWithType(singleBoolean)
 	}
 	
 	@Test
@@ -69,6 +72,9 @@ class RosettaTypingTest {
 		'[1, 3] all = 5.0'.assertIsValidWithType(singleBoolean)
 		'empty all <> 5.0'.assertIsValidWithType(singleBoolean)
 		'[1, 3] any = 5.0'.assertIsValidWithType(singleBoolean)
+		
+		// Test loosened version
+        '[1, 3] any = (if False then 1 else [2, 3])'.assertIsValidWithType(singleBoolean)
 	}
 	
 	@Test
@@ -118,6 +124,9 @@ class RosettaTypingTest {
 		'3.0 * 4'.assertIsValidWithType(singleNumber)
 		
 		'3 / 4'.assertIsValidWithType(singleNumber)
+		
+		// Test loosened version
+        '(if False then 2 else [3, 4]) + 5'.assertIsValidWithType(singleInt)
 	}
 	
 	@Test
@@ -145,6 +154,10 @@ class RosettaTypingTest {
 		
 		'[1, 2] any < 5'.assertIsValidWithType(singleBoolean)
 		'empty all > 5'.assertIsValidWithType(singleBoolean)
+		
+		// Test loosened version
+        '(if False then 2 else [3, 4]) < 5'.assertIsValidWithType(singleBoolean)
+        '[1, 2] any < (if False then 5 else [3, 4])'.assertIsValidWithType(singleBoolean)
 	}
 	
 	@Test

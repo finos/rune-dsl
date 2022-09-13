@@ -33,6 +33,8 @@ public interface ModelObjectValidator {
 	<T extends RosettaModelObject> void validateAndFailOnErorr(Class<T> topClass, List<? extends T> modelObjects);
 
 	class ModelObjectValidationException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+		
 		private final String errors;
 
 		public ModelObjectValidationException(String errors) {

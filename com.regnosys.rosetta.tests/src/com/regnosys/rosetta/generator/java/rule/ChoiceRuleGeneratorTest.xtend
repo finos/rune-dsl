@@ -45,7 +45,7 @@ class ChoiceRuleGeneratorTest {
 	
 		val testChoiceRuleClass = classes.get(rootPackage.choiceRule.name + ".TestRequiredChoice")
 		
-		val testChoiceRule = testChoiceRuleClass.newInstance;
+		val testChoiceRule = testChoiceRuleClass.declaredConstructor.newInstance;
 		
 		val validationResult = testChoiceRuleClass.getMatchingMethod("validate", #[RosettaPath, testInstance.class])
 			.invoke(testChoiceRule, null, testInstance)
@@ -68,7 +68,7 @@ class ChoiceRuleGeneratorTest {
 		
 		println(classes)
 		val testChoiceRuleClass = classes.get(rootPackage.choiceRule.name + ".TestOptionalChoice")
-		val testChoiceRule = testChoiceRuleClass.newInstance;
+		val testChoiceRule = testChoiceRuleClass.declaredConstructor.newInstance;
 		
 		val validationResult = testChoiceRuleClass.getMatchingMethod("validate", #[RosettaPath ,testInstance.class])
 			.invoke(testChoiceRule, null, testInstance)

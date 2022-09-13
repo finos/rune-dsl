@@ -20,7 +20,7 @@ class NamespaceHierarchyGenerator {
 				«namespaceToModelUriMap.keySet
 					.filter[it.startsWith(root)]
 					.sort
-					.forEach[namespace | buildNamespaceModelTree(rootModel, AtomicInteger.newInstance, namespace, namespaceToDescriptionMap, namespaceToModelUriMap)]»
+					.forEach[namespace | buildNamespaceModelTree(rootModel, AtomicInteger.declaredConstructor.newInstance, namespace, namespaceToDescriptionMap, namespaceToModelUriMap)]»
 				«buildModelJson(rootModel)»
 			
 			«ENDFOR»]			

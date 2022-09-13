@@ -131,8 +131,9 @@ class CodeGeneratorTestHelper {
 
 	def Method getMatchingMethod(Class<?> clazz, String name, List<Class<?>> values) {
 		var methods = clazz.methods.filter[m|m.name==name]
+		val size = values === null ? 0 : values.size
 		methods = methods
-			.filter[m|m.parameterCount==values?.size]
+			.filter[m|m.parameterCount==size]
 		val meth = methods.findFirst[m|m.paramsMatch(values)]
 		meth
 	}
