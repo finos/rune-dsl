@@ -36,6 +36,13 @@ import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.RosettaCallableCall
+import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.simple.ListOperation
+import com.regnosys.rosetta.rosetta.RosettaCallable
+import com.regnosys.rosetta.rosetta.simple.ClosureParameter
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.types.RQualifiedType
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -65,6 +72,7 @@ auxiliary {
 	// TODO: Functions I need temporarily during transition from old to new type system
 	rosettaTypeToRType(RosettaType rt): RType
 	attributeListType(Attribute a): RListType
+	callableListType(RosettaCallable c): RListType
 }
 
 judgments {
@@ -94,6 +102,16 @@ auxiliary listComparable(RListType t1, RListType t2) {
 	comparable(t1.itemType, t2.itemType)
 	overlap(t1.constraint, t2.constraint)
 }
+auxiliary join(RQualifiedType t1, RBuiltinType t2) {
+	if (t2 == STRING) {
+		return t1
+	}
+}
+auxiliary join(RBuiltinType t1, RQualifiedType t2) {
+	if (t1 == STRING) {
+		return t2
+	}
+}
 auxiliary join(RBuiltinType t1, RBuiltinType t2) {
 	if (t1 == t2) {
 		return t1
@@ -113,6 +131,10 @@ auxiliary join(RBuiltinType t1, RType t2) {
 }
 auxiliary join(RType t1, RBuiltinType t2) {
 	t2 == NOTHING
+	return t1
+}
+auxiliary join(RType t1, RType t2) {
+	t1 == t2
 	return t1
 }
 auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
@@ -242,7 +264,7 @@ auxiliary looseOnlyRightIsSingularCheck(RosettaBinaryOperation sourceObject) {
         or
         {
             if (tl.constraint.constraintEquals(single)) {
-                if (single.isSubconstraintOf(tr.constraint)) {
+                if (tr.constraint.constraintEquals(single)) {
                     fail error bothAreSingularMessage(sourceObject)
                         source sourceObject
                         feature RosettaPackage.Literals.ROSETTA_BINARY_OPERATION__CARD_OP
@@ -291,6 +313,14 @@ auxiliary isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardina
 auxiliary rosettaTypeToRType(Data d) {
     return new RDataType(d)
 }
+auxiliary rosettaTypeToRType(RosettaQualifiedType t) {
+	return switch t.name {
+		case RQualifiedType.PRODUCT_TYPE.qualifiedType:
+			RQualifiedType.PRODUCT_TYPE
+		case RQualifiedType.EVENT_TYPE.qualifiedType:
+			RQualifiedType.EVENT_TYPE
+	}
+}
 auxiliary rosettaTypeToRType(RosettaBuiltinType t) {
     return switch t.name {
         case 'boolean':
@@ -319,7 +349,39 @@ auxiliary attributeListType(Attribute a) {
 	return createListType(rosettaTypeToRType(a.type), a.card)
 }
 
+auxiliary callableListType(Attribute c) {
+	return c.attributeListType
+}
+
+auxiliary callableListType(ClosureParameter c) {
+	val op = c.operation
+	empty |- op.receiver : var RListType receiverType
+	if (receiverType !== null) {
+		return createListType(receiverType.itemType, single)
+	}
+	return null
+}
+
+auxiliary callableListType(Data c) {
+	return createListType(new RDataType(c), single)
+}
+
+auxiliary callableListType(RosettaEnumeration c) {
+	return createListType(new REnumType(c), single)
+}
+
+auxiliary callableListType(ShortcutDeclaration c) {
+	empty |- c.expression : var RListType t
+	return t
+}
+
 /*** SUBTYPING **/
+rule SQualified
+	G |- RQualifiedType t1 <: RBuiltinType t2
+from {
+	t2 == STRING
+}
+
 rule SBuiltIn // SA-Refl, SA-Num, SA-Nothing
 	G |- RBuiltinType t1 <: RBuiltinType t2
 from {
@@ -364,6 +426,17 @@ axiom TNumber
 	G |- RosettaBigDecimalLiteral num : singleNumber
 axiom TInt
 	G |- RosettaIntLiteral i : singleInt
+
+rule TVar
+	G |- RosettaCallableCall c : RListType t
+from {
+	if (c.implicitReceiver) {
+		val op = EcoreUtil2.getContainerOfType(c, ListOperation)
+		t = op.firstOrImplicit.callableListType
+	} else {
+		t = c.callable.callableListType
+	}
+}
 
 rule TArithmetic
 	G |- ArithmeticOperation op : RListType lt

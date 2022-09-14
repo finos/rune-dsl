@@ -11,6 +11,9 @@ import static com.regnosys.rosetta.types.RBuiltinType.*
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
+import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.simple.ListOperation
+import com.regnosys.rosetta.rosetta.ArithmeticOperation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -34,6 +37,36 @@ class RosettaTypingTest {
 		'3.14'.assertIsValidWithType(singleNumber)
 		'1'.assertIsValidWithType(singleInt)
 		'empty'.assertIsValidWithType(emptyNothing)
+	}
+	
+	@Test
+	def void testVariableTypeInference() {
+		val model = '''
+		namespace test
+		
+		func TestVar:
+			inputs:
+				a int (2..4)
+				b boolean (1..1)
+			output: result int (2..4)
+			add result:
+				if b then a else a
+		
+		func TestImplicitVar:
+			output: result int (3..3)
+			add result:
+				[1, 2, 3] map [item + 1]
+		'''.parseRosetta
+		model.elements.get(0) as Function => [operations.head.expression as RosettaConditionalExpression => [
+			^if.assertHasType(singleBoolean)
+			ifthen.assertHasType(createListType(INT, 2, 4))
+		]];
+		
+		model.elements.get(1) as Function => [operations.head.expression as ListOperation => [
+			body as ArithmeticOperation => [
+				left.assertHasType(singleInt)
+			]
+		]];
 	}
 	
 	// TODO: test auxiliary functions

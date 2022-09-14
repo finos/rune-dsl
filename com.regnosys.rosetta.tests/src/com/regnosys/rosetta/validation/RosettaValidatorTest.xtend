@@ -155,9 +155,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				id productType (1..1)
 				val int (1..1)
 			
-			condition R:
-				if  id = "Type"
-				then val < 1
+			    condition R:
+				    if  id = "Type"
+				    then val < 1
 		'''.parseRosettaWithNoErrors
 	}
 	

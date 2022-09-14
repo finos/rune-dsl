@@ -1163,8 +1163,8 @@ class FunctionGeneratorTest {
 			
 			func F1:
 				inputs:
-					s1 string (1..1)
-					s2 string (1..*)
+					s1 string (1..*)
+					s2 string (1..1)
 				output:
 					res boolean (1..1)
 				set res: s1 all = s2
@@ -1173,9 +1173,9 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertTrue(func.invokeFunc(Boolean, "a", Arrays.asList("a", "a")))
-		assertFalse(func.invokeFunc(Boolean, "a", Arrays.asList("a", "b")))
-		assertFalse(func.invokeFunc(Boolean, "b", Arrays.asList("a", "a")))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList("a", "a"), "a"))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList("a", "b"), "a"))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList("b", "b"), "a"))
 	}
 
 	@Test
@@ -1186,8 +1186,8 @@ class FunctionGeneratorTest {
 			
 			func F1:
 				inputs:
-					s1 string (1..1)
-					s2 string (1..*)
+					s1 string (1..*)
+					s2 string (1..1)
 				output:
 					res boolean (1..1)
 				set res: s1 any = s2
@@ -1196,9 +1196,9 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertTrue(func.invokeFunc(Boolean, "a", Arrays.asList("a", "a")))
-		assertTrue(func.invokeFunc(Boolean, "a", Arrays.asList("a", "b")))
-		assertFalse(func.invokeFunc(Boolean, "b", Arrays.asList("a", "a")))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList("a", "a"), "a"))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList("a", "b"), "a"))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList("b", "b"), "a"))
 	}
 
 	@Test
@@ -1209,8 +1209,8 @@ class FunctionGeneratorTest {
 			
 			func F1:
 				inputs:
-					n1 int (1..1)
-					n2 int (1..*)
+					n1 int (1..*)
+					n2 int (1..1)
 				output:
 					res boolean (1..1)
 				set res: n1 all = n2
@@ -1219,9 +1219,9 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertTrue(func.invokeFunc(Boolean, 1, Arrays.asList(1, 1)))
-		assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(1, 2)))
-		assertFalse(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList(1, 1), 1))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList(1, 2), 1))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList(1, 1), 2))
 	}
 
 	@Test
@@ -1232,8 +1232,8 @@ class FunctionGeneratorTest {
 			
 			func F1:
 				inputs:
-					n1 int (1..1)
-					n2 int (1..*)
+					n1 int (1..*)
+					n2 int (1..1)
 				output:
 					res boolean (1..1)
 				set res: n1 any = n2
@@ -1242,9 +1242,9 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertTrue(func.invokeFunc(Boolean, 1, Arrays.asList(1, 1)))
-		assertTrue(func.invokeFunc(Boolean, 1, Arrays.asList(1, 2)))
-		assertFalse(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList(1, 1), 1))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList(1, 2), 1))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList(1, 1), 2))
 	}
 
 	@Test
@@ -1255,8 +1255,8 @@ class FunctionGeneratorTest {
 			
 			func F1:
 				inputs:
-					s1 string (1..1)
-					s2 string (1..*)
+					s1 string (1..*)
+					s2 string (1..1)
 				output:
 					res boolean (1..1)
 				set res: s1 all <> s2
@@ -1265,9 +1265,9 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertFalse(func.invokeFunc(Boolean, "a", Arrays.asList("a", "a")))
-		assertFalse(func.invokeFunc(Boolean, "a", Arrays.asList("a", "b")))
-		assertTrue(func.invokeFunc(Boolean, "b", Arrays.asList("a", "a")))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList("a", "a"), "a"))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList("a", "b"), "a"))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList("a", "a"), "b"))
 	}
 
 	@Test
@@ -1278,8 +1278,8 @@ class FunctionGeneratorTest {
 			
 			func F1:
 				inputs:
-					s1 string (1..1)
-					s2 string (1..*)
+					s1 string (1..*)
+					s2 string (1..1)
 				output:
 					res boolean (1..1)
 				set res: s1 any <> s2
@@ -1288,9 +1288,9 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertFalse(func.invokeFunc(Boolean, "a", Arrays.asList("a", "a")))
-		assertTrue(func.invokeFunc(Boolean, "a", Arrays.asList("a", "b")))
-		assertTrue(func.invokeFunc(Boolean, "b", Arrays.asList("a", "a")))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList("a", "a"), "a"))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList("a", "b"), "a"))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList("a", "a"), "b"))
 	}
 
 	@Test
@@ -1301,8 +1301,8 @@ class FunctionGeneratorTest {
 			
 			func F1:
 				inputs:
-					n1 int (1..1)
-					n2 int (1..*)
+					n1 int (1..*)
+					n2 int (1..1)
 				output:
 					res boolean (1..1)
 				set res: n1 all <> n2
@@ -1311,9 +1311,9 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(1, 1)))
-		assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(1, 2)))
-		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList(1, 1), 1))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList(1, 2), 1))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList(1, 1), 2))
 	}
 
 	@Test
@@ -1324,8 +1324,8 @@ class FunctionGeneratorTest {
 			
 			func F1:
 				inputs:
-					n1 int (1..1)
-					n2 int (1..*)
+					n1 int (1..*)
+					n2 int (1..1)
 				output:
 					res boolean (1..1)
 				set res: n1 any <> n2
@@ -1334,9 +1334,9 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(1, 1)))
-		assertTrue(func.invokeFunc(Boolean, 1, Arrays.asList(1, 2)))
-		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList(1, 1), 1))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList(1, 2), 1))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList(1, 1), 2))
 	}
 
 	@Test
@@ -1347,8 +1347,8 @@ class FunctionGeneratorTest {
 			
 			func F1:
 				inputs:
-					n1 int (1..1)
-					n2 int (1..*)
+					n1 int (1..*)
+					n2 int (1..1)
 				output:
 					res boolean (1..1)
 				set res: n1 all > n2
@@ -1357,9 +1357,9 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
-		assertFalse(func.invokeFunc(Boolean, 2, Arrays.asList(1, 2)))
-		assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(2, 2)))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList(1, 1), 2))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList(1, 3), 2))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList(3, 3), 2))
 	}
 
 	@Test
@@ -1370,8 +1370,8 @@ class FunctionGeneratorTest {
 			
 			func F1:
 				inputs:
-					n1 int (1..1)
-					n2 int (1..*)
+					n1 int (1..*)
+					n2 int (1..1)
 				output:
 					res boolean (1..1)
 				set res: n1 any > n2
@@ -1380,9 +1380,9 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func = classes.createFunc("F1");
-		// assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
-		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 2)))
-	// assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(2, 2)))
+		assertFalse(func.invokeFunc(Boolean, Arrays.asList(1, 1), 2))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList(1, 3), 2))
+		assertTrue(func.invokeFunc(Boolean, Arrays.asList(3, 3), 2))
 	}
 
 	@Test
