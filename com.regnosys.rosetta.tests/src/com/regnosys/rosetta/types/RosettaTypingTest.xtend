@@ -10,10 +10,10 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.types.RBuiltinType.*
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.ArithmeticOperation
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -148,6 +148,7 @@ class RosettaTypingTest {
 			.assertError(null, "The cardinality operator `any` is redundant when comparing two single values.")
 	}
 	
+	// TODO: test arithmetic with dates/times/etc
 	@Test
 	def void testArithmeticOperationTypeInference() {
 		'3 + 4'.assertIsValidWithType(singleInt)
@@ -323,5 +324,95 @@ class RosettaTypingTest {
 		
 		val expr3 = (model.elements.get(3) as Function).operations.head.expression;
 		expr3.assertError(null, "Expected a list with 2 to 4 items, but got a list with 5 items instead.");
+	}
+	
+	@Test
+	def void testProjectionTypeInference() {
+		val model = '''
+		namespace test
+		
+		type A:
+			x int (1..1)
+			y number (0..*)
+			z boolean (3..7)
+		
+		func Test1:
+			inputs:
+			  a A (1..1)
+			output: result int (1..1)
+			set result:
+				a -> x
+		
+		func Test2:
+			inputs:
+			  a A (1..1)
+			output: result number (0..*)
+			add result:
+				a -> y
+		
+		func Test3:
+			inputs:
+			  a A (1..1)
+			output: result boolean (3..7)
+			add result:
+				a -> z
+		
+		func Test4:
+			inputs:
+			  a A (2..5)
+			output: result int (2..5)
+			add result:
+				a -> x
+		
+		func Test5:
+			inputs:
+			  a A (2..5)
+			output: result number (0..*)
+			add result:
+				a -> y
+		
+		func Test6:
+			inputs:
+			  a A (2..5)
+			output: result boolean (6..35)
+			add result:
+				a -> z
+		'''.parseRosettaWithNoIssues		
+		val expr1 = (model.elements.get(1) as Function).operations.head.expression;
+		expr1.assertHasType(createListType(INT, 1, 1));
+		
+		val expr2 = (model.elements.get(2) as Function).operations.head.expression;
+		expr2.assertHasType(createListType(NUMBER, 0));
+		
+		val expr3 = (model.elements.get(3) as Function).operations.head.expression;
+		expr3.assertHasType(createListType(BOOLEAN, 3, 7));
+		
+		val expr4 = (model.elements.get(4) as Function).operations.head.expression;
+		expr4.assertHasType(createListType(INT, 2, 5));
+		
+		val expr5 = (model.elements.get(5) as Function).operations.head.expression;
+		expr5.assertHasType(createListType(NUMBER, 0));
+		
+		val expr6 = (model.elements.get(6) as Function).operations.head.expression;
+		expr6.assertHasType(createListType(BOOLEAN, 6, 35));
+	}
+	
+	@Test
+	def void testEnumTypeInference() {
+		val model = '''
+		namespace test
+		
+		enum A:
+			V1
+			V2
+		
+		func Test:
+			output: result A (1..1)
+			set result:
+				A -> V1
+		'''.parseRosettaWithNoIssues
+		val A = new REnumType(model.elements.get(0) as RosettaEnumeration);
+		val expr1 = (model.elements.get(1) as Function).operations.head.expression;
+		expr1.assertHasType(createListType(A, 1, 1));
 	}
 }

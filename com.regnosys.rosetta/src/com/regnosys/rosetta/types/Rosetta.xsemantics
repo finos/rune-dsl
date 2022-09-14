@@ -43,11 +43,15 @@ import com.regnosys.rosetta.rosetta.RosettaCallable
 import com.regnosys.rosetta.rosetta.simple.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RQualifiedType
+import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
+import java.util.List
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
 
 auxiliary {
+	ancestorEnums(RosettaEnumeration t) : List<RosettaEnumeration>
 	comparable(RType t1, RType t2)
 	overlap(RosettaCardinality c1, RosettaCardinality c2)
 	listComparable(RListType t1, RListType t2)
@@ -86,6 +90,13 @@ judgments {
 }
 
 /****** AUXILIARY DEFINITIONS *******/
+auxiliary ancestorEnums(RosettaEnumeration t) {
+	getAll(t,
+		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
+		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
+		typeof(RosettaEnumeration)
+	)
+}
 auxiliary comparable(RType t1, RType t2) {
 	empty |- t1 <: t2
 	or
@@ -106,6 +117,15 @@ auxiliary join(RQualifiedType t1, RBuiltinType t2) {
 	if (t2 == STRING) {
 		return t1
 	}
+}
+auxiliary join(REnumType t1, REnumType t2) {
+	val st1 = ancestorEnums(t1.enumeration)
+	st1.add(0, t1.enumeration)
+	val st2 = ancestorEnums(t2.enumeration)
+	st2.add(0, t2.enumeration)
+	val result = st2.findFirst[st1.contains(it)]
+	result !== null
+	return new REnumType(result)
 }
 auxiliary join(RBuiltinType t1, RQualifiedType t2) {
 	if (t1 == STRING) {
@@ -382,6 +402,17 @@ from {
 	t2 == STRING
 }
 
+rule SEnum // SA-Refl, SA-Enum
+	G |- REnumType t1 <: REnumType t2
+from {
+	{
+		t1 == t2
+	} or
+	{
+		ancestorEnums(t1.enumeration).contains(t2.enumeration)
+	}
+}
+
 rule SBuiltIn // SA-Refl, SA-Num, SA-Nothing
 	G |- RBuiltinType t1 <: RBuiltinType t2
 from {
@@ -446,8 +477,24 @@ from {
 	} else {
 		G |- op.left : var RListType t1
 		G |- op.right : var RListType t2
-		if (op.operator == '+' && (t1.equals(singleString) || t2.equals(singleString))) {
-			lt = singleString
+		if (op.operator == '+') {
+			if (t1.equals(singleDate)) {
+				lt = singleDateTime
+			} else if (t1.equals(singleString) || t2.equals(singleString)) {
+				lt = singleString
+			} else if (t1.equals(singleNumber) || t2.equals(singleNumber)) {
+				lt = singleNumber
+			} else {
+				lt = singleInt
+			}
+		} else if (op.operator == '-') {
+			if (t1.equals(singleDate) || t2.equals(singleDate)) {
+				lt = singleInt
+			} else if (t1.equals(singleNumber) || t2.equals(singleNumber)) {
+				lt = singleNumber
+			} else {
+				lt = singleInt
+			}
 		} else if (t1.equals(singleNumber) || t2.equals(singleNumber)) {
 			lt = singleNumber
 		} else {
@@ -527,13 +574,39 @@ from {
     }
 }
 
+rule TProject // TA-Project
+	G |- RosettaFeatureCall e : RListType t
+from { // TODO: support metadata feature calls?
+	G |- e.receiver : var RListType dt
+	if (dt !== null) {
+		val a = e.^feature
+		switch (a) {
+			Attribute: {
+				val at = a.attributeListType
+				t = createListType(at.itemType, dt.constraint * at.constraint)
+			}
+			RosettaEnumValue: {
+				t = dt
+			}
+		}
+	}
+}
+
 /****** CHECK RULES ********/
 checkrule CheckLeftArithmetic for
 	ArithmeticOperation op
 from {
 	if (op.operator == '+') {
 		{
+			looseListTypeCheck(op.left, singleDate)
+		} or {
 			looseListTypeCheck(op.left, singleString)
+		} or {
+			looseListSubtypeCheck(op.left, singleNumber)
+		}
+	} else if (op.operator == '-') {
+		{
+			looseListTypeCheck(op.left, singleDate)
 		} or {
 			looseListSubtypeCheck(op.left, singleNumber)
 		}
@@ -546,7 +619,15 @@ checkrule CheckRightArithmetic for
 from {
 	if (op.operator == '+') {
 		{
+			looseListTypeCheck(op.right, singleTime)
+		} or {
 			looseListTypeCheck(op.right, singleString)
+		} or {
+			looseListSubtypeCheck(op.right, singleNumber)
+		}
+	} else if (op.operator == '-') {
+		{
+			looseListTypeCheck(op.right, singleDate)
 		} or {
 			looseListSubtypeCheck(op.right, singleNumber)
 		}
@@ -557,12 +638,17 @@ from {
 checkrule CheckAddition for
 	ArithmeticOperation op
 from {
-	if (op.operator == '+') {
-		var RListType tl
-		var RListType tr
-		empty |- op.left : tl or tl = null
-		empty |- op.right : tr or tr = null
-		if (tl !== null && tr !== null) {
+	var RListType tl
+	var RListType tr
+	empty |- op.left : tl or tl = null
+	empty |- op.right : tr or tr = null
+	if (tl !== null && tr !== null) {
+		if (op.operator == '+') {
+			{
+				tl.itemType == DATE
+				tr.itemType == TIME
+			}
+			or
 			{
 				tl.itemType == STRING
 				tr.itemType == STRING
@@ -575,7 +661,20 @@ from {
 			or 
 				fail error "Expected arguments to be either both a `string` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
 					source op
-		}		
+		} else if (op.operator == '-') {
+			{
+				tl.itemType == DATE
+				tr.itemType == DATE
+			}
+			or
+			{
+				empty |- tl.itemType <: NUMBER
+				empty |- tr.itemType <: NUMBER
+			}
+			or 
+				fail error "Expected arguments to be either both a `string` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
+					source op
+		}
 	}
 }
 
