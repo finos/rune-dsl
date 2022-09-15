@@ -53,6 +53,7 @@ import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.regnosys.rosetta.utils.ExpressionHelper
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -615,11 +616,18 @@ from { // TODO: support metadata feature calls?
 	if (dt !== null) {
 		val a = e.^feature
 		switch (a) {
-			Attribute: {
+			Attribute: { // regular projections
 				val at = a.attributeListType
 				t = createListType(at.itemType, dt.constraint * at.constraint)
 			}
-			RosettaEnumValue: {
+			RosettaTypedFeature: { // projections of record types
+				if (a.type === null) {
+					fail error "Unsupported by the type system."
+				} else {
+					t = createListType(a.type.rosettaTypeToRType, dt.constraint)
+				}
+			}
+			RosettaEnumValue: { // projections of enums
 				t = dt
 			}
 		}
