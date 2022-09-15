@@ -150,7 +150,7 @@ class RosettaTypingTest {
 			.assertError(null, "The cardinality operator `any` is redundant when comparing two single values.")
 	}
 	
-	// TODO: test arithmetic with dates/times/etc
+	// TODO: test arithmetic and comparisons with dates/times/etc
 	@Test
 	def void testArithmeticOperationTypeInference() {
 		'3 + 4'.assertIsValidWithType(singleInt)

@@ -647,7 +647,7 @@ from {
 checkrule CheckLeftArithmetic for
 	ArithmeticOperation op
 from {
-	if (op.operator == '+') {
+	if (op.operator == '+') { // TODO: improve error messages
 		{
 			looseListTypeCheck(op.left, singleDate)
 		} or {
@@ -754,24 +754,53 @@ from {
 checkrule CheckLeftComparison for
 	ComparisonOperation op
 from {
-	if (op.cardOp === null) {
-		looseListSubtypeCheck(op.left, singleNumber)
+	if (op.cardOp === null) { // TODO: improve error messages
+		{
+			looseListTypeCheck(op.left, singleDate)
+		} or {
+			looseListSubtypeCheck(op.left, singleNumber)
+		}
 	} else {
-		subtypeCheck(op.left, NUMBER)
+		{
+			typeCheck(op.left, DATE)
+		} or {
+			subtypeCheck(op.left, NUMBER)
+		}
 	}
 }
 checkrule CheckRightComparison for
 	ComparisonOperation op
 from {
 	if (op.cardOp === null) {
-		looseListSubtypeCheck(op.right, singleNumber)
+		{
+			looseListTypeCheck(op.right, singleDate)
+		} or {
+			looseListSubtypeCheck(op.right, singleNumber)
+		}
 	} else {
-		subtypeCheck(op.right, NUMBER)
+		{
+			typeCheck(op.right, DATE)
+		} or {
+			subtypeCheck(op.right, NUMBER)
+		}
 	}
 }
 checkrule CheckComparison for
 	ComparisonOperation op
 from {
+	var RListType tl
+	var RListType tr
+	empty |- op.left : tl or tl = null
+	empty |- op.right : tr or tr = null
+	{
+		tl.itemType == DATE
+		tr.itemType == DATE
+	}
+	or
+	{
+		empty |- tl.itemType <: NUMBER
+		empty |- tr.itemType <: NUMBER
+	}
 	if (op.cardOp !== null) {
 		looseOnlyRightIsSingularCheck(op)
 	}
