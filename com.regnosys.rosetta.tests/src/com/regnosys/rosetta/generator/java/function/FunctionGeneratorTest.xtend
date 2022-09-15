@@ -1124,7 +1124,7 @@ class FunctionGeneratorTest {
 				then bar -> num exists
 			
 			type Bar:
-				num number (1..1)
+				num number (0..1)
 				zap Zap (1..1)
 			
 			enum Zap:

@@ -12,8 +12,10 @@ import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.simple.ListOperation
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.LogicalOperation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -414,5 +416,166 @@ class RosettaTypingTest {
 		val A = new REnumType(model.elements.get(0) as RosettaEnumeration);
 		val expr1 = (model.elements.get(1) as Function).operations.head.expression;
 		expr1.assertHasType(createListType(A, 1, 1));
+	}
+	
+	@Test
+	def void testExistsTypeInference() {
+		'(if True then [] else 5) exists'.assertIsValidWithType(singleBoolean);
+		'(if True then [] else [1, 2, 3]) exists'.assertIsValidWithType(singleBoolean);
+	}
+	
+	@Test
+	def void testExistsTypeChecking() {
+		'empty exists'
+			.parseExpression
+			.assertError(null, "Expected an optional value, but got an empty value instead.")
+		'42 exists'
+			.parseExpression
+			.assertError(null, "Expected an optional value, but got a single value instead.")
+		'(if True then 42 else [1, 2, 3, 4, 5]) exists'
+			.parseExpression
+			.assertError(null, "Expected an optional value, but got a list with 1 to 5 items instead.")
+	}
+
+	@Test
+	def void testAbsentTypeInference() {
+		'(if True then [] else 5) is absent'.assertIsValidWithType(singleBoolean);
+		'(if True then [] else [1, 2, 3]) is absent'.assertIsValidWithType(singleBoolean);
+	}
+	
+	@Test
+	def void testAbsentTypeChecking() {
+		'empty is absent'
+			.parseExpression
+			.assertError(null, "Expected an optional value, but got an empty value instead.")
+		'42 is absent'
+			.parseExpression
+			.assertError(null, "Expected an optional value, but got a single value instead.")
+		'(if True then 42 else [1, 2, 3, 4, 5]) is absent'
+			.parseExpression
+			.assertError(null, "Expected an optional value, but got a list with 1 to 5 items instead.")
+	}
+	
+	@Test
+	def void testCountTypeInference() {
+		'empty count'.assertIsValidWithType(singleInt);
+		'42 count'.assertIsValidWithType(singleInt);
+		'[1, 2, 3] count'.assertIsValidWithType(singleInt);
+		'(if True then empty else [1, 2, 3]) count'.assertIsValidWithType(singleInt);
+	}
+	
+	@Test
+	def void testOnlyExistsTypeInference() {
+		val model = '''
+		namespace test
+		
+		type A:
+			x int (0..1)
+			y number (0..3)
+			z boolean (0..*)
+			
+			condition C:
+				x only exists and (x, y) only exists
+		
+		func Test:
+			inputs:
+			    a A (1..1)
+			output: result boolean (1..1)
+			set result:
+				a -> x only exists and (a -> x, a -> y) only exists
+		'''.parseRosettaWithNoIssues;
+		
+		(model.elements.get(0) as Data).conditions.head.expression as LogicalOperation => [
+			left.assertHasType(singleBoolean)
+			right.assertHasType(singleBoolean)
+		]
+		(model.elements.get(1) as Function).operations.head.expression as LogicalOperation => [
+			left.assertHasType(singleBoolean)
+			right.assertHasType(singleBoolean)
+		]
+	}
+	
+	@Test
+	def void testOnlyExistsTypeChecking() {
+		val model = '''
+		namespace test
+		
+		type Foo:
+			bar int (1..1)
+			baz boolean (0..1)
+			
+			condition X:
+				baz only exists
+		
+		type A:
+			x Foo (0..1)
+			y number (0..3)
+			z boolean (0..*)
+			
+			condition C1:
+				(x -> baz, y) only exists and (y, x -> baz) only exists
+			condition C2:
+				(x, x) only exists and (x -> baz, x -> baz) only exists
+		
+		func Test:
+			inputs:
+			    a A (1..1)
+			    foo Foo (1..1)
+			    b A (2..3)
+			    c A (0..1)
+			output: result boolean (0..*)
+			add result:
+				b -> x only exists
+			add result:
+				c only exists
+			add result:
+				(a -> x -> baz, a -> x) only exists
+			add result:
+				foo -> baz only exists
+		'''.parseRosetta;
+		
+		(model.elements.get(0) as Data).conditions.head.expression
+			.assertError(null, "The `only exists` operator is not applicable to instances of `Foo`.");
+		
+		(model.elements.get(1) as Data).conditions => [
+			get(0).expression as LogicalOperation => [
+				left.assertError(null, "All parent paths must be equal.")
+				right.assertError(null, "All parent paths must be equal.")
+			]
+			get(1).expression as LogicalOperation => [
+				left.assertError(null, "Duplicate attribute.")
+				right.assertError(null, "Duplicate attribute.")
+			]
+		]
+		
+		(model.elements.get(2) as Function).operations => [
+			get(0).expression.assertError(null, "Expected a single value, but got a list with 2 to 3 items instead.")
+			get(1).expression.assertError(null, "Object must have a parent object.")
+			get(2).expression.assertError(null, "All parent paths must be equal.")
+			get(3).expression.assertError(null, "The `only exists` operator is not applicable to instances of `Foo`.")
+		]
+	}
+	
+	@Test
+	def void testOnlyElementTypeInference() {
+		'(if True then 0 else [1, 2]) only-element'.assertIsValidWithType(createListType(INT, 0, 1));
+		'(if True then empty else [True, False]) only-element'.assertIsValidWithType(createListType(BOOLEAN, 0, 1));
+		'(if True then 0 else [1, 2, 3, 42.0]) only-element'.assertIsValidWithType(createListType(NUMBER, 0, 1));
+	}
+	
+	@Test
+	def void testOnlyElementTypeChecking() {
+		'empty only-element'
+			.parseExpression
+			.assertError(null, "Expected a list with 1 to 2 items, but got an empty value instead.")
+		'42 only-element'
+			.parseExpression
+			.assertError(null, "Expected a list with 1 to 2 items, but got a single value instead.")
+		'[1, 2] only-element'
+			.parseExpression
+			.assertError(null, "Expected a list with 1 to 2 items, but got a list with 2 items instead.")
+		'(if True then empty else 42) only-element'
+			.parseExpression
+			.assertError(null, "Expected a list with 1 to 2 items, but got an optional value instead.")
 	}
 }

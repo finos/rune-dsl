@@ -46,9 +46,18 @@ import com.regnosys.rosetta.types.RQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import java.util.List
+import com.regnosys.rosetta.rosetta.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
+import com.regnosys.rosetta.rosetta.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.RosettaOnlyElement
+import org.eclipse.emf.ecore.util.EcoreUtil
+import com.regnosys.rosetta.utils.ExpressionHelper
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
+inject extension ExpressionHelper exprHelper
+
 
 auxiliary {
 	ancestorEnums(RosettaEnumeration t) : List<RosettaEnumeration>
@@ -58,6 +67,8 @@ auxiliary {
 	join(RType t1, RType t2) : RType
 	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
 	listJoin(RListType t1, RListType t2) : RListType
+	allAttributes(Data d) : Iterable<Attribute>
+	mayBeEmpty(Data d)
 	
 	listTypeCheck(RosettaExpression sourceObject, RListType expected)
 	looseListTypeCheck(RosettaExpression sourceObject, RListType expected)
@@ -70,6 +81,7 @@ auxiliary {
 	onlyRightIsSingularCheck(RosettaBinaryOperation sourceObject)
 	looseOnlyRightIsSingularCheck(RosettaBinaryOperation sourceObject)
 	constraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
+	looseConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
 	notConstraintCheck(RosettaExpression sourceObject, RosettaCardinality notExpected)
 	isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
 	
@@ -168,6 +180,18 @@ auxiliary listJoin(RListType t1, RListType t2) {
 	val sup = join(t1.itemType, t2.itemType);
 	sup !== null
 	return createListType(sup, union(t1.constraint, t2.constraint))
+}
+auxiliary allAttributes(Data d) {
+	if (d.superType === null) {
+		return d.attributes;
+	} else {
+		return allAttributes(d.superType) + d.attributes;
+	}
+}
+auxiliary mayBeEmpty(Data d) {
+	d.allAttributes.forall[
+		card.inf === 0
+	]
 }
 
 /****** TYPE VALIDATION UTILITIES *******/
@@ -304,6 +328,16 @@ auxiliary constraintCheck(RosettaExpression sourceObject, RosettaCardinality exp
 	empty |- sourceObject : actual or actual = null
 	if (expected !== null && actual !== null) {
 		expected.constraintEquals(actual.constraint)
+		or
+		fail error notConstraintMessage(expected, actual)
+			source sourceObject
+	}
+}
+auxiliary looseConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected) {
+	var RListType actual
+	empty |- sourceObject : actual or actual = null
+	if (expected !== null && actual !== null) {
+		expected.isSubconstraintOf(actual.constraint)
 		or
 		fail error notConstraintMessage(expected, actual)
 			source sourceObject
@@ -592,6 +626,23 @@ from { // TODO: support metadata feature calls?
 	}
 }
 
+axiom TExists // TA-Exists
+	G |- RosettaExistsExpression e : singleBoolean
+axiom TAbsent
+	G |- RosettaAbsentExpression e : singleBoolean
+axiom TOnlyExists // TA-OnlyExists
+	G |- RosettaOnlyExistsExpression e : singleBoolean
+axiom TCount // TA-Count
+	G |- RosettaCountOperation e : singleInt
+rule TOnlyElement // TA-OnlyElement
+	G |- RosettaOnlyElement e : RListType t
+from {
+	G |- e.argument : var RListType targ
+	if (targ !== null) {
+		t = createListType(targ.itemType, 0, 1)
+	}
+}
+
 /****** CHECK RULES ********/
 checkrule CheckLeftArithmetic for
 	ArithmeticOperation op
@@ -810,4 +861,52 @@ checkrule CheckCallableWithArgsCall for RosettaCallableWithArgsCall e from {
 			]
         }
     }
+}
+
+checkrule CheckExistsExpression for RosettaExistsExpression e from {
+	isLooserConstraintCheck(e.argument, createConstraint(0, 1))
+}
+checkrule CheckAbsentExpression for RosettaAbsentExpression e from {
+	isLooserConstraintCheck(e.argument, createConstraint(0, 1))
+}
+checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
+	val first = e.args.head
+	val parent = first.parentExpression
+	for (var i = 1; i < e.args.size; i++) {
+		val other = e.args.get(i)
+		if (EcoreUtil.equals(first, other)) {
+			fail error "Duplicate attribute."
+				source other
+		}
+		val otherParent = other.parentExpression
+		if ((parent === null) !== (otherParent === null) || parent !== null && otherParent !== null && !EcoreUtil.equals(parent, otherParent)) {
+			if (otherParent !== null) {
+				fail error "All parent paths must be equal."
+					source otherParent
+			} else {
+				fail error "All parent paths must be equal."
+					source other
+			}
+		}
+	}
+	if (parent === null && !e.hasImplicitParent) {
+		fail error "Object must have a parent object."
+			source e.args.head
+	}
+	
+	var Data parentData
+	if (parent !== null) {
+		looseConstraintCheck(parent, single)
+		empty |- parent : var RListType pt
+		parentData = (pt.itemType as RDataType).^data
+	} else {
+		parentData = e.implicitParent
+	}
+	mayBeEmpty(parentData)
+	or
+	fail error "The `only exists` operator is not applicable to instances of `" + parentData.name + "`."
+		source parent
+}
+checkrule CheckOnlyElement for RosettaOnlyElement e from {
+	isLooserConstraintCheck(e.argument, createConstraint(1, 2))
 }

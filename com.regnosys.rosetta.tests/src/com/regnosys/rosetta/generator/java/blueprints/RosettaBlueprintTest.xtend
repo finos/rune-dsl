@@ -77,7 +77,7 @@ class RosettaBlueprintTest {
 				extract Qux->qux2 as "6 QuxQux2"
 			
 			type Bar:
-				bar1 string (1..1)
+				bar1 string (0..1)
 				bar2 string (0..*)
 				baz Baz (1..1)
 				quxList Qux (0..*)
@@ -278,7 +278,7 @@ class RosettaBlueprintTest {
 			namespace ns1
 			
 			type Bar:
-				bar1 string (1..1)
+				bar1 string (0..1)
 				bar2 string (1..1)
 			
 		''','''
@@ -392,7 +392,7 @@ class RosettaBlueprintTest {
 					// no rules
 			
 			type Bar:
-				bar1 string (1..1)
+				bar1 string (0..1)
 
 		'''
 		val code = model.generateCode
@@ -1374,7 +1374,7 @@ class RosettaBlueprintTest {
 				filter when Input->traderef exists
 									
 			type Input:
-				traderef string (1..1)
+				traderef string (0..1)
 			
 		'''.generateCode
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
