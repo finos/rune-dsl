@@ -50,18 +50,20 @@ class RosettaTypingTest {
 			inputs:
 				a int (2..4)
 				b boolean (1..1)
-			output: result int (2..4)
+			output: result number (1..4)
+			alias c: if b then 42 else -1/12
 			add result:
-				if b then a else a
+				if b then a else c
 		
 		func TestImplicitVar:
 			output: result int (3..3)
 			add result:
 				[1, 2, 3] map [item + 1]
-		'''.parseRosetta
+		'''.parseRosettaWithNoIssues
 		model.elements.get(0) as Function => [operations.head.expression as RosettaConditionalExpression => [
 			^if.assertHasType(singleBoolean)
 			ifthen.assertHasType(createListType(INT, 2, 4))
+			elsethen.assertHasType(singleNumber)
 		]];
 		
 		model.elements.get(1) as Function => [operations.head.expression as ListOperation => [

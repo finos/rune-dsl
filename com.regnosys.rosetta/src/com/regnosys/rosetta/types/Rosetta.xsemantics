@@ -54,6 +54,7 @@ import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -61,6 +62,7 @@ inject extension ExpressionHelper exprHelper
 
 
 auxiliary {
+	ancestors(Data t) : List<Data>
 	ancestorEnums(RosettaEnumeration t) : List<RosettaEnumeration>
 	comparable(RType t1, RType t2)
 	overlap(RosettaCardinality c1, RosettaCardinality c2)
@@ -103,6 +105,13 @@ judgments {
 }
 
 /****** AUXILIARY DEFINITIONS *******/
+auxiliary ancestors(Data t) {
+	getAll(t,
+		SimplePackage::eINSTANCE.data_SuperType,
+		SimplePackage::eINSTANCE.data_SuperType,
+		typeof(Data)
+	)
+}
 auxiliary ancestorEnums(RosettaEnumeration t) {
 	getAll(t,
 		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
@@ -130,6 +139,15 @@ auxiliary join(RQualifiedType t1, RBuiltinType t2) {
 	if (t2 == STRING) {
 		return t1
 	}
+}
+auxiliary join(RDataType t1, RDataType t2) {
+	val st1 = ancestors(t1.^data)
+	st1.add(0, t1.^data)
+	val st2 = ancestors(t2.^data)
+	st2.add(0, t2.^data)
+	val result = st2.findFirst[st1.contains(it)]
+	result !== null
+	return new RDataType(result)
 }
 auxiliary join(REnumType t1, REnumType t2) {
 	val st1 = ancestorEnums(t1.enumeration)
@@ -437,6 +455,17 @@ from {
 	t2 == STRING
 }
 
+rule SData // SA-Refl, SA-Ancestor
+	G |- RDataType t1 <: RDataType t2
+from {
+	{
+		t1 == t2
+	} or
+	{
+		ancestors(t1.^data).contains(t2.^data)
+	}
+}
+
 rule SEnum // SA-Refl, SA-Enum
 	G |- REnumType t1 <: REnumType t2
 from {
@@ -620,14 +649,14 @@ from { // TODO: support metadata feature calls?
 				val at = a.attributeListType
 				t = createListType(at.itemType, dt.constraint * at.constraint)
 			}
-			RosettaTypedFeature: { // projections of record types
+			RosettaTypedFeature: { // projections on record types or of metadata properties
 				if (a.type === null) {
 					fail error "Unsupported by the type system."
 				} else {
 					t = createListType(a.type.rosettaTypeToRType, dt.constraint)
 				}
 			}
-			RosettaEnumValue: { // projections of enums
+			RosettaEnumValue: { // projections on enums
 				t = dt
 			}
 		}
@@ -800,14 +829,19 @@ from {
 	var RListType tr
 	empty |- op.left : tl or tl = null
 	empty |- op.right : tr or tr = null
-	{
-		tl.itemType == DATE
-		tr.itemType == DATE
-	}
-	or
-	{
-		empty |- tl.itemType <: NUMBER
-		empty |- tr.itemType <: NUMBER
+	if (tl !== null && tr !== null) {
+		{
+			tl.itemType == DATE
+			tr.itemType == DATE
+		}
+		or
+		{
+			empty |- tl.itemType <: NUMBER
+			empty |- tr.itemType <: NUMBER
+		}
+		or
+			fail error "Expected arguments to be either both a `date` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
+				source op
 	}
 	if (op.cardOp !== null) {
 		looseOnlyRightIsSingularCheck(op)
@@ -931,18 +965,22 @@ checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
 			source e.args.head
 	}
 	
-	var Data parentData
+	var Data parentData = null
 	if (parent !== null) {
 		looseConstraintCheck(parent, single)
 		empty |- parent : var RListType pt
-		parentData = (pt.itemType as RDataType).^data
+		if (pt !== null) {
+			parentData = (pt.itemType as RDataType).^data
+		}
 	} else {
 		parentData = e.implicitParent
 	}
-	mayBeEmpty(parentData)
-	or
-	fail error "The `only exists` operator is not applicable to instances of `" + parentData.name + "`."
-		source parent
+	if (parentData !== null) {
+		mayBeEmpty(parentData)
+		or
+		fail error "The `only exists` operator is not applicable to instances of `" + parentData.name + "`."
+			source parent
+	}
 }
 checkrule CheckOnlyElement for RosettaOnlyElement e from {
 	isLooserConstraintCheck(e.argument, createConstraint(1, 2))
