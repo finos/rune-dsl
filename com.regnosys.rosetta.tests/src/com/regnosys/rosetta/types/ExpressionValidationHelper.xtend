@@ -50,9 +50,16 @@ class ExpressionValidationHelper {
 			fail("Expected no issues, but got :" + getIssuesAsString(issues, new StringBuilder()));
 	}
 	
+	def void assertWarning(RosettaExpression expr, String code, String message) {
+		assertIssue(Severity.WARNING, expr, code, message);
+	}
+	
 	def void assertError(RosettaExpression expr, String code, String message) {
+		assertIssue(Severity.ERROR, expr, code, message);
+	}
+	
+	def void assertIssue(Severity severity, RosettaExpression expr, String code, String message) {
 		val allIssues = expr.validateExpression
-		val severity = Severity.ERROR
 		val matchingIssues = 
 			allIssues.filter[it.code == code && it.severity == severity && it.message == message]
 		if (isEmpty(matchingIssues)) {

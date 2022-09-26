@@ -569,15 +569,15 @@ class RosettaTypingTest {
 	def void testOnlyElementTypeChecking() {
 		'empty only-element'
 			.parseExpression
-			.assertError(null, "Expected a list with 1 to 2 items, but got an empty value instead.")
+			.assertWarning(null, "Expected a list with 1 to 2 items, but got an empty value instead.")
 		'42 only-element'
 			.parseExpression
-			.assertError(null, "Expected a list with 1 to 2 items, but got a single value instead.")
+			.assertWarning(null, "Expected a list with 1 to 2 items, but got a single value instead.")
 		'[1, 2] only-element'
 			.parseExpression
-			.assertError(null, "Expected a list with 1 to 2 items, but got a list with 2 items instead.")
+			.assertWarning(null, "Expected a list with 1 to 2 items, but got a list with 2 items instead.")
 		'(if True then empty else 42) only-element'
 			.parseExpression
-			.assertError(null, "Expected a list with 1 to 2 items, but got an optional value instead.")
+			.assertWarning(null, "Expected a list with 1 to 2 items, but got an optional value instead.")
 	}
 }

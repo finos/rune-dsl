@@ -982,6 +982,7 @@ checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
 			source parent
 	}
 }
-checkrule CheckOnlyElement for RosettaOnlyElement e from {
-	isLooserConstraintCheck(e.argument, createConstraint(1, 2))
-}
+// Moved the check below to StandaloneRosettaTypingValidator and made it a warning instead.
+//checkrule CheckOnlyElement for RosettaOnlyElement e from {
+//	isLooserConstraintCheck(e.argument, createConstraint(1, 2))
+//}
