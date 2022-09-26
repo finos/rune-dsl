@@ -1112,7 +1112,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def checkOnlyElement(RosettaOnlyElement e) {
 		val receiver = e.argument
 		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
-			errorKeyword('''List only-element cannot be used for single cardinality expressions.''', e, grammar.listOperationAccess.onlyElementKeyword_1_1_0_1)
+			warningKeyword('''List only-element cannot be used for single cardinality expressions.''', e, grammar.listOperationAccess.onlyElementKeyword_1_1_0_1)
 		}
 		
 		val previousOp = (e.argument instanceof ListOperation ? e.argument : null) as ListOperation
@@ -1370,6 +1370,23 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
             val ge = n.grammarElement
             if (ge instanceof Keyword && ge == keyword) {
                 messageAcceptor.acceptError(
+                    message,
+                    o,
+                    n.offset,
+                    n.length,
+                    null
+                )
+            }
+        }
+	}
+	
+	private def warningKeyword(String message, EObject o, Keyword keyword) {
+		val node = NodeModelUtils.findActualNodeFor(o)
+
+        for (n : node.asTreeIterable) {
+            val ge = n.grammarElement
+            if (ge instanceof Keyword && ge == keyword) {
+                messageAcceptor.acceptWarning(
                     message,
                     o,
                     n.offset,
