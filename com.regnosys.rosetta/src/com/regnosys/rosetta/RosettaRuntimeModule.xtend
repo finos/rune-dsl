@@ -24,6 +24,9 @@ import org.eclipse.xtext.resource.IResourceDescription
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy
 import org.eclipse.xtext.serializer.ISerializer
+import org.eclipse.xtext.parser.IEncodingProvider
+import com.google.inject.Binder
+import org.eclipse.xtext.service.DispatchingProvider
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -59,6 +62,12 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	override Class<? extends ISerializer> bindISerializer() {
 		IgnoreDerivedStateSerializer
 	}
+	
+    override void configureRuntimeEncodingProvider(Binder binder) {
+        binder.bind(IEncodingProvider)
+        	.annotatedWith(DispatchingProvider.Runtime)
+        	.to(UTF8EncodingProvider);
+    }
 	
 	// Setup derived state
 	override Class<? extends XtextResource> bindXtextResource() {
