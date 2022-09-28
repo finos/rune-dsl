@@ -25,7 +25,7 @@ public class ExpressionOperators {
 		if (o.resultCount()==0) {
 			return ComparisonResult.success();
 		}
-		return ComparisonResult.failure(o.getPaths() + " does exist and is " + formatMultiError(o));
+		return ComparisonResult.failure(o.getPaths() + " does exist and is " + formatMultiError(o) + \n);
 	}
 	
 	// exists
@@ -34,7 +34,7 @@ public class ExpressionOperators {
 		if (o.resultCount()>0) {
 			return ComparisonResult.success();
 		}
-		return ComparisonResult.failure(o.getErrorPaths() + " does not exist");
+		return ComparisonResult.failure(o.getErrorPaths() + " does not exist" + \n);
 	}
 	
 	// singleExists
@@ -45,8 +45,8 @@ public class ExpressionOperators {
 		}
 		
 		String error = o.resultCount() > 0 ?
-				String.format("Expected single %s but found %s [%s]", o.getPaths(), o.resultCount(), formatMultiError(o)) :
-				String.format("Expected single %s but found zero", o.getErrorPaths());
+				String.format("Expected single %s but found %s [%s]", o.getPaths(), o.resultCount(), formatMultiError(o) + \n) :
+				String.format("Expected single %s but found zero", o.getErrorPaths() + \n);
 		
 		return ComparisonResult.failure(error);
 	}
@@ -59,8 +59,8 @@ public class ExpressionOperators {
 		}
 		
 		String error = o.resultCount() > 0 ?
-				String.format("Expected multiple %s but only one [%s]", o.getPaths(), formatMultiError(o)) :
-				String.format("Expected multiple %s but found zero", o.getErrorPaths());
+				String.format("Expected multiple %s but only one [%s]", o.getPaths(), formatMultiError(o) + \n) :
+				String.format("Expected multiple %s but found zero", o.getErrorPaths() + \n);
 				
 		return ComparisonResult.failure(error);
 	}
@@ -76,7 +76,7 @@ public class ExpressionOperators {
 			    .collect(Collectors.toSet());
 		
 		if (parents.size() == 0) {
-			return ComparisonResult.failure("No fields set.");
+			return ComparisonResult.failure("No fields set." + \n);
 		}
 
 		// Find attributes to check
@@ -87,7 +87,7 @@ public class ExpressionOperators {
 		
 		// The number of attributes to check, should equal the number of mappers
 		if (fields.size() != o.size()) {
-			return ComparisonResult.failure("All required fields not set.");
+			return ComparisonResult.failure("All required fields not set." + \n);
 		}
 		
 		// Run validation then and results together 
@@ -207,17 +207,17 @@ public class ExpressionOperators {
 	
 	public static <T> ComparisonResult contains(Mapper<? extends T> o1, Mapper<? extends T> o2) {
 		if (o1.getMulti().isEmpty()) {
-			return ComparisonResult.failure("Empty list does not contain all of " +formatMultiError(o2));
+			return ComparisonResult.failure("Empty list does not contain all of " +formatMultiError(o2) + \n);
 		}
 		if (o2.getMulti().isEmpty()) {
-			return ComparisonResult.failure(formatMultiError(o1) + " does not contain empty list");
+			return ComparisonResult.failure(formatMultiError(o1) + " does not contain empty list" + \n);
 		}
 		boolean result =  o1.getMulti().containsAll(o2.getMulti());
 		if (result) {
 			return ComparisonResult.success();
 		}
 		else {
-			return ComparisonResult.failure(formatMultiError(o1) + " does not contain all of " +formatMultiError(o2));
+			return ComparisonResult.failure(formatMultiError(o1) + " does not contain all of " +formatMultiError(o2) + \n);
 		}
 	}
 	
@@ -232,7 +232,7 @@ public class ExpressionOperators {
 		}
 		else {
 			Collection<T> common = multi1.stream().filter(multi2::contains).collect(Collectors.toSet());
-			return ComparisonResult.failure(formatMultiError(o1) + " is not disjoint from " +formatMultiError(o2) + "common items are " + common);
+			return ComparisonResult.failure(formatMultiError(o1) + " is not disjoint from " +formatMultiError(o2) + "common items are " + common + \n);
 		}
 	}
 	
@@ -248,10 +248,10 @@ public class ExpressionOperators {
 	public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {
 		if (actual < min) {
 			return ComparisonResult
-					.failure(msgPrefix + " - Expected cardinality lower bound of [" + min + "] found [" + actual + "]");
+					.failure("Minimum of [" + min + "] " + msgPrefix + " is expected but found [" + actual + "]");
 		} else if (max > 0 && actual > max) {
 			return ComparisonResult
-					.failure(msgPrefix + " - Expected cardinality upper bound of [" + max + "] found [" + actual + "]");
+					.failure("Maximum of [" + max + "] " + msgPrefix + " are expected but found [" + actual + "]");
 		}
 		return ComparisonResult.success();
 	}
