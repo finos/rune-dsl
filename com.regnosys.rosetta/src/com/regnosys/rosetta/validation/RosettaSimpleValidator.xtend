@@ -97,6 +97,7 @@ import org.eclipse.xtext.validation.EValidatorRegistrar
 import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.Keyword
+import com.regnosys.rosetta.rosetta.BlueprintOr
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -149,6 +150,18 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		
 		def Diagnostic createDiagnostic(String message, State state) {
 			new FeatureBasedDiagnostic(Diagnostic.ERROR, message, state.currentObject, null, -1, state.currentCheckType, null, null)
+		}
+	}
+	
+	@Check
+	def void deprecateBlueprintOrNode(BlueprintOr orNode) {
+		warning("Using comma-seperated expressions ('or' statements) is deprecated. Explicitely write down the conditional logic instead.", orNode, null);
+	}
+	
+	@Check
+	def void deprecateExternalFunctions(RosettaCallableWithArgsCall call) {
+		if (call.callable instanceof RosettaExternalFunction) {
+			warning("Using external functions ('library' functions) is deprecated. Declare the function and use that one instead.", call, ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE);
 		}
 	}
 	

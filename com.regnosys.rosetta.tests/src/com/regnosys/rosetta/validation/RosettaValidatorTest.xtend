@@ -29,6 +29,62 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void deprecatedOrNodeWarning() {
+		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			type BarReport:
+			    bazList BazReport (0..*)
+			        [ruleReference RepeatableBarBazList]
+			
+			type BazReport:
+				field string (1..1)
+					[ruleReference BazField]
+			
+			type Bar:
+				bazList Baz (1..*)
+			
+			type Baz:
+				field string (1..1)
+			
+			eligibility rule FooRule
+				filter when Bar->bazList exists
+
+			reporting rule RepeatableBarBazList
+				extract repeatable Bar->bazList then
+				(
+					BazField
+				)
+			
+			reporting rule BazField
+				extract Baz->field
+		'''.parseRosetta;
+		
+		model.assertWarning(BLUEPRINT_OR, null, "Using comma-seperated expressions ('or' statements) is deprecated. Explicitely write down the conditional logic instead.");
+	}
+	
+	@Test
+	def void deprecatedExternalFunctionWarning() {
+		val model = '''
+			func Foo:
+				inputs:
+					year number (1..1)
+				output:
+					result boolean (1..1)
+				
+				set result:
+					IsLeapYear(year)
+		'''.parseRosetta;
+		
+		model.assertWarning(ROSETTA_CALLABLE_WITH_ARGS_CALL, null, "Using external functions ('library' functions) is deprecated. Declare the function and use that one instead.");
+	}
+	
+	@Test
 	@Disabled
 	def void identicalAttributesInOnlyExistsError() {
 		val model =

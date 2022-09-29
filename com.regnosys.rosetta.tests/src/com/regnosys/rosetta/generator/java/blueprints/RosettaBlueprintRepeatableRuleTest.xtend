@@ -206,10 +206,7 @@ class RosettaBlueprintRepeatableRuleTest {
 				filter when Bar->bazList exists
 
 			reporting rule RepeatableBarBazList
-				extract repeatable Bar->bazList then
-				(
-					BazField
-				)
+				extract repeatable Bar->bazList then BazField
 			
 			reporting rule BazField
 				extract Baz->field
