@@ -98,6 +98,8 @@ import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.Keyword
 import com.regnosys.rosetta.rosetta.BlueprintOr
+import com.regnosys.rosetta.rosetta.BlueprintNodeExp
+import com.regnosys.rosetta.rosetta.BlueprintNode
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -153,8 +155,26 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 	}
 	
+	def protected BlueprintNode getPreviousNode(BlueprintNode node) {
+		val exp = node.eContainer;
+		if (exp instanceof BlueprintNodeExp) {
+			val context = exp.eContainer;
+			if (context instanceof BlueprintNodeExp) {
+				return context.node;
+			}
+		}
+		return null;
+	}
+	
 	@Check
 	def void deprecateBlueprintOrNode(BlueprintOr orNode) {
+		val previous = orNode.previousNode;
+		// Do not deprecate if it is part of an 'extract repeatable' expression.
+		if (previous instanceof BlueprintExtract) {
+			if (previous.repeatable) {
+				return;
+			}
+		}
 		warning("Using comma-seperated expressions ('or' statements) is deprecated. Explicitely write down the conditional logic instead.", orNode, null);
 	}
 	

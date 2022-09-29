@@ -31,12 +31,29 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void deprecatedOrNodeWarning() {
 		val model = '''
+			type Foo:
+				a int (1..1)
+				b int (1..1)
+			
+			reporting rule OrRule
+				(
+					Foo -> a,
+					Foo -> b
+				)
+		'''.parseRosetta;
+		
+		model.assertWarning(BLUEPRINT_OR, null, "Using comma-seperated expressions ('or' statements) is deprecated. Explicitely write down the conditional logic instead.");
+	}
+	
+	@Test
+	def void orNodeInContextOfRepeatableRuleShouldNotBeDeprecated() {
+		'''
 			body Authority TEST_REG
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
-			when FooRule
-			with type BarReport
+				when FooRule
+				with type BarReport
 			
 			type BarReport:
 			    bazList BazReport (0..*)
@@ -63,9 +80,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			reporting rule BazField
 				extract Baz->field
-		'''.parseRosetta;
-		
-		model.assertWarning(BLUEPRINT_OR, null, "Using comma-seperated expressions ('or' statements) is deprecated. Explicitely write down the conditional logic instead.");
+		'''.parseRosettaWithNoIssues
 	}
 	
 	@Test
