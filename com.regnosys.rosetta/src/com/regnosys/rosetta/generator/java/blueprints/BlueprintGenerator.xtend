@@ -33,7 +33,6 @@ import java.util.Collection
 import java.util.List
 import java.util.Map
 import javax.inject.Inject
-import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
@@ -47,7 +46,7 @@ import static extension com.regnosys.rosetta.generator.java.util.JavaClassTransl
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class BlueprintGenerator {
-	static Logger LOGGER = Logger.getLogger(BlueprintGenerator) => [level = Level.DEBUG]
+	static Logger LOGGER = Logger.getLogger(BlueprintGenerator)
 	
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaBlueprintTypeResolver
