@@ -23,12 +23,13 @@ See the Apache License Version 2.0 for the specific language governing permissio
 	<properties>
 		<xtextVersion>2.27.0</xtextVersion>
 		<xsemantics.repository>1.22</xsemantics.repository>
-		<xsemantics.version>1.22.0-SNAPSHOT</xsemantics.version>
+		<xsemantics.version>1.22.0</xsemantics.version>
 		<mwe2Version>2.13.0</mwe2Version>
 		<org.eclipse.emf.ecore.xcore-version>1.19.0</org.eclipse.emf.ecore.xcore-version>
 		<org.eclipse.emf.ecore.xcore.lib-version>1.6.0</org.eclipse.emf.ecore.xcore.lib-version>
 		<org.eclipse.emf.codegen.ecore-version>2.28.0</org.eclipse.emf.codegen.ecore-version>
 		<org.eclipse.emf.codegen.ecore.xtext-version>1.6.0</org.eclipse.emf.codegen.ecore.xtext-version>
+		<enforcer.version>3.1.0</enforcer.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -179,6 +180,26 @@ See the Apache License Version 2.0 for the specific language governing permissio
 						</extraRequirements>
 					</dependency-resolution>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>${enforcer.version}</version>
+				<executions>
+					<execution>
+						<id>enforce-java</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireJavaVersion>
+									<version>[11,12)</version>
+								</requireJavaVersion>
+							</rules>    
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 
@@ -372,24 +393,9 @@ See the Apache License Version 2.0 for the specific language governing permissio
 			<url>http://download.eclipse.org/xsemantics/milestones/${xsemantics.repository}</url>
 		</repository>
 		<repository>
-			<id>eclipse</id>
-			<layout>p2</layout>
-			<url>https://download.eclipse.org/releases/2022-09</url>
-		</repository>
-		<repository>
 			<id>Xtext Update Site</id>
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/${xtextVersion}</url>
-		</repository>
-		<repository>
-		  <id>sonatype_snapshots</id>
-		  <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-		  <releases>
-		    <enabled>false</enabled>
-		  </releases>
-		  <snapshots>
-		    <enabled>true</enabled>
-		  </snapshots>
 		</repository>
 	</repositories>
 	<pluginRepositories>
@@ -402,16 +408,6 @@ See the Apache License Version 2.0 for the specific language governing permissio
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-		<pluginRepository>
-			<id>sonatype_snapshots</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
