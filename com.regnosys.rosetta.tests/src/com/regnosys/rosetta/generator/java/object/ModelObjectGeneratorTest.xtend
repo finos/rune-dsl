@@ -460,7 +460,7 @@ class ModelObjectGeneratorTest {
 		val builderInstance = fooClass.getMethod("builder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFoo")
 		val metas = metad.invoke("getOrCreateMeta")
-		val keys = metas.invoke("getKey") as List
+		val keys = metas.invoke("getKey") as List<Integer>
 		assertThat(keys.size(), is(1));
 		
 	}
