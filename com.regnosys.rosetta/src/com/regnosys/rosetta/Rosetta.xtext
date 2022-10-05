@@ -1,6 +1,7 @@
 grammar com.regnosys.rosetta.Rosetta with org.eclipse.xtext.common.Terminals
 import "http://www.rosetta-model.com/Rosetta"
 import "http://www.rosetta-model.com/RosettaSimple"
+import "http://www.rosetta-model.com/RosettaExpression"
 
 RosettaModel:
 	'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)?
@@ -476,41 +477,48 @@ enum RosettaQualifiableType :
 ;
 
 
+/**********************************************************************
+ * Function references
+ */
+ClosureParameter:
+	name = ID
+;
+ 
+FunctionReference:
+	{NamedFunctionReference} function=[RosettaCallableWithArgs]
+	| {InlineFunction} (parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[' body=RosettaCalcExpression ']'
+;
 
 /**********************************************************************
  * Calculations
  */
 
-
 RosettaCalcExpression returns RosettaExpression:
 	RosettaCalcOr
 ;
 
+/*
+ * Binary operations
+ */
+enum CardinalityModifier:
+	  ANY = 'any'
+	| ALL = 'all'
+;
+
 RosettaCalcOr returns RosettaExpression:
-	RosettaCalcAnd ( =>({LogicalOperation.left=current} operator=('or')) right=RosettaCalcAnd)*
+	RosettaCalcAnd ( =>({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
 ;
 
 RosettaCalcAnd returns RosettaExpression:
-	RosettaCalcExists ( =>({LogicalOperation.left=current} operator=('and')) right=RosettaCalcExists)*
-;
-
-RosettaCalcExists returns RosettaExpression:
-	RosettaCalcEquality (
-		->(
-			{RosettaExistsExpression.argument=current} (single?='single' | multiple?='multiple')? 'exists'
-			| {RosettaAbsentExpression.argument=current} 'is' 'absent'
-			| {RosettaContainsExpression.container=current} 'contains' contained=RosettaCalcEquality
-			| {RosettaDisjointExpression.container=current} 'disjoint' disjoint=RosettaCalcEquality
-		)
-	)?
+	RosettaCalcEquality ( =>({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*
 ;
 
 RosettaCalcEquality returns RosettaExpression:
-	RosettaCalcComparison ( =>({EqualityOperation.left=current} (cardOp=('all'|'any'))? operator=('='|'<>')) right=RosettaCalcComparison)*
+	RosettaCalcComparison ( =>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*
 ;
 	
 RosettaCalcComparison returns RosettaExpression:
-	RosettaCalcAdditive ( =>({ComparisonOperation.left=current} (cardOp=('all'|'any'))? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
+	RosettaCalcAdditive ( =>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
 ;
 
 RosettaCalcAdditive returns RosettaExpression:
@@ -518,22 +526,53 @@ RosettaCalcAdditive returns RosettaExpression:
 ;
 
 RosettaCalcMultiplicative returns RosettaExpression:
-	RosettaCalcCountOperation ( =>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcCountOperation)*
+	RosettaCalcContains ( =>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcContains)*
 ;
 
-RosettaCalcCountOperation returns RosettaExpression:
-	ListOperation (=> ({RosettaCountOperation.argument=current} 'count'))?
+RosettaCalcContains returns RosettaExpression:
+	ListOperation (->(
+		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
+		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+	))?
+;
+
+/**
+ * List operations
+ */
+enum ExistsModifier:
+	  SINGLE='single'
+	| MULTIPLE='multiple'
 ;
 
 ListOperation returns RosettaExpression:
-	RosettaCalcPrimary
+	RosettaCalcPrimary 
 	(
-		=>({ListOperation.receiver=current} operationKind=ListOperationKind) (((=> parameters += ClosureParameter (',' parameters += ClosureParameter)*) | parameters += OptionalClosureParameter) '['body = RosettaCalcExpression ']')?
-	   |=>({RosettaOnlyElement.argument=current} 'only-element')
-	   |=>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR) (=>feature=[RosettaFeature|ValidID])?
+		(
+			 =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR (=>feature=[RosettaFeature|ValidID])?)
+			|=>({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? 'exists')
+			|=>({RosettaAbsentExpression.argument=current} 'is' 'absent')
+			|=>({RosettaOnlyElement.argument=current} 'only-element')
+			|=>({RosettaCountOperation.argument=current} 'count')
+			|=>({FlattenOperation.argument=current} 'flatten')
+			|=>({DistinctOperation.argument=current} 'distinct')
+			|=>({ReverseOperation.argument=current} 'reverse')
+			|=>({FirstOperation.argument=current} 'first')
+			|=>({LastOperation.argument=current} 'last')
+			|=>({SumOperation.argument=current} 'sum')
+			|=>({MinOperation.argument=current} 'min')
+			|=>({MaxOperation.argument=current} 'max')	
+		) | (
+			 =>({ReduceOperation.receiver=current} 'reduce')
+			|=>({FilterOperation.receiver=current} 'filter')
+			|=>({MapOperation.receiver=current} 'map')
+			|=>({SortOperation.receiver=current} 'sort')
+		) (function=FunctionReference)?
 	)*
 ;
 
+/**
+ * Primary operations
+ */
 RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConditionalExpression
 	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|QualifiedName] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')'
@@ -542,31 +581,6 @@ RosettaCalcPrimary returns RosettaExpression:
 	| RosettaLiteral
 	| '(' RosettaCalcExpression ')'
 	| RosettaCalcOnlyExists
-;
-
-ClosureParameter:
-	name = ID
-;
-
-OptionalClosureParameter returns ClosureParameter:
-	name = ID
-	| {ClosureParameter}
-;
-
-enum ListOperationKind:
-	filter 
-	| map 
-	| flatten 
-	| distinct 
-	| reduce 
-	| sort 
-	| reverse 
-	| join 
-	| sum 
-	| min 
-	| max 
-	| first
-	| last
 ;
 
 RosettaCalcConditionalExpression returns RosettaExpression:

@@ -10,8 +10,6 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
-import com.regnosys.rosetta.rosetta.RosettaExpression
-import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
@@ -20,6 +18,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import org.eclipse.emf.common.util.BasicEList
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {
 }
@@ -120,46 +119,6 @@ class OutputOperation extends Operation {
 	refers AssignPathRoot input
 }
 
-class ListOperation extends RosettaExpression {
-	contains RosettaExpression receiver
-	ListOperationKind operationKind
-	contains ClosureParameter[] parameters opposite operation
-	contains RosettaExpression body
-	
-	op ClosureParameter getFirstOrImplicit() {
-		return if (parameters.size == 1)
-			parameters.get(0)
-		else
-			parameters.findFirst[name === null]
-	}
-}
-
-enum ListOperationKind {
-	filter
-	, map
-	, flatten
-	, distinct
-	, reduce
-	, sort
-	, reverse
-	, join
-	, sum
-	, min
-	, max
-	, first
-	, last
-}
-
-class ClosureParameter extends RosettaCallable {
-	container ListOperation operation opposite parameters
-	/**
-	 * @return The name or 'item' if it's <code>null</code>
-	 */
-	derived String getNameOrDefault get {
-		return name ?: 'item'
-	}
-}
-
 
 class Segment {
 	refers Attribute attribute
@@ -181,10 +140,6 @@ class Segment {
 
 class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable, AssignPathRoot {
 	contains RosettaExpression expression
-}
-
-class ListLiteral extends RosettaLiteral {
-	contains RosettaExpression[] elements
 }
 
 class References {

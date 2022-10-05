@@ -4,25 +4,25 @@
 package com.regnosys.rosetta.formatting2
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
 import com.regnosys.rosetta.rosetta.RosettaExternalEnum
 import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonym
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.RosettaSynonym
@@ -33,7 +33,7 @@ import com.regnosys.rosetta.rosetta.simple.Constraint
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Definable
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.ListLiteral
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.services.RosettaGrammarAccess
@@ -45,7 +45,6 @@ import org.eclipse.xtext.formatting2.IFormattableDocument
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatter
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
-import com.regnosys.rosetta.rosetta.simple.ListOperation
 
 class RosettaFormatter extends AbstractFormatter2 {
 	

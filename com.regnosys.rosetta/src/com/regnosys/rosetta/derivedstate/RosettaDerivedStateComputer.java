@@ -5,9 +5,9 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.resource.IDerivedStateComputer;
 
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression;
-import com.regnosys.rosetta.rosetta.RosettaExpression;
-import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
+import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 
 /**
  * Derived state:
@@ -53,7 +53,7 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	
 	private void setDefaultElseToEmpty(RosettaConditionalExpression expr) {
 		if (!expr.isFull()) {
-			expr.setElsethen(SimpleFactory.eINSTANCE.createListLiteral());
+			expr.setElsethen(ExpressionFactory.eINSTANCE.createListLiteral());
 		}
 	}
 	private void discardDefaultElse(RosettaConditionalExpression expr) {

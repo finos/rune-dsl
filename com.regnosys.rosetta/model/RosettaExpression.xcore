@@ -1,0 +1,239 @@
+@Ecore(nsURI="http://www.rosetta-model.com/RosettaExpression")
+@GenModel(fileExtensions="rosetta", modelDirectory="/com.regnosys.rosetta/emf-gen", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0")
+
+package com.regnosys.rosetta.rosetta.expression
+
+import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.RosettaCallable
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+
+
+interface RosettaExpression {}
+
+/*
+ * Literals
+ */
+abstract class RosettaLiteral extends RosettaExpression, RosettaTyped {
+	op String stringValue() {
+		return "Unknown Literal"
+	}
+}
+
+class RosettaBooleanLiteral extends RosettaLiteral {
+	boolean value
+	
+	op String stringValue() {
+		return Boolean.toString(value)
+	}
+}
+
+class RosettaStringLiteral extends RosettaLiteral {
+	String value
+	op String stringValue() {
+		return '"' + value + '"'
+	}
+}
+
+class RosettaBigDecimalLiteral extends RosettaLiteral {
+	String value
+	op String stringValue() {
+		return value
+	}
+}
+
+class RosettaIntLiteral extends RosettaLiteral {
+	String value
+	op String stringValue() {
+		return value
+	}
+}
+
+class ListLiteral extends RosettaLiteral {
+	contains RosettaExpression[] elements
+}
+
+/*
+ * Variables, projections, conditionals and function calls
+ */
+
+class RosettaCallableCall extends RosettaExpression {
+	boolean implicitReceiver
+	refers RosettaCallable callable
+}
+
+class RosettaFeatureCall extends RosettaExpression {
+	contains RosettaExpression receiver
+	refers RosettaFeature feature
+}
+
+class RosettaConditionalExpression extends RosettaExpression {
+	contains RosettaExpression ^if
+	contains RosettaExpression ifthen
+	contains RosettaExpression elsethen
+	
+	boolean full // whether the conditional expression has an explicit `else` branch.
+}
+
+class RosettaCallableWithArgsCall extends RosettaExpression {
+	refers RosettaCallableWithArgs callable
+	contains RosettaExpression[] args
+}
+
+/**
+ * Binary operations
+ */
+abstract class RosettaBinaryOperation extends RosettaExpression {
+	contains RosettaExpression left
+	String operator
+	contains RosettaExpression right
+}
+
+class ArithmeticOperation extends RosettaBinaryOperation {
+}
+
+class LogicalOperation extends RosettaBinaryOperation {
+}
+
+enum CardinalityModifier {
+	NONE,
+	ALL,
+	ANY
+}
+
+abstract class ModifiableBinaryOperation extends RosettaBinaryOperation {
+	CardinalityModifier cardMod
+}
+
+class EqualityOperation extends ModifiableBinaryOperation {
+}
+
+class ComparisonOperation extends ModifiableBinaryOperation {
+}
+
+class RosettaContainsExpression extends RosettaBinaryOperation {
+}
+
+class RosettaDisjointExpression extends RosettaBinaryOperation {
+}
+
+class JoinOperation extends RosettaBinaryOperation {
+}
+
+/**
+ * Only exists checks
+ */
+
+class RosettaOnlyExistsExpression extends RosettaExpression {
+	contains RosettaExpression[] args
+}
+
+/**
+ * Unary operations
+ */
+
+abstract class RosettaUnaryOperation extends RosettaExpression {
+	contains RosettaExpression argument
+}
+
+enum ExistsModifier {
+	NONE,
+	SINGLE,
+	MULTIPLE
+}
+
+
+class RosettaExistsExpression extends RosettaUnaryOperation {
+    ExistsModifier modifier
+}
+
+class RosettaAbsentExpression extends RosettaUnaryOperation {
+}
+
+class RosettaOnlyElement extends RosettaUnaryOperation {
+}
+
+class RosettaCountOperation extends RosettaUnaryOperation {
+}
+
+class FlattenOperation extends RosettaUnaryOperation {
+}
+
+class DistinctOperation extends RosettaUnaryOperation {
+}
+
+class ReverseOperation extends RosettaUnaryOperation {
+}
+
+class FirstOperation extends RosettaUnaryOperation {
+}
+
+class LastOperation extends RosettaUnaryOperation {
+}
+
+abstract class NumberReducer extends RosettaUnaryOperation {
+}
+
+class SumOperation extends NumberReducer {
+}
+
+class MinOperation extends NumberReducer {
+}
+
+class MaxOperation extends NumberReducer {
+}
+
+/**
+ * Functional operations
+ */
+
+abstract class FunctionReference {
+}
+
+class NamedFunctionReference extends FunctionReference {
+	refers RosettaCallableWithArgs function
+}
+
+class ClosureParameter extends RosettaCallable {
+	container InlineFunction function opposite parameters
+	/**
+	 * @return The name or 'item' if it's <code>null</code>
+	 */
+	derived String getNameOrDefault get {
+		return name ?: 'item'
+	}
+}
+
+class InlineFunction extends FunctionReference {
+	contains ClosureParameter[] parameters opposite function
+	contains RosettaExpression body
+	
+	op ClosureParameter getFirstOrImplicit() {
+		return if (parameters.size == 1)
+			parameters.get(0)
+		else
+			parameters.findFirst[name === null]
+	}
+}
+
+abstract class FunctionalOperation extends RosettaExpression {
+	contains RosettaExpression receiver
+	contains FunctionReference function
+}
+
+class ReduceOperation extends FunctionalOperation {
+}
+
+abstract class UnaryFunctionalOperation extends FunctionalOperation {
+}
+
+class FilterOperation extends UnaryFunctionalOperation {
+}
+
+class MapOperation extends UnaryFunctionalOperation {
+}
+
+class SortOperation extends UnaryFunctionalOperation {
+}
