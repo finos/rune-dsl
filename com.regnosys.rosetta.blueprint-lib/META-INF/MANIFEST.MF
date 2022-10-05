@@ -4,7 +4,7 @@ Bundle-Name: com.regnosys.rosetta.blueprints
 Bundle-SymbolicName: com.regnosys.rosetta.blueprints
 Bundle-Version: 0.0.0.master
 Bundle-Vendor: REGnosys
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.regnosys.rosetta.blueprints,
  com.regnosys.rosetta.blueprints.runner,
  com.regnosys.rosetta.blueprints.runner.actions,
