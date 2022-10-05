@@ -33,12 +33,11 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<junit-jupiter-api-version>5.9.1</junit-jupiter-api-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<enforcer.version>3.1.0</enforcer.version>
-		<java.enforced.version>[11,12)</java.enforced.version>
+		<java.enforced.version>[17,18)</java.enforced.version>
 		<maven.compiler.source>11</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.release>8</maven.compiler.release>
+		<maven.compiler.target>11</maven.compiler.target>
 		<!-- Tycho settings -->
-		<tycho-version>2.7.5</tycho-version>
+		<tycho-version>3.0.0</tycho-version>
 		<!-- Define overridable properties for tycho-surefire-plugin IMPORTANT THESE PROPERTIES ARE SOMETIMES OVERRIDEN BUT NEED TO BE BLANK OTHERWISE -->
 		<platformSystemProperties></platformSystemProperties>
 		<moduleProperties></moduleProperties>
@@ -339,7 +338,6 @@ See the Apache License Version 2.0 for the specific language governing permissio
 						<compilerVersion>11</compilerVersion>
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
-						<release>${maven.compiler.release}</release>
  					</configuration>
 				</plugin>
 				<!-- to skip running (and compiling) tests use commandline flag: -Dmaven.test.skip
