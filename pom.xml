@@ -35,10 +35,9 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<enforcer.version>3.1.0</enforcer.version>
 		<java.enforced.version>[11,12)</java.enforced.version>
 		<maven.compiler.source>11</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.release>8</maven.compiler.release>
+		<maven.compiler.target>11</maven.compiler.target>
 		<!-- Tycho settings -->
-		<tycho-version>2.7.5</tycho-version>
+		<tycho-version>2.6.0</tycho-version>
 		<!-- Define overridable properties for tycho-surefire-plugin IMPORTANT THESE PROPERTIES ARE SOMETIMES OVERRIDEN BUT NEED TO BE BLANK OTHERWISE -->
 		<platformSystemProperties></platformSystemProperties>
 		<moduleProperties></moduleProperties>
@@ -192,7 +191,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 								<requireJavaVersion>
 									<version>${java.enforced.version}</version>
 								</requireJavaVersion>
-							</rules>    
+							</rules>
 						</configuration>
 					</execution>
 				</executions>
@@ -339,7 +338,6 @@ See the Apache License Version 2.0 for the specific language governing permissio
 						<compilerVersion>11</compilerVersion>
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
-						<release>${maven.compiler.release}</release>
  					</configuration>
 				</plugin>
 				<!-- to skip running (and compiling) tests use commandline flag: -Dmaven.test.skip
