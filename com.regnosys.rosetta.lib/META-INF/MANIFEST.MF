@@ -7,8 +7,8 @@ Bundle-Version: 0.0.0.master
 Bundle-Vendor: REGnosys
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
- org.junit.jupiter.api;bundle-version="5.8.1",
- org.junit.jupiter.params;bundle-version="5.8.1",
+ org.junit.jupiter.api,
+ org.junit.jupiter.params,
  org.junit.platform.commons;bundle-version="1.8.1",
  org.opentest4j;bundle-version="1.2.0",
  org.hamcrest.core,
