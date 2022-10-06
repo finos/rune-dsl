@@ -13,9 +13,20 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 
 interface RosettaExpression {}
 
-/*
- * Literals
- */
+class RosettaOnlyElement extends RosettaExpression {
+	contains RosettaExpression argument
+}
+
+class RosettaCallableCall extends RosettaExpression {
+	boolean implicitReceiver
+	refers RosettaCallable callable
+}
+
+class RosettaEnumValueReference extends RosettaExpression {
+	refers RosettaEnumeration enumeration
+	refers RosettaEnumValue value
+}
+
 abstract class RosettaLiteral extends RosettaExpression, RosettaTyped {
 	op String stringValue() {
 		return "Unknown Literal"
