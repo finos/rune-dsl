@@ -14,5 +14,5 @@ Export-Package: com.regnosys.rosetta.ide,
  com.regnosys.rosetta.ide.contentassist.antlr,
  com.regnosys.rosetta.ide.contentassist.antlr.internal,
  com.regnosys.rosetta.ide.highlight,
- com.regnosys.rosetta.ide.hover 
+ com.regnosys.rosetta.ide.hover
 Automatic-Module-Name: com.regnosys.rosetta.ide
