@@ -9,7 +9,7 @@ Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Require-Bundle: com.google.guava,
  com.regnosys.rosetta.lib,
- org.antlr.runtime,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  org.apache.commons.lang3,
  org.eclipse.core.runtime,
  org.eclipse.emf.common,
