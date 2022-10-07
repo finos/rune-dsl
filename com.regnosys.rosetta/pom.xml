@@ -25,6 +25,7 @@
 				<includes>
 					<include>model/Rosetta.xcore</include>
 					<include>model/RosettaSimple.xcore</include>
+					<include>model/RosettaExpression.xcore</include>
 				</includes>
 			</resource>
 		</resources>

@@ -13,21 +13,11 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 
 interface RosettaExpression {}
 
-class RosettaOnlyElement extends RosettaExpression {
-	contains RosettaExpression argument
-}
+/**
+ * Literals
+ */
 
-class RosettaCallableCall extends RosettaExpression {
-	boolean implicitReceiver
-	refers RosettaCallable callable
-}
-
-class RosettaEnumValueReference extends RosettaExpression {
-	refers RosettaEnumeration enumeration
-	refers RosettaEnumValue value
-}
-
-abstract class RosettaLiteral extends RosettaExpression, RosettaTyped {
+interface RosettaLiteral extends RosettaExpression, RosettaTyped {
 	op String stringValue() {
 		return "Unknown Literal"
 	}
@@ -93,12 +83,14 @@ class RosettaCallableWithArgsCall extends RosettaExpression {
 	contains RosettaExpression[] args
 }
 
+interface RosettaOperation extends RosettaExpression {
+	String operator
+}
 /**
  * Binary operations
  */
-abstract class RosettaBinaryOperation extends RosettaExpression {
+interface RosettaBinaryOperation extends RosettaOperation {
 	contains RosettaExpression left
-	String operator
 	contains RosettaExpression right
 }
 
@@ -109,12 +101,12 @@ class LogicalOperation extends RosettaBinaryOperation {
 }
 
 enum CardinalityModifier {
-	NONE,
-	ALL,
-	ANY
+	NONE as "none",
+	ALL as "all",
+	ANY as "any"
 }
 
-abstract class ModifiableBinaryOperation extends RosettaBinaryOperation {
+interface ModifiableBinaryOperation extends RosettaBinaryOperation {
 	CardinalityModifier cardMod
 }
 
@@ -131,6 +123,7 @@ class RosettaDisjointExpression extends RosettaBinaryOperation {
 }
 
 class JoinOperation extends RosettaBinaryOperation {
+	boolean explicitSeparator
 }
 
 /**
@@ -145,8 +138,14 @@ class RosettaOnlyExistsExpression extends RosettaExpression {
  * Unary operations
  */
 
-abstract class RosettaUnaryOperation extends RosettaExpression {
+interface RosettaUnaryOperation extends RosettaOperation {
 	contains RosettaExpression argument
+}
+
+interface ListOperation extends RosettaUnaryOperation {
+}
+
+interface CanHandleListOfLists extends RosettaUnaryOperation {
 }
 
 enum ExistsModifier {
@@ -163,44 +162,35 @@ class RosettaExistsExpression extends RosettaUnaryOperation {
 class RosettaAbsentExpression extends RosettaUnaryOperation {
 }
 
-class RosettaOnlyElement extends RosettaUnaryOperation {
+class RosettaOnlyElement extends ListOperation {
 }
 
-class RosettaCountOperation extends RosettaUnaryOperation {
+class RosettaCountOperation extends ListOperation {
 }
 
-class FlattenOperation extends RosettaUnaryOperation {
+class FlattenOperation extends ListOperation, CanHandleListOfLists {
 }
 
-class DistinctOperation extends RosettaUnaryOperation {
+class DistinctOperation extends ListOperation {
 }
 
-class ReverseOperation extends RosettaUnaryOperation {
+class ReverseOperation extends ListOperation {
 }
 
-class FirstOperation extends RosettaUnaryOperation {
+class FirstOperation extends ListOperation {
 }
 
-class LastOperation extends RosettaUnaryOperation {
+class LastOperation extends ListOperation {
 }
 
-abstract class NumberReducer extends RosettaUnaryOperation {
-}
-
-class SumOperation extends NumberReducer {
-}
-
-class MinOperation extends NumberReducer {
-}
-
-class MaxOperation extends NumberReducer {
+class SumOperation extends ListOperation {
 }
 
 /**
  * Functional operations
  */
 
-abstract class FunctionReference {
+interface FunctionReference {
 }
 
 class NamedFunctionReference extends FunctionReference {
@@ -229,22 +219,31 @@ class InlineFunction extends FunctionReference {
 	}
 }
 
-abstract class FunctionalOperation extends RosettaExpression {
-	contains RosettaExpression receiver
-	contains FunctionReference function
+interface RosettaFunctionalOperation extends RosettaUnaryOperation {
+	contains FunctionReference functionRef
 }
 
-class ReduceOperation extends FunctionalOperation {
+interface MandatoryFunctionalOperation extends RosettaFunctionalOperation {
 }
 
-abstract class UnaryFunctionalOperation extends FunctionalOperation {
+class ReduceOperation extends MandatoryFunctionalOperation, ListOperation {
 }
 
-class FilterOperation extends UnaryFunctionalOperation {
+class FilterOperation extends MandatoryFunctionalOperation, CanHandleListOfLists, ListOperation {
 }
 
-class MapOperation extends UnaryFunctionalOperation {
+class MapOperation extends MandatoryFunctionalOperation, CanHandleListOfLists {
 }
 
-class SortOperation extends UnaryFunctionalOperation {
+interface ComparingFunctionalOperation extends RosettaFunctionalOperation {
 }
+
+class SortOperation extends ComparingFunctionalOperation, ListOperation {
+}
+
+class MinOperation extends ComparingFunctionalOperation, ListOperation {
+}
+
+class MaxOperation extends ComparingFunctionalOperation, ListOperation {
+}
+

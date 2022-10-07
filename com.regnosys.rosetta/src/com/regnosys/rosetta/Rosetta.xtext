@@ -365,7 +365,7 @@ RosettaMapTestExpression returns RosettaExpression:
 	RosettaMapPathValue (
 		{RosettaExistsExpression.argument=current} 'exists' 
 		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
-		| {RosettaBinaryOperation.left=current} operator=('='|'<>') right=RosettaMapPrimaryExpression
+		| {EqualityOperation.left=current} operator=('='|'<>') right=RosettaMapPrimaryExpression
 	)
 ;
 
@@ -483,10 +483,15 @@ enum RosettaQualifiableType :
 ClosureParameter:
 	name = ID
 ;
- 
+
+OptionalClosureParameter returns ClosureParameter:
+	name = ID
+	| {ClosureParameter}
+;
+
 FunctionReference:
 	{NamedFunctionReference} function=[RosettaCallableWithArgs]
-	| {InlineFunction} (parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[' body=RosettaCalcExpression ']'
+	| {InlineFunction} ((parameters+=ClosureParameter (',' parameters += ClosureParameter)*) | parameters += OptionalClosureParameter) '[' body=RosettaCalcExpression ']'
 ;
 
 /**********************************************************************
@@ -526,13 +531,14 @@ RosettaCalcAdditive returns RosettaExpression:
 ;
 
 RosettaCalcMultiplicative returns RosettaExpression:
-	RosettaCalcContains ( =>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcContains)*
+	RosettaCalcBinary ( =>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*
 ;
 
-RosettaCalcContains returns RosettaExpression:
+RosettaCalcBinary returns RosettaExpression:
 	ListOperation (->(
 		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
 		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+		| {JoinOperation.left=current} operator='join' (right=ListOperation)?
 	))?
 ;
 
@@ -549,24 +555,24 @@ ListOperation returns RosettaExpression:
 	(
 		(
 			 =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR (=>feature=[RosettaFeature|ValidID])?)
-			|=>({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? 'exists')
-			|=>({RosettaAbsentExpression.argument=current} 'is' 'absent')
-			|=>({RosettaOnlyElement.argument=current} 'only-element')
-			|=>({RosettaCountOperation.argument=current} 'count')
-			|=>({FlattenOperation.argument=current} 'flatten')
-			|=>({DistinctOperation.argument=current} 'distinct')
-			|=>({ReverseOperation.argument=current} 'reverse')
-			|=>({FirstOperation.argument=current} 'first')
-			|=>({LastOperation.argument=current} 'last')
-			|=>({SumOperation.argument=current} 'sum')
-			|=>({MinOperation.argument=current} 'min')
-			|=>({MaxOperation.argument=current} 'max')	
+			|=>({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
+			|=>({RosettaAbsentExpression.argument=current} 'is' operator='absent')
+			|=>({RosettaOnlyElement.argument=current} operator='only-element')
+			|=>({RosettaCountOperation.argument=current} operator='count')
+			|=>({FlattenOperation.argument=current} operator='flatten')
+			|=>({DistinctOperation.argument=current} operator='distinct')
+			|=>({ReverseOperation.argument=current} operator='reverse')
+			|=>({FirstOperation.argument=current} operator='first')
+			|=>({LastOperation.argument=current} operator='last')
+			|=>({SumOperation.argument=current} operator='sum')	
 		) | (
-			 =>({ReduceOperation.receiver=current} 'reduce')
-			|=>({FilterOperation.receiver=current} 'filter')
-			|=>({MapOperation.receiver=current} 'map')
-			|=>({SortOperation.receiver=current} 'sort')
-		) (function=FunctionReference)?
+			 =>({ReduceOperation.argument=current} operator='reduce')
+			|=>({FilterOperation.argument=current} operator='filter')
+			|=>({MapOperation.argument=current} operator='map')
+			|=>({SortOperation.argument=current} operator='sort')
+			|=>({MinOperation.argument=current} operator='min')
+			|=>({MaxOperation.argument=current} operator='max')
+		) (functionRef=FunctionReference)?
 	)*
 ;
 

@@ -12,30 +12,20 @@ import com.regnosys.rosetta.rosetta.BlueprintOr
 import com.regnosys.rosetta.rosetta.BlueprintRef
 import com.regnosys.rosetta.rosetta.BlueprintReturn
 import com.regnosys.rosetta.rosetta.BlueprintSource
-import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCallable
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.RosettaCountOperation
-import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFactory
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaLiteral
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaType
-import com.regnosys.rosetta.rosetta.RosettaTyped
-import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
-import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
@@ -48,7 +38,19 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EStructuralFeature
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.RosettaOnlyElement
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.expression.MapOperation
+import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
 
 class RosettaBlueprintTypeResolver {
 	
@@ -387,10 +389,6 @@ class RosettaBlueprintTypeResolver {
 			}
 		}
 	}
-//
-//	def dispatch RosettaType getInput(RosettaLiteral expr) {
-//		return expr.type
-//	}
 
 	def dispatch RosettaType getInput(RosettaExpression expr) {
 		val rType = expr.RType
@@ -399,15 +397,11 @@ class RosettaBlueprintTypeResolver {
 			"Unexpected input expression "  + expr.class + "... " + rType)
 	}
 	
-	def dispatch RosettaType getInput(RosettaContainsExpression expr) {
-		return getInput(expr.container)
-	}
-	
 	def dispatch RosettaType getInput(RosettaLiteral literal) {
 		null
 	}
 	
-	def dispatch RosettaType getInput(RosettaCountOperation expr) {
+	def dispatch RosettaType getInput(RosettaUnaryOperation expr) {
 		return getInput(expr.argument);
 	}
 
@@ -442,10 +436,6 @@ class RosettaBlueprintTypeResolver {
 			"Unexpected input parsing rosetta callable " + callable.class.simpleName)
 	}
 	
-	def dispatch RosettaType getInput(RosettaOnlyElement expr) {
-		return getInput(expr.argument)
-	}
-	
 	def dispatch RosettaType getInput(RosettaConditionalExpression call) {
 		return getInput(call.^if);		
 	}
@@ -454,24 +444,12 @@ class RosettaBlueprintTypeResolver {
 		return getInput(expr.args.get(0))
 	}
 	
-	def dispatch RosettaType getInput(RosettaExistsExpression expr) {
-		return getInput(expr.argument)
-	}
-	
-	def dispatch RosettaType getInput(RosettaAbsentExpression expr) {
-		return getInput(expr.argument)
-	}
-	
-	def dispatch RosettaType getInput(RosettaDisjointExpression expr) {
-		return getInput(expr.container)//TODO check RHS has matching scope? or is that checked elsewhere
-	}
-	
 	def dispatch RosettaType getInput(RosettaEnumValueReference expr) {
 		return null
 	}
 	
-	def dispatch RosettaType getInput(ListOperation expr) {
-		return getInput(expr.receiver)
+	def dispatch RosettaType getInput(RosettaFunctionalOperation expr) {
+		return getInput(expr.argument)
 	}
 	
 	def dispatch RosettaType getInput(RosettaCallableWithArgsCall expr) {
@@ -546,15 +524,20 @@ class RosettaBlueprintTypeResolver {
 		return typed.type
 	}
 	
-	def dispatch RosettaType getOutput(ListOperation op) {
-		switch (op.operationKind) {
-			case MAP: {
-				return op.body.output
-			}
-			default: {
-				return op.receiver.output
-			}
-		}
+	def dispatch RosettaType getOutput(MapOperation op) {
+		return op.functionRef.output
+	}
+	
+	def dispatch RosettaType getOutput(NamedFunctionReference op) {
+		return op.function.output
+	}
+	
+	def dispatch RosettaType getOutput(InlineFunction op) {
+		return op.body.output
+	}
+	
+	def dispatch RosettaType getOutput(RosettaUnaryOperation op) {
+		return op.argument.output
 	}
 
 	def dispatch RosettaType getOutput(RosettaFeatureCall call) {
@@ -573,10 +556,6 @@ class RosettaBlueprintTypeResolver {
 		}
 		throw new UnsupportedOperationException("Unexpected input parsing rosetta feature call feature of type " +
 			feature.class.simpleName)
-	}
-	
-	def dispatch RosettaType getOutput(RosettaOnlyElement expr) {
-		return getOutput(expr.argument)
 	}
 	
 	def dispatch RosettaType getOutput(Void typed) {

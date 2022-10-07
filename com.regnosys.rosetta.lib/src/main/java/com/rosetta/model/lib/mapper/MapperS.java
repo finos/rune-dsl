@@ -126,8 +126,8 @@ public class MapperS<T> implements MapperBuilder<T> {
 	 * @param mappingFunc
 	 * @return mapped list
 	 */
-	public <F> MapperC<F> mapSingleToItem(Function<MapperS<T>, MapperS<F>> mappingFunc) {
-		return MapperC.of(mappingFunc.apply(this).getMulti());
+	public <F> MapperS<F> mapSingleToItem(Function<MapperS<T>, MapperS<F>> mappingFunc) {
+		return mappingFunc.apply(this);
 	}
 	
 	/**
@@ -137,8 +137,8 @@ public class MapperS<T> implements MapperBuilder<T> {
 	 * @param mappingFunc
 	 * @return mapped list
 	 */
-	public <F> MapperListOfLists<F> mapSingleToList(Function<MapperS<T>, MapperC<F>> mappingFunc) {
-		return MapperListOfLists.of(Arrays.asList(mappingFunc.apply(this).getMulti()));
+	public <F> MapperC<F> mapSingleToList(Function<MapperS<T>, MapperC<F>> mappingFunc) {
+		return mappingFunc.apply(this);
 	}
 	
 	/* (non-Javadoc)
