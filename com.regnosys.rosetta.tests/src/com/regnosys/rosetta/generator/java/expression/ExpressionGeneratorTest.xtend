@@ -29,6 +29,9 @@ import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
+import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
+import com.regnosys.rosetta.rosetta.expression.EqualityOperation
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -45,7 +48,7 @@ class ExpressionGeneratorTest {
 		
 		val rhsIntLiteral = createIntLiteral(5)
 		
-		val comparisonOp = createModifiableBinaryOperation(">", lhsFeatureCall, rhsIntLiteral)
+		val comparisonOp = createModifiableBinaryOperation(">", lhsFeatureCall, rhsIntLiteral, ComparisonOperation)
 		
 		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(lhsMockClass))
 		
@@ -62,12 +65,12 @@ class ExpressionGeneratorTest {
 		val mockClass = createData("Foo")
 		
 		val lhsFeatureCall = createFeatureCall(mockClass, "attr1")
-		val lhsComparisonOp = createModifiableBinaryOperation(">", lhsFeatureCall, createIntLiteral(5))
+		val lhsComparisonOp = createModifiableBinaryOperation(">", lhsFeatureCall, createIntLiteral(5), ComparisonOperation)
 		
 		val rhsFeatureCall = createFeatureCall(mockClass, "attr2")
-		val rhsComparisonOp = createModifiableBinaryOperation(">", rhsFeatureCall, createIntLiteral(5))
+		val rhsComparisonOp = createModifiableBinaryOperation(">", rhsFeatureCall, createIntLiteral(5), ComparisonOperation)
 		
-		val orOp = createBinaryOperation("or", lhsComparisonOp, rhsComparisonOp)
+		val orOp = createBinaryOperation("or", lhsComparisonOp, rhsComparisonOp, LogicalOperation)
 		
 		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
 		
@@ -105,7 +108,7 @@ class ExpressionGeneratorTest {
 		val rhsFeatureCall = createFeatureCall(mockClass, "attr2")
 		val rhsExistsOp = createExistsExpression(rhsFeatureCall)
 		
-		val orOp = createBinaryOperation("or", lhsExistsOp, rhsExistsOp)
+		val orOp = createBinaryOperation("or", lhsExistsOp, rhsExistsOp, LogicalOperation)
 		
 		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
 		
@@ -123,14 +126,14 @@ class ExpressionGeneratorTest {
 		val featureCall1 = createFeatureCall(mockClass, "attr1")
 		val featureCall2 = createFeatureCall(mockClass, "attr2")
 		
-		val lhsEqualsOp = createModifiableBinaryOperation("=", featureCall1, featureCall2)
+		val lhsEqualsOp = createModifiableBinaryOperation("=", featureCall1, featureCall2, EqualityOperation)
 		
 		val featureCall3 = createFeatureCall(mockClass, "attr3")
 		val featureCall4 = createFeatureCall(mockClass, "attr4")
 		
-		val rhsEqualsOp = createModifiableBinaryOperation("=", featureCall3, featureCall4)
+		val rhsEqualsOp = createModifiableBinaryOperation("=", featureCall3, featureCall4, EqualityOperation)
 		
-		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp)
+		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp, LogicalOperation)
 		
 		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
 		
@@ -146,14 +149,14 @@ class ExpressionGeneratorTest {
 		val featureCall1 = createFeatureCall(mockClass, "attr1")
 		val featureCall2 = createFeatureCall(mockClass, "attr2")
 		
-		val lhsEqualsOp = createModifiableBinaryOperation("=", featureCall1, featureCall2)
+		val lhsEqualsOp = createModifiableBinaryOperation("=", featureCall1, featureCall2, EqualityOperation)
 		
 		val featureCall3 = createFeatureCall(mockClass, "attr3")
 		val featureCall4 = createFeatureCall(mockClass, "attr4")
 		
-		val rhsEqualsOp = createModifiableBinaryOperation("=", featureCall3, featureCall4)
+		val rhsEqualsOp = createModifiableBinaryOperation("=", featureCall3, featureCall4, EqualityOperation)
 		
-		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp)
+		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp, LogicalOperation)
 		
 		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
 		
@@ -176,19 +179,16 @@ class ExpressionGeneratorTest {
 		return mockExistsExpression;
 	}
 	
- 	private def RosettaBinaryOperation createBinaryOperation(String operator, RosettaExpression left, RosettaExpression right) {
-		val mockBinaryOperation = mock(RosettaBinaryOperation) 
+ 	private def <T extends RosettaBinaryOperation> T createBinaryOperation(String operator, RosettaExpression left, RosettaExpression right, Class<T> op) {
+		val mockBinaryOperation = mock(op) 
 		when(mockBinaryOperation.operator).thenReturn(operator)
 		when(mockBinaryOperation.left).thenReturn(left)
 		when(mockBinaryOperation.right).thenReturn(right)
 		return mockBinaryOperation
 	}
 	
-	private def ModifiableBinaryOperation createModifiableBinaryOperation(String operator, RosettaExpression left, RosettaExpression right) {
-		val mockBinaryOperation = mock(ModifiableBinaryOperation) 
-		when(mockBinaryOperation.operator).thenReturn(operator)
-		when(mockBinaryOperation.left).thenReturn(left)
-		when(mockBinaryOperation.right).thenReturn(right)
+	private def <T extends ModifiableBinaryOperation> T createModifiableBinaryOperation(String operator, RosettaExpression left, RosettaExpression right, Class<T> op) {
+		val mockBinaryOperation = createBinaryOperation(operator, left, right, op)
 		when(mockBinaryOperation.cardMod).thenReturn(CardinalityModifier.NONE)
 		return mockBinaryOperation
 	}

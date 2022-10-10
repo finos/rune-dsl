@@ -77,6 +77,11 @@ import com.regnosys.rosetta.rosetta.expression.ExistsModifier
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
+import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 
 class ExpressionGenerator {
 	
@@ -207,9 +212,9 @@ class ExpressionGenerator {
 	}
 
 	private def StringConcatenationClient genConditionalMapper(RosettaConditionalExpression expr, ParamMap params)'''
-		«IF !expr.ifthen.evalulatesToMapper»com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(«ENDIF»com.rosetta.model.lib.mapper.MapperUtils.«IF funcExt.needsBuilder(expr.ifthen)»fromDataType«ELSE»fromBuiltInType«ENDIF»(() -> {
+		«IF expr.ifthen.evaluatesToComparisonResult»com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(«ENDIF»com.rosetta.model.lib.mapper.MapperUtils.«IF funcExt.needsBuilder(expr.ifthen)»fromDataType«ELSE»fromBuiltInType«ENDIF»(() -> {
 			«expr.genConditional(params)»
-		})«IF !expr.ifthen.evalulatesToMapper»)«ENDIF»'''
+		})«IF expr.ifthen.evaluatesToComparisonResult»)«ENDIF»'''
 
 
 
@@ -450,7 +455,7 @@ class ExpressionGenerator {
 	}
 
 	def StringConcatenationClient toComparisonResult(RosettaExpression expr, ParamMap params) {
-		val wrap = expr.evalulatesToMapper && !(expr instanceof RosettaBinaryOperation)
+		val wrap = !expr.evaluatesToComparisonResult
 		'''«IF wrap»«ComparisonResult».of(«ENDIF»«expr.javaCode(params)»«IF wrap»)«ENDIF»'''
 	}
 
@@ -472,17 +477,28 @@ class ExpressionGenerator {
 		val exprs = newHashSet
 		collectExpressions(expr, [exprs.add(it)])
 
-		return !exprs.empty && 
-			exprs.stream.allMatch[it instanceof RosettaFeatureCall ||
+		return expr.evaluatesToComparisonResult
+			|| !exprs.empty
+			&& exprs.stream.allMatch[it instanceof RosettaFeatureCall ||
 									it instanceof RosettaCallableCall ||
 									it instanceof RosettaCallableWithArgsCall ||
 									it instanceof RosettaLiteral && !(it.isEmpty && !(it.eContainer instanceof RosettaConditionalExpression)) ||
 									it instanceof RosettaCountOperation ||
-									it instanceof RosettaBinaryOperation ||
 									it instanceof RosettaFunctionalOperation ||
 									it instanceof RosettaOnlyElement ||
 									isArithmeticOperation(it)
 			]
+	}
+	private def boolean evaluatesToComparisonResult(RosettaExpression expr) {
+		return expr instanceof LogicalOperation
+			|| expr instanceof ComparisonOperation
+			|| expr instanceof EqualityOperation
+			|| expr instanceof RosettaContainsExpression
+			|| expr instanceof RosettaDisjointExpression
+			|| expr instanceof RosettaOnlyExistsExpression
+			|| expr instanceof RosettaExistsExpression
+			|| expr instanceof RosettaAbsentExpression
+			|| expr instanceof RosettaConditionalExpression && (expr as RosettaConditionalExpression).ifthen.evaluatesToComparisonResult
 	}
 	
 	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right, CardinalityModifier cardMod) {
