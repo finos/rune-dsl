@@ -611,7 +611,7 @@ class ExpressionGenerator {
 		val isBodyMulti =  ref.isBodyExpressionMulti
 		val StringConcatenationClient bodyExpr = '''«ref.body.javaCode(params)»«IF needsMapper»«IF !ref.body.evalulatesToMapper».asMapper()«ENDIF»«ELSE»«IF ref.body.evalulatesToMapper»«IF isBodyMulti».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDIF»'''
 		val outputType =  ref.bodyRawType
-		val StringConcatenationClient cast = '''(«IF needsMapper»«IF isBodyMulti»«MapperC»<«outputType»>«ELSE»«MapperS»<«outputType»>«ENDIF»«ELSE»«outputType»«ENDIF»)'''
+		val StringConcatenationClient cast = '''(«IF needsMapper»«IF ref.body.evaluatesToComparisonResult»«ComparisonResult»«ELSEIF isBodyMulti»«MapperC»<«outputType»>«ELSE»«MapperS»<«outputType»>«ENDIF»«ELSE»«outputType»«ENDIF»)'''
 
 		if (ref.parameters.size <= 1) {
 			val item = ref.itemName
