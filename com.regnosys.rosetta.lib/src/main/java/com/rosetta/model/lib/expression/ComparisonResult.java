@@ -30,9 +30,6 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	public static ComparisonResult of(Mapper<Boolean> result) {
-		if (result instanceof ComparisonResult) {
-			return (ComparisonResult)result;
-		}
 		return new ComparisonResult(result.getMulti().stream().allMatch(r -> r == true), false, null);
 	}
 	
