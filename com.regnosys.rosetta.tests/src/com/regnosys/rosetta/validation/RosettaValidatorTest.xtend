@@ -1853,7 +1853,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_ONLY_ELEMENT, null, "List only-element cannot be used for single cardinality expressions.")
+		model.assertWarning(ROSETTA_ONLY_ELEMENT, null, "List only-element cannot be used for single cardinality expressions.")
 	}
 	
 	@Test
@@ -1872,7 +1872,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_ONLY_ELEMENT, null, "List only-element cannot be used for single cardinality expressions.")
+		model.assertWarning(ROSETTA_ONLY_ELEMENT, null, "List only-element cannot be used for single cardinality expressions.")
 	}
 	
 	@Test
