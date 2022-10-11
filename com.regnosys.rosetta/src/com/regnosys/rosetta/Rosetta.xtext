@@ -551,7 +551,7 @@ enum ExistsModifier:
 ;
 
 ListOperation returns RosettaExpression:
-	RosettaCalcPrimary 
+	RosettaCalcPrimary
 	(
 		(
 			 =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR (=>feature=[RosettaFeature|ValidID])?)
