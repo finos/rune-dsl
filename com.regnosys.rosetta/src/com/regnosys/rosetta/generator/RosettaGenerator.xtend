@@ -28,7 +28,6 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.rosetta.util.DemandableLock
 import java.util.Map
 import java.util.concurrent.CancellationException
-import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -44,7 +43,7 @@ import com.regnosys.rosetta.generator.java.function.FunctionGenerator
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
 class RosettaGenerator extends AbstractGenerator {
-	static Logger LOGGER = Logger.getLogger(RosettaGenerator) => [level = Level.DEBUG]
+	static Logger LOGGER = Logger.getLogger(RosettaGenerator)
 
 	@Inject EnumGenerator enumGenerator
 	@Inject ModelMetaGenerator metaGenerator
