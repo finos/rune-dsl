@@ -13,7 +13,7 @@ Export-Package: com.regnosys.rosetta.blueprints,
  com.regnosys.rosetta.blueprints.runner.nodes
 Import-Package: com.google.common.collect,
  com.rosetta.model.lib,
- org.apache.commons.lang3.builder;version="3.1.0",
+ org.apache.commons.lang3.builder,
  org.apache.log4j
 Automatic-Module-Name: com.regnosys.rosetta.blueprints
 Require-Bundle: com.regnosys.rosetta.lib,

@@ -248,10 +248,10 @@ public class ExpressionOperators {
 	public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {
 		if (actual < min) {
 			return ComparisonResult
-					.failure(msgPrefix + " - Expected cardinality lower bound of [" + min + "] found [" + actual + "]");
+					.failure("Minimum of " + min + " '" + msgPrefix + "' is expected but found " + actual + "");
 		} else if (max > 0 && actual > max) {
 			return ComparisonResult
-					.failure(msgPrefix + " - Expected cardinality upper bound of [" + max + "] found [" + actual + "]");
+					.failure("Maximum of " + max + " '" + msgPrefix + "' are expected but found " + actual + "");
 		}
 		return ComparisonResult.success();
 	}
