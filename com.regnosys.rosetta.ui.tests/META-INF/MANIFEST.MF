@@ -7,7 +7,7 @@ Bundle-Version: 0.0.0.master
 Bundle-SymbolicName: com.regnosys.rosetta.ui.tests;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.regnosys.rosetta.ui,
- org.junit.jupiter.api;bundle-version="[5.1.0,6.0.0)",
+ org.junit.jupiter.api,
  org.eclipse.xtext.testing,
  org.eclipse.xtext.xbase.testing,
  org.eclipse.jdt.core,
@@ -17,6 +17,6 @@ Require-Bundle: com.regnosys.rosetta.ui,
  org.eclipse.xtext.xbase.junit,
  org.eclipse.core.runtime,
  org.eclipse.xtext.ui.testing,
- org.eclipse.ui.workbench;resolution:=optional
+ org.eclipse.ui.workbench
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.regnosys.rosetta.ui.tests;x-internal=true
