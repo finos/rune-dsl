@@ -2,11 +2,15 @@ package com.rosetta.model.lib.expression;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.ZonedDateTime;
 
 public class CompareHelper {
 
 	@SuppressWarnings("unchecked")
 	static <T extends Comparable<? super T>, X extends Comparable<? super X>> int compare(T o1, X o2) {
+		if (o1 instanceof ZonedDateTime && o2 instanceof ZonedDateTime) {
+			return ((ZonedDateTime)o1).toInstant().compareTo(((ZonedDateTime)o2).toInstant());
+		}
 		if (o1.getClass() == o2.getClass()) {
 			return (o1).compareTo((T)o2);
 		}

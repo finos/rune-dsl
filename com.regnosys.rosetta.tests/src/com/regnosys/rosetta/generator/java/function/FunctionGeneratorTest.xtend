@@ -22,6 +22,8 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
+import java.time.ZonedDateTime
+import java.time.ZoneId
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -1277,6 +1279,37 @@ class FunctionGeneratorTest {
 		assertTrue(func.invokeFunc(Boolean, 1, Arrays.asList(1, 2)))
 		assertFalse(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
 	}
+	
+	@Test
+	def void funcUsingZonedDateTimeEquality() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				inputs:
+					dt1 zonedDateTime (1..1)
+					dt2 zonedDateTime (1..1)
+				output:
+					res boolean (1..1)
+				set res: dt1 = dt2
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		
+		var dt1 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		var dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		assertTrue(func.invokeFunc(Boolean, dt1, dt2))
+		
+		dt1 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/London"));
+		assertFalse(func.invokeFunc(Boolean, dt1, dt2))
+		
+		dt1 = ZonedDateTime.of(2022, 10, 13, 15, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/London"));
+		assertTrue(func.invokeFunc(Boolean, dt1, dt2))
+	}
 
 	@Test
 	def void funcUsingListNotEqualsAll() {
@@ -1414,6 +1447,76 @@ class FunctionGeneratorTest {
 		// assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 1)))
 		assertTrue(func.invokeFunc(Boolean, 2, Arrays.asList(1, 2)))
 	// assertFalse(func.invokeFunc(Boolean, 1, Arrays.asList(2, 2)))
+	}
+	
+	@Test
+	def void funcUsingZonedDateTimeGreaterThan() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				inputs:
+					dt1 zonedDateTime (1..1)
+					dt2 zonedDateTime (1..1)
+				output:
+					res boolean (1..1)
+				set res: dt1 > dt2
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		
+		var dt1 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		var dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		assertFalse(func.invokeFunc(Boolean, dt1, dt2))
+		
+		dt1 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/London"));
+		assertFalse(func.invokeFunc(Boolean, dt1, dt2))
+		
+		dt1 = ZonedDateTime.of(2022, 10, 13, 15, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/London"));
+		assertFalse(func.invokeFunc(Boolean, dt1, dt2))
+		
+		dt1 = ZonedDateTime.of(2022, 10, 13, 16, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/London"));
+		assertTrue(func.invokeFunc(Boolean, dt1, dt2))
+	}
+	
+	@Test
+	def void funcUsingZonedDateTimeGreatherThanOrEqual() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				inputs:
+					dt1 zonedDateTime (1..1)
+					dt2 zonedDateTime (1..1)
+				output:
+					res boolean (1..1)
+				set res: dt1 >= dt2
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func = classes.createFunc("F1");
+		
+		var dt1 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		var dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		assertTrue(func.invokeFunc(Boolean, dt1, dt2))
+		
+		dt1 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/London"));
+		assertFalse(func.invokeFunc(Boolean, dt1, dt2))
+		
+		dt1 = ZonedDateTime.of(2022, 10, 13, 15, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/London"));
+		assertTrue(func.invokeFunc(Boolean, dt1, dt2))
+		
+		dt1 = ZonedDateTime.of(2022, 10, 13, 16, 0, 0, 0, ZoneId.of("Europe/Brussels"));
+		dt2 = ZonedDateTime.of(2022, 10, 13, 14, 0, 0, 0, ZoneId.of("Europe/London"));
+		assertTrue(func.invokeFunc(Boolean, dt1, dt2))
 	}
 
 	@Test
