@@ -32,6 +32,8 @@ We use the [Xsemantics DSL](https://github.com/eclipse/xsemantics) to define the
 3. **Update Maven dependencies**: right click on the `com.regnosys.rosetta.parent` project > Maven > Update project... and finish.
 
 ### Troubleshooting
+Make sure you have successfully run `mvn clean install`. (see section 1 of this guide)
+
 If you're seeing 1000+ errors in the "Problems" window of Eclipse, try the following.
 1. Disable auto-building. (Project > Build automatically)
 2. Close Eclipse and open it again.
