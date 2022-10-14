@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.google.common.collect.ImmutableMap.*
-import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
@@ -33,6 +33,40 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testPreconditionValidGeneration() {
+		'''
+			func FuncFoo:
+				inputs:
+					a int (1..1)
+				output:
+					result int (1..1)
+				
+				condition PositiveArgument:
+					if True then a = 0
+				
+				set result:
+					a
+		'''.generateCode.compileToClasses
+	}
+	
+	@Test
+	def void testExpressionValidGeneration() {
+		'''
+			type A:
+				a int (0..1)
+			
+			func FuncFoo:
+				inputs:
+					a A (0..*)
+				output:
+					result A (0..*)
+				
+				set result:
+					a filter [item->a exists]
+		'''.generateCode.compileToClasses
+	}
 
 	@Test
 	def void testSimpleFunctionGeneration() {
@@ -761,7 +795,7 @@ class FunctionGeneratorTest {
 					top1-> foo disjoint top2 -> bar
 		'''.parseRosetta
 
-		model.assertError(ROSETTA_DISJOINT_EXPRESSION, null, "Disjoint must operate on lists of the same type")
+		model.assertError(ROSETTA_DISJOINT_EXPRESSION, null, "Incompatible types: cannot use operator 'disjoint' with Foo and string.")
 	}
 
 	@Test
@@ -2003,7 +2037,7 @@ class FunctionGeneratorTest {
 			
 		'''.parseRosetta
 		model.assertWarning(ROSETTA_ONLY_ELEMENT, null,
-			"List only-element cannot be used for single cardinality expressions.")
+			"List only-element operation cannot be used for single cardinality expressions.")
 	}
 
 	@Test

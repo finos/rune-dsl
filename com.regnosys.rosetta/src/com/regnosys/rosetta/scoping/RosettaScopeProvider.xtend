@@ -13,7 +13,7 @@ import com.regnosys.rosetta.rosetta.RosettaExternalClass
 import com.regnosys.rosetta.rosetta.RosettaExternalEnum
 import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -21,7 +21,6 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
-import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
@@ -46,6 +45,8 @@ import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
 
 /**
  * This class contains custom scoping description.
@@ -149,8 +150,8 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 							inputsAndOutputs.add(function.output)
 						return Scopes.scopeFor(inputsAndOutputs)
 					} else {
-						val listOp = EcoreUtil2.getContainerOfType(context, ListOperation)
-						if(listOp !== null) {
+						val inline = EcoreUtil2.getContainerOfType(context, InlineFunction)
+						if(inline !== null) {
 							return getParentScope(context, reference, IScope.NULLSCOPE)
 						}
 						val container = EcoreUtil2.getContainerOfType(context, Function)
@@ -242,7 +243,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		}
 		val parentScope = getParentScope(object.eContainer, reference, outer)
 		switch (object) {
-			ListOperation: {
+			InlineFunction: {
 				return Scopes.scopeFor(object.parameters, parentScope)
 			}
 			Data: {

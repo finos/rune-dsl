@@ -5,9 +5,10 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.resource.IDerivedStateComputer;
 
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression;
-import com.regnosys.rosetta.rosetta.RosettaExpression;
-import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
+import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
+import com.regnosys.rosetta.rosetta.expression.JoinOperation;
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 
 /**
  * Derived state:
@@ -30,6 +31,8 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	public void setDerivedState(EObject obj) {
 		if (obj instanceof RosettaConditionalExpression) {
 			this.setDefaultElseToEmpty((RosettaConditionalExpression)obj);
+		} else if (obj instanceof JoinOperation) {
+			this.setDefaultJoinSeparator((JoinOperation)obj);
 		}
 	}
 	public void setAllDerivedState(TreeIterator<EObject> tree) {
@@ -42,6 +45,8 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 		if (obj instanceof RosettaExpression) {
 			if (obj instanceof RosettaConditionalExpression) {
 				this.discardDefaultElse((RosettaConditionalExpression)obj);
+			} else if (obj instanceof JoinOperation) {
+				this.discardDefaultJoinSeparator((JoinOperation)obj);
 			}
 		}
 	}
@@ -53,12 +58,26 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	
 	private void setDefaultElseToEmpty(RosettaConditionalExpression expr) {
 		if (!expr.isFull()) {
-			expr.setElsethen(SimpleFactory.eINSTANCE.createListLiteral());
+			expr.setElsethen(ExpressionFactory.eINSTANCE.createListLiteral());
 		}
 	}
 	private void discardDefaultElse(RosettaConditionalExpression expr) {
 		if (!expr.isFull()) {
 			expr.setElsethen(null);
+		}
+	}
+	
+	private void setDefaultJoinSeparator(JoinOperation expr) {
+		if (expr.getRight() == null) {
+			expr.setRight(ExpressionFactory.eINSTANCE.createRosettaStringLiteral());
+			expr.setExplicitSeparator(false);
+		} else {
+			expr.setExplicitSeparator(true);
+		}
+	}
+	private void discardDefaultJoinSeparator(JoinOperation expr) {
+		if (!expr.isExplicitSeparator()) {
+			expr.setRight(null);
 		}
 	}
 }

@@ -1,28 +1,25 @@
 package com.regnosys.rosetta.generator.java.function
 
-import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.RosettaCountOperation
-import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
-import com.regnosys.rosetta.rosetta.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaLiteral
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.ListLiteral
-import com.regnosys.rosetta.rosetta.simple.ListOperation
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
 
 import static com.regnosys.rosetta.generator.util.Util.*
-import com.regnosys.rosetta.rosetta.RosettaOnlyElement
+import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -44,7 +41,10 @@ class FunctionDependencyProvider {
 			RosettaOnlyExistsExpression: {
 				functionDependencies(object.args)
 			}
-			RosettaExistsExpression: {
+			RosettaFunctionalOperation: {
+				newHashSet(functionDependencies(object.argument) + functionDependencies(object.functionRef))
+			}
+			RosettaUnaryOperation: {
 				functionDependencies(object.argument)
 			}
 			RosettaFeatureCall:
@@ -55,25 +55,12 @@ class FunctionDependencyProvider {
 			Function: {
 				newHashSet(object)
 			}
-			RosettaAbsentExpression: {
-				functionDependencies(object.argument)
+			NamedFunctionReference: {
+				functionDependencies(object.function)
 			}
-			RosettaContainsExpression: {
-				newHashSet(functionDependencies(object.contained) + functionDependencies(object.container))
+			InlineFunction: {
+				functionDependencies(object.body)
 			}
-			
-			RosettaDisjointExpression: {
-				newHashSet(functionDependencies(object.disjoint) + functionDependencies(object.container))
-			}
-			RosettaCountOperation: {
-				functionDependencies(object.argument)
-			}
-			ListOperation: {
-				newHashSet(functionDependencies(object.body) + functionDependencies(object.receiver))
-			}
-			RosettaOnlyElement: {
-                functionDependencies(object.argument)
-            }
 			ListLiteral: {
 				newHashSet(object.elements.flatMap[functionDependencies])
 			},

@@ -5,33 +5,27 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
 import com.regnosys.rosetta.rosetta.BlueprintSource
-import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
-import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCallable
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.RosettaCountOperation
-import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaExpression
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.validation.TypedBPNode
 import java.util.Comparator
 import org.apache.log4j.Logger
@@ -39,7 +33,11 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import com.regnosys.rosetta.rosetta.RosettaOnlyElement
+import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.FunctionReference
+import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -150,7 +148,11 @@ class ImportGenerator {
 			RosettaOnlyExistsExpression: {
 				expression.args.forEach[addExpression]
 			}
-			RosettaExistsExpression: {
+			RosettaFunctionalOperation: {
+				addExpression(expression.argument)
+				addFunctionReference(expression.functionRef)
+			}
+			RosettaUnaryOperation: {
 				addExpression(expression.argument)
 			}
 			RosettaBinaryOperation: {
@@ -162,16 +164,10 @@ class ImportGenerator {
 				addExpression(expression.left)
 				addExpression(expression.right)
 			}
-			RosettaCountOperation: {
-				addExpression(expression.argument)
-			}
 			RosettaBigDecimalLiteral: {
 				imports.add("java.math.BigDecimal")
 			}
 			RosettaLiteral: {
-			}
-			RosettaAbsentExpression: {
-				addExpression(expression.argument);
 			}
 			RosettaEnumValueReference: {
 				imports.add(expression.enumeration.fullName)
@@ -182,28 +178,24 @@ class ImportGenerator {
 				if (expression.elsethen!==null) 
 					addExpression(expression.elsethen)
 			}
-			RosettaContainsExpression: {
-				addExpression(expression.contained)
-				addExpression(expression.container)
-			}
-			RosettaDisjointExpression: {
-				addExpression(expression.disjoint)
-				addExpression(expression.container)
-			}
 			RosettaCallable:{}
 			RosettaCallableWithArgsCall: {
 				addCallableWithArgs(expression.callable)
 			}
-			ListOperation: {
-				addExpression(expression.receiver)
-				addExpression(expression.body)
-			}
-			RosettaOnlyElement: {
-				addExpression(expression.argument)
-			}
 			default:
 				LOGGER.warn("Unsupported expression type of " + expression.class.simpleName)
 		}
+	}
+	
+	def addFunctionReference(FunctionReference ref) {
+		switch ref {
+			NamedFunctionReference: {
+				addCallableWithArgs(ref.function)
+			}
+			InlineFunction: {
+				addExpression(ref.body)
+			}
+		}	
 	}
 
 	def fullName(RosettaType type) {

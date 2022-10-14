@@ -2,7 +2,7 @@ package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
 import com.google.inject.name.Named
-import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.validation.AbstractRosettaValidator
 import com.regnosys.rosetta.validation.StandaloneRosettaTypingValidator
 import java.util.List

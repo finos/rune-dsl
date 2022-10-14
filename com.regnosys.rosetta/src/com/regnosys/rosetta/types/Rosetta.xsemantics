@@ -2,27 +2,29 @@ system com.regnosys.rosetta.typing.RosettaTyping
 
 validatorExtends AbstractDeclarativeValidator
 
-import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.types.RListType
 import com.regnosys.rosetta.types.TypeFactory
-import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
-import com.regnosys.rosetta.rosetta.RosettaStringLiteral
-import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
-import com.regnosys.rosetta.rosetta.RosettaIntLiteral
-import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import static extension com.regnosys.rosetta.types.RBuiltinType.*
 import com.regnosys.rosetta.types.RBuiltinType
-import com.regnosys.rosetta.rosetta.ArithmeticOperation
-import com.regnosys.rosetta.rosetta.EqualityOperation
-import com.regnosys.rosetta.rosetta.LogicalOperation
-import com.regnosys.rosetta.rosetta.ComparisonOperation
+import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
+import com.regnosys.rosetta.rosetta.expression.EqualityOperation
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation
+import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import com.regnosys.rosetta.types.TypeValidationUtil
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.simple.ListLiteral
-import com.regnosys.rosetta.rosetta.RosettaPackage
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
+import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -43,8 +45,8 @@ auxiliary {
 	subtypeCheck(RosettaExpression sourceObject, RType expected)
 	comparableListTypeCheck(RosettaBinaryOperation sourceObject)
 	comparableTypeCheck(RosettaBinaryOperation sourceObject)
-	onlyRightIsSingularCheck(RosettaBinaryOperation sourceObject)
-	looseOnlyRightIsSingularCheck(RosettaBinaryOperation sourceObject)
+	onlyRightIsSingularCheck(ModifiableBinaryOperation sourceObject)
+	looseOnlyRightIsSingularCheck(ModifiableBinaryOperation sourceObject)
 	constraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
 	notConstraintCheck(RosettaExpression sourceObject, RosettaCardinality notExpected)
 	isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
@@ -188,7 +190,7 @@ auxiliary comparableTypeCheck(RosettaBinaryOperation sourceObject) {
 			source sourceObject
 	}
 }
-auxiliary onlyRightIsSingularCheck(RosettaBinaryOperation sourceObject) {
+auxiliary onlyRightIsSingularCheck(ModifiableBinaryOperation sourceObject) {
 	var RListType tl
     var RListType tr
     empty |- sourceObject.left : tl or tl = null
@@ -201,7 +203,7 @@ auxiliary onlyRightIsSingularCheck(RosettaBinaryOperation sourceObject) {
                 if (tr.constraint.constraintEquals(single)) {
                     fail error bothAreSingularMessage(sourceObject)
                         source sourceObject
-                        feature RosettaPackage.Literals.ROSETTA_BINARY_OPERATION__CARD_OP
+                        feature ExpressionPackage.Literals.MODIFIABLE_BINARY_OPERATION__CARD_MOD
                 } else {
                     fail error notRightIsSingularButLeftIsMessage(tr)
                         source sourceObject.right
@@ -213,7 +215,7 @@ auxiliary onlyRightIsSingularCheck(RosettaBinaryOperation sourceObject) {
         }
     }
 }
-auxiliary looseOnlyRightIsSingularCheck(RosettaBinaryOperation sourceObject) {
+auxiliary looseOnlyRightIsSingularCheck(ModifiableBinaryOperation sourceObject) {
     var RListType tl
     var RListType tr
     empty |- sourceObject.left : tl or tl = null
@@ -226,7 +228,7 @@ auxiliary looseOnlyRightIsSingularCheck(RosettaBinaryOperation sourceObject) {
                 if (single.isSubconstraintOf(tr.constraint)) {
                     fail error bothAreSingularMessage(sourceObject)
                         source sourceObject
-                        feature RosettaPackage.Literals.ROSETTA_BINARY_OPERATION__CARD_OP
+                        feature ExpressionPackage.Literals.MODIFIABLE_BINARY_OPERATION__CARD_MOD
                 } else {
                     fail error notRightIsSingularButLeftIsMessage(tr)
                         source sourceObject.right
@@ -430,7 +432,7 @@ from {
 checkrule CheckEqualityOperation for
 	EqualityOperation op
 from {
-	if (op.cardOp === null) {
+	if (op.cardMod === CardinalityModifier.^NONE) {
 		comparableListTypeCheck(op)
 	} else {
 		looseOnlyRightIsSingularCheck(op)
@@ -452,7 +454,7 @@ from {
 checkrule CheckLeftComparison for
 	ComparisonOperation op
 from {
-	if (op.cardOp === null) {
+	if (op.cardMod === CardinalityModifier.^NONE) {
 		looseListSubtypeCheck(op.left, singleNumber)
 	} else {
 		subtypeCheck(op.left, NUMBER)
@@ -461,7 +463,7 @@ from {
 checkrule CheckRightComparison for
 	ComparisonOperation op
 from {
-	if (op.cardOp === null) {
+	if (op.cardMod === CardinalityModifier.^NONE) {
 		looseListSubtypeCheck(op.right, singleNumber)
 	} else {
 		subtypeCheck(op.right, NUMBER)
@@ -470,7 +472,7 @@ from {
 checkrule CheckComparison for
 	ComparisonOperation op
 from {
-	if (op.cardOp !== null) {
+	if (op.cardMod !== CardinalityModifier.^NONE) {
 		looseOnlyRightIsSingularCheck(op)
 	}
 }
