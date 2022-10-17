@@ -1,10 +1,10 @@
 # Setup for developers
-If you want to contribute to the Rosetta DSL and need to get things up and running, you are in the right place.
+This guide is meant for everyone who wants to contribute to the Rosetta DSL and needs to get things up and running.
 
 If this guide does not work for you, be sure to raise an issue. This way we can help you figure out what the problem is and update this guide to prevent the same problem for future users.
 
 # 1. Building with Maven
-If you haven't already, start by cloning the project: `git clone https://github.com/REGnosys/rosetta-dsl`
+Start by cloning the project: `git clone https://github.com/REGnosys/rosetta-dsl`
 
 Our project runs with Java 11. Make sure that your Maven also uses this version of Java by running `mvn -v`.
 
@@ -29,9 +29,11 @@ We use the [Xsemantics DSL](https://github.com/eclipse/xsemantics) to define the
 ## Setup the project
 1. **Open the project in Eclipse**: File > Open Projects from File System..., select the right folder, click Finish.
 2. **Load the target platform**: in the `com.regnosys.rosetta.target` project, there is a file called `com.regnosys.rosetta.target.target`. Open it and click on the button in the right top corner to set it as the active target platform.
-3. **Update Maven dependencies**: right click on the `com.regnosys.rosetta.parent` project > Maven > Update project...
+3. **Update Maven dependencies**: right click on the `com.regnosys.rosetta.parent` project > Maven > Update project... and finish.
 
 ### Troubleshooting
+Make sure you have successfully run `mvn clean install`. (see section 1 of this guide)
+
 If you're seeing 1000+ errors in the "Problems" window of Eclipse, try the following.
 1. Disable auto-building. (Project > Build automatically)
 2. Close Eclipse and open it again.
@@ -54,6 +56,7 @@ type Foo:
   b boolean (0..*)
 ```
 You will notice `int` and `boolean` are not being recognized. To fix that, you need to add two files to your project:
+
 4. In the `com.regnosys.rosetta.lib` project, navigate to `src/main/java/model`. There should be two files there: `annotations.rosetta` and `basictypes.rosetta`.
 5. Copy them and paste them in your newly created project.
 
