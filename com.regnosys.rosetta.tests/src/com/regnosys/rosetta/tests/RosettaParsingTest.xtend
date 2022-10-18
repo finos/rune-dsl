@@ -10,12 +10,31 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+import com.regnosys.rosetta.rosetta.simple.Function
+
+import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.rosetta.expression.MapOperation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
+	
+	@Test
+	def void testExtractIsASynonymForMap() {
+	    val model = '''
+           func Test:
+               output:
+                   result boolean (0..*)
+               add result:
+                   [True, False] extract [item = False]
+	    '''.parseRosettaWithNoIssues
+	    
+	    model.elements.last as Function => [
+	    	assertTrue(operations.last.expression instanceof MapOperation)
+	    ]
+	}
 	
 	@Test
 	def void testOnlyElementInsidePath() {

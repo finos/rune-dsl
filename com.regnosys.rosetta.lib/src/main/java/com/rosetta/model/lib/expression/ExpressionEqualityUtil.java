@@ -2,6 +2,7 @@ package com.rosetta.model.lib.expression;
 
 import static com.rosetta.model.lib.expression.ErrorHelper.formatEqualsComparisonResultError;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -62,24 +63,19 @@ class ExpressionEqualityUtil {
 		while (e1.hasNext() && e2.hasNext()) {
 			T b1 = e1.next();
 			T b2 = e2.next();
-			if (b1 instanceof Number && b2 instanceof Number) {
-				@SuppressWarnings({ "unchecked", "rawtypes" })
-				int compRes = CompareHelper.compare((Comparable) b1, (Comparable) b2);
-				if (compRes != 0 && o == CardinalityOperator.All) {
-					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does not equal " + formatEqualsComparisonResultError(m2));
-				}
-				if (compRes == 0 && o == CardinalityOperator.Any) {
-					return ComparisonResult.success();
-				}
+			boolean equals;
+			if (b1 instanceof Number && b2 instanceof Number || b1 instanceof ZonedDateTime && b2 instanceof ZonedDateTime) {
+				@SuppressWarnings("unchecked")
+				int compRes = CompareHelper.compare((Comparable)b1, (Comparable)b2);
+				equals = compRes == 0;
 			} else {
-				boolean equals = b1 == null ? b2 == null : b1.equals(b2);
-				if (!equals && o == CardinalityOperator.All) {
-					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does not equal " + formatEqualsComparisonResultError(m2));
-				}
-				if (equals && o == CardinalityOperator.Any) {
-					return ComparisonResult.success();
-				}
-			}	
+				equals = b1 == null ? b2 == null : b1.equals(b2);
+			}
+			if (!equals && o == CardinalityOperator.All) {
+				return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does not equal " + formatEqualsComparisonResultError(m2));
+			} else if (equals && o == CardinalityOperator.Any) {
+				return ComparisonResult.success();
+			}
 		}
 		
 		if (e1.hasNext() || e2.hasNext())

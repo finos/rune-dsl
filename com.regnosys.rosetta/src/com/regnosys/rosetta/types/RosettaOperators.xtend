@@ -10,8 +10,9 @@ class RosettaOperators {
 	
 	public static val ARITHMETIC_OPS = #['+', '-', '*', '/']
 	public static val COMPARISON_OPS = #['<', '<=', '>', '>=']
-	public static val EQUALITY_OPS = #['=', '<>']
+	public static val EQUALITY_OPS = #['=', '<>', 'contains', 'disjoint']
 	public static val LOGICAL_OPS = #['and', 'or']
+	public static val JOIN_OP = 'join'
 
 	@Inject RosettaTypeCompatibility comaptibility
 
@@ -19,6 +20,15 @@ class RosettaOperators {
 	val List<RBuiltinType> builtinTypes = newArrayList
 
 	def RType resultType(String op, RType left, RType right) {
+		if (op == JOIN_OP) {
+			if (right !== null) {
+				return bothString(left, right, op)
+			} else if (left != RBuiltinType.STRING) {
+				return new RErrorType('''Left hand side of '«op»' expression must be string''')
+			} else {
+				return RBuiltinType.STRING
+			}
+		}
 		if (LOGICAL_OPS.contains(op)) {
 			return bothBoolean(left, right, op)
 		}
@@ -67,6 +77,14 @@ class RosettaOperators {
 		if (right!=RBuiltinType.BOOLEAN)
 			return new RErrorType('''Right hand side of '«op»' expression must be boolean''')
 		return RBuiltinType.BOOLEAN
+	}
+	
+	def private bothString(RType left, RType right, String op) {
+		if (left!=RBuiltinType.STRING)
+			return new RErrorType('''Left hand side of '«op»' expression must be string''')
+		if (right!=RBuiltinType.STRING)
+			return new RErrorType('''Right hand side of '«op»' expression must be string''')
+		return RBuiltinType.STRING
 	}
 	
 	def RBuiltinType convertToBuiltIn(RType type) {

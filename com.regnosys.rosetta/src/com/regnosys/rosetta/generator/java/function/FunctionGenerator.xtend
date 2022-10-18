@@ -13,13 +13,13 @@ import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaCallable
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.AssignOutputOperation
@@ -27,7 +27,6 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
-import com.regnosys.rosetta.rosetta.simple.ListOperation
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.OutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
@@ -51,6 +50,7 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 
 class FunctionGenerator {
 
@@ -416,8 +416,8 @@ class FunctionGenerator {
 	private def dispatch StringConcatenationClient lhsExpand(ShortcutDeclaration f) 
 	'''«f.expression.lhsExpand»'''
 	
-	private def dispatch StringConcatenationClient lhsExpand(ListOperation f) 
-	'''«f.receiver.lhsExpand»'''
+	private def dispatch StringConcatenationClient lhsExpand(RosettaUnaryOperation f) 
+	'''«f.argument.lhsExpand»'''
 	
 	private def dispatch StringConcatenationClient lhsFeature(RosettaFeature f){
 		throw new IllegalStateException("No implementation for lhsFeature for "+f.class)

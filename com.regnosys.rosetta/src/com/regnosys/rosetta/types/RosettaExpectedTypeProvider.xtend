@@ -1,14 +1,14 @@
 package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Operation
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 
-import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 class RosettaExpectedTypeProvider {

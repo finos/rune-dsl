@@ -7,6 +7,7 @@ import com.google.inject.Injector
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import org.eclipse.emf.ecore.EPackage
+import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
 
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.
@@ -25,6 +26,7 @@ class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 		if (!EPackage.Registry.INSTANCE.containsKey(RosettaPackage.eNS_URI)) {
 			EPackage.Registry.INSTANCE.put(RosettaPackage.eNS_URI, RosettaPackage.eINSTANCE);
 			EPackage.Registry.INSTANCE.put(SimplePackage.eNS_URI, SimplePackage.eINSTANCE);
+			EPackage.Registry.INSTANCE.put(ExpressionPackage.eNS_URI, ExpressionPackage.eINSTANCE);
 		}
 		super.register(injector)
 	}

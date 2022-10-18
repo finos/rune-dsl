@@ -10,9 +10,9 @@ import org.eclipse.xtext.EcoreUtil2;
 
 import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.RosettaCallable;
-import com.regnosys.rosetta.rosetta.RosettaCallableCall;
-import com.regnosys.rosetta.rosetta.RosettaExpression;
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall;
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall;
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -1586,7 +1587,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List filter must have an expression specified within square brackets.")
+		model.assertError(FILTER_OPERATION, null, "Missing a function reference.")
 	}
 	
 	@Test
@@ -1605,7 +1606,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				attr boolean (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List filter must have 1 named parameter.")
+		model.assertError(INLINE_FUNCTION, null, "Function must have 1 named parameter.")
 	}
 	
 	@Test
@@ -1624,7 +1625,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List filter expression must evaluate to a boolean.")
+		model.assertError(INLINE_FUNCTION, null, "Expression must evaluate to a boolean.")
 	}
 	
 	@Test
@@ -1643,7 +1644,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List map must have an expression specified within square brackets.")
+		model.assertError(MAP_OPERATION, null, "Missing a function reference.")
 	}
 	
 	@Test
@@ -1662,7 +1663,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List map must have 1 named parameter.")
+		model.assertError(INLINE_FUNCTION, null, "Function must have 1 named parameter.")
 	}
 	
 	@Test
@@ -1736,47 +1737,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Baz:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "Each list item (bars) is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).")
-	}
-	
-	@Test
-	def void shouldGenerateListFlattenExpressionSpecifiedError() {
-		val model = '''
-			func FuncFoo:
-			 	inputs:
-			 		foos Foo (0..*)
-				output:
-					strings string (0..*)
-				
-				add strings:
-					foos
-						map a [ a -> xs ] // list of lists
-						flatten [ item ]
-			
-			type Foo:
-				xs string (0..*)
-		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "No expression allowed for list flatten.")
-	}
-	
-	@Test
-	def void shouldGenerateListFlattenParameterSpecifiedError() {
-		val model = '''
-			func FuncFoo:
-			 	inputs:
-			 		foos Foo (0..*)
-				output:
-					strings string (0..*)
-				
-				add strings:
-					foos
-						map a [ a -> xs ] // list of lists
-						flatten xItem
-			
-			type Foo:
-				xs string (0..*)
-		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "No item parameter allowed for list flatten.")
+		model.assertError(MAP_OPERATION, null, "Each list item is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).")
 	}
 	
 	@Test
@@ -1796,7 +1757,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1) // single cardinality
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List flatten only allowed for list of lists.")
+		model.assertError(FLATTEN_OPERATION, null, "List flatten only allowed for list of lists.")
 	}
 	
 	@Test
@@ -1815,12 +1776,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List flatten only allowed for list of lists.")
+		model.assertError(FLATTEN_OPERATION, null, "List flatten only allowed for list of lists.")
 	}
 	
 	@Test
-	def void shouldGenerateListSingleCardinalityError() {
-		val model = '''
+	def void shouldNotGenerateListSingleCardinalityError() {
+		'''
 			func FuncFoo:
 			 	inputs:
 			 		foo Foo (1..1)
@@ -1833,8 +1794,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Foo:
 				x string (0..1)
-		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List map cannot be used for single cardinality expressions.")
+		'''.parseRosettaWithNoIssues
 	}
 	
 	@Test
@@ -1853,7 +1813,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertWarning(ROSETTA_ONLY_ELEMENT, null, "List only-element cannot be used for single cardinality expressions.")
+		model.assertWarning(ROSETTA_ONLY_ELEMENT, null, "List only-element operation cannot be used for single cardinality expressions.")
 	}
 	
 	@Test
@@ -1872,7 +1832,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertWarning(ROSETTA_ONLY_ELEMENT, null, "List only-element cannot be used for single cardinality expressions.")
+		model.assertWarning(ROSETTA_ONLY_ELEMENT, null, "List only-element operation cannot be used for single cardinality expressions.")
 	}
 	
 	@Test
@@ -1993,7 +1953,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				xs string (0..*)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List must be flattened before distinct operation.")
+		model.assertError(DISTINCT_OPERATION, null, "List must be flattened before distinct operation.")
 	}
 	
 	@Test
@@ -2082,7 +2042,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List reduce must have 2 named parameters.")
+		model.assertError(INLINE_FUNCTION, null, "Function must have 2 named parameters.")
 	}
 	
 	@Test
@@ -2101,7 +2061,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List reduce expression must evaluate to the same type as the input.  Found types Foo and String.")
+		model.assertError(REDUCE_OPERATION, null, "List reduce expression must evaluate to the same type as the input. Found types Foo and String.")
 	}
 	
 	@Test
@@ -2127,7 +2087,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					foos Foo (0..*)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List reduce only supports single cardinality expressions.")
+		model.assertError(INLINE_FUNCTION, null, "Operation only supports single cardinality expressions.")
 	}
 	
 	@Test
@@ -2145,7 +2105,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				add sortedFoos:
 					foos sort [item -> attrList] // sort based on multi-cardinality
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List sort only supports single cardinality expressions.")
+		model.assertError(INLINE_FUNCTION, null, "Operation only supports single cardinality expressions.")
 	}
 	
 	@Test
@@ -2163,7 +2123,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				add sortedFoos:
 					foos sort // sort based on Foo
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
+		model.assertError(SORT_OPERATION, null, "Operation sort only supports comparable types (string, int, string, date). Found type Foo.")
 	}
 	
 	@Test
@@ -2185,7 +2145,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					bars 
 						sort x [ x -> foo ] // sort based on Foo
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List sort only supports comparable types (string, int, string, date). Found type Foo.")
+		model.assertError(INLINE_FUNCTION, null, "Operation sort only supports comparable types (string, int, string, date). Found type Foo.")
 	}
 	
 	@Test
@@ -2205,7 +2165,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				attr int (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List get-item does not allow expressions using an item or named parameter.")
+		model.assertError(null, null, "List get-item does not allow expressions using an item or named parameter.")
 	}
 	
 	@Test
@@ -2225,7 +2185,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				attr int (1..1)
 		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List get-item does not allow expressions using an item or named parameter.")
+		model.assertError(null, null, "List get-item does not allow expressions using an item or named parameter.")
 	}
 	
 	@Test
@@ -2271,8 +2231,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldGenerateListJoinNoItemExpression() {
-		val model = '''
+	def void joinShouldAllowExpressions() {
+		'''
 			func FuncFoo:
 			 	inputs:
 			 		stringList string (0..*)
@@ -2281,12 +2241,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set joined:
 					stringList
-						join [ item ]
+						join ("a" + "b")
 			
 			type Foo:
 				attr int (1..1)
-		'''.parseRosetta
-		model.assertError(LIST_OPERATION, null, "List join does not allow expressions.")
+		'''.parseRosettaWithNoIssues
 	}
 	
 	@Test

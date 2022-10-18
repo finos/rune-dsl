@@ -10,12 +10,13 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.types.RBuiltinType.*
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.simple.ListOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.ArithmeticOperation
+import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.LogicalOperation
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation
+import com.regnosys.rosetta.rosetta.expression.MapOperation
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -66,8 +67,8 @@ class RosettaTypingTest {
 			elsethen.assertHasType(singleNumber)
 		]];
 		
-		model.elements.get(1) as Function => [operations.head.expression as ListOperation => [
-			body as ArithmeticOperation => [
+		model.elements.get(1) as Function => [operations.head.expression as MapOperation => [
+			(functionRef as InlineFunction).body as ArithmeticOperation => [
 				left.assertHasType(singleInt)
 			]
 		]];

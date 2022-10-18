@@ -62,3 +62,7 @@ A complete *Software Development Kit (SDK)* also called [Rosetta](https://ui.ros
 Much like how software engineers use programming languages and tools to build and test software, it is useful to think of Rosetta as a platform with a set of tools to build and test a domain model using the Rosetta DSL. The [Rosetta products documentation](https://docs.rosetta-technology.io/rosetta/rosetta-products/) details the various tools and products that are available in the Rosetta platform.
 
 In order to facilitate the use of the Rosetta DSL by industry members, a *Community Edition* of Rosetta that already features many of the platform's functionalities is available as a free web application. Through Rosetta, users can also access a number of open-source [modelling projects](https://docs.rosetta-technology.io/rosetta/projects/) that are based on the Rosetta DSL, allowing them to use, edit or extend those models.
+
+## Developer setup
+
+If you want to contribute to the Rosetta DSL and need to get things up and running, see [this guide](setup-for-developers.md).

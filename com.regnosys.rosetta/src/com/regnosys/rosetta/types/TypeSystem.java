@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.types;
 
 import com.google.inject.Inject;
-import com.regnosys.rosetta.rosetta.RosettaExpression;
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.typing.RosettaTyping;
 
 public class TypeSystem {

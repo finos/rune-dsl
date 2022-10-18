@@ -2,42 +2,39 @@ package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.rosetta.RosettaAbsentExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.RosettaBasicType
-import com.regnosys.rosetta.rosetta.RosettaBigDecimalLiteral
-import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.RosettaBooleanLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.RosettaCountOperation
-import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaIntLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaMapPath
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapRosettaPath
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
-import com.regnosys.rosetta.rosetta.RosettaStringLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.simple.Annotated
-import com.regnosys.rosetta.rosetta.simple.ClosureParameter
+import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.ListLiteral
-import com.regnosys.rosetta.rosetta.simple.ListOperation
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import java.util.List
 import java.util.Map
@@ -46,7 +43,20 @@ import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import com.regnosys.rosetta.rosetta.RosettaOnlyElement
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.FilterOperation
+import com.regnosys.rosetta.rosetta.expression.ReverseOperation
+import com.regnosys.rosetta.rosetta.expression.FlattenOperation
+import com.regnosys.rosetta.rosetta.expression.DistinctOperation
+import com.regnosys.rosetta.rosetta.expression.FirstOperation
+import com.regnosys.rosetta.rosetta.expression.LastOperation
+import com.regnosys.rosetta.rosetta.expression.ReduceOperation
+import com.regnosys.rosetta.rosetta.expression.MapOperation
+import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
+import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.SumOperation
 
 class RosettaTypeProvider {
 
@@ -76,7 +86,7 @@ class RosettaTypeProvider {
 		switch expression {
 			RosettaCallableCall: {
 				if(expression.implicitReceiver)
-					safeRType(EcoreUtil2.getContainerOfType(expression, ListOperation).firstOrImplicit, cycleTracker)
+					safeRType(EcoreUtil2.getContainerOfType(expression, InlineFunction).firstOrImplicit, cycleTracker)
 				else
 					safeRType(expression.callable, cycleTracker)
 			}
@@ -148,7 +158,7 @@ class RosettaTypeProvider {
 				var leftType = left.safeRType(cycleTracker)
 				if (leftType instanceof RErrorType) {
 					return leftType
-					}
+				}
 				val right = expression.right
 				var rightType = right.safeRType(cycleTracker)
 				if (rightType instanceof RErrorType) {
@@ -159,8 +169,6 @@ class RosettaTypeProvider {
 			RosettaCountOperation: {
 				RBuiltinType.INT
 			}
-			RosettaContainsExpression,
-			RosettaDisjointExpression,
 			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
 			RosettaAbsentExpression,
@@ -257,34 +265,28 @@ class RosettaTypeProvider {
 			Condition:
 				expression.expression.safeRType(cycleTracker)
 			ClosureParameter: {
-				val setOp = EcoreUtil2.getContainerOfType(expression.operation, ListOperation) // TODO get container with opposite in xcore and use receiver
+				val setOp = expression.function.eContainer as RosettaFunctionalOperation
 				if(setOp !== null) {
-					setOp.receiver.safeRType(cycleTracker)
+					setOp.argument.safeRType(cycleTracker)
 				} else
 					RBuiltinType.MISSING
 			}
-			ListOperation:
-				switch(expression.operationKind) {
-					case FILTER:
-						expression.firstOrImplicit.safeRType(cycleTracker)
-					case REDUCE,
-					case MAP:
-						expression.body.safeRType(cycleTracker)
-					case SORT,
-					case REVERSE,
-					case FLATTEN,
-					case DISTINCT,
-					case SUM,
-					case JOIN,
-					case MIN,
-					case MAX,
-					case FIRST,
-					case LAST: {
-						expression.receiver.safeRType(cycleTracker)
-					}	
-					default: 
-						RBuiltinType.MISSING
-				}
+			ReverseOperation,
+			FlattenOperation,
+			DistinctOperation,
+			ComparingFunctionalOperation,
+			SumOperation,
+			FirstOperation,
+			LastOperation,
+			FilterOperation:
+				expression.argument.safeRType(cycleTracker)
+			ReduceOperation,
+			MapOperation:
+				expression.functionRef.safeRType(cycleTracker)
+			NamedFunctionReference:
+				expression.function.safeRType(cycleTracker)
+			InlineFunction:
+				expression.body.safeRType(cycleTracker)
 			default:
 				RBuiltinType.MISSING
 		}

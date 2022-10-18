@@ -23,4 +23,12 @@
             genModel="model/RosettaSimple.xcore"/>
    </extension>
 
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated RosettaExpression -->
+      <package
+            uri="http://www.rosetta-model.com/RosettaExpression"
+            class="com.regnosys.rosetta.rosetta.expression.ExpressionPackage"
+            genModel="model/RosettaExpression.xcore"/>
+   </extension>
+
 </plugin>

@@ -10,29 +10,26 @@ import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
-import com.regnosys.rosetta.rosetta.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import com.regnosys.rosetta.rosetta.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgsCall
-import com.regnosys.rosetta.rosetta.RosettaContainsExpression
-import com.regnosys.rosetta.rosetta.RosettaCountOperation
-import com.regnosys.rosetta.rosetta.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeature
-import com.regnosys.rosetta.rosetta.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
-import com.regnosys.rosetta.rosetta.RosettaLiteral
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
@@ -48,9 +45,7 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
-import com.regnosys.rosetta.rosetta.simple.ListLiteral
-import com.regnosys.rosetta.rosetta.simple.ListOperation
-import com.regnosys.rosetta.rosetta.simple.ListOperationKind
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.OutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
@@ -60,7 +55,6 @@ import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
-import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
@@ -87,6 +81,7 @@ import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
@@ -94,9 +89,24 @@ import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import org.eclipse.xtext.validation.EValidatorRegistrar
-import com.regnosys.rosetta.rosetta.RosettaOnlyElement
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.Keyword
+import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
+import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
+import com.regnosys.rosetta.rosetta.expression.FlattenOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.MapOperation
+import com.regnosys.rosetta.rosetta.expression.FilterOperation
+import com.regnosys.rosetta.rosetta.expression.FunctionReference
+import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.ReduceOperation
+import com.regnosys.rosetta.rosetta.expression.MandatoryFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.SumOperation
+import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.ListOperation
+import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -110,7 +120,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension ListOperationExtensions
 	@Inject ExpressionHelper exprHelper
-	@Inject CardinalityProvider cardinality
+	@Inject extension CardinalityProvider cardinality
 	@Inject RosettaGrammarAccess grammar
 	@Inject RosettaConfigExtension confExtensions
 	
@@ -120,6 +130,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		val result = newArrayList
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/Rosetta"));
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaSimple"));
+		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaExpression"));
 		return result;
 	}
 	
@@ -708,20 +719,18 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			return !multiple
 		}
 	}
-
+	
 	@Check
-	def checkExpressionCardinality(RosettaBinaryOperation binOp) {
+	def checkExpressionCardinality(ModifiableBinaryOperation binOp) {
 		val leftCard = cardinality.isMulti(binOp.left)
 		val rightCard = cardinality.isMulti(binOp.right)
 		if (leftCard!=rightCard) {
-			if (RosettaOperators.COMPARISON_OPS.contains(binOp.operator) || RosettaOperators.EQUALITY_OPS.contains(binOp.operator)) {
-				if (binOp.cardOp===null) {
-					warning('''Comparison operator «binOp.operator» should specify 'all' or 'any' when comparing a list to a single value''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
-				}
+			if (binOp.cardMod===CardinalityModifier.NONE) {
+				warning('''Comparison operator «binOp.operator» should specify 'all' or 'any' when comparing a list to a single value''', binOp, ROSETTA_OPERATION__OPERATOR)
 			}
 		}
-		else if (binOp.cardOp!==null) {
-			warning('''«binOp.cardOp» is only aplicable when the sides have differing cardinality''', binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
+		else if (binOp.cardMod!==CardinalityModifier.NONE) {
+			warning('''«binOp.cardMod» is only aplicable when the sides have differing cardinality''', binOp, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 
@@ -729,27 +738,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def checkBinaryParamsRightTypes(RosettaBinaryOperation binOp) {
 		val resultType = binOp.RType
 		if (resultType instanceof RErrorType) {
-			error(resultType.message, binOp, ROSETTA_BINARY_OPERATION__OPERATOR)
-		}
-	}
-	
-	@Check
-	def checkDisjointTypesMatch(RosettaDisjointExpression disjoint) {
-		val leftType  = disjoint.container.RType
-		val rightType = disjoint.disjoint.RType
-		val typesMatch = leftType == rightType //arguable could support leftType.isUsablaAs || rightType.isUsableAs but the generated code doesn't support it
-		if (!typesMatch) {
-			error('''Disjoint must operate on lists of the same type''', disjoint, ROSETTA_DISJOINT_EXPRESSION__DISJOINT)
-		}
-	}
-	
-	@Check
-	def checkContainsTypesMatch(RosettaContainsExpression disjoint) {
-		val leftType  = disjoint.container.RType
-		val rightType = disjoint.contained.RType
-		val typesMatch = leftType == rightType //arguable could support leftType.isUsablaAs || rightType.isUsableAs but the generated code doesn't support it
-		if (!typesMatch) {
-			error('''contains must operate on lists of the same type''', disjoint, ROSETTA_DISJOINT_EXPRESSION__DISJOINT)
+			error(resultType.message, binOp, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 
@@ -926,7 +915,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def checkCountOpArgument(RosettaCountOperation ele) {
 		if (ele.argument !== null && !ele.argument.eIsProxy) {
 			if (!cardinality.isMulti(ele.argument))
-				error('''Count operation multiple cardinality argument.''', ele, ROSETTA_COUNT_OPERATION__ARGUMENT)
+				error('''Count operation multiple cardinality argument.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 		}
 	}
 	
@@ -1109,108 +1098,71 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
-	def checkOnlyElement(RosettaOnlyElement e) {
+	def checkUnaryOperation(RosettaUnaryOperation e) {
 		val receiver = e.argument
-		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
-			warningKeyword('''List only-element cannot be used for single cardinality expressions.''', e, grammar.listOperationAccess.onlyElementKeyword_1_1_0_1)
+		if (e instanceof ListOperation && receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
+			warning('''List «e.operator» operation cannot be used for single cardinality expressions.''', e, ROSETTA_OPERATION__OPERATOR)
 		}
 		
-		val previousOp = (e.argument instanceof ListOperation ? e.argument : null) as ListOperation
-		if (previousOp !== null && previousOp.isOutputListOfLists) {
-			errorKeyword('''List must be flattened before only-element operation.''', e, grammar.listOperationAccess.onlyElementKeyword_1_1_0_1)
+		if (!(e instanceof CanHandleListOfLists) && receiver !== null && receiver.isOutputListOfLists) {
+			error('''List must be flattened before «e.operator» operation.''', e, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 	
 	@Check
-	def checkListOperation(ListOperation o) {
-		val receiver = o.receiver
-		if (receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
-			// previous step must be single cardinality except when it is a MAP following a ListOperation (such as REDUCE)
-			val currentOperationIsMap = o.operationKind === ListOperationKind.MAP
-			val previousOperationWasListOperation = receiver instanceof ListOperation || receiver instanceof RosettaOnlyElement
-			if (!(currentOperationIsMap && previousOperationWasListOperation)) {
-				error('''List «o.operationKind.literal» cannot be used for single cardinality expressions.''', o, LIST_OPERATION__OPERATION_KIND)
-			}
+	def checkInlineFunction(InlineFunction f) {
+		if (f.body === null) {
+			error('''Missing function body.''', f, null)
 		}
-		
-		if (o.operationKind !== ListOperationKind.MAP && o.operationKind !== ListOperationKind.FILTER && o.operationKind !== ListOperationKind.FLATTEN)  {
-			val previousOp = o.previousListOperation
-			if (previousOp !== null && previousOp.isOutputListOfLists) {
-				error('''List must be flattened before «o.operationKind» operation.''', o, LIST_OPERATION__OPERATION_KIND)
-			}
+	}
+	
+	@Check
+	def checkMandatoryFunctionalOperation(MandatoryFunctionalOperation e) {
+		checkBodyExists(e)
+	}
+
+	@Check
+	def checkFilterOperation(FilterOperation o) {
+		checkOptionalNamedParameter(o.functionRef)
+		checkBodyType(o.functionRef, RBuiltinType.BOOLEAN)
+	}
+	
+	@Check
+	def checkMapOperation(MapOperation o) {
+		checkOptionalNamedParameter(o.functionRef)
+		if (o.isOutputListOfListOfLists) {
+			error('''Each list item is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION_REF)
 		}
-		
-		switch (o.operationKind) {
-			case FILTER: {
-				checkBodyExists(o)
-				checkOptionalNamedParameter(o)
-				checkBodyType(o, RBuiltinType.BOOLEAN)
-			}
-			case MAP: {
-				checkBodyExists(o)
-				checkOptionalNamedParameter(o)
-				if (o.isOutputListOfListOfLists) {
-					error('''Each list item («o.firstOrImplicit.name») is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).''', o, LIST_OPERATION__BODY)
-				}
-			}
-			case FLATTEN: {
-				checkBodyIsAbsent(o)
-				checkNoParameters(o)
-				if (!o.isItemMulti) {
-					error('''List flatten only allowed for list of lists.''', o, LIST_OPERATION__OPERATION_KIND)
-				}
-			}
-			case REDUCE: {
-				checkBodyExists(o)
-				checkNumberOfMandatoryNamedParameters(o, 2)
-				if (o.inputRawType != o.bodyRawType) {
-					error('''List reduce expression must evaluate to the same type as the input.  Found types «o.inputRawType» and «o.bodyRawType».''', o, LIST_OPERATION__BODY)
-				}
-				checkBodyIsSingleCardinality(o)
-			}
-			case SUM: {
-				checkBodyIsAbsent(o)
-				checkNoParameters(o)
-				checkInputType(o, RBuiltinType.INT, RBuiltinType.NUMBER)
-			}
-			case JOIN: {
-				// body is optional
-				checkInputType(o, RBuiltinType.STRING)	
-				checkBodyIsSingleCardinality(o)
-				checkBodyExpressionTypeIsRosettaLiteral(o)
-				checkBodyType(o, RBuiltinType.STRING)
-			}
-			case MIN,
-			case MAX: {
-				// body is optional
-				checkOptionalNamedParameter(o)
-				checkBodyIsSingleCardinality(o)
-				checkBodyIsComparable(o)
-				if (o.body === null) {
-					checkInputIsComparable(o)
-				}
-			}
-			case SORT: {
-				// body is optional
-				checkOptionalNamedParameter(o)
-				checkBodyIsSingleCardinality(o)
-				checkBodyIsComparable(o)
-				if (o.body === null) {
-					checkInputIsComparable(o)
-				}
-			}
-			case REVERSE: {
-				checkBodyIsAbsent(o)
-				checkNoParameters(o)
-			}
-			case FIRST,
-			case LAST: {
-				checkBodyIsAbsent(o)
-				checkNoParameters(o)
-			}
-			default: {
-				// Do nothing
-			}
+	}
+	
+	@Check
+	def checkFlattenOperation(FlattenOperation o) {
+		if (!o.argument.isOutputListOfLists) {
+			error('''List flatten only allowed for list of lists.''', o, ROSETTA_OPERATION__OPERATOR)
+		}
+	}
+	
+	@Check
+	def checkReduceOperation(ReduceOperation o) {
+		checkNumberOfMandatoryNamedParameters(o.functionRef, 2)
+		if (o.inputRawType != o.functionRef.bodyRawType) {
+			error('''List reduce expression must evaluate to the same type as the input. Found types «o.inputRawType» and «o.functionRef.bodyRawType».''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION_REF)
+		}
+		checkBodyIsSingleCardinality(o.functionRef)
+	}
+	
+	@Check
+	def checkNumberReducerOperation(SumOperation o) {
+		checkInputType(o, RBuiltinType.INT, RBuiltinType.NUMBER)
+	}
+	
+	@Check
+	def checkComparingFunctionalOperation(ComparingFunctionalOperation o) {
+		checkOptionalNamedParameter(o.functionRef)
+		checkBodyIsSingleCardinality(o.functionRef)
+		checkBodyIsComparable(o)
+		if (o.functionRef === null) {
+			checkInputIsComparable(o)
 		}
 	}
 	
@@ -1239,75 +1191,97 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}
 		}
 	}
+
 	
-	
-	private def void checkNoParameters(ListOperation o) {
-		if (o.parameters.size > 0) {
-			error('''No item parameter allowed for list «o.operationKind.literal».''', o, LIST_OPERATION__PARAMETERS)
+		
+	private def checkBodyExists(RosettaFunctionalOperation operation) {
+		if (operation.functionRef === null) {
+			error('''Missing a function reference.''', operation, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 	
-	private def void checkOptionalNamedParameter(ListOperation o) {
-		if (o.parameters !== null && o.parameters.size !== 0 && o.parameters.size !== 1) {
-			error('''List «o.operationKind.literal» must have 1 named parameter.''', o, LIST_OPERATION__PARAMETERS)
+	private def void checkOptionalNamedParameter(FunctionReference ref) {
+		if (ref instanceof NamedFunctionReference) {
+			val f = ref.function
+			switch f {
+				Function: {
+					if (f.inputs !== null && f.inputs.size !== 1) {
+						error('''Function must have 1 parameter.''', ref, null)
+					}
+				}
+				RosettaExternalFunction: {
+					if (f.parameters !== null && f.parameters.size !== 1) {
+						error('''Function must have 1 parameter.''', ref, null)
+					}
+				}
+				default: {
+					error("Unsupported function reference.", ref, null)
+				}
+			}
+		} else if (ref instanceof InlineFunction) {
+			if (ref.parameters !== null && ref.parameters.size !== 0 && ref.parameters.size !== 1) {
+				error('''Function must have 1 named parameter.''', ref, INLINE_FUNCTION__PARAMETERS)
+			}
 		}
 	}
 	
-	private def void checkNumberOfMandatoryNamedParameters(ListOperation o, int max) {
-		if (o.parameters === null || o.parameters.size !== max) {
-			error('''List «o.operationKind.literal» must have «max» named parameter«IF max > 1»s«ENDIF».''', o, LIST_OPERATION__PARAMETERS)
+	private def void checkNumberOfMandatoryNamedParameters(FunctionReference ref, int max) {
+		if (ref instanceof NamedFunctionReference) {
+			val f = ref.function
+			switch f {
+				Function: {
+					if (f.inputs !== null && f.inputs.size !== max) {
+						error('''Function must have «max» named parameter«IF max > 1»s«ENDIF».''', ref, null)
+					}
+				}
+				RosettaExternalFunction: {
+					if (f.parameters !== null && f.parameters.size !== max) {
+						error('''Function must have «max» named parameter«IF max > 1»s«ENDIF».''', ref, null)
+					}
+				}
+				default: {
+					error("Unsupported function reference.", ref, null)
+				}
+			}
+		} else if (ref instanceof InlineFunction) {
+			if (ref.parameters === null || ref.parameters.size !== max) {
+				error('''Function must have «max» named parameter«IF max > 1»s«ENDIF».''', ref, INLINE_FUNCTION__PARAMETERS)
+			}
 		}
 	}
 	
-	private def void checkInputType(ListOperation o, RType... type) {
-		if (!type.contains(o.receiver.getRType)) {
-			error('''List «o.operationKind.literal» input type must be a «type.map[name].join(" or ")».''', o, LIST_OPERATION__BODY)
+	private def void checkInputType(RosettaUnaryOperation o, RType... type) {
+		if (!type.contains(o.argument.getRType)) {
+			error('''Input type must be a «type.map[name].join(" or ")».''', o, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 	
-	private def void checkInputIsComparable(ListOperation o) {
-		val inputRType = o.receiver.getRType
+	private def void checkInputIsComparable(RosettaUnaryOperation o) {
+		val inputRType = o.argument.getRType
 		if (!inputRType.isComparable) {
-			error('''List «o.operationKind.literal» only supports comparable types (string, int, string, date). Found type «inputRType.name».''', o, LIST_OPERATION__BODY)
+			error('''Operation «o.operator» only supports comparable types (string, int, string, date). Found type «inputRType.name».''', o, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 	
-	private def void checkBodyIsAbsent(ListOperation o) {
-		if (o.body !== null) {
-			error('''No expression allowed for list «o.operationKind.literal».''', o, LIST_OPERATION__OPERATION_KIND)
+	private def void checkBodyIsSingleCardinality(FunctionReference ref) {
+		if (ref !== null && ref.isBodyExpressionMulti) {
+			error('''Operation only supports single cardinality expressions.''', ref, null)
 		}
 	}
 	
-	private def void checkBodyExists(ListOperation o) {
-		if (o.body === null) {
-			error('''List «o.operationKind.literal» must have an expression specified within square brackets.''', o, LIST_OPERATION__OPERATION_KIND)
+	private def void checkBodyType(FunctionReference ref, RType type) {
+		if (ref !== null && ref.getRType != type) {
+			error('''Expression must evaluate to a «type.name».''', ref, null)
 		}
 	}
 	
-	private def void checkBodyIsSingleCardinality(ListOperation o) {
-	 	if (o.body !== null && o.isBodyExpressionMulti) {
-			error('''List «o.operationKind.literal» only supports single cardinality expressions.''', o, LIST_OPERATION__BODY)
-		}
-	}
-	
-	private def void checkBodyType(ListOperation o, RType type) {
-		if (o.body !== null && o.body.getRType != type) {
-			error('''List «o.operationKind.literal» expression must evaluate to a «type.name».''', o, LIST_OPERATION__BODY)
-		}
-	}
-	
-	private def void checkBodyIsComparable(ListOperation o) {
-		if (o.body !== null) {
-			val bodyRType = o.body.getRType
+	private def void checkBodyIsComparable(RosettaFunctionalOperation op) {
+		val ref = op.functionRef
+		if (ref !== null) {
+			val bodyRType = ref.getRType
 			if (!bodyRType.isComparable) {
-				error('''List «o.operationKind.literal» only supports comparable types (string, int, string, date). Found type «bodyRType.name».''', o, LIST_OPERATION__BODY)
+				error('''Operation «op.operator» only supports comparable types (string, int, string, date). Found type «bodyRType.name».''', ref, null)
 			}			
-		}
-	}
-	
-	private def void checkBodyExpressionTypeIsRosettaLiteral(ListOperation o) {
-		if (o.body !== null && !(o.body instanceof RosettaLiteral)) {
-			error('''List «o.operationKind.literal» does not allow expressions.''', o, LIST_OPERATION__BODY)
 		}
 	}
 
@@ -1324,11 +1298,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkAssignOutput(Operation o) {
-		val expr = o?.expression	
-		if (expr instanceof ListOperation) {
-			if (expr !== null && expr.isOutputListOfLists) {
-				error('''Assign expression contains a list of lists, use flatten to create a list.''', o, OPERATION__EXPRESSION)
-			}
+		val expr = o?.expression
+		if (expr !== null && expr.isOutputListOfLists) {
+			error('''Assign expression contains a list of lists, use flatten to create a list.''', o, OPERATION__EXPRESSION)
 		}
 	}
 	
@@ -1356,10 +1328,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkAlias(ShortcutDeclaration o) {
 		val expr = o?.expression	
-		if (expr instanceof ListOperation) {
-			if (expr !== null && expr.isOutputListOfLists) {
-				error('''Alias expression contains a list of lists, use flatten to create a list.''', o, SHORTCUT_DECLARATION__EXPRESSION)
-			}
+		if (expr !== null && expr.isOutputListOfLists) {
+			error('''Alias expression contains a list of lists, use flatten to create a list.''', o, SHORTCUT_DECLARATION__EXPRESSION)
 		}
 	}
 	
