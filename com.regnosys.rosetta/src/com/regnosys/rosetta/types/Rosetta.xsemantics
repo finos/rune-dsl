@@ -793,12 +793,16 @@ checkrule CheckLeftComparison for
 from {
 	if (op.cardOp === null) { // TODO: improve error messages
 		{
+			looseListTypeCheck(op.left, singleZonedDateTime)
+		} or {
 			looseListTypeCheck(op.left, singleDate)
 		} or {
 			looseListSubtypeCheck(op.left, singleNumber)
 		}
 	} else {
 		{
+			typeCheck(op.left, ZONED_DATE_TIME)
+		} or {
 			typeCheck(op.left, DATE)
 		} or {
 			subtypeCheck(op.left, NUMBER)
@@ -810,12 +814,16 @@ checkrule CheckRightComparison for
 from {
 	if (op.cardOp === null) {
 		{
+			looseListTypeCheck(op.left, singleZonedDateTime)
+		} or {
 			looseListTypeCheck(op.right, singleDate)
 		} or {
 			looseListSubtypeCheck(op.right, singleNumber)
 		}
 	} else {
 		{
+			typeCheck(op.left, ZONED_DATE_TIME)
+		} or {
 			typeCheck(op.right, DATE)
 		} or {
 			subtypeCheck(op.right, NUMBER)
@@ -831,6 +839,11 @@ from {
 	empty |- op.right : tr or tr = null
 	if (tl !== null && tr !== null) {
 		{
+			tl.itemType == ZONED_DATE_TIME
+			tr.itemType == ZONED_DATE_TIME
+		}
+		or
+		{
 			tl.itemType == DATE
 			tr.itemType == DATE
 		}
@@ -840,7 +853,7 @@ from {
 			empty |- tr.itemType <: NUMBER
 		}
 		or
-			fail error "Expected arguments to be either both a `date` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
+			fail error "Expected arguments to be either both a `date`, both a `number` or both a `zonedDateTime`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
 				source op
 	}
 	if (op.cardOp !== null) {
