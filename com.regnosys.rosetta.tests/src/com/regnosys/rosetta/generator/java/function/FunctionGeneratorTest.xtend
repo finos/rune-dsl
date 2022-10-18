@@ -36,6 +36,36 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void singularExtractTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				output:
+					res int (1..1)
+				set res:
+					42
+						extract [item + 1]
+			
+			func F2:
+				output:
+					res boolean (1..1)
+				set res:
+					42
+						extract [item + 1]
+						extract [item = 42]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func1 = classes.createFunc("F1");
+		assertEquals(43, func1.invokeFunc(Integer))
+		
+		val func2 = classes.createFunc("F2");
+		assertFalse(func2.invokeFunc(Boolean))
+	}
+	
+	@Test
 	def void testPreconditionValidGeneration() {
 		'''
 			func FuncFoo:
