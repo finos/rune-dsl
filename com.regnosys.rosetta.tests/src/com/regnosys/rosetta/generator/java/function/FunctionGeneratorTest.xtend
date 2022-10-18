@@ -35,6 +35,65 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void extractAllTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				output:
+					res boolean (1..1)
+				set res:
+					empty extract-all [item exists]
+			
+			func F2:
+				output:
+					res int (1..1)
+				set res:
+					42 extract-all [item + 1]
+			
+			func F3:
+				output:
+					res int (2..2)
+				set res:
+					[1, 2, 3] extract-all [ [item count, item sum] ]
+			
+			func F4:
+				output:
+					res int (2..2)
+				set res:
+					[1, 2, 3]
+						extract [ [item, item] ]
+						extract-all [ item extract [ item count ] ]
+			
+			func F5:
+				output:
+					res int (2..2)
+				set res:
+					[1, 2, 3]
+						extract [ [item, item] ]
+						extract-all [ [item, item] ]
+						extract-all [ item extract [ item sum ] ]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func1 = classes.createFunc("F1");
+		assertFalse(func1.invokeFunc(Boolean))
+		
+		val func2 = classes.createFunc("F2");
+		assertEquals(43, func2.invokeFunc(Integer))
+		
+		val func3 = classes.createFunc("F3");
+		assertEquals(#[3, 6], func3.invokeFunc(List))
+		
+		val func4 = classes.createFunc("F4");
+		assertEquals(#[2, 2, 2], func4.invokeFunc(List))
+		
+		val func5 = classes.createFunc("F5");
+		assertEquals(#[2, 4, 6, 2, 4, 6], func5.invokeFunc(List))
+	}
+	
+	@Test
 	def void testPreconditionValidGeneration() {
 		'''
 			func FuncFoo:
