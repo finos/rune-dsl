@@ -141,6 +141,13 @@ public class MapperS<T> implements MapperBuilder<T> {
 		return mappingFunc.apply(this);
 	}
 	
+	/**
+	 * Apply a function to this mapper
+	 */
+	public <F> F apply(Function<MapperS<T>, F> f) {
+		return f.apply(this);
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.rosetta.model.lib.blueprint.Mapper#getPath()
 	 */

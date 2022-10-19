@@ -131,6 +131,13 @@ public class MapperC<T> implements MapperBuilder<T> {
 				.map(MapperC::getMulti)
 				.collect(Collectors.toList()));
 	}
+	
+	/**
+	 * Apply a function to this mapper
+	 */
+	public <F> F apply(Function<MapperC<T>, F> f) {
+		return f.apply(this);
+	}
 
 	/**
 	 * Reduce list items to single item based on the given reduce function.
