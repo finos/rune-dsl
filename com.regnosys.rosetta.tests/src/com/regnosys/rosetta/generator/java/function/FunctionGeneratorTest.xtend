@@ -79,18 +79,48 @@ class FunctionGeneratorTest {
 
 		val func1 = classes.createFunc("F1");
 		assertFalse(func1.invokeFunc(Boolean))
-		
+
 		val func2 = classes.createFunc("F2");
 		assertEquals(84, func2.invokeFunc(Integer))
-		
+
 		val func3 = classes.createFunc("F3");
 		assertEquals(#[3, 6], func3.invokeFunc(List))
-		
+
 		val func4 = classes.createFunc("F4");
 		assertEquals(#[2, 2, 2], func4.invokeFunc(List))
-		
+
 		val func5 = classes.createFunc("F5");
 		assertEquals(#[4, 6, 8], func5.invokeFunc(List))
+	}
+	
+	@Test
+	def void singularExtractTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				output:
+					res int (1..1)
+				set res:
+					42
+						extract [item + 1]
+			
+			func F2:
+				output:
+					res boolean (1..1)
+				set res:
+					42
+						extract [item + 1]
+						extract [item = 42]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func1 = classes.createFunc("F1");
+		assertEquals(43, func1.invokeFunc(Integer))
+		
+		val func2 = classes.createFunc("F2");
+		assertFalse(func2.invokeFunc(Boolean))
 	}
 	
 	@Test
