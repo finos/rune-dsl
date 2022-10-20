@@ -44,6 +44,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.FunctionReference
+import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 
 class CardinalityProvider {
 	
@@ -90,6 +91,7 @@ class CardinalityProvider {
 					obj.argument.isMulti(breakOnClosureParameter)
 				}
 			}
+			ExtractAllOperation: obj.functionRef.isMulti(breakOnClosureParameter)
 			SortOperation: true
 			NamedFunctionReference: obj.function.isMulti(breakOnClosureParameter)
 			InlineFunction: obj.body.isMulti(breakOnClosureParameter)
@@ -140,6 +142,9 @@ class CardinalityProvider {
 	def boolean isClosureParameterMulti(InlineFunction obj) {
 		val op = obj.eContainer
 		if (op instanceof RosettaFunctionalOperation) {
+			if (op instanceof ExtractAllOperation) {
+				return op.argument.isMulti
+			}
 			return op.argument.isOutputListOfLists
 		}
 		return false
@@ -163,8 +168,10 @@ class CardinalityProvider {
 	def boolean isPreviousOperationBodyMulti(RosettaUnaryOperation expr) {
 		val previousOperation = expr.argument
 		if (previousOperation instanceof RosettaUnaryOperation) {
-			// only map can increase a closure parameter's cardinality
+			// only map and extract-all can increase a closure parameter's cardinality
 			switch (previousOperation) {
+				ExtractAllOperation:
+					return previousOperation.isMulti
 				MapOperation:
 					return previousOperation.functionRef.isMulti(false)
 				FlattenOperation:
@@ -178,10 +185,10 @@ class CardinalityProvider {
 	
 	
 	/**
-	 * List MAP/FILTER operations can handle a list of lists, however it cannot be handled anywhere else (e.g. a list of list cannot be assigned to a func output or alias)
+	 * List MAP/FILTER/Extract-all operations can handle a list of lists, however it cannot be handled anywhere else (e.g. a list of list cannot be assigned to a func output or alias)
 	 */
 	def boolean isOutputListOfLists(RosettaExpression op) {
-		if (op instanceof FlattenOperation || !(op instanceof CanHandleListOfLists)) {
+		if (op instanceof FlattenOperation) {
 			false
 		}
 		else if (op instanceof MapOperation) {
@@ -191,7 +198,29 @@ class CardinalityProvider {
 				op.functionRef.isBodyExpressionMulti && op.isPreviousOperationMulti
 			}
 		}
-		else if (op instanceof RosettaUnaryOperation) {
+		else if (op instanceof ExtractAllOperation) {
+			val f = op.functionRef
+			switch f {
+				InlineFunction:
+					f.body.isOutputListOfLists
+				default:
+					false
+			}
+		}
+		else if (op instanceof RosettaCallableCall) {
+			if (op.implicitReceiver || op.callable instanceof ClosureParameter) {
+				val f = EcoreUtil2.getContainerOfType(op, InlineFunction)
+				val enclosed = f.eContainer as RosettaFunctionalOperation
+				if (enclosed instanceof ExtractAllOperation) {
+					return enclosed.argument.isOutputListOfLists
+				} else {
+					false
+				}
+			} else {
+				false
+			}
+		}
+		else if (op instanceof CanHandleListOfLists) {
 			val previousListOp = op.argument
 			previousListOp.isOutputListOfLists
 		} else {
@@ -203,13 +232,6 @@ class CardinalityProvider {
 		isMulti(op.argument)
 	}
 	
-	/**
-	 * Does the list operation body expression increase the cardinality? 
-	 * 
-	 * E.g., 
-	 * - from single to list, or from list to list of lists, would return true.
-	 * - from single to single, or from list to list, or from list to single, would return false.
-	 */
 	def isBodyExpressionMulti(FunctionReference op) {
 		if (op instanceof InlineFunction) {
 			op.body !== null && isMulti(op.body, false)
@@ -222,15 +244,16 @@ class CardinalityProvider {
 	 * Nothing handles a list of list of list
 	 */
 	def boolean isOutputListOfListOfLists(RosettaExpression op) {
-		if (op instanceof MapOperation) {
-			val previousListOp = op.argument
-			previousListOp.isOutputListOfLists && op.functionRef.isBodyExpressionWithSingleInputMulti
-		} 
-		else {
-			false
-		}
+		false // The output of an expression never results a list of lists of lists.
 	}
 	
+	/**
+	 * Does the list operation body expression increase the cardinality? 
+	 * 
+	 * E.g., 
+	 * - from single to list, or from list to list of lists, would return true.
+	 * - from single to single, or from list to list, or from list to single, would return false.
+	 */
 	def isBodyExpressionWithSingleInputMulti(FunctionReference op) {
 		if (op instanceof InlineFunction) {
 			op.body !== null && isMulti(op.body, true)
