@@ -1267,7 +1267,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	private def void checkBodyIsSingleCardinality(FunctionReference ref) {
-		if (ref !== null && ref.isBodyExpressionWithSingleInputMulti) {
+		if (ref !== null && ref.isBodyExpressionMulti) {
 			error('''Operation only supports single cardinality expressions.''', ref, null)
 		}
 	}

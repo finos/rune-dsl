@@ -244,7 +244,7 @@ class CardinalityProvider {
 	 * Nothing handles a list of list of list
 	 */
 	def boolean isOutputListOfListOfLists(RosettaExpression op) {
-		false
+		false // The output of an expression never results a list of lists of lists.
 	}
 	
 	/**
