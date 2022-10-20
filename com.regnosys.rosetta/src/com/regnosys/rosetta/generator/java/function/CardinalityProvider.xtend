@@ -193,9 +193,9 @@ class CardinalityProvider {
 		}
 		else if (op instanceof MapOperation) {
 			if (op.functionRef.isItemMulti) {
-				op.functionRef.isBodyExpressionWithSingleInputMulti
+				op.functionRef.isBodyExpressionMulti
 			} else {
-				op.functionRef.isBodyExpressionWithSingleInputMulti && op.isPreviousOperationMulti
+				op.functionRef.isBodyExpressionMulti && op.isPreviousOperationMulti
 			}
 		}
 		else if (op instanceof ExtractAllOperation) {
@@ -244,13 +244,7 @@ class CardinalityProvider {
 	 * Nothing handles a list of list of list
 	 */
 	def boolean isOutputListOfListOfLists(RosettaExpression op) {
-		if (op instanceof MapOperation) {
-			val previousListOp = op.argument
-			previousListOp.isOutputListOfLists && op.functionRef.isBodyExpressionWithSingleInputMulti
-		} 
-		else {
-			false
-		}
+		false
 	}
 	
 	/**

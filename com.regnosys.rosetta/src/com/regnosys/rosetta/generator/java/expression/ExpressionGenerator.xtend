@@ -82,6 +82,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
+import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 
 class ExpressionGenerator {
 	
@@ -187,6 +188,9 @@ class ExpressionGenerator {
 			MapOperation : {
 				mapOperation(expr, params)
 			}
+			ExtractAllOperation : {
+				extractAllOperation(expr, params)
+			}
 			SortOperation : {
 				sortOperation(expr, params)
 			}
@@ -197,7 +201,7 @@ class ExpressionGenerator {
 	
 	def StringConcatenationClient listLiteral(ListLiteral e, ParamMap params) {
 	    if (e.isEmpty) {
-	        '''null'''
+	        '''«MapperS».ofNull()'''
 	    } else {
 	       '''«MapperC».of(«FOR ele: e.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
 	    }
@@ -591,7 +595,7 @@ class ExpressionGenerator {
 		}
 	}
 	
-	def dispatch StringConcatenationClient functionReference(NamedFunctionReference ref, ParamMap params, boolean needsMapper) {
+	def dispatch StringConcatenationClient functionReference(NamedFunctionReference ref, ParamMap params, boolean doCast, boolean needsMapper) {
 //		val callable = ref.function
 //		
 //		return switch (callable) {
@@ -607,11 +611,15 @@ class ExpressionGenerator {
 		throw new UnsupportedOperationException()
 	}
 	
-	def dispatch StringConcatenationClient functionReference(InlineFunction ref, ParamMap params, boolean needsMapper) {
+	def dispatch StringConcatenationClient functionReference(InlineFunction ref, ParamMap params, boolean doCast, boolean needsMapper) {
 		val isBodyMulti =  ref.isBodyExpressionMulti
 		val StringConcatenationClient bodyExpr = '''«ref.body.javaCode(params)»«IF needsMapper»«IF ref.body.evaluatesToComparisonResult».asMapper()«ENDIF»«ELSE»«IF ref.body.evalulatesToMapper»«IF isBodyMulti».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDIF»'''
-		val outputType =  ref.bodyRawType
-		val StringConcatenationClient cast = '''(«IF needsMapper»«IF isBodyMulti»«MapperC»<«outputType»>«ELSE»«MapperS»<«outputType»>«ENDIF»«ELSE»«outputType»«ENDIF»)'''
+		val StringConcatenationClient cast = if (doCast) {
+			val outputType =  ref.bodyRawType
+			'''(«IF needsMapper»«IF isBodyMulti»«MapperC»<«outputType»>«ELSE»«MapperS»<«outputType»>«ENDIF»«ELSE»«outputType»«ENDIF»)'''
+		} else {
+			''''''
+		}
 
 		if (ref.parameters.size <= 1) {
 			val item = ref.itemName
@@ -629,12 +637,12 @@ class ExpressionGenerator {
 	def StringConcatenationClient filterOperation(FilterOperation op, ParamMap params) {
 		'''
 		«op.argument.javaCode(params)»
-			.«IF op.functionRef.isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.functionRef.functionReference(params, false)»)'''
+			.«IF op.functionRef.isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.functionRef.functionReference(params, true, false)»)'''
 	}
 	
 	def StringConcatenationClient mapOperation(MapOperation op, ParamMap params) {
 		val isBodyMulti =  op.functionRef.isBodyExpressionMulti
-		val funcExpr = op.functionRef.functionReference(params, true)
+		val funcExpr = op.functionRef.functionReference(params, true, true)
 		
 		if (!op.isPreviousOperationMulti) {
 			if (isBodyMulti) {
@@ -665,6 +673,13 @@ class ExpressionGenerator {
 				}
 			}
 		}
+	}
+	
+	def StringConcatenationClient extractAllOperation(ExtractAllOperation op, ParamMap params) {
+		val funcExpr = op.functionRef.functionReference(params, false, true)
+		'''
+		«op.argument.javaCode(params)»
+			.apply(«funcExpr»)'''
 	}
 	
 	def StringConcatenationClient flattenOperation(FlattenOperation op, ParamMap params) {
@@ -699,7 +714,7 @@ class ExpressionGenerator {
 		val outputType =  op.functionRef.bodyRawType
 		'''
 		«op.argument.javaCode(params)»
-			.<«outputType»>reduce(«op.functionRef.functionReference(params, true)»)'''
+			.<«outputType»>reduce(«op.functionRef.functionReference(params, true, true)»)'''
 	}
 	
 	def StringConcatenationClient firstOperation(FirstOperation op, ParamMap params) {
@@ -727,7 +742,7 @@ class ExpressionGenerator {
 	private def StringConcatenationClient buildSingleItemListOperation(RosettaFunctionalOperation op, String name, ParamMap params) {
 		'''
 		«op.argument.javaCode(params)»
-			.«name»(«op.functionRef.functionReference(params, true)»)'''	
+			.«name»(«op.functionRef.functionReference(params, true, true)»)'''	
 	}
 	
 	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute) {

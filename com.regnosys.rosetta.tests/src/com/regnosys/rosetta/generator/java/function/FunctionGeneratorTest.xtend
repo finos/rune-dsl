@@ -50,7 +50,7 @@ class FunctionGeneratorTest {
 				output:
 					res int (1..1)
 				set res:
-					42 extract-all [item + 1]
+					42 extract-all [item + item]
 			
 			func F3:
 				output:
@@ -64,7 +64,7 @@ class FunctionGeneratorTest {
 				set res:
 					[1, 2, 3]
 						extract [ [item, item] ]
-						extract-all [ item extract [ item count ] ]
+						extract-all [ item extract l [ l count ] ]
 			
 			func F5:
 				output:
@@ -72,8 +72,8 @@ class FunctionGeneratorTest {
 				set res:
 					[1, 2, 3]
 						extract [ [item, item] ]
-						extract-all [ [item, item] ]
-						extract-all [ item extract [ item sum ] ]
+						extract-all [ item extract l [ [ l count, l sum ] ] ]
+						extract-all [ item extract l [ l sum ] ]
 		'''.generateCode
 		val classes = code.compileToClasses
 
@@ -81,7 +81,7 @@ class FunctionGeneratorTest {
 		assertFalse(func1.invokeFunc(Boolean))
 		
 		val func2 = classes.createFunc("F2");
-		assertEquals(43, func2.invokeFunc(Integer))
+		assertEquals(84, func2.invokeFunc(Integer))
 		
 		val func3 = classes.createFunc("F3");
 		assertEquals(#[3, 6], func3.invokeFunc(List))
@@ -90,7 +90,7 @@ class FunctionGeneratorTest {
 		assertEquals(#[2, 2, 2], func4.invokeFunc(List))
 		
 		val func5 = classes.createFunc("F5");
-		assertEquals(#[2, 4, 6, 2, 4, 6], func5.invokeFunc(List))
+		assertEquals(#[4, 6, 8], func5.invokeFunc(List))
 	}
 	
 	@Test
