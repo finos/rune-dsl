@@ -209,7 +209,7 @@ class ExpressionGenerator {
 	
 	def StringConcatenationClient listLiteral(ListLiteral e, ParamMap params) {
 	    if (e.isEmpty) {
-	        '''null'''
+	        '''«MapperS».ofNull()'''
 	    } else {
 	       '''«MapperC».of(«FOR ele: e.elements SEPARATOR ', '»«ele.javaCode(params)»«ENDFOR»)'''
 	    }
