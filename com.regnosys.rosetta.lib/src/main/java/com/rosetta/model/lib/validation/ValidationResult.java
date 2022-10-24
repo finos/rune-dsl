@@ -53,7 +53,7 @@ public interface ValidationResult<T> {
 			this.path = path;
 			this.modelObjectName = modelObjectName;
 			this.definition = definition;
-			this.failureReason = failureReason;
+			this.failureReason = getUpdatedFailureReason(name, modelObjectName, failureReason);
 		}
 
 		@Override
