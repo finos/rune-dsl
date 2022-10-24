@@ -35,6 +35,29 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void emptyArgumentTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				output:
+					res int (1..1)
+				set res:
+					F2(empty)
+			
+			func F2:
+				inputs:
+					a int (0..1)
+				output:
+					res int (1..1)
+				set res:
+					42
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
 	def void extractAllTest() {
 		val code = '''
 			namespace com.rosetta.test.model
