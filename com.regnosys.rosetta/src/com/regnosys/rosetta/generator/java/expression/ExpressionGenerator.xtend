@@ -199,6 +199,14 @@ class ExpressionGenerator {
 		}
 	}
 	
+	private def StringConcatenationClient emptyToMapperJavaCode(RosettaExpression expr, ParamMap params, boolean multi) {
+		if (expr.isEmpty) {
+			'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».ofNull()'''
+		} else {
+			expr.javaCode(params)
+		}
+	}
+	
 	def StringConcatenationClient listLiteral(ListLiteral e, ParamMap params) {
 	    if (e.isEmpty) {
 	        '''«MapperS».ofNull()'''
@@ -229,13 +237,9 @@ class ExpressionGenerator {
 			}
 			«IF expr.childElseThen !== null»
 				«expr.childElseThen.genElseIf(params)»
-			«ELSEIF !expr.elsethen.isEmpty»
-				else {
-					return «expr.elsethen.javaCode(params)»;
-				}
 			«ELSE»
 				else {
-					return «IF cardinalityProvider.isMulti(expr.ifthen)»«MapperC»«ELSE»«MapperS»«ENDIF».ofNull();
+					return «expr.elsethen.emptyToMapperJavaCode(params, cardinalityProvider.isMulti(expr.ifthen))»;
 				}
 			«ENDIF»
 			'''
@@ -249,13 +253,9 @@ class ExpressionGenerator {
 			}
 			«IF next.childElseThen !== null»
 				«next.childElseThen.genElseIf(params)»
-			«ELSEIF !next.elsethen.isEmpty»
-				else {
-					return «next.elsethen.javaCode(params)»;
-				}
 			«ELSE»
 				else {
-					return «IF cardinalityProvider.isMulti(next.ifthen)»«MapperC»«ELSE»«MapperS»«ENDIF».ofNull();
+					return «next.elsethen.emptyToMapperJavaCode(params, cardinalityProvider.isMulti(next.ifthen))»;
 				}
 			«ENDIF»
 		«ENDIF»
@@ -636,7 +636,7 @@ class ExpressionGenerator {
 	
 	def StringConcatenationClient filterOperation(FilterOperation op, ParamMap params) {
 		'''
-		«op.argument.javaCode(params)»
+		«op.argument.emptyToMapperJavaCode(params, true)»
 			.«IF op.functionRef.isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.functionRef.functionReference(params, true, false)»)'''
 	}
 	
@@ -647,7 +647,7 @@ class ExpressionGenerator {
 		if (!op.isPreviousOperationMulti) {
 			if (isBodyMulti) {
 				'''
-				«op.argument.javaCode(params)»
+				«op.argument.emptyToMapperJavaCode(params, false)»
 					.mapSingleToList(«funcExpr»)'''
 			} else {
 				buildSingleItemListOperationOptionalBody(op, "mapSingleToItem", params)
@@ -656,17 +656,17 @@ class ExpressionGenerator {
 			if (op.argument.isOutputListOfLists) {
 				if (isBodyMulti) {
 					'''
-					«op.argument.javaCode(params)»
+					«op.argument.emptyToMapperJavaCode(params, false)»
 						.mapListToList(«funcExpr»)'''
 				} else {
 					'''
-					«op.argument.javaCode(params)»
+					«op.argument.emptyToMapperJavaCode(params, false)»
 						.mapListToItem(«funcExpr»)'''
 				}
 			} else {
 				if (isBodyMulti) {
 					'''
-					«op.argument.javaCode(params)»
+					«op.argument.emptyToMapperJavaCode(params, false)»
 						.mapItemToList(«funcExpr»)'''
 				} else {
 					buildSingleItemListOperationOptionalBody(op, "mapItem", params)
@@ -678,7 +678,7 @@ class ExpressionGenerator {
 	def StringConcatenationClient extractAllOperation(ExtractAllOperation op, ParamMap params) {
 		val funcExpr = op.functionRef.functionReference(params, false, true)
 		'''
-		«op.argument.javaCode(params)»
+		«op.argument.emptyToMapperJavaCode(params, false)»
 			.apply(«funcExpr»)'''
 	}
 	
@@ -727,7 +727,7 @@ class ExpressionGenerator {
 	
 	private def StringConcatenationClient buildListOperationNoBody(RosettaUnaryOperation op, String name, ParamMap params) {
 		'''
-		«op.argument.javaCode(params)»
+		«op.argument.emptyToMapperJavaCode(params, true)»
 			.«name»()'''	
 	}
 	
@@ -741,7 +741,7 @@ class ExpressionGenerator {
 	
 	private def StringConcatenationClient buildSingleItemListOperation(RosettaFunctionalOperation op, String name, ParamMap params) {
 		'''
-		«op.argument.javaCode(params)»
+		«op.argument.emptyToMapperJavaCode(params, true)»
 			.«name»(«op.functionRef.functionReference(params, true, true)»)'''	
 	}
 	
