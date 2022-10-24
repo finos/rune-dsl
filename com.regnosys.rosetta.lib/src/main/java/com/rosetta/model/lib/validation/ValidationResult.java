@@ -99,6 +99,17 @@ public interface ValidationResult<T> {
 					name,
 					failureReason.map(s -> "because [" + s + "]").orElse(""));
 		}
+
+		public Optional<String> getUpdatedFailureReason(String name, String modelObjectName, Optional<String> failureReason){
+			String conditionName;
+			if(name.contains("Report")){
+				conditionName = name.substring(modelObjectName.length()) + " :";
+				conditionName = conditionName + " " + failureReason.toString();
+				failureReason = Optional.of(conditionName);;
+			}
+
+			return failureReason;
+		}
 	}
 
 	class ChoiceRuleFailure<T> implements ValidationResult<T> {
