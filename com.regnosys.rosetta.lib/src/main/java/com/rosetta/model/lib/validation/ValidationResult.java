@@ -53,7 +53,7 @@ public interface ValidationResult<T> {
 			this.path = path;
 			this.modelObjectName = modelObjectName;
 			this.definition = definition;
-			this.failureReason = getUpdatedFailureReason(name, modelObjectName, failureReason);
+			this.failureReason = failureReason;
 		}
 
 		@Override
@@ -98,17 +98,6 @@ public interface ValidationResult<T> {
 					validationType,
 					name,
 					failureReason.map(s -> "because [" + s + "]").orElse(""));
-		}
-
-		public Optional<String> getUpdatedFailureReason(String name, String modelObjectName, Optional<String> failureReason){
-			String conditionName;
-			if(name.contains("Report")){
-				conditionName = name.substring(modelObjectName.length()) + " :";
-				conditionName = conditionName + " " + failureReason.toString();
-				failureReason = Optional.of(conditionName);;
-			}
-
-			return failureReason;
 		}
 	}
 
