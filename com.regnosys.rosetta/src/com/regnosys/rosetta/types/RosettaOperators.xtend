@@ -20,6 +20,9 @@ class RosettaOperators {
 	val List<RBuiltinType> builtinTypes = newArrayList
 
 	def RType resultType(String op, RType left, RType right) {
+		if (left == RBuiltinType.NOTHING || right == RBuiltinType.NOTHING) {
+			return RBuiltinType.NOTHING
+		}
 		if (op == JOIN_OP) {
 			if (right !== null) {
 				return bothString(left, right, op)

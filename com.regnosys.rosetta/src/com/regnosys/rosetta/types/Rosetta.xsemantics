@@ -22,20 +22,61 @@ import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import com.regnosys.rosetta.types.TypeValidationUtil
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
-import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
+import com.regnosys.rosetta.rosetta.RosettaPackage
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.RosettaRecordType
+import com.regnosys.rosetta.rosetta.RosettaQualifiedType
+import com.regnosys.rosetta.rosetta.RosettaCalculationType
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.rosetta.RosettaBuiltinType
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
+import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.RosettaCallable
+import com.regnosys.rosetta.rosetta.expression.ClosureParameter
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.types.RQualifiedType
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
+import java.util.List
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement
+import org.eclipse.emf.ecore.util.EcoreUtil
+import com.regnosys.rosetta.utils.ExpressionHelper
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
+import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
+import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
+inject extension ExpressionHelper exprHelper
+
 
 auxiliary {
+	ancestors(Data t) : List<Data>
+	ancestorEnums(RosettaEnumeration t) : List<RosettaEnumeration>
 	comparable(RType t1, RType t2)
 	overlap(RosettaCardinality c1, RosettaCardinality c2)
 	listComparable(RListType t1, RListType t2)
 	join(RType t1, RType t2) : RType
 	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
 	listJoin(RListType t1, RListType t2) : RListType
+	allAttributes(Data d) : Iterable<Attribute>
+	mayBeEmpty(Data d)
 	
 	listTypeCheck(RosettaExpression sourceObject, RListType expected)
 	looseListTypeCheck(RosettaExpression sourceObject, RListType expected)
@@ -48,8 +89,14 @@ auxiliary {
 	onlyRightIsSingularCheck(ModifiableBinaryOperation sourceObject)
 	looseOnlyRightIsSingularCheck(ModifiableBinaryOperation sourceObject)
 	constraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
+	looseConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
 	notConstraintCheck(RosettaExpression sourceObject, RosettaCardinality notExpected)
 	isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
+	
+	// TODO: Functions I need temporarily during transition from old to new type system
+	rosettaTypeToRType(RosettaType rt): RType
+	attributeListType(Attribute a): RListType
+	callableListType(RosettaCallable c): RListType
 }
 
 judgments {
@@ -63,6 +110,20 @@ judgments {
 }
 
 /****** AUXILIARY DEFINITIONS *******/
+auxiliary ancestors(Data t) {
+	getAll(t,
+		SimplePackage::eINSTANCE.data_SuperType,
+		SimplePackage::eINSTANCE.data_SuperType,
+		typeof(Data)
+	)
+}
+auxiliary ancestorEnums(RosettaEnumeration t) {
+	getAll(t,
+		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
+		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
+		typeof(RosettaEnumeration)
+	)
+}
 auxiliary comparable(RType t1, RType t2) {
 	empty |- t1 <: t2
 	or
@@ -72,10 +133,40 @@ auxiliary comparable(RType t1, RType t2) {
 }
 auxiliary overlap(RosettaCardinality c1, RosettaCardinality c2) {
 	(c1.unbounded || c1.sup >= c2.inf) && (c2.unbounded || c2.sup >= c1.inf)
+	or
+	return false
 }
 auxiliary listComparable(RListType t1, RListType t2) {
 	comparable(t1.itemType, t2.itemType)
 	overlap(t1.constraint, t2.constraint)
+}
+auxiliary join(RQualifiedType t1, RBuiltinType t2) {
+	if (t2 == STRING) {
+		return t1
+	}
+}
+auxiliary join(RDataType t1, RDataType t2) {
+	val st1 = ancestors(t1.^data)
+	st1.add(0, t1.^data)
+	val st2 = ancestors(t2.^data)
+	st2.add(0, t2.^data)
+	val result = st2.findFirst[st1.contains(it)]
+	result !== null
+	return new RDataType(result)
+}
+auxiliary join(REnumType t1, REnumType t2) {
+	val st1 = ancestorEnums(t1.enumeration)
+	st1.add(0, t1.enumeration)
+	val st2 = ancestorEnums(t2.enumeration)
+	st2.add(0, t2.enumeration)
+	val result = st2.findFirst[st1.contains(it)]
+	result !== null
+	return new REnumType(result)
+}
+auxiliary join(RBuiltinType t1, RQualifiedType t2) {
+	if (t1 == STRING) {
+		return t2
+	}
 }
 auxiliary join(RBuiltinType t1, RBuiltinType t2) {
 	if (t1 == t2) {
@@ -98,6 +189,10 @@ auxiliary join(RType t1, RBuiltinType t2) {
 	t2 == NOTHING
 	return t1
 }
+auxiliary join(RType t1, RType t2) {
+	t1 == t2
+	return t1
+}
 auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
 	if (c1.unbounded || c2.unbounded) {
 		return createConstraint(Math.min(c1.inf, c2.inf))
@@ -109,6 +204,18 @@ auxiliary listJoin(RListType t1, RListType t2) {
 	val sup = join(t1.itemType, t2.itemType);
 	sup !== null
 	return createListType(sup, union(t1.constraint, t2.constraint))
+}
+auxiliary allAttributes(Data d) {
+	if (d.superType === null) {
+		return d.attributes;
+	} else {
+		return allAttributes(d.superType) + d.attributes;
+	}
+}
+auxiliary mayBeEmpty(Data d) {
+	d.allAttributes.forall[
+		card.inf === 0
+	]
 }
 
 /****** TYPE VALIDATION UTILITIES *******/
@@ -153,7 +260,7 @@ auxiliary listSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
 auxiliary looseListSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
     var RListType actual
     empty |- sourceObject : actual or actual = null
-    if (expected !== null && actual !== null && !({empty |- actual.itemType <: expected.itemType} && expected.constraint.isSubconstraintOf(actual.constraint))) {
+    if (expected !== null && actual !== null && !({empty |- actual.itemType <: expected.itemType} && expected.constraint.overlap(actual.constraint))) {
         fail error notAListSubtypeMessage(expected, actual)
             source sourceObject
     }
@@ -225,7 +332,7 @@ auxiliary looseOnlyRightIsSingularCheck(ModifiableBinaryOperation sourceObject) 
         or
         {
             if (tl.constraint.constraintEquals(single)) {
-                if (single.isSubconstraintOf(tr.constraint)) {
+                if (tr.constraint.constraintEquals(single)) {
                     fail error bothAreSingularMessage(sourceObject)
                         source sourceObject
                         feature ExpressionPackage.Literals.MODIFIABLE_BINARY_OPERATION__CARD_MOD
@@ -245,6 +352,16 @@ auxiliary constraintCheck(RosettaExpression sourceObject, RosettaCardinality exp
 	empty |- sourceObject : actual or actual = null
 	if (expected !== null && actual !== null) {
 		expected.constraintEquals(actual.constraint)
+		or
+		fail error notConstraintMessage(expected, actual)
+			source sourceObject
+	}
+}
+auxiliary looseConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected) {
+	var RListType actual
+	empty |- sourceObject : actual or actual = null
+	if (expected !== null && actual !== null) {
+		expected.isSubconstraintOf(actual.constraint)
 		or
 		fail error notConstraintMessage(expected, actual)
 			source sourceObject
@@ -271,7 +388,105 @@ auxiliary isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardina
 	}
 }
 
+auxiliary rosettaTypeToRType(Data d) {
+    return new RDataType(d)
+}
+auxiliary rosettaTypeToRType(RosettaQualifiedType t) {
+	return switch t.name {
+		case RQualifiedType.PRODUCT_TYPE.qualifiedType:
+			RQualifiedType.PRODUCT_TYPE
+		case RQualifiedType.EVENT_TYPE.qualifiedType:
+			RQualifiedType.EVENT_TYPE
+	}
+}
+auxiliary rosettaTypeToRType(RosettaBuiltinType t) {
+    return switch t.name {
+        case 'boolean':
+            RBuiltinType.BOOLEAN
+        case 'string':
+            RBuiltinType.STRING
+        case 'int':
+            RBuiltinType.INT
+        case 'number':
+            RBuiltinType.NUMBER
+        case 'time':
+            RBuiltinType.TIME
+        case 'date':
+            RBuiltinType.DATE
+        case 'dateTime':
+            RBuiltinType.DATE_TIME
+        case 'zonedDateTime':
+            RBuiltinType.ZONED_DATE_TIME        
+    }
+}
+auxiliary rosettaTypeToRType(RosettaEnumeration t) {
+    return new REnumType(t)
+}
+
+auxiliary attributeListType(Attribute a) {
+	return createListType(rosettaTypeToRType(a.type), a.card)
+}
+
+auxiliary callableListType(Attribute c) {
+	return c.attributeListType
+}
+
+auxiliary callableListType(ClosureParameter c) {
+	val f = c.function
+	val op = f.eContainer as RosettaFunctionalOperation
+	empty |- op.argument : var RListType receiverType
+	if (receiverType !== null) {
+		if (op instanceof ExtractAllOperation) {
+			return receiverType
+		} else {
+			return createListType(receiverType.itemType, single)
+		}
+	}
+	return null
+}
+
+auxiliary callableListType(Data c) {
+	return createListType(new RDataType(c), single)
+}
+
+auxiliary callableListType(RosettaEnumeration c) {
+	return createListType(new REnumType(c), single)
+}
+
+auxiliary callableListType(ShortcutDeclaration c) {
+	empty |- c.expression : var RListType t
+	return t
+}
+
 /*** SUBTYPING **/
+rule SQualified
+	G |- RQualifiedType t1 <: RBuiltinType t2
+from {
+	t2 == STRING
+}
+
+rule SData // SA-Refl, SA-Ancestor
+	G |- RDataType t1 <: RDataType t2
+from {
+	{
+		t1 == t2
+	} or
+	{
+		ancestors(t1.^data).contains(t2.^data)
+	}
+}
+
+rule SEnum // SA-Refl, SA-Enum
+	G |- REnumType t1 <: REnumType t2
+from {
+	{
+		t1 == t2
+	} or
+	{
+		ancestorEnums(t1.enumeration).contains(t2.enumeration)
+	}
+}
+
 rule SBuiltIn // SA-Refl, SA-Num, SA-Nothing
 	G |- RBuiltinType t1 <: RBuiltinType t2
 from {
@@ -290,6 +505,12 @@ rule SNothing // SA-Nothing
 	G |- RBuiltinType t1 <: RType t2
 from {
 	t1 == NOTHING
+}
+
+rule SRefl
+	G |- RType t1 <: RType t2
+from {
+	t1 == t2
 }
 
 /*** LIST SUBTYPING ***/
@@ -311,6 +532,17 @@ axiom TNumber
 axiom TInt
 	G |- RosettaIntLiteral i : singleInt
 
+rule TVar
+	G |- RosettaCallableCall c : RListType t
+from {
+	if (c.implicitReceiver) {
+		val f = EcoreUtil2.getContainerOfType(c, InlineFunction)
+		t = f.firstOrImplicit.callableListType
+	} else {
+		t = c.callable.callableListType
+	}
+}
+
 rule TArithmetic
 	G |- ArithmeticOperation op : RListType lt
 from {
@@ -319,8 +551,24 @@ from {
 	} else {
 		G |- op.left : var RListType t1
 		G |- op.right : var RListType t2
-		if (op.operator == '+' && (t1.equals(singleString) || t2.equals(singleString))) {
-			lt = singleString
+		if (op.operator == '+') {
+			if (t1.equals(singleDate)) {
+				lt = singleDateTime
+			} else if (t1.equals(singleString) || t2.equals(singleString)) {
+				lt = singleString
+			} else if (t1.equals(singleNumber) || t2.equals(singleNumber)) {
+				lt = singleNumber
+			} else {
+				lt = singleInt
+			}
+		} else if (op.operator == '-') {
+			if (t1.equals(singleDate) || t2.equals(singleDate)) {
+				lt = singleInt
+			} else if (t1.equals(singleNumber) || t2.equals(singleNumber)) {
+				lt = singleNumber
+			} else {
+				lt = singleInt
+			}
 		} else if (t1.equals(singleNumber) || t2.equals(singleNumber)) {
 			lt = singleNumber
 		} else {
@@ -377,13 +625,86 @@ from {
 	}
 }
 
+rule TFunc // TA-Func
+    G |- RosettaCallableWithArgsCall e : RListType t
+from {
+    val f = e.callable
+    switch f {
+        RosettaRecordType: {
+            fail
+        }
+        RosettaQualifiedType: {
+            fail
+        }
+        RosettaCalculationType: {
+            fail
+        }
+        RosettaExternalFunction: {
+            t = createListType(rosettaTypeToRType(f.type), 1, 1)
+        }
+        Function: {
+            t = createListType(rosettaTypeToRType(f.^output.type), f.^output.card)
+        }
+    }
+}
+
+rule TProject // TA-Project
+	G |- RosettaFeatureCall e : RListType t
+from { // TODO: support metadata feature calls?
+	G |- e.receiver : var RListType dt
+	if (dt !== null) {
+		val a = e.^feature
+		switch (a) {
+			Attribute: { // regular projections
+				val at = a.attributeListType
+				t = createListType(at.itemType, dt.constraint * at.constraint)
+			}
+			RosettaTypedFeature: { // projections on record types or of metadata properties
+				if (a.type === null) {
+					fail error "Unsupported by the type system."
+				} else {
+					t = createListType(a.type.rosettaTypeToRType, dt.constraint)
+				}
+			}
+			RosettaEnumValue: { // projections on enums
+				t = dt
+			}
+		}
+	}
+}
+
+axiom TExists // TA-Exists
+	G |- RosettaExistsExpression e : singleBoolean
+axiom TAbsent
+	G |- RosettaAbsentExpression e : singleBoolean
+axiom TOnlyExists // TA-OnlyExists
+	G |- RosettaOnlyExistsExpression e : singleBoolean
+axiom TCount // TA-Count
+	G |- RosettaCountOperation e : singleInt
+rule TOnlyElement // TA-OnlyElement
+	G |- RosettaOnlyElement e : RListType t
+from {
+	G |- e.argument : var RListType targ
+	if (targ !== null) {
+		t = createListType(targ.itemType, 0, 1)
+	}
+}
+
 /****** CHECK RULES ********/
 checkrule CheckLeftArithmetic for
 	ArithmeticOperation op
 from {
-	if (op.operator == '+') {
+	if (op.operator == '+') { // TODO: improve error messages
 		{
+			looseListTypeCheck(op.left, singleDate)
+		} or {
 			looseListTypeCheck(op.left, singleString)
+		} or {
+			looseListSubtypeCheck(op.left, singleNumber)
+		}
+	} else if (op.operator == '-') {
+		{
+			looseListTypeCheck(op.left, singleDate)
 		} or {
 			looseListSubtypeCheck(op.left, singleNumber)
 		}
@@ -396,7 +717,15 @@ checkrule CheckRightArithmetic for
 from {
 	if (op.operator == '+') {
 		{
+			looseListTypeCheck(op.right, singleTime)
+		} or {
 			looseListTypeCheck(op.right, singleString)
+		} or {
+			looseListSubtypeCheck(op.right, singleNumber)
+		}
+	} else if (op.operator == '-') {
+		{
+			looseListTypeCheck(op.right, singleDate)
 		} or {
 			looseListSubtypeCheck(op.right, singleNumber)
 		}
@@ -407,12 +736,17 @@ from {
 checkrule CheckAddition for
 	ArithmeticOperation op
 from {
-	if (op.operator == '+') {
-		var RListType tl
-		var RListType tr
-		empty |- op.left : tl or tl = null
-		empty |- op.right : tr or tr = null
-		if (tl !== null && tr !== null) {
+	var RListType tl
+	var RListType tr
+	empty |- op.left : tl or tl = null
+	empty |- op.right : tr or tr = null
+	if (tl !== null && tr !== null) {
+		if (op.operator == '+') {
+			{
+				tl.itemType == DATE
+				tr.itemType == TIME
+			}
+			or
 			{
 				tl.itemType == STRING
 				tr.itemType == STRING
@@ -425,7 +759,20 @@ from {
 			or 
 				fail error "Expected arguments to be either both a `string` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
 					source op
-		}		
+		} else if (op.operator == '-') {
+			{
+				tl.itemType == DATE
+				tr.itemType == DATE
+			}
+			or
+			{
+				empty |- tl.itemType <: NUMBER
+				empty |- tr.itemType <: NUMBER
+			}
+			or 
+				fail error "Expected arguments to be either both a `string` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
+					source op
+		}
 	}
 }
 
@@ -454,24 +801,71 @@ from {
 checkrule CheckLeftComparison for
 	ComparisonOperation op
 from {
-	if (op.cardMod === CardinalityModifier.^NONE) {
-		looseListSubtypeCheck(op.left, singleNumber)
+	if (op.cardMod === CardinalityModifier.^NONE) { // TODO: improve error messages
+		{
+			looseListTypeCheck(op.left, singleZonedDateTime)
+		} or {
+			looseListTypeCheck(op.left, singleDate)
+		} or {
+			looseListSubtypeCheck(op.left, singleNumber)
+		}
 	} else {
-		subtypeCheck(op.left, NUMBER)
+		{
+			typeCheck(op.left, ZONED_DATE_TIME)
+		} or {
+			typeCheck(op.left, DATE)
+		} or {
+			subtypeCheck(op.left, NUMBER)
+		}
 	}
 }
 checkrule CheckRightComparison for
 	ComparisonOperation op
 from {
 	if (op.cardMod === CardinalityModifier.^NONE) {
-		looseListSubtypeCheck(op.right, singleNumber)
+		{
+			looseListTypeCheck(op.left, singleZonedDateTime)
+		} or {
+			looseListTypeCheck(op.right, singleDate)
+		} or {
+			looseListSubtypeCheck(op.right, singleNumber)
+		}
 	} else {
-		subtypeCheck(op.right, NUMBER)
+		{
+			typeCheck(op.left, ZONED_DATE_TIME)
+		} or {
+			typeCheck(op.right, DATE)
+		} or {
+			subtypeCheck(op.right, NUMBER)
+		}
 	}
 }
 checkrule CheckComparison for
 	ComparisonOperation op
 from {
+	var RListType tl
+	var RListType tr
+	empty |- op.left : tl or tl = null
+	empty |- op.right : tr or tr = null
+	if (tl !== null && tr !== null) {
+		{
+			tl.itemType == ZONED_DATE_TIME
+			tr.itemType == ZONED_DATE_TIME
+		}
+		or
+		{
+			tl.itemType == DATE
+			tr.itemType == DATE
+		}
+		or
+		{
+			empty |- tl.itemType <: NUMBER
+			empty |- tr.itemType <: NUMBER
+		}
+		or
+			fail error "Expected arguments to be either both a `date`, both a `number` or both a `zonedDateTime`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
+				source op
+	}
 	if (op.cardMod !== CardinalityModifier.^NONE) {
 		looseOnlyRightIsSingularCheck(op)
 	}
@@ -524,3 +918,94 @@ from {
 		fail error "Elements do not have a common supertype: " + telems.join(', ')["`" + it.itemType + "`"] + "."
 	}
 }
+
+checkrule CheckCallableWithArgsCall for RosettaCallableWithArgsCall e from {
+	val f = e.callable
+    switch f {
+        RosettaRecordType: {
+            fail
+        }
+        RosettaQualifiedType: {
+            fail
+        }
+        RosettaCalculationType: {
+            fail
+        }
+        RosettaExternalFunction: {
+        	f.parameters.head
+        	{
+				f.parameters.size() == e.args.size()
+				or
+				fail error "Expected " + f.parameters.size() + " argument" + (if (f.parameters.size() === 1) "" else "s") + ", but got " + e.args.size() + " instead."
+			}
+			(0..<e.args.size).forall[idx |
+				val param = f.parameters.get(idx)
+				val paramType = if (param.isArray) createListType(rosettaTypeToRType(param.type), 0) else createListType(rosettaTypeToRType(param.type), 1, 1)
+				looseListSubtypeCheck(e.args.get(idx), paramType)
+			]
+        }
+        Function: {
+            {
+				f.inputs.size() == e.args.size()
+				or
+				fail error "Expected " + f.inputs.size() + " argument" + (if (f.inputs.size() === 1) "" else "s") + ", but got " + e.args.size() + " instead."
+			}
+			(0..<e.args.size).forall[idx |
+				looseListSubtypeCheck(e.args.get(idx), f.inputs.get(idx).attributeListType)
+			]
+        }
+    }
+}
+
+checkrule CheckExistsExpression for RosettaExistsExpression e from {
+	isLooserConstraintCheck(e.argument, createConstraint(0, 1))
+}
+checkrule CheckAbsentExpression for RosettaAbsentExpression e from {
+	isLooserConstraintCheck(e.argument, createConstraint(0, 1))
+}
+checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
+	val first = e.args.head
+	val parent = first.parentExpression
+	for (var i = 1; i < e.args.size; i++) {
+		val other = e.args.get(i)
+		if (EcoreUtil.equals(first, other)) {
+			fail error "Duplicate attribute."
+				source other
+		}
+		val otherParent = other.parentExpression
+		if ((parent === null) !== (otherParent === null) || parent !== null && otherParent !== null && !EcoreUtil.equals(parent, otherParent)) {
+			if (otherParent !== null) {
+				fail error "All parent paths must be equal."
+					source otherParent
+			} else {
+				fail error "All parent paths must be equal."
+					source other
+			}
+		}
+	}
+	if (parent === null && !e.hasImplicitParent) {
+		fail error "Object must have a parent object."
+			source e.args.head
+	}
+	
+	var Data parentData = null
+	if (parent !== null) {
+		looseConstraintCheck(parent, single)
+		empty |- parent : var RListType pt
+		if (pt !== null) {
+			parentData = (pt.itemType as RDataType).^data
+		}
+	} else {
+		parentData = e.implicitParent
+	}
+	if (parentData !== null) {
+		mayBeEmpty(parentData)
+		or
+		fail error "The `only exists` operator is not applicable to instances of `" + parentData.name + "`."
+			source parent
+	}
+}
+// Moved the check below to StandaloneRosettaTypingValidator and made it a warning instead.
+//checkrule CheckOnlyElement for RosettaOnlyElement e from {
+//	isLooserConstraintCheck(e.argument, createConstraint(1, 2))
+//}

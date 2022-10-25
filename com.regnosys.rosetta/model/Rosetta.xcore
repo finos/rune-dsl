@@ -152,7 +152,7 @@ class RosettaCardinality {
 			return false;
 		}
 		if (this.isUnbounded()) {
-			return this.getInf() == other.getInf();
+			return other.isUnbounded() && this.getInf() == other.getInf();
 		}
 		return this.getInf() == other.getInf() && this.getSup() == other.getSup();
 	}
@@ -181,6 +181,21 @@ class RosettaCardinality {
 	}
 	op RosettaCardinality operator_plus(RosettaCardinality other) {
 		return this.add(other)
+	}
+	op RosettaCardinality multiply(RosettaCardinality other) {
+		val c = RosettaFactory.eINSTANCE.createRosettaCardinality
+		c.inf = inf * other.inf
+		if ((!unbounded && sup === 0) || (!other.unbounded && other.sup === 0)) {
+			c.sup = 0
+		} else if (unbounded || other.unbounded) {
+			c.unbounded = true
+		} else {
+			c.sup = sup * other.sup
+		}
+		return c
+	}
+	op RosettaCardinality operator_multiply(RosettaCardinality other) {
+		return this.multiply(other)
 	}
 	
 	derived boolean empty get {
