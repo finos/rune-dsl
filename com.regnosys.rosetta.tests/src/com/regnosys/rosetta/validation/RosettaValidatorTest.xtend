@@ -156,9 +156,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				id productType (1..1)
 				val int (1..1)
 			
-			condition R:
-				if  id = "Type"
-				then val < 1
+			    condition R:
+				    if  id = "Type"
+				    then val < 1
 		'''.parseRosettaWithNoErrors
 	}
 	
@@ -1111,7 +1111,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Bar:
 				test boolean (1..1)
-				bar1 string (1..1)
+				bar1 string (0..1)
 				bar2 string (1..1)
 			
 			type BarReport:
@@ -1144,7 +1144,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Bar:
 				test boolean (1..1)
-				bar1 string (1..1)
+				bar1 string (0..1)
 				bar2 string (1..1)
 			
 			type BarReport:
@@ -1177,7 +1177,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Bar:
 				test boolean (1..1)
-				bar1 number (1..1)
+				bar1 number (0..1)
 				bar2 number (1..1)
 			
 			type BarReport:
@@ -1210,7 +1210,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Bar:
 				test boolean (1..1)
-				bar1 number (1..1)
+				bar1 number (0..1)
 				bar2 int (1..1)
 			
 			type BarReport:
@@ -1243,7 +1243,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			type Bar:
 				test boolean (1..1)
-				bar1 Baz (1..1)
+				bar1 Baz (0..1)
 				bar2 Baz (1..1)
 			
 			type Baz:
@@ -1972,10 +1972,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x1 boolean (1..1)
 				x2 boolean (1..1)
-				x3 number (1..1)
+				x3 number (0..1)
 				x4 number (1..1)
 				x5 int (1..1)
-				x6 string (1..1)
+				x6 string (0..1)
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues

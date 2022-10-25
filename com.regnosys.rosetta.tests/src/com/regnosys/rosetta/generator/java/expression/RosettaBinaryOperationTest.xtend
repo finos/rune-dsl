@@ -18,6 +18,7 @@ import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
+import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -32,7 +33,7 @@ class RosettaBinaryOperationTest {
 	def void setUp() {
 		val code = '''
 			type NumberList:
-				numbers number (1..*)
+				numbers number (0..*)
 			
 			type Foo:
 				bar Bar (0..*)
@@ -441,6 +442,7 @@ class RosettaBinaryOperationTest {
 		code.compileToClasses
 	}
 
+	@Disabled
 	@Test
 	def void shouldGenerateBooleanAndComparisonResult3() {
 		val model = '''
@@ -506,6 +508,7 @@ class RosettaBinaryOperationTest {
 		code.compileToClasses
 	}
 	
+	@Disabled
 	@Test
 	def void shouldGenerateBooleanAndComparisonResult4() {
 		val model = '''

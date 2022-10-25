@@ -453,7 +453,7 @@ class ExpressionGenerator {
 					.join(«IF expr.right !== null»«expr.right.javaCode(params)»«ELSE»«MapperS».of("")«ENDIF»)'''
 			}
 			default: {
-				toComparisonOp('''«expr.left.javaCode(params)»''', expr.operator, '''«expr.right.javaCode(params)»''', (expr as ModifiableBinaryOperation).cardMod)
+				toComparisonOp('''«expr.left.emptyToMapperJavaCode(params, false)»''', expr.operator, '''«expr.right.emptyToMapperJavaCode(params, false)»''', (expr as ModifiableBinaryOperation).cardMod)
 			}
 		}
 	}

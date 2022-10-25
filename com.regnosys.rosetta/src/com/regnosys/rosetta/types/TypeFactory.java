@@ -11,6 +11,10 @@ public class TypeFactory {
 	public final RListType singleString;
 	public final RListType singleNumber;
 	public final RListType singleInt;
+	public final RListType singleDate;
+	public final RListType singleTime;
+	public final RListType singleDateTime;
+	public final RListType singleZonedDateTime;
 	public final RListType emptyNothing;
 	
 	public TypeFactory() {
@@ -22,6 +26,10 @@ public class TypeFactory {
 		this.singleString = createListType(RBuiltinType.STRING, single);
 		this.singleNumber = createListType(RBuiltinType.NUMBER, single);
 		this.singleInt = createListType(RBuiltinType.INT, single);
+		this.singleDate = createListType(RBuiltinType.DATE, single);
+		this.singleTime = createListType(RBuiltinType.TIME, single);
+		this.singleDateTime = createListType(RBuiltinType.DATE_TIME, single);
+		this.singleZonedDateTime = createListType(RBuiltinType.ZONED_DATE_TIME, single);
 		this.emptyNothing = createListType(RBuiltinType.NOTHING, empty);
 	}
 	

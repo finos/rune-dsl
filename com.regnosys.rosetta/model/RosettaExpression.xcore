@@ -165,7 +165,7 @@ class RosettaAbsentExpression extends RosettaUnaryOperation {
 class RosettaOnlyElement extends ListOperation {
 }
 
-class RosettaCountOperation extends ListOperation {
+class RosettaCountOperation extends RosettaUnaryOperation {
 }
 
 class FlattenOperation extends ListOperation, CanHandleListOfLists {

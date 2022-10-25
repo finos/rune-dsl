@@ -197,7 +197,7 @@ class RosettaBlueprintRepeatableRuleTest {
 					[ruleReference BazField]
 			
 			type Bar:
-				bazList Baz (1..*)
+				bazList Baz (0..*)
 			
 			type Baz:
 				field string (1..1)
