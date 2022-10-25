@@ -59,6 +59,7 @@ import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
+import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -435,7 +436,11 @@ auxiliary callableListType(ClosureParameter c) {
 	val op = f.eContainer as RosettaFunctionalOperation
 	empty |- op.argument : var RListType receiverType
 	if (receiverType !== null) {
-		return createListType(receiverType.itemType, single)
+		if (op instanceof ExtractAllOperation) {
+			return receiverType
+		} else {
+			return createListType(receiverType.itemType, single)
+		}
 	}
 	return null
 }

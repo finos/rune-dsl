@@ -68,7 +68,7 @@ class FunctionGeneratorTest {
 				output:
 					res boolean (1..1)
 				set res:
-					empty extract-all [item exists]
+					empty extract-all [item = empty]
 			
 			func F2:
 				output:
