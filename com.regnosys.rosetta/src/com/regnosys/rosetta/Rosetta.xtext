@@ -569,6 +569,7 @@ ListOperation returns RosettaExpression:
 			 =>({ReduceOperation.argument=current} operator='reduce')
 			|=>({FilterOperation.argument=current} operator='filter')
 			|=>({MapOperation.argument=current} operator=('map' | 'extract'))
+			|=>({ExtractAllOperation.argument=current} operator='extract-all')
 			|=>({SortOperation.argument=current} operator='sort')
 			|=>({MinOperation.argument=current} operator='min')
 			|=>({MaxOperation.argument=current} operator='max')

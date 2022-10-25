@@ -1708,12 +1708,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertNoErrors
 		model.assertNoIssues
 	}
 	
 	@Test
-	def void shouldGenerateListMapExpressionCardinalityError() {
+	def void shouldNotGenerateListMapExpressionCardinalityError3() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -1724,7 +1723,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				add strings:
 					foos
 						map a [ a -> bars ] // list of list<bar>
-						map bars [ bars -> bazs ] // list of list of list<baz> // not supported (list item to list of lists)
+						map bars [ bars -> bazs ] // list of list<baz>
 						map bazs [ bazs -> x ] // list of list<string>
 						flatten // list<string>
 			
@@ -1737,7 +1736,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Baz:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(MAP_OPERATION, null, "Each list item is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).")
+		model.assertNoIssues
 	}
 	
 	@Test

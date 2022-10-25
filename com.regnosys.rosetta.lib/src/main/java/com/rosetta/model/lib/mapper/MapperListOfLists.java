@@ -69,6 +69,13 @@ public class MapperListOfLists<T> {
 	}
 	
 	/**
+	 * Apply a function to this mapper
+	 */
+	public <F> F apply(Function<MapperListOfLists<T>, F> f) {
+		return f.apply(this);
+	}
+	
+	/**
 	 * Flatten a list of lists to a list.
 	 * 
 	 * @param <F>

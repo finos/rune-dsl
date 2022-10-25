@@ -226,16 +226,22 @@ interface RosettaFunctionalOperation extends RosettaUnaryOperation {
 interface MandatoryFunctionalOperation extends RosettaFunctionalOperation {
 }
 
+interface UnaryFunctionalOperation extends RosettaFunctionalOperation {
+}
+
 class ReduceOperation extends MandatoryFunctionalOperation, ListOperation {
 }
 
-class FilterOperation extends MandatoryFunctionalOperation, CanHandleListOfLists, ListOperation {
+class FilterOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists, ListOperation {
 }
 
-class MapOperation extends MandatoryFunctionalOperation, CanHandleListOfLists {
+class MapOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
 }
 
-interface ComparingFunctionalOperation extends RosettaFunctionalOperation {
+class ExtractAllOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
+}
+
+interface ComparingFunctionalOperation extends RosettaFunctionalOperation, UnaryFunctionalOperation {
 }
 
 class SortOperation extends ComparingFunctionalOperation, ListOperation {

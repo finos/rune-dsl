@@ -107,6 +107,7 @@ import com.regnosys.rosetta.rosetta.expression.SumOperation
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.ListOperation
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
+import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -1120,16 +1121,19 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def checkMandatoryFunctionalOperation(MandatoryFunctionalOperation e) {
 		checkBodyExists(e)
 	}
+	
+	@Check
+	def checkUnaryFunctionalOperation(UnaryFunctionalOperation e) {
+		checkOptionalNamedParameter(e.functionRef)
+	}
 
 	@Check
 	def checkFilterOperation(FilterOperation o) {
-		checkOptionalNamedParameter(o.functionRef)
 		checkBodyType(o.functionRef, RBuiltinType.BOOLEAN)
 	}
 	
 	@Check
 	def checkMapOperation(MapOperation o) {
-		checkOptionalNamedParameter(o.functionRef)
 		if (o.isOutputListOfListOfLists) {
 			error('''Each list item is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION_REF)
 		}
@@ -1158,7 +1162,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkComparingFunctionalOperation(ComparingFunctionalOperation o) {
-		checkOptionalNamedParameter(o.functionRef)
 		checkBodyIsSingleCardinality(o.functionRef)
 		checkBodyIsComparable(o)
 		if (o.functionRef === null) {
