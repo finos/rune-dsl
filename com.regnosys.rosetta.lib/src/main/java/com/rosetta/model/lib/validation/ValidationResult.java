@@ -102,10 +102,18 @@ public interface ValidationResult<T> {
 
 		public Optional<String> getUpdatedFailureReason(String name, String modelObjectName, Optional<String> failureReason){
 			String conditionName;
-			if(name.contains("Report")){
-				conditionName = name.substring(modelObjectName.length()) + " :";
-				conditionName = conditionName + " " + failureReason.toString();
-				failureReason = Optional.of(conditionName);;
+			if(!failureReason.isEmpty() && modelObjectName.endsWith("Report")){
+				conditionName = name.substring(modelObjectName.length()) + ": ";
+				String failReason = failureReason.get();
+
+				if( failReason.contains(modelObjectName) ) {
+					failReason = failReason.replaceAll(modelObjectName, "");
+					failReason = failReason.replaceAll("->get", "");
+					failReason = failReason.replaceAll("[^\\w-]+", "");
+
+					failureReason = Optional.of(failReason);
+				}
+				failureReason = Optional.of(conditionName + failureReason.get());
 			}
 
 			return failureReason;
