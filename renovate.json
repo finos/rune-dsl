@@ -2,5 +2,17 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base"
-  ]
+  ],
+
+  "labels": ["dependencies"],
+  "dependencyDashboardLabels": ["dependencies"],
+
+  "prConcurrentLimit": 4,
+  "prHourlyLimit": 2,
+
+  "major": {
+    "dependencyDashboardApproval": true
+  },
+
+  "assignees": ["simon.cockx@regnosys.com"]
 }
