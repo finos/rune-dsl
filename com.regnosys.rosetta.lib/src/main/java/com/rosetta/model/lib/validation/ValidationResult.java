@@ -53,7 +53,7 @@ public interface ValidationResult<T> {
 			this.path = path;
 			this.modelObjectName = modelObjectName;
 			this.definition = definition;
-			this.failureReason = getUpdatedFailureReason(name, modelObjectName, failureReason);
+			this.failureReason = failureReason;
 		}
 
 		@Override
@@ -82,6 +82,9 @@ public interface ValidationResult<T> {
 		
 		@Override
 		public Optional<String> getFailureReason() {
+			if (!failureReason.isEmpty() && modelObjectName.endsWith("Report")) {
+				return getUpdatedFailureReason();
+			}
 			return failureReason;
 		}
 
@@ -100,23 +103,17 @@ public interface ValidationResult<T> {
 					failureReason.map(s -> "because [" + s + "]").orElse(""));
 		}
 
-		public Optional<String> getUpdatedFailureReason(String name, String modelObjectName, Optional<String> failureReason){
-			String conditionName;
-			if(!failureReason.isEmpty() && modelObjectName.endsWith("Report")){
-				conditionName = name.substring(modelObjectName.length()) + ": ";
-				String failReason = failureReason.get();
+		public Optional<String> getUpdatedFailureReason() {
 
-				if( failReason.contains(modelObjectName) ) {
-					failReason = failReason.replaceAll(modelObjectName, "");
-					failReason = failReason.replaceAll("->get", "");
-					failReason = failReason.replaceAll("[^\\w-]+", " ");
+			String conditionName = name.replaceFirst(modelObjectName, "");
+			String failReason = failureReason.get();
 
-					failureReason = Optional.of(failReason);
-				}
-				failureReason = Optional.of(conditionName + failureReason.get());
+			if (failReason.contains(modelObjectName)) {
+				failReason = failReason.replaceAll("[^\\w-]+", " ");
+				failReason = failReason.replaceAll(modelObjectName, ":- ");
+				failReason = failReason.replaceAll("->get", "");
 			}
-
-			return failureReason;
+			return Optional.of(conditionName + failReason);
 		}
 	}
 
