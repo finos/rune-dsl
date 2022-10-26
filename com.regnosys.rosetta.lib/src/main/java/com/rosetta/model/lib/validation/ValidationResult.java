@@ -82,6 +82,9 @@ public interface ValidationResult<T> {
 		
 		@Override
 		public Optional<String> getFailureReason() {
+			if (!failureReason.isEmpty() && modelObjectName.endsWith("Report") && failureReason.get().contains(modelObjectName)) {
+				return getUpdatedFailureReason();
+			}
 			return failureReason;
 		}
 
@@ -98,6 +101,18 @@ public interface ValidationResult<T> {
 					validationType,
 					name,
 					failureReason.map(s -> "because [" + s + "]").orElse(""));
+		}
+
+		public Optional<String> getUpdatedFailureReason() {
+
+			String conditionName = name.replaceFirst(modelObjectName, "");
+			String failReason = failureReason.get();
+
+			failReason = failReason.replaceAll(modelObjectName, "");
+			failReason = failReason.replaceAll("->get", " ");
+			failReason = failReason.replaceAll("[^\\w-]+", " ");
+
+			return Optional.of(conditionName + ":- " + failReason);
 		}
 	}
 
