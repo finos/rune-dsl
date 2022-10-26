@@ -112,7 +112,7 @@ public interface ValidationResult<T> {
 			failReason = failReason.replaceAll("->get", " ");
 			failReason = failReason.replaceAll("[^\\w-]+", " ");
 
-			return Optional.of(conditionName +, ":- "+ failReason);
+			return Optional.of(conditionName + ":- " + failReason);
 		}
 	}
 
