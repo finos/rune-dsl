@@ -103,7 +103,7 @@ public interface ValidationResult<T> {
 					failureReason.map(s -> "because [" + s + "]").orElse(""));
 		}
 
-		public Optional<String> getUpdatedFailureReason() {
+		private Optional<String> getUpdatedFailureReason() {
 
 			String conditionName = name.replaceFirst(modelObjectName, "");
 			String failReason = failureReason.get();
