@@ -5,6 +5,7 @@
 		<groupId>com.regnosys.rosetta</groupId>
 		<artifactId>com.regnosys.rosetta.parent</artifactId>
 		<version>0.0.0.master</version>
+		<relativePath>../</relativePath>
 	</parent>
 	<artifactId>com.regnosys.rosetta.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
