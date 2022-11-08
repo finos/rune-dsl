@@ -458,7 +458,6 @@ auxiliary callableListType(ShortcutDeclaration c) {
 }
 
 /*** SUBTYPING **/
-
 rule SQualified
 	G |- RQualifiedType t1 <: RBuiltinType t2
 from {
@@ -514,7 +513,6 @@ from {
 }
 
 /*** LIST SUBTYPING ***/
-
 rule SList // SA-List
 	G |- RListType s <| RListType t
 from {
@@ -685,7 +683,6 @@ from {
 }
 
 /****** CHECK RULES ********/
-
 checkrule CheckLeftArithmetic for
 	ArithmeticOperation op
 from {
@@ -728,7 +725,6 @@ from {
 		looseListSubtypeCheck(op.right, singleNumber)
 	}
 }
-
 checkrule CheckAddition for
 	ArithmeticOperation op
 from {
