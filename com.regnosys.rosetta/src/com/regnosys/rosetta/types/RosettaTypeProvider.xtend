@@ -242,7 +242,10 @@ class RosettaTypeProvider {
 					ifT
 				} else {
 					val elseT = expression.elsethen.safeRType(cycleTracker)
-					if (ifT instanceof RErrorType) {
+					if (ifT === null || elseT === null) {
+						new RErrorType("Can not infer common type for conditional expression.")
+					}
+					else if (ifT instanceof RErrorType) {
 						elseT
 					} else if (elseT instanceof RErrorType) {
 						ifT
