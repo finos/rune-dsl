@@ -18,7 +18,6 @@ Require-Bundle: org.junit.jupiter.api,
  com.google.guava,
  org.hamcrest.core,
  org.mockito,
- org.apache.log4j,
  org.eclipse.xsemantics.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Import-Package: com.regnosys.rosetta.rosetta,
