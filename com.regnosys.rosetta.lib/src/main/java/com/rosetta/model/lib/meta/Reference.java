@@ -202,5 +202,41 @@ public interface Reference extends RosettaModelObject {
 			return getReference() != null;
 		}
 
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((pointsTo == null) ? 0 : pointsTo.hashCode());
+			result = prime * result + ((reference == null) ? 0 : reference.hashCode());
+			result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ReferenceBuilder other = (ReferenceBuilder) obj;
+			if (pointsTo == null) {
+				if (other.getPointsTo() != null)
+					return false;
+			} else if (!pointsTo.equals(other.getPointsTo()))
+				return false;
+			if (reference == null) {
+				if (other.getReference() != null)
+					return false;
+			} else if (!reference.equals(other.getReference()))
+				return false;
+			if (scope == null) {
+				if (other.getScope() != null)
+					return false;
+			} else if (!scope.equals(other.getScope()))
+				return false;
+			return true;
+        }
 	}
 }
