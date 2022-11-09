@@ -163,10 +163,6 @@ See the Apache License Version 2.0 for the specific language governing permissio
 							<arch>x86_64</arch>
 						</environment>
 					</environments>
-					<dependency-resolution>
-						<extraRequirements>
-						</extraRequirements>
-					</dependency-resolution>
 				</configuration>
 			</plugin>
 			<plugin>
