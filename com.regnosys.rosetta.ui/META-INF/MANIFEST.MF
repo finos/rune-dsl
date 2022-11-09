@@ -28,3 +28,4 @@ Export-Package: com.regnosys.rosetta.ui.quickfix,
  com.regnosys.rosetta.ui.outline,
  com.regnosys.rosetta.ui.internal
 Bundle-Activator: com.regnosys.rosetta.ui.internal.RosettaActivator
+Import-Package: org.apache.log4j

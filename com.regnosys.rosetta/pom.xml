@@ -14,7 +14,6 @@
 		<dependency>
             <groupId>org.eclipse.xsemantics</groupId>
             <artifactId>org.eclipse.xsemantics.runtime</artifactId>
-            <version>${xsemantics.version}</version>
         </dependency>
 	</dependencies>
 	<build>
