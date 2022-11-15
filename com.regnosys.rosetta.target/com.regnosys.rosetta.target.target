@@ -3,7 +3,7 @@
 <target name="com.regnosys.rosetta.target" sequenceNumber="1">
 	<locations>
 		<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/releases/2021-12"/>
+			<repository location="https://download.eclipse.org/releases/2022-06"/>
 			<unit id="org.eclipse.draw2d.feature.group" version="0.0.0"/>
 			<unit id="org.eclipse.emf.codegen.ecore.feature.group" version="0.0.0"/>
 			<unit id="org.eclipse.emf.codegen.feature.group" version="0.0.0"/>
@@ -24,31 +24,33 @@
  			<unit id="org.eclipse.xtext.xbase.feature.group" version="0.0.0"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="http://boothen.github.io/Json-Eclipse-Plugin/"/>
+			<repository location="https://boothen.github.io/Json-Eclipse-Plugin/"/>
 			<unit id="jsonedit-feature.feature.group" version="0.0.0"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 			<repository location="https://download.eclipse.org/tools/orbit/downloads/2021-12"/>
-			<unit id="org.apache.logging.log4j.source" version="0.0.0"/>
-			<unit id="net.bytebuddy.byte-buddy" version="0.0.0"/>
 			<unit id="org.apache.commons.lang3" version="0.0.0"/>
+		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/tools/orbit/downloads/2022-09"/>
+			<unit id="net.bytebuddy.byte-buddy" version="0.0.0"/>
+			<unit id="org.mockito" version="0.0.0"/>
 			<unit id="org.junit.jupiter.api" version="0.0.0"/>
 			<unit id="org.junit.jupiter.engine" version="0.0.0"/>
-			<unit id="org.mockito" version="0.0.0"/>
-			<unit id="org.slf4j.api" version="0.0.0"/>
-			<unit id="org.slf4j.binding.simple.source" version="0.0.0"/>
+			<unit id="org.junit.jupiter.params" version="0.0.0"/>
+			<unit id="org.junit.platform.commons" version="0.0.0"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 			<repository location="https://download.eclipse.org/xsemantics/milestones/"/>
-			<unit id="org.eclipse.xsemantics.doc.feature.feature.group" version="1.20.0.v20210401-0731"/>
-			<unit id="org.eclipse.xsemantics.examples.feature.feature.group" version="1.20.0.v20210401-0731"/>
-			<unit id="org.eclipse.xsemantics.feature.feature.group" version="1.20.0.v20210401-0731"/>
-			<unit id="org.eclipse.xsemantics.feature.source.feature.group" version="1.20.0.v20210401-0731"/>
-			<unit id="org.eclipse.xsemantics.implemented.examples.feature.feature.group" version="1.20.0.v20210401-0731"/>
-			<unit id="org.eclipse.xsemantics.runtime.feature.feature.group" version="1.20.0.v20210401-0731"/>
-			<unit id="org.eclipse.xsemantics.runtime.feature.source.feature.group" version="1.20.0.v20210401-0731"/>
-			<unit id="org.eclipse.xsemantics.sdk.feature.group" version="1.20.0.v20210401-0731"/>
-			<unit id="org.eclipse.xsemantics.sdk.source.feature.group" version="1.20.0.v20210401-0731"/>
+			<unit id="org.eclipse.xsemantics.doc.feature.feature.group" version="1.22.0.v20220621-0842"/>
+			<unit id="org.eclipse.xsemantics.examples.feature.feature.group" version="1.22.0.v20220621-0842"/>
+			<unit id="org.eclipse.xsemantics.feature.feature.group" version="1.22.0.v20220621-0842"/>
+			<unit id="org.eclipse.xsemantics.feature.source.feature.group" version="1.22.0.v20220621-0842"/>
+			<unit id="org.eclipse.xsemantics.implemented.examples.feature.feature.group" version="1.22.0.v20220621-0842"/>
+			<unit id="org.eclipse.xsemantics.runtime.feature.feature.group" version="1.22.0.v20220621-0842"/>
+			<unit id="org.eclipse.xsemantics.runtime.feature.source.feature.group" version="1.22.0.v20220621-0842"/>
+			<unit id="org.eclipse.xsemantics.sdk.feature.group" version="1.22.0.v20220621-0842"/>
+			<unit id="org.eclipse.xsemantics.sdk.source.feature.group" version="1.22.0.v20220621-0842"/>
 		</location>
 	</locations>
 </target>
