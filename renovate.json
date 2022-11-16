@@ -14,5 +14,21 @@
     "dependencyDashboardApproval": true
   },
 
-  "assignees": ["simon.cockx@regnosys.com"]
+  "assignees": ["simon.cockx@regnosys.com"],
+
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^org\\.eclipse\\.(xtext|xtend)"],
+      "versioning": "regex:^(\\d+)\\.(?<major>\\d+)\\.(?<patch>\\d+)?$"
+    },
+    {
+      "matchPackagePatterns": ["*"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch"
+    }
+  ]
 }
