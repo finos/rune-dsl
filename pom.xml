@@ -25,7 +25,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<xtextVersion>2.27.0</xtextVersion>
 		<xsemantics.repository>1.22</xsemantics.repository>
 		<xsemantics.version>1.22.0</xsemantics.version>
-		<mwe2Version>2.13.0</mwe2Version>
+		<mwe2Version>2.14.0</mwe2Version>
 		<org.eclipse.emf.ecore.xcore-version>1.22.0</org.eclipse.emf.ecore.xcore-version>
 		<org.eclipse.emf.ecore.xcore.lib-version>1.6.0</org.eclipse.emf.ecore.xcore.lib-version>
 		<org.eclipse.emf.codegen.ecore-version>2.28.0</org.eclipse.emf.codegen.ecore-version>
