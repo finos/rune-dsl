@@ -14,7 +14,7 @@
     "dependencyDashboardApproval": true
   },
 
-  "assignees": ["simon.cockx@regnosys.com"],
+  "assignees": ["SimonCockx"],
 
   "packageRules": [
     {
