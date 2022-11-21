@@ -18,12 +18,14 @@
 
   "packageRules": [
     {
-      "matchPackagePatterns": ["^org\\.eclipse\\.(xtext|xtend)"],
-      "dependencyDashboardApproval": true
+      "matchPackagePatterns": ["^org\\.eclipse\\."],
+      "dependencyDashboardApproval": true,
+      "groupName": "eclipse dependencies",
+      "groupSlug": "eclipse-dependencies"
     },
     {
       "matchPackagePatterns": ["*"],
-      "excludePackagePatterns": ["^org\\.eclipse\\.(xtext|xtend)"],
+      "excludePackagePatterns": ["^org\\.eclipse\\."],
       "matchUpdateTypes": [
         "minor",
         "patch"
