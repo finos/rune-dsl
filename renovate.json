@@ -19,16 +19,17 @@
   "packageRules": [
     {
       "matchPackagePatterns": ["^org\\.eclipse\\.(xtext|xtend)"],
-      "versioning": "regex:^(\\d+)\\.(?<major>\\d+)\\.(?<patch>\\d+)?$"
+      "dependencyDashboardApproval": true
     },
     {
       "matchPackagePatterns": ["*"],
+      "excludePackagePatterns": ["^org\\.eclipse\\.(xtext|xtend)"],
       "matchUpdateTypes": [
         "minor",
         "patch"
       ],
-      "groupName": "all non-major dependencies",
-      "groupSlug": "all-minor-patch"
+      "groupName": "all non-breaking dependencies",
+      "groupSlug": "all-non-breaking"
     }
   ]
 }
