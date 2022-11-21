@@ -39,5 +39,7 @@
       "groupName": "all non-breaking dependencies",
       "groupSlug": "all-non-breaking"
     }
-  ]
+  ],
+
+  "ignoreDeps": ["org.eclipse.m2e:lifecycle-mapping"]
 }
