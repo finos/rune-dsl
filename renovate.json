@@ -18,7 +18,13 @@
 
   "packageRules": [
     {
+      "matchPackagePatterns": ["^org\\.eclipse\\.tycho"],
+      "groupName": "tycho",
+      "groupSlug": "tycho"
+    },
+    {
       "matchPackagePatterns": ["^org\\.eclipse\\."],
+      "excludePackagePatterns": ["^org\\.eclipse\\.tycho"],
       "dependencyDashboardApproval": true,
       "groupName": "eclipse dependencies",
       "groupSlug": "eclipse-dependencies"
