@@ -14,5 +14,30 @@
     "dependencyDashboardApproval": true
   },
 
-  "assignees": ["simon.cockx@regnosys.com"]
+  "assignees": ["SimonCockx"],
+
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^org\\.eclipse\\.tycho"],
+      "groupName": "tycho",
+      "groupSlug": "tycho"
+    },
+    {
+      "matchPackagePatterns": ["^org\\.eclipse\\."],
+      "excludePackagePatterns": ["^org\\.eclipse\\.tycho"],
+      "dependencyDashboardApproval": true,
+      "groupName": "eclipse dependencies",
+      "groupSlug": "eclipse-dependencies"
+    },
+    {
+      "matchPackagePatterns": ["*"],
+      "excludePackagePatterns": ["^org\\.eclipse\\."],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "all non-breaking dependencies",
+      "groupSlug": "all-non-breaking"
+    }
+  ]
 }
