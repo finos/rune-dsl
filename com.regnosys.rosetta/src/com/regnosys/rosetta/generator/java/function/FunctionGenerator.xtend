@@ -294,7 +294,7 @@ class FunctionGenerator {
 		if (pathAsList.isEmpty) {
 			// assign function output object
 			if (op.add) {
-				val addVarName = ("addVar" + index).toDecoratedName
+				val addVarName = ("addVar" + index).toDecoratedName(op)
 				'''
 				«IF needsBuilder(op.assignRoot)»
 					«type.toBuilderType(names)» «addVarName» = toBuilder(«assignPlainValue(op, type.isMany)»);

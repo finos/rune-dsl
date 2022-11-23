@@ -1659,7 +1659,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(INLINE_FUNCTION, null, "Function must have 1 named parameter.")
+		model.assertError(NAMED_FUNCTION_REFERENCE, null, "Function must have 1 parameter.")
 	}
 	
 	@Test
