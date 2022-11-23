@@ -30,67 +30,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
-	@Disabled
-	def void identicalAttributesInOnlyExistsError() {
-		val model =
-		'''
-			type A:
-			  i int (0..1)
-			
-			func Foo:
-			  inputs: a A (1..1)
-			  output: result boolean (1..1)
-			  set result: a -> (i, i) only exists
-		'''.parseRosetta
-		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
-			"TODO")
-	}
-	
-	@Test
-	@Disabled
-	def void noParentInOnlyExistsError() {
-		val model =
-		'''
-			type A:
-			  i int (0..1)
-			
-			func Foo:
-			  inputs: a A (0..1)
-			  output: result boolean (1..1)
-			  set result: a only exists
-		'''.parseRosetta
-		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
-			"TODO")
-	}
-	
-	@Test
-	@Disabled
-	def void implicitParentInOnlyExists() {
-		val model =
-		'''
-			type A:
-			  i int (0..1)
-			  
-			  condition OnlyExistsTest:
-			    i only exists
-		'''.parseRosetta
-		model.assertNoIssues
-	}
-	
-	@Test
-	@Disabled
-	def void primitiveTypeInOnlyExistsError() {
-		val model =
-		'''
-			func Foo:
-			  output: result boolean (1..1)
-			  set result: True only exists
-		'''.parseRosetta
-		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
-			"TODO")
-	}
-	
-	@Test
 	def void testLowerCaseClass() {
 		val model =
 		'''
@@ -1664,6 +1603,63 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x string (1..1)
 		'''.parseRosetta
 		model.assertError(INLINE_FUNCTION, null, "Function must have 1 named parameter.")
+	}
+	
+	@Test
+	def void mapWithNamedFunctionReferenceShouldGenerateNoError() {
+		val model = '''
+			func DoSomething:
+				inputs:
+					a Foo (1..1)
+				output:
+					result string (1..1)
+					
+				set result:
+					a -> x
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				add strings:
+					foos
+						map DoSomething
+			
+			type Foo:
+				x string (1..1)
+		'''.parseRosetta
+		model.assertNoIssues
+	}
+	
+	@Test
+	def void shouldGenerateListMapParametersErrorNamedFunctionReference() {
+		val model = '''
+			func DoSomething:
+				inputs:
+					a Foo (1..1)
+					b boolean (1..1)
+				output:
+					result string (1..1)
+					
+				set result:
+					a -> x
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				add strings:
+					foos
+						map DoSomething
+			
+			type Foo:
+				x string (1..1)
+		'''.parseRosetta
+		model.assertError(NAMED_FUNCTION_REFERENCE, null, "Function must have 1 parameter.")
 	}
 	
 	@Test

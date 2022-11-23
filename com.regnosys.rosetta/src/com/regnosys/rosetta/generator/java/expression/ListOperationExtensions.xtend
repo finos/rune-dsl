@@ -26,7 +26,7 @@ class ListOperationExtensions {
 	}
 	
 	def String getItemName(InlineFunction op) {
-		op.firstOrImplicit.getNameOrDefault.toDecoratedName
+		op.firstOrImplicit.getNameOrDefault.toDecoratedName(op)
 	}
 	
 	def String getBodyRawType(FunctionReference op) {
