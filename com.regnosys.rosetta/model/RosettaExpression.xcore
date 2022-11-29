@@ -6,9 +6,11 @@
 package com.regnosys.rosetta.rosetta.expression
 
 import com.regnosys.rosetta.rosetta.RosettaTyped
-import com.regnosys.rosetta.rosetta.RosettaCallable
+import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaFactory
+import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 
 
 interface RosettaExpression {}
@@ -17,10 +19,8 @@ interface RosettaExpression {}
  * Literals
  */
 
-interface RosettaLiteral extends RosettaExpression, RosettaTyped {
-	op String stringValue() {
-		return "Unknown Literal"
-	}
+interface RosettaLiteral extends RosettaExpression, RosettaMapTestExpression, RosettaTyped {
+	op String stringValue()
 }
 
 class RosettaBooleanLiteral extends RosettaLiteral {
@@ -52,7 +52,11 @@ class RosettaIntLiteral extends RosettaLiteral {
 	}
 }
 
-class ListLiteral extends RosettaLiteral {
+/*
+ * List construction
+ */
+
+class ListLiteral extends RosettaExpression {
 	contains RosettaExpression[] elements
 }
 
@@ -60,9 +64,8 @@ class ListLiteral extends RosettaLiteral {
  * Variables, projections, conditionals and function calls
  */
 
-class RosettaCallableCall extends RosettaExpression {
-	boolean implicitReceiver
-	refers RosettaCallable callable
+class RosettaSymbolReference extends RosettaExpression {
+	refers RosettaSymbol symbol
 }
 
 class RosettaFeatureCall extends RosettaExpression {
@@ -79,9 +82,10 @@ class RosettaConditionalExpression extends RosettaExpression {
 }
 
 class RosettaCallableWithArgsCall extends RosettaExpression {
-	refers RosettaCallableWithArgs callable
+	refers RosettaCallableWithArgs function
 	contains RosettaExpression[] args
-	boolean explicitArguments
+
+	boolean explicitArguments // whether the function has explicit arguments given
 }
 
 interface RosettaOperation extends RosettaExpression {
@@ -198,25 +202,19 @@ class NamedFunctionReference extends FunctionReference {
 	refers RosettaCallableWithArgs function
 }
 
-class ClosureParameter extends RosettaCallable {
+class ClosureParameter extends RosettaSymbol {
 	container InlineFunction function opposite parameters
-	/**
-	 * @return The name or 'item' if it's <code>null</code>
-	 */
-	derived String getNameOrDefault get {
-		return name ?: 'item'
-	}
 }
 
 class InlineFunction extends FunctionReference {
 	contains ClosureParameter[] parameters opposite function
 	contains RosettaExpression body
 	
-	op ClosureParameter getFirstOrImplicit() {
-		return if (parameters.size == 1)
-			parameters.get(0)
+	op RosettaSymbol getFirstParameterOrImplicit() {
+		return if (parameters.size >= 1)
+			parameters.head
 		else
-			parameters.findFirst[name === null]
+			RosettaFactory.eINSTANCE.createRosettaImplicitVariable
 	}
 }
 

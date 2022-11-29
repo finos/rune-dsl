@@ -229,9 +229,9 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.expression.format
 		
 		// Format parentheses
-		ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.leftParenthesisKeyword_4_0)
+		ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.leftParenthesisKeyword_3_0)
 			.forEach[append(NO_SPACE_PRESERVE_NEW_LINE)]
-	    ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.rightParenthesisKeyword_4_2)
+	    ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.rightParenthesisKeyword_3_2)
 			.forEach[prepend(NO_SPACE_PRESERVE_NEW_LINE)]
 	}
 

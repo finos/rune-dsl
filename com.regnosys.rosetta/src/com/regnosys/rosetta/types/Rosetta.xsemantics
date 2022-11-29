@@ -634,9 +634,6 @@ from {
         Function: {
             t = createListType(rosettaTypeToRType(f.^output.type), f.^output.card)
         }
-        default: {
-        	t = null
-        }
     }
 }
 

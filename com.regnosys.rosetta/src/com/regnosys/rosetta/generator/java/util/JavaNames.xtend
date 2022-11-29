@@ -81,8 +81,6 @@ class JavaNames {
 			RosettaRecordType:
 				JavaType.create(JavaClassTranslator.toJavaFullType(type.name)) ?:
 					JavaType.create(packages.defaultLibRecords.name + '.' + type.name.toFirstUpper)
-			RosettaExternalFunction:
-				createJavaType(packages.defaultLibFunctions, type.name)
 			RosettaCalculationType,
 			RosettaQualifiedType:
 				JavaType.create('java.lang.String')
