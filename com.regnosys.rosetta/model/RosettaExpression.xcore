@@ -81,6 +81,7 @@ class RosettaConditionalExpression extends RosettaExpression {
 class RosettaCallableWithArgsCall extends RosettaExpression {
 	refers RosettaCallableWithArgs callable
 	contains RosettaExpression[] args
+	boolean explicitArguments
 }
 
 interface RosettaOperation extends RosettaExpression {
