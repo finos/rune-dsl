@@ -16,14 +16,40 @@ import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.rosetta.expression.MapOperation
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
-	@Inject extension ValidationTestHelper 
+	
+	@Test
+	def void testImplicitInput() {
+	    val model = '''
+           type Foo:
+               a int (0..1)
+               b string (0..1)
+               
+               condition C:
+                   [deprecated] // the parser should parse this as an annotation, not a list
+                   extract [ exists ]
+	    '''.parseRosetta
+	    	    
+	    model.elements.head as Data => [
+	    	conditions.head => [
+	    		assertEquals(1, annotations.size)
+	    		assertTrue(expression instanceof MapOperation)
+	    		expression as MapOperation => [
+	    			assertTrue(functionRef instanceof InlineFunction)
+	    			functionRef as InlineFunction => [
+	    				assertTrue(body instanceof RosettaExistsExpression)
+	    			]
+	    		]
+	    	]
+	    ]
+	}
 	
 	@Test
 	def void testMultiExtract() {
@@ -50,8 +76,6 @@ class RosettaParsingTest {
 	    		]
 	    	]
 	    ]
-	    
-	    model.assertNoIssues
 	}
 	
 	@Test
@@ -62,7 +86,7 @@ class RosettaParsingTest {
                    result boolean (0..*)
                add result:
                    [True, False] extract [item = False]
-	    '''.parseRosettaWithNoIssues
+	    '''.parseRosetta
 	    
 	    model.elements.last as Function => [
 	    	assertTrue(operations.last.expression instanceof MapOperation)
