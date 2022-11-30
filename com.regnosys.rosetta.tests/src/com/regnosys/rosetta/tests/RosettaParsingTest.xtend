@@ -18,12 +18,14 @@ import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
+	@Inject extension ValidationTestHelper 
 	
 	@Test
 	def void testImplicitInput() {
@@ -35,8 +37,20 @@ class RosettaParsingTest {
                condition C:
                    [deprecated] // the parser should parse this as an annotation, not a list
                    extract [ exists ]
-	    '''.parseRosetta
-	    	    
+           
+           func F:
+               inputs:
+                   a int (1..1)
+               output:
+                   result boolean (1..1)
+               set result:
+                   a extract [
+                       if F
+                       then False
+                       else True and F
+                   ]
+	    '''.parseRosettaWithNoIssues
+
 	    model.elements.head as Data => [
 	    	conditions.head => [
 	    		assertEquals(1, annotations.size)
@@ -49,6 +63,8 @@ class RosettaParsingTest {
 	    		]
 	    	]
 	    ]
+	    
+	    model.assertNoIssues
 	}
 	
 	@Test

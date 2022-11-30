@@ -180,15 +180,18 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 							inputsAndOutputs.add(function.output)
 						return Scopes.scopeFor(inputsAndOutputs)
 					} else {
+						val rootElement = EcoreUtil2.getRootContainer(context);
+            			val functionSymbols = EcoreUtil2.getAllContentsOfType(rootElement, Function);
+						
 						val inline = EcoreUtil2.getContainerOfType(context, InlineFunction)
 						if(inline !== null) {
-							return getParentScope(context, reference, IScope.NULLSCOPE)
+							return Scopes.scopeFor(functionSymbols, getParentScope(context, reference, IScope.NULLSCOPE))
 						}
 						val container = EcoreUtil2.getContainerOfType(context, Function)
 						if(container !== null) {
-							return filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
+							return Scopes.scopeFor(functionSymbols, filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
 								descr | descr.EClass !== DATA
-							])
+							]))
 						}
 						
 					}

@@ -32,7 +32,7 @@ class RosettaExpressionsTest {
 
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
-	@Inject extension ValidationTestHelper 
+	@Inject extension ValidationTestHelper
 	@Inject EqualityHelper eqHelper;
 	
 	
