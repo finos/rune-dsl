@@ -360,8 +360,12 @@ RosettaMapRosettaPath:
 	'rosettaPath' '=' path=RosettaAttributeReference
 ;
 
-RosettaAttributeReference:
-	data=[Data|QualifiedName] (FEATURE_CALL_SEPARATOR attributes+=[Attribute|ValidID])+
+RosettaDataReference returns RosettaAttributeReferenceSegment:
+	{RosettaDataReference} data=[Data|QualifiedName]
+;
+
+RosettaAttributeReference returns RosettaAttributeReferenceSegment:
+	RosettaDataReference ({RosettaAttributeReference.receiver=current} FEATURE_CALL_SEPARATOR attribute=[Attribute|ValidID])+
 ;
 
 RosettaMapTestExpression returns RosettaMapTestExpression:
@@ -481,7 +485,7 @@ ClosureParameter:
 
 FunctionReference:
 	{NamedFunctionReference} function=[RosettaCallableWithArgs]
-	| {InlineFunction} =>(parameters+=ClosureParameter (',' parameters += ClosureParameter)*) '[' body=RosettaCalcExpression ']'
+	| {InlineFunction} (parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[' body=RosettaCalcExpression ']'
 ;
 
 /**********************************************************************
@@ -591,7 +595,7 @@ ListOperation returns RosettaExpression:
 	)*
 	| // Without left parameter:
 	(
-		->(
+		(
 			 ({RosettaExistsExpression} (modifier=ExistsModifier)? operator='exists')
 			|({RosettaAbsentExpression} 'is' operator='absent')
 			|({RosettaOnlyElement} operator='only-element')
@@ -602,7 +606,7 @@ ListOperation returns RosettaExpression:
 			|({FirstOperation} operator='first')
 			|({LastOperation} operator='last')
 			|({SumOperation} operator='sum')	
-		) | ->(
+		) | (
 			 ({ReduceOperation} operator='reduce')
 			|({FilterOperation} operator='filter')
 			|({MapOperation} operator=('map' | 'extract'))

@@ -59,6 +59,8 @@ import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
+import com.regnosys.rosetta.rosetta.RosettaDataReference
 
 class RosettaTypeProvider {
 
@@ -147,6 +149,16 @@ class RosettaTypeProvider {
 					default:
 						RBuiltinType.ANY
 				}
+			}
+			RosettaDataReference: {
+				expression.data.safeRType(cycleTracker)
+			}
+			RosettaAttributeReference: {
+				val attr = expression.attribute
+				if(attr === null || attr.eIsProxy) {
+					return null
+				}
+				attr.type.safeRType(cycleTracker)
 			}
 			RosettaOnlyElement: {
 				safeRType(expression.argument, cycleTracker)

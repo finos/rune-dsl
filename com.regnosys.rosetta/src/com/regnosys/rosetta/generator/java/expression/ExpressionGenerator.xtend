@@ -354,7 +354,7 @@ class ExpressionGenerator {
 	protected def StringConcatenationClient reference(RosettaReference expr, ParamMap params) {
 		switch (expr) {
 			RosettaImplicitVariable: {
-				return '''«defaultImplicitVariable.name.toDecoratedName(expr)»'''
+				return '''«defaultImplicitVariable.name.toDecoratedName(expr.findContainerDefiningImplicitVariable.get)»'''
 			}
 			RosettaSymbolReference: {
 				val s = expr.symbol
@@ -500,10 +500,12 @@ class ExpressionGenerator {
 			&& exprs.stream.allMatch[it instanceof RosettaFeatureCall ||
 									it instanceof RosettaReference ||
 									it instanceof RosettaCallableWithArgsCall ||
-									it instanceof RosettaLiteral && !(it.isEmpty && !(it.eContainer instanceof RosettaConditionalExpression)) ||
+									it instanceof RosettaLiteral ||
+									it instanceof ListLiteral && !(it.isEmpty && !(it.eContainer instanceof RosettaConditionalExpression)) ||
 									it instanceof RosettaCountOperation ||
 									it instanceof RosettaFunctionalOperation ||
 									it instanceof RosettaOnlyElement ||
+									it instanceof RosettaConditionalExpression ||
 									isArithmeticOperation(it)
 			]
 	}
@@ -635,12 +637,12 @@ class ExpressionGenerator {
 		} else {
 			''''''
 		}
-		if (ref.parameters.size <= 1) {
-			val item = defaultImplicitVariable.name.toDecoratedName(ref)
+		if (ref.parameters.size == 0) {
+			val item = defaultImplicitVariable.name.toDecoratedName(ref.findContainerDefiningImplicitVariable.get)
 			'''«item» -> «cast»«bodyExpr»'''
 		} else {
 			val items = ref.parameters.map[name.toDecoratedName(ref)]
-			'''(«FOR item : items SEPARATOR ', '»«item»«ENDFOR») -> «cast»«bodyExpr»'''
+			'''«IF items.size > 1»(«ENDIF»«FOR item : items SEPARATOR ', '»«item»«ENDFOR»«IF items.size > 1»)«ENDIF» -> «cast»«bodyExpr»'''
 		}
 	}
 	

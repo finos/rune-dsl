@@ -47,6 +47,7 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 
 /**
  * This class contains custom scoping description.
@@ -70,6 +71,35 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			switch reference {
 				case ROSETTA_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaFeatureCall) {
+						val receiverType = typeProvider.getRType(context.receiver)
+						val featureScope = receiverType.createFeatureScope
+						var allPosibilities = newArrayList
+						
+						if (featureScope!==null) {
+							allPosibilities.addAll(featureScope.allElements);
+						}
+						//if an attribute has metafields then then the meta names are valid in a feature call e.g. -> currency -> scheme
+						val receiver = context.receiver;
+						if (receiver instanceof RosettaFeatureCall) {
+							val feature = receiver.feature
+							switch(feature) {
+								Attribute: {
+									val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
+									// TODO check that we can use QualifiedName here 
+									if (metas !== null && !metas.isEmpty) {
+										allPosibilities.addAll(configs.findMetaTypes(feature).filter[
+											metas.contains(it.name.lastSegment.toString)
+										].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)])
+									}
+								}
+							}
+						}
+						return new SimpleScope(allPosibilities)
+					}
+					return IScope.NULLSCOPE
+				}
+				case ROSETTA_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
+					if (context instanceof RosettaAttributeReference) {
 						val receiverType = typeProvider.getRType(context.receiver)
 						val featureScope = receiverType.createFeatureScope
 						var allPosibilities = newArrayList

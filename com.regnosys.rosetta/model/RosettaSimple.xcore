@@ -20,6 +20,7 @@ import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {
 }
@@ -37,7 +38,7 @@ interface Annotated {
 class AnnotationQualifier {
 	String qualName
 	String qualValue
-	contains RosettaAttributeReference qualPath
+	contains RosettaAttributeReferenceSegment qualPath
 }
 
 class AnnotationRef {
@@ -59,7 +60,7 @@ class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaSymbol
 abstract class Definable extends RosettaDefinable {}
 
 
-class Data extends RosettaType, RootElement, RosettaSymbol, References {
+class Data extends RosettaType, RootElement, RosettaSymbol, References, RosettaAttributeReferenceSegment {
 	refers Data superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes

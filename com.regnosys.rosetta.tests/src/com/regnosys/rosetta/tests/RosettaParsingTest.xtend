@@ -14,12 +14,45 @@ import com.regnosys.rosetta.rosetta.simple.Function
 
 import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.rosetta.expression.MapOperation
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
+	@Inject extension ValidationTestHelper 
+	
+	@Test
+	def void testMultiExtract() {
+	    val model = '''
+           func Test:
+               output:
+                   result boolean (0..*)
+               add result:
+                   [True, False]
+                       extract [item = False]
+                       extract [item = True]
+	    '''.parseRosetta
+	    
+	    model.elements.last as Function => [
+	    	operations.head => [
+	    		assertTrue(expression instanceof MapOperation)
+	    		expression as MapOperation => [
+	    			assertTrue(argument instanceof MapOperation)
+	    			assertTrue(functionRef instanceof InlineFunction)
+	    			argument as MapOperation => [
+	    				assertTrue(argument instanceof ListLiteral)
+	    				assertTrue(functionRef instanceof InlineFunction)
+	    			]
+	    		]
+	    	]
+	    ]
+	    
+	    model.assertNoIssues
+	}
 	
 	@Test
 	def void testExtractIsASynonymForMap() {

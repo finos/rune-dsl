@@ -334,9 +334,15 @@ class RosettaMapTestEqualityOperation extends RosettaMapTestExpression {
 	String operator
 }
 
-class RosettaAttributeReference {
+interface RosettaAttributeReferenceSegment {}
+
+class RosettaDataReference extends RosettaAttributeReferenceSegment {
 	refers Data data
-	refers Attribute[] attributes
+}
+
+class RosettaAttributeReference extends RosettaAttributeReferenceSegment {
+	contains RosettaAttributeReferenceSegment receiver
+	refers Attribute attribute
 }
 
 class RosettaMapping {
@@ -358,7 +364,7 @@ class RosettaMapPath extends RosettaMapTest {
 }
 
 class RosettaMapRosettaPath extends RosettaMapTest {
-	contains RosettaAttributeReference path
+	contains RosettaAttributeReferenceSegment path
 }
 
 /**********************************************************************

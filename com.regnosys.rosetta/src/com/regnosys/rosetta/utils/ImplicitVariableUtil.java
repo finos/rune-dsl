@@ -7,10 +7,8 @@ import org.eclipse.xtext.EcoreUtil2;
 
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
-import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Data;
 
 /**
@@ -31,7 +29,7 @@ public class ImplicitVariableUtil {
 	/**
 	 * Find the enclosing object that defines the implicit variable in the given expression.
 	 */
-	public Optional<EObject> findContainerDefiningImplicitVariable(RosettaExpression context) {
+	public Optional<EObject> findContainerDefiningImplicitVariable(EObject context) {
 		Iterable<EObject> containers = EcoreUtil2.getAllContainers(context);
 		EObject prev = context;
 		for (EObject container: containers) {
@@ -54,7 +52,7 @@ public class ImplicitVariableUtil {
 	/**
 	 * Indicates whether an implicit variable exists in the given context.
 	 */
-	public boolean implicitVariableExistsInContext(RosettaExpression context) {
+	public boolean implicitVariableExistsInContext(EObject context) {
 		return findContainerDefiningImplicitVariable(context).isPresent();
 	}
 }

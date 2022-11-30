@@ -109,6 +109,7 @@ import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -972,13 +973,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 							if (qualName=="pointsTo") {
 								//check the qualPath has the address metadata
 								switch qualPath {
-									RosettaFeatureCall : { 
-										val featCall = qualPath as RosettaFeatureCall
-										switch att:featCall.feature {
-											Attribute : checkForLocation(att, it)
-										default : error('''Target of an address must be an attribute''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
-											
-										}
+									RosettaAttributeReference: {
+										val attrRef = qualPath as RosettaAttributeReference
+										checkForLocation(attrRef.attribute, it)
 									}
 									default : error('''Target of an address must be an attribute''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
 								}
