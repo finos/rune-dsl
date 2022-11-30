@@ -27,6 +27,7 @@ import org.eclipse.xtext.serializer.ISerializer
 import org.eclipse.xtext.parser.IEncodingProvider
 import com.google.inject.Binder
 import org.eclipse.xtext.service.DispatchingProvider
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -67,6 +68,10 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
         binder.bind(IEncodingProvider)
         	.annotatedWith(DispatchingProvider.Runtime)
         	.to(UTF8EncodingProvider);
+    }
+    
+    def Class<? extends ImplicitVariableUtil> bindImplicitVariableUtil() {
+    	return ImplicitVariableUtil;
     }
 	
 	// Setup derived state

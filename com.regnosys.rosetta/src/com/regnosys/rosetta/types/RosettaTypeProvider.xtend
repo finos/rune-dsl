@@ -8,7 +8,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
@@ -39,7 +38,6 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
@@ -58,6 +56,9 @@ import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
 import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 
 class RosettaTypeProvider {
 
@@ -67,6 +68,7 @@ class RosettaTypeProvider {
 	@Inject RosettaTypeCompatibility compatibility
 	@Inject RosettaExtensions extensions
 	@Inject extension RosettaTypeCompatibility
+	@Inject extension ImplicitVariableUtil
 	
 	def RType getRType(EObject expression) {
 		expression.safeRType(newHashMap)
@@ -85,15 +87,22 @@ class RosettaTypeProvider {
 			return null
 		}
 		switch expression {
-			RosettaCallableCall: {
-				if(expression.implicitReceiver)
-					safeRType(EcoreUtil2.getContainerOfType(expression, InlineFunction).firstOrImplicit, cycleTracker)
-				else
-					safeRType(expression.callable, cycleTracker)
+			RosettaSymbolReference: {
+				safeRType(expression.symbol, cycleTracker)
+			}
+			RosettaImplicitVariable: {
+				val definingContainer = expression.findContainerDefiningImplicitVariable
+				definingContainer.map [
+					if (it instanceof Data) {
+						new RDataType(it)
+					} else if (it instanceof RosettaFunctionalOperation) {
+						safeRType(it.argument, cycleTracker)
+					}
+				].orElse(RBuiltinType.MISSING)
 			}
 			RosettaCallableWithArgsCall: {
-				if (expression.callable instanceof RosettaExternalFunction) {
-					val fun = expression.callable as RosettaExternalFunction
+				if (expression.function instanceof RosettaExternalFunction) {
+					val fun = expression.function as RosettaExternalFunction
 					val returnType = fun.safeRType(cycleTracker)
 					// Generic return type for number type e.g. Min(1,2) or Max(2,6)
 					if (returnType == RBuiltinType.NUMBER && expression.args.forall[it.safeRType(cycleTracker) == RBuiltinType.INT]) {
@@ -102,7 +111,7 @@ class RosettaTypeProvider {
 						returnType
 					}
 				} else {
-					expression.callable.safeRType(cycleTracker)
+					expression.function.safeRType(cycleTracker)
 				}
 			}
 			Data:

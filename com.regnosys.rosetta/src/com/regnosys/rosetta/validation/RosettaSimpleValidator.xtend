@@ -13,7 +13,6 @@ import com.regnosys.rosetta.rosetta.BlueprintFilter
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
@@ -108,6 +107,8 @@ import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.ListOperation
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -461,7 +462,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkFunctionCall(RosettaCallableWithArgsCall element) {
 		val callerSize = element.args.size
-		val callable = element.callable
+		val callable = element.function
 		
 		var implicitFirstArgument = implicitFirstArgument(element)
 		val callableSize = switch callable {
@@ -473,7 +474,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 		if ((callerSize !== callableSize && implicitFirstArgument === null) || (implicitFirstArgument !== null && callerSize + 1 !== callableSize)) {
 			error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
-				ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
+				ROSETTA_CALLABLE_WITH_ARGS_CALL__FUNCTION)
 		} else {
 			if (callable instanceof Function) {
 				val skipFirstParam = if(implicitFirstArgument === null) 0 else 1
@@ -1370,7 +1371,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
         }
 	}
 	
-	private def getOnlyExistsParentType(RosettaExpression e) {
+	private def String getOnlyExistsParentType(RosettaExpression e) {
 		switch (e) {
 			RosettaFeatureCall: {
 				val parentFeatureCall = e.receiver
@@ -1381,11 +1382,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 							return parentFeature.type.name
 						}
 					}
-					RosettaCallableCall: {
-						val parentCallable = parentFeatureCall.callable 
+					RosettaSymbolReference: {
+						val parentCallable = parentFeatureCall.symbol 
 						if (parentCallable instanceof Attribute) {
 							return parentCallable.type.name
 						}
+					}
+					RosettaImplicitVariable: {
+						return parentFeatureCall.RType.name
 					}
 					default: {
 						log.warn("Only exists parent type unsupported " + parentFeatureCall)

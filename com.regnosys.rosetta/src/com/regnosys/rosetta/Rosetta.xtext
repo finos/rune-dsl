@@ -414,8 +414,9 @@ RosettaSegment:
  * Expressions 
  */ 
 
-RosettaSymbolReferenceOrFunctionCall returns RosettaExpression:
+RosettaReferenceOrFunctionCall returns RosettaExpression:
 	  {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName]
+	| {RosettaImplicitVariable} name=('item' | 'it')
 	| {RosettaCallableWithArgsCall} function=[RosettaCallableWithArgs|QualifiedName] explicitArguments?='(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')'
 ;
 
@@ -641,7 +642,7 @@ ListOperation returns RosettaExpression:
  */
 RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConditionalExpression
-	| RosettaSymbolReferenceOrFunctionCall
+	| RosettaReferenceOrFunctionCall
 	| RosettaLiteral
 	| '(' RosettaCalcExpression ')'
 	| RosettaCalcOnlyExists

@@ -13,7 +13,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
@@ -84,6 +83,10 @@ import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.expression.RosettaReference
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 class ExpressionGenerator {
 	
@@ -97,6 +100,7 @@ class ExpressionGenerator {
 	@Inject ExpressionHelper exprHelper
 	@Inject extension Util
 	@Inject extension ListOperationExtensions
+	@Inject extension ImplicitVariableUtil
 	
 	/**
 	 * convert a rosetta expression to code
@@ -104,30 +108,30 @@ class ExpressionGenerator {
 	 */
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		switch (expr) {
-			RosettaFeatureCall : {
+			RosettaFeatureCall: {
 				var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-				if (expr.eContainer!==null && expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-					autoValue=false;
+				if (expr.eContainer !== null && expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
+					autoValue = false;
 				}
 				featureCall(expr, params, autoValue)
 			}
-			RosettaOnlyExistsExpression : {
+			RosettaOnlyExistsExpression: {
 				onlyExistsExpr(expr, params)
 			}
-			RosettaExistsExpression : {
+			RosettaExistsExpression: {
 				existsExpr(expr, params)
 			}
-			RosettaBinaryOperation : {
+			RosettaBinaryOperation: {
 				binaryExpr(expr, null, params)
 			}
-			RosettaCountOperation : {
+			RosettaCountOperation: {
 				countExpr(expr, null, params)
 			}
-			RosettaAbsentExpression : {
+			RosettaAbsentExpression: {
 				absentExpr(expr, expr.argument, params)
 			}
-			RosettaCallableCall : {
-				callableCall(expr, params) 
+			RosettaReference: {
+				reference(expr, params)
 			}
 			RosettaCallableWithArgsCall: {
 				callableWithArgsCall(expr, params)
@@ -284,9 +288,9 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient callableWithArgsCall(RosettaCallableWithArgsCall expr, ParamMap params) {
-		val callable = expr.callable
+		val f = expr.function
 		val implicitArg = funcExt.implicitFirstArgument(expr)
-		callableWithArgs(callable, params, '''«IF implicitArg !== null»«implicitArg.name.toFirstLower»«ENDIF»«args(expr, params)»''', true)
+		callableWithArgs(f, params, '''«IF implicitArg !== null»«implicitArg.name.toFirstLower»«ENDIF»«args(expr, params)»''', true)
 	}
 	
 	private def StringConcatenationClient args(RosettaCallableWithArgsCall expr, ParamMap params) {
@@ -347,32 +351,38 @@ class ExpressionGenerator {
 		}
 	}
 	
-	protected def StringConcatenationClient callableCall(RosettaCallableCall expr, ParamMap params) {
-		if (expr.implicitReceiver) {
-			return '''«EcoreUtil2.getContainerOfType(expr, InlineFunction).itemName»'''
-		}
-		val call = expr.callable
-		switch (call)  {
-			Data : {
-				'''«MapperS».of(«params.getClass(call)»)'''
+	protected def StringConcatenationClient reference(RosettaReference expr, ParamMap params) {
+		switch (expr) {
+			RosettaImplicitVariable: {
+				return '''«defaultImplicitVariable.name.toDecoratedName(expr)»'''
 			}
-			Attribute : {
-				// Data Attributes can only be called from their conditions
-				// The current container (Data) is stored in Params, but we need also look for superTypes
-				// so we could also do: (call.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
-				if(call.eContainer instanceof Data)
-					'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(call, true, expr)»'''
-				else
-					'''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)'''
+			RosettaSymbolReference: {
+				val s = expr.symbol
+				switch (s)  {
+					Data: {
+						'''«MapperS».of(«params.getClass(s)»)'''
+					}
+					Attribute: {
+						// Data Attributes can only be called from their conditions
+						// The current container (Data) is stored in Params, but we need also look for superTypes
+						// so we could also do: (s.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
+						if(s.eContainer instanceof Data)
+							'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(s, true, expr)»'''
+						else
+							'''«if (s.card.isIsMany) MapperC else MapperS».of(«s.name»)'''
+					}
+					ShortcutDeclaration: {
+						val multi = cardinalityProvider.isMulti(s)
+						'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«s.name»(«aliasCallArgs(s)»).«IF exprHelper.usesOutputParameter(s.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
+					}
+					RosettaEnumeration: '''«s.toJavaType»'''
+					ClosureParameter: '''«s.name.toDecoratedName(s.function)»'''
+					default: 
+						throw new UnsupportedOperationException("Unsupported symbol type of " + s?.class?.name)
+				}
 			}
-			ShortcutDeclaration : {
-				val multi = cardinalityProvider.isMulti(call)
-				'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
-			}
-			RosettaEnumeration: '''«call.toJavaType»'''
-			ClosureParameter: '''«call.getNameOrDefault.toDecoratedName(call.function)»'''
 			default: 
-				throw new UnsupportedOperationException("Unsupported callable type of " + call?.class?.name)
+				throw new UnsupportedOperationException("Unsupported reference type of " + expr?.class?.name)
 		}
 	}
 	
@@ -488,7 +498,7 @@ class ExpressionGenerator {
 		return expr.evaluatesToComparisonResult
 			|| !exprs.empty
 			&& exprs.stream.allMatch[it instanceof RosettaFeatureCall ||
-									it instanceof RosettaCallableCall ||
+									it instanceof RosettaReference ||
 									it instanceof RosettaCallableWithArgsCall ||
 									it instanceof RosettaLiteral && !(it.isEmpty && !(it.eContainer instanceof RosettaConditionalExpression)) ||
 									it instanceof RosettaCountOperation ||
@@ -626,7 +636,7 @@ class ExpressionGenerator {
 			''''''
 		}
 		if (ref.parameters.size <= 1) {
-			val item = ref.itemName
+			val item = defaultImplicitVariable.name.toDecoratedName(ref)
 			'''«item» -> «cast»«bodyExpr»'''
 		} else {
 			val items = ref.parameters.map[name.toDecoratedName(ref)]
@@ -838,10 +848,13 @@ class ExpressionGenerator {
 				'''«toNodeLabel(expr.argument)» count'''
 			}
 			RosettaCallableWithArgsCall :{
-				'''«expr.callable.name»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)'''
+				'''«expr.function.name»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)'''
 			}
-			RosettaCallableCall : {
-				'''«expr.callable.name»'''
+			RosettaSymbolReference : {
+				'''«expr.symbol.name»'''
+			}
+			RosettaImplicitVariable : {
+				'''«defaultImplicitVariable.name»'''
 			}
 			RosettaOnlyElement : {
 				toNodeLabel(expr.argument)
@@ -863,8 +876,8 @@ class ExpressionGenerator {
 		
 		val receiver = call.receiver
 		val left = switch receiver {
-			RosettaCallableCall, 
-			RosettaCallableWithArgsCall, 
+			RosettaReference,
+			RosettaCallableWithArgsCall,
 			RosettaFeatureCall: {
 				toNodeLabel(receiver)
 			}

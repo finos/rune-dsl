@@ -13,8 +13,6 @@ import com.regnosys.rosetta.rosetta.BlueprintRef
 import com.regnosys.rosetta.rosetta.BlueprintReturn
 import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.RosettaCallable
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
@@ -51,6 +49,9 @@ import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.rosetta.expression.RosettaReference
 
 class RosettaBlueprintTypeResolver {
 	
@@ -414,15 +415,15 @@ class RosettaBlueprintTypeResolver {
 		return t1
 	}
 
-	def dispatch RosettaType getInput(RosettaCallableCall expr) {
-		return getInput(expr.callable)
+	def dispatch RosettaType getInput(RosettaSymbolReference expr) {
+		return getInput(expr.symbol)
 	}
 
 	def dispatch RosettaType getInput(RosettaFeatureCall call) {
 		return getInput(call.receiver)
 	}
 
-	def dispatch RosettaType getInput(RosettaCallable callable) {
+	def dispatch RosettaType getInput(RosettaSymbol callable) {
 		switch (callable) {
 			Data: {
 				return callable
@@ -433,7 +434,7 @@ class RosettaBlueprintTypeResolver {
 			}
 		}
 		throw new UnsupportedOperationException(
-			"Unexpected input parsing rosetta callable " + callable.class.simpleName)
+			"Unexpected input parsing Rosetta symbol " + callable.class.simpleName)
 	}
 	
 	def dispatch RosettaType getInput(RosettaConditionalExpression call) {
@@ -473,8 +474,8 @@ class RosettaBlueprintTypeResolver {
 	
 	//def dispatch RosettaType getOutput(RosettaCallable)
 
-	def dispatch RosettaType getOutput(RosettaCallableCall callable) {
-		return callable.callable.output
+	def dispatch RosettaType getOutput(RosettaSymbolReference ref) {
+		return ref.symbol.output
 	}
 	
 	def dispatch RosettaType getOutput(Function func) {
@@ -482,7 +483,7 @@ class RosettaBlueprintTypeResolver {
 	}
 	
 	def dispatch RosettaType getOutput(RosettaCallableWithArgsCall callable) {
-		return callable.callable.output
+		return callable.function.output
 	}
 	
 	def dispatch RosettaType getOutput(RosettaBinaryOperation binOp) {
@@ -567,7 +568,7 @@ class RosettaBlueprintTypeResolver {
 			RosettaFeatureCall: {
 				getOutput(expression).name
 			}
-			RosettaCallableCall: {
+			RosettaReference: {
 				""
 			}
 		}

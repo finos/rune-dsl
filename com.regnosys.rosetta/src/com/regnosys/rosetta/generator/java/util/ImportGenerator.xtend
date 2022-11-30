@@ -8,8 +8,6 @@ import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
-import com.regnosys.rosetta.rosetta.RosettaCallable
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
@@ -38,6 +36,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.FunctionReference
 import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.RosettaSymbol
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -139,8 +139,8 @@ class ImportGenerator {
 			case null: {
 				// do nothing
 			}	
-			RosettaCallableCall: {
-				add(expression.callable)
+			RosettaSymbolReference: {
+				add(expression.symbol)
 			}
 			RosettaFeatureCall: {
 				addFeatureCall(expression)
@@ -178,9 +178,9 @@ class ImportGenerator {
 				if (expression.elsethen!==null) 
 					addExpression(expression.elsethen)
 			}
-			RosettaCallable:{}
+			RosettaSymbol:{}
 			RosettaCallableWithArgsCall: {
-				addCallableWithArgs(expression.callable)
+				addCallableWithArgs(expression.function)
 			}
 			default:
 				LOGGER.warn("Unsupported expression type of " + expression.class.simpleName)

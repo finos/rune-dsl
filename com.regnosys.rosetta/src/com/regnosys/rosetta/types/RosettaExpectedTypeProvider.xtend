@@ -20,8 +20,8 @@ class RosettaExpectedTypeProvider {
 			RosettaConditionalExpression case reference == ROSETTA_CONDITIONAL_EXPRESSION__IF:
 				RBuiltinType.BOOLEAN
 			RosettaCallableWithArgsCall case reference == ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS: {
-				if(idx >= 0 && owner.callable instanceof RosettaExternalFunction) {
-					val fun =  (owner.callable as RosettaExternalFunction)
+				if(idx >= 0 && owner.function instanceof RosettaExternalFunction) {
+					val fun =  (owner.function as RosettaExternalFunction)
 					if(idx >= fun.parameters.size) {
 						null // add error type? 
 					} else {

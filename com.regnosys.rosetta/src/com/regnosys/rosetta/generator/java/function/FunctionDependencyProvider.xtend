@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
@@ -20,6 +19,7 @@ import static com.regnosys.rosetta.generator.util.Util.*
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.RosettaReference
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -50,7 +50,7 @@ class FunctionDependencyProvider {
 			RosettaFeatureCall:
 				functionDependencies(object.receiver)
 			RosettaCallableWithArgsCall: {
-				newHashSet(functionDependencies(object.callable) + functionDependencies(object.args))
+				newHashSet(functionDependencies(object.function) + functionDependencies(object.args))
 			}
 			Function: {
 				newHashSet(object)
@@ -67,7 +67,7 @@ class FunctionDependencyProvider {
 			RosettaExternalFunction,
 			RosettaEnumValueReference,
 			RosettaLiteral,
-			RosettaCallableCall:
+			RosettaReference:
 				emptySet()
 			default:
 				if(object !== null)

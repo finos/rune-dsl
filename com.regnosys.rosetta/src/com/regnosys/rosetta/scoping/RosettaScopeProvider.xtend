@@ -140,7 +140,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 							return defaultScope(context, reference)
 					}
 				}
-				case ROSETTA_CALLABLE_CALL__CALLABLE: {
+				case ROSETTA_SYMBOL_REFERENCE__SYMBOL: {
 					if (context instanceof Operation) {
 						val function = context.function
 						val inputsAndOutputs = newArrayList
@@ -164,7 +164,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					}
 					return getParentScope(context, reference, defaultScope(context, reference))
 				}
-				case ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE: {
+				case ROSETTA_CALLABLE_WITH_ARGS_CALL__FUNCTION: {
 					return filteredScope(defaultScope(context, reference), [EClass !== FUNCTION_DISPATCH])
 				}
 				case ROSETTA_ENUM_VALUE_REFERENCE__VALUE: {

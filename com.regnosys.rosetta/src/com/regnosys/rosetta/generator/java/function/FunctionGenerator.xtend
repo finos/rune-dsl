@@ -12,8 +12,6 @@ import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
-import com.regnosys.rosetta.rosetta.RosettaCallable
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -51,6 +49,8 @@ import org.eclipse.xtext.naming.QualifiedName
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.RosettaSymbol
 
 class FunctionGenerator {
 
@@ -410,8 +410,8 @@ class FunctionGenerator {
 	private def dispatch StringConcatenationClient lhsExpand(RosettaFeatureCall f) 
 	'''«lhsExpand(f.receiver)».«f.feature.lhsFeature»'''
 	
-	private def dispatch StringConcatenationClient lhsExpand(RosettaCallableCall f) 
-	'''«f.callable.lhsExpand»'''
+	private def dispatch StringConcatenationClient lhsExpand(RosettaSymbolReference f) 
+	'''«f.symbol.lhsExpand»'''
 	
 	private def dispatch StringConcatenationClient lhsExpand(ShortcutDeclaration f) 
 	'''«f.expression.lhsExpand»'''
@@ -427,7 +427,7 @@ class FunctionGenerator {
 		else '''getOrCreate«f.name.toFirstUpper»()'''
 	}
 	
-	private def dispatch StringConcatenationClient lhsExpand(RosettaCallable c) {
+	private def dispatch StringConcatenationClient lhsExpand(RosettaSymbol c) {
 		throw new IllegalStateException("No implementation for lhsExpand for "+c.class)
 	}
 	private def dispatch StringConcatenationClient lhsExpand(Attribute c) '''«c.name»'''

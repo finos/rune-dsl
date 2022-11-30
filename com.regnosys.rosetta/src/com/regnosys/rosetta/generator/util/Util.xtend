@@ -10,7 +10,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.expression.RosettaReference
 
 class Util {
 	static def <T> Iterable<T> distinct(Iterable<T> parentIterable) {
@@ -73,7 +73,7 @@ class Util {
 	def List<RosettaExpression> getEnclosingScopes(EObject e) {
 		val containers = EcoreUtil2.getAllContainers(e)
 		val result = newArrayList();
-		if (e instanceof RosettaFeatureCall || e instanceof RosettaCallableCall) {
+		if (e instanceof RosettaFeatureCall || e instanceof RosettaReference) {
 			result.add(e as RosettaExpression);
 		}
 		var prev = e;

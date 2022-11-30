@@ -26,11 +26,11 @@ class Import {
  * Common types
  */
 
-abstract class RosettaDefinable {
+interface RosettaDefinable {
 	String definition
 }
 
-abstract class RosettaNamed {
+interface RosettaNamed {
 	String name
 }
 
@@ -58,11 +58,10 @@ class RosettaFeature extends RosettaNamed {
 class RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
 
 /**
- * A named symbol that may be used in a expression to reference an object.
+ * A named symbol that may be used in an expression to reference an object
+ * such as a parameter or a function.
  */
 interface RosettaSymbol extends RosettaNamed {}
-
-class RosettaImplicitVariable extends RosettaSymbol {}
 
 interface RosettaCallableWithArgs extends RosettaSymbol {
 }
