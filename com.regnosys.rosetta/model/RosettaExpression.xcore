@@ -13,7 +13,16 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 
 
-interface RosettaExpression {}
+interface RosettaExpression {
+	boolean generated
+}
+
+interface HasGeneratedInput {
+	boolean generatedInputWasSet
+	
+	op RosettaExpression getInput()
+	op void setGeneratedInputIfAbsent(RosettaExpression e)
+}
 
 /**
  * Literals
@@ -87,11 +96,26 @@ class RosettaConditionalExpression extends RosettaExpression {
 	boolean full // whether the conditional expression has an explicit `else` branch.
 }
 
-class RosettaCallableWithArgsCall extends RosettaExpression {
+class RosettaCallableWithArgsCall extends RosettaExpression, HasGeneratedInput {
 	refers RosettaCallableWithArgs function
 	contains RosettaExpression[] args
 
-	boolean explicitArguments // whether the function has explicit arguments given
+	op RosettaExpression getInput() {
+		args.head
+	}
+	op void setGeneratedInputIfAbsent(RosettaExpression e) {
+		if (e === null) {
+			if (generatedInputWasSet) {
+				args.clear
+				generatedInputWasSet = false
+			}
+		} else {
+			if (!generatedInputWasSet && args.empty) {
+				args.add(e)
+				generatedInputWasSet = true
+			}
+		}
+	}
 }
 
 interface RosettaOperation extends RosettaExpression {
@@ -100,9 +124,26 @@ interface RosettaOperation extends RosettaExpression {
 /**
  * Binary operations
  */
-interface RosettaBinaryOperation extends RosettaOperation {
+interface RosettaBinaryOperation extends RosettaOperation, HasGeneratedInput {
 	contains RosettaExpression left
 	contains RosettaExpression right
+	
+	op RosettaExpression getInput() {
+		left
+	}
+	op void setGeneratedInputIfAbsent(RosettaExpression e) {
+		if (e === null) {
+			if (generatedInputWasSet) {
+				left = null
+				generatedInputWasSet = false
+			}
+		} else {
+			if (!generatedInputWasSet && left === null) {
+				left = e
+				generatedInputWasSet = true
+			}
+		}
+	}
 }
 
 class ArithmeticOperation extends RosettaBinaryOperation {
@@ -149,8 +190,25 @@ class RosettaOnlyExistsExpression extends RosettaExpression {
  * Unary operations
  */
 
-interface RosettaUnaryOperation extends RosettaOperation {
+interface RosettaUnaryOperation extends RosettaOperation, HasGeneratedInput {
 	contains RosettaExpression argument
+	
+	op RosettaExpression getInput() {
+		argument
+	}
+	op void setGeneratedInputIfAbsent(RosettaExpression e) {
+		if (e === null) {
+			if (generatedInputWasSet) {
+				argument = null
+				generatedInputWasSet = false
+			}
+		} else {
+			if (!generatedInputWasSet && argument === null) {
+				argument = e
+				generatedInputWasSet = true
+			}
+		}
+	}
 }
 
 interface ListOperation extends RosettaUnaryOperation {

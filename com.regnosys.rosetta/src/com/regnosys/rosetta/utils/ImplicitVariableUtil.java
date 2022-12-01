@@ -16,14 +16,12 @@ import com.regnosys.rosetta.rosetta.simple.Data;
  * `this`, `item`, `it`, ...
  */
 public class ImplicitVariableUtil {
-	/**
-	 * The default name for implicit variables.
-	 */
-	public final RosettaImplicitVariable defaultImplicitVariable;
 	
-	public ImplicitVariableUtil() {
-		this.defaultImplicitVariable = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
-		this.defaultImplicitVariable.setName("it");
+	public RosettaImplicitVariable getDefaultImplicitVariable() {
+		RosettaImplicitVariable def = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
+		def.setName("it");
+		def.setGenerated(true);
+		return def;
 	}
 	
 	/**
