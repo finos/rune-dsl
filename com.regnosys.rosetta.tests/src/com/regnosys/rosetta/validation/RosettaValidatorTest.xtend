@@ -44,6 +44,19 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void testGeneratedInputValidationRedirection() {
+		val model =
+		'''
+			type Foo:
+				a int (1..1)
+				condition A:
+					/42
+		'''.parseRosetta
+		model.assertError(ROSETTA_IMPLICIT_VARIABLE, null,
+            "Expected type `number`, but got `Foo` instead.")
+	}
+	
+	@Test
 	def void testLowerCaseClass() {
 		val model =
 		'''
