@@ -18,7 +18,9 @@ import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 /**
  * Derived state:
  * - syntactic sugar for if-then: automatically add 'empty' to the 'else' clause.
- * - static type of expressions
+ * - syntactic sugar for `join`: automatically add "" if no explicit separator is given.
+ * - syntactic sugar for parameter omission: automatically add `it` if the left operand of
+ * an operator is omitted.
  */
 public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	@Inject
