@@ -14,14 +14,19 @@ import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 
 
 interface RosettaExpression {
+	// Whether the expression was generated
 	boolean generated
 }
 
+/**
+ * An object that may get an implicit variable generated as input.
+ */
 interface HasGeneratedInput {
 	boolean generatedInputWasSet
 	
 	op RosettaExpression getInput()
 	op void setGeneratedInputIfAbsent(RosettaExpression e)
+	op boolean needsGeneratedInput()
 }
 
 /**
@@ -99,6 +104,8 @@ class RosettaConditionalExpression extends RosettaExpression {
 class RosettaCallableWithArgsCall extends RosettaExpression, HasGeneratedInput {
 	refers RosettaCallableWithArgs function
 	contains RosettaExpression[] args
+	
+	boolean explicitArguments
 
 	op RosettaExpression getInput() {
 		args.head
@@ -110,11 +117,14 @@ class RosettaCallableWithArgsCall extends RosettaExpression, HasGeneratedInput {
 				generatedInputWasSet = false
 			}
 		} else {
-			if (!generatedInputWasSet && args.empty) {
+			if (!generatedInputWasSet) {
 				args.add(e)
 				generatedInputWasSet = true
 			}
 		}
+	}
+	op boolean needsGeneratedInput() {
+		!explicitArguments
 	}
 }
 
@@ -138,11 +148,14 @@ interface RosettaBinaryOperation extends RosettaOperation, HasGeneratedInput {
 				generatedInputWasSet = false
 			}
 		} else {
-			if (!generatedInputWasSet && left === null) {
+			if (!generatedInputWasSet) {
 				left = e
 				generatedInputWasSet = true
 			}
 		}
+	}
+	op boolean needsGeneratedInput() {
+		left === null
 	}
 }
 
@@ -203,11 +216,14 @@ interface RosettaUnaryOperation extends RosettaOperation, HasGeneratedInput {
 				generatedInputWasSet = false
 			}
 		} else {
-			if (!generatedInputWasSet && argument === null) {
+			if (!generatedInputWasSet) {
 				argument = e
 				generatedInputWasSet = true
 			}
 		}
+	}
+	op boolean needsGeneratedInput() {
+		argument === null
 	}
 }
 

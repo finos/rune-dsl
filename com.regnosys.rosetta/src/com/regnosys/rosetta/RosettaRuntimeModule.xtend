@@ -29,7 +29,7 @@ import com.google.inject.Binder
 import org.eclipse.xtext.service.DispatchingProvider
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import org.eclipse.xsemantics.runtime.validation.XsemanticsValidatorFilter
-import com.regnosys.rosetta.validation.RetainXsemanticTypeIssuesOnGeneratedInputsFilter
+import com.regnosys.rosetta.validation.RetainXsemanticsIssuesOnGeneratedInputsFilter
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -76,7 +76,7 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
     	ImplicitVariableUtil
     }
     def Class<? extends XsemanticsValidatorFilter> bindXsemanticsValidatorFilter() {
-    	RetainXsemanticTypeIssuesOnGeneratedInputsFilter
+    	RetainXsemanticsIssuesOnGeneratedInputsFilter
     }
 	
 	// Setup derived state

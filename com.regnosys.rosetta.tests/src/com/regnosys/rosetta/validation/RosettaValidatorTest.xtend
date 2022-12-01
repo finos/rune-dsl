@@ -30,6 +30,20 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void testGeneratedInputWithoutImplicitVariable() {
+		val model =
+		'''
+			func Foo:
+				inputs: a int (0..*)
+				output: b int (0..*)
+				set b:
+					extract [item+1]
+		'''.parseRosetta
+		model.assertError(MAP_OPERATION, null,
+            "There is no implicit variable in this context. This operator needs an explicit input in this context.")
+	}
+	
+	@Test
 	def void testLowerCaseClass() {
 		val model =
 		'''

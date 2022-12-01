@@ -110,6 +110,8 @@ import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
+import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -126,6 +128,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension CardinalityProvider cardinality
 	@Inject RosettaGrammarAccess grammar
 	@Inject RosettaConfigExtension confExtensions
+	@Inject extension ImplicitVariableUtil
 	
 	static final Logger log = Logger.getLogger(RosettaValidator);
 	
@@ -163,6 +166,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		
 		def Diagnostic createDiagnostic(String message, State state) {
 			new FeatureBasedDiagnostic(Diagnostic.ERROR, message, state.currentObject, null, -1, state.currentCheckType, null, null)
+		}
+	}
+	
+	@Check
+	def void checkGeneratedInputInContextWithImplicitVariable(HasGeneratedInput e) {
+		if (e.needsGeneratedInput && !e.implicitVariableExistsInContext) {
+			error("There is no implicit variable in this context. This operator needs an explicit input in this context.", e, null);
 		}
 	}
 	

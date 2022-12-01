@@ -48,9 +48,11 @@ class RosettaExpressionsTest {
 		model => [
 			((elements.last as Function)
 			  .operations.head.expression as RosettaConditionalExpression) => [
-			  	isFull.assertFalse;
-			  	elsethen.assertNotNull;
-			  	eqHelper.equals(elsethen, ExpressionFactory.eINSTANCE.createListLiteral).assertTrue
+			  	assertFalse(isFull);
+			  	assertNotNull(elsethen);
+			  	val lit = ExpressionFactory.eINSTANCE.createListLiteral
+			  	lit.generated = true
+			  	assertTrue(eqHelper.equals(elsethen, lit))
 			  ]
 		]
 	}

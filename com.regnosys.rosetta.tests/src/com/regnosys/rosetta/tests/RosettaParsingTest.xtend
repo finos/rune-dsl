@@ -19,6 +19,8 @@ import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
+import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -36,7 +38,8 @@ class RosettaParsingTest {
                
                condition C:
                    [deprecated] // the parser should parse this as an annotation, not a list
-                   extract [ exists ]
+                   extract [it -> a]
+                   extract-all [ exists ]
            
            func F:
                inputs:
@@ -49,13 +52,13 @@ class RosettaParsingTest {
                        then False
                        else True and F
                    ]
-	    '''.parseRosettaWithNoIssues
+	    '''.parseRosetta
 
 	    model.elements.head as Data => [
 	    	conditions.head => [
 	    		assertEquals(1, annotations.size)
-	    		assertTrue(expression instanceof MapOperation)
-	    		expression as MapOperation => [
+	    		assertTrue(expression instanceof ExtractAllOperation)
+	    		expression as ExtractAllOperation => [
 	    			assertTrue(functionRef instanceof InlineFunction)
 	    			functionRef as InlineFunction => [
 	    				assertTrue(body instanceof RosettaExistsExpression)
@@ -65,6 +68,26 @@ class RosettaParsingTest {
 	    ]
 	    
 	    model.assertNoIssues
+	}
+	
+	@Test
+	def void testExplicitArguments() {
+	    val model = '''
+           func F:
+               inputs:
+                   a int (1..1)
+               output:
+                   result boolean (1..1)
+               set result:
+                   F(a)
+	    '''.parseRosetta
+
+	    model.elements.head as Function => [
+	    	operations.head.expression as RosettaCallableWithArgsCall => [
+	    		assertTrue(explicitArguments)
+	    		assertFalse(needsGeneratedInput)
+	    	]
+	    ]
 	}
 	
 	@Test

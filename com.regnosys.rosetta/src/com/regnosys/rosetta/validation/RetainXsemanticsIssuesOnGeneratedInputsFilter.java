@@ -18,7 +18,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
  * source that isn't represented by a node, e.g., when the source is generated
  * by our {@code RosettaDerivedStateComputer}. This class fixes that.
  */
-public class RetainXsemanticTypeIssuesOnGeneratedInputsFilter extends XsemanticsValidatorFilter {
+public class RetainXsemanticsIssuesOnGeneratedInputsFilter extends XsemanticsValidatorFilter {
 	@Override
 	public Iterable<RuleFailedException> filterRuleFailedExceptions(
 			RuleFailedException e) {

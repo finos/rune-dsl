@@ -11,6 +11,7 @@ import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
 import com.regnosys.rosetta.rosetta.expression.ListLiteral;
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
@@ -52,6 +53,9 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 			setDerivedState(obj);
 		});
 	}
+	public void setAllDerivedState(EObject root) {
+		setAllDerivedState(root.eAllContents());
+	}
 	
 	public void removeDerivedState(EObject obj) {
 		if (obj instanceof RosettaConditionalExpression) {
@@ -70,7 +74,9 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	
 	
 	private void setDefaultInput(HasGeneratedInput expr) {
-		expr.setGeneratedInputIfAbsent(implicitVariableUtil.getDefaultImplicitVariable());
+		if (expr.needsGeneratedInput() && implicitVariableUtil.implicitVariableExistsInContext(expr)) {
+			expr.setGeneratedInputIfAbsent(implicitVariableUtil.getDefaultImplicitVariable());
+		}
 	}
 	
 	private void discardDefaultInput(HasGeneratedInput expr) {
