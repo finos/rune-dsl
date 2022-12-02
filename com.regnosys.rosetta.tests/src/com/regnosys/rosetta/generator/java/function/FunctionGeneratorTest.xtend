@@ -36,6 +36,37 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void nestedInlineFunctionsTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				output:
+					result int (1..1)
+				
+				set result:
+					1 extract [
+						item extract-all param1 [
+							10 extract [
+								item extract-all param2 [
+									100 extract [
+										item*10
+									] extract [
+										item + param1 + param2
+									]
+								]
+							]
+						]
+					]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func1 = classes.createFunc("F1");
+		assertEquals(1011, func1.invokeFunc(List))
+	}
+	
+	@Test
 	def void directlyUseAttributesOfImplicitVariableTest() {
 		val code = '''
 			namespace com.rosetta.test.model
