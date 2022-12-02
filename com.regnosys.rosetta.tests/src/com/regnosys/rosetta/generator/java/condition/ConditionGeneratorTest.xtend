@@ -28,7 +28,7 @@ class ConditionGeneratorTest {
 				a int (0..1)
 				
 				condition C:
-				    FooIsValid(it)
+				    FooIsValid
 			
 			func FooIsValid:
 				inputs: foo Foo (1..1)
