@@ -12,9 +12,16 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 class RosettaModel extends RosettaDefinable {
 	String name
 	String version = "0.0.0"
+	contains RosettaDefinable doc
 	contains Import[] imports
 	contains RosettaQualifiableConfiguration[] configurations opposite model 
 	contains RosettaRootElement[] elements opposite model
+	
+	contains Playground playground
+}
+
+class Playground {
+	contains RosettaDefinable[] definitions
 }
 
 class Import {
@@ -25,7 +32,7 @@ class Import {
  * Common types
  */
 
-abstract class RosettaDefinable {
+class RosettaDefinable {
 	String definition
 }
 

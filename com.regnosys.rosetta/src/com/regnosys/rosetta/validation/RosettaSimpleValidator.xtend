@@ -856,38 +856,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
-	def checkAsKeyUsage(AssignOutputOperation ele) {
-		if (!ele.assignAsKey) {
-			return
-		}
-		if(ele.path === null) {
-			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used when assigning an attribute. Example: "assign-output out -> attribute: value as-key"''', ele, ASSIGN_OUTPUT_OPERATION__ASSIGN_AS_KEY)
-			return
-		}
-		val segments = ele.path?.asSegmentList(ele.path)
-		val attr =  segments?.last?.attribute
-		if(!attr.hasReferenceAnnotation) {
-			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
-		}
-	}
-	
-	@Check
-	def checkAsKeyUsage(OutputOperation ele) {
-		if (!ele.assignAsKey) {
-			return
-		}
-		if(ele.path === null) {
-			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used when assigning an attribute. Example: "set out -> attribute: value as-key"''', ele, OUTPUT_OPERATION__ASSIGN_AS_KEY)
-			return
-		}
-		val segments = ele.path?.asSegmentList(ele.path)
-		val attr =  segments?.last?.attribute
-		if(!attr.hasReferenceAnnotation) {
-			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
-		}
-	}
-	
-	@Check
 	def checkListLiteral(ListLiteral ele) {
 		val type = ele.RType
 		if (type instanceof RErrorType) {

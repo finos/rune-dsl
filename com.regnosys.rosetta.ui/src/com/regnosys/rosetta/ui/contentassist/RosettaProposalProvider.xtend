@@ -68,9 +68,7 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 				val proposal = proposalFactory.apply(
 						EObjectDescription.create(qNames.getFullyQualifiedName(enumValue), enumValue))
 				if(proposal instanceof ConfigurableCompletionProposal) {
-					val separator = (grammar.FEATURE_CALL_SEPARATORRule.alternatives as Keyword).value
-					proposal.replacementString = '''«enumValue.enumeration.name» «separator» «enumValue.name»'''
-					proposal.priority = proposal.priority + 5
+					
 				}
 				acceptor.accept(proposal)
 			]
@@ -78,7 +76,7 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 		super.lookupCrossReference(model, reference, acceptor, filter, proposalFactory)
 	}
 	
-	override void complete_QualifiedNameWithWildcard(EObject model, RuleCall ruleCall, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+	def complete_QualifiedNameWithWildcard(EObject model, RuleCall ruleCall, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
 		val rosettaModel = EcoreUtil2.getContainerOfType(model, RosettaModel)
 		val Predicate<IEObjectDescription> filter = if (rosettaModel !== null) {
 				[ IEObjectDescription descr |
