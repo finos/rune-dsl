@@ -116,19 +116,6 @@ class RosettaFunctionExtensions {
 	def boolean isOutput(Attribute attr) {
 		attr.eContainingFeature === SimplePackage.Literals.FUNCTION__OUTPUT
 	}
-
-//	def implicitFirstArgument(RosettaCallableWithArgsCall element) {
-//		val dataContainer = EcoreUtil2.getContainerOfType(element, Data)
-//		val callable = element.function
-//		if (callable instanceof Function) {
-//			if (dataContainer !== null) {
-//				if (callable.inputs.head !== null && callable.inputs.head.type == dataContainer) {
-//					return dataContainer
-//				}
-//			}
-//		}
-//	}
-	
 	
 	def boolean isQualifierFunctionFor(Function function, Data type) {
 		function.isQualifierFunction && getInputs(function).get(0).type == type
