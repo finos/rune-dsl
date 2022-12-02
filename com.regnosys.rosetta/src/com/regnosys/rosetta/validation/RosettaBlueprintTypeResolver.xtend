@@ -13,7 +13,6 @@ import com.regnosys.rosetta.rosetta.BlueprintRef
 import com.regnosys.rosetta.rosetta.BlueprintReturn
 import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -52,6 +51,7 @@ import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.expression.RosettaReference
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 
 class RosettaBlueprintTypeResolver {
 	
@@ -416,6 +416,14 @@ class RosettaBlueprintTypeResolver {
 	}
 
 	def dispatch RosettaType getInput(RosettaSymbolReference expr) {
+		if (expr.symbol instanceof RosettaCallableWithArgs) {
+			val inputs = expr.args.map[getInput].filter[it !== null].toSet
+			if (inputs.size == 0) 
+				return null
+			else if (inputs.size > 1)
+				throw new BlueprintTypeException('''Input types must be the same but were «inputs.map[name]»''');
+			return inputs.get(0)
+		}
 		return getInput(expr.symbol)
 	}
 
@@ -453,15 +461,6 @@ class RosettaBlueprintTypeResolver {
 		return getInput(expr.argument)
 	}
 	
-	def dispatch RosettaType getInput(RosettaCallableWithArgsCall expr) {
-		val inputs = expr.args.map[getInput].filter[it !== null].toSet
-		if (inputs.size == 0) 
-			return null
-		else if (inputs.size > 1)
-			throw new BlueprintTypeException('''Input types must be the same but were «inputs.map[name]»''');
-		return inputs.get(0)
-	}
-	
 	def dispatch RosettaType getInput(Void typed) {
 		return null
 	}
@@ -480,10 +479,6 @@ class RosettaBlueprintTypeResolver {
 	
 	def dispatch RosettaType getOutput(Function func) {
 		return func.output.type
-	}
-	
-	def dispatch RosettaType getOutput(RosettaCallableWithArgsCall callable) {
-		return callable.function.output
 	}
 	
 	def dispatch RosettaType getOutput(RosettaBinaryOperation binOp) {

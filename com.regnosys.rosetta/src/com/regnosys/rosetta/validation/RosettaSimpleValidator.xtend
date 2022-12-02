@@ -13,7 +13,6 @@ import com.regnosys.rosetta.rosetta.BlueprintFilter
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
@@ -112,6 +111,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -471,34 +471,41 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	@Check
-	def checkFunctionCall(RosettaCallableWithArgsCall element) {
-		val callerSize = element.args.size
-		val callable = element.function
-		
-		var implicitFirstArgument = implicitFirstArgument(element)
-		val callableSize = switch callable {
-			RosettaExternalFunction: callable.parameters.size
-			Function: {
-				callable.inputs.size
+	def checkSymbolReference(RosettaSymbolReference element) {
+		val callable = element.symbol
+		if (callable instanceof RosettaCallableWithArgs) {
+			val callerSize = element.args.size
+			
+			val callableSize = switch callable {
+				RosettaExternalFunction: callable.parameters.size
+				Function: {
+					callable.inputs.size
+				}
+				default: 0
 			}
-			default: 0
-		}
-		if ((callerSize !== callableSize && implicitFirstArgument === null) || (implicitFirstArgument !== null && callerSize + 1 !== callableSize)) {
-			error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
-				ROSETTA_CALLABLE_WITH_ARGS_CALL__FUNCTION)
+			if (callerSize !== callableSize) {
+				error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
+					ROSETTA_SYMBOL_REFERENCE__SYMBOL)
+			} else {
+				if (callable instanceof Function) {
+					element.args.indexed.forEach [ indexed |
+						val callerArg = indexed.value
+						val callerIdx = indexed.key
+						val param = callable.inputs.get(callerIdx)
+						checkType(param.type.RType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
+						if(!param.card.isMany && cardinality.isMulti(callerArg)) {
+							error('''Expecting single cardinality for parameter '«param.name»'.''', element,
+								ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
+						}
+					]
+				}
+			}
 		} else {
-			if (callable instanceof Function) {
-				val skipFirstParam = if(implicitFirstArgument === null) 0 else 1
-				element.args.indexed.forEach [ indexed |
-					val callerArg = indexed.value
-					val callerIdx = indexed.key
-					val param = callable.inputs.get(callerIdx + skipFirstParam)
-					checkType(param.type.RType, callerArg, element, ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, callerIdx)
-					if(!param.card.isMany && cardinality.isMulti(callerArg)) {
-						error('''Expecting single cardinality for parameter '«param.name»'.''', element,
-							ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, callerIdx)
-					}
-				]
+			if (element.explicitArguments) {
+				error('''A variable may not be called.''',
+					element,
+					ROSETTA_SYMBOL_REFERENCE__EXPLICIT_ARGUMENTS
+				)
 			}
 		}
 	}

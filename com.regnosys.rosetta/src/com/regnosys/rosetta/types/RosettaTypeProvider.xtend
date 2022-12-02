@@ -8,7 +8,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
@@ -90,7 +89,18 @@ class RosettaTypeProvider {
 		}
 		switch expression {
 			RosettaSymbolReference: {
-				safeRType(expression.symbol, cycleTracker)
+				if (expression.symbol instanceof RosettaExternalFunction) {
+					val fun = expression.symbol as RosettaExternalFunction
+					val returnType = fun.safeRType(cycleTracker)
+					// Generic return type for number type e.g. Min(1,2) or Max(2,6)
+					if (returnType == RBuiltinType.NUMBER && expression.args.forall[it.safeRType(cycleTracker) == RBuiltinType.INT]) {
+						RBuiltinType.INT
+					} else {
+						returnType
+					}
+				} else {
+					safeRType(expression.symbol, cycleTracker)
+				}
 			}
 			RosettaImplicitVariable: {
 				val definingContainer = expression.findContainerDefiningImplicitVariable
@@ -101,20 +111,6 @@ class RosettaTypeProvider {
 						safeRType(it.argument, cycleTracker)
 					}
 				].orElse(RBuiltinType.MISSING)
-			}
-			RosettaCallableWithArgsCall: {
-				if (expression.function instanceof RosettaExternalFunction) {
-					val fun = expression.function as RosettaExternalFunction
-					val returnType = fun.safeRType(cycleTracker)
-					// Generic return type for number type e.g. Min(1,2) or Max(2,6)
-					if (returnType == RBuiltinType.NUMBER && expression.args.forall[it.safeRType(cycleTracker) == RBuiltinType.INT]) {
-						RBuiltinType.INT
-					} else {
-						returnType
-					}
-				} else {
-					expression.function.safeRType(cycleTracker)
-				}
 			}
 			Data:
 				new RDataType(expression)

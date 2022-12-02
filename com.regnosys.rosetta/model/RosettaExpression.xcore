@@ -81,31 +81,12 @@ class ListLiteral extends RosettaExpression {
 abstract class RosettaReference extends RosettaExpression {
 }
 
-class RosettaSymbolReference extends RosettaReference {
+class RosettaSymbolReference extends RosettaReference, HasGeneratedInput {
 	refers RosettaSymbol symbol
-}
-
-class RosettaImplicitVariable extends RosettaReference, RosettaNamed {
-}
-
-class RosettaFeatureCall extends RosettaExpression {
-	contains RosettaExpression receiver
-	refers RosettaFeature feature
-}
-
-class RosettaConditionalExpression extends RosettaExpression {
-	contains RosettaExpression ^if
-	contains RosettaExpression ifthen
-	contains RosettaExpression elsethen
-	
-	boolean full // whether the conditional expression has an explicit `else` branch.
-}
-
-class RosettaCallableWithArgsCall extends RosettaExpression, HasGeneratedInput {
-	refers RosettaCallableWithArgs function
-	contains RosettaExpression[] args
 	
 	boolean explicitArguments
+	contains RosettaExpression[] args
+	
 
 	op RosettaExpression getInput() {
 		args.head
@@ -124,8 +105,24 @@ class RosettaCallableWithArgsCall extends RosettaExpression, HasGeneratedInput {
 		}
 	}
 	op boolean needsGeneratedInput() {
-		!explicitArguments
+		symbol instanceof RosettaCallableWithArgs && !explicitArguments
 	}
+}
+
+class RosettaImplicitVariable extends RosettaReference, RosettaNamed {
+}
+
+class RosettaFeatureCall extends RosettaExpression {
+	contains RosettaExpression receiver
+	refers RosettaFeature feature
+}
+
+class RosettaConditionalExpression extends RosettaExpression {
+	contains RosettaExpression ^if
+	contains RosettaExpression ifthen
+	contains RosettaExpression elsethen
+	
+	boolean full // whether the conditional expression has an explicit `else` branch.
 }
 
 interface RosettaOperation extends RosettaExpression {

@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.util
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Annotated
@@ -118,17 +117,17 @@ class RosettaFunctionExtensions {
 		attr.eContainingFeature === SimplePackage.Literals.FUNCTION__OUTPUT
 	}
 
-	def implicitFirstArgument(RosettaCallableWithArgsCall element) {
-		val dataContainer = EcoreUtil2.getContainerOfType(element, Data)
-		val callable = element.function
-		if (callable instanceof Function) {
-			if (dataContainer !== null) {
-				if (callable.inputs.head !== null && callable.inputs.head.type == dataContainer) {
-					return dataContainer
-				}
-			}
-		}
-	}
+//	def implicitFirstArgument(RosettaCallableWithArgsCall element) {
+//		val dataContainer = EcoreUtil2.getContainerOfType(element, Data)
+//		val callable = element.function
+//		if (callable instanceof Function) {
+//			if (dataContainer !== null) {
+//				if (callable.inputs.head !== null && callable.inputs.head.type == dataContainer) {
+//					return dataContainer
+//				}
+//			}
+//		}
+//	}
 	
 	
 	def boolean isQualifierFunctionFor(Function function, Data type) {

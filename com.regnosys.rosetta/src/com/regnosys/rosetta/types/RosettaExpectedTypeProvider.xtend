@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Operation
@@ -10,6 +9,7 @@ import org.eclipse.emf.ecore.EReference
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 class RosettaExpectedTypeProvider {
 	
@@ -19,9 +19,9 @@ class RosettaExpectedTypeProvider {
 		switch owner {
 			RosettaConditionalExpression case reference == ROSETTA_CONDITIONAL_EXPRESSION__IF:
 				RBuiltinType.BOOLEAN
-			RosettaCallableWithArgsCall case reference == ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS: {
-				if(idx >= 0 && owner.function instanceof RosettaExternalFunction) {
-					val fun =  (owner.function as RosettaExternalFunction)
+			RosettaSymbolReference case reference == ROSETTA_SYMBOL_REFERENCE__ARGS: {
+				if(idx >= 0 && owner.symbol instanceof RosettaExternalFunction) {
+					val fun =  (owner.symbol as RosettaExternalFunction)
 					if(idx >= fun.parameters.size) {
 						null // add error type? 
 					} else {

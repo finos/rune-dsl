@@ -19,8 +19,8 @@ import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -83,7 +83,7 @@ class RosettaParsingTest {
 	    '''.parseRosetta
 
 	    model.elements.head as Function => [
-	    	operations.head.expression as RosettaCallableWithArgsCall => [
+	    	operations.head.expression as RosettaSymbolReference => [
 	    		assertTrue(explicitArguments)
 	    		assertFalse(needsGeneratedInput)
 	    	]

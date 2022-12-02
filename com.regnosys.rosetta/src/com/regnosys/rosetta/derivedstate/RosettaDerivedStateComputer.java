@@ -11,17 +11,18 @@ import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
 import com.regnosys.rosetta.rosetta.expression.ListLiteral;
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
 /**
  * Derived state:
- * - syntactic sugar for if-then: automatically add 'empty' to the 'else' clause.
- * - syntactic sugar for `join`: automatically add "" if no explicit separator is given.
- * - syntactic sugar for parameter omission: automatically add `it` if the left operand of
- * an operator is omitted.
+ * - syntactic sugar for if-then: automatically add 'empty'
+ * to the 'else' clause.
+ * - syntactic sugar for `join`: automatically add "" if no
+ * explicit separator is given.
+ * - syntactic sugar for parameter omission: automatically add
+ * `it` if the left operand of an operator is omitted.
  */
 public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	@Inject

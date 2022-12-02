@@ -419,9 +419,8 @@ RosettaSegment:
  */ 
 
 RosettaReferenceOrFunctionCall returns RosettaExpression:
-	  {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName]
+	  {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName] (explicitArguments?='(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')')?
 	| {RosettaImplicitVariable} name=('item' | 'it')
-	| {RosettaCallableWithArgsCall} function=[RosettaCallableWithArgs|QualifiedName] explicitArguments?='(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')'
 ;
 
 RosettaLiteral returns RosettaExpression:

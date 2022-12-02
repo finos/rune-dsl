@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
@@ -87,6 +86,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaReference
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import java.util.List
 
 class ExpressionGenerator {
 	
@@ -132,9 +132,6 @@ class ExpressionGenerator {
 			}
 			RosettaReference: {
 				reference(expr, params)
-			}
-			RosettaCallableWithArgsCall: {
-				callableWithArgsCall(expr, params)
 			}
 			RosettaBigDecimalLiteral : {
 				'''«MapperS».of(«BigDecimal».valueOf(«expr.value»))'''
@@ -287,14 +284,12 @@ class ExpressionGenerator {
 		
 	}
 	
-	def StringConcatenationClient callableWithArgsCall(RosettaCallableWithArgsCall expr, ParamMap params) {
-		val f = expr.function
-		val implicitArg = funcExt.implicitFirstArgument(expr)
-		callableWithArgs(f, params, '''«IF implicitArg !== null»«implicitArg.name.toFirstLower»«ENDIF»«args(expr, params)»''', true)
+	def StringConcatenationClient callableWithArgsCall(RosettaCallableWithArgs func, List<RosettaExpression> arguments, ParamMap params) {
+		callableWithArgs(func, params, '''«args(arguments, params)»''', true)
 	}
 	
-	private def StringConcatenationClient args(RosettaCallableWithArgsCall expr, ParamMap params) {
-		'''«FOR argExpr : expr.args SEPARATOR ', '»«arg(argExpr, params)»«ENDFOR»'''
+	private def StringConcatenationClient args(List<RosettaExpression> arguments, ParamMap params) {
+		'''«FOR argExpr : arguments SEPARATOR ', '»«arg(argExpr, params)»«ENDFOR»'''
 	}
 	
 	private def StringConcatenationClient arg(RosettaExpression expr, ParamMap params) {
@@ -354,7 +349,14 @@ class ExpressionGenerator {
 	protected def StringConcatenationClient reference(RosettaReference expr, ParamMap params) {
 		switch (expr) {
 			RosettaImplicitVariable: {
-				return '''«defaultImplicitVariable.name.toDecoratedName(expr.findContainerDefiningImplicitVariable.get)»'''
+				val d = EcoreUtil2.getContainerOfType(expr, Data)
+				if (d !== null) {
+					// For conditions
+					return '''«MapperS».of(«d.getName.toFirstLower»)'''
+				} else {
+					// For inline functions
+					return '''«defaultImplicitVariable.name.toDecoratedName(expr.findContainerDefiningImplicitVariable.get)»'''
+				}
 			}
 			RosettaSymbolReference: {
 				val s = expr.symbol
@@ -377,6 +379,9 @@ class ExpressionGenerator {
 					}
 					RosettaEnumeration: '''«s.toJavaType»'''
 					ClosureParameter: '''«s.name.toDecoratedName(s.function)»'''
+					RosettaCallableWithArgs: {
+						callableWithArgsCall(s, expr.args, params)
+					}
 					default: 
 						throw new UnsupportedOperationException("Unsupported symbol type of " + s?.class?.name)
 				}
@@ -499,7 +504,6 @@ class ExpressionGenerator {
 			|| !exprs.empty
 			&& exprs.stream.allMatch[it instanceof RosettaFeatureCall ||
 									it instanceof RosettaReference ||
-									it instanceof RosettaCallableWithArgsCall ||
 									it instanceof RosettaLiteral ||
 									it instanceof ListLiteral && !(it.isEmpty && !(it.eContainer instanceof RosettaConditionalExpression)) ||
 									it instanceof RosettaCountOperation ||
@@ -849,11 +853,8 @@ class ExpressionGenerator {
 			RosettaCountOperation : {
 				'''«toNodeLabel(expr.argument)» count'''
 			}
-			RosettaCallableWithArgsCall :{
-				'''«expr.function.name»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)'''
-			}
 			RosettaSymbolReference : {
-				'''«expr.symbol.name»'''
+				'''«expr.symbol.name»«IF expr.explicitArguments»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)«ENDIF»'''
 			}
 			RosettaImplicitVariable : {
 				'''«defaultImplicitVariable.name»'''
@@ -879,7 +880,6 @@ class ExpressionGenerator {
 		val receiver = call.receiver
 		val left = switch receiver {
 			RosettaReference,
-			RosettaCallableWithArgsCall,
 			RosettaFeatureCall: {
 				toNodeLabel(receiver)
 			}

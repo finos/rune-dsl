@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.function
 
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
@@ -79,9 +78,6 @@ class CardinalityProvider {
 						false
 					}
 				].orElse(false)
-			}
-			RosettaCallableWithArgsCall: {
-				obj.function.isMulti(breakOnClosureParameter)
 			}
 			Function: if(obj.output === null) false else obj.output.isMulti(breakOnClosureParameter)
 			ShortcutDeclaration: obj.expression.isMulti(breakOnClosureParameter)

@@ -13,7 +13,6 @@ import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -394,13 +393,14 @@ class FunctionGenerator {
 	}
 	
 	private def StringConcatenationClient unfoldLHSShortcut(ShortcutDeclaration shortcut) {
-		switch (shortcut.expression) {
-			RosettaCallableWithArgsCall: 
+		val e = shortcut.expression
+		if (e instanceof RosettaSymbolReference) {
+			if (e.symbol instanceof RosettaCallableWithArgs) {
 				// assign-output for an alias
-				'''«shortcut.name»(«expressionGenerator.aliasCallArgs(shortcut)»)'''
-			default: 
-				'''«lhsExpand(shortcut.expression)»'''
-		}		
+				return '''«shortcut.name»(«expressionGenerator.aliasCallArgs(shortcut)»)'''
+			}
+		}
+		return '''«lhsExpand(e)»'''	
 	}
 	
 	private def dispatch StringConcatenationClient lhsExpand(RosettaExpression f) {

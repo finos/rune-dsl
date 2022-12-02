@@ -36,6 +36,27 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void omittedParameterInFunctionalOperationTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				inputs:
+					a int (0..*)
+				output:
+					result int (0..*)
+				
+				add result:
+					a extract [+ 1]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func1 = classes.createFunc("F1");
+		assertEquals(#[2, 3, 4], func1.invokeFunc(List, #[#[1, 2, 3]]))
+	}
+	
+	@Test
 	def void namedFunctionInFunctionalOperationTest() {
 		val code = '''
 			namespace com.rosetta.test.model
@@ -3571,7 +3592,11 @@ class FunctionGeneratorTest {
 							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
 						}
 						
-						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, result.getError());
+						String failureMessage = result.getError();
+						if (failureMessage == null) {
+							failureMessage = "Condition " + NAME + " failed.";
+						}
+						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 					}
 					
 					private ComparisonResult executeDataRule(Foo foo) {

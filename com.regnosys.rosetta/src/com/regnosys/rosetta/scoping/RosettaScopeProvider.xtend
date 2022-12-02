@@ -179,26 +179,20 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						if(function.output!==null)
 							inputsAndOutputs.add(function.output)
 						return Scopes.scopeFor(inputsAndOutputs)
-					} else {
-						val rootElement = EcoreUtil2.getRootContainer(context);
-            			val functionSymbols = EcoreUtil2.getAllContentsOfType(rootElement, Function);
-						
+					} else {						
 						val inline = EcoreUtil2.getContainerOfType(context, InlineFunction)
 						if(inline !== null) {
-							return Scopes.scopeFor(functionSymbols, getParentScope(context, reference, IScope.NULLSCOPE))
+							return getParentScope(context, reference, IScope.NULLSCOPE)
 						}
 						val container = EcoreUtil2.getContainerOfType(context, Function)
 						if(container !== null) {
-							return Scopes.scopeFor(functionSymbols, filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
+							return filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
 								descr | descr.EClass !== DATA
-							]))
+							])
 						}
 						
 					}
 					return getParentScope(context, reference, defaultScope(context, reference))
-				}
-				case ROSETTA_CALLABLE_WITH_ARGS_CALL__FUNCTION: {
-					return filteredScope(defaultScope(context, reference), [EClass !== FUNCTION_DISPATCH])
 				}
 				case ROSETTA_ENUM_VALUE_REFERENCE__VALUE: {
 					if (context instanceof RosettaEnumValueReference) {
@@ -290,7 +284,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					features.add(getOutput(object))
 				features.addAll(object.shortcuts)
 				return Scopes.scopeFor(features, filteredScope(parentScope)[ descr |
-					descr.EClass == ROSETTA_ENUMERATION
+					descr.EClass == ROSETTA_ENUMERATION || descr.EClass == FUNCTION || descr.EClass == ROSETTA_EXTERNAL_FUNCTION
 				])
 			}
 			ShortcutDeclaration: {

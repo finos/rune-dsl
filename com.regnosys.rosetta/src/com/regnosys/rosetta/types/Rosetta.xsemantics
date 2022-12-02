@@ -25,7 +25,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
@@ -451,6 +450,14 @@ auxiliary symbolListType(ShortcutDeclaration c) {
 	return t
 }
 
+auxiliary symbolListType(RosettaExternalFunction c) {
+	return createListType(rosettaTypeToRType(c.type), 1, 1)
+}
+
+auxiliary symbolListType(Function c) {
+	return createListType(rosettaTypeToRType(c.^output.type), c.^output.card)
+}
+
 auxiliary functionalOperationItemType(RosettaFunctionalOperation op) {
 	empty |- op.argument : var RListType receiverType
 	if (receiverType !== null) {
@@ -536,7 +543,7 @@ axiom TNumber
 axiom TInt
 	G |- RosettaIntLiteral i : singleInt
 
-rule TVar
+rule TVar // TA-Var, TA-Func
 	G |- RosettaSymbolReference ref : RListType t
 from {
 	t = ref.symbol.symbolListType
@@ -634,20 +641,6 @@ from {
 			}
 		])
 	}
-}
-
-rule TFunc // TA-Func
-    G |- RosettaCallableWithArgsCall e : RListType t
-from {
-    val f = e.function
-    switch f {
-        RosettaExternalFunction: {
-            t = createListType(rosettaTypeToRType(f.type), 1, 1)
-        }
-        Function: {
-            t = createListType(rosettaTypeToRType(f.^output.type), f.^output.card)
-        }
-    }
 }
 
 rule TProject // TA-Project
@@ -921,8 +914,8 @@ from {
 	}
 }
  
-checkrule CheckCallableWithArgsCall for RosettaCallableWithArgsCall e from {
-	val f = e.function
+checkrule CheckRosettaSymbolReference for RosettaSymbolReference e from {
+	val f = e.symbol
 	switch f {
         RosettaExternalFunction: {
         	{

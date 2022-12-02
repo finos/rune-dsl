@@ -71,7 +71,11 @@ class DataRuleGenerator {
 						return «ValidationResult».success(NAME, ValidationResult.ValidationType.DATA_RULE,  "«rosettaClass.name»", path, DEFINITION);
 					}
 					
-					return «ValidationResult».failure(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", path, DEFINITION, result.getError());
+					String failureMessage = result.getError();
+					if (failureMessage == null) {
+						failureMessage = "Condition " + NAME + " failed.";
+					}
+					return «ValidationResult».failure(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", path, DEFINITION, failureMessage);
 				}
 				
 				private ComparisonResult executeDataRule(«rosettaClass.name» «rosettaClass.name.toFirstLower») {

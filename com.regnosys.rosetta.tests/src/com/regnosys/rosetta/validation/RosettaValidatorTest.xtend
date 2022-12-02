@@ -684,7 +684,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			     Foo(timestamp) = timestamp
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_CALLABLE_WITH_ARGS_CALL, TYPE_ERROR, 
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, TYPE_ERROR, 
 			"Expected type 'zonedDateTime' but was 'date'")
 	}
 	
