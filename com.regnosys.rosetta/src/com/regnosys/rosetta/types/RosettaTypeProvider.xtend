@@ -103,14 +103,7 @@ class RosettaTypeProvider {
 				}
 			}
 			RosettaImplicitVariable: {
-				val definingContainer = expression.findContainerDefiningImplicitVariable
-				definingContainer.map [
-					if (it instanceof Data) {
-						new RDataType(it)
-					} else if (it instanceof RosettaFunctionalOperation) {
-						safeRType(it.argument, cycleTracker)
-					}
-				].orElse(RBuiltinType.MISSING)
+				safeTypeOfImplicitVariable(expression, cycleTracker)
 			}
 			Data:
 				new RDataType(expression)
@@ -309,6 +302,21 @@ class RosettaTypeProvider {
 			default:
 				RBuiltinType.MISSING
 		}
+	}
+	
+	def typeOfImplicitVariable(EObject context) {
+		safeTypeOfImplicitVariable(context, newHashMap)
+	}
+	
+	private def safeTypeOfImplicitVariable(EObject context, Map<EObject,RType> cycleTracker) {
+		val definingContainer = context.findContainerDefiningImplicitVariable
+		definingContainer.map [
+			if (it instanceof Data) {
+				new RDataType(it)
+			} else if (it instanceof RosettaFunctionalOperation) {
+				safeRType(argument, cycleTracker)
+			}
+		].orElse(RBuiltinType.MISSING)
 	}
 	
 	private def listType(List<RosettaExpression> exp) {

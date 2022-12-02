@@ -110,7 +110,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					if id = True
 					then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, 
+		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR,
 			"Incompatible types: cannot use operator '=' with int and boolean.")
 	}
 	
