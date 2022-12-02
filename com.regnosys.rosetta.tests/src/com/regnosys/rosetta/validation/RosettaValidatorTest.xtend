@@ -30,13 +30,49 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void testCannotOmitParametersOfBinaryFunction() {
+		val model =
+		'''
+			func Add:
+				inputs:
+					a int (1..1)
+					b int (1..1)
+				output: result int (1..1)
+				set result:
+					a + b
+			
+			func Foo:
+				inputs: a int (0..*)
+				output: b int (0..*)
+				add b:
+					a extract [Add]
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+            "Expected 2 arguments, but got 1 instead.")
+	}
+	
+	@Test
+	def void testCannotCallParameter() {
+		val model =
+		'''
+			func Foo:
+				inputs: a int (0..*)
+				output: b int (0..*)
+				add b:
+					a()
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+            "A variable may not be called.")
+	}
+	
+	@Test
 	def void testGeneratedInputWithoutImplicitVariable() {
 		val model =
 		'''
 			func Foo:
 				inputs: a int (0..*)
 				output: b int (0..*)
-				set b:
+				add b:
 					extract [item+1]
 		'''.parseRosetta
 		model.assertError(MAP_OPERATION, null,
