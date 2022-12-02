@@ -36,6 +36,34 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void directlyUseAttributesOfImplicitVariableTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			type Foo:
+				a int (1..1)
+				b string (0..*)
+			
+			func F1:
+				inputs:
+					foos Foo (0..*)
+				output:
+					result int (0..*)
+				
+				add result:
+					foos
+						extract [ a + b count]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val foo1 = classes.createInstanceUsingBuilder('Foo', of('a', 42, 'b', #[]))
+		val foo2 = classes.createInstanceUsingBuilder('Foo', of('a', -5, 'b', #["Hello", "World!"]))
+		val func1 = classes.createFunc("F1");
+		assertEquals(#[42, -3], func1.invokeFunc(List, #[#[foo1, foo2]]))
+	}
+	
+	@Test
 	def void omittedParameterInFunctionalOperationTest() {
 		val code = '''
 			namespace com.rosetta.test.model

@@ -109,11 +109,7 @@ class ExpressionGenerator {
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		switch (expr) {
 			RosettaFeatureCall: {
-				var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-				if (expr.eContainer !== null && expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-					autoValue = false;
-				}
-				featureCall(expr, params, autoValue)
+				featureCall(expr, params)
 			}
 			RosettaOnlyExistsExpression: {
 				onlyExistsExpr(expr, params)
@@ -346,17 +342,21 @@ class ExpressionGenerator {
 		}
 	}
 	
+	private def StringConcatenationClient implicitVariable(EObject context, ParamMap params) {
+		val definingContainer = context.findContainerDefiningImplicitVariable.get
+		if (definingContainer instanceof Data) {
+			// For conditions
+			return '''«MapperS».of(«definingContainer.getName.toFirstLower»)'''
+		} else {
+			// For inline functions
+			return '''«defaultImplicitVariable.name.toDecoratedName(definingContainer)»'''
+		}
+	}
+	
 	protected def StringConcatenationClient reference(RosettaReference expr, ParamMap params) {
 		switch (expr) {
 			RosettaImplicitVariable: {
-				val d = EcoreUtil2.getContainerOfType(expr, Data)
-				if (d !== null) {
-					// For conditions
-					return '''«MapperS».of(«d.getName.toFirstLower»)'''
-				} else {
-					// For inline functions
-					return '''«defaultImplicitVariable.name.toDecoratedName(expr.findContainerDefiningImplicitVariable.get)»'''
-				}
+				implicitVariable(expr, params)
 			}
 			RosettaSymbolReference: {
 				val s = expr.symbol
@@ -365,11 +365,11 @@ class ExpressionGenerator {
 						'''«MapperS».of(«params.getClass(s)»)'''
 					}
 					Attribute: {
-						// Data Attributes can only be called from their conditions
+						// Data attributes can only be called if there is an implicit variable present.
 						// The current container (Data) is stored in Params, but we need also look for superTypes
 						// so we could also do: (s.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
 						if(s.eContainer instanceof Data)
-							'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(s, true, expr)»'''
+							featureCall(implicitVariable(expr, params), s, params, true, expr)
 						else
 							'''«if (s.card.isIsMany) MapperC else MapperS».of(«s.name»)'''
 					}
@@ -404,11 +404,17 @@ class ExpressionGenerator {
 	/**
 	 * feature call is a call to get an attribute of an object e.g. Quote->amount
 	 */
-	private def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params, boolean autoValue) {
-		val feature = call.feature
+	private def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params) {
+		var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
+		if (call.eContainer instanceof RosettaFeatureCall && (call.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
+			autoValue = false;
+		}
+		return featureCall(javaCode(call.receiver, params), call.feature, params, autoValue, call)
+	}
+	private def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RosettaFeature feature, ParamMap params, boolean autoValue, EObject scopeContext) {
 		val StringConcatenationClient right = switch (feature) {
 			Attribute:
-				feature.buildMapFunc(autoValue, call)
+				feature.buildMapFunc(autoValue, scopeContext)
 			RosettaMetaType: 
 				'''«feature.buildMapFunc»'''
 			RosettaEnumValue: 
@@ -417,7 +423,7 @@ class ExpressionGenerator {
 				'''.map("get«feature.name.toFirstUpper»", «feature.containerType.toJavaType»::get«feature.name.toFirstUpper»)'''
 		}
 		
-		return '''«javaCode(call.receiver, params)»«right»'''
+		return '''«receiverCode»«right»'''
 	}
 	
 	private def StringConcatenationClient distinct(StringConcatenationClient code) {
@@ -765,13 +771,13 @@ class ExpressionGenerator {
 			.«name»(«op.functionRef.functionReference(params, true, true)»)'''	
 	}
 	
-	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute, EObject container) {
+	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute, EObject scopeContext) {
 		if(attribute.eContainer instanceof Data) 
-			'''"get«attribute.name.toFirstUpper»", «attribute.attributeTypeVariableName(container)» -> «IF attribute.override»(«attribute.type.toJavaType») «ENDIF»«attribute.attributeTypeVariableName(container)».get«attribute.name.toFirstUpper»()'''
+			'''"get«attribute.name.toFirstUpper»", «attribute.attributeTypeVariableName(scopeContext)» -> «IF attribute.override»(«attribute.type.toJavaType») «ENDIF»«attribute.attributeTypeVariableName(scopeContext)».get«attribute.name.toFirstUpper»()'''
 	}
 
-	private def attributeTypeVariableName(Attribute attribute, EObject container) {
-		(attribute.eContainer as Data).toJavaType.simpleName.toFirstLower.toDecoratedName(container)
+	private def attributeTypeVariableName(Attribute attribute, EObject scopeContext) {
+		(attribute.eContainer as Data).toJavaType.simpleName.toFirstLower.toDecoratedName(scopeContext)
 	}
 	
 	/**
