@@ -747,8 +747,9 @@ RosettaRuleReference:
 	'[' 'ruleReference' reportingRule=[RosettaBlueprint] ']'	
 ;
 
+// @Compat: make ':' mandatory at January 16
 RosettaBlueprint:
- 	('reporting'|'eligibility') 'rule' RosettaNamed RosettaDefinable?
+ 	('reporting'|'eligibility') 'rule' RosettaNamed ':'? RosettaDefinable?
 	(references += RosettaDocReference)*
 	(nodes = BlueprintNodeExp)?
 	('output' output=[Data])?

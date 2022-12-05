@@ -949,10 +949,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule Aa
+			reporting rule Aa:
 				extract Bar->bar1 as "A"
 			
 			type Bar:
@@ -975,25 +975,25 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->barA exists
 			
-			reporting rule Aa
+			reporting rule Aa:
 				extract Bar->barA as "A"
 
-			reporting rule Bb
+			reporting rule Bb:
 				extract Bar->barB as "B"
 				
-			reporting rule Cc
+			reporting rule Cc:
 				extract Bar->barC as "C"
 
-			reporting rule Dd
+			reporting rule Dd:
 				extract Bar->barD as "D"
 
-			reporting rule Ee
+			reporting rule Ee:
 				extract Bar->barE as "E"
 				
-			reporting rule Ff
+			reporting rule Ff:
 				extract Bar->barF as "F"
 			
 			type Bar:
@@ -1042,10 +1042,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->barA exists
 			
-			reporting rule Aa
+			reporting rule Aa:
 			(
 				extract Bar->barA as "A",
 				extract Bar->barB as "B"
@@ -1074,10 +1074,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule A
+			reporting rule A:
 				return "Not Modelled" 
 					as "A"
 			
@@ -1102,10 +1102,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1135,10 +1135,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1 + Bar->bar2,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1168,10 +1168,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1 * Bar->bar2,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1201,10 +1201,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1234,10 +1234,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1270,10 +1270,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1310,10 +1310,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule A
+			reporting rule A:
 				return "Not Modelled" 
 					as "A"
 			
@@ -1339,10 +1339,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule A
+			reporting rule A:
 				extract Bar->bar1 as "A"
 			
 			type Bar:
