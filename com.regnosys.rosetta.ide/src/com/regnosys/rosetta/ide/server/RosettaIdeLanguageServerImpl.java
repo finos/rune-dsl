@@ -68,7 +68,6 @@ public class RosettaIdeLanguageServerImpl extends LanguageServerImpl  {
 		}
 	}
 
-	@SuppressWarnings("rawtypes")
 	protected URI uninstallInlayHintURI(InlayHint inlayHint) {
 		URI result = null;
 		Object data = inlayHint.getData();
@@ -76,7 +75,7 @@ public class RosettaIdeLanguageServerImpl extends LanguageServerImpl  {
 			result = URI.createURI(data.toString());
 			inlayHint.setData(null);
 		} else if (data instanceof List) {
-			List<?> l = (List) data;
+			List<?> l = (List<?>) data;
 			result = URI.createURI(l.get(0).toString());
 			inlayHint.setData(l.get(1));
 		}
