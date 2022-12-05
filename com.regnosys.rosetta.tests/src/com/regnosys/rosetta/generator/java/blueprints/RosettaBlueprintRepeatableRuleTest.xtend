@@ -42,10 +42,10 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Bar:
 				fieldList string (0..*)
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->fieldList exists
 
-			reporting rule RepeatableBarFieldList
+			reporting rule RepeatableBarFieldList:
 				extract repeatable Bar->fieldList then
 				maximum
 		'''
@@ -71,10 +71,10 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Bar:
 				fieldList string (0..*)
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->fieldList exists
 
-			reporting rule RepeatableBarFieldList
+			reporting rule RepeatableBarFieldList:
 				extract repeatable Bar->fieldList
 		'''
 		.parseRosettaWithNoIssues
@@ -101,10 +101,10 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Baz:
 				fieldList string (1..*)
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->baz exists
 
-			reporting rule RepeatableBazFieldList
+			reporting rule RepeatableBazFieldList:
 				extract Bar->baz then
 				extract repeatable Baz->fieldList
 		'''
@@ -132,14 +132,14 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Baz:
 				fieldList string (1..*)
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->baz exists
 
-			reporting rule RepeatableBazFieldList
+			reporting rule RepeatableBazFieldList:
 				BarBaz then
 				extract repeatable Baz->fieldList
 			
-			reporting rule BarBaz
+			reporting rule BarBaz:
 				extract Bar->baz
 		'''
 		.parseRosettaWithNoIssues
@@ -166,10 +166,10 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Baz:
 				field string (1..1)
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bazList exists
 
-			reporting rule RepeatableBarBazList
+			reporting rule RepeatableBarBazList:
 				extract repeatable Bar->bazList then
 				(
 					extract Baz->field
@@ -202,16 +202,16 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Baz:
 				field string (1..1)
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bazList exists
 
-			reporting rule RepeatableBarBazList
+			reporting rule RepeatableBarBazList:
 				extract repeatable Bar->bazList then
 				(
 					BazField
 				)
 			
-			reporting rule BazField
+			reporting rule BazField:
 				extract Baz->field
 		'''
 		.parseRosettaWithNoIssues
@@ -243,16 +243,16 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Baz:
 				field string (1..1)
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bazList exists
 
-			reporting rule RepeatableBarBazList
+			reporting rule RepeatableBarBazList:
 				extract repeatable Bar->bazList then
 				(
 					BazField
 				)
 			
-			reporting rule BazField
+			reporting rule BazField:
 				extract Baz->field
 		'''
 		.parseRosetta.assertError(ROSETTA_RULE_REFERENCE, null, "Duplicate reporting rule BazField")
@@ -265,7 +265,7 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Foo:
 				listAttr int (1..*)
 			
-			reporting rule RepeatableValue
+			reporting rule RepeatableValue:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				extract repeatable Foo -> listAttr as "Repeating Value"
 			
