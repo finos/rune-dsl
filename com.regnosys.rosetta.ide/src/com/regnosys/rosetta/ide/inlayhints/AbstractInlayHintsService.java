@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.google.inject.Injector;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintParams;
@@ -56,8 +57,6 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 	public List<InlayHint> computeInlayHint(Document document, XtextResource resource, InlayHintParams params, CancelIndicator cancelIndicator) {
 		Range range = params.getRange();
 		
-		params.getWorkDoneToken();
-		
 		if (checkMethods == null) {
 			synchronized (this) {
 				if (checkMethods == null) {
@@ -67,19 +66,24 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 				}
 			}
 		}
-
-		return Lists.newArrayList(resource.getAllContents()).stream()
-			.filter(x -> !cancelIndicator.isCanceled())
-			.filter(x -> inRange(range, x))
-			.filter(x -> !cancelIndicator.isCanceled())
-			.flatMap(object ->
-				methodsForType.get(object.getClass()).stream()
-					.filter(x -> !cancelIndicator.isCanceled())
-					.flatMap(m -> m.invoke(new State(object, m.getMethod(), document, resource, params, cancelIndicator))
-						.stream()
-						.filter(x -> !cancelIndicator.isCanceled())
-					)
-			).collect(Collectors.toList());
+		
+		List<InlayHint> result = Lists.newArrayList();
+		TreeIterator<EObject> contents = resource.getAllContents();
+		while (contents.hasNext()) {
+			EObject obj = contents.next();
+			
+			if (cancelIndicator.isCanceled()) return null;
+			
+			if (inRange(range, obj)) {
+				for (MethodWrapper m: methodsForType.get(obj.getClass())) {
+					if (cancelIndicator.isCanceled()) return null;
+					
+					result.addAll(
+							m.invoke(new State(obj, m.getMethod(), document, resource, params, cancelIndicator)));
+				}
+			}
+		}
+		return result;
 	}
 
 	protected InlayHint createInlayHint(EObject hintObject, String label, String tooltip) {
@@ -122,7 +126,6 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 		ICompositeNode node = NodeModelUtils.getNode(eObject);
 		if (node == null) {
 			return false;
-
 		}
 		int startRangeLine = range.getStart().getLine();
 		int endRangeLine = range.getEnd().getLine();
@@ -173,7 +176,7 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 	protected AbstractInlayHintsService newInstance(Class<? extends AbstractInlayHintsService> clazz) {
 		AbstractInlayHintsService instanceToUse;
 		if (injector == null)
-			throw new IllegalStateException("the class is not configured with an injector.");
+			throw new IllegalStateException("The class is not configured with an injector.");
 		instanceToUse = injector.getInstance(clazz);
 		return instanceToUse;
 	}
@@ -235,14 +238,13 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 					} else if (res instanceof InlayHint) {
 						return List.of((InlayHint) res);
 					} else {
-						log.error("incorrect return type for method " + method);
+						log.error("Incorrect return type for method " + method);
 					}
 				} catch (IllegalArgumentException | IllegalAccessException e) {
 					log.error(e.getMessage(), e);
 				} catch (InvocationTargetException e) {
 					Throwable targetException = e.getTargetException();
 					log.error(e.getMessage(), targetException);
-
 				}
 			} finally {
 				if (wasNull)
