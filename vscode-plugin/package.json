@@ -53,7 +53,6 @@
     "compile": "tsc -p ./src",
     "watch": "tsc -w -p ./src",
     "update-vscode": "node ./node_modules/vscode/bin/install",
-    "vsce": "vsce",
-    "vsce-package": "vsce package"
+    "build": "npm run copy-lsp && tsc -p ./src && vsce package"
   }
 }
