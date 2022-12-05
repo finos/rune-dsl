@@ -108,6 +108,7 @@ import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.ListOperation
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
+import com.regnosys.rosetta.rosetta.PlaygroundRequest
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -162,6 +163,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		def Diagnostic createDiagnostic(String message, State state) {
 			new FeatureBasedDiagnostic(Diagnostic.ERROR, message, state.currentObject, null, -1, state.currentCheckType, null, null)
 		}
+	}
+	
+	@Check
+	def void checkPlaygroundRequest(PlaygroundRequest req) {
+		
 	}
 	
 	@Check

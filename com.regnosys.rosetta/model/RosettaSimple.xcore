@@ -20,7 +20,7 @@ import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
-abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {
+abstract class RootElement extends RosettaRootElement, RosettaNamed, Annotated {
 }
 
 class Annotation extends RootElement, RosettaCallable {

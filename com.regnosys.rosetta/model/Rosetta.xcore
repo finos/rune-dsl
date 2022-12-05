@@ -21,7 +21,53 @@ class RosettaModel extends RosettaDefinable {
 }
 
 class Playground {
-	contains RosettaDefinable[] definitions
+	contains PlaygroundElement[] elements
+	contains PlaygroundRequest[] requests
+}
+
+interface PlaygroundElement {
+	String value
+}
+
+class Identifier extends PlaygroundElement {
+}
+
+class Literal extends PlaygroundElement {
+}
+
+class Keyword extends PlaygroundElement {
+}
+
+interface PlaygroundRequest {
+	RequestType ^type
+	String content
+}
+
+enum RequestType {
+	ERROR
+	WARNING
+	INFO
+	INLAY
+}
+
+class OnRequest extends PlaygroundRequest {
+	contains PlaygroundLocation location
+}
+
+class RangeRequest extends PlaygroundRequest {
+	contains PlaygroundLocation from
+	contains PlaygroundLocation to
+}
+
+class PlaygroundLocation {
+	String value
+	int n="1"
+	Direction direction
+}
+
+enum Direction {
+	BACK
+	NEXT
 }
 
 class Import {
@@ -32,7 +78,7 @@ class Import {
  * Common types
  */
 
-class RosettaDefinable {
+class RosettaDefinable extends PlaygroundElement {
 	String definition
 }
 

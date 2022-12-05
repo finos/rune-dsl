@@ -18,16 +18,60 @@ QualifiedName:
 Definition returns RosettaDefinable:
 	'<'definition=STRING'>';
 
-RosettaStringLiteral:
-	value=STRING
+Playground:
+	{Playground} (elements+=PlaygroundElement | requests+=PlaygroundRequest)*
 ;
 
-Playground:
-	{Playground} (=>definitions+=Definition | Keyword | ID | INT | STRING)*
+PlaygroundElement:
+	=>Definition
+	| Keyword
+	| =>Literal
+	| Identifier
+;
+
+PlaygroundRequest:
+	'<' (
+		  {OnRequest} type=RequestType 'on' location=PlaygroundLocation
+		| {RangeRequest} type=RequestType
+		  'from' from=PlaygroundLocation 'to' to=PlaygroundLocation
+	) content=STRING '>'
+;
+
+PlaygroundLocation:
+	value=STRING (n=INT)? direction=Direction
+;
+
+enum RequestType:
+	  ERROR
+	| WARNING
+	| INFO
+	| INLAY
+;
+
+enum Direction:
+	  BACK='back'
+	| NEXT='next'
+;
+
+Identifier:
+	value=ID
+;
+
+BigDecimal:
+	'-'? ('.' INT | INT | =>INT '.' INT) SCIENTIFIC?
+;
+terminal SCIENTIFIC:
+    ('e' | 'E') ('+' | '-')? ('0'..'9')+
+;
+
+Literal:
+	value=STRING
+	| value=BigDecimal
 ;
 
 Keyword:
-	'import'
+	value=
+	( 'import'
 	| 'annotation'
 	| ':'
 	| '['
@@ -125,5 +169,6 @@ Keyword:
 	| 'report'|'in'|'real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5'|'ASATP'|'using'|'standard'|'with'
 	| 'ruleReference'|'reporting'|'eligibility'|'rule'|'as'
 	| 'repeatable'|'return'|'lookup'
-	| '.'
+	| '?'
+	)
 ;
