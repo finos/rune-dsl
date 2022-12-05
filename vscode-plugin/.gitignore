@@ -1,0 +1,17 @@
+# Compiled binary addons (http://nodejs.org/api/addons.html)
+build/Release
+
+# Dependency directory
+node_modules
+
+# Debug log from npm
+npm-debug.log
+
+# OSX hidden files
+.DS_Store
+
+# copy of the Rosetta LSP Java binary
+src/rosetta
+
+# compiled output of the plugin
+out

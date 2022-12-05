@@ -46,9 +46,10 @@
     "vscode-languageclient": "^8.0.2"
   },
   "scripts": {
-    "prepublish": "tsc -p ./src",
-    "compile": "cp -r ../com.regnosys.rosetta.ide/target/languageserver src/rosetta;tsc -p ./src",
+    "copy-lsp": "cp -r ../com.regnosys.rosetta.ide/target/languageserver src/rosetta",
+    "prepublish": "npm run copy-lsp && tsc -p ./src",
+    "compile": "tsc -p ./src",
     "watch": "tsc -w -p ./src",
     "update-vscode": "node ./node_modules/vscode/bin/install"
-}
+  }
 }
