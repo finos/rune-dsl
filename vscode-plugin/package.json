@@ -2,7 +2,9 @@
   "name": "rosetta-language",
   "displayName": "rosetta-language",
   "description": "Rosetta DSL",
-  "version": "0.0.1",
+  "version": "5.0.0",
+  "repository" : "https://github.com/REGnosys/rosetta-dsl",
+  "license" : "LICENSE",
   "engines": {
     "vscode": "^1.73.0"
   },
@@ -50,6 +52,8 @@
     "prepublish": "npm run copy-lsp && tsc -p ./src",
     "compile": "tsc -p ./src",
     "watch": "tsc -w -p ./src",
-    "update-vscode": "node ./node_modules/vscode/bin/install"
+    "update-vscode": "node ./node_modules/vscode/bin/install",
+    "vsce": "vsce",
+    "vsce-package": "vsce package"
   }
 }

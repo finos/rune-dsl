@@ -15,3 +15,5 @@ src/rosetta
 
 # compiled output of the plugin
 out
+
+rosetta-language-*.vsix
