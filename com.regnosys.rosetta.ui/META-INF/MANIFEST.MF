@@ -23,7 +23,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.regnosys.rosetta.ui.quickfix,
  com.regnosys.rosetta.ui,
  com.regnosys.rosetta.ui.contentassist,
- com.regnosys.rosetta.ui.highlight,
  com.regnosys.rosetta.ui.labeling,
  com.regnosys.rosetta.ui.outline,
  com.regnosys.rosetta.ui.internal

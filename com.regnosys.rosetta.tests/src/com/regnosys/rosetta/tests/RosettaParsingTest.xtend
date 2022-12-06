@@ -22,7 +22,11 @@ class RosettaParsingTest {
 	@Test
 	def void loadModel() {
 		val result = parseHelper.parse('''
-			Hello Xtext!
+			namespace foo
+			version test
+			
+			type Foo:
+			    a int (1..1)
 		''')
 		Assertions.assertNotNull(result)
 		val errors = result.eResource.errors

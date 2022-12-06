@@ -46,7 +46,6 @@ import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.OutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RRecordType
@@ -86,8 +85,6 @@ import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import org.eclipse.xtext.validation.EValidatorRegistrar
-import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import org.eclipse.xtext.Keyword
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
@@ -107,12 +104,10 @@ import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
 
 import com.regnosys.rosetta.rosetta.PlaygroundRequest
-import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
-import com.regnosys.rosetta.utils.ImplicitVariableUtil
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -127,9 +122,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension ListOperationExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject extension CardinalityProvider cardinality
-	@Inject RosettaGrammarAccess grammar
 	@Inject RosettaConfigExtension confExtensions
-	@Inject extension ImplicitVariableUtil
 	
 	static final Logger log = Logger.getLogger(RosettaValidator);
 	
@@ -1316,40 +1309,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if (expr !== null && expr.isOutputListOfLists) {
 			error('''Alias expression contains a list of lists, use flatten to create a list.''', o, SHORTCUT_DECLARATION__EXPRESSION)
 		}
-	}
-	
-	private def errorKeyword(String message, EObject o, Keyword keyword) {
-		val node = NodeModelUtils.findActualNodeFor(o)
-
-        for (n : node.asTreeIterable) {
-            val ge = n.grammarElement
-            if (ge instanceof Keyword && ge == keyword) {
-                messageAcceptor.acceptError(
-                    message,
-                    o,
-                    n.offset,
-                    n.length,
-                    null
-                )
-            }
-        }
-	}
-	
-	private def warningKeyword(String message, EObject o, Keyword keyword) {
-		val node = NodeModelUtils.findActualNodeFor(o)
-
-        for (n : node.asTreeIterable) {
-            val ge = n.grammarElement
-            if (ge instanceof Keyword && ge == keyword) {
-                messageAcceptor.acceptWarning(
-                    message,
-                    o,
-                    n.offset,
-                    n.length,
-                    null
-                )
-            }
-        }
 	}
 	
 	private def String getOnlyExistsParentType(RosettaExpression e) {
