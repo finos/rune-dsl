@@ -9,10 +9,11 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.google.common.collect.Streams;
-import com.regnosys.rosetta.rosetta.RosettaCallable;
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall;
+import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
+import com.regnosys.rosetta.rosetta.expression.RosettaReference;
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
@@ -23,29 +24,29 @@ public class ExpressionHelper {
 		return !this.findOutputRef(expr, new Stack<String>()).isEmpty();
 	}
 
-	public List<RosettaCallable> findOutputRef(EObject ele, Stack<String> trace) {
+	public List<RosettaSymbol> findOutputRef(EObject ele, Stack<String> trace) {
 		if (ele == null) {
 			return Collections.emptyList();
 		}
 		if (ele instanceof ShortcutDeclaration) {
 			ShortcutDeclaration sd = (ShortcutDeclaration)ele;
 			trace.push(sd.getName());
-			List<RosettaCallable> result = findOutputRef(sd.getExpression(), trace);
+			List<RosettaSymbol> result = findOutputRef(sd.getExpression(), trace);
 			if (result.isEmpty())
 				trace.pop();
 			return result;
-		} else if (ele instanceof RosettaCallableCall) {
-			RosettaCallableCall cc = (RosettaCallableCall)ele;
-			if (cc.getCallable() instanceof Attribute &&
-					cc.getCallable().eContainingFeature() == SimplePackage.Literals.FUNCTION__OUTPUT)
-				return Collections.singletonList(cc.getCallable());
-			return findOutputRef(cc.getCallable(), trace);
+		} else if (ele instanceof RosettaSymbolReference) {
+			RosettaSymbolReference cc = (RosettaSymbolReference)ele;
+			if (cc.getSymbol() instanceof Attribute &&
+					cc.getSymbol().eContainingFeature() == SimplePackage.Literals.FUNCTION__OUTPUT)
+				return Collections.singletonList(cc.getSymbol());
+			return findOutputRef(cc.getSymbol(), trace);
 		} else {
 			return Streams.concat(
 						ele.eContents().stream(),
 						ele.eCrossReferences().stream()
 							.filter(ref -> (ref instanceof RosettaExpression) || (ref instanceof ShortcutDeclaration)))
-					.<RosettaCallable>flatMap(ref -> this.findOutputRef(ref, trace).stream())
+					.<RosettaSymbol>flatMap(ref -> this.findOutputRef(ref, trace).stream())
 					.collect(Collectors.toList());
 		}
 	}
@@ -53,7 +54,7 @@ public class ExpressionHelper {
 	public RosettaExpression getParentExpression(RosettaExpression e) {
 		if (e instanceof RosettaFeatureCall) {
 			return ((RosettaFeatureCall)e).getReceiver();
-		} else if (e instanceof RosettaCallableCall) {
+		} else if (e instanceof RosettaReference) {
 			return null;
 		} else {
 			throw new UnsupportedOperationException("Only exists expression type unsupported: " + e.getClass().getSimpleName());

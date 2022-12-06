@@ -13,8 +13,6 @@ import com.regnosys.rosetta.rosetta.BlueprintFilter
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
@@ -108,6 +106,12 @@ import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.ListOperation
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
+import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -124,6 +128,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension CardinalityProvider cardinality
 	@Inject RosettaGrammarAccess grammar
 	@Inject RosettaConfigExtension confExtensions
+	@Inject extension ImplicitVariableUtil
 	
 	static final Logger log = Logger.getLogger(RosettaValidator);
 	
@@ -161,6 +166,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		
 		def Diagnostic createDiagnostic(String message, State state) {
 			new FeatureBasedDiagnostic(Diagnostic.ERROR, message, state.currentObject, null, -1, state.currentCheckType, null, null)
+		}
+	}
+	
+	@Check
+	def void checkGeneratedInputInContextWithImplicitVariable(HasGeneratedInput e) {
+		if (e.needsGeneratedInput && !e.implicitVariableExistsInContext) {
+			error("There is no implicit variable in this context. This operator needs an explicit input in this context.", e, null);
 		}
 	}
 	
@@ -459,34 +471,41 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	@Check
-	def checkFunctionCall(RosettaCallableWithArgsCall element) {
-		val callerSize = element.args.size
-		val callable = element.callable
-		
-		var implicitFirstArgument = implicitFirstArgument(element)
-		val callableSize = switch callable {
-			RosettaExternalFunction: callable.parameters.size
-			Function: {
-				callable.inputs.size
+	def checkSymbolReference(RosettaSymbolReference element) {
+		val callable = element.symbol
+		if (callable instanceof RosettaCallableWithArgs) {
+			val callerSize = element.args.size
+			
+			val callableSize = switch callable {
+				RosettaExternalFunction: callable.parameters.size
+				Function: {
+					callable.inputs.size
+				}
+				default: 0
 			}
-			default: 0
-		}
-		if ((callerSize !== callableSize && implicitFirstArgument === null) || (implicitFirstArgument !== null && callerSize + 1 !== callableSize)) {
-			error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
-				ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE)
+			if (callerSize !== callableSize) {
+				error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
+					ROSETTA_SYMBOL_REFERENCE__SYMBOL)
+			} else {
+				if (callable instanceof Function) {
+					element.args.indexed.forEach [ indexed |
+						val callerArg = indexed.value
+						val callerIdx = indexed.key
+						val param = callable.inputs.get(callerIdx)
+						checkType(param.type.RType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
+						if(!param.card.isMany && cardinality.isMulti(callerArg)) {
+							error('''Expecting single cardinality for parameter '«param.name»'.''', element,
+								ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
+						}
+					]
+				}
+			}
 		} else {
-			if (callable instanceof Function) {
-				val skipFirstParam = if(implicitFirstArgument === null) 0 else 1
-				element.args.indexed.forEach [ indexed |
-					val callerArg = indexed.value
-					val callerIdx = indexed.key
-					val param = callable.inputs.get(callerIdx + skipFirstParam)
-					checkType(param.type.RType, callerArg, element, ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, callerIdx)
-					if(!param.card.isMany && cardinality.isMulti(callerArg)) {
-						error('''Expecting single cardinality for parameter '«param.name»'.''', element,
-							ROSETTA_CALLABLE_WITH_ARGS_CALL__ARGS, callerIdx)
-					}
-				]
+			if (element.explicitArguments) {
+				error('''A variable may not be called.''',
+					element,
+					ROSETTA_SYMBOL_REFERENCE__EXPLICIT_ARGUMENTS
+				)
 			}
 		}
 	}
@@ -971,13 +990,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 							if (qualName=="pointsTo") {
 								//check the qualPath has the address metadata
 								switch qualPath {
-									RosettaFeatureCall : { 
-										val featCall = qualPath as RosettaFeatureCall
-										switch att:featCall.feature {
-											Attribute : checkForLocation(att, it)
-										default : error('''Target of an address must be an attribute''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
-											
-										}
+									RosettaAttributeReference: {
+										val attrRef = qualPath as RosettaAttributeReference
+										checkForLocation(attrRef.attribute, it)
 									}
 									default : error('''Target of an address must be an attribute''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
 								}
@@ -1370,7 +1385,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
         }
 	}
 	
-	private def getOnlyExistsParentType(RosettaExpression e) {
+	private def String getOnlyExistsParentType(RosettaExpression e) {
 		switch (e) {
 			RosettaFeatureCall: {
 				val parentFeatureCall = e.receiver
@@ -1381,11 +1396,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 							return parentFeature.type.name
 						}
 					}
-					RosettaCallableCall: {
-						val parentCallable = parentFeatureCall.callable 
+					RosettaSymbolReference: {
+						val parentCallable = parentFeatureCall.symbol 
 						if (parentCallable instanceof Attribute) {
 							return parentCallable.type.name
 						}
+					}
+					RosettaImplicitVariable: {
+						return parentFeatureCall.RType.name
 					}
 					default: {
 						log.warn("Only exists parent type unsupported " + parentFeatureCall)

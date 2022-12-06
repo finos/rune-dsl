@@ -8,10 +8,7 @@ import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
-import com.regnosys.rosetta.rosetta.RosettaCallable
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
@@ -38,6 +35,10 @@ import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.FunctionReference
 import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
 
 /**
  * This class should go away - the ImportingStringConcatenation method is superior
@@ -139,9 +140,10 @@ class ImportGenerator {
 			case null: {
 				// do nothing
 			}	
-			RosettaCallableCall: {
-				add(expression.callable)
+			RosettaSymbolReference: {
+				add(expression.symbol)
 			}
+			RosettaImplicitVariable: {}
 			RosettaFeatureCall: {
 				addFeatureCall(expression)
 			}
@@ -167,8 +169,8 @@ class ImportGenerator {
 			RosettaBigDecimalLiteral: {
 				imports.add("java.math.BigDecimal")
 			}
-			RosettaLiteral: {
-			}
+			RosettaLiteral: {}
+			ListLiteral: {}
 			RosettaEnumValueReference: {
 				imports.add(expression.enumeration.fullName)
 			}
@@ -178,10 +180,7 @@ class ImportGenerator {
 				if (expression.elsethen!==null) 
 					addExpression(expression.elsethen)
 			}
-			RosettaCallable:{}
-			RosettaCallableWithArgsCall: {
-				addCallableWithArgs(expression.callable)
-			}
+			RosettaSymbol: {}
 			default:
 				LOGGER.warn("Unsupported expression type of " + expression.class.simpleName)
 		}

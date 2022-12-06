@@ -5,7 +5,6 @@ import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
@@ -32,6 +31,7 @@ import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -194,8 +194,8 @@ class ExpressionGeneratorTest {
 	}
 	
 	private def RosettaFeatureCall createFeatureCall(Data rosettaClass, String attributeName) {
-		val mockCallableCall = mock(RosettaCallableCall)
-		when(mockCallableCall.callable).thenReturn(rosettaClass)
+		val mockSymbolReference = mock(RosettaSymbolReference)
+		when(mockSymbolReference.symbol).thenReturn(rosettaClass)
 
 		val mockCardinality = mock(RosettaCardinality)
 		when(mockCardinality.sup).thenReturn(1)
@@ -209,7 +209,7 @@ class ExpressionGeneratorTest {
 		
 		val mockFeatureCall = mock(RosettaFeatureCall)
 		when(mockFeatureCall.feature).thenReturn(mockAttribute)
-		when(mockFeatureCall.receiver).thenReturn(mockCallableCall)
+		when(mockFeatureCall.receiver).thenReturn(mockSymbolReference)
 		return mockFeatureCall
 	}
 
