@@ -19,7 +19,7 @@ public class IgnoreDerivedStateSerializer extends Serializer {
 	public String serialize(EObject obj, SaveOptions options) {
 		derivedStateComputer.removeAllDerivedState(obj.eAllContents());
 		String result = super.serialize(obj, options);
-		derivedStateComputer.setAllDerivedState(obj.eAllContents());
+		derivedStateComputer.setAllDerivedState(obj);
 		return result;
 	}
 	
@@ -27,6 +27,6 @@ public class IgnoreDerivedStateSerializer extends Serializer {
 	public void serialize(EObject obj, Writer writer, SaveOptions options) throws IOException {
 		derivedStateComputer.removeAllDerivedState(obj.eAllContents());
 		super.serialize(obj, writer, options);
-		derivedStateComputer.setAllDerivedState(obj.eAllContents());
+		derivedStateComputer.setAllDerivedState(obj);
 	}
 }

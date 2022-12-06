@@ -9,6 +9,7 @@ build.acceleo
 .metadata/
 *.class
 .DS_Store
+plugin.xml_gen
 
 **/.settings
 **/src-gen/

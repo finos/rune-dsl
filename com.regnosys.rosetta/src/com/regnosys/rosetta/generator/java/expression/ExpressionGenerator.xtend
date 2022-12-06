@@ -13,9 +13,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
@@ -84,6 +82,11 @@ import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.expression.RosettaReference
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import java.util.List
 
 class ExpressionGenerator {
 	
@@ -97,6 +100,7 @@ class ExpressionGenerator {
 	@Inject ExpressionHelper exprHelper
 	@Inject extension Util
 	@Inject extension ListOperationExtensions
+	@Inject extension ImplicitVariableUtil
 	
 	/**
 	 * convert a rosetta expression to code
@@ -104,33 +108,26 @@ class ExpressionGenerator {
 	 */
 	def StringConcatenationClient javaCode(RosettaExpression expr, ParamMap params) {
 		switch (expr) {
-			RosettaFeatureCall : {
-				var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-				if (expr.eContainer!==null && expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-					autoValue=false;
-				}
-				featureCall(expr, params, autoValue)
+			RosettaFeatureCall: {
+				featureCall(expr, params)
 			}
-			RosettaOnlyExistsExpression : {
+			RosettaOnlyExistsExpression: {
 				onlyExistsExpr(expr, params)
 			}
-			RosettaExistsExpression : {
+			RosettaExistsExpression: {
 				existsExpr(expr, params)
 			}
-			RosettaBinaryOperation : {
+			RosettaBinaryOperation: {
 				binaryExpr(expr, null, params)
 			}
-			RosettaCountOperation : {
+			RosettaCountOperation: {
 				countExpr(expr, null, params)
 			}
-			RosettaAbsentExpression : {
+			RosettaAbsentExpression: {
 				absentExpr(expr, expr.argument, params)
 			}
-			RosettaCallableCall : {
-				callableCall(expr, params) 
-			}
-			RosettaCallableWithArgsCall: {
-				callableWithArgsCall(expr, params)
+			RosettaReference: {
+				reference(expr, params)
 			}
 			RosettaBigDecimalLiteral : {
 				'''«MapperS».of(«BigDecimal».valueOf(«expr.value»))'''
@@ -275,7 +272,7 @@ class ExpressionGenerator {
 				'''«IF needsMapper»«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«ENDIF»«callable.name.toFirstLower».evaluate(«argsCode»)«IF needsMapper»)«ENDIF»'''
 			}
 			RosettaExternalFunction: {
-				'''«IF needsMapper»«MapperS».of(«ENDIF»new «factory.create(callable.model).toJavaType(callable as RosettaCallableWithArgs)»().execute(«argsCode»)«IF needsMapper»)«ENDIF»'''
+				'''«IF needsMapper»«MapperS».of(«ENDIF»new «factory.create(callable.model).toJavaType(callable)»().execute(«argsCode»)«IF needsMapper»)«ENDIF»'''
 			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable with args of type " + callable?.eClass?.name)
@@ -283,14 +280,12 @@ class ExpressionGenerator {
 		
 	}
 	
-	def StringConcatenationClient callableWithArgsCall(RosettaCallableWithArgsCall expr, ParamMap params) {
-		val callable = expr.callable
-		val implicitArg = funcExt.implicitFirstArgument(expr)
-		callableWithArgs(callable, params, '''«IF implicitArg !== null»«implicitArg.name.toFirstLower»«ENDIF»«args(expr, params)»''', true)
+	def StringConcatenationClient callableWithArgsCall(RosettaCallableWithArgs func, List<RosettaExpression> arguments, ParamMap params) {
+		callableWithArgs(func, params, '''«args(arguments, params)»''', true)
 	}
 	
-	private def StringConcatenationClient args(RosettaCallableWithArgsCall expr, ParamMap params) {
-		'''«FOR argExpr : expr.args SEPARATOR ', '»«arg(argExpr, params)»«ENDFOR»'''
+	private def StringConcatenationClient args(List<RosettaExpression> arguments, ParamMap params) {
+		'''«FOR argExpr : arguments SEPARATOR ', '»«arg(argExpr, params)»«ENDFOR»'''
 	}
 	
 	private def StringConcatenationClient arg(RosettaExpression expr, ParamMap params) {
@@ -347,32 +342,52 @@ class ExpressionGenerator {
 		}
 	}
 	
-	protected def StringConcatenationClient callableCall(RosettaCallableCall expr, ParamMap params) {
-		if (expr.implicitReceiver) {
-			return '''«EcoreUtil2.getContainerOfType(expr, InlineFunction).itemName»'''
+	private def StringConcatenationClient implicitVariable(EObject context, ParamMap params) {
+		val definingContainer = context.findContainerDefiningImplicitVariable.get
+		if (definingContainer instanceof Data) {
+			// For conditions
+			return '''«MapperS».of(«definingContainer.getName.toFirstLower»)'''
+		} else {
+			// For inline functions
+			return '''«defaultImplicitVariable.name.toDecoratedName(definingContainer)»'''
 		}
-		val call = expr.callable
-		switch (call)  {
-			Data : {
-				'''«MapperS».of(«params.getClass(call)»)'''
+	}
+	
+	protected def StringConcatenationClient reference(RosettaReference expr, ParamMap params) {
+		switch (expr) {
+			RosettaImplicitVariable: {
+				implicitVariable(expr, params)
 			}
-			Attribute : {
-				// Data Attributes can only be called from their conditions
-				// The current container (Data) is stored in Params, but we need also look for superTypes
-				// so we could also do: (call.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
-				if(call.eContainer instanceof Data)
-					'''«MapperS».of(«EcoreUtil2.getContainerOfType(expr, Data).getName.toFirstLower»)«buildMapFunc(call, true, expr)»'''
-				else
-					'''«if (call.card.isIsMany) MapperC else MapperS».of(«call.name»)'''
+			RosettaSymbolReference: {
+				val s = expr.symbol
+				switch (s)  {
+					Data: {
+						'''«MapperS».of(«params.getClass(s)»)'''
+					}
+					Attribute: {
+						// Data attributes can only be called if there is an implicit variable present.
+						// The current container (Data) is stored in Params, but we need also look for superTypes
+						// so we could also do: (s.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
+						if(s.eContainer instanceof Data)
+							featureCall(implicitVariable(expr, params), s, params, true, expr)
+						else
+							'''«if (s.card.isIsMany) MapperC else MapperS».of(«s.name»)'''
+					}
+					ShortcutDeclaration: {
+						val multi = cardinalityProvider.isMulti(s)
+						'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«s.name»(«aliasCallArgs(s)»).«IF exprHelper.usesOutputParameter(s.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
+					}
+					RosettaEnumeration: '''«s.toJavaType»'''
+					ClosureParameter: '''«s.name.toDecoratedName(s.function)»'''
+					RosettaCallableWithArgs: {
+						callableWithArgsCall(s, expr.args, params)
+					}
+					default: 
+						throw new UnsupportedOperationException("Unsupported symbol type of " + s?.class?.name)
+				}
 			}
-			ShortcutDeclaration : {
-				val multi = cardinalityProvider.isMulti(call)
-				'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«call.name»(«aliasCallArgs(call)»).«IF exprHelper.usesOutputParameter(call.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
-			}
-			RosettaEnumeration: '''«call.toJavaType»'''
-			ClosureParameter: '''«call.getNameOrDefault.toDecoratedName(call.function)»'''
 			default: 
-				throw new UnsupportedOperationException("Unsupported callable type of " + call?.class?.name)
+				throw new UnsupportedOperationException("Unsupported reference type of " + expr?.class?.name)
 		}
 	}
 	
@@ -389,11 +404,17 @@ class ExpressionGenerator {
 	/**
 	 * feature call is a call to get an attribute of an object e.g. Quote->amount
 	 */
-	private def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params, boolean autoValue) {
-		val feature = call.feature
+	private def StringConcatenationClient featureCall(RosettaFeatureCall call, ParamMap params) {
+		var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
+		if (call.eContainer instanceof RosettaFeatureCall && (call.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
+			autoValue = false;
+		}
+		return featureCall(javaCode(call.receiver, params), call.feature, params, autoValue, call)
+	}
+	private def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RosettaFeature feature, ParamMap params, boolean autoValue, EObject scopeContext) {
 		val StringConcatenationClient right = switch (feature) {
 			Attribute:
-				feature.buildMapFunc(autoValue, call)
+				feature.buildMapFunc(autoValue, scopeContext)
 			RosettaMetaType: 
 				'''«feature.buildMapFunc»'''
 			RosettaEnumValue: 
@@ -402,7 +423,7 @@ class ExpressionGenerator {
 				'''.map("get«feature.name.toFirstUpper»", «feature.containerType.toJavaType»::get«feature.name.toFirstUpper»)'''
 		}
 		
-		return '''«javaCode(call.receiver, params)»«right»'''
+		return '''«receiverCode»«right»'''
 	}
 	
 	private def StringConcatenationClient distinct(StringConcatenationClient code) {
@@ -488,12 +509,13 @@ class ExpressionGenerator {
 		return expr.evaluatesToComparisonResult
 			|| !exprs.empty
 			&& exprs.stream.allMatch[it instanceof RosettaFeatureCall ||
-									it instanceof RosettaCallableCall ||
-									it instanceof RosettaCallableWithArgsCall ||
-									it instanceof RosettaLiteral && !(it.isEmpty && !(it.eContainer instanceof RosettaConditionalExpression)) ||
+									it instanceof RosettaReference ||
+									it instanceof RosettaLiteral ||
+									it instanceof ListLiteral && !(it.isEmpty && !(it.eContainer instanceof RosettaConditionalExpression)) ||
 									it instanceof RosettaCountOperation ||
 									it instanceof RosettaFunctionalOperation ||
 									it instanceof RosettaOnlyElement ||
+									it instanceof RosettaConditionalExpression ||
 									isArithmeticOperation(it)
 			]
 	}
@@ -625,12 +647,12 @@ class ExpressionGenerator {
 		} else {
 			''''''
 		}
-		if (ref.parameters.size <= 1) {
-			val item = ref.itemName
+		if (ref.parameters.size == 0) {
+			val item = defaultImplicitVariable.name.toDecoratedName(ref.findContainerDefiningImplicitVariable.get)
 			'''«item» -> «cast»«bodyExpr»'''
 		} else {
 			val items = ref.parameters.map[name.toDecoratedName(ref)]
-			'''(«FOR item : items SEPARATOR ', '»«item»«ENDFOR») -> «cast»«bodyExpr»'''
+			'''«IF items.size > 1»(«ENDIF»«FOR item : items SEPARATOR ', '»«item»«ENDFOR»«IF items.size > 1»)«ENDIF» -> «cast»«bodyExpr»'''
 		}
 	}
 	
@@ -749,13 +771,13 @@ class ExpressionGenerator {
 			.«name»(«op.functionRef.functionReference(params, true, true)»)'''	
 	}
 	
-	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute, EObject container) {
+	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute, EObject scopeContext) {
 		if(attribute.eContainer instanceof Data) 
-			'''"get«attribute.name.toFirstUpper»", «attribute.attributeTypeVariableName(container)» -> «IF attribute.override»(«attribute.type.toJavaType») «ENDIF»«attribute.attributeTypeVariableName(container)».get«attribute.name.toFirstUpper»()'''
+			'''"get«attribute.name.toFirstUpper»", «attribute.attributeTypeVariableName(scopeContext)» -> «IF attribute.override»(«attribute.type.toJavaType») «ENDIF»«attribute.attributeTypeVariableName(scopeContext)».get«attribute.name.toFirstUpper»()'''
 	}
 
-	private def attributeTypeVariableName(Attribute attribute, EObject container) {
-		(attribute.eContainer as Data).toJavaType.simpleName.toFirstLower.toDecoratedName(container)
+	private def attributeTypeVariableName(Attribute attribute, EObject scopeContext) {
+		(attribute.eContainer as Data).toJavaType.simpleName.toFirstLower.toDecoratedName(scopeContext)
 	}
 	
 	/**
@@ -837,11 +859,11 @@ class ExpressionGenerator {
 			RosettaCountOperation : {
 				'''«toNodeLabel(expr.argument)» count'''
 			}
-			RosettaCallableWithArgsCall :{
-				'''«expr.callable.name»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)'''
+			RosettaSymbolReference : {
+				'''«expr.symbol.name»«IF expr.explicitArguments»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)«ENDIF»'''
 			}
-			RosettaCallableCall : {
-				'''«expr.callable.name»'''
+			RosettaImplicitVariable : {
+				'''«defaultImplicitVariable.name»'''
 			}
 			RosettaOnlyElement : {
 				toNodeLabel(expr.argument)
@@ -863,8 +885,7 @@ class ExpressionGenerator {
 		
 		val receiver = call.receiver
 		val left = switch receiver {
-			RosettaCallableCall, 
-			RosettaCallableWithArgsCall, 
+			RosettaReference,
 			RosettaFeatureCall: {
 				toNodeLabel(receiver)
 			}

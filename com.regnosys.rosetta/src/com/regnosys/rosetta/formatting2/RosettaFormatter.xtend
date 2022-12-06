@@ -3,6 +3,7 @@
  */
 package com.regnosys.rosetta.formatting2
 
+
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
 

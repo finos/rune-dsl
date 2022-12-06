@@ -7,6 +7,7 @@ package com.regnosys.rosetta.rosetta
 import java.util.stream.Collectors
 import com.regnosys.rosetta.rosetta.simple.References
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
 class RosettaModel extends RosettaDefinable {
@@ -82,7 +83,7 @@ class RosettaDefinable extends PlaygroundElement {
 	String definition
 }
 
-abstract class RosettaNamed {
+interface RosettaNamed {
 	String name
 }
 
@@ -109,9 +110,13 @@ class RosettaFeature extends RosettaNamed {
 
 class RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
 
-abstract class RosettaCallable extends RosettaNamed {}
+/**
+ * A named symbol that may be used in an expression to reference an object
+ * such as a parameter or a function.
+ */
+interface RosettaSymbol extends RosettaNamed {}
 
-interface RosettaCallableWithArgs extends RosettaNamed{
+interface RosettaCallableWithArgs extends RosettaSymbol {
 }
 
 interface RosettaRootElement {
@@ -139,10 +144,10 @@ class RosettaBasicType extends RosettaRootElement , RosettaBuiltinType {
 class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 }
 
-class RosettaRecordType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType, RosettaCallableWithArgs {
+class RosettaRecordType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType {
 }
 
-class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaCallableWithArgs, RosettaBuiltinType , RosettaDefinable {
+class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaCallableWithArgs, RosettaDefinable {
 	contains RosettaParameter[] parameters
 }
 
@@ -150,10 +155,10 @@ class RosettaParameter extends RosettaTypedFeature {
 	boolean isArray
 }
 
-class RosettaQualifiedType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType, RosettaCallableWithArgs {
+class RosettaQualifiedType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType {
 }
 
-class RosettaCalculationType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType, RosettaCallableWithArgs {
+class RosettaCalculationType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType {
 }
 
 
@@ -164,7 +169,7 @@ class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaTy
 	
 }
 
-class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, RosettaCallable, References {
+class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, References, RosettaSymbol {
 	refers RosettaEnumeration superType
 	contains RosettaSynonym[] synonyms
 	contains RosettaEnumValue[] enumValues opposite enumeration
@@ -180,7 +185,7 @@ class RosettaEnumValue extends RosettaNamed, RosettaDefinable, RosettaFeature, R
 	}
 }
 
-class RosettaEnumValueReference extends RosettaExpression {
+class RosettaEnumValueReference extends RosettaExpression, RosettaMapTestExpression {
 	refers RosettaEnumeration enumeration
 	refers RosettaEnumValue value
 }
@@ -360,30 +365,59 @@ class RosettaSegment extends RosettaRootElement, RosettaNamed {
  * Mappings
  */
 
+interface RosettaMapTest {}
+
+interface RosettaMapTestExpression extends RosettaMapTest {}
+
+class RosettaMapPathValue extends RosettaMapTestExpression {
+	String path
+}
+
+class RosettaMapTestExistsExpression extends RosettaMapTestExpression {
+	contains RosettaMapTestExpression argument
+}
+
+class RosettaMapTestAbsentExpression extends RosettaMapTestExpression {
+	contains RosettaMapTestExpression argument
+}
+
+class RosettaMapTestEqualityOperation extends RosettaMapTestExpression {
+	contains RosettaMapTestExpression left
+	contains RosettaMapTestExpression right
+	String operator
+}
+
+interface RosettaAttributeReferenceSegment {}
+
+class RosettaDataReference extends RosettaAttributeReferenceSegment {
+	refers Data data
+}
+
+class RosettaAttributeReference extends RosettaAttributeReferenceSegment {
+	contains RosettaAttributeReferenceSegment receiver
+	refers Attribute attribute
+}
+
 class RosettaMapping {
 	contains RosettaMappingInstance[] instances
 }
 
 class RosettaMappingInstance {
-	contains RosettaExpression ^set
+	contains RosettaMapTestExpression ^set
 	contains RosettaMappingPathTests when
 	boolean ^default
 }
 
 class RosettaMappingPathTests {
-	contains RosettaExpression[] tests
+	contains RosettaMapTest[] tests
 }
 
-class RosettaMapPath extends RosettaExpression {
-	contains RosettaExpression path
+class RosettaMapPath extends RosettaMapTest {
+	contains RosettaMapPathValue path
 }
 
-class RosettaMapRosettaPath extends RosettaExpression {
-	contains RosettaExpression path
-}
-
-class RosettaMapPathValue extends RosettaExpression {
-	String path
+class RosettaMapRosettaPath extends RosettaMapTest {
+	contains RosettaAttributeReferenceSegment path
 }
 
 /**********************************************************************

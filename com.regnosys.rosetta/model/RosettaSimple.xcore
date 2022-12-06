@@ -5,7 +5,7 @@
 
 package com.regnosys.rosetta.rosetta.simple
 
-import com.regnosys.rosetta.rosetta.RosettaCallable
+import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaDefinable
@@ -17,13 +17,15 @@ import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, Annotated {
 }
 
-class Annotation extends RootElement, RosettaCallable {
+class Annotation extends RootElement, RosettaSymbol {
 	String prefix
 	contains Attribute[] attributes
 }
@@ -36,7 +38,7 @@ interface Annotated {
 class AnnotationQualifier {
 	String qualName
 	String qualValue
-	contains RosettaExpression qualPath
+	contains RosettaAttributeReferenceSegment qualPath
 }
 
 class AnnotationRef {
@@ -45,11 +47,11 @@ class AnnotationRef {
 	contains AnnotationQualifier[] qualifiers
 }
 
-abstract class AssignPathRoot extends RosettaCallable, Definable, RosettaNamed {
+interface AssignPathRoot {
 }
 
 
-class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallable, AssignPathRoot, WithCardinality, References {
+class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaSymbol, AssignPathRoot, WithCardinality, References {
 	boolean override
 	contains RosettaSynonym[] synonyms
 	contains RosettaRuleReference ruleReference
@@ -58,7 +60,7 @@ class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaCallab
 abstract class Definable extends RosettaDefinable {}
 
 
-class Data extends RosettaType, RootElement, RosettaCallable, References {
+class Data extends RosettaType, RootElement, RosettaSymbol, References, RosettaAttributeReferenceSegment {
 	refers Data superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
@@ -138,7 +140,7 @@ class Segment {
 	}
 }
 
-class ShortcutDeclaration extends RosettaCallable, RosettaNamed, Definable, AssignPathRoot {
+class ShortcutDeclaration extends RosettaSymbol, RosettaNamed, Definable, AssignPathRoot {
 	contains RosettaExpression expression
 }
 
