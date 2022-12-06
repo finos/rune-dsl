@@ -103,11 +103,14 @@ import com.regnosys.rosetta.rosetta.expression.ListOperation
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
 
-import com.regnosys.rosetta.rosetta.PlaygroundRequest
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.utils.PlaygroundLocationUtil
+import com.regnosys.rosetta.rosetta.OnRequest
+import com.regnosys.rosetta.rosetta.RequestType
+import com.regnosys.rosetta.rosetta.RangeRequest
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -123,6 +126,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject ExpressionHelper exprHelper
 	@Inject extension CardinalityProvider cardinality
 	@Inject RosettaConfigExtension confExtensions
+	@Inject extension PlaygroundLocationUtil
 	
 	static final Logger log = Logger.getLogger(RosettaValidator);
 	
@@ -164,8 +168,43 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
-	def void checkPlaygroundRequest(PlaygroundRequest req) {
-
+	def void checkPlaygroundOnRequest(OnRequest req) {
+		if (req.type == RequestType.INFO || req.type == RequestType.WARNING || req.type == RequestType.ERROR) {
+			findElement(req.location, req).ifPresentOrElse([
+				switch (req.type) {
+					case RequestType.INFO:
+						error(req.content, it, null)
+					case RequestType.WARNING:
+						error(req.content, it, null)
+					case RequestType.ERROR:
+						error(req.content, it, null)
+					default:
+						throw new IllegalArgumentException('''Unexpected request type: «req.type»''')
+				}
+			], [
+				error("Not found.", req.location, null)
+			])
+		}
+	}
+	
+	@Check
+	def void checkPlaygroundRangeRequest(RangeRequest req) {
+		if (req.type == RequestType.INFO || req.type == RequestType.WARNING || req.type == RequestType.ERROR) {
+			findElement(req.from, req).ifPresentOrElse([
+				switch (req.type) {
+					case RequestType.INFO:
+						error(req.content, it, null)
+					case RequestType.WARNING:
+						error(req.content, it, null)
+					case RequestType.ERROR:
+						error(req.content, it, null)
+					default:
+						throw new IllegalArgumentException('''Unexpected request type: «req.type»''')
+				}
+			], [
+				error("Not found.", req.from, null)
+			])
+		}
 	}
 	
 	@Check

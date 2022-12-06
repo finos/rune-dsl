@@ -67,8 +67,8 @@ class PlaygroundLocation {
 }
 
 enum Direction {
-	BACK
-	NEXT
+	BACK=-1
+	NEXT=1
 }
 
 class Import {

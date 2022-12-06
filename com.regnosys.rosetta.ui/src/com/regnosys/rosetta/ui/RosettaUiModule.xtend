@@ -5,10 +5,15 @@
 package com.regnosys.rosetta.ui
 
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
+import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfiguration
+import com.regnosys.rosetta.ui.highlight.RosettaHighlightingConfiguration
 
 /**
  * Use this class to register components to be used within the Eclipse IDE.
  */
 @FinalFieldsConstructor
 class RosettaUiModule extends AbstractRosettaUiModule {
+	def Class<? extends IHighlightingConfiguration> bindIHighlightingConfiguration() {
+		RosettaHighlightingConfiguration
+	}
 }
