@@ -30,6 +30,69 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void testCannotOmitParametersOfBinaryFunction() {
+		val model =
+		'''
+			func Add:
+				inputs:
+					a int (1..1)
+					b int (1..1)
+				output: result int (1..1)
+				set result:
+					a + b
+			
+			func Foo:
+				inputs: a int (0..*)
+				output: b int (0..*)
+				add b:
+					a extract [Add]
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+            "Expected 2 arguments, but got 1 instead.")
+	}
+	
+	@Test
+	def void testCannotCallParameter() {
+		val model =
+		'''
+			func Foo:
+				inputs: a int (0..*)
+				output: b int (0..*)
+				add b:
+					a()
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+            "A variable may not be called.")
+	}
+	
+	@Test
+	def void testGeneratedInputWithoutImplicitVariable() {
+		val model =
+		'''
+			func Foo:
+				inputs: a int (0..*)
+				output: b int (0..*)
+				add b:
+					extract [item+1]
+		'''.parseRosetta
+		model.assertError(MAP_OPERATION, null,
+            "There is no implicit variable in this context. This operator needs an explicit input in this context.")
+	}
+	
+	@Test
+	def void testGeneratedInputValidationRedirection() {
+		val model =
+		'''
+			type Foo:
+				a int (1..1)
+				condition A:
+					/42
+		'''.parseRosetta
+		model.assertError(ROSETTA_IMPLICIT_VARIABLE, null,
+            "Expected type `number`, but got `Foo` instead.")
+	}
+	
+	@Test
 	def void testLowerCaseClass() {
 		val model =
 		'''
@@ -83,7 +146,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					if id = True
 					then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, 
+		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR,
 			"Incompatible types: cannot use operator '=' with int and boolean.")
 	}
 	
@@ -657,7 +720,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			     Foo(timestamp) = timestamp
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_CALLABLE_WITH_ARGS_CALL, TYPE_ERROR, 
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, TYPE_ERROR, 
 			"Expected type 'zonedDateTime' but was 'date'")
 	}
 	

@@ -56,7 +56,7 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 		Function<IEObjectDescription, ICompletionProposal> proposalFactory
 	) {
 		val expectedType = switch (model) {
-			Operation case reference == ROSETTA_CALLABLE_CALL__CALLABLE: {
+			Operation case reference == ROSETTA_SYMBOL_REFERENCE__SYMBOL: {
 				model.getExpectedType(OPERATION__EXPRESSION)
 			}
 			RosettaBinaryOperation: {

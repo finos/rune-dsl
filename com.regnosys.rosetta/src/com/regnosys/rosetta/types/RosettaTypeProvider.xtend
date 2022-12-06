@@ -8,8 +8,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
@@ -39,7 +37,6 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
@@ -58,6 +55,11 @@ import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
 import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
+import com.regnosys.rosetta.rosetta.RosettaDataReference
 
 class RosettaTypeProvider {
 
@@ -67,6 +69,7 @@ class RosettaTypeProvider {
 	@Inject RosettaTypeCompatibility compatibility
 	@Inject RosettaExtensions extensions
 	@Inject extension RosettaTypeCompatibility
+	@Inject extension ImplicitVariableUtil
 	
 	def RType getRType(EObject expression) {
 		expression.safeRType(newHashMap)
@@ -85,15 +88,9 @@ class RosettaTypeProvider {
 			return null
 		}
 		switch expression {
-			RosettaCallableCall: {
-				if(expression.implicitReceiver)
-					safeRType(EcoreUtil2.getContainerOfType(expression, InlineFunction).firstOrImplicit, cycleTracker)
-				else
-					safeRType(expression.callable, cycleTracker)
-			}
-			RosettaCallableWithArgsCall: {
-				if (expression.callable instanceof RosettaExternalFunction) {
-					val fun = expression.callable as RosettaExternalFunction
+			RosettaSymbolReference: {
+				if (expression.symbol instanceof RosettaExternalFunction) {
+					val fun = expression.symbol as RosettaExternalFunction
 					val returnType = fun.safeRType(cycleTracker)
 					// Generic return type for number type e.g. Min(1,2) or Max(2,6)
 					if (returnType == RBuiltinType.NUMBER && expression.args.forall[it.safeRType(cycleTracker) == RBuiltinType.INT]) {
@@ -102,8 +99,11 @@ class RosettaTypeProvider {
 						returnType
 					}
 				} else {
-					expression.callable.safeRType(cycleTracker)
+					safeRType(expression.symbol, cycleTracker)
 				}
+			}
+			RosettaImplicitVariable: {
+				safeTypeOfImplicitVariable(expression, cycleTracker)
 			}
 			Data:
 				new RDataType(expression)
@@ -138,6 +138,16 @@ class RosettaTypeProvider {
 					default:
 						RBuiltinType.ANY
 				}
+			}
+			RosettaDataReference: {
+				expression.data.safeRType(cycleTracker)
+			}
+			RosettaAttributeReference: {
+				val attr = expression.attribute
+				if(attr === null || attr.eIsProxy) {
+					return null
+				}
+				attr.type.safeRType(cycleTracker)
 			}
 			RosettaOnlyElement: {
 				safeRType(expression.argument, cycleTracker)
@@ -292,6 +302,21 @@ class RosettaTypeProvider {
 			default:
 				RBuiltinType.MISSING
 		}
+	}
+	
+	def typeOfImplicitVariable(EObject context) {
+		safeTypeOfImplicitVariable(context, newHashMap)
+	}
+	
+	private def safeTypeOfImplicitVariable(EObject context, Map<EObject,RType> cycleTracker) {
+		val definingContainer = context.findContainerDefiningImplicitVariable
+		definingContainer.map [
+			if (it instanceof Data) {
+				new RDataType(it)
+			} else if (it instanceof RosettaFunctionalOperation) {
+				safeRType(argument, cycleTracker)
+			}
+		].orElse(RBuiltinType.MISSING)
 	}
 	
 	private def listType(List<RosettaExpression> exp) {

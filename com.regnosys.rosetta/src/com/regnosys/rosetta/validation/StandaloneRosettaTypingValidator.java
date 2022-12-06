@@ -10,6 +10,7 @@ import org.eclipse.xtext.validation.EValidatorRegistrar;
 import com.google.inject.Inject;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.expression.ListOperation;
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.types.RListType;
 import com.regnosys.rosetta.types.TypeFactory;
 import com.regnosys.rosetta.types.TypeSystem;
@@ -42,7 +43,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingValidator {
 	}
 	
 	@Check
-	public void checkListOperation(ListOperation e) {
+	public void checkOnlyElement(RosettaOnlyElement e) {
 		RListType t = ts.inferType(e.getArgument());
 		if (t != null) {
 			RosettaCardinality minimalConstraint = tf.createConstraint(1, 2);

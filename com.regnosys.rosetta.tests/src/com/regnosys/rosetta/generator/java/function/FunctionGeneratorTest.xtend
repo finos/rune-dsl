@@ -36,6 +36,86 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void nestedInlineFunctionsTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				output:
+					result int (1..1)
+				
+				set result:
+					1 extract [
+						item extract-all param1 [
+							10 extract [
+								item extract-all param2 [
+									100 extract [
+										item*10
+									] extract [
+										item + param1 + param2
+									]
+								]
+							]
+						]
+					]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func1 = classes.createFunc("F1");
+		assertEquals(1011, func1.invokeFunc(List))
+	}
+	
+	@Test
+	def void directlyUseAttributesOfImplicitVariableTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			type Foo:
+				a int (1..1)
+				b string (0..*)
+			
+			func F1:
+				inputs:
+					foos Foo (0..*)
+				output:
+					result int (0..*)
+				
+				add result:
+					foos
+						extract [ a + b count]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val foo1 = classes.createInstanceUsingBuilder('Foo', of('a', 42, 'b', #[]))
+		val foo2 = classes.createInstanceUsingBuilder('Foo', of('a', -5, 'b', #["Hello", "World!"]))
+		val func1 = classes.createFunc("F1");
+		assertEquals(#[42, -3], func1.invokeFunc(List, #[#[foo1, foo2]]))
+	}
+	
+	@Test
+	def void omittedParameterInFunctionalOperationTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				inputs:
+					a int (0..*)
+				output:
+					result int (0..*)
+				
+				add result:
+					a extract [+ 1]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func1 = classes.createFunc("F1");
+		assertEquals(#[2, 3, 4], func1.invokeFunc(List, #[#[1, 2, 3]]))
+	}
+	
+	@Test
 	def void namedFunctionInFunctionalOperationTest() {
 		val code = '''
 			namespace com.rosetta.test.model
@@ -3571,7 +3651,11 @@ class FunctionGeneratorTest {
 							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
 						}
 						
-						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, result.getError());
+						String failureMessage = result.getError();
+						if (failureMessage == null) {
+							failureMessage = "Condition " + NAME + " failed.";
+						}
+						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 					}
 					
 					private ComparisonResult executeDataRule(Foo foo) {

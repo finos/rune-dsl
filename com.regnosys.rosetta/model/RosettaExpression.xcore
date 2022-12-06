@@ -5,22 +5,36 @@
 
 package com.regnosys.rosetta.rosetta.expression
 
+import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaTyped
-import com.regnosys.rosetta.rosetta.RosettaCallable
+import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 
 
-interface RosettaExpression {}
+interface RosettaExpression {
+	// Whether the expression was generated
+	boolean generated
+}
+
+/**
+ * An object that may get an implicit variable generated as input.
+ */
+interface HasGeneratedInput {
+	boolean generatedInputWasSet
+	
+	op RosettaExpression getInput()
+	op void setGeneratedInputIfAbsent(RosettaExpression e)
+	op boolean needsGeneratedInput()
+}
 
 /**
  * Literals
  */
 
-interface RosettaLiteral extends RosettaExpression, RosettaTyped {
-	op String stringValue() {
-		return "Unknown Literal"
-	}
+interface RosettaLiteral extends RosettaExpression, RosettaMapTestExpression, RosettaTyped {
+	op String stringValue()
 }
 
 class RosettaBooleanLiteral extends RosettaLiteral {
@@ -52,7 +66,11 @@ class RosettaIntLiteral extends RosettaLiteral {
 	}
 }
 
-class ListLiteral extends RosettaLiteral {
+/*
+ * List construction
+ */
+
+class ListLiteral extends RosettaExpression {
 	contains RosettaExpression[] elements
 }
 
@@ -60,9 +78,38 @@ class ListLiteral extends RosettaLiteral {
  * Variables, projections, conditionals and function calls
  */
 
-class RosettaCallableCall extends RosettaExpression {
-	boolean implicitReceiver
-	refers RosettaCallable callable
+abstract class RosettaReference extends RosettaExpression {
+}
+
+class RosettaSymbolReference extends RosettaReference, HasGeneratedInput {
+	refers RosettaSymbol symbol
+	
+	boolean explicitArguments
+	contains RosettaExpression[] args
+	
+
+	op RosettaExpression getInput() {
+		args.head
+	}
+	op void setGeneratedInputIfAbsent(RosettaExpression e) {
+		if (e === null) {
+			if (generatedInputWasSet) {
+				args.clear
+				generatedInputWasSet = false
+			}
+		} else {
+			if (!generatedInputWasSet) {
+				args.add(e)
+				generatedInputWasSet = true
+			}
+		}
+	}
+	op boolean needsGeneratedInput() {
+		symbol instanceof RosettaCallableWithArgs && !explicitArguments
+	}
+}
+
+class RosettaImplicitVariable extends RosettaReference, RosettaNamed {
 }
 
 class RosettaFeatureCall extends RosettaExpression {
@@ -78,20 +125,35 @@ class RosettaConditionalExpression extends RosettaExpression {
 	boolean full // whether the conditional expression has an explicit `else` branch.
 }
 
-class RosettaCallableWithArgsCall extends RosettaExpression {
-	refers RosettaCallableWithArgs callable
-	contains RosettaExpression[] args
-}
-
 interface RosettaOperation extends RosettaExpression {
 	String operator
 }
 /**
  * Binary operations
  */
-interface RosettaBinaryOperation extends RosettaOperation {
+interface RosettaBinaryOperation extends RosettaOperation, HasGeneratedInput {
 	contains RosettaExpression left
 	contains RosettaExpression right
+	
+	op RosettaExpression getInput() {
+		left
+	}
+	op void setGeneratedInputIfAbsent(RosettaExpression e) {
+		if (e === null) {
+			if (generatedInputWasSet) {
+				left = null
+				generatedInputWasSet = false
+			}
+		} else {
+			if (!generatedInputWasSet) {
+				left = e
+				generatedInputWasSet = true
+			}
+		}
+	}
+	op boolean needsGeneratedInput() {
+		left === null
+	}
 }
 
 class ArithmeticOperation extends RosettaBinaryOperation {
@@ -138,8 +200,28 @@ class RosettaOnlyExistsExpression extends RosettaExpression {
  * Unary operations
  */
 
-interface RosettaUnaryOperation extends RosettaOperation {
+interface RosettaUnaryOperation extends RosettaOperation, HasGeneratedInput {
 	contains RosettaExpression argument
+	
+	op RosettaExpression getInput() {
+		argument
+	}
+	op void setGeneratedInputIfAbsent(RosettaExpression e) {
+		if (e === null) {
+			if (generatedInputWasSet) {
+				argument = null
+				generatedInputWasSet = false
+			}
+		} else {
+			if (!generatedInputWasSet) {
+				argument = e
+				generatedInputWasSet = true
+			}
+		}
+	}
+	op boolean needsGeneratedInput() {
+		argument === null
+	}
 }
 
 interface ListOperation extends RosettaUnaryOperation {
@@ -197,26 +279,13 @@ class NamedFunctionReference extends FunctionReference {
 	refers RosettaCallableWithArgs function
 }
 
-class ClosureParameter extends RosettaCallable {
+class ClosureParameter extends RosettaSymbol {
 	container InlineFunction function opposite parameters
-	/**
-	 * @return The name or 'item' if it's <code>null</code>
-	 */
-	derived String getNameOrDefault get {
-		return name ?: 'item'
-	}
 }
 
 class InlineFunction extends FunctionReference {
 	contains ClosureParameter[] parameters opposite function
 	contains RosettaExpression body
-	
-	op ClosureParameter getFirstOrImplicit() {
-		return if (parameters.size == 1)
-			parameters.get(0)
-		else
-			parameters.findFirst[name === null]
-	}
 }
 
 interface RosettaFunctionalOperation extends RosettaUnaryOperation {

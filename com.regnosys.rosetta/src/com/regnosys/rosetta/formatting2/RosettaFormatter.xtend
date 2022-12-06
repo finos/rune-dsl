@@ -5,7 +5,6 @@ package com.regnosys.rosetta.formatting2
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaDocReference
@@ -45,6 +44,7 @@ import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -229,9 +229,9 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.expression.format
 		
 		// Format parentheses
-		ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.leftParenthesisKeyword_5_0)
+		ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.leftParenthesisKeyword_3_0)
 			.forEach[append(NO_SPACE_PRESERVE_NEW_LINE)]
-	    ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.rightParenthesisKeyword_5_2)
+	    ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.rightParenthesisKeyword_3_2)
 			.forEach[prepend(NO_SPACE_PRESERVE_NEW_LINE)]
 	}
 
@@ -280,10 +280,12 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.right.format
 	}
 	
-	def dispatch void format(RosettaCallableWithArgsCall ele, extension IFormattableDocument document) {
-		ele.regionFor.keyword('(').append(NO_SPACE_PRESERVE_NEW_LINE)
-		ele.regionFor.keyword(')').prepend(NO_SPACE_PRESERVE_NEW_LINE)
-		ele.regionFor.keywords(',').forEach[prepend(NO_SPACE).append(ONE_SPACE)]
+	def dispatch void format(RosettaSymbolReference ele, extension IFormattableDocument document) {
+		if (ele.explicitArguments) {
+			ele.regionFor.keyword('(').append(NO_SPACE_PRESERVE_NEW_LINE)
+			ele.regionFor.keyword(')').prepend(NO_SPACE_PRESERVE_NEW_LINE)
+			ele.regionFor.keywords(',').forEach[prepend(NO_SPACE).append(ONE_SPACE)]
+		}
 	}
 	
 	def dispatch void format(RosettaConditionalExpression ele, extension IFormattableDocument document) {

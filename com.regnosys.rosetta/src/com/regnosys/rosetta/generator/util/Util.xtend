@@ -10,9 +10,10 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
+import com.regnosys.rosetta.rosetta.expression.RosettaReference
 
 class Util {
+	
 	static def <T> Iterable<T> distinct(Iterable<T> parentIterable) {
 		return new DistinctByIterator(parentIterable, [it])
 	}
@@ -73,7 +74,7 @@ class Util {
 	def List<RosettaExpression> getEnclosingScopes(EObject e) {
 		val containers = EcoreUtil2.getAllContainers(e)
 		val result = newArrayList();
-		if (e instanceof RosettaFeatureCall || e instanceof RosettaCallableCall) {
+		if (e instanceof RosettaFunctionalOperation || e instanceof RosettaFeatureCall || e instanceof RosettaReference) {
 			result.add(e as RosettaExpression);
 		}
 		var prev = e;
@@ -96,8 +97,8 @@ class Util {
 	 * Prefix code generated variable name with double underscore to avoid name clashes with model names.
 	 * Currently only used for list operation variable names, but should be used everywhere.
 	 */
-	def String toDecoratedName(String name, EObject container) {
-		val prefix = '_'.repeat(container.scopeDepth)
+	def String toDecoratedName(String name, EObject context) {
+		val prefix = '_'.repeat(context.scopeDepth)
 		'''«prefix»«name»'''
 	}
 }
