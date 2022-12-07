@@ -1,16 +1,37 @@
 package com.regnosys.rosetta.ide.inlayhints;
 
+import javax.inject.Inject;
+
 import org.eclipse.lsp4j.InlayHint;
 
+import com.regnosys.rosetta.rosetta.OnRequest;
+import com.regnosys.rosetta.rosetta.PlaygroundElement;
+import com.regnosys.rosetta.rosetta.RangeRequest;
+import com.regnosys.rosetta.rosetta.RequestType;
+import com.regnosys.rosetta.utils.PlaygroundLocationUtil;
+
 public class RosettaInlayHintsService extends AbstractInlayHintsService {
-// Example:
-//	@InlayHintCheck
-//	public InlayHint checkRosettaFeatureCall(RosettaFeatureCall rosettaFeatureCall) {
-//		RosettaFeature feature = rosettaFeatureCall.getFeature();
-//		if (feature == null || feature.eIsProxy() || !(feature instanceof Attribute)) {
-//			return null;
-//		}
-//		Attribute attr = (Attribute)feature;
-//		return createInlayHint(rosettaFeatureCall, "Some type", String.format("(%s..%s)", attr.getCard().getInf(), attr.getCard().getSup()));
-//	}
+	@Inject PlaygroundLocationUtil locationUtil;
+	
+	@InlayHintCheck
+	public InlayHint checkPlaygroundOnRequest(OnRequest req) {
+		if (req.getType().equals(RequestType.INLAY)) {
+			return locationUtil.findElement(req.getLocation(), req)
+					.map((PlaygroundElement elem) -> {
+						return createInlayHint(elem, req.getContent(), "");
+					}).orElse(null);
+		}
+		return null;
+	}
+	
+	@InlayHintCheck
+	public InlayHint checkPlaygroundRangeRequest(RangeRequest req) {
+		if (req.getType().equals(RequestType.INLAY)) {
+			return locationUtil.findElement(req.getFrom(), req)
+					.map((PlaygroundElement elem) -> {
+						return createInlayHint(elem, req.getContent(), "");
+					}).orElse(null);
+		}
+		return null;
+	}
 }

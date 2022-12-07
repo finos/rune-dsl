@@ -31,13 +31,6 @@
 							</includes>
 							<followSymlinks>false</followSymlinks>
 						</fileset>
-						<fileset>
-							<directory>src-gen/rosetta</directory>
-							<includes>
-								<include>**/*</include>
-							</includes>
-							<followSymlinks>false</followSymlinks>
-						</fileset>
 					</filesets>
 				</configuration>
 			</plugin>
@@ -54,7 +47,6 @@
 						</goals>
 						<configuration>
 							<sources>
-								<source>src-gen</source>
 								<source>src-test/java</source>
 								<!-- This is to trick m2e into actually getting eclipse to copy these 
 									resources. Supposedly, tycho-surefire-plugin should be really smart and 
