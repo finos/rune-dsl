@@ -6,17 +6,32 @@
 			"include": "#keywords"
 		},
 		{
-			"include": "#strings"
+			"include": "#doubleQuotedStrings"
+		},
+		{
+			"include": "#singleQuotedStrings"
+		},
+		{
+			"include": "#doubleQuotedDocumentation"
+		},
+		{
+			"include": "#singleQuotedDocumentation"
+		},
+		{
+			"include": "#numbers"
+		},
+		{
+			"include": "#comments"
 		}
 	],
 	"repository": {
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.rosetta",
-				"match": "\\b(if|while|for|return)\\b"
+				"match": "\\b(dateFormat|prefix|eligibility|False|type|when|required|output|path|qualifiedType|real\\-time|disjoint|else|merge|absent|join|if|reduce|item|using|in|is|optional|it|then|version|enum|basicType|contains|as|meta|one\\-of|removeHtml|isEvent|E|displayName|pattern|sum|output:|enums|default|library|min|repeatable|override|map|key|annotation|set|e|max|reverse|filter|single|rosettaPath|report|exists|to|choice|first|return|standard|corpus|True|source|body|empty|flatten|function|segment|only|isProduct|tag|add|all|workflow|maps|last|count|sort|docReference|ASATP|condition|extract|extends|as\\-key|provision|hint|T+2|reportedField|T+1|T+4|T+3|assign\\-output|T+5|calculationType|extract\\-all|import|distinct|rule|mapper|only\\-element|synonym|and|root|regulatoryReference|alias|definition|value|reporting|lookup|or|componentID|ruleReference|recordType|multiple|any|with|func|inputs:|post\\-condition|namespace|metaType)\\b"
 			}]
 		},
-		"strings": {
+		"doubleQuotedStrings": {
 			"name": "string.quoted.double.rosetta",
 			"begin": "\"",
 			"end": "\"",
@@ -26,6 +41,41 @@
 					"match": "\\\\."
 				}
 			]
+		},
+		"singleQuotedStrings": {
+			"name": "string.quoted.single.rosetta",
+			"begin": "'",
+			"end": "'",
+			"patterns": [
+				{
+					"name": "constant.character.escape.rosetta",
+					"match": "\\\\."
+				}
+			]
+		},
+		"doubleQuotedDocumentation": {
+			"name": "comment.block.documentation.rosetta",
+			"begin": "<\\s*\"",
+			"end": "\"\\s*>"
+		},
+		"singleQuotedDocumentation": {
+			"name": "comment.block.documentation.rosetta",
+			"begin": "<\\s*'",
+			"end": "'\\s*>"
+		},
+		"numbers": {
+			"name": "constant.numeric.float.decimal.rosetta",
+			"match": "[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([Ee][+-]?[0-9]+)?"
+		},
+		"comments": {
+			"begin": "//",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.comment.rosetta"
+				}
+			},
+			"end": "\\n",
+			"name": "comment.line.rosetta"
 		}
 	},
 	"scopeName": "source.rosetta"
