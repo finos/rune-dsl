@@ -15,7 +15,7 @@ QualifiedName:
 	ID (->'.' ID)*
 ;
 
-Definition:
+Definition hidden():
 	'<'definition=STRING'>'
 ;
 
@@ -59,7 +59,7 @@ Identifier:
 	value=ID
 ;
 
-BigDecimal:
+BigDecimal hidden():
 	'-'? ('.' INT | INT | =>INT '.' INT) SCIENTIFIC?
 ;
 terminal SCIENTIFIC:
@@ -86,8 +86,8 @@ Keyword:
 	| 'func'
 	| '('
 	| ')'
-	| 'inputs:'
-	| 'output:'
+	| 'inputs'
+	| 'output'
 	| 'alias'
 	| 'condition'
 	| 'choice'

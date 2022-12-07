@@ -10,7 +10,6 @@ import org.eclipse.xtext.formatting2.IFormattableDocument
 class RosettaFormatter extends AbstractFormatter2 {
 	
 	override format(Object obj, IFormattableDocument document) {
-		
 	}
 	
 }
