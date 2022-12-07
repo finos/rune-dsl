@@ -55,13 +55,13 @@
 		},
 		"doubleQuotedDocumentation": {
 			"name": "comment.block.documentation.rosetta",
-			"begin": "<\\s*\"",
-			"end": "\"\\s*>"
+			"begin": "<\"",
+			"end": "\">"
 		},
 		"singleQuotedDocumentation": {
 			"name": "comment.block.documentation.rosetta",
-			"begin": "<\\s*'",
-			"end": "'\\s*>"
+			"begin": "<'",
+			"end": "'>"
 		},
 		"numbers": {
 			"name": "constant.numeric.float.decimal.rosetta",
