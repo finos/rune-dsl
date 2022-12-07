@@ -5,6 +5,7 @@ import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.xtext.Grammar;
@@ -21,8 +22,14 @@ public class ListRosettaKeywords {
 		
 		System.out.println(
 				keywords.stream()
-					.filter(keyword -> keyword.matches(".*[a-zA-Z].*"))
-					.map(keyword -> keyword.replaceAll("-", "\\\\\\\\-"))
+					.filter(keyword -> keyword.matches(".*[a-zA-Z].*")) // only match keywords that at least contain one alpha character
+					.map(keyword -> {
+						if (keyword.matches("[a-zA-Z]*")) {
+							return keyword;
+						} else {
+							return Pattern.quote(keyword).replace("\\", "\\\\");
+						}
+					})
 					.collect(Collectors.joining("|"))
 		);
 	}
