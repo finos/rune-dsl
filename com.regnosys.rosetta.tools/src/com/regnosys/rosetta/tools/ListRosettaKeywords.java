@@ -22,6 +22,7 @@ public class ListRosettaKeywords {
 		System.out.println(
 				keywords.stream()
 					.filter(keyword -> keyword.matches(".*[a-zA-Z].*"))
+					.map(keyword -> keyword.replaceAll("-", "\\\\\\\\-"))
 					.collect(Collectors.joining("|"))
 		);
 	}
