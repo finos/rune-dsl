@@ -39,7 +39,7 @@ class Literal extends PlaygroundElement {
 class Keyword extends PlaygroundElement {
 }
 
-interface PlaygroundRequest {
+interface PlaygroundRequest extends PlaygroundElement {
 	RequestType ^type
 	String content
 }
@@ -79,8 +79,12 @@ class Import {
  * Common types
  */
 
-class RosettaDefinable extends PlaygroundElement {
+interface RosettaDefinable {
 	String definition
+}
+
+class Definition extends PlaygroundElement, RosettaDefinable {
+	
 }
 
 interface RosettaNamed {

@@ -15,15 +15,17 @@ QualifiedName:
 	ID (->'.' ID)*
 ;
 
-Definition returns RosettaDefinable:
-	'<'definition=STRING'>';
+Definition:
+	'<'definition=STRING'>'
+;
 
 Playground:
-	{Playground} (elements+=PlaygroundElement | requests+=PlaygroundRequest)*
+	{Playground} (elements+=PlaygroundElement)*
 ;
 
 PlaygroundElement:
 	=>Definition
+	| =>PlaygroundRequest
 	| Keyword
 	| =>Literal
 	| Identifier
@@ -31,8 +33,8 @@ PlaygroundElement:
 
 PlaygroundRequest:
 	'<' (
-		  {OnRequest} type=RequestType 'on' location=PlaygroundLocation
-		| {RangeRequest} type=RequestType
+		  {OnRequest} ->type=RequestType 'on' location=PlaygroundLocation
+		| {RangeRequest} ->type=RequestType
 		  'from' from=PlaygroundLocation 'to' to=PlaygroundLocation
 	) content=STRING '>'
 ;

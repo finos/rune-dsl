@@ -4,9 +4,13 @@
  */
 package com.regnosys.rosetta.ui
 
-import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
-import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfiguration
+import com.regnosys.rosetta.ide.highlight.RosettaHighlightingCalculator
 import com.regnosys.rosetta.ui.highlight.RosettaHighlightingConfiguration
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
+import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator
+import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfiguration
+import org.eclipse.xtext.documentation.IEObjectDocumentationProvider
+import com.regnosys.rosetta.ide.hover.RosettaDocumentationProvider
 
 /**
  * Use this class to register components to be used within the Eclipse IDE.
@@ -15,5 +19,13 @@ import com.regnosys.rosetta.ui.highlight.RosettaHighlightingConfiguration
 class RosettaUiModule extends AbstractRosettaUiModule {
 	def Class<? extends IHighlightingConfiguration> bindIHighlightingConfiguration() {
 		RosettaHighlightingConfiguration
+	}
+	
+	def Class<? extends ISemanticHighlightingCalculator> bindISemanticHighlightingCalculator() {
+		RosettaHighlightingCalculator
+	}
+	
+	def Class<? extends IEObjectDocumentationProvider> bindIEObjectDocumentationProvider() {
+		RosettaDocumentationProvider
 	}
 }

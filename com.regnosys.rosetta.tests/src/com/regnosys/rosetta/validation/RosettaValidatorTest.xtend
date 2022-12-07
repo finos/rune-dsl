@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -40,4 +39,17 @@ class RosettaValidatorTest implements RosettaIssueCodes {
             "My custom error")
 	}
 	
+	@Test
+	def void testLocationMustExist() {
+		val model =
+		'''
+			<ERROR on 'id' back "Invalid location">
+			
+			id id
+			
+			<INFO on 'id' 2 back "Information">
+		'''.parseRosetta
+		model.assertError(PLAYGROUND_LOCATION, null,
+            "Not found.")
+	}
 }

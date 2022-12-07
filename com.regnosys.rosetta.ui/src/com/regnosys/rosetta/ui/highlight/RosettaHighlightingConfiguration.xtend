@@ -11,6 +11,9 @@ class RosettaHighlightingConfiguration extends DefaultHighlightingConfiguration 
 
 	override configure(IHighlightingConfigurationAcceptor acceptor) {
 		super.configure(acceptor)
+		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.PLAYGROUND_REQUEST_ID, "PlaygroundRequest", playgroundRequestTextStyle)
+		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.PLAYGROUND_REQUEST_KEYWORD_ID, "PlaygroundRequestKeyword", playgroundRequestKeywordTextStyle)
+		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.DOCUMENTATION_ID, "Documentation", documentationTextStyle)
 		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.NAMED_ID, "Named", namedTextStyle)
 		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.CLASS_ID, "Class", classTextStyle)
 		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.ENUM_ID, "Enumeration", enumTextStyle)
@@ -25,6 +28,27 @@ class RosettaHighlightingConfiguration extends DefaultHighlightingConfiguration 
 		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.META_ID, "Meta", metaTextStyle)
 		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.ANNO_ID, "Annotation", annotationTextStyle)
 		acceptor.acceptDefaultHighlighting(RosettaHighlightingCalculator.ANNO_ATTR_ID, "AnnotationAttribute", annotationAttrTextStyle)
+	}
+	
+	def TextStyle playgroundRequestTextStyle() {
+		defaultTextStyle.copy => [
+			style = SWT.NORMAL
+			color = new RGB(130, 130, 130)
+		]
+	}
+	
+	def TextStyle playgroundRequestKeywordTextStyle() {
+		defaultTextStyle.copy => [
+			style = SWT.BOLD
+			color = new RGB(160, 160, 160)
+		]
+	}
+	
+	def TextStyle documentationTextStyle() {
+		defaultTextStyle.copy => [
+			style = SWT.NORMAL
+			color = new RGB(96, 139, 74)
+		]
 	}
 
 	def TextStyle namedTextStyle() {

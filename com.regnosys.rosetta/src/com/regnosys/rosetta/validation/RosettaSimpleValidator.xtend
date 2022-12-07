@@ -111,6 +111,7 @@ import com.regnosys.rosetta.utils.PlaygroundLocationUtil
 import com.regnosys.rosetta.rosetta.OnRequest
 import com.regnosys.rosetta.rosetta.RequestType
 import com.regnosys.rosetta.rosetta.RangeRequest
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -173,9 +174,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			findElement(req.location, req).ifPresentOrElse([
 				switch (req.type) {
 					case RequestType.INFO:
-						error(req.content, it, null)
+						info(req.content, it, null)
 					case RequestType.WARNING:
-						error(req.content, it, null)
+						warning(req.content, it, null)
 					case RequestType.ERROR:
 						error(req.content, it, null)
 					default:
@@ -190,20 +191,38 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def void checkPlaygroundRangeRequest(RangeRequest req) {
 		if (req.type == RequestType.INFO || req.type == RequestType.WARNING || req.type == RequestType.ERROR) {
-			findElement(req.from, req).ifPresentOrElse([
-				switch (req.type) {
-					case RequestType.INFO:
-						error(req.content, it, null)
-					case RequestType.WARNING:
-						error(req.content, it, null)
-					case RequestType.ERROR:
-						error(req.content, it, null)
-					default:
-						throw new IllegalArgumentException('''Unexpected request type: «req.type»''')
-				}
-			], [
+			val maybeFrom = findElement(req.from, req)
+			if (maybeFrom.empty) {
 				error("Not found.", req.from, null)
-			])
+			}
+			val maybeTo = findElement(req.to, req)
+			if (maybeTo.empty) {
+				error("Not found.", req.to, null)
+			}
+			maybeFrom.ifPresent [ from |
+				maybeTo.ifPresent [ to |
+					val fromNode = NodeModelUtils.findActualNodeFor(from)
+					val toNode = NodeModelUtils.findActualNodeFor(to)
+					
+					val offset = fromNode.offset
+					val length = toNode.endOffset - offset
+					if (length < 0) {
+						error("Location must come after first location.", req.to, null)
+						return
+					}
+					
+					switch (req.type) {
+						case RequestType.INFO:
+							messageAcceptor.acceptInfo(req.content, from, offset, length, null)
+						case RequestType.WARNING:
+							messageAcceptor.acceptWarning(req.content, from, offset, length, null)
+						case RequestType.ERROR:
+							messageAcceptor.acceptError(req.content, from, offset, length, null)
+						default:
+							throw new IllegalArgumentException('''Unexpected request type: «req.type»''')
+					}
+				]
+			]
 		}
 	}
 	

@@ -18,4 +18,7 @@ public interface RosettaHighlightingStyles extends HighlightingStyles {
 	final static String META_ID = "meta";
 	final static String ANNO_ID = "anno";
 	final static String ANNO_ATTR_ID = "annoAttr";
+	final static String DOCUMENTATION_ID = "documentation";
+	final static String PLAYGROUND_REQUEST_ID = "playgroundRequest";
+	final static String PLAYGROUND_REQUEST_KEYWORD_ID = "playgroundRequestKeyword";
 }

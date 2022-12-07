@@ -26,12 +26,29 @@ import org.eclipse.xtext.util.CancelIndicator
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.rosetta.RosettaDocReference
+import com.regnosys.rosetta.rosetta.Definition
+import com.regnosys.rosetta.rosetta.PlaygroundRequest
+import org.eclipse.xtext.Keyword
+import org.eclipse.xtext.EnumLiteralDeclaration
 
 class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculator implements RosettaHighlightingStyles {
 
 	override protected highlightElement(EObject object, IHighlightedPositionAcceptor acceptor,
 		CancelIndicator cancelIndicator) {
 		switch (object) {
+			Definition: {
+				highlightNode(acceptor, NodeModelUtils.findActualNodeFor(object), DOCUMENTATION_ID)
+			}
+			PlaygroundRequest: {
+				highlightNode(acceptor, NodeModelUtils.findActualNodeFor(object), PLAYGROUND_REQUEST_ID)
+				// highlightFeature(acceptor, object, PLAYGROUND_REQUEST__TYPE, PLAYGROUND_REQUEST_KEYWORD_ID)
+				for (ILeafNode n : NodeModelUtils.findActualNodeFor(object).getLeafNodes()) {
+					val elem = n.grammarElement
+					if (elem instanceof Keyword || elem instanceof EnumLiteralDeclaration) {
+						acceptor.addPosition(n.getOffset(), n.getLength(), PLAYGROUND_REQUEST_KEYWORD_ID);
+					}
+				}
+			}
 			RosettaTypedFeature: {
 				switch (object.type) {
 					Data:
@@ -50,10 +67,6 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 			Data: {
 				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, CLASS_ID)
 				highlightFeature(acceptor, object, SimplePackage.Literals.DATA__SUPER_TYPE, CLASS_ID)
-			}
-			RosettaEnumeration: {
-				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, ENUM_ID)
-				highlightFeature(acceptor, object, ROSETTA_ENUMERATION__SUPER_TYPE, ENUM_ID)
 			}
 			RosettaEnumValueReference: {
 				highlightFeature(acceptor, object, ROSETTA_ENUM_VALUE_REFERENCE__ENUMERATION, ENUM_ID)
