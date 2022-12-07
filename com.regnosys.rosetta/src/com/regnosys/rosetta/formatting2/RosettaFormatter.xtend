@@ -155,7 +155,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 	
 	def dispatch void format(Function ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword(functionAccess.funcKeyword_0).append(ONE_SPACE).prepend(NEW_ROOT_ELEMENT)
-		ele.regionFor.keyword(':').prepend(NO_SPACE).append(ONE_SPACE)
+		ele.regionFor.keyword(functionAccess.colonKeyword_2).prepend(NO_SPACE).append(ONE_SPACE)
 		ele.formatDefinition(document)
 		ele.annotations.forEach[
 			prepend(NEW_LINE)prepend(NEW_LINE)
@@ -163,11 +163,12 @@ class RosettaFormatter extends AbstractFormatter2 {
 		]
 		
 		val inputsKW = ele.regionFor.keyword(functionAccess.inputsKeyword_5_0)
-		inputsKW.prepend(NEW_LINE)
+		inputsKW.prepend(NEW_LINE).append(NO_SPACE)
+		val inputsColon = ele.regionFor.keyword(functionAccess.colonKeyword_5_1).prepend(NO_SPACE).append(ONE_SPACE)
 		if (ele.inputs.size <= 1) {
-			inputsKW.append(ONE_SPACE_PRESERVE_NEWLINE)
+			inputsColon.append(ONE_SPACE_PRESERVE_NEWLINE)
 		} else {
-			inputsKW.append(NEW_LINE)
+			inputsColon.append(NEW_LINE)
 		}
 		ele.interior(INDENT).append(NEW_LINE_LOW_PRIO)
 		ele.inputs.forEach[
@@ -176,10 +177,11 @@ class RosettaFormatter extends AbstractFormatter2 {
 			format
 		]
 		
-		ele.regionFor.keyword(functionAccess.outputKeyword_6_0).prepend(NEW_LINE).append(ONE_SPACE_PRESERVE_NEWLINE)
+		ele.regionFor.keyword(functionAccess.outputKeyword_6_0).prepend(NEW_LINE).append(NO_SPACE)
+		ele.regionFor.keyword(functionAccess.colonKeyword_6_1).prepend(NO_SPACE).append(ONE_SPACE_PRESERVE_NEWLINE)
 		if(ele.output !== null) {
 			set(
-				ele.regionFor.keyword(functionAccess.outputKeyword_6_0)?.nextHiddenRegion,
+				ele.regionFor.keyword(functionAccess.colonKeyword_6_1)?.nextHiddenRegion,
 				ele.output.nextHiddenRegion,
 				INDENT
 			)

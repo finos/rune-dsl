@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.GrammarUtil;
 
-public class ListRosettaKeywords {
+public class ListRosettaKeywordsAsJavascript {
 
 	public static void main(String[] args) {
 		Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
@@ -23,14 +23,8 @@ public class ListRosettaKeywords {
 		System.out.println(
 				keywords.stream()
 					.filter(keyword -> keyword.matches(".*[a-zA-Z].*")) // only match keywords that at least contain one alpha character
-					.map(keyword -> {
-						if (keyword.matches("[a-zA-Z]*")) {
-							return keyword;
-						} else {
-							return Pattern.quote(keyword).replace("\\", "\\\\");
-						}
-					})
-					.collect(Collectors.joining("|"))
+					.map(keyword -> "'" + keyword + "'")
+					.collect(Collectors.joining(", "))
 		);
 	}
 
