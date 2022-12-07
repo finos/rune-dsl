@@ -27,7 +27,7 @@ QualifiedNameWithWildcard:
 RootElement:
 	Annotation | Data | Function;
 
-fragment Definable:
+fragment Definable hidden():
 	'<'definition=STRING'>';
 
 Annotation:
@@ -84,8 +84,8 @@ Function:
 	)
 	 ':' =>Definable?
 	(References|Annotations)*
-	('inputs:' inputs += Attribute+)?
-	('output:' output = Attribute)?
+	('inputs' ':' inputs += Attribute+)?
+	('output' ':' output = Attribute)?
 	
 	(shortcuts     += ShortcutDeclaration)*
 	conditions     += Condition*
@@ -448,11 +448,15 @@ RosettaIntLiteral:
 	value = Integer
 ;
 
-BigDecimal:
-	'-'? ('.' INT | INT '.' | INT '.' INT) (('e'|'E') ('+'|'-')? INT)?
+BigDecimal hidden():
+	'-'? ('.' INT | INT '.' | INT '.' INT) SCIENTIFIC?
 ;
 
-Integer:
+terminal SCIENTIFIC:
+    ('e' | 'E') ('+' | '-')? ('0'..'9')+
+;
+
+Integer hidden():
 	'-'? INT
 ;
 /*

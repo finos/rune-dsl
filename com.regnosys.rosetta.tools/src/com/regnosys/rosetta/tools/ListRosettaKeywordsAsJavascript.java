@@ -5,12 +5,13 @@ import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.GrammarUtil;
 
-public class ListRosettaKeywords {
+public class ListRosettaKeywordsAsJavascript {
 
 	public static void main(String[] args) {
 		Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
@@ -21,9 +22,9 @@ public class ListRosettaKeywords {
 		
 		System.out.println(
 				keywords.stream()
-					.filter(keyword -> keyword.matches(".*[a-zA-Z].*"))
-					.map(keyword -> keyword.replaceAll("-", "\\\\\\\\-"))
-					.collect(Collectors.joining("|"))
+					.filter(keyword -> keyword.matches(".*[a-zA-Z].*")) // only match keywords that at least contain one alpha character
+					.map(keyword -> "'" + keyword + "'")
+					.collect(Collectors.joining(", "))
 		);
 	}
 
