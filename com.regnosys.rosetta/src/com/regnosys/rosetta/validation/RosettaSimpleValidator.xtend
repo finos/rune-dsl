@@ -112,6 +112,7 @@ import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import org.eclipse.xtext.validation.GuardException
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -138,6 +139,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaSimple"));
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaExpression"));
 		return result;
+	}
+	
+	override void handleExceptionDuringValidation(Throwable targetException) throws RuntimeException {
+		if (!(targetException instanceof GuardException) && !(targetException instanceof NullPointerException)) {
+			log.warn("Unhandled validation error", targetException);
+		}	
 	}
 	
 	override void register(EValidatorRegistrar registrar) {
