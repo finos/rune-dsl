@@ -115,6 +115,7 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import com.regnosys.rosetta.rosetta.PlaygroundLocation
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.PlaygroundElement
+import com.regnosys.rosetta.rosetta.PlaygroundRequest
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -168,6 +169,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		
 		def Diagnostic createDiagnostic(String message, State state) {
 			new FeatureBasedDiagnostic(Diagnostic.ERROR, message, state.currentObject, null, -1, state.currentCheckType, null, null)
+		}
+	}
+	
+	@Check
+	def void checkContentOfPlaygroundRequest(PlaygroundRequest req) {
+		if (req.content === null || req.content.empty) {
+			error("You must specify a message.", req, PLAYGROUND_REQUEST__CONTENT)
 		}
 	}
 	

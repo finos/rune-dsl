@@ -23,7 +23,6 @@ class RosettaModel extends RosettaDefinable {
 
 class Playground {
 	contains PlaygroundElement[] elements
-	contains PlaygroundRequest[] requests
 }
 
 interface PlaygroundElement {

@@ -33,7 +33,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				set result:
 					a + b
 			
-			<ERROR on 'inputs:' 1 back "My custom error">
+			<ERROR on 'inputs' 1 back "My custom error">
 		'''.parseRosetta
 		model.assertError(PLAYGROUND_ELEMENT, null,
             "My custom error")
@@ -51,5 +51,28 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(PLAYGROUND_LOCATION, null,
             "Not found.")
+	}
+	
+	@Test
+	def void testNoErrors() {
+		val model =
+		'''
+			namespace foo
+			
+			reporting rule Rule:
+			  [docReference ]
+			
+			  extract Product from ReportableEvent:
+			    from TradeForEvent
+			    extract tradeableProduct -> product
+			    then
+			        if it HasUnderlier
+			        then UnderlierForProduct
+			        else 42
+			
+			<INLAY on 'tradeableProduct' 1 back "Trade ->">
+			<INLAY on 'it' 1 back "Trade">
+		'''.parseRosetta
+		model.assertNoIssues
 	}
 }

@@ -22,13 +22,16 @@
 		},
 		{
 			"include": "#comments"
+		},
+		{
+			"include": "#playgroundRequests"
 		}
 	],
 	"repository": {
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.rosetta",
-				"match": "\\b(dateFormat|prefix|eligibility|False|type|when|required|output|path|qualifiedType|\\Qreal-time\\E|disjoint|else|merge|absent|join|if|reduce|item|using|in|is|optional|it|then|version|enum|basicType|contains|as|meta|\\Qone-of\\E|removeHtml|isEvent|displayName|pattern|sum|enums|default|library|min|repeatable|override|map|key|annotation|set|max|reverse|filter|single|rosettaPath|report|exists|to|choice|first|return|standard|inputs|corpus|True|source|body|empty|flatten|function|segment|only|isProduct|tag|add|all|workflow|maps|last|count|sort|docReference|ASATP|condition|extract|extends|\\Qas-key\\E|provision|hint|\\QT+2\\E|reportedField|\\QT+1\\E|\\QT+4\\E|\\QT+3\\E|\\Qassign-output\\E|\\QT+5\\E|calculationType|\\Qextract-all\\E|import|distinct|rule|mapper|\\Qonly-element\\E|synonym|and|root|regulatoryReference|alias|definition|value|reporting|lookup|or|componentID|ruleReference|recordType|multiple|any|with|func|\\Qpost-condition\\E|namespace|metaType)\\b"
+				"match": "\\b(from|dateFormat|prefix|eligibility|False|type|when|required|output|path|qualifiedType|\\Qreal-time\\E|disjoint|else|merge|absent|join|if|reduce|item|using|in|is|optional|it|then|version|enum|basicType|contains|as|meta|\\Qone-of\\E|removeHtml|isEvent|displayName|pattern|sum|enums|default|library|min|repeatable|override|map|key|annotation|set|max|reverse|filter|single|rosettaPath|report|exists|to|choice|first|return|standard|inputs|corpus|True|source|body|empty|flatten|function|segment|only|isProduct|tag|add|all|workflow|maps|last|count|sort|docReference|ASATP|condition|extract|extends|\\Qas-key\\E|provision|hint|\\QT+2\\E|reportedField|\\QT+1\\E|\\QT+4\\E|\\QT+3\\E|\\Qassign-output\\E|\\QT+5\\E|calculationType|\\Qextract-all\\E|import|distinct|rule|mapper|\\Qonly-element\\E|synonym|and|root|regulatoryReference|alias|definition|value|reporting|lookup|or|componentID|ruleReference|recordType|multiple|any|with|func|\\Qpost-condition\\E|namespace|metaType)\\b"
 			}]
 		},
 		"doubleQuotedStrings": {
@@ -76,6 +79,22 @@
 			},
 			"end": "\\n",
 			"name": "comment.line.rosetta"
+		},
+		"playgroundRequests": {
+			"begin": "<\\s*(INFO|WARNING|ERROR|INLAY)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.request.playground.rosetta"
+				}
+			},
+			"end": "(\"|')\\s*>",
+			"name": "request.playground.rosetta",
+			"patterns": [
+				{
+					"name": "keyword.request.playground.rosetta",
+					"match": "\\b(on|from|to|back|next)\\b"
+				}
+			]
 		}
 	},
 	"scopeName": "source.rosetta"
