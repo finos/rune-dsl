@@ -35,7 +35,26 @@
         "scopeName": "source.rosetta",
         "path": "./syntaxes/rosetta.tmLanguage.json"
       }
-    ]
+    ],
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": "keyword.request.playground.rosetta",
+            "settings": {
+              "foreground": "#6c556a",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "request.playground.rosetta",
+            "settings": {
+              "foreground": "#525252"
+            }
+          }
+        ]
+      }
+    }
   },
   "devDependencies": {
     "@types/node": "^18.11.9",
