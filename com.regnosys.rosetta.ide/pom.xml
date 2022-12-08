@@ -124,7 +124,7 @@
 							<programs>
 								<program>
 									<id>rosetta-dsl-ls</id>
-									<mainClass>org.eclipse.xtext.ide.server.ServerLauncher</mainClass>
+									<mainClass>com.regnosys.rosetta.ide.server.RosettaServerLauncher</mainClass>
 									<!--uncomment to enable options
 									<commandLineArguments>
 										<commandLineArgument>-trace</commandLineArgument>
