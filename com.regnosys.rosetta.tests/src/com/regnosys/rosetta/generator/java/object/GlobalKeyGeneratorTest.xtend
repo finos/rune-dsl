@@ -62,7 +62,7 @@ class GlobalKeyGeneratorTest {
 					[metadata reference]
 				
 				condition:
-					Baz -> foo -> reference = "reference"
+					foo -> reference = "reference"
 		'''.generateCode
 
 		val classes = code.compileToClasses

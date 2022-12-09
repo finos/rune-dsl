@@ -27,7 +27,38 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
-	@Inject extension ValidationTestHelper 
+	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void ambiguousReferenceAllowed() {
+		val model =
+		'''
+			type Foo:
+				a int (1..1)
+			
+			func F:
+				inputs:
+					foo Foo (1..1)
+					a int (1..1)
+				output: result int (1..1)
+				set result:
+					foo extract [ a ]
+		'''.parseRosettaWithNoIssues
+		
+		model.elements.last as Function => [
+			val aInput = inputs.last
+	    	operations.head => [
+	    		expression as MapOperation => [
+	    			functionRef as InlineFunction => [
+	    				assertTrue(body instanceof RosettaSymbolReference)
+	    				body as RosettaSymbolReference => [
+	    					assertEquals(aInput, symbol)
+	    				]
+	    			]
+	    		]
+	    	]
+	    ]
+	}
 	
 	@Test
 	def void testImplicitInput() {

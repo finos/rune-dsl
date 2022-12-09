@@ -30,6 +30,61 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void nameShadowingNotAllowed1() {
+		val model =
+		'''
+			func F:
+				inputs:
+					a int (1..1)
+				output: result int (1..1)
+				set result:
+					42 extract a [ a ]
+		'''.parseRosetta
+		model.assertError(CLOSURE_PARAMETER, null,
+            "Duplicate name.")
+	}
+	
+	@Test
+	def void nameShadowingNotAllowed2() {
+		val model =
+		'''
+			func F:
+				output: result int (1..1)
+				alias a: 10
+				set result:
+					42 extract a [ a ]
+		'''.parseRosetta
+		model.assertError(CLOSURE_PARAMETER, null,
+            "Duplicate name.")
+	}
+	
+	@Test
+	def void nameShadowingNotAllowed3() {
+		val model =
+		'''
+			func F:
+				output: a int (1..1)
+				set a:
+					42 extract a [ a ]
+		'''.parseRosetta
+		model.assertError(CLOSURE_PARAMETER, null,
+            "Duplicate name.")
+	}
+	
+	@Test
+	def void nameShadowingNotAllowed4() {
+		val model =
+		'''
+			func F:
+				output: result int (1..1)
+				set result:
+					42 extract a [ 10 extract a [ a ] ]
+		'''.parseRosetta
+		model.assertError(CLOSURE_PARAMETER, null,
+            "Duplicate name.")
+	}
+	
+	@Test
 	def void mayDoRecursiveCalls() {
 		'''
 			func Rec:
@@ -87,6 +142,20 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(MAP_OPERATION, null,
             "There is no implicit variable in this context. This operator needs an explicit input in this context.")
+	}
+	
+	@Test
+	def void testImplicitVariableWhenItDoesNotExist() {
+		val model =
+		'''
+			func Foo:
+				inputs: a int (0..*)
+				output: b int (0..*)
+				add b:
+					item
+		'''.parseRosetta
+		model.assertError(ROSETTA_IMPLICIT_VARIABLE, null,
+            "There is no implicit variable in this context.")
 	}
 	
 	@Test
