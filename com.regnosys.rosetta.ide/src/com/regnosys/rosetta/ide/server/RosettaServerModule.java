@@ -20,10 +20,10 @@ public class RosettaServerModule extends AbstractGenericModule {
 	
 	
 	public Class<? extends LanguageServer> bindLanguageServer() {
-		return RosettaIdeLanguageServerImpl.class;
+		return RosettaLanguageServerImpl.class;
 	}
 	
 	public Class<? extends LanguageServerImpl> bindLanguageServerImpl() {
-		return RosettaIdeLanguageServerImpl.class;
+		return RosettaLanguageServerImpl.class;
 	}
 }

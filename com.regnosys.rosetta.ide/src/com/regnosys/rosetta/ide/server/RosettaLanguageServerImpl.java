@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class RosettaIdeLanguageServerImpl extends LanguageServerImpl  {
+public class RosettaLanguageServerImpl extends LanguageServerImpl  {
 
 	@Override
 	protected ServerCapabilities createServerCapabilities(InitializeParams params) {
@@ -99,6 +99,13 @@ public class RosettaIdeLanguageServerImpl extends LanguageServerImpl  {
 	}
 	
 	/*** SEMANTIC TOKENS ***/
+	public List<SemanticToken> semanticTokens(SemanticTokensParams params, CancelIndicator cancelIndicator) {
+		URI uri = this.getURI(params.getTextDocument());
+		return this.getWorkspaceManager().doRead(uri, (document, resource) -> {
+			ISemanticTokensService service = getService(uri, ISemanticTokensService.class);
+			return service.computeSemanticTokens(document, resource, params, cancelIndicator);
+		});
+	}
 	
 	protected SemanticTokens semanticTokensFull(SemanticTokensParams params, CancelIndicator cancelIndicator) {
 		URI uri = this.getURI(params.getTextDocument());

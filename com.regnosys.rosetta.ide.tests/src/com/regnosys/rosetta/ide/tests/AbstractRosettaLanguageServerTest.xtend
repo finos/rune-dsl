@@ -18,10 +18,17 @@ import org.junit.Before
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
+import org.eclipse.lsp4j.SemanticTokens
+import org.eclipse.lsp4j.SemanticTokensParams
+import javax.inject.Inject
+import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService
+import com.regnosys.rosetta.ide.semantictokens.SemanticToken
+import org.eclipse.emf.common.util.URI
+import com.regnosys.rosetta.ide.server.RosettaLanguageServerImpl
 
-@ExtendWith(InjectionExtension)
-@InjectWith(RosettaServerInjectorProvider)
 abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerTest {
+	@Inject ISemanticTokensService semanticTokensService
+	
 	new() {
 		super("rosetta")
 	}
@@ -66,6 +73,33 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 			configuration.assertInlayHints.apply(result)
 		} else {
 			assertEquals(expectedInlayHintItems, result.toExpectation)
+		}
+	}
+	
+	@Accessors static class TestSemanticTokensConfiguration extends TextDocumentPositionConfiguration {
+		String expectedSemanticTokenItems = ''
+		(List<? extends SemanticToken>) => void assertSemanticTokens = null
+	}
+	
+	protected def void testSemanticToken((TestSemanticTokensConfiguration)=>void configurator) {
+		val extension configuration = new TestSemanticTokensConfiguration
+		configuration.filePath = 'MyModel.' + fileExtension
+		configurator.apply(configuration)
+		val filePath = initializeContext(configuration).uri
+		val semanticTokens = languageServer.requestManager.runRead[cancelIndicator |
+			(languageServer as RosettaLanguageServerImpl).semanticTokens(
+				new SemanticTokensParams(
+					new TextDocumentIdentifier(filePath)
+				),
+				cancelIndicator
+			)
+		]
+		val result = semanticTokens.get
+
+		if (configuration.assertSemanticTokens !== null) {
+			configuration.assertSemanticTokens.apply(result)
+		} else {
+			assertEquals(expectedSemanticTokenItems, result.toExpectation)
 		}
 	}
 }
