@@ -11,6 +11,12 @@ import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver
 import com.regnosys.rosetta.ide.inlayhints.RosettaInlayHintsService
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService
 import com.regnosys.rosetta.ide.util.RangeUtils
+import com.regnosys.rosetta.ide.semantictokens.ISemanticTokenTypesProvider
+import com.regnosys.rosetta.ide.semantictokens.lsp.LSPSemanticTokenTypesProvider
+import com.regnosys.rosetta.ide.semantictokens.ISemanticTokenModifiersProvider
+import com.regnosys.rosetta.ide.semantictokens.lsp.LSPSemanticTokenModifiersProvider
+import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService
+import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokensService
 
 /**
  * Use this class to register ide components.
@@ -35,5 +41,17 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	def Class<? extends IInlayHintsService> bindIInlayHintsService() {
 		RosettaInlayHintsService
+	}
+	
+	def Class<? extends ISemanticTokenTypesProvider> bindISemanticTokenTypesProvider() {
+		LSPSemanticTokenTypesProvider
+	}
+	
+	def Class<? extends ISemanticTokenModifiersProvider> bindISemanticTokenModifiersProvider() {
+		LSPSemanticTokenModifiersProvider
+	}
+	
+	def Class<? extends ISemanticTokensService> bindISemanticTokensService() {
+		RosettaSemanticTokensService
 	}
 }
