@@ -3,6 +3,7 @@ package com.regnosys.rosetta.ide.inlayhints;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Injector;
+import com.regnosys.rosetta.ide.util.RangeUtils;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.TreeIterator;
@@ -12,9 +13,6 @@ import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.xtext.ide.server.Document;
-import org.eclipse.xtext.ide.server.DocumentExtensions;
-import org.eclipse.xtext.nodemodel.ICompositeNode;
-import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.SimpleCache;
@@ -30,10 +28,10 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 	private static final Logger log = Logger.getLogger(AbstractInlayHintsService.class);
 
 	@Inject
-	DocumentExtensions documentExtensions;
+	private RangeUtils rangeUtils;
 
 	@Inject
-	Injector injector;
+	private Injector injector;
 
 	private final ThreadLocal<State> state;
 
@@ -74,7 +72,7 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 			
 			if (cancelIndicator.isCanceled()) return null;
 			
-			if (inRange(range, obj)) {
+			if (rangeUtils.overlap(range, obj)) {
 				for (MethodWrapper m: methodsForType.get(obj.getClass())) {
 					if (cancelIndicator.isCanceled()) return null;
 					
@@ -87,7 +85,7 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 	}
 
 	protected InlayHint createInlayHint(EObject hintObject, String label, String tooltip) {
-		Position start = documentExtensions.newLocation(hintObject).getRange().getStart();
+		Position start = rangeUtils.getRange(hintObject).getStart();
 		InlayHint inlayHint = new InlayHint();
 		inlayHint.setPosition(start);
 		inlayHint.setLabel(label);
@@ -120,16 +118,6 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 
 	protected CancelIndicator getCancelIndicator() {
 		return state.get().cancelIndicator;
-	}
-
-	private static boolean inRange(Range range, EObject eObject) {
-		ICompositeNode node = NodeModelUtils.getNode(eObject);
-		if (node == null) {
-			return false;
-		}
-		int startRangeLine = range.getStart().getLine();
-		int endRangeLine = range.getEnd().getLine();
-		return startRangeLine < node.getStartLine() && endRangeLine > node.getEndLine();
 	}
 
 	private List<MethodWrapper> collectMethods(Class<? extends AbstractInlayHintsService> clazz) {

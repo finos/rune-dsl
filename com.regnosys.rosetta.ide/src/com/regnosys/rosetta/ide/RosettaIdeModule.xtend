@@ -10,6 +10,7 @@ import com.regnosys.rosetta.ide.hover.RosettaDocumentationProvider
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver
 import com.regnosys.rosetta.ide.inlayhints.RosettaInlayHintsService
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService
+import com.regnosys.rosetta.ide.util.RangeUtils
 
 /**
  * Use this class to register ide components.
@@ -22,6 +23,10 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	def Class<? extends IEObjectDocumentationProvider> bindIEObjectDocumentationProvider() {
 		return RosettaDocumentationProvider
+	}
+	
+	def Class<? extends RangeUtils> bindRangeUtils() {
+		RangeUtils
 	}
 	
 	def Class<? extends IInlayHintsResolver> bindIInlayHintsResolver() {

@@ -3,11 +3,14 @@ package com.regnosys.rosetta.ide.server;
 import org.eclipse.xtext.ide.server.LanguageServerImpl;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.lsp4j.*;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.util.CancelIndicator;
 
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
+import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
+import com.regnosys.rosetta.ide.semantictokens.SemanticToken;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,9 +28,21 @@ public class RosettaIdeLanguageServerImpl extends LanguageServerImpl  {
 			inlayHintRegistrationOptions.setResolveProvider(resourceServiceProvider.get(IInlayHintsResolver.class) != null);
 			serverCapabilities.setInlayHintProvider(inlayHintRegistrationOptions);
 		}
+		
+		ISemanticTokensService semanticTokensService = resourceServiceProvider.get(ISemanticTokensService.class);
+		if (semanticTokensService != null) {
+			SemanticTokensWithRegistrationOptions semanticTokensOptions = new SemanticTokensWithRegistrationOptions();
+			semanticTokensOptions.setLegend(semanticTokensService.getLegend());
+			semanticTokensOptions.setFull(true);
+			semanticTokensOptions.setRange(true);
+			serverCapabilities.setSemanticTokensProvider(semanticTokensOptions);
+		}
+		
 		return serverCapabilities;
 	}
 
+	/*** INLAY HINTS ***/
+	
 	protected List<InlayHint> inlayHint(InlayHintParams params, CancelIndicator cancelIndicator) {
 		URI uri = this.getURI(params.getTextDocument());
 		return this.getWorkspaceManager().doRead(uri, (document, resource) -> {
@@ -81,5 +96,51 @@ public class RosettaIdeLanguageServerImpl extends LanguageServerImpl  {
 		}
 
 		return result;
+	}
+	
+	/*** SEMANTIC TOKENS ***/
+	
+	protected SemanticTokens semanticTokensFull(SemanticTokensParams params, CancelIndicator cancelIndicator) {
+		URI uri = this.getURI(params.getTextDocument());
+		return this.getWorkspaceManager().doRead(uri, (document, resource) -> {
+			ISemanticTokensService service = getService(uri, ISemanticTokensService.class);
+			List<SemanticToken> tokens = service.computeSemanticTokens(document, resource, params, cancelIndicator);
+			SemanticTokens result = service.toSemanticTokensResponse(tokens);
+			return result;
+		});
+	}
+	
+	/**
+	 * LSP method: textDocument/semanticTokens/full
+	 */
+	@Override
+	public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params) {
+		return this.getRequestManager().runRead((cancelIndicator) -> this.semanticTokensFull(params, cancelIndicator));
+	}
+	
+	/**
+	 * LSP method: textDocument/semanticTokens/full/delta
+	 */
+	@Override
+	public CompletableFuture<Either<SemanticTokens, SemanticTokensDelta>> semanticTokensFullDelta(SemanticTokensDeltaParams params) {
+		throw new UnsupportedOperationException();
+	}
+	
+	protected SemanticTokens semanticTokensRange(SemanticTokensRangeParams params, CancelIndicator cancelIndicator) {
+		URI uri = this.getURI(params.getTextDocument());
+		return this.getWorkspaceManager().doRead(uri, (document, resource) -> {
+			ISemanticTokensService service = getService(uri, ISemanticTokensService.class);
+			List<SemanticToken> tokens = service.computeSemanticTokensInRange(document, resource, params, cancelIndicator);
+			SemanticTokens result = service.toSemanticTokensResponse(tokens);
+			return result;
+		});
+	}
+	
+	/**
+	 * LSP method: textDocument/semanticTokens/range
+	 */
+	@Override
+	public CompletableFuture<SemanticTokens> semanticTokensRange(SemanticTokensRangeParams params) {
+		return this.getRequestManager().runRead((cancelIndicator) -> this.semanticTokensRange(params, cancelIndicator));
 	}
 }
