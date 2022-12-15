@@ -112,6 +112,9 @@ import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.expression.ClosureParameter
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import org.eclipse.xtext.naming.QualifiedName
 
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -129,6 +132,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject RosettaGrammarAccess grammar
 	@Inject RosettaConfigExtension confExtensions
 	@Inject extension ImplicitVariableUtil
+	@Inject RosettaScopeProvider scopeProvider
 	
 	static final Logger log = Logger.getLogger(RosettaValidator);
 	
@@ -173,6 +177,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void checkGeneratedInputInContextWithImplicitVariable(HasGeneratedInput e) {
 		if (e.needsGeneratedInput && !e.implicitVariableExistsInContext) {
 			error("There is no implicit variable in this context. This operator needs an explicit input in this context.", e, null);
+		}
+	}
+	
+	@Check
+	def void checkImplicitVariableReferenceInContextWithoutImplicitVariable(RosettaImplicitVariable e) {
+		if (!e.implicitVariableExistsInContext) {
+			error("There is no implicit variable in this context.", e, null);
 		}
 	}
 	
@@ -369,6 +380,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}
 		]
 	}
+
 	@Check
 	def checkFunctionElementNamesAreUnique(Function ele) {
 		(ele.inputs + ele.shortcuts + #[ele.output]).filterNull.groupBy[name].forEach [ k, v |
@@ -378,6 +390,15 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				]
 			}
 		]
+	}
+	
+	@Check
+	def checkClosureParameterNamesAreUnique(ClosureParameter param) {
+		val scope = scopeProvider.getScope(param.function.eContainer, ROSETTA_SYMBOL_REFERENCE__SYMBOL)
+		val sameNamedElement = scope.getSingleElement(QualifiedName.create(param.name))
+		if (sameNamedElement !== null) {
+			error('''Duplicate name.''', param, null)
+		}
 	}
 
 	// TODO This probably should be made namespace aware

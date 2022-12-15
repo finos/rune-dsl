@@ -19,7 +19,7 @@ public class ImplicitVariableUtil {
 	
 	public RosettaImplicitVariable getDefaultImplicitVariable() {
 		RosettaImplicitVariable def = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
-		def.setName("it");
+		def.setName("item");
 		def.setGenerated(true);
 		return def;
 	}
