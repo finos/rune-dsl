@@ -30,6 +30,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void mayDoRecursiveCalls() {
+		'''
+			func Rec:
+				output: result int (1..1)
+				alias test: Rec()
+				set result: Rec()
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testCannotOmitParametersOfBinaryFunction() {
 		val model =
 		'''
