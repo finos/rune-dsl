@@ -9,6 +9,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.google.common.collect.Streams;
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
@@ -35,7 +36,7 @@ public class ExpressionHelper {
 			if (result.isEmpty())
 				trace.pop();
 			return result;
-		} else if (ele instanceof RosettaSymbolReference) {
+		} else if (ele instanceof RosettaSymbolReference && !(((RosettaSymbolReference)ele).getSymbol() instanceof RosettaCallableWithArgs)) {
 			RosettaSymbolReference cc = (RosettaSymbolReference)ele;
 			if (cc.getSymbol() instanceof Attribute &&
 					cc.getSymbol().eContainingFeature() == SimplePackage.Literals.FUNCTION__OUTPUT)
