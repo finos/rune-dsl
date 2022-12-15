@@ -36,6 +36,17 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void mayDoRecursiveCalls() {
+		val code = '''
+			func Rec:
+				output: result int (1..1)
+				alias test: Rec()
+				set result: Rec()
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
 	def void nestedInlineFunctionsTest() {
 		val code = '''
 			namespace com.rosetta.test.model

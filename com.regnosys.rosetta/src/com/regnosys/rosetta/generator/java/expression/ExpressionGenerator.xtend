@@ -368,8 +368,13 @@ class ExpressionGenerator {
 						// Data attributes can only be called if there is an implicit variable present.
 						// The current container (Data) is stored in Params, but we need also look for superTypes
 						// so we could also do: (s.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
-						if(s.eContainer instanceof Data)
-							featureCall(implicitVariable(expr, params), s, params, true, expr)
+						if(s.eContainer instanceof Data) {
+							var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
+							if (expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
+								autoValue = false;
+							}
+							featureCall(implicitVariable(expr, params), s, params, autoValue, expr)
+						}
 						else
 							'''«if (s.card.isIsMany) MapperC else MapperS».of(«s.name»)'''
 					}
