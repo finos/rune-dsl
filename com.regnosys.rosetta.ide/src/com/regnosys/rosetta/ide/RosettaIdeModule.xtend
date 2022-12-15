@@ -19,6 +19,7 @@ import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokensService
 import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesProvider
 import com.regnosys.rosetta.ide.textmate.RosettaTextMateGrammarUtil
 
+
 /**
  * Use this class to register ide components.
  */
