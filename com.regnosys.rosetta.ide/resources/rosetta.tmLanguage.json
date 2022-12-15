@@ -1,5 +1,6 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"scopeName": "source.rosetta",
 	"name": "Rosetta DSL",
 	"patterns": [
 		{
@@ -77,6 +78,5 @@
 			"end": "\\n",
 			"name": "comment.line.rosetta"
 		}
-	},
-	"scopeName": "source.rosetta"
+	}
 }
