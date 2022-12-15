@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensLegend;
@@ -176,6 +177,16 @@ public class AbstractSemanticTokensService implements ISemanticTokensService {
 
 	protected SemanticToken createSemanticToken(EObject tokenObject, ISemanticTokenType tokenType, ISemanticTokenModifier... tokenModifiers) {
 		ITextRegion region = locationInFileProvider.getFullTextRegion(tokenObject);
+		Range range = documentExtensions.newRange(tokenObject.eResource(), region);
+		return new SemanticToken(range.getStart().getLine(), range.getStart().getCharacter(), region.getLength(), tokenType, tokenModifiers);
+	}
+	
+	protected SemanticToken createSemanticToken(EObject tokenObject, EStructuralFeature feature, ISemanticTokenType tokenType, ISemanticTokenModifier... tokenModifiers) {
+		return createSemanticToken(tokenObject, feature, -1, tokenType);
+	}
+	
+	protected SemanticToken createSemanticToken(EObject tokenObject, EStructuralFeature feature, int featureIndex, ISemanticTokenType tokenType, ISemanticTokenModifier... tokenModifiers) {
+		ITextRegion region = locationInFileProvider.getFullTextRegion(tokenObject, feature, featureIndex);
 		Range range = documentExtensions.newRange(tokenObject.eResource(), region);
 		return new SemanticToken(range.getStart().getLine(), range.getStart().getCharacter(), region.getLength(), tokenType, tokenModifiers);
 	}

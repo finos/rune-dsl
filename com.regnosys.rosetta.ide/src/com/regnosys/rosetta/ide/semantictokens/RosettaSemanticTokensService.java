@@ -2,11 +2,14 @@ package com.regnosys.rosetta.ide.semantictokens;
 
 import javax.inject.Inject;
 
-//import com.regnosys.rosetta.rosetta.RosettaSymbol;
-//import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
-//
-//import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
-//import static com.regnosys.rosetta.ide.semantictokens.lsp.LSPSemanticTokenTypesEnum.*;
+import com.regnosys.rosetta.rosetta.RosettaBuiltinType;
+import com.regnosys.rosetta.rosetta.RosettaEnumeration;
+import com.regnosys.rosetta.rosetta.RosettaType;
+import com.regnosys.rosetta.rosetta.RosettaTyped;
+import com.regnosys.rosetta.rosetta.simple.Data;
+
+import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
+import static com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesEnum.*;
 
 public class RosettaSemanticTokensService extends AbstractSemanticTokensService {
 
@@ -15,13 +18,17 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 			ISemanticTokenModifiersProvider tokenModifiersProvider) {
 		super(tokenTypesProvider, tokenModifiersProvider);
 	}
-// Example:	
-//	@MarkSemanticToken
-//	public SemanticToken markSymbolReference(RosettaSymbolReference ref) {
-//		RosettaSymbol symbol = ref.getSymbol();
-//		if (symbol.eContainmentFeature().equals(FUNCTION__INPUTS)) {
-//			return createSemanticToken(ref, PARAMETER);
-//		}
-//		return null;
-//	}
+
+	@MarkSemanticToken
+	public SemanticToken markType(RosettaTyped typed) {
+		RosettaType t = typed.getType();
+		if (t instanceof Data) {
+			return createSemanticToken(typed, ROSETTA_TYPED__TYPE, TYPE);
+		} else if (t instanceof RosettaBuiltinType) {
+			return createSemanticToken(typed, ROSETTA_TYPED__TYPE, BASIC_TYPE);
+		} else if (t instanceof RosettaEnumeration) {
+			return createSemanticToken(typed, ROSETTA_TYPED__TYPE, ENUM);
+		}
+		return null;
+	}
 }
