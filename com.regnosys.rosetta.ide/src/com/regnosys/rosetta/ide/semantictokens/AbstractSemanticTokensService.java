@@ -101,12 +101,11 @@ public class AbstractSemanticTokensService implements ISemanticTokensService {
 				deltaStartChar = token.getStartChar();
 			}			
 			
-			int offset = i*5;
-			data.set(offset, deltaLine);
-			data.set(offset + 1, deltaStartChar);
-			data.set(offset + 2, token.getLength());
-			data.set(offset + 3, getTokenTypeRepr(token.getTokenType()));
-			data.set(offset + 4, getTokenModifiersRepr(token.getTokenModifiers()));
+			data.add(deltaLine);
+			data.add(deltaStartChar);
+			data.add(token.getLength());
+			data.add(getTokenTypeRepr(token.getTokenType()));
+			data.add(getTokenModifiersRepr(token.getTokenModifiers()));
 			
 			lastLine = token.getLine();
 			lastStartChar = token.getStartChar();
