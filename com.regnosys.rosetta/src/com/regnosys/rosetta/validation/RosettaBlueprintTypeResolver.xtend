@@ -52,6 +52,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.expression.RosettaReference
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
 
 class RosettaBlueprintTypeResolver {
 	
@@ -399,6 +400,10 @@ class RosettaBlueprintTypeResolver {
 	}
 	
 	def dispatch RosettaType getInput(RosettaLiteral literal) {
+		null
+	}
+	
+	def dispatch RosettaType getInput(ListLiteral list) {
 		null
 	}
 	
