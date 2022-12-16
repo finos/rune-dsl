@@ -24,6 +24,32 @@
 	<build>
 		<plugins>
 			<plugin>
+			    <groupId>com.github.iarellano</groupId>
+			    <artifactId>iad-j2y2j-converter-maven-plugin</artifactId>
+			    <executions>
+			        <execution>
+			            <id>Generate TextMate grammar json file</id>
+			            <phase>process-resources</phase>
+			            <goals>
+			                <goal>yaml-2-json</goal>
+			            </goals>
+			            <configuration>
+			                <resources>
+			                    <resource>
+			                        <directory>${project.basedir}</directory>
+			                        <filtering>true</filtering>
+			                        <includes>
+			                            <include>rosetta.tmLanguage.yaml</include>
+			                        </includes>
+			                    </resource>
+			                </resources>
+			                <outputExtension>json</outputExtension>
+			                <outputDirectory>${project.basedir}/src-gen</outputDirectory>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>
+			<plugin>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
@@ -139,11 +165,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-	    <resources>
-	      <resource>
-	        <directory>resources</directory>
-	      </resource>
-	    </resources>
 	</build>
 
 </project>

@@ -351,6 +351,11 @@ See the Apache License Version 2.0 for the specific language governing permissio
 						<useUIHarness>false</useUIHarness>
 					</configuration>
 				</plugin>
+				<plugin>
+				    <groupId>com.github.iarellano</groupId>
+				    <artifactId>iad-j2y2j-converter-maven-plugin</artifactId>
+				    <version>1.0</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>

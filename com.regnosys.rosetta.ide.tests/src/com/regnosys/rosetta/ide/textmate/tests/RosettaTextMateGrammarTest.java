@@ -12,12 +12,14 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.regnosys.rosetta.ide.tests.RosettaIdeInjectorProvider;
 import com.regnosys.rosetta.ide.textmate.RosettaTextMateGrammarUtil;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.hamcrest.CoreMatchers.containsString;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaIdeInjectorProvider.class)
@@ -36,6 +38,7 @@ public class RosettaTextMateGrammarTest {
 	        scanner.useDelimiter("\\A");
 	        content = scanner.hasNext() ? scanner.next() : "";
 	    }
-		assertThat(content, containsString("\"name\": \"Rosetta DSL\""));
+		JsonObject grammarDef = JsonParser.parseString(content).getAsJsonObject();
+		assertEquals(grammarDef.get("name").getAsString(), "Rosetta DSL");
 	}
 }
