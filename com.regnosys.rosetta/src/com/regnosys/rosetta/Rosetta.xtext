@@ -27,7 +27,7 @@ QualifiedNameWithWildcard:
 RootElement:
 	Annotation | Data | Function;
 
-fragment Definable hidden():
+fragment Definable:
 	'<'definition=STRING'>';
 
 Annotation:
