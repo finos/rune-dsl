@@ -22,12 +22,48 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import org.eclipse.xtext.diagnostics.Diagnostic
+
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
 	@Inject extension ValidationTestHelper 
+	
+	@Test
+	def void nameParsingDoesNotConflictWithScientificNotation() {
+		'''           
+           type E2:
+             e2 int (1..1)
+	    '''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void scientificNotationIsNotTooLoose() {
+		val model = '''
+           func Foo:
+             output: result number (0..*)
+             
+             add result: .4a3
+	    '''.parseRosetta
+	    
+	    model.assertError(ROSETTA_EXPRESSION, Diagnostic.SYNTAX_DIAGNOSTIC, "Character a is neither a decimal digit number, decimal point, nor \"e\" notation exponential mark.")
+	}
+	
+	@Test
+	def void canParseScientificNotation() {
+		'''
+           func Foo:
+             output: result number (0..*)
+             
+             add result: .4e3
+             add result: -5.E-2
+             add result: 3.3e+42
+             add result: 0.e0
+	    '''.parseRosettaWithNoIssues
+	}
 	
 	@Test
 	def void testImplicitInput() {

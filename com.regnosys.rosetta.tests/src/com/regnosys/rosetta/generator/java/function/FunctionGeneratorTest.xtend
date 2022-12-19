@@ -107,12 +107,12 @@ class FunctionGeneratorTest {
 					result int (0..*)
 				
 				add result:
-					a extract [+ 1]
+					a extract [* 2]
 		'''.generateCode
 		val classes = code.compileToClasses
 
 		val func1 = classes.createFunc("F1");
-		assertEquals(#[2, 3, 4], func1.invokeFunc(List, #[#[1, 2, 3]]))
+		assertEquals(#[2, 4, 6], func1.invokeFunc(List, #[#[1, 2, 3]]))
 	}
 	
 	@Test

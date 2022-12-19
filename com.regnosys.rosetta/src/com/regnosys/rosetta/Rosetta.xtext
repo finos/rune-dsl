@@ -182,6 +182,7 @@ ValidID:
 	(ID | 'key' // used in Lib: annotations.rosetta
 		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
 		| 'workflow' //used in the namespace
+		| 'e' | 'E'
 	)
 ;
 
@@ -449,15 +450,11 @@ RosettaIntLiteral:
 ;
 
 BigDecimal hidden():
-	'-'? ('.' INT | INT '.' | INT '.' INT) SCIENTIFIC?
-;
-
-terminal SCIENTIFIC:
-    ('e' | 'E') ('+' | '-')? ('0'..'9')+
+	('+' | '-')? ('.' INT | INT '.' | INT '.' INT) (('e' | 'E') ('+' | '-') INT | ID)?
 ;
 
 Integer hidden():
-	'-'? INT
+	('+' | '-')? INT
 ;
 /*
  * = '->'
@@ -533,8 +530,6 @@ RosettaCalcComparison returns RosettaExpression:
 
 RosettaCalcAdditive returns RosettaExpression:
 	RosettaCalcMultiplicative ( =>({ArithmeticOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*
-	// Without left parameter:
-	| (->({ArithmeticOperation} operator=('+'|'-') right=RosettaCalcMultiplicative) (=>({ArithmeticOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*)
 ;
 
 RosettaCalcMultiplicative returns RosettaExpression:
