@@ -14,12 +14,139 @@ import com.regnosys.rosetta.rosetta.simple.Function
 
 import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.rosetta.expression.MapOperation
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
+	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void ambiguousReferenceAllowed() {
+		val model =
+		'''
+			type Foo:
+				a int (1..1)
+			
+			func F:
+				inputs:
+					foo Foo (1..1)
+					a int (1..1)
+				output: result int (1..1)
+				set result:
+					foo extract [ a ]
+		'''.parseRosettaWithNoIssues
+		
+		model.elements.last as Function => [
+			val aInput = inputs.last
+	    	operations.head => [
+	    		expression as MapOperation => [
+	    			functionRef as InlineFunction => [
+	    				assertTrue(body instanceof RosettaSymbolReference)
+	    				body as RosettaSymbolReference => [
+	    					assertEquals(aInput, symbol)
+	    				]
+	    			]
+	    		]
+	    	]
+	    ]
+	}
+	
+	@Test
+	def void testImplicitInput() {
+	    val model = '''
+           type Foo:
+               a int (0..1)
+               b string (0..1)
+               
+               condition C:
+                   [deprecated] // the parser should parse this as an annotation, not a list
+                   extract [it -> a]
+                   extract-all [ exists ]
+           
+           func F:
+               inputs:
+                   a int (1..1)
+               output:
+                   result boolean (1..1)
+               set result:
+                   a extract [
+                       if F
+                       then False
+                       else True and F
+                   ]
+	    '''.parseRosetta
+
+	    model.elements.head as Data => [
+	    	conditions.head => [
+	    		assertEquals(1, annotations.size)
+	    		assertTrue(expression instanceof ExtractAllOperation)
+	    		expression as ExtractAllOperation => [
+	    			assertTrue(functionRef instanceof InlineFunction)
+	    			functionRef as InlineFunction => [
+	    				assertTrue(body instanceof RosettaExistsExpression)
+	    			]
+	    		]
+	    	]
+	    ]
+	    
+	    model.assertNoIssues
+	}
+	
+	@Test
+	def void testExplicitArguments() {
+	    val model = '''
+           func F:
+               inputs:
+                   a int (1..1)
+               output:
+                   result boolean (1..1)
+               set result:
+                   F(a)
+	    '''.parseRosetta
+
+	    model.elements.head as Function => [
+	    	operations.head.expression as RosettaSymbolReference => [
+	    		assertTrue(explicitArguments)
+	    		assertFalse(needsGeneratedInput)
+	    	]
+	    ]
+	}
+	
+	@Test
+	def void testMultiExtract() {
+	    val model = '''
+           func Test:
+               output:
+                   result boolean (0..*)
+               add result:
+                   [True, False]
+                       extract [item = False]
+                       extract [item = True]
+	    '''.parseRosetta
+	    
+	    model.elements.last as Function => [
+	    	operations.head => [
+	    		assertTrue(expression instanceof MapOperation)
+	    		expression as MapOperation => [
+	    			assertTrue(argument instanceof MapOperation)
+	    			assertTrue(functionRef instanceof InlineFunction)
+	    			argument as MapOperation => [
+	    				assertTrue(argument instanceof ListLiteral)
+	    				assertTrue(functionRef instanceof InlineFunction)
+	    			]
+	    		]
+	    	]
+	    ]
+	}
 	
 	@Test
 	def void testExtractIsASynonymForMap() {
@@ -29,7 +156,7 @@ class RosettaParsingTest {
                    result boolean (0..*)
                add result:
                    [True, False] extract [item = False]
-	    '''.parseRosettaWithNoIssues
+	    '''.parseRosetta
 	    
 	    model.elements.last as Function => [
 	    	assertTrue(operations.last.expression instanceof MapOperation)

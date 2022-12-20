@@ -27,6 +27,9 @@ import org.eclipse.xtext.serializer.ISerializer
 import org.eclipse.xtext.parser.IEncodingProvider
 import com.google.inject.Binder
 import org.eclipse.xtext.service.DispatchingProvider
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import org.eclipse.xsemantics.runtime.validation.XsemanticsValidatorFilter
+import com.regnosys.rosetta.validation.RetainXsemanticsIssuesOnGeneratedInputsFilter
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -68,10 +71,17 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
         	.annotatedWith(DispatchingProvider.Runtime)
         	.to(UTF8EncodingProvider);
     }
+    
+    def Class<? extends ImplicitVariableUtil> bindImplicitVariableUtil() {
+    	ImplicitVariableUtil
+    }
+    def Class<? extends XsemanticsValidatorFilter> bindXsemanticsValidatorFilter() {
+    	RetainXsemanticsIssuesOnGeneratedInputsFilter
+    }
 	
 	// Setup derived state
 	override Class<? extends XtextResource> bindXtextResource() {
-		return DerivedStateAwareResource;
+		return DerivedStateAwareResource
 	}
 	def Class<? extends IDerivedStateComputer> bindIDerivedStateComputer() {
 		RosettaDerivedStateComputer

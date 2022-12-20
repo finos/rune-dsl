@@ -56,7 +56,7 @@ AnnotationRef:
 ;
 
 AnnotationQualifier:
-	qualName = STRING '=' (qualValue= STRING | qualPath = RosettaClassAttributeCall)
+	qualName=STRING '=' (qualValue=STRING | qualPath=RosettaAttributeReference)
 ;
 
 Data:
@@ -82,10 +82,10 @@ Function:
 		RosettaNamed
 		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
 	)
-	 ':' Definable?
+	 ':' =>Definable?
 	(References|Annotations)*
-	('inputs:' inputs += Attribute+)?
-	('output:' output = Attribute)?
+	('inputs' ':' inputs += Attribute+)?
+	('output' ':' output = Attribute)?
 	
 	(shortcuts     += ShortcutDeclaration)*
 	conditions     += Condition*
@@ -94,12 +94,12 @@ Function:
 ;
 
 ShortcutDeclaration:
-	'alias' RosettaNamed ':' Definable?  expression=RosettaCalcExpression
+	'alias' RosettaNamed ':' =>Definable?  expression=RosettaCalcExpression
 ;
 
 Condition:
-	'condition' RosettaNamed? ':' Definable?
-		->(References|Annotations)* // conflicts with ListLiteral as RosettaCalcExpression
+	'condition' RosettaNamed? ':' =>Definable?
+		=>(References|Annotations)* // conflicts with ListLiteral as RosettaCalcExpression
 		( constraint = OneOf
 		| constraint = Constraint
 		| expression = RosettaCalcExpression)
@@ -119,7 +119,7 @@ OneOf returns Constraint :
 ;
 
 PostCondition returns Condition:
-	postCondition ?= 'post-condition'  RosettaNamed? ':' Definable?
+	postCondition ?= 'post-condition'  RosettaNamed? ':' =>Definable?
 	expression     = RosettaCalcExpression
 ;
 
@@ -129,12 +129,12 @@ Operation:
 
 // deprecated - to be deleted once all models updated
 AssignOutputOperation:
-	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
+	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>Definable?
 	expression = RosettaCalcExpression assignAsKey?='as-key'?
 ;
 
 OutputOperation:
-	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' Definable?
+	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>Definable?
 		expression = RosettaCalcExpression assignAsKey?='as-key'?
 ;
 
@@ -182,7 +182,6 @@ ValidID:
 	(ID | 'key' // used in Lib: annotations.rosetta
 		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
 		| 'workflow' //used in the namespace
-		| 'sum' //used in ListOperation
 	)
 ;
 
@@ -331,8 +330,8 @@ RosettaMapping:
 ;
 
 RosettaMappingInstance:
-	('set' 'when') when = RosettaMappingPathTests
-	| (default?='default' 'to') set = RosettaMapPrimaryExpression
+	('set' 'when') when=RosettaMappingPathTests
+	| (default?='default' 'to') set=RosettaMapPrimaryExpression
 ;
 
 RosettaMappingSetTo returns RosettaMapping:
@@ -340,14 +339,14 @@ RosettaMappingSetTo returns RosettaMapping:
 ;
 
 RosettaMappingSetToInstance returns RosettaMappingInstance:
-	('set' 'to') set = RosettaMapPrimaryExpression ('when' when = RosettaMappingPathTests)?
+	('set' 'to') set=RosettaMapPrimaryExpression ('when' when = RosettaMappingPathTests)?
 ;
 
 RosettaMappingPathTests:
-	tests += RosettaMapTest ('and' tests += RosettaMapTest)*
+	tests+=RosettaMapTest ('and' tests += RosettaMapTest)*
 ;
 
-RosettaMapTest returns RosettaExpression:
+RosettaMapTest:
 	RosettaMapPath
 	| RosettaMapRosettaPath
 	| RosettaMapTestExpression
@@ -358,26 +357,35 @@ RosettaMapPath:
 ;
 
 RosettaMapRosettaPath:
-	'rosettaPath' '=' path=RosettaClassAttributeCall
+	'rosettaPath' '=' path=RosettaAttributeReference
 ;
 
-RosettaMapTestExpression returns RosettaExpression:
+RosettaDataReference returns RosettaAttributeReferenceSegment:
+	{RosettaDataReference} data=[Data|QualifiedName]
+;
+
+RosettaAttributeReference returns RosettaAttributeReferenceSegment:
+	RosettaDataReference ({RosettaAttributeReference.receiver=current} FEATURE_CALL_SEPARATOR attribute=[Attribute|ValidID])+
+;
+
+RosettaMapTestExpression returns RosettaMapTestExpression:
 	RosettaMapPathValue (
-		{RosettaExistsExpression.argument=current} 'exists' 
-		| {RosettaAbsentExpression.argument=current} 'is' 'absent'
-		| {EqualityOperation.left=current} operator=('='|'<>') right=RosettaMapPrimaryExpression
+		{RosettaMapTestExistsExpression.argument=current} 'exists' 
+		| {RosettaMapTestAbsentExpression.argument=current} 'is' 'absent'
+		| {RosettaMapTestEqualityOperation.left=current} operator=('='|'<>') right=RosettaMapPrimaryExpression
 	)
 ;
 
-RosettaMapPrimaryExpression returns RosettaExpression:
+RosettaMapPrimaryExpression returns RosettaMapTestExpression:
 	EnumValueReference
 	| RosettaStringLiteral
 	| RosettaBooleanLiteral
 	| RosettaIntLiteral
+	| RosettaBigDecimalLiteral
 ;
 
-RosettaMapPathValue returns RosettaExpression:
-	{RosettaMapPathValue} path = STRING
+RosettaMapPathValue:
+	path=STRING
 ;
 
 
@@ -410,9 +418,9 @@ RosettaSegment:
  * Expressions 
  */ 
 
-RosettaCallableCall: 
-	callable=[RosettaCallable|QualifiedName]
-	| implicitReceiver ?= 'item'
+RosettaReferenceOrFunctionCall returns RosettaExpression:
+	  {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName] (explicitArguments?='(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')')?
+	| {RosettaImplicitVariable} name=('item' | 'it')
 ;
 
 RosettaLiteral returns RosettaExpression:
@@ -440,11 +448,15 @@ RosettaIntLiteral:
 	value = Integer
 ;
 
-BigDecimal:
-	'-'? ('.' INT | INT '.' | INT '.' INT) (('e'|'E') ('+'|'-')? INT)?
+BigDecimal hidden():
+	'-'? ('.' INT | INT '.' | INT '.' INT) SCIENTIFIC?
 ;
 
-Integer:
+terminal SCIENTIFIC:
+    ('e' | 'E') ('+' | '-')? ('0'..'9')+
+;
+
+Integer hidden():
 	'-'? INT
 ;
 /*
@@ -452,16 +464,6 @@ Integer:
  */
 terminal FEATURE_CALL_SEPARATOR:
 	'->'
-;
-
-
-RosettaClassAttributeCall returns RosettaExpression:
-	RosettaClassReference ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID])*
-;
-
-RosettaClassReference returns RosettaExpression:
-	{RosettaCallableCall}
-	callable=[Data|QualifiedName]
 ;
 
 
@@ -484,14 +486,9 @@ ClosureParameter:
 	name = ID
 ;
 
-OptionalClosureParameter returns ClosureParameter:
-	name = ID
-	| {ClosureParameter}
-;
-
 FunctionReference:
 	{NamedFunctionReference} function=[RosettaCallableWithArgs]
-	| {InlineFunction} ((parameters+=ClosureParameter (',' parameters += ClosureParameter)*) | parameters += OptionalClosureParameter) '[' body=RosettaCalcExpression ']'
+	| {InlineFunction} (parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[' body=RosettaCalcExpression ']'
 ;
 
 /**********************************************************************
@@ -512,34 +509,58 @@ enum CardinalityModifier:
 
 RosettaCalcOr returns RosettaExpression:
 	RosettaCalcAnd ( =>({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
+	// Without left parameter:
+	| ->({LogicalOperation} operator='or' right=RosettaCalcAnd) (=>({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
 ;
 
 RosettaCalcAnd returns RosettaExpression:
 	RosettaCalcEquality ( =>({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*
+	// Without left parameter:
+	| (->({LogicalOperation} operator='and' right=RosettaCalcEquality) (=>({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*)
 ;
 
 RosettaCalcEquality returns RosettaExpression:
 	RosettaCalcComparison ( =>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*
+	// Without left parameter:
+	| (->({EqualityOperation} (cardMod=CardinalityModifier)? operator=('='|'<>') right=RosettaCalcComparison) (=>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*)
 ;
-	
+
 RosettaCalcComparison returns RosettaExpression:
 	RosettaCalcAdditive ( =>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
+	// Without left parameter:
+	| (->({ComparisonOperation} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<") right=RosettaCalcAdditive) (=>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*)
 ;
 
 RosettaCalcAdditive returns RosettaExpression:
 	RosettaCalcMultiplicative ( =>({ArithmeticOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*
+	// Without left parameter:
+	| (->({ArithmeticOperation} operator=('+'|'-') right=RosettaCalcMultiplicative) (=>({ArithmeticOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*)
 ;
 
 RosettaCalcMultiplicative returns RosettaExpression:
 	RosettaCalcBinary ( =>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*
+	// Without left parameter:
+	| (->({ArithmeticOperation} operator=('*'|'/') right=RosettaCalcBinary) (=>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*)
 ;
 
 RosettaCalcBinary returns RosettaExpression:
-	ListOperation (->(
+	ListOperation (=>(
 		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
 		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
-		| {JoinOperation.left=current} operator='join' (right=ListOperation)?
+		| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
 	))?
+	| // Without left parameter:
+	(->(
+		{RosettaContainsExpression} operator='contains' right=ListOperation
+		| {RosettaDisjointExpression} operator='disjoint' right=ListOperation
+		| {JoinOperation} operator='join' (=>right=ListOperation)?
+	)
+	(=>(
+		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
+		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+		| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
+	))?
+	)
 ;
 
 /**
@@ -553,26 +574,72 @@ enum ExistsModifier:
 ListOperation returns RosettaExpression:
 	RosettaCalcPrimary
 	(
+		=>(
+			 ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR (=>feature=[RosettaFeature|ValidID])?)
+			|({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
+			|({RosettaAbsentExpression.argument=current} 'is' operator='absent')
+			|({RosettaOnlyElement.argument=current} operator='only-element')
+			|({RosettaCountOperation.argument=current} operator='count')
+			|({FlattenOperation.argument=current} operator='flatten')
+			|({DistinctOperation.argument=current} operator='distinct')
+			|({ReverseOperation.argument=current} operator='reverse')
+			|({FirstOperation.argument=current} operator='first')
+			|({LastOperation.argument=current} operator='last')
+			|({SumOperation.argument=current} operator='sum')	
+		) | =>(
+			 ({ReduceOperation.argument=current} operator='reduce')
+			|({FilterOperation.argument=current} operator='filter')
+			|({MapOperation.argument=current} operator=('map' | 'extract'))
+			|({ExtractAllOperation.argument=current} operator='extract-all')
+			|({SortOperation.argument=current} operator='sort')
+			|({MinOperation.argument=current} operator='min')
+			|({MaxOperation.argument=current} operator='max')
+		) (functionRef=FunctionReference)?
+	)*
+	| // Without left parameter:
+	(
 		(
-			 =>({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR (=>feature=[RosettaFeature|ValidID])?)
-			|=>({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
-			|=>({RosettaAbsentExpression.argument=current} 'is' operator='absent')
-			|=>({RosettaOnlyElement.argument=current} operator='only-element')
-			|=>({RosettaCountOperation.argument=current} operator='count')
-			|=>({FlattenOperation.argument=current} operator='flatten')
-			|=>({DistinctOperation.argument=current} operator='distinct')
-			|=>({ReverseOperation.argument=current} operator='reverse')
-			|=>({FirstOperation.argument=current} operator='first')
-			|=>({LastOperation.argument=current} operator='last')
-			|=>({SumOperation.argument=current} operator='sum')	
+			 ({RosettaExistsExpression} (modifier=ExistsModifier)? operator='exists')
+			|({RosettaAbsentExpression} 'is' operator='absent')
+			|({RosettaOnlyElement} operator='only-element')
+			|({RosettaCountOperation} operator='count')
+			|({FlattenOperation} operator='flatten')
+			|({DistinctOperation} operator='distinct')
+			|({ReverseOperation} operator='reverse')
+			|({FirstOperation} operator='first')
+			|({LastOperation} operator='last')
+			|({SumOperation} operator='sum')	
 		) | (
-			 =>({ReduceOperation.argument=current} operator='reduce')
-			|=>({FilterOperation.argument=current} operator='filter')
-			|=>({MapOperation.argument=current} operator=('map' | 'extract'))
-			|=>({ExtractAllOperation.argument=current} operator='extract-all')
-			|=>({SortOperation.argument=current} operator='sort')
-			|=>({MinOperation.argument=current} operator='min')
-			|=>({MaxOperation.argument=current} operator='max')
+			 ({ReduceOperation} operator='reduce')
+			|({FilterOperation} operator='filter')
+			|({MapOperation} operator=('map' | 'extract'))
+			|({ExtractAllOperation} operator='extract-all')
+			|({SortOperation} operator='sort')
+			|({MinOperation} operator='min')
+			|({MaxOperation} operator='max')
+		) (functionRef=FunctionReference)?
+	)
+	(
+		=>(
+			 ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR (=>feature=[RosettaFeature|ValidID])?)
+			|({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
+			|({RosettaAbsentExpression.argument=current} 'is' operator='absent')
+			|({RosettaOnlyElement.argument=current} operator='only-element')
+			|({RosettaCountOperation.argument=current} operator='count')
+			|({FlattenOperation.argument=current} operator='flatten')
+			|({DistinctOperation.argument=current} operator='distinct')
+			|({ReverseOperation.argument=current} operator='reverse')
+			|({FirstOperation.argument=current} operator='first')
+			|({LastOperation.argument=current} operator='last')
+			|({SumOperation.argument=current} operator='sum')	
+		) | =>(
+			 ({ReduceOperation.argument=current} operator='reduce')
+			|({FilterOperation.argument=current} operator='filter')
+			|({MapOperation.argument=current} operator=('map' | 'extract'))
+			|({ExtractAllOperation.argument=current} operator='extract-all')
+			|({SortOperation.argument=current} operator='sort')
+			|({MinOperation.argument=current} operator='min')
+			|({MaxOperation.argument=current} operator='max')
 		) (functionRef=FunctionReference)?
 	)*
 ;
@@ -582,9 +649,7 @@ ListOperation returns RosettaExpression:
  */
 RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConditionalExpression
-	| {RosettaCallableWithArgsCall} callable=[RosettaCallableWithArgs|QualifiedName] '(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')'
-	| {RosettaCallableCall} callable=[AssignPathRoot|ValidID]
-	| RosettaCallableCall
+	| RosettaReferenceOrFunctionCall
 	| RosettaLiteral
 	| '(' RosettaCalcExpression ')'
 	| RosettaCalcOnlyExists
@@ -595,7 +660,15 @@ RosettaCalcConditionalExpression returns RosettaExpression:
 ;
 
 RosettaCalcOnlyExists returns RosettaExpression:
-	{RosettaOnlyExistsExpression} (args+=RosettaClassAttributeCall | ('(' args+=RosettaClassAttributeCall (',' args+=RosettaClassAttributeCall)* ')')) 'only' 'exists'
+	{RosettaOnlyExistsExpression} (args+=RosettaOnlyExistsElement | ('(' args+=RosettaOnlyExistsElement (',' args+=RosettaOnlyExistsElement)* ')')) 'only' 'exists'
+;
+
+RosettaOnlyExistsElement returns RosettaExpression:
+	RosettaOnlyExistsElementRoot ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID])*
+;
+
+RosettaOnlyExistsElementRoot returns RosettaSymbolReference:
+	{RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName]
 ;
 
 /*****************************************
@@ -678,8 +751,9 @@ RosettaRuleReference:
 	'[' 'ruleReference' reportingRule=[RosettaBlueprint] ']'	
 ;
 
+// @Compat: make ':' mandatory at January 16
 RosettaBlueprint:
- 	('reporting'|'eligibility') 'rule' RosettaNamed RosettaDefinable?
+ 	('reporting'|'eligibility') 'rule' RosettaNamed ':'? RosettaDefinable?
 	(references += RosettaDocReference)*
 	(nodes = BlueprintNodeExp)?
 	('output' output=[Data])?

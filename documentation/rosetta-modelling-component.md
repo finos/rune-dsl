@@ -1831,7 +1831,7 @@ To provide transparency and auditability to the reporting process, the Rosetta D
 The syntax of a reporting rule is as follows:
 
 ``` Haskell
-<ruleType> rule <RuleName>
+<ruleType> rule <RuleName>:
   [ regulatoryReference <Body> <Corpus>
     <Segment1>
     <Segment2>
@@ -1847,7 +1847,7 @@ The functional expression of reporting rules uses the same [logical expression](
 Functional expressions are composable, so a rule can also call another rule. When multiple rules may need to be applied for a single field or eligibility criteria, those rules can be specified in brackets separated by a comma, as illustrated below. Each of `Euro1Standard`, ..., `Euro6Standard` are themselves reporting rules.
 
 ``` Haskell
-reporting rule EuroEmissionStandard
+reporting rule EuroEmissionStandard:
    [regulatoryReference EuropeanCommission StandardEmissionsEuro6 article "1"  
     provision "Regulation (EC) No 715/2007 is amended as follows:..."]
     (
@@ -1906,10 +1906,10 @@ extract if
 Extraction instructions can be chained using the keyword `then`, which means that extraction continues from the previous point. The syntax provides type safety when chaining extraction instructions: the output type of the preceding instruction must be equal to the input type of the following instruction.
 
 ``` Haskell
-reporting rule VehicleForOwner
+reporting rule VehicleForOwner:
     extract VehicleOwnership -> vehicle
 
-reporting rule VehicleClassification
+reporting rule VehicleClassification:
     VehicleForOwner then extract Vehicle -> vehicleClassification
     // This is equivalent to writing directly:
     // extract VehicleOwnership -> vehicle -> vehicleClassification
@@ -1918,7 +1918,7 @@ reporting rule VehicleClassification
 An extraction instruction followed by `as` sets a label onto the value to appear as the column name in a computed report. The label is an arbitrary, non-functional string and should generally be aligned with the name of the reportable field as per the regulation.
 
 ``` Haskell
-reporting rule FirstRegistrationDate <"Date of first registration of the vehicle">
+reporting rule FirstRegistrationDate: <"Date of first registration of the vehicle">
    extract VehicleOwnership -> vehicle -> specification -> dateOfFirstRegistration
     as "First Registration Date"
 ```
@@ -1960,7 +1960,7 @@ extract Vehicle -> specification -> dateOfFirstRegistration
 where the filtering rule itself is defined as:
 
 ``` Haskell
-reporting rule VehicleIsM
+reporting rule VehicleIsM:
   extract
     Vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
       or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers

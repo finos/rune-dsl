@@ -16,7 +16,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
-import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -29,24 +28,31 @@ import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
-import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.resource.IEObjectDescription
-import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.FilteringScope
 import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider
-import org.eclipse.xtext.scoping.impl.SimpleScope
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
+import java.util.List
+import org.eclipse.xtext.scoping.impl.SimpleScope
+import org.eclipse.xtext.resource.EObjectDescription
+import org.eclipse.xtext.naming.QualifiedName
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.utils.RosettaConfigExtension
+import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 /**
  * This class contains custom scoping description.
@@ -70,30 +76,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			switch reference {
 				case ROSETTA_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaFeatureCall) {
-						val receiverType = typeProvider.getRType(context.receiver)
-						val featureScope = receiverType.createFeatureScope
-						var allPosibilities = newArrayList
-						
-						if (featureScope!==null) {
-							allPosibilities.addAll(featureScope.allElements);
-						}
-						//if an attribute has metafields then then the meta names are valid in a feature call e.g. -> currency -> scheme
-						val receiver = context.receiver;
-						if (receiver instanceof RosettaFeatureCall) {
-							val feature = receiver.feature
-							switch(feature) {
-								Attribute: {
-									val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
-									// TODO check that we can use QualifiedName here 
-									if (metas !== null && !metas.isEmpty) {
-										allPosibilities.addAll(configs.findMetaTypes(feature).filter[
-											metas.contains(it.name.lastSegment.toString)
-										].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)])
-									}
-								}
-							}
-						}
-						return new SimpleScope(allPosibilities)
+						return createExtendedFeatureScope(context.receiver)
+					}
+					return IScope.NULLSCOPE
+				}
+				case ROSETTA_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
+					if (context instanceof RosettaAttributeReference) {
+						return createExtendedFeatureScope(context.receiver)
 					}
 					return IScope.NULLSCOPE
 				}
@@ -113,22 +102,14 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					switch (context) {
 						Operation: {
 							val receiverType = typeProvider.getRType(context.assignRoot)
-							val featureScope = receiverType.createFeatureScope
-							if (featureScope !== null) {
-								return featureScope;
-							}
-							return IScope.NULLSCOPE
+							return Scopes.scopeFor(receiverType.findFeatures)
 						}
 						Segment: {
 							val prev = context.prev
 							if (prev !== null) {
 								if (prev.attribute !== null && !prev.attribute.eIsProxy) {
 									val receiverType = typeProvider.getRType(prev.attribute)
-									val featureScope = receiverType.createFeatureScope
-									if (featureScope !== null) {
-										return featureScope;
-									}
-									return IScope.NULLSCOPE
+									return Scopes.scopeFor(receiverType.findFeatures)
 								}
 							}
 							if (context.eContainer instanceof Operation) {
@@ -140,7 +121,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 							return defaultScope(context, reference)
 					}
 				}
-				case ROSETTA_CALLABLE_CALL__CALLABLE: {
+				case ROSETTA_SYMBOL_REFERENCE__SYMBOL: {
 					if (context instanceof Operation) {
 						val function = context.function
 						val inputsAndOutputs = newArrayList
@@ -150,22 +131,33 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 							inputsAndOutputs.add(function.output)
 						return Scopes.scopeFor(inputsAndOutputs)
 					} else {
+						val implicitFeatures = findFeaturesOfImplicitVariable(context)
+						
 						val inline = EcoreUtil2.getContainerOfType(context, InlineFunction)
 						if(inline !== null) {
-							return getParentScope(context, reference, IScope.NULLSCOPE)
+							val ps = getSymbolParentScope(context, reference, IScope.NULLSCOPE)
+							return Scopes.scopeFor(
+								implicitFeatures.filterNamesThatAlreadyExist(ps),
+								ps
+							)
 						}
 						val container = EcoreUtil2.getContainerOfType(context, Function)
 						if(container !== null) {
-							return filteredScope(getParentScope(context, reference, IScope.NULLSCOPE), [
+							val ps = filteredScope(getSymbolParentScope(context, reference, IScope.NULLSCOPE), [
 								descr | descr.EClass !== DATA
 							])
+							return Scopes.scopeFor(
+								implicitFeatures.filterNamesThatAlreadyExist(ps),
+								ps
+							)
 						}
 						
+						val ps = getSymbolParentScope(context, reference, defaultScope(context, reference))
+						return Scopes.scopeFor(
+							implicitFeatures.filterNamesThatAlreadyExist(ps),
+							ps
+						)
 					}
-					return getParentScope(context, reference, defaultScope(context, reference))
-				}
-				case ROSETTA_CALLABLE_WITH_ARGS_CALL__CALLABLE: {
-					return filteredScope(defaultScope(context, reference), [EClass !== FUNCTION_DISPATCH])
 				}
 				case ROSETTA_ENUM_VALUE_REFERENCE__VALUE: {
 					if (context instanceof RosettaEnumValueReference) {
@@ -203,10 +195,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					return IScope.NULLSCOPE
 				}
 				case CONSTRAINT__ATTRIBUTES: {
-					return context.getParentScope(reference, IScope.NULLSCOPE)
+					return Scopes.scopeFor(
+						EcoreUtil2.getContainerOfType(context, Data).allAttributes
+					)
 				}
 			}
-			defaultScope(context, reference)
+			// LOGGER.warn('''No scope defined for «context.class.simpleName» referencing «reference.name».''')
+			return defaultScope(context, reference)
 		}
 		catch (Exception e) {
 			LOGGER.error ("Error scoping rosetta - \"" + e.message + "\" see debug logging for full trace");
@@ -216,6 +211,12 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			//so just return an empty scope here and let the validator do its thing afterwards
 			return IScope.NULLSCOPE;
 		}
+	}
+	
+	private def Iterable<? extends RosettaNamed> filterNamesThatAlreadyExist(Iterable<? extends RosettaNamed> features, IScope parentScope) {
+		features.filter[
+			parentScope.getSingleElement(QualifiedName.create(it.name)) === null
+		]
 	}
 	
 	override protected getImplicitImports(boolean ignoreCase) {
@@ -237,17 +238,14 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		filteredScope(super.getScope(object,reference), [it.EClass !== FUNCTION_DISPATCH])
 	}
 	
-	private def IScope getParentScope(EObject object, EReference reference, IScope outer) {
+	private def IScope getSymbolParentScope(EObject object, EReference reference, IScope outer) {
 		if (object === null) {
 			return IScope.NULLSCOPE
 		}
-		val parentScope = getParentScope(object.eContainer, reference, outer)
+		val parentScope = getSymbolParentScope(object.eContainer, reference, outer)
 		switch (object) {
 			InlineFunction: {
 				return Scopes.scopeFor(object.parameters, parentScope)
-			}
-			Data: {
-				return Scopes.scopeFor(object.allAttributes, outer)
 			}
 			Function: {
 				val features = newArrayList
@@ -256,9 +254,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				if (out !== null)
 					features.add(getOutput(object))
 				features.addAll(object.shortcuts)
-				return Scopes.scopeFor(features, filteredScope(parentScope)[ descr |
-					descr.EClass == ROSETTA_ENUMERATION
-				])
+				return Scopes.scopeFor(features, parentScope)
 			}
 			ShortcutDeclaration: {
 				filteredScope(parentScope, [descr|
@@ -271,7 +267,9 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				])
 			}
 			RosettaModel:
-				defaultScope(object, reference)
+				filteredScope(defaultScope(object, reference))[ descr |
+					#{DATA, ROSETTA_ENUMERATION, FUNCTION, ROSETTA_EXTERNAL_FUNCTION}.contains(descr.EClass)
+				]
 			default:
 				parentScope
 		}
@@ -281,16 +279,48 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		new FilteringScope(scope,filter)
 	}
 
-	private def IScope createFeatureScope(RType receiverType) {
+	private def Iterable<? extends RosettaFeature> findFeatures(RType receiverType) {
 		switch receiverType {
 			RDataType:
-				Scopes.scopeFor(receiverType.data.allAttributes)
+				receiverType.data.allAttributes
 			REnumType:
-				Scopes.scopeFor(receiverType.enumeration.allEnumValues)
+				receiverType.enumeration.allEnumValues
 			RRecordType:
-				Scopes.scopeFor(receiverType.record.features)
+				receiverType.record.features
 			default:
-				null
+				#[]
 		}
+	}
+	
+	private def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
+		findFeatures(typeProvider.typeOfImplicitVariable(context))
+	}
+	
+	private def IScope createExtendedFeatureScope(EObject receiver) {
+		val receiverType = typeProvider.getRType(receiver)
+
+		val List<IEObjectDescription> allPosibilities = newArrayList
+		allPosibilities.addAll(
+			receiverType.findFeatures
+				.map[new EObjectDescription(QualifiedName.create(name), it, null)]
+			
+		)
+
+		//if an attribute has metafields then the meta names are valid in a feature call e.g. -> currency -> scheme
+		val feature = if (receiver instanceof RosettaFeatureCall) {
+			receiver.feature
+		} else if (receiver instanceof RosettaSymbolReference) {
+			receiver.symbol
+		}
+		if (feature instanceof Attribute) {
+			val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
+			if (metas !== null && !metas.isEmpty) {
+				allPosibilities.addAll(configs.findMetaTypes(feature).filter[
+					metas.contains(it.name.lastSegment.toString)
+				].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)])
+			}
+		}
+		
+		return new SimpleScope(allPosibilities)
 	}
 }

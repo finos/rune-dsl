@@ -127,7 +127,7 @@ class DocReferenceTest {
 			func Sum:
 				[docReference Org1 Agr1 name "something"]
 				inputs: x number (0..*)
-				output: sum number (1..1)
+				output: s number (1..1)
 
 		'''.parseRosettaWithNoErrors
 	}

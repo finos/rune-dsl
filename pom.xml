@@ -46,14 +46,18 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<additionalTestArguments></additionalTestArguments>
 	</properties>
 	<modules>
-		<module>com.regnosys.rosetta</module>
 		<module>com.regnosys.rosetta.target</module>
+		<module>com.regnosys.rosetta.lib</module>
+		<module>com.regnosys.rosetta.blueprint-lib</module>
+		<module>com.regnosys.rosetta</module>
 		<module>com.regnosys.rosetta.tests</module>
 		<module>com.regnosys.rosetta.ui</module>
-		<module>com.regnosys.rosetta.ide</module>
 		<module>com.regnosys.rosetta.ui.tests</module>
 		<module>com.regnosys.rosetta.lib</module>
 		<module>com.regnosys.rosetta.blueprint.lib</module>
+		<module>com.regnosys.rosetta.ide</module>
+		<module>com.regnosys.rosetta.ide.tests</module>
+		<module>com.regnosys.rosetta.tools</module>
 	</modules>
 	<dependencyManagement>
 		<dependencies>

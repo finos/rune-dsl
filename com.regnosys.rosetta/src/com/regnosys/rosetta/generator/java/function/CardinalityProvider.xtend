@@ -2,8 +2,6 @@ package com.regnosys.rosetta.generator.java.function
 
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableCall
-import com.regnosys.rosetta.rosetta.expression.RosettaCallableWithArgsCall
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
@@ -23,7 +21,6 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation
 import com.regnosys.rosetta.rosetta.expression.FilterOperation
 import com.regnosys.rosetta.rosetta.expression.SortOperation
@@ -45,8 +42,14 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.FunctionReference
 import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import javax.inject.Inject
 
 class CardinalityProvider {
+	
+	@Inject extension ImplicitVariableUtil
 	
 	def boolean isMulti(EObject obj) {
 		isMulti(obj, false)
@@ -63,14 +66,18 @@ class CardinalityProvider {
 			}
 			RosettaEnumValue:false
 			WithCardinality: if(obj.card === null) false else obj.card.isIsMany
-			RosettaCallableCall: {
-				if (obj.implicitReceiver) 
-					EcoreUtil2.getContainerOfType(obj, InlineFunction).firstOrImplicit.isMulti(breakOnClosureParameter)
-				else 
-					obj.callable.isMulti(breakOnClosureParameter)
+			RosettaSymbolReference: {
+				obj.symbol.isMulti(breakOnClosureParameter)
 			}
-			RosettaCallableWithArgsCall: {
-				obj.callable.isMulti(breakOnClosureParameter)
+			RosettaImplicitVariable: {
+				val definingContainer = obj.findContainerDefiningImplicitVariable
+				definingContainer.map [
+					if (it instanceof RosettaFunctionalOperation) {
+						functionRef.isItemMulti
+					} else {
+						false
+					}
+				].orElse(false)
 			}
 			Function: if(obj.output === null) false else obj.output.isMulti(breakOnClosureParameter)
 			ShortcutDeclaration: obj.expression.isMulti(breakOnClosureParameter)
@@ -207,9 +214,10 @@ class CardinalityProvider {
 					false
 			}
 		}
-		else if (op instanceof RosettaCallableCall) {
-			if (op.implicitReceiver || op.callable instanceof ClosureParameter) {
-				val f = EcoreUtil2.getContainerOfType(op, InlineFunction)
+		else if (op instanceof RosettaSymbolReference) {
+			val s = op.symbol
+			if (s instanceof ClosureParameter) {
+				val f = s.function
 				val enclosed = f.eContainer as RosettaFunctionalOperation
 				if (enclosed instanceof ExtractAllOperation) {
 					return enclosed.argument.isOutputListOfLists
@@ -219,6 +227,15 @@ class CardinalityProvider {
 			} else {
 				false
 			}
+		}
+		else if (op instanceof RosettaImplicitVariable) {
+			val definingContainer = op.findContainerDefiningImplicitVariable
+			definingContainer.map [
+				if (it instanceof ExtractAllOperation)
+					argument.isOutputListOfLists
+				else
+					false
+			].orElse(false)
 		}
 		else if (op instanceof CanHandleListOfLists) {
 			val previousListOp = op.argument

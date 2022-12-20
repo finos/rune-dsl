@@ -34,10 +34,10 @@
 					<pomDependencies>consider</pomDependencies>
 				</configuration>
 			</plugin>
-			<!--plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.4.0</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -118,27 +118,32 @@
 							<assembleDirectory>${project.build.directory}/languageserver</assembleDirectory>
 							<repositoryLayout>flat</repositoryLayout>
 							<useWildcardClassPath>true</useWildcardClassPath>
-							<!- - uncomment to enable remote debugging
+							<!--uncomment to enable remote debugging
 							<extraJvmArguments>-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000</extraJvmArguments>
-							- ->
+							-->
 							<programs>
 								<program>
-									<id>mydsl-ls</id>
-									<mainClass>org.eclipse.xtext.ide.server.ServerLauncher</mainClass>
-									<!- - uncomment to enable options
+									<id>rosetta-dsl-ls</id>
+									<mainClass>com.regnosys.rosetta.ide.server.RosettaServerLauncher</mainClass>
+									<!--uncomment to enable options
 									<commandLineArguments>
 										<commandLineArgument>-trace</commandLineArgument>
 										<commandLineArgument>-log</commandLineArgument>
 										<commandLineArgument>-noValidate</commandLineArgument>
 									</commandLineArguments>
-									- - >
+									-->
 								</program>
 							</programs>
 						</configuration>
 					</execution>
 				</executions>
-			</plugin-->
+			</plugin>
 		</plugins>
+	    <resources>
+	      <resource>
+	        <directory>resources</directory>
+	      </resource>
+	    </resources>
 	</build>
 
 </project>

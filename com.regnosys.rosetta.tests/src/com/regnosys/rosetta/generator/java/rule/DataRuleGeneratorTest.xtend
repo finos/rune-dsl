@@ -74,7 +74,11 @@ class DataRuleGeneratorTest {
 							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
 						}
 						
-						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, result.getError());
+						String failureMessage = result.getError();
+						if (failureMessage == null) {
+							failureMessage = "Condition " + NAME + " failed.";
+						}
+						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 					}
 					
 					private ComparisonResult executeDataRule(Foo foo) {
@@ -172,7 +176,11 @@ class DataRuleGeneratorTest {
 							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
 						}
 						
-						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, result.getError());
+						String failureMessage = result.getError();
+						if (failureMessage == null) {
+							failureMessage = "Condition " + NAME + " failed.";
+						}
+						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 					}
 					
 					private ComparisonResult executeDataRule(Foo foo) {

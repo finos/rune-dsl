@@ -36,6 +36,212 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void mayDoRecursiveCalls() {
+		val code = '''
+			func Rec:
+				output: result int (1..1)
+				alias test: Rec()
+				set result: Rec()
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
+	def void nestedInlineFunctionsTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				output:
+					result int (1..1)
+				
+				set result:
+					1 extract [
+						item extract-all param1 [
+							10 extract [
+								item extract-all param2 [
+									100 extract [
+										item*10
+									] extract [
+										item + param1 + param2
+									]
+								]
+							]
+						]
+					]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func1 = classes.createFunc("F1");
+		assertEquals(1011, func1.invokeFunc(List))
+	}
+	
+	@Test
+	def void directlyUseAttributesOfImplicitVariableTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			type Foo:
+				a int (1..1)
+				b string (0..*)
+			
+			func F1:
+				inputs:
+					foos Foo (0..*)
+				output:
+					result int (0..*)
+				
+				add result:
+					foos
+						extract [ a + b count]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val foo1 = classes.createInstanceUsingBuilder('Foo', of('a', 42, 'b', #[]))
+		val foo2 = classes.createInstanceUsingBuilder('Foo', of('a', -5, 'b', #["Hello", "World!"]))
+		val func1 = classes.createFunc("F1");
+		assertEquals(#[42, -3], func1.invokeFunc(List, #[#[foo1, foo2]]))
+	}
+	
+	@Test
+	def void omittedParameterInFunctionalOperationTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				inputs:
+					a int (0..*)
+				output:
+					result int (0..*)
+				
+				add result:
+					a extract [+ 1]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func1 = classes.createFunc("F1");
+		assertEquals(#[2, 3, 4], func1.invokeFunc(List, #[#[1, 2, 3]]))
+	}
+	
+	@Test
+	def void namedFunctionInFunctionalOperationTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func Incr:
+				inputs:
+					a int (1..1)
+				output:
+					result int (1..1)
+				
+				set result:
+					a + 1
+			
+			func IsAnswerToTheUniverse:
+				inputs:
+					a int (1..1)
+				output:
+					result boolean (1..1)
+				
+				set result:
+					a = 42
+			
+			func ClosestToTen:
+				inputs:
+					a int (1..1)
+					b int (1..1)
+				output:
+					result int (1..1)
+				
+				set result:
+					if a < 10 then
+						if b < 10 then
+							if a > b then a else b
+						else
+							if 10 - a < b - 10 then a else b
+					else
+						if b < 10 then
+							if a - 10 < 10 - b then a else b
+						else
+							if a < b then a else b
+			
+			func F1:
+				inputs:
+					list int (0..*)
+				output:
+					res int (0..*)
+				
+				add res:
+					list
+						extract Incr
+			
+			func F2:
+				inputs:
+					list int (0..*)
+				output:
+					res boolean (0..*)
+				
+				add res:
+					list
+						extract IsLeapYear
+			
+			func F3:
+				inputs:
+					list int (0..*)
+				output:
+					res int (0..*)
+				
+				add res:
+					list
+						filter IsAnswerToTheUniverse
+			
+			func F4:
+				inputs:
+					list int (0..*)
+				output:
+					res int (1..1)
+				
+				set res:
+					list
+						reduce ClosestToTen
+			
+			func F5:
+				inputs:
+					list int (0..*)
+				output:
+					res int (0..*)
+				
+				add res:
+					list
+						extract Incr
+						extract Incr
+						extract [ item + 1 ]
+						extract-all a [ a extract Incr ]
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val func1 = classes.createFunc("F1");
+		assertEquals(#[2, 3, 4], func1.invokeFunc(List, #[#[1, 2, 3]]))
+		
+		val func2 = classes.createFunc("F2");
+		assertEquals(#[true, false, false], func2.invokeFunc(List, #[#[2000, 2001, 2002]]))
+		
+		val func3 = classes.createFunc("F3");
+		assertEquals(#[42, 42], func3.invokeFunc(List, #[#[1, 2, 42, 3, 42]]))
+		
+		val func4 = classes.createFunc("F4");
+		assertEquals(8, func4.invokeFunc(Integer, #[#[0, 5, 8]]))
+		assertEquals(11, func4.invokeFunc(Integer, #[#[0, 5, 8, 11, 15]]))
+		
+		val func5 = classes.createFunc("F5");
+		assertEquals(#[5, 6, 7], func5.invokeFunc(List, #[#[1, 2, 3]]))
+	}
+	
+	@Test
 	def void emptyArgumentTest() {
 		val code = '''
 			namespace com.rosetta.test.model
@@ -1889,8 +2095,8 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, Foo foo) {
-							List<Bar.BarBuilder> __addVar0 = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti());
-							res.addAll(__addVar0);
+							List<Bar.BarBuilder> addVar0 = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti());
+							res.addAll(addVar0);
 							
 							return Optional.ofNullable(res)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -1988,8 +2194,8 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, List<? extends Bar> barList) {
-							List<Bar.BarBuilder> __addVar0 = toBuilder(distinct(MapperC.of(barList)).getMulti());
-							res.addAll(__addVar0);
+							List<Bar.BarBuilder> addVar0 = toBuilder(distinct(MapperC.of(barList)).getMulti());
+							res.addAll(addVar0);
 							
 							return Optional.ofNullable(res)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -2380,7 +2586,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
-							List<String> __addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							List<String> addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.of(t1);
 								}
@@ -2388,7 +2594,7 @@ class FunctionGeneratorTest {
 									return MapperC.of(t2);
 								}
 							}).getMulti();
-							result.addAll(__addVar0);
+							result.addAll(addVar0);
 							
 							return result;
 						}
@@ -2532,7 +2738,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
-							List<BigDecimal> __addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							List<BigDecimal> addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.of(t1);
 								}
@@ -2540,7 +2746,7 @@ class FunctionGeneratorTest {
 									return MapperC.of(t2);
 								}
 							}).getMulti();
-							result.addAll(__addVar0);
+							result.addAll(addVar0);
 							
 							return result;
 						}
@@ -2711,7 +2917,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-							List<Bar.BarBuilder> __addVar0 = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+							List<Bar.BarBuilder> addVar0 = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.of(b1);
 								}
@@ -2719,7 +2925,7 @@ class FunctionGeneratorTest {
 									return MapperC.of(b2);
 								}
 							}).getMulti());
-							result.addAll(__addVar0);
+							result.addAll(addVar0);
 							
 							return Optional.ofNullable(result)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -3456,7 +3662,11 @@ class FunctionGeneratorTest {
 							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
 						}
 						
-						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, result.getError());
+						String failureMessage = result.getError();
+						if (failureMessage == null) {
+							failureMessage = "Condition " + NAME + " failed.";
+						}
+						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 					}
 					
 					private ComparisonResult executeDataRule(Foo foo) {

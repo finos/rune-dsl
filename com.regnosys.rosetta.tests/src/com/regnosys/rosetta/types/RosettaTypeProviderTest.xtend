@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -19,6 +20,22 @@ class RosettaTypeProviderTest {
 
 	@Inject extension RosettaTypeProvider
 	@Inject extension ModelHelper modelHelper
+	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testAttributeSameNameAsAnnotationTest() {
+		val model =
+		'''		
+		type A:
+			[rootType]
+			rootType string (0..1)
+		
+			condition C:
+				rootType exists
+		'''.parseRosetta
+		
+		model.assertNoIssues
+	}
 	
 	@Test
 	def void testEnumCompatibility() {

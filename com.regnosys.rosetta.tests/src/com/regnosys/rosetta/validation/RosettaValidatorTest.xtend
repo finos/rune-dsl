@@ -30,64 +30,145 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
-	@Disabled
-	def void identicalAttributesInOnlyExistsError() {
+	def void nameShadowingNotAllowed1() {
 		val model =
 		'''
-			type A:
-			  i int (0..1)
+			func F:
+				inputs:
+					a int (1..1)
+				output: result int (1..1)
+				set result:
+					42 extract a [ a ]
+		'''.parseRosetta
+		model.assertError(CLOSURE_PARAMETER, null,
+            "Duplicate name.")
+	}
+	
+	@Test
+	def void nameShadowingNotAllowed2() {
+		val model =
+		'''
+			func F:
+				output: result int (1..1)
+				alias a: 10
+				set result:
+					42 extract a [ a ]
+		'''.parseRosetta
+		model.assertError(CLOSURE_PARAMETER, null,
+            "Duplicate name.")
+	}
+	
+	@Test
+	def void nameShadowingNotAllowed3() {
+		val model =
+		'''
+			func F:
+				output: a int (1..1)
+				set a:
+					42 extract a [ a ]
+		'''.parseRosetta
+		model.assertError(CLOSURE_PARAMETER, null,
+            "Duplicate name.")
+	}
+	
+	@Test
+	def void nameShadowingNotAllowed4() {
+		val model =
+		'''
+			func F:
+				output: result int (1..1)
+				set result:
+					42 extract a [ 10 extract a [ a ] ]
+		'''.parseRosetta
+		model.assertError(CLOSURE_PARAMETER, null,
+            "Duplicate name.")
+	}
+	
+	@Test
+	def void mayDoRecursiveCalls() {
+		'''
+			func Rec:
+				output: result int (1..1)
+				alias test: Rec()
+				set result: Rec()
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testCannotOmitParametersOfBinaryFunction() {
+		val model =
+		'''
+			func Add:
+				inputs:
+					a int (1..1)
+					b int (1..1)
+				output: result int (1..1)
+				set result:
+					a + b
 			
 			func Foo:
-			  inputs: a A (1..1)
-			  output: result boolean (1..1)
-			  set result: a -> (i, i) only exists
+				inputs: a int (0..*)
+				output: b int (0..*)
+				add b:
+					a extract [Add]
 		'''.parseRosetta
-		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
-			"TODO")
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+            "Expected 2 arguments, but got 1 instead.")
 	}
 	
 	@Test
-	@Disabled
-	def void noParentInOnlyExistsError() {
-		val model =
-		'''
-			type A:
-			  i int (0..1)
-			
-			func Foo:
-			  inputs: a A (0..1)
-			  output: result boolean (1..1)
-			  set result: a only exists
-		'''.parseRosetta
-		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
-			"TODO")
-	}
-	
-	@Test
-	@Disabled
-	def void implicitParentInOnlyExists() {
-		val model =
-		'''
-			type A:
-			  i int (0..1)
-			  
-			  condition OnlyExistsTest:
-			    i only exists
-		'''.parseRosetta
-		model.assertNoIssues
-	}
-	
-	@Test
-	@Disabled
-	def void primitiveTypeInOnlyExistsError() {
+	def void testCannotCallParameter() {
 		val model =
 		'''
 			func Foo:
-			  output: result boolean (1..1)
-			  set result: True only exists
+				inputs: a int (0..*)
+				output: b int (0..*)
+				add b:
+					a()
 		'''.parseRosetta
-		model.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, TYPE_ERROR, 
-			"TODO")
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+            "A variable may not be called.")
+	}
+	
+	@Test
+	def void testGeneratedInputWithoutImplicitVariable() {
+		val model =
+		'''
+			func Foo:
+				inputs: a int (0..*)
+				output: b int (0..*)
+				add b:
+					extract [item+1]
+		'''.parseRosetta
+		model.assertError(MAP_OPERATION, null,
+            "There is no implicit variable in this context. This operator needs an explicit input in this context.")
+	}
+	
+	@Test
+	def void testImplicitVariableWhenItDoesNotExist() {
+		val model =
+		'''
+			func Foo:
+				inputs: a int (0..*)
+				output: b int (0..*)
+				add b:
+					item
+		'''.parseRosetta
+		model.assertError(ROSETTA_IMPLICIT_VARIABLE, null,
+            "There is no implicit variable in this context.")
+	}
+	
+	@Test
+	def void testGeneratedInputValidationRedirection() {
+		val model =
+		'''
+			type Foo:
+				a int (1..1)
+				condition A:
+					/42
+		'''.parseRosetta
+		model.assertError(ROSETTA_IMPLICIT_VARIABLE, null,
+            "Expected type `number`, but got `Foo` instead.")
 	}
 	
 	@Test
@@ -144,7 +225,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					if id = True
 					then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, 
+		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR,
 			"Incompatible types: cannot use operator '=' with int and boolean.")
 	}
 	
@@ -718,7 +799,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			     Foo(timestamp) = timestamp
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_CALLABLE_WITH_ARGS_CALL, TYPE_ERROR, 
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, TYPE_ERROR, 
 			"Expected type 'zonedDateTime' but was 'date'")
 	}
 	
@@ -947,10 +1028,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule Aa
+			reporting rule Aa:
 				extract Bar->bar1 as "A"
 			
 			type Bar:
@@ -973,25 +1054,25 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->barA exists
 			
-			reporting rule Aa
+			reporting rule Aa:
 				extract Bar->barA as "A"
 
-			reporting rule Bb
+			reporting rule Bb:
 				extract Bar->barB as "B"
 				
-			reporting rule Cc
+			reporting rule Cc:
 				extract Bar->barC as "C"
 
-			reporting rule Dd
+			reporting rule Dd:
 				extract Bar->barD as "D"
 
-			reporting rule Ee
+			reporting rule Ee:
 				extract Bar->barE as "E"
 				
-			reporting rule Ff
+			reporting rule Ff:
 				extract Bar->barF as "F"
 			
 			type Bar:
@@ -1040,10 +1121,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->barA exists
 			
-			reporting rule Aa
+			reporting rule Aa:
 			(
 				extract Bar->barA as "A",
 				extract Bar->barB as "B"
@@ -1072,10 +1153,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule A
+			reporting rule A:
 				return "Not Modelled" 
 					as "A"
 			
@@ -1100,10 +1181,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1133,10 +1214,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1 + Bar->bar2,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1166,10 +1247,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1 * Bar->bar2,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1199,10 +1280,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1232,10 +1313,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1268,10 +1349,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule BarBarOne
+			reporting rule BarBarOne:
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1308,10 +1389,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule A
+			reporting rule A:
 				return "Not Modelled" 
 					as "A"
 			
@@ -1337,10 +1418,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule
+			eligibility rule FooRule:
 				filter when Bar->bar1 exists
 			
-			reporting rule A
+			reporting rule A:
 				extract Bar->bar1 as "A"
 			
 			type Bar:
@@ -1664,6 +1745,63 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x string (1..1)
 		'''.parseRosetta
 		model.assertError(INLINE_FUNCTION, null, "Function must have 1 named parameter.")
+	}
+	
+	@Test
+	def void mapWithNamedFunctionReferenceShouldGenerateNoError() {
+		val model = '''
+			func DoSomething:
+				inputs:
+					a Foo (1..1)
+				output:
+					result string (1..1)
+					
+				set result:
+					a -> x
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				add strings:
+					foos
+						map DoSomething
+			
+			type Foo:
+				x string (1..1)
+		'''.parseRosetta
+		model.assertNoIssues
+	}
+	
+	@Test
+	def void shouldGenerateListMapParametersErrorNamedFunctionReference() {
+		val model = '''
+			func DoSomething:
+				inputs:
+					a Foo (1..1)
+					b boolean (1..1)
+				output:
+					result string (1..1)
+					
+				set result:
+					a -> x
+			
+			func FuncFoo:
+			 	inputs:
+			 		foos Foo (0..*)
+				output:
+					strings string (0..*)
+				
+				add strings:
+					foos
+						map DoSomething
+			
+			type Foo:
+				x string (1..1)
+		'''.parseRosetta
+		model.assertError(NAMED_FUNCTION_REFERENCE, null, "Function must have 1 parameter.")
 	}
 	
 	@Test
