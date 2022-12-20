@@ -13,6 +13,9 @@ npm-debug.log
 # copy of the Rosetta LSP Java binary
 src/rosetta
 
+# copy of the Rosetta Text Mate grammar
+syntaxes
+
 # compiled output of the plugin
 out
 
