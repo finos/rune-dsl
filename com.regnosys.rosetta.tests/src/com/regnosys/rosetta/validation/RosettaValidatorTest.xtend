@@ -113,7 +113,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					a extract [Add]
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
-            "Expected 2 arguments, but got 1 instead.")
+            "Expected 2 arguments, but got 0 instead.")
 	}
 	
 	@Test
