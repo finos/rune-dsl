@@ -972,6 +972,23 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void externalSynonymCanExtendMultipleParents() {
+	val model='''
+			type Foo:
+				foo time (0..1)
+			
+			synonym source TEST_Base1
+			synonym source TEST_Base2
+			synonym source TEST_Base3
+			
+			synonym source TEST extends TEST_Base1, TEST_Base2, TEST_Base3 {
+			
+			}
+		'''.parseRosetta
+		model.assertNoErrors
+	}
+	
+	@Test
 	def void internalSynonymWithPatternShouldBeValid() {
 	val model='''
 			type Foo:
