@@ -79,7 +79,7 @@ class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs, Refer
 	contains Operation[] operations opposite function
 	contains Condition[] postConditions
 	
-	op int numberOfParameter() {
+	op int numberOfParameters() {
 		inputs.size
 	}
 }
