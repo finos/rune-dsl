@@ -44,7 +44,7 @@
 			                    </resource>
 			                </resources>
 			                <outputExtension>json</outputExtension>
-			                <outputDirectory>${project.basedir}/src-gen</outputDirectory>
+			                <outputDirectory>${project.basedir}/src-gen/syntaxes</outputDirectory>
 			            </configuration>
 			        </execution>
 			    </executions>
@@ -163,6 +163,26 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+			    <artifactId>exec-maven-plugin</artifactId>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <executions>
+			        <execution>
+			            <id>Build VS Code plugin</id>
+			            <phase>package</phase>
+			            <goals>
+			                <goal>exec</goal>
+			            </goals>
+			            <configuration>
+			                <executable>npm</executable>
+			                <arguments>
+			                	<argument>install</argument>
+			                </arguments>
+			                <workingDirectory>${project.parent.basedir}/vscode-plugin</workingDirectory>
+			            </configuration>
+			        </execution>
+			    </executions>
 			</plugin>
 		</plugins>
 	</build>

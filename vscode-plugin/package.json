@@ -50,8 +50,8 @@
   },
   "scripts": {
     "copy-lsp": "shx cp -r ../com.regnosys.rosetta.ide/target/languageserver src/rosetta",
-    "copy-text-mate": "shx cp ../com.regnosys.rosetta.ide/src-gen/rosetta.tmLanguage.json syntaxes/rosetta.tmLanguage.json",
-    "prepublish": "npm run copy-lsp && tsc -p ./src",
+    "copy-text-mate": "shx cp -r ../com.regnosys.rosetta.ide/src-gen/syntaxes .",
+    "prepublish": "npm run copy-lsp && npm run copy-text-mate && tsc -p ./src",
     "compile": "tsc -p ./src",
     "watch": "tsc -w -p ./src",
     "update-vscode": "node ./node_modules/vscode/bin/install",
