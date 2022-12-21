@@ -8,6 +8,6 @@
 		<version>0.0.0.master</version>
 		<relativePath>../</relativePath>
 	</parent>
-	<artifactId>com.regnosys.rosetta.blueprints</artifactId>
+	<artifactId>com.regnosys.rosetta.blueprint.lib</artifactId>
 	<packaging>eclipse-plugin</packaging>
 </project>
