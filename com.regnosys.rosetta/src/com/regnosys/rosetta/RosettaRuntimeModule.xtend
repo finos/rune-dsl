@@ -33,6 +33,8 @@ import com.regnosys.rosetta.validation.RetainXsemanticsIssuesOnGeneratedInputsFi
 import org.eclipse.xtext.conversion.IValueConverterService
 import com.regnosys.rosetta.parsing.RosettaValueConverterService
 import com.regnosys.rosetta.parsing.BigDecimalConverter
+import com.regnosys.rosetta.transgest.ModelLoader
+import com.regnosys.rosetta.transgest.ModelLoaderImpl
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -94,5 +96,9 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	}
 	def Class<? extends IDerivedStateComputer> bindIDerivedStateComputer() {
 		RosettaDerivedStateComputer
+	}
+	
+	def Class<? extends ModelLoader> bindModelLoader() {
+		ModelLoaderImpl
 	}
 }
