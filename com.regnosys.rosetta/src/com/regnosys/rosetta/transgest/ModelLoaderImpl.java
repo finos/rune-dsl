@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -29,19 +30,19 @@ import com.regnosys.rosetta.rosetta.simple.Data;
 import com.rosetta.model.lib.RosettaModelObject;
 
 public class ModelLoaderImpl implements ModelLoader {
-	@Inject IResourceValidator resourceValidator;
+	@Inject Provider<XtextResourceSet> resourceSetProvider;
 	
 	public List<RosettaModel> loadRosettaModels(Stream<URL> res) {
-		XtextResourceSet resourceSet = new XtextResourceSet();
-		return res.map(ModelLoaderImpl::url)
+		XtextResourceSet resourceSet = resourceSetProvider.get();
+		List<RosettaModel> models = res.map(ModelLoaderImpl::url)
 				.map(f -> getResource(resourceSet, f))
 				.filter(Objects::nonNull)
-				.peek(r -> resourceValidator.validate(r, CheckMode.ALL, CancelIndicator.NullImpl))
 				.map(Resource::getContents)
 				.flatMap(Collection::stream)
 				.map(r -> (RosettaModel) r)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
+		return models;
 	}
 	
 	public List<RosettaModel> loadRosettaModels(URL... urls) {
