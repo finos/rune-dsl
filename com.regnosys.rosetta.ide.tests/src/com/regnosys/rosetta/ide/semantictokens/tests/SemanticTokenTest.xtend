@@ -12,12 +12,12 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			val model = '''
 			namespace foo.bar
 			
-			enum E:
+			enum Bar:
 				V
 			
 			type Foo:
 				a int (1..1)
-				b E (1..1)
+				b Bar (1..1)
 				c Foo (0..1)
 			'''
 			it.model = model
@@ -33,7 +33,7 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 					assertEquals(ENUM, tokenType)
 					assertEquals(7, line)
 					assertEquals(3, startChar)
-					assertEquals(1, length)
+					assertEquals(3, length)
 				]
 				get(2) => [
 					assertEquals(TYPE, tokenType)
