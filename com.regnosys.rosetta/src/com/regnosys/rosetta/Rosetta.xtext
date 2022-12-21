@@ -182,7 +182,6 @@ ValidID:
 	(ID | 'key' // used in Lib: annotations.rosetta
 		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
 		| 'workflow' //used in the namespace
-		| 'e' | 'E'
 	)
 ;
 
