@@ -1,21 +1,24 @@
 package com.regnosys.rosetta.transgest;
 
+import java.net.URL;
+import java.util.Collection;
 import java.util.List;
-
-import org.eclipse.emf.ecore.resource.ResourceSet;
+import java.util.stream.Stream;
 
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.rosetta.model.lib.RosettaModelObject;	
 
-public interface ModelLoader {	
+public interface ModelLoader {
+	
+	List<RosettaModel> loadRosettaModels(Stream<URL> res);
+	List<RosettaModel> loadRosettaModels(URL... urls);
+	List<RosettaModel> loadRosettaModels(Collection<String> resourceLocations);
 
-	RosettaType rosettaClass(Class<? extends RosettaModelObject> rootObject);	
+	RosettaType rosettaClass(List<RosettaModel> rosettaModels, Class<? extends RosettaModelObject> rootObject);	
 
-	RosettaType rosettaClass(String className);	
-
-	List<RosettaModel> models();	
+	RosettaType rosettaClass(List<RosettaModel> rosettaModels, String className);
 
 	/**	
 	 * Will return a list of objects which are assignment-compatible with the object represented 	
@@ -28,10 +31,5 @@ public interface ModelLoader {
 	 * @param clazz	
 	 * @return a list of concrete objects of the above class or subclasses of	
 	 */	
-	<T extends RosettaRootElement> List<T> rosettaElements(Class<T> clazz);	
-
-	ResourceSet getResourceSet();	
-
-	void addModel(RosettaModel model);	
-
+	<T extends RosettaRootElement> List<T> rosettaElements(List<RosettaModel> rosettaModels, Class<T> clazz);	
 } 

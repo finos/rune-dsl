@@ -2,7 +2,6 @@ package com.regnosys.rosetta.transgest;
 
 import static com.regnosys.rosetta.generator.util.Util.fullname;
 
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -13,12 +12,17 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.resource.XtextResourceSet;
+import org.eclipse.xtext.util.CancelIndicator;
+import org.eclipse.xtext.validation.CheckMode;
+import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.google.common.io.Resources;
-import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaType;
@@ -26,30 +30,11 @@ import com.regnosys.rosetta.rosetta.simple.Data;
 import com.rosetta.model.lib.RosettaModelObject;
 
 public class ModelLoaderImpl implements ModelLoader {
-
-	private final List<RosettaModel> rosettaModels;
-	private XtextResourceSet resourceSet;
-
-	public ModelLoaderImpl(Collection<String> resourceLocations) {
-		this(true, resourceLocations.stream().map(Resources::getResource).toArray(i->new URL[i]));
-	}
-
-	public ModelLoaderImpl(URL... urls) {
-		this(true, urls);
-	}
+	@Inject Provider<XtextResourceSet> resourceSetProvider;
 	
-	public ModelLoaderImpl(boolean runSetup, URL... urls) {
-		if (runSetup) RosettaStandaloneSetup.doSetup();
-		rosettaModels = loadRosettaModels(Arrays.stream(urls));
-	}
-
-	public void addRosource(InputStream resourceStream) {
-
-	}
-
-	private List<RosettaModel> loadRosettaModels(Stream<URL> res) {
-		resourceSet = new XtextResourceSet();
-		return res.map(ModelLoaderImpl::url)
+	public List<RosettaModel> loadRosettaModels(Stream<URL> res) {
+		XtextResourceSet resourceSet = resourceSetProvider.get();
+		List<RosettaModel> models = res.map(ModelLoaderImpl::url)
 				.map(f -> getResource(resourceSet, f))
 				.filter(Objects::nonNull)
 				.map(Resource::getContents)
@@ -57,15 +42,19 @@ public class ModelLoaderImpl implements ModelLoader {
 				.map(r -> (RosettaModel) r)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
+		return models;
+	}
+	
+	public List<RosettaModel> loadRosettaModels(URL... urls) {
+		return loadRosettaModels(Arrays.stream(urls));
+	}
+	
+	public List<RosettaModel> loadRosettaModels(Collection<String> resourceLocations) {
+		return loadRosettaModels(resourceLocations.stream().map(Resources::getResource));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.regnosys.rosetta.transgest.ModelLoader#rosettaClass(java.lang.Class)
-	 */
 	@Override
-	public RosettaType rosettaClass(Class<? extends RosettaModelObject> rootObject) {
+	public RosettaType rosettaClass(List<RosettaModel> rosettaModels, Class<? extends RosettaModelObject> rootObject) {
 		return rosettaModels.stream()
 				.map(RosettaModel::getElements)
 				.flatMap(Collection::stream)
@@ -77,7 +66,7 @@ public class ModelLoaderImpl implements ModelLoader {
 	}
 
 	@Override
-	public RosettaType rosettaClass(String className) {
+	public RosettaType rosettaClass(List<RosettaModel> rosettaModels, String className) {
 		return rosettaModels.stream().map(RosettaModel::getElements)
 				.flatMap(Collection::stream)
 				.filter(c -> c instanceof Data)
@@ -88,7 +77,7 @@ public class ModelLoaderImpl implements ModelLoader {
 	}
 
 	@Override
-	public <T extends RosettaRootElement> List<T> rosettaElements(Class<T> clazz) {
+	public <T extends RosettaRootElement> List<T> rosettaElements(List<RosettaModel> rosettaModels, Class<T> clazz) {
 		return rosettaModels.stream()
 				.map(RosettaModel::getElements)
 				.flatMap(Collection::stream)
@@ -112,20 +101,5 @@ public class ModelLoaderImpl implements ModelLoader {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	@Override
-	public List<RosettaModel> models() {
-		return rosettaModels;
-	}
-
-	@Override
-	public XtextResourceSet getResourceSet() {
-		return resourceSet;
-	}
-
-	@Override
-	public void addModel(RosettaModel model) {
-		rosettaModels.add(model);
 	}
 }
