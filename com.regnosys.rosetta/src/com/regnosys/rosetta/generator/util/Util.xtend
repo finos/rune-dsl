@@ -98,10 +98,7 @@ class Util {
 	 * Currently only used for list operation variable names, but should be used everywhere.
 	 */
 	def String toDecoratedName(String name, EObject context) {
-		var prefix = "";
-		for(var i = 0; i < context.scopeDepth; i++) {
-			prefix += "_"
-		}
+		val prefix = '_'.repeat(context.scopeDepth)
 		'''«prefix»«name»'''
 	}
 }

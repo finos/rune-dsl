@@ -11,6 +11,14 @@
     <artifactId>com.regnosys.rosetta.lib</artifactId>
     <packaging>eclipse-plugin</packaging>
 
+	<properties>
+		<!-- source and target used by tycho plugin -->
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<!-- release used by maven compiler plugin -->
+		<maven.compiler.release>8</maven.compiler.release>
+	</properties>
+
     <build>
         <plugins>
             <plugin>
