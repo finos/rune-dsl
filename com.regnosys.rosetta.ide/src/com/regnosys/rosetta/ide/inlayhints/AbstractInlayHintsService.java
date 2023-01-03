@@ -214,17 +214,17 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 				try {
 					method.setAccessible(true);
 					if (state.cancelIndicator.isCanceled()) {
-						return List.of();
+						return Collections.emptyList();
 					}
 					Object res = method.invoke(instance, state.currentObject);
 					if (res == null) {
-						return List.of();
+						return Collections.emptyList();
 					}
 					if (res instanceof List<?>) {
 						return ((List<?>) res).stream().filter(InlayHint.class::isInstance).map(InlayHint.class::cast)
 							.collect(Collectors.toList());
 					} else if (res instanceof InlayHint) {
-						return List.of((InlayHint) res);
+						return Arrays.asList((InlayHint) res);
 					} else {
 						log.error("Incorrect return type for method " + method);
 					}
@@ -238,7 +238,7 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 				if (wasNull)
 					instance.state.remove();
 			}
-			return List.of();
+			return Collections.emptyList();
 		}
 
 		@Override

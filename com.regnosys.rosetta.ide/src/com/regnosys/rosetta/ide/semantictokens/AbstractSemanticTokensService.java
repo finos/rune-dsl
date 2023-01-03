@@ -3,7 +3,9 @@ package com.regnosys.rosetta.ide.semantictokens;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -285,17 +287,17 @@ public class AbstractSemanticTokensService implements ISemanticTokensService {
 				try {
 					method.setAccessible(true);
 					if (state.cancelIndicator.isCanceled()) {
-						return List.of();
+						return Collections.emptyList();
 					}
 					Object res = method.invoke(instance, state.currentObject);
 					if (res == null) {
-						return List.of();
+						return Collections.emptyList();
 					}
 					if (res instanceof List<?>) {
 						return ((List<?>) res).stream().filter(SemanticToken.class::isInstance).map(SemanticToken.class::cast)
 							.collect(Collectors.toList());
 					} else if (res instanceof SemanticToken) {
-						return List.of((SemanticToken) res);
+						return Arrays.asList((SemanticToken) res);
 					} else {
 						log.error("Incorrect return type for method " + method);
 					}
@@ -309,7 +311,7 @@ public class AbstractSemanticTokensService implements ISemanticTokensService {
 				if (wasNull)
 					instance.state.remove();
 			}
-			return List.of();
+			return Collections.emptyList();
 		}
 
 		@Override
