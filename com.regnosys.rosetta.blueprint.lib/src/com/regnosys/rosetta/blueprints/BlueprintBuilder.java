@@ -6,12 +6,20 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableList;
-import com.regnosys.rosetta.blueprints.runner.*;
+import com.regnosys.rosetta.blueprints.runner.Downstream;
+import com.regnosys.rosetta.blueprints.runner.StreamExpander;
+import com.regnosys.rosetta.blueprints.runner.StreamProcessor;
+import com.regnosys.rosetta.blueprints.runner.StreamSink;
+import com.regnosys.rosetta.blueprints.runner.StreamSource;
+import com.regnosys.rosetta.blueprints.runner.Upstream;
 import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-import com.regnosys.rosetta.blueprints.runner.nodes.*;
+import com.regnosys.rosetta.blueprints.runner.nodes.ExpanderNode;
+import com.regnosys.rosetta.blueprints.runner.nodes.Node;
+import com.regnosys.rosetta.blueprints.runner.nodes.ProcessorNode;
+import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
+import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
 
 public class BlueprintBuilder<I,O, K1, K2> {
 	
@@ -132,6 +140,7 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		return new BlueprintBuilder<I, O, K1, K2>(actionFactory, heads, of(), of(sink), sources, dataItemReportBuilder);
 	}
 	
+	
 	@SafeVarargs
 	public static <I, O, K1, K2> BlueprintBuilder<I, O, K1, K2> or(RosettaActionFactory actionFactory, BlueprintBuilder<I, ? extends O, K1, K2>... bps) {
 		Collection<Downstream<? super I, K1>> heads = Arrays.stream(bps).flatMap(bp->bp.heads.stream()).collect(ImmutableList.toImmutableList());
@@ -146,7 +155,6 @@ public class BlueprintBuilder<I,O, K1, K2> {
 	}
 	
 	public BlueprintInstance<I, O, K1, K2> toBlueprint(String uri, String blueprintName) {
-		return new BlueprintInstance<I, O, K1, K2>(uri, blueprintName, heads, 
-				tails.stream().map(Upstream.class::cast).collect(Collectors.toList()), sources, sinks, dataItemReportBuilder);
+		return new BlueprintInstance<I, O, K1, K2>(uri, blueprintName, heads, tails, sources, sinks, dataItemReportBuilder);
 	}	
 }

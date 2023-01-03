@@ -11,7 +11,7 @@
 	<artifactId>com.regnosys.rosetta.blueprint.lib</artifactId>
 	<packaging>eclipse-plugin</packaging>
 	
-		<properties>
+	<properties>
 		<!-- source and target used by tycho plugin -->
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -21,10 +21,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.eclipse.xtend</groupId>
-                <artifactId>xtend-maven-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -46,9 +42,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                	<excludes>
-                		<!-- exclude>model/*.rosetta</exclude-->
-                	</excludes>
                     <release>${maven.compiler.release}</release>
                 </configuration>
             </plugin>
