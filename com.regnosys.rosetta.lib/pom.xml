@@ -17,7 +17,7 @@
                 <groupId>org.eclipse.xtend</groupId>
                 <artifactId>xtend-maven-plugin</artifactId>
                 <configuration>
-                    <source>${lib.maven.compiler.source}</source>	
+                    <source>${maven.compiler.source}</source>	
                     <target>${lib.maven.compiler.target}</target>
 					<release>${lib.maven.compiler.release}</release>
                 </configuration>
