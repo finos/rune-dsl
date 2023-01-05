@@ -140,7 +140,6 @@ public class BlueprintBuilder<I,O, K1, K2> {
 		return new BlueprintBuilder<I, O, K1, K2>(actionFactory, heads, of(), of(sink), sources, dataItemReportBuilder);
 	}
 	
-	
 	@SafeVarargs
 	public static <I, O, K1, K2> BlueprintBuilder<I, O, K1, K2> or(RosettaActionFactory actionFactory, BlueprintBuilder<I, ? extends O, K1, K2>... bps) {
 		Collection<Downstream<? super I, K1>> heads = Arrays.stream(bps).flatMap(bp->bp.heads.stream()).collect(ImmutableList.toImmutableList());
