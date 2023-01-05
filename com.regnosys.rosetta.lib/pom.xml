@@ -13,10 +13,7 @@
 
 	<!-- override java versions in lib projects for wider compatibility -->
 	<properties>
-		<!-- source and target properties used by tycho plugin -->
-		<maven.compiler.source>11</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<!-- release property used by maven compiler plugin -->
+		<!-- release property used by maven compiler and tycho plugins -->
 		<maven.compiler.release>8</maven.compiler.release>
 	</properties>
 
@@ -26,7 +23,7 @@
                 <groupId>org.eclipse.xtend</groupId>
                 <artifactId>xtend-maven-plugin</artifactId>
                 <configuration>
-                	<javaSourceVersion>${maven.compiler.target}</javaSourceVersion>
+                	<javaSourceVersion>${maven.compiler.release}</javaSourceVersion>
                 </configuration>
             </plugin>
             <plugin>
