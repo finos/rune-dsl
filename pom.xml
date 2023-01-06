@@ -33,6 +33,9 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<antlr4-version>4.11.1</antlr4-version>
 		<junit-jupiter-api-version>5.9.1</junit-jupiter-api-version>
 		<exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
+		<frontend-maven-plugin.version>1.12.1</frontend-maven-plugin.version>
+		<node.version>19.3.0</node.version>
+		<vscode.plugin.dir>${project.parent.basedir}/vscode-plugin</vscode.plugin.dir>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<enforcer.version>3.1.0</enforcer.version>
 		<java.enforced.version>[11,12)</java.enforced.version>
@@ -358,10 +361,15 @@ See the Apache License Version 2.0 for the specific language governing permissio
 					</configuration>
 				</plugin>
 				<plugin>
-				    <groupId>com.github.iarellano</groupId>
-				    <artifactId>iad-j2y2j-converter-maven-plugin</artifactId>
-				    <version>1.0</version>
-				</plugin>
+	                <groupId>com.github.eirslett</groupId>
+	                <artifactId>frontend-maven-plugin</artifactId>
+	                <version>${frontend-maven-plugin.version}</version>
+	                <configuration>
+	                    <nodeVersion>v${node.version}</nodeVersion>
+	                    <workingDirectory>${vscode.plugin.dir}</workingDirectory>
+	                    <installDirectory>${project.basedir}/target</installDirectory>
+	                </configuration>
+	            </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>

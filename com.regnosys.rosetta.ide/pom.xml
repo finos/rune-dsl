@@ -24,30 +24,25 @@
 	<build>
 		<plugins>
 			<plugin>
-			    <groupId>com.github.iarellano</groupId>
-			    <artifactId>iad-j2y2j-converter-maven-plugin</artifactId>
-			    <executions>
-			        <execution>
-			            <id>Generate TextMate grammar json file</id>
-			            <phase>process-resources</phase>
-			            <goals>
-			                <goal>yaml-2-json</goal>
-			            </goals>
-			            <configuration>
-			                <resources>
-			                    <resource>
-			                        <directory>${project.basedir}</directory>
-			                        <filtering>true</filtering>
-			                        <includes>
-			                            <include>rosetta.tmLanguage.yaml</include>
-			                        </includes>
-			                    </resource>
-			                </resources>
-			                <outputExtension>json</outputExtension>
-			                <outputDirectory>${project.basedir}/src-gen/syntaxes</outputDirectory>
-			            </configuration>
-			        </execution>
-			    </executions>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+				    <execution>
+				    	<id>Generate TextMate grammar json file</id>
+			            <phase>prepare-package</phase>
+				        <goals>
+				            <goal>java</goal>
+				        </goals>
+						<configuration>
+						    <mainClass>com.regnosys.rosetta.ide.textmate.GenerateTmLanguage</mainClass>
+						    <arguments>
+						        <argument>${project.basedir}/rosetta.tmLanguage.yaml</argument>
+						        <argument>${project.basedir}/src-gen/syntaxes/rosetta.tmLanguage.json</argument>
+						    </arguments>
+						    <classpathScope>compile</classpathScope>
+						</configuration>
+				    </execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.eclipse.xtend</groupId>
@@ -165,25 +160,30 @@
 				</executions>
 			</plugin>
 			<plugin>
-			    <artifactId>exec-maven-plugin</artifactId>
-			    <groupId>org.codehaus.mojo</groupId>
-			    <executions>
-			        <execution>
-			            <id>Build VS Code plugin</id>
-			            <phase>package</phase>
-			            <goals>
-			                <goal>exec</goal>
-			            </goals>
-			            <configuration>
-			                <executable>npm</executable>
-			                <arguments>
-			                	<argument>install</argument>
-			                </arguments>
-			                <workingDirectory>${project.parent.basedir}/vscode-plugin</workingDirectory>
-			            </configuration>
-			        </execution>
-			    </executions>
-			</plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                        <id>install node and npm</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                    </execution>
+ 
+                    <execution>
+                        <id>npm install</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 
