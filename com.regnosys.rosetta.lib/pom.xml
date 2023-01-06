@@ -11,16 +11,25 @@
     <artifactId>com.regnosys.rosetta.lib</artifactId>
     <packaging>eclipse-plugin</packaging>
 
+	<!-- override java versions in lib projects for wider compatibility -->
+	<properties>
+		<!-- release property used by maven compiler and tycho plugins -->
+		<maven.compiler.release>8</maven.compiler.release>
+	</properties>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.eclipse.xtend</groupId>
                 <artifactId>xtend-maven-plugin</artifactId>
+                <configuration>
+                	<javaSourceVersion>${maven.compiler.release}</javaSourceVersion>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -37,13 +46,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                	<excludes>
-                		<!-- exclude>model/*.rosetta</exclude-->
-                	</excludes>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
