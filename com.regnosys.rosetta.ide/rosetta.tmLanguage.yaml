@@ -15,7 +15,7 @@ fileTypes: [rosetta]
 # TODO: clean up `storage` scopes
 # TODO: watch out for forgetting \s* between words
 # TODO: write tests that verify:
-# - all variables exist
+# - OK all variables exist
 # - all inclusions exist
 # - schema is valid (begin/end with beginCaptures/endCaptures for example, captures is an array, regexes are valid, ...)
 # - check all scopes end with .rosetta
@@ -51,11 +51,11 @@ patterns:
 repository:
   model:
     patterns:
-      - include: '#namespace'
-      - include: '#version'
-      - include: '#import'
-      - include: '#configuration'
-      - include: '#rootElement'
+    - include: '#namespace'
+    - include: '#version'
+    - include: '#import'
+    - include: '#configuration'
+    - include: '#rootElement'
 
     repository:
       namespace:
@@ -168,7 +168,8 @@ repository:
         patterns:
         - include: '#comment'
         - begin: '{{identifier}}'
-          beginCaptures: { name: entity.name.document.corpus-type.rosetta }
+          beginCaptures:
+            0: { name: entity.name.document.corpus-type.rosetta }
           end: '{{rootEnd}}'
           patterns:
           - include: '#comment'
@@ -216,7 +217,7 @@ repository:
           - include: '#rosettaBracedFeatures'
 
       rosettaBracedFeatures:
-        name: meta.braces
+        name: meta.braces.rosetta
         begin: \{
         beginCaptures:
           0: { name: punctuation.section.braces.begin.rosetta }
@@ -1020,6 +1021,7 @@ repository:
           match: '{{identifier}}'
       
       documentationAndAnnotationsFollowedByExpression: # Special rule to circumvent clashing of '[' and '<' in expressions
+        name: meta.documentation-and-annotations-followed-by-expression.rosetta
         begin: (?!\s)
         end: '{{sectionEnd}}'
         patterns:
@@ -1041,6 +1043,7 @@ repository:
         - include: '#annotationsFollowedByExpression'
       
       documentationFollowedByExpression:
+        name: meta.documentation-followed-by-expression.rosetta
         begin: (?!\s)
         end: '{{sectionEnd}}'
         patterns:
@@ -1062,6 +1065,7 @@ repository:
         - include: '#expression'
       
       annotationsFollowedByExpression:
+        name: meta.annotations-followed-by-expression.rosetta
         begin: (?!\s)
         end: '{{sectionEnd}}'
         patterns:
