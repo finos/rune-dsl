@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -21,12 +22,19 @@ import java.util.stream.Collectors;
 
 import javax.naming.ConfigurationException;
 
+import org.eclipse.xtext.Grammar;
+import org.eclipse.xtext.GrammarUtil;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.inject.Injector;
+import com.regnosys.rosetta.RosettaStandaloneSetup;
+import com.regnosys.rosetta.services.RosettaGrammarAccess;
 
 public class GenerateTmLanguage {
+	private static List<String> ignoredRosettaKeywords = List.of("..");
+	
 	/**
 	 * param 0: path to input yaml file
 	 * param 1: output path for json file
@@ -45,6 +53,7 @@ public class GenerateTmLanguage {
 	}
 	
 	private Pattern variablePattern = Pattern.compile("\\{\\{(\\w+)\\}\\}");
+	private List<String> regexKeys = List.of("match", "begin", "end", "while");
 	
 	private void generateTmLanguage(String inputPath, String outputPath) throws IOException, ConfigurationException {
 		Map<Object, Object> input = loadYaml(inputPath);
@@ -60,6 +69,32 @@ public class GenerateTmLanguage {
 		List<TmValue<Object>> allPatterns = findAllPatterns(input, new ArrayList<>());
 		for (TmValue<Object> pattern: allPatterns) {
 			validatePattern(pattern, namedPatterns);
+		}
+		
+		ensureAllRosettaKeywordsAreSupported(input);
+	}
+	
+	private void ensureAllRosettaKeywordsAreSupported(Map<Object, Object> input) throws ConfigurationException {
+		List<Pattern> regexes = findAllRegexes(input);
+		
+		Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
+		
+		RosettaGrammarAccess grammarAccess = inj.getInstance(RosettaGrammarAccess.class);
+		Grammar grammar = grammarAccess.getGrammar();
+		Set<String> keywords = GrammarUtil.getAllKeywords(grammar);
+		for (String ignoredKeyword: ignoredRosettaKeywords) {
+			if (!keywords.contains(ignoredKeyword)) {
+				throw new ConfigurationException("Sanity check failed. Please remove `" + ignoredKeyword + "` from the list of ignored keywords, as it is not a keyword of Rosetta.");
+			}
+		}
+		
+		
+		for (String keyword: keywords) {
+			if (!ignoredRosettaKeywords.contains(keyword)) {
+				if (!regexes.stream().anyMatch(regex -> regex.matcher(keyword).matches())) {
+					throw new ConfigurationException("The TextMate grammar contains no pattern that highlights the Rosetta keyword `" + keyword + "`. Add an appropriate pattern to `rosetta.tmLanguage.yaml` or add the keyword to the list of ignored Rosetta keywords.");
+				}
+			}
 		}
 	}
 	
@@ -204,6 +239,25 @@ public class GenerateTmLanguage {
 		} else if (input instanceof List) {
 			for (Object item : (List<Object>)input) {
 				result.addAll(findAllPatterns(item, path));
+			}
+		}
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private List<Pattern> findAllRegexes(Object input) {
+		List<Pattern> result = new ArrayList<>();
+		if (input instanceof Map) {
+			Map<Object, Object> inputMap = (Map<Object, Object>)input;
+			for (Entry<Object, Object> node : inputMap.entrySet()) {
+				if (regexKeys.contains(node.getKey())) {
+					result.add(Pattern.compile(node.getValue().toString()));
+				}
+			    result.addAll(findAllRegexes(node.getValue()));
+			}
+		} else if (input instanceof List) {
+			for (Object item : (List<Object>)input) {
+				result.addAll(findAllRegexes(item));
 			}
 		}
 		return result;

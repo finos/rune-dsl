@@ -14,17 +14,8 @@ fileTypes: [rosetta]
 
 # TODO: clean up `storage` scopes
 # TODO: watch out for forgetting \s* between words
-# TODO: write tests that verify:
-# - OK all variables exist
-# - all inclusions exist
-# - schema is valid (begin/end with beginCaptures/endCaptures for example, captures is an array, regexes are valid, ...)
-# - check all scopes end with .rosetta
-# - all keywords are present?
 # TODO: support newlines in qualified identifiers (e.g., add support for a kind of yaml functions?)
-# TODO: double-check usage of qualifiedIdentifier versus identifier
-# TODO: debug 
-# - DRR: ClearingSwapUSIs, EventTypeCondition
-# - CDM: CompareNumbers, TaxonomyValue, DateRange
+# TODO: review usage of qualifiedIdentifier versus identifier
 
 variables:
   wordStart: \b # (?<!-)\b We do not consider a dash to be a word boundary
@@ -663,7 +654,7 @@ repository:
         - include: '#comment'
         - begin: '{{identifier}}'
           beginCaptures:
-            0: { name: variable.other.member.rosetta } # TODO: meta?
+            0: { name: variable.other.member.rosetta } # need semantic tokens for meta members
           end: (?=\])|{{sectionEnd}}
           patterns:
           - include: '#comment'
@@ -686,6 +677,8 @@ repository:
         - include: '#comment'
         - include: '#annotation'
         - include: '#documentation'
+        - name: keyword.other.override.rosetta
+          match: '{{wordStart}}override{{wordEnd}}'
         - name: meta.attribute.rosetta
           begin: '{{identifier}}'
           beginCaptures:
@@ -921,10 +914,11 @@ repository:
 
       operation:
         name: meta.operation.rosetta
-        begin: '{{wordStart}}(?:(set)|(add)){{wordEnd}}'
+        begin: '{{wordStart}}(?:(set)|(add)|(assign-output)){{wordEnd}}'
         beginCaptures:
           1: { name: keyword.other.set.rosetta }
           2: { name: keyword.other.add.rosetta }
+          3: { name: keyword.other.assing-output.rosetta }
         end: '{{sectionEnd}}'
         patterns:
         - name: meta.operation.attribute.rosetta
@@ -950,6 +944,8 @@ repository:
       expression:
         patterns:
         - include: '#comment'
+        - name: keyword.other.rosetta
+          match: '{{wordStart}}as-key{{wordEnd}}'
         - name: keyword.other.rosetta
           match: '{{wordStart}}one-of{{wordEnd}}'
         - begin: '{{wordStart}}(optional|required){{wordEnd}}'
