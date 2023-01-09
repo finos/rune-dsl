@@ -76,7 +76,8 @@
 					</execution>
 				</executions>
 				<configuration>
-					<compilerTargetLevel>11</compilerTargetLevel>
+					<compilerSourceLevel>${java.version}</compilerSourceLevel>
+					<compilerTargetLevel>${maven.compiler.release}</compilerTargetLevel>
 					<languages>
 						<language>
 							<setup>org.eclipse.xsemantics.dsl.XsemanticsStandaloneSetup</setup>
