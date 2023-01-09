@@ -353,7 +353,7 @@ repository:
             match: '{{wordStart}}(synonym|source|extends|enums|value|meta|definition|pattern){{wordEnd}}'
           - name: keyword.other.extends.rosetta
             match: '{{wordStart}}extends{{wordEnd}}'
-          - name: entity.name.synonym.source.rosetta
+          - name: entity.name.synonym-source.rosetta
             match: '{{identifier}}'
 
       rosettaBlueprint:
@@ -561,7 +561,7 @@ repository:
             match: ','
           - name: punctuation.separator.dot.rosetta
             match: '.'
-          - name: entity.name.synonym.source.rosetta
+          - name: entity.name.synonym-source.rosetta
             match: '{{identifier}}'
         - begin: '{{synonymAnnotationSimpleSection}}'
           beginCaptures:
@@ -627,7 +627,7 @@ repository:
             patterns:
             - include: '#comment'
             - include: '#string'
-            - name: entity.name.document.rosetta # need semantic tokens to distinguish between corpus and segment (or a fancy bit of recursion)
+            - name: entity.name.document.rosetta # need semantic tokens to distinguish between corpus and segment
               match: '{{identifier}}'
         - name: keyword.other.rosetta
           match: '{{wordStart}}(provision|reportedField){{wordEnd}}'
