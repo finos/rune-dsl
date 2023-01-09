@@ -12,12 +12,7 @@ name: Rosetta DSL
 scopeName: source.rosetta
 fileTypes: [rosetta]
 
-# TODO: introduce variables for i.e., identifiers '^'?('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')* and root element endings
-# TODO: improve tokenization of comments throughout patterns
-# TODO: add punctuation scope to `.` in qualified names/imports
-# TODO: which scope to use for imports? With wildcards?
-# TODO: check 'match' rules for potential line breaks
-# TODO: clean-up `storage` scopes 
+# TODO: clean up `storage` scopes
 # TODO: watch out for forgetting \s* between words
 # TODO: write tests that verify:
 # - all variables exist

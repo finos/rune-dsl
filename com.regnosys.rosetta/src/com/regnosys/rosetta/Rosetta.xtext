@@ -8,7 +8,6 @@ import "http://www.rosetta-model.com/RosettaExpression"
 // - [RosettaSynonymSource|ValidID]
 // - [RosettaSynonymSource|QualifiedName]
 
-// TODO enforce namespace and version on their own line?
 RosettaModel:
 	'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)? // TODO do we need STRING here? It is not supported for highlighting.
 	// TODO colon is inconsistent with other documentation
