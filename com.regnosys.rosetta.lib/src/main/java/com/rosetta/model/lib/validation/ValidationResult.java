@@ -82,7 +82,7 @@ public interface ValidationResult<T> {
 		
 		@Override
 		public Optional<String> getFailureReason() {
-			if (!failureReason.isEmpty() && modelObjectName.endsWith("Report") && failureReason.get().contains(modelObjectName)) {
+			if (failureReason.isPresent() && modelObjectName.endsWith("Report") && failureReason.get().contains(modelObjectName)) {
 				return getUpdatedFailureReason();
 			}
 			return failureReason;
