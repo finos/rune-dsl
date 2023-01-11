@@ -33,7 +33,10 @@ variables:
   listOperation: ->|{{listOperationWord}}
   blueprintNodeEnd: '(?={{wordStart}}(then|output|as){{wordEnd}})|{{rootEnd}}'
   synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge){{wordEnd}}'
-  synonymAnnotationSectionEnd: (?<={{synonymAnnotationSimpleSection}})|(?=\])|{{sectionEnd}}
+  synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
+  synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
+  expressionEnd: '{{blueprintNodeEnd}}|{{sectionEnd}}'
+  functionalOperationEnd: (?<=\])|(?={{listOperation}}|{{wordStart}}(else){{wordEnd}})|{{expressionEnd}}
 
 patterns:
 - include: '#model'
@@ -199,19 +202,19 @@ repository:
         end: '{{rootEnd}}'
         patterns:
         - include: '#comment'
-        - begin: '{{identifier}}'
-          beginCaptures: 
-            0: { name: entity.name.type.builtin.record-type.rosetta }
-          end: '{{rootEnd}}'
+        - begin: (?<={{wordStart}}recordType{{wordEnd}})
+          end: (?=\{)|{{rootEnd}}
           patterns:
           - include: '#comment'
-          - include: '#rosettaBracedFeatures'
+          - name: entity.name.type.builtin.record-type.rosetta
+            match: '{{identifier}}'
+        - include: '#rosettaBracedFeatures'
 
       rosettaBracedFeatures:
         name: meta.braces.rosetta
-        begin: \{
+        begin: (\{)
         beginCaptures:
-          0: { name: punctuation.section.braces.begin.rosetta }
+          1: { name: punctuation.section.braces.begin.rosetta }
         end: (\})|{{rootEnd}}
         endCaptures:
           1: { name: punctuation.section.braces.end.rosetta }
@@ -343,18 +346,69 @@ repository:
         end: '{{rootEnd}}'
         patterns:
         - include: '#comment'
-        - begin: '{{wordStart}}source{{wordEnd}}'
+        - begin: '(?<={{wordStart}}synonym{{wordEnd}})'
           beginCaptures:
             0: { name: keyword.other.synonym-source.rosetta }
-          end: '{{rootEnd}}'
+          end: (?=\{)|{{rootEnd}}
           patterns:
           - include: '#comment'
-          - name: keyword.other.rosetta  # TODO: add support for synonym body of external synonym source
-            match: '{{wordStart}}(synonym|source|extends|enums|value|meta|definition|pattern){{wordEnd}}'
+          - name: keyword.other.synonym-source.rosetta
+            match: '{{wordStart}}source{{wordEnd}}'
           - name: keyword.other.extends.rosetta
             match: '{{wordStart}}extends{{wordEnd}}'
           - name: entity.name.synonym-source.rosetta
             match: '{{identifier}}'
+        - name: meta.synonym-source-body.rosetta
+          begin: (\{)
+          beginCaptures:
+            1: { name: punctuation.section.braces.begin.rosetta }
+          end: (\})|{{rootEnd}}
+          endCaptures:
+            1: { name: punctuation.section.braces.end.rosetta }
+          patterns:
+          - include: '#comment'
+          - begin: '{{wordStart}}enums{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.other.rosetta }
+            end: (?=\})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - include: '#colon'
+            - name: meta.synonym-source-enum-mapping.rosetta
+              begin: '{{identifier}}'
+              beginCaptures:
+                0: { name: entity.name.type.enum.rosetta }
+              end: (?={{identifier}}|\})|{{rootEnd}}
+              patterns:
+              - include: '#comment'
+              - include: '#annotation'
+              - name: meta.synonym-source-enum-value-mapping.rosetta
+                begin: '(\+|-)\s*({{identifier}})'
+                beginCaptures:
+                  1: { name: keyword.operator.synonym.rosetta }
+                  2: { name: variable.other.enummember.rosetta }
+                end: (?={{identifier}}|\}|\+|-)|{{rootEnd}}
+                patterns:
+                - include: '#comment'
+                - include: '#annotation'
+          - name: meta.synonym-source-type-mapping.rosetta
+            begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: entity.name.type.type.rosetta }
+            end: (?={{identifier}}|\})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - include: '#colon'
+            - include: '#annotation'
+            - name: meta.synonym-source-attribute-mapping.rosetta
+              begin: '(\+|-)\s*({{identifier}})'
+              beginCaptures:
+                1: { name: keyword.operator.synonym.rosetta }
+                2: { name: variable.other.member.rosetta }
+              end: (?={{identifier}}|\}|\+|-)|{{rootEnd}}
+              patterns:
+              - include: '#comment'
+              - include: '#annotation'
 
       rosettaBlueprint:
         name: meta.rule.rosetta
@@ -523,7 +577,7 @@ repository:
         begin: (\[)
         beginCaptures:
           1: { name: punctuation.annotation.begin.rosetta }
-        end: (\])|{{sectionEnd}}
+        end: (\])|{{rootEnd}}
         endCaptures:
           1: { name: punctuation.annotation.end.rosetta }
         patterns:
@@ -545,15 +599,16 @@ repository:
         - name: entity.name.function.rosetta
           match: '{{identifier}}'
       
-      synonymAnnotationBody:
+      synonymAnnotationBody: # TODO: highlight `path` and `dateFormat` strings differently
         name: meta.annotated.synonym.rosetta
-        begin: '{{wordStart}}(synonym){{wordEnd}}|(?={{wordStart}}(value|meta){{wordEnd}})'
+        begin: '{{wordStart}}(synonym){{wordEnd}}|(?={{synonymAnnotationSection}})'
         beginCaptures:
           1: { name: variable.annotation.synonym.rosetta }
-        end: (?=\])|{{sectionEnd}}
+        end: (?=\])|{{rootEnd}}
         patterns:
         - include: '#comment'
-        - begin: '(?<={{wordStart}}synonym{{wordEnd}})'
+        - name: meta.annotated.synonym.synonym-section.rosetta
+          begin: '(?<={{wordStart}}synonym{{wordEnd}})'
           end: '{{synonymAnnotationSectionEnd}}'
           patterns:
           - include: '#comment'
@@ -563,10 +618,22 @@ repository:
             match: '.'
           - name: entity.name.synonym-source.rosetta
             match: '{{identifier}}'
-        - begin: '{{synonymAnnotationSimpleSection}}'
+        - name: meta.annotated.synonym.simple-section.rosetta
+          begin: '{{synonymAnnotationSimpleSection}}'
           beginCaptures:
-            0: { name: keyword.other.value.rosetta }
+            0: { name: keyword.other.rosetta }
           end: '{{synonymAnnotationSectionEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#synonymValue'
+          - include: '#synonymMapping'
+          - name: punctuation.separator.comma.rosetta
+            match: ','
+        - name: meta.annotated.synonym.set-section.rosetta
+          begin: '(?={{wordStart}}set{{wordEnd}})'
+          beginCaptures:
+            0: { name: keyword.other.rosetta }
+          end: '(?!{{wordStart}}set{{wordEnd}}){{synonymAnnotationSectionEnd}}'
           patterns:
           - include: '#comment'
           - include: '#synonymValue'
@@ -942,6 +1009,9 @@ repository:
         - include: '#documentationFollowedByExpression'
 
       expression:
+        name: meta.expression.rosetta
+        begin: (?!\s)
+        end: '{{expressionEnd}}'
         patterns:
         - include: '#comment'
         - name: keyword.other.rosetta
@@ -998,18 +1068,18 @@ repository:
         - name: constant.language.rosetta
           match: '{{wordStart}}(True|False|empty){{wordEnd}}'
       
-      functionalOperation: # TODO: test nested
+      functionalOperation:
         name: meta.functional-operation.rosetta
         begin: '{{functionalOperation}}'
         beginCaptures:
           0: { name: keyword.operator.word.rosetta }
-        end: '(?={{listOperation}})|{{sectionEnd}}'
+        end: '{{functionalOperationEnd}}'
         patterns:
         - include: '#comment'
         - begin: \[
           beginCaptures:
             0: { name: punctuation.definition.inline-function.begin.rosetta }
-          end: \]|{{sectionEnd}}
+          end: \]|{{expressionEnd}}
           patterns:
           - include: '#comment'
           - include: '#expression'

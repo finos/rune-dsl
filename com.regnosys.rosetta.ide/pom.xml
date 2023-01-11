@@ -15,10 +15,12 @@
 		<dependency>
 			<groupId>org.eclipse.lsp4j</groupId>
 			<artifactId>org.eclipse.lsp4j</artifactId>
+			<version>0.14.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ow2.asm</groupId>
 			<artifactId>asm</artifactId>
+			<version>9.3</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -34,7 +36,7 @@
 				            <goal>java</goal>
 				        </goals>
 						<configuration>
-						    <mainClass>com.regnosys.rosetta.ide.textmate.GenerateTmLanguage</mainClass>
+						    <mainClass>com.regnosys.rosetta.ide.textmate.GenerateTmGrammar</mainClass>
 						    <arguments>
 						        <argument>${project.basedir}/rosetta.tmLanguage.yaml</argument>
 						        <argument>${project.basedir}/src-gen/syntaxes/rosetta.tmLanguage.json</argument>

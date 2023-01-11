@@ -103,7 +103,7 @@ class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaC
 	}
 }
 
-class RosettaParameter extends RosettaTypedFeature {
+class RosettaParameter extends RosettaTyped, RosettaNamed {
 	boolean isArray
 }
 

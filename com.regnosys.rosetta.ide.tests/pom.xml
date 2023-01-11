@@ -10,13 +10,6 @@
 	</parent>
 	<artifactId>com.regnosys.rosetta.ide.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
-	
-	<dependencies>
-		<dependency>
-		    <groupId>aopalliance</groupId>
-		    <artifactId>aopalliance</artifactId>
-		</dependency>
-	</dependencies>
 
 	<build>
 		<plugins>

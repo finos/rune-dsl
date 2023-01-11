@@ -18,9 +18,11 @@ Require-Bundle: org.junit.jupiter.api,
  com.google.guava,
  org.hamcrest.core,
  org.mockito,
- org.eclipse.xsemantics.runtime
+ org.eclipse.xsemantics.runtime,
+ org.aopalliance
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Import-Package: com.regnosys.rosetta.rosetta,
  model
 Bundle-ActivationPolicy: lazy
-Export-Package: com.regnosys.rosetta.tests
+Export-Package: com.regnosys.rosetta.tests,
+ com.regnosys.rosetta.tests.util

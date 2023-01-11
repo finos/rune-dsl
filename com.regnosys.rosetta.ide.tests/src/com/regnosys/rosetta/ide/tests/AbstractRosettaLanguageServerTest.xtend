@@ -15,19 +15,17 @@ import org.eclipse.lsp4j.jsonrpc.services.ServiceEndpoints
 import java.io.File
 import org.junit.jupiter.api.BeforeEach
 import org.junit.Before
-import org.junit.jupiter.api.^extension.ExtendWith
-import org.eclipse.xtext.testing.InjectWith
-import org.eclipse.xtext.testing.extensions.InjectionExtension
-import org.eclipse.lsp4j.SemanticTokens
 import org.eclipse.lsp4j.SemanticTokensParams
 import javax.inject.Inject
-import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService
 import com.regnosys.rosetta.ide.semantictokens.SemanticToken
-import org.eclipse.emf.common.util.URI
 import com.regnosys.rosetta.ide.server.RosettaLanguageServerImpl
+import com.regnosys.rosetta.tests.util.ModelHelper
+import org.eclipse.xtext.testing.TextDocumentConfiguration
+import org.eclipse.xtext.testing.FileInfo
+import java.nio.charset.StandardCharsets
 
 abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerTest {
-	@Inject ISemanticTokensService semanticTokensService
+	@Inject extension ModelHelper
 	
 	new() {
 		super("rosetta")
@@ -79,6 +77,7 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	@Accessors static class TestSemanticTokensConfiguration extends TextDocumentPositionConfiguration {
 		String expectedSemanticTokenItems = ''
 		(List<? extends SemanticToken>) => void assertSemanticTokens = null
+		boolean assertNoIssues = true
 	}
 	
 	protected def void testSemanticToken((TestSemanticTokensConfiguration)=>void configurator) {
@@ -94,12 +93,27 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 				cancelIndicator
 			)
 		]
-		val result = semanticTokens.get
+		val result = semanticTokens.get.sort
 
+		if (configuration.assertNoIssues) {
+			configuration.model.parseRosettaWithNoIssues
+		}
 		if (configuration.assertSemanticTokens !== null) {
 			configuration.assertSemanticTokens.apply(result)
 		} else {
 			assertEquals(expectedSemanticTokenItems, result.toExpectation)
 		}
+	}
+	
+	protected override FileInfo initializeContext(TextDocumentConfiguration configuration) {
+		val filePath = super.initializeContext(configuration);
+		writeModelFile('basictypes.rosetta')
+		writeModelFile('annotations.rosetta')
+		return filePath
+	}
+	private def void writeModelFile(String fileName) {
+		val content = new String(this.getClass().getResourceAsStream('''/model/«fileName»''').readAllBytes(), StandardCharsets.UTF_8);
+		val filePath = fileName.writeFile(content);
+		open(filePath, content);
 	}
 }

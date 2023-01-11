@@ -33,7 +33,7 @@ interface HasGeneratedInput {
  * Literals
  */
 
-interface RosettaLiteral extends RosettaExpression, RosettaMapTestExpression, RosettaTyped {
+interface RosettaLiteral extends RosettaExpression, RosettaMapTestExpression {
 	op String stringValue()
 }
 

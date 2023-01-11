@@ -2,15 +2,44 @@ package com.regnosys.rosetta.ide.semantictokens;
 
 import javax.inject.Inject;
 
-import com.regnosys.rosetta.rosetta.RosettaBuiltinType;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
+
+import com.regnosys.rosetta.rosetta.RosettaBasicType;
+import com.regnosys.rosetta.rosetta.RosettaCalculationType;
+import com.regnosys.rosetta.rosetta.RosettaDocReference;
+import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
+import com.regnosys.rosetta.rosetta.RosettaFeature;
+import com.regnosys.rosetta.rosetta.RosettaMetaType;
+import com.regnosys.rosetta.rosetta.RosettaQualifiedType;
+import com.regnosys.rosetta.rosetta.RosettaRecordType;
+import com.regnosys.rosetta.rosetta.RosettaSegmentRef;
+import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.RosettaTyped;
+import com.regnosys.rosetta.rosetta.expression.ClosureParameter;
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
-import static com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesEnum.*;
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesEnum.*;
+import static com.regnosys.rosetta.ide.semantictokens.lsp.LSPSemanticTokenModifiersEnum.*;
+
+// TODO: check for null?
 public class RosettaSemanticTokensService extends AbstractSemanticTokensService {
 
 	@Inject
@@ -18,16 +47,96 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 			ISemanticTokenModifiersProvider tokenModifiersProvider) {
 		super(tokenTypesProvider, tokenModifiersProvider);
 	}
+	
+	private boolean isResolved(EObject obj) {
+		return obj != null && !obj.eIsProxy();
+	}
+	private Optional<RosettaSemanticTokenTypesEnum> typeToToken(RosettaType t) {
+		if (isResolved(t)) {
+			if (t instanceof Data) {
+				return Optional.of(TYPE);
+			} else if (t instanceof RosettaBasicType) {
+				return Optional.of(BASIC_TYPE);
+			} else if (t instanceof RosettaRecordType) {
+				return Optional.of(RECORD_TYPE);
+			} else if (t instanceof RosettaQualifiedType) {
+				return Optional.of(QUALIFIED_TYPE);
+			} else if (t instanceof RosettaCalculationType) {
+				return Optional.of(CALCULATION_TYPE);
+			} else if (t instanceof RosettaEnumeration) {
+				return Optional.of(ENUM);
+			}
+		}
+		return Optional.empty();
+	}
 
 	@MarkSemanticToken
-	public SemanticToken markType(RosettaTyped typed) {
+	public Optional<SemanticToken> markType(RosettaTyped typed) {
+		typed.eIsSet(ROSETTA_TYPED__TYPE);
 		RosettaType t = typed.getType();
-		if (t instanceof Data) {
-			return createSemanticToken(typed, ROSETTA_TYPED__TYPE, TYPE);
-		} else if (t instanceof RosettaBuiltinType) {
-			return createSemanticToken(typed, ROSETTA_TYPED__TYPE, BASIC_TYPE);
-		} else if (t instanceof RosettaEnumeration) {
-			return createSemanticToken(typed, ROSETTA_TYPED__TYPE, ENUM);
+		return typeToToken(t)
+				.map(token -> 
+					createSemanticToken(typed, ROSETTA_TYPED__TYPE, token));
+	}
+	
+	@MarkSemanticToken
+	public List<SemanticToken> markDocumentReferences(RosettaDocReference docRef) {
+		List<SemanticToken> tokens = new ArrayList<>();
+		for (int i = 0; i < docRef.getCorpuses().size(); i++) {
+			tokens.add(createSemanticToken(docRef, ROSETTA_REGULATORY_BODY__CORPUSES, i, DOCUMENT_CORPUS));
+		}
+		for (RosettaSegmentRef seg: docRef.getSegments()) {
+			tokens.add(createSemanticToken(seg, ROSETTA_SEGMENT_REF__SEGMENT, DOCUMENT_SEGMENT));
+		}
+		return tokens;
+	}
+	
+	@MarkSemanticToken
+	public SemanticToken markMetaMemberInAnnotation(AnnotationRef annotation) {
+		if (annotation.getAnnotation().getName().equals("metadata") && annotation.getAttribute() != null) {
+			return createSemanticToken(annotation, ANNOTATION_REF__ATTRIBUTE, META_MEMBER);
+		}
+		return null;
+	}
+	
+	@MarkSemanticToken
+	public SemanticToken markFeature(RosettaFeatureCall featureCall) {
+		RosettaFeature feature = featureCall.getFeature();
+		if (isResolved(feature)) {
+			if (feature instanceof RosettaEnumValue) {
+				return createSemanticToken(featureCall, ROSETTA_FEATURE_CALL__FEATURE, ENUM_MEMBER);
+			} else if (feature instanceof Attribute) {
+				return createSemanticToken(featureCall, ROSETTA_FEATURE_CALL__FEATURE, PROPERTY);
+			} else if (feature instanceof RosettaMetaType) {
+				return createSemanticToken(featureCall, ROSETTA_FEATURE_CALL__FEATURE, META_MEMBER);
+			}
+		}
+		return null;
+	}
+	
+	@MarkSemanticToken
+	public SemanticToken markRosettaReference(RosettaSymbolReference reference) {
+		RosettaSymbol symbol = reference.getSymbol();
+		if (isResolved(symbol)) {
+			if (symbol instanceof Attribute) {
+				EReference containmentFeature = symbol.eContainmentFeature();
+				if (containmentFeature.equals(FUNCTION__INPUTS)) {
+					return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, PARAMETER);
+				} else if (containmentFeature.equals(DATA__ATTRIBUTES)) {
+					return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, PROPERTY);
+				}
+				return null;
+			} else if (symbol instanceof ClosureParameter) {
+				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, INLINE_PARAMETER);
+			} else if (symbol instanceof Function) {
+				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, RosettaSemanticTokenTypesEnum.FUNCTION);
+			} else if (symbol instanceof RosettaExternalFunction) {
+				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, RosettaSemanticTokenTypesEnum.FUNCTION, DEFAULT_LIBRARY);
+			} else if (symbol instanceof ShortcutDeclaration) {
+				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, VARIABLE);
+			} else if (symbol instanceof RosettaType) {
+				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, typeToToken((RosettaType)symbol).get());
+			}
 		}
 		return null;
 	}

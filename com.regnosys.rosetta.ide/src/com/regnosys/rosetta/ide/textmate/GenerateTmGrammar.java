@@ -32,7 +32,7 @@ import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
 
-public class GenerateTmLanguage {
+public class GenerateTmGrammar {
 	private static List<String> ignoredRosettaKeywords = List.of("..");
 	
 	/**
@@ -48,7 +48,7 @@ public class GenerateTmLanguage {
 		String inputPath = args[0];
 		String outputPath = args[1];
 		
-		GenerateTmLanguage generator = new GenerateTmLanguage();
+		GenerateTmGrammar generator = new GenerateTmGrammar();
 		generator.generateTmLanguage(inputPath, outputPath);
 	}
 	
