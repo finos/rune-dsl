@@ -61,17 +61,6 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<module>com.regnosys.rosetta.ide.tests</module>
 		<module>com.regnosys.rosetta.tools</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-	            <groupId>org.eclipse.xsemantics</groupId>
-	            <artifactId>org.eclipse.xsemantics.runtime</artifactId>
-	            <version>${xsemantics.version}</version>
-	        </dependency>
-		</dependencies>
-	</dependencyManagement>
-	
 	<build>
 		<plugins>
 			<plugin>
