@@ -30,9 +30,28 @@
 						        <argument>${project.basedir}/src-gen/syntaxes/rosetta.tmLanguage.json</argument>
 						    </arguments>
 						    <classpathScope>compile</classpathScope>
+						    <includePluginDependencies>true</includePluginDependencies>
 						</configuration>
 				    </execution>
 				</executions>
+				<dependencies>
+					<!-- We need this because of a conflict between Tycho and Maven.
+					If we would rely completely on Tycho (i.e., not have Maven dependencies
+					in com.regnosys.rosetta), then this wouldn't be necessary. If we would
+					rely completely on Maven (i.e., get rid of Tycho), then this wouldn't be
+					necessary.
+					 -->
+					<dependency>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.core.runtime</artifactId>
+						<version>3.25.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.equinox.common</artifactId>
+						<version>3.16.100</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 		        <artifactId>maven-resources-plugin</artifactId>
