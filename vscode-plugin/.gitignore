@@ -2,7 +2,7 @@
 build/Release
 
 # Dependency directory
-node_modules
+node_modules/
 
 # Debug log from npm
 npm-debug.log
@@ -11,9 +11,12 @@ npm-debug.log
 .DS_Store
 
 # copy of the Rosetta LSP Java binary
-src/rosetta
+src/rosetta/
+
+# copy of the Rosetta Text Mate grammar
+syntaxes/
 
 # compiled output of the plugin
-out
+out/
 
 rosetta-language-*.vsix

@@ -17,6 +17,8 @@ import com.regnosys.rosetta.ide.semantictokens.lsp.LSPSemanticTokenModifiersProv
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService
 import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokensService
 import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesProvider
+import com.regnosys.rosetta.ide.textmate.RosettaTextMateGrammarUtil
+
 
 /**
  * Use this class to register ide components.
@@ -53,5 +55,9 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	def Class<? extends ISemanticTokensService> bindISemanticTokensService() {
 		RosettaSemanticTokensService
+	}
+	
+	def Class<? extends RosettaTextMateGrammarUtil> bindRosettaTextMateGrammarUtil() {
+		RosettaTextMateGrammarUtil
 	}
 }

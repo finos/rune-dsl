@@ -25,13 +25,14 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<xtextVersion>2.27.0</xtextVersion>
 		<xsemantics.repository>1.22</xsemantics.repository>
 		<xsemantics.version>1.22.0</xsemantics.version>
-		<mwe2Version>2.13.0</mwe2Version>
 		<org.eclipse.emf.ecore.xcore-version>1.22.0</org.eclipse.emf.ecore.xcore-version>
 		<org.eclipse.emf.ecore.xcore.lib-version>1.6.0</org.eclipse.emf.ecore.xcore.lib-version>
 		<org.eclipse.emf.codegen.ecore-version>2.28.0</org.eclipse.emf.codegen.ecore-version>
 		<org.eclipse.emf.codegen.ecore.xtext-version>1.6.0</org.eclipse.emf.codegen.ecore.xtext-version>
-		<antlr4-version>4.11.1</antlr4-version>
-		<junit-jupiter-api-version>5.9.1</junit-jupiter-api-version>
+		<exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
+		<frontend-maven-plugin.version>1.12.1</frontend-maven-plugin.version>
+		<node.version>19.3.0</node.version>
+		<vscode.plugin.dir>${project.parent.basedir}/vscode-plugin</vscode.plugin.dir>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<enforcer.version>3.1.0</enforcer.version>
 		<java.enforced.version>[11,12)</java.enforced.version>
@@ -60,38 +61,6 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<module>com.regnosys.rosetta.ide.tests</module>
 		<module>com.regnosys.rosetta.tools</module>
 	</modules>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.eclipse.xtext</groupId>
-				<artifactId>xtext-dev-bom</artifactId>
-				<version>${xtextVersion}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.emf</groupId>
-				<artifactId>org.eclipse.emf.mwe2.runtime</artifactId>
-				<version>${mwe2Version}</version>
-			</dependency>
-			<dependency>
-	            <groupId>org.eclipse.xsemantics</groupId>
-	            <artifactId>org.eclipse.xsemantics.runtime</artifactId>
-	            <version>${xsemantics.version}</version>
-	        </dependency>
-			<dependency>
-			    <groupId>org.antlr</groupId>
-			    <artifactId>antlr4-runtime</artifactId>
-			    <version>${antlr4-version}</version>
-			</dependency>
-			<dependency>
-			    <groupId>org.junit.jupiter</groupId>
-			    <artifactId>junit-jupiter-api</artifactId>
-			    <version>${junit-jupiter-api-version}</version>
-			    <scope>test</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	<build>
 		<plugins>
 			<plugin>
@@ -194,6 +163,11 @@ See the Apache License Version 2.0 for the specific language governing permissio
 
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+				    <artifactId>exec-maven-plugin</artifactId>
+				    <version>${exec-maven-plugin.version}</version>
+				</plugin>
 				<plugin>
 					<groupId>org.eclipse.xtend</groupId>
 					<artifactId>xtend-maven-plugin</artifactId>
@@ -353,6 +327,16 @@ See the Apache License Version 2.0 for the specific language governing permissio
 						<useUIHarness>false</useUIHarness>
 					</configuration>
 				</plugin>
+				<plugin>
+	                <groupId>com.github.eirslett</groupId>
+	                <artifactId>frontend-maven-plugin</artifactId>
+	                <version>${frontend-maven-plugin.version}</version>
+	                <configuration>
+	                    <nodeVersion>v${node.version}</nodeVersion>
+	                    <workingDirectory>${vscode.plugin.dir}</workingDirectory>
+	                    <installDirectory>${project.basedir}/target</installDirectory>
+	                </configuration>
+	            </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>

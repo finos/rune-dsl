@@ -9,8 +9,10 @@ Require-Bundle: com.regnosys.rosetta,
  org.eclipse.xtext.xbase.ide,
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  org.eclipse.lsp4j,
- org.eclipse.lsp4j.jsonrpc
-Import-Package: org.apache.log4j 
+ org.eclipse.lsp4j.jsonrpc,
+ com.google.gson,
+ org.yaml.snakeyaml,
+ org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.regnosys.rosetta.ide,
@@ -18,8 +20,9 @@ Export-Package: com.regnosys.rosetta.ide,
  com.regnosys.rosetta.ide.contentassist.antlr.internal,
  com.regnosys.rosetta.ide.highlight,
  com.regnosys.rosetta.ide.hover,
- com.regnosys.rosetta.ide.server,
  com.regnosys.rosetta.ide.inlayhints,
  com.regnosys.rosetta.ide.semantictokens,
- com.regnosys.rosetta.ide.semantictokens.lsp
+ com.regnosys.rosetta.ide.semantictokens.lsp,
+ com.regnosys.rosetta.ide.server,
+ com.regnosys.rosetta.ide.textmate
 Automatic-Module-Name: com.regnosys.rosetta.ide

@@ -3,7 +3,7 @@
 import * as path from 'path';
 import * as os from 'os';
 
-import {Trace} from 'vscode-jsonrpc';
+import { Trace } from 'vscode-jsonrpc';
 import { commands, window, workspace, ExtensionContext, Uri } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
 
@@ -29,7 +29,7 @@ export function activate(context: ExtensionContext) {
     // Create the language client and start the client.
     lc = new LanguageClient('Xtext Server', serverOptions, clientOptions);
     
-    var disposable2 =commands.registerCommand("rosetta.a.proxy", async () => {
+    var disposable2 = commands.registerCommand("rosetta.a.proxy", async () => {
         let activeEditor = window.activeTextEditor;
         if (!activeEditor || !activeEditor.document || activeEditor.document.languageId !== 'rosetta') {
             return;

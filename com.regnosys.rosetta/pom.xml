@@ -11,12 +11,6 @@
 	<artifactId>com.regnosys.rosetta</artifactId>
 	<packaging>eclipse-plugin</packaging>
 
-	<dependencies>
-		<dependency>
-            <groupId>org.eclipse.xsemantics</groupId>
-            <artifactId>org.eclipse.xsemantics.runtime</artifactId>
-        </dependency>
-	</dependencies>
 	<build>
 		<resources>
 			<!-- Make sure the .xcore file is part of the produced JAR. -->
@@ -34,7 +28,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<id>mwe2Launcher</id>
