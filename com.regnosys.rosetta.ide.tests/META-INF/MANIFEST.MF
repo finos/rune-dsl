@@ -13,10 +13,10 @@ Require-Bundle: com.regnosys.rosetta.ide,
  com.regnosys.rosetta,
  com.regnosys.rosetta.lib,
  com.regnosys.rosetta.tests,
- io.github.classgraph,
- com.google.gson,
  org.eclipse.lsp4j,
  org.eclipse.lsp4j.jsonrpc,
+ io.github.classgraph,
+ com.google.gson,
  org.junit
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.regnosys.rosetta.ide.tests;x-internal=true
