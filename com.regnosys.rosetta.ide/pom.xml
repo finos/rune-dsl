@@ -47,6 +47,28 @@
 				</executions>
 			</plugin>
 			<plugin>
+		        <artifactId>maven-resources-plugin</artifactId>
+		        <version>3.0.2</version>
+		        <executions>
+		            <execution>
+			            <id>copy-resources</id>
+			            <phase>prepare-package</phase>
+			            <goals>
+			                <goal>copy-resources</goal>
+			            </goals>
+			            <configuration>
+			                <outputDirectory>${project.build.outputDirectory}/syntaxes</outputDirectory>
+			                <resources>
+			                	<resource>
+			                 	    <directory>${project.basedir}/src-gen/syntaxes</directory>
+			                 	    <filtering>false</filtering>
+			                	</resource>
+			                </resources>              
+			            </configuration>            
+		            </execution>
+		        </executions>
+		    </plugin>
+			<plugin>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
@@ -187,6 +209,10 @@
                 </executions>
             </plugin>
 		</plugins>
+		<resources>
+	    	<resource>
+	    		<directory>src-gen/textmate</directory>
+	    	</resource>
+	    </resources>
 	</build>
-
 </project>

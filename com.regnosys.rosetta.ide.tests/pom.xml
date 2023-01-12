@@ -71,6 +71,7 @@
 				</executions>
 				<configuration>
 					<failIfNoTests>false</failIfNoTests>
+					<redirectTestOutputToFile>true</redirectTestOutputToFile>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -114,7 +115,5 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		
-		
 	</build>
 </project>
