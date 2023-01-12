@@ -53,6 +53,7 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		String expectedInlayHintItems = ''
 		(List<? extends InlayHint>) => void assertInlayHints = null
 		Range range = new Range(new Position(0, 0), new Position(Integer.MAX_VALUE, Integer.MAX_VALUE))
+		boolean assertNoIssues = true
 	}
 	
 	protected def void testInlayHint((TestInlayHintsConfiguration)=>void configurator) {
@@ -67,6 +68,9 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		))
 		val result = inlayHints.get.map[languageServer.resolveInlayHint(it).get].toList
 
+		if (configuration.assertNoIssues) {
+			configuration.model.parseRosettaWithNoIssues
+		}
 		if (configuration.assertInlayHints !== null) {
 			configuration.assertInlayHints.apply(result)
 		} else {

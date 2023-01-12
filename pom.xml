@@ -61,38 +61,6 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<module>com.regnosys.rosetta.ide.tests</module>
 		<module>com.regnosys.rosetta.tools</module>
 	</modules>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.eclipse.xtext</groupId>
-				<artifactId>xtext-dev-bom</artifactId>
-				<version>${xtextVersion}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.emf</groupId>
-				<artifactId>org.eclipse.emf.mwe2.runtime</artifactId>
-				<version>${mwe2Version}</version>
-			</dependency>
-			<dependency>
-	            <groupId>org.eclipse.xsemantics</groupId>
-	            <artifactId>org.eclipse.xsemantics.runtime</artifactId>
-	            <version>${xsemantics.version}</version>
-	        </dependency>
-			<dependency>
-			    <groupId>org.antlr</groupId>
-			    <artifactId>antlr4-runtime</artifactId>
-			    <version>${antlr4-version}</version>
-			</dependency>
-			<dependency>
-			    <groupId>org.junit.jupiter</groupId>
-			    <artifactId>junit-jupiter-api</artifactId>
-			    <version>${junit-jupiter-api-version}</version>
-			    <scope>test</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	<build>
 		<plugins>
 			<plugin>

@@ -39,7 +39,6 @@ import java.util.Optional;
 import static com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesEnum.*;
 import static com.regnosys.rosetta.ide.semantictokens.lsp.LSPSemanticTokenModifiersEnum.*;
 
-// TODO: check for null?
 public class RosettaSemanticTokensService extends AbstractSemanticTokensService {
 
 	@Inject

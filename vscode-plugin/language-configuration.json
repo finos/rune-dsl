@@ -17,10 +17,7 @@
         ["[", "]"],
         ["(", ")"],
         ["\"", "\""],
-        ["'", "'"],
-        {
-            "notIn": ["meta.expression.rosetta"]
-        }
+        ["'", "'"]
     ],
     // symbols that can be used to surround a selection
     "surroundingPairs": [
