@@ -11,6 +11,13 @@
 	<artifactId>com.regnosys.rosetta</artifactId>
 	<packaging>eclipse-plugin</packaging>
 
+	<dependencies>
+		<dependency>
+            <groupId>org.eclipse.xsemantics</groupId>
+            <artifactId>org.eclipse.xsemantics.runtime</artifactId>
+            <version>${xsemantics.version}</version>
+        </dependency>
+	</dependencies>
 	<build>
 		<resources>
 			<!-- Make sure the .xcore file is part of the produced JAR. -->
