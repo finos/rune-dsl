@@ -11,8 +11,8 @@ Require-Bundle: com.regnosys.rosetta,
  org.eclipse.lsp4j,
  org.eclipse.lsp4j.jsonrpc,
  com.google.gson,
- org.yaml.snakeyaml
-Import-Package: org.apache.log4j
+ org.yaml.snakeyaml,
+ org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.regnosys.rosetta.ide,

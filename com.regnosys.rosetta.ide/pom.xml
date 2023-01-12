@@ -11,18 +11,6 @@
 	<artifactId>com.regnosys.rosetta.ide</artifactId>
 	<packaging>eclipse-plugin</packaging>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.eclipse.lsp4j</groupId>
-			<artifactId>org.eclipse.lsp4j</artifactId>
-			<version>0.14.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.ow2.asm</groupId>
-			<artifactId>asm</artifactId>
-			<version>9.3</version>
-		</dependency>
-	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
@@ -209,10 +197,5 @@
                 </executions>
             </plugin>
 		</plugins>
-		<resources>
-	    	<resource>
-	    		<directory>src-gen/textmate</directory>
-	    	</resource>
-	    </resources>
 	</build>
 </project>
