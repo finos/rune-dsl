@@ -9,7 +9,7 @@ import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-lan
 
 let lc: LanguageClient;
 
-export function activate(context: ExtensionContext) {
+export async function activate(context: ExtensionContext) {
     // The server is a locally installed in src/rosetta
     let launcher = os.platform() === 'win32' ? 'rosetta-dsl-ls.bat' : 'rosetta-dsl-ls';
     let script = context.asAbsolutePath(path.join('src', 'rosetta', 'bin', launcher));
@@ -27,7 +27,7 @@ export function activate(context: ExtensionContext) {
     };
     
     // Create the language client and start the client.
-    lc = new LanguageClient('Xtext Server', serverOptions, clientOptions);
+    lc = new LanguageClient('Rosetta Language Server', serverOptions, clientOptions);
     
     var disposable2 = commands.registerCommand("rosetta.a.proxy", async () => {
         let activeEditor = window.activeTextEditor;
@@ -43,7 +43,13 @@ export function activate(context: ExtensionContext) {
     
     // enable tracing (.Off, .Messages, Verbose)
     lc.setTrace(Trace.Verbose);
-    lc.start();
+    console.log("Launching Rosetta Language Server...");
+    await lc.start().then(() => {
+        console.log("Rosetta Language Server started.");
+    }).catch((err) => {
+        console.error("Failed to launch Rosetta Language Server.")
+        console.error(err);
+    });
 }
 export function deactivate() {
     return lc.stop();

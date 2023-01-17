@@ -13,8 +13,6 @@ scopeName: source.rosetta
 fileTypes: [rosetta]
 
 # TODO: clean up `storage` scopes
-# TODO: watch out for forgetting \s* between words
-# TODO: support newlines in qualified identifiers (e.g., add support for a kind of yaml functions?)
 # TODO: review usage of qualifiedIdentifier versus identifier
 
 variables:
@@ -114,7 +112,6 @@ repository:
             match: '{{identifier}}'
           - name: punctuation.separator.dot.rosetta
             match: \.
-          
 
       rootElement:
         patterns:

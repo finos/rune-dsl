@@ -137,7 +137,7 @@ class RosettaEnumValue extends RosettaNamed, RosettaDefinable, RosettaFeature, R
 	}
 }
 
-class RosettaEnumValueReference extends RosettaExpression, RosettaMapTestExpression {
+class RosettaEnumValueReference extends RosettaMapTestExpression {
 	refers RosettaEnumeration enumeration
 	refers RosettaEnumValue value
 }

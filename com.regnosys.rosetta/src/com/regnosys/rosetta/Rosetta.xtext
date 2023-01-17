@@ -151,10 +151,10 @@ OutputOperation:
 ;
 
 Segment:
-	FEATURE_CALL_SEPARATOR attribute = [Attribute|ValidID] (next = Segment)?;
+	'->' attribute = [Attribute|ValidID] (next = Segment)?;
 
 EnumValueReference returns RosettaEnumValueReference:
-	enumeration=[RosettaEnumeration|QualifiedName] FEATURE_CALL_SEPARATOR value=[RosettaEnumValue|ValidID]
+	enumeration=[RosettaEnumeration|QualifiedName] '->' value=[RosettaEnumValue|ValidID]
 ;
 
 EmptyLiteral returns RosettaExpression:
@@ -376,7 +376,7 @@ RosettaDataReference returns RosettaAttributeReferenceSegment:
 ;
 
 RosettaAttributeReference returns RosettaAttributeReferenceSegment:
-	RosettaDataReference ({RosettaAttributeReference.receiver=current} FEATURE_CALL_SEPARATOR attribute=[Attribute|ValidID])+
+	RosettaDataReference ({RosettaAttributeReference.receiver=current} '->' attribute=[Attribute|ValidID])+
 ;
 
 RosettaMapTestExpression returns RosettaMapTestExpression:
@@ -465,12 +465,6 @@ BigDecimal hidden():
 
 Integer hidden():
 	('+' | '-')? INT
-;
-/*
- * = '->'
- */
-terminal FEATURE_CALL_SEPARATOR:
-	'->'
 ;
 
 
@@ -580,7 +574,7 @@ ListOperation returns RosettaExpression:
 	RosettaCalcPrimary
 	(
 		=>(
-			 ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR (=>feature=[RosettaFeature|ValidID])?)
+			 ({RosettaFeatureCall.receiver=current} '->' (=>feature=[RosettaFeature|ValidID])?)
 			|({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
 			|({RosettaAbsentExpression.argument=current} 'is' operator='absent')
 			|({RosettaOnlyElement.argument=current} operator='only-element')
@@ -626,7 +620,7 @@ ListOperation returns RosettaExpression:
 	)
 	(
 		=>(
-			 ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR (=>feature=[RosettaFeature|ValidID])?)
+			 ({RosettaFeatureCall.receiver=current} '->' (=>feature=[RosettaFeature|ValidID])?)
 			|({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
 			|({RosettaAbsentExpression.argument=current} 'is' operator='absent')
 			|({RosettaOnlyElement.argument=current} operator='only-element')
@@ -669,7 +663,7 @@ RosettaCalcOnlyExists returns RosettaExpression:
 ;
 
 RosettaOnlyExistsElement returns RosettaExpression:
-	RosettaOnlyExistsElementRoot ({RosettaFeatureCall.receiver=current} FEATURE_CALL_SEPARATOR feature=[RosettaFeature|ValidID])*
+	RosettaOnlyExistsElementRoot ({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID])*
 ;
 
 RosettaOnlyExistsElementRoot returns RosettaSymbolReference:
