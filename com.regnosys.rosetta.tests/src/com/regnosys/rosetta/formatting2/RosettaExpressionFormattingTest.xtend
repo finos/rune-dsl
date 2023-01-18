@@ -14,21 +14,12 @@ class RosettaExpressionFormattingTest {
 	@Inject
 	extension ExpressionFormatterTestHelper
 	
-	@Test
-	def void testIndexOutOfBounds() { // TODO
-		'''
-		True exists
-		''' -> '''
-		True exists
-		'''
-	}
-	
 	def ->(CharSequence unformated, CharSequence expectation) {
 		assertFormattedExpression[
 			it.expectation = expectation
 			it.toBeFormatted = unformated
 			it.useNodeModel = false // see issue https://github.com/eclipse/xtext-core/issues/164
-			// TODO it.allowUnformattedWhitespace = false
+			it.allowUnformattedWhitespace = false
 		]
 	}
 	
@@ -58,7 +49,7 @@ class RosettaExpressionFormattingTest {
 	@Test
 	def void testShortListFormatting3() {
 		'''
-		[1 extract-all [ item ]]
+		[1  extract-all  [  item] ]
 		''' -> '''
 		[1 extract-all [ item ]]
 		'''
@@ -107,7 +98,8 @@ class RosettaExpressionFormattingTest {
 		["This is a veeeeeery looooong list" extract-all [PerformComputation], 2, 3]
 		''' -> '''
 		[
-			"This is a veeeeeery looooong list" extract-all [PerformComputation],
+			"This is a veeeeeery looooong list"
+				extract-all [ PerformComputation ],
 			2,
 			3
 		]
@@ -364,6 +356,7 @@ class RosettaExpressionFormattingTest {
 		[3, 2, 1]  
 		  reduce  a ,
 		  b [if "This is a veryyyyyyyy loooooooong expression" count > a then b else a]
+		  
 		''' -> '''
 		[3, 2, 1]
 			reduce a, b [
@@ -371,6 +364,7 @@ class RosettaExpressionFormattingTest {
 				then b
 				else a
 			]
+			
 		'''
 	}
 }

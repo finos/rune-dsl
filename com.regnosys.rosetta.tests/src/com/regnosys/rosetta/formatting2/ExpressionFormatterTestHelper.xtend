@@ -25,14 +25,13 @@ class ExpressionFormatterTestHelper extends FormatterTestHelper {
 				result int (0..*)
 			set result:
 		'''
-		val postfix = Strings.newLine()
 		assertFormatted[
 			preferences[
 				put(FormatterPreferenceKeys.maxLineWidth, 80);
 			]
 			test.apply(it)
-			setExpectation(prefix + indent(it.getExpectationOrToBeFormatted().toString().trim(), "\t\t") + postfix);
-			setToBeFormatted(prefix + indent(it.getToBeFormatted().toString().trim(), "\t\t") + postfix);
+			it.expectation = prefix + indent(it.expectationOrToBeFormatted.toString().trim(), "\t\t") + Strings.newLine()
+			it.toBeFormatted = prefix + indent(it.toBeFormatted.toString().trim(), "\t\t")
 		]
 	}
 
