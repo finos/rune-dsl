@@ -38,6 +38,7 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.eclipse.xtext.formatting2.FormatterRequest
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import com.regnosys.rosetta.rosetta.RosettaCardinality
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -103,7 +104,10 @@ class RosettaFormatter extends AbstractFormatter2 {
 	}
 
 	def dispatch void format(Attribute ele, extension IFormattableDocument document) {
+		ele.card.formatCardinality(document)
 		ele.indentInner(document)
+		ele.regionFor.feature(ROSETTA_TYPED__TYPE)
+			.surround[oneSpace]
 		ele.formatDefinition(document)
 		ele.annotations.forEach[
 			prepend(NEW_LINE_LOW_PRIO)
@@ -112,6 +116,15 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.synonyms.forEach[
 			formatAttributeSynonym(document)
 		]
+	}
+	
+	private def formatCardinality(RosettaCardinality card, extension IFormattableDocument document) {
+		card.regionFor.keyword('(')
+			.append[noSpace]
+		card.regionFor.keyword('..')
+			.surround[noSpace]
+		card.regionFor.keyword(')')
+			.prepend[noSpace]
 	}
 	
 	/**
@@ -234,6 +247,13 @@ class RosettaFormatter extends AbstractFormatter2 {
 	}
 	
 	def dispatch void format(Operation ele, extension IFormattableDocument document) {
+		val extension outputOperationGrammarAccess = outputOperationAccess
+		
+		ele.regionFor.keyword(setKeyword_0_0)
+			.append[oneSpace]
+		ele.regionFor.keyword(addAddKeyword_0_1_0)
+			.append[oneSpace]
+		
 		ele.regionFor.keyword(':').prepend(NO_SPACE).append(ONE_SPACE_PRESERVE_NEWLINE)
 		
 		ele.expression.surround(INDENT)
