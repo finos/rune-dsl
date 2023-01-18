@@ -29,7 +29,6 @@ import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.rosetta.model.lib.annotations.RosettaChoiceRule
-import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
@@ -37,6 +36,8 @@ import org.eclipse.xtext.formatting2.IHiddenRegionFormatter
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import org.eclipse.xtext.formatting2.FormatterRequest
+
+import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -68,7 +69,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 			.prepend[noSpace]
 			.append[oneSpace]
 		rosettaModel.regionFor.keyword(versionKeyword_3_0).prepend[newLine]
-		formatChild(rosettaModel.elements, document)
+		rosettaModel.elements.forEach[it.format(document)]
 	}
 
 
@@ -102,6 +103,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 	}
 
 	def dispatch void format(Attribute ele, extension IFormattableDocument document) {
+		ele.indentInner(document)
 		ele.formatDefinition(document)
 		ele.annotations.forEach[
 			prepend(NEW_LINE_LOW_PRIO)
@@ -160,11 +162,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.regionFor.keyword(functionAccess.colonKeyword_2).prepend(NO_SPACE).append(ONE_SPACE)
 		ele.formatDefinition(document)
 		
-		set(
-			ele.previousHiddenRegion.nextHiddenRegion,
-			ele.nextHiddenRegion,
-			[indent]
-		)
+		ele.indentInner(document)
 		ele.append(NEW_LINE_LOW_PRIO)
 		
 		ele.annotations.forEach[
@@ -294,34 +292,34 @@ class RosettaFormatter extends AbstractFormatter2 {
 	def dispatch void format(RosettaExternalSynonymSource externalSynonymSource,
 		extension IFormattableDocument document) {
 		indentedBraces(externalSynonymSource, document)
-		formatChild(externalSynonymSource.externalClasses, document)
-		formatChild(externalSynonymSource.externalEnums, document)
+		externalSynonymSource.externalClasses.forEach[it.format(document)]
+		externalSynonymSource.externalEnums.forEach[it.format(document)]
 	}
 
 	def dispatch void format(RosettaExternalClass externalClass, extension IFormattableDocument document) {
 		externalClass.regionFor.keyword(':').prepend[noSpace]
 		externalClass.prepend[lowPriority; setNewLines(2)]
-		formatChild(externalClass.regularAttributes, document)
+		externalClass.regularAttributes.forEach[it.format(document)]
 	}
 
 	def dispatch void format(RosettaExternalEnum externalEnum, extension IFormattableDocument document) {
 		externalEnum.regionFor.keyword(':').prepend[noSpace]
 		externalEnum.prepend[lowPriority; setNewLines(2)]
-		formatChild(externalEnum.regularValues, document)
+		externalEnum.regularValues.forEach[it.format(document)]
 	}
 
 	def dispatch void format(RosettaExternalRegularAttribute externalRegularAttribute,
 		extension IFormattableDocument document) {
 		externalRegularAttribute.regionFor.keyword('+').append[oneSpace].prepend[newLine]
 		externalRegularAttribute.surround[indent]
-		formatChild(externalRegularAttribute.externalSynonyms, document)
+		externalRegularAttribute.externalSynonyms.forEach[it.format(document)]
 	}
 	
 	def dispatch void format(RosettaExternalEnumValue externalEnumValue,
 		extension IFormattableDocument document) {
 		externalEnumValue.regionFor.keyword('+').append[oneSpace].prepend[newLine]
 		externalEnumValue.surround[indent]
-		formatChild(externalEnumValue.externalEnumSynonyms, document)
+		externalEnumValue.externalEnumSynonyms.forEach[it.format(document)]
 	}
 	
 
@@ -333,12 +331,6 @@ class RosettaFormatter extends AbstractFormatter2 {
 		val lcurly = eObject.regionFor.keyword('{').prepend[newLine].append[newLine]
 		val rcurly = eObject.regionFor.keyword('}').prepend[newLine].append[setNewLines(2)]
 		interior(lcurly, rcurly)[highPriority; indent]
-	}
-
-	def void formatChild(List<? extends EObject> children, extension IFormattableDocument document) {
-		for (EObject child : children) {
-			child.format;
-		}
 	}
 
 	private def void singleIndentedLine(EObject eObject, extension IFormattableDocument document) {
@@ -353,5 +345,13 @@ class RosettaFormatter extends AbstractFormatter2 {
 
 	def void appendWithOneSpace(EObject eObject, extension IFormattableDocument document) {
 		eObject.regionFor.keyword(',').append[oneSpace]
+	}
+	
+	private def void indentInner(EObject obj, extension IFormattableDocument document) {
+		set(
+			obj.previousHiddenRegion.nextHiddenRegion,
+			obj.nextHiddenRegion,
+			[indent]
+		)
 	}
 }

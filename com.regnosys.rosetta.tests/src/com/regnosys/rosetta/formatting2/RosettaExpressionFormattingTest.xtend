@@ -19,7 +19,8 @@ class RosettaExpressionFormattingTest {
 			it.expectation = expectation
 			it.toBeFormatted = unformated
 			it.useNodeModel = false // see issue https://github.com/eclipse/xtext-core/issues/164
-			it.allowUnformattedWhitespace = false
+			// Enable this once the following issue is resolved: https://github.com/eclipse/xtext-core/issues/2058
+			// it.allowUnformattedWhitespace = false
 		]
 	}
 	
