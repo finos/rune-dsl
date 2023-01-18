@@ -64,6 +64,7 @@ class RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
 interface RosettaSymbol extends RosettaNamed {}
 
 interface RosettaCallableWithArgs extends RosettaSymbol {
+	op int numberOfParameters()
 }
 
 interface RosettaRootElement {
@@ -96,9 +97,13 @@ class RosettaRecordType extends RosettaRootElement, RosettaFeatureOwner, Rosetta
 
 class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaCallableWithArgs, RosettaDefinable {
 	contains RosettaParameter[] parameters
+	
+	op int numberOfParameters() {
+		parameters.size
+	}
 }
 
-class RosettaParameter extends RosettaTypedFeature {
+class RosettaParameter extends RosettaTyped, RosettaNamed {
 	boolean isArray
 }
 

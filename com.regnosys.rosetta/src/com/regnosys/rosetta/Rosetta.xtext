@@ -3,10 +3,16 @@ import "http://www.rosetta-model.com/Rosetta"
 import "http://www.rosetta-model.com/RosettaSimple"
 import "http://www.rosetta-model.com/RosettaExpression"
 
+// general TODO: naming is inconsistent, e.g., 
+// - [RosettaSynonymSource]
+// - [RosettaSynonymSource|ValidID]
+// - [RosettaSynonymSource|QualifiedName]
+
 RosettaModel:
-	'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)?
+	'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)? // TODO do we need STRING here? It is not supported for highlighting.
+	// TODO colon is inconsistent with other documentation
 	
-	('version' version=STRING)?
+	('version' version=STRING)? // TODO: could do better than STRING
 	
 	imports += Import*
 	
@@ -22,7 +28,7 @@ Import:
 	'import' importedNamespace=QualifiedNameWithWildcard;
 
 QualifiedNameWithWildcard:
-	QualifiedName '.*'?;
+	QualifiedName ('.' '*')?;
 
 RootElement:
 	Annotation | Data | Function;
@@ -50,7 +56,13 @@ fragment References*:
 
 fragment RuleReference*:
 	ruleReference=RosettaRuleReference;
-
+// TODO: cleanup annotations. Now it's a mix of hard-coded annotations and these kind of annotations.
+// Hard-coded:
+// - prefix annotation
+// - (class/enum) synonyms
+// - external (class/enum) synonym
+// - docReference
+// - ruleReference
 AnnotationRef:
 	'[' annotation = [Annotation|ValidID] (attribute = [Attribute|ValidID] (qualifiers += AnnotationQualifier)*)? ']'
 ;
@@ -127,7 +139,7 @@ Operation:
 	AssignOutputOperation | OutputOperation
 ;
 
-// deprecated - to be deleted once all models updated
+// @Compat deprecated - to be deleted once all models updated
 AssignOutputOperation:
 	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>Definable?
 	expression = RosettaCalcExpression assignAsKey?='as-key'?
@@ -165,8 +177,8 @@ RosettaRootElement:
 /**********************************************************************
  * Common rules 
  */
-fragment RosettaDefinable:
-	('<' definition=STRING '>')
+fragment RosettaDefinable: // TODO should a definition be able to hold any character? Escape characters? Spaces between '<' and '"'?
+	('<' definition=STRING '>') // TODO rename to documentation?
 ;
 
 fragment RosettaNamed:
@@ -179,9 +191,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'key' // used in Lib: annotations.rosetta
-		| 'condition' | 'source' | 'value' | 'version' // used in CDM model
-		| 'workflow' //used in the namespace
+	(ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
 	)
 ;
 
@@ -211,7 +221,8 @@ RosettaRecordFeature returns RosettaTypedFeature:
 RosettaParameter:
 	RosettaNamed RosettaTyped (isArray?='[' ']')?
 ;
-
+// TODO get rid of these
+// TODO parameter types and return type should be RosettaBuiltinType (similar to record features)
 RosettaLibraryFunction returns RosettaExternalFunction:
 	'library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable? RosettaTyped
 ;
@@ -239,7 +250,7 @@ RosettaCalculationTypeFeature returns RosettaTypedFeature:
 /**********************************************************************
  * Data model 
  */ 
-
+// TODO: get rid of this one?
 RosettaMetaType:
 	'metaType' RosettaNamed RosettaTyped
 ;
@@ -250,7 +261,7 @@ RosettaEnumValue:
 ;
 
 RosettaCardinality:
-	'(' (inf=INT'..' sup=INT | inf=INT'..' unbounded?='*') ')'
+	'(' (inf=INT '..' sup=INT | inf=INT '..' unbounded?='*') ')'
 ;
 
 
@@ -449,15 +460,11 @@ RosettaIntLiteral:
 ;
 
 BigDecimal hidden():
-	'-'? ('.' INT | INT '.' | INT '.' INT) SCIENTIFIC?
-;
-
-terminal SCIENTIFIC:
-    ('e' | 'E') ('+' | '-')? ('0'..'9')+
+	('+' | '-')? ('.' INT | INT '.' | INT '.' INT) (('e' | 'E') ('+' | '-') INT | ID)?
 ;
 
 Integer hidden():
-	'-'? INT
+	('+' | '-')? INT
 ;
 /*
  * = '->'
@@ -533,8 +540,6 @@ RosettaCalcComparison returns RosettaExpression:
 
 RosettaCalcAdditive returns RosettaExpression:
 	RosettaCalcMultiplicative ( =>({ArithmeticOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*
-	// Without left parameter:
-	| (->({ArithmeticOperation} operator=('+'|'-') right=RosettaCalcMultiplicative) (=>({ArithmeticOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*)
 ;
 
 RosettaCalcMultiplicative returns RosettaExpression:
@@ -756,7 +761,7 @@ RosettaBlueprint:
  	('reporting'|'eligibility') 'rule' RosettaNamed ':'? RosettaDefinable?
 	(references += RosettaDocReference)*
 	(nodes = BlueprintNodeExp)?
-	('output' output=[Data])?
+	('output' output=[Data])? // TODO: I don't think this is ever used...
 ;
 
 BlueprintNodeExp:

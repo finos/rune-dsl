@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -274,6 +275,7 @@ public class AbstractSemanticTokensService implements ISemanticTokensService {
 			return method.getParameterTypes()[0].isAssignableFrom(param);
 		}
 
+		@SuppressWarnings("unchecked")
 		public List<SemanticToken> invoke(State state) {
 			State instanceState = instance.state.get();
 			if (instanceState != null && instanceState != state)
@@ -288,6 +290,9 @@ public class AbstractSemanticTokensService implements ISemanticTokensService {
 						return List.of();
 					}
 					Object res = method.invoke(instance, state.currentObject);
+					if (res instanceof Optional) {
+						res = ((Optional<Object>)res).orElse(null);
+					}
 					if (res == null) {
 						return List.of();
 					}
