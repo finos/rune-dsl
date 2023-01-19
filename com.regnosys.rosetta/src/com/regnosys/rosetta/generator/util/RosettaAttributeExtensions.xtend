@@ -235,12 +235,12 @@ class RosettaAttributeExtensions {
 		val externalAttr = syn.eContainer as RosettaExternalRegularAttribute;
 		val externalClass = externalAttr.eContainer as RosettaExternalClass
 		val externalSynonymSource = externalClass.eContainer as RosettaExternalSynonymSource
-		val superSynonym = externalSynonymSource.superSynonym;
+		val superSynonyms = externalSynonymSource.superSynonyms;
 		
 		val sources = new ArrayList
 		sources.add(externalSynonymSource)
-		if  (superSynonym !== null) {
-			sources.add(superSynonym)
+		if  (superSynonyms !== null) {
+			sources.addAll(superSynonyms)
 		}
 		
 		new ExpandedSynonym(sources, syn.body.values?.map[new ExpandedSynonymValue(name, path, maps, false)], syn.body.hints, syn.body.merge, 

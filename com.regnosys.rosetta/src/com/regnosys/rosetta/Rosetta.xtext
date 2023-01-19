@@ -681,7 +681,7 @@ RosettaOnlyExistsElementRoot returns RosettaSymbolReference:
  *****************************************/
 
 RosettaExternalSynonymSource:
-	'synonym' 'source' RosettaNamed ('extends' superSynonym=[RosettaSynonymSource]) '{'
+		'synonym' 'source' RosettaNamed ('extends' superSynonyms += [RosettaSynonymSource] (',' superSynonyms += [RosettaSynonymSource])* )? '{'
 	    (externalRefs+= (RosettaExternalClass))*
 	    ('enums' (externalRefs+= (RosettaExternalEnum))*)?
 	'}'

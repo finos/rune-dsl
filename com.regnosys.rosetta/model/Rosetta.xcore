@@ -396,7 +396,7 @@ enum RosettaQualifiableType {
 
 class RosettaExternalSynonymSource extends RosettaSynonymSource {
 	contains RosettaExternalRef[] externalRefs
-	refers RosettaSynonymSource superSynonym
+	refers RosettaSynonymSource[] superSynonyms
 	
 	op RosettaExternalClass[] getExternalClasses() {
 		externalRefs.filter(RosettaExternalClass).toEList
