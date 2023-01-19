@@ -87,6 +87,8 @@ import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import java.util.List
+import com.regnosys.rosetta.rosetta.RosettaRecordFeature
+import com.regnosys.rosetta.generator.util.RecordFeatureMap
 
 class ExpressionGenerator {
 	
@@ -101,6 +103,7 @@ class ExpressionGenerator {
 	@Inject extension Util
 	@Inject extension ListOperationExtensions
 	@Inject extension ImplicitVariableUtil
+	@Inject RecordFeatureMap recordFeatureMap
 	
 	/**
 	 * convert a rosetta expression to code
@@ -424,6 +427,8 @@ class ExpressionGenerator {
 				'''«feature.buildMapFunc»'''
 			RosettaEnumValue: 
 				return '''«MapperS».of(«feature.enumeration.toJavaType».«feature.convertValues»)'''
+			RosettaRecordFeature:
+				'''.map("«feature.name.toFirstUpper»", «recordFeatureMap.recordFeatureToLambda(feature)»)'''
 			default: 
 				'''.map("get«feature.name.toFirstUpper»", «feature.containerType.toJavaType»::get«feature.name.toFirstUpper»)'''
 		}
