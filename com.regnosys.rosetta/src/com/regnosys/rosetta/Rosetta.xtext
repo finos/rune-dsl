@@ -214,7 +214,7 @@ RosettaRecordType:
 	'}'
 ;
 
-RosettaRecordFeature returns RosettaTypedFeature:
+RosettaRecordFeature:
 	RosettaNamed type=[RosettaBuiltinType|ValidID]
 ;
 

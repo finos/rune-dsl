@@ -7,6 +7,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.InjectWith
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -21,6 +22,31 @@ class RosettaExpressionFormattingTest {
 			it.useNodeModel = false // see issue https://github.com/eclipse/xtext-core/issues/164
 			it.allowUnformattedWhitespace = false
 			it.request.allowIdentityEdits = true // see issue https://github.com/eclipse/xtext-core/issues/2058
+		]
+	}
+	
+	@Test
+	def void parenthesesBug() {
+		assertFormatted[
+			preferences[
+				put(FormatterPreferenceKeys.maxLineWidth, 10);
+			]
+			it.useNodeModel = false
+			it.expectation = '''
+			namespace test
+			
+			func F:
+				set result:
+					exists exists
+			'''
+			it.toBeFormatted = '''
+			namespace test
+			
+			func F:
+				set result:
+					exists
+						exists
+			'''
 		]
 	}
 	
@@ -266,7 +292,18 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
-	def void testBinaryOperation3() {
+	def void testBinaryOperation3() { // with implicit left parameter
+		'''
+		contains
+		
+		  5
+		''' -> '''
+		contains 5
+		'''
+	}
+	
+	@Test
+	def void testBinaryOperation4() {
 		'''
 		SomeFunc(if "This is a veryyyyyyyy loooooooong expression" count > 999 then 1 else 2, "another param", "and another")  all  =
 		if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999 then 1 else 2
@@ -317,6 +354,16 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testShortUnaryOperation4() { // with implicit left parameter
+		'''
+		is 
+		 absent
+		''' -> '''
+		is absent
+		'''
+	}
+	
+	@Test
 	def void testLongUnaryOperation1() {
 		'''
 		[10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]  distinct  
@@ -328,6 +375,23 @@ class RosettaExpressionFormattingTest {
 			sort
 			multiple exists
 			is absent
+		'''
+	}
+	
+	@Test
+	def void testLongUnaryOperation2() { // with implicit left parameter
+		'''
+		distinct  
+		sort   reverse count   only-element
+		multiple  exists is  absent
+		''' -> '''
+		distinct
+		sort
+		reverse
+		count
+		only-element
+		multiple exists
+		is absent
 		'''
 	}
 	
@@ -357,7 +421,6 @@ class RosettaExpressionFormattingTest {
 		[3, 2, 1]  
 		  reduce  a ,
 		  b [if "This is a veryyyyyyyy loooooooong expression" count > a then b else a]
-		  
 		''' -> '''
 		[3, 2, 1]
 			reduce a, b [
@@ -365,7 +428,22 @@ class RosettaExpressionFormattingTest {
 				then b
 				else a
 			]
-			
+		'''
+	}
+	
+	@Test
+	def void testLongFunctionalOperation2() { // with implicit parameter
+		'''
+		reduce  a ,
+		  b [if "This is a veryyyyyyyy loooooooong expression" count > a then b else a]
+		   only-element
+		''' -> '''
+		reduce a, b [
+			if "This is a veryyyyyyyy loooooooong expression" count > a
+			then b
+			else a
+		]
+		only-element
 		'''
 	}
 }

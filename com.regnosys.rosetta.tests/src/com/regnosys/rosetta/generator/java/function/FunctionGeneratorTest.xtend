@@ -25,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import java.time.ZonedDateTime
 import java.time.ZoneId
+import com.rosetta.model.lib.records.Date
+import java.time.LocalTime
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -34,6 +36,92 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testAccessToDateMembers() {
+		val code = '''
+		func GetDay:
+			inputs:
+				d date (1..1)
+			output:
+				result int (1..1)
+			set result:
+				d -> day
+		
+		func GetMonth:
+			inputs:
+				d date (1..1)
+			output:
+				result int (1..1)
+			set result:
+				d -> month
+		
+		func GetYear:
+			inputs:
+				d date (1..1)
+			output:
+				result int (1..1)
+			set result:
+				d -> year
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val getDay = classes.createFunc("GetDay");
+		val getMonth = classes.createFunc("GetMonth");
+		val getYear = classes.createFunc("GetYear");
+		
+		val d = Date.of(2023, 1, 19)
+
+		assertEquals(19, getDay.invokeFunc(Date, #[d]))
+		assertEquals(1, getMonth.invokeFunc(Date, #[d]))
+		assertEquals(2023, getYear.invokeFunc(Date, #[d]))
+	}
+	
+	@Test
+	def void testAccessToZonedDateTimeMembers() {
+		val code = '''
+		func GetDate:
+			inputs:
+				zdt zonedDateTime (1..1)
+			output:
+				result date (1..1)
+			set result:
+				zdt -> date
+		
+		func GetTime:
+			inputs:
+				zdt zonedDateTime (1..1)
+			output:
+				result time (1..1)
+			set result:
+				zdt -> time
+						
+		func GetZone:
+			inputs:
+				zdt zonedDateTime (1..1)
+			output:
+				result string (1..1)
+			set result:
+				zdt -> timezone
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val getDate = classes.createFunc("GetDate");
+		val getTime = classes.createFunc("GetTime");
+		val getZone = classes.createFunc("GetZone");
+		
+		val date = Date.of(2023, 1, 19)
+		val time = LocalTime.of(11, 2)
+		val zone = "Europe/Paris"
+		val zdt = ZonedDateTime.of(date.toLocalDate, time, ZoneId.of(zone))
+		assertEquals(date, Date.of(zdt.toLocalDate));
+		assertEquals(time, zdt.toLocalTime);
+		assertEquals(zone, zdt.zone.id);
+
+		assertEquals(date, getDate.invokeFunc(ZonedDateTime, #[zdt]))
+		assertEquals(time, getTime.invokeFunc(ZonedDateTime, #[zdt]))
+		assertEquals(zone, getZone.invokeFunc(ZonedDateTime, #[zdt]))
+	}
 	
 	@Test
 	def void mayDoRecursiveCalls() {

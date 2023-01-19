@@ -232,9 +232,13 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 	}
 	
 	private def void formatBinaryExpression(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
-		expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR).surround[oneSpace]
+		if (expr.left !== null) {
+			expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR).surround[oneSpace]
 		
-		expr.left.formatExpression(document, FormattingMode.NORMAL)
+			expr.left.formatExpression(document, FormattingMode.NORMAL)
+		} else {
+			expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR).append[oneSpace]
+		}
 		expr.right.formatExpression(document, FormattingMode.NORMAL)
 	}
 	
@@ -327,9 +331,11 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 			formatConditionally(region.offset, region.getLength(),
 				[doc | // case: short operation
 					val extension singleLineDoc = doc.requireFitsInLine
-					expr.argument.nextHiddenRegion
-						.set[oneSpace]
-					expr.argument.formatExpression(singleLineDoc, FormattingMode.NORMAL)
+					if (expr.argument !== null) {
+						expr.argument.nextHiddenRegion
+							.set[oneSpace]
+						expr.argument.formatExpression(singleLineDoc, FormattingMode.NORMAL)
+					}
 					internalFormatter.apply(singleLineDoc)
 				],
 				[extension doc | // case: long operation
@@ -342,15 +348,17 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 	}
 	
 	private def void formatUnaryOperationMultiLine(RosettaUnaryOperation expr, extension IFormattableDocument document, (IFormattableDocument) => void internalFormatter) {
-		val afterArgument = expr.argument.nextHiddenRegion
-		afterArgument
-			.set[newLine]
-		set(
-			afterArgument,
-			expr.nextHiddenRegion,
-			[indent]
-		)
-		expr.argument.formatExpression(document, FormattingMode.MULTI_LINE)
+		if (expr.argument !== null) {
+			val afterArgument = expr.argument.nextHiddenRegion
+			afterArgument
+				.set[newLine]
+			set(
+				afterArgument,
+				expr.nextHiddenRegion,
+				[indent]
+			)
+			expr.argument.formatExpression(document, FormattingMode.MULTI_LINE)
+		}
 		internalFormatter.apply(document)
 	}
 }
