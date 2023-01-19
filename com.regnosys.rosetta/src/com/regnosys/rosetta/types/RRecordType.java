@@ -1,13 +1,13 @@
 package com.regnosys.rosetta.types;
 
-import com.regnosys.rosetta.rosetta.RosettaFeatureOwner;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
+import com.regnosys.rosetta.rosetta.RosettaRecordType;
 
 
 public class RRecordType extends RAnnotateType {
-  private final RosettaFeatureOwner record;
+  private final RosettaRecordType record;
   
-  public RRecordType(final RosettaFeatureOwner record) {
+  public RRecordType(final RosettaRecordType record) {
     super();
     this.record = record;
   }
@@ -39,7 +39,7 @@ public class RRecordType extends RAnnotateType {
     return true;
   }
   
-  public RosettaFeatureOwner getRecord() {
+  public RosettaRecordType getRecord() {
     return this.record;
   }
 }

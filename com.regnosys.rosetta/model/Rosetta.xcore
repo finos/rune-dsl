@@ -92,8 +92,11 @@ class RosettaBasicType extends RosettaRootElement , RosettaBuiltinType {
 class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 }
 
-class RosettaRecordType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType {
+class RosettaRecordType extends RosettaRootElement, RosettaDefinable, RosettaBuiltinType {
+	contains RosettaRecordFeature[] features
 }
+
+class RosettaRecordFeature extends RosettaFeature, RosettaTyped {}
 
 class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaCallableWithArgs, RosettaDefinable {
 	contains RosettaParameter[] parameters
