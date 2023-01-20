@@ -337,10 +337,10 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 						expr.argument.formatExpression(singleLineDoc, FormattingMode.NORMAL)
 					}
 					internalFormatter.apply(singleLineDoc)
-				],
-				[extension doc | // case: long operation
-					formatUnaryOperationMultiLine(expr, doc, internalFormatter)
-				]
+				]//,
+//				[extension doc | // case: long operation
+//					formatUnaryOperationMultiLine(expr, doc, internalFormatter)
+//				]
 			)
 		} else if (mode == FormattingMode.MULTI_LINE) {
 			formatUnaryOperationMultiLine(expr, document, internalFormatter)

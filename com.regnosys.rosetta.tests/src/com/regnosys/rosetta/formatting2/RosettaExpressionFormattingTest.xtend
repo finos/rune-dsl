@@ -7,7 +7,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.InjectWith
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
-import org.eclipse.xtext.formatting2.FormatterPreferenceKeys
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -19,34 +18,16 @@ class RosettaExpressionFormattingTest {
 		assertFormattedExpression[
 			it.expectation = expectation
 			it.toBeFormatted = unformated
-			it.useNodeModel = false // see issue https://github.com/eclipse/xtext-core/issues/164
-			it.allowUnformattedWhitespace = false
-			it.request.allowIdentityEdits = true // see issue https://github.com/eclipse/xtext-core/issues/2058
-		]
-	}
-	
-	@Test
-	def void parenthesesBug() {
-		assertFormatted[
-			preferences[
-				put(FormatterPreferenceKeys.maxLineWidth, 10);
-			]
-			it.useNodeModel = false
-			it.expectation = '''
-			namespace test
 			
-			func F:
-				set result:
-					exists exists
-			'''
-			it.toBeFormatted = '''
-			namespace test
+			// make sure we didn't miss any hidden region in our formatter:
+			it.allowUnformattedWhitespace = false 
 			
-			func F:
-				set result:
-					exists
-						exists
-			'''
+			// see issue https://github.com/eclipse/xtext-core/issues/2058
+			it.request.allowIdentityEdits = true
+		
+			// see issue https://github.com/eclipse/xtext-core/issues/164
+			// and issue https://github.com/eclipse/xtext-core/issues/2060
+			it.useSerializer = false
 		]
 	}
 	
@@ -384,14 +365,17 @@ class RosettaExpressionFormattingTest {
 		distinct  
 		sort   reverse count   only-element
 		multiple  exists is  absent
+		  sum last
 		''' -> '''
 		distinct
-		sort
-		reverse
-		count
-		only-element
-		multiple exists
-		is absent
+			sort
+			reverse
+			count
+			only-element
+			multiple exists
+			is absent
+			sum
+			last
 		'''
 	}
 	
@@ -443,7 +427,7 @@ class RosettaExpressionFormattingTest {
 			then b
 			else a
 		]
-		only-element
+			only-element
 		'''
 	}
 }
