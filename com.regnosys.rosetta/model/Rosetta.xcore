@@ -96,7 +96,7 @@ class RosettaRecordType extends RosettaRootElement, RosettaDefinable, RosettaBui
 	contains RosettaRecordFeature[] features
 }
 
-class RosettaRecordFeature extends RosettaFeature, RosettaTyped {}
+class RosettaRecordFeature extends RosettaTypedFeature {}
 
 class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaCallableWithArgs, RosettaDefinable {
 	contains RosettaParameter[] parameters
