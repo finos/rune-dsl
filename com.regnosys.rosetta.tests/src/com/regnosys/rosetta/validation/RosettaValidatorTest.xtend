@@ -30,6 +30,18 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void dateMemberHasRightTypeTest() {
+		'''
+			func F:
+				inputs:
+					d date (1..1)
+				output: result boolean (1..1)
+				set result:
+					d -> day > 15
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void nameShadowingNotAllowed1() {
 		val model =
 		'''
@@ -969,6 +981,23 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYNONYM_BODY, null,
 			"Format can only be applied to date/time types")
+	}
+	
+	@Test
+	def void externalSynonymCanExtendMultipleParents() {
+	val model='''
+			type Foo:
+				foo time (0..1)
+			
+			synonym source TEST_Base1
+			synonym source TEST_Base2
+			synonym source TEST_Base3
+			
+			synonym source TEST extends TEST_Base1, TEST_Base2, TEST_Base3 {
+			
+			}
+		'''.parseRosetta
+		model.assertNoErrors
 	}
 	
 	@Test
