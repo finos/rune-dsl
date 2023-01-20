@@ -19,7 +19,24 @@ class RosettaExpressionFormattingTest {
 			it.expectation = expectation
 			it.toBeFormatted = unformated
 			
-			// make sure we didn't miss any hidden region in our formatter:
+			// extra check to make sure we didn't miss any hidden region in our formatter:
+			it.allowUnformattedWhitespace = false 
+			
+			// see issue https://github.com/eclipse/xtext-core/issues/2058
+			it.request.allowIdentityEdits = true
+		
+			// see issue https://github.com/eclipse/xtext-core/issues/164
+			// and issue https://github.com/eclipse/xtext-core/issues/2060
+			it.useSerializer = false
+		]
+	}
+	
+	def =>(CharSequence unformated, CharSequence expectation) {
+		assertFormattedRuleExpression[
+			it.expectation = expectation
+			it.toBeFormatted = unformated
+			
+			// extra check to make sure we didn't miss any hidden region in our formatter:
 			it.allowUnformattedWhitespace = false 
 			
 			// see issue https://github.com/eclipse/xtext-core/issues/2058
@@ -158,6 +175,19 @@ class RosettaExpressionFormattingTest {
 		if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999
 		then 1
 		else 2
+		'''
+	}
+	
+	@Test
+	def void testLongConditional2() {
+		'''
+		if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999 then 1 else if False then "foo" else "bar"
+		''' -> '''
+		if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999
+		then 1
+		else if False
+		then "foo"
+		else "bar"
 		'''
 	}
 	
@@ -345,6 +375,15 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testShortUnaryOperation5() {
+		'''
+		execution -> foo is absent
+		''' -> '''
+		execution -> foo is absent
+		'''
+	}
+	
+	@Test
 	def void testLongUnaryOperation1() {
 		'''
 		[10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]  distinct  
@@ -428,6 +467,164 @@ class RosettaExpressionFormattingTest {
 			else a
 		]
 			only-element
+		'''
+	}
+	
+	@Test
+	def void testRuleChaining() {
+		'''
+		OtherRule
+		   then  OtherRule
+		''' => '''
+		OtherRule
+		then OtherRule
+		'''
+	}
+	
+	@Test
+	def void testShortRuleFilter1() {
+		'''
+		filter
+		  when   True
+		''' => '''
+		filter when True
+		'''
+	}
+	
+	@Test
+	def void testShortRuleFilter2() {
+		'''
+		filter
+		  when  
+		  rule  OtherRule
+		''' => '''
+		filter when rule OtherRule
+		'''
+	}
+	
+	@Test
+	def void testShortRuleFilter3() {
+		'''
+		filter
+		  when  
+		  rule  OtherRule  as"07 Original swap USI"
+		''' => '''
+		filter when rule OtherRule as "07 Original swap USI"
+		'''
+	}
+	
+	@Test
+	def void testLongRuleFilter1() {
+		'''
+		filter
+		  when   ["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
+		''' => '''
+		filter when
+			["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
+		'''
+	}
+	
+	@Test
+	def void testLongRuleFilter2() {
+		'''
+		filter
+		  when   ["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
+		 as"07 Original swap USI"
+		''' => '''
+		filter when
+			["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
+		as "07 Original swap USI"
+		'''
+	}
+	
+	@Test
+	def void testRuleOr1() {
+		'''
+		( OtherRule
+		,  extract  True)
+		''' => '''
+		(
+			OtherRule,
+			extract True
+		)
+		'''
+	}
+	
+	@Test
+	def void testShortRuleExtract1() {
+		'''
+		extract
+		
+		 42
+		''' => '''
+		extract 42
+		'''
+	}
+	
+	@Test
+	def void testShortRuleExtract2() {
+		'''
+		extract  repeatable
+		
+		 42
+		''' => '''
+		extract repeatable 42
+		'''
+	}
+	
+	@Test
+	def void testLongRuleExtract1() {
+		'''
+		extract
+		     ["This", "is", "a", "loooooooooooooooooooooooong", "list"] 
+		   count > 10
+		''' => '''
+		extract
+			["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
+		'''
+	}
+	
+	@Test
+	def void testLongRuleExtract2() {
+		'''
+		extract   repeatable
+		     ["This", "is", "a", "loooooooooooooooooooooooong", "list"] 
+		   count > 10
+		''' => '''
+		extract repeatable
+			["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
+		'''
+	}
+	
+	@Test
+	def void testShortRuleReturn1() {
+		'''
+		return
+		
+		 42
+		''' => '''
+		return 42
+		'''
+	}
+	
+	@Test
+	def void testLongRuleReturn1() {
+		'''
+		return
+		     ["This", "is", "a", "loooooooooooooooooooooooooong", "list"] 
+		   count > 10
+		''' => '''
+		return
+			["This", "is", "a", "loooooooooooooooooooooooooong", "list"] count > 10
+		'''
+	}
+	
+	@Test
+	def void testRuleLookup1() {
+		'''
+		lookup  foo  Foo
+		''' => '''
+		lookup foo Foo
 		'''
 	}
 }

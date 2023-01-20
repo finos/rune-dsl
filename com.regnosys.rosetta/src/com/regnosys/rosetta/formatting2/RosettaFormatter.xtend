@@ -23,7 +23,6 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Constraint
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.Definable
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
@@ -39,6 +38,9 @@ import org.eclipse.xtext.formatting2.FormatterRequest
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.rosetta.RosettaCardinality
+import com.regnosys.rosetta.rosetta.BlueprintNodeExp
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.rosetta.RosettaDefinable
 
 class RosettaFormatter extends AbstractFormatter2 {
 	
@@ -149,7 +151,7 @@ class RosettaFormatter extends AbstractFormatter2 {
 		ele.expression.format
 	}
 	
-	private def void formatDefinition(Definable ele, extension IFormattableDocument document) {
+	private def void formatDefinition(RosettaDefinable ele, extension IFormattableDocument document) {
 		if (ele.definition !== null)
 			ele.regionFor.keyword('>').append(NEW_LINE)
 	}
@@ -304,6 +306,39 @@ class RosettaFormatter extends AbstractFormatter2 {
 
 	def dispatch void format(RosettaExpression ele, extension IFormattableDocument document) {
 		expressionFormatter.formatExpression(ele, document)
+	}
+	
+	def dispatch void format(RosettaBlueprint ele, extension IFormattableDocument document) {
+		val extension ruleGrammarAccess = rosettaBlueprintAccess
+		
+		val firstKeyword = ele.regionFor.keyword(reportingKeyword_0_0)
+			?: ele.regionFor.keyword(eligibilityKeyword_0_1)
+		
+		firstKeyword
+			.prepend(NEW_ROOT_ELEMENT)
+			.append[oneSpace]
+		ele.regionFor.keyword(ruleKeyword_1)
+			.append[oneSpace]
+		ele.regionFor.keyword(colonKeyword_3)
+			.prepend[noSpace]
+			.append[oneSpace]
+		ele.formatDefinition(document)
+		
+		ele.indentInner(document)
+		ele.append(NEW_LINE_LOW_PRIO)
+		
+		ele.references.forEach[ // TODO: format references
+			prepend[newLine]
+			format
+		]
+		
+		ele.nodes
+			.prepend[newLine]
+			.format(document)
+	}
+	
+	def dispatch void format(BlueprintNodeExp ele, extension IFormattableDocument document) {
+		expressionFormatter.formatRuleExpression(ele, document)
 	}
 
 	def dispatch void format(RosettaChoiceRule rosettaChoiceRule, extension IFormattableDocument document) {

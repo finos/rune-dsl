@@ -34,6 +34,32 @@ class ExpressionFormatterTestHelper extends FormatterTestHelper {
 			it.toBeFormatted = prefix + indent(it.toBeFormatted.toString().trim(), "\t\t")
 		]
 	}
+	
+	def void assertFormattedRuleExpression(Procedure1<? super FormatterTestRequest> test) {
+		val prefix = '''
+		namespace test
+		
+		type Foo:
+			bar Foo (1..1)
+		
+		func SomeFunc:
+			output:
+				result int (1..1)
+		
+		reporting rule OtherRule:
+			return True
+		
+		reporting rule ExpressionContainer:
+		'''
+		assertFormatted[
+			preferences[
+				put(FormatterPreferenceKeys.maxLineWidth, 80);
+			]
+			test.apply(it)
+			it.expectation = prefix + indent(it.expectationOrToBeFormatted.toString().trim(), "\t") + Strings.newLine()
+			it.toBeFormatted = prefix + indent(it.toBeFormatted.toString().trim(), "\t")
+		]
+	}
 
 	def protected String indent(String string, String indent) {
 		return string.split("\\r?\\n").map[

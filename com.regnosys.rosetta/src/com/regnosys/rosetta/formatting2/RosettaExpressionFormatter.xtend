@@ -27,6 +27,17 @@ import com.regnosys.rosetta.rosetta.expression.FunctionReference
 import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import org.eclipse.xtext.formatting2.FormatterRequest
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys
+import org.eclipse.xtext.formatting2.IFormattableSubDocument
+import org.eclipse.xtext.formatting2.regionaccess.internal.TextSegment
+import com.regnosys.rosetta.rosetta.BlueprintNodeExp
+import com.regnosys.rosetta.rosetta.BlueprintNode
+import com.regnosys.rosetta.rosetta.BlueprintFilter
+import com.regnosys.rosetta.rosetta.BlueprintOr
+import com.regnosys.rosetta.rosetta.BlueprintRef
+import com.regnosys.rosetta.rosetta.BlueprintExtract
+import com.regnosys.rosetta.rosetta.BlueprintReturn
+import com.regnosys.rosetta.rosetta.BlueprintLookup
 
 class RosettaExpressionFormatter extends AbstractFormatter2 {
 	
@@ -39,6 +50,7 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 	override format(Object obj, IFormattableDocument document) {
 		switch (obj) {
 			RosettaExpression: formatExpression(obj, document)
+			BlueprintNodeExp: formatRuleExpression(obj, document)
 			default: throw new UnsupportedOperationException('''«RosettaExpressionFormatter» does not support formatting «obj».''')
 		}
 	}
@@ -81,13 +93,6 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 				expr.elements.forEach[formatExpression(doc, FormattingMode.NORMAL)]
 			]
 		);
-		
-//		interior(
-//			ele.regionFor.keyword('[').append(NO_SPACE_PRESERVE_NEW_LINE),
-//			ele.regionFor.keyword(']').prepend(NO_SPACE_PRESERVE_NEW_LINE),
-//			INDENT
-//		)
-//		ele.regionFor.keywords(',').forEach[prepend(NO_SPACE).append(ONE_SPACE_PRESERVE_NEWLINE)]
 	}
 	
 	def dispatch void formatExpression(RosettaConditionalExpression expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -97,50 +102,42 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 			append[oneSpace]
 		]
 		
-		expr.formatConditionally(
-			[doc | // case: short conditional
-				val extension singleLineDoc = doc.requireFitsInLine
-				expr.regionFor.keyword(thenKeyword_3)
-					.prepend[oneSpace]
-				expr.regionFor.keyword(fullElseKeyword_5_0_0)
-					.prepend[oneSpace]
-				expr.^if.formatExpression(singleLineDoc, FormattingMode.NORMAL)
-				expr.ifthen.formatExpression(singleLineDoc, FormattingMode.NORMAL)
-				expr.elsethen.formatExpression(singleLineDoc, FormattingMode.NORMAL)
-			],
-			[extension doc | // case: long conditional
-				expr.regionFor.keyword(thenKeyword_3)
-					.prepend[newLine]
-				expr.regionFor.keyword(fullElseKeyword_5_0_0)
-					.prepend[newLine]
-				expr.^if.formatExpression(doc, FormattingMode.NORMAL)
-				expr.ifthen.formatExpression(doc, FormattingMode.NORMAL)
-				expr.elsethen.formatExpression(doc, FormattingMode.NORMAL)
-			]
-		);
-
-//		ele.regionFor.keywords(
-//			rosettaCalcConditionalExpressionAccess.ifKeyword_1
-//		).forEach [
-//			append(ONE_SPACE_PRESERVE_NEWLINE)
-//		]
-//		ele.regionFor.keywords(
-//			rosettaCalcConditionalExpressionAccess.fullElseKeyword_5_0_0,
-//			rosettaCalcConditionalExpressionAccess.thenKeyword_3
-//		).forEach [
-//			prepend(ONE_SPACE_PRESERVE_NEWLINE)
-//			append(ONE_SPACE_PRESERVE_NEWLINE)
-//		]
-//		ele.^if.interior(INDENT).format
-//		ele.elsethen.interior(INDENT).format
-//		ele.ifthen.interior(INDENT).format
+		if (mode == FormattingMode.NORMAL) {
+			expr.formatConditionally(
+				[doc | // case: short conditional
+					val extension singleLineDoc = doc.requireFitsInLine
+					expr.regionFor.keyword(thenKeyword_3)
+						.prepend[oneSpace]
+					expr.regionFor.keyword(fullElseKeyword_5_0_0)
+						.prepend[oneSpace]
+					expr.^if.formatExpression(singleLineDoc, FormattingMode.NORMAL)
+					expr.ifthen.formatExpression(singleLineDoc, FormattingMode.NORMAL)
+					expr.elsethen.formatExpression(singleLineDoc, FormattingMode.NORMAL)
+				],
+				[extension doc | // case: long conditional
+					expr.formatConditionalMultiLine(doc)
+				]
+			);
+		} else if (mode == FormattingMode.MULTI_LINE) {
+			expr.formatConditionalMultiLine(document)
+		}
+	}
+	
+	private def void formatConditionalMultiLine(RosettaConditionalExpression expr, extension IFormattableDocument document) {
+		val extension conditionalGrammarAccess = rosettaCalcConditionalExpressionAccess
+		
+		expr.regionFor.keyword(thenKeyword_3)
+			.prepend[newLine]
+		expr.regionFor.keyword(fullElseKeyword_5_0_0)
+			.prepend[newLine]
+		expr.^if.formatExpression(document, FormattingMode.NORMAL)
+		expr.ifthen.formatExpression(document, FormattingMode.NORMAL)
+		expr.elsethen.formatExpression(document, FormattingMode.MULTI_LINE)
 	}
 	
 	def dispatch void formatExpression(RosettaFeatureCall expr, extension IFormattableDocument document, FormattingMode mode) {
 		expr.regionFor.keyword('->').surround[oneSpace]
 		expr.receiver.formatExpression(document, FormattingMode.NORMAL)
-		
-//		ele.regionFor.keyword('->').surround(ONE_SPACE)
 	}
 	
 	def dispatch void formatExpression(RosettaLiteral expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -209,12 +206,6 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 				]
 			);
 		}
-
-//		if (ele.explicitArguments) {
-//			ele.regionFor.keyword('(').append(NO_SPACE_PRESERVE_NEW_LINE)
-//			ele.regionFor.keyword(')').prepend(NO_SPACE_PRESERVE_NEW_LINE)
-//			ele.regionFor.keywords(',').forEach[prepend(NO_SPACE).append(ONE_SPACE)]
-//		}
 	}
 	
 	def dispatch void formatExpression(ModifiableBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -225,10 +216,6 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 	
 	def dispatch void formatExpression(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
 		expr.formatBinaryExpression(document, FormattingMode.NORMAL)
-
-//		ele.left.format
-//		ele.regionFor.feature(ExpressionPackage.Literals.ROSETTA_OPERATION__OPERATOR).surround(ONE_SPACE_PRESERVE_NEWLINE)
-//		ele.right.format
 	}
 	
 	private def void formatBinaryExpression(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -249,9 +236,6 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 			mode,
 			[expr.functionRef.formatFunctionReference(it)]
 		)
-		
-//		operation.argument.format
-//		operation.regionFor.feature(ExpressionPackage.Literals.ROSETTA_OPERATION__OPERATOR).surround(ONE_SPACE_PRESERVE_NEWLINE)
 	}
 	
 	private def void formatFunctionReference(FunctionReference ref, extension IFormattableDocument document) {
@@ -292,15 +276,6 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 				)
 			}
 		}
-		
-//		f.parameters.forEach[format]
-//		f.body.format
-//		interior(
-//			f.regionFor.keyword('[').prepend(ONE_SPACE_LOW_PRIO).append(NO_SPACE_PRESERVE_NEW_LINE),
-//			f.regionFor.keyword(']').prepend(NO_SPACE_PRESERVE_NEW_LINE),
-//			INDENT
-//		)
-//		f.regionFor.keywords(',').forEach[prepend(NO_SPACE).append(ONE_SPACE_PRESERVE_NEWLINE)]
 	}
 
 	def dispatch void formatExpression(RosettaExistsExpression expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -319,28 +294,27 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 	
 	def dispatch void formatExpression(RosettaUnaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
 		expr.formatUnaryOperation(document, mode, [])
-
-//		ele.argument.format
 	}
 	
 	private def void formatUnaryOperation(RosettaUnaryOperation expr, extension IFormattableDocument document, FormattingMode mode, (IFormattableDocument) => void internalFormatter) {
-		// TODO: test absent arguments
-
 		if (mode == FormattingMode.NORMAL) {
-			val region = expr.regionForEObject.merge(expr.nextHiddenRegion)
+			val opRegion = expr.regionForEObject
+			 // I need to include the next hidden region in the conditional formatting as well,
+			 // because that's where I decrease indentation in case of a (long) multi-line operation.
+			val region = opRegion.merge(expr.nextHiddenRegion)
 			formatConditionally(region.offset, region.getLength(),
 				[doc | // case: short operation
-					val extension singleLineDoc = doc.requireFitsInLine
+					val extension singleLineDoc = doc.requireTrimmedFitsInLine(region.offset, region.length, doc.request.preferences.getPreference(FormatterPreferenceKeys.maxLineWidth))
 					if (expr.argument !== null) {
 						expr.argument.nextHiddenRegion
 							.set[oneSpace]
 						expr.argument.formatExpression(singleLineDoc, FormattingMode.NORMAL)
 					}
 					internalFormatter.apply(singleLineDoc)
-				]//,
-//				[extension doc | // case: long operation
-//					formatUnaryOperationMultiLine(expr, doc, internalFormatter)
-//				]
+				],
+				[extension doc | // case: long operation
+					formatUnaryOperationMultiLine(expr, doc, internalFormatter)
+				]
 			)
 		} else if (mode == FormattingMode.MULTI_LINE) {
 			formatUnaryOperationMultiLine(expr, document, internalFormatter)
@@ -360,5 +334,195 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 			expr.argument.formatExpression(document, FormattingMode.MULTI_LINE)
 		}
 		internalFormatter.apply(document)
+	}
+	
+	
+	
+	def void formatRuleExpression(BlueprintNodeExp expr, extension IFormattableDocument document) {
+		val extension ruleExprGrammarAccess = blueprintNodeExpAccess
+		
+		expr.node.formatRuleNode(document, FormattingMode.NORMAL)
+		if (expr.next !== null) {
+			expr.regionFor.keyword(thenKeyword_2_0)
+				.prepend[newLine]
+				.append[oneSpace]
+			expr.next.formatRuleExpression(document)
+		}
+	}
+	
+	private def dispatch void formatRuleNode(BlueprintFilter expr, extension IFormattableDocument document, FormattingMode mode) {
+		val extension filterGrammarAccess = blueprintFilterAccess
+		
+		expr.regionFor.keyword(whenKeyword_1)
+			.prepend[oneSpace]
+		if (expr.filterBP !== null) {
+			expr.regionFor.keyword(ruleKeyword_2_1_0)
+				.surround[oneSpace]
+			expr.formatAsInline(document)
+		} else {
+			if (mode == FormattingMode.NORMAL) {
+				val opRegion = expr.regionForEObject
+				 // I need to include the next hidden region in the conditional formatting as well,
+				 // because that's where I decrease indentation in case of a (long) multi-line operation.
+				val region = opRegion.merge(expr.nextHiddenRegion)
+				formatConditionally(region.offset, region.getLength(),
+					[doc | // case: short operation
+						val extension singleLineDoc = doc.requireTrimmedFitsInLine(region.offset, region.length, doc.request.preferences.getPreference(FormatterPreferenceKeys.maxLineWidth))
+						expr.regionFor.keyword(whenKeyword_1)
+							.append[oneSpace]
+						expr.filter.formatExpression(singleLineDoc, FormattingMode.NORMAL)
+						expr.formatAsInline(singleLineDoc)
+					],
+					[extension doc | // case: long operation
+						expr.regionFor.keyword(whenKeyword_1)
+							.append[newLine]
+						expr.filter
+							.surround[indent]
+							.formatExpression(doc, FormattingMode.NORMAL)
+						expr.formatAsMultiline(doc)
+					]
+				)
+			} else if (mode == FormattingMode.MULTI_LINE) {
+				expr.regionFor.keyword(whenKeyword_1)
+					.append[newLine]
+				expr.filter
+					.surround[indent]
+					.formatExpression(document, FormattingMode.NORMAL)
+				expr.formatAsMultiline(document)
+			}
+		}
+	}
+	
+	private def dispatch void formatRuleNode(BlueprintOr expr, extension IFormattableDocument document, FormattingMode mode) {
+		expr.regionFor.keywords(',').forEach[
+			prepend[noSpace]
+		]
+		interior(
+			expr.regionFor.keyword('('),
+			expr.regionFor.keyword(')'),
+			[indent]
+		)
+		expr.regionFor.keyword('(')
+			.append[newLine]
+		expr.bps.last
+			.append[newLine]
+		expr.regionFor.keywords(',').forEach[
+			append[newLine]
+		]
+		expr.bps.forEach[formatRuleExpression(document)]
+	}
+	
+	private def dispatch void formatRuleNode(BlueprintRef expr, extension IFormattableDocument document, FormattingMode mode) {
+		
+	}
+	
+	private def dispatch void formatRuleNode(BlueprintExtract expr, extension IFormattableDocument document, FormattingMode mode) {
+		val extension extractGrammarAccess = blueprintExtractAccess
+		
+		val lastKeyword = if (expr.repeatable) {
+			expr.regionFor.keyword(repeatableRepeatableKeyword_1_0)
+				.prepend[oneSpace]
+		} else {
+			expr.regionFor.keyword(extractKeyword_0)
+		}
+		if (mode == FormattingMode.NORMAL) {
+			val opRegion = expr.regionForEObject
+			 // I need to include the next hidden region in the conditional formatting as well,
+			 // because that's where I decrease indentation in case of a (long) multi-line operation.
+			val region = opRegion.merge(expr.nextHiddenRegion)
+			formatConditionally(region.offset, region.getLength(),
+				[doc | // case: short operation
+					val extension singleLineDoc = doc.requireTrimmedFitsInLine(region.offset, region.length, doc.request.preferences.getPreference(FormatterPreferenceKeys.maxLineWidth))
+					lastKeyword
+						.append[oneSpace]
+					expr.call.formatExpression(singleLineDoc, FormattingMode.NORMAL)
+					expr.formatAsInline(singleLineDoc)
+				],
+				[extension doc | // case: long operation
+					lastKeyword
+						.append[newLine]
+					expr.call
+						.surround[indent]
+						.formatExpression(doc, FormattingMode.NORMAL)
+					expr.formatAsMultiline(doc)
+				]
+			)
+		} else if (mode == FormattingMode.MULTI_LINE) {
+			lastKeyword
+				.append[newLine]
+			expr.call
+				.surround[indent]
+				.formatExpression(document, FormattingMode.NORMAL)
+			expr.formatAsMultiline(document)
+		}
+	}
+	
+	private def dispatch void formatRuleNode(BlueprintReturn expr, extension IFormattableDocument document, FormattingMode mode) {
+		val extension returnGrammarAccess = blueprintReturnAccess
+		
+		if (mode == FormattingMode.NORMAL) {
+			val opRegion = expr.regionForEObject
+			 // I need to include the next hidden region in the conditional formatting as well,
+			 // because that's where I decrease indentation in case of a (long) multi-line operation.
+			val region = opRegion.merge(expr.nextHiddenRegion)
+			formatConditionally(region.offset, region.getLength(),
+				[doc | // case: short operation
+					val extension singleLineDoc = doc.requireTrimmedFitsInLine(region.offset, region.length, doc.request.preferences.getPreference(FormatterPreferenceKeys.maxLineWidth))
+					expr.regionFor.keyword(returnKeyword_0)
+						.append[oneSpace]
+					expr.expression.formatExpression(singleLineDoc, FormattingMode.NORMAL)
+					expr.formatAsInline(singleLineDoc)
+				],
+				[extension doc | // case: long operation
+					expr.regionFor.keyword(returnKeyword_0)
+						.append[newLine]
+					expr.expression
+						.surround[indent]
+						.formatExpression(doc, FormattingMode.NORMAL)
+					expr.formatAsMultiline(doc)
+				]
+			)
+		} else if (mode == FormattingMode.MULTI_LINE) {
+			expr.regionFor.keyword(returnKeyword_0)
+				.append[newLine]
+			expr.expression
+				.surround[indent]
+				.formatExpression(document, FormattingMode.NORMAL)
+			expr.formatAsMultiline(document)
+		}
+	}
+	
+	private def dispatch void formatRuleNode(BlueprintLookup expr, extension IFormattableDocument document, FormattingMode mode) {
+		val extension lookupGrammarAccess = blueprintLookupAccess
+		
+		expr.regionFor.assignment(nameAssignment_1)
+			.surround[oneSpace]
+		expr.formatAsInline(document)
+	}
+	
+	private def void formatAsInline(BlueprintNode expr, extension IFormattableDocument document) {
+		val extension filterGrammarAccess = blueprintNodeAccess
+		
+		if (expr.identifier !== null) {
+			expr.regionFor.keyword(asKeyword_1_0)
+				.surround[oneSpace]
+		}
+	}
+	
+	private def void formatAsMultiline(BlueprintNode expr, extension IFormattableDocument document) {
+		val extension filterGrammarAccess = blueprintNodeAccess
+		
+		if (expr.identifier !== null) {
+			expr.regionFor.keyword(asKeyword_1_0)
+				.prepend[newLine]
+				.append[oneSpace]
+		}
+	}
+	
+	private def IFormattableSubDocument requireTrimmedFitsInLine(IFormattableDocument doc, int offset, int length, int maxLineWidth) {
+		val segment = new TextSegment(textRegionAccess, offset, length);
+		val document = new TrimmedMaxLineWidthDocument(segment, doc, maxLineWidth);
+		doc.addReplacer(document);
+		return document;
 	}
 }

@@ -329,10 +329,10 @@ class RosettaFormattingTest {
 					[synonym SynSource value "allocatedTrade"]
 
 				condition AllocationOutcome_executionClosed: <"The allocation outcome must result in execution state of 'Allocated' for an execution.">
-					if AllocationOutcome -> allocatedTrade  exists
+					if AllocationOutcome -> allocatedTrade exists
 					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
 				condition AllocationOutcome_contractClosed: <"The allocation outcome must result in a contract state of 'Allocated' for a contract.">
-					if AllocationOutcome -> allocatedTrade  exists
+					if AllocationOutcome -> allocatedTrade exists
 					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
 				condition AllocationOutcome_contractClosed:
 					one-of
@@ -365,10 +365,7 @@ class RosettaFormattingTest {
 			func Foo:
 				inputs: in1 Type (1..1)
 				output: out Type (1..1)
-				add out -> other: [
-						in1, in1, in1,
-						in1
-				]
+				add out -> other: [in1, in1, in1, in1]
 		'''
 	}
 
