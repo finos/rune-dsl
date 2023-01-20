@@ -30,6 +30,18 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void dateMemberHasRightTypeTest() {
+		'''
+			func F:
+				inputs:
+					d date (1..1)
+				output: result boolean (1..1)
+				set result:
+					d -> day > 15
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void nameShadowingNotAllowed1() {
 		val model =
 		'''
