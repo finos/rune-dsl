@@ -12,6 +12,12 @@ import org.eclipse.xtext.formatting2.internal.SubDocument;
 import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
 import org.eclipse.xtext.formatting2.regionaccess.ITextSegment;
 
+/**
+ * A small modification to Xtext's `MaxLineWidthDocument`. In comparison,
+ * this subdocument is also applicable if there are newlines at the end of
+ * the input region, i.e., applicability is checked on the region stripped of
+ * all trailing whitespace instead of on the full region.
+ */
 @SuppressWarnings("restriction")
 public class TrimmedMaxLineWidthDocument extends SubDocument {
 	private final int maxLineWidth;
@@ -31,7 +37,7 @@ public class TrimmedMaxLineWidthDocument extends SubDocument {
 	public ITextReplacerContext createReplacements(ITextReplacerContext context) {
 		ITextReplacerContext last = super.createReplacements(context);
 		List<ITextReplacement> replacements = last.getReplacementsUntil(context);
-		String string = applyTextReplacements(replacements).trim();
+		String string = applyTextReplacements(replacements).stripTrailing();
 		if (string.contains("\n"))
 			throw new FormattingNotApplicableException();
 		int leadingCharCount = context.getLeadingCharsInLineCount();

@@ -282,7 +282,7 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
-	def void testBinaryOperation1() {
+	def void testShortBinaryOperation1() {
 		'''
 		1  
 		 contains 
@@ -293,7 +293,7 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
-	def void testBinaryOperation2() {
+	def void testShortBinaryOperation2() {
 		'''
 		1  all  =
 		2
@@ -303,7 +303,7 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
-	def void testBinaryOperation3() { // with implicit left parameter
+	def void testShortBinaryOperation3() { // with implicit left parameter
 		'''
 		contains
 		
@@ -314,20 +314,23 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
-	def void testBinaryOperation4() {
+	def void testLongBinaryOperation1() {
 		'''
 		SomeFunc(if "This is a veryyyyyyyy loooooooong expression" count > 999 then 1 else 2, "another param", "and another")  all  =
 		if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999 then 1 else 2
 		''' -> '''
 		SomeFunc(
-			if "This is a veryyyyyyyy loooooooong expression" count > 999
+				if "This is a veryyyyyyyy loooooooong expression" count > 999
+				then 1
+				else 2,
+				"another param",
+				"and another"
+			)
+			all = if "This is a verryyyyyyyyy loooooooooooooong expression"
+				count
+				> 999
 			then 1
-			else 2,
-			"another param",
-			"and another"
-		) all = if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999
-		then 1
-		else 2
+			else 2
 		'''
 	}
 	
@@ -462,10 +465,10 @@ class RosettaExpressionFormattingTest {
 		   only-element
 		''' -> '''
 		reduce a, b [
-			if "This is a veryyyyyyyy loooooooong expression" count > a
-			then b
-			else a
-		]
+				if "This is a veryyyyyyyy loooooooong expression" count > a
+				then b
+				else a
+			]
 			only-element
 		'''
 	}

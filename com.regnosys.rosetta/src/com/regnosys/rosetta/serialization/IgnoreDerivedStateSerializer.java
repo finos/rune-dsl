@@ -26,7 +26,7 @@ public class IgnoreDerivedStateSerializer extends Serializer {
 	
 	@Override
 	public String serialize(EObject obj, SaveOptions options) {
-		derivedStateComputer.removeAllDerivedState(obj.eAllContents());
+		derivedStateComputer.removeAllDerivedState(obj);
 		String result = super.serialize(obj, options);
 		derivedStateComputer.setAllDerivedState(obj);
 		return result;
@@ -34,7 +34,7 @@ public class IgnoreDerivedStateSerializer extends Serializer {
 	
 	@Override
 	public void serialize(EObject obj, Writer writer, SaveOptions options) throws IOException {
-		derivedStateComputer.removeAllDerivedState(obj.eAllContents());
+		derivedStateComputer.removeAllDerivedState(obj);
 		super.serialize(obj, writer, options);
 		derivedStateComputer.setAllDerivedState(obj);
 	}
@@ -42,7 +42,7 @@ public class IgnoreDerivedStateSerializer extends Serializer {
 	@Override
 	protected void serialize(ISerializationContext context, EObject semanticObject, ISequenceAcceptor tokens,
 			ISerializationDiagnostic.Acceptor errors) {
-		derivedStateComputer.removeAllDerivedState(semanticObject.eAllContents());
+		derivedStateComputer.removeAllDerivedState(semanticObject);
 		super.serialize(context, semanticObject, tokens, errors);
 		derivedStateComputer.setAllDerivedState(semanticObject);
 	}

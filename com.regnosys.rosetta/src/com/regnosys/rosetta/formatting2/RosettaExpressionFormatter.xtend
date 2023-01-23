@@ -4,7 +4,6 @@ package com.regnosys.rosetta.formatting2
  * For info on the formatter API, see https://www.slideshare.net/meysholdt/xtexts-new-formatter-api.
  */
 
-import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
@@ -27,9 +26,6 @@ import com.regnosys.rosetta.rosetta.expression.FunctionReference
 import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import org.eclipse.xtext.formatting2.FormatterRequest
-import org.eclipse.xtext.formatting2.FormatterPreferenceKeys
-import org.eclipse.xtext.formatting2.IFormattableSubDocument
-import org.eclipse.xtext.formatting2.regionaccess.internal.TextSegment
 import com.regnosys.rosetta.rosetta.BlueprintNodeExp
 import com.regnosys.rosetta.rosetta.BlueprintNode
 import com.regnosys.rosetta.rosetta.BlueprintFilter
@@ -39,9 +35,10 @@ import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintReturn
 import com.regnosys.rosetta.rosetta.BlueprintLookup
 
-class RosettaExpressionFormatter extends AbstractFormatter2 {
+class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
 	@Inject extension RosettaGrammarAccess
+	@Inject extension FormattingUtil
 	
 	override void initialize(FormatterRequest request) {
 		super.initialize(request)
@@ -58,9 +55,14 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 	def void formatExpression(RosettaExpression expr, IFormattableDocument document) {
 		formatExpression(expr, document, FormattingMode.NORMAL)
 	}
+	def void formatExpression(RosettaExpression expr, IFormattableDocument document, FormattingMode mode) {
+		if (!expr.generated) {
+			unsafeFormatExpression(expr, document, mode)
+		}
+	}
 	
 	
-	def dispatch void formatExpression(ListLiteral expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(ListLiteral expr, extension IFormattableDocument document, FormattingMode mode) {
 		expr.regionFor.keywords(',').forEach[
 			prepend[noSpace]
 		]
@@ -70,9 +72,8 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 			[indent]
 		)
 		
-		expr.formatConditionally(
-			[doc | // case: short list
-				val extension singleLineDoc = doc.requireFitsInLine
+		formatInlineOrMultiline(document, expr, FormattingMode.NORMAL,
+			[extension doc | // case: short list
 				expr.regionFor.keyword('[')
 					.append[noSpace]
 				expr.regionFor.keyword(']')
@@ -80,7 +81,7 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 				expr.regionFor.keywords(',').forEach[
 					append[oneSpace]
 				]
-				expr.elements.forEach[formatExpression(singleLineDoc, FormattingMode.NORMAL)]
+				expr.elements.forEach[formatExpression(doc, FormattingMode.NORMAL)]
 			],
 			[extension doc | // case: long list
 				expr.regionFor.keyword('[')
@@ -95,56 +96,45 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 		);
 	}
 	
-	def dispatch void formatExpression(RosettaConditionalExpression expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaConditionalExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		val extension conditionalGrammarAccess = rosettaCalcConditionalExpressionAccess
 		
 		expr.regionFor.keywords(ifKeyword_1, thenKeyword_3, fullElseKeyword_5_0_0).forEach[
 			append[oneSpace]
 		]
 		
-		if (mode == FormattingMode.NORMAL) {
-			expr.formatConditionally(
-				[doc | // case: short conditional
-					val extension singleLineDoc = doc.requireFitsInLine
-					expr.regionFor.keyword(thenKeyword_3)
-						.prepend[oneSpace]
-					expr.regionFor.keyword(fullElseKeyword_5_0_0)
-						.prepend[oneSpace]
-					expr.^if.formatExpression(singleLineDoc, FormattingMode.NORMAL)
-					expr.ifthen.formatExpression(singleLineDoc, FormattingMode.NORMAL)
-					expr.elsethen.formatExpression(singleLineDoc, FormattingMode.NORMAL)
-				],
-				[extension doc | // case: long conditional
-					expr.formatConditionalMultiLine(doc)
-				]
-			);
-		} else if (mode == FormattingMode.MULTI_LINE) {
-			expr.formatConditionalMultiLine(document)
-		}
+		formatInlineOrMultiline(document, expr, mode,
+			[extension doc | // case: short conditional
+				expr.regionFor.keyword(thenKeyword_3)
+					.prepend[oneSpace]
+				expr.regionFor.keyword(fullElseKeyword_5_0_0)
+					.prepend[oneSpace]
+				expr.^if.formatExpression(doc, FormattingMode.NORMAL)
+				expr.ifthen.formatExpression(doc, FormattingMode.NORMAL)
+				expr.elsethen.formatExpression(doc, FormattingMode.NORMAL)
+			],
+			[extension doc | // case: long conditional
+				expr.regionFor.keyword(thenKeyword_3)
+					.prepend[newLine]
+				expr.regionFor.keyword(fullElseKeyword_5_0_0)
+					.prepend[newLine]
+				expr.^if.formatExpression(doc, FormattingMode.NORMAL)
+				expr.ifthen.formatExpression(doc, FormattingMode.NORMAL)
+				expr.elsethen.formatExpression(doc, FormattingMode.MULTI_LINE)
+			]
+		)
 	}
 	
-	private def void formatConditionalMultiLine(RosettaConditionalExpression expr, extension IFormattableDocument document) {
-		val extension conditionalGrammarAccess = rosettaCalcConditionalExpressionAccess
-		
-		expr.regionFor.keyword(thenKeyword_3)
-			.prepend[newLine]
-		expr.regionFor.keyword(fullElseKeyword_5_0_0)
-			.prepend[newLine]
-		expr.^if.formatExpression(document, FormattingMode.NORMAL)
-		expr.ifthen.formatExpression(document, FormattingMode.NORMAL)
-		expr.elsethen.formatExpression(document, FormattingMode.MULTI_LINE)
-	}
-	
-	def dispatch void formatExpression(RosettaFeatureCall expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaFeatureCall expr, extension IFormattableDocument document, FormattingMode mode) {
 		expr.regionFor.keyword('->').surround[oneSpace]
 		expr.receiver.formatExpression(document, FormattingMode.NORMAL)
 	}
 	
-	def dispatch void formatExpression(RosettaLiteral expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaLiteral expr, extension IFormattableDocument document, FormattingMode mode) {
 
 	}
 	
-	def dispatch void formatExpression(RosettaOnlyExistsExpression expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaOnlyExistsExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		val extension onlyExistsGrammarAccess = rosettaCalcOnlyExistsAccess
 		
 		expr.regionFor.keyword('(')
@@ -165,11 +155,11 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 		]
 	}
 	
-	def dispatch void formatExpression(RosettaImplicitVariable expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaImplicitVariable expr, extension IFormattableDocument document, FormattingMode mode) {
 		
 	}
 	
-	def dispatch void formatExpression(RosettaSymbolReference expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaSymbolReference expr, extension IFormattableDocument document, FormattingMode mode) {
 		if (expr.explicitArguments) {
 			expr.regionFor.keywords(',').forEach[
 				prepend[noSpace]
@@ -182,9 +172,8 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 				[indent]
 			)
 			
-			expr.formatConditionally(
-				[doc | // case: short argument list
-					val extension singleLineDoc = doc.requireFitsInLine
+			formatInlineOrMultiline(document, expr, FormattingMode.NORMAL,
+				[extension doc | // case: short argument list
 					expr.regionFor.keyword('(')
 						.append[noSpace]
 					expr.regionFor.keyword(')')
@@ -192,7 +181,7 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 					expr.regionFor.keywords(',').forEach[
 						append[oneSpace]
 					]
-					expr.args.forEach[formatExpression(singleLineDoc, FormattingMode.NORMAL)]
+					expr.args.forEach[formatExpression(doc, FormattingMode.NORMAL)]
 				],
 				[extension doc | // case: long argument list
 					expr.regionFor.keyword('(')
@@ -204,32 +193,48 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 					]
 					expr.args.forEach[formatExpression(doc, FormattingMode.NORMAL)]
 				]
-			);
+			)
 		}
 	}
 	
-	def dispatch void formatExpression(ModifiableBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(ModifiableBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
 		// specialization of RosettaBinaryOperation
-		expr.formatBinaryExpression(document, FormattingMode.NORMAL)
-		expr.regionFor.feature(MODIFIABLE_BINARY_OPERATION__CARD_MOD).surround[oneSpace]
+		expr.formatBinaryOperation(document, FormattingMode.NORMAL)
+		expr.regionFor.feature(MODIFIABLE_BINARY_OPERATION__CARD_MOD)
+			.append[oneSpace]
 	}
 	
-	def dispatch void formatExpression(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
-		expr.formatBinaryExpression(document, FormattingMode.NORMAL)
+	private def dispatch void unsafeFormatExpression(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+		expr.formatBinaryOperation(document, FormattingMode.NORMAL)
 	}
 	
-	private def void formatBinaryExpression(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
-		if (expr.left !== null) {
-			expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR).surround[oneSpace]
+	private def void formatBinaryOperation(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+		expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR)
+			.append[oneSpace]
 		
-			expr.left.formatExpression(document, FormattingMode.NORMAL)
-		} else {
-			expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR).append[oneSpace]
-		}
-		expr.right.formatExpression(document, FormattingMode.NORMAL)
+		formatInlineOrIndentedMultiline(document, expr, mode,
+			[extension doc | // case: short operation
+				if (expr.left !== null) {
+					expr.left.nextHiddenRegion
+						.set[oneSpace]
+					expr.left
+						.formatExpression(doc, FormattingMode.NORMAL)
+				}
+				expr.right.formatExpression(doc, FormattingMode.NORMAL)
+			],
+			[extension doc | // case: long operation
+				if (expr.left !== null) {
+					val afterArgument = expr.left.nextHiddenRegion
+					afterArgument
+						.set[newLine]
+					expr.left.formatExpression(doc, FormattingMode.MULTI_LINE)
+				}
+				expr.right.formatExpression(doc, FormattingMode.NORMAL)
+			]
+		)
 	}
 	
-	def dispatch void formatExpression(RosettaFunctionalOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaFunctionalOperation expr, extension IFormattableDocument document, FormattingMode mode) {
 		// specialization of RosettaUnaryOperation
 		expr.formatUnaryOperation(
 			document,
@@ -257,14 +262,13 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 					prepend[noSpace]
 				]
 				
-				ref.formatConditionally(
-					[doc | // case: short inline function
-						val extension singleLineDoc = doc.requireFitsInLine
+				formatInlineOrMultiline(document, ref, FormattingMode.NORMAL,
+					[extension doc | // case: short inline function
 						ref.regionFor.keyword('[')
 							.append[oneSpace]
 						ref.regionFor.keyword(']')
 							.prepend[oneSpace]
-						ref.body.formatExpression(singleLineDoc)
+						ref.body.formatExpression(doc)
 					],
 					[extension doc | // case: long inline function
 						ref.regionFor.keyword('[')
@@ -278,62 +282,44 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 		}
 	}
 
-	def dispatch void formatExpression(RosettaExistsExpression expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaExistsExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		// specialization of RosettaUnaryOperation
 		expr.formatUnaryOperation(document, mode, [])
 		expr.regionFor.feature(ROSETTA_EXISTS_EXPRESSION__MODIFIER)
 			.append[oneSpace]
 	}
 	
-	def dispatch void formatExpression(RosettaAbsentExpression expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaAbsentExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		// specialization of RosettaUnaryOperation		
 		expr.formatUnaryOperation(document, mode, [])
 		expr.regionFor.keyword('is')
 			.append[oneSpace]
 	}
 	
-	def dispatch void formatExpression(RosettaUnaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaUnaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
 		expr.formatUnaryOperation(document, mode, [])
 	}
 	
 	private def void formatUnaryOperation(RosettaUnaryOperation expr, extension IFormattableDocument document, FormattingMode mode, (IFormattableDocument) => void internalFormatter) {
-		if (mode == FormattingMode.NORMAL) {
-			val opRegion = expr.regionForEObject
-			 // I need to include the next hidden region in the conditional formatting as well,
-			 // because that's where I decrease indentation in case of a (long) multi-line operation.
-			val region = opRegion.merge(expr.nextHiddenRegion)
-			formatConditionally(region.offset, region.getLength(),
-				[doc | // case: short operation
-					val extension singleLineDoc = doc.requireTrimmedFitsInLine(region.offset, region.length, doc.request.preferences.getPreference(FormatterPreferenceKeys.maxLineWidth))
-					if (expr.argument !== null) {
-						expr.argument.nextHiddenRegion
-							.set[oneSpace]
-						expr.argument.formatExpression(singleLineDoc, FormattingMode.NORMAL)
-					}
-					internalFormatter.apply(singleLineDoc)
-				],
-				[extension doc | // case: long operation
-					formatUnaryOperationMultiLine(expr, doc, internalFormatter)
-				]
-			)
-		} else if (mode == FormattingMode.MULTI_LINE) {
-			formatUnaryOperationMultiLine(expr, document, internalFormatter)
-		}
-	}
-	
-	private def void formatUnaryOperationMultiLine(RosettaUnaryOperation expr, extension IFormattableDocument document, (IFormattableDocument) => void internalFormatter) {
-		if (expr.argument !== null) {
-			val afterArgument = expr.argument.nextHiddenRegion
-			afterArgument
-				.set[newLine]
-			set(
-				afterArgument,
-				expr.nextHiddenRegion,
-				[indent]
-			)
-			expr.argument.formatExpression(document, FormattingMode.MULTI_LINE)
-		}
-		internalFormatter.apply(document)
+		formatInlineOrIndentedMultiline(document, expr, mode,
+			[extension doc | // case: short operation
+				if (expr.argument !== null) {
+					expr.argument.nextHiddenRegion
+						.set[oneSpace]
+					expr.argument.formatExpression(doc, FormattingMode.NORMAL)
+				}
+				internalFormatter.apply(doc)
+			],
+			[extension doc | // case: long operation
+				if (expr.argument !== null) {
+					val afterArgument = expr.argument.nextHiddenRegion
+					afterArgument
+						.set[newLine]
+					expr.argument.formatExpression(doc, FormattingMode.MULTI_LINE)
+				}
+				internalFormatter.apply(doc)
+			]
+		)
 	}
 	
 	
@@ -360,36 +346,22 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 				.surround[oneSpace]
 			expr.formatAsInline(document)
 		} else {
-			if (mode == FormattingMode.NORMAL) {
-				val opRegion = expr.regionForEObject
-				 // I need to include the next hidden region in the conditional formatting as well,
-				 // because that's where I decrease indentation in case of a (long) multi-line operation.
-				val region = opRegion.merge(expr.nextHiddenRegion)
-				formatConditionally(region.offset, region.getLength(),
-					[doc | // case: short operation
-						val extension singleLineDoc = doc.requireTrimmedFitsInLine(region.offset, region.length, doc.request.preferences.getPreference(FormatterPreferenceKeys.maxLineWidth))
-						expr.regionFor.keyword(whenKeyword_1)
-							.append[oneSpace]
-						expr.filter.formatExpression(singleLineDoc, FormattingMode.NORMAL)
-						expr.formatAsInline(singleLineDoc)
-					],
-					[extension doc | // case: long operation
-						expr.regionFor.keyword(whenKeyword_1)
-							.append[newLine]
-						expr.filter
-							.surround[indent]
-							.formatExpression(doc, FormattingMode.NORMAL)
-						expr.formatAsMultiline(doc)
-					]
-				)
-			} else if (mode == FormattingMode.MULTI_LINE) {
-				expr.regionFor.keyword(whenKeyword_1)
-					.append[newLine]
-				expr.filter
-					.surround[indent]
-					.formatExpression(document, FormattingMode.NORMAL)
-				expr.formatAsMultiline(document)
-			}
+			formatInlineOrMultiline(document, expr, mode,
+				[extension doc | // case: short operation
+					expr.regionFor.keyword(whenKeyword_1)
+						.append[oneSpace]
+					expr.filter.formatExpression(doc, FormattingMode.NORMAL)
+					expr.formatAsInline(doc)
+				],
+				[extension doc | // case: long operation
+					expr.regionFor.keyword(whenKeyword_1)
+						.append[newLine]
+					expr.filter
+						.surround[indent]
+						.formatExpression(doc, FormattingMode.NORMAL)
+					expr.formatAsMultiline(doc)
+				]
+			)
 		}
 	}
 	
@@ -425,71 +397,43 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 		} else {
 			expr.regionFor.keyword(extractKeyword_0)
 		}
-		if (mode == FormattingMode.NORMAL) {
-			val opRegion = expr.regionForEObject
-			 // I need to include the next hidden region in the conditional formatting as well,
-			 // because that's where I decrease indentation in case of a (long) multi-line operation.
-			val region = opRegion.merge(expr.nextHiddenRegion)
-			formatConditionally(region.offset, region.getLength(),
-				[doc | // case: short operation
-					val extension singleLineDoc = doc.requireTrimmedFitsInLine(region.offset, region.length, doc.request.preferences.getPreference(FormatterPreferenceKeys.maxLineWidth))
-					lastKeyword
-						.append[oneSpace]
-					expr.call.formatExpression(singleLineDoc, FormattingMode.NORMAL)
-					expr.formatAsInline(singleLineDoc)
-				],
-				[extension doc | // case: long operation
-					lastKeyword
-						.append[newLine]
-					expr.call
-						.surround[indent]
-						.formatExpression(doc, FormattingMode.NORMAL)
-					expr.formatAsMultiline(doc)
-				]
-			)
-		} else if (mode == FormattingMode.MULTI_LINE) {
-			lastKeyword
-				.append[newLine]
-			expr.call
-				.surround[indent]
-				.formatExpression(document, FormattingMode.NORMAL)
-			expr.formatAsMultiline(document)
-		}
+		formatInlineOrMultiline(document, expr, mode,
+			[extension doc | // case: short operation
+				lastKeyword
+					.append[oneSpace]
+				expr.call.formatExpression(doc, FormattingMode.NORMAL)
+				expr.formatAsInline(doc)
+			],
+			[extension doc | // case: long operation
+				lastKeyword
+					.append[newLine]
+				expr.call
+					.surround[indent]
+					.formatExpression(doc, FormattingMode.NORMAL)
+				expr.formatAsMultiline(doc)
+			]
+		)
 	}
 	
 	private def dispatch void formatRuleNode(BlueprintReturn expr, extension IFormattableDocument document, FormattingMode mode) {
 		val extension returnGrammarAccess = blueprintReturnAccess
 		
-		if (mode == FormattingMode.NORMAL) {
-			val opRegion = expr.regionForEObject
-			 // I need to include the next hidden region in the conditional formatting as well,
-			 // because that's where I decrease indentation in case of a (long) multi-line operation.
-			val region = opRegion.merge(expr.nextHiddenRegion)
-			formatConditionally(region.offset, region.getLength(),
-				[doc | // case: short operation
-					val extension singleLineDoc = doc.requireTrimmedFitsInLine(region.offset, region.length, doc.request.preferences.getPreference(FormatterPreferenceKeys.maxLineWidth))
-					expr.regionFor.keyword(returnKeyword_0)
-						.append[oneSpace]
-					expr.expression.formatExpression(singleLineDoc, FormattingMode.NORMAL)
-					expr.formatAsInline(singleLineDoc)
-				],
-				[extension doc | // case: long operation
-					expr.regionFor.keyword(returnKeyword_0)
-						.append[newLine]
-					expr.expression
-						.surround[indent]
-						.formatExpression(doc, FormattingMode.NORMAL)
-					expr.formatAsMultiline(doc)
-				]
-			)
-		} else if (mode == FormattingMode.MULTI_LINE) {
-			expr.regionFor.keyword(returnKeyword_0)
-				.append[newLine]
-			expr.expression
-				.surround[indent]
-				.formatExpression(document, FormattingMode.NORMAL)
-			expr.formatAsMultiline(document)
-		}
+		formatInlineOrMultiline(document, expr, mode,
+			[extension doc | // case: short operation
+				expr.regionFor.keyword(returnKeyword_0)
+					.append[oneSpace]
+				expr.expression.formatExpression(doc, FormattingMode.NORMAL)
+				expr.formatAsInline(doc)
+			],
+			[extension doc | // case: long operation
+				expr.regionFor.keyword(returnKeyword_0)
+					.append[newLine]
+				expr.expression
+					.surround[indent]
+					.formatExpression(doc, FormattingMode.NORMAL)
+				expr.formatAsMultiline(doc)
+			]
+		)
 	}
 	
 	private def dispatch void formatRuleNode(BlueprintLookup expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -517,12 +461,5 @@ class RosettaExpressionFormatter extends AbstractFormatter2 {
 				.prepend[newLine]
 				.append[oneSpace]
 		}
-	}
-	
-	private def IFormattableSubDocument requireTrimmedFitsInLine(IFormattableDocument doc, int offset, int length, int maxLineWidth) {
-		val segment = new TextSegment(textRegionAccess, offset, length);
-		val document = new TrimmedMaxLineWidthDocument(segment, doc, maxLineWidth);
-		doc.addReplacer(document);
-		return document;
 	}
 }

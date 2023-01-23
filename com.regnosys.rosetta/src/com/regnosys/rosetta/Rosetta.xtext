@@ -79,7 +79,9 @@ Data:
 ;
 
 Attribute:
-	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable? (References|Annotations|Synonyms)* RuleReference?
+	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable?
+	(References|Annotations|Synonyms)*
+	RuleReference?
 ;
 
 Enumeration returns RosettaEnumeration:
@@ -112,22 +114,18 @@ ShortcutDeclaration:
 Condition:
 	'condition' RosettaNamed? ':' =>Definable?
 		=>(References|Annotations)* // conflicts with ListLiteral as RosettaCalcExpression
-		( constraint = OneOf
-		| constraint = Constraint
+		( constraint = Constraint
 		| expression = RosettaCalcExpression)
 ;
 
 Constraint:
-	necessity = Necessity 'choice' attributes += [Attribute | ValidID] (',' attributes += [Attribute | ValidID])*
+	{Constraint} oneOf ?= 'one-of'
+	| necessity = Necessity 'choice' attributes += [Attribute | ValidID] (',' attributes += [Attribute | ValidID])*
 ;
 
 
 enum Necessity:
 	optional | required
-;
-
-OneOf returns Constraint :
-	oneOf ?= 'one-of'
 ;
 
 PostCondition returns Condition:
