@@ -1487,22 +1487,32 @@ An inline synonym can be expressed next to the attribute being mapped as follows
 E.g.
 
 ```
-type Collateral:
-    independentAmount IndependentAmount (1..1)
-        [synonym FpML_5_10 value "independentAmount"]
+type Engine:
+    engineSpecification EngineSpecification(1..1)
+        [synonym CONDITIONAL_SET_TO_EXAMPLE_1 value "engineDetail"]
 ```
 
 ##### External synonym
 
-External synonyms are defined inside the synonym source declaration so the synonym keyword and the synonym source are not required in every synonym. A synonym is added to an attribute by referencing the type and attribute name and then declaring the synonym to add as the synonym body enclosed in square brackets `[..]`. The code below removes all the synonyms from the `independentAmount` attribute of `Collateral` and then adds in a new synonym:
+External synonyms are defined inside the synonym source declaration so the synonym keyword and the synonym source are not required in every synonym. A synonym is added to an attribute by referencing the type and attribute name and then declaring the synonym to add as the synonym body enclosed in square brackets `[..]`. The code below removes all the synonyms from the `fuel` attribute of `EngineSpecification` as well as removing the synonyms for the `FuelEnum` for `Diesel` and `Gasoline`, so then adds in a new synonym:
 
 ```
-synonym source FpML_5_10 extends FpML
+synonym source EXTERNAL_SYNONYM_EXAMPLE_8 extends EXTERNAL_SYNONYM_EXAMPLE_8_BASE_2
 {
-    Collateral:
-        - independentAmount
-        + independentAmount
-            [value "independentAmount"]
+	EngineSpecification:
+		- fuel
+		+ fuel
+			[value "combustible"]
+
+	enums
+
+	FuelEnum:
+		- Diesel
+		+ Diesel
+			[value "Diesel"]
+		- Gasoline
+		+ Gasoline
+			[value "Gasoline"]
 }
 ```
 
@@ -1510,17 +1520,17 @@ synonym source FpML_5_10 extends FpML
 
 ##### Value
 
-The simplest synonym consists of a single value `[value "independentAmount"]`. This means that the value of the input attribute \"independentAmount\" will be mapped to the associated Rosetta attribute. If both the input attribute and the Rosetta attribute are basic types (string, number, date etc) then the input value will be stored in the appropriate place in the output document. If they are both complex types (with child attributes of their own) then the attributes contained within the complex type will be compared against synonyms inside the corresponding Rosetta type. If one is complex and the other is basic then a mapping error will be recorded.
+The simplest synonym consists of a single value `[value "combustible"]`. This means that the value of the input attribute \"combustible\" will be mapped to the associated Rosetta attribute. If both the input attribute and the Rosetta attribute are basic types (string, number, date etc) then the input value will be stored in the appropriate place in the output document. If they are both complex types (with child attributes of their own) then the attributes contained within the complex type will be compared against synonyms inside the corresponding Rosetta type. If one is complex and the other is basic then a mapping error will be recorded.
 
 ##### Path
 
 The value of a synonym can be followed with a path declaration. E.g.:
 
 ```
-[synonym FpML_5_10 value "initialFixingDate" path "resetDates"]
+[synonym MULTI_CARDINALITY_EXAMPLE_2 value "combustible" path "engineDetail"]
 ```
 
-This allows a path of input document elements to be matched to a single Rosetta attribute. In the example the contents of the xml path `resetDates.initialFixingDate` will be mapped to the Rosetta attribute. Note that the path is applied as a suffix to the synonym value.
+This allows a path of input document elements to be matched to a single Rosetta attribute. In the example the contents of the xml path `engineDetail.combustible` will be mapped to the Rosetta attribute. Note that the path is applied as a suffix to the synonym value.
 
 ##### Maps 2
 
@@ -1530,23 +1540,25 @@ Mappings are expected to be one-to-one with each input value mapping to one Rose
 
 The `meta` keyword inside a synonym is used to map [metadata](#meta-data-annotation).
 
-In the below example, the value of the "issuer" input will be mapped to the value of the `issuer` attribute and the value of the "issuerIdScheme" metadata associated to "issuer" will be mapped to the `scheme` metadata attribute.
+In the below example, the value of the "combustible" input will be mapped to the value of the `fuelType` attribute and the value of the "scheme" metadata associated to "combustible" will be mapped to the `scheme` metadata attribute.
 
 ```
-issuer string (0..1)
-  [metadata scheme]
-  [synonym FpML_5_10 value "issuer" meta "issuerIdScheme"]
+type EngineSpecification:
+    fuelType string (1..*)
+        [metadata scheme]
+        [synonym META_SCHEME_EXAMPLE_1 value "combustible" meta "scheme"]
 ```
 
 #### Enumeration
 
-A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the FpML value `Broker` will be mapped to the enumeration value `NaturalPersonRoleEnum.Broker` in Rosetta:
+A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the FpML value `HYBRID` will be mapped to the enumeration value `EngineEnum.HYBRID` in Rosetta:
 
 ```
-enum NaturalPersonRoleEnum: <"The enumerated values for the natural person's role.">
-
-  Broker <"The person who arranged with a client to execute the trade.">
-    [synonym FpML_5_10 value "Broker"]
+enum EngineEnum: <"The enumerated values for the natural person's role.">
+    HYBRID
+        [synonym CONDITIONAL_SET_TO_EXAMPLE_8 value "hybrid"]
+    COMBUSTION
+        [synonym CONDITIONAL_SET_TO_EXAMPLE_8 value "combustion"]
 ```
 
 ##### External Enumeration Synonym
@@ -1556,9 +1568,11 @@ In an external synonym file, enumeration synonyms are defined in a block after t
 ```
 enums
 
-NaturalPersonRoleEnum:
-  + Broker
-    [value "Broker"]
+	FuelEnum:
+		+ Diesel
+			[value "Diesel"]
+		+ Gasoline
+			[value "Gasoline"]
 ```
 
 ### Advanced Mapping
@@ -1580,33 +1594,35 @@ Hints are synonyms used to bypass a layer of rosetta without *consuming* an inpu
 e.g. :
 
 ```
-ResolvablePayoutQuantity:
-  + assetIdentifier
-    [value "notionalAmount"]
-    [hint "currency"]
+type EngineSpecification:
+    engineMetric EngineMetric (0..*)
+        [synonym MULTI_CARDINALITY_EXAMPLE_12 value "capacityDetail"]
+        [synonym MULTI_CARDINALITY_EXAMPLE_12 hint "combustible"]
 
-AssetIdentifier:
-  + currency
-    [value "currency" maps 2 meta "currencyScheme"]
+
+type EngineMetric:
+    fuel string (0..1)
+        [synonym MULTI_CARDINALITY_EXAMPLE_12 value "combustible"]
+
 ```
 
-In this example the input attribute \"notionalAmount\" is matched to the assetIdentifier and the children of \"notionalAmount\" will be matched against the synonyms for AssetIdentifier. However the input attribute \"currency\" will also be matched to the assetIdentifier but \"currency\" is still available to be matched against the synonyms of AssetIdentifier.
+In this example the input attribute \"capacityDetail\" is matched to the engineMetric and the children of \"capacityDetail\" will be matched against the synonyms for EngineMetric. However the input attribute \"combustible\" will also be matched to the engineMetric but \"combustible\" is still available to be matched against the synonyms of EngineMetric.
 
 #### Merging inputs
 
 Where a Rosetta attribute exists with multiple cardinality, to which more than one input element maps, synonyms can be used to either create a single instance of the Rosetta attribute that merges the input elements or to create multiple attributes - one for each input element. E.g. The synonyms :
 
 ```
-interestRatePayout InterestRatePayout (0..*)
-  [synonym FpML_5_10 value feeLeg]
-  [synonym FpML_5_10 value generalTerms]
+engineSpecification EngineSpecification (0..*)
+  [synonym MULTI_CARDINALITY_EXAMPLE_20 value "fuelDetail"]
+  [synonym MULTI_CARDINALITY_EXAMPLE_20 value "capacityDetail"]
 ```
 
-will produce two InterestRatePayout objects. In order to create a single InterestRatePayout with values from the FpML `feeLeg` and `generalTerms` the synonym merging syntax should be used:
+will produce two EngineSpecification objects. In order to create a single EngineSpecification with values from the FpML `fuelDetail ` and `capacityDetail` the synonym merging syntax should be used:
 
 ```
-interestRatePayout InterestRatePayout (0..*)
-  [synonym FpML_5_10 value feeLeg, generalTerms]
+engineSpecification EngineSpecification (0..*)
+  [synonym FpML_5_10 value fuelDetail, capacityDetail]
 ```
 
 #### Conditional Mappings
@@ -1618,26 +1634,24 @@ Conditional mappings allow to build more complex mappings. Conditional mappings 
 A set to mapping is used to set the value of an attribute to a constant value. They don\'t attempt to use any data from the input document as the value for the attribute and a synonym value must not be given. The type of the constant must be convertible to the type of the attribute. The constant value can be given as a string (converted as necessary) or an enum - e.g. :
 
 ```
-period PeriodEnum (1..1)
-  [synonym ISDA_Create_1_0 set to PeriodEnum.D]
-itemName string (1..1) <"In this ....">;
-  [synonym DTCC_11_0 set to "comment"]
+engineEnum EngineEnum (0..1)
+  [synonym CONDITIONAL_SET_TO_EXAMPLE_13 set to EngineEnum->HYBRID]
 ```
 
 A set to mapping can be conditional on a [when clause](#when-clause) - e.g.:
 
 ```
-itemName string (1..1) <"In this ....">;
-  [synonym DTCC_11_0 set to "comment" when path = "PartyWorkflowFields.comment"]
+engineEnum EngineEnum (0..1)
+  [synonym CONDITIONAL_SET_TO_EXAMPLE_13 set to EngineEnum->HYBRID when "alternativeFuelDetail" exists and "fuelDetail" exists]
 ```
 
 Multiple set to mappings can be combined in one synonym. They will be evaluated in the order specified with the first matching value used - e.g. :
 
 ```
-xField string (1..1);
-  [synonym Bank_A
-    set to "FISH2" when "b.c.d" = "FISH",
-    set to "SAUSAGE2" when "b.c.d" = "SAUSAGE",
+engineSystem string (1..1)
+  [synonym CONDITIONAL_SET_TO_EXAMPLE_6
+    set to "COMBUSTION" when "engineDetail->fuelDetail->combustible" = "Gasoline",
+    set to "ELECTRIC" when "engineDetail->fuelDetail->combustible" = "Electricity",
     set to "DEFAULT"]
 ```
 
@@ -1646,14 +1660,15 @@ xField string (1..1);
 A set when mapping is used to set an attribute to a value derived from the input document if a given when clause is met -  e.g. :
 
 ```
-execution Execution (0..1) <"The execution ...">;
-  [synonym CME_SubmissionIRS_1_0 value TrdCaptRpt set when "TrdCaptRpt.VenuTyp" exists]
+alternativeCombustible FuelEnum (1..1)
+  [synonym CONDITIONAL_SET_TO_EXAMPLE_7 set to FuelEnum -> ELECTRICITY when "engineDetail->fuelDetail->alternativeCombustible" exists]
 ```
 
 A set when synonym can include a default to set an attribute to a constant value when no other value was applicable - e.g. :
 
 ```
-[synonym Bank_A value e path "b.c" default to "DEFAULT"]
+capacityUnit string (0..1)
+  [synonym CONDITIONAL_DEFAULT_EXAMPLE_1 value "volumeCapacityUnit" path "engineType->engineDetail" default to "UK Gallon"]
 ```
 
 #### When Clause
@@ -1662,7 +1677,7 @@ There are three types of *when* clauses: test expression, input path expression 
 
 ##### Test Expression
 
-A test expression consists of a synonym path and one of three types of test. The synonym path is from the mapping that bound to this class.
+A test expression consists of a synonym path and one of three types of test. The synonym path is from the mapping that is bound to this class.
 
 - exists - tests whether a value with the given path exists in the input document
 - absent - tests that a value with given path does not exist in the input document
@@ -1671,21 +1686,22 @@ A test expression consists of a synonym path and one of three types of test. The
 e.g. :
 
 ```
-execution Execution (0..1) <"The execution ...">;
-  [synonym Rosetta_Workbench value trade set when "trade.executionType" exists]
-contract Contract (0..1) <"The contract ... ">;
-  [synonym Rosetta_Workbench value trade set when "trade.executionType" is absent]
-discountingType DiscountingTypeEnum (1..1) <"The discounting method that is applicable.">;
-  [synonym FpML_5_10 value fraDiscounting set when "fraDiscounting" <> "NONE"]
+capacityUnit string (0..1)	    
+  [synonym CONDITIONAL_SET_EXAMPLE_2 value "volumeCapacityUnit" path "engineType->engineDetail" set when "engineType->engineDetail->powerUnit" exists]
+capacityUnit string (0..1)
+  [synonym CONDITIONAL_SET_EXAMPLE_3 value "volumeCapacityUnit" path "engineType->engineDetail" set when "engineType->engineDetail->powerUnit" is absent]
+capacityUnit string (0..1)
+  [synonym CONDITIONAL_SET_EXAMPLE_1 value "volumeCapacityUnit" path "engineType->engineDetail" set when "engineType->engineDetail->powerUnit" = "Cylinder"]
 ```
 
 ##### Input Path Expression
 
-A input path expression checks the path through the input document that leads to the current value. The path provided can only be the direct path from the level above the current value in the input document. The condition avlauates to true when the current path is the given path:
+An input path expression checks the path through the input document that leads to the current value. The path provided can only be the direct path from the level above the current value in the input document. The condition evaluates to true when the current path is the given path:
 
 ```
-role PartyRoleEnum (1..1) <"The party role.">;`
-  [synonym FpML_5_10 set to PartyRoleEnum.DeterminingParty when path = "trade.determiningParty"]
+volume string (0..1)
+  [synonym CONDITIONAL_SET_EXAMPLE_6 value "capacity" set when path = "ukEngineVersion->terminology"]
+
 ```
 
 ##### Output Path Expression
@@ -1695,8 +1711,10 @@ An output path expression checks the path through the rosetta output object that
 e.g. :
 
 ```
-identifier string (1..1) scheme <"The identifier value.">;
-  [synonym DTCC_11_0, DTCC_9_0 value tradeId path "partyTradeIdentifier" set when rosettaPath = Event -> eventIdentifier -> assignedIdentifier -> identifier]
+fuelType string (1..1)
+  [metadata scheme]
+  [synonym CONDITIONAL_SET_EXAMPLE_16 value "combustible" path "engineDetail" set when "engineDetail->combustible->scheme"="petrolScheme" and rosettaPath = Root->engineSpecification->fuel->fuelType meta "scheme"]
+
 ```
 
 #### Mapper
@@ -1704,29 +1722,33 @@ identifier string (1..1) scheme <"The identifier value.">;
 Occasionally the Rosetta mapping syntax is not powerful enough to perform the required transformation from the input document to the output document. In this case a *Mapper* can be called from a synonym :
 
 ```
-NotifyingParty:
-  + buyer
-    [value "buyerPartyReference" mapper "CounterpartyEnum"]
+fuelType string (0..1)
+  // value updated by mapper
+  [synonym MAPPERS_EXAMPLE_1 value "combustible" path "engineDetail->metric" mapper "Example1"]
 ```
 
-When the ingestion is run a class called CounterPartyMappingProcessor will be loaded and its mapping method invoked with the partially mapped Rosetta element. The creation of mapper classes is outside the scope of this document but the full power of the programming language can be used to transform the output.
+When the ingestion is run a class called `Example1MappingProcessor` will be loaded and its mapping method invoked with the partially mapped Rosetta element. The creation of mapper classes is outside the scope of this document but the full power of the programming language can be used to transform the output.
 
 #### Format
 
-A date/time synonym can be followed by a format construct. The keyword `format` should be followed by a string. The string should follow a standardised [date format](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) - e.g. :
+A date/time synonym can be followed by a format construct. The keyword `format` should be followed by a string. The string should follow a standardized [date format](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) - e.g. :
 
 ```
-[value "bar" path "baz" format "MM/dd/yy"]
+type EngineSpecification:
+	fabricationDate date (1..1)
+		[synonym FORMAT_EXAMPLE_1 value "fabricationDate" dateFormat "MM/dd/yyyy"]
 ```
 
 #### Pattern
 
-A synonym can optionally be followed by a the pattern construct. It is only applicable to enums and basic types other than date/times. The keyword `pattern` followed by two quoted strings. The first string is a [regular expression](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html) used to match against the input value. The second string is a replacement expression used to reformat the matched input before it is processed as usual for the basictype/enum.
+A synonym can optionally be followed by a pattern construct. It is only applicable to enums and basic types other than date/times. The keyword `pattern` followed by two quoted strings. The first string is a [regular expression](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html) used to match against the input value. The second string is a replacement expression used to reformat the matched input before it is processed as usual for the basictype/enum.
 
 E.g. :
 
 ```
-[value "Tenor" maps 2 pattern "([0-9]*).*" "$1"]
+type EngineSpecification:
+	guaranteePeriod int (1..1)
+		[synonym FORMAT_EXAMPLE_1 value "guaranteePeriod" maps 2 pattern "([0-9])*.*" "$1"]
 ```
 
 ## Reporting Component
