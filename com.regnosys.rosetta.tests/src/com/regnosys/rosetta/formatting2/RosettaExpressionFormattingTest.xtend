@@ -14,6 +14,8 @@ class RosettaExpressionFormattingTest {
 	@Inject
 	extension ExpressionFormatterTestHelper
 	
+	
+	
 	def ->(CharSequence unformated, CharSequence expectation) {
 		assertFormattedExpression[
 			it.expectation = expectation
@@ -255,14 +257,14 @@ class RosettaExpressionFormattingTest {
 		   "looooooooooooooooooooooong", "function", "call")
 		''' -> '''
 		SomeFunc(
-			"This",
-			"is",
-			"a",
-			"verrrrryyyyyyyyy",
-			"looooooooooooooooooooooong",
-			"function",
-			"call"
-		)
+				"This",
+				"is",
+				"a",
+				"verrrrryyyyyyyyy",
+				"looooooooooooooooooooooong",
+				"function",
+				"call"
+			)
 		'''
 	}
 	
@@ -272,12 +274,12 @@ class RosettaExpressionFormattingTest {
 		SomeFunc(if "This is a veryyyyyyyy loooooooong expression" count > 999 then 1 else 2, "another param", "and another")
 		''' -> '''
 		SomeFunc(
-			if "This is a veryyyyyyyy loooooooong expression" count > 999
-			then 1
-			else 2,
-			"another param",
-			"and another"
-		)
+				if "This is a veryyyyyyyy loooooooong expression" count > 999
+				then 1
+				else 2,
+				"another param",
+				"and another"
+			)
 		'''
 	}
 	
@@ -450,10 +452,10 @@ class RosettaExpressionFormattingTest {
 		''' -> '''
 		[3, 2, 1]
 			reduce a, b [
-				if "This is a veryyyyyyyy loooooooong expression" count > a
-				then b
-				else a
-			]
+					if "This is a veryyyyyyyy loooooooong expression" count > a
+					then b
+					else a
+				]
 		'''
 	}
 	

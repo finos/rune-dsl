@@ -166,11 +166,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			]
 			expr.regionFor.keyword('(')
 				.prepend[noSpace]
-			interior(
-				expr.regionFor.keyword('('),
-				expr.regionFor.keyword(')'),
-				[indent]
-			)
 			
 			formatInlineOrMultiline(document, expr, FormattingMode.NORMAL,
 				[extension doc | // case: short argument list
@@ -184,10 +179,14 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.args.forEach[formatExpression(doc, FormattingMode.NORMAL)]
 				],
 				[extension doc | // case: long argument list
-					expr.regionFor.keyword('(')
-						.append[newLine]
-					expr.regionFor.keyword(')')
-						.prepend[newLine]
+					expr.indentInner(doc)
+					interior(
+						expr.regionFor.keyword('(')
+							.append[newLine],
+						expr.regionFor.keyword(')')
+							.prepend[newLine],
+						[indent]
+					)
 					expr.regionFor.keywords(',').forEach[
 						append[newLine]
 					]
@@ -212,7 +211,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR)
 			.append[oneSpace]
 		
-		formatInlineOrIndentedMultiline(document, expr, mode,
+		formatInlineOrMultiline(document, expr, mode,
 			[extension doc | // case: short operation
 				if (expr.left !== null) {
 					expr.left.nextHiddenRegion
@@ -225,6 +224,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			[extension doc | // case: long operation
 				if (expr.left !== null) {
 					val afterArgument = expr.left.nextHiddenRegion
+					expr.indentInner(afterArgument, doc)
 					afterArgument
 						.set[newLine]
 					expr.left.formatExpression(doc, FormattingMode.MULTI_LINE)
@@ -248,11 +248,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			NamedFunctionReference:
 				ref.prepend[oneSpace]
 			InlineFunction: {
-				interior(
-					ref.regionFor.keyword('['),
-					ref.regionFor.keyword(']'),
-					[indent]
-				)
 				ref.parameters.forEach[
 					prepend[oneSpace]
 				]
@@ -271,10 +266,14 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 						ref.body.formatExpression(doc)
 					],
 					[extension doc | // case: long inline function
-						ref.regionFor.keyword('[')
-							.append[newLine]
-						ref.regionFor.keyword(']')
-							.prepend[newLine]
+						ref.indentInner(doc)
+						interior(
+							ref.regionFor.keyword('[')
+								.append[newLine],
+							ref.regionFor.keyword(']')
+								.prepend[newLine],
+							[indent]
+						)
 						ref.body.formatExpression(doc)
 					]
 				)
@@ -301,7 +300,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	private def void formatUnaryOperation(RosettaUnaryOperation expr, extension IFormattableDocument document, FormattingMode mode, (IFormattableDocument) => void internalFormatter) {
-		formatInlineOrIndentedMultiline(document, expr, mode,
+		formatInlineOrMultiline(document, expr, mode,
 			[extension doc | // case: short operation
 				if (expr.argument !== null) {
 					expr.argument.nextHiddenRegion
@@ -313,6 +312,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			[extension doc | // case: long operation
 				if (expr.argument !== null) {
 					val afterArgument = expr.argument.nextHiddenRegion
+					expr.indentInner(afterArgument, doc)
 					afterArgument
 						.set[newLine]
 					expr.argument.formatExpression(doc, FormattingMode.MULTI_LINE)

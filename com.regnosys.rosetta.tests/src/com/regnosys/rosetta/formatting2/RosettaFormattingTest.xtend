@@ -290,7 +290,6 @@ class RosettaFormattingTest {
 					+ account
 						[value "event_account"]
 			}
-			
 		'''
 	}
 

@@ -286,12 +286,17 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		ele.regionFor.keyword(':')
 			.prepend[noSpace]
 		ele.formatDefinition(document)
-		formatInlineOrIndentedMultiline(document, ele,
-			[extension doc | 
-				ele.expression.format
+		formatInlineOrMultiline(document, ele,
+			[extension doc |
+				ele.expression
+					.prepend[oneSpace]
+					.format
 			],
-			[extension doc | 
-				ele.expression.format
+			[extension doc |
+				ele.indentInner(doc)
+				ele.expression
+					.prepend[newLine]
+					.format
 			]
 		)
 	}
@@ -310,15 +315,16 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		
 		ele.regionFor.keyword(colonKeyword_3)
 			.prepend[noSpace]
-		formatInlineOrIndentedMultiline(document, ele,
-			[extension doc | 
+		formatInlineOrMultiline(document, ele,
+			[extension doc |
 				ele.expression
 					.prepend[oneSpace]
 					.format
 				ele.regionFor.keyword(assignAsKeyAsKeyKeyword_6_0)
 					.prepend[oneSpace]
 			],
-			[extension doc | 
+			[extension doc |
+				ele.indentInner(doc)
 				ele.expression
 					.prepend[newLine]
 					.format
@@ -376,6 +382,10 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 	def dispatch void format(RosettaEnumSynonym rosettaEnumSynonym, extension IFormattableDocument document) {		
 		formatSingleLineAnnotation(rosettaEnumSynonym, document)
 	}
+		
+	def dispatch void format(RosettaExternalSynonym externalSynonym, extension IFormattableDocument document) {
+		formatSingleLineAnnotation(externalSynonym, document)
+	}
 
 	def dispatch void format(RosettaExpression ele, extension IFormattableDocument document) {
 		// Format parentheses
@@ -424,52 +434,84 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.surround[oneSpace]
 	}
 
-	def dispatch void format(RosettaExternalSynonymSource externalSynonymSource,
-		extension IFormattableDocument document) {
+	def dispatch void format(RosettaExternalSynonymSource externalSynonymSource, extension IFormattableDocument document) {
+		val extension externalSynonymSourceGrammarAccess = rosettaExternalSynonymSourceAccess
+		
+		externalSynonymSource.regionFor.keyword(sourceKeyword_1)
+			.surround[oneSpace]
+		externalSynonymSource.regionFor.keyword(extendsKeyword_3_0)
+			.surround[oneSpace]
+		
 		indentedBraces(externalSynonymSource, document)
-		externalSynonymSource.externalClasses.forEach[format]
-		externalSynonymSource.externalEnums.forEach[format]
+		externalSynonymSource.externalClasses.head
+			.prepend[newLine]
+		externalSynonymSource.externalClasses.tail.forEach[
+			prepend[setNewLines(2)]
+		]
+		externalSynonymSource.externalClasses.forEach[
+			format
+		]
+		
+		val enumsKeyword = externalSynonymSource.regionFor.keyword(enumsKeyword_6_0)
+		if (enumsKeyword !== null) {
+			if (externalSynonymSource.externalClasses.empty) {
+				enumsKeyword.prepend[newLine]
+			} else {
+				enumsKeyword.prepend[setNewLines(2)]
+			}
+			externalSynonymSource.externalEnums.forEach[
+				prepend[setNewLines(2)]
+				format
+			]
+		}
 	}
 
 	def dispatch void format(RosettaExternalClass externalClass, extension IFormattableDocument document) {
 		externalClass.regionFor.keyword(':').prepend[noSpace]
-		externalClass.prepend[lowPriority; setNewLines(2)]
-		externalClass.regularAttributes.forEach[format]
+		externalClass.indentInner(document)
+		externalClass.regularAttributes.forEach[
+			prepend[newLine]
+			format
+		]
 	}
 
 	def dispatch void format(RosettaExternalEnum externalEnum, extension IFormattableDocument document) {
 		externalEnum.regionFor.keyword(':').prepend[noSpace]
-		externalEnum.prepend[lowPriority; setNewLines(2)]
-		externalEnum.regularValues.forEach[format]
+		externalEnum.indentInner(document)
+		externalEnum.regularValues.forEach[
+			prepend[newLine]
+			format
+		]
 	}
 
-	def dispatch void format(RosettaExternalRegularAttribute externalRegularAttribute,
-		extension IFormattableDocument document) {
-		externalRegularAttribute.regionFor.keyword('+').append[oneSpace].prepend[newLine]
-		externalRegularAttribute.surround[indent]
-		externalRegularAttribute.externalSynonyms.forEach[format]
+	def dispatch void format(RosettaExternalRegularAttribute externalRegularAttribute, extension IFormattableDocument document) {
+		externalRegularAttribute.regionFor.keyword('+')
+			.append[oneSpace]
+		externalRegularAttribute.regionFor.keyword('-')
+			.append[oneSpace]
+		externalRegularAttribute.indentInner(document)
+		externalRegularAttribute.externalSynonyms.forEach[
+			prepend[newLine]
+			format
+		]
 	}
 	
-	def dispatch void format(RosettaExternalEnumValue externalEnumValue,
-		extension IFormattableDocument document) {
-		externalEnumValue.regionFor.keyword('+').append[oneSpace].prepend[newLine]
-		externalEnumValue.surround[indent]
-		externalEnumValue.externalEnumSynonyms.forEach[format]
-	}
-	
-
-	def dispatch void format(RosettaExternalSynonym externalSynonym, extension IFormattableDocument document) {
-		externalSynonym.prepend[newLine].surround[indent]
+	def dispatch void format(RosettaExternalEnumValue externalEnumValue, extension IFormattableDocument document) {
+		externalEnumValue.regionFor.keyword('+')
+			.append[oneSpace]
+		externalEnumValue.regionFor.keyword('-')
+			.append[oneSpace]
+		externalEnumValue.indentInner(document)
+		externalEnumValue.externalEnumSynonyms.forEach[
+			prepend[newLine]
+			format
+		]
 	}
 
 	def void indentedBraces(EObject eObject, extension IFormattableDocument document) {
-		val lcurly = eObject.regionFor.keyword('{').prepend[newLine].append[newLine]
-		val rcurly = eObject.regionFor.keyword('}').prepend[newLine].append[setNewLines(2)]
-		interior(lcurly, rcurly)[highPriority; indent]
-	}
-
-	private def void singleIndentedLine(EObject eObject, extension IFormattableDocument document) {
-		eObject.prepend(NEW_LINE_LOW_PRIO).append(NEW_LINE_LOW_PRIO).surround[indent]
+		val lcurly = eObject.regionFor.keyword('{').prepend[newLine]
+		val rcurly = eObject.regionFor.keyword('}').prepend[newLine]
+		interior(lcurly, rcurly)[indent]
 	}
 
 	def void surroundWithOneSpace(EObject eObject, extension IFormattableDocument document) {

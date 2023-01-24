@@ -43,19 +43,6 @@ public class FormattingUtil {
 		}
 	}
 	
-	public void formatInlineOrIndentedMultiline(IFormattableDocument document, EObject object, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
-		formatInlineOrIndentedMultiline(document, object, FormattingMode.NORMAL, inlineFormatter, multilineFormatter);
-	}
-	public void formatInlineOrIndentedMultiline(IFormattableDocument document, EObject object, FormattingMode mode, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
-		formatInlineOrMultiline(document, object, mode,
-				inlineFormatter,
-				(doc) -> {
-					indentInner(object, doc);
-					multilineFormatter.accept(doc);
-				}
-		);
-	}
-	
 	public IFormattableSubDocument requireTrimmedFitsInLine(IFormattableDocument document, ITextSegment segment, int maxLineWidth) {
 		TrimmedMaxLineWidthDocument subdoc = new TrimmedMaxLineWidthDocument(segment, document, maxLineWidth);
 		document.addReplacer(subdoc);
@@ -63,11 +50,13 @@ public class FormattingUtil {
 	}
 	
 	public void indentInner(EObject obj, IFormattableDocument document) {
-		ITextRegionExtensions textRegionExt = getTextRegionExt(document);
-		IHiddenRegion firstHiddenRegion = textRegionExt.previousHiddenRegion(obj).getNextHiddenRegion();
-		IHiddenRegion nextHiddenRegion = textRegionExt.nextHiddenRegion(obj);
+		IHiddenRegion firstHiddenRegion = getTextRegionExt(document).previousHiddenRegion(obj).getNextHiddenRegion();
+		indentInner(obj, firstHiddenRegion, document);
+	}
+	public void indentInner(EObject obj, IHiddenRegion indentationStart, IFormattableDocument document) {
+		IHiddenRegion nextHiddenRegion = getTextRegionExt(document).nextHiddenRegion(obj);
 		
-		document.set(firstHiddenRegion, nextHiddenRegion, IHiddenRegionFormatter::indent);
+		document.set(indentationStart, nextHiddenRegion, IHiddenRegionFormatter::indent);
 	}
 	
 	public void formatAllUntil(IFormattableDocument document, IHiddenRegion start, IHiddenRegion end, Consumer<IHiddenRegionFormatter> formatter) {
