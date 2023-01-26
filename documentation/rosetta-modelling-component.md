@@ -1494,7 +1494,7 @@ type Engine:
 
 ##### External synonym
 
-External synonyms are defined inside the synonym source declaration so the synonym keyword and the synonym source are not required in every synonym. A synonym is added to an attribute by referencing the type and attribute name and then declaring the synonym to add as the synonym body enclosed in square brackets `[..]`. The code below removes all the synonyms from the `fuel` attribute of `EngineSpecification` as well as removing the synonyms for the `FuelEnum` for `Diesel` and `Gasoline`, so then adds in a new synonym:
+External synonyms are defined inside the synonym source declaration so the synonym keyword and the synonym source are not required in every synonym. A synonym is added to an attribute by referencing the type and attribute name and then declaring the synonym to add as the synonym body enclosed in square brackets `[..]`. The code below removes all the synonyms from the `fuel` attribute of `EngineSpecification`, then adds in a new synonym:
 
 ```
 synonym source EXTERNAL_SYNONYM_EXAMPLE_8 extends EXTERNAL_SYNONYM_EXAMPLE_8_BASE_2
@@ -1503,16 +1503,6 @@ synonym source EXTERNAL_SYNONYM_EXAMPLE_8 extends EXTERNAL_SYNONYM_EXAMPLE_8_BAS
 		- fuel
 		+ fuel
 			[value "combustible"]
-
-	enums
-
-	FuelEnum:
-		- Diesel
-		+ Diesel
-			[value "Diesel"]
-		- Gasoline
-		+ Gasoline
-			[value "Gasoline"]
 }
 ```
 
@@ -1540,13 +1530,13 @@ Mappings are expected to be one-to-one with each input value mapping to one Rose
 
 The `meta` keyword inside a synonym is used to map [metadata](#meta-data-annotation).
 
-In the below example, the value of the "combustible" input will be mapped to the value of the `fuelType` attribute and the value of the "scheme" metadata associated to "combustible" will be mapped to the `scheme` metadata attribute.
+In the below example, the value of the "combustible" input will be mapped to the value of the `fuelType` attribute and the value of the "fuelTypeScheme" metadata associated to "combustible" will be mapped to the `scheme` metadata attribute.
 
 ```
 type EngineSpecification:
     fuelType string (1..*)
         [metadata scheme]
-        [synonym META_SCHEME_EXAMPLE_1 value "combustible" meta "scheme"]
+        [synonym META_SCHEME_EXAMPLE_1 value "combustible" meta "fuelTypeScheme"]
 ```
 
 #### Enumeration
