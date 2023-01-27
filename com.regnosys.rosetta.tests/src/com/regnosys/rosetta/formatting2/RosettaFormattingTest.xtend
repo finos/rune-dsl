@@ -32,6 +32,45 @@ class RosettaFormattingTest {
 			it.useSerializer = false
 		]
 	}
+	
+	@Test
+	def void testBuiltinFeaturesAreGrouped() {
+		'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			
+			basicType string
+			
+			basicType int
+			
+			library function DateRanges() date
+			
+			library function Min(x number, y number) number
+		''' -> '''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			
+			basicType string
+			basicType int
+			
+			library function DateRanges() date
+			library function Min(x number, y number) number
+		'''
+	}
+	
+	@Test
+	def void testRedundantWhitespaceInEmptyRosettaFileIsRemoved() {
+		'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+				
+			
+				
+		''' -> '''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+		'''
+	}
 
 	@Test
 	def void simpleClassWithOneFieldIsFormatted() {
@@ -44,6 +83,7 @@ class RosettaFormattingTest {
 			version "test"
 			
 			type Test: <"Some definition">
+			
 				field1 string (1..1) <"Field 1">
 				field2 string (1..1) <"Field 2">
 		'''
@@ -79,6 +119,7 @@ class RosettaFormattingTest {
 			
 			type CalculationPeriod: <"xxx xxx.">
 				[synonym FpML value "CalculationPeriod"]
+			
 				// sinleline comment
 				field1 string (1..1) <"Some Field">
 					[synonym FpML value "CalculationPeriod"]
@@ -111,6 +152,7 @@ class RosettaFormattingTest {
 			type CalculationPeriod: <"xxx xxx.">
 				[metadata scheme]
 				[synonym FpML value "CalculationPeriod"]
+			
 				// sinleline comment
 				field3 string (1..1) <"Some Field">
 					[metadata scheme]
@@ -118,17 +160,23 @@ class RosettaFormattingTest {
 					[synonym FpML value "CalculationPeriod"]
 				field1 string (1..1) <"Some Field">
 					[synonym FpML value "CalculationPeriod"]
+			
 				condition:
 					one-of
+			
 				condition Foo:
 					field1
+			
 				condition Foo12:
 					optional choice field1, field3
+			
 			// sinleline comment
 				condition Foo2:
 					optional choice field1, field3
+			
 				condition Foo4:
 					required choice field1, field3
+			
 				condition:
 					one-of
 		'''
@@ -152,6 +200,7 @@ class RosettaFormattingTest {
 			version "test"
 
 			type Type:
+			
 				foo string (1..1)
 
 			func Execute2:
@@ -321,16 +370,20 @@ class RosettaFormattingTest {
 			synonym source SynSource
 
 			type AllocationOutcome:
+			
 				allocatedTrade AllocationOutcome (1..*)
 					[synonym SynSource value "originalTrade"]
 				originalTrade string (1..1) <"">
 					[synonym SynSource value "allocatedTrade"]
+			
 				condition AllocationOutcome_executionClosed: <"The allocation outcome must result in execution state of 'Allocated' for an execution.">
 					if AllocationOutcome -> allocatedTrade exists
 					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+			
 				condition AllocationOutcome_contractClosed: <"The allocation outcome must result in a contract state of 'Allocated' for a contract.">
 					if AllocationOutcome -> allocatedTrade exists
 					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+			
 				condition AllocationOutcome_contractClosed:
 					one-of
 		'''
@@ -347,10 +400,12 @@ class RosettaFormattingTest {
 				namespace "test"
 
 				type AllocationOutcome:
+				
 					condition C1:
 						if True
 						then True
 							= True
+				
 					condition C2:
 						True
 			'''
@@ -388,6 +443,7 @@ class RosettaFormattingTest {
 			version "test"
 			
 			type Type:
+			
 				other Type (0..*)
 			
 			func Foo:

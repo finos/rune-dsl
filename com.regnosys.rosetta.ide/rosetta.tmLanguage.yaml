@@ -680,7 +680,8 @@ repository:
         end: (?=\])|{{sectionEnd}}
         patterns:
         - include: '#comment'
-        - begin: '(?<={{wordStart}}(regulatoryReference|docReference){{wordEnd}})'
+        - name: meta.annotated.document.document-id.rosetta
+          begin: '(?<={{wordStart}}regulatoryReference{{wordEnd}}|{{wordStart}}docReference{{wordEnd}})' # used to be '(?<={{wordStart}}(regulatoryReference|docReference){{wordEnd}})'. See issue https://github.com/zikaari/monaco-textmate/issues/10.
           end: '(?={{wordStart}}(provision|reportedField){{wordEnd}}|\])|{{sectionEnd}}'
           patterns:
           - include: '#comment'

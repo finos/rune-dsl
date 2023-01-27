@@ -104,7 +104,7 @@ class RosettaContentAssistTest extends ContentAssistTestHelper {
 				attr boolean (1..1)
 				[synonym FpML set to T<|>]
 			}
-		'''  >= #["True"]
+		'''  >= #["True", "->"]
 	}
 
 	@Test

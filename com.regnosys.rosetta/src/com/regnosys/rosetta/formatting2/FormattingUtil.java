@@ -7,6 +7,7 @@ import org.eclipse.xtext.formatting2.FormatterPreferenceKeys;
 import org.eclipse.xtext.formatting2.IFormattableDocument;
 import org.eclipse.xtext.formatting2.IFormattableSubDocument;
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatter;
+import org.eclipse.xtext.formatting2.regionaccess.IAstRegion;
 import org.eclipse.xtext.formatting2.regionaccess.IEObjectRegion;
 import org.eclipse.xtext.formatting2.regionaccess.IHiddenRegion;
 import org.eclipse.xtext.formatting2.regionaccess.ITextRegionExtensions;
@@ -27,7 +28,7 @@ public class FormattingUtil {
 						IFormattableSubDocument singleLineDoc =
 								requireTrimmedFitsInLine(
 										doc,
-										region,
+										objRegion,
 										doc.getRequest()
 											.getPreferences()
 											.getPreference(FormatterPreferenceKeys.maxLineWidth)
@@ -43,7 +44,7 @@ public class FormattingUtil {
 		}
 	}
 	
-	public IFormattableSubDocument requireTrimmedFitsInLine(IFormattableDocument document, ITextSegment segment, int maxLineWidth) {
+	public IFormattableSubDocument requireTrimmedFitsInLine(IFormattableDocument document, IAstRegion segment, int maxLineWidth) {
 		TrimmedMaxLineWidthDocument subdoc = new TrimmedMaxLineWidthDocument(segment, document, maxLineWidth);
 		document.addReplacer(subdoc);
 		return subdoc;

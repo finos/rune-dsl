@@ -198,13 +198,13 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
 	private def dispatch void unsafeFormatExpression(ModifiableBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
 		// specialization of RosettaBinaryOperation
-		expr.formatBinaryOperation(document, FormattingMode.NORMAL)
+		expr.formatBinaryOperation(document, mode)
 		expr.regionFor.feature(MODIFIABLE_BINARY_OPERATION__CARD_MOD)
 			.append[oneSpace]
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
-		expr.formatBinaryOperation(document, FormattingMode.NORMAL)
+		expr.formatBinaryOperation(document, mode)
 	}
 	
 	private def void formatBinaryOperation(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -227,7 +227,13 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.indentInner(afterArgument, doc)
 					afterArgument
 						.set[newLine]
-					expr.left.formatExpression(doc, FormattingMode.MULTI_LINE)
+					
+					val shouldChain = if (expr.left instanceof RosettaBinaryOperation) {
+						expr.operator == (expr.left as RosettaBinaryOperation).operator
+					} else {
+						false
+					}
+					expr.left.formatExpression(doc, shouldChain ? FormattingMode.MULTI_LINE : FormattingMode.NORMAL)
 				}
 				expr.right.formatExpression(doc, FormattingMode.NORMAL)
 			]
@@ -266,7 +272,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 						ref.body.formatExpression(doc)
 					],
 					[extension doc | // case: long inline function
-						ref.indentInner(doc)
 						interior(
 							ref.regionFor.keyword('[')
 								.append[newLine],
@@ -303,7 +308,8 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		formatInlineOrMultiline(document, expr, mode,
 			[extension doc | // case: short operation
 				if (expr.argument !== null) {
-					expr.argument.nextHiddenRegion
+					val afterArgument = expr.argument.nextHiddenRegion
+					afterArgument
 						.set[oneSpace]
 					expr.argument.formatExpression(doc, FormattingMode.NORMAL)
 				}
@@ -316,6 +322,8 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					afterArgument
 						.set[newLine]
 					expr.argument.formatExpression(doc, FormattingMode.MULTI_LINE)
+				} else {
+					expr.indentInner(doc)
 				}
 				internalFormatter.apply(doc)
 			]

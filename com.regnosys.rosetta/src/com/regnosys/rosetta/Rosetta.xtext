@@ -222,7 +222,7 @@ RosettaParameter:
 // TODO get rid of these
 // TODO parameter types and return type should be RosettaBuiltinType (similar to record features)
 RosettaLibraryFunction returns RosettaExternalFunction:
-	'library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaDefinable? RosettaTyped
+	'library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaTyped RosettaDefinable? 
 ;
 
 RosettaQualifiedType:

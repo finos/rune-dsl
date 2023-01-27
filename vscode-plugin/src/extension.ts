@@ -16,7 +16,7 @@ export async function activate(context: ExtensionContext) {
     
     let serverOptions: ServerOptions = {
         run : { command: script },
-        debug: { command: script, args: [], options: { env: createDebugEnv() } }
+        debug: { command: script, args: ['-trace'], options: { env: createDebugEnv() } }
     };
     
     let clientOptions: LanguageClientOptions = {
@@ -52,6 +52,7 @@ export async function activate(context: ExtensionContext) {
     });
 }
 export function deactivate() {
+    console.log("Stopping Rosetta Language Server...");
     return lc.stop();
 }
 function createDebugEnv() {

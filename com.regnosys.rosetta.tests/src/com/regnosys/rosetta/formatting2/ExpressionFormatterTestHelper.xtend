@@ -32,6 +32,7 @@ class ExpressionFormatterTestHelper extends FormatterTestHelper {
 		namespace test
 		
 		type Foo:
+		
 			bar Foo (1..1)
 		
 		func SomeFunc:
@@ -75,6 +76,7 @@ class ExpressionFormatterTestHelper extends FormatterTestHelper {
 		namespace test
 		
 		type Foo:
+		
 			bar Foo (1..1)
 		
 		func SomeFunc:

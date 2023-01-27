@@ -51,6 +51,15 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testShortExpressionWithLongCommentOnSameLine() {
+		'''
+		[  1,   2 ,3  ] // this is a veeeerrrrrrrrrryyyyyyyyyyyy looooooooooong comment
+		''' -> '''
+		[1, 2, 3] // this is a veeeerrrrrrrrrryyyyyyyyyyyy looooooooooong comment
+		'''
+	}
+	
+	@Test
 	def void testShortListFormatting1() {
 		'''
 		[  1,   2 ,3  ]
@@ -337,6 +346,23 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testLongBinaryOperation2() {
+		'''
+		adjustedDate exists
+			or relativeDate exists
+			or unadjustedDate exists
+			or (unadjustedDate exists and dateAdjustments exists and adjustedDate is absent)
+		''' -> '''
+		adjustedDate exists
+			or relativeDate exists
+			or unadjustedDate exists
+			or (unadjustedDate exists
+				and dateAdjustments exists
+				and adjustedDate is absent)
+		'''
+	}
+	
+	@Test
 	def void testShortUnaryOperation1() {
 		'''
 		1
@@ -452,10 +478,10 @@ class RosettaExpressionFormattingTest {
 		''' -> '''
 		[3, 2, 1]
 			reduce a, b [
-					if "This is a veryyyyyyyy loooooooong expression" count > a
-					then b
-					else a
-				]
+				if "This is a veryyyyyyyy loooooooong expression" count > a
+				then b
+				else a
+			]
 		'''
 	}
 	
@@ -472,6 +498,26 @@ class RosettaExpressionFormattingTest {
 				else a
 			]
 			only-element
+		'''
+	}
+	
+	@Test
+	def void testLongFunctionalOperation3() {
+		'''
+		FilterQuantity( quantity1, unitOfAmount )
+			extract q1 [
+				FilterQuantity( quantity2, unitOfAmount )
+					extract q2 [ CompareNumbers( q1 -> value, op, q2 -> value ) ]
+				] flatten
+				all = True
+		''' -> '''
+		FilterQuantity(quantity1, unitOfAmount)
+			extract q1 [
+				FilterQuantity(quantity2, unitOfAmount)
+					extract q2 [ CompareNumbers(q1 -> value, op, q2 -> value) ]
+			]
+			flatten
+			all = True
 		'''
 	}
 	
