@@ -1541,14 +1541,12 @@ type EngineSpecification:
 
 #### Enumeration
 
-A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the FpML value `HYBRID` will be mapped to the enumeration value `EngineEnum.HYBRID` in Rosetta:
+A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the FpML value `Hybrid` will be mapped to the enumeration value `EngineEnum.Hybrid` in Rosetta:
 
 ```
 enum EngineEnum: <"The enumerated values for the natural person's role.">
-    HYBRID
+    Hybrid
         [synonym CONDITIONAL_SET_TO_EXAMPLE_8 value "hybrid"]
-    COMBUSTION
-        [synonym CONDITIONAL_SET_TO_EXAMPLE_8 value "combustion"]
 ```
 
 ##### External Enumeration Synonym
@@ -1558,11 +1556,9 @@ In an external synonym file, enumeration synonyms are defined in a block after t
 ```
 enums
 
-	FuelEnum:
-		+ Diesel
-			[value "Diesel"]
-		+ Gasoline
-			[value "Gasoline"]
+	EngineEnum:
+		+ Hybrid
+        		[value "hybrid"]
 ```
 
 ### Advanced Mapping
@@ -1608,7 +1604,7 @@ engineSpecification EngineSpecification (0..*)
   [synonym MULTI_CARDINALITY_EXAMPLE_20 value "capacityDetail"]
 ```
 
-will produce two EngineSpecification objects. In order to create a single EngineSpecification with values from the FpML `fuelDetail ` and `capacityDetail` the synonym merging syntax should be used:
+will produce two EngineSpecification objects. In order to create a single EngineSpecification with values from the attributes `fuelDetail ` and `capacityDetail` the synonym merging syntax should be used:
 
 ```
 engineSpecification EngineSpecification (0..*)
@@ -1625,14 +1621,14 @@ A set to mapping is used to set the value of an attribute to a constant value. T
 
 ```
 engineEnum EngineEnum (0..1)
-  [synonym CONDITIONAL_SET_TO_EXAMPLE_13 set to EngineEnum->HYBRID]
+  [synonym CONDITIONAL_SET_TO_EXAMPLE_13 set to EngineEnum->Hybrid]
 ```
 
 A set to mapping can be conditional on a [when clause](#when-clause) - e.g.:
 
 ```
 engineEnum EngineEnum (0..1)
-  [synonym CONDITIONAL_SET_TO_EXAMPLE_13 set to EngineEnum->HYBRID when "alternativeFuelDetail" exists and "fuelDetail" exists]
+  [synonym CONDITIONAL_SET_TO_EXAMPLE_13 set to EngineEnum->Hybrid when "alternativeFuelDetail" exists and "fuelDetail" exists]
 ```
 
 Multiple set to mappings can be combined in one synonym. They will be evaluated in the order specified with the first matching value used - e.g. :
@@ -1640,9 +1636,9 @@ Multiple set to mappings can be combined in one synonym. They will be evaluated 
 ```
 engineSystem string (1..1)
   [synonym CONDITIONAL_SET_TO_EXAMPLE_6
-    set to "COMBUSTION" when "engineDetail->fuelDetail->combustible" = "Gasoline",
-    set to "ELECTRIC" when "engineDetail->fuelDetail->combustible" = "Electricity",
-    set to "DEFAULT"]
+    set to "Combustion" when "engineDetail->fuelDetail->combustible" = "Gasoline",
+    set to "Electric" when "engineDetail->fuelDetail->combustible" = "Electricity",
+    set to "Default"]
 ```
 
 ##### Set When Mapping
@@ -1650,8 +1646,8 @@ engineSystem string (1..1)
 A set when mapping is used to set an attribute to a value derived from the input document if a given when clause is met -  e.g. :
 
 ```
-alternativeCombustible FuelEnum (1..1)
-  [synonym CONDITIONAL_SET_TO_EXAMPLE_7 set to FuelEnum -> ELECTRICITY when "engineDetail->fuelDetail->alternativeCombustible" exists]
+alternativeFuelType string (0..1)
+    [synonym CONDITIONAL_SET_EXAMPLE_5 value "complementaryEnergy" path "engineType->engineDetail" set when "engineType->engineDetail->complementaryEnergy" exists]
 ```
 
 A set when synonym can include a default to set an attribute to a constant value when no other value was applicable - e.g. :
@@ -1724,9 +1720,8 @@ When the ingestion is run a class called `Example1MappingProcessor` will be load
 A date/time synonym can be followed by a format construct. The keyword `format` should be followed by a string. The string should follow a standardized [date format](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) - e.g. :
 
 ```
-type EngineSpecification:
-	fabricationDate date (1..1)
-		[synonym FORMAT_EXAMPLE_1 value "fabricationDate" dateFormat "MM/dd/yyyy"]
+fabricationDate date (1..1)
+	[synonym FORMAT_EXAMPLE_1 value "fabricationDate" dateFormat "MM/dd/yyyy"]
 ```
 
 #### Pattern
