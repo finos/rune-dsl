@@ -34,7 +34,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<node.version>19.3.0</node.version>
 		<vscode.plugin.dir>${project.parent.basedir}/vscode-plugin</vscode.plugin.dir>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<enforcer.version>3.1.0</enforcer.version>
+		<enforcer.version>3.2.1</enforcer.version>
 		<java.enforced.version>[11,12)</java.enforced.version>
 		<java.version>11</java.version>
 		<!-- release used by maven compiler and tycho plugins, overridden in lib projects -->
