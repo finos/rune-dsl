@@ -1,12 +1,17 @@
 package com.rosetta.model.lib.expression;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.mapper.Mapper;
@@ -14,6 +19,7 @@ import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.Mapper.Path;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.validation.ExistenceChecker;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
 
@@ -261,5 +267,31 @@ public class ExpressionOperators {
 		return t instanceof RosettaModelObject  ? 
 				t.getClass().getSimpleName() : // for rosettaModelObjects only log class name otherwise error messages are way too long
 				o.getMulti().toString();
+	}
+	
+	// one-of and choice
+
+	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ValidationResult.ChoiceRuleValidationMethod necessity) {
+		T object = mapper.get();
+		List<String> populatedFieldNames = new LinkedList<>();
+		for (String a: choiceFieldNames) {
+			try {
+				Method getter = object.getClass().getMethod("get" + StringUtils.capitalize(a));
+				if (ExistenceChecker.isSet(getter.invoke(object))) {
+					populatedFieldNames.add(a);
+				}
+			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				throw new IllegalArgumentException(e);
+			}
+		}
+				
+		if (necessity.check(populatedFieldNames.size())) {
+			return ComparisonResult.success();
+		}
+		String definition = choiceFieldNames.stream()
+			.collect(Collectors.joining("', '", necessity.getDescription() + " of '", "'. "));
+		String errorMessage = definition + (populatedFieldNames.isEmpty() ? "No fields are set." :
+			populatedFieldNames.stream().collect(Collectors.joining("', '", "Set fields are '", "'.")));
+		return ComparisonResult.failure(errorMessage);
 	}
 }

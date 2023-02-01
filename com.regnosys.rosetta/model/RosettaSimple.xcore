@@ -90,18 +90,7 @@ class FunctionDispatch extends Function {
 
 class Condition extends Definable, Annotated, RosettaNamed, References {
 	boolean postCondition
-	contains Constraint constraint
 	contains RosettaExpression expression
-}
-
-class Constraint {
-	boolean oneOf
-	Necessity necessity
-	refers Attribute[] attributes
-}
-
-enum Necessity {
-	optional, required
 }
 
 abstract class Operation extends Definable {
@@ -115,12 +104,10 @@ abstract class Operation extends Definable {
 }
 
 class AssignOutputOperation extends Operation {
-	boolean assignAsKey
 }
 
 class OutputOperation extends Operation {
 	boolean add
-	boolean assignAsKey
 	refers AssignPathRoot input
 }
 

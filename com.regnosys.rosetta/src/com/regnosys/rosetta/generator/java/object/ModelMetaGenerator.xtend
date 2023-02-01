@@ -57,8 +57,7 @@ class ModelMetaGenerator {
 	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version, Set<RosettaModel> models) {
 		val dataClass = javaNames.toJavaType(c)
 		val qualifierFuncs = qualifyFuncs(c, javaNames, models)
-		val dataRules = c.allSuperTypes.map[it.conditionRules(it.conditions)[!isChoiceRuleCondition]].flatten
-		val choiceRules = c.allSuperTypes.map[it.conditionRules(it.conditions)[isChoiceRuleCondition]].flatten
+		val dataRules = c.allSuperTypes.map[it.conditionRules(it.conditions)].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -69,15 +68,6 @@ class ModelMetaGenerator {
 					return «Arrays».asList(
 						«FOR r : dataRules SEPARATOR ','»
 							factory.create(«r.containingClassNamespace.dataRule.name».«r.ruleName.toConditionJavaType».class)
-						«ENDFOR»
-					);
-				}
-			
-				@Override
-				public «List»<«Validator»<? super «dataClass»>> choiceRuleValidators() {
-					return Arrays.asList(
-						«FOR r : choiceRules SEPARATOR ','»
-							new «r.containingClassNamespace.choiceRule.name».«r.ruleName.toConditionJavaType»()
 						«ENDFOR»
 					);
 				}
@@ -116,9 +106,9 @@ class ModelMetaGenerator {
 		return funcs.filter[funcExt.isQualifierFunctionFor(it,type)].toSet
 	}
 	
-	private def List<ClassRule> conditionRules(Data d, List<Condition> elements, (Condition)=>boolean filter) {
+	private def List<ClassRule> conditionRules(Data d, List<Condition> elements) {
 		val dataNamespace = new RootPackage(d.model)
-		return elements.filter(filter).map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(d), dataNamespace)].toList
+		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(d), dataNamespace)].toList
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data

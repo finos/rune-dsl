@@ -34,6 +34,58 @@ class RosettaFormattingTest {
 	}
 	
 	@Test
+	def void testDocReference() {
+		'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			
+			body Authority ESMA
+			corpus Regulation "600/2014" MiFIR 
+			corpus CommissionDelegatedRegulation "2017/590" RTS_22
+			segment annex
+			segment table
+			segment field
+			segment article
+			
+			reporting rule ReportStatus <"Indication as to whether the transaction report is new or a cancellation">
+				[regulatoryReference ESMA MiFIR RTS_22
+						annex "I" table "2" field "1"
+						provision "Indication as to whether the transaction report is new or a cancellation."]
+				[regulatoryReference ESMA MiFIR RTS_22
+						article "2"
+						rationale_author "DRR"
+						rationale "Article 2 means that each reportable event is treated as an independent transaction. The practical implementation of corrections is: A New event is a NEWT, A new, non-reportable version of a previously-reported event, that renders the previous version of the same event non-reportable, is a CANC, A new, non-reportable version of a non-reportable event is not reported, A new, reportable version of a previously-reported event, that supersedes the previous version of the same event is a CANC followed by a NEWT"
+						structured_provision "MiFIR.ReportStatus is by definition 'NEWT’ unless the report is a Cancellation when MiFIR.ReportStatus is by definition 'CANC’"
+						provision "Indication as to whether the transaction report is new or a cancellation."]
+				return "Not Modelled"
+					as "Report Status"
+		''' -> '''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			
+			body Authority ESMA
+			
+			corpus Regulation "600/2014" MiFIR
+			corpus CommissionDelegatedRegulation "2017/590" RTS_22
+			
+			segment annex
+			segment table
+			segment field
+			segment article
+			
+			reporting rule ReportStatus <"Indication as to whether the transaction report is new or a cancellation">
+				[regulatoryReference ESMA MiFIR RTS_22 annex "I" table "2" field "1"
+					provision "Indication as to whether the transaction report is new or a cancellation."]
+				[regulatoryReference ESMA MiFIR RTS_22 article "2"
+					rationale_author "DRR"
+					rationale "Article 2 means that each reportable event is treated as an independent transaction. The practical implementation of corrections is: A New event is a NEWT, A new, non-reportable version of a previously-reported event, that renders the previous version of the same event non-reportable, is a CANC, A new, non-reportable version of a non-reportable event is not reported, A new, reportable version of a previously-reported event, that supersedes the previous version of the same event is a CANC followed by a NEWT"
+					structured_provision "MiFIR.ReportStatus is by definition 'NEWT’ unless the report is a Cancellation when MiFIR.ReportStatus is by definition 'CANC’"
+					provision "Indication as to whether the transaction report is new or a cancellation."]
+				return "Not Modelled" as "Report Status"
+		'''
+	}
+	
+	@Test
 	def void testBuiltinFeaturesAreGrouped() {
 		'''
 			namespace "com.regnosys.rosetta.model"
@@ -234,6 +286,7 @@ class RosettaFormattingTest {
 			version "test"
 			
 			enum DatesReferenceEnum: <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
+			
 				tradeDate
 				effectiveDate
 				firstRegularPeriodStartDate
@@ -256,6 +309,7 @@ class RosettaFormattingTest {
 
 			enum DayOfWeekEnum: <"A day of the seven-day week.">
 				[synonym FpML value "DayOfWeekEnum"]
+			
 				MON <"Monday">
 					[synonym FpML value "MON"]
 				TUE <"Tuesday">
@@ -288,6 +342,7 @@ class RosettaFormattingTest {
 			
 			enum SpreadScheduleTypeEnum: <"The enumerated values to specify a long or short spread value.">
 				[synonym FpML value "spreadScheduleTypeScheme"]
+			
 				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
 					[synonym FpML value "Long"]
 				Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">

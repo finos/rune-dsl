@@ -51,6 +51,42 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testShortParenthesesAreFormatted() {
+		'''
+		(  
+		  [  1,   ( 2) ,3  ] )
+		''' -> '''
+		([1, (2), 3])
+		'''
+	}
+	
+	@Test
+	def void testLongParenthesesAreFormatted() {
+		'''
+		(  
+		  ["This", "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"] )
+		''' -> '''
+		([
+			"This",
+			"is",
+			"a",
+			"veeeeeeeeeeeery",
+			"looooooooooooooooooooong",
+			"list"
+		])
+		'''
+	}
+	
+	@Test
+	def void testLongParenthesesOnSameLineStayOnSameLine() {
+		'''
+		( ["This", "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"] )
+		''' -> '''
+		(["This", "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"])
+		'''
+	}
+	
+	@Test
 	def void testShortExpressionWithLongCommentOnSameLine() {
 		'''
 		[  1,   2 ,3  ] // this is a veeeerrrrrrrrrryyyyyyyyyyyy looooooooooong comment
@@ -213,6 +249,31 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testShortAsKey1() {
+		'''
+		"bla" 
+				 as-key
+		''' -> '''
+		"bla" as-key
+		'''
+	}
+	
+	@Test
+	def void testLongAsKey1() {
+		'''
+		if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999 then 1 else if False then "foo" else "bar"
+		 as-key
+		''' -> '''
+		if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999
+		then 1
+		else if False
+		then "foo"
+		else "bar"
+			as-key
+		'''
+	}
+	
+	@Test
 	def void testOnlyExists1() {
 		'''
 		foo 
@@ -356,9 +417,7 @@ class RosettaExpressionFormattingTest {
 		adjustedDate exists
 			or relativeDate exists
 			or unadjustedDate exists
-			or (unadjustedDate exists
-				and dateAdjustments exists
-				and adjustedDate is absent)
+			or (unadjustedDate exists and dateAdjustments exists and adjustedDate is absent)
 		'''
 	}
 	

@@ -46,6 +46,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 
 class CardinalityProvider {
 	
@@ -118,6 +119,9 @@ class CardinalityProvider {
 				true
 			RosettaBinaryOperation: {
 				false // check '+' operator
+			}
+			AsKeyOperation: {
+				obj.argument.isMulti(breakOnClosureParameter)
 			}
 			RosettaLiteral,
 			RosettaTypedFeature,

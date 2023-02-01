@@ -34,6 +34,8 @@ import com.regnosys.rosetta.rosetta.BlueprintRef
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintReturn
 import com.regnosys.rosetta.rosetta.BlueprintLookup
+import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -55,12 +57,25 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	def void formatExpression(RosettaExpression expr, IFormattableDocument document) {
 		formatExpression(expr, document, FormattingMode.NORMAL)
 	}
-	def void formatExpression(RosettaExpression expr, IFormattableDocument document, FormattingMode mode) {
+	def void formatExpression(RosettaExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		if (!expr.generated) {
-			unsafeFormatExpression(expr, document, mode)
+			val leftParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.leftParenthesisKeyword_3_0)
+			val rightParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.rightParenthesisKeyword_3_2);
+			if (leftParenthesis !== null && rightParenthesis !== null) {
+				leftParenthesis
+					.append[noSpace]
+			    rightParenthesis
+					.prepend[noSpace]
+				if (!expr.isMultiline) {
+					unsafeFormatExpression(expr, document, FormattingMode.SINGLE_LINE)
+				} else {
+					unsafeFormatExpression(expr, document, mode.stopChain)
+				}
+			} else {
+				unsafeFormatExpression(expr, document, mode)
+			}
 		}
 	}
-	
 	
 	private def dispatch void unsafeFormatExpression(ListLiteral expr, extension IFormattableDocument document, FormattingMode mode) {
 		expr.regionFor.keywords(',').forEach[
@@ -72,7 +87,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			[indent]
 		)
 		
-		formatInlineOrMultiline(document, expr, FormattingMode.NORMAL,
+		formatInlineOrMultiline(document, expr, mode,
 			[extension doc | // case: short list
 				expr.regionFor.keyword('[')
 					.append[noSpace]
@@ -81,7 +96,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				expr.regionFor.keywords(',').forEach[
 					append[oneSpace]
 				]
-				expr.elements.forEach[formatExpression(doc, FormattingMode.NORMAL)]
+				expr.elements.forEach[formatExpression(doc, mode)]
 			],
 			[extension doc | // case: long list
 				expr.regionFor.keyword('[')
@@ -91,7 +106,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				expr.regionFor.keywords(',').forEach[
 					append[newLine]
 				]
-				expr.elements.forEach[formatExpression(doc, FormattingMode.NORMAL)]
+				expr.elements.forEach[formatExpression(doc, mode.stopChain)]
 			]
 		);
 	}
@@ -109,25 +124,25 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					.prepend[oneSpace]
 				expr.regionFor.keyword(fullElseKeyword_5_0_0)
 					.prepend[oneSpace]
-				expr.^if.formatExpression(doc, FormattingMode.NORMAL)
-				expr.ifthen.formatExpression(doc, FormattingMode.NORMAL)
-				expr.elsethen.formatExpression(doc, FormattingMode.NORMAL)
+				expr.^if.formatExpression(doc, mode)
+				expr.ifthen.formatExpression(doc, mode)
+				expr.elsethen.formatExpression(doc, mode)
 			],
 			[extension doc | // case: long conditional
 				expr.regionFor.keyword(thenKeyword_3)
 					.prepend[newLine]
 				expr.regionFor.keyword(fullElseKeyword_5_0_0)
 					.prepend[newLine]
-				expr.^if.formatExpression(doc, FormattingMode.NORMAL)
-				expr.ifthen.formatExpression(doc, FormattingMode.NORMAL)
-				expr.elsethen.formatExpression(doc, FormattingMode.MULTI_LINE)
+				expr.^if.formatExpression(doc, mode.stopChain)
+				expr.ifthen.formatExpression(doc, mode.stopChain)
+				expr.elsethen.formatExpression(doc, mode.chainIf(expr.elsethen instanceof RosettaConditionalExpression))
 			]
 		)
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaFeatureCall expr, extension IFormattableDocument document, FormattingMode mode) {
 		expr.regionFor.keyword('->').surround[oneSpace]
-		expr.receiver.formatExpression(document, FormattingMode.NORMAL)
+		expr.receiver.formatExpression(document, mode.stopChain)
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaLiteral expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -151,7 +166,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			.prepend[oneSpace]
 			
 		expr.args.forEach[
-			formatExpression(document, FormattingMode.NORMAL)
+			formatExpression(document, mode.stopChain)
 		]
 	}
 	
@@ -167,7 +182,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			expr.regionFor.keyword('(')
 				.prepend[noSpace]
 			
-			formatInlineOrMultiline(document, expr, FormattingMode.NORMAL,
+			formatInlineOrMultiline(document, expr, mode,
 				[extension doc | // case: short argument list
 					expr.regionFor.keyword('(')
 						.append[noSpace]
@@ -176,7 +191,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.regionFor.keywords(',').forEach[
 						append[oneSpace]
 					]
-					expr.args.forEach[formatExpression(doc, FormattingMode.NORMAL)]
+					expr.args.forEach[formatExpression(doc, mode)]
 				],
 				[extension doc | // case: long argument list
 					expr.indentInner(doc)
@@ -190,7 +205,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.regionFor.keywords(',').forEach[
 						append[newLine]
 					]
-					expr.args.forEach[formatExpression(doc, FormattingMode.NORMAL)]
+					expr.args.forEach[formatExpression(doc, mode.stopChain)]
 				]
 			)
 		}
@@ -201,6 +216,11 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		expr.formatBinaryOperation(document, mode)
 		expr.regionFor.feature(MODIFIABLE_BINARY_OPERATION__CARD_MOD)
 			.append[oneSpace]
+	}
+	
+	private def dispatch void unsafeFormatExpression(ArithmeticOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+		// specialization of RosettaBinaryOperation
+		expr.formatBinaryOperation(document, FormattingMode.SINGLE_LINE)
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -217,9 +237,9 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.left.nextHiddenRegion
 						.set[oneSpace]
 					expr.left
-						.formatExpression(doc, FormattingMode.NORMAL)
+						.formatExpression(doc, mode)
 				}
-				expr.right.formatExpression(doc, FormattingMode.NORMAL)
+				expr.right.formatExpression(doc, mode)
 			],
 			[extension doc | // case: long operation
 				if (expr.left !== null) {
@@ -228,14 +248,15 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					afterArgument
 						.set[newLine]
 					
-					val shouldChain = if (expr.left instanceof RosettaBinaryOperation) {
-						expr.operator == (expr.left as RosettaBinaryOperation).operator
-					} else {
-						false
-					}
-					expr.left.formatExpression(doc, shouldChain ? FormattingMode.MULTI_LINE : FormattingMode.NORMAL)
+					expr.left.formatExpression(doc, mode.chainIf(
+						if (expr.left instanceof RosettaBinaryOperation) {
+							expr.operator == (expr.left as RosettaBinaryOperation).operator
+						} else {
+							false
+						})
+					)
 				}
-				expr.right.formatExpression(doc, FormattingMode.NORMAL)
+				expr.right.formatExpression(doc, mode.stopChain)
 			]
 		)
 	}
@@ -245,11 +266,11 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		expr.formatUnaryOperation(
 			document,
 			mode,
-			[expr.functionRef.formatFunctionReference(it)]
+			[expr.functionRef.formatFunctionReference(it, mode.stopChain)]
 		)
 	}
 	
-	private def void formatFunctionReference(FunctionReference ref, extension IFormattableDocument document) {
+	private def void formatFunctionReference(FunctionReference ref, extension IFormattableDocument document, FormattingMode mode) {
 		switch (ref) {
 			NamedFunctionReference:
 				ref.prepend[oneSpace]
@@ -263,13 +284,13 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					prepend[noSpace]
 				]
 				
-				formatInlineOrMultiline(document, ref, FormattingMode.NORMAL,
+				formatInlineOrMultiline(document, ref, mode,
 					[extension doc | // case: short inline function
 						ref.regionFor.keyword('[')
 							.append[oneSpace]
 						ref.regionFor.keyword(']')
 							.prepend[oneSpace]
-						ref.body.formatExpression(doc)
+						ref.body.formatExpression(doc, mode)
 					],
 					[extension doc | // case: long inline function
 						interior(
@@ -279,7 +300,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 								.prepend[newLine],
 							[indent]
 						)
-						ref.body.formatExpression(doc)
+						ref.body.formatExpression(doc, mode.stopChain)
 					]
 				)
 			}
@@ -290,6 +311,16 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		// specialization of RosettaUnaryOperation
 		expr.formatUnaryOperation(document, mode, [])
 		expr.regionFor.feature(ROSETTA_EXISTS_EXPRESSION__MODIFIER)
+			.append[oneSpace]
+	}
+	
+	private def dispatch void unsafeFormatExpression(ChoiceOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+		// specialization of RosettaUnaryOperation
+		expr.formatUnaryOperation(document, mode, [])
+		expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR)
+			.surround[oneSpace]
+		expr.allRegionsFor.keyword(',')
+			.prepend[noSpace]
 			.append[oneSpace]
 	}
 	
@@ -311,7 +342,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					val afterArgument = expr.argument.nextHiddenRegion
 					afterArgument
 						.set[oneSpace]
-					expr.argument.formatExpression(doc, FormattingMode.NORMAL)
+					expr.argument.formatExpression(doc, mode)
 				}
 				internalFormatter.apply(doc)
 			],
@@ -321,7 +352,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.indentInner(afterArgument, doc)
 					afterArgument
 						.set[newLine]
-					expr.argument.formatExpression(doc, FormattingMode.MULTI_LINE)
+					expr.argument.formatExpression(doc, mode.chainIf(expr.argument instanceof RosettaUnaryOperation))
 				} else {
 					expr.indentInner(doc)
 				}
@@ -358,7 +389,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				[extension doc | // case: short operation
 					expr.regionFor.keyword(whenKeyword_1)
 						.append[oneSpace]
-					expr.filter.formatExpression(doc, FormattingMode.NORMAL)
+					expr.filter.formatExpression(doc, mode)
 					expr.formatAsInline(doc)
 				],
 				[extension doc | // case: long operation
@@ -366,7 +397,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 						.append[newLine]
 					expr.filter
 						.surround[indent]
-						.formatExpression(doc, FormattingMode.NORMAL)
+						.formatExpression(doc, mode.stopChain)
 					expr.formatAsMultiline(doc)
 				]
 			)
@@ -409,7 +440,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			[extension doc | // case: short operation
 				lastKeyword
 					.append[oneSpace]
-				expr.call.formatExpression(doc, FormattingMode.NORMAL)
+				expr.call.formatExpression(doc, mode)
 				expr.formatAsInline(doc)
 			],
 			[extension doc | // case: long operation
@@ -417,7 +448,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					.append[newLine]
 				expr.call
 					.surround[indent]
-					.formatExpression(doc, FormattingMode.NORMAL)
+					.formatExpression(doc, mode.stopChain)
 				expr.formatAsMultiline(doc)
 			]
 		)
@@ -430,7 +461,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			[extension doc | // case: short operation
 				expr.regionFor.keyword(returnKeyword_0)
 					.append[oneSpace]
-				expr.expression.formatExpression(doc, FormattingMode.NORMAL)
+				expr.expression.formatExpression(doc, mode)
 				expr.formatAsInline(doc)
 			],
 			[extension doc | // case: long operation
@@ -438,7 +469,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					.append[newLine]
 				expr.expression
 					.surround[indent]
-					.formatExpression(doc, FormattingMode.NORMAL)
+					.formatExpression(doc, mode.stopChain)
 				expr.formatAsMultiline(doc)
 			]
 		)

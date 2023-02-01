@@ -110,10 +110,6 @@ class RosettaExtensions {
 		return false
 	}
 	
-	def boolean isChoiceRuleCondition(Condition cond) {
-		return cond.constraint !== null
-	}
-	
 	def metaAnnotations(Annotated it) {
 		allAnnotations.filter[annotation?.name == "metadata"]
 	}
@@ -167,9 +163,7 @@ class RosettaExtensions {
 				cond.name
 			else {
 				val idx = conditions.filter[name.nullOrEmpty].toList.indexOf(cond)
-				val type = if (cond.constraint !== null) {
-						if(cond.constraint.oneOf) 'OneOf' else 'Choice'
-					} else 'DataRule'
+				val type = 'DataRule'
 				'''«type»«idx»'''
 			}
 		return '''«containerName»«name»'''

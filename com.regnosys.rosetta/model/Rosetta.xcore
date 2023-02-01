@@ -287,10 +287,18 @@ enum RosettaSynonymRef {
  * docReferences
  */
 
-class RosettaDocReference extends RosettaRegulatoryBody {
+class RosettaDocReference {
+	contains RegulatoryDocumentReference docReference
+	contains DocumentRationale[] rationales
+	String structuredProvision
 	String provision
-	contains RosettaSegmentRef[] segments
 	boolean reportedField
+}
+
+class RegulatoryDocumentReference {
+	refers RosettaBody body
+	refers RosettaCorpus[] corpuses
+	contains RosettaSegmentRef[] segments
 }
 
 class RosettaSegmentRef {
@@ -298,9 +306,9 @@ class RosettaSegmentRef {
 	String segmentRef
 }
 
-class RosettaRegulatoryBody {
-	refers RosettaBody body
-	refers RosettaCorpus[] corpuses
+class DocumentRationale {
+	String rationale
+	String rationaleAuthor
 }
 
 class RosettaBody extends RosettaRootElement, RosettaNamed, RosettaDefinable {
@@ -446,7 +454,7 @@ class RosettaExternalSynonym {
 */
  
 class RosettaBlueprintReport extends RosettaRootElement {
-	contains RosettaRegulatoryBody regulatoryBody
+	contains RegulatoryDocumentReference regulatoryBody
 	refers Data reportType
 	refers RosettaBlueprint[] eligibilityRules
 	refers RosettaCorpus reportingStandard

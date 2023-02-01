@@ -21,7 +21,6 @@ import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
-import com.regnosys.rosetta.rosetta.simple.Constraint
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.Operation
@@ -53,21 +52,12 @@ import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.rosetta.simple.Annotation
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	
 	static val Procedure1<? super IHiddenRegionFormatter> NO_SPACE = [noSpace]
-	static val Procedure1<? super IHiddenRegionFormatter> NO_SPACE_PRESERVE_NEW_LINE = [setNewLines(0, 0, 1);noSpace]
-	static val Procedure1<? super IHiddenRegionFormatter> NO_SPACE_LOW_PRIO = [noSpace; lowPriority]
 	static val Procedure1<? super IHiddenRegionFormatter> ONE_SPACE = [oneSpace]
-	static val Procedure1<? super IHiddenRegionFormatter> ONE_SPACE_LOW_PRIO = [oneSpace; lowPriority]
-	static val Procedure1<? super IHiddenRegionFormatter> ONE_SPACE_PRESERVE_NEWLINE = [setNewLines(0, 0, 1); oneSpace]
-	static val Procedure1<? super IHiddenRegionFormatter> NEW_LINE = [setNewLines(1, 1, 2)]
-	
-	static val Procedure1<? super IHiddenRegionFormatter> NEW_ROOT_ELEMENT = [setNewLines(2, 2, 3);highPriority]
-	
-	static val Procedure1<? super IHiddenRegionFormatter> NEW_LINE_LOW_PRIO = [lowPriority; setNewLines(1, 1, 2)]
-	static val Procedure1<? super IHiddenRegionFormatter> INDENT = [indent]
 	
 	@Inject extension RosettaGrammarAccess
 	@Inject RosettaExpressionFormatter expressionFormatter
@@ -139,12 +129,41 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		]
 		ele.formatDefinition(document)
 	}
+	
+	def dispatch void format(RosettaBody ele, extension IFormattableDocument document) {
+		val extension bodyGrammarAccess = rosettaBodyAccess
+		
+		ele.regionFor.assignment(bodyTypeAssignment_1)
+			.surround[oneSpace]
+		ele.formatDefinition(document)
+	}
+	
+	def dispatch void format(RosettaCorpus ele, extension IFormattableDocument document) {
+		val extension corpusGrammarAccess = rosettaCorpusAccess
+		
+		ele.regionFor.assignment(corpusTypeAssignment_1)
+			.prepend[oneSpace]
+		ele.regionFor.assignment(bodyAssignment_2)
+			.prepend[oneSpace]
+		ele.regionFor.assignment(displayNameAssignment_3)
+			.prepend[oneSpace]
+		ele.regionFor.assignment(rosettaNamedAccess.nameAssignment)
+			.prepend[oneSpace]
+		ele.formatDefinition(document)
+	}
+	
+	def dispatch void format(RosettaSegment ele, extension IFormattableDocument document) {
+		val extension segmentGrammarAccess = rosettaSegmentAccess
+		
+		ele.regionFor.assignment(nameAssignment_1)
+			.prepend[oneSpace]
+	}
 
 
 	def dispatch void format(Data ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword(dataAccess.typeKeyword_0).append(ONE_SPACE)
 		ele.regionFor.keyword(dataAccess.extendsKeyword_2_0).append(ONE_SPACE)
-		ele.regionFor.keyword(':').prepend(NO_SPACE).append(ONE_SPACE)
+		ele.regionFor.keyword(':').prepend(NO_SPACE)
 		ele.formatDefinition(document)
 		ele.indentInner(document)
 		ele.synonyms.forEach[
@@ -164,6 +183,33 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		]
 		ele.conditions.forEach[
 			prepend[setNewLines(2)]
+			format
+		]
+	}
+	
+	def dispatch void format(Annotation ele, extension IFormattableDocument document) {
+		val extension annotationGrammarAccess = annotationAccess
+		
+		ele.regionFor.keyword(annotationKeyword_0)
+			.append[oneSpace]
+		ele.regionFor.keyword(':')
+			.prepend[noSpace]
+		ele.formatDefinition(document)
+		ele.indentInner(document)
+		
+		val left = ele.regionFor.keyword('[')
+		if (left !== null) {
+			val right = ele.regionFor.keyword(']')
+			left.append[noSpace]
+			right.prepend[noSpace]
+			singleSpacesUntil(document, left.nextHiddenRegion.nextHiddenRegion, right.previousHiddenRegion)
+		}
+
+		ele.attributes.head
+			.prepend[setNewLines(2)]
+			.format
+		ele.attributes.tail.forEach[
+			prepend[newLine]
 			format
 		]
 	}
@@ -218,9 +264,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			prepend[newLine]
 			format
 		]
-		ele.constraint
-			.prepend[newLine]
-			.format
 		ele.expression
 			.prepend[newLine]
 			.format
@@ -235,16 +278,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 				.prepend[noSpace]
 		}
 		return ele
-	}
-	
-	def dispatch void format(Constraint ele, extension IFormattableDocument document) {
-		ele.regionFor.keyword(necessityAccess.requiredRequiredKeyword_1_0).prepend(ONE_SPACE_PRESERVE_NEWLINE)
-		ele.regionFor.keyword(necessityAccess.optionalOptionalKeyword_0_0).prepend(ONE_SPACE_PRESERVE_NEWLINE)
-		ele.regionFor.keyword(
-			constraintAccess.choiceKeyword_1_1
-		).surround(ONE_SPACE)
-		
-		ele.allRegionsFor.keyword(',').prepend(NO_SPACE_LOW_PRIO).append(ONE_SPACE_PRESERVE_NEWLINE)
 	}
 	
 	def dispatch void format(AnnotationRef ele, extension IFormattableDocument document) {
@@ -409,7 +442,26 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			right,
 			[indent]
 		)
+		singleSpacesUntil(
+			document,
+			left.nextHiddenRegion.nextHiddenRegion,
+			rosettaRegulatoryReference.docReference.nextHiddenRegion
+		)
+		rosettaRegulatoryReference.rationales.forEach[
+			regionFor.keyword(documentRationaleAccess.rationaleKeyword_0_0)
+				.prepend[newLine]
+				.append[oneSpace]
+			regionFor.keyword(documentRationaleAccess.rationale_authorKeyword_1_0)
+				.prepend[newLine]
+				.append[oneSpace]
+		]
+		rosettaRegulatoryReference.regionFor.keyword(structured_provisionKeyword_4_0)
+			.prepend[newLine]
+			.append[oneSpace]
 		rosettaRegulatoryReference.regionFor.keyword(provisionKeyword_5_0)
+			.prepend[newLine]
+			.append[oneSpace]
+		rosettaRegulatoryReference.regionFor.keyword(reportedFieldReportedFieldKeyword_6_0)
 			.prepend[newLine]
 	}
 
@@ -433,12 +485,17 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			prepend[newLine]
 			format
 		]
-		ele.enumValues.forEach[ format ]
+		ele.enumValues.head
+			.prepend[setNewLines(2)]
+			.format
+		ele.enumValues.tail.forEach[
+			prepend[newLine]
+			format
+		]
 	}
 
 	def dispatch void format(RosettaEnumValue rosettaEnumValue, extension IFormattableDocument document) {
 		rosettaEnumValue
-			.prepend[newLine]
 			.formatDefinition(document)
 			.indentInner(document)
 		rosettaEnumValue.enumSynonyms.forEach[
@@ -456,11 +513,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 	}
 
 	def dispatch void format(RosettaExpression ele, extension IFormattableDocument document) {
-		// Format parentheses
-		ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.leftParenthesisKeyword_3_0)
-			.forEach[append(NO_SPACE_PRESERVE_NEW_LINE)]
-	    ele.allRegionsFor.keywords(rosettaCalcPrimaryAccess.rightParenthesisKeyword_3_2)
-			.forEach[prepend(NO_SPACE_PRESERVE_NEW_LINE)]
 		expressionFormatter.formatExpression(ele, document)
 	}
 	

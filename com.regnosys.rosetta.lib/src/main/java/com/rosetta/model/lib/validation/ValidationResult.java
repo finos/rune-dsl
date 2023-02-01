@@ -103,6 +103,7 @@ public interface ValidationResult<T> {
 					failureReason.map(s -> "because [" + s + "]").orElse(""));
 		}
 
+		// TODO: refactor this method. This is an ugly hack.
 		private Optional<String> getUpdatedFailureReason() {
 
 			String conditionName = name.replaceFirst(modelObjectName, "");
@@ -116,6 +117,8 @@ public interface ValidationResult<T> {
 		}
 	}
 
+	// @Compat. Choice rules are now obsolete in favor of data rules.
+	@Deprecated
 	class ChoiceRuleFailure<T> implements ValidationResult<T> {
 
 		private final String name;
@@ -209,6 +212,10 @@ public interface ValidationResult<T> {
 
 		public boolean check(int fields) {
 			return check.apply(fields);
+		}
+		
+		public String getDescription() {
+			return this.desc;
 		}
 	}
 	

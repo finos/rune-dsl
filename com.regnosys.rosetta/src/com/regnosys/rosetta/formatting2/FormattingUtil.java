@@ -39,7 +39,9 @@ public class FormattingUtil {
 						multilineFormatter.accept(doc);
 					}
 			);
-		} else if (mode.equals(FormattingMode.MULTI_LINE)) {
+		} else if (mode.equals(FormattingMode.SINGLE_LINE)) {
+			inlineFormatter.accept(document);
+		} else if (mode.equals(FormattingMode.CHAIN)) {
 			multilineFormatter.accept(document);
 		}
 	}

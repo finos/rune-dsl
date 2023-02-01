@@ -114,15 +114,8 @@ ShortcutDeclaration:
 Condition:
 	'condition' RosettaNamed? ':' =>Definable?
 		=>(References|Annotations)* // conflicts with ListLiteral as RosettaCalcExpression
-		( constraint = Constraint
-		| expression = RosettaCalcExpression)
+		expression=RosettaCalcExpression
 ;
-
-Constraint:
-	{Constraint} oneOf ?= 'one-of'
-	| necessity = Necessity 'choice' attributes += [Attribute | ValidID] (',' attributes += [Attribute | ValidID])*
-;
-
 
 enum Necessity:
 	optional | required
@@ -140,12 +133,12 @@ Operation:
 // @Compat deprecated - to be deleted once all models updated
 AssignOutputOperation:
 	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>Definable?
-	expression = RosettaCalcExpression assignAsKey?='as-key'?
+	expression = RosettaCalcExpressionWithAsKey
 ;
 
 OutputOperation:
 	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>Definable?
-		expression = RosettaCalcExpression assignAsKey?='as-key'?
+		expression = RosettaCalcExpressionWithAsKey
 ;
 
 Segment:
@@ -403,23 +396,29 @@ RosettaMapPathValue:
  */ 
  
 RosettaDocReference:
-	'[' ('regulatoryReference'|'docReference') body=[RosettaBody|ValidID] corpuses+=([RosettaCorpus|ValidID])+ (segments+=RosettaSegmentRef)+ ('provision' provision=STRING)? (reportedField?='reportedField')?  ']'
+	'[' ('regulatoryReference'|'docReference') docReference=RegulatoryDocumentReference
+		(rationales+=DocumentRationale)*
+		('structured_provision' structuredProvision=STRING)?
+		('provision' provision=STRING)?
+		(reportedField?='reportedField')?  ']'
 ;
 
-RosettaSegmentRef:
-	segment=[RosettaSegment|ValidID] segmentRef=STRING
+DocumentRationale:
+	  'rationale' rationale=STRING
+	& 'rationale_author' rationaleAuthor=STRING
 ;
+
 
 RosettaBody:
-	('body') (bodyType=ID) RosettaNamed RosettaDefinable?
+	'body' bodyType=ID RosettaNamed RosettaDefinable?
 ;
 
 RosettaCorpus:
-	('corpus') (corpusType=ID) (body=[RosettaBody])? (displayName=STRING)? RosettaNamed RosettaDefinable?
+	'corpus' corpusType=ID (body=[RosettaBody])? (displayName=STRING)? RosettaNamed RosettaDefinable?
 ;
 
 RosettaSegment:
-	'segment' RosettaNamed
+	'segment' name=(ValidID | 'rationale' | 'rationale_author' | 'structured_provision') // @Compat. These were previously used as `segment`s, but are now considered keywords.
 ;
 
 
@@ -493,6 +492,10 @@ FunctionReference:
 /**********************************************************************
  * Calculations
  */
+
+RosettaCalcExpressionWithAsKey returns RosettaExpression:
+	RosettaCalcExpression =>({AsKeyOperation.argument=current} operator='as-key')?
+;
 
 RosettaCalcExpression returns RosettaExpression:
 	RosettaCalcOr
@@ -582,7 +585,9 @@ ListOperation returns RosettaExpression:
 			|({ReverseOperation.argument=current} operator='reverse')
 			|({FirstOperation.argument=current} operator='first')
 			|({LastOperation.argument=current} operator='last')
-			|({SumOperation.argument=current} operator='sum')	
+			|({SumOperation.argument=current} operator='sum')
+			|({OneOfOperation.argument=current} operator='one-of')
+			|({ChoiceOperation.argument=current} necessity=Necessity operator='choice' attributes+=[Attribute|ValidID] =>(',' attributes+=[Attribute|ValidID])*)
 		) | =>(
 			 ({ReduceOperation.argument=current} operator='reduce')
 			|({FilterOperation.argument=current} operator='filter')
@@ -605,7 +610,9 @@ ListOperation returns RosettaExpression:
 			|({ReverseOperation} operator='reverse')
 			|({FirstOperation} operator='first')
 			|({LastOperation} operator='last')
-			|({SumOperation} operator='sum')	
+			|({SumOperation} operator='sum')
+			|({OneOfOperation} operator='one-of')
+			|({ChoiceOperation} necessity=Necessity operator='choice' attributes+=[Attribute|ValidID] =>(',' attributes+=[Attribute|ValidID])*)
 		) | (
 			 ({ReduceOperation} operator='reduce')
 			|({FilterOperation} operator='filter')
@@ -628,7 +635,9 @@ ListOperation returns RosettaExpression:
 			|({ReverseOperation.argument=current} operator='reverse')
 			|({FirstOperation.argument=current} operator='first')
 			|({LastOperation.argument=current} operator='last')
-			|({SumOperation.argument=current} operator='sum')	
+			|({SumOperation.argument=current} operator='sum')
+			|({OneOfOperation.argument=current} operator='one-of')
+			|({ChoiceOperation.argument=current} necessity=Necessity operator='choice' attributes+=[Attribute|ValidID] =>(',' attributes+=[Attribute|ValidID])*)
 		) | =>(
 			 ({ReduceOperation.argument=current} operator='reduce')
 			|({FilterOperation.argument=current} operator='filter')
@@ -725,17 +734,20 @@ RosettaExternalEnumSynonym returns RosettaEnumSynonym:
  * Reporting support
  *****************************************/
 
-RosettaRegulatoryBody:
-	body=[RosettaBody|ValidID] corpuses+=([RosettaCorpus|ValidID])+
-;   
+RegulatoryDocumentReference:
+	body=[RosettaBody|ValidID] corpuses+=([RosettaCorpus|ValidID])+ (segments+=RosettaSegmentRef)*
+;
 
+RosettaSegmentRef:
+	segment=[RosettaSegment|ValidID] segmentRef=STRING
+;
 
 /*****************************************
  * Blueprints
  */
  
 RosettaBlueprintReport:
-	'report' regulatoryBody=RosettaRegulatoryBody
+	'report' regulatoryBody=RegulatoryDocumentReference
 	'in' ('real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5'|'ASATP')
 	'when'
 	eligibilityRules+=[RosettaBlueprint] ( 'and' eligibilityRules+=[RosettaBlueprint])*

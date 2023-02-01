@@ -5,9 +5,9 @@ import javax.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
+import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
 import com.regnosys.rosetta.rosetta.RosettaBasicType;
 import com.regnosys.rosetta.rosetta.RosettaCalculationType;
-import com.regnosys.rosetta.rosetta.RosettaDocReference;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
@@ -79,10 +79,10 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	}
 	
 	@MarkSemanticToken
-	public List<SemanticToken> markDocumentReferences(RosettaDocReference docRef) {
+	public List<SemanticToken> markDocumentReferences(RegulatoryDocumentReference docRef) {
 		List<SemanticToken> tokens = new ArrayList<>();
 		for (int i = 0; i < docRef.getCorpuses().size(); i++) {
-			tokens.add(createSemanticToken(docRef, ROSETTA_REGULATORY_BODY__CORPUSES, i, DOCUMENT_CORPUS));
+			tokens.add(createSemanticToken(docRef, REGULATORY_DOCUMENT_REFERENCE__CORPUSES, i, DOCUMENT_CORPUS));
 		}
 		for (RosettaSegmentRef seg: docRef.getSegments()) {
 			tokens.add(createSemanticToken(seg, ROSETTA_SEGMENT_REF__SEGMENT, DOCUMENT_SEGMENT));
