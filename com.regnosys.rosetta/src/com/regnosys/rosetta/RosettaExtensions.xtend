@@ -19,6 +19,8 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.expression.OneOfOperation
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 
 class RosettaExtensions {
 	
@@ -156,6 +158,17 @@ class RosettaExtensions {
 		return cond.conditionName(func.name, func.conditions)
 	}
 	
+	def boolean isConstraintCondition(Condition cond) {
+		return cond.isOneOf || cond.isChoice
+	}
+	
+	private def boolean isOneOf(Condition cond) {
+		return cond.expression instanceof OneOfOperation
+	}
+	
+	private def boolean isChoice(Condition cond) {
+		return cond.expression instanceof ChoiceOperation
+	}
 	
 	//Name convention: <type name>(<condition name>|<condition type><#>) where condition type should be 'choice' or 'oneof'.
 	private def String conditionName(Condition cond, String containerName, Collection<Condition> conditions) {
@@ -163,7 +176,11 @@ class RosettaExtensions {
 				cond.name
 			else {
 				val idx = conditions.filter[name.nullOrEmpty].toList.indexOf(cond)
-				val type = 'DataRule'
+				val type = if (cond.isOneOf) {
+						'OneOf' 
+					} else if (cond.isChoice) {
+						 'Choice'
+					} else 'DataRule'
 				'''«type»«idx»'''
 			}
 		return '''«containerName»«name»'''

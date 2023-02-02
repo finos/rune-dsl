@@ -194,9 +194,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def void checkConditionName(Condition condition) {
-		if (condition.name === null) {
+		if (condition.name === null && !condition.isConstraintCondition) {
 			warning("Condition name should be specified", ROSETTA_NAMED__NAME, INVALID_NAME)
-		} else if (!Character.isUpperCase(condition.name.charAt(0))) {
+		} else if (condition.name !== null && !Character.isUpperCase(condition.name.charAt(0))) {
 			warning("Condition name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
