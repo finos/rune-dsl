@@ -34,6 +34,30 @@ class RosettaFormattingTest {
 	}
 	
 	@Test
+	def void testDocumentationEndsLine() {
+		'''
+		namespace "com.regnosys.rosetta.model"
+		version "test"
+		
+		func F:
+			output:
+				x int (1..1)
+		
+			set x: <"Docs"> 0
+		''' -> '''
+		namespace "com.regnosys.rosetta.model"
+		version "test"
+		
+		func F:
+			output:
+				x int (1..1)
+		
+			set x: <"Docs">
+				0
+		'''
+	}
+	
+	@Test
 	def void testDocReference() {
 		'''
 			namespace "com.regnosys.rosetta.model"

@@ -1,0 +1,11 @@
+namespace foo.bar
+
+type Foo:
+	a int (1..1)
+
+func Foo:
+	inputs: foo Foo (1..1)
+	output: result int (1..1)
+	
+	set result:
+		foo -> a
