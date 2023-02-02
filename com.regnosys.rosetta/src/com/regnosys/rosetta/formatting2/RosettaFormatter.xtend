@@ -161,9 +161,12 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 
 
 	def dispatch void format(Data ele, extension IFormattableDocument document) {
-		ele.regionFor.keyword(dataAccess.typeKeyword_0).append(ONE_SPACE)
-		ele.regionFor.keyword(dataAccess.extendsKeyword_2_0).append(ONE_SPACE)
-		ele.regionFor.keyword(':').prepend(NO_SPACE)
+		ele.regionFor.keyword(dataAccess.typeKeyword_0)
+			.append[oneSpace]
+		ele.regionFor.keyword(dataAccess.extendsKeyword_2_0)
+			.append[oneSpace]
+		ele.regionFor.keyword(':')
+			.prepend[noSpace]
 		ele.formatDefinition(document)
 		ele.indentInner(document)
 		ele.synonyms.forEach[
@@ -175,7 +178,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			format
 		]
 		ele.attributes.head
-			.prepend[setNewLines(2)]
+			.prepend[setNewLines(1, 2, 2)]
 			.format
 		ele.attributes.tail.forEach[
 			prepend[newLine]
@@ -206,7 +209,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		}
 
 		ele.attributes.head
-			.prepend[setNewLines(2)]
+			.prepend[setNewLines(1, 2, 2)]
 			.format
 		ele.attributes.tail.forEach[
 			prepend[newLine]
@@ -351,19 +354,19 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		}
 		
 		ele.shortcuts.forEach[
-			prepend[newLine]
+			prepend[setNewLines(1, 1, 2)]
 			format
 		]
 		ele.conditions.forEach[
-			prepend[newLine]
+			prepend[setNewLines(1, 1, 2)]
 			format
 		]
 		ele.operations.forEach[
-			prepend[newLine]
+			prepend[setNewLines(1, 1, 2)]
 			format
 		]
 		ele.postConditions.forEach[
-			prepend[newLine]
+			prepend[setNewLines(1, 1, 2)]
 			format
 		]
 	}
@@ -481,12 +484,16 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		ele.formatDefinition(document)
 		ele.indentInner(document)
 		
+		ele.references.forEach[
+			prepend[newLine]
+			format
+		]
 		ele.synonyms.forEach[
 			prepend[newLine]
 			format
 		]
 		ele.enumValues.head
-			.prepend[setNewLines(2)]
+			.prepend[setNewLines(1, 2, 2)]
 			.format
 		ele.enumValues.tail.forEach[
 			prepend[newLine]

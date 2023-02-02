@@ -474,12 +474,12 @@ class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinabl
 class BlueprintNodeExp {
 	contains BlueprintNode node
 	contains RosettaDocReference reference
-	contains BlueprintNodeExp next 
+	contains BlueprintNodeExp next
+	String identifier
 }
 
 abstract class BlueprintNode {
 	String name
-	String identifier
 	refers RosettaType input
 	refers RosettaType output
 	refers RosettaType inputKey

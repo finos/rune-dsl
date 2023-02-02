@@ -12,9 +12,7 @@ import org.eclipse.xtext.formatting2.ITextReplacerContext;
 import org.eclipse.xtext.formatting2.internal.HiddenRegionReplacer;
 import org.eclipse.xtext.formatting2.internal.SubDocument;
 import org.eclipse.xtext.formatting2.regionaccess.IAstRegion;
-import org.eclipse.xtext.formatting2.regionaccess.ISequentialRegion;
 import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
-import org.eclipse.xtext.formatting2.regionaccess.ITextSegment;
 
 import com.google.common.collect.Lists;
 

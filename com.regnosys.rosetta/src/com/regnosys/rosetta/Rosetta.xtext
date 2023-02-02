@@ -85,7 +85,8 @@ Attribute:
 ;
 
 Enumeration returns RosettaEnumeration:
-	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable? References*
+	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable?
+		References*
 		(synonyms += RosettaSynonym)*
 		enumValues += RosettaEnumValue*
 ;
@@ -405,7 +406,7 @@ RosettaDocReference:
 
 DocumentRationale:
 	  'rationale' rationale=STRING
-	& 'rationale_author' rationaleAuthor=STRING
+	& ('rationale_author' rationaleAuthor=STRING)?
 ;
 
 
@@ -769,19 +770,18 @@ RosettaBlueprint:
 ;
 
 BlueprintNodeExp:
-	node=BlueprintNode (reference = RosettaDocReference)? ('then' next=BlueprintNodeExp)? 
+	node=BlueprintNode (reference=RosettaDocReference)?
+	('then' next=BlueprintNodeExp)?
+	(=>'as' identifier=STRING)?
 ;
 
 BlueprintNode:
-	(
-		BlueprintRef |
-		BlueprintFilter |
-		BlueprintOr |
-		BlueprintExtract |
-		BlueprintReturn | 
-		BlueprintLookup
-	)
-	('as' identifier=STRING)?
+	BlueprintRef |
+	BlueprintFilter |
+	BlueprintOr |
+	BlueprintExtract |
+	BlueprintReturn | 
+	BlueprintLookup
 ;
 
 BlueprintFilter :

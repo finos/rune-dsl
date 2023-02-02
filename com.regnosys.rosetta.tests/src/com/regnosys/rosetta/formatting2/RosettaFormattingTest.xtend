@@ -135,7 +135,6 @@ class RosettaFormattingTest {
 			version "test"
 			
 			type Test: <"Some definition">
-			
 				field1 string (1..1) <"Field 1">
 				field2 string (1..1) <"Field 2">
 		'''
@@ -171,7 +170,6 @@ class RosettaFormattingTest {
 			
 			type CalculationPeriod: <"xxx xxx.">
 				[synonym FpML value "CalculationPeriod"]
-			
 				// sinleline comment
 				field1 string (1..1) <"Some Field">
 					[synonym FpML value "CalculationPeriod"]
@@ -204,7 +202,6 @@ class RosettaFormattingTest {
 			type CalculationPeriod: <"xxx xxx.">
 				[metadata scheme]
 				[synonym FpML value "CalculationPeriod"]
-			
 				// sinleline comment
 				field3 string (1..1) <"Some Field">
 					[metadata scheme]
@@ -252,7 +249,6 @@ class RosettaFormattingTest {
 			version "test"
 
 			type Type:
-			
 				foo string (1..1)
 
 			func Execute2:
@@ -286,7 +282,6 @@ class RosettaFormattingTest {
 			version "test"
 			
 			enum DatesReferenceEnum: <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
-			
 				tradeDate
 				effectiveDate
 				firstRegularPeriodStartDate
@@ -309,7 +304,6 @@ class RosettaFormattingTest {
 
 			enum DayOfWeekEnum: <"A day of the seven-day week.">
 				[synonym FpML value "DayOfWeekEnum"]
-			
 				MON <"Monday">
 					[synonym FpML value "MON"]
 				TUE <"Tuesday">
@@ -342,7 +336,6 @@ class RosettaFormattingTest {
 			
 			enum SpreadScheduleTypeEnum: <"The enumerated values to specify a long or short spread value.">
 				[synonym FpML value "spreadScheduleTypeScheme"]
-			
 				Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
 					[synonym FpML value "Long"]
 				Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
@@ -425,7 +418,6 @@ class RosettaFormattingTest {
 			synonym source SynSource
 
 			type AllocationOutcome:
-			
 				allocatedTrade AllocationOutcome (1..*)
 					[synonym SynSource value "originalTrade"]
 				originalTrade string (1..1) <"">
@@ -498,7 +490,6 @@ class RosettaFormattingTest {
 			version "test"
 			
 			type Type:
-			
 				other Type (0..*)
 			
 			func Foo:

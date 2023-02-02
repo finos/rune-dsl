@@ -398,11 +398,10 @@ class RosettaExpressionFormattingTest {
 				"another param",
 				"and another"
 			)
-			all = if "This is a verryyyyyyyyy loooooooooooooong expression"
-				count
-				> 999
-			then 1
-			else 2
+			all = if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999
+				then 1
+				else 2
+
 		'''
 	}
 	
@@ -714,6 +713,18 @@ class RosettaExpressionFormattingTest {
 		 42
 		''' => '''
 		return 42
+		'''
+	}
+	
+	@Test
+	def void testShortRuleReturn2() {
+		'''
+		return
+		
+		 42 as "This is a veeeeeeeeeerrry loooooooooooooooooong `as` operation"
+		''' => '''
+		return 42
+		as "This is a veeeeeeeeeerrry loooooooooooooooooong `as` operation"
 		'''
 	}
 	

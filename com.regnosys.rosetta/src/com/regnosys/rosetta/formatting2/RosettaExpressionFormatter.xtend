@@ -27,7 +27,6 @@ import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import org.eclipse.xtext.formatting2.FormatterRequest
 import com.regnosys.rosetta.rosetta.BlueprintNodeExp
-import com.regnosys.rosetta.rosetta.BlueprintNode
 import com.regnosys.rosetta.rosetta.BlueprintFilter
 import com.regnosys.rosetta.rosetta.BlueprintOr
 import com.regnosys.rosetta.rosetta.BlueprintRef
@@ -36,6 +35,8 @@ import com.regnosys.rosetta.rosetta.BlueprintReturn
 import com.regnosys.rosetta.rosetta.BlueprintLookup
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -133,6 +134,9 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					.prepend[newLine]
 				expr.regionFor.keyword(fullElseKeyword_5_0_0)
 					.prepend[newLine]
+				if (expr.eContainingFeature == ROSETTA_BINARY_OPERATION__RIGHT) {
+					expr.indentInner(doc)
+				}
 				expr.^if.formatExpression(doc, mode.stopChain)
 				expr.ifthen.formatExpression(doc, mode.stopChain)
 				expr.elsethen.formatExpression(doc, mode.chainIf(expr.elsethen instanceof RosettaConditionalExpression))
@@ -211,7 +215,16 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		}
 	}
 	
+	private def dispatch void unsafeFormatExpression(ComparisonOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+		// specialization of ModifiableBinaryOperation
+		formatModifiableBinaryOperation(expr, document, FormattingMode.SINGLE_LINE)
+	}
+	
 	private def dispatch void unsafeFormatExpression(ModifiableBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+		formatModifiableBinaryOperation(expr, document, mode)
+	}
+	
+	private def void formatModifiableBinaryOperation(ModifiableBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
 		// specialization of RosettaBinaryOperation
 		expr.formatBinaryOperation(document, mode)
 		expr.regionFor.feature(MODIFIABLE_BINARY_OPERATION__CARD_MOD)
@@ -248,13 +261,16 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					afterArgument
 						.set[newLine]
 					
-					expr.left.formatExpression(doc, mode.chainIf(
-						if (expr.left instanceof RosettaBinaryOperation) {
+					val leftIsSameOperation = if (expr.left instanceof RosettaBinaryOperation) {
 							expr.operator == (expr.left as RosettaBinaryOperation).operator
 						} else {
 							false
-						})
-					)
+						}
+					if (expr.left instanceof RosettaBinaryOperation && !leftIsSameOperation) {
+						expr.left.indentInner(doc)
+					}
+					
+					expr.left.formatExpression(doc, mode.chainIf(leftIsSameOperation))
 				}
 				expr.right.formatExpression(doc, mode.stopChain)
 			]
@@ -266,7 +282,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		expr.formatUnaryOperation(
 			document,
 			mode,
-			[expr.functionRef.formatFunctionReference(it, mode.stopChain)]
+			[ expr.functionRef.formatFunctionReference(it, mode.stopChain) ]
 		)
 	}
 	
@@ -291,6 +307,10 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 						ref.regionFor.keyword(']')
 							.prepend[oneSpace]
 						ref.body.formatExpression(doc, mode)
+						if (ref.eContainer.eContainer instanceof RosettaOperation) {
+							// Always put next operations on a new line.
+							ref.append[highPriority; newLine]
+						}
 					],
 					[extension doc | // case: long inline function
 						interior(
@@ -301,6 +321,10 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 							[indent]
 						)
 						ref.body.formatExpression(doc, mode.stopChain)
+						if (ref.eContainer.eContainer instanceof RosettaOperation) {
+							// Always put next operations on a new line.
+							ref.append[highPriority; newLine]
+						}
 					]
 				)
 			}
@@ -366,13 +390,35 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	def void formatRuleExpression(BlueprintNodeExp expr, extension IFormattableDocument document) {
 		val extension ruleExprGrammarAccess = blueprintNodeExpAccess
 		
-		expr.node.formatRuleNode(document, FormattingMode.NORMAL)
-		if (expr.next !== null) {
-			expr.regionFor.keyword(thenKeyword_2_0)
-				.prepend[newLine]
-				.append[oneSpace]
-			expr.next.formatRuleExpression(document)
-		}
+		formatInlineOrMultiline(document, expr, FormattingMode.NORMAL,
+			[extension doc | // case: short operation
+				expr.node.formatRuleNode(doc, FormattingMode.NORMAL)
+				if (expr.next !== null) {
+					expr.regionFor.keyword(thenKeyword_2_0)
+						.prepend[newLine]
+						.append[oneSpace]
+					expr.next.formatRuleExpression(doc)
+				}
+				if (expr.identifier !== null) {
+					expr.regionFor.keyword(asKeyword_3_0)
+						.surround[oneSpace]
+				}
+			],
+			[extension doc | // case: long operation
+				expr.node.formatRuleNode(doc, FormattingMode.NORMAL)
+				if (expr.next !== null) {
+					expr.regionFor.keyword(thenKeyword_2_0)
+						.prepend[newLine]
+						.append[oneSpace]
+					expr.next.formatRuleExpression(doc)
+				}
+				if (expr.identifier !== null) {
+					expr.regionFor.keyword(asKeyword_3_0)
+						.prepend[newLine]
+						.append[oneSpace]
+				}
+			]
+		)
 	}
 	
 	private def dispatch void formatRuleNode(BlueprintFilter expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -383,14 +429,12 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		if (expr.filterBP !== null) {
 			expr.regionFor.keyword(ruleKeyword_2_1_0)
 				.surround[oneSpace]
-			expr.formatAsInline(document)
 		} else {
 			formatInlineOrMultiline(document, expr, mode,
 				[extension doc | // case: short operation
 					expr.regionFor.keyword(whenKeyword_1)
 						.append[oneSpace]
 					expr.filter.formatExpression(doc, mode)
-					expr.formatAsInline(doc)
 				],
 				[extension doc | // case: long operation
 					expr.regionFor.keyword(whenKeyword_1)
@@ -398,7 +442,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.filter
 						.surround[indent]
 						.formatExpression(doc, mode.stopChain)
-					expr.formatAsMultiline(doc)
 				]
 			)
 		}
@@ -441,7 +484,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				lastKeyword
 					.append[oneSpace]
 				expr.call.formatExpression(doc, mode)
-				expr.formatAsInline(doc)
 			],
 			[extension doc | // case: long operation
 				lastKeyword
@@ -449,7 +491,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				expr.call
 					.surround[indent]
 					.formatExpression(doc, mode.stopChain)
-				expr.formatAsMultiline(doc)
 			]
 		)
 	}
@@ -462,7 +503,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				expr.regionFor.keyword(returnKeyword_0)
 					.append[oneSpace]
 				expr.expression.formatExpression(doc, mode)
-				expr.formatAsInline(doc)
 			],
 			[extension doc | // case: long operation
 				expr.regionFor.keyword(returnKeyword_0)
@@ -470,7 +510,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				expr.expression
 					.surround[indent]
 					.formatExpression(doc, mode.stopChain)
-				expr.formatAsMultiline(doc)
 			]
 		)
 	}
@@ -480,25 +519,5 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		
 		expr.regionFor.assignment(nameAssignment_1)
 			.surround[oneSpace]
-		expr.formatAsInline(document)
-	}
-	
-	private def void formatAsInline(BlueprintNode expr, extension IFormattableDocument document) {
-		val extension filterGrammarAccess = blueprintNodeAccess
-		
-		if (expr.identifier !== null) {
-			expr.regionFor.keyword(asKeyword_1_0)
-				.surround[oneSpace]
-		}
-	}
-	
-	private def void formatAsMultiline(BlueprintNode expr, extension IFormattableDocument document) {
-		val extension filterGrammarAccess = blueprintNodeAccess
-		
-		if (expr.identifier !== null) {
-			expr.regionFor.keyword(asKeyword_1_0)
-				.prepend[newLine]
-				.append[oneSpace]
-		}
 	}
 }

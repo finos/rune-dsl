@@ -249,14 +249,15 @@ class BlueprintGenerator {
 	 */
 	def StringConcatenationClient buildGraph(BlueprintNodeExp nodeExp, TypedBPNode typedNode, Context context) 
 		'''
-		«nodeExp.node.buildNode(typedNode, context)»«IF nodeExp.next !== null»)
+		«nodeExp.buildNode(typedNode, context)»«IF nodeExp.next !== null»)
 		.then(« nodeExp.next.buildGraph(typedNode.next, context)»«ENDIF»'''
 	
 	/**
 	 * write out an individual graph node
 	 */
-	def StringConcatenationClient buildNode(BlueprintNode node, TypedBPNode typedNode, Context context) {
-		val id = createIdentifier(node); 
+	def StringConcatenationClient buildNode(BlueprintNodeExp nodeExp, TypedBPNode typedNode, Context context) {
+		val node = nodeExp.node
+		val id = createIdentifier(nodeExp); 
 		switch (node) {
 			BlueprintExtract: {
 				context.imports.addTypes(typedNode)
@@ -289,7 +290,7 @@ class BlueprintGenerator {
 			BlueprintLookup: {
 				context.imports.addTypes(typedNode)
 				context.imports.addMappingImport()
-				val nodeName = if (node.identifier !== null) node.identifier else node.name
+				val nodeName = if (nodeExp.identifier !== null) nodeExp.identifier else node.name
 				//val lookupLamda = '''«typedNode.input.type.name.toFirstLower» -> lookup«node.name»(«typedNode.input.type.name.toFirstLower»)'''
 				'''actionFactory.<«typedNode.input.getEither», «
 					typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaLookup("«node.URI»", "«nodeName»", «id», "«node.name»")'''
@@ -302,8 +303,8 @@ class BlueprintGenerator {
 				context.addBPRef(typedNode)
 				context.imports.addTypes(typedNode)
 				context.imports.addBPRef(node.blueprint)
-				'''get«node.blueprint.name.toFirstUpper»()«IF node.identifier!==null»)
-				.then(new IdChange("«node.URI»", "as «node.identifier»", «id»)«ENDIF»'''				
+				'''get«node.blueprint.name.toFirstUpper»()«IF nodeExp.identifier!==null»)
+				.then(new IdChange("«node.URI»", "as «nodeExp.identifier»", «id»)«ENDIF»'''				
 			}
 			BlueprintFilter :{
 				context.imports.addFilter(node);
@@ -327,32 +328,28 @@ class BlueprintGenerator {
 		}
 	}
 	
-	def createIdentifier(BlueprintNode node) {
+	def createIdentifier(BlueprintNodeExp nodeExp) {
+		if (nodeExp.identifier !== null) {
+			return '''new RuleIdentifier("«nodeExp.identifier»", getClass())'''
+		}
+		val node = nodeExp.node
 		switch (node) {
 			BlueprintExtract: {
-				val nodeName = if (node.identifier !== null) node.identifier 
-								else if (node.name !== null) node.name
+				val nodeName = if (node.name !== null) node.name
 								else node.call.toNodeLabel
 				'''new RuleIdentifier("«nodeName»", getClass())'''
 			}
 			BlueprintReturn: {
-				val nodeName = if (node.identifier !== null) node.identifier 
-								else if (node.name !== null) node.name
+				val nodeName = if (node.name !== null) node.name
 								else node.expression.toNodeLabel
 				
 				'''new RuleIdentifier("«nodeName»", getClass())'''
 			}
 			BlueprintLookup: {
-				val nodeName = if (node.identifier !== null) node.identifier else node.name
-				'''new RuleIdentifier("Lookup «nodeName»", getClass())'''
+				'''new RuleIdentifier("Lookup «node.name»", getClass())'''
 			}
 			default: {
-				if (node.identifier!==null) {
-					'''new RuleIdentifier("«node.identifier»", getClass())'''
-				}
-				else {
-					'''null'''
-				}
+				'''null'''
 			}
 		}
 	}

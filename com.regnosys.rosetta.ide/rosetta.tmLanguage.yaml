@@ -33,6 +33,8 @@ variables:
   synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge){{wordEnd}}'
   synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
+  docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
+  docReferenceAnnotationSectionEnd: (?={{wordStart}}(provision|reportedField){{wordEnd}}|\])|{{sectionEnd}}
   expressionEnd: '{{blueprintNodeEnd}}|{{sectionEnd}}'
   functionalOperationEnd: (?<=\])|(?={{listOperation}}|{{wordStart}}(else){{wordEnd}})|{{expressionEnd}}
 
@@ -682,20 +684,20 @@ repository:
         - include: '#comment'
         - name: meta.annotated.document.document-id.rosetta
           begin: '(?<={{wordStart}}regulatoryReference{{wordEnd}}|{{wordStart}}docReference{{wordEnd}})' # used to be '(?<={{wordStart}}(regulatoryReference|docReference){{wordEnd}})'. See issue https://github.com/zikaari/monaco-textmate/issues/10.
-          end: '(?={{wordStart}}(provision|reportedField){{wordEnd}}|\])|{{sectionEnd}}'
+          end: '{{docReferenceAnnotationSectionEnd}}'
           patterns:
           - include: '#comment'
           - begin: '{{identifier}}'
             beginCaptures:
               0: { name: entity.name.document.body.rosetta }
-            end: '(?={{wordStart}}(provision|reportedField){{wordEnd}}|\])|{{sectionEnd}}'
+            end: '{{docReferenceAnnotationSectionEnd}}'
             patterns:
             - include: '#comment'
             - include: '#string'
             - name: entity.name.document.rosetta # need semantic tokens to distinguish between corpus and segment
               match: '{{identifier}}'
         - name: keyword.other.rosetta
-          match: '{{wordStart}}(provision|reportedField){{wordEnd}}'
+          match: '{{docReferenceAnnotationSection}}'
         - include: '#string'
       
       ruleReferenceAnnotationBody:
@@ -1012,21 +1014,6 @@ repository:
         end: '{{expressionEnd}}'
         patterns:
         - include: '#comment'
-        - name: keyword.other.rosetta
-          match: '{{wordStart}}as-key{{wordEnd}}'
-        - name: keyword.other.rosetta
-          match: '{{wordStart}}one-of{{wordEnd}}'
-        - begin: '{{wordStart}}(optional|required){{wordEnd}}'
-          beginCaptures:
-            0: { name: keyword.other.rosetta }
-          end: '{{sectionEnd}}'
-          patterns:
-          - name: keyword.other.rosetta
-            match: '{{wordStart}}choice{{wordEnd}}'
-          - name: variable.other.member.rosetta
-            match: '{{identifier}}'
-          - name: punctuation.separator.member.rosetta
-            match: ','
         - include: '#functionalOperation'
         - name: meta.projection.rosetta
           begin: ->
@@ -1052,8 +1039,19 @@ repository:
           - include: '#expression'
         - name: keyword.control.conditional.else.rosetta
           match: '{{wordStart}}else{{wordEnd}}'
+        - begin: '{{wordStart}}(optional|required){{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.operator.word.rosetta }
+          end: '{{sectionEnd}}'
+          patterns:
+          - name: keyword.operator.word.rosetta
+            match: '{{wordStart}}choice{{wordEnd}}'
+          - name: variable.other.member.rosetta
+            match: '{{identifier}}'
+          - name: punctuation.separator.member.rosetta
+            match: ','
         - name: keyword.operator.word.rosetta
-          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|disjoint|join|only|exists){{wordEnd}}'
+          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|disjoint|join|only|exists|as-key|one-of){{wordEnd}}'
         - name: keyword.operator.rosetta
           match: =|<>|>=|<=|>|<|\+|-|\*|\/
         - name: variable.rosetta # Need semantic tokens to specify variable

@@ -88,13 +88,19 @@ public class GenerateTmGrammar {
 			}
 		}
 		
-		
+		List<String> keywordsWithoutToken = new ArrayList();
 		for (String keyword: keywords) {
 			if (!ignoredRosettaKeywords.contains(keyword)) {
 				if (!regexes.stream().anyMatch(regex -> regex.matcher(keyword).matches())) {
-					throw new ConfigurationException("The TextMate grammar contains no pattern that highlights the Rosetta keyword `" + keyword + "`. Add an appropriate pattern to `rosetta.tmLanguage.yaml` or add the keyword to the list of ignored Rosetta keywords.");
+					keywordsWithoutToken.add(keyword);
 				}
 			}
+		}
+		if (!keywordsWithoutToken.isEmpty()) {
+			String keywordList = keywordsWithoutToken.stream()
+					.map(k -> "`" + k + "`")
+					.collect(Collectors.joining(", "));
+			throw new ConfigurationException("The TextMate grammar contains no pattern that highlights the Rosetta keyword(s) " + keywordList + ". Add an appropriate pattern to `rosetta.tmLanguage.yaml` or add the keywords to the list of ignored Rosetta keywords.");
 		}
 	}
 	

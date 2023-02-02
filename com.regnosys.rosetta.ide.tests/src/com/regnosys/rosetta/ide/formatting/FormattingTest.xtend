@@ -32,7 +32,6 @@ class FormattingTest extends AbstractRosettaLanguageServerTest {
 				namespace foo.bar
 				
 				type Foo:
-				
 					a int (1..1)
 				
 				func Foo:
@@ -40,6 +39,7 @@ class FormattingTest extends AbstractRosettaLanguageServerTest {
 						foo Foo (1..1)
 					output:
 						result int (1..1)
+				
 					set result:
 						foo -> a
 				'''
