@@ -1558,7 +1558,7 @@ enums
 
 	EngineEnum:
 		+ Hybrid
-        		[value "hybrid"]
+        		[value "Hybrid"]
 ```
 
 ### Advanced Mapping
