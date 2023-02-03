@@ -17,6 +17,14 @@ public class RosettaServerModule extends AbstractGenericModule {
 	 */
 	protected RosettaServerModule() {}
 	
+	/**
+	 * TODO: make a contribution to XText.
+	 * The fact that we need this create method is just
+	 * to hack around the fact that the `ServerModule` from xtext
+	 * doesn't inherit from `AbstractGenericModule`, but rather from `AbstractModule`,
+	 * which doesn't allow us to override bindings.
+	 * The best fix would be with a patch in Xtext.
+	 */
 	public static Module create() {
 		return create(RosettaServerModule.class);
 	}

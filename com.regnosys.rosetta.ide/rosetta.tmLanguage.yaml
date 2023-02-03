@@ -36,7 +36,7 @@ variables:
   synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
-  docReferenceAnnotationSectionEnd: (?={{wordStart}}(provision|reportedField){{wordEnd}}|\])|{{sectionEnd}}
+  docReferenceAnnotationSectionEnd: (?={{docReferenceAnnotationSection}}|\])|{{sectionEnd}}
   expressionEnd: '{{blueprintNodeEnd}}|{{sectionEnd}}'
   functionalOperationEnd: (?<=\])|(?={{listOperation}}|{{wordStart}}(else){{wordEnd}})|{{expressionEnd}}
 

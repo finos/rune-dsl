@@ -63,6 +63,6 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	}
 
 	def Class<? extends FormattingService> bindFormattingService() {
-		RosettaFormattingService // TODO: what's the best way to bind this? (DefaultResourceServiceProvider)
+		RosettaFormattingService
 	}
 }

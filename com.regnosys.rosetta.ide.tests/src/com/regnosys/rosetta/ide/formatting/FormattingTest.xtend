@@ -23,7 +23,7 @@ class FormattingTest extends AbstractRosettaLanguageServerTest {
 		testFormatting(
 			[
 				val options = new FormattingOptions
-				options.putNumber("maxLineWidth", 10)
+				options.putNumber(RosettaFormattingService.PREFERENCE_MAX_LINE_WIDTH_KEY, 10)
 				it.options = options
 			],
 			[
@@ -67,7 +67,7 @@ class FormattingTest extends AbstractRosettaLanguageServerTest {
 		testFormatting(
 			[
 				val options = new FormattingOptions
-				options.putNumber("conditionalMaxLineWidth", 10)
+				options.putNumber(RosettaFormattingService.PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY, 10)
 				it.options = options
 			],
 			[
