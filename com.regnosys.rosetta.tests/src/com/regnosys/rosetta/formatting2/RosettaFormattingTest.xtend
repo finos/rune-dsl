@@ -34,6 +34,22 @@ class RosettaFormattingTest {
 	}
 	
 	@Test
+	def void testFormatRule() {
+		'''
+		namespace drr.regulation.techsprint.g20.mas
+		
+		
+		reporting rule OptionPremium <"Option premium">
+		    return "N/A" as "I.6.3 Option Premium"
+		''' -> '''
+		namespace drr.regulation.techsprint.g20.mas
+		
+		reporting rule OptionPremium <"Option premium">
+			return "N/A" as "I.6.3 Option Premium"
+		'''
+	}
+	
+	@Test
 	def void testDocumentationEndsLine() {
 		'''
 		namespace "com.regnosys.rosetta.model"
@@ -475,7 +491,9 @@ class RosettaFormattingTest {
 					condition C1:
 						if True
 						then True
-							= True
+							extract [
+								it = False
+							] = True
 				
 					condition C2:
 						True
@@ -486,7 +504,7 @@ class RosettaFormattingTest {
 				type AllocationOutcome:
 					condition C1:
 						if True
-						then True = True
+						then True extract [it = False] = True
 					condition C2:
 						True
 			'''

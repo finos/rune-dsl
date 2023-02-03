@@ -113,6 +113,7 @@ import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import org.eclipse.xtext.naming.QualifiedName
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 
 // TODO: split expression validator
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
@@ -168,6 +169,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		
 		def Diagnostic createDiagnostic(String message, State state) {
 			new FeatureBasedDiagnostic(Diagnostic.ERROR, message, state.currentObject, null, -1, state.currentCheckType, null, null)
+		}
+	}
+	
+	// @Compat. In DRR, there is a segment `table` located after a `rationale`. This should never be the case, but to remain backwards compatible, we need to allow this.
+	@Check
+	def void deprecatedExtraneousSegment(RosettaDocReference docRef) {
+		for (seg: docRef.extraneousSegments) {
+			warning("Placing document segments after `rationale` is deprecated.", seg, null)
 		}
 	}
 	

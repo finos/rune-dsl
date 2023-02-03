@@ -64,10 +64,10 @@ class RosettaExpressionFormattingTest {
 	def void testLongParenthesesAreFormatted() {
 		'''
 		(  
-		  ["This", "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"] )
+		  [["This"], "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"] )
 		''' -> '''
 		([
-			"This",
+			["This"],
 			"is",
 			"a",
 			"veeeeeeeeeeeery",
@@ -130,10 +130,10 @@ class RosettaExpressionFormattingTest {
 	@Test
 	def void testLongListFormatting1() {
 		'''
-		["This", "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"]
+		[["This"], "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"]
 		''' -> '''
 		[
-			"This",
+			["This"],
 			"is",
 			"a",
 			"veeeeeeeeeeeery",
@@ -147,14 +147,14 @@ class RosettaExpressionFormattingTest {
 	def void testLongListFormatting2() {
 		'''
 		[
-			"This" ,
+			["This"] ,
 			"is", "a", "veeeeeeeeeeeery",
 			"looooooooooooooooooooong",
 			"list"
 		]
 		''' -> '''
 		[
-			"This",
+			["This"],
 			"is",
 			"a",
 			"veeeeeeeeeeeery",
@@ -574,8 +574,7 @@ class RosettaExpressionFormattingTest {
 				FilterQuantity(quantity2, unitOfAmount)
 					extract q2 [ CompareNumbers(q1 -> value, op, q2 -> value) ]
 			]
-			flatten
-			all = True
+			flatten all = True
 		'''
 	}
 	

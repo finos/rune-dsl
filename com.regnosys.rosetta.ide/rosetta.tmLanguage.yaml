@@ -22,8 +22,10 @@ variables:
   identifier: '{{identifierStart}}[_[:alnum:]]*{{wordEnd}}'
   notAnIdentifier: ((?!{{identifierStart}})[:graph:])
   qualifiedIdentifier: ({{identifier}})(?:\s*(\.)\s*({{identifier}}))*
+  idsConflictingWithKeywords: '{{wordStart}}version{{wordEnd}}'
   rootStart: '{{wordStart}}(namespace|version|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|library|synonym|reporting|eligibility|qualifiedType|calculationType|metaType|report|annotation|enum|type|func){{wordEnd}}'
-  rootEnd: (?={{rootStart}})
+  strictRootEnd: (?={{rootStart}})
+  rootEnd: '{{strictRootEnd}}(?!{{idsConflictingWithKeywords}})'
   sectionStart: '{{wordStart}}((\Qpost-\E)?condition|set|add|inputs|output|alias){{wordEnd}}'
   sectionEnd: (?={{sectionStart}}|{{rootStart}})
   functionalOperation: '{{wordStart}}(reduce|filter|map|extract-all|extract|sort|min|max){{wordEnd}}'
@@ -57,7 +59,7 @@ repository:
         begin: '{{wordStart}}namespace{{wordEnd}}'
         beginCaptures:
           0: { name: keyword.other.namespace.rosetta }
-        end: '{{rootEnd}}'
+        end: '{{strictRootEnd}}'
         patterns:
         - include: '#comment'
         - include: '#documentation'

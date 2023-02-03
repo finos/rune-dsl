@@ -3,7 +3,6 @@ package com.regnosys.rosetta.formatting2;
 import java.util.function.Consumer;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.formatting2.FormatterPreferenceKeys;
 import org.eclipse.xtext.formatting2.IFormattableDocument;
 import org.eclipse.xtext.formatting2.IFormattableSubDocument;
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatter;
@@ -12,12 +11,21 @@ import org.eclipse.xtext.formatting2.regionaccess.IEObjectRegion;
 import org.eclipse.xtext.formatting2.regionaccess.IHiddenRegion;
 import org.eclipse.xtext.formatting2.regionaccess.ITextRegionExtensions;
 import org.eclipse.xtext.formatting2.regionaccess.ITextSegment;
+import org.eclipse.xtext.preferences.TypedPreferenceKey;
 
-public class FormattingUtil {	
+public class FormattingUtil {
+	private ITextRegionExtensions getTextRegionExt(IFormattableDocument doc) {
+		return doc.getRequest().getTextRegionAccess().getExtensions();
+	}
+	
 	public void formatInlineOrMultiline(IFormattableDocument document, EObject object, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
 		formatInlineOrMultiline(document, object, FormattingMode.NORMAL, inlineFormatter, multilineFormatter);
 	}
 	public void formatInlineOrMultiline(IFormattableDocument document, EObject object, FormattingMode mode, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
+		int maxLineWidth = getPreference(document, RosettaFormatterPreferenceKeys.maxLineWidth);
+		formatInlineOrMultiline(document, object, mode, maxLineWidth, inlineFormatter, multilineFormatter);
+	}
+	public void formatInlineOrMultiline(IFormattableDocument document, EObject object, FormattingMode mode, int maxLineWidth, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
 		if (mode.equals(FormattingMode.NORMAL)) {
 			IEObjectRegion objRegion = getTextRegionExt(document).regionForEObject(object);
 			 // I need to include the next hidden region in the conditional formatting as well,
@@ -29,9 +37,7 @@ public class FormattingUtil {
 								requireTrimmedFitsInLine(
 										doc,
 										objRegion,
-										doc.getRequest()
-											.getPreferences()
-											.getPreference(FormatterPreferenceKeys.maxLineWidth)
+										maxLineWidth
 								);
 						inlineFormatter.accept(singleLineDoc);
 					},
@@ -72,7 +78,11 @@ public class FormattingUtil {
 		formatAllUntil(document, start, end, (f) -> f.oneSpace());
 	}
 	
-	private ITextRegionExtensions getTextRegionExt(IFormattableDocument doc) {
-		return doc.getRequest().getTextRegionAccess().getExtensions();
+	public <T> T getPreference(IFormattableDocument document, TypedPreferenceKey<T> key) {
+		return document
+				.getRequest()
+				.getPreferences()
+				.getPreference(key);
 	}
+
 }

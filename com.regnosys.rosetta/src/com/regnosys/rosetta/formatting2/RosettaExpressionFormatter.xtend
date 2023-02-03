@@ -43,6 +43,43 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	@Inject extension RosettaGrammarAccess
 	@Inject extension FormattingUtil
 	
+	private def boolean isSimple(RosettaExpression expr) {
+		switch expr {
+			RosettaLiteral:
+				true
+			RosettaImplicitVariable:
+				true
+			RosettaSymbolReference:
+				!expr.explicitArguments
+			RosettaFeatureCall:
+				true
+			ArithmeticOperation:
+				true
+			ComparisonOperation:
+				true
+			default:
+				false
+		}
+	}
+	
+	private def boolean shouldBeOnSingleLine(RosettaExpression expr) {
+		if (expr.isSimple) {
+			return true
+		}
+		switch expr {
+			RosettaBinaryOperation:
+				expr.left.isSimple || expr.right.isSimple
+			RosettaFunctionalOperation:
+				expr.functionRef === null && expr.argument.isSimple
+			RosettaUnaryOperation:
+				expr.argument.isSimple
+			ListLiteral:
+				expr.elements.forall[isSimple]
+			default:
+				false
+		}
+	}
+	
 	override void initialize(FormatterRequest request) {
 		super.initialize(request)
 	}
@@ -88,7 +125,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			[indent]
 		)
 		
-		formatInlineOrMultiline(document, expr, mode,
+		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
 			[extension doc | // case: short list
 				expr.regionFor.keyword('[')
 					.append[noSpace]
@@ -119,7 +156,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			append[oneSpace]
 		]
 		
-		formatInlineOrMultiline(document, expr, mode,
+		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine), document.getPreference(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth),
 			[extension doc | // case: short conditional
 				expr.regionFor.keyword(thenKeyword_3)
 					.prepend[oneSpace]
@@ -186,7 +223,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			expr.regionFor.keyword('(')
 				.prepend[noSpace]
 			
-			formatInlineOrMultiline(document, expr, mode,
+			formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
 				[extension doc | // case: short argument list
 					expr.regionFor.keyword('(')
 						.append[noSpace]
@@ -244,7 +281,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR)
 			.append[oneSpace]
 		
-		formatInlineOrMultiline(document, expr, mode,
+		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
 			[extension doc | // case: short operation
 				if (expr.left !== null) {
 					expr.left.nextHiddenRegion
@@ -321,10 +358,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 							[indent]
 						)
 						ref.body.formatExpression(doc, mode.stopChain)
-						if (ref.eContainer.eContainer instanceof RosettaOperation) {
-							// Always put next operations on a new line.
-							ref.append[highPriority; newLine]
-						}
 					]
 				)
 			}
@@ -360,7 +393,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	private def void formatUnaryOperation(RosettaUnaryOperation expr, extension IFormattableDocument document, FormattingMode mode, (IFormattableDocument) => void internalFormatter) {
-		formatInlineOrMultiline(document, expr, mode,
+		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
 			[extension doc | // case: short operation
 				if (expr.argument !== null) {
 					val afterArgument = expr.argument.nextHiddenRegion

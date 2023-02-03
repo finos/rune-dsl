@@ -27,4 +27,14 @@ public enum FormattingMode {
 		}
 		return FormattingMode.NORMAL;
 	}
+	
+	public FormattingMode singleLineIf(boolean condition) {
+		if (this.equals(FormattingMode.CHAIN)) {
+			return this;
+		}
+		if (condition) {
+			return FormattingMode.SINGLE_LINE;
+		}
+		return this;
+	}
 }

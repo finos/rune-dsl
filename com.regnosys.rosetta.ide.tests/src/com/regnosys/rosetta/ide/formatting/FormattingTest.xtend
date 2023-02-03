@@ -46,4 +46,51 @@ class FormattingTest extends AbstractRosettaLanguageServerTest {
 			]
 		)
 	}
+	
+	@Test
+	def testFormattingWithSmallConditionalMaxLineWidth() {
+		val model = '''
+		namespace foo.bar
+		
+		type Foo:
+			a int (1..1)
+		
+		func Foo:
+			inputs: foo Foo (1..1)
+			output: result int (0..*)
+			
+			add result:
+				foo -> a
+			add result:
+				if True then 42 else 10
+		'''
+		testFormatting(
+			[
+				val options = new FormattingOptions
+				options.putNumber("conditionalMaxLineWidth", 10)
+				it.options = options
+			],
+			[
+				it.model = model
+				it.expectedText = '''
+				namespace foo.bar
+				
+				type Foo:
+					a int (1..1)
+				
+				func Foo:
+					inputs:
+						foo Foo (1..1)
+					output:
+						result int (0..*)
+				
+					add result: foo -> a
+					add result:
+						if True
+						then 42
+						else 10
+				'''
+			]
+		)
+	}
 }

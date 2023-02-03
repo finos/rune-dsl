@@ -39,9 +39,6 @@ import com.regnosys.rosetta.formatting2.RosettaExpressionFormatter
 import org.eclipse.xtext.serializer.impl.Serializer
 import com.regnosys.rosetta.generator.util.RecordFeatureMap
 import com.regnosys.rosetta.formatting2.FormattingUtil
-import com.regnosys.rosetta.formatting2.RosettaFormatterPreferenceValuesProvider
-import org.eclipse.xtext.preferences.IPreferenceValuesProvider
-import org.eclipse.xtext.formatting2.FormatterPreferenceValuesProvider
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -120,14 +117,6 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	def Class<? extends FormattingUtil> bindFormattingUtil() {
 		FormattingUtil
-	}
-	
-	def Class<? extends IPreferenceValuesProvider> bindIPreferenceValuesProvider() {
-		RosettaFormatterPreferenceValuesProvider
-	}
-	
-	def Class<? extends FormatterPreferenceValuesProvider> bindFormatterPreferenceValuesProvider() {
-		RosettaFormatterPreferenceValuesProvider
 	}
 	
 	def Class<? extends RecordFeatureMap> bindRecordFeatureMap() {

@@ -399,9 +399,12 @@ RosettaMapPathValue:
 RosettaDocReference:
 	'[' ('regulatoryReference'|'docReference') docReference=RegulatoryDocumentReference
 		(rationales+=DocumentRationale)*
+		// @Compat. In DRR, there is a segment `table` located after a `rationale`. This should never be the case, but to remain backwards compatible, we need to allow this.
+ 		// NOTE: once we get rid of `extraneousSegments`, we can also remove the syntactic predicate `=>` on the segment of rule `RegulatoryDocumentReference`.
+ 		(extraneousSegments+=RosettaSegmentRef)*
 		('structured_provision' structuredProvision=STRING)?
 		('provision' provision=STRING)?
-		(reportedField?='reportedField')?  ']'
+		(reportedField?='reportedField')? ']'
 ;
 
 DocumentRationale:
@@ -736,7 +739,7 @@ RosettaExternalEnumSynonym returns RosettaEnumSynonym:
  *****************************************/
 
 RegulatoryDocumentReference:
-	body=[RosettaBody|ValidID] corpuses+=([RosettaCorpus|ValidID])+ (segments+=RosettaSegmentRef)*
+	body=[RosettaBody|ValidID] corpuses+=([RosettaCorpus|ValidID])+ (=>segments+=RosettaSegmentRef)*
 ;
 
 RosettaSegmentRef:
