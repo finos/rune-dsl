@@ -252,25 +252,11 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		}
 	}
 	
-	private def dispatch void unsafeFormatExpression(ComparisonOperation expr, extension IFormattableDocument document, FormattingMode mode) {
-		// specialization of ModifiableBinaryOperation
-		formatModifiableBinaryOperation(expr, document, FormattingMode.SINGLE_LINE)
-	}
-	
 	private def dispatch void unsafeFormatExpression(ModifiableBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
-		formatModifiableBinaryOperation(expr, document, mode)
-	}
-	
-	private def void formatModifiableBinaryOperation(ModifiableBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
 		// specialization of RosettaBinaryOperation
 		expr.formatBinaryOperation(document, mode)
 		expr.regionFor.feature(MODIFIABLE_BINARY_OPERATION__CARD_MOD)
 			.append[oneSpace]
-	}
-	
-	private def dispatch void unsafeFormatExpression(ArithmeticOperation expr, extension IFormattableDocument document, FormattingMode mode) {
-		// specialization of RosettaBinaryOperation
-		expr.formatBinaryOperation(document, FormattingMode.SINGLE_LINE)
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaBinaryOperation expr, extension IFormattableDocument document, FormattingMode mode) {
