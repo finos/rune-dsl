@@ -5,6 +5,7 @@ import com.regnosys.rosetta.ide.semantictokens.ISemanticTokenType;
 /**
  * The default semantic token types of the LSP.
  * See https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokenTypes
+ * TODO: contribute to Xtext
  */
 public enum LSPSemanticTokenTypesEnum implements ISemanticTokenType {
 	NAMESPACE("namespace"),

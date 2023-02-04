@@ -24,6 +24,9 @@ import org.eclipse.xtext.testing.TextDocumentConfiguration
 import org.eclipse.xtext.testing.FileInfo
 import java.nio.charset.StandardCharsets
 
+/**
+ * TODO: contribute to Xtext.
+ */
 abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerTest {
 	@Inject extension ModelHelper
 	

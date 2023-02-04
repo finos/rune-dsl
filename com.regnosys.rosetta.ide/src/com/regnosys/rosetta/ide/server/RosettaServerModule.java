@@ -44,6 +44,11 @@ public class RosettaServerModule extends AbstractGenericModule {
 		return RosettaLanguageServerImpl.class;
 	}
 	
+	/**
+	 * Some classes on Xtext inject `LanguageServerImpl` instead of
+	 * the interface `LanguageServer`. (e.g., `AbstractLanguageServerTest`)
+	 * TODO: make a patch in Xtext.
+	 */
 	public Class<? extends LanguageServerImpl> bindLanguageServerImpl() {
 		return RosettaLanguageServerImpl.class;
 	}

@@ -8,6 +8,10 @@ import com.regnosys.rosetta.RosettaRuntimeModule;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.ide.RosettaIdeModule;
 
+/**
+ * TODO: contribute to Xtext.
+ *
+ */
 public class RosettaServerSetup extends RosettaStandaloneSetup {
 	@Override
 	public Injector createInjector() {
