@@ -36,6 +36,10 @@ import com.google.common.collect.Sets;
 import com.google.inject.Injector;
 import com.regnosys.rosetta.ide.util.RangeUtils;
 
+/**
+ * TODO: contribute to Xtext.
+ *
+ */
 public class AbstractSemanticTokensService implements ISemanticTokensService {
 	private static final Logger log = Logger.getLogger(AbstractSemanticTokensService.class);
 

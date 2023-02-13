@@ -53,6 +53,7 @@ import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 
 /**
  * This class contains custom scoping description.
@@ -77,6 +78,12 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case ROSETTA_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaFeatureCall) {
 						return createExtendedFeatureScope(context.receiver)
+					}
+					return IScope.NULLSCOPE
+				}
+				case CHOICE_OPERATION__ATTRIBUTES: {
+					if (context instanceof ChoiceOperation) {
+						return createExtendedFeatureScope(context.argument)
 					}
 					return IScope.NULLSCOPE
 				}
@@ -193,11 +200,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						return Scopes.scopeFor(getInputs(context))
 					}
 					return IScope.NULLSCOPE
-				}
-				case CONSTRAINT__ATTRIBUTES: {
-					return Scopes.scopeFor(
-						EcoreUtil2.getContainerOfType(context, Data).allAttributes
-					)
 				}
 			}
 			// LOGGER.warn('''No scope defined for «context.class.simpleName» referencing «reference.name».''')

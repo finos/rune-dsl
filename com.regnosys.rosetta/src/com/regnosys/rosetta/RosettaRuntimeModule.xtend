@@ -35,7 +35,10 @@ import com.regnosys.rosetta.parsing.RosettaValueConverterService
 import com.regnosys.rosetta.parsing.BigDecimalConverter
 import com.regnosys.rosetta.transgest.ModelLoader
 import com.regnosys.rosetta.transgest.ModelLoaderImpl
+import com.regnosys.rosetta.formatting2.RosettaExpressionFormatter
+import org.eclipse.xtext.serializer.impl.Serializer
 import com.regnosys.rosetta.generator.util.RecordFeatureMap
+import com.regnosys.rosetta.formatting2.FormattingUtil
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -72,6 +75,10 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 		IgnoreDerivedStateSerializer
 	}
 	
+	def Class<? extends Serializer> bindSerializer() {
+		IgnoreDerivedStateSerializer
+	}
+	
     override void configureRuntimeEncodingProvider(Binder binder) {
         binder.bind(IEncodingProvider)
         	.annotatedWith(DispatchingProvider.Runtime)
@@ -101,6 +108,15 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	def Class<? extends ModelLoader> bindModelLoader() {
 		ModelLoaderImpl
+	}
+	
+
+	def Class<? extends RosettaExpressionFormatter> bindRosettaExpressionFormatter() {
+		RosettaExpressionFormatter
+	}
+	
+	def Class<? extends FormattingUtil> bindFormattingUtil() {
+		FormattingUtil
 	}
 	
 	def Class<? extends RecordFeatureMap> bindRecordFeatureMap() {

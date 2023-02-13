@@ -9,8 +9,9 @@ import org.eclipse.xtext.validation.EValidatorRegistrar;
 
 import com.google.inject.Inject;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
-import com.regnosys.rosetta.rosetta.expression.ListOperation;
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.types.RListType;
 import com.regnosys.rosetta.types.TypeFactory;
 import com.regnosys.rosetta.types.TypeSystem;
@@ -42,6 +43,9 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingValidator {
 	public void register(EValidatorRegistrar registrar) {
 	}
 	
+	/**
+	 * Xsemantics does not allow raising warnings. See https://github.com/eclipse/xsemantics/issues/149.
+	 */
 	@Check
 	public void checkOnlyElement(RosettaOnlyElement e) {
 		RListType t = ts.inferType(e.getArgument());
@@ -49,6 +53,22 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingValidator {
 			RosettaCardinality minimalConstraint = tf.createConstraint(1, 2);
 			if (!minimalConstraint.isSubconstraintOf(t.getConstraint())) {
 				warning(tu.notLooserConstraintMessage(minimalConstraint, t), e, Literals.ROSETTA_UNARY_OPERATION__ARGUMENT);
+			}
+		}
+	}
+	
+	/**
+	 * Xsemantics does not allow raising errors on a specific index of a multi-valued feature.
+	 * See https://github.com/eclipse/xsemantics/issues/64.
+	 */
+	@Check
+	public void checkChoiceOperationHasNoDuplicateAttributes(ChoiceOperation e) {
+		for (var i = 1; i < e.getAttributes().size(); i++) {
+			Attribute attr = e.getAttributes().get(i);
+			for (var j = 0; j < i; j++) {
+				if (attr.equals(e.getAttributes().get(j))) {
+					error("Duplicate attribute.", e, Literals.CHOICE_OPERATION__ATTRIBUTES, i);
+				}
 			}
 		}
 	}

@@ -23,6 +23,10 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * TODO: contribute to Xtext.
+ *
+ */
 public abstract class AbstractInlayHintsService implements IInlayHintsService, IInlayHintsResolver {
 
 	private static final Logger log = Logger.getLogger(AbstractInlayHintsService.class);

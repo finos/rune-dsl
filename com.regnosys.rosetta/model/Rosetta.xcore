@@ -140,7 +140,7 @@ class RosettaEnumValue extends RosettaNamed, RosettaDefinable, RosettaFeature, R
 	}
 }
 
-class RosettaEnumValueReference extends RosettaExpression, RosettaMapTestExpression {
+class RosettaEnumValueReference extends RosettaMapTestExpression {
 	refers RosettaEnumeration enumeration
 	refers RosettaEnumValue value
 }
@@ -287,10 +287,20 @@ enum RosettaSynonymRef {
  * docReferences
  */
 
-class RosettaDocReference extends RosettaRegulatoryBody {
+class RosettaDocReference {
+	contains RegulatoryDocumentReference docReference
+	contains DocumentRationale[] rationales
+	String structuredProvision
 	String provision
-	contains RosettaSegmentRef[] segments
 	boolean reportedField
+	// @Compat. In DRR, there is a segment `table` located after a `rationale`. This should never be the case, but to remain backwards compatible, we need to allow this.
+	contains RosettaSegmentRef[] extraneousSegments
+}
+
+class RegulatoryDocumentReference {
+	refers RosettaBody body
+	refers RosettaCorpus[] corpuses
+	contains RosettaSegmentRef[] segments
 }
 
 class RosettaSegmentRef {
@@ -298,9 +308,9 @@ class RosettaSegmentRef {
 	String segmentRef
 }
 
-class RosettaRegulatoryBody {
-	refers RosettaBody body
-	refers RosettaCorpus[] corpuses
+class DocumentRationale {
+	String rationale
+	String rationaleAuthor
 }
 
 class RosettaBody extends RosettaRootElement, RosettaNamed, RosettaDefinable {
@@ -446,7 +456,7 @@ class RosettaExternalSynonym {
 */
  
 class RosettaBlueprintReport extends RosettaRootElement {
-	contains RosettaRegulatoryBody regulatoryBody
+	contains RegulatoryDocumentReference regulatoryBody
 	refers Data reportType
 	refers RosettaBlueprint[] eligibilityRules
 	refers RosettaCorpus reportingStandard
@@ -466,12 +476,12 @@ class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinabl
 class BlueprintNodeExp {
 	contains BlueprintNode node
 	contains RosettaDocReference reference
-	contains BlueprintNodeExp next 
+	contains BlueprintNodeExp next
+	String identifier
 }
 
 abstract class BlueprintNode {
 	String name
-	String identifier
 	refers RosettaType input
 	refers RosettaType output
 	refers RosettaType inputKey

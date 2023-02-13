@@ -60,6 +60,9 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaDataReference
+import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
+import com.regnosys.rosetta.rosetta.expression.OneOfOperation
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 
 class RosettaTypeProvider {
 
@@ -183,7 +186,9 @@ class RosettaTypeProvider {
 			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
 			RosettaAbsentExpression,
-			RosettaBooleanLiteral:
+			RosettaBooleanLiteral,
+			OneOfOperation,
+			ChoiceOperation:
 				RBuiltinType.BOOLEAN
 			RosettaStringLiteral:
 				RBuiltinType.STRING
@@ -289,7 +294,8 @@ class RosettaTypeProvider {
 			SumOperation,
 			FirstOperation,
 			LastOperation,
-			FilterOperation:
+			FilterOperation,
+			AsKeyOperation:
 				expression.argument.safeRType(cycleTracker)
 			ReduceOperation,
 			MapOperation,

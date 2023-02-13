@@ -50,6 +50,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 
 class FunctionGenerator {
 
@@ -285,6 +286,10 @@ class FunctionGenerator {
 					.«IF seg.attribute.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«op.assignValue(op.assignAsKey, names)»)«ENDIF»«ENDFOR»;
 			'''
 		}
+	}
+	
+	private def boolean assignAsKey(Operation op) {
+		return op.expression instanceof AsKeyOperation
 	}
 	
 	private def StringConcatenationClient assign(OutputOperation op, Map<ShortcutDeclaration, Boolean> outs, JavaNames names, Attribute type, int index) {

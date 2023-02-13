@@ -72,6 +72,9 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 			removeDerivedState(obj);
 		});
 	}
+	public void removeAllDerivedState(EObject root) {
+		removeAllDerivedState(root.eAllContents());
+	}
 	
 	
 	private void setDefaultInput(HasGeneratedInput expr) {

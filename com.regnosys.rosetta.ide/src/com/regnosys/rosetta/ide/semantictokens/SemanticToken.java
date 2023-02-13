@@ -1,5 +1,9 @@
 package com.regnosys.rosetta.ide.semantictokens;
 
+/**
+ * TODO: contribute to Xtext.
+ *
+ */
 public class SemanticToken implements Comparable<SemanticToken> {
 	private final int line;
 	private final int startChar;

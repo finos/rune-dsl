@@ -89,6 +89,12 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import java.util.List
 import com.regnosys.rosetta.rosetta.RosettaRecordFeature
 import com.regnosys.rosetta.generator.util.RecordFeatureMap
+import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
+import com.regnosys.rosetta.rosetta.expression.OneOfOperation
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.rosetta.expression.Necessity
+import com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleValidationMethod
+import com.regnosys.rosetta.types.RDataType
 
 class ExpressionGenerator {
 	
@@ -194,6 +200,16 @@ class ExpressionGenerator {
 			}
 			SortOperation : {
 				sortOperation(expr, params)
+			}
+			AsKeyOperation: {
+				// this operation is currently handled by the `FunctionGenerator`
+				expr.argument.javaCode(params)
+			}
+			OneOfOperation: {
+				oneOfOperation(expr, params)
+			}
+			ChoiceOperation: {
+				choiceOperation(expr, params)
 			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
@@ -539,6 +555,8 @@ class ExpressionGenerator {
 			|| expr instanceof RosettaExistsExpression
 			|| expr instanceof RosettaAbsentExpression
 			|| expr instanceof RosettaConditionalExpression && (expr as RosettaConditionalExpression).ifthen.evaluatesToComparisonResult
+			|| expr instanceof OneOfOperation
+			|| expr instanceof ChoiceOperation
 	}
 	
 	private def StringConcatenationClient toComparisonOp(StringConcatenationClient left, String operator, StringConcatenationClient right, CardinalityModifier cardMod) {
@@ -759,6 +777,19 @@ class ExpressionGenerator {
 	
 	def StringConcatenationClient lastOperation(LastOperation op, ParamMap params) {
 		buildListOperationNoBody(op, "last", params)
+	}
+	
+	def StringConcatenationClient oneOfOperation(OneOfOperation op, ParamMap params) {
+		val type = typeProvider.getRType(op.argument) as RDataType
+		buildConstraint(op.argument, type.data.allAttributes, Necessity.REQUIRED, params)
+	}
+	
+	def StringConcatenationClient choiceOperation(ChoiceOperation op, ParamMap params) {
+		buildConstraint(op.argument, op.attributes, op.necessity, params)
+	}
+	
+	private def StringConcatenationClient buildConstraint(RosettaExpression arg, Iterable<Attribute> usedAttributes, Necessity validationType, ParamMap params) {
+		'''«importWildCard(ExpressionOperators)»choice(«arg.javaCode(params)», «List».of(«usedAttributes.join(", ")['"' + name + '"']»), «ChoiceRuleValidationMethod».«validationType.name()»)'''
 	}
 	
 	private def StringConcatenationClient buildListOperationNoBody(RosettaUnaryOperation op, String name, ParamMap params) {

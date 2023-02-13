@@ -38,10 +38,10 @@ public class ListTextMateScopes {
 		addScopesRecursively(grammarDef.get("patterns"), scopes);
 		addScopesRecursively(grammarDef.get("repository"), scopes);
 		
-		List<String[]> sortedScopes = scopes.stream().map(s -> s.split("\\.")).collect(Collectors.toList());
+		List<String[]> sortedScopes = scopes.stream().map(s -> s.replace(".rosetta", "").split("\\.")).collect(Collectors.toList());
 		sortedScopes.sort(ListTextMateScopes::compareScopes);
 		for (String[] scope: sortedScopes) {
-			System.out.println(List.of(scope).stream().filter(p -> !p.equals("rosetta")).collect(Collectors.joining(".")));
+			System.out.println(List.of(scope).stream().collect(Collectors.joining(".")));
 		}
 	}
 	

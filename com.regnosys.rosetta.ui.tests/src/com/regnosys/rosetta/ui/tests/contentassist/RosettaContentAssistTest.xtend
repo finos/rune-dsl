@@ -104,7 +104,7 @@ class RosettaContentAssistTest extends ContentAssistTestHelper {
 				attr boolean (1..1)
 				[synonym FpML set to T<|>]
 			}
-		'''  >= #["True"]
+		'''  >= #["True", "->"]
 	}
 
 	@Test
@@ -131,7 +131,7 @@ class RosettaContentAssistTest extends ContentAssistTestHelper {
 				set attrOut -> action:
 					<|>
 			
-		''' >= #['ActionEnum -> cancel', 'ActionEnum -> correct', 'ActionEnum -> new', 'attrIn', 'attrOut', '"Value"', '(', '*', '/', '<', '<=', '<>', '=', '>', '>=', '[', 'all', 'and', 'any', 'contains', 'count', 'disjoint', 'distinct', 'empty', 'exists', 'extract', 'extract-all', 'False', 'filter', 'first', 'flatten', 'if', 'is', 'it', 'item', 'join', 'last', 'map', 'max', 'min', 'multiple', 'only-element', 'or', 'reduce', 'reverse', 'single', 'sort', 'sum', 'True']
+		''' >= #['ActionEnum -> cancel', 'ActionEnum -> correct', 'ActionEnum -> new', 'attrIn', 'attrOut', '"Value"', '(', '*', '/', '<', '<=', '<>', '=', '>', '>=', '[', 'all', 'and', 'any', 'contains', 'count', 'disjoint', 'distinct', 'empty', 'exists', 'extract', 'extract-all', 'False', 'filter', 'first', 'flatten', 'if', 'is', 'it', 'item', 'join', 'last', 'map', 'max', 'min', 'multiple', 'one-of', 'only-element', 'optional', 'or', 'reduce', 'required', 'reverse', 'single', 'sort', 'sum', 'True']
 	}
 
 	@Test

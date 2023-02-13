@@ -8,6 +8,10 @@ import org.eclipse.xtext.util.CancelIndicator;
 
 import java.util.List;
 
+/**
+ * TODO: contribute to Xtext.
+ *
+ */
 public interface IInlayHintsService {
 	List<InlayHint> computeInlayHint(Document document, XtextResource resource, InlayHintParams params, CancelIndicator cancelIndicator);
 }

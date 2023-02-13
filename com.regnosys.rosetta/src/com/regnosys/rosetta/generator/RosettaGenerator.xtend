@@ -5,7 +5,6 @@
 package com.regnosys.rosetta.generator
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
@@ -15,7 +14,6 @@ import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
 import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
 import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
-import com.regnosys.rosetta.generator.java.rule.ChoiceRuleGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
@@ -47,7 +45,6 @@ class RosettaGenerator extends AbstractGenerator {
 
 	@Inject EnumGenerator enumGenerator
 	@Inject ModelMetaGenerator metaGenerator
-	@Inject ChoiceRuleGenerator choiceRuleGenerator
 	@Inject DataRuleGenerator dataRuleGenerator
 	@Inject BlueprintGenerator blueprintGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
@@ -58,7 +55,6 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
-	@Inject extension RosettaExtensions
 	@Inject JavaNames.Factory factory
 	@Inject FunctionGenerator funcGenerator
 	@Inject BackwardCompatibilityGenerator backwardCompatibilityGenerator
@@ -107,11 +103,7 @@ class RosettaGenerator extends AbstractGenerator {
 								metaGenerator.generate(javaNames, fsa, it, version, models)
 								validatorsGenerator.generate(javaNames, fsa, it, version)
 								it.conditions.forEach [ cond |
-									if (cond.isChoiceRuleCondition) {
-										choiceRuleGenerator.generate(javaNames, fsa, it, cond, version)
-									} else {
-										dataRuleGenerator.generate(javaNames, fsa, it, cond, version)
-									}
+									dataRuleGenerator.generate(javaNames, fsa, it, cond, version)
 								]
 							}
 							Function: {

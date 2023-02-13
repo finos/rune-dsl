@@ -58,6 +58,10 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
+import com.regnosys.rosetta.rosetta.expression.OneOfOperation
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -684,6 +688,15 @@ from {
 		t = createListType(targ.itemType, 0, 1)
 	}
 }
+rule TAsKey
+	G |- AsKeyOperation e : RListType t
+from {
+	G |- e.argument : t
+}
+axiom TOneOf
+	G |- OneOfOperation e : singleBoolean
+axiom TChoice
+	G |- ChoiceOperation e : singleBoolean
 
 /****** CHECK RULES ********/
 checkrule CheckLeftArithmetic for
@@ -953,9 +966,11 @@ checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
 	val parent = first.parentExpression
 	for (var i = 1; i < e.args.size; i++) {
 		val other = e.args.get(i)
-		if (EcoreUtil2.equals(first, other)) {
-			fail error "Duplicate attribute."
-				source other
+		for (var j = 0; j < i; j++) {
+			if (EcoreUtil2.equals(e.args.get(j), other)) {
+				fail error "Duplicate attribute."
+					source other
+			}
 		}
 		val otherParent = other.parentExpression
 		if ((parent === null) !== (otherParent === null) || parent !== null && otherParent !== null && !EcoreUtil2.equals(parent, otherParent)) {
@@ -990,7 +1005,29 @@ checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
 			source parent
 	}
 }
-// Moved the check below to StandaloneRosettaTypingValidator and made it a warning instead.
-//checkrule CheckOnlyElement for RosettaOnlyElement e from {
-//	isLooserConstraintCheck(e.argument, createConstraint(1, 2))
-//}
+checkrule CheckOneOfOperation for OneOfOperation e from {
+	looseConstraintCheck(e.argument, single)
+	empty |- e.argument : var RListType pt
+	if (pt !== null) {
+		val itemType = pt.itemType
+		if (!(itemType instanceof RDataType)) {
+			fail error "The `" + e.operator + "` operator is not applicable to instances of `" + itemType + "`."
+				source e.argument
+		}
+	}
+}
+checkrule CheckChoiceOperation for ChoiceOperation e from {
+	looseConstraintCheck(e.argument, single)
+	empty |- e.argument : var RListType pt
+	if (pt !== null) {
+		val itemType = pt.itemType
+		if (!(itemType instanceof RDataType)) {
+			fail error "The `" + e.operator + "` operator is not applicable to instances of `" + itemType + "`."
+				source e.argument
+		}
+	}
+	if(e.attributes.size < 2) {
+		fail error "At least two attributes must be passed to a choice rule."
+			feature CHOICE_OPERATION__ATTRIBUTES
+	}
+}

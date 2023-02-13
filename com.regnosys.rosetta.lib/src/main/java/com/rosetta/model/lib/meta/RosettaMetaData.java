@@ -1,5 +1,6 @@
 package com.rosetta.model.lib.meta;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -15,7 +16,11 @@ public interface RosettaMetaData<T extends RosettaModelObject> {
 
 	List<Validator<? super T>> dataRules(ValidatorFactory factory);
 	
-	List<Validator<? super T>> choiceRuleValidators();
+	// @Compat. This will be empty, as choice rules are now all data rules.
+	@Deprecated
+	default List<Validator<? super T>> choiceRuleValidators() {
+		return Collections.emptyList();
+	}
 	
 	List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory);
 	
