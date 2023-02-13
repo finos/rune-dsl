@@ -132,10 +132,6 @@ public class RosettaJavaPackages {
 			return new Package(this, "validation");
 		}
 
-		public Package choiceRule() {
-			return typeValidation().child("choicerule");
-		}
-
 		public Package dataRule() {
 			return typeValidation().child("datarule");
 		}

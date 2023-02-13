@@ -600,7 +600,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					required choice
 					attribute1, attribute1
 		'''.parseRosetta
-		model.assertError(CONDITION, DUPLICATE_CHOICE_RULE_ATTRIBUTE, 'Duplicate attribute')
+		model.assertError(CHOICE_OPERATION, null, 'Duplicate attribute.')
 	}
 	
 	@Test
@@ -614,23 +614,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			condition Foo:
 				required choice attribute1 , attribute2 , attribute2
 		'''.parseRosetta
-		model.assertError(CONDITION, DUPLICATE_CHOICE_RULE_ATTRIBUTE, 'Duplicate attribute')
-	}
-	
-	@Test
-	def void testClassWithChoiceRuleAndOneOfRule() {
-		val model = '''
-			type Foo:
-				attribute1 string (0..1)
-				attribute2 string (0..1)
-				attribute3 string (0..1)
-			
-				condition Foo_oneOfRule: one-of
-				condition Foo_choiceRule:
-					required choice
-						attribute1, attribute2
-		'''.parseRosetta
-		model.assertError(DATA, CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE, 'Type Foo has both choice condition and one-of condition.')
+		model.assertError(CHOICE_OPERATION, null, 'Duplicate attribute.')
 	}
 
 	@Test
@@ -888,8 +872,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  set result:
 			     in0 as-key
 		'''.parseRosetta
-		model.assertError(OPERATION, null,
-			"'as-key' can only be used when assigning an attribute. Example: \"set out -> attribute: value as-key\"")
+		model.assertError(AS_KEY_OPERATION, null,
+			"'as-key' can only be used when assigning an attribute. Example: \"assign-output out -> attribute: value as-key\"")
 	}
 	
 	@Test
@@ -926,7 +910,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					required choice
 					attribute1
 		'''.parseRosetta
-		model.assertError(CONSTRAINT, null,
+		model.assertError(CHOICE_OPERATION, null,
 			"At least two attributes must be passed to a choice rule.")
 	}
 	

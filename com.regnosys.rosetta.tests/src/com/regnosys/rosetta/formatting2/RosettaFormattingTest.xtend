@@ -1,28 +1,176 @@
 package com.regnosys.rosetta.formatting2
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
-import org.eclipse.xtext.resource.SaveOptions
-import org.eclipse.xtext.serializer.ISerializer
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
-import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
-import static org.junit.jupiter.api.Assertions.*
+import org.eclipse.xtext.testing.formatter.FormatterTestHelper
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaFormattingTest {
+	@Inject
+	extension FormatterTestHelper
 
-	@Inject extension ParseHelper<RosettaModel>
-	@Inject extension ISerializer
+	def ->(CharSequence unformated, CharSequence expectation) {
+		assertFormatted[
+			it.expectation = expectation
+			it.toBeFormatted = unformated
+			
+			// extra check to make sure we didn't miss any hidden region in our formatter:
+			it.allowUnformattedWhitespace = false 
+			
+			// see issue https://github.com/eclipse/xtext-core/issues/2058
+			it.request.allowIdentityEdits = true
+		
+			// see issue https://github.com/eclipse/xtext-core/issues/164
+			// and issue https://github.com/eclipse/xtext-core/issues/2060
+			it.useSerializer = false
+		]
+	}
+	
+	@Test
+	def void testFormatRule() {
+		'''
+		namespace drr.regulation.techsprint.g20.mas
+		
+		
+		reporting rule OptionPremium <"Option premium">
+		    return "N/A" as "I.6.3 Option Premium"
+		''' -> '''
+		namespace drr.regulation.techsprint.g20.mas
+		
+		reporting rule OptionPremium <"Option premium">
+			return "N/A" as "I.6.3 Option Premium"
+		'''
+	}
+	
+	@Test
+	def void testDocumentationEndsLine() {
+		'''
+		namespace "com.regnosys.rosetta.model"
+		version "test"
+		
+		func F:
+			output:
+				x int (1..1)
+		
+			set x: <"Docs"> 0
+		''' -> '''
+		namespace "com.regnosys.rosetta.model"
+		version "test"
+		
+		func F:
+			output:
+				x int (1..1)
+		
+			set x: <"Docs">
+				0
+		'''
+	}
+	
+	@Test
+	def void testDocReference() {
+		'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			
+			body Authority ESMA
+			corpus Regulation "600/2014" MiFIR 
+			corpus CommissionDelegatedRegulation "2017/590" RTS_22
+			segment annex
+			segment table
+			segment field
+			segment article
+			
+			reporting rule ReportStatus <"Indication as to whether the transaction report is new or a cancellation">
+				[regulatoryReference ESMA MiFIR RTS_22
+						annex "I" table "2" field "1"
+						provision "Indication as to whether the transaction report is new or a cancellation."]
+				[regulatoryReference ESMA MiFIR RTS_22
+						article "2"
+						rationale_author "DRR"
+						rationale "Article 2 means that each reportable event is treated as an independent transaction. The practical implementation of corrections is: A New event is a NEWT, A new, non-reportable version of a previously-reported event, that renders the previous version of the same event non-reportable, is a CANC, A new, non-reportable version of a non-reportable event is not reported, A new, reportable version of a previously-reported event, that supersedes the previous version of the same event is a CANC followed by a NEWT"
+						structured_provision "MiFIR.ReportStatus is by definition 'NEWT’ unless the report is a Cancellation when MiFIR.ReportStatus is by definition 'CANC’"
+						provision "Indication as to whether the transaction report is new or a cancellation."]
+				return "Not Modelled"
+					as "Report Status"
+		''' -> '''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			
+			body Authority ESMA
+			
+			corpus Regulation "600/2014" MiFIR
+			corpus CommissionDelegatedRegulation "2017/590" RTS_22
+			
+			segment annex
+			segment table
+			segment field
+			segment article
+			
+			reporting rule ReportStatus <"Indication as to whether the transaction report is new or a cancellation">
+				[regulatoryReference ESMA MiFIR RTS_22 annex "I" table "2" field "1"
+					provision "Indication as to whether the transaction report is new or a cancellation."]
+				[regulatoryReference ESMA MiFIR RTS_22 article "2"
+					rationale_author "DRR"
+					rationale "Article 2 means that each reportable event is treated as an independent transaction. The practical implementation of corrections is: A New event is a NEWT, A new, non-reportable version of a previously-reported event, that renders the previous version of the same event non-reportable, is a CANC, A new, non-reportable version of a non-reportable event is not reported, A new, reportable version of a previously-reported event, that supersedes the previous version of the same event is a CANC followed by a NEWT"
+					structured_provision "MiFIR.ReportStatus is by definition 'NEWT’ unless the report is a Cancellation when MiFIR.ReportStatus is by definition 'CANC’"
+					provision "Indication as to whether the transaction report is new or a cancellation."]
+				return "Not Modelled" as "Report Status"
+		'''
+	}
+	
+	@Test
+	def void testBuiltinFeaturesAreGrouped() {
+		'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			
+			basicType string
+			
+			basicType int
+			
+			library function DateRanges() date
+			
+			library function Min(x number, y number) number
+		''' -> '''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			
+			basicType string
+			basicType int
+			
+			library function DateRanges() date
+			library function Min(x number, y number) number
+		'''
+	}
+	
+	@Test
+	def void testRedundantWhitespaceInEmptyRosettaFileIsRemoved() {
+		'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+				
+			
+				
+		''' -> '''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+		'''
+	}
 
 	@Test
 	def void simpleClassWithOneFieldIsFormatted() {
-		val expectedResult = '''
+		'''
+			namespace "com.regnosys.rosetta.model"
+				version "test"
+						type Test: <"Some definition"> field1 string (1..1) <"Field 1"> field2 string (1..1) <"Field 2">
+		''' -> '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
@@ -30,37 +178,33 @@ class RosettaFormattingTest {
 				field1 string (1..1) <"Field 1">
 				field2 string (1..1) <"Field 2">
 		'''
-
-		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model"
-			version "test"
-					type Test: <"Some definition"> field1 string (1..1) <"Field 1"> field2 string (1..1) <"Field 2">
-		'''
-
-		assertEquals(expectedResult, format(unFormatted))
 	}
 
 	@Test
 	def void stereotypeIsSurroundedWithSingleSpace() {
-		val expectedResult = '''
+		'''
+			namespace "com.regnosys.rosetta.model" version "test" type CalculationPeriod: <"xxx xxx.">
+				 [synonym FpML value "CalculationPeriod"]
+			
+		''' -> '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
 			type CalculationPeriod: <"xxx xxx.">
 				[synonym FpML value "CalculationPeriod"]
 		'''
-
-		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model" version "test" type CalculationPeriod: <"xxx xxx.">
-			 [synonym FpML value "CalculationPeriod"]
-		'''
-
-		assertEquals(expectedResult, format(unFormatted))
 	}
 
 	@Test
 	def void synonymIsOnSingleIndentedLine() {
-		val expectedResult = '''
+		'''
+			namespace "com.regnosys.rosetta.model"
+			version "test"
+			type CalculationPeriod : <"xxx xxx."> [synonym FpML value "CalculationPeriod"]
+					// sinleline comment
+								field1 string (1..1) <"Some Field">[synonym FpML value "CalculationPeriod"]
+			
+		''' -> '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
@@ -69,19 +213,7 @@ class RosettaFormattingTest {
 				// sinleline comment
 				field1 string (1..1) <"Some Field">
 					[synonym FpML value "CalculationPeriod"]
-			
 		'''
-
-		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model"
-			version "test"
-			type CalculationPeriod : <"xxx xxx."> [synonym FpML value "CalculationPeriod"]
-					// sinleline comment
-								field1 string (1..1) <"Some Field">[synonym FpML value "CalculationPeriod"]
-
-		'''
-
-		assertEquals(expectedResult, format(unFormatted))
 	}
 
 	@Test
@@ -117,14 +249,23 @@ class RosettaFormattingTest {
 					[synonym FpML value "CalculationPeriod"]
 				field1 string (1..1) <"Some Field">
 					[synonym FpML value "CalculationPeriod"]
-				condition: one-of
-				condition Foo: field1
-				condition Foo12: optional choice field1, field3
+			
+				condition:
+					one-of
+			
+				condition Foo:
+					field1
+			
+				condition Foo12:
+					optional choice field1, field3
+			
 			// sinleline comment
 				condition Foo2:
 					optional choice field1, field3
+			
 				condition Foo4:
 					required choice field1, field3
+			
 				condition:
 					one-of
 		'''
@@ -158,13 +299,11 @@ class RosettaFormattingTest {
 					quantity string (1..1)
 				output:
 					execution Type (1..1) <"">
-				condition Foo: product
-				set execution -> foo:
-					"sdf"
-				set execution:
-					execution
-				set execution:
-					execution
+				condition Foo:
+					product
+				set execution -> foo: "sdf"
+				set execution: execution
+				set execution: execution
 				post-condition:
 					execution -> foo is absent
 		'''
@@ -172,7 +311,13 @@ class RosettaFormattingTest {
 
 	@Test
 	def void formatDatesReferenceEnum() {
-		val expectedResult = '''
+		'''
+			namespace "com.regnosys.rosetta.model" version "test" enum DatesReferenceEnum: <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
+				tradeDate
+				effectiveDate firstRegularPeriodStartDate lastRegularPeriodEndDate cashSettlementPaymentDate <"">
+				calculationPeriodDates <"FpML business validation rule ird-59 specifies that if resetDates exists in resetDates/calculationPeriodDatesReference, the @href attribute is equal to the @id attribute of calculationPeriodDates in the same swapStream.">
+				paymentDates resetDates fixingDates valuationDates
+		''' -> '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
@@ -188,14 +333,6 @@ class RosettaFormattingTest {
 				fixingDates
 				valuationDates
 		'''
-		val unFormatted = '''
-			namespace "com.regnosys.rosetta.model" version "test" enum DatesReferenceEnum: <"The enumerated values to specify the set of dates that can be referenced through FpML href constructs of type ...periodDatesReference.">
-				tradeDate
-				effectiveDate firstRegularPeriodStartDate lastRegularPeriodEndDate cashSettlementPaymentDate <"">
-				calculationPeriodDates <"FpML business validation rule ird-59 specifies that if resetDates exists in resetDates/calculationPeriodDatesReference, the @href attribute is equal to the @id attribute of calculationPeriodDates in the same swapStream.">
-				paymentDates resetDates fixingDates valuationDates
-		'''
-		assertEquals(expectedResult, format(unFormatted))
 	}
 
 	@Test
@@ -248,7 +385,7 @@ class RosettaFormattingTest {
 
 	@Test
 	def void formatExternalSynomym() {
-		val unFormatted = '''
+		'''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
@@ -271,8 +408,7 @@ class RosettaFormattingTest {
 					
 					
 			}
-		'''
-		val expectedResult = '''
+		''' -> '''
 			namespace "com.regnosys.rosetta.model"
 			version "test"
 			
@@ -291,9 +427,7 @@ class RosettaFormattingTest {
 					+ account
 						[value "event_account"]
 			}
-			
 		'''
-		assertEquals(expectedResult, format(unFormatted))
 	}
 
 	@Test
@@ -320,23 +454,61 @@ class RosettaFormattingTest {
 		''' -> '''
 			namespace "test"
 			version "test"
+			
 			synonym source SynSource
 
 			type AllocationOutcome:
 				allocatedTrade AllocationOutcome (1..*)
 					[synonym SynSource value "originalTrade"]
-				originalTrade string (1..1)<"">
+				originalTrade string (1..1) <"">
 					[synonym SynSource value "allocatedTrade"]
-
+			
 				condition AllocationOutcome_executionClosed: <"The allocation outcome must result in execution state of 'Allocated' for an execution.">
-					if AllocationOutcome -> allocatedTrade  exists
+					if AllocationOutcome -> allocatedTrade exists
 					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+			
 				condition AllocationOutcome_contractClosed: <"The allocation outcome must result in a contract state of 'Allocated' for a contract.">
-					if AllocationOutcome -> allocatedTrade  exists
+					if AllocationOutcome -> allocatedTrade exists
 					then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
+			
 				condition AllocationOutcome_contractClosed:
 					one-of
 		'''
+	}
+	
+	@Test
+	def void formatIndentationTest() {
+		assertFormatted[
+			preferences[
+				put(FormatterPreferenceKeys.maxLineWidth, 20);
+			]
+			
+			it.expectation = '''
+				namespace "test"
+
+				type AllocationOutcome:
+				
+					condition C1:
+						if True
+						then True
+							extract [
+								it = False
+							] = True
+				
+					condition C2:
+						True
+			'''
+			it.toBeFormatted = '''
+				namespace "test"
+
+				type AllocationOutcome:
+					condition C1:
+						if True
+						then True extract [it = False] = True
+					condition C2:
+						True
+			'''
+		]
 	}
 
 	@Test
@@ -363,20 +535,11 @@ class RosettaFormattingTest {
 				other Type (0..*)
 			
 			func Foo:
-				inputs: in1 Type (1..1)
-				output: out Type (1..1)
-				add out -> other: [
-						in1, in1, in1,
-						in1
-				]
+				inputs:
+					in1 Type (1..1)
+				output:
+					out Type (1..1)
+				add out -> other: [in1, in1, in1, in1]
 		'''
-	}
-
-	def String format(String unFormatted) {
-		unFormatted.parse.serialize(SaveOptions.newBuilder.format().getOptions())
-	}
-
-	def ->(CharSequence unformated, CharSequence expectation) {
-		assertEquals(expectation.toString, format(unformated.toString))
 	}
 }

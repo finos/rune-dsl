@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.validation
 
-import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
 import com.google.inject.Inject
@@ -37,7 +36,6 @@ import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
-import com.regnosys.rosetta.rosetta.simple.AssignOutputOperation
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -47,7 +45,6 @@ import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.OutputOperation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RRecordType
@@ -115,7 +112,10 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import org.eclipse.xtext.naming.QualifiedName
+import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 
+// TODO: split expression validator
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Inject extension RosettaExtensions
@@ -129,7 +129,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension ListOperationExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject extension CardinalityProvider cardinality
-	@Inject RosettaGrammarAccess grammar
 	@Inject RosettaConfigExtension confExtensions
 	@Inject extension ImplicitVariableUtil
 	@Inject RosettaScopeProvider scopeProvider
@@ -173,6 +172,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 	}
 	
+	// @Compat. In DRR, there is a segment `table` located after a `rationale`. This should never be the case, but to remain backwards compatible, we need to allow this.
+	@Check
+	def void deprecatedExtraneousSegment(RosettaDocReference docRef) {
+		for (seg: docRef.extraneousSegments) {
+			warning("Placing document segments after `rationale` is deprecated.", seg, null)
+		}
+	}
+	
 	@Check
 	def void checkGeneratedInputInContextWithImplicitVariable(HasGeneratedInput e) {
 		if (e.needsGeneratedInput && !e.implicitVariableExistsInContext) {
@@ -196,9 +203,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def void checkConditionName(Condition condition) {
-		if (condition.name === null && !condition.choiceRuleCondition) {
+		if (condition.name === null && !condition.isConstraintCondition) {
 			warning("Condition name should be specified", ROSETTA_NAMED__NAME, INVALID_NAME)
-		} else if (!Character.isUpperCase(condition.name.charAt(0))) {
+		} else if (condition.name !== null && !Character.isUpperCase(condition.name.charAt(0))) {
 			warning("Condition name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -345,27 +352,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			val valuesByName = name2attr.get(value.name)
 			if (valuesByName.size > 1) {
 				error('''Duplicate enum value '«value.name»'«»''', value, ROSETTA_NAMED__NAME, DUPLICATE_ENUM_VALUE)
-			}
-		}
-	}
-
-	@Check
-	def checkChoiceRuleAttributesAreUnique(Condition choiceRule) {
-		if(!choiceRule.isChoiceRuleCondition) {
-			return
-		}
-		if(choiceRule.constraint !== null && choiceRule.constraint.attributes.size == 1) {
-			error('''At least two attributes must be passed to a choice rule.''', choiceRule.constraint, CONSTRAINT__ATTRIBUTES)
-			return
-		}
-		val name2attr = ArrayListMultimap.create
-		choiceRule.constraint.attributes.forEach [
-			name2attr.put(name, it)
-		]
-		for (value : choiceRule.constraint.attributes) {
-			val attributeByName = name2attr.get(value.name)
-			if (attributeByName.size > 1) {
-				error('''Duplicate attribute '«value.name»'«»''', ROSETTA_NAMED__NAME, DUPLICATE_CHOICE_RULE_ATTRIBUTE)
 			}
 		}
 	}
@@ -794,24 +780,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
-	def checkData(Data ele) {
-		val choiceRules = ele.conditions.filter[isChoiceRuleCondition].groupBy[it.constraint.oneOf]
-		val onOfs = choiceRules.get(Boolean.TRUE)
-		if (!onOfs.nullOrEmpty) {
-			if (onOfs.size > 1) {
-				onOfs.forEach [
-					error('''Only a single 'one-of' constraint is allowed.''', it.constraint, null)
-				]
-			} else {
-				if (!choiceRules.get(Boolean.FALSE).nullOrEmpty) {
-					error('''Type «ele.name» has both choice condition and one-of condition.''', ROSETTA_NAMED__NAME,
-						CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE)
-				}
-			}
-		}
-	}
-	
-	@Check
 	def checkAttribute(Attribute ele) {
 		if (ele.type instanceof Data && !ele.type.eIsProxy) {
 			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(ele.type as Annotated) || (ele.type as Data).allSuperTypes.exists[hasKeyedAnnotation])) {
@@ -866,13 +834,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
-	def checkConstraintNotUsed(Function ele) {
-		ele.conditions.filter[constraint !== null].forEach [ cond |
-			error('''Constraints: 'one-of' and 'choice' are not supported inside function.''', cond, CONDITION__CONSTRAINT)
-		]
-	}
-	
-	@Check
 	def checkConditionDontUseOutput(Function ele) {
 		ele.conditions.filter[!isPostCondition].forEach [ cond |
 			val expr = cond.expression
@@ -893,38 +854,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def checkAssignAnAlias(Operation ele) {
 		if (ele.path === null && ele.assignRoot instanceof ShortcutDeclaration)
 			error('''An alias can not be assigned. Assign target must be an attribute.''', ele, OPERATION__ASSIGN_ROOT)
-	}
-	
-	@Check
-	def checkAsKeyUsage(AssignOutputOperation ele) {
-		if (!ele.assignAsKey) {
-			return
-		}
-		if(ele.path === null) {
-			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used when assigning an attribute. Example: "assign-output out -> attribute: value as-key"''', ele, ASSIGN_OUTPUT_OPERATION__ASSIGN_AS_KEY)
-			return
-		}
-		val segments = ele.path?.asSegmentList(ele.path)
-		val attr =  segments?.last?.attribute
-		if(!attr.hasReferenceAnnotation) {
-			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
-		}
-	}
-	
-	@Check
-	def checkAsKeyUsage(OutputOperation ele) {
-		if (!ele.assignAsKey) {
-			return
-		}
-		if(ele.path === null) {
-			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used when assigning an attribute. Example: "set out -> attribute: value as-key"''', ele, OUTPUT_OPERATION__ASSIGN_AS_KEY)
-			return
-		}
-		val segments = ele.path?.asSegmentList(ele.path)
-		val attr =  segments?.last?.attribute
-		if(!attr.hasReferenceAnnotation) {
-			error(''''«grammar.assignOutputOperationAccess.assignAsKeyAsKeyKeyword_6_0.value»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
-		}
 	}
 	
 	@Check
@@ -1202,6 +1131,25 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		checkBodyIsComparable(o)
 		if (o.functionRef === null) {
 			checkInputIsComparable(o)
+		}
+	}
+	
+	@Check
+	def checkAsKeyOperation(AsKeyOperation o) {
+		val container = o.eContainer
+		if (!(container instanceof Operation)) {
+			error(''''«o.operator»' may only be used at the most outer operation of an expression."''', o, ROSETTA_OPERATION__OPERATOR)
+			return
+		}
+		val opContainer = container as Operation
+		if(opContainer.path === null) {
+			error(''''«o.operator»' can only be used when assigning an attribute. Example: "assign-output out -> attribute: value as-key"''', o, ROSETTA_OPERATION__OPERATOR)
+			return
+		}
+		val segments = opContainer.path.asSegmentList(opContainer.path)
+		val attr =  segments?.last?.attribute
+		if(!attr.hasReferenceAnnotation) {
+			error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''', segments?.last, SEGMENT__ATTRIBUTE)
 		}
 	}
 	

@@ -5,6 +5,7 @@ import com.regnosys.rosetta.ide.semantictokens.ISemanticTokenModifier;
 /**
  * The default semantic token modifiers of the LSP.
  * See https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokenModifiers
+ * TODO: contribute to Xtext
  */
 public enum LSPSemanticTokenModifiersEnum implements ISemanticTokenModifier {
 	DECLARATION("declaration"),

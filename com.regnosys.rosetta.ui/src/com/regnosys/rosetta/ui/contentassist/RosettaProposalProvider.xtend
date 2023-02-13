@@ -12,7 +12,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
-import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -20,7 +19,6 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.jface.text.contentassist.ICompletionProposal
 import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.xtext.Keyword
 import org.eclipse.xtext.RuleCall
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.EObjectDescription
@@ -45,7 +43,6 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 	@Inject extension RosettaExtensions
 	
 	@Inject IQualifiedNameProvider qNames
-	@Inject RosettaGrammarAccess grammar
 	@Inject IResourceDescriptions resDescr
 	
 	override protected lookupCrossReference(
@@ -68,8 +65,7 @@ class RosettaProposalProvider extends AbstractRosettaProposalProvider {
 				val proposal = proposalFactory.apply(
 						EObjectDescription.create(qNames.getFullyQualifiedName(enumValue), enumValue))
 				if(proposal instanceof ConfigurableCompletionProposal) {
-					val separator = (grammar.FEATURE_CALL_SEPARATORRule.alternatives as Keyword).value
-					proposal.replacementString = '''«enumValue.enumeration.name» «separator» «enumValue.name»'''
+					proposal.replacementString = '''«enumValue.enumeration.name» -> «enumValue.name»'''
 					proposal.priority = proposal.priority + 5
 				}
 				acceptor.accept(proposal)

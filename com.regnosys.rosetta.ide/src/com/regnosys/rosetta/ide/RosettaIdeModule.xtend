@@ -18,7 +18,8 @@ import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService
 import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokensService
 import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesProvider
 import com.regnosys.rosetta.ide.textmate.RosettaTextMateGrammarUtil
-
+import org.eclipse.xtext.ide.server.formatting.FormattingService
+import com.regnosys.rosetta.ide.formatting.RosettaFormattingService
 
 /**
  * Use this class to register ide components.
@@ -59,5 +60,9 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	def Class<? extends RosettaTextMateGrammarUtil> bindRosettaTextMateGrammarUtil() {
 		RosettaTextMateGrammarUtil
+	}
+
+	def Class<? extends FormattingService> bindFormattingService() {
+		RosettaFormattingService
 	}
 }

@@ -25,7 +25,7 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.util.CancelIndicator
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import com.regnosys.rosetta.rosetta.RosettaDocReference
+import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference
 
 class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculator implements RosettaHighlightingStyles {
 
@@ -58,10 +58,10 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 			RosettaEnumValueReference: {
 				highlightFeature(acceptor, object, ROSETTA_ENUM_VALUE_REFERENCE__ENUMERATION, ENUM_ID)
 			}
-			RosettaDocReference: {
-				highlightFeature(acceptor, object, ROSETTA_REGULATORY_BODY__BODY, REGULATOR_ID)
-				highlightFeature(acceptor, object, ROSETTA_REGULATORY_BODY__CORPUSES, NAMED_ID)
-				highlightFeature(acceptor, object, ROSETTA_DOC_REFERENCE__SEGMENTS, NAMED_ID)
+			RegulatoryDocumentReference: {
+				highlightFeature(acceptor, object, REGULATORY_DOCUMENT_REFERENCE__BODY, REGULATOR_ID)
+				highlightFeature(acceptor, object, REGULATORY_DOCUMENT_REFERENCE__CORPUSES, NAMED_ID)
+				highlightFeature(acceptor, object, REGULATORY_DOCUMENT_REFERENCE__SEGMENTS, NAMED_ID)
 			}
 			RosettaSynonymBase: {
 				highlightFeatureForAllChildren(acceptor, object, ROSETTA_SYNONYM_BASE__SOURCES, SOURCE_ID)

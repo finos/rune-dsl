@@ -16,6 +16,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * TODO: contribute to Xtext.
+ *
+ */
 public class RosettaLanguageServerImpl extends LanguageServerImpl  {
 
 	@Override

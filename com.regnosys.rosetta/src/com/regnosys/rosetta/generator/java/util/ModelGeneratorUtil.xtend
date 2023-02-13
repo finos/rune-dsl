@@ -48,9 +48,9 @@ class ModelGeneratorUtil {
 		«IF references !==null && !references.isEmpty»
 			«FOR reference : references»
 			 *
-			 * Body «reference.getBody.name»
-			«FOR mandate : reference.corpuses» * Corpus «mandate.getCorpusType» «mandate.name» «IF mandate.getDisplayName !== null»«HtmlEscapers.htmlEscaper().escape(mandate.getDisplayName)»«ENDIF» «IF mandate.definition !== null»"«HtmlEscapers.htmlEscaper().escape(mandate.definition)»"«ENDIF» «ENDFOR»
-			«FOR segment : reference.segments» * «segment.segment.name» "«HtmlEscapers.htmlEscaper().escape(segment.segmentRef)»"«ENDFOR»
+			 * Body «reference.docReference.body.name»
+			«FOR mandate : reference.docReference.corpuses» * Corpus «mandate.getCorpusType» «mandate.name» «IF mandate.getDisplayName !== null»«HtmlEscapers.htmlEscaper().escape(mandate.getDisplayName)»«ENDIF» «IF mandate.definition !== null»"«HtmlEscapers.htmlEscaper().escape(mandate.definition)»"«ENDIF» «ENDFOR»
+			«FOR segment : reference.docReference.segments» * «segment.segment.name» "«HtmlEscapers.htmlEscaper().escape(segment.segmentRef)»"«ENDFOR»
 			 *
 			 * Provision «reference.getProvision»
 			 *

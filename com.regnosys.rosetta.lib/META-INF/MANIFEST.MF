@@ -18,7 +18,8 @@ Require-Bundle: org.eclipse.xtext,
  com.google.guava,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib,
- org.eclipse.xtend.lib.macro
+ org.eclipse.xtend.lib.macro,
+ org.apache.commons.lang3
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.rosetta.lib.postprocess,
  com.rosetta.model.lib,
