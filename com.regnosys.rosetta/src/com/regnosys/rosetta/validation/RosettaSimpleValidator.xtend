@@ -31,7 +31,6 @@ import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
-import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
@@ -113,6 +112,7 @@ import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import org.eclipse.xtext.naming.QualifiedName
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.RosettaDocReference
+import org.eclipse.xtext.EcoreUtil2
 
 // TODO: split expression validator
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
@@ -1046,6 +1046,23 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				val notValid = segment.toCharArray.findFirst[it|!Character.isJavaIdentifierPart(it)]
 				if (notValid !== null) {
 					return notValid -> false
+				}
+			}
+		}
+	}
+	
+	@Check
+	def checkOnlyExistsPathsHaveCommonParent(RosettaOnlyExistsExpression e) {
+		val first = e.args.head
+		val parent = exprHelper.getParentExpression(first)
+		for (var i = 1; i < e.args.size; i++) {
+			val other = e.args.get(i)
+			val otherParent = exprHelper.getParentExpression(other)
+			if ((parent === null) !== (otherParent === null) || parent !== null && otherParent !== null && !EcoreUtil2.equals(parent, otherParent)) {
+				if (otherParent !== null) {
+					error('''Only exists paths must have a common parent.''', otherParent, null)
+				} else {
+					error('''Only exists paths must have a common parent.''', other, null)
 				}
 			}
 		}

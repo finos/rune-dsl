@@ -62,6 +62,8 @@ import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import java.util.Optional
+import org.eclipse.emf.ecore.EObject
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -101,6 +103,7 @@ auxiliary {
 	attributeListType(Attribute a): RListType
 	symbolListType(RosettaSymbol c): RListType
 	functionalOperationItemType(RosettaFunctionalOperation op): RListType
+	typeOfImplicitVariable(EObject context): Optional<RListType>
 }
 
 judgments {
@@ -474,6 +477,17 @@ auxiliary functionalOperationItemType(RosettaFunctionalOperation op) {
 	return null
 }
 
+auxiliary typeOfImplicitVariable(EObject c) {
+	val definingContainer = c.findContainerDefiningImplicitVariable
+	definingContainer.map [
+		if (it instanceof Data) {
+			createListType(new RDataType(it), single)
+		} else if (it instanceof RosettaFunctionalOperation) {
+			functionalOperationItemType
+		}
+	]
+}
+
 /*** SUBTYPING **/
 rule SQualified
 	G |- RQualifiedType t1 <: RBuiltinType t2
@@ -555,14 +569,7 @@ from {
 rule TIt
 	G |- RosettaImplicitVariable c : RListType t
 from {
-	val definingContainer = c.findContainerDefiningImplicitVariable
-	t = definingContainer.map [
-		if (it instanceof Data) {
-			createListType(new RDataType(it), single)
-		} else if (it instanceof RosettaFunctionalOperation) {
-			functionalOperationItemType
-		}
-	].orElse(null)
+	t = c.typeOfImplicitVariable.orElse(null)
 }
 
 rule TArithmetic
@@ -983,21 +990,25 @@ checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
 			}
 		}
 	}
-	if (parent === null && !e.hasImplicitParent) {
+	if (parent === null && !e.implicitVariableExistsInContext) {
 		fail error "Object must have a parent object."
 			source e.args.head
 	}
 	
-	var Data parentData = null
+	var RListType parentType = null
 	if (parent !== null) {
 		looseConstraintCheck(parent, single)
-		empty |- parent : var RListType pt
-		if (pt !== null) {
-			parentData = (pt.itemType as RDataType).^data
-		}
+		empty |- parent : parentType
 	} else {
-		parentData = e.implicitParent
+		parentType = e.typeOfImplicitVariable.orElse(null)
+		if (parentType !== null) {
+			single.isSubconstraintOf(parentType.constraint)
+			or
+			fail error notConstraintMessage(single, parentType)
+				source e
+		}
 	}
+	val parentData = (parentType.itemType as RDataType).^data
 	if (parentData !== null) {
 		mayBeEmpty(parentData)
 		or
