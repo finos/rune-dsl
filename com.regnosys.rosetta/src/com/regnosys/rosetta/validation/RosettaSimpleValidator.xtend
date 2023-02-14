@@ -16,7 +16,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -1053,17 +1052,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
-	def checkOnlyExistsPathsHaveCommonParent(RosettaOnlyExistsExpression e) {
-		val parents = e.args
-				.map[onlyExistsParentType]
-				.filter[it !== null]
-				.toSet
-		if (parents.size > 1) {
-			error('''Only exists paths must have a common parent. Found types «parents.join(", ")».''', e, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS)
-		}
-	}
-	
-	@Check
 	def checkUnaryOperation(RosettaUnaryOperation e) {
 		val receiver = e.argument
 		if (e instanceof ListOperation && receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
@@ -1353,40 +1341,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
             }
         }
 	}
-	
-	private def String getOnlyExistsParentType(RosettaExpression e) {
-		switch (e) {
-			RosettaFeatureCall: {
-				val parentFeatureCall = e.receiver
-				switch (parentFeatureCall) {
-					RosettaFeatureCall: {
-						val parentFeature = parentFeatureCall.feature 
-						if (parentFeature instanceof RosettaTypedFeature) {
-							return parentFeature.type.name
-						}
-					}
-					RosettaSymbolReference: {
-						val parentCallable = parentFeatureCall.symbol 
-						if (parentCallable instanceof Attribute) {
-							return parentCallable.type.name
-						}
-					}
-					RosettaImplicitVariable: {
-						return parentFeatureCall.RType.name
-					}
-					default: {
-						log.warn("Only exists parent type unsupported " + parentFeatureCall)
-						return null
-					}
-						
-				}
-			}
-			default: {
-				log.warn("Only exists expression type unsupported " + e)
-				return null
-			}
-		}
-	} 
 
 /* 	
 	@Inject TargetURIConverter converter
