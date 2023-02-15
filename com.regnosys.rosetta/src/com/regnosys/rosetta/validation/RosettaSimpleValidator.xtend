@@ -16,7 +16,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -32,7 +31,6 @@ import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
-import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
@@ -114,6 +112,7 @@ import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import org.eclipse.xtext.naming.QualifiedName
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.RosettaDocReference
+import org.eclipse.xtext.EcoreUtil2
 
 // TODO: split expression validator
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
@@ -1054,12 +1053,18 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkOnlyExistsPathsHaveCommonParent(RosettaOnlyExistsExpression e) {
-		val parents = e.args
-				.map[onlyExistsParentType]
-				.filter[it !== null]
-				.toSet
-		if (parents.size > 1) {
-			error('''Only exists paths must have a common parent. Found types «parents.join(", ")».''', e, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS)
+		val first = e.args.head
+		val parent = exprHelper.getParentExpression(first)
+		for (var i = 1; i < e.args.size; i++) {
+			val other = e.args.get(i)
+			val otherParent = exprHelper.getParentExpression(other)
+			if ((parent === null) !== (otherParent === null) || parent !== null && otherParent !== null && !EcoreUtil2.equals(parent, otherParent)) {
+				if (otherParent !== null) {
+					error('''Only exists paths must have a common parent.''', otherParent, null)
+				} else {
+					error('''Only exists paths must have a common parent.''', other, null)
+				}
+			}
 		}
 	}
 	
@@ -1353,40 +1358,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
             }
         }
 	}
-	
-	private def String getOnlyExistsParentType(RosettaExpression e) {
-		switch (e) {
-			RosettaFeatureCall: {
-				val parentFeatureCall = e.receiver
-				switch (parentFeatureCall) {
-					RosettaFeatureCall: {
-						val parentFeature = parentFeatureCall.feature 
-						if (parentFeature instanceof RosettaTypedFeature) {
-							return parentFeature.type.name
-						}
-					}
-					RosettaSymbolReference: {
-						val parentCallable = parentFeatureCall.symbol 
-						if (parentCallable instanceof Attribute) {
-							return parentCallable.type.name
-						}
-					}
-					RosettaImplicitVariable: {
-						return parentFeatureCall.RType.name
-					}
-					default: {
-						log.warn("Only exists parent type unsupported " + parentFeatureCall)
-						return null
-					}
-						
-				}
-			}
-			default: {
-				log.warn("Only exists expression type unsupported " + e)
-				return null
-			}
-		}
-	} 
 
 /* 	
 	@Inject TargetURIConverter converter

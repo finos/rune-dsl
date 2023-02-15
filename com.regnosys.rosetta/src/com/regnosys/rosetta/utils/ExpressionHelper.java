@@ -55,18 +55,8 @@ public class ExpressionHelper {
 	public RosettaExpression getParentExpression(RosettaExpression e) {
 		if (e instanceof RosettaFeatureCall) {
 			return ((RosettaFeatureCall)e).getReceiver();
-		} else if (e instanceof RosettaReference) {
-			return null;
 		} else {
-			throw new UnsupportedOperationException("Only exists expression type unsupported: " + e.getClass().getSimpleName());
+			return null;
 		}
-	}
-	
-	public boolean hasImplicitParent(RosettaExpression e) {
-		return this.getImplicitParent(e) != null;
-	}
-	
-	public Data getImplicitParent(RosettaExpression e) {
-		return EcoreUtil2.getContainerOfType(e, Data.class);
 	}
 }

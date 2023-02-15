@@ -789,7 +789,7 @@ class ExpressionGenerator {
 	}
 	
 	private def StringConcatenationClient buildConstraint(RosettaExpression arg, Iterable<Attribute> usedAttributes, Necessity validationType, ParamMap params) {
-		'''«importWildCard(ExpressionOperators)»choice(«arg.javaCode(params)», «List».of(«usedAttributes.join(", ")['"' + name + '"']»), «ChoiceRuleValidationMethod».«validationType.name()»)'''
+		'''«importWildCard(ExpressionOperators)»choice(«arg.javaCode(params)», «Arrays».asList(«usedAttributes.join(", ")['"' + name + '"']»), «ChoiceRuleValidationMethod».«validationType.name()»)'''
 	}
 	
 	private def StringConcatenationClient buildListOperationNoBody(RosettaUnaryOperation op, String name, ParamMap params) {
