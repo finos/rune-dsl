@@ -10,13 +10,16 @@ public class ExistenceChecker {
 	}
 
 	public static boolean isSet(Object field) {
-		return field != null;
-	}
-	public static boolean isSet(RosettaModelObjectBuilder field) {
-		return field != null && field.hasData();
-	}
-
-	public static boolean isSet(List<? extends Object> field) {
-		return field != null && field.size() > 0 && field.stream().anyMatch(Objects::nonNull);
+		if (field == null) {
+			return false;
+		}
+		if (field instanceof List) {
+			@SuppressWarnings("unchecked")
+			List<? extends Object> l = (List<? extends Object>)field;
+			return l.size() > 0 && l.stream().anyMatch(Objects::nonNull);
+		} else if (field instanceof RosettaModelObjectBuilder) {
+			return ((RosettaModelObjectBuilder)field).hasData();
+		}
+		return true;
 	}
 }

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.google.common.collect.ImmutableMap.*
 import static org.junit.jupiter.api.Assertions.*
+import java.util.List
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -40,7 +41,7 @@ class ChoiceRuleGeneratorTest {
 			
 		val testInstance = classes.createInstanceUsingBuilder('Test',of(
 			'field1', 'field one value',
-			'field2', 'field two value'),
+			'field2', List.of('field two value')),
 			of())
 	
 		val testChoiceRuleClass = classes.get(rootPackage.dataRule.name + ".TestRequiredChoice")
@@ -58,12 +59,32 @@ class ChoiceRuleGeneratorTest {
 	}
 	
 	@Test
+	def void succeededRequiredChoiceRuleValidation() {
+		val classes = createTestClassAndRule()
+			
+		val testInstance = classes.createInstanceUsingBuilder('Test',of(
+			'field1', 'field one value',
+			'field2', List.of()),
+			of())
+	
+		val testChoiceRuleClass = classes.get(rootPackage.dataRule.name + ".TestRequiredChoice")
+		
+		val testChoiceRule = testChoiceRuleClass.declaredConstructor.newInstance;
+		
+		val validationResult = testChoiceRuleClass.getMatchingMethod("validate", #[RosettaPath, testInstance.class])
+			.invoke(testChoiceRule, null, testInstance)
+				
+		val isSuccess = validationResult.class.getMethod("isSuccess", null).invoke(validationResult) as Boolean
+		assertTrue(isSuccess)
+	}
+	
+	@Test
 	def void failedOptionalChoiceRuleValidation() {
 		val classes = createTestClassAndRule()
 			
 		val testInstance = classes.createInstanceUsingBuilder('Test',of(
 			'field1', 'field one value',
-			'field2', 'field two value'),
+			'field2', List.of('field two value')),
 			of())
 		
 		val testChoiceRuleClass = classes.get(rootPackage.dataRule.name + ".TestOptionalChoice")
@@ -83,7 +104,7 @@ class ChoiceRuleGeneratorTest {
 		return '''
 			type Test:
 				field1 string (0..1)
-				field2 string (0..1)
+				field2 string (0..2)
 			
 				condition RequiredChoice:
 					required choice field1, field2
