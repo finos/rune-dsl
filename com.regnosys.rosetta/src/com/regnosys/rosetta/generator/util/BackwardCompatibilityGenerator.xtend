@@ -776,9 +776,6 @@ class BackwardCompatibilityGenerator {
 			import com.rosetta.model.lib.RosettaModelObjectBuilder;
 			
 			public class ExistenceChecker {
-				public ExistenceChecker() {
-				}
-			
 				public static boolean isSet(Object field) {
 					if (field == null) {
 						return false;
