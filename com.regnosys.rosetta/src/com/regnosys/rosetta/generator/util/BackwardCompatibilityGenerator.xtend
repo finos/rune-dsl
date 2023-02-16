@@ -792,6 +792,14 @@ class BackwardCompatibilityGenerator {
 					}
 					return true;
 				}
+				
+				public static boolean isSet(RosettaModelObjectBuilder field) {
+					return isSet((Object)field);
+				}
+				
+				public static boolean isSet(List<? extends Object> field) {
+					return isSet((Object)field);
+				}
 			}
 			''')
 		
