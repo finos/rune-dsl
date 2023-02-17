@@ -352,6 +352,11 @@ class RosettaMapTestEqualityOperation extends RosettaMapTestExpression {
 	String operator
 }
 
+class RosettaMapTestMapper extends RosettaMapTestExpression {
+	String conditionMapperName
+	contains RosettaMapPathValue path
+}
+
 interface RosettaAttributeReferenceSegment {}
 
 class RosettaDataReference extends RosettaAttributeReferenceSegment {

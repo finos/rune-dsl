@@ -353,6 +353,7 @@ RosettaMapTest:
 	RosettaMapPath
 	| RosettaMapRosettaPath
 	| RosettaMapTestExpression
+	| RosettaMapTestMapper
 ;
 
 RosettaMapPath:
@@ -389,6 +390,10 @@ RosettaMapPrimaryExpression returns RosettaMapTestExpression:
 
 RosettaMapPathValue:
 	path=STRING
+;
+
+RosettaMapTestMapper:
+	'condition-mapper' conditionMapperName=STRING (path=RosettaMapPathValue)?
 ;
 
 

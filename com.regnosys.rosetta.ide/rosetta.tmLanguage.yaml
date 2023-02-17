@@ -671,7 +671,7 @@ repository:
           - name: keyword.other.rosetta
             match: '{{wordStart}}(when|to|path|rosettaPath|and){{wordEnd}}'
           - name: keyword.operator.word.rosetta
-            match: '{{wordStart}}(exists|is|absent){{wordEnd}}'
+            match: '{{wordStart}}(exists|is|absent|condition-mapper){{wordEnd}}'
           - name: keyword.operator.rosetta
             match: '{{wordStart}}(=|<>){{wordEnd}}'
           - include: '#literal'
