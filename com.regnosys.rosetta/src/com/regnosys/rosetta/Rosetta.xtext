@@ -393,7 +393,7 @@ RosettaMapPathValue:
 ;
 
 RosettaMapTestMapper:
-	'condition-mapper' conditionMapperName=STRING (path=RosettaMapPathValue)?
+	'condition-mapper' conditionMapperName=STRING (predicatePath=RosettaMapPathValue)?
 ;
 
 
