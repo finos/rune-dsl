@@ -27,6 +27,7 @@ import java.time.ZonedDateTime
 import java.time.ZoneId
 import com.rosetta.model.lib.records.Date
 import java.time.LocalTime
+import java.math.BigDecimal
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -439,6 +440,24 @@ class FunctionGeneratorTest {
 		
 		val func2 = classes.createFunc("F2");
 		assertFalse(func2.invokeFunc(Boolean))
+	}
+	
+	@Test
+	def void largeNumberTest() {
+		val code = '''
+			namespace com.rosetta.test.model
+			version "${project.version}"
+			
+			func F1:
+				output:
+					res number (1..1)
+				set res:
+					99999999999999999999.99999
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val func1 = classes.createFunc("F1");
+		assertEquals(new BigDecimal("99999999999999999999.99999"), func1.invokeFunc(Number))
 	}
 	
 	@Test
