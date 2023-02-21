@@ -139,7 +139,7 @@ class ExpressionGenerator {
 				reference(expr, params)
 			}
 			RosettaBigDecimalLiteral : {
-				'''«MapperS».of(«BigDecimal».valueOf(«expr.value»))'''
+				'''«MapperS».of(new «BigDecimal»("«expr.value»"))'''
 			}
 			RosettaBooleanLiteral : {
 				'''«MapperS».of(Boolean.valueOf(«expr.value»))'''
