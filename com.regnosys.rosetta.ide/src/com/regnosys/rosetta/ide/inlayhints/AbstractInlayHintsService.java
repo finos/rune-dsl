@@ -8,10 +8,12 @@ import com.regnosys.rosetta.ide.util.RangeUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.ide.server.Document;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
@@ -88,14 +90,52 @@ public abstract class AbstractInlayHintsService implements IInlayHintsService, I
 		return result;
 	}
 
-	protected InlayHint createInlayHint(EObject hintObject, String label, String tooltip) {
+	protected InlayHint inlayHintBefore(EObject hintObject, String label, String tooltip) {
 		Position start = rangeUtils.getRange(hintObject).getStart();
-		InlayHint inlayHint = new InlayHint();
-		inlayHint.setPosition(start);
+		return inlayHintAt(start, label, tooltip, false, true);
+	}
+	protected InlayHint inlayHintBefore(EObject hintObject, EStructuralFeature feature, String label, String tooltip) {
+		Position start = rangeUtils.getRange(hintObject, feature).getStart();
+		return inlayHintAt(start, label, tooltip, false, true);
+	}
+	protected InlayHint inlayHintBefore(EObject hintObject, EStructuralFeature feature, int featureIndex, String label, String tooltip) {
+		Position start = rangeUtils.getRange(hintObject, feature, featureIndex).getStart();
+		return inlayHintAt(start, label, tooltip, false, true);
+	}
+	protected InlayHint inlayHintBefore(EObject hintObject, Keyword keyword, String label, String tooltip) {
+		Position start = rangeUtils.getRange(hintObject, keyword).getStart();
+		return inlayHintAt(start, label, tooltip, false, true);
+	}
+	
+	protected InlayHint inlayHintAfter(EObject hintObject, String label, String tooltip) {
+		Position end = rangeUtils.getRange(hintObject).getEnd();
+		return inlayHintAt(end, label, tooltip, true, false);
+	}
+	protected InlayHint inlayHintAfter(EObject hintObject, EStructuralFeature feature, String label, String tooltip) {
+		Position end = rangeUtils.getRange(hintObject, feature).getEnd();
+		return inlayHintAt(end, label, tooltip, true, false);
+	}
+	protected InlayHint inlayHintAfter(EObject hintObject, EStructuralFeature feature, int featureIndex, String label, String tooltip) {
+		Position end = rangeUtils.getRange(hintObject, feature, featureIndex).getEnd();
+		return inlayHintAt(end, label, tooltip, true, false);
+	}
+	protected InlayHint inlayHintAfter(EObject hintObject, Keyword keyword, String label, String tooltip) {
+		Position end = rangeUtils.getRange(hintObject, keyword).getEnd();
+		return inlayHintAt(end, label, tooltip, true, false);
+	}
+	
+	protected InlayHint inlayHintAt(Position position, String label, String tooltip, boolean paddingLeft, boolean paddingRight) {
+		InlayHint inlayHint = createInlayHint();
+		inlayHint.setPosition(position);
 		inlayHint.setLabel(label);
 		inlayHint.setTooltip(tooltip);
-		inlayHint.setPaddingLeft(true);
-		inlayHint.setPaddingRight(true);
+		inlayHint.setPaddingLeft(paddingLeft);
+		inlayHint.setPaddingRight(paddingRight);
+		return inlayHint;
+	}
+	
+	protected InlayHint createInlayHint() {
+		InlayHint inlayHint = new InlayHint();
 		return inlayHint;
 	}
 

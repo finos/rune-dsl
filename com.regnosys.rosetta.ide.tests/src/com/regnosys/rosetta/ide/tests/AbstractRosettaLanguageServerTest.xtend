@@ -23,12 +23,16 @@ import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.TextDocumentConfiguration
 import org.eclipse.xtext.testing.FileInfo
 import java.nio.charset.StandardCharsets
+import com.regnosys.rosetta.ide.util.RangeUtils
+import java.util.stream.Collectors
+import java.util.ArrayList
 
 /**
  * TODO: contribute to Xtext.
  */
 abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerTest {
 	@Inject extension ModelHelper
+	@Inject RangeUtils ru
 	
 	new() {
 		super("rosetta")
@@ -69,7 +73,8 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 			new TextDocumentIdentifier(filePath),
 			range
 		))
-		val result = inlayHints.get.map[languageServer.resolveInlayHint(it).get].toList
+		val result = inlayHints.get.map[languageServer.resolveInlayHint(it).get].stream.collect(Collectors.toCollection[newArrayList])
+		result.sort[a,b| ru.comparePositions(a.position, b.position)]
 
 		if (configuration.assertNoIssues) {
 			configuration.model.parseRosettaWithNoIssues

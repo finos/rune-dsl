@@ -25,5 +25,6 @@ Export-Package: com.regnosys.rosetta.ide,
  com.regnosys.rosetta.ide.semantictokens,
  com.regnosys.rosetta.ide.semantictokens.lsp,
  com.regnosys.rosetta.ide.server,
- com.regnosys.rosetta.ide.textmate
+ com.regnosys.rosetta.ide.textmate,
+ com.regnosys.rosetta.ide.util
 Automatic-Module-Name: com.regnosys.rosetta.ide
