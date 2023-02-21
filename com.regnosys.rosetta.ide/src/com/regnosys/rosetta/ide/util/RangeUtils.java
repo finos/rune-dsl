@@ -1,9 +1,14 @@
 package com.regnosys.rosetta.ide.util;
 
+import java.util.Iterator;
+
 import javax.inject.Inject;
 
+import org.eclipse.emf.common.util.AbstractTreeIterator;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.xtext.Keyword;
@@ -11,6 +16,8 @@ import org.eclipse.xtext.ide.server.DocumentExtensions;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+
+import com.google.common.collect.Iterators;
 
 /**
  * TODO: contribute to Xtext?
@@ -43,6 +50,19 @@ public class RangeUtils {
 			}
 		}
 		return null;
+	}
+	
+	public TreeIterator<EObject> iterateOverlapping(ResourceImpl resource, Range filter) {
+		return new AbstractTreeIterator<EObject>(resource, false) {
+	        private static final long serialVersionUID = 1L;
+
+	        @Override
+	        public Iterator<EObject> getChildren(Object object)
+	        {
+	        	Iterator<EObject> allChildren = object == resource ? resource.getContents().iterator() : ((EObject)object).eContents().iterator();
+	        	return Iterators.filter(allChildren, obj -> overlap(filter, obj));
+	        }
+	    };
 	}
 	
 	public boolean overlap(Range a, Range b) {
