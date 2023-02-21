@@ -432,5 +432,646 @@ class BackwardCompatibilityGenerator {
 				}
 			}
 			''')
+		
+		fsa.generateFile('com/rosetta/model/lib/expression/ExpressionOperators.java',
+			'''
+			package com.rosetta.model.lib.expression;
+			
+			import java.lang.reflect.InvocationTargetException;
+			import java.lang.reflect.Method;
+			import java.util.Collection;
+			import java.util.Collections;
+			import java.util.LinkedList;
+			import java.util.List;
+			import java.util.Set;
+			import java.util.function.Supplier;
+			import java.util.stream.Collectors;
+			import java.util.stream.Stream;
+			
+			import com.rosetta.model.lib.RosettaModelObject;
+			import com.rosetta.model.lib.mapper.Mapper;
+			import com.rosetta.model.lib.mapper.MapperC;
+			import com.rosetta.model.lib.mapper.Mapper.Path;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.model.lib.meta.RosettaMetaData;
+			import com.rosetta.model.lib.validation.ExistenceChecker;
+			import com.rosetta.model.lib.validation.ValidationResult;
+			import com.rosetta.model.lib.validation.ValidatorWithArg;
+			
+			public class ExpressionOperators {
+				
+				// notExists
+				
+				public static <T> ComparisonResult notExists(Mapper<T> o) {
+					if (o.resultCount()==0) {
+						return ComparisonResult.success();
+					}
+					return ComparisonResult.failure(o.getPaths() + " does exist and is " + formatMultiError(o));
+				}
+				
+				// exists
+				
+				public static <T> ComparisonResult exists(Mapper<T> o) {
+					if (o.resultCount()>0) {
+						return ComparisonResult.success();
+					}
+					return ComparisonResult.failure(o.getErrorPaths() + " does not exist");
+				}
+				
+				// singleExists
+				
+				public static <T> ComparisonResult singleExists(Mapper<T> o) {
+					if (o.resultCount()==1) {
+						return  ComparisonResult.success();
+					}
+					
+					String error = o.resultCount() > 0 ?
+							String.format("Expected single %s but found %s [%s]", o.getPaths(), o.resultCount(), formatMultiError(o)) :
+							String.format("Expected single %s but found zero", o.getErrorPaths());
+					
+					return ComparisonResult.failure(error);
+				}
+				
+				// multipleExists
+				
+				public static <T> ComparisonResult multipleExists(Mapper<T> o) {
+					if (o.resultCount()>1) {
+						return ComparisonResult.success();
+					}
+					
+					String error = o.resultCount() > 0 ?
+							String.format("Expected multiple %s but only one [%s]", o.getPaths(), formatMultiError(o)) :
+							String.format("Expected multiple %s but found zero", o.getErrorPaths());
+							
+					return ComparisonResult.failure(error);
+				}
+				
+				// onlyExists
+				
+				public static ComparisonResult onlyExists(List<? extends Mapper<?>> o) {
+					// Validation rule checks that all parents match
+					Set<RosettaModelObject> parents = o.stream()
+							.map(Mapper::getParentMulti)
+							.flatMap(Collection::stream)
+							.map(RosettaModelObject.class::cast)
+						    .collect(Collectors.toSet());
+					
+					if (parents.size() == 0) {
+						return ComparisonResult.failure("No fields set.");
+					}
+			
+					// Find attributes to check
+					Set<String> fields = o.stream()
+							.flatMap(m -> Stream.concat(m.getPaths().stream(), m.getErrorPaths().stream()))
+							.map(ExpressionOperators::getAttributeName)
+							.collect(Collectors.toSet());
+					
+					// The number of attributes to check, should equal the number of mappers
+					if (fields.size() != o.size()) {
+						return ComparisonResult.failure("All required fields not set.");
+					}
+					
+					// Run validation then and results together 
+					return parents.stream()
+						.map(p -> validateOnlyExists(p, fields))
+						.reduce(ComparisonResult.success(), (a, b) -> a.and(b));
+				}
+			
+				/**
+				 * @return attributeName - get the attribute name which is the path leaf node, unless attribute has metadata (scheme/reference etc), where it is the paths penultimate node. 
+				 */
+				private static String getAttributeName(Path p) {
+					String attr = p.getLastName();
+					return "value".equals(attr) || "reference".equals(attr) || "globalReference".equals(attr) ? 
+							p.getNames().get(p.getNames().size() - 2) : 
+							attr;
+				}
+				
+				private static <T extends RosettaModelObject> ComparisonResult validateOnlyExists(T parent, Set<String> fields) {
+					@SuppressWarnings("unchecked")
+					RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
+					ValidatorWithArg<? super T, Set<String>> onlyExistsValidator = meta.onlyExistsValidator();
+					if (onlyExistsValidator != null) {
+						ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
+						// Translate validationResult into comparisonResult
+						return validationResult.isSuccess() ? 
+								ComparisonResult.success() : 
+								ComparisonResult.failure(validationResult.getFailureReason().orElse(""));
+					} else {
+						return ComparisonResult.success();
+					}
+				}
+				
+				/**
+				 * DoIf implementation for Mappers
+				 */
+				public static <T, A extends Mapper<T>> A doIf(Mapper<Boolean> test, Supplier<A> ifthen, Supplier<A> elsethen) {
+					boolean testResult = test.getMulti().stream().allMatch(Boolean::booleanValue);
+					if (testResult) return ifthen.get();
+					else return elsethen.get();
+				}
+				@SuppressWarnings("unchecked")
+				public static <T, A extends Mapper<T>> A doIf(Mapper<Boolean> test, Supplier<A> ifthen) {
+					return doIf(test, ifthen, () -> (A) MapperS.of((T) null));
+				}
+				
+				
+				/**
+				 * DoIf implementation for ComparisonResult.
+				 */
+				public static ComparisonResult resultDoIf(Mapper<Boolean> test, Supplier<Mapper<Boolean>> ifthen, Supplier<Mapper<Boolean>> elsethen) {
+					boolean testResult = test.getMulti().stream().allMatch(Boolean::booleanValue);
+					if (testResult) {
+						return toComparisonResult(ifthen.get());
+					} else {
+						return toComparisonResult(elsethen.get());
+					}
+				}
+				
+				public static ComparisonResult resultDoIf(Mapper<Boolean> test, Supplier<Mapper<Boolean>> ifthen) {
+					return resultDoIf(test, ifthen, () -> ComparisonResult.success());
+				}
+				
+				private static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
+					if (mapper instanceof ComparisonResult) {
+						return (ComparisonResult) mapper;
+					} else {
+						return mapper.getMulti().stream().allMatch(Boolean::booleanValue) ? ComparisonResult.success() : ComparisonResult.failure("");
+					}
+				}
+				
+				interface CompareFunction<T, U> {
+				    ComparisonResult apply(T t, U u, CardinalityOperator o);
+				}
+				
+				// areEqual
+				
+				public static <T, U> ComparisonResult areEqual(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
+					return ExpressionEqualityUtil.evaluate(m1, m2, o, ExpressionEqualityUtil::areEqual);
+				}
+				
+				// notEqual
+					
+				public static <T, U> ComparisonResult notEqual(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
+					return ExpressionEqualityUtil.evaluate(m1, m2, o, ExpressionEqualityUtil::notEqual);
+				}
+				
+				public static <T extends Comparable<? super T>> ComparisonResult notEqual(ComparisonResult r1, ComparisonResult r2) {
+					return r1.get() != r2.get() ? ComparisonResult.success() : ComparisonResult.failure("Results are not equal");
+				}
+				
+				// greaterThan
+					
+				public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
+					return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::greaterThan);
+				}
+				
+				// greaterThanEquals
+				
+				public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
+					return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::greaterThanEquals);
+				}
+				
+				// lessThan
+			
+				public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o)  {
+					return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::lessThan);
+				}
+				
+				// lessThanEquals
+			
+				public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o)  {
+					return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::lessThanEquals);
+				}
+			
+				// contains
+				
+				public static <T> ComparisonResult contains(Mapper<? extends T> o1, Mapper<? extends T> o2) {
+					if (o1.getMulti().isEmpty()) {
+						return ComparisonResult.failure("Empty list does not contain all of " +formatMultiError(o2));
+					}
+					if (o2.getMulti().isEmpty()) {
+						return ComparisonResult.failure(formatMultiError(o1) + " does not contain empty list");
+					}
+					boolean result =  o1.getMulti().containsAll(o2.getMulti());
+					if (result) {
+						return ComparisonResult.success();
+					}
+					else {
+						return ComparisonResult.failure(formatMultiError(o1) + " does not contain all of " +formatMultiError(o2));
+					}
+				}
+				
+				// disjoint
+				
+				public static <T> ComparisonResult disjoint(Mapper<T> o1, Mapper<T> o2) {
+					List<T> multi2 = o2.getMulti();
+					List<T> multi1 = o1.getMulti();
+					boolean result =  Collections.disjoint(multi1, multi2);
+					if (result) {
+						return ComparisonResult.success();
+					}
+					else {
+						Collection<T> common = multi1.stream().filter(multi2::contains).collect(Collectors.toSet());
+						return ComparisonResult.failure(formatMultiError(o1) + " is not disjoint from " +formatMultiError(o2) + "common items are " + common);
+					}
+				}
+				
+				// distinct
+				
+				public static <T> MapperC<T> distinct(Mapper<T> o) {
+					return MapperC.of(o.getMulti()
+							.stream()
+							.distinct()
+							.collect(Collectors.toList()));
+				}
+				
+				public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {
+					if (actual < min) {
+						return ComparisonResult
+								.failure("Minimum of " + min + " '" + msgPrefix + "' is expected but found " + actual + "");
+					} else if (max > 0 && actual > max) {
+						return ComparisonResult
+								.failure("Maximum of " + max + " '" + msgPrefix + "' are expected but found " + actual + "");
+					}
+					return ComparisonResult.success();
+				}
+				
+				private static <T> String formatMultiError(Mapper<T> o) {
+					T t = o.getMulti().stream().findAny().orElse(null);
+					return t instanceof RosettaModelObject  ? 
+							t.getClass().getSimpleName() : // for rosettaModelObjects only log class name otherwise error messages are way too long
+							o.getMulti().toString();
+				}
+				
+				// one-of and choice
+			
+				public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ValidationResult.ChoiceRuleValidationMethod necessity) {
+					T object = mapper.get();
+					List<String> populatedFieldNames = new LinkedList<>();
+					for (String a: choiceFieldNames) {
+						try {
+							Method getter = object.getClass().getMethod("get" + a.substring(0, 1).toUpperCase() + a.substring(1));
+							if (ExistenceChecker.isSet(getter.invoke(object))) {
+								populatedFieldNames.add(a);
+							}
+						} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+							throw new IllegalArgumentException(e);
+						}
+					}
+							
+					if (necessity.check(populatedFieldNames.size())) {
+						return ComparisonResult.success();
+					}
+					String definition = choiceFieldNames.stream()
+						.collect(Collectors.joining("', '", necessity.getDescription() + " of '", "'. "));
+					String errorMessage = definition + (populatedFieldNames.isEmpty() ? "No fields are set." :
+						populatedFieldNames.stream().collect(Collectors.joining("', '", "Set fields are '", "'.")));
+					return ComparisonResult.failure(errorMessage);
+				}
+			}
+			''')
+		
+		fsa.generateFile('com/rosetta/model/lib/meta/RosettaMetaData.java',
+			'''
+			package com.rosetta.model.lib.meta;
+			
+			import java.util.Collections;
+			import java.util.List;
+			import java.util.Set;
+			import java.util.function.Function;
+			
+			import com.rosetta.model.lib.RosettaModelObject;
+			import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+			import com.rosetta.model.lib.qualify.QualifyResult;
+			import com.rosetta.model.lib.validation.Validator;
+			import com.rosetta.model.lib.validation.ValidatorFactory;
+			import com.rosetta.model.lib.validation.ValidatorWithArg;
+			
+			public interface RosettaMetaData<T extends RosettaModelObject> {
+			
+				List<Validator<? super T>> dataRules(ValidatorFactory factory);
+				
+				// @Compat. This will be empty, as choice rules are now all data rules.
+				@Deprecated
+				default List<Validator<? super T>> choiceRuleValidators() {
+					return Collections.emptyList();
+				}
+				
+				List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory);
+				
+				Validator<? super T> validator();
+				
+				ValidatorWithArg<? super T, Set<String>> onlyExistsValidator();
+			}
+			''')
+		
+		fsa.generateFile('com/rosetta/model/lib/validation/ExistenceChecker.java',
+			'''
+			package com.rosetta.model.lib.validation;
+			
+			import java.util.List;
+			import java.util.Objects;
+			
+			import com.rosetta.model.lib.RosettaModelObjectBuilder;
+			
+			public class ExistenceChecker {
+				public static boolean isSet(Object field) {
+					if (field == null) {
+						return false;
+					}
+					if (field instanceof List) {
+						@SuppressWarnings("unchecked")
+						List<? extends Object> l = (List<? extends Object>)field;
+						return l.size() > 0 && l.stream().anyMatch(Objects::nonNull);
+					} else if (field instanceof RosettaModelObjectBuilder) {
+						return ((RosettaModelObjectBuilder)field).hasData();
+					}
+					return true;
+				}
+				
+				public static boolean isSet(RosettaModelObjectBuilder field) {
+					return isSet((Object)field);
+				}
+				
+				public static boolean isSet(List<? extends Object> field) {
+					return isSet((Object)field);
+				}
+			}
+			''')
+		
+		fsa.generateFile('com/rosetta/model/lib/validation/ValidationResult.java',
+			'''
+			package com.rosetta.model.lib.validation;
+			
+			import java.util.Optional;
+			import java.util.List;
+			import java.util.stream.Collectors;
+			
+			import com.rosetta.model.lib.path.RosettaPath;
+			
+			import java.util.function.Function;
+			
+			import static com.rosetta.model.lib.validation.ValidationResult.ValidationType.CHOICE_RULE;
+			
+			public interface ValidationResult<T> {
+			
+				boolean isSuccess();
+			
+				String getModelObjectName();
+			
+				String getName();
+				
+				ValidationType getValidationType();
+			
+				String getDefinition();
+				
+				Optional<String> getFailureReason();
+				
+				RosettaPath getPath();
+			
+				static <T> ValidationResult<T> success(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition) {
+					return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.empty());
+				}
+				
+				static <T> ValidationResult<T> failure(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition, String failureMessage) {
+					return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage));
+				}
+			
+				enum ValidationType {
+					DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, ONLY_EXISTS, POST_PROCESS_EXCEPTION
+				}
+			
+				class ModelValidationResult<T> implements ValidationResult<T> {
+			
+					private final String modelObjectName;
+					private final String name;
+					private final String definition;
+					private final Optional<String> failureReason;
+					private final ValidationType validationType;
+					private final RosettaPath path;
+			
+					public ModelValidationResult(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition, Optional<String> failureReason) {
+						this.name = name;
+						this.validationType = validationType;
+						this.path = path;
+						this.modelObjectName = modelObjectName;
+						this.definition = definition;
+						this.failureReason = failureReason;
+					}
+			
+					@Override
+					public boolean isSuccess() {
+						return !failureReason.isPresent();
+					}
+			
+					@Override
+					public String getModelObjectName() {
+						return modelObjectName;
+					}
+			
+					@Override
+					public String getName() {
+						return name;
+					}
+					
+					public RosettaPath getPath() {
+						return path;
+					}
+			
+					@Override
+					public String getDefinition() {
+						return definition;
+					}
+					
+					@Override
+					public Optional<String> getFailureReason() {
+						if (failureReason.isPresent() && modelObjectName.endsWith("Report") && failureReason.get().contains(modelObjectName)) {
+							return getUpdatedFailureReason();
+						}
+						return failureReason;
+					}
+			
+					@Override
+					public ValidationType getValidationType() {
+						return validationType;
+					}
+			
+					@Override
+					public String toString() {
+						return String.format("Validation %s on [%s] for [%s] [%s] %s",
+								isSuccess() ? "SUCCESS" : "FAILURE",
+								path.buildPath(),
+								validationType,
+								name,
+								failureReason.map(s -> "because [" + s + "]").orElse(""));
+					}
+			
+					// TODO: refactor this method. This is an ugly hack.
+					private Optional<String> getUpdatedFailureReason() {
+			
+						String conditionName = name.replaceFirst(modelObjectName, "");
+						String failReason = failureReason.get();
+			
+						failReason = failReason.replaceAll(modelObjectName, "");
+						failReason = failReason.replaceAll("->get", " ");
+						failReason = failReason.replaceAll("[^\\w-]+", " ");
+			
+						return Optional.of(conditionName + ":- " + failReason);
+					}
+				}
+			
+				// @Compat. Choice rules are now obsolete in favor of data rules.
+				@Deprecated
+				class ChoiceRuleFailure<T> implements ValidationResult<T> {
+			
+					private final String name;
+					private final String modelObjectName;
+					private final List<String> populatedFields;
+					private final List<String> choiceFieldNames;
+					private final ChoiceRuleValidationMethod validationMethod;
+					private final RosettaPath path;
+			
+					public ChoiceRuleFailure(String name, String modelObjectName, List<String> choiceFieldNames, RosettaPath path, List<String> populatedFields,
+											 ChoiceRuleValidationMethod validationMethod) {
+						this.name = name;
+						this.path = path;
+						this.modelObjectName = modelObjectName;
+						this.populatedFields = populatedFields;
+						this.choiceFieldNames = choiceFieldNames;
+						this.validationMethod = validationMethod;
+					}
+			
+					@Override
+					public boolean isSuccess() {
+						return false;
+					}
+			
+					@Override
+					public String getName() {
+						return name;
+					}
+					
+					public RosettaPath getPath() {
+						return path;
+					}
+			
+					@Override
+					public String getModelObjectName() {
+						return modelObjectName;
+					}
+			
+					public List<String> populatedFields() {
+						return populatedFields;
+					}
+			
+					public List<String> choiceFieldNames() {
+						return choiceFieldNames;
+					}
+			
+					public ChoiceRuleValidationMethod validationMethod() {
+						return validationMethod;
+					}
+			
+					@Override
+					public String getDefinition() {
+						return choiceFieldNames.stream()
+							.collect(Collectors.joining("', '", validationMethod.desc + " of '", "'. "));
+					}
+					
+					@Override
+					public Optional<String> getFailureReason() {
+						return Optional.of(getDefinition() + (populatedFields.isEmpty() ? "No fields are set." :
+								populatedFields.stream().collect(Collectors.joining("', '", "Set fields are '", "'."))));
+					}
+			
+					@Override
+					public ValidationType getValidationType() {
+						return CHOICE_RULE;
+					}
+			
+					@Override
+					public String toString() {
+						return String.format("Validation %s on [%s] for [%s] [%s] %s",
+								isSuccess() ? "SUCCESS" : "FAILURE",
+								path.buildPath(),
+								CHOICE_RULE + ":" + validationMethod,
+								name,
+								getFailureReason().map(reason -> "because " + reason).orElse(""));
+					}
+				}
+			
+				enum ChoiceRuleValidationMethod {
+			
+					OPTIONAL("Zero or one field must be set", fieldCount -> fieldCount == 1 || fieldCount == 0),
+					REQUIRED("One and only one field must be set", fieldCount -> fieldCount == 1);
+			
+					private final String desc;
+					private final Function<Integer, Boolean> check;
+			
+					ChoiceRuleValidationMethod(String desc, Function<Integer, Boolean> check) {
+						this.desc = desc;
+						this.check = check;
+					}
+			
+					public boolean check(int fields) {
+						return check.apply(fields);
+					}
+					
+					public String getDescription() {
+						return this.desc;
+					}
+				}
+				
+				class ProcessValidationResult<T> implements ValidationResult<T> {
+					private String message;
+					private String modelObjectName;
+					private String processorName;
+					private RosettaPath path;
+			
+					public ProcessValidationResult(String message, String modelObjectName, String processorName, RosettaPath path) {
+						this.message = message;
+						this.modelObjectName = modelObjectName;
+						this.processorName = processorName;
+						this.path = path;
+					}
+			
+					@Override
+					public boolean isSuccess() {
+						return false;
+					}
+			
+					@Override
+					public String getModelObjectName() {
+						return modelObjectName;
+					}
+			
+					@Override
+					public String getName() {
+						return processorName;
+					}
+			
+					@Override
+					public ValidationType getValidationType() {
+						return ValidationType.POST_PROCESS_EXCEPTION;
+					}
+			
+					@Override
+					public String getDefinition() {
+						return "";
+					}
+			
+					@Override
+					public Optional<String> getFailureReason() {
+						return Optional.of(message);
+					}
+			
+					@Override
+					public RosettaPath getPath() {
+						return path;
+					}
+				}
+			}
+			''')
 	}
 }
