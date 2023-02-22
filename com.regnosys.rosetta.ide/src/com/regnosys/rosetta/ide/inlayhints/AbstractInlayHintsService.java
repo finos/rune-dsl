@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.ide.inlayhints;
 
-import com.regnosys.rosetta.ide.semantictokens.MarkSemanticToken;
 import com.regnosys.rosetta.ide.util.AbstractLanguageServerService;
 import com.regnosys.rosetta.ide.util.RangeUtils;
 
@@ -27,7 +26,7 @@ public abstract class AbstractInlayHintsService extends AbstractLanguageServerSe
 
 
 	public AbstractInlayHintsService() {
-		super(InlayHint.class, MarkSemanticToken.class);
+		super(InlayHint.class, InlayHintCheck.class);
 	}
 
 	@Override
