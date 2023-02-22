@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.ide.inlayhints;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -13,7 +12,7 @@ import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Iterables;
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider;
 import com.regnosys.rosetta.rosetta.RosettaBlueprint;
@@ -26,8 +25,6 @@ import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
-import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.RRecordType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
@@ -85,15 +82,7 @@ public class RosettaInlayHintsService extends AbstractInlayHintsService {
 				if (symbol instanceof RosettaCallableWithArgs) {
 					needsInlayHint = !ref.isExplicitArguments();
 				} else if (symbol instanceof RosettaFeature) {
-					// TODO: extract this in some utility class (also for RosettaScopeProvider)
-					List<? extends RosettaFeature> implicitFeatures = Collections.emptyList();
-					if (implicitType instanceof RDataType) {
-						implicitFeatures = Lists.newArrayList(extensions.getAllAttributes(((RDataType)implicitType).getData()));
-					} else if (implicitType instanceof RRecordType) {
-						implicitFeatures = ((RRecordType)implicitType).getRecord().getFeatures();
-					}
-					
-					needsInlayHint = implicitFeatures.contains((RosettaFeature)symbol);
+					needsInlayHint = Iterables.contains(extensions.allFeatures(implicitType), symbol);
 				}
 				
 				if (needsInlayHint) {

@@ -23,10 +23,6 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.REnumType
-import com.regnosys.rosetta.types.RRecordType
-import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EObject
@@ -109,14 +105,14 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					switch (context) {
 						Operation: {
 							val receiverType = typeProvider.getRType(context.assignRoot)
-							return Scopes.scopeFor(receiverType.findFeatures)
+							return Scopes.scopeFor(receiverType.allFeatures)
 						}
 						Segment: {
 							val prev = context.prev
 							if (prev !== null) {
 								if (prev.attribute !== null && !prev.attribute.eIsProxy) {
 									val receiverType = typeProvider.getRType(prev.attribute)
-									return Scopes.scopeFor(receiverType.findFeatures)
+									return Scopes.scopeFor(receiverType.allFeatures)
 								}
 							}
 							if (context.eContainer instanceof Operation) {
@@ -280,22 +276,9 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	def private IScope filteredScope(IScope scope, Predicate<IEObjectDescription> filter) {
 		new FilteringScope(scope,filter)
 	}
-
-	private def Iterable<? extends RosettaFeature> findFeatures(RType receiverType) {
-		switch receiverType {
-			RDataType:
-				receiverType.data.allAttributes
-			REnumType:
-				receiverType.enumeration.allEnumValues
-			RRecordType:
-				receiverType.record.features
-			default:
-				#[]
-		}
-	}
 	
 	private def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
-		findFeatures(typeProvider.typeOfImplicitVariable(context))
+		typeProvider.typeOfImplicitVariable(context).allFeatures
 	}
 	
 	private def IScope createExtendedFeatureScope(EObject receiver) {
@@ -303,7 +286,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 
 		val List<IEObjectDescription> allPosibilities = newArrayList
 		allPosibilities.addAll(
-			receiverType.findFeatures
+			receiverType.allFeatures
 				.map[new EObjectDescription(QualifiedName.create(name), it, null)]
 			
 		)
