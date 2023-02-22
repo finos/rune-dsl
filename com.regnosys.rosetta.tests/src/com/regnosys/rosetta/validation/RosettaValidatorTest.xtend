@@ -30,21 +30,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
-	def void mayNotUseOutputTest1() {
-		val model = '''
-			func F:
-			    output:
-			        result int (1..1)
-						
-			    set result:
-			        result
-		'''.parseRosetta
-		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
-            "You may not refer to an output variable here.")
-	}
-	
-	@Test
-	def void mayNotUseOutputTest2() {
+	def void mayNotUseAmbiguousOutputTest() {
 		val model = '''
 			type Foo:
 				result int (1..1)
@@ -59,7 +45,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			        foo extract [ result ]
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
-            "You may not refer to an output variable here.")
+            "Ambiguous reference. `result` may either refer to `item -> result` or to the output variable.")
 	}
 	
 	@Test

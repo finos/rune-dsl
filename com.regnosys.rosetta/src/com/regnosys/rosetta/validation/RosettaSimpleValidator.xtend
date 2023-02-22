@@ -509,10 +509,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		} else {
 			if (callable instanceof Attribute) {
 				if (callable.isOutput) {
-					error('''You may not refer to an output variable here.''',
-						element,
-						ROSETTA_SYMBOL_REFERENCE__SYMBOL
-					)
+					val implicitType = element.typeOfImplicitVariable
+					val implicitFeatures = implicitType.allFeatures
+					if (implicitFeatures.exists[name == callable.name]) {
+						error('''Ambiguous reference. `«callable.name»` may either refer to `«defaultImplicitVariable.name» -> «callable.name»` or to the output variable.''',
+							element,
+							ROSETTA_SYMBOL_REFERENCE__SYMBOL
+						)
+					}
 				}
 			}
 			if (element.explicitArguments) {
