@@ -30,6 +30,39 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void mayNotUseOutputTest1() {
+		val model = '''
+			func F:
+			    output:
+			        result int (1..1)
+						
+			    set result:
+			        result
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+            "You may not refer to an output variable here.")
+	}
+	
+	@Test
+	def void mayNotUseOutputTest2() {
+		val model = '''
+			type Foo:
+				result int (1..1)
+			
+			func F:
+			    inputs:
+			        foo Foo (1..1)
+			    output:
+			        result int (1..1)
+						
+			    set result:
+			        foo extract [ result ]
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+            "You may not refer to an output variable here.")
+	}
+	
+	@Test
 	def void dateMemberHasRightTypeTest() {
 		'''
 			func F:

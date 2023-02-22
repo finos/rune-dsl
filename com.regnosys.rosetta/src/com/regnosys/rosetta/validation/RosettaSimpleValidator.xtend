@@ -507,6 +507,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				}
 			}
 		} else {
+			if (callable instanceof Attribute) {
+				if (callable.isOutput) {
+					error('''You may not refer to an output variable here.''',
+						element,
+						ROSETTA_SYMBOL_REFERENCE__SYMBOL
+					)
+				}
+			}
 			if (element.explicitArguments) {
 				error('''A variable may not be called.''',
 					element,
