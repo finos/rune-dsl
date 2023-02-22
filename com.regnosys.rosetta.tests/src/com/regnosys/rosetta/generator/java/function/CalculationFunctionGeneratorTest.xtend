@@ -102,7 +102,7 @@ class CalculationFunctionGeneratorTest {
 							}
 							
 							protected BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
-								out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(BigDecimal.valueOf(30.0))).get();
+								out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(new BigDecimal("30.0"))).get();
 								
 								return out;
 							}
