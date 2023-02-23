@@ -26,6 +26,8 @@ import java.nio.charset.StandardCharsets
 import com.regnosys.rosetta.ide.util.RangeUtils
 import java.util.stream.Collectors
 import java.util.ArrayList
+import static extension org.junit.Assert.assertTrue
+import org.junit.jupiter.api.Assertions
 
 /**
  * TODO: contribute to Xtext.
@@ -58,6 +60,7 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	
 	@Accessors static class TestInlayHintsConfiguration extends TextDocumentPositionConfiguration {
 		String expectedInlayHintItems = ''
+		Integer assertNumberOfInlayHints = null
 		(List<? extends InlayHint>) => void assertInlayHints = null
 		Range range = new Range(new Position(0, 0), new Position(Integer.MAX_VALUE, Integer.MAX_VALUE))
 		boolean assertNoIssues = true
@@ -79,10 +82,22 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		if (configuration.assertNoIssues) {
 			configuration.model.parseRosettaWithNoIssues
 		}
+		val nbInlayHints = configuration.assertNumberOfInlayHints
+		if (nbInlayHints !== null) {
+			Assertions.assertTrue(
+				result.size >= nbInlayHints,
+				'''Expected «nbInlayHints» inlay hints, got «result.size».'''
+			)
+		}
 		if (configuration.assertInlayHints !== null) {
 			configuration.assertInlayHints.apply(result)
 		} else {
 			assertEquals(expectedInlayHintItems, result.toExpectation)
+		}
+		if (nbInlayHints !== null) {
+			Assertions.assertEquals(nbInlayHints, result.size,
+				'''Expected «nbInlayHints» inlay hints, got «result.size».'''
+			)
 		}
 	}
 	

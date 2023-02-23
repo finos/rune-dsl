@@ -6,30 +6,32 @@ import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerTest
 
 class InlayHintTest extends AbstractRosettaLanguageServerTest {
 	@Test
-	def testImplicitFeatureCall() {
+	def testOperationShowsMulticardinality() {
 		testInlayHint[
 			val model = '''
 			namespace foo.bar
 			
 			type Foo:
-				a int (1..1)
-				condition C:
-					a > 42
+				a int (0..*)
+			
+			func F:
+				output:
+					result Foo (1..1)
+				set result -> a:
+					42
 			'''
 			it.model = model
+			it.assertNumberOfInlayHints = 1
 			it.assertInlayHints = [
 				val first = head
-				assertNotNull(first)
-				assertEquals("Foo ->", first.label.getLeft)
-				assertEquals(5, first.position.line)
-				
-				assertEquals(1, size)
+				assertEquals("(0..*)", first.label.getLeft)
+				assertEquals(8, first.position.line)
 			]
 		]
 	}
 	
 	@Test
-	def testImplicitParameter() {
+	def testFunctionalOperation() {
 		testInlayHint[
 			val model = '''
 			namespace foo.bar
@@ -38,7 +40,7 @@ class InlayHintTest extends AbstractRosettaLanguageServerTest {
 				inputs:
 					a int (1..1)
 				output:
-					b int (1..1)
+					b number (1..1)
 				set b:
 					a + 1
 			
@@ -49,47 +51,11 @@ class InlayHintTest extends AbstractRosettaLanguageServerTest {
 					[0, 1, 2] extract [ Foo ]
 			'''
 			it.model = model
+			it.assertNumberOfInlayHints = 1
 			it.assertInlayHints = [
-				val first = get(0)
-				assertEquals("item int", first.label.getLeft)
+				val first = head
+				assertEquals("number (0..*)", first.label.getLeft)
 				assertEquals(14, first.position.line)
-				
-				val second = get(1)
-				assertEquals("int ->", second.label.getLeft)
-				assertEquals(14, second.position.line)
-				
-				val third = get(2)
-				assertEquals("int*", third.label.getLeft)
-				assertEquals(14, third.position.line)
-				
-				assertEquals(3, size)
-			]
-		]
-	}
-	
-	@Test
-	def testRuleOutput() {
-		testInlayHint[
-			val model = '''
-			namespace foo.bar
-			
-			reporting rule Foo:
-				return 42
-			
-			reporting rule Bar:
-				return ["", ""]
-			'''
-			it.model = model
-			it.assertInlayHints = [
-				val first = get(0)
-				assertEquals("output int", first.label.getLeft)
-				assertEquals(2, first.position.line)
-				
-				val second = get(1)
-				assertEquals("output string*", second.label.getLeft)
-				assertEquals(5, second.position.line)
-				
-				assertEquals(2, size)
 			]
 		]
 	}
