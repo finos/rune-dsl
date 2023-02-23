@@ -1,7 +1,9 @@
 module com.regnosys.rosetta.GenerateRosetta
 
-import org.eclipse.xtext.xtext.generator.*
-import org.eclipse.xtext.xtext.generator.model.project.*
+import org.eclipse.xtext.xtext.generator.XtextGenerator
+import org.eclipse.xtext.xtext.generator.StandardLanguage
+import org.eclipse.xtext.xtext.generator.parser.antlr.XtextAntlrGeneratorFragment2
+import org.eclipse.xtext.xtext.generator.model.project.StandardProjectConfig
 
 var rootPath = ".."
 
@@ -38,7 +40,7 @@ Workflow {
 			name = "com.regnosys.rosetta.Rosetta"
 			fileExtensions = "rosetta"
 
-			parserGenerator = parser.antlr.XtextAntlrGeneratorFragment2 {
+			parserGenerator = XtextAntlrGeneratorFragment2 {
 				// set to true to get a debug Grammar
 				debugGrammar = true
 			}
