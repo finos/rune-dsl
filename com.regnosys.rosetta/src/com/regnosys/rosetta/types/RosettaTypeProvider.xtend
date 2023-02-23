@@ -87,7 +87,7 @@ class RosettaTypeProvider {
 				return computed
 			}
 		}
-		if (expression === null || expression.eIsProxy) {
+		if (!extensions.isResolved(expression)) {
 			return null
 		}
 		switch expression {
@@ -118,7 +118,7 @@ class RosettaTypeProvider {
 			} 
 			RosettaFeatureCall: {
 				val feature = expression.feature
-				if(feature === null || feature.eIsProxy) {
+				if (!extensions.isResolved(feature)) {
 					return null
 				}
 				switch (feature) {
@@ -147,7 +147,7 @@ class RosettaTypeProvider {
 			}
 			RosettaAttributeReference: {
 				val attr = expression.attribute
-				if(attr === null || attr.eIsProxy) {
+				if (!extensions.isResolved(attr)) {
 					return null
 				}
 				attr.type.safeRType(cycleTracker)

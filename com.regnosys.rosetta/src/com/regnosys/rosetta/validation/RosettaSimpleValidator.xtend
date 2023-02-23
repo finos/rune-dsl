@@ -507,6 +507,18 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				}
 			}
 		} else {
+			if (callable instanceof Attribute) {
+				if (callable.isOutput) {
+					val implicitType = element.typeOfImplicitVariable
+					val implicitFeatures = implicitType.allFeatures
+					if (implicitFeatures.exists[name == callable.name]) {
+						error('''Ambiguous reference. `«callable.name»` may either refer to `«defaultImplicitVariable.name» -> «callable.name»` or to the output variable.''',
+							element,
+							ROSETTA_SYMBOL_REFERENCE__SYMBOL
+						)
+					}
+				}
+			}
 			if (element.explicitArguments) {
 				error('''A variable may not be called.''',
 					element,
@@ -770,7 +782,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 	@Check
 	def checkFuncDispatchAttr(FunctionDispatch ele) {
-		if (ele.attribute !== null && ele.attribute.type !== null && !ele.attribute.type.eIsProxy) {
+		if (ele.attribute !== null && ele.attribute.type.isResolved) {
 			if (!(ele.attribute.type instanceof RosettaEnumeration)) {
 				error('''Dispatching function may refer to an enumeration typed attributes only. Current type is «ele.attribute.type.name»''', ele,
 					FUNCTION_DISPATCH__ATTRIBUTE)
@@ -780,7 +792,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkAttribute(Attribute ele) {
-		if (ele.type instanceof Data && !ele.type.eIsProxy) {
+		if (ele.type instanceof Data && ele.type.isResolved) {
 			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(ele.type as Annotated) || (ele.type as Data).allSuperTypes.exists[hasKeyedAnnotation])) {
 				//TODO turn to error if it's okay
 				warning('''«ele.type.name» must be annotated with [metadata key] as reference annotation is used''',
@@ -882,7 +894,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkCountOpArgument(RosettaCountOperation ele) {
-		if (ele.argument !== null && !ele.argument.eIsProxy) {
+		if (ele.argument.isResolved) {
 			if (!cardinality.isMulti(ele.argument))
 				error('''Count operation multiple cardinality argument.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 		}
@@ -1025,7 +1037,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			return
 		}
 		val inputType = inputs.get(0).type
-		if (inputType === null || inputType.eIsProxy) {
+		if (!inputType.isResolved) {
 			error('''Invalid input type for qualification function.''', func, FUNCTION__INPUTS)
 		} else if (!confExtensions.isRootEventOrProduct(inputType)) {
 			warning('''Input type does not match qualification root type.''', func, FUNCTION__INPUTS)
@@ -1071,7 +1083,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkUnaryOperation(RosettaUnaryOperation e) {
 		val receiver = e.argument
-		if (e instanceof ListOperation && receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
+		if (e instanceof ListOperation && receiver.isResolved && !cardinality.isMulti(receiver)) {
 			warning('''List «e.operator» operation cannot be used for single cardinality expressions.''', e, ROSETTA_OPERATION__OPERATOR)
 		}
 		

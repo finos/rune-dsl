@@ -88,7 +88,7 @@ public class GenerateTmGrammar {
 			}
 		}
 		
-		List<String> keywordsWithoutToken = new ArrayList();
+		List<String> keywordsWithoutToken = new ArrayList<>();
 		for (String keyword: keywords) {
 			if (!ignoredRosettaKeywords.contains(keyword)) {
 				if (!regexes.stream().anyMatch(regex -> regex.matcher(keyword).matches())) {
@@ -104,12 +104,11 @@ public class GenerateTmGrammar {
 		}
 	}
 	
-	@SuppressWarnings({ "unchecked" })
 	private void validatePattern(TmValue<Object> pattern, Map<Object, Object> namedPatterns) throws ConfigurationException {
 		if (!(pattern.value instanceof Map)) {
 			throw new ConfigurationException("A pattern may not be of type " + pattern.value.getClass().getSimpleName() + ". " + pattern.getPath());
 		}
-		TmValue<Map<Object, Object>> tmMap = pattern.asMap();
+		TmValue<Map<?, ?>> tmMap = pattern.asMap();
 		
 		Function<Predicate<String>, Predicate<Object>> string = pred -> (obj -> {
 			if (obj instanceof String) {
@@ -152,12 +151,12 @@ public class GenerateTmGrammar {
 			if (!(obj instanceof Map)) {
 				return false;
 			}
-			for (Entry<String, Object> capture: ((Map<String, Object>)obj).entrySet()) {
+			for (Entry<?, ?> capture: ((Map<?, ?>)obj).entrySet()) {
 				if (!(capture.getValue() instanceof Map)) {
 					return false;
 				}
 				try {
-					TmValue<Map<Object, Object>> captureMap = new TmValue<>((Map<Object, Object>) capture.getValue(), new ArrayList<>());
+					TmValue<Map<?, ?>> captureMap = new TmValue<>((Map<?, ?>) capture.getValue(), new ArrayList<>());
 					runValidators(captureMap, Map.of("name", scopes, "patterns", patterns, "comment", comment));
 				} catch (ConfigurationException e) {
 					return false;
@@ -186,14 +185,14 @@ public class GenerateTmGrammar {
 		}
 	}
 	
-	private void runValidators(TmValue<Map<Object, Object>> tmValue, Map<Object, Predicate<Object>> validators) throws ConfigurationException {		
-		for (Entry<Object, Object> entry: tmValue.value.entrySet()) {
-			Predicate<Object> validator = validators.get(entry.getKey());
+	private void runValidators(TmValue<Map<?, ?>> tmValue, Map<?, Predicate<Object>> validators) throws ConfigurationException {		
+		for (Entry<?, ?> entry: tmValue.value.entrySet()) {
+			Predicate<?> validator = validators.get(entry.getKey());
 			if (validator == null) {
 				throw new ConfigurationException("Unknown property " + entry.getKey() + ". " + tmValue.getPath());
 			}
 		}
-		for (Entry<Object, Predicate<Object>> validatorEntry: validators.entrySet()) {
+		for (Entry<?, Predicate<Object>> validatorEntry: validators.entrySet()) {
 			Predicate<Object> validator = validatorEntry.getValue();
 			Object patternValue = tmValue.value.get(validatorEntry.getKey());
 			if (!validator.test(patternValue)) {
@@ -202,38 +201,36 @@ public class GenerateTmGrammar {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	private Map<Object, Object> findNamedPatterns(Object input) {
 		Map<Object, Object> result = new LinkedHashMap<>();
 		if (input instanceof Map) {
-			Map<Object, Object> inputMap = (Map<Object, Object>)input;
-			for (Entry<Object, Object> node : inputMap.entrySet()) {
+			Map<?, ?> inputMap = (Map<?, ?>)input;
+			for (Entry<?, ?> node : inputMap.entrySet()) {
 			    if (node.getKey().equals("repository")) {
-			    	result.putAll((Map<Object, Object>) node.getValue());
+			    	result.putAll((Map<?, ?>) node.getValue());
 			    }
 			    result.putAll(findNamedPatterns(node.getValue()));
 			}
 		} else if (input instanceof List) {
-			for (Object item : (List<Object>)input) {
+			for (Object item : (List<?>)input) {
 				result.putAll(findNamedPatterns(item));
 			}
 		}
 		return result;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private List<TmValue<Object>> findAllPatterns(Object input, List<String> path) {
 		List<TmValue<Object>> result = new ArrayList<>();
 		if (input instanceof Map) {
-			Map<Object, Object> inputMap = (Map<Object, Object>)input;
-			for (Entry<Object, Object> node : inputMap.entrySet()) {
+			Map<?, ?> inputMap = (Map<?, ?>)input;
+			for (Entry<?, ?> node : inputMap.entrySet()) {
 				path.add(node.getKey().toString());
 				if (node.getKey().equals("patterns")) {
-					for (Object p: (List<Object>)node.getValue()) {
+					for (Object p: (List<?>)node.getValue()) {
 						result.add(new TmValue<>(p, path));
 					}
 			    } else if (node.getKey().equals("repository")) {
-			    	for (Entry<Object, Object> p: ((Map<Object, Object>)node.getValue()).entrySet()) {
+			    	for (Entry<?, ?> p: ((Map<?, ?>)node.getValue()).entrySet()) {
 						path.add((String)p.getKey());
 			    		result.add(new TmValue<>(p.getValue(), path));
 			    		path.remove(path.size() - 1);
@@ -243,26 +240,25 @@ public class GenerateTmGrammar {
 			    path.remove(path.size() - 1);
 			}
 		} else if (input instanceof List) {
-			for (Object item : (List<Object>)input) {
+			for (Object item : (List<?>)input) {
 				result.addAll(findAllPatterns(item, path));
 			}
 		}
 		return result;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private List<Pattern> findAllRegexes(Object input) {
 		List<Pattern> result = new ArrayList<>();
 		if (input instanceof Map) {
-			Map<Object, Object> inputMap = (Map<Object, Object>)input;
-			for (Entry<Object, Object> node : inputMap.entrySet()) {
+			Map<?, ?> inputMap = (Map<?, ?>)input;
+			for (Entry<?, ?> node : inputMap.entrySet()) {
 				if (regexKeys.contains(node.getKey())) {
 					result.add(Pattern.compile(node.getValue().toString()));
 				}
 			    result.addAll(findAllRegexes(node.getValue()));
 			}
 		} else if (input instanceof List) {
-			for (Object item : (List<Object>)input) {
+			for (Object item : (List<?>)input) {
 				result.addAll(findAllRegexes(item));
 			}
 		}
@@ -285,7 +281,6 @@ public class GenerateTmGrammar {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private Map<String, String> readVariables(Map<Object, Object> yaml) throws ConfigurationException {
 		LinkedHashMap<String, String> result = new LinkedHashMap<>(yaml.size());
 		
@@ -293,8 +288,8 @@ public class GenerateTmGrammar {
 		if (!(rawVariables instanceof Map)) {
 			return result;
 		}
-		Map<Object, Object> variables = (Map<Object, Object>)rawVariables;
-		for (Entry<Object, Object> variable : variables.entrySet()) {
+		Map<?, ?> variables = (Map<?, ?>)rawVariables;
+		for (Entry<?, ?> variable : variables.entrySet()) {
 		    if (variable.getValue() instanceof String) {
 		    	String rawValue = (String)variable.getValue();
 		    	try {
@@ -326,10 +321,10 @@ public class GenerateTmGrammar {
 	@SuppressWarnings("unchecked")
 	private void applyVariablesRecursively(Object input, Map<String, String> variables) throws ConfigurationException {
 		if (input instanceof Map) {
-			for (Entry<Object, Object> node : ((Map<Object, Object>)input).entrySet()) {
+			for (Entry<?, ?> node : ((Map<?, ?>)input).entrySet()) {
 			    if (node.getValue() instanceof String) {
 			    	try {
-						node.setValue(applyVariables((String)node.getValue(), variables));
+						((Entry<?, String>)node).setValue(applyVariables((String)node.getValue(), variables));
 					} catch (ConfigurationException e) {
 						throw new ConfigurationException("At " + node.getKey() + ": " + e.getExplanation());
 					}
@@ -338,7 +333,7 @@ public class GenerateTmGrammar {
 			    }
 			}
 		} else if (input instanceof List) {
-			for (Object item : (List<Object>)input) {
+			for (Object item : (List<?>)input) {
 				applyVariablesRecursively(item, variables);
 			}
 		}
@@ -353,9 +348,8 @@ public class GenerateTmGrammar {
 			this.path = new ArrayList<>(path);
 		}
 		
-		@SuppressWarnings("unchecked")
-		public TmValue<Map<Object, Object>> asMap() {
-			Map<Object, Object> newValue = (Map<Object, Object>) value;
+		public TmValue<Map<?, ?>> asMap() {
+			Map<?, ?> newValue = (Map<?, ?>) value;
 			return new TmValue<>(newValue, path);
 		}
 		

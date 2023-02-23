@@ -30,6 +30,25 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void mayNotUseAmbiguousOutputTest() {
+		val model = '''
+			type Foo:
+				result int (1..1)
+			
+			func F:
+			    inputs:
+			        foo Foo (1..1)
+			    output:
+			        result int (1..1)
+						
+			    set result:
+			        foo extract [ result ]
+		'''.parseRosetta
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+            "Ambiguous reference. `result` may either refer to `item -> result` or to the output variable.")
+	}
+	
+	@Test
 	def void dateMemberHasRightTypeTest() {
 		'''
 			func F:

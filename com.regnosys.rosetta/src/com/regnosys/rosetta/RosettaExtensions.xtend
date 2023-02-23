@@ -21,13 +21,34 @@ import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.RRecordType
+import org.eclipse.emf.ecore.EObject
 
 class RosettaExtensions {
+	def boolean isResolved(EObject obj) {
+		obj !== null && !obj.eIsProxy
+	}
+	
+	def Iterable<? extends RosettaFeature> allFeatures(RType t) {
+		switch t {
+			RDataType:
+				t.data.allAttributes
+			REnumType:
+				t.enumeration.allEnumValues
+			RRecordType:
+				t.record.features
+			default:
+				#[]
+		}
+	}
 	
 	def Set<Data> getAllSuperTypes(Data clazz) {
 		doGetSuperTypes(clazz, newLinkedHashSet)
 	}
-	
 	
 	private def Set<Data> doGetSuperTypes(Data clazz, Set<Data> seenClasses) {
 		if(clazz !== null && seenClasses.add(clazz)) 
@@ -147,7 +168,7 @@ class RosettaExtensions {
 	}
 	
 	def private allAnnotations(Annotated withAnnotations) {
-		withAnnotations?.annotations?.filter[annotation !== null && !annotation.eIsProxy]
+		withAnnotations?.annotations?.filter[annotation.isResolved]
 	}
 	
 	def String conditionName(Condition cond, Data data) {

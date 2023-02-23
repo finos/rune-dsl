@@ -23,12 +23,16 @@ import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.TextDocumentConfiguration
 import org.eclipse.xtext.testing.FileInfo
 import java.nio.charset.StandardCharsets
+import com.regnosys.rosetta.ide.util.RangeUtils
+import java.util.stream.Collectors
+import org.junit.jupiter.api.Assertions
 
 /**
  * TODO: contribute to Xtext.
  */
 abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerTest {
 	@Inject extension ModelHelper
+	@Inject RangeUtils ru
 	
 	new() {
 		super("rosetta")
@@ -54,6 +58,7 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	
 	@Accessors static class TestInlayHintsConfiguration extends TextDocumentPositionConfiguration {
 		String expectedInlayHintItems = ''
+		Integer assertNumberOfInlayHints = null
 		(List<? extends InlayHint>) => void assertInlayHints = null
 		Range range = new Range(new Position(0, 0), new Position(Integer.MAX_VALUE, Integer.MAX_VALUE))
 		boolean assertNoIssues = true
@@ -69,15 +74,28 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 			new TextDocumentIdentifier(filePath),
 			range
 		))
-		val result = inlayHints.get.map[languageServer.resolveInlayHint(it).get].toList
+		val result = inlayHints.get.map[languageServer.resolveInlayHint(it).get].stream.collect(Collectors.toCollection[newArrayList])
+		result.sort[a,b| ru.comparePositions(a.position, b.position)]
 
 		if (configuration.assertNoIssues) {
 			configuration.model.parseRosettaWithNoIssues
+		}
+		val nbInlayHints = configuration.assertNumberOfInlayHints
+		if (nbInlayHints !== null) {
+			Assertions.assertTrue(
+				result.size >= nbInlayHints,
+				'''Expected «nbInlayHints» inlay hints, got «result.size».'''
+			)
 		}
 		if (configuration.assertInlayHints !== null) {
 			configuration.assertInlayHints.apply(result)
 		} else {
 			assertEquals(expectedInlayHintItems, result.toExpectation)
+		}
+		if (nbInlayHints !== null) {
+			Assertions.assertEquals(nbInlayHints, result.size,
+				'''Expected «nbInlayHints» inlay hints, got «result.size».'''
+			)
 		}
 	}
 	
