@@ -2,9 +2,9 @@ package com.regnosys.rosetta.ide.semantictokens;
 
 import javax.inject.Inject;
 
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
+import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
 import com.regnosys.rosetta.rosetta.RosettaBasicType;
 import com.regnosys.rosetta.rosetta.RosettaCalculationType;
@@ -40,18 +40,17 @@ import static com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesE
 import static com.regnosys.rosetta.ide.semantictokens.lsp.LSPSemanticTokenModifiersEnum.*;
 
 public class RosettaSemanticTokensService extends AbstractSemanticTokensService {
-
+	@Inject
+	private RosettaExtensions extensions;
+	
 	@Inject
 	public RosettaSemanticTokensService(ISemanticTokenTypesProvider tokenTypesProvider,
 			ISemanticTokenModifiersProvider tokenModifiersProvider) {
 		super(tokenTypesProvider, tokenModifiersProvider);
 	}
 	
-	private boolean isResolved(EObject obj) {
-		return obj != null && !obj.eIsProxy();
-	}
 	private Optional<RosettaSemanticTokenTypesEnum> typeToToken(RosettaType t) {
-		if (isResolved(t)) {
+		if (extensions.isResolved(t)) {
 			if (t instanceof Data) {
 				return Optional.of(TYPE);
 			} else if (t instanceof RosettaBasicType) {
@@ -101,7 +100,7 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	@MarkSemanticToken
 	public SemanticToken markFeature(RosettaFeatureCall featureCall) {
 		RosettaFeature feature = featureCall.getFeature();
-		if (isResolved(feature)) {
+		if (extensions.isResolved(feature)) {
 			if (feature instanceof RosettaEnumValue) {
 				return createSemanticToken(featureCall, ROSETTA_FEATURE_CALL__FEATURE, ENUM_MEMBER);
 			} else if (feature instanceof Attribute) {
@@ -116,7 +115,7 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	@MarkSemanticToken
 	public SemanticToken markRosettaReference(RosettaSymbolReference reference) {
 		RosettaSymbol symbol = reference.getSymbol();
-		if (isResolved(symbol)) {
+		if (extensions.isResolved(symbol)) {
 			if (symbol instanceof Attribute) {
 				EReference containmentFeature = symbol.eContainmentFeature();
 				if (containmentFeature.equals(FUNCTION__INPUTS)) {

@@ -26,8 +26,13 @@ import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RRecordType
+import org.eclipse.emf.ecore.EObject
 
 class RosettaExtensions {
+	def boolean isResolved(EObject obj) {
+		obj !== null && !obj.eIsProxy
+	}
+	
 	def Iterable<? extends RosettaFeature> allFeatures(RType t) {
 		switch t {
 			RDataType:
@@ -163,7 +168,7 @@ class RosettaExtensions {
 	}
 	
 	def private allAnnotations(Annotated withAnnotations) {
-		withAnnotations?.annotations?.filter[annotation !== null && !annotation.eIsProxy]
+		withAnnotations?.annotations?.filter[annotation.isResolved]
 	}
 	
 	def String conditionName(Condition cond, Data data) {

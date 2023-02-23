@@ -110,7 +110,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						Segment: {
 							val prev = context.prev
 							if (prev !== null) {
-								if (prev.attribute !== null && !prev.attribute.eIsProxy) {
+								if (prev.attribute.isResolved) {
 									val receiverType = typeProvider.getRType(prev.attribute)
 									return Scopes.scopeFor(receiverType.allFeatures)
 								}
