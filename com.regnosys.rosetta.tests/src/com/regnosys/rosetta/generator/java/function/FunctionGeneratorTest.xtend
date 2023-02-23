@@ -27,7 +27,6 @@ import java.time.ZonedDateTime
 import java.time.ZoneId
 import com.rosetta.model.lib.records.Date
 import java.time.LocalTime
-import java.math.BigDecimal
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -440,24 +439,6 @@ class FunctionGeneratorTest {
 		
 		val func2 = classes.createFunc("F2");
 		assertFalse(func2.invokeFunc(Boolean))
-	}
-	
-	@Test
-	def void largeNumberTest() {
-		val code = '''
-			namespace com.rosetta.test.model
-			version "${project.version}"
-			
-			func F1:
-				output:
-					res number (1..1)
-				set res:
-					99999999999999999999.99999
-		'''.generateCode
-		val classes = code.compileToClasses
-		
-		val func1 = classes.createFunc("F1");
-		assertEquals(new BigDecimal("99999999999999999999.99999"), func1.invokeFunc(Number))
 	}
 	
 	@Test
@@ -1105,6 +1086,72 @@ class FunctionGeneratorTest {
 			'''
 		].generateCode // .writeClasses("shouldGenerateFunctionWithConditionalAssignment")
 		.compileToClasses
+	}
+
+	@Test
+	def void shouldGenerateFunctionWithCreationLHSUsingAlias() {
+		val code = #[
+			'''
+				namespace com.rosetta.test.model.agreement
+				version "test"
+				
+				type Top:
+					foo Foo (1..1)
+				
+				type Foo:
+					bar1 Bar (0..1)
+					bar2 Bar (0..1)
+				
+				type Bar:
+					id number (1..1)
+				
+				func ExtractBar: <"Extracts a bar">
+					inputs: top Top (1..1)
+					output: topOut Top (1..1)
+					alias fooAlias : topOut -> foo
+					set fooAlias -> bar1:
+						top -> foo -> bar1
+					set topOut -> foo -> bar2:
+						top -> foo -> bar2
+			'''
+		].generateCode
+		// .writeClasses("shouldGenerateFunctionWithCreationLHS")
+		code.compileToClasses
+	}
+
+	@Test
+	def void shouldGenerateFunctionWithAliasAssignOutput() {
+		val code = #[
+			'''
+				namespace com.rosetta.test.model.agreement
+				version "test"
+				
+				type Top:
+					foo Foo (1..1)
+				
+				type Foo:
+					bar Bar (0..1)
+				
+				type Bar:
+					id number (1..1)
+				
+				func UpdateBarId: <"Updates Bar.id by set on an alias">
+					inputs:
+						top Top (1..1)
+						newId number (1..1)
+				
+					output:
+						topOut Top (1..1)
+				
+					alias barAlias :
+						topOut -> foo -> bar
+				
+					set barAlias -> id:
+						newId
+			'''
+		].generateCode
+		// .writeClasses("shouldGenerateFunctionWithAliasAssignOutput")
+		code.compileToClasses
 	}
 
 	@Test

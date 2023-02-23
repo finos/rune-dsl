@@ -1083,7 +1083,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkUnaryOperation(RosettaUnaryOperation e) {
 		val receiver = e.argument
-		if (e instanceof ListOperation && receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
+		if (e instanceof ListOperation && receiver.isResolved && !cardinality.isMulti(receiver)) {
 			warning('''List «e.operator» operation cannot be used for single cardinality expressions.''', e, ROSETTA_OPERATION__OPERATOR)
 		}
 		
