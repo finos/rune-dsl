@@ -25,8 +25,6 @@ import org.eclipse.xtext.testing.FileInfo
 import java.nio.charset.StandardCharsets
 import com.regnosys.rosetta.ide.util.RangeUtils
 import java.util.stream.Collectors
-import java.util.ArrayList
-import static extension org.junit.Assert.assertTrue
 import org.junit.jupiter.api.Assertions
 
 /**
