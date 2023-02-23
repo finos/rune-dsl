@@ -353,7 +353,7 @@ class RosettaMapTestEqualityOperation extends RosettaMapTestExpression {
 }
 
 class RosettaMapTestFunc extends RosettaMapTestExpression {
-	refers RosettaCallableWithArgs conditionFunc
+	refers RosettaCallableWithArgs func
 	contains RosettaMapPathValue predicatePath
 }
 

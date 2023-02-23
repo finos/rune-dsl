@@ -669,9 +669,9 @@ repository:
           patterns:
           - include: '#comment'
           - name: keyword.other.rosetta
-            match: '{{wordStart}}(when|to|path|rosettaPath|and|predicatePath){{wordEnd}}'
+            match: '{{wordStart}}(when|to|path|rosettaPath|and){{wordEnd}}'
           - name: keyword.operator.word.rosetta
-            match: '{{wordStart}}(exists|is|absent|condition-func){{wordEnd}}'
+            match: '{{wordStart}}(exists|is|absent|func){{wordEnd}}'
           - name: keyword.operator.rosetta
             match: '{{wordStart}}(=|<>){{wordEnd}}'
           - include: '#literal'
