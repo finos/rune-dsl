@@ -153,7 +153,7 @@ repository:
           - name: entity.name.document.body.rosetta
             match: '{{identifier}}'
           - include: '#documentation'
-      
+
       rosettaCorpus:
         name: meta.corpus.rosetta
         begin: '{{wordStart}}corpus{{wordEnd}}'
@@ -172,7 +172,7 @@ repository:
           - name: entity.name.document.rosetta # note: I cannot differentiate between the body and the corpus here :(
             match: '{{identifier}}'
           - include: '#documentation'
-      
+
       rosettaSegment:
         name: meta.segment.rosetta
         begin: '{{wordStart}}segment{{wordEnd}}'
@@ -183,7 +183,7 @@ repository:
         - include: '#comment'
         - name: entity.name.document.segment.rosetta
           match: '{{identifier}}'
-      
+
       rosettaBasicType:
         name: meta.basic-type.rosetta
         begin: '{{wordStart}}basicType{{wordEnd}}'
@@ -194,7 +194,7 @@ repository:
         - include: '#comment'
         - name: entity.name.type.builtin.basic-type.rosetta
           match: '{{identifier}}'
-      
+
       rosettaRecordType:
         name: meta.record-type.rosetta
         begin: '{{wordStart}}recordType{{wordEnd}}'
@@ -234,7 +234,7 @@ repository:
           2: { name: invalid.illegal.identifier.rosetta }
         patterns:
         - include: '#comment'
-      
+
       rosettaQualifiedType:
         name: meta.qualified-type.rosetta
         begin: '{{wordStart}}qualifiedType{{wordEnd}}'
@@ -267,7 +267,7 @@ repository:
           - include: '#comment'
           - include: '#rosettaBracedFeatures'
 
-      rosettaMetaType:        
+      rosettaMetaType:
         name: meta.meta-type.rosetta
         begin: '{{wordStart}}metaType{{wordEnd}}'
         beginCaptures:
@@ -283,7 +283,7 @@ repository:
           - include: '#comment'
           - begin: '{{identifier}}'
             beginCaptures:
-              0: { name: entity.name.type.rosetta } # Need semantic tokens to specify type 
+              0: { name: entity.name.type.rosetta } # Need semantic tokens to specify type
             end: '{{rootEnd}}'
             patterns:
             - include: '#comment'
@@ -312,7 +312,7 @@ repository:
             - include: '#documentation'
             - name: entity.name.type.rosetta # Need semantic tokens to specify type
               match: '{{identifier}}'
-      
+
       rosettaParameters:
         name: meta.parameters.rosetta
         begin: \(
@@ -326,7 +326,7 @@ repository:
         - include: '#rosettaParameter'
         - name: punctuation.separator.parameter.rosetta
           match: ','
-      
+
       rosettaParameter:
         name: meta.parameter.rosetta
         begin: '{{identifier}}'
@@ -444,7 +444,7 @@ repository:
               - include: '#comment'
               - name: entity.name.type.type.rosetta
                 match: '{{identifier}}'
-      
+
       blueprintExpression:
         patterns:
         - include: '#comment'
@@ -553,7 +553,7 @@ repository:
             match: '{{identifier}}'
           - name: punctuation.separator.dot.rosetta
             match: \.
-      
+
       annotationDeclaration:
         name: meta.annotation.rosetta
         begin: '{{wordStart}}annotation{{wordEnd}}'
@@ -572,7 +572,7 @@ repository:
           - include: '#annotation'
           - include: '#colon'
           - include: '#memberAttribute'
-      
+
       annotation:
         name: meta.annotated.rosetta
         begin: (\[)
@@ -588,7 +588,7 @@ repository:
         - include: '#referenceAnnotationBody'
         - include: '#ruleReferenceAnnotationBody'
         - include: '#customAnnotationBody'
-      
+
       prefixAnnotationBody:
         name: meta.annotated.prefix.rosetta
         begin: '{{wordStart}}prefix{{wordEnd}}'
@@ -599,7 +599,7 @@ repository:
         - include: '#comment'
         - name: entity.name.function.rosetta
           match: '{{identifier}}'
-      
+
       synonymAnnotationBody: # TODO: highlight `path` and `dateFormat` strings differently
         name: meta.annotated.synonym.rosetta
         begin: '{{wordStart}}(synonym){{wordEnd}}|(?={{synonymAnnotationSection}})'
@@ -641,7 +641,7 @@ repository:
           - include: '#synonymMapping'
           - name: punctuation.separator.comma.rosetta
             match: ','
-      
+
       synonymValue: # includes RosettaSynonymValue, RosettaClassSynonymValue, RosettaMetaSynonymValue and RosettaMergeSynonymValue
         patterns:
         - include: '#comment'
@@ -655,7 +655,7 @@ repository:
           match: '{{wordStart}}(when|path|maps){{wordEnd}}'
         - name: keyword.operator.rosetta
           match: '<>'
-      
+
       synonymMapping: # TODO: improve
         patterns:
         - include: '#comment'
@@ -669,9 +669,9 @@ repository:
           patterns:
           - include: '#comment'
           - name: keyword.other.rosetta
-            match: '{{wordStart}}(when|to|path|rosettaPath|and){{wordEnd}}'
+            match: '{{wordStart}}(when|to|path|rosettaPath|and|predicatePath){{wordEnd}}'
           - name: keyword.operator.word.rosetta
-            match: '{{wordStart}}(exists|is|absent|condition-mapper){{wordEnd}}'
+            match: '{{wordStart}}(exists|is|absent|condition-func){{wordEnd}}'
           - name: keyword.operator.rosetta
             match: '{{wordStart}}(=|<>){{wordEnd}}'
           - include: '#literal'
@@ -701,7 +701,7 @@ repository:
         - name: keyword.other.rosetta
           match: '{{docReferenceAnnotationSection}}'
         - include: '#string'
-      
+
       ruleReferenceAnnotationBody:
         name: meta.annotated.rule.rosetta
         begin: '{{wordStart}}ruleReference{{wordEnd}}'
@@ -712,7 +712,7 @@ repository:
         - include: '#comment'
         - name: entity.name.rule.rosetta
           match: '{{identifier}}'
-      
+
       customAnnotationBody:
         name: meta.annotated.rosetta
         begin: '{{identifier}}'
@@ -740,7 +740,7 @@ repository:
             - include: '#comment'
           - name: entity.name.type.type.rosetta
             match: '{{identifier}}'
-      
+
       memberAttribute: # TODO: improve (nested patterns? First consume attribute, then start consuming annotations until the next identifier)
         patterns:
         - include: '#comment'
@@ -768,7 +768,7 @@ repository:
           end: '(?<=\))|{{sectionEnd}}'
           patterns:
           - include: '#attributeType'
-      
+
       outputAttribute:
         patterns:
         - include: '#comment'
@@ -781,7 +781,7 @@ repository:
           end: '(?<=\))|{{sectionEnd}}'
           patterns:
           - include: '#attributeType'
-      
+
       attributeType:
         patterns:
         - include: '#comment'
@@ -790,7 +790,7 @@ repository:
         - name: punctuation.separator.dot.rosetta
           match: \.
         - include: '#cardinalityConstraint'
-      
+
       cardinalityConstraint:
         name: meta.cardinality.rosetta
         match: (\()(\d+)?(\.\.)?(?:(\d+)|(\*))?(\))?
@@ -830,7 +830,7 @@ repository:
         - name: variable.other.enummember.rosetta
           match: '{{identifier}}'
 
-      typeDeclaration:        
+      typeDeclaration:
         name: meta.type.rosetta
         begin: '{{wordStart}}type{{wordEnd}}'
         beginCaptures:
@@ -854,8 +854,8 @@ repository:
         - include: '#annotation'
         - include: '#condition'
         - include: '#memberAttribute'
-      
-      condition:        
+
+      condition:
         name: meta.condition.rosetta
         begin: '{{wordStart}}(post\-)?condition{{wordEnd}}'
         beginCaptures:
@@ -873,7 +873,7 @@ repository:
         - include: '#comment'
         - include: '#documentationAndAnnotationsFollowedByExpression'
 
-      functionDeclaration:        
+      functionDeclaration:
         name: meta.function.rosetta
         begin: '{{wordStart}}func{{wordEnd}}'
         beginCaptures:
@@ -930,7 +930,7 @@ repository:
         - include: '#output'
         - include: '#alias'
         - include: '#operation'
-      
+
       inputs:
         name: meta.inputs.rosetta
         begin: '{{wordStart}}inputs{{wordEnd}}'
@@ -1065,7 +1065,7 @@ repository:
         - include: '#number'
         - name: constant.language.rosetta
           match: '{{wordStart}}(True|False|empty){{wordEnd}}'
-      
+
       functionalOperation:
         name: meta.functional-operation.rosetta
         begin: '{{functionalOperation}}'
@@ -1083,7 +1083,7 @@ repository:
           - include: '#expression'
         - name: variable.rosetta # Need semantic tokens to specify variable
           match: '{{identifier}}'
-      
+
       documentationAndAnnotationsFollowedByExpression: # Special rule to circumvent clashing of '[' and '<' in expressions
         name: meta.documentation-and-annotations-followed-by-expression.rosetta
         begin: (?!\s)
@@ -1105,7 +1105,7 @@ repository:
             - include: '#string'
           - include: '#annotationsFollowedByExpression'
         - include: '#annotationsFollowedByExpression'
-      
+
       documentationFollowedByExpression:
         name: meta.documentation-followed-by-expression.rosetta
         begin: (?!\s)
@@ -1127,7 +1127,7 @@ repository:
             - include: '#string'
           - include: '#expression'
         - include: '#expression'
-      
+
       annotationsFollowedByExpression:
         name: meta.annotations-followed-by-expression.rosetta
         begin: (?!\s)
@@ -1182,7 +1182,7 @@ repository:
       stringCharacterEscape:
         name: constant.character.escape.rosetta
         match: \\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\{[0-9A-Fa-f]+\}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)
-  
+
   number:
     patterns:
     - include: '#float'
@@ -1194,7 +1194,7 @@ repository:
       float:
         name: constant.numeric.float.decimal.rosetta
         match: '[+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?'
-  
+
   documentation:
     name: comment.block.documentation.rosetta
     begin: (<)
@@ -1205,7 +1205,7 @@ repository:
       1: { name: punctuation.definition.documentation.end.rosetta }
     patterns:
     - include: '#string'
-  
+
   comment:
     patterns:
     - include: '#lineComment'

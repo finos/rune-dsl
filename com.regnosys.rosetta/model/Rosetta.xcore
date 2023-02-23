@@ -352,8 +352,8 @@ class RosettaMapTestEqualityOperation extends RosettaMapTestExpression {
 	String operator
 }
 
-class RosettaMapTestMapper extends RosettaMapTestExpression {
-	String conditionMapperName
+class RosettaMapTestFunc extends RosettaMapTestExpression {
+	refers RosettaCallableWithArgs conditionFunc
 	contains RosettaMapPathValue predicatePath
 }
 

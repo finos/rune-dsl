@@ -353,7 +353,7 @@ RosettaMapTest:
 	RosettaMapPath
 	| RosettaMapRosettaPath
 	| RosettaMapTestExpression
-	| RosettaMapTestMapper
+	| RosettaMapTestFunc
 ;
 
 RosettaMapPath:
@@ -392,8 +392,8 @@ RosettaMapPathValue:
 	path=STRING
 ;
 
-RosettaMapTestMapper:
-	'condition-mapper' conditionMapperName=STRING (predicatePath=RosettaMapPathValue)?
+RosettaMapTestFunc:
+	'condition-func' conditionFunc=[RosettaCallableWithArgs] ('predicatePath' '=' predicatePath=RosettaMapPathValue)?
 ;
 
 
