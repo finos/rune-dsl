@@ -669,7 +669,7 @@ repository:
           patterns:
           - include: '#comment'
           - name: keyword.other.rosetta
-            match: '{{wordStart}}(when|func|to|path|rosettaPath|and){{wordEnd}}'
+            match: '{{wordStart}}(when|funcReference|to|path|rosettaPath|and){{wordEnd}}'
           - name: keyword.operator.word.rosetta
             match: '{{wordStart}}(exists|is|absent){{wordEnd}}'
           - name: keyword.operator.rosetta

@@ -393,7 +393,7 @@ RosettaMapPathValue:
 ;
 
 RosettaMapTestFunc:
-	'func' func=[RosettaCallableWithArgs] ('path' predicatePath=RosettaMapPathValue)?
+	'funcReference' func=[RosettaCallableWithArgs] ('path' predicatePath=RosettaMapPathValue)?
 ;
 
 
