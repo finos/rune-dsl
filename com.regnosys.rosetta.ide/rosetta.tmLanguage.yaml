@@ -32,7 +32,7 @@ variables:
   listOperationWord: '{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum){{wordEnd}}|{{functionalOperation}}'
   listOperation: ->|{{listOperationWord}}
   blueprintNodeEnd: '(?={{wordStart}}(then|output|as){{wordEnd}})|{{rootEnd}}'
-  synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge){{wordEnd}}'
+  synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge|funcReference){{wordEnd}}'
   synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
