@@ -40,7 +40,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
 		<!-- release used by maven compiler and tycho plugins, overridden in lib projects -->
 		<maven.compiler.release>11</maven.compiler.release>
 		<!-- Tycho settings -->
-		<tycho-version>2.6.0</tycho-version>
+		<tycho-version>2.7.5</tycho-version>
 		<!-- Define overridable properties for tycho-surefire-plugin IMPORTANT THESE PROPERTIES ARE SOMETIMES OVERRIDEN BUT NEED TO BE BLANK OTHERWISE -->
 		<platformSystemProperties></platformSystemProperties>
 		<moduleProperties></moduleProperties>
