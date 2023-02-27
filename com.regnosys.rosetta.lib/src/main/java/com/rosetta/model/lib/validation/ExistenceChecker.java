@@ -6,17 +6,27 @@ import java.util.Objects;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 
 public class ExistenceChecker {
-	public ExistenceChecker() {
-	}
-
 	public static boolean isSet(Object field) {
-		return field != null;
+		if (field == null) {
+			return false;
+		}
+		if (field instanceof List) {
+			@SuppressWarnings("unchecked")
+			List<? extends Object> l = (List<? extends Object>)field;
+			return l.size() > 0 && l.stream().anyMatch(Objects::nonNull);
+		} else if (field instanceof RosettaModelObjectBuilder) {
+			return ((RosettaModelObjectBuilder)field).hasData();
+		}
+		return true;
 	}
+	
+	// @Compat. Older models are compiled against these method overloads.
 	public static boolean isSet(RosettaModelObjectBuilder field) {
-		return field != null && field.hasData();
+		return isSet((Object)field);
 	}
-
+	
+	// @Compat. Older models are compiled against these method overloads.
 	public static boolean isSet(List<? extends Object> field) {
-		return field != null && field.size() > 0 && field.stream().anyMatch(Objects::nonNull);
+		return isSet((Object)field);
 	}
 }

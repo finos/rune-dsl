@@ -16,7 +16,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -32,7 +31,6 @@ import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
-import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
@@ -114,6 +112,7 @@ import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import org.eclipse.xtext.naming.QualifiedName
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.RosettaDocReference
+import org.eclipse.xtext.EcoreUtil2
 
 // TODO: split expression validator
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
@@ -508,6 +507,18 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				}
 			}
 		} else {
+			if (callable instanceof Attribute) {
+				if (callable.isOutput) {
+					val implicitType = element.typeOfImplicitVariable
+					val implicitFeatures = implicitType.allFeatures
+					if (implicitFeatures.exists[name == callable.name]) {
+						error('''Ambiguous reference. `«callable.name»` may either refer to `«defaultImplicitVariable.name» -> «callable.name»` or to the output variable.''',
+							element,
+							ROSETTA_SYMBOL_REFERENCE__SYMBOL
+						)
+					}
+				}
+			}
 			if (element.explicitArguments) {
 				error('''A variable may not be called.''',
 					element,
@@ -771,7 +782,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 	@Check
 	def checkFuncDispatchAttr(FunctionDispatch ele) {
-		if (ele.attribute !== null && ele.attribute.type !== null && !ele.attribute.type.eIsProxy) {
+		if (ele.attribute !== null && ele.attribute.type.isResolved) {
 			if (!(ele.attribute.type instanceof RosettaEnumeration)) {
 				error('''Dispatching function may refer to an enumeration typed attributes only. Current type is «ele.attribute.type.name»''', ele,
 					FUNCTION_DISPATCH__ATTRIBUTE)
@@ -781,7 +792,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkAttribute(Attribute ele) {
-		if (ele.type instanceof Data && !ele.type.eIsProxy) {
+		if (ele.type instanceof Data && ele.type.isResolved) {
 			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(ele.type as Annotated) || (ele.type as Data).allSuperTypes.exists[hasKeyedAnnotation])) {
 				//TODO turn to error if it's okay
 				warning('''«ele.type.name» must be annotated with [metadata key] as reference annotation is used''',
@@ -883,7 +894,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkCountOpArgument(RosettaCountOperation ele) {
-		if (ele.argument !== null && !ele.argument.eIsProxy) {
+		if (ele.argument.isResolved) {
 			if (!cardinality.isMulti(ele.argument))
 				error('''Count operation multiple cardinality argument.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 		}
@@ -1026,7 +1037,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			return
 		}
 		val inputType = inputs.get(0).type
-		if (inputType === null || inputType.eIsProxy) {
+		if (!inputType.isResolved) {
 			error('''Invalid input type for qualification function.''', func, FUNCTION__INPUTS)
 		} else if (!confExtensions.isRootEventOrProduct(inputType)) {
 			warning('''Input type does not match qualification root type.''', func, FUNCTION__INPUTS)
@@ -1054,19 +1065,25 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkOnlyExistsPathsHaveCommonParent(RosettaOnlyExistsExpression e) {
-		val parents = e.args
-				.map[onlyExistsParentType]
-				.filter[it !== null]
-				.toSet
-		if (parents.size > 1) {
-			error('''Only exists paths must have a common parent. Found types «parents.join(", ")».''', e, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS)
+		val first = e.args.head
+		val parent = exprHelper.getParentExpression(first)
+		for (var i = 1; i < e.args.size; i++) {
+			val other = e.args.get(i)
+			val otherParent = exprHelper.getParentExpression(other)
+			if ((parent === null) !== (otherParent === null) || parent !== null && otherParent !== null && !EcoreUtil2.equals(parent, otherParent)) {
+				if (otherParent !== null) {
+					error('''Only exists paths must have a common parent.''', otherParent, null)
+				} else {
+					error('''Only exists paths must have a common parent.''', other, null)
+				}
+			}
 		}
 	}
 	
 	@Check
 	def checkUnaryOperation(RosettaUnaryOperation e) {
 		val receiver = e.argument
-		if (e instanceof ListOperation && receiver !== null && !receiver.eIsProxy && !cardinality.isMulti(receiver)) {
+		if (e instanceof ListOperation && receiver.isResolved && !cardinality.isMulti(receiver)) {
 			warning('''List «e.operator» operation cannot be used for single cardinality expressions.''', e, ROSETTA_OPERATION__OPERATOR)
 		}
 		
@@ -1353,40 +1370,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
             }
         }
 	}
-	
-	private def String getOnlyExistsParentType(RosettaExpression e) {
-		switch (e) {
-			RosettaFeatureCall: {
-				val parentFeatureCall = e.receiver
-				switch (parentFeatureCall) {
-					RosettaFeatureCall: {
-						val parentFeature = parentFeatureCall.feature 
-						if (parentFeature instanceof RosettaTypedFeature) {
-							return parentFeature.type.name
-						}
-					}
-					RosettaSymbolReference: {
-						val parentCallable = parentFeatureCall.symbol 
-						if (parentCallable instanceof Attribute) {
-							return parentCallable.type.name
-						}
-					}
-					RosettaImplicitVariable: {
-						return parentFeatureCall.RType.name
-					}
-					default: {
-						log.warn("Only exists parent type unsupported " + parentFeatureCall)
-						return null
-					}
-						
-				}
-			}
-			default: {
-				log.warn("Only exists expression type unsupported " + e)
-				return null
-			}
-		}
-	} 
 
 /* 	
 	@Inject TargetURIConverter converter

@@ -47,6 +47,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
+import com.regnosys.rosetta.rosetta.RosettaParameter
+import com.regnosys.rosetta.rosetta.simple.Data
 
 class CardinalityProvider {
 	
@@ -130,9 +132,27 @@ class CardinalityProvider {
 			RosettaOnlyExistsExpression,
 			RosettaRootElement,
 			RosettaEnumValueReference,
-			RosettaMapPathValue: false
+			RosettaMapPathValue,
+			RosettaParameter: false
 			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }
 		}
+	}
+	
+	def isImplicitVariableMulti(EObject context) {
+		isImplicitVariableMulti(context, false)
+	}
+	
+	def isImplicitVariableMulti(EObject context, boolean breakOnClosureParameter) {
+		val definingContainer = context.findContainerDefiningImplicitVariable
+		definingContainer.map [
+			if (it instanceof Data) {
+				false
+			} else if (it instanceof RosettaFunctionalOperation) {
+				isClosureParameterMulti(it.functionRef as InlineFunction)
+			} else {
+				false
+			}
+		].orElse(false)
 	}
 	
 	/**

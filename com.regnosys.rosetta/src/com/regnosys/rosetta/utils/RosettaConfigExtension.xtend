@@ -47,7 +47,7 @@ class RosettaConfigExtension {
 		return index.getResourceDescriptions(ctx.eResource.resourceSet).getExportedObjectsByType(
 			ROSETTA_QUALIFIABLE_CONFIGURATION).filter[isProjectLocal(ctx.eResource.URI, it.EObjectURI)].map [
 			val eObj = if(it.EObjectOrProxy.eIsProxy) EcoreUtil.resolve(it.EObjectOrProxy, ctx) else it.EObjectOrProxy
-			if (!eObj.eIsProxy && type === (eObj as RosettaQualifiableConfiguration).QType)
+			if (eObj.isResolved && type === (eObj as RosettaQualifiableConfiguration).QType)
 				(eObj as RosettaQualifiableConfiguration).rosettaClass
 		].filterNull.head
 	}

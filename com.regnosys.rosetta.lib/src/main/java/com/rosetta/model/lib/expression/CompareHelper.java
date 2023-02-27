@@ -12,7 +12,7 @@ public class CompareHelper {
 			return ((ZonedDateTime)o1).toInstant().compareTo(((ZonedDateTime)o2).toInstant());
 		}
 		if (o1.getClass() == o2.getClass()) {
-			return (o1).compareTo((T)o2);
+			return o1.compareTo((T)o2);
 		}
 		if (!(o1 instanceof Number && o2 instanceof Number)) {
 			throw new IllegalArgumentException("I only know how to compare identical comparable types and numbers not " + 
