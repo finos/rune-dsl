@@ -32,7 +32,7 @@ variables:
   listOperationWord: '{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum){{wordEnd}}|{{functionalOperation}}'
   listOperation: ->|{{listOperationWord}}
   blueprintNodeEnd: '(?={{wordStart}}(then|output|as){{wordEnd}})|{{rootEnd}}'
-  synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge|funcReference){{wordEnd}}'
+  synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge|condition-func|condition-path){{wordEnd}}'
   synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
@@ -669,7 +669,7 @@ repository:
           patterns:
           - include: '#comment'
           - name: keyword.other.rosetta
-            match: '{{wordStart}}(when|funcReference|to|path|rosettaPath|and){{wordEnd}}'
+            match: '{{wordStart}}(when|condition-func|condition-path|to|path|rosettaPath|and){{wordEnd}}'
           - name: keyword.operator.word.rosetta
             match: '{{wordStart}}(exists|is|absent){{wordEnd}}'
           - name: keyword.operator.rosetta

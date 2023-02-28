@@ -21,4 +21,4 @@ annotation qualification: <"Annotation that describes a func that is used for ev
 
 annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
 
-annotation synonym-set-when: <"Defines a function is specified in a synonym set when condition.">
+annotation set-when-condition: <"Defines a function is specified in a synonym set when condition.">
