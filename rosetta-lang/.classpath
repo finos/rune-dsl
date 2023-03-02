@@ -6,6 +6,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="target/xsemantics-gen/main/java"/>
 	<classpathentry including="**/*.java" kind="src" output="target/classes" path="src-gen/main/java">
 		<attributes>
 			<attribute name="optional" value="true"/>
@@ -38,6 +39,7 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
 		<attributes>
+			<attribute name="module" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
@@ -46,10 +48,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/rosetta-xcore-plugin-dependencies">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/rosetta-xcore-plugin-dependencies"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

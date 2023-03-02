@@ -1,5 +1,7 @@
 package com.rosetta.model.lib.meta;
 
+import java.lang.reflect.InvocationTargetException;
+
 import com.rosetta.model.lib.RosettaModelObject;
 
 public class RosettaMetaDataBuilder {
@@ -7,8 +9,8 @@ public class RosettaMetaDataBuilder {
 	public static <T extends RosettaModelObject> RosettaMetaData<T> getMetaData(T t) {
 		String metaClassName = getMetaClassName(t);
 		try {
-			return castToMeta(Class.forName(metaClassName, true, t.getClass().getClassLoader()).newInstance());
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			return castToMeta(Class.forName(metaClassName, true, t.getClass().getClassLoader()).getConstructor().newInstance());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 			throw new IllegalArgumentException("Failed to instantiate RosettaMetaData class: " + metaClassName, e);
 		}
 	}

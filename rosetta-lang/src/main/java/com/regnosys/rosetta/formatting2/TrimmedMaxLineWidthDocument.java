@@ -21,7 +21,6 @@ import com.google.common.collect.Lists;
  * this subdocument allows you to format the next hidden region as well, but ignores
  * it when checking applicability, i.e., you may add newlines, long comments, etc.
  */
-@SuppressWarnings("restriction")
 public class TrimmedMaxLineWidthDocument extends SubDocument {
 	private final int maxLineWidth;
 	
