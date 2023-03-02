@@ -67,6 +67,7 @@
                                 <argument>${project.basedir}/src-gen/main/resources/syntaxes/rosetta.tmLanguage.json</argument>
                             </arguments>
                             <classpathScope>compile</classpathScope>
+                            <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         </configuration>
                     </execution>
                 </executions>
