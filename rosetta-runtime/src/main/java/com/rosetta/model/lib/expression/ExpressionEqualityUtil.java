@@ -65,8 +65,7 @@ class ExpressionEqualityUtil {
 			T b2 = e2.next();
 			boolean equals;
 			if (b1 instanceof Number && b2 instanceof Number || b1 instanceof ZonedDateTime && b2 instanceof ZonedDateTime) {
-				@SuppressWarnings("unchecked")
-				int compRes = CompareHelper.compare((Comparable)b1, (Comparable)b2);
+				int compRes = CompareHelper.compare(b1, b2);
 				equals = compRes == 0;
 			} else {
 				equals = b1 == null ? b2 == null : b1.equals(b2);
@@ -99,8 +98,7 @@ class ExpressionEqualityUtil {
 			T b1 = e1.next();
 			
 			if (b1 instanceof Number && b2 instanceof Number) {
-				@SuppressWarnings({ "unchecked", "rawtypes" })
-				int compRes = CompareHelper.compare((Comparable) b1, (Comparable) b2);
+				int compRes = CompareHelper.compare(b1, b2);
 				if (compRes != 0 && o == CardinalityOperator.All) {
 					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does not equal " + formatEqualsComparisonResultError(m2));
 				}
@@ -157,8 +155,7 @@ class ExpressionEqualityUtil {
 			T b1 = e1.next();
 			T b2 = e2.next();
 			if (b1 instanceof Number && b2 instanceof Number) {
-				@SuppressWarnings({ "unchecked", "rawtypes" })
-				int compRes = CompareHelper.compare((Comparable) b1, (Comparable) b2);
+				int compRes = CompareHelper.compare(b1, b2);
 				if (compRes != 0 && o == CardinalityOperator.Any) {
 					return ComparisonResult.success();
 				}
@@ -198,8 +195,7 @@ class ExpressionEqualityUtil {
 			T b1 = e1.next();
 			
 			if (b1 instanceof Number && b2 instanceof Number) {
-				@SuppressWarnings({ "unchecked", "rawtypes" })
-				int compRes = CompareHelper.compare((Comparable) b1, (Comparable) b2);
+				int compRes = CompareHelper.compare(b1, b2);
 				if (compRes != 0 && o == CardinalityOperator.Any) {
 					return ComparisonResult.success();
 				}

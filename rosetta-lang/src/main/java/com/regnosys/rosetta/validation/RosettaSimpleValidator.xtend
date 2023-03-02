@@ -82,8 +82,6 @@ import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import org.eclipse.xtext.validation.EValidatorRegistrar
-import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import org.eclipse.xtext.Keyword
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
@@ -1336,85 +1334,4 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			error('''Alias expression contains a list of lists, use flatten to create a list.''', o, SHORTCUT_DECLARATION__EXPRESSION)
 		}
 	}
-	
-	private def errorKeyword(String message, EObject o, Keyword keyword) {
-		val node = NodeModelUtils.findActualNodeFor(o)
-
-        for (n : node.asTreeIterable) {
-            val ge = n.grammarElement
-            if (ge instanceof Keyword && ge == keyword) {
-                messageAcceptor.acceptError(
-                    message,
-                    o,
-                    n.offset,
-                    n.length,
-                    null
-                )
-            }
-        }
-	}
-	
-	private def warningKeyword(String message, EObject o, Keyword keyword) {
-		val node = NodeModelUtils.findActualNodeFor(o)
-
-        for (n : node.asTreeIterable) {
-            val ge = n.grammarElement
-            if (ge instanceof Keyword && ge == keyword) {
-                messageAcceptor.acceptWarning(
-                    message,
-                    o,
-                    n.offset,
-                    n.length,
-                    null
-                )
-            }
-        }
-	}
-
-/* 	
-	@Inject TargetURIConverter converter
-	@Inject IResourceDescriptionsProvider index
-	@Inject IReferenceFinder refFinder
-	
-	@Check(EXPENSIVE)
-	def checkNeverUsedModelElement(RosettaModel model) {
-		model.elements
-			.filter[it instanceof Data || it instanceof RosettaEnumeration || it instanceof Function]
-			.forEach[ele |
-				val refs = newHashSet
-				val resSet = ele.eResource.resourceSet
-				
-				refFinder.findAllReferences(converter.fromIterable(#[ele.URI]), 
-					[ targetURI, work | work.exec(resSet) ], 
-					index.getResourceDescriptions(resSet), new IReferenceFinder.Acceptor() {
-						override accept(IReferenceDescription description) {
-							refs.add(description)
-						}
-		
-						override accept(EObject source, URI sourceURI, EReference eReference, int index, EObject targetOrProxy, URI targetURI) {
-							refs.add(new DefaultReferenceDescription(EcoreUtil2.getFragmentPathURI(source), targetURI, eReference, index, null))
-						}
-		
-					}, 
-					new NullProgressMonitor)
-				
-				if (refs.filter[filterEnumValueReferences(ele, it)].empty) {
-					warning('''«(ele as RosettaNamed).name» is never used.''', ele, ROSETTA_NAMED__NAME)
-				}
-			]
-	}
-	
-	// RosettaEnumeration are referenced by their own RosettaEnumValue, so exclude those to actually determine if the enum is unused
-	private def filterEnumValueReferences(RosettaRootElement ele, IReferenceDescription ref) {
-		if (ele instanceof RosettaEnumeration) {
-			if (ref instanceof DefaultReferenceDescription) {
-				val refType = ref?.EReference?.EContainingClass?.instanceClass
-				if (refType !== null) {
-					return !refType.isAssignableFrom(RosettaEnumValue)
-				}
-			}
-		}
-		return true
-	}
-*/
 }

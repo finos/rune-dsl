@@ -1,7 +1,6 @@
 package com.rosetta.model.lib.functions;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;

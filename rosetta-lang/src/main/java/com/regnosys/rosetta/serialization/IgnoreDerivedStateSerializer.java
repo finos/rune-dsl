@@ -6,20 +6,13 @@ import java.io.Writer;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.SaveOptions;
 import org.eclipse.xtext.serializer.ISerializationContext;
-import org.eclipse.xtext.serializer.acceptor.ISemanticSequenceAcceptor;
 import org.eclipse.xtext.serializer.acceptor.ISequenceAcceptor;
-import org.eclipse.xtext.serializer.acceptor.ISyntacticSequenceAcceptor;
-import org.eclipse.xtext.serializer.acceptor.TokenStreamSequenceAdapter;
 import org.eclipse.xtext.serializer.diagnostic.ISerializationDiagnostic;
 import org.eclipse.xtext.serializer.impl.Serializer;
-import org.eclipse.xtext.serializer.sequencer.IHiddenTokenSequencer;
-import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
-import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
 
 import com.google.inject.Inject;
 import com.regnosys.rosetta.derivedstate.RosettaDerivedStateComputer;
 
-@SuppressWarnings("restriction")
 public class IgnoreDerivedStateSerializer extends Serializer {
 	@Inject
 	RosettaDerivedStateComputer derivedStateComputer;
