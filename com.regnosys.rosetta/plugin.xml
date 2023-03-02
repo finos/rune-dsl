@@ -8,13 +8,6 @@
 <plugin>
 
    <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated RosettaSimple -->
-      <package
-            uri="http://www.rosetta-model.com/RosettaSimple"
-            class="com.regnosys.rosetta.rosetta.simple.SimplePackage"/>
-   </extension>
-
-   <extension point="org.eclipse.emf.ecore.generated_package">
       <!-- @generated RosettaExpression -->
       <package
             uri="http://www.rosetta-model.com/RosettaExpression"
@@ -26,6 +19,13 @@
       <package
             uri="http://www.rosetta-model.com/Rosetta"
             class="com.regnosys.rosetta.rosetta.RosettaPackage"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated RosettaSimple -->
+      <package
+            uri="http://www.rosetta-model.com/RosettaSimple"
+            class="com.regnosys.rosetta.rosetta.simple.SimplePackage"/>
    </extension>
 
 </plugin>

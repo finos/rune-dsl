@@ -8,9 +8,9 @@ Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: com.regnosys.rosetta.rosetta.simple,
- com.regnosys.rosetta.rosetta.simple.impl,
- com.regnosys.rosetta.rosetta.simple.util
+Export-Package: com.regnosys.rosetta.rosetta.expression,
+ com.regnosys.rosetta.rosetta.expression.impl,
+ com.regnosys.rosetta.rosetta.expression.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  org.eclipse.xtext.xbase.lib,
