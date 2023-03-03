@@ -23,7 +23,7 @@ We use the [Xsemantics DSL](https://github.com/eclipse/xsemantics) to define the
 
 ## Setup the project
 1. **Open the project in Eclipse**: File > Open Projects from File System..., select the right folder, click Finish.
-3. **Update Maven dependencies**: right click on the `com.regnosys.rosetta.parent` project > Maven > Update project... and finish.
+2. **Update Maven dependencies**: right click on the `com.regnosys.rosetta.parent` project > Maven > Update project... and finish.
 
 ### Troubleshooting
 Make sure you have successfully run `mvn clean install`. (see section 1 of this guide)
@@ -33,3 +33,19 @@ If you're seeing 1000+ errors in the "Problems" window of Eclipse, try the follo
 2. Close Eclipse and open it again.
 3. Update Maven dependencies again.
 4. Re-enable auto-building.
+
+# 3. Setting things up in Intellij
+Support for developing Xtext projects in Intellij is limited. It has no support for
+- editing `Xtend` files
+- editing the `Xtext` file
+- editing the `Xsemantics` file
+- running `GenerateRosetta.mwe2`.
+
+You can however let Maven take care of that, and still edit regular Java files, run tests, etc.
+
+Unfortunately, there is an issue in Intellij that lets the Maven build fail, see
+- https://youtrack.jetbrains.com/issue/IDEA-262695
+- https://github.com/eclipse/xtext/issues/1953
+
+In the stacktrace, you'll see a reference to a file called `plexus-classworlds.license`. It is safe to delete this file.
+Once you do this, the build should succeed.
