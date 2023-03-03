@@ -58,7 +58,7 @@
             <!-- Make sure the .xcore file is part of the produced JAR. -->
             <!-- It may be needed by downstream projects. -->
             <resource>
-                <directory>${project.basedir}/xcore</directory>
+                <directory>${project.basedir}</directory>
                 <includes>
                     <include>model/Rosetta.xcore</include>
                     <include>model/RosettaSimple.xcore</include>
@@ -154,7 +154,7 @@
 <!--                    <classPathLookupFilter>^.*\.(emf|xtext).*$</classPathLookupFilter>-->
                     <addOutputDirectoriesToCompileSourceRoots>true</addOutputDirectoriesToCompileSourceRoots>
                     <sourceRoots>
-                        <sourceRoot>${project.basedir}/xcore/model</sourceRoot>
+                        <sourceRoot>${project.basedir}/model</sourceRoot>
                         <sourceRoot>${project.basedir}/src/main/java</sourceRoot>
                         <sourceRoot>${project.basedir}/src-gen/main/java</sourceRoot>
                         <sourceRoot>${project.basedir}/emf-gen/main/java</sourceRoot>
