@@ -223,6 +223,20 @@
                             </sources>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>add-generated-test-sources-to-build</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.basedir}/src-gen/test/java</source>
+                                <source>${project.basedir}/emf-gen/test/java</source>
+                                <source>${project.build.directory}/xtend-gen/test/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
