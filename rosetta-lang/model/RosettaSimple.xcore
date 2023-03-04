@@ -1,0 +1,144 @@
+@Ecore(nsURI="http://www.rosetta-model.com/RosettaSimple")
+@GenModel(fileExtensions="rosetta", modelDirectory="/rosetta-lang/emf-gen/main/java", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
+
+package com.regnosys.rosetta.rosetta.simple
+
+import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaClassSynonym
+import com.regnosys.rosetta.rosetta.RosettaDefinable
+import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaSynonym
+import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
+import com.regnosys.rosetta.rosetta.WithCardinality
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import org.eclipse.emf.common.util.BasicEList
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
+
+abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {
+}
+
+class Annotation extends RootElement, RosettaSymbol {
+	String prefix
+	contains Attribute[] attributes
+}
+
+interface Annotated {
+	contains AnnotationRef[] annotations
+}
+
+//An arbitrary name=value qualifier on an annotation
+class AnnotationQualifier {
+	String qualName
+	String qualValue
+	contains RosettaAttributeReferenceSegment qualPath
+}
+
+class AnnotationRef {
+	refers Annotation ^annotation
+	refers Attribute attribute
+	contains AnnotationQualifier[] qualifiers
+}
+
+interface AssignPathRoot {
+}
+
+
+class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaSymbol, AssignPathRoot, WithCardinality, References {
+	boolean override
+	contains RosettaSynonym[] synonyms
+	contains RosettaRuleReference ruleReference
+}
+
+abstract class Definable extends RosettaDefinable {}
+
+
+class Data extends RosettaType, RootElement, RosettaSymbol, References, RosettaAttributeReferenceSegment {
+	refers Data superType
+	contains RosettaClassSynonym[] synonyms
+	contains Attribute[] attributes
+	contains Condition[] conditions
+	
+	op boolean hasSuperType() {
+		return superType !== null
+	}
+}
+
+class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs, References {
+	contains Attribute[] inputs
+	contains Attribute output
+	contains ShortcutDeclaration[] shortcuts
+	contains Condition[] conditions
+	contains Operation[] operations opposite function
+	contains Condition[] postConditions
+	
+	op int numberOfParameters() {
+		inputs.size
+	}
+}
+
+class FunctionDispatch extends Function {
+	refers Attribute attribute
+	contains RosettaEnumValueReference value
+}
+
+class Condition extends Definable, Annotated, RosettaNamed, References {
+	boolean postCondition
+	contains RosettaExpression expression
+}
+
+abstract class Operation extends Definable {
+	container Function function opposite operations
+	refers AssignPathRoot assignRoot
+	contains Segment path
+	contains RosettaExpression expression
+	op Segment[] pathAsSegmentList() {
+		return if(path !== null) path.asSegmentList(path) else new BasicEList
+	}
+}
+
+class AssignOutputOperation extends Operation {
+}
+
+class OutputOperation extends Operation {
+	boolean add
+	refers AssignPathRoot input
+}
+
+
+class Segment {
+	refers Attribute attribute
+	contains Segment next opposite prev
+	container Segment prev opposite next
+	
+	op Segment[] asSegmentList(Segment path) {
+		val result = new BasicEList
+		if (path !== null) {
+			result.add(path)
+			val segmentNext = path?.next
+			if (segmentNext !== null) {
+				result.addAll(asSegmentList(segmentNext))
+			}
+		}
+		return result
+	}
+}
+
+class ShortcutDeclaration extends RosettaSymbol, RosettaNamed, Definable, AssignPathRoot {
+	contains RosettaExpression expression
+}
+
+class References {
+	contains com.regnosys.rosetta.rosetta.RosettaDocReference[] references
+}
+
+class RosettaRuleReference {
+	refers RosettaBlueprint reportingRule
+}
+

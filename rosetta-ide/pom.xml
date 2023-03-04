@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.regnosys.rosetta</groupId>
+        <artifactId>com.regnosys.rosetta.parent</artifactId>
+        <version>0.0.0.master</version>
+    </parent>
+
+    <artifactId>com.regnosys.rosetta.ide</artifactId>
+
+    <description>
+        Responsibilities: adding support for developing Rosetta in an IDE, including
+        - language server features (semantic highlighting, inlay hints, etc)
+        - syntax highlighting
+    </description>
+
+    <dependencies>
+        <!-- Inter-project dependencies -->
+        <dependency>
+            <groupId>com.regnosys.rosetta</groupId>
+            <artifactId>com.regnosys.rosetta</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- External dependencies -->
+        <dependency>
+            <groupId>org.eclipse.xtext</groupId>
+            <artifactId>org.eclipse.xtext.ide</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>com.regnosys.rosetta</groupId>
+            <artifactId>com.regnosys.rosetta.tests</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.xtend</groupId>
+                <artifactId>xtend-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>Generate TextMate grammar json file</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>com.regnosys.rosetta.ide.textmate.GenerateTmGrammar</mainClass>
+                            <arguments>
+                                <argument>${project.basedir}/rosetta.tmLanguage.yaml</argument>
+                                <argument>${project.basedir}/src-gen/main/resources/syntaxes/rosetta.tmLanguage.json</argument>
+                            </arguments>
+                            <classpathScope>compile</classpathScope>
+                            <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/syntaxes</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src-gen/main/resources/syntaxes</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <excludeGroupIds>p2.eclipse-feature</excludeGroupIds>
+                            <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <excludeTransitive>true</excludeTransitive>
+                            <excludeArtifactIds>
+                                com.ibm.icu,
+                                org.apache.ant,
+                                org.apache.commons.lang,
+                                org.apache.commons.logging,
+                                org.eclipse.core.commands,
+                                org.eclipse.core.contenttype,
+                                org.eclipse.core.expressions,
+                                org.eclipse.core.filesystem,
+                                org.eclipse.core.jobs,
+                                org.eclipse.core.resources,
+                                org.eclipse.core.runtime,
+                                org.eclipse.core.variables,
+                                org.eclipse.debug.core,
+                                org.eclipse.emf.codegen.ecore,
+                                org.eclipse.emf.codegen,
+                                org.eclipse.emf.mwe.core,
+                                org.eclipse.emf.mwe.utils,
+                                org.eclipse.emf.mwe2.lib,
+                                org.eclipse.emf.mwe2.runtime,
+                                org.eclipse.equinox.app,
+                                org.eclipse.equinox.preferences,
+                                org.eclipse.equinox.registry,
+                                org.eclipse.jdt.core,
+                                org.eclipse.jdt.debug,
+                                org.eclipse.jdt.launching,
+                                org.eclipse.text,
+                            </excludeArtifactIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.googlecode.addjars-maven-plugin</groupId>
+                <artifactId>addjars-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>add-jars</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/libs</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                        <configuration>
+                            <assembleDirectory>${project.build.directory}/languageserver</assembleDirectory>
+                            <repositoryLayout>flat</repositoryLayout>
+                            <useWildcardClassPath>true</useWildcardClassPath>
+                            <!--uncomment to enable remote debugging
+                            <extraJvmArguments>-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000</extraJvmArguments>
+                            -->
+                            <programs>
+                                <program>
+                                    <id>rosetta-dsl-ls</id>
+                                    <mainClass>com.regnosys.rosetta.ide.server.RosettaServerLauncher</mainClass>
+                                    <!--uncomment to enable options
+                                    <commandLineArguments>
+                                        <commandLineArgument>-trace</commandLineArgument>
+                                        <commandLineArgument>-log</commandLineArgument>
+                                        <commandLineArgument>-noValidate</commandLineArgument>
+                                    </commandLineArguments>
+                                    -->
+                                </program>
+                            </programs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>install node and npm</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>npm install</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

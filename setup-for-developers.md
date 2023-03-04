@@ -10,11 +10,6 @@ Our project runs with Java 11. Make sure that your Maven also uses this version 
 
 To build the project, run `mvn clean install`.
 
-### Troubleshooting
-Our project is build with the Maven [Tycho](https://www.eclipse.org/tycho/sitedocs/tycho-maven-plugin/index.html) plugin. If you have ever used this plugin before with a different version, you might be seeing errors such as `[ERROR] Internal error: java.lang.IllegalArgumentException: bundleLocation not found: ...`. This happens because switching Tycho versions sometimes corrupts your Maven repository. There are two possible solutions:
-1. If you don't need Tycho for other projects, you can simply delete your `~/.m2/repository` folder and retry. Maven will reinstall the necessary dependencies.
-2. If you want to remain compatible with multiple Tycho versions, you can install the Maven dependencies of the Rosetta DSL in another repository by passing the command line option `-Dmaven.repo.local=/a/path/to/my/m2repo` to Maven. In this case, also make sure to add this folder to the classpath in Eclipse for the next step!
-
 # 2. Setting things up in Eclipse
 ## Install Eclipse IDE for Java and DSL Developers
 Install the latest version of the "Eclipse IDE for Java and DSL Developers" using the [Eclipse Installer](https://www.eclipse.org/downloads/packages/installer).
@@ -28,8 +23,7 @@ We use the [Xsemantics DSL](https://github.com/eclipse/xsemantics) to define the
 
 ## Setup the project
 1. **Open the project in Eclipse**: File > Open Projects from File System..., select the right folder, click Finish.
-2. **Load the target platform**: in the `com.regnosys.rosetta.target` project, there is a file called `com.regnosys.rosetta.target.target`. Open it and click on the button in the right top corner to set it as the active target platform.
-3. **Update Maven dependencies**: right click on the `com.regnosys.rosetta.parent` project > Maven > Update project... and finish.
+2. **Update Maven dependencies**: right click on the `com.regnosys.rosetta.parent` project > Maven > Update project... and finish.
 
 ### Troubleshooting
 Make sure you have successfully run `mvn clean install`. (see section 1 of this guide)
@@ -37,27 +31,21 @@ Make sure you have successfully run `mvn clean install`. (see section 1 of this 
 If you're seeing 1000+ errors in the "Problems" window of Eclipse, try the following.
 1. Disable auto-building. (Project > Build automatically)
 2. Close Eclipse and open it again.
-3. Open the `com.regnosys.rosetta.target.target` file and wait for Eclipse to resolve it. (might take a couple of minutes)
-4. Reload the target platform.
-5. Update Maven dependencies again.
-6. Re-enable auto-building.
+3. Update Maven dependencies again.
+4. Re-enable auto-building.
 
-# 3. Running a Rosetta IDE locally
-Once you are all set-up, you should be able to run an Eclipse IDE with Rosetta support locally. Follow these steps.
+# 3. Setting things up in Intellij
+Support for developing Xtext projects in Intellij is limited. It has no support for
+- editing `Xtend` files
+- editing the `Xtext` file
+- editing the `Xsemantics` file
+- running `GenerateRosetta.mwe2`.
 
-1. Right click the `com.regnosys.rosetta` project > Run as > Eclipse Application.
-2. Once the new window opens, create an empty project with File > New > Project..., select the wizard called "Project" under "General", choose a name and finish.
-3. Create a file called `test.rosetta` and paste the following content:
-```
-namespace com.world.hello
+You can however let Maven take care of that, and still edit regular Java files, run tests, etc.
 
-type Foo:
-  a int (1..1)
-  b boolean (0..*)
-```
-You will notice `int` and `boolean` are not being recognized. To fix that, you need to add two files to your project:
+Unfortunately, there is an issue in Intellij that lets the Maven build fail, see
+- https://youtrack.jetbrains.com/issue/IDEA-262695
+- https://github.com/eclipse/xtext/issues/1953
 
-4. In the `com.regnosys.rosetta.lib` project, navigate to `src/main/java/model`. There should be two files there: `annotations.rosetta` and `basictypes.rosetta`.
-5. Copy them and paste them in your newly created project.
-
-Now your project should not contain any errors. Notice that the Java code generator will automatically kick in and generate a `Foo` class.
+In the stacktrace, you'll see a reference to a file called `plexus-classworlds.license`. It is safe to delete this file.
+Once you do this, the build should succeed.
