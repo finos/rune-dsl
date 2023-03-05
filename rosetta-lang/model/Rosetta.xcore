@@ -352,6 +352,11 @@ class RosettaMapTestEqualityOperation extends RosettaMapTestExpression {
 	String operator
 }
 
+class RosettaMapTestFunc extends RosettaMapTestExpression {
+	refers RosettaCallableWithArgs func
+	contains RosettaMapPathValue predicatePath
+}
+
 interface RosettaAttributeReferenceSegment {}
 
 class RosettaDataReference extends RosettaAttributeReferenceSegment {
