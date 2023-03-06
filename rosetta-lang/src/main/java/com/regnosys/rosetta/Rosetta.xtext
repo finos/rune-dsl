@@ -493,9 +493,9 @@ ClosureParameter:
 	name = ID
 ;
 
-FunctionReference:
-	{NamedFunctionReference} function=[RosettaCallableWithArgs]
-	| {InlineFunction} (parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[' body=RosettaCalcExpression ']'
+InlineFunction:
+	body=RosettaCalcExpression
+	| (parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[' body=RosettaCalcExpression ']'
 ;
 
 /**********************************************************************
