@@ -252,7 +252,18 @@ class RosettaAttributeExtensions {
 	static dispatch def toRosettaExpandedSynonym(RosettaExternalClassSynonym syn) {
 		val synVals = if (syn.value===null) Collections.emptyList else newArrayList(new ExpandedSynonymValue(syn.value.name, syn.value.path, syn.value.maps, false))
 		val synMetaVals = if (syn.metaValue!==null) newArrayList(new ExpandedSynonymValue(syn.metaValue.name, syn.metaValue.path, syn.metaValue.maps, true)) else Collections.emptyList
-		new ExpandedSynonym(#[], synVals, newArrayList, null, synMetaVals, null, null, null, null, null, false)	
+		
+		val externalClass = syn.eContainer as RosettaExternalClass
+		val externalSynonymSource = externalClass.eContainer as RosettaExternalSynonymSource
+		val superSynonyms = externalSynonymSource.superSynonymSources;
+		
+		val sources = new ArrayList
+		sources.add(externalSynonymSource)
+		if  (superSynonyms !== null) {
+			sources.addAll(superSynonyms)
+		}
+		
+		new ExpandedSynonym(sources, synVals, newArrayList, null, synMetaVals, null, null, null, null, null, false)	
 	}
 	
 	static dispatch def toRosettaExpandedSynonym(RosettaClassSynonym syn) {
