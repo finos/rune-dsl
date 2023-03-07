@@ -161,7 +161,7 @@ RosettaRootElement:
 	Enumeration | RosettaBody | RosettaCorpus | RosettaSegment | 
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaBlueprint | RosettaQualifiedType | RosettaCalculationType  | RosettaMetaType | RosettaExternalSynonymSource |
-	RosettaBlueprintReport
+	RosettaExternalRuleSource | RosettaBlueprintReport
 ;
 
 
@@ -281,7 +281,7 @@ RosettaSynonym:
 ;
 
 RosettaSynonymBody:
-	( 'value'  (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? ('meta' (metaValues += STRING ',')* metaValues += STRING)? 
+	('value' (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? ('meta' (metaValues += STRING ',')* metaValues += STRING)? 
 		| 'hint' (hints+=STRING ',')* hints+=STRING
 		| 'merge' merge=RosettaMergeSynonymValue
 		| mappingLogic=RosettaMappingSetTo 
@@ -687,14 +687,24 @@ RosettaOnlyExistsElementRoot returns RosettaSymbolReference:
 ;
 
 /*****************************************
- * Translate external synonym support
+ * Translate external synonym and rule support
  *****************************************/
 
-RosettaExternalSynonymSource:
-		'synonym' 'source' RosettaNamed ('extends' superSynonyms += [RosettaSynonymSource] (',' superSynonyms += [RosettaSynonymSource])* )? '{'
-	    (externalRefs+= (RosettaExternalClass))*
-	    ('enums' (externalRefs+= (RosettaExternalEnum))*)?
+fragment ExternalAnnotationSource:
+	'{'
+	    (externalRefs+=RosettaExternalClass)*
+	    ('enums' (externalRefs+=RosettaExternalEnum)*)?
 	'}'
+;
+// @Compat: move common parts to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed.
+RosettaExternalSynonymSource:
+		'synonym' 'source' RosettaNamed ('extends' superSources+=[RosettaSynonymSource]  (',' superSources+=[RosettaSynonymSource])* )?
+		ExternalAnnotationSource
+;
+
+RosettaExternalRuleSource:
+		'rule' 'source' RosettaNamed ('extends' superSources+=[RosettaExternalRuleSource]  (',' superSources+=[RosettaExternalRuleSource])* )?
+		ExternalAnnotationSource
 ;
 
 RosettaExternalClass:
@@ -708,13 +718,19 @@ RosettaExternalEnum:
 		(regularValues += RosettaExternalEnumValue)*
 ;
 
+enum ExternalValueOperator:
+	PLUS='+'
+	| MINUS='-'
+;
+
 RosettaExternalRegularAttribute:
-	operator=('+'|'-') attributeRef=[RosettaFeature|ValidID]
-		externalSynonyms += RosettaExternalSynonym*
+	operator=ExternalValueOperator attributeRef=[RosettaFeature|ValidID]
+		externalSynonyms+=RosettaExternalSynonym*
+		externalRuleReferences+=RosettaRuleReference*
 ;
 
 RosettaExternalEnumValue: 
-	operator=('+'|'-') enumRef=[RosettaEnumValue]
+	operator=ExternalValueOperator enumRef=[RosettaEnumValue]
 		externalEnumSynonyms += RosettaExternalEnumSynonym*
 ;
 
@@ -760,10 +776,10 @@ RosettaBlueprintReport:
 	'in' ('real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5'|'ASATP')
 	'when'
 	eligibilityRules+=[RosettaBlueprint] ( 'and' eligibilityRules+=[RosettaBlueprint])*
-	('using' 'standard' reportingStandard=[RosettaCorpus])?
+	('using' 'standard' reportingStandard=[RosettaCorpus])? // @Compat: this attribute is unnecessary
 	'with' 'type' reportType=[Data|QualifiedName]
+	('with' 'source' ruleSource=[RosettaExternalRuleSource])?
 ;
-
 
 RosettaRuleReference:
 	'[' 'ruleReference' reportingRule=[RosettaBlueprint] ']'	

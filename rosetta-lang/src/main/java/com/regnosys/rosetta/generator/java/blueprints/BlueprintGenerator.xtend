@@ -26,6 +26,7 @@ import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.validation.BindableType
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver
 import com.regnosys.rosetta.validation.TypedBPNode
@@ -36,14 +37,12 @@ import javax.inject.Inject
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
-import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator)
@@ -412,7 +411,7 @@ class BlueprintGenerator {
 	}
 	
 	def fullname(RosettaType type, RosettaJavaPackages packageName) {
-		if (type instanceof com.regnosys.rosetta.rosetta.simple.Data)
+		if (type instanceof Data)
 			'''«packageName.model.name».«type.name»'''.toString
 		else 
 			type.name.toJavaFullType
@@ -508,23 +507,22 @@ class BlueprintGenerator {
 		}'''
 	}
 	
-	def StringConcatenationClient buildRules(com.regnosys.rosetta.rosetta.simple.Data dataType, String builderPath, extension JavaNames names, ImportGenerator imports) {
+	def StringConcatenationClient buildRules(Data dataType, String builderPath, extension JavaNames names, ImportGenerator imports) {
 		'''«FOR attr : dataType.allAttributes»
-			«val attrEx = attr.toExpandedAttribute»
 			«val attrType = attr.type»
 			«val rule = attr.ruleReference?.reportingRule»
 			«IF rule !== null»
 				«imports.addDataItemReportRule(rule)»
 				«IF attr.card.isIsMany»
-					«IF attrType instanceof com.regnosys.rosetta.rosetta.simple.Data»
+					«IF attrType instanceof Data»
 						«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»(ruleIdentifier.getRepeatableIndex().orElse(0))''', names, imports)»
 					«ENDIF»
 				«ELSE»
 					if («rule.name»Rule.class.isAssignableFrom(ruleType)) {
-						DataItemReportUtils.setField(«builderPath»::set«attr.name.toFirstUpper», «attrEx.type.toJavaType».class, data, «rule.name»Rule.class);
+						DataItemReportUtils.setField(«builderPath»::set«attr.name.toFirstUpper», «attrType.toJavaType».class, data, «rule.name»Rule.class);
 					}
 				«ENDIF»
-			«ELSEIF attrType instanceof com.regnosys.rosetta.rosetta.simple.Data»
+			«ELSEIF attrType instanceof Data»
 				«IF !attr.card.isIsMany»
 					«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»()''', names, imports)»
 				«ENDIF»
@@ -537,17 +535,17 @@ class BlueprintGenerator {
 		'''«dataItemReportTypeName»_DataItemReportBuilder'''
 	}
 	
-	@Data static class AttributePath {
+	@org.eclipse.xtend.lib.annotations.Data static class AttributePath {
 		List<Attribute> path
 		RosettaDocReference ref
 	}
 	
-	@Data static class RegdOutputField {
+	@org.eclipse.xtend.lib.annotations.Data static class RegdOutputField {
 		Attribute attrib
 		RosettaDocReference ref
 	}
 	
-	@Data static class Context {
+	@org.eclipse.xtend.lib.annotations.Data static class Context {
 		BlueprintNodeExp nodes
 		ImportGenerator imports
 		Map<String, TypedBPNode> bpRefs = newHashMap

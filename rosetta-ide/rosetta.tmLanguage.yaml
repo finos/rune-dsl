@@ -23,7 +23,7 @@ variables:
   notAnIdentifier: ((?!{{identifierStart}})[:graph:])
   qualifiedIdentifier: ({{identifier}})(?:\s*(\.)\s*({{identifier}}))*
   idsConflictingWithKeywords: '{{wordStart}}version{{wordEnd}}'
-  rootStart: '{{wordStart}}(namespace|version|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|library|synonym|reporting|eligibility|qualifiedType|calculationType|metaType|report|annotation|enum|type|func){{wordEnd}}'
+  rootStart: '{{wordStart}}(namespace|version|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|library|synonym|rule|reporting|eligibility|qualifiedType|calculationType|metaType|report|annotation|enum|type|func){{wordEnd}}'
   strictRootEnd: (?={{rootStart}})
   rootEnd: '{{strictRootEnd}}(?!{{idsConflictingWithKeywords}})'
   sectionStart: '{{wordStart}}((\Qpost-\E)?condition|set|add|inputs|output|alias){{wordEnd}}'
@@ -125,7 +125,7 @@ repository:
           - include: '#rosettaBasicType'
           - include: '#rosettaRecordType'
           - include: '#rosettaLibraryFunction'
-          - include: '#rosettaSynonymSource'
+          - include: '#rosettaAnnotationSource'
           - include: '#rosettaBlueprint'
           - include: '#rosettaQualifiedType'
           - include: '#rosettaCalculationType'
@@ -339,27 +339,25 @@ repository:
         patterns:
         - include: '#comment'
 
-      rosettaSynonymSource:
-        name: meta.synonym-source.rosetta
-        begin: '{{wordStart}}synonym{{wordEnd}}'
+      rosettaAnnotationSource:
+        name: meta.annotation-source.rosetta
+        begin: '{{wordStart}}(synonym|rule){{wordEnd}}'
         beginCaptures:
-          0: { name: keyword.other.synonym-source.rosetta }
+          0: { name: keyword.other.rosetta }
         end: '{{rootEnd}}'
         patterns:
         - include: '#comment'
-        - begin: '(?<={{wordStart}}synonym{{wordEnd}})'
-          beginCaptures:
-            0: { name: keyword.other.synonym-source.rosetta }
+        - begin: '(?<={{wordStart}}(synonym|rule){{wordEnd}})'
           end: (?=\{)|{{rootEnd}}
           patterns:
           - include: '#comment'
-          - name: keyword.other.synonym-source.rosetta
+          - name: keyword.other.source.rosetta
             match: '{{wordStart}}source{{wordEnd}}'
           - name: keyword.other.extends.rosetta
             match: '{{wordStart}}extends{{wordEnd}}'
-          - name: entity.name.synonym-source.rosetta
+          - name: entity.name.annotation-source.rosetta
             match: '{{identifier}}'
-        - name: meta.synonym-source-body.rosetta
+        - name: meta.annotation-source-body.rosetta
           begin: (\{)
           beginCaptures:
             1: { name: punctuation.section.braces.begin.rosetta }
@@ -375,7 +373,7 @@ repository:
             patterns:
             - include: '#comment'
             - include: '#colon'
-            - name: meta.synonym-source-enum-mapping.rosetta
+            - name: meta.annotation-source-enum-mapping.rosetta
               begin: '{{identifier}}'
               beginCaptures:
                 0: { name: entity.name.type.enum.rosetta }
@@ -383,7 +381,7 @@ repository:
               patterns:
               - include: '#comment'
               - include: '#annotation'
-              - name: meta.synonym-source-enum-value-mapping.rosetta
+              - name: meta.annotation-source-enum-value-mapping.rosetta
                 begin: '(\+|-)\s*({{identifier}})'
                 beginCaptures:
                   1: { name: keyword.operator.synonym.rosetta }
@@ -392,7 +390,7 @@ repository:
                 patterns:
                 - include: '#comment'
                 - include: '#annotation'
-          - name: meta.synonym-source-type-mapping.rosetta
+          - name: meta.annotation-source-type-mapping.rosetta
             begin: '{{identifier}}'
             beginCaptures:
               0: { name: entity.name.type.type.rosetta }
@@ -401,7 +399,7 @@ repository:
             - include: '#comment'
             - include: '#colon'
             - include: '#annotation'
-            - name: meta.synonym-source-attribute-mapping.rosetta
+            - name: meta.annotation-source-attribute-mapping.rosetta
               begin: '(\+|-)\s*({{identifier}})'
               beginCaptures:
                 1: { name: keyword.operator.synonym.rosetta }
@@ -547,12 +545,26 @@ repository:
           end: (?={{wordStart}}(in|when|using|with){{wordEnd}})|{{rootEnd}}
           patterns:
           - include: '#comment'
-          - name: keyword.other.type.rosetta
-            match: '{{wordStart}}type{{wordEnd}}'
-          - name: entity.name.type.type.rosetta
-            match: '{{identifier}}'
-          - name: punctuation.separator.dot.rosetta
-            match: \.
+          - begin: '{{wordStart}}type{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.other.type.rosetta }
+            end: (?={{wordStart}}(in|when|using|with){{wordEnd}})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - name: entity.name.type.type.rosetta
+              match: '{{identifier}}'
+            - name: punctuation.separator.dot.rosetta
+              match: \.
+          - begin: '{{wordStart}}source{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.other.source.rosetta }
+            end: (?={{wordStart}}(in|when|using|with){{wordEnd}})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - name: entity.name.annotation-source.rosetta
+              match: '{{identifier}}'
+            - name: punctuation.separator.dot.rosetta
+              match: \.
 
       annotationDeclaration:
         name: meta.annotation.rosetta

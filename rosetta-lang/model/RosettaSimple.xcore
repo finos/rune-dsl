@@ -9,6 +9,7 @@ import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaDefinable
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
@@ -135,7 +136,7 @@ class ShortcutDeclaration extends RosettaSymbol, RosettaNamed, Definable, Assign
 }
 
 class References {
-	contains com.regnosys.rosetta.rosetta.RosettaDocReference[] references
+	contains RosettaDocReference[] references
 }
 
 class RosettaRuleReference {

@@ -73,7 +73,7 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 			}
 			RosettaExternalSynonymSource: {
 				highlightFeature(acceptor, object, ROSETTA_NAMED__NAME, SOURCE_ID)
-				highlightFeature(acceptor, object, ROSETTA_EXTERNAL_SYNONYM_SOURCE__SUPER_SYNONYMS, SOURCE_ID)
+				highlightFeature(acceptor, object, ROSETTA_EXTERNAL_SYNONYM_SOURCE__SUPER_SOURCES, SOURCE_ID)
 			}
 			AnnotationRef: {
 				highlightFeature(acceptor, object, SimplePackage.Literals.ANNOTATION_REF__ANNOTATION, ANNO_ID)

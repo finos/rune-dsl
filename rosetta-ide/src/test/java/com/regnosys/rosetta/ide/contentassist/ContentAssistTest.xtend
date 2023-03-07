@@ -144,6 +144,7 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 			reporting -> reporting [[7, 27] .. [7, 27]]
 			required -> required [[7, 27] .. [7, 27]]
 			reverse -> reverse [[7, 27] .. [7, 27]]
+			rule -> rule [[7, 27] .. [7, 27]]
 			segment -> segment [[7, 27] .. [7, 27]]
 			single -> single [[7, 27] .. [7, 27]]
 			sort -> sort [[7, 27] .. [7, 27]]
