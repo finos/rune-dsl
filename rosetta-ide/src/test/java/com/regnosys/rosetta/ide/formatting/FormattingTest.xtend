@@ -5,46 +5,6 @@ import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerTest
 import org.eclipse.lsp4j.FormattingOptions
 
 class FormattingTest extends AbstractRosettaLanguageServerTest {
-	
-	@Test
-	def testBug() {
-		val model = '''
-		namespace demo.emissions
-		version "${project.version}"
-		
-		func JoinStrings:
-		    inputs:
-		        strings string (0..*)
-		    output:
-		        result string (1..1)
-		
-		    set result:
-		        strings join ", "
-		'''
-		testFormatting(
-			[
-				val options = new FormattingOptions
-				options.putNumber(RosettaFormattingService.PREFERENCE_MAX_LINE_WIDTH_KEY, 10)
-				it.options = options
-			],
-			[
-				it.model = model
-				it.expectedText = '''
-				namespace demo.emissions
-				version "${project.version}"
-				
-				func JoinStrings:
-				    inputs:
-				        strings string (0..*)
-				    output:
-				        result string (1..1)
-				
-				    set result: strings join ", "
-				'''
-			]
-		)
-	}
-	
 	@Test
 	def testFormattingWithSmallMaxLineWidth() {
 		val model = '''
