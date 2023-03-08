@@ -1,0 +1,11 @@
+namespace demo.emissions
+version "${project.version}"
+
+func JoinStrings:
+    inputs:
+        strings string (0..*)
+    output:
+        result string (1..1)
+
+    set result:
+        strings join ", "
