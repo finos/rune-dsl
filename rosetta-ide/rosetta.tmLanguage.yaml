@@ -22,12 +22,21 @@ variables:
   identifier: '{{identifierStart}}[_[:alnum:]]*{{wordEnd}}'
   notAnIdentifier: ((?!{{identifierStart}})[:graph:])
   qualifiedIdentifier: ({{identifier}})(?:\s*(\.)\s*({{identifier}}))*
-  idsConflictingWithKeywords: '{{wordStart}}version{{wordEnd}}'
-  rootStart: '{{wordStart}}(namespace|version|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|library|synonym|rule|reporting|eligibility|qualifiedType|calculationType|metaType|report|annotation|enum|type|func){{wordEnd}}'
+  
+  # Keywords indicating the start of a root element are split in three categories:
+  # - keywords that may also be used as an identifier (e.g., `version`),
+  # - keywords that may also be used as another keyword in a certain context (e.g., `synonym`),
+  # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
+  identifiersConflictingWithRootStart: '{{wordStart}}(version){{wordEnd}}'
+  ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
+  unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|library|reporting|eligibility|qualifiedType|calculationType|metaType|report|annotation|enum|type|func){{wordEnd}}'
+  rootStart: '{{identifiersConflictingWithRootStart}}|{{ambiguousRootStart}}|{{unambiguousRootStart}}'
   strictRootEnd: (?={{rootStart}})
-  rootEnd: '{{strictRootEnd}}(?!{{idsConflictingWithKeywords}})'
+  rootEnd: (?={{ambiguousRootStart}}|{{unambiguousRootStart}})
+  unambiguousRootEnd: (?={{unambiguousRootStart}})
+  
   sectionStart: '{{wordStart}}((\Qpost-\E)?condition|set|add|inputs|output|alias){{wordEnd}}'
-  sectionEnd: (?={{sectionStart}}|{{rootStart}})
+  sectionEnd: (?={{sectionStart}})|{{rootEnd}}
   functionalOperation: '{{wordStart}}(reduce|filter|map|extract-all|extract|sort|min|max){{wordEnd}}'
   listOperationWord: '{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum){{wordEnd}}|{{functionalOperation}}'
   listOperation: ->|{{listOperationWord}}
@@ -384,7 +393,7 @@ repository:
               - name: meta.annotation-source-enum-value-mapping.rosetta
                 begin: '(\+|-)\s*({{identifier}})'
                 beginCaptures:
-                  1: { name: keyword.operator.synonym.rosetta }
+                  1: { name: keyword.operator.annotation.rosetta }
                   2: { name: variable.other.enummember.rosetta }
                 end: (?={{identifier}}|\}|\+|-)|{{rootEnd}}
                 patterns:
@@ -402,7 +411,7 @@ repository:
             - name: meta.annotation-source-attribute-mapping.rosetta
               begin: '(\+|-)\s*({{identifier}})'
               beginCaptures:
-                1: { name: keyword.operator.synonym.rosetta }
+                1: { name: keyword.operator.annotation.rosetta }
                 2: { name: variable.other.member.rosetta }
               end: (?={{identifier}}|\}|\+|-)|{{rootEnd}}
               patterns:
@@ -410,17 +419,13 @@ repository:
               - include: '#annotation'
 
       rosettaBlueprint:
-        name: meta.rule.rosetta
-        begin: '{{wordStart}}(?:(reporting)|(eligibility)){{wordEnd}}'
-        beginCaptures:
-          1: { name: storage.modifier.reporting.rosetta keyword.other.reporting.rosetta }
-          2: { name: storage.modifier.eligibility.rosetta keyword.other.eligibility.rosetta }
-        end: '{{rootEnd}}'
         patterns:
-        - include: '#comment'
-        - begin: '{{wordStart}}rule{{wordEnd}}'
+        - name: meta.rule.rosetta
+          begin: '{{wordStart}}(?:(reporting)|(eligibility)){{wordEnd}}\s*{{wordStart}}(rule){{wordEnd}}'
           beginCaptures:
-            0: { name: storage.type.rule.rosetta keyword.declaration.rule.rosetta }
+            1: { name: storage.modifier.reporting.rosetta keyword.other.reporting.rosetta }
+            2: { name: storage.modifier.eligibility.rosetta keyword.other.eligibility.rosetta }
+            3: { name: storage.type.rule.rosetta keyword.declaration.rule.rosetta }
           end: '{{rootEnd}}'
           patterns:
           - include: '#comment'
@@ -442,6 +447,11 @@ repository:
               - include: '#comment'
               - name: entity.name.type.type.rosetta
                 match: '{{identifier}}'
+        - name: meta.rule.rosetta
+          match: '{{wordStart}}(?:(reporting)|(eligibility)){{wordEnd}}'
+          captures:
+            1: { name: storage.modifier.reporting.rosetta keyword.other.reporting.rosetta }
+            2: { name: storage.modifier.eligibility.rosetta keyword.other.eligibility.rosetta }
 
       blueprintExpression:
         patterns:
@@ -590,7 +600,7 @@ repository:
         begin: (\[)
         beginCaptures:
           1: { name: punctuation.annotation.begin.rosetta }
-        end: (\])|{{rootEnd}}
+        end: (\])|{{unambiguousRootEnd}}
         endCaptures:
           1: { name: punctuation.annotation.end.rosetta }
         patterns:
