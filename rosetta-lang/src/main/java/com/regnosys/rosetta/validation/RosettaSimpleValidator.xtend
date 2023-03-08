@@ -209,38 +209,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def void checkSynonymSource(RosettaExternalSynonymSource source) {		
-		for (t: source.externalClasses) {			
-			val definedAttributes = newHashSet
-			externalAnn.getSuperSources(source)
-				.map[externalAnn.getAllExternalAttributesForType(it, t.typeRef as Data)]
-				.forEach[definedAttributes.addAll(it)]
+		for (t: source.externalClasses) {
 			for (attr: t.regularAttributes) {
 				attr.externalRuleReferences.forEach[
 					error('''You may not define rule references in a synonym source.''', it, null);
 				]
-				
-				if (attr.getOperator().equals(ExternalValueOperator.MINUS)) {
-					if (!definedAttributes.removeIf[attributeRef == attr.attributeRef]) {
-						error('''You cannot remove this mapping because `«attr.attributeRef.name»` did not have a mapping defined before.''', attr, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
-					}
-				} else { // attr.getOperator().equals(ExternalValueOperator.PLUS)
-					definedAttributes.add(attr);
-				}
-			}
-		}
-		for (t: source.externalEnums) {			
-			val definedValues = newHashSet
-			externalAnn.getSuperSources(source)
-				.map[externalAnn.getAllExternalEnumValuesForType(it, t.typeRef as RosettaEnumeration)]
-				.forEach[definedValues.addAll(it)]
-			for (v: t.regularValues) {
-				if (v.getOperator().equals(ExternalValueOperator.MINUS)) {
-					if (!definedValues.removeIf[enumRef == v.enumRef]) {
-						error('''You cannot remove this mapping because `«v.enumRef.name»` did not have a mapping defined before.''', v, ROSETTA_EXTERNAL_ENUM_VALUE__ENUM_REF);
-					}
-				} else { // v.getOperator().equals(ExternalValueOperator.PLUS)
-					definedValues.add(v);
-				}
 			}
 		}
 	}
