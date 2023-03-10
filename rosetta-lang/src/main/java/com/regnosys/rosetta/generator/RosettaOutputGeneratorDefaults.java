@@ -4,4 +4,5 @@ public class RosettaOutputGeneratorDefaults implements IRosettaOutputGeneratorDe
     @Override
     public String getOutputDirectoryBase() {
         return ".";
+    }
 }
