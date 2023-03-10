@@ -6,6 +6,8 @@ package com.regnosys.rosetta
 import com.google.inject.Provider
 import com.regnosys.rosetta.derivedstate.RosettaDerivedStateComputer
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
+import com.regnosys.rosetta.generator.IRosettaOutputGeneratorDefaults
+import com.regnosys.rosetta.generator.RosettaOutputGeneratorDefaults
 import com.regnosys.rosetta.generator.external.EmptyExternalGeneratorsProvider
 import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
@@ -61,6 +63,10 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	def Class<? extends IOutputConfigurationProvider> bindIOutputConfigurationProvider() {
 		return RosettaOutputConfigurationProvider
+	}
+
+	def Class<? extends IRosettaOutputGeneratorDefaults> bindIRosettaOutputGeneratorDefaults() {
+		return RosettaOutputGeneratorDefaults
 	}
 	
 	def Class<? extends IResourceDescription.Manager> bindIResourceDescriptionManager() {

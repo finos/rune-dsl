@@ -14,6 +14,7 @@ import java.util.HashSet
 class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 
 	@Inject ExternalGenerators externalGeneratorsProvider
+	@Inject IRosettaOutputGeneratorDefaults rosettaOutputGeneratorDefaults
 
 	public final static String SRC_GEN_JAVA_OUTPUT = IFileSystemAccess.DEFAULT_OUTPUT
 	public final static String SRC_TEST_GEN_JAVA_OUTPUT = "SRC_TEST_GEN_JAVA_OUTPUT"
@@ -28,7 +29,7 @@ class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 	
 	def Map<String, OutputConfiguration> getOutConfigMap() {
 		var srcGenJava = new OutputConfiguration(SRC_GEN_JAVA_OUTPUT)
-		srcGenJava.setOutputDirectory("./src/generated/java")
+		srcGenJava.setOutputDirectory(rosettaOutputGeneratorDefaults + "/src/generated/java")
 		srcGenJava.setDescription("Generated Java Output Folder")
 		srcGenJava.setOverrideExistingResources(true)
 		srcGenJava.setCanClearOutputDirectory(true)
@@ -38,7 +39,7 @@ class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 		srcGenJava.setKeepLocalHistory(true)
 
 		var srcMainJava = new OutputConfiguration(SRC_MAIN_JAVA_OUTPUT)
-		srcMainJava.setOutputDirectory("./src/main/java")
+		srcMainJava.setOutputDirectory(rosettaOutputGeneratorDefaults + "/src/main/java")
 		srcMainJava.setDescription("Java Main Output Folder")
 		srcMainJava.setOverrideExistingResources(false)
 		srcMainJava.setCanClearOutputDirectory(false)
@@ -48,7 +49,7 @@ class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 		srcMainJava.setKeepLocalHistory(false)
 		
 		var srcTestJava = new OutputConfiguration(SRC_TEST_GEN_JAVA_OUTPUT)
-		srcTestJava.setOutputDirectory("./src/test/generated/java")
+		srcTestJava.setOutputDirectory(rosettaOutputGeneratorDefaults + "/src/test/generated/java")
 		srcTestJava.setDescription("Java Tests Output Folder")
 		srcTestJava.setOverrideExistingResources(true)
 		srcTestJava.setCanClearOutputDirectory(true)
@@ -58,7 +59,7 @@ class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 		srcTestJava.setKeepLocalHistory(false)
 
 		var srcGenDaml = new OutputConfiguration(SRC_GEN_DAML_OUTPUT)
-		srcGenDaml.setOutputDirectory("./src/generated/daml")
+		srcGenDaml.setOutputDirectory(rosettaOutputGeneratorDefaults + "/src/generated/daml")
 		srcGenDaml.setDescription("Generated DAML Output Folder")
 		srcGenDaml.setOverrideExistingResources(true)
 		srcGenDaml.setCanClearOutputDirectory(true)
@@ -77,7 +78,7 @@ class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 
 	private def inflate(extension ExternalOutputConfiguration minimalConfig) {
 		val config = new OutputConfiguration(getName)
-		config.setOutputDirectory('./src/generated/' + directory)
+		config.setOutputDirectory(rosettaOutputGeneratorDefaults + '/src/generated/' + directory)
 		config.setDescription(getDescription)
 		config.setOverrideExistingResources(true)
 		config.setCanClearOutputDirectory(true)
