@@ -32,9 +32,6 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.FunctionReference
-import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
@@ -152,7 +149,7 @@ class ImportGenerator {
 			}
 			RosettaFunctionalOperation: {
 				addExpression(expression.argument)
-				addFunctionReference(expression.functionRef)
+				addExpression(expression.function?.body)
 			}
 			RosettaUnaryOperation: {
 				addExpression(expression.argument)
@@ -184,17 +181,6 @@ class ImportGenerator {
 			default:
 				LOGGER.warn("Unsupported expression type of " + expression.class.simpleName)
 		}
-	}
-	
-	def addFunctionReference(FunctionReference ref) {
-		switch ref {
-			NamedFunctionReference: {
-				addCallableWithArgs(ref.function)
-			}
-			InlineFunction: {
-				addExpression(ref.body)
-			}
-		}	
 	}
 
 	def fullName(RosettaType type) {

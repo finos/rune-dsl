@@ -183,7 +183,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
+	(ID | 'source' | 'value' | 'version' // used in CDM model
 	)
 ;
 
@@ -494,8 +494,12 @@ ClosureParameter:
 ;
 
 InlineFunction:
-	body=RosettaCalcExpression
-	| (parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[' body=RosettaCalcExpression ']'
+	// TODO check whether this predicate is necessary
+	=>((parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[') body=RosettaCalcExpression ']'
+;
+
+ImplicitInlineFunction returns InlineFunction:
+	body=RosettaCalcOr
 ;
 
 /**********************************************************************
@@ -507,7 +511,41 @@ RosettaCalcExpressionWithAsKey returns RosettaExpression:
 ;
 
 RosettaCalcExpression returns RosettaExpression:
+	FunctionalOperation
+;
+
+enum ExistsModifier:
+	  SINGLE='single'
+	| MULTIPLE='multiple'
+;
+
+FunctionalOperation returns RosettaExpression:
 	RosettaCalcOr
+	(
+		=>(
+			 ({ReduceOperation.argument=current} operator='reduce')
+			|({FilterOperation.argument=current} operator='filter')
+			|({MapOperation.argument=current} operator=('map' | 'extract'))
+			|({ExtractAllOperation.argument=current} operator='extract-all')
+		) function=ImplicitInlineFunction
+	)*
+	| // Without left parameter:
+	(
+		=>(
+			 ({ReduceOperation} operator='reduce')
+			|({FilterOperation} operator='filter')
+			|({MapOperation} operator=('map' | 'extract'))
+			|({ExtractAllOperation} operator='extract-all')
+		) function=ImplicitInlineFunction
+	)
+	(
+		=>(
+			 ({ReduceOperation.argument=current} operator='reduce')
+			|({FilterOperation.argument=current} operator='filter')
+			|({MapOperation.argument=current} operator=('map' | 'extract'))
+			|({ExtractAllOperation.argument=current} operator='extract-all')
+		) function=ImplicitInlineFunction
+	)*
 ;
 
 /*
@@ -553,34 +591,30 @@ RosettaCalcMultiplicative returns RosettaExpression:
 ;
 
 RosettaCalcBinary returns RosettaExpression:
-	ListOperation (=>(
-		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
-		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
-		| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
+	PathOperation (=>(
+		{RosettaContainsExpression.left=current} operator='contains' right=PathOperation
+		| {RosettaDisjointExpression.left=current} operator='disjoint' right=PathOperation
+		| {JoinOperation.left=current} operator='join' (=>right=PathOperation)?
 	))?
 	| // Without left parameter:
-	(->(
-		{RosettaContainsExpression} operator='contains' right=ListOperation
-		| {RosettaDisjointExpression} operator='disjoint' right=ListOperation
-		| {JoinOperation} operator='join' (=>right=ListOperation)?
-	)
-	(=>(
-		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
-		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
-		| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
-	))?
+	(
+		->(
+			{RosettaContainsExpression} operator='contains' right=PathOperation
+			| {RosettaDisjointExpression} operator='disjoint' right=PathOperation
+			| {JoinOperation} operator='join' (=>right=PathOperation)?
+		)
+		(=>(
+			{RosettaContainsExpression.left=current} operator='contains' right=PathOperation
+			| {RosettaDisjointExpression.left=current} operator='disjoint' right=PathOperation
+			| {JoinOperation.left=current} operator='join' (=>right=PathOperation)?
+		))?
 	)
 ;
 
 /**
- * List operations
+ * Path operations
  */
-enum ExistsModifier:
-	  SINGLE='single'
-	| MULTIPLE='multiple'
-;
-
-ListOperation returns RosettaExpression:
+PathOperation returns RosettaExpression:
 	RosettaCalcPrimary
 	(
 		=>(
@@ -597,15 +631,18 @@ ListOperation returns RosettaExpression:
 			|({SumOperation.argument=current} operator='sum')
 			|({OneOfOperation.argument=current} operator='one-of')
 			|({ChoiceOperation.argument=current} necessity=Necessity operator='choice' attributes+=[Attribute|ValidID] =>(',' attributes+=[Attribute|ValidID])*)
-		) | =>(
+		)
+		| =>(
+			({SortOperation.argument=current} operator='sort')
+			|({MinOperation.argument=current} operator='min')
+			|({MaxOperation.argument=current} operator='max')
+		) (function=InlineFunction)?
+		| =>((
 			 ({ReduceOperation.argument=current} operator='reduce')
 			|({FilterOperation.argument=current} operator='filter')
 			|({MapOperation.argument=current} operator=('map' | 'extract'))
 			|({ExtractAllOperation.argument=current} operator='extract-all')
-			|({SortOperation.argument=current} operator='sort')
-			|({MinOperation.argument=current} operator='min')
-			|({MaxOperation.argument=current} operator='max')
-		) (functionRef=FunctionReference)?
+		) function=InlineFunction)
 	)*
 	| // Without left parameter:
 	(
@@ -622,15 +659,18 @@ ListOperation returns RosettaExpression:
 			|({SumOperation} operator='sum')
 			|({OneOfOperation} operator='one-of')
 			|({ChoiceOperation} necessity=Necessity operator='choice' attributes+=[Attribute|ValidID] =>(',' attributes+=[Attribute|ValidID])*)
-		) | (
+		)
+		| (
+			({SortOperation} operator='sort')
+			|({MinOperation} operator='min')
+			|({MaxOperation} operator='max')
+		) (function=InlineFunction)?
+		| ((
 			 ({ReduceOperation} operator='reduce')
 			|({FilterOperation} operator='filter')
 			|({MapOperation} operator=('map' | 'extract'))
 			|({ExtractAllOperation} operator='extract-all')
-			|({SortOperation} operator='sort')
-			|({MinOperation} operator='min')
-			|({MaxOperation} operator='max')
-		) (functionRef=FunctionReference)?
+		) function=InlineFunction)
 	)
 	(
 		=>(
@@ -647,15 +687,18 @@ ListOperation returns RosettaExpression:
 			|({SumOperation.argument=current} operator='sum')
 			|({OneOfOperation.argument=current} operator='one-of')
 			|({ChoiceOperation.argument=current} necessity=Necessity operator='choice' attributes+=[Attribute|ValidID] =>(',' attributes+=[Attribute|ValidID])*)
-		) | =>(
+		)
+		| =>(
+			({SortOperation.argument=current} operator='sort')
+			|({MinOperation.argument=current} operator='min')
+			|({MaxOperation.argument=current} operator='max')
+		) (function=InlineFunction)?
+		| =>((
 			 ({ReduceOperation.argument=current} operator='reduce')
 			|({FilterOperation.argument=current} operator='filter')
 			|({MapOperation.argument=current} operator=('map' | 'extract'))
 			|({ExtractAllOperation.argument=current} operator='extract-all')
-			|({SortOperation.argument=current} operator='sort')
-			|({MinOperation.argument=current} operator='min')
-			|({MaxOperation.argument=current} operator='max')
-		) (functionRef=FunctionReference)?
+		) function=InlineFunction)
 	)*
 ;
 
@@ -671,7 +714,7 @@ RosettaCalcPrimary returns RosettaExpression:
 ;
 
 RosettaCalcConditionalExpression returns RosettaExpression:
-	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcExpression (=>full?='else' elsethen=RosettaCalcExpression)?
+	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcOr (=>full?='else' elsethen=RosettaCalcOr)?
 ;
 
 RosettaCalcOnlyExists returns RosettaExpression:

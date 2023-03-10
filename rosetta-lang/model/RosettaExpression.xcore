@@ -301,7 +301,7 @@ class InlineFunction {
 }
 
 interface RosettaFunctionalOperation extends RosettaUnaryOperation {
-	contains InlineFunction functionRef
+	contains InlineFunction function
 }
 
 interface MandatoryFunctionalOperation extends RosettaFunctionalOperation {

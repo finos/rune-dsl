@@ -22,8 +22,6 @@ import javax.inject.Inject
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.expression.FunctionReference
-import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import org.eclipse.xtext.formatting2.FormatterRequest
 import com.regnosys.rosetta.rosetta.BlueprintNodeExp
@@ -70,7 +68,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			RosettaBinaryOperation:
 				expr.left.isSimple || expr.right.isSimple
 			RosettaFunctionalOperation:
-				expr.functionRef === null && expr.argument.isSimple
+				expr.function === null && expr.argument.isSimple
 			RosettaUnaryOperation:
 				expr.argument.isSimple
 			ListLiteral:
@@ -305,48 +303,54 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		expr.formatUnaryOperation(
 			document,
 			mode,
-			[ expr.functionRef.formatFunctionReference(it, mode.stopChain) ]
+			[extension doc |
+				if (expr.function !== null) {
+					expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR)
+						.append[oneSpace]
+					expr.function.formatInlineFunction(doc, mode.stopChain)
+				}
+			]
 		)
 	}
 	
-	private def void formatFunctionReference(FunctionReference ref, extension IFormattableDocument document, FormattingMode mode) {
-		switch (ref) {
-			NamedFunctionReference:
-				ref.prepend[oneSpace]
-			InlineFunction: {
-				ref.parameters.forEach[
-					prepend[oneSpace]
+	private def void formatInlineFunction(InlineFunction f, extension IFormattableDocument document, FormattingMode mode) {
+		val left = f.regionFor.keyword('[')
+		if (left !== null) { // case inline function with brackets
+			val right = f.regionFor.keyword(']')
+			f.parameters.forEach[
+				prepend[oneSpace]
+			]
+			left
+				.prepend[oneSpace]
+			f.regionFor.keywords(',').forEach[
+				prepend[noSpace]
+			]
+			
+			formatInlineOrMultiline(document, f, mode,
+				[extension doc | // case: short inline function
+					left
+						.append[oneSpace]
+					right
+						.prepend[oneSpace]
+					f.body.formatExpression(doc, mode)
+					if (f.eContainer.eContainer instanceof RosettaOperation) {
+						// Always put next operations on a new line.
+						f.append[highPriority; newLine]
+					}
+				],
+				[extension doc | // case: long inline function
+					interior(
+						left
+							.append[newLine],
+						right
+							.prepend[newLine],
+						[indent]
+					)
+					f.body.formatExpression(doc, mode.stopChain)
 				]
-				ref.regionFor.keyword('[')
-					.prepend[oneSpace]
-				ref.regionFor.keywords(',').forEach[
-					prepend[noSpace]
-				]
-				
-				formatInlineOrMultiline(document, ref, mode,
-					[extension doc | // case: short inline function
-						ref.regionFor.keyword('[')
-							.append[oneSpace]
-						ref.regionFor.keyword(']')
-							.prepend[oneSpace]
-						ref.body.formatExpression(doc, mode)
-						if (ref.eContainer.eContainer instanceof RosettaOperation) {
-							// Always put next operations on a new line.
-							ref.append[highPriority; newLine]
-						}
-					],
-					[extension doc | // case: long inline function
-						interior(
-							ref.regionFor.keyword('[')
-								.append[newLine],
-							ref.regionFor.keyword(']')
-								.prepend[newLine],
-							[indent]
-						)
-						ref.body.formatExpression(doc, mode.stopChain)
-					]
-				)
-			}
+			)
+		} else { // case inline function without brackets
+			f.body.formatExpression(document, mode)
 		}
 	}
 

@@ -6,7 +6,6 @@ import javax.inject.Inject
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaType
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
-import com.regnosys.rosetta.rosetta.expression.FunctionReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 
 class ListOperationExtensions {
@@ -22,15 +21,11 @@ class ListOperationExtensions {
 		'''«IF funcExt.needsBuilder(op.argument)»? extends «ENDIF»«op.inputRawType»'''
 	}
 	
-	def String getBodyRawType(FunctionReference op) {
+	def String getBodyRawType(InlineFunction op) {
 		typeProvider.getRType(op).name.toJavaType
 	}
 	
-	def String getOutputType(FunctionReference op) {
-		if (op instanceof InlineFunction) {
-			'''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«op.bodyRawType»'''
-		} else {
-			op.bodyRawType
-		}
+	def String getOutputType(InlineFunction op) {
+		'''«IF funcExt.needsBuilder(op.body)»? extends «ENDIF»«op.bodyRawType»'''
 	}
 }

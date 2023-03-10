@@ -44,7 +44,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.expression.MapOperation
-import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.impl.RosettaFeatureImpl
@@ -526,10 +525,6 @@ class RosettaBlueprintTypeResolver {
 	}
 	
 	def dispatch RosettaType getOutput(MapOperation op) {
-		return op.functionRef.output
-	}
-	
-	def dispatch RosettaType getOutput(NamedFunctionReference op) {
 		return op.function.output
 	}
 	

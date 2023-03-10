@@ -80,7 +80,7 @@ class Util {
 		var prev = e;
 		for (c: containers) {
 			if (c instanceof RosettaFunctionalOperation) {
-				if (c.functionRef == prev) {
+				if (c.function == prev) {
 					result.add(c);
 				}
 			}
