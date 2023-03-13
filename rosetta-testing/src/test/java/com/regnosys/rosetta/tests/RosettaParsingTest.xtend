@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.simple.Function
 
 import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.rosetta.expression.MapOperation
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
@@ -24,6 +23,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import org.eclipse.xtext.diagnostics.Diagnostic
+import org.eclipse.xtext.EcoreUtil2
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -31,6 +31,86 @@ class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testPrioritisationOfOperations1() {
+		val model =
+		'''
+			type Foo:
+				bar Bar (0..*)
+			type Bar:
+				a string (0..*)
+			func F:
+				inputs: a string (1..1)
+				output: result Bar (0..*)
+				set result -> a: a
+			
+			func Test:
+				inputs:
+					foo Foo (1..1)
+				output: result string (0..*)
+				
+				set result:
+					foo -> bar only-element -> a
+						join ", "
+						then extract F(item) only-element -> a
+						then filter item <> "foo"
+				
+				set result:
+					(((((((foo -> bar) only-element) -> a)
+						join ", ")
+						then (extract F(item) only-element -> a)))
+						then (filter item <> "foo"))
+		'''.parseRosettaWithNoErrors
+		model.elements.last as Function => [
+			val expr1 = operations.head.expression
+			val expr2 = operations.last.expression
+			assertTrue(EcoreUtil2.equals(expr1, expr2));
+		]
+	}
+	
+	@Test
+	def void testPrioritisationOfOperations2() {
+		val model =
+		'''
+			type Foo:
+				bar Bar (0..*)
+			type Bar:
+				a string (0..*)
+			func F:
+				inputs: bar Bar (1..1)
+				output: result boolean (1..1)
+				set result: bar -> a any = "foo"
+			
+			func Test:
+				inputs:
+					foo Foo (1..1)
+				output: result string (0..*)
+				
+				set result:
+					foo
+						extract if F(bar only-element) = True and bar only-element -> a first = "bar"
+							then bar
+					    then extract item -> a
+					    	filter [<> "foo"]
+					    	only-element
+					    then extract item + "bar"
+				
+				set result:
+					((foo
+						extract (if ((F(bar only-element) = True) and (((bar only-element) -> a) first = "bar"))
+							then bar))
+					    then (extract (((item -> a)
+					    	filter [<> "foo"])
+					    	only-element)))
+					    then (extract (item + "bar"))
+		'''.parseRosettaWithNoErrors
+		model.elements.last as Function => [
+			val expr1 = operations.head.expression
+			val expr2 = operations.last.expression
+			assertTrue(EcoreUtil2.equals(expr1, expr2));
+		]
+	}
 	
 	@Test
 	def void ambiguousReferenceAllowed() {
@@ -52,7 +132,7 @@ class RosettaParsingTest {
 			val aInput = inputs.last
 	    	operations.head => [
 	    		expression as MapOperation => [
-	    			functionRef as InlineFunction => [
+	    			function => [
 	    				assertTrue(body instanceof RosettaSymbolReference)
 	    				body as RosettaSymbolReference => [
 	    					assertEquals(aInput, symbol)
@@ -126,8 +206,7 @@ class RosettaParsingTest {
 	    		assertEquals(1, annotations.size)
 	    		assertTrue(expression instanceof ExtractAllOperation)
 	    		expression as ExtractAllOperation => [
-	    			assertTrue(functionRef instanceof InlineFunction)
-	    			functionRef as InlineFunction => [
+	    			function => [
 	    				assertTrue(body instanceof RosettaExistsExpression)
 	    			]
 	    		]
@@ -174,10 +253,8 @@ class RosettaParsingTest {
 	    		assertTrue(expression instanceof MapOperation)
 	    		expression as MapOperation => [
 	    			assertTrue(argument instanceof MapOperation)
-	    			assertTrue(functionRef instanceof InlineFunction)
 	    			argument as MapOperation => [
 	    				assertTrue(argument instanceof ListLiteral)
-	    				assertTrue(functionRef instanceof InlineFunction)
 	    			]
 	    		]
 	    	]

@@ -36,7 +36,7 @@ public class RosettaInlayHintsService extends AbstractInlayHintsService {
 	public InlayHint checkFunctionalOperation(RosettaFunctionalOperation op) {
 		if (EcoreUtil2.getContainerOfType(op, Function.class) != null) {
 			if (op instanceof ReduceOperation || op instanceof MapOperation || op instanceof ExtractAllOperation) {
-				if (extensions.isResolved(op.getFunctionRef()) && op.getFunctionRef() instanceof InlineFunction) {
+				if (extensions.isResolved(op.getFunction())) {
 					RType outputType = types.getRType(op);
 					boolean outputMulti = card.isMulti(op);
 		

@@ -94,6 +94,7 @@ import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.Necessity
 import com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleValidationMethod
 import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
 
 class ExpressionGenerator {
 	
@@ -196,6 +197,9 @@ class ExpressionGenerator {
 			}
 			ExtractAllOperation : {
 				extractAllOperation(expr, params)
+			}
+			ThenOperation : {
+				thenOperation(expr, params)
 			}
 			SortOperation : {
 				sortOperation(expr, params)
@@ -714,6 +718,13 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient extractAllOperation(ExtractAllOperation op, ParamMap params) {
+		val funcExpr = op.function.inlineFunction(params, false, true)
+		'''
+		«op.argument.emptyToMapperJavaCode(params, false)»
+			.apply(«funcExpr»)'''
+	}
+	
+	def StringConcatenationClient thenOperation(ThenOperation op, ParamMap params) {
 		val funcExpr = op.function.inlineFunction(params, false, true)
 		'''
 		«op.argument.emptyToMapperJavaCode(params, false)»

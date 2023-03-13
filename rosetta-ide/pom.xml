@@ -45,6 +45,15 @@
     </dependencies>
 
     <build>
+		<resources>
+            <resource>
+                <directory>${project.basedir}/src-gen/main/java</directory>
+                <includes>
+                    <include>META-INF/services/org.eclipse.xtext.ISetup</include>
+                </includes>
+            </resource>
+        </resources>
+		
         <plugins>
             <plugin>
                 <groupId>org.eclipse.xtend</groupId>

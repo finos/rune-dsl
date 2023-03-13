@@ -319,7 +319,11 @@ class FilterOperation extends MandatoryFunctionalOperation, UnaryFunctionalOpera
 class MapOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
 }
 
+// TODO: since we have a `then` operation, should we get rid of `extract-all`?
 class ExtractAllOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
+}
+
+class ThenOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
 }
 
 interface ComparingFunctionalOperation extends RosettaFunctionalOperation, UnaryFunctionalOperation {

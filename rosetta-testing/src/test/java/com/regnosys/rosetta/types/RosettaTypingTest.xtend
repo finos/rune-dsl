@@ -16,7 +16,6 @@ import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
 import com.regnosys.rosetta.rosetta.expression.MapOperation
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -68,7 +67,7 @@ class RosettaTypingTest {
 		]];
 		
 		model.elements.get(1) as Function => [operations.head.expression as MapOperation => [
-			(functionRef as InlineFunction).body as ArithmeticOperation => [
+			function.body as ArithmeticOperation => [
 				left.assertHasType(singleInt)
 			]
 		]];

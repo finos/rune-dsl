@@ -62,6 +62,7 @@ import com.regnosys.rosetta.rosetta.RosettaDataReference
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
 
 class RosettaTypeProvider {
 
@@ -298,6 +299,7 @@ class RosettaTypeProvider {
 				expression.argument.safeRType(cycleTracker)
 			ReduceOperation,
 			MapOperation,
+			ThenOperation,
 			ExtractAllOperation:
 				expression.function.safeRType(cycleTracker)
 			InlineFunction:

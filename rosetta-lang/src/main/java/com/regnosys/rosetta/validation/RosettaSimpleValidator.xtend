@@ -1196,7 +1196,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		
 	private def checkBodyExists(RosettaFunctionalOperation operation) {
 		if (operation.function === null) {
-			error('''Missing a function reference.''', operation, ROSETTA_OPERATION__OPERATOR)
+			error('''Missing an expression.''', operation, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 	

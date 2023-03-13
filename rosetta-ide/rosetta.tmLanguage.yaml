@@ -27,7 +27,7 @@ variables:
   strictRootEnd: (?={{rootStart}})
   rootEnd: '{{strictRootEnd}}(?!{{idsConflictingWithKeywords}})'
   sectionStart: '{{wordStart}}((\Qpost-\E)?condition|set|add|inputs|output|alias){{wordEnd}}'
-  sectionEnd: (?={{sectionStart}}|{{rootStart}})
+  sectionEnd: (?={{sectionStart}}|{{rootStart}})(?!\bcondition\b)|(?=\bcondition\b\s*({{identifier}})?:)
   functionalOperation: '{{wordStart}}(reduce|filter|map|extract-all|extract|sort|min|max){{wordEnd}}'
   listOperationWord: '{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum){{wordEnd}}|{{functionalOperation}}'
   listOperation: ->|{{listOperationWord}}
@@ -857,9 +857,10 @@ repository:
 
       condition:
         name: meta.condition.rosetta
-        begin: '{{wordStart}}(post\-)?condition{{wordEnd}}'
+        begin: '{{wordStart}}(post\-condition){{wordEnd}}|{{wordStart}}(condition){{wordEnd}}(?=\s*({{identifier}})?:)'
         beginCaptures:
-          0: { name: keyword.declaration.condition.rosetta }
+          1: { name: keyword.declaration.post-condition.rosetta }
+          2: { name: keyword.declaration.condition.rosetta }
         end: '{{sectionEnd}}'
         patterns:
         - begin: (?<=condition{{wordEnd}})

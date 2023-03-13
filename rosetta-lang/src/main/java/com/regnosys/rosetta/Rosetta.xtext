@@ -183,7 +183,7 @@ fragment RosettaTyped:
 
 
 ValidID:
-	(ID | 'source' | 'value' | 'version' // used in CDM model
+	(ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
 	)
 ;
 
@@ -494,7 +494,6 @@ ClosureParameter:
 ;
 
 InlineFunction:
-	// TODO check whether this predicate is necessary
 	=>((parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[') body=RosettaCalcExpression ']'
 ;
 
@@ -511,41 +510,11 @@ RosettaCalcExpressionWithAsKey returns RosettaExpression:
 ;
 
 RosettaCalcExpression returns RosettaExpression:
-	FunctionalOperation
+	ThenOperation
 ;
 
-enum ExistsModifier:
-	  SINGLE='single'
-	| MULTIPLE='multiple'
-;
-
-FunctionalOperation returns RosettaExpression:
-	RosettaCalcOr
-	(
-		=>(
-			 ({ReduceOperation.argument=current} operator='reduce')
-			|({FilterOperation.argument=current} operator='filter')
-			|({MapOperation.argument=current} operator=('map' | 'extract'))
-			|({ExtractAllOperation.argument=current} operator='extract-all')
-		) function=ImplicitInlineFunction
-	)*
-	| // Without left parameter:
-	(
-		=>(
-			 ({ReduceOperation} operator='reduce')
-			|({FilterOperation} operator='filter')
-			|({MapOperation} operator=('map' | 'extract'))
-			|({ExtractAllOperation} operator='extract-all')
-		) function=ImplicitInlineFunction
-	)
-	(
-		=>(
-			 ({ReduceOperation.argument=current} operator='reduce')
-			|({FilterOperation.argument=current} operator='filter')
-			|({MapOperation.argument=current} operator=('map' | 'extract'))
-			|({ExtractAllOperation.argument=current} operator='extract-all')
-		) function=ImplicitInlineFunction
-	)*
+ThenOperation returns RosettaExpression:
+	RosettaCalcOr (=>({ThenOperation.argument=current} operator='then') (function=InlineFunction|=>function=ImplicitInlineFunction)?)*
 ;
 
 /*
@@ -614,6 +583,11 @@ RosettaCalcBinary returns RosettaExpression:
 /**
  * Path operations
  */
+enum ExistsModifier:
+	  SINGLE='single'
+	| MULTIPLE='multiple'
+;
+
 PathOperation returns RosettaExpression:
 	RosettaCalcPrimary
 	(
@@ -637,12 +611,13 @@ PathOperation returns RosettaExpression:
 			|({MinOperation.argument=current} operator='min')
 			|({MaxOperation.argument=current} operator='max')
 		) (function=InlineFunction)?
-		| =>((
+		| =>(
 			 ({ReduceOperation.argument=current} operator='reduce')
 			|({FilterOperation.argument=current} operator='filter')
+			// @Compat: remove `map`
 			|({MapOperation.argument=current} operator=('map' | 'extract'))
 			|({ExtractAllOperation.argument=current} operator='extract-all')
-		) function=InlineFunction)
+		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)*
 	| // Without left parameter:
 	(
@@ -665,12 +640,13 @@ PathOperation returns RosettaExpression:
 			|({MinOperation} operator='min')
 			|({MaxOperation} operator='max')
 		) (function=InlineFunction)?
-		| ((
+		| (
 			 ({ReduceOperation} operator='reduce')
 			|({FilterOperation} operator='filter')
+			// @Compat: remove `map`
 			|({MapOperation} operator=('map' | 'extract'))
 			|({ExtractAllOperation} operator='extract-all')
-		) function=InlineFunction)
+		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)
 	(
 		=>(
@@ -693,12 +669,13 @@ PathOperation returns RosettaExpression:
 			|({MinOperation.argument=current} operator='min')
 			|({MaxOperation.argument=current} operator='max')
 		) (function=InlineFunction)?
-		| =>((
+		| =>(
 			 ({ReduceOperation.argument=current} operator='reduce')
 			|({FilterOperation.argument=current} operator='filter')
+			// @Compat: remove `map`
 			|({MapOperation.argument=current} operator=('map' | 'extract'))
 			|({ExtractAllOperation.argument=current} operator='extract-all')
-		) function=InlineFunction)
+		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)*
 ;
 
@@ -714,7 +691,7 @@ RosettaCalcPrimary returns RosettaExpression:
 ;
 
 RosettaCalcConditionalExpression returns RosettaExpression:
-	 {RosettaConditionalExpression} 'if' if=RosettaCalcExpression 'then' ifthen=RosettaCalcOr (=>full?='else' elsethen=RosettaCalcOr)?
+	 {RosettaConditionalExpression} 'if' if=RosettaCalcOr 'then' ifthen=RosettaCalcOr (=>full?='else' elsethen=RosettaCalcOr)?
 ;
 
 RosettaCalcOnlyExists returns RosettaExpression:
@@ -836,7 +813,7 @@ BlueprintNode:
 ;
 
 BlueprintFilter :
-	'filter' 'when' (filter = RosettaCalcExpression | 'rule' filterBP = BlueprintRef)
+	'filter' 'when' (filter=RosettaCalcOr | 'rule' filterBP=BlueprintRef)
 ;
 
 BlueprintOr:
@@ -848,11 +825,11 @@ BlueprintRef:
 ;
 
 BlueprintExtract:
-	'extract' (repeatable?='repeatable')? call=RosettaCalcExpression 
+	'extract' (repeatable?='repeatable')? call=RosettaCalcOr 
 ;
 
 BlueprintReturn:
-	'return' expression = RosettaCalcExpression
+	'return' expression=RosettaCalcOr
 ;
 
 BlueprintLookup:

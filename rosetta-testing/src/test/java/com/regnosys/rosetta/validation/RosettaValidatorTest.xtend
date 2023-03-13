@@ -1700,7 +1700,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(FILTER_OPERATION, null, "Missing a function reference.")
+		model.assertError(FILTER_OPERATION, null, "Missing an expression.")
 	}
 	
 	@Test
@@ -1757,7 +1757,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(MAP_OPERATION, null, "Missing a function reference.")
+		model.assertError(MAP_OPERATION, null, "Missing an expression.")
 	}
 	
 	@Test
@@ -1833,7 +1833,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(NAMED_FUNCTION_REFERENCE, null, "Function must have 1 parameter.")
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Expected 2 arguments, but got 0 instead.")
 	}
 	
 	@Test

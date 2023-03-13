@@ -296,7 +296,7 @@ class FunctionGeneratorTest {
 				
 				set res:
 					list
-						reduce ClosestToTen
+						reduce acc, v [ ClosestToTen(acc, v) ]
 			
 			func F5:
 				inputs:
