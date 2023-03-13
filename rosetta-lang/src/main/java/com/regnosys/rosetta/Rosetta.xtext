@@ -560,35 +560,35 @@ RosettaCalcMultiplicative returns RosettaExpression:
 ;
 
 RosettaCalcBinary returns RosettaExpression:
-	PathOperation (=>(
-		{RosettaContainsExpression.left=current} operator='contains' right=PathOperation
-		| {RosettaDisjointExpression.left=current} operator='disjoint' right=PathOperation
-		| {JoinOperation.left=current} operator='join' (=>right=PathOperation)?
+	ListOperation (=>(
+		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
+		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+		| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
 	))?
 	| // Without left parameter:
 	(
 		->(
-			{RosettaContainsExpression} operator='contains' right=PathOperation
-			| {RosettaDisjointExpression} operator='disjoint' right=PathOperation
-			| {JoinOperation} operator='join' (=>right=PathOperation)?
+			{RosettaContainsExpression} operator='contains' right=ListOperation
+			| {RosettaDisjointExpression} operator='disjoint' right=ListOperation
+			| {JoinOperation} operator='join' (=>right=ListOperation)?
 		)
 		(=>(
-			{RosettaContainsExpression.left=current} operator='contains' right=PathOperation
-			| {RosettaDisjointExpression.left=current} operator='disjoint' right=PathOperation
-			| {JoinOperation.left=current} operator='join' (=>right=PathOperation)?
+			{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
+			| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+			| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
 		))?
 	)
 ;
 
 /**
- * Path operations
+ * List operations
  */
 enum ExistsModifier:
 	  SINGLE='single'
 	| MULTIPLE='multiple'
 ;
 
-PathOperation returns RosettaExpression:
+ListOperation returns RosettaExpression:
 	RosettaCalcPrimary
 	(
 		=>(
