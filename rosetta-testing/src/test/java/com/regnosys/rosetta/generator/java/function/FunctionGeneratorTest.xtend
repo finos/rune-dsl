@@ -147,9 +147,9 @@ class FunctionGeneratorTest {
 				
 				set result:
 					1 extract [
-						item extract-all param1 [
+						item then param1 [
 							10 extract [
-								item extract-all param2 [
+								item then param2 [
 									100 extract [
 										item*10
 									] extract [
@@ -309,7 +309,7 @@ class FunctionGeneratorTest {
 						extract Incr
 						extract Incr
 						extract [ item + 1 ]
-						extract-all a [ a extract Incr ]
+						then a [ a extract Incr ]
 		'''.generateCode
 		val classes = code.compileToClasses
 
@@ -354,7 +354,7 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
-	def void extractAllTest() {
+	def void thenOperationTest() {
 		val code = '''
 			namespace com.rosetta.test.model
 			version "${project.version}"
@@ -363,19 +363,19 @@ class FunctionGeneratorTest {
 				output:
 					res boolean (1..1)
 				set res:
-					empty extract-all [item = empty]
+					empty then item = empty
 			
 			func F2:
 				output:
 					res int (1..1)
 				set res:
-					42 extract-all [item + item]
+					42 then item + item
 			
 			func F3:
 				output:
 					res int (2..2)
 				set res:
-					[1, 2, 3] extract-all [ [item count, item sum] ]
+					[1, 2, 3] then [ [item count, item sum] ]
 			
 			func F4:
 				output:
@@ -383,7 +383,7 @@ class FunctionGeneratorTest {
 				set res:
 					[1, 2, 3]
 						extract [ [item, item] ]
-						extract-all [ item extract l [ l count ] ]
+						then extract l [ l count ]
 			
 			func F5:
 				output:
@@ -391,8 +391,8 @@ class FunctionGeneratorTest {
 				set res:
 					[1, 2, 3]
 						extract [ [item, item] ]
-						extract-all [ item extract l [ [ l count, l sum ] ] ]
-						extract-all [ item extract l [ l sum ] ]
+						then extract l [ [ l count, l sum ] ]
+						then extract l [ l sum ]
 		'''.generateCode
 		val classes = code.compileToClasses
 

@@ -18,12 +18,12 @@ import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -186,7 +186,7 @@ class RosettaParsingTest {
                condition C:
                    [deprecated] // the parser should parse this as an annotation, not a list
                    extract [it -> a]
-                   extract-all [ exists ]
+                   then [ exists ]
            
            func F:
                inputs:
@@ -204,8 +204,8 @@ class RosettaParsingTest {
 	    model.elements.head as Data => [
 	    	conditions.head => [
 	    		assertEquals(1, annotations.size)
-	    		assertTrue(expression instanceof ExtractAllOperation)
-	    		expression as ExtractAllOperation => [
+	    		assertTrue(expression instanceof ThenOperation)
+	    		expression as ThenOperation => [
 	    			function => [
 	    				assertTrue(body instanceof RosettaExistsExpression)
 	    			]

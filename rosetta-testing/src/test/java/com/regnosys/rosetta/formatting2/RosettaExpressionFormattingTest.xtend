@@ -121,9 +121,9 @@ class RosettaExpressionFormattingTest {
 	@Test
 	def void testShortListFormatting3() {
 		'''
-		[1  extract-all  [  item] ]
+		[1  then  [  item] ]
 		''' -> '''
-		[1 extract-all [ item ]]
+		[1 then [ item ]]
 		'''
 	}
 	
@@ -167,11 +167,11 @@ class RosettaExpressionFormattingTest {
 	@Test
 	def void testLongListFormatting3() {
 		'''
-		["This is a veeeeeery looooong list" extract-all [PerformComputation], 2, 3]
+		["This is a veeeeeeeeery loooooooong list" then [PerformComputation], 2, 3]
 		''' -> '''
 		[
-			"This is a veeeeeery looooong list"
-				extract-all [ PerformComputation ],
+			"This is a veeeeeeeeery loooooooong list"
+				then [ PerformComputation ],
 			2,
 			3
 		]
@@ -575,6 +575,23 @@ class RosettaExpressionFormattingTest {
 					extract q2 [ CompareNumbers(q1 -> value, op, q2 -> value) ]
 			]
 			flatten all = True
+		'''
+	}
+	
+	@Test
+	def void testFunctionalOperationWithoutBrackets() {
+		'''
+		FilterQuantity( quantity1, unitOfAmount )
+			extract FilterQuantity( quantity2, unitOfAmount )
+				extract q2 [ CompareNumbers( value, op, q2 -> value ) ]
+				flatten
+			then filter item = False
+		''' -> '''
+		FilterQuantity(quantity1, unitOfAmount)
+			extract FilterQuantity(quantity2, unitOfAmount)
+				extract q2 [ CompareNumbers(value, op, q2 -> value) ]
+				flatten
+			then filter item = False
 		'''
 	}
 	

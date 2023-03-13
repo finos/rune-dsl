@@ -79,7 +79,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
-import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import org.eclipse.emf.ecore.EObject
 import com.regnosys.rosetta.rosetta.expression.RosettaReference
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
@@ -194,9 +193,6 @@ class ExpressionGenerator {
 			}
 			MapOperation : {
 				mapOperation(expr, params)
-			}
-			ExtractAllOperation : {
-				extractAllOperation(expr, params)
 			}
 			ThenOperation : {
 				thenOperation(expr, params)
@@ -715,13 +711,6 @@ class ExpressionGenerator {
 				}
 			}
 		}
-	}
-	
-	def StringConcatenationClient extractAllOperation(ExtractAllOperation op, ParamMap params) {
-		val funcExpr = op.function.inlineFunction(params, false, true)
-		'''
-		«op.argument.emptyToMapperJavaCode(params, false)»
-			.apply(«funcExpr»)'''
 	}
 	
 	def StringConcatenationClient thenOperation(ThenOperation op, ParamMap params) {

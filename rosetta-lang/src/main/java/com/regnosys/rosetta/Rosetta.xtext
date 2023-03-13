@@ -616,7 +616,6 @@ PathOperation returns RosettaExpression:
 			|({FilterOperation.argument=current} operator='filter')
 			// @Compat: remove `map`
 			|({MapOperation.argument=current} operator=('map' | 'extract'))
-			|({ExtractAllOperation.argument=current} operator='extract-all')
 		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)*
 	| // Without left parameter:
@@ -645,7 +644,6 @@ PathOperation returns RosettaExpression:
 			|({FilterOperation} operator='filter')
 			// @Compat: remove `map`
 			|({MapOperation} operator=('map' | 'extract'))
-			|({ExtractAllOperation} operator='extract-all')
 		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)
 	(
@@ -674,7 +672,6 @@ PathOperation returns RosettaExpression:
 			|({FilterOperation.argument=current} operator='filter')
 			// @Compat: remove `map`
 			|({MapOperation.argument=current} operator=('map' | 'extract'))
-			|({ExtractAllOperation.argument=current} operator='extract-all')
 		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)*
 ;

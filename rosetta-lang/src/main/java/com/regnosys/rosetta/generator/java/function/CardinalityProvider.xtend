@@ -39,7 +39,6 @@ import com.regnosys.rosetta.rosetta.expression.MaxOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
-import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
@@ -100,7 +99,6 @@ class CardinalityProvider {
 					obj.argument.isMulti(breakOnClosureParameter)
 				}
 			}
-			ExtractAllOperation: obj.function.isMulti(breakOnClosureParameter)
 			ThenOperation: obj.function.isMulti(breakOnClosureParameter)
 			SortOperation: true
 			InlineFunction: obj.body.isMulti(breakOnClosureParameter)
@@ -172,7 +170,7 @@ class CardinalityProvider {
 	def boolean isClosureParameterMulti(InlineFunction obj) {
 		val op = obj.eContainer
 		if (op instanceof RosettaFunctionalOperation) {
-			if (op instanceof ExtractAllOperation || op instanceof ThenOperation) {
+			if (op instanceof ThenOperation) {
 				return op.argument.isMulti
 			}
 			return op.argument.isOutputListOfLists
@@ -192,8 +190,7 @@ class CardinalityProvider {
 		if (previousOperation instanceof RosettaUnaryOperation) {
 			// only map and extract-all can increase a closure parameter's cardinality
 			switch (previousOperation) {
-				ThenOperation,
-				ExtractAllOperation:
+				ThenOperation:
 					return previousOperation.isMulti
 				MapOperation:
 					return previousOperation.function.isMulti(false)
@@ -221,8 +218,8 @@ class CardinalityProvider {
 				op.function.isBodyExpressionMulti && op.isPreviousOperationMulti
 			}
 		}
-		else if (op instanceof ExtractAllOperation || op instanceof ThenOperation) {
-			val f = (op as RosettaFunctionalOperation).function
+		else if (op instanceof ThenOperation) {
+			val f = op.function
 			switch f {
 				InlineFunction:
 					f.body.isOutputListOfLists
@@ -234,8 +231,8 @@ class CardinalityProvider {
 			val s = op.symbol
 			if (s instanceof ClosureParameter) {
 				val f = s.function
-				val enclosed = f.eContainer as RosettaFunctionalOperation
-				if (enclosed instanceof ExtractAllOperation || enclosed instanceof ThenOperation) {
+				val enclosed = f.eContainer
+				if (enclosed instanceof ThenOperation) {
 					return enclosed.argument.isOutputListOfLists
 				} else {
 					false
@@ -247,7 +244,7 @@ class CardinalityProvider {
 		else if (op instanceof RosettaImplicitVariable) {
 			val definingContainer = op.findContainerDefiningImplicitVariable
 			definingContainer.map [
-				if (it instanceof ExtractAllOperation || it instanceof ThenOperation)
+				if (it instanceof ThenOperation)
 					(it as RosettaFunctionalOperation).argument.isOutputListOfLists
 				else
 					false

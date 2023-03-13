@@ -7,8 +7,6 @@ import org.eclipse.xtext.EcoreUtil2;
 
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider;
-import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation;
-import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.MapOperation;
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
@@ -35,7 +33,7 @@ public class RosettaInlayHintsService extends AbstractInlayHintsService {
 	@InlayHintCheck
 	public InlayHint checkFunctionalOperation(RosettaFunctionalOperation op) {
 		if (EcoreUtil2.getContainerOfType(op, Function.class) != null) {
-			if (op instanceof ReduceOperation || op instanceof MapOperation || op instanceof ExtractAllOperation) {
+			if (op instanceof ReduceOperation || op instanceof MapOperation) {
 				if (extensions.isResolved(op.getFunction())) {
 					RType outputType = types.getRType(op);
 					boolean outputMulti = card.isMulti(op);
