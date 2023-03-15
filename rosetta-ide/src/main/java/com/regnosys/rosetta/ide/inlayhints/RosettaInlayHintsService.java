@@ -12,6 +12,7 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider;
+import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.MapOperation;
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
@@ -40,7 +41,7 @@ public class RosettaInlayHintsService extends AbstractInlayHintsService {
 	
 	@InlayHintCheck
 	public InlayHint checkFunctionalOperation(RosettaFunctionalOperation op) {
-		if (EcoreUtil2.getContainerOfType(op, Function.class) != null && operationHasBrackets(op)) {
+		if (EcoreUtil2.getContainerOfType(op, Function.class) != null && operationHasBrackets(op.getFunction())) {
 			if (op instanceof ReduceOperation || op instanceof MapOperation) {
 				if (extensions.isResolved(op.getFunction())) {
 					RType outputType = types.getRType(op);
@@ -55,11 +56,11 @@ public class RosettaInlayHintsService extends AbstractInlayHintsService {
 		return null;
 	}
 	
-	private boolean operationHasBrackets(RosettaFunctionalOperation op) {
+	private boolean operationHasBrackets(InlineFunction op) {
 		Keyword keyword = grammar.getInlineFunctionAccess().getLeftSquareBracketKeyword_0_0_1();
 		ICompositeNode node = NodeModelUtils.findActualNodeFor(op);
 
-        for (INode n : node.getAsTreeIterable()) {
+        for (INode n : node.getChildren()) {
             EObject ge = n.getGrammarElement();
             if (ge instanceof Keyword && ge == keyword) {
                 return true;
