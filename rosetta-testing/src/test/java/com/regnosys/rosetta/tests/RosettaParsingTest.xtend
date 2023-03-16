@@ -33,6 +33,33 @@ class RosettaParsingTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void externalRuleReferenceParseTest() {
+		'''
+			type Foo:
+				foo string (0..1)
+			
+			reporting rule RA:
+				return "A"
+			
+			reporting rule RB:
+				return "B"
+			
+			rule source TestA {
+				Foo:
+				+ foo
+					[ruleReference RA]
+			}
+			
+			rule source TestB extends TestA {
+				Foo:
+				- foo
+				+ foo
+					[ruleReference RB]
+			}
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void ambiguousReferenceAllowed() {
 		val model =
 		'''

@@ -171,7 +171,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF: {
 					if (context instanceof RosettaExternalRegularAttribute) {
 						val classRef = (context.eContainer as RosettaExternalClass).typeRef
-						if(classRef instanceof Data)
+						if (classRef instanceof Data)
 							return Scopes.scopeFor(classRef.allAttributes)
 					}
 					return IScope.NULLSCOPE
@@ -179,7 +179,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case ROSETTA_EXTERNAL_ENUM_VALUE__ENUM_REF: {
 					if (context instanceof RosettaExternalEnumValue) {
 						val enumRef = (context.eContainer as RosettaExternalEnum).typeRef
-						if(enumRef instanceof RosettaEnumeration)
+						if (enumRef instanceof RosettaEnumeration)
 							return Scopes.scopeFor(enumRef.allEnumValues)
 					}
 					return IScope.NULLSCOPE
@@ -192,10 +192,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					return IScope.NULLSCOPE
 				}
 				case FUNCTION_DISPATCH__ATTRIBUTE: {
-					if(context instanceof FunctionDispatch) {
+					if (context instanceof FunctionDispatch) {
 						return Scopes.scopeFor(getInputs(context))
 					}
 					return IScope.NULLSCOPE
+				}
+				case ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES: {
+					return defaultScope(context, reference).filteredScope[it.EClass == ROSETTA_EXTERNAL_RULE_SOURCE]
 				}
 			}
 			// LOGGER.warn('''No scope defined for «context.class.simpleName» referencing «reference.name».''')

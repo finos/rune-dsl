@@ -8,6 +8,7 @@ import java.util.stream.Collectors
 import com.regnosys.rosetta.rosetta.simple.References
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
 class RosettaModel extends RosettaDefinable {
@@ -231,7 +232,6 @@ class RosettaCardinality {
  */
 
 abstract class RosettaSynonymBase {
-
 	refers RosettaSynonymSource[] sources
 }
 
@@ -252,7 +252,7 @@ class RosettaSynonym extends RosettaSynonymBase {
 	contains RosettaSynonymBody body
 }
 
-class RosettaSynonymBody extends RosettaSynonymBase {
+class RosettaSynonymBody {
 	contains RosettaSynonymValueBase[] values
 	contains RosettaMapping mappingLogic
 	String[] hints
@@ -409,10 +409,10 @@ enum RosettaQualifiableType {
  * Translate external synonym support
  *****************************************/
 
-class RosettaExternalSynonymSource extends RosettaSynonymSource {
+abstract class ExternalAnnotationSource extends RosettaRootElement, RosettaNamed {
 	contains RosettaExternalRef[] externalRefs
-	refers RosettaSynonymSource[] superSynonyms
-	
+	// refers ExternalAnnotationSource[] superSources
+		
 	op RosettaExternalClass[] getExternalClasses() {
 		externalRefs.filter(RosettaExternalClass).toEList
 	}
@@ -435,19 +435,25 @@ class RosettaExternalEnum extends RosettaExternalRef {
 	contains RosettaExternalEnumValue[] regularValues
 }
 
+enum ExternalValueOperator {
+	PLUS
+	MINUS
+}
+
 class RosettaExternalRegularAttribute {
-	String operator
+	ExternalValueOperator operator
 	refers RosettaFeature attributeRef
 	contains RosettaExternalSynonym[] externalSynonyms
+	contains RosettaRuleReference[] externalRuleReferences
 }
 
 class RosettaExternalEnumValue {
-	String operator
+	ExternalValueOperator operator
 	refers RosettaEnumValue enumRef
 	contains RosettaEnumSynonym[] externalEnumSynonyms
 }
 
-class RosettaExternalClassSynonym extends RosettaSynonymBase {
+class RosettaExternalClassSynonym {
 	contains RosettaSynonymValueBase value
 	contains RosettaSynonymValueBase metaValue
 }
@@ -456,15 +462,34 @@ class RosettaExternalSynonym {
 	contains RosettaSynonymBody body
 }
 
+class RosettaExternalSynonymSource extends ExternalAnnotationSource, RosettaSynonymSource {
+	// @Compat: move this one up to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed
+	refers RosettaSynonymSource[] superSources
+	
+	op RosettaSynonymSource[] getSuperSynonymSources(){
+		return superSources.filter(RosettaSynonymSource).toEList
+	}
+}
+
+class RosettaExternalRuleSource extends ExternalAnnotationSource {
+	// @Compat: move this one up to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed
+	refers ExternalAnnotationSource[] superSources
+	
+	op RosettaExternalRuleSource getSuperRuleSource(){
+		return superSources.filter(RosettaExternalRuleSource).head
+	}
+}
+
 /********************
 * Blueprint - Should be a separate grammar
 */
- 
+
 class RosettaBlueprintReport extends RosettaRootElement {
 	contains RegulatoryDocumentReference regulatoryBody
-	refers Data reportType
 	refers RosettaBlueprint[] eligibilityRules
-	refers RosettaCorpus reportingStandard
+	refers RosettaCorpus reportingStandard // @Compat: this attribute is unnecessary
+	refers Data reportType
+	refers RosettaExternalRuleSource ruleSource
 	
 	op String name() {
 		(getRegulatoryBody.getBody.name.toFirstUpper 
