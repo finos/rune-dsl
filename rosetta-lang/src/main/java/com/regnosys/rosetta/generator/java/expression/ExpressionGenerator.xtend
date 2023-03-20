@@ -8,7 +8,6 @@ import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.types.JavaType
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
@@ -96,6 +95,8 @@ import com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleValidationMet
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.BlueprintImplicitVariableRepresentation
+import com.regnosys.rosetta.generator.java.types.JavaClass
+import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 
 class ExpressionGenerator {
 	
@@ -107,9 +108,9 @@ class ExpressionGenerator {
 	@Inject extension RosettaExtensions
 	@Inject extension ImportManagerExtension
 	@Inject ExpressionHelper exprHelper
-	@Inject extension Util
 	@Inject extension ListOperationExtensions
 	@Inject extension ImplicitVariableUtil
+	@Inject extension JavaIdentifierRepresentationService
 	@Inject RecordFeatureMap recordFeatureMap
 	
 	/**
@@ -293,7 +294,7 @@ class ExpressionGenerator {
 		return switch (callable) {
 			Function: {
 				val multi = funcExt.getOutput(callable).card.isMany
-				'''«IF needsMapper»«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«ENDIF»«callable.name.toFirstLower».evaluate(«argsCode»)«IF needsMapper»)«ENDIF»'''
+				'''«IF needsMapper»«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«ENDIF»«scope.getIdentifier(callable.toFunctionInstance)».evaluate(«argsCode»)«IF needsMapper»)«ENDIF»'''
 			}
 			RosettaExternalFunction: {
 				'''«IF needsMapper»«MapperS».of(«ENDIF»new «factory.create(callable.model).toJavaType(callable)»().execute(«argsCode»)«IF needsMapper»)«ENDIF»'''
@@ -370,10 +371,10 @@ class ExpressionGenerator {
 		val definingContainer = context.findContainerDefiningImplicitVariable.get
 		if (definingContainer instanceof Data) {
 			// For conditions
-			return '''«MapperS».of(«definingContainer.getName.toFirstLower»)'''
+			return '''«MapperS».of(«scope.getIdentifier(context.implicitVarInContext)»)'''
 		} else {
 			// For inline functions
-			return '''«defaultImplicitVariable.name.toDecoratedName(definingContainer)»'''
+			return '''«scope.getIdentifier(context.implicitVarInContext)»'''
 		}
 	}
 	
@@ -399,17 +400,17 @@ class ExpressionGenerator {
 							if (expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
 								autoValue = false;
 							}
-							featureCall(implicitVariable(expr, scope), s, scope, autoValue, expr)
+							featureCall(implicitVariable(expr, scope), s, scope, autoValue)
 						}
 						else
-							'''«if (s.card.isIsMany) MapperC else MapperS».of(«s.name»)'''
+							'''«if (s.card.isIsMany) MapperC else MapperS».of(«scope.getIdentifier(s)»)'''
 					}
 					ShortcutDeclaration: {
 						val multi = cardinalityProvider.isMulti(s)
-						'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«s.name»(«aliasCallArgs(s)»).«IF exprHelper.usesOutputParameter(s.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
+						'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».of(«scope.getIdentifier(s)»(«aliasCallArgs(s)»).«IF exprHelper.usesOutputParameter(s.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
 					}
 					RosettaEnumeration: '''«s.toJavaType»'''
-					ClosureParameter: '''«s.name.toDecoratedName(s.function)»'''
+					ClosureParameter: '''«scope.getIdentifier(s)»'''
 					RosettaCallableWithArgs: {
 						callableWithArgsCall(s, expr.args, scope)
 					}
@@ -440,12 +441,12 @@ class ExpressionGenerator {
 		if (call.eContainer instanceof RosettaFeatureCall && (call.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
 			autoValue = false;
 		}
-		return featureCall(javaCode(call.receiver, scope), call.feature, scope, autoValue, call)
+		return featureCall(javaCode(call.receiver, scope), call.feature, scope, autoValue)
 	}
-	private def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RosettaFeature feature, JavaScope scope, boolean autoValue, EObject scopeContext) {
+	private def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RosettaFeature feature, JavaScope scope, boolean autoValue) {
 		val StringConcatenationClient right = switch (feature) {
 			Attribute:
-				feature.buildMapFunc(autoValue, scopeContext)
+				feature.buildMapFunc(autoValue, scope)
 			RosettaMetaType: 
 				'''«feature.buildMapFunc(scope)»'''
 			RosettaEnumValue: 
@@ -593,8 +594,8 @@ class ExpressionGenerator {
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	def StringConcatenationClient buildMapFunc(Attribute attribute, boolean autoValue, EObject container) {
-		val mapFunc = attribute.buildMapFuncAttribute(container)
+	def StringConcatenationClient buildMapFunc(Attribute attribute, boolean autoValue, JavaScope scope) {
+		val mapFunc = attribute.buildMapFuncAttribute(scope)
 		if (attribute.card.isIsMany) {
 			if (attribute.metaAnnotations.nullOrEmpty)
 				'''.<«attribute.type.toJavaType»>mapC(«mapFunc»)'''
@@ -621,7 +622,7 @@ class ExpressionGenerator {
 		}
 	}
 	
-	private def JavaType toJavaType(RosettaType rosType) {
+	private def JavaClass toJavaType(RosettaType rosType) {
 		val model = rosType.model
 		if(model === null)
 			throw new IllegalArgumentException('''Can not create type reference. «rosType.eClass?.name» «rosType.name» is not attached to a «RosettaModel.name»''')
@@ -677,26 +678,35 @@ class ExpressionGenerator {
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable with args of type " + callable?.eClass?.name)
 		}
-		val StringConcatenationClient inputExprs = '''«FOR input: inputs SEPARATOR ', '»«input.name.toDecoratedName(ref)»«IF cardinalityProvider.isMulti(input)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»'''
-		val body = callableWithArgs(callable, scope, inputExprs, needsMapper)
-		'''(«FOR input: inputs SEPARATOR ', '»«input.name.toDecoratedName(ref)»«ENDFOR») -> «body»'''
+		val lambdaScope = scope.childScope
+		val inputIds = inputs.map[lambdaScope.createIdentifier(it)]
+		val StringConcatenationClient inputExprs = '''«FOR input: inputs SEPARATOR ', '»«scope.getIdentifier(input)»«IF cardinalityProvider.isMulti(input)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»'''
+		val body = callableWithArgs(callable, lambdaScope, inputExprs, needsMapper)
+		lambdaScope.close
+		'''(«FOR id: inputIds SEPARATOR ', '»«id»«ENDFOR») -> «body»'''
 	}
 	
 	def dispatch StringConcatenationClient functionReference(InlineFunction ref, JavaScope scope, boolean doCast, boolean needsMapper) {
-		val isBodyMulti =  ref.isBodyExpressionMulti
-		val StringConcatenationClient bodyExpr = '''«ref.body.javaCode(scope)»«IF needsMapper»«IF ref.body.evaluatesToComparisonResult».asMapper()«ENDIF»«ELSE»«IF ref.body.evalulatesToMapper»«IF isBodyMulti».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDIF»'''
+		val lambdaScope = scope.childScope
+		val paramIds = if (ref.parameters.size == 0) {
+			#[lambdaScope.createIdentifier(ref.implicitVarInContext, defaultImplicitVariable.name) ]
+		} else {
+			ref.parameters.map[lambdaScope.createIdentifier(it)]
+		}
+		
+		val isBodyMulti = ref.isBodyExpressionMulti
+		val StringConcatenationClient bodyExpr = '''«ref.body.javaCode(lambdaScope)»«IF needsMapper»«IF ref.body.evaluatesToComparisonResult».asMapper()«ENDIF»«ELSE»«IF ref.body.evalulatesToMapper»«IF isBodyMulti».getMulti()«ELSE».get()«ENDIF»«ENDIF»«ENDIF»'''
 		val StringConcatenationClient cast = if (doCast) {
 			val outputType =  ref.bodyRawType
 			'''(«IF needsMapper»«IF isBodyMulti»«MapperC»<«outputType»>«ELSE»«MapperS»<«outputType»>«ENDIF»«ELSE»«outputType»«ENDIF»)'''
 		} else {
 			''''''
 		}
-		if (ref.parameters.size == 0) {
-			val item = defaultImplicitVariable.name.toDecoratedName(ref.findContainerDefiningImplicitVariable.get)
-			'''«item» -> «cast»«bodyExpr»'''
+		lambdaScope.close
+		if (paramIds.size == 1) {
+			'''«paramIds.head» -> «cast»«bodyExpr»'''
 		} else {
-			val items = ref.parameters.map[name.toDecoratedName(ref)]
-			'''«IF items.size > 1»(«ENDIF»«FOR item : items SEPARATOR ', '»«item»«ENDFOR»«IF items.size > 1»)«ENDIF» -> «cast»«bodyExpr»'''
+			'''(«FOR id : paramIds SEPARATOR ', '»«id»«ENDFOR») -> «cast»«bodyExpr»'''
 		}
 	}
 	
@@ -828,13 +838,17 @@ class ExpressionGenerator {
 			.«name»(«op.functionRef.functionReference(scope, true, true)»)'''	
 	}
 	
-	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute, EObject scopeContext) {
-		if(attribute.eContainer instanceof Data) 
-			'''"get«attribute.name.toFirstUpper»", «attribute.attributeTypeVariableName(scopeContext)» -> «IF attribute.override»(«attribute.type.toJavaType») «ENDIF»«attribute.attributeTypeVariableName(scopeContext)».get«attribute.name.toFirstUpper»()'''
+	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute, JavaScope scope) {
+		if(attribute.eContainer instanceof Data) {
+			val lambdaScope = scope.childScope
+			val lambdaParam = lambdaScope.createUniqueIdentifier(attribute.attributeTypeVariableName)
+			lambdaScope.close
+			'''"get«attribute.name.toFirstUpper»", «lambdaParam» -> «IF attribute.override»(«attribute.type.toJavaType») «ENDIF»«lambdaParam».get«attribute.name.toFirstUpper»()'''
+		}
 	}
 
-	private def attributeTypeVariableName(Attribute attribute, EObject scopeContext) {
-		(attribute.eContainer as Data).toJavaType.simpleName.toFirstLower.toDecoratedName(scopeContext)
+	private def attributeTypeVariableName(Attribute attribute) {
+		(attribute.eContainer as Data).toJavaType.simpleName.toFirstLower
 	}
 	
 	/**

@@ -5,8 +5,6 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.generator.java.util.JavaType
-import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -17,7 +15,6 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.rosetta.model.lib.GlobalKey
-import com.rosetta.model.lib.meta.BasicRosettaMetaData
 import com.rosetta.model.lib.meta.GlobalKeyFields
 import com.rosetta.model.lib.meta.MetaDataFields
 import com.rosetta.model.lib.meta.ReferenceWithMeta
@@ -30,9 +27,12 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.rosetta.model.lib.meta.FieldWithMeta
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.types.JavaClass
+import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -52,10 +52,10 @@ class MetaFieldGenerator {
 //			try {
 				val allModels = resource.resourceSet.resources.flatMap[contents].filter(RosettaModel).toList
 				val allMetaTypes = allModels.flatMap[elements].filter(RosettaMetaType).toList
-				fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaFields.java''',
+				fsa.generateFile('''«names.packages.basicMetafields.withForwardSlashes»/MetaFields.java''',
 				metaFields(names, "MetaFields", newArrayList(GlobalKeyFields), allMetaTypes.metaFieldTypes))
 				
-				fsa.generateFile('''«names.packages.basicMetafields.directoryName»/MetaAndTemplateFields.java''',
+				fsa.generateFile('''«names.packages.basicMetafields.withForwardSlashes»/MetaAndTemplateFields.java''',
 				metaFields(names, "MetaAndTemplateFields", newArrayList(GlobalKeyFields, TemplateFields), allMetaTypes.metaAndTemplateFieldTypes))
 //			} finally {
 //				resource.resourceSet.adapterFactories.add(new MarkerAdapterFactory(model.name))
@@ -86,9 +86,9 @@ class MetaFieldGenerator {
 					return
 				}
 				if (ref.isBuiltInType)
-					fsa.generateFile('''«targetPackage.basicMetafields.directoryName»/BasicReferenceWithMeta«ref.name.toFirstUpper».java''', basicReferenceWithMeta(newNames, ref))
+					fsa.generateFile('''«targetPackage.basicMetafields.withForwardSlashes»/BasicReferenceWithMeta«ref.name.toFirstUpper».java''', basicReferenceWithMeta(newNames, ref))
 				else
-					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(newNames, ref))
+					fsa.generateFile('''«targetPackage.model.metaField.withForwardSlashes»/ReferenceWithMeta«ref.name.toFirstUpper».java''', referenceWithMeta(newNames, ref))
 			}
 			//find all the metaed types
 			val metas =  nsc.value.flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference" || name=="address"]].map[rosettaType].toSet
@@ -101,9 +101,9 @@ class MetaFieldGenerator {
 				val newNames=JavaNames.createBasicFromPackages(targetPackage)
 				
 				if(meta.isBuiltInType) {
-					fsa.generateFile('''«targetPackage.basicMetafields.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(newNames, meta))
+					fsa.generateFile('''«targetPackage.basicMetafields.withForwardSlashes»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(newNames, meta))
 				} else {
-					fsa.generateFile('''«targetPackage.model.metaField.directoryName»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(newNames, meta))
+					fsa.generateFile('''«targetPackage.model.metaField.withForwardSlashes»/FieldWithMeta«meta.name.toFirstUpper».java''', fieldWithMeta(newNames, meta))
 				}
 			}
 		}
@@ -176,34 +176,23 @@ class MetaFieldGenerator {
 		if (attributes.exists[t|t.name == "scheme"]) {
 			interfaces.add(MetaDataFields)
 		}
-
-		
 		
 		val Data d = SimpleFactory.eINSTANCE.createData;
 		d.name = name
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = "com.rosetta.model.metafields"
 		d.attributes.addAll(attributes)
-		val classBody = tracImports(d.classBody(names, "1", interfaces))
-		classBody.addImport(BasicRosettaMetaData.name, BasicRosettaMetaData.simpleName)
 		
-		//val classBody = tracImports(metaBody(name, interfaces, metaFieldTypes))
-		'''
-		package «names.packages.basicMetafields.name»;
-
-		«FOR imp : classBody.imports.filter[i| !i.endsWith(name+"Meta")]»
-			import «imp»;
-		«ENDFOR»
-		«FOR imp : classBody.staticImports»
-			import static «imp»;
-		«ENDFOR»
+		val scope = new JavaScope
 		
-		«classBody.toString»
+		val StringConcatenationClient body = '''		
+		«d.classBody(names, "1", interfaces)»
 		
 		class «name»Meta extends BasicRosettaMetaData<«name»>{
 		
 		}
 		'''
+		buildClass(names.packages.basicMetafields, body, scope)
 	}
 
 	def CharSequence fieldWithMeta(JavaNames names, RosettaType type) {
@@ -216,43 +205,35 @@ class MetaFieldGenerator {
 		val metaType = SimpleFactory.eINSTANCE.createData()
 		metaType.setName("MetaFields")
 		metaType.model = RosettaFactory.eINSTANCE.createRosettaModel
-		metaType.model.name = names.packages.basicMetafields.name
+		metaType.model.name = names.packages.basicMetafields.withDots
 		val metaAttribute = SimpleFactory.eINSTANCE.createAttribute()
 		metaAttribute.setName("meta")
 		metaAttribute.type = metaType
 		metaAttribute.card = cardSingle
 		
-		val packageName= if (type.isBuiltInType) names.packages.basicMetafields.name else names.packages.model.metaField.name
-		val underlyingName= if (type.isBuiltInType) type.name.toJavaFullType else names.packages.model.name+"." + type.name
+		val packageName= if (type.isBuiltInType) names.packages.basicMetafields else names.packages.model.metaField
 		
 		val Data d = SimpleFactory.eINSTANCE.createData;
 		d.name = "FieldWithMeta"+type.name.toFirstUpper
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
-		d.model.name = packageName
+		d.model.name = packageName.withDots
 		d.attributes.addAll(#[
 			valueAttribute, metaAttribute
 		])
 		
-		val FWMType = new ParameterizedType(new JavaType(FieldWithMeta.name), #[new ParameterizedType(new JavaType(underlyingName), #[])])
-		val classBody = tracImports(d.classBody(names, "1", #[GlobalKey, FWMType]))
-		classBody.addImport(BasicRosettaMetaData.name, BasicRosettaMetaData.simpleName)
+		val FWMType = new JavaParameterizedType(JavaClass.from(FieldWithMeta), names.toReferenceType(names.toJavaType(type)))
 		
+		val scope = new JavaScope
+		
+		val StringConcatenationClient body = '''
+			«d.classBody(names, "1", #[GlobalKey, FWMType])»
+			
+			class FieldWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<FieldWithMeta«type.name.toFirstUpper»>{
+			
+			}
 		'''
-		package «packageName»;
-
-		«FOR imp : classBody.imports.filter[i| !i.endsWith("FieldWithMeta"+type.name.toFirstUpper+"Meta")]»
-			import «imp»;
-		«ENDFOR»
-		«FOR imp : classBody.staticImports»
-			import static «imp»;
-		«ENDFOR»
 		
-		«classBody.toString»
-		
-		class FieldWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<FieldWithMeta«type.name.toFirstUpper»>{
-		
-		}
-		'''
+		buildClass(packageName, body, scope)
 	}
 	
 	def referenceAttributes(RosettaType type) {
@@ -288,58 +269,42 @@ class MetaFieldGenerator {
 		val Data d = SimpleFactory.eINSTANCE.createData;
 		d.name = "ReferenceWithMeta"+type.name.toFirstUpper
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
-		d.model.name = names.packages.model.metaField.name
+		d.model.name = names.packages.model.metaField.withDots
 		d.attributes.addAll(referenceAttributes(type))
-		val refInterface = new ParameterizedType(new JavaType(ReferenceWithMeta.name), #[new ParameterizedType(names.toJavaType(type), #[])])
-		val classBody = tracImports(d.classBody(names, "1", #[refInterface]))
-		classBody.addImport(BasicRosettaMetaData.name, BasicRosettaMetaData.simpleName)
+		val refInterface = new JavaParameterizedType(JavaClass.from(ReferenceWithMeta), names.toJavaType(type))
 		
-		//val classBody = tracImports(metaBody(name, interfaces, metaFieldTypes))
+		val scope = new JavaScope
+		
+		val StringConcatenationClient body = '''
+			«d.classBody(names, "1", #[refInterface])»
+			
+			class ReferenceWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<ReferenceWithMeta«type.name.toFirstUpper»>{
+			
+			}
 		'''
-		package «names.packages.model.metaField.name»;
-
-		«FOR imp : classBody.imports.filter[i| !i.endsWith("ReferenceWithMeta"+type.name.toFirstUpper+"Meta")]»
-			import «imp»;
-		«ENDFOR»
-		«FOR imp : classBody.staticImports»
-			import static «imp»;
-		«ENDFOR»
 		
-		«classBody.toString»
-		
-		class ReferenceWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<ReferenceWithMeta«type.name.toFirstUpper»>{
-		
-		}
-		'''
+		buildClass(names.packages.model.metaField, body, scope)
 	}
 	
 	def basicReferenceWithMeta(JavaNames names, RosettaType type) {
 		val Data d = SimpleFactory.eINSTANCE.createData;
 		d.name = "BasicReferenceWithMeta"+type.name.toFirstUpper
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
-		d.model.name = names.packages.basicMetafields.name
+		d.model.name = names.packages.basicMetafields.withDots
 		d.attributes.addAll(referenceAttributes(type))
-		val refInterface = new ParameterizedType(new JavaType(ReferenceWithMeta.name), #[new ParameterizedType(new JavaType(type.name.toJavaFullType), #[])])
-		val classBody = tracImports(d.classBody(names, "1", #[refInterface]))
-		classBody.addImport(BasicRosettaMetaData.name, BasicRosettaMetaData.simpleName)
+		val refInterface = new JavaParameterizedType(JavaClass.from(ReferenceWithMeta), names.toJavaType(type))
 		
-		//val classBody = tracImports(metaBody(name, interfaces, metaFieldTypes))
+		val scope = new JavaScope
+		
+		val StringConcatenationClient body = '''		
+			«d.classBody(names, "1", #[refInterface])»
+			
+			class BasicReferenceWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<BasicReferenceWithMeta«type.name.toFirstUpper»>{
+			
+			}
 		'''
-		package «names.packages.basicMetafields.name»;
-
-		«FOR imp : classBody.imports.filter[i| !i.endsWith("BasicReferenceWithMeta"+type.name.toFirstUpper+"Meta")]»
-			import «imp»;
-		«ENDFOR»
-		«FOR imp : classBody.staticImports»
-			import static «imp»;
-		«ENDFOR»
 		
-		«classBody.toString»
-		
-		class BasicReferenceWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<BasicReferenceWithMeta«type.name.toFirstUpper»>{
-		
-		}
-		'''
+		buildClass(names.packages.basicMetafields, body, scope)
 	}
 	
 	private def namespace(RosettaRootElement rc) {

@@ -8,28 +8,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.emf.ecore.EObject;
-
 import com.google.common.collect.LinkedListMultimap;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
-import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
-public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
-	protected final ImplicitVariableUtil implicitVarUtil;
-	
+public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {	
 	protected final Optional<Scope> parent;
 	private final Map<Object, GeneratedIdentifier> identifiers = new LinkedHashMap<>();
 	
 	private boolean isClosed = false;
 	private Map<GeneratedIdentifier, String> actualNames = null;
 	
-	public GeneratorScope(ImplicitVariableUtil implicitVarUtil) {
-		this.implicitVarUtil = implicitVarUtil;
+	public GeneratorScope() {
 		this.parent = Optional.empty();
 	}
 	
-	protected GeneratorScope(ImplicitVariableUtil implicitVarUtil, Scope parent) {
-		this.implicitVarUtil = implicitVarUtil;
+	protected GeneratorScope(Scope parent) {
 		this.parent = Optional.of(parent);
 	}
 	
@@ -85,13 +78,28 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 		return id;
 	}
 	/**
+	 * Create an identifier for the given named Rosetta object.
+	 * 
+	 * @throws IllegalStateException if this scope is closed.
+	 * @throws IllegalStateException if this scope already contains an identifier for `obj`.
+	 */
+	public GeneratedIdentifier createIdentifier(RosettaNamed obj) {
+		return createIdentifier(obj, obj.getName());
+	}
+	/**
 	 * Create a new identifier with the desired name that is guaranteed
 	 * not to clash with any identifiers defined before.
 	 * 
 	 * @throws IllegalStateException if this scope is closed.
 	 */
 	public GeneratedIdentifier createUniqueIdentifier(String name) {
-		return createIdentifier(new Object(), name);
+		Object token = new Object() {
+			@Override
+			public String toString() {
+				return "{token for \"" + name + "\"}";
+			}
+		};
+		return createIdentifier(token, name);
 	}
 	/**
 	 * Get the generated identifier of the given Rosetta object in the current
@@ -106,45 +114,6 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 */
 	public GeneratedIdentifier getOrCreateIdentifier(RosettaNamed obj) {
 		return getOrCreateIdentifier(obj, obj.getName());
-	}
-	
-	private ImplicitVariableRepresentation getReprOfImplicitVariable(EObject context) {
-		return new ImplicitVariableRepresentation(
-				implicitVarUtil.findContainerDefiningImplicitVariable(context)
-					.orElseThrow());
-	}
-	/**
-	 * Get the generated identifier of the implicit variable in the given context,
-	 * if it exists.
-	 * 
-	 * @throws NoSuchElementException if there is no implicit variable in the given context.
-	 */
-	public Optional<GeneratedIdentifier> getIdentifierOfImplicitVariable(EObject context) {
-		return this.getIdentifier(getReprOfImplicitVariable(context));
-	}
-	/**
-	 * Define the desired name for the implicit variable in the given context in this scope.
-	 * 
-	 * @throws IllegalStateException if this scope is closed.
-	 * @throws IllegalStateException if this scope already contains an identifier for the implicit variable in the given context.
-	 * @throws NoSuchElementException if there is no implicit variable in the given context.
-	 */
-	public GeneratedIdentifier createIdentifierOfImplicitVariable(EObject context, String name) {
-		return createIdentifier(getReprOfImplicitVariable(context), name);
-	}
-	/**
-	 * Get the generated identifier of the implicit variable in the given context in the current
-	 * scope, or create a new one with the given desired name if it doesn't exist.
-	 */
-	public GeneratedIdentifier getOrCreateIdentifierOfImplicitVariable(EObject context, String name) {
-		return getOrCreateIdentifier(getReprOfImplicitVariable(context), name);
-	}
-	/**
-	 * Get the generated identifier of the implicit variable in the given context in the current
-	 * scope, or create a new one with the default implicit variable name if it doesn't exist.
-	 */
-	public GeneratedIdentifier getOrCreateIdentifierOfImplicitVariable(EObject context) {
-		return getOrCreateIdentifierOfImplicitVariable(context, implicitVarUtil.getDefaultImplicitVariable().getName());
 	}
 	
 	/**

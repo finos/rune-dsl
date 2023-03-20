@@ -4,6 +4,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.generator.java.types.JavaClass
 import java.lang.reflect.Method
 import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.utils.DottedPath
 
 class ImportManagerExtension {
 	def method(Class<?> clazz, String methodName) {
@@ -19,10 +20,27 @@ class ImportManagerExtension {
 	def importWildcard(Method method) {
 		new PreferWildcardImportMethod(method)
 	}
-
-	def ImportingStringConcatenation trackImports(StringConcatenationClient scc, JavaScope scope) {
-		val isc = new ImportingStringConcatenation(scope)
-		isc.append(scc)
-		isc
+	
+	/**
+	 * Given the body of a Java class represented as a StringConcatenationClient,
+	 * generate a full Java class file by adding imports and resolving identifiers.
+	 */
+	def String buildClass(DottedPath packageName, StringConcatenationClient classCode, JavaScope topScope) {
+		val isc = new ImportingStringConcatenation(topScope)
+		val resolvedCode = isc.resolveIdentifiers(classCode)
+		isc.append(resolvedCode)
+		'''
+		package «packageName»;
+		
+		«FOR imp : isc.imports»
+			import «imp»;
+		«ENDFOR»
+		
+		«FOR imp : isc.staticImports»
+			import static «imp»;
+		«ENDFOR»
+		
+		«resolvedCode»
+		'''
 	}
 }

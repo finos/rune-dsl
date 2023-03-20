@@ -1,0 +1,25 @@
+package com.regnosys.rosetta.generator.java;
+
+import java.util.Objects;
+
+import com.regnosys.rosetta.rosetta.simple.Function;
+
+public class FunctionInstanceRepresentation {
+	private final Function func;
+	public FunctionInstanceRepresentation(Function func) {
+		this.func = func;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.getClass(), func);
+	}
+	@Override
+	public boolean equals(Object object) {
+		if (object == this) return true;
+        if (this.getClass() != object.getClass()) return false;
+
+        FunctionInstanceRepresentation other = (FunctionInstanceRepresentation) object;
+        return Objects.equals(func, other.func);
+	}
+}

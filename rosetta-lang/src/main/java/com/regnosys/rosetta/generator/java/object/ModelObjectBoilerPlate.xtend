@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.generator.java.util.JavaType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.GlobalKey
@@ -22,6 +21,7 @@ import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.generator.java.types.JavaType
 
 class ModelObjectBoilerPlate {
 
@@ -31,7 +31,7 @@ class ModelObjectBoilerPlate {
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
 
-	def StringConcatenationClient builderBoilerPlate(Data c, JavaNames names) {
+	def StringConcatenationClient builderBoilerPlate(Data c, extension JavaNames names) {
 		val attrs = c.expandedAttributes.toList
 		'''
 			«c.contributeEquals(attrs, [t|names.toJavaType(t).toBuilderType])»
@@ -162,7 +162,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
 			«IF c.hasSuperType»
-				«names.toJavaType(c.superType).name».super.process(path, processor);
+				«names.toJavaType(c.superType)».super.process(path, processor);
 			«ENDIF»
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
 				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
@@ -175,7 +175,7 @@ class ModelObjectBoilerPlate {
 		
 	'''
 	
-	def StringConcatenationClient builderProcessMethod(Data c, JavaNames names) '''
+	def StringConcatenationClient builderProcessMethod(Data c, extension JavaNames names) '''
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
 			«IF c.hasSuperType»

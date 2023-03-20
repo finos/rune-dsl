@@ -5,8 +5,6 @@ import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.generator.java.util.JavaType
-import com.regnosys.rosetta.generator.java.util.ParameterizedType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.RosettaModelObject
@@ -24,6 +22,10 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.types.JavaClass
+import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
+import com.regnosys.rosetta.utils.DottedPath
 
 class ModelObjectGenerator {
 	
@@ -32,32 +34,20 @@ class ModelObjectGenerator {
 	@Inject extension ImportManagerExtension
 
 	def generate(JavaNames javaNames, IFileSystemAccess2 fsa, Data data, String version) {
-		fsa.generateFile(javaNames.packages.model.directoryName + '/' + data.name + '.java',
+		fsa.generateFile(javaNames.packages.model.withForwardSlashes + '/' + data.name + '.java',
 			generateRosettaClass(javaNames, data, version))
 	}
 
 	private def generateRosettaClass(JavaNames javaNames, Data d, String version) {
-		val classBody = tracImports(d.classBody(javaNames, version))
-		'''
-			package «javaNames.packages.model.name»;
-
-			«FOR imp : classBody.getImports(javaNames.packages.model.name, javaNames.toJavaType(d).name)»
-				import «imp»;
-			«ENDFOR»
-
-			«FOR imp : classBody.staticImports»
-				import static «imp»;
-			«ENDFOR»
-
-			«classBody.toString»
-		'''
+		val scope = new JavaScope
+		buildClass(javaNames.packages.model, d.classBody(javaNames, version), scope)
 	}
 	
 	def StringConcatenationClient classBody(Data d, JavaNames names, String version) {
 		classBody(d, names, version, Collections.emptyList)
 	}
 
-	def StringConcatenationClient classBody(Data d, JavaNames names, String version, Collection<Object> interfaces) '''
+	def StringConcatenationClient classBody(Data d, extension JavaNames names, String version, Collection<Object> interfaces) '''
 		«javadoc(d, version)»
 		@«RosettaClass»
 		public interface «names.toJavaType(d)» extends «IF d.hasSuperType»«names.toJavaType(d.superType)»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
@@ -68,7 +58,7 @@ class ModelObjectGenerator {
 				«javadoc(attribute.definition, attribute.docReferences, null)»
 				«attribute.toJavaType(names)» get«attribute.name.toFirstUpper»();
 			«ENDFOR»
-			«val metaType = names.createJavaType(names.packages.model.meta, d.name+'Meta')»
+			«val metaType = new JavaClass(names.packages.model.meta, d.name+'Meta')»
 			final static «metaType» metaData = new «metaType»();
 			
 			@Override
@@ -83,10 +73,10 @@ class ModelObjectGenerator {
 			default Class<? extends «d.name»> getType() {
 				return «d.name».class;
 			}
-			«FOR pt :interfaces.filter(ParameterizedType).filter[type.simpleName=="ReferenceWithMeta" || type.simpleName=="FieldWithMeta"]»
+			«FOR pt :interfaces.filter(JavaParameterizedType).filter[baseType.simpleName=="ReferenceWithMeta" || baseType.simpleName=="FieldWithMeta"]»
 			
-				default Class<«pt.typeArgs.get(0).type»> getValueType() {
-					return «pt.typeArgs.get(0).type».class;
+				default Class<«pt.arguments.head»> getValueType() {
+					return «pt.arguments.head».class;
 				}
 			«ENDFOR»
 			
@@ -146,18 +136,18 @@ class ModelObjectGenerator {
 	}
 	
 	def dispatch buildify(Class<?> clazz) {
-		new JavaType(clazz.name+"."+clazz.simpleName+"Builder")
+		new JavaClass(DottedPath.splitOnDots(clazz.packageName), clazz.simpleName+"."+clazz.simpleName+"Builder")
 	}
-	def dispatch buildify(ParameterizedType clazz) {
-		val builderType = new JavaType(clazz.type.name+"."+clazz.type.simpleName+"Builder")
-		new ParameterizedType(builderType, clazz.typeArgs)
+	def dispatch buildify(JavaParameterizedType clazz) {
+		val builderType = new JavaClass(clazz.baseType.packageName, clazz.baseType.simpleName+"."+clazz.baseType.simpleName+"Builder")
+		new JavaParameterizedType(builderType, clazz.arguments)
 	}
 
 	def boolean globalKeyRecursive(Data class1) {
 		return class1.globalKey || (class1.superType !== null && class1.superType.globalKeyRecursive)
 	}
 
-	private def StringConcatenationClient rosettaClass(Data c, JavaNames names) {
+	private def StringConcatenationClient rosettaClass(Data c, extension JavaNames names) {
 		val expandedAttributes = c.expandedAttributes
 		'''
 		«FOR attribute : expandedAttributes»
@@ -197,7 +187,7 @@ class ModelObjectGenerator {
 				super.setBuilderFields(builder);
 			«ENDIF»
 			«FOR attribute :expandedAttributes»
-				«Optional.importMethod("ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
+				«method(Optional, "ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
 			«ENDFOR»
 		}
 		'''

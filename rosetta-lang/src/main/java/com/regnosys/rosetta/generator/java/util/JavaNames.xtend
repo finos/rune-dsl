@@ -34,11 +34,22 @@ import com.regnosys.rosetta.utils.DottedPath
 import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.JavaReferenceType
 import com.regnosys.rosetta.generator.java.types.JavaPrimitiveType
+import com.regnosys.rosetta.generator.object.ExpandedAttribute
 
 class JavaNames {
 
 	@Accessors(PUBLIC_GETTER)
 	RosettaJavaPackages packages
+	
+	def JavaClass toImplType(JavaClass type) {
+		new JavaClass(type.packageName, type.simpleName + "." + type.simpleName + "Impl")
+	}
+	def JavaClass toBuilderType(JavaClass type) {
+		new JavaClass(type.packageName, type.simpleName + "." + type.simpleName + "Builder")
+	}
+	def JavaClass toBuilderImplType(JavaClass type) {
+		new JavaClass(type.packageName, type.simpleName + "." + type.simpleName + "BuilderImpl")
+	}
 
 	def JavaType toListOrSingleJavaType(Attribute attribute) {
 		if (attribute.card.isIsMany) {
@@ -54,7 +65,7 @@ class JavaNames {
 		type
 	}
 
-	def JavaType toJavaType(ExpandedType type) {
+	def JavaClass toJavaType(ExpandedType type) {
 		if (type.name == RosettaAttributeExtensions.METAFIELDS_CLASS_NAME || type.name == RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME) {
 			return new JavaClass(packages.basicMetafields, type.name)
 		}
@@ -67,7 +78,7 @@ class JavaNames {
 		new JavaClass(new RootPackage(type.model), type.name)
 	}
 
-	def JavaType toJavaType(RosettaCallableWithArgs func) {
+	def JavaClass toJavaType(RosettaCallableWithArgs func) {
 		switch (func) {
 			Function:
 				new JavaClass(modelRootPackage(func).functions, func.name)
@@ -82,7 +93,7 @@ class JavaNames {
 		JavaClass.from(c)
 	}
 
-	def JavaType toJavaType(RosettaType type) {
+	def JavaClass toJavaType(RosettaType type) {
 		switch (type) {
 			RosettaBasicType:
 				createForBasicType(type.name)
@@ -101,7 +112,7 @@ class JavaNames {
 		}
 	}
 
-	def JavaType toJavaType(RType rType) {
+	def JavaClass toJavaType(RType rType) {
 		switch (rType) {
 			RBuiltinType:
 				rType.name.createForBasicType
@@ -116,11 +127,11 @@ class JavaNames {
 		}
 	}
 	
-//	def createMetaType(String parent, String meta) {
-//		MetaType.create(parent, meta)
-//	}
-//
-	def toMetaType(Attribute ctx, String name) {
+	def createMetaType(DottedPath parent, String meta) {
+		return new JavaClass(parent, meta)
+	}
+
+	def JavaClass toMetaType(Attribute ctx, String name) {
 		var model = ctx.type.eContainer
 		if (model instanceof RosettaModel) {
 			var pkg = new RootPackage(model.name).metaField
@@ -135,18 +146,15 @@ class JavaNames {
 //		createJavaType(pkg, name)
 	}
 
-//	def toMetaType(ExpandedAttribute type, String name) {
-//		if(type.type.isBuiltInType) {
-//			// built-in meta types are defined in metafield package
-//			return new JavaClass(packages.basicMetafields, name)
-//		}
-//		var parentPKG = new RootPackage(type.type.model)
-//		var metaParent = parentPKG.child(type.type.name)
-//		
-//		var metaPKG = parentPKG.metaField
-//		var meta = metaPKG.child(name)
-//		createMetaType(metaParent, meta)
-//	}
+	def toMetaType(ExpandedAttribute type, String name) {
+		if(type.type.isBuiltInType) {
+			// built-in meta types are defined in metafield package
+			return new JavaClass(packages.basicMetafields, name)
+		}
+		var parentPKG = new RootPackage(type.type.model)
+		var metaPKG = parentPKG.metaField
+		return new JavaClass(metaPKG, name)
+	}
 
 	def private RootPackage modelRootPackage(RosettaNamed namedType) {
 		val rootElement = EcoreUtil2.getContainerOfType(namedType, RosettaRootElement)
@@ -157,7 +165,7 @@ class JavaNames {
 		return new RootPackage(model)
 	}
 
-	private def JavaType createForBasicType(String typeName) {
+	private def JavaClass createForBasicType(String typeName) {
 		val canonicalName = DottedPath.splitOnDots(JavaClassTranslator.toJavaFullType(typeName))
 		return new JavaClass(canonicalName.parent, canonicalName.last)
 	}

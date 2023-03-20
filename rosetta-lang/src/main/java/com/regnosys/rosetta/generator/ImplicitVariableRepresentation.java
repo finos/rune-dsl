@@ -17,7 +17,7 @@ public class ImplicitVariableRepresentation {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(definingContainer);
+		return Objects.hash(this.getClass(), definingContainer);
 	}
 	@Override
 	public boolean equals(Object object) {

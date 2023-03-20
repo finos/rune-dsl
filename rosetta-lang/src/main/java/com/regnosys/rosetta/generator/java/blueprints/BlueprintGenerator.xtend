@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.blueprints
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
-import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.util.ImportGenerator
@@ -20,13 +19,13 @@ import com.regnosys.rosetta.rosetta.BlueprintReturn
 import com.regnosys.rosetta.rosetta.BlueprintSource
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.validation.BindableType
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver
 import com.regnosys.rosetta.validation.TypedBPNode
@@ -43,6 +42,8 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator)
@@ -53,6 +54,7 @@ class BlueprintGenerator {
 	@Inject CardinalityProvider cardinality
 	@Inject FunctionDependencyProvider functionDependencyProvider
 	@Inject extension RosettaExtensions
+	@Inject extension JavaIdentifierRepresentationService
 
 	/**
 	 * generate a blueprint java file
@@ -60,11 +62,11 @@ class BlueprintGenerator {
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version, extension JavaNames names) {
 		elements.filter(RosettaBlueprintReport).forEach [ report |
 			// generate blueprint report
-			fsa.generateFile(packages.model.blueprint.directoryName + '/' + report.name + 'BlueprintReport.java',
+			fsa.generateFile(packages.model.blueprint.withForwardSlashes + '/' + report.name + 'BlueprintReport.java',
 				generateBlueprint(packages, firstNodeExpression(report), null, report.name, 'BlueprintReport', report.URI, report.reportType?.name, version, names))
 			// generate output report type builder
 			if (report.reportType !== null) {
-				fsa.generateFile(packages.model.blueprint.directoryName + '/' + report.reportType.name.toDataItemReportBuilderName + '.java',
+				fsa.generateFile(packages.model.blueprint.withForwardSlashes + '/' + report.reportType.name.toDataItemReportBuilderName + '.java',
 					generateReportBuilder(packages, report, version, names))
 			}
 		]
@@ -72,7 +74,7 @@ class BlueprintGenerator {
 		elements.filter(RosettaBlueprint)
 			.filter[nodes !== null]
 			.forEach [ bp |
-			fsa.generateFile(packages.model.blueprint.directoryName + '/' + bp.name + 'Rule.java',
+			fsa.generateFile(packages.model.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
 				generateBlueprint(packages, bp.nodes, bp.output, bp.name, 'Rule', bp.URI, null, version, names))
 		]
 	}
@@ -133,18 +135,12 @@ class BlueprintGenerator {
 			val typed = buildTypeGraph(nodes, output)
 			val typeArgs = bindArgs(typed)
 			imports.addTypes(typed)
-			val StringConcatenationClient scc = nodes.buildBody(typed, dataItemReportBuilderName, imports, names)
-			val body = tracImports(scc)
-			body.addImport("javax.inject.Inject", "Inject")
-			return '''
-				package «packageName.model.blueprint.name»;
-				
-				«FOR imp : body.imports»
-					import «imp»;
-				«ENDFOR»
-				«FOR imp : body.staticImports»
-					import static «imp»;
-				«ENDFOR»
+			
+			val topScope = new JavaScope
+			
+			val classScope = topScope.childScope
+			
+			val StringConcatenationClient body = '''
 				// manual imports
 				«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
 				import «importClass»;
@@ -158,7 +154,7 @@ class BlueprintGenerator {
 					
 					private final RosettaActionFactory actionFactory;
 					
-					@Inject
+					@«Inject»
 					public «name»«type»(RosettaActionFactory actionFactory) {
 						this.actionFactory = actionFactory;
 					}
@@ -173,9 +169,11 @@ class BlueprintGenerator {
 						return "«uri»";
 					}
 					
-					«body.toString»
+					«nodes.buildBody(classScope, typed, dataItemReportBuilderName, imports, names)»
 				}
 				'''
+				
+				buildClass(packageName.model.blueprint, body, topScope)
 			}
 			catch (Exception e) {
 				LOGGER.error("Error generating blueprint java for "+name, e);
@@ -218,8 +216,9 @@ class BlueprintGenerator {
 	/**
 	 * build the body of the blueprint class
 	 */
-	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, TypedBPNode typedNode, String dataItemReportBuilderName, ImportGenerator imports, extension JavaNames names) {
+	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, JavaScope scope, TypedBPNode typedNode, String dataItemReportBuilderName, ImportGenerator imports, extension JavaNames names) {
 		val context = new Context(nodes, imports)
+		val blueprintScope = scope.childScope
 		return '''
 			«FOR dep : nodes.functionDependencies.toSet»
 				@«Inject» protected «dep.toJavaType» «dep.name.toFirstLower»;
@@ -228,7 +227,7 @@ class BlueprintGenerator {
 			@Override
 			public BlueprintInstance<«typedNode.input.either», «typedNode.output.either», «typedNode.inputKey.either», «typedNode.outputKey.either»> blueprint() { 
 				return 
-					startsWith(actionFactory, «nodes.buildGraph(typedNode.next, context)»)
+					startsWith(actionFactory, «nodes.buildGraph(blueprintScope, typedNode.next, context)»)
 					«IF dataItemReportBuilderName !== null».addDataItemReportBuilder(new «dataItemReportBuilderName.toDataItemReportBuilderName»())«ENDIF»
 					.toBlueprint(getURI(), getName());
 			}
@@ -246,17 +245,17 @@ class BlueprintGenerator {
 	/**
 	 * recursive function that builds the graph of nodes
 	 */
-	def StringConcatenationClient buildGraph(BlueprintNodeExp nodeExp, TypedBPNode typedNode, Context context) 
+	def StringConcatenationClient buildGraph(BlueprintNodeExp nodeExp, JavaScope scope, TypedBPNode typedNode, Context context) 
 		'''
-		«nodeExp.buildNode(typedNode, context)»«IF nodeExp.next !== null»)
-		.then(« nodeExp.next.buildGraph(typedNode.next, context)»«ENDIF»'''
+		«nodeExp.buildNode(scope, typedNode, context)»«IF nodeExp.next !== null»)
+		.then(« nodeExp.next.buildGraph(scope, typedNode.next, context)»«ENDIF»'''
 	
 	/**
 	 * write out an individual graph node
 	 */
-	def StringConcatenationClient buildNode(BlueprintNodeExp nodeExp, TypedBPNode typedNode, Context context) {
+	def StringConcatenationClient buildNode(BlueprintNodeExp nodeExp, JavaScope scope, TypedBPNode typedNode, Context context) {
 		val node = nodeExp.node
-		val id = createIdentifier(nodeExp); 
+		val id = createIdentifier(nodeExp);
 		switch (node) {
 			BlueprintExtract: {
 				context.imports.addTypes(typedNode)
@@ -266,25 +265,31 @@ class BlueprintGenerator {
 				val multi = cardinality.isMulti(cond)
 				val repeatable = node.repeatable
 				
+				val lambdaScope = scope.childScope
+				val implicitVar = lambdaScope.createIdentifier(typedNode.input.type.toBlueprintImplicitVar, typedNode.input.either.toFirstLower)
+				
 				if (!multi)
 				'''actionFactory.<«typedNode.input.getEither», «
 					typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaSingleMapper("«node.URI»", "«(cond).toNodeLabel
-						»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type))»)'''
+						»", «id», «implicitVar» -> «node.call.javaCode(lambdaScope)»)'''
 				else if (repeatable)
 				'''actionFactory.<«typedNode.input.getEither», «
 									typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaRepeatableMapper("«node.URI»", "«(cond).toNodeLabel
-														»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type))»)'''
+														»", «id», «implicitVar» -> «node.call.javaCode(lambdaScope)»)'''
 				else
 				'''actionFactory.<«typedNode.input.getEither», «
 									typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaMultipleMapper("«node.URI»", "«(cond).toNodeLabel
-														»", «id», «typedNode.input.type.name.toFirstLower» -> «node.call.javaCode(new ParamMap(typedNode.input.type))»)'''
+														»", «id», «implicitVar» -> «node.call.javaCode(lambdaScope)»)'''
 			}
 			BlueprintReturn: {
 				context.imports.addTypes(typedNode)
 				context.imports.addMappingImport()
 				
-				val expr = node.expression 
-				'''actionFactory.<«typedNode.input.getEither», «typedNode.output.getEither», «typedNode.inputKey.getEither»> newRosettaReturn("«node.URI»", "«expr.toNodeLabel»",  «id»,  () -> «expr.javaCode(new ParamMap())»)'''
+				val expr = node.expression
+				
+				val lambdaScope = scope.childScope
+				
+				'''actionFactory.<«typedNode.input.getEither», «typedNode.output.getEither», «typedNode.inputKey.getEither»> newRosettaReturn("«node.URI»", "«expr.toNodeLabel»",  «id»,  () -> «expr.javaCode(lambdaScope)»)'''
 			}
 			BlueprintLookup: {
 				context.imports.addTypes(typedNode)
@@ -296,7 +301,7 @@ class BlueprintGenerator {
 			
 			}
 			BlueprintOr : {
-				node.orNode(typedNode, context, id)
+				node.orNode(scope, typedNode, context, id)
 			}
 			BlueprintRef : {
 				context.addBPRef(typedNode)
@@ -307,9 +312,12 @@ class BlueprintGenerator {
 			}
 			BlueprintFilter :{
 				context.imports.addFilter(node);
+								
 				if(node.filter!==null) {
-				'''new Filter<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filter.toNodeLabel»", «typedNode.input.either.toFirstLower
-					» -> «node.filter.javaCode(new ParamMap(typedNode.input.type))».get(), «id»)'''
+					val lambdaScope = scope.childScope
+					val implicitVar = lambdaScope.createIdentifier(typedNode.input.type.toBlueprintImplicitVar, typedNode.input.either.toFirstLower)
+					'''new Filter<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filter.toNodeLabel»", «implicitVar
+						» -> «node.filter.javaCode(lambdaScope)».get(), «id»)'''
 				}
 				else {
 					context.addBPRef(typedNode)
@@ -368,12 +376,12 @@ class BlueprintGenerator {
 		}
 	}
 	
-	def StringConcatenationClient orNode(BlueprintOr orNode, TypedBPNode orTyped, Context context, CharSequence id) {
+	def StringConcatenationClient orNode(BlueprintOr orNode, JavaScope scope, TypedBPNode orTyped, Context context, CharSequence id) {
 		'''
 		«IF !orNode.bps.isEmpty»
 			BlueprintBuilder.<«orTyped.outFullS»>or(actionFactory,
 				«FOR bp:orNode.bps.indexed  SEPARATOR ","»
-				startsWith(actionFactory, «bp.value.buildGraph(orTyped.orNodes.get(bp.key), context)»)
+				startsWith(actionFactory, «bp.value.buildGraph(scope, orTyped.orNodes.get(bp.key), context)»)
 				«ENDFOR»
 				)
 			«ENDIF»
@@ -412,16 +420,16 @@ class BlueprintGenerator {
 	
 	def fullname(RosettaType type, RosettaJavaPackages packageName) {
 		if (type instanceof Data)
-			'''«packageName.model.name».«type.name»'''.toString
+			'''«packageName.model».«type.name»'''.toString
 		else 
 			type.name.toJavaFullType
 	}
 	
-	def Iterable<RosettaCallableWithArgs> functionDependencies(BlueprintNodeExp node) {
+	def Iterable<Function> functionDependencies(BlueprintNodeExp node) {
 		return node.node.functionDependencies + (node.next===null?#[]:node.next.functionDependencies)
 	}
 	
-	def Iterable<RosettaCallableWithArgs> functionDependencies(BlueprintNode node) {
+	def Iterable<Function> functionDependencies(BlueprintNode node) {
 		switch (node) {
 			BlueprintOr : {
 				node.bps.flatMap[functionDependencies].toList
@@ -448,20 +456,10 @@ class BlueprintGenerator {
 		try {
 			val imports = new ImportGenerator(packageName)
 			imports.addDataItemReportBuilder(report.reportType)
-
-			val StringConcatenationClient scc = report.buildDataItemReportBuilderBody(names, imports)
-			val body = tracImports(scc)
-
-			return '''
-				package «packageName.model.blueprint.name»;
-				
-				«FOR imp : body.imports»
-					import «imp»;
-				«ENDFOR»
-				«FOR imp : body.staticImports»
-					import static «imp»;
-				«ENDFOR»
-				
+			
+			val scope = new JavaScope
+			
+			val StringConcatenationClient body = '''
 				«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
 				import «importClass»;
 				«ENDFOR»
@@ -472,14 +470,15 @@ class BlueprintGenerator {
 				«emptyJavadocWithVersion(version)»
 				public class «report.reportType.name.toDataItemReportBuilderName» implements DataItemReportBuilder {
 				
-					«body.toString»
+					«report.buildDataItemReportBuilderBody(names, imports)»
 				}
 				'''
-			}
-			catch (Exception e) {
-				LOGGER.error("Error generating blueprint java for "+report.reportType.name, e);
-				return '''Unexpected Error generating «report.reportType.name».java Please see log for details'''
-			}
+			buildClass(packageName.model.blueprint, body, scope)
+		}
+		catch (Exception e) {
+			LOGGER.error("Error generating blueprint java for "+report.reportType.name, e);
+			return '''Unexpected Error generating «report.reportType.name».java Please see log for details'''
+		}
 	}
 	
 	def StringConcatenationClient buildDataItemReportBuilderBody(RosettaBlueprintReport report, extension JavaNames names, ImportGenerator imports) {

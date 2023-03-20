@@ -4,7 +4,6 @@ import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.GeneratorScope;
 import com.regnosys.rosetta.generator.java.types.JavaClass;
 import com.regnosys.rosetta.generator.java.types.JavaType;
-import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
 import java.util.Optional;
 
@@ -12,11 +11,11 @@ import javax.lang.model.SourceVersion;
 
 public class JavaScope extends GeneratorScope<JavaScope> {
 
-	public JavaScope(ImplicitVariableUtil implicitVarUtil) {
-		super(implicitVarUtil);
+	public JavaScope() {
+		super();
 	}
-	protected JavaScope(ImplicitVariableUtil implicitVarUtil, JavaScope parent) {
-		super(implicitVarUtil, parent);
+	protected JavaScope(JavaScope parent) {
+		super(parent);
 	}
 	
 	@Override
@@ -37,7 +36,7 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 
 	@Override
 	public JavaScope childScope() {
-		return new JavaScope(this.implicitVarUtil, this);
+		return new JavaScope(this);
 	}
 
 	@Override

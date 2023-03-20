@@ -26,6 +26,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.generator.java.JavaScope
 
 class ValidatorsGenerator {
 
@@ -33,42 +34,20 @@ class ValidatorsGenerator {
 	@Inject extension RosettaExtensions
 
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version) {
-		fsa.generateFile(names.packages.model.typeValidation.directoryName + '/' + data.name + 'Validator.java',
+		fsa.generateFile(names.packages.model.typeValidation.withForwardSlashes + '/' + data.name + 'Validator.java',
 			generatClass(names, data, version))
-		fsa.generateFile(names.packages.model.existsValidation.directoryName + '/' + onlyExistsValidatorName(data) + '.java',
+		fsa.generateFile(names.packages.model.existsValidation.withForwardSlashes + '/' + onlyExistsValidatorName(data) + '.java',
 			generateOnlyExistsValidator(names, data, version))
 	}
 
 	private def generatClass(JavaNames names, Data d, String version) {
-		val classBody = tracImports(d.classBody(names, version, d.allAttributes))
-		'''
-			package «names.packages.model.typeValidation.name»;
-			
-			«FOR imp : classBody.imports»
-				import «imp»;
-			«ENDFOR»
-			«FOR imp : classBody.staticImports»
-				import static «imp»;
-			«ENDFOR»
-			
-			«classBody.toString»
-		'''
+		val scope = new JavaScope
+		buildClass(names.packages.model.typeValidation, d.classBody(names, version, d.allAttributes), scope)
 	}
 
 	private def generateOnlyExistsValidator(JavaNames names, Data d, String version) {
-		val classBody = tracImports(d.onlyExistsClassBody(names, version, d.allAttributes))
-		'''
-			package «names.packages.model.existsValidation.name»;
-			
-			«FOR imp : classBody.imports»
-				import «imp»;
-			«ENDFOR»
-			«FOR imp : classBody.staticImports»
-				import static «imp»;
-			«ENDFOR»
-			
-			«classBody.toString»
-		'''
+		val scope = new JavaScope
+		buildClass(names.packages.model.existsValidation, d.onlyExistsClassBody(names, version, d.allAttributes), scope)
 	}
 
 	def private StringConcatenationClient classBody(Data c, JavaNames names, String version, Iterable<Attribute> attributes) '''
@@ -81,12 +60,12 @@ class ValidatorsGenerator {
 						«FOR attr : attributes SEPARATOR ","»
 							«checkCardinality(attr.toExpandedAttribute)»
 						«ENDFOR»
-					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«Collectors.importMethod("joining")»("; "));
+					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
-				if (!«Strings.importMethod("isNullOrEmpty")»(error)) {
-					return «ValidationResult.importMethod("failure")»("«c.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "", error);
+				if (!«method(Strings, "isNullOrEmpty")»(error)) {
+					return «method(ValidationResult, "failure")»("«c.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "", error);
 				}
-				return «ValidationResult.importMethod("success")»("«c.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "");
+				return «method(ValidationResult, "success")»("«c.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "");
 			}
 		
 		}
@@ -114,9 +93,9 @@ class ValidatorsGenerator {
 						.collect(«Collectors».toSet());
 				
 				if (setFields.equals(fields)) {
-					return «ValidationResult.importMethod("success")»("«c.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "");
+					return «method(ValidationResult, "success")»("«c.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "");
 				}
-				return «ValidationResult.importMethod("failure")»("«c.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "",
+				return «method(ValidationResult, "failure")»("«c.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "",
 						String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
 			}
 		}
@@ -124,9 +103,9 @@ class ValidatorsGenerator {
 
 	private def StringConcatenationClient checkCardinality(ExpandedAttribute attr) '''
 		«IF attr.isMultiple»
-			«ExpressionOperators.importMethod("checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
+			«method(ExpressionOperators, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
 		«ELSE»
-			«ExpressionOperators.importMethod("checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)
+			«method(ExpressionOperators, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)
 		«ENDIF»
 	'''
 }
