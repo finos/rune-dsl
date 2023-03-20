@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.expression
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
-import com.regnosys.rosetta.generator.java.util.ImportingStringConcatination
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
@@ -32,6 +31,7 @@ import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.generator.java.util.ImportingStringConcatenation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -166,7 +166,7 @@ class ExpressionGeneratorTest {
 	}
 	
 	private def String formatGeneratedFunction(StringConcatenationClient generatedFunction) {
-		val isc = new ImportingStringConcatination()
+		val isc = new ImportingStringConcatenation()
 		isc.append(generatedFunction)
 		isc.toString.replace('\n','').replace('\t','')
 	}

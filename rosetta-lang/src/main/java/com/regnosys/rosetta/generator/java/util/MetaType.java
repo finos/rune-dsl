@@ -6,6 +6,7 @@ package com.regnosys.rosetta.generator.java.util;
  * and the base JavaType represents the parent type of meta.  
  *
  */
+@Deprecated
 public class MetaType extends JavaType {
 
 	private String metaFieldName;

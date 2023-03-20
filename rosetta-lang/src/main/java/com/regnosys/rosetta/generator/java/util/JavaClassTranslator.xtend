@@ -33,6 +33,8 @@ class JavaClassTranslator {
 				'java.lang.String'
 			case RCalculationType.CALCULATION.calculationType:
 				'java.lang.String'
+			default:
+				throw new UnsupportedOperationException("Not implemented for type " + typename)
 		}
 	}
 

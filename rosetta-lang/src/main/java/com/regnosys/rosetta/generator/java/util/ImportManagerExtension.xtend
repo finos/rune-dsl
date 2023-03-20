@@ -1,20 +1,27 @@
 package com.regnosys.rosetta.generator.java.util
 
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.generator.java.types.JavaClass
+import java.lang.reflect.Method
+import com.regnosys.rosetta.generator.java.JavaScope
 
 class ImportManagerExtension {
-
-	def importMethod(Class<?> clazz, String methodName) {
+	def method(Class<?> clazz, String methodName) {
 		clazz.methods.findFirst[name == methodName]
 	}
 
-	def importWildCard(Class<?> clazz) {
-		JavaType.create(clazz.name + '.*')
+	def importWildcard(Class<?> clazz) {
+		importWildcard(JavaClass.from(clazz))
+	}
+	def importWildcard(JavaClass t) {
+		new PreferWildcardImportClass(t)
+	}
+	def importWildcard(Method method) {
+		new PreferWildcardImportMethod(method)
 	}
 
-	def ImportingStringConcatination tracImports(StringConcatenationClient scc, String... reservedSimpleNames) {
-		val isc = new ImportingStringConcatination()
-		reservedSimpleNames.forEach[isc.addReservedSimpleName(it)]
+	def ImportingStringConcatenation trackImports(StringConcatenationClient scc, JavaScope scope) {
+		val isc = new ImportingStringConcatenation(scope)
 		isc.append(scc)
 		isc
 	}

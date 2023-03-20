@@ -41,7 +41,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
 
 /**
- * This class should go away - the ImportingStringConcatenation method is superior
+ * TODO This class should go away - the ImportingStringConcatenation method is superior
  */
 class ImportGenerator {
 
@@ -59,17 +59,17 @@ class ImportGenerator {
 
 	def void addBlueprintImports() {
 		imports.addAll(
-		'''«packages.blueprintLib.name».Blueprint''',
-		'''«packages.blueprintLib.name».BlueprintInstance''',
-		'''«packages.blueprintLib.name».BlueprintBuilder''',
-		'''«packages.blueprintLib.name».runner.actions.rosetta.RosettaActionFactory''')
-		staticImports.add('''«packages.blueprintLib.name».BlueprintBuilder''')
+		'''«packages.blueprintLib».Blueprint''',
+		'''«packages.blueprintLib».BlueprintInstance''',
+		'''«packages.blueprintLib».BlueprintBuilder''',
+		'''«packages.blueprintLib».runner.actions.rosetta.RosettaActionFactory''')
+		staticImports.add('''«packages.blueprintLib».BlueprintBuilder''')
 	}
 
 	def void addSourceAndSink() {
 		imports.addAll(
-		'''«packages.blueprintLib.name».runner.nodes.SinkNode''',
-		'''«packages.blueprintLib.name».runner.nodes.SourceNode''')
+		'''«packages.blueprintLib».runner.nodes.SinkNode''',
+		'''«packages.blueprintLib».runner.nodes.SourceNode''')
 	}
 	
 	def void addSingleMapping(BlueprintExtract extract) {
@@ -78,18 +78,18 @@ class ImportGenerator {
 	}
 
 	def void addMappingImport() {
-		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
-		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
+		imports.add('''«packages.blueprintLib».runner.data.StringIdentifier''')
+		imports.add('''«packages.blueprintLib».runner.data.RuleIdentifier''')
 	}
 	
 	def void addDataItemReportBuilder(Data reportType) {
 		addMappingImport
 		imports.addAll(
-			'''«packages.model.name».«reportType.name»''',
-			'''«packages.blueprintLib.name».DataItemReportBuilder''',
-			'''«packages.blueprintLib.name».DataItemReportUtils''',
-			'''«packages.blueprintLib.name».runner.data.DataIdentifier''',
-			'''«packages.blueprintLib.name».runner.data.GroupableData''')
+			'''«packages.model».«reportType.name»''',
+			'''«packages.blueprintLib».DataItemReportBuilder''',
+			'''«packages.blueprintLib».DataItemReportUtils''',
+			'''«packages.blueprintLib».runner.data.DataIdentifier''',
+			'''«packages.blueprintLib».runner.data.GroupableData''')
 	}
 	
 	def void addDataItemReportRule(RosettaBlueprint blueprint) {
@@ -109,7 +109,7 @@ class ImportGenerator {
 //				}
 			}
 			RosettaMetaType:{
-				imports.add('''«packages.basicMetafields.name».*''')
+				imports.add('''«packages.basicMetafields».*''')
 			}
 			RosettaEnumValue:{
 				imports.add((feature.eContainer as RosettaEnumeration).fullName);
@@ -200,10 +200,10 @@ class ImportGenerator {
 	def fullName(RosettaType type) {
 		if (type instanceof Data) {
 			val targetPackage = new RootPackage(type.model.name)
-			'''«targetPackage.name».«type.name»'''.toString
+			'''«targetPackage».«type.name»'''.toString
 		} else if (type instanceof RosettaEnumeration) {
 			val targetPackage = new RootPackage(type.model.name)
-			'''«targetPackage.name».«type.name»'''.toString
+			'''«targetPackage».«type.name»'''.toString
 		} else {
 			val simple = type.name.toJavaFullType
 			if (simple === null) {
@@ -226,7 +226,7 @@ class ImportGenerator {
 
 	def fullName(EClass type) {
 		if (type instanceof Data)
-			'''«packages.model.name».«type.name»'''.toString
+			'''«packages.model».«type.name»'''.toString
 		else
 			type.name.toJavaFullType
 	}
@@ -234,38 +234,38 @@ class ImportGenerator {
 	def addFilter(BlueprintFilter filter) {
 		if (filter.filter!==null) {
 			addExpression(filter.filter);
-			imports.add(packages.blueprintLib.name + ".runner.actions.Filter")
+			imports.add(packages.blueprintLib + ".runner.actions.Filter")
 		}
 		if (filter.filterBP!==null) {
-			imports.add(packages.blueprintLib.name + ".runner.actions.FilterByRule")
+			imports.add(packages.blueprintLib + ".runner.actions.FilterByRule")
 		}
 	}
 
 	def addQualifyClass(RosettaExpression expr,
 		RosettaType rClass) {
 		imports.addAll("com.rosetta.model.lib.annotations.RosettaQualifiable", "java.util.function.Function",
-			rClass.fullName, packages.model.dataRule.name + ".*")
-		imports.add('''«packages.defaultLibQualify.name».QualifyResult''')
-		imports.add(packages.defaultLib.name + ".validation.ComparisonResult")
-		imports.add(packages.defaultLib.name + ".meta.FieldWithMeta")
+			rClass.fullName, packages.model.dataRule + ".*")
+		imports.add('''«packages.defaultLibQualify».QualifyResult''')
+		imports.add(packages.defaultLib + ".validation.ComparisonResult")
+		imports.add(packages.defaultLib + ".meta.FieldWithMeta")
 		addExpression(expr)
 	}
 
 	def addNode(TypedBPNode typed) {
-		imports.add('''«packages.blueprintLib.name».runner.nodes.Node''')
+		imports.add('''«packages.blueprintLib».runner.nodes.Node''')
 		addTypes(typed)
 	}
 
 	def addSource(BlueprintSource source, TypedBPNode typed) {
-		imports.add('''«packages.blueprintLib.name».runner.nodes.SourceNode''')
+		imports.add('''«packages.blueprintLib».runner.nodes.SourceNode''')
 		addTypes(typed)
 	}
 		
 	def addBPRef(RosettaBlueprint blueprint) {
 		imports.add('''«(blueprint.eContainer as RosettaModel).name».blueprint.«blueprint.name»Rule''')
-		imports.add('''«packages.blueprintLib.name».runner.actions.IdChange''')
-		imports.add('''«packages.blueprintLib.name».runner.data.StringIdentifier''')
-		imports.add('''«packages.blueprintLib.name».runner.data.RuleIdentifier''')
+		imports.add('''«packages.blueprintLib».runner.actions.IdChange''')
+		imports.add('''«packages.blueprintLib».runner.data.StringIdentifier''')
+		imports.add('''«packages.blueprintLib».runner.data.RuleIdentifier''')
 	}
 
 }
