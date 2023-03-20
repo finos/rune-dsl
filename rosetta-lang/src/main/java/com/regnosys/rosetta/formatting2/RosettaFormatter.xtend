@@ -15,7 +15,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalEnum
 import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonym
-import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
@@ -53,6 +52,7 @@ import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Annotation
+import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	
@@ -569,32 +569,38 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.surround[oneSpace]
 	}
 
-	def dispatch void format(RosettaExternalSynonymSource externalSynonymSource, extension IFormattableDocument document) {
+	def dispatch void format(ExternalAnnotationSource externalAnnotationSource, extension IFormattableDocument document) {
+		val extension externalAnnotationSourceGrammarAccess = externalAnnotationSourceAccess
 		val extension externalSynonymSourceGrammarAccess = rosettaExternalSynonymSourceAccess
+		val extension externalRuleSourceGrammarAccess = rosettaExternalRuleSourceAccess
 		
-		externalSynonymSource.regionFor.keyword(sourceKeyword_1)
+		externalAnnotationSource.regionFor.keyword(externalSynonymSourceGrammarAccess.sourceKeyword_1)
 			.surround[oneSpace]
-		externalSynonymSource.regionFor.keyword(extendsKeyword_3_0)
+		externalAnnotationSource.regionFor.keyword(externalRuleSourceGrammarAccess.sourceKeyword_1)
+			.surround[oneSpace]
+		externalAnnotationSource.regionFor.keyword(externalSynonymSourceGrammarAccess.extendsKeyword_3_0)
+			.surround[oneSpace]
+		externalAnnotationSource.regionFor.keyword(externalRuleSourceGrammarAccess.extendsKeyword_3_0)
 			.surround[oneSpace]
 		
-		indentedBraces(externalSynonymSource, document)
-		externalSynonymSource.externalClasses.head
+		indentedBraces(externalAnnotationSource, document)
+		externalAnnotationSource.externalClasses.head
 			.prepend[newLine]
-		externalSynonymSource.externalClasses.tail.forEach[
+		externalAnnotationSource.externalClasses.tail.forEach[
 			prepend[setNewLines(2)]
 		]
-		externalSynonymSource.externalClasses.forEach[
+		externalAnnotationSource.externalClasses.forEach[
 			format
 		]
 		
-		val enumsKeyword = externalSynonymSource.regionFor.keyword(enumsKeyword_6_0)
+		val enumsKeyword = externalAnnotationSource.regionFor.keyword(enumsKeyword_2_0)
 		if (enumsKeyword !== null) {
-			if (externalSynonymSource.externalClasses.empty) {
+			if (externalAnnotationSource.externalClasses.empty) {
 				enumsKeyword.prepend[newLine]
 			} else {
 				enumsKeyword.prepend[setNewLines(2)]
 			}
-			externalSynonymSource.externalEnums.forEach[
+			externalAnnotationSource.externalEnums.forEach[
 				prepend[setNewLines(2)]
 				format
 			]
@@ -620,9 +626,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 	}
 
 	def dispatch void format(RosettaExternalRegularAttribute externalRegularAttribute, extension IFormattableDocument document) {
-		externalRegularAttribute.regionFor.keyword('+')
-			.append[oneSpace]
-		externalRegularAttribute.regionFor.keyword('-')
+		externalRegularAttribute.regionFor.feature(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__OPERATOR)
 			.append[oneSpace]
 		externalRegularAttribute.indentInner(document)
 		externalRegularAttribute.externalSynonyms.forEach[
@@ -632,9 +636,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	def dispatch void format(RosettaExternalEnumValue externalEnumValue, extension IFormattableDocument document) {
-		externalEnumValue.regionFor.keyword('+')
-			.append[oneSpace]
-		externalEnumValue.regionFor.keyword('-')
+		externalEnumValue.regionFor.feature(ROSETTA_EXTERNAL_ENUM_VALUE__OPERATOR)
 			.append[oneSpace]
 		externalEnumValue.indentInner(document)
 		externalEnumValue.externalEnumSynonyms.forEach[

@@ -47,8 +47,8 @@ class EnumGenerator {
 				«IF value.display !== null»
 				    «convertValuesWithDisplay(value)»
 				«ELSE»
-					    «convertValues(value)»    
-			        «ENDIF»		
+				    «convertValues(value)»
+		        «ENDIF»		
 			«ENDFOR»
 			;
 		

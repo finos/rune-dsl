@@ -50,6 +50,10 @@ public class RosettaFormattingService extends FormattingService {
 			}
 		}
 		preferences.put(PREFERENCE_INDENTATION_KEY, indent);
+		
+		if (options == null) {
+			return preferences;
+		}
 
 		Number conditionalMaxLineWidth = options.getNumber(PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY);
 		if (conditionalMaxLineWidth != null) {
