@@ -101,7 +101,7 @@ class CodeGeneratorTestHelper {
 	}
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, RootPackage namespace, String className, Map<String, Object> itemsToSet, Map<String, List<?>> itemsToAddToList) {
-		val rosettaClassBuilderInstance = classes.get(namespace.name + '.' + className).getMethod(
+		val rosettaClassBuilderInstance = classes.get(namespace + '.' + className).getMethod(
 			"builder").invoke(null);
 		itemsToSet.forEach [ name, value |
 			rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value.class]).invoke(
@@ -148,7 +148,7 @@ class CodeGeneratorTestHelper {
 	}
 
 	def createCalculationInstance(Map<String, Class<?>> classes, String className) {
-		val fqn = rootPackage.functions.name + '.' + className
+		val fqn = rootPackage.functions + '.' + className
 		val foundClazz = classes.get(fqn)
 		if(foundClazz === null)
 			throw new IllegalStateException('''No generated class '«fqn»' found''')

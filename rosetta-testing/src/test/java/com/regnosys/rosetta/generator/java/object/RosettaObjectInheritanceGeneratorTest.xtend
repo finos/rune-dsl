@@ -38,10 +38,10 @@ class RosettaObjectInheritanceGeneratorTest {
 		
 		val classes = genereated.compileToClasses
 
-		val classA = classes.get(rootPackage.name + ".A")
-		val classB = classes.get(rootPackage.name + ".B")
-		val classC = classes.get(rootPackage.name + ".C")
-		val classD = classes.get(rootPackage.name + ".D")
+		val classA = classes.get(rootPackage + ".A")
+		val classB = classes.get(rootPackage + ".B")
+		val classC = classes.get(rootPackage + ".C")
+		val classD = classes.get(rootPackage + ".D")
 
 		assertTrue(classC.isAssignableFrom(classD))
 		assertTrue(classB.isAssignableFrom(classC))

@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
-import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
@@ -32,11 +31,14 @@ import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.generator.java.util.ImportingStringConcatenation
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class ExpressionGeneratorTest {
 	@Inject ExpressionGenerator expressionHandler
+	@Inject extension JavaIdentifierRepresentationService
 	
 	/**
 	 *  Foo -> attr1 > 5
@@ -50,10 +52,12 @@ class ExpressionGeneratorTest {
 		
 		val comparisonOp = createModifiableBinaryOperation(">", lhsFeatureCall, rhsIntLiteral, ComparisonOperation)
 		
-		val generatedFunction = expressionHandler.javaCode(comparisonOp, new ParamMap(lhsMockClass))
+		val scope = new JavaScope
+		scope.createIdentifier(lhsMockClass.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(comparisonOp, scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
+		assertThat(formatGeneratedFunction(generatedFunction, scope), 
 			is('greaterThan(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)'))
 	}
 
@@ -72,10 +76,12 @@ class ExpressionGeneratorTest {
 		
 		val orOp = createBinaryOperation("or", lhsComparisonOp, rhsComparisonOp, LogicalOperation)
 		
-		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
+		val scope = new JavaScope
+		scope.createIdentifier(mockClass.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
+		assertThat(formatGeneratedFunction(generatedFunction, scope), 
 			is('greaterThan(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All).or(greaterThan(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All))'))
 	}
 	
@@ -88,10 +94,12 @@ class ExpressionGeneratorTest {
 		val lhsFeatureCall = createFeatureCall(lhsMockClass, "attr")
 		val lhsExistsOp = createExistsExpression(lhsFeatureCall)
 		
-		val generatedFunction = expressionHandler.javaCode(lhsExistsOp, new ParamMap(lhsMockClass))
+		val scope = new JavaScope
+		scope.createIdentifier(lhsMockClass.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(lhsExistsOp, scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
+		assertThat(formatGeneratedFunction(generatedFunction, scope), 
 			is('exists(MapperS.of(foo).<Foo>map(\"getAttr\", _foo -> _foo.getAttr()))'))
 	}
 
@@ -110,10 +118,12 @@ class ExpressionGeneratorTest {
 		
 		val orOp = createBinaryOperation("or", lhsExistsOp, rhsExistsOp, LogicalOperation)
 		
-		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
+		val scope = new JavaScope
+		scope.createIdentifier(mockClass.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
+		assertThat(formatGeneratedFunction(generatedFunction, scope), 
 			is('exists(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1())).or(exists(MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2())))'))
 	}
 
@@ -135,10 +145,12 @@ class ExpressionGeneratorTest {
 		
 		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp, LogicalOperation)
 		
-		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
+		val scope = new JavaScope
+		scope.createIdentifier(mockClass.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
+		assertThat(formatGeneratedFunction(generatedFunction, scope), 
 			is('areEqual(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<Foo>map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).<Foo>map(\"getAttr4\", _foo -> _foo.getAttr4()), CardinalityOperator.All))'))
 	}
 	
@@ -158,16 +170,19 @@ class ExpressionGeneratorTest {
 		
 		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp, LogicalOperation)
 		
-		val generatedFunction = expressionHandler.javaCode(orOp, new ParamMap(mockClass))
+		val scope = new JavaScope
+		scope.createIdentifier(mockClass.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction('''«generatedFunction»'''), 
+		assertThat(formatGeneratedFunction(generatedFunction, scope), 
 			is('areEqual(MapperS.of(foo).<Foo>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).<Foo>map(\"getAttr2\", _foo -> _foo.getAttr2()), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<Foo>map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).<Foo>map(\"getAttr4\", _foo -> _foo.getAttr4()), CardinalityOperator.All))'))
 	}
 	
-	private def String formatGeneratedFunction(StringConcatenationClient generatedFunction) {
-		val isc = new ImportingStringConcatenation()
-		isc.append(generatedFunction)
+	private def String formatGeneratedFunction(StringConcatenationClient generatedFunction, JavaScope topScope) {
+		val isc = new ImportingStringConcatenation(topScope)
+		val resolvedCode = isc.resolveIdentifiers(generatedFunction)
+		isc.append(resolvedCode)
 		isc.toString.replace('\n','').replace('\t','')
 	}
 

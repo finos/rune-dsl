@@ -30,7 +30,7 @@ class EnumGeneratorTest {
         		two <"Some other description"> [synonym FpML value "twoSynonym"]
         '''.generateCode
 
-        val testEnumCode = code.get(rootPackage.name + ".TestEnum")
+        val testEnumCode = code.get(rootPackage + ".TestEnum")
         assertThat(testEnumCode, containsString('''RosettaSynonym(value = "oneSynonym", source = "FpML")'''))
 
         code.compileToClasses
@@ -66,7 +66,7 @@ class EnumGeneratorTest {
         		four  displayName "tessera" <"Some description"> [synonym FpML value "fourSynonym"]
         '''.generateCode
 
-        val testEnumCode = code.get(rootPackage.name + ".TestEnumWithDisplay")
+        val testEnumCode = code.get(rootPackage + ".TestEnumWithDisplay")
         assertThat(testEnumCode,
             allOf(containsString('''TestEnumWithDisplay()'''),
                 containsString('''TestEnumWithDisplay(String displayName)'''),
