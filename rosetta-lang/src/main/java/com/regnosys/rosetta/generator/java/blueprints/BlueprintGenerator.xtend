@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.generator.java.blueprints
 
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.RosettaExtensions.PathAttribute
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.ParamMap
@@ -26,10 +27,10 @@ import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.validation.BindableType
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver
 import com.regnosys.rosetta.validation.TypedBPNode
+import com.rosetta.model.lib.path.RosettaPath
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -37,6 +38,7 @@ import javax.inject.Inject
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
+import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
@@ -102,7 +104,7 @@ class BlueprintGenerator {
 		val node = RosettaFactory.eINSTANCE.createBlueprintOr
 		node.name = report.name
 		
-		report.allReportingRules.sortBy[name].forEach[
+		report.getAllReportingRules(false).values.sortBy[name].forEach[
 			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
 			ref.blueprint = it
 			ref.name = it.name
@@ -411,7 +413,7 @@ class BlueprintGenerator {
 	}
 	
 	def fullname(RosettaType type, RosettaJavaPackages packageName) {
-		if (type instanceof Data)
+		if (type instanceof com.regnosys.rosetta.rosetta.simple.Data)
 			'''«packageName.model.name».«type.name»'''.toString
 		else 
 			type.name.toJavaFullType
@@ -499,7 +501,7 @@ class BlueprintGenerator {
 					if (data == null) {
 						continue;
 					}
-					«report.reportType.buildRules(builderName, names, imports)»
+					«report.getAllReportingRules(true).buildRules(builderName, names, imports)»
 				}
 			}
 			
@@ -507,45 +509,45 @@ class BlueprintGenerator {
 		}'''
 	}
 	
-	def StringConcatenationClient buildRules(Data dataType, String builderPath, extension JavaNames names, ImportGenerator imports) {
-		'''«FOR attr : dataType.allAttributes»
+	def StringConcatenationClient buildRules(Map<PathAttribute, RosettaBlueprint> attrRules, String builderPath, extension JavaNames names, ImportGenerator imports) {
+		'''«FOR entry : attrRules.entrySet.sortBy[value.name]»
+			«val path = entry.key.path»
+			«val attr = entry.key.attr»
 			«val attrType = attr.type»
-			«val rule = attr.ruleReference?.reportingRule»
-			«IF rule !== null»
-				«imports.addDataItemReportRule(rule)»
-				«IF attr.card.isIsMany»
-					«IF attrType instanceof Data»
-						«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»(ruleIdentifier.getRepeatableIndex().orElse(0))''', names, imports)»
-					«ENDIF»
-				«ELSE»
-					if («rule.name»Rule.class.isAssignableFrom(ruleType)) {
-						DataItemReportUtils.setField(«builderPath»::set«attr.name.toFirstUpper», «attrType.toJavaType».class, data, «rule.name»Rule.class);
-					}
-				«ENDIF»
-			«ELSEIF attrType instanceof Data»
-				«IF !attr.card.isIsMany»
-					«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»()''', names, imports)»
-				«ENDIF»
-			«ENDIF»
+			«val rule = entry.value»
+			«imports.addDataItemReportRule(rule)»
+			if («rule.name»Rule.class.isAssignableFrom(ruleType)) {
+				DataItemReportUtils.setField(«builderPath»«path.trimFirst.buildAttributePathGetters»::set«attr.name.toFirstUpper», «attrType.toJavaType».class, data, «rule.name»Rule.class);
+			}
 		«ENDFOR»
 		'''	
+	}
+	
+	private def buildAttributePathGetters(RosettaPath path) {
+		if (path === null) {
+			return ""
+		}
+		
+		return "." + path.allElements.map[
+				'''«IF it.index.isPresent»getOrCreate«it.path.toFirstUpper»(ruleIdentifier.getRepeatableIndex().orElse(0))«ELSE»getOrCreate«it.path.toFirstUpper»()«ENDIF»'''
+			].join('.')
 	}
 	
 	def String toDataItemReportBuilderName(String dataItemReportTypeName) {
 		'''«dataItemReportTypeName»_DataItemReportBuilder'''
 	}
 	
-	@org.eclipse.xtend.lib.annotations.Data static class AttributePath {
+	@Data static class AttributePath {
 		List<Attribute> path
 		RosettaDocReference ref
 	}
 	
-	@org.eclipse.xtend.lib.annotations.Data static class RegdOutputField {
+	@Data static class RegdOutputField {
 		Attribute attrib
 		RosettaDocReference ref
 	}
 	
-	@org.eclipse.xtend.lib.annotations.Data static class Context {
+	@Data static class Context {
 		BlueprintNodeExp nodes
 		ImportGenerator imports
 		Map<String, TypedBPNode> bpRefs = newHashMap

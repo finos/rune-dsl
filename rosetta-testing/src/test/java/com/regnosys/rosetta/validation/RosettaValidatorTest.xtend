@@ -97,6 +97,17 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void cannotImplicitlyOverrideRuleReferenceFromSuperSourceTest() {
 		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG FOO
+			
+			report TEST_REG FOO in T+1
+			when FooRule
+			with type Foo
+			with source TestB
+			
+			eligibility rule FooRule:
+				filter when Foo->foo exists
+
 			type Foo:
 				foo string (0..1)
 			
@@ -136,6 +147,17 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void cannotRemoveNonExistingRuleReferenceFromExternalRuleSourceTest() {
 		val model = '''
+			body Authority TEST_REG
+			corpus TEST_REG FOO
+			
+			report TEST_REG FOO in T+1
+			when FooRule
+			with type Foo
+			with source TestA
+			
+			eligibility rule FooRule:
+				filter when Foo->foo exists
+			
 			type Foo:
 				foo string (0..1)
 			

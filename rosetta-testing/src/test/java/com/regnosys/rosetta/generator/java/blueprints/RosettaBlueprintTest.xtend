@@ -41,73 +41,88 @@ class RosettaBlueprintTest {
 		parseRosettaWithNoErrors(r)
 	}
 
-	@Test
-	def void parseSimpleReportWithType() {
-		val model = '''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			when FooRule
-			with type BarReport
-			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
-			
-			reporting rule BarBarOne:
-				extract Bar->bar1 as "1 BarOne"
-			
-			reporting rule BarBarTwo:
-				extract Bar->bar2 as "2 BarTwo"
-			
-			reporting rule BarBaz:
-				extract Bar->baz->baz1 as "3 BarBaz"
-			
-			reporting rule BarQuxList:
-				extract repeatable Bar->quxList then
-				(
-					QuxQux1,
-					QuxQux2
-				) as "4 BarQuxList"
+	static final CharSequence REPORT_RULES = '''
+					namespace com.rosetta.test.model
 
-			reporting rule QuxQux1:
-				extract Qux->qux1 as "5 QuxQux1"
-			
-			reporting rule QuxQux2:
-				extract Qux->qux2 as "6 QuxQux2"
-			
-			type Bar:
-				bar1 string (0..1)
-				bar2 string (0..*)
-				baz Baz (1..1)
-				quxList Qux (0..*)
-				
-			type Baz:
-				 baz1 string (1..1)
-			
-			type Qux:
-				 qux1 string (1..1)
-				 qux2 string (1..1)
-			
-			type BarReport:
-				barBarOne string (1..1)
-					[ruleReference BarBarOne]
-				barBarTwo string (1..1)
-					[ruleReference BarBarTwo]
-				barBaz BarBazReport (1..1)
-				barQuxList BarQuxReport (0..*)
-					[ruleReference BarQuxList]
-			
-			type BarBazReport:
-				barBaz1 string (1..1)
-					[ruleReference BarBaz]
-			
-			type BarQuxReport:
-				bazQux1 string (1..1)
-					[ruleReference QuxQux1]
-				bazQux2 string (1..1)
-					[ruleReference QuxQux2]
-		'''
+					eligibility rule FooRule:
+						filter when Bar->bar1 exists
+					
+					reporting rule BarBarOne:
+						extract Bar->bar1 as "1 BarOne"
+					
+					reporting rule BarBarTwo:
+						extract Bar->bar2 as "2 BarTwo"
+					
+					reporting rule BarBaz:
+						extract Bar->baz->baz1 as "3 BarBaz"
+					
+					reporting rule BarQuxList:
+						extract repeatable Bar->quxList then
+						(
+							QuxQux1,
+							QuxQux2
+						) as "4 BarQuxList"
+
+					reporting rule QuxQux1:
+						extract Qux->qux1 as "5 QuxQux1"
+					
+					reporting rule QuxQux2:
+						extract Qux->qux2 as "6 QuxQux2"
+					
+				'''
+
+	static final CharSequence REPORT_TYPES = '''
+					namespace com.rosetta.test.model
+					
+					type Bar:
+						bar1 string (0..1)
+						bar2 string (0..*)
+						baz Baz (1..1)
+						quxList Qux (0..*)
+						
+					type Baz:
+						 baz1 string (1..1)
+					
+					type Qux:
+						 qux1 string (1..1)
+						 qux2 string (1..1)
+					
+				'''
+
+	@Test
+	def void parseSimpleReportForTypeWithInlineRuleReferences() {
+		val model = #[
+				REPORT_TYPES,
+				REPORT_RULES,
+				'''
+					namespace com.rosetta.test.model
+					
+					body Authority TEST_REG
+					corpus TEST_REG MiFIR
+					
+					report TEST_REG MiFIR in T+1
+					when FooRule
+					with type BarReport
+					
+					type BarReport:
+						barBarOne string (1..1)
+							[ruleReference BarBarOne]
+						barBarTwo string (1..1)
+							[ruleReference BarBarTwo]
+						barBaz BarBazReport (1..1)
+						barQuxList BarQuxReport (0..*)
+							[ruleReference BarQuxList]
+					
+					type BarBazReport:
+						barBaz1 string (1..1)
+							[ruleReference BarBaz]
+					
+					type BarQuxReport:
+						bazQux1 string (1..1)
+							[ruleReference QuxQux1]
+						bazQux2 string (1..1)
+							[ruleReference QuxQux2]
+				''']
 		val code = model.generateCode
 		//println(code)
 		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
@@ -136,7 +151,7 @@ class RosettaBlueprintTest {
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**
-				 * @version test
+				 * @version 0.0.0
 				 */
 				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
 					
@@ -154,7 +169,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic1.rosetta#/0/@elements.2";
+						return "__synthetic6.rosetta#/0/@elements.2";
 					}
 					
 					
@@ -221,12 +236,11 @@ class RosettaBlueprintTest {
 				import com.rosetta.test.model.blueprint.BarBarOneRule;
 				import com.rosetta.test.model.blueprint.BarBarTwoRule;
 				import com.rosetta.test.model.blueprint.BarBazRule;
-				import com.rosetta.test.model.blueprint.BarQuxListRule;
 				import com.rosetta.test.model.blueprint.QuxQux1Rule;
 				import com.rosetta.test.model.blueprint.QuxQux2Rule;
 				
 				/**
-				 * @version test
+				 * @version 0.0.0
 				 */
 				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
 				
@@ -266,6 +280,495 @@ class RosettaBlueprintTest {
 				}
 			'''
 			assertEquals(expected, reportBuilderJava)
+
+		} finally {
+		}
+		code.compileToClasses
+	}
+	
+	@Test
+	def void parseSimpleReportForTypeWithExternalRuleReferences() {
+		val model = #[
+				REPORT_TYPES,
+				REPORT_RULES,
+				'''
+					namespace com.rosetta.test.model
+					
+					body Authority TEST_REG
+					corpus TEST_REG MiFIR
+					
+					report TEST_REG MiFIR in T+1
+					when FooRule
+					with type BarReport
+					with source RuleSource
+					
+					type BarReport:
+						barBarOne string (1..1)
+						barBarTwo string (1..1)
+						barBaz BarBazReport (1..1)
+						barQuxList BarQuxReport (0..*)
+					
+					type BarBazReport:
+						barBaz1 string (1..1)
+					
+					type BarQuxReport:
+						bazQux1 string (1..1)
+						bazQux2 string (1..1)
+					
+					rule source RuleSource {
+					
+						BarReport:
+							+ barBarOne
+								[ruleReference BarBarOne]
+							+ barBarTwo
+								[ruleReference BarBarTwo]
+							+ barQuxList
+								[ruleReference BarQuxList]
+					
+						BarBazReport:
+							+ barBaz1
+								[ruleReference BarBaz]
+					
+						BarQuxReport:
+							+ bazQux1
+								[ruleReference QuxQux1]
+							+ bazQux2
+								[ruleReference QuxQux2]
+					}
+				''']
+		val code = model.generateCode
+		//println(code)
+		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		try {
+			assertThat(reportJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import javax.inject.Inject;
+				// manual imports
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
+				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.blueprint.BarBarOneRule;
+				import com.rosetta.test.model.blueprint.BarBarTwoRule;
+				import com.rosetta.test.model.blueprint.BarBazRule;
+				import com.rosetta.test.model.blueprint.BarQuxListRule;
+				import com.rosetta.test.model.blueprint.FooRuleRule;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				/**
+				 * @version 0.0.0
+				 */
+				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+					
+					private final RosettaActionFactory actionFactory;
+					
+					@Inject
+					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
+						this.actionFactory = actionFactory;
+					}
+					
+					@Override
+					public String getName() {
+						return "TEST_REGMiFIR"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic6.rosetta#/0/@elements.2";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() { 
+						return 
+							startsWith(actionFactory, getFooRule())
+							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
+								startsWith(actionFactory, getBarBarOne()),
+								startsWith(actionFactory, getBarBarTwo()),
+								startsWith(actionFactory, getBarBaz()),
+								startsWith(actionFactory, getBarQuxList())
+								)
+							)
+							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
+							.toBlueprint(getURI(), getName());
+					}
+					
+					@Inject private FooRuleRule fooRuleRef;
+					protected BlueprintInstance <Bar, Bar, INKEY, INKEY> getFooRule() {
+						return fooRuleRef.blueprint();
+					}
+					
+					@Inject private BarBazRule barBazRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBaz() {
+						return barBazRef.blueprint();
+					}
+					
+					@Inject private BarBarTwoRule barBarTwoRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBarTwo() {
+						return barBarTwoRef.blueprint();
+					}
+					
+					@Inject private BarQuxListRule barQuxListRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarQuxList() {
+						return barQuxListRef.blueprint();
+					}
+					
+					@Inject private BarBarOneRule barBarOneRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBarOne() {
+						return barBarOneRef.blueprint();
+					}
+				}
+			'''
+			assertEquals(expected, reportJava)
+
+		} finally {
+		}
+		val reportBuilderJava = code.get("com.rosetta.test.model.blueprint.BarReport_DataItemReportBuilder")
+		try {
+			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import java.util.Collection;
+				
+				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
+				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
+				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import com.rosetta.test.model.BarReport;
+				import com.rosetta.test.model.blueprint.BarBarOneRule;
+				import com.rosetta.test.model.blueprint.BarBarTwoRule;
+				import com.rosetta.test.model.blueprint.BarBazRule;
+				import com.rosetta.test.model.blueprint.QuxQux1Rule;
+				import com.rosetta.test.model.blueprint.QuxQux2Rule;
+				
+				/**
+				 * @version 0.0.0
+				 */
+				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
+				
+					@Override
+					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
+						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
+						
+						for (GroupableData<?, T> groupableData : reportData) {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
+								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+								}
+								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+								}
+								if (BarBazRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+								}
+								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+								}
+								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+								}
+							}
+						}
+						
+						return dataItemReportBuilder.build();
+					}
+				}
+			'''
+			assertEquals(expected, reportBuilderJava)
+
+		} finally {
+		}
+		code.compileToClasses
+	}
+	
+	@Test
+	def void parseSimpleReportForTypeWithExternalRuleReferences_OverrideAdd() {
+		val model = #[
+				REPORT_TYPES,
+				REPORT_RULES,
+				'''
+					namespace com.rosetta.test.model
+					
+					body Authority TEST_REG
+					corpus TEST_REG MiFIR
+					
+					report TEST_REG MiFIR in T+1
+					when FooRule
+					with type BarReport
+					with source RuleSource
+					
+					type BarReport:
+						barBarOne string (1..1)
+							[ruleReference BarBarOne]
+						barBarTwo string (1..1)
+							[ruleReference BarBarTwo]
+						barBaz BarBazReport (1..1)
+						barQuxList BarQuxReport (0..*)
+							[ruleReference BarQuxList]
+					
+					type BarBazReport:
+						barBaz1 string (1..1)
+							[ruleReference BarBaz]
+					
+					type BarQuxReport:
+						bazQux1 string (1..1)
+							[ruleReference QuxQux1]
+						bazQux2 string (1..1)
+							[ruleReference QuxQux2]
+					
+					reporting rule New_BarBarOne:
+						extract Bar->bar1 + "NEW" as "1 New BarOne"
+					
+					rule source RuleSource {
+					
+						BarReport:
+							- barBarOne
+							+ barBarOne
+								[ruleReference New_BarBarOne]
+					}
+				''']
+		val code = model.generateCode
+		//println(code)
+		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		try {
+			assertThat(reportJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import javax.inject.Inject;
+				// manual imports
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
+				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.blueprint.BarBarTwoRule;
+				import com.rosetta.test.model.blueprint.BarBazRule;
+				import com.rosetta.test.model.blueprint.BarQuxListRule;
+				import com.rosetta.test.model.blueprint.FooRuleRule;
+				import com.rosetta.test.model.blueprint.New_BarBarOneRule;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				/**
+				 * @version 0.0.0
+				 */
+				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+					
+					private final RosettaActionFactory actionFactory;
+					
+					@Inject
+					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
+						this.actionFactory = actionFactory;
+					}
+					
+					@Override
+					public String getName() {
+						return "TEST_REGMiFIR"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic6.rosetta#/0/@elements.2";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() { 
+						return 
+							startsWith(actionFactory, getFooRule())
+							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
+								startsWith(actionFactory, getBarBarTwo()),
+								startsWith(actionFactory, getBarBaz()),
+								startsWith(actionFactory, getBarQuxList()),
+								startsWith(actionFactory, getNew_BarBarOne())
+								)
+							)
+							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
+							.toBlueprint(getURI(), getName());
+					}
+					
+					@Inject private FooRuleRule fooRuleRef;
+					protected BlueprintInstance <Bar, Bar, INKEY, INKEY> getFooRule() {
+						return fooRuleRef.blueprint();
+					}
+					
+					@Inject private BarBazRule barBazRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBaz() {
+						return barBazRef.blueprint();
+					}
+					
+					@Inject private BarBarTwoRule barBarTwoRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBarTwo() {
+						return barBarTwoRef.blueprint();
+					}
+					
+					@Inject private New_BarBarOneRule new_BarBarOneRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getNew_BarBarOne() {
+						return new_BarBarOneRef.blueprint();
+					}
+					
+					@Inject private BarQuxListRule barQuxListRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarQuxList() {
+						return barQuxListRef.blueprint();
+					}
+				}
+			'''
+			assertEquals(expected, reportJava)
+
+		} finally {
+		}
+		code.compileToClasses
+	}
+	
+	@Test
+	def void parseSimpleReportForTypeWithExternalRuleReferences_OverrideRemove() {
+		val model = #[
+				REPORT_TYPES,
+				REPORT_RULES,
+				'''
+					namespace com.rosetta.test.model
+					
+					body Authority TEST_REG
+					corpus TEST_REG MiFIR
+					
+					report TEST_REG MiFIR in T+1
+					when FooRule
+					with type BarReport
+					with source RuleSource
+					
+					type BarReport:
+						barBarOne string (1..1)
+							[ruleReference BarBarOne]
+						barBarTwo string (1..1)
+							[ruleReference BarBarTwo]
+						barBaz BarBazReport (1..1)
+						barQuxList BarQuxReport (0..*)
+							[ruleReference BarQuxList]
+					
+					type BarBazReport:
+						barBaz1 string (1..1)
+							[ruleReference BarBaz]
+					
+					type BarQuxReport:
+						bazQux1 string (1..1)
+							[ruleReference QuxQux1]
+						bazQux2 string (1..1)
+							[ruleReference QuxQux2]
+					
+					rule source RuleSource {
+					
+						BarReport:
+							- barBarOne
+					}
+				''']
+		val code = model.generateCode
+		//println(code)
+		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		try {
+			assertThat(reportJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import javax.inject.Inject;
+				// manual imports
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
+				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.blueprint.BarBarTwoRule;
+				import com.rosetta.test.model.blueprint.BarBazRule;
+				import com.rosetta.test.model.blueprint.BarQuxListRule;
+				import com.rosetta.test.model.blueprint.FooRuleRule;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				/**
+				 * @version 0.0.0
+				 */
+				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+					
+					private final RosettaActionFactory actionFactory;
+					
+					@Inject
+					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
+						this.actionFactory = actionFactory;
+					}
+					
+					@Override
+					public String getName() {
+						return "TEST_REGMiFIR"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic6.rosetta#/0/@elements.2";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() { 
+						return 
+							startsWith(actionFactory, getFooRule())
+							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
+								startsWith(actionFactory, getBarBarTwo()),
+								startsWith(actionFactory, getBarBaz()),
+								startsWith(actionFactory, getBarQuxList())
+								)
+							)
+							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
+							.toBlueprint(getURI(), getName());
+					}
+					
+					@Inject private FooRuleRule fooRuleRef;
+					protected BlueprintInstance <Bar, Bar, INKEY, INKEY> getFooRule() {
+						return fooRuleRef.blueprint();
+					}
+					
+					@Inject private BarBazRule barBazRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBaz() {
+						return barBazRef.blueprint();
+					}
+					
+					@Inject private BarBarTwoRule barBarTwoRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBarTwo() {
+						return barBarTwoRef.blueprint();
+					}
+					
+					@Inject private BarQuxListRule barQuxListRef;
+					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarQuxList() {
+						return barQuxListRef.blueprint();
+					}
+				}
+			'''
+			assertEquals(expected, reportJava)
 
 		} finally {
 		}
@@ -686,7 +1189,6 @@ class RosettaBlueprintTest {
 				import test.reg.blueprint.AttributeZonedDateTimeRule;
 				import test.reg.blueprint.DateOfBirthRule;
 				import test.reg.blueprint.HeroNameRule;
-				import test.reg.blueprint.HeroOrganisationsRule;
 				import test.reg.blueprint.IsGovernmentAgencyRule;
 				import test.reg.blueprint.NationalityRule;
 				import test.reg.blueprint.NotModelledRule;
@@ -713,21 +1215,6 @@ class RosettaBlueprintTest {
 								if (data == null) {
 									continue;
 								}
-								if (HeroNameRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
-								}
-								if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
-								}
-								if (NationalityRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
-								}
-								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
-								}
-								if (PowersRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
-								}
 								if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
 								}
@@ -740,17 +1227,32 @@ class RosettaBlueprintTest {
 								if (AttributeZonedDateTimeRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
 								}
-								if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
+								if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
+								}
+								if (HeroNameRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
 								}
 								if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
 								}
-								if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
+								if (NationalityRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
 								}
 								if (NotModelledRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
+								}
+								if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
+								}
+								if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
+								}
+								if (PowersRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
+								}
+								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
 								}
 							}
 						}

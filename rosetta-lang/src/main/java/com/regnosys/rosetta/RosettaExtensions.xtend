@@ -4,31 +4,39 @@ import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
+import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaSynonym
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.rosetta.expression.OneOfOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
-import java.util.Collection
-import java.util.List
-import java.util.Set
-import org.eclipse.emf.common.util.URI
-
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.expression.OneOfOperation
-import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
-import com.regnosys.rosetta.rosetta.RosettaFeature
-import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RRecordType
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.utils.ExternalAnnotationUtil
+import com.rosetta.model.lib.path.RosettaPath
+import java.util.Collection
+import java.util.List
+import java.util.Map
+import java.util.Set
+import javax.inject.Inject
+import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+
 class RosettaExtensions {
+	
+	@Inject ExternalAnnotationUtil externalAnn
+	
 	def boolean isResolved(EObject obj) {
 		obj !== null && !obj.eIsProxy
 	}
@@ -216,38 +224,52 @@ class RosettaExtensions {
 	/**
 	 * Get all reporting rules for blueprint report
 	 */
-	def getAllReportingRules(RosettaBlueprintReport report) {
-		val rules = newHashSet
-		report.reportType.collectReportingRules([rules.add(it)], newHashSet)
+	def getAllReportingRules(RosettaBlueprintReport report, boolean includeRepeatable) {
+		val rules = newHashMap
+		val path = RosettaPath.valueOf(report.reportType.name)
+		report.reportType.collectReportingRules(path, report.ruleSource, rules, newHashSet, includeRepeatable)
 		return rules
 	}
 	
 	/**
 	 * Recursively collects all reporting rules for all attributes
 	 */
-	def void collectReportingRules(Data dataType, (RosettaBlueprint) => void visitor, Set<Data> collectedTypes) {
-		dataType.allNonOverridesAttributes.forEach[attr|
+	private def void collectReportingRules(Data dataType, RosettaPath path, RosettaExternalRuleSource ruleSource, Map<PathAttribute, RosettaBlueprint> visitor, Set<Data> collectedTypes, boolean includeRepeatable) {
+		val attrRules = externalAnn.getAllRuleReferencesForType(ruleSource, dataType)
+		
+		dataType.allNonOverridesAttributes.forEach[attr |
 			val attrType = attr.type
 			val attrEx = attr.toExpandedAttribute
-			if (attrEx.builtInType || attrEx.enum) {
-				val rule = attr.ruleReference?.reportingRule
+			val rule = attrRules.get(attr)
+			
+			if (attrEx.builtInType || attrEx.isEnum) {
 				if (rule !== null) {
-					visitor.apply(rule)
+					visitor.put(new PathAttribute(path, attr), rule.reportingRule)
 				}
-			} else if (attrType instanceof Data) {
+			} 
+			else if (attrType instanceof Data) {
 				if (!collectedTypes.contains(attrType)) {
 					collectedTypes.add(attrType)
-					val attrRule = attr.ruleReference?.reportingRule
-					// only collect rules from nested type if no rule exists at the top level
+					// if includeRepeatable is false - only collect rules from nested type if no rule exists at the top level
 					// e.g. nested reporting rules are not supported (except for repeatable rules where only the top level rule should be collected) 
-					if (attrRule === null)
-						attrType.collectReportingRules(visitor, collectedTypes)
+					if (rule === null || includeRepeatable) {
+						val subPath = attrEx.isMultiple ?
+							path.newSubPath(attr.name, 0) :
+							path.newSubPath(attr.name)
+						attrType.collectReportingRules(subPath, ruleSource, visitor, collectedTypes, includeRepeatable)
+					}
 					else 
-						visitor.apply(attrRule)
+						visitor.put(new PathAttribute(path, attr), rule.reportingRule)
 				}
-			} else {
+			} 
+			else {
 				throw new IllegalArgumentException("Did not collect reporting rules from type " + attrType)
 			}
 		]	
+	}
+	
+	@org.eclipse.xtend.lib.annotations.Data static class PathAttribute {
+		RosettaPath path
+		Attribute attr
 	}
 }
