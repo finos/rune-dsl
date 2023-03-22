@@ -56,7 +56,7 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 				if (t instanceof JavaClass) {
 					JavaClass clazz = (JavaClass)t;
 					if (this.defaultPackages.contains(clazz.getPackageName())) {
-						return Optional.of(new DefaultScopeIdentifier(this, clazz.getSimpleName()));
+						return Optional.of(new DefaultScopeIdentifier(this, clazz.getCanonicalName()));
 					}
 				}
 			}
@@ -89,12 +89,18 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 	}
 	
 	private static class DefaultScopeIdentifier extends GeneratedIdentifier {
-		public DefaultScopeIdentifier(GeneratorScope<?> scope, String desiredName) {
-			super(scope, desiredName);
+		private final DottedPath canonicalName;
+		
+		public DefaultScopeIdentifier(GeneratorScope<?> scope, DottedPath canonicalName) {
+			super(scope, canonicalName.last());
+			this.canonicalName = canonicalName;
 		}
 		
 		@Override
 		protected String getActualName() {
+			if (this.scope.getIdentifiers().stream().anyMatch(id -> id.getDesiredName().equals(this.getDesiredName()))) {
+				return this.canonicalName.withDots();
+			}
 			return this.getDesiredName();
 		}
 	}

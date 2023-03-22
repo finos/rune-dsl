@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 public class GeneratedIdentifier implements TargetLanguageRepresentation {
-	private final GeneratorScope<?> scope;
+	protected final GeneratorScope<?> scope;
 	private final String desiredName;
 	
 	public GeneratedIdentifier(GeneratorScope<?> scope, String desiredName) {

@@ -309,12 +309,12 @@ class FunctionGenerator {
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(scope, names, op, type.card.isMany)»);
+				«op.assignTarget(outs, scope, names)» = toBuilder(«assignPlainValue(scope, names, op, type.card.isMany)»);
 			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(scope, names, op, type.card.isMany)»;«ENDIF»'''
+				«op.assignTarget(outs, scope, names)» = «assignPlainValue(scope, names, op, type.card.isMany)»;«ENDIF»'''
 		else {
 			'''
-				«op.assignTarget(outs, names)»
+				«op.assignTarget(outs, scope, names)»
 					«FOR seg : pathAsList»«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.card.isMany»0«ENDIF»)
 					«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»«ELSE»
 					.«IF seg.attribute.card.isMany»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«assignValue(scope, op, op.assignAsKey, names)»)«ENDIF»«ENDFOR»;
@@ -338,17 +338,17 @@ class FunctionGenerator {
 					«type.toBuilderType(names)» «addVarName» = toBuilder(«assignPlainValue(scope, names, op, type.card.isMany)»);
 				«ELSE»
 					«type.toBuilderType(names)» «addVarName» = «assignPlainValue(scope, names, op, type.card.isMany)»;«ENDIF»
-				«op.assignTarget(outs, names)».addAll(«addVarName»);'''	
+				«op.assignTarget(outs, scope, names)».addAll(«addVarName»);'''	
 			} else {
 				'''
 				«IF needsBuilder(op.assignRoot)»
-					«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(scope, names, op, type.card.isMany)»);
+					«op.assignTarget(outs, scope, names)» = toBuilder(«assignPlainValue(scope, names, op, type.card.isMany)»);
 				«ELSE»
-					«op.assignTarget(outs, names)» = «assignPlainValue(scope, names, op, type.card.isMany)»;«ENDIF»'''	
+					«op.assignTarget(outs, scope, names)» = «assignPlainValue(scope, names, op, type.card.isMany)»;«ENDIF»'''	
 			}
 		} else { // assign an attribute of the function output object
 			'''
-			«op.assignTarget(outs, names)»
+			«op.assignTarget(outs, scope, names)»
 				«FOR seg : pathAsList»
 					«IF seg.next !== null».getOrCreate«seg.attribute.name.toFirstUpper»(«IF seg.attribute.card.isMany»0«ENDIF»)«IF isReference(seg.attribute)».getOrCreateValue()«ENDIF»
 					«ELSE».«IF op.add»add«ELSE»set«ENDIF»«seg.attribute.name.toFirstUpper»«IF seg.attribute.isReference && !op.assignAsKey»Value«ENDIF»(«assignValue(scope, op, op.assignAsKey, names, seg.attribute.card.isMany)»);«ENDIF»
@@ -428,40 +428,40 @@ class FunctionGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient assignTarget(Operation operation, Map<ShortcutDeclaration, Boolean> outs, JavaNames names) {
+	private def StringConcatenationClient assignTarget(Operation operation, Map<ShortcutDeclaration, Boolean> outs, JavaScope scope, JavaNames names) {
 		val root = operation.assignRoot
 		switch (root) {
-			Attribute: '''«root.name»'''
-			ShortcutDeclaration: unfoldLHSShortcut(root)
+			Attribute: '''«scope.getIdentifierOrThrow(root)»'''
+			ShortcutDeclaration: unfoldLHSShortcut(root, scope)
 		}
 	}
 	
-	private def StringConcatenationClient unfoldLHSShortcut(ShortcutDeclaration shortcut) {
+	private def StringConcatenationClient unfoldLHSShortcut(ShortcutDeclaration shortcut, JavaScope scope) {
 		val e = shortcut.expression
 		if (e instanceof RosettaSymbolReference) {
 			if (e.symbol instanceof RosettaCallableWithArgs) {
 				// assign-output for an alias
-				return '''«shortcut.name»(«expressionGenerator.aliasCallArgs(shortcut)»)'''
+				return '''«scope.getIdentifierOrThrow(shortcut)»(«expressionGenerator.aliasCallArgs(shortcut)»)'''
 			}
 		}
-		return '''«lhsExpand(e)»'''	
+		return '''«lhsExpand(e, scope)»'''	
 	}
 	
-	private def dispatch StringConcatenationClient lhsExpand(RosettaExpression f) {
+	private def dispatch StringConcatenationClient lhsExpand(RosettaExpression f, JavaScope scope) {
 		throw new IllegalStateException("No implementation for lhsExpand for "+f.class)
 	}
 	
-	private def dispatch StringConcatenationClient lhsExpand(RosettaFeatureCall f) 
-	'''«lhsExpand(f.receiver)».«f.feature.lhsFeature»'''
+	private def dispatch StringConcatenationClient lhsExpand(RosettaFeatureCall f, JavaScope scope) 
+	'''«lhsExpand(f.receiver, scope)».«f.feature.lhsFeature»'''
 	
-	private def dispatch StringConcatenationClient lhsExpand(RosettaSymbolReference f) 
-	'''«f.symbol.lhsExpand»'''
+	private def dispatch StringConcatenationClient lhsExpand(RosettaSymbolReference f, JavaScope scope) 
+	'''«f.symbol.lhsExpand(scope)»'''
 	
-	private def dispatch StringConcatenationClient lhsExpand(ShortcutDeclaration f) 
-	'''«f.expression.lhsExpand»'''
+	private def dispatch StringConcatenationClient lhsExpand(ShortcutDeclaration f, JavaScope scope) 
+	'''«f.expression.lhsExpand(scope)»'''
 	
-	private def dispatch StringConcatenationClient lhsExpand(RosettaUnaryOperation f) 
-	'''«f.argument.lhsExpand»'''
+	private def dispatch StringConcatenationClient lhsExpand(RosettaUnaryOperation f, JavaScope scope) 
+	'''«f.argument.lhsExpand(scope)»'''
 	
 	private def dispatch StringConcatenationClient lhsFeature(RosettaFeature f){
 		throw new IllegalStateException("No implementation for lhsFeature for "+f.class)
@@ -471,10 +471,10 @@ class FunctionGenerator {
 		else '''getOrCreate«f.name.toFirstUpper»()'''
 	}
 	
-	private def dispatch StringConcatenationClient lhsExpand(RosettaSymbol c) {
+	private def dispatch StringConcatenationClient lhsExpand(RosettaSymbol c, JavaScope scope) {
 		throw new IllegalStateException("No implementation for lhsExpand for "+c.class)
 	}
-	private def dispatch StringConcatenationClient lhsExpand(Attribute c) '''«c.name»'''
+	private def dispatch StringConcatenationClient lhsExpand(Attribute c, JavaScope scope) '''«scope.getIdentifierOrThrow(c)»'''
 	
 	private def StringConcatenationClient contributeCondition(Condition condition, GeneratedIdentifier conditionValidator, JavaScope scope, JavaNames names) {
 		'''

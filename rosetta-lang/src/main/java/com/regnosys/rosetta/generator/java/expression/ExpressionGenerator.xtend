@@ -141,10 +141,10 @@ class ExpressionGenerator {
 				'''«MapperS».of(new «BigDecimal»("«expr.value»"))'''
 			}
 			RosettaBooleanLiteral : {
-				'''«MapperS».of(Boolean.valueOf(«expr.value»))'''
+				'''«MapperS».of(«Boolean».valueOf(«expr.value»))'''
 			}
 			RosettaIntLiteral : {
-				'''«MapperS».of(Integer.valueOf(«expr.value»))'''
+				'''«MapperS».of(«Integer».valueOf(«expr.value»))'''
 			}
 			RosettaStringLiteral : {
 				'''«MapperS».of("«expr.value»")'''

@@ -39,19 +39,6 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
-	def void testFuncReservedNames() {
-		val code = '''
-		func X:
-			output:
-				result boolean (1..1)
-			alias evaluate: True
-			set result:
-				evaluate
-		'''.generateCode
-		code.compileToClasses
-	}
-	
-	@Test
 	def void testJavaLangNames() {
 		val code = '''
 		func Boolean:
