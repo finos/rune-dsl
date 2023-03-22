@@ -116,23 +116,18 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import javax.inject.Inject;
-				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.blueprint.BarBarOneRule;
 				import com.rosetta.test.model.blueprint.BarBarTwoRule;
 				import com.rosetta.test.model.blueprint.BarBazRule;
 				import com.rosetta.test.model.blueprint.BarQuxListRule;
 				import com.rosetta.test.model.blueprint.FooRuleRule;
+				import com.rosetta.test.model.Bar;
+				import javax.inject.Inject;
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**
@@ -174,28 +169,28 @@ class RosettaBlueprintTest {
 					}
 					
 					@Inject private FooRuleRule fooRuleRef;
-					protected BlueprintInstance <Bar, Bar, INKEY, INKEY> getFooRule() {
+					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
 					
-					@Inject private BarBazRule barBazRef;
-					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBaz() {
-						return barBazRef.blueprint();
+					@Inject private BarBarOneRule barBarOneRef;
+					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarOne() {
+						return barBarOneRef.blueprint();
 					}
 					
 					@Inject private BarBarTwoRule barBarTwoRef;
-					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBarTwo() {
+					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
 					}
 					
-					@Inject private BarQuxListRule barQuxListRef;
-					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarQuxList() {
-						return barQuxListRef.blueprint();
+					@Inject private BarBazRule barBazRef;
+					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
+						return barBazRef.blueprint();
 					}
 					
-					@Inject private BarBarOneRule barBarOneRef;
-					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBarOne() {
-						return barBarOneRef.blueprint();
+					@Inject private BarQuxListRule barQuxListRef;
+					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
+						return barQuxListRef.blueprint();
 					}
 				}
 			'''
@@ -209,21 +204,19 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import java.util.Collection;
-				
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
 				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.blueprint.BarBarOneRule;
 				import com.rosetta.test.model.blueprint.BarBarTwoRule;
 				import com.rosetta.test.model.blueprint.BarBazRule;
-				import com.rosetta.test.model.blueprint.BarQuxListRule;
 				import com.rosetta.test.model.blueprint.QuxQux1Rule;
 				import com.rosetta.test.model.blueprint.QuxQux2Rule;
+				import com.rosetta.test.model.BarReport;
+				import java.util.Collection;
+				
 				
 				/**
 				 * @version test
@@ -324,17 +317,15 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package ns3.blueprint;
 				
-				import java.util.Collection;
-				
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
 				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import java.util.Collection;
 				import ns2.blueprint.BarBarTwoRule;
 				import ns3.BarReport;
-				import ns3.blueprint.BarBarOneRule;
+				
 				
 				/**
 				 * @version 0.0.0
@@ -403,19 +394,13 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import javax.inject.Inject;
-				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
-				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.blueprint.FooRuleRule;
+				import com.rosetta.test.model.Bar;
+				import javax.inject.Inject;
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**
@@ -450,7 +435,7 @@ class RosettaBlueprintTest {
 					}
 					
 					@Inject private FooRuleRule fooRuleRef;
-					protected BlueprintInstance <Bar, Bar, INKEY, INKEY> getFooRule() {
+					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
 				}
@@ -465,15 +450,13 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import java.util.Collection;
-				
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
-				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
 				import com.rosetta.test.model.BarReport;
+				import java.util.Collection;
+				
 				
 				/**
 				 * @version test
@@ -665,28 +648,22 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package test.reg.blueprint;
 				
-				import com.rosetta.model.lib.records.Date;
-				import java.math.BigDecimal;
-				import java.time.LocalTime;
-				import java.time.ZonedDateTime;
-				import java.util.Collection;
-				import test.reg.CountryEnum;
-				import test.reg.PowerEnum;
-				
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
 				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import test.reg.SokoviaAccordsReport;
+				import com.rosetta.model.lib.records.Date;
+				import java.math.BigDecimal;
+				import java.time.LocalTime;
+				import java.time.ZonedDateTime;
+				import java.util.Collection;
 				import test.reg.blueprint.AttributeIntRule;
 				import test.reg.blueprint.AttributeNumberRule;
 				import test.reg.blueprint.AttributeTimeRule;
 				import test.reg.blueprint.AttributeZonedDateTimeRule;
 				import test.reg.blueprint.DateOfBirthRule;
 				import test.reg.blueprint.HeroNameRule;
-				import test.reg.blueprint.HeroOrganisationsRule;
 				import test.reg.blueprint.IsGovernmentAgencyRule;
 				import test.reg.blueprint.NationalityRule;
 				import test.reg.blueprint.NotModelledRule;
@@ -694,6 +671,10 @@ class RosettaBlueprintTest {
 				import test.reg.blueprint.OrganisationNameRule;
 				import test.reg.blueprint.PowersRule;
 				import test.reg.blueprint.SpecialAbilitiesRule;
+				import test.reg.CountryEnum;
+				import test.reg.PowerEnum;
+				import test.reg.SokoviaAccordsReport;
+				
 				
 				/**
 				 * @version test
@@ -796,20 +777,15 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Bar;
-				import javax.inject.Inject;
-				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
+				import javax.inject.Inject;
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**
@@ -884,7 +860,7 @@ class RosettaBlueprintTest {
 				colour string (1..1)
 			
 		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
-			"Input type of Input2 is not assignable from type Input of previous node ")
+			"Input type of com.rosetta.test.model.Input2 is not assignable from type com.rosetta.test.model.Input of previous node ")
 	}
 	
 	@Test
@@ -960,22 +936,19 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.expression.CardinalityOperator;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import javax.inject.Inject;
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
-				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.Filter;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.model.lib.expression.CardinalityOperator;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Input;
+				import javax.inject.Inject;
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
 				/**
 				 * @version test
@@ -1041,20 +1014,16 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.mapper.MapperS;
-				import java.math.BigDecimal;
-				import javax.inject.Inject;
-				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Input;
 				import java.math.BigDecimal;
+				import javax.inject.Inject;
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**
@@ -1130,22 +1099,17 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Foo;
-				import javax.inject.Inject;
-				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Input;
+				import javax.inject.Inject;
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**
@@ -1216,20 +1180,16 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Input2;
-				import javax.inject.Inject;
-				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Input1;
 				import com.rosetta.test.model.Input2;
+				import javax.inject.Inject;
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**
@@ -1316,20 +1276,17 @@ class RosettaBlueprintTest {
 		val expected = '''
 		package com.rosetta.test.model.blueprint;
 		
-		import com.rosetta.model.lib.expression.CardinalityOperator;
-		import com.rosetta.model.lib.mapper.MapperS;
-		import javax.inject.Inject;
-		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
-		// manual imports
 		import com.regnosys.rosetta.blueprints.Blueprint;
-		import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 		import com.regnosys.rosetta.blueprints.BlueprintInstance;
 		import com.regnosys.rosetta.blueprints.runner.actions.Filter;
 		import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-		import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-		import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+		import com.rosetta.model.lib.expression.CardinalityOperator;
+		import com.rosetta.model.lib.mapper.MapperS;
 		import com.rosetta.test.model.Input;
+		import javax.inject.Inject;
+		
 		import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		
 		/**
 		 * @version test
@@ -1432,27 +1389,21 @@ class RosettaBlueprintTest {
 		val expected = '''
 			package com.rosetta.test.model.blueprint;
 			
-			import com.rosetta.model.lib.expression.CardinalityOperator;
-			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.test.model.Hero;
-			import javax.inject.Inject;
-			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
-			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
-			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 			import com.regnosys.rosetta.blueprints.BlueprintInstance;
 			import com.regnosys.rosetta.blueprints.runner.actions.Filter;
 			import com.regnosys.rosetta.blueprints.runner.actions.FilterByRule;
-			import com.regnosys.rosetta.blueprints.runner.actions.IdChange;
 			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 			import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-			import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-			import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-			import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+			import com.rosetta.model.lib.expression.CardinalityOperator;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.test.model.blueprint.CanWieldMjolnirRule;
 			import com.rosetta.test.model.Avengers;
 			import com.rosetta.test.model.Hero;
-			import com.rosetta.test.model.blueprint.CanWieldMjolnirRule;
+			import javax.inject.Inject;
+			
 			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			
 			/**
 			 * @version test
@@ -1489,7 +1440,7 @@ class RosettaBlueprintTest {
 				}
 				
 				@Inject private CanWieldMjolnirRule canWieldMjolnirRef;
-				protected BlueprintInstance <Hero, Boolean, INKEY, INKEY> getCanWieldMjolnir() {
+				protected BlueprintInstance<Hero, Boolean, INKEY, INKEY> getCanWieldMjolnir() {
 					return canWieldMjolnirRef.blueprint();
 				}
 			}
@@ -1515,7 +1466,7 @@ class RosettaBlueprintTest {
 		'''.parseRosetta
 		
 		model.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
-			"output type of node String does not match required type of Boolean")
+			"output type of node java.lang.String does not match required type of java.lang.Boolean")
 		model.assertError(BLUEPRINT_FILTER, null,
 			"The expression for Filter must return a single value but the rule TestRule can return multiple values")
 	}
@@ -1537,21 +1488,17 @@ class RosettaBlueprintTest {
 		val expected = '''
 			package com.rosetta.test.model.blueprint;
 			
-			import com.rosetta.model.lib.expression.CardinalityOperator;
-			import com.rosetta.model.lib.mapper.MapperS;
-			import javax.inject.Inject;
-			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
-			// manual imports
 			import com.regnosys.rosetta.blueprints.Blueprint;
-			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 			import com.regnosys.rosetta.blueprints.BlueprintInstance;
 			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 			import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-			import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-			import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-			import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+			import com.rosetta.model.lib.expression.CardinalityOperator;
+			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Foo;
+			import javax.inject.Inject;
+			
 			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 			
 			/**
 			 * @version test
@@ -1969,7 +1916,7 @@ class RosettaBlueprintTest {
 		.replace('\r', "")
 		.parseRosetta
 			.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
-			"Input type of Foo is not assignable from type Bar of previous node")
+			"Input type of com.rosetta.test.model.Foo is not assignable from type com.rosetta.test.model.Bar of previous node ")
 		
 	}
 

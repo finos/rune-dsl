@@ -1,39 +1,79 @@
 package com.regnosys.rosetta.generator.java.util
 
-import com.google.common.base.Splitter
-import com.regnosys.rosetta.types.RCalculationType
-import com.regnosys.rosetta.types.RQualifiedType
 import com.rosetta.model.lib.meta.Key
+import com.regnosys.rosetta.types.RBuiltinType
+import static com.regnosys.rosetta.types.RBuiltinType.*
+import com.regnosys.rosetta.generator.java.types.JavaType
+import java.math.BigDecimal
+import com.rosetta.model.lib.records.Date
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
+import java.time.LocalTime
+import com.regnosys.rosetta.types.RRecordType
+import com.regnosys.rosetta.types.RQualifiedType
+import com.regnosys.rosetta.types.RCalculationType
+import com.regnosys.rosetta.types.RType
+import com.google.common.base.Splitter
+import com.regnosys.rosetta.generator.java.types.JavaClass
 
 class JavaClassTranslator {
-	
-	static def toJavaFullType(String typename) {
+	@Deprecated
+	static def RType toRType(String typename) {
 		switch typename {
 			case 'any':
-				'java.lang.Object'
+				ANY
 			case 'string':
-				'java.lang.String'
+				STRING
 			case 'int':
-				'java.lang.Integer'
+				INT
 			case 'time':
-				'java.time.LocalTime'
+				TIME
 			case 'date':
-				'com.rosetta.model.lib.records.Date'
+				DATE
 			case 'dateTime':
-				'java.time.LocalDateTime'
+				DATE_TIME
 			case 'zonedDateTime':
-				'java.time.ZonedDateTime'
+				ZONED_DATE_TIME
 			case 'number':
-				'java.math.BigDecimal'
+				NUMBER
 			case 'boolean':
-				'java.lang.Boolean'
+				BOOLEAN
 			case RQualifiedType.PRODUCT_TYPE.qualifiedType:
-				'java.lang.String'
+				RQualifiedType.PRODUCT_TYPE
 			case RQualifiedType.EVENT_TYPE.qualifiedType:
-				'java.lang.String'
+				RQualifiedType.EVENT_TYPE
 			case RCalculationType.CALCULATION.calculationType:
-				'java.lang.String'
+				RCalculationType.CALCULATION
 		}
+	}
+	static def toJavaFullType(RBuiltinType t) {
+		val clazz = switch t {
+			case ANY: Object
+			case BOOLEAN: Boolean
+			case STRING: String
+			case INT: Integer
+			case NUMBER: BigDecimal
+			case DATE: Date
+			case DATE_TIME: LocalDateTime
+			case ZONED_DATE_TIME: ZonedDateTime
+			case TIME: LocalTime
+			case VOID: Void
+			case NOTHING: Void
+			case RQualifiedType.PRODUCT_TYPE:
+				String
+			case RQualifiedType.EVENT_TYPE:
+				String
+			case RCalculationType.CALCULATION:
+				String
+		}
+		JavaType.from(clazz)
+	}
+	static def JavaClass toJavaFullType(RRecordType t) {
+		val clazz = switch t.name {
+			case "date": Date
+			case "zonedDateTime": ZonedDateTime
+		}
+		JavaClass.from(clazz)
 	}
 
 	static def toJavaClass(String typeName) {
@@ -74,12 +114,14 @@ class JavaClassTranslator {
 		}
 	}
 
+	@Deprecated
 	static def toJavaType(String typename) {
-		val basicType = toJavaFullType(typename);
-		if (basicType === null) {
-			return typename
-		} else {
-			return Splitter.on('.').splitToList(basicType).last
+		val t = typename.toRType
+		val jt = switch t {
+			RBuiltinType: t.toJavaFullType.toString
+			RRecordType: t.toJavaFullType.toString
+			default: typename
 		}
+		return Splitter.on('.').splitToList(jt).last
 	}
 }

@@ -39,6 +39,29 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testJavaLangNames() {
+		val code = '''
+		func Boolean:
+			output:
+				Boolean boolean (1..1)
+			set Boolean:
+				True extract [ False ]
+		'''.generateCode
+		code.compileToClasses
+	}
+	
+	@Test
+	def void testJavaKeywordNames() {
+		'''
+		func This:
+			output:
+				static int (1..1)
+			set static:
+				42
+		'''.generateCode.compileToClasses
+	}
+	
+	@Test
 	def void testAccessToDateMembers() {
 		val code = '''
 		func GetDay:
@@ -1323,8 +1346,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.records.Date;
-				import com.rosetta.test.model.functions.F1;
-				import com.rosetta.test.model.functions.F2;
 				
 				
 				@ImplementedBy(F3.F3Default.class)
@@ -1355,7 +1376,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected Date assignOutput(Date f3Output, Date f3Input) {
-							f3Output = MapperS.of(f2.evaluate(MapperC.of(f1.evaluate(MapperS.of(f3Input).get())).getMulti())).get();
+							f3Output = MapperS.of(f2.evaluate(MapperC.<Date>of(f1.evaluate(MapperS.of(f3Input).get())).getMulti())).get();
 							
 							return f3Output;
 						}
@@ -1480,8 +1501,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.records.Date;
-				import com.rosetta.test.model.functions.F1;
-				import com.rosetta.test.model.functions.F2;
 				
 				
 				@ImplementedBy(F3.F3Default.class)
@@ -1514,14 +1533,14 @@ class FunctionGeneratorTest {
 						}
 						
 						protected Date assignOutput(Date f3Output, Date f3Input) {
-							f3Output = MapperS.of(f2.evaluate(MapperC.of(f1OutList(f3Input).getMulti()).getMulti())).get();
+							f3Output = MapperS.of(f2.evaluate(MapperC.<Date>of(f1OutList(f3Input).getMulti()).getMulti())).get();
 							
 							return f3Output;
 						}
 						
 						@Override
 						protected Mapper<Date> f1OutList(Date f3Input) {
-							return MapperC.of(f1.evaluate(MapperS.of(f3Input).get()));
+							return MapperC.<Date>of(f1.evaluate(MapperS.of(f3Input).get()));
 						}
 					}
 				}
@@ -2071,7 +2090,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Integer> assignOutput(List<Integer> res, List<Integer> n) {
-							res = distinct(MapperC.of(n)).getMulti();
+							res = distinct(MapperC.<Integer>of(n)).getMulti();
 							
 							return res;
 						}
@@ -2202,8 +2221,8 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, Foo foo) {
-							List<Bar.BarBuilder> addVar0 = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti());
-							res.addAll(addVar0);
+							List<Bar.BarBuilder> addVar = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti());
+							res.addAll(addVar);
 							
 							return Optional.ofNullable(res)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -2301,8 +2320,8 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, List<? extends Bar> barList) {
-							List<Bar.BarBuilder> addVar0 = toBuilder(distinct(MapperC.of(barList)).getMulti());
-							res.addAll(addVar0);
+							List<Bar.BarBuilder> addVar = toBuilder(distinct(MapperC.<Bar>of(barList)).getMulti());
+							res.addAll(addVar);
 							
 							return Optional.ofNullable(res)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -2693,15 +2712,15 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
-							List<String> addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							List<String> addVar = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-									return MapperC.of(t1);
+									return MapperC.<String>of(t1);
 								}
 								else {
-									return MapperC.of(t2);
+									return MapperC.<String>of(t2);
 								}
 							}).getMulti();
-							result.addAll(addVar0);
+							result.addAll(addVar);
 							
 							return result;
 						}
@@ -2845,15 +2864,15 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
-							List<BigDecimal> addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							List<BigDecimal> addVar = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-									return MapperC.of(t1);
+									return MapperC.<BigDecimal>of(t1);
 								}
 								else {
-									return MapperC.of(t2);
+									return MapperC.<BigDecimal>of(t2);
 								}
 							}).getMulti();
-							result.addAll(addVar0);
+							result.addAll(addVar);
 							
 							return result;
 						}
@@ -3024,15 +3043,15 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-							List<Bar.BarBuilder> addVar0 = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+							List<Bar.BarBuilder> addVar = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-									return MapperC.of(b1);
+									return MapperC.<Bar>of(b1);
 								}
 								else {
-									return MapperC.of(b2);
+									return MapperC.<Bar>of(b2);
 								}
 							}).getMulti());
-							result.addAll(addVar0);
+							result.addAll(addVar);
 							
 							return Optional.ofNullable(result)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -3169,7 +3188,7 @@ class FunctionGeneratorTest {
 						
 						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
 							foo
-								.setOutList(MapperC.of(inList).getMulti());
+								.setOutList(MapperC.<String>of(inList).getMulti());
 							
 							return Optional.ofNullable(foo)
 								.map(o -> o.prune())
@@ -3244,7 +3263,7 @@ class FunctionGeneratorTest {
 						
 						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
 							foo
-								.addOutList(MapperC.of(inList).getMulti());
+								.addOutList(MapperC.<String>of(inList).getMulti());
 							
 							return Optional.ofNullable(foo)
 								.map(o -> o.prune())
@@ -3766,7 +3785,7 @@ class FunctionGeneratorTest {
 					public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
 						ComparisonResult result = executeDataRule(foo);
 						if (result.get()) {
-							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 						}
 						
 						String failureMessage = result.getError();
@@ -3827,7 +3846,6 @@ class FunctionGeneratorTest {
                 import com.google.inject.Inject;
                 import com.rosetta.model.lib.functions.RosettaFunction;
                 import com.rosetta.model.lib.mapper.MapperS;
-                import com.rosetta.test.model.functions.A;
                 
                 
                 @ImplementedBy(B.BDefault.class)

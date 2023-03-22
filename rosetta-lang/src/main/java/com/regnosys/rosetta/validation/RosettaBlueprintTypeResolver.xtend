@@ -23,7 +23,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -53,6 +52,9 @@ import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.expression.RosettaReference
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.types.RDataType
 
 class RosettaBlueprintTypeResolver {
 	
@@ -69,14 +71,14 @@ class RosettaBlueprintTypeResolver {
 		
 	}
 
-	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp, RosettaType output) throws BlueprintUnresolvedTypeException {
+	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp, RType output, JavaNames names) throws BlueprintUnresolvedTypeException {
 		val prevNode = new TypedBPNode // a hypothetical node before this BP
 		val nextNode = new TypedBPNode // a hypothetical node after this BP
 		nextNode.input.type = output
 
 		val result = new TypedBPNode
 		try {
-			result.next = bindTypes(nodeExp, prevNode, nextNode, new HashSet)
+			result.next = bindTypes(nodeExp, prevNode, nextNode, new HashSet, names)
 		}
 		catch (BlueprintTypeException ex) {
 			throw new BlueprintUnresolvedTypeException(ex.message,nodeExp, BLUEPRINT_NODE_EXP__NODE, RosettaIssueCodes.TYPE_ERROR)
@@ -89,35 +91,35 @@ class RosettaBlueprintTypeResolver {
 		return result
 	}
 
-	def TypedBPNode bindTypes(BlueprintNodeExp nodeExp, TypedBPNode parentNode, TypedBPNode outputNode, Set<BlueprintNode> visited) {
+	def TypedBPNode bindTypes(BlueprintNodeExp nodeExp, TypedBPNode parentNode, TypedBPNode outputNode, Set<BlueprintNode> visited, JavaNames names) {
 		val typedNode = new TypedBPNode
 		typedNode.node = nodeExp.node
 		typedNode.input = parentNode.output
 		typedNode.inputKey = parentNode.outputKey
 		
 		val nodeFixedTypes = computeExpected(nodeExp)
-		link(typedNode, visited)
-		bindFixedTypes(typedNode, nodeFixedTypes, nodeExp.node)
+		link(typedNode, visited, names)
+		bindFixedTypes(typedNode, nodeFixedTypes, nodeExp.node, names)
 		
 		// check outputs
 		if (nodeExp.next !== null) {
-			typedNode.next = nodeExp.next.bindTypes(typedNode, outputNode, visited)
+			typedNode.next = nodeExp.next.bindTypes(typedNode, outputNode, visited, names)
 			typedNode.repeatable = typedNode.repeatable || typedNode.next.repeatable
 		} else {
-			if (!typedNode.output.isAssignableTo(outputNode.input)) {
-				BlueprintUnresolvedTypeException.error('''output type of node «typedNode.output.either» does not match required type of «outputNode.input.either»''', nodeExp.node,
+			if (!typedNode.output.isAssignableTo(outputNode.input, names)) {
+				BlueprintUnresolvedTypeException.error('''output type of node «typedNode.output.getEither(names)» does not match required type of «outputNode.input.getEither(names)»''', nodeExp.node,
 							BLUEPRINT_NODE__NAME, RosettaIssueCodes.TYPE_ERROR)
 			}
 			// check the terminal types match the expected
 			if (typedNode.output.type !== null && outputNode.input.type !== null) {
 				println("fish")
 			} else if (outputNode.input.type !== null) {
-				outputNode.input.setGenericName("Object")
+				outputNode.input.setGenericType(Object)
 			/*error('''output type of «typedNode.output.getEither» is not assignable to expected outputType «outputNode.input.type.name» of blueprint''', 
 			 nodeExp.node, BLUEPRINT_NODE__OUTPUT, RosettaIssueCodes.TYPE_ERROR)*/
 			} else {
 				outputNode.input.type = typedNode.output.type
-				outputNode.input.genericName = typedNode.output.genericName
+				outputNode.input.genericType = typedNode.output.genericType
 			}
 
 			outputNode.inputKey = typedNode.outputKey;
@@ -136,37 +138,37 @@ class RosettaBlueprintTypeResolver {
 		switch (node) {
 			BlueprintExtract: {
 				// extract defines both the input and output types
-				result.input.type = getInput(node.call)
+				result.input.type = getInput(node.call).RType
 				// and the output type comes from the expression
-				result.output.type = getOutput(node.call)
+				result.output.type = getOutput(node.call).RType
 				result.cardinality.set(0, if (cardinality.isMulti(node.call)) BPCardinality.EXPAND else BPCardinality.UNCHANGED)
 				result.repeatable = node.repeatable
 			}
 			BlueprintReturn: {
 				result.input.type = null
 				// and the output type comes from the expression
-				result.output.type = getOutput(node.expression)
+				result.output.type = getOutput(node.expression).RType
 				result.cardinality.set(0, if(cardinality.isMulti(node.expression)) BPCardinality.EXPAND else BPCardinality.UNCHANGED)
 			}
 			BlueprintRef: {
-				result.output.type = node.output
+				result.output.type = node.output.RType
 			}
 			BlueprintFilter: {
 				if(node.filter!==null) {
-					result.input.type = getInput(node.filter)
+					result.input.type = getInput(node.filter).RType
 				}
 				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintSource: {
-				result.output.type = node.output
-				result.outputKey.type = node.outputKey
-				result.input.genericName = "Void"
-				result.inputKey.type = node.outputKey
+				result.output.type = node.output.RType
+				result.outputKey.type = node.outputKey.RType
+				result.input.genericType = Void
+				result.inputKey.type = node.outputKey.RType
 				//not sure about this cardinality but this node type is unused
 				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintLookup : {
-				result.output.type = node.output
+				result.output.type = node.output.RType
 				result.cardinality.set(0, BPCardinality.UNCHANGED)
 			}
 			BlueprintOr: {
@@ -180,7 +182,7 @@ class RosettaBlueprintTypeResolver {
 	}
 
 	//link the object refs forward through types that are unchanged by this type of node
-	def void link(TypedBPNode tNode, Set<BlueprintNode> visited) {
+	def void link(TypedBPNode tNode, Set<BlueprintNode> visited, JavaNames names) {
 		val node = tNode.node
 		/*if (visited.contains(node)) {
 			return
@@ -206,7 +208,7 @@ class RosettaBlueprintTypeResolver {
 					val bpOut = new TypedBPNode
 					bpIn.output = tNode.input
 					bpIn.outputKey = tNode.inputKey
-					tNode.orNodes.add(bindTypes(child, bpIn, bpOut, visited))
+					tNode.orNodes.add(bindTypes(child, bpIn, bpOut, visited, names))
 
 					if (bpIn.output !== bpOut.input) {
 						allPassThroughInput = false
@@ -235,11 +237,11 @@ class RosettaBlueprintTypeResolver {
 					val bpOut = new TypedBPNode
 					bpIn.output=tNode.input;
 					bpIn.inputKey = tNode.inputKey;
-					bpOut.input.genericName  ="Boolean"
+					bpOut.input.genericType = Boolean
 					bpOut.inputKey = tNode.inputKey
 					bpIn.outputKey = tNode.inputKey
 					try {
-						bindTypes(node.filterBP.blueprint.nodes, bpIn, bpOut, visited)
+						bindTypes(node.filterBP.blueprint.nodes, bpIn, bpOut, visited, names)
 					}
 					catch (BlueprintUnresolvedTypeException e) {
 					//we found an that the types don't match further down the stack - we want to report it as an error with this call
@@ -258,7 +260,7 @@ class RosettaBlueprintTypeResolver {
 				bpOut.inputKey = tNode.outputKey
 
 				try {
-					val child = bindTypes(node.blueprint.nodes, bpIn, bpOut, visited)
+					val child = bindTypes(node.blueprint.nodes, bpIn, bpOut, visited, names)
 					tNode.cardinality = child.cardinality
 				}
 				catch (BlueprintUnresolvedTypeException e) {
@@ -287,25 +289,25 @@ class RosettaBlueprintTypeResolver {
 		val count = outputTypes.map[it?.name].toSet.length
 		if (count == 1) {
 			tNode.output.type = outputTypes.get(0)
-			tNode.output.genericName = types.get(0).output.genericName
+			tNode.output.genericType = types.get(0).output.genericType
 		} else if (outputTypes.forall[it !== null && (it.name == "int" || it.name == "number")])
-			tNode.output.setGenericName("Number")
+			tNode.output.setGenericType(Number)
 		/*				val end= getRType(typedNode.output.type)
 		 * 		val expectedOutput= getRType(outputNode.input.type)
 		 if (!end.isUseableAs(expectedOutput)) {*/
 		else
-			tNode.output.setGenericName("Object") // if there is more then one type just go for object
+			tNode.output.setGenericType(Object) // if there is more then one type just go for object
 		val keyTypes = types.map[outputKey.type]
 		val countKey = keyTypes.map[it?.name].toSet.length
 		if (countKey == 1)
 			tNode.outputKey.type = keyTypes.get(0)
 		else if (keyTypes.forall[it !== null && (it.name == "int" || it.name == "number")])
-			tNode.outputKey.setGenericName("Number")
+			tNode.outputKey.setGenericType(Number)
 		/*				val end= getRType(typedNode.output.type)
 		 * 		val expectedOutput= getRType(outputNode.input.type)
 		 if (!end.isUseableAs(expectedOutput)) {*/
 		else
-			tNode.outputKey.setGenericName("Object") // if there is more then one type just go for object
+			tNode.outputKey.setGenericType(Object) // if there is more then one type just go for object
 	}
 
 	def getBaseType(List<TypedBPNode> types, TypedBPNode tNode, BlueprintNode node) {
@@ -314,7 +316,7 @@ class RosettaBlueprintTypeResolver {
 		if (count == 1)
 			tNode.input.type = inputTypes.get(0)
 		else if (inputTypes.forall[it !== null && (it.name == "int" || it.name == "number")])
-			tNode.input.setGenericName("Integer")
+			tNode.input.setGenericType(Integer)
 		else
 			BlueprintUnresolvedTypeException.error('''input types of orNode «inputTypes.map[name]» are not compatible''', node, BLUEPRINT_NODE__INPUT,
 				RosettaIssueCodes.TYPE_ERROR)
@@ -325,33 +327,33 @@ class RosettaBlueprintTypeResolver {
 		if (countKey == 1)
 			tNode.inputKey.type = inputKeyTypes.get(0)
 		else if (inputKeyTypes.forall[it !== null && (it.name == "int" || it.name == "number")])
-			tNode.inputKey.setGenericName("Integer")
+			tNode.inputKey.setGenericType(Integer)
 		else
 			BlueprintUnresolvedTypeException.error('''inputKey types of orNode «inputKeyTypes.map[name]» are not compatible''', node,
 				BLUEPRINT_NODE__INPUT_KEY, RosettaIssueCodes.TYPE_ERROR)
 	}
 
-	def bindFixedTypes(TypedBPNode node, TypedBPNode expected, BlueprintNode bpNode) {
-		bindInType(node.input, expected.input, bpNode, "Input")
-		bindInType(node.inputKey, expected.inputKey, bpNode, "InputKey")
+	def bindFixedTypes(TypedBPNode node, TypedBPNode expected, BlueprintNode bpNode, JavaNames names) {
+		bindInType(node.input, expected.input, bpNode, "Input", names)
+		bindInType(node.inputKey, expected.inputKey, bpNode, "InputKey", names)
 		bindOutType(node.output, expected.output, bpNode, "Output")
 		bindOutType(node.outputKey, expected.outputKey, bpNode, "OutputKey")
 		node.cardinality.set(0,expected.cardinality.get(0))
 		node.repeatable = expected.repeatable
 	}
 
-	def bindInType(BindableType nodeType, BindableType expected, BlueprintNode node, String fieldName) {
+	def bindInType(BindableType nodeType, BindableType expected, BlueprintNode node, String fieldName, JavaNames names) {
 		if (expected.isBound) {
 			if (!nodeType.isBound) {
 				// the expected input is known and the actual is unbound - bind it
 				nodeType.type = expected.type
-				nodeType.genericName = expected.genericName
-			} else if (isAssignableTo(expected, nodeType)) {
+				nodeType.genericType = expected.genericType
+			} else if (isAssignableTo(expected, nodeType, names)) {
 				nodeType.type = expected.type
-				nodeType.genericName = expected.genericName
+				nodeType.genericType = expected.genericType
 			}
-			else if (!isAssignableTo(expected, nodeType)){
-				BlueprintUnresolvedTypeException.error('''«fieldName» type of «expected.either» is not assignable from type «nodeType.either» of previous node «node.name»''',
+			else if (!isAssignableTo(expected, nodeType, names)){
+				BlueprintUnresolvedTypeException.error('''«fieldName» type of «expected.getEither(names)» is not assignable from type «nodeType.getEither(names)» of previous node «node.name»''',
 					node, BLUEPRINT_NODE__INPUT, RosettaIssueCodes.TYPE_ERROR)
 			}
 		}
@@ -362,32 +364,17 @@ class RosettaBlueprintTypeResolver {
 			if (!nodeType.isBound) {
 				// the expected input is know and the actual is unbound - bind it
 				nodeType.type = expected.type
-				nodeType.genericName = expected.genericName
+				nodeType.genericType = expected.genericType
 			} else {
 				// both ends are known, check they are compatible
-				val inType = getRType(nodeType)
-				val exType = getRType(expected)
+				val inType = nodeType.type
+				val exType = expected.type
 				if (!inType.isUseableAs(exType)) {
 					BlueprintUnresolvedTypeException.error('''«fieldName» type of «expected.type.name» is not assignable to «fieldName» type «nodeType.type.name» of next node «node.name»''',
 						node, BLUEPRINT_NODE__INPUT, RosettaIssueCodes.TYPE_ERROR)
 				} else {
 					nodeType.type = expected.type
 				}
-			}
-		}
-	}
-
-	def getRType(BindableType t) {
-		if (t.type !== null) {
-			return getRType(t.type)
-		}
-		switch (t.genericName) {
-			case "Number",
-			case "number": {
-				return RBuiltinType.NUMBER
-			}
-			default: {
-				return RBuiltinType.MISSING
 			}
 		}
 	}
@@ -616,28 +603,28 @@ class RosettaBlueprintTypeResolver {
 	 * Type2 b;
 	 * b = a
 	 * */
-	def isAssignableTo(BindableType type1, BindableType type2) {
+	def isAssignableTo(BindableType type1, BindableType type2, JavaNames names) {
 		if (!type1.bound || !type2.bound) return true;
-		if (type2.genericName=="number") {
-			return type1.genericName=="number" || type1.genericName=="int"
+		if (type2.genericType==Number) {
+			return type1.genericType==Number || type1.genericType==Integer
 		}
-		else if (type1.genericName=="Object") {
+		else if (type1.genericType==Object) {
 			return true
 		}
-		else if (type2.genericName=="Comparable") {
-			val t = type1.type?.RType
+		else if (type2.genericType==Comparable) {
+			val t = type1.type
 			if (t === null) {
 				return false;
 			}
 			return t.isSelfComparable
 		}
-		else if (type2.genericName!==null) {
-			return type2.genericName==type1.either
+		else if (type2.genericType!==null) {
+			return type2.genericType==type1.getEither(names)
 		}
-		else if (type2.type instanceof Data && type1.type instanceof Data) {
-			val class2 = type2.type as Data
-			val class1 = type1.type as Data
-			return class1.allSuperTypes.contains(class2);
+		else if (type2.type instanceof RDataType && type1.type instanceof RDataType) {
+			val class2 = type2.type as RDataType
+			val class1 = type1.type as RDataType
+			return class1.data.allSuperTypes.contains(class2.data);
 		}
 		else return type1.type == type2.type;
 	}

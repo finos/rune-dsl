@@ -3,24 +3,16 @@ package com.regnosys.rosetta.generator.java.util
 import com.google.inject.Inject
 import com.google.inject.Injector
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.Package
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedType
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 import com.regnosys.rosetta.rosetta.RosettaBasicType
-import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaQualifiedType
-import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RDataType
@@ -30,114 +22,123 @@ import com.regnosys.rosetta.types.RType
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
+import com.regnosys.rosetta.generator.java.types.JavaType
+import com.regnosys.rosetta.utils.DottedPath
+import com.regnosys.rosetta.generator.java.types.JavaClass
+import com.regnosys.rosetta.generator.java.types.JavaReferenceType
+import com.regnosys.rosetta.generator.java.types.JavaPrimitiveType
+import com.regnosys.rosetta.generator.object.ExpandedAttribute
+import com.regnosys.rosetta.generator.java.types.JavaWildcardTypeArgument
 
 class JavaNames {
 
 	@Accessors(PUBLIC_GETTER)
 	RosettaJavaPackages packages
-
-	def ParameterizedType toListOrSingleJavaType(Attribute attribute) {
-		if (attribute.card.isIsMany) {
-			return new ParameterizedType(List.toJavaType, #[new ParameterizedType(attribute.type.toJavaType, null)])
-		} else
-			new ParameterizedType(attribute.type.toJavaType, null)
+	
+	def JavaClass toImplType(JavaClass type) {
+		new JavaClass(type.packageName, type.simpleName + "." + type.simpleName + "Impl")
+	}
+	def JavaClass toBuilderType(JavaClass type) {
+		new JavaClass(type.packageName, type.simpleName + "." + type.simpleName + "Builder")
+	}
+	def JavaClass toBuilderImplType(JavaClass type) {
+		new JavaClass(type.packageName, type.simpleName + "." + type.simpleName + "BuilderImpl")
 	}
 
-	def JavaType toJavaType(ExpandedType type) {
+	def JavaType toListOrSingleJavaType(RType type, boolean isMany) {
+		if (isMany) {
+			return new JavaParameterizedType(List.toJavaType, type.toJavaType);
+		} else
+			return type.toJavaType
+	}
+	
+	def JavaType toPolymorphicListOrSingleJavaType(RType type, boolean isMany) {
+		if (isMany) {
+			return type.toJavaType.toPolymorphicList
+		} else
+			return type.toJavaType
+	}
+	
+	def JavaParameterizedType toPolymorphicList(JavaReferenceType t) {
+		return new JavaParameterizedType(List.toJavaType, JavaWildcardTypeArgument.extendsBound(t));
+	}
+	
+	def dispatch JavaReferenceType toReferenceType(JavaPrimitiveType type) {
+		type.toReferenceType
+	}
+	def dispatch JavaReferenceType toReferenceType(JavaReferenceType type) {
+		type
+	}
+
+	def JavaReferenceType toJavaType(ExpandedType type) {
 		if (type.name == RosettaAttributeExtensions.METAFIELDS_CLASS_NAME || type.name == RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME) {
-			return createJavaType(packages.basicMetafields, type.name)
+			return new JavaClass(packages.basicMetafields, type.name)
 		}
 		if (type.metaType) {//TODO ExpandedType needs to store the underlying type for meta types if we want them to be anything other than strings
-			return createForBasicType("string")
+			return createForBasicType(RBuiltinType.STRING)
 		}
 		if (type.builtInType) {
-			return createForBasicType(type.name)
+			return JavaClassTranslator.toRType(type.name).toJavaType
 		}
-		createJavaType(new RootPackage(type.model), type.name)
+		new JavaClass(new RootPackage(type.model), type.name)
 	}
 
-	def JavaType toJavaType(RosettaCallableWithArgs func) {
+	def JavaReferenceType toJavaType(RosettaCallableWithArgs func) {
 		switch (func) {
 			Function:
-				createJavaType(modelRootPackage(func).functions, func.name)
+				new JavaClass(modelRootPackage(func).functions, func.name)
 			RosettaExternalFunction:
-				createJavaType(packages.defaultLibFunctions, func.name)
+				new JavaClass(packages.defaultLibFunctions, func.name)
 			default:
 				throw new UnsupportedOperationException("Not implemented for type " + func?.class?.name)
 		}
 	}
 	
-	def JavaType toJavaType(Class<?> c) {
-		return new JavaType(c.name);
+	def JavaClass toJavaType(Class<?> c) {
+		JavaClass.from(c)
 	}
 
-	def JavaType toJavaType(RosettaType type) {
-		switch (type) {
-			RosettaBasicType:
-				createForBasicType(type.name)
-			Data,
-			RosettaEnumeration:
-				createJavaType(modelRootPackage(type), type.name)
-			RosettaRecordType:
-				JavaType.create(JavaClassTranslator.toJavaFullType(type.name)) ?:
-					JavaType.create(packages.defaultLibRecords.name + '.' + type.name.toFirstUpper)
-			RosettaCalculationType,
-			RosettaQualifiedType:
-				JavaType.create('java.lang.String')
-			default:
-				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
-		}
-	}
-
-	def JavaType toJavaType(RType rType) {
+	def JavaReferenceType toJavaType(RType rType) {
 		switch (rType) {
 			RBuiltinType:
-				rType.name.createForBasicType
+				rType.createForBasicType
 			REnumType:
-				rType.enumeration.toJavaType
+				new JavaClass(modelRootPackage(rType.enumeration), rType.enumeration.name)
 			RDataType:
-				rType.data.toJavaType
+				new JavaClass(modelRootPackage(rType.data), rType.data.name)
 			RRecordType:
-				(rType.record as RosettaType).toJavaType
-			default:
-				JavaType.create(rType.name)
+				rType.createForRecordType
 		}
 	}
-
-	def createJavaType(Package pack, String typeName) {
-		JavaType.create(pack.child(typeName).name())
-	}
 	
-	def createMetaType(String parent, String meta) {
-		MetaType.create(parent, meta)
+	def JavaClass createMetaType(DottedPath parent, String meta) {
+		return new JavaClass(parent, meta)
 	}
 
-	def toMetaType(Attribute ctx, String name) {
+	def JavaClass toMetaType(Attribute ctx, String name) {
 		var model = ctx.type.eContainer
 		if (model instanceof RosettaModel) {
 			var pkg = new RootPackage(model.name).metaField
-			return createJavaType(pkg, name)
+			return new JavaClass(pkg, name)
 		}
 		
 		if(model instanceof RosettaBasicType) {
 			// built-in meta types are defined in metafield package
-			return createJavaType(packages.basicMetafields, name)
+			return new JavaClass(packages.basicMetafields, name)
 		}
 //		var pkg = modelRootPackage(ctx).metaField 
 //		createJavaType(pkg, name)
 	}
 
-	def toMetaType(ExpandedAttribute type, String name) {
+	def JavaClass toMetaType(ExpandedAttribute type, String name) {
 		if(type.type.isBuiltInType) {
 			// built-in meta types are defined in metafield package
-			return createJavaType(packages.basicMetafields, name)
+			return new JavaClass(packages.basicMetafields, name)
 		}
 		var parentPKG = new RootPackage(type.type.model)
-		var metaParent = parentPKG.child(type.type.name).name()
-		
 		var metaPKG = parentPKG.metaField
-		var meta = metaPKG.child(name).name()		
-		createMetaType(metaParent, meta)
+		return new JavaClass(metaPKG, name)
 	}
 
 	def private RootPackage modelRootPackage(RosettaNamed namedType) {
@@ -149,10 +150,11 @@ class JavaNames {
 		return new RootPackage(model)
 	}
 
-	private def JavaType createForBasicType(String typeName) {
-		return JavaType.create(JavaClassTranslator.toJavaFullType(typeName) ?: 
-		"missing built-in type " + typeName
-		)
+	private def JavaReferenceType createForBasicType(RBuiltinType type) {
+		return JavaClassTranslator.toJavaFullType(type).toReferenceType
+	}
+	private def JavaReferenceType createForRecordType(RRecordType type) {
+		return JavaClassTranslator.toJavaFullType(type)
 	}
 	
 	static def JavaNames createBasicFromPackages(RosettaJavaPackages packages) {
@@ -175,9 +177,4 @@ class JavaNames {
 			return result
 		}
 	}
-
-	def voidType() {
-		JavaType.create('void')
-	}
-
 }
