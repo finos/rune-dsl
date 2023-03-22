@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java;
 import com.google.common.collect.Streams;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.GeneratorScope;
+import com.regnosys.rosetta.generator.ImplicitVariableRepresentation;
 import com.regnosys.rosetta.generator.java.types.JavaClass;
 import com.regnosys.rosetta.generator.java.types.JavaType;
 import com.regnosys.rosetta.utils.DottedPath;
@@ -64,7 +65,8 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 				return this.getAllBlueprintVars()
 						.filter(otherRepr -> repr.match(otherRepr))
 						.findFirst()
-						.flatMap(otherRepr -> getIdentifier(otherRepr));
+						.flatMap(otherRepr -> getIdentifier(otherRepr))
+						.or(() -> getIdentifier(new ImplicitVariableRepresentation(repr.getType().getData())));
 			}
 			return Optional.empty();
 		});

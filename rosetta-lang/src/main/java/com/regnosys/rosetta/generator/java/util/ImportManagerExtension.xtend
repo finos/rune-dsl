@@ -5,7 +5,6 @@ import com.regnosys.rosetta.generator.java.types.JavaClass
 import java.lang.reflect.Method
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.utils.DottedPath
-import com.regnosys.rosetta.generator.TargetLanguageStringConcatenation
 
 class ImportManagerExtension {
 	def method(Class<?> clazz, String methodName) {

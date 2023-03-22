@@ -4,16 +4,15 @@ import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.RType;
 
 public class BlueprintImplicitVariableRepresentation {
-	private final RType type;
+	private final RDataType type;
 	
-	public BlueprintImplicitVariableRepresentation(RType type) {
+	public BlueprintImplicitVariableRepresentation(RDataType type) {
 		this.type = type;
 	}
 	
-	public RType getType() {
+	public RDataType getType() {
 		return type;
 	}
 	
@@ -21,11 +20,8 @@ public class BlueprintImplicitVariableRepresentation {
 		if (type.equals(other.type)) {
 			return true;
 		}
-		if (!(type instanceof RDataType) || !(other.type instanceof RDataType)) {
-			return false;
-		}
-		Data data = ((RDataType)type).getData();
-		Data otherData = ((RDataType)other.type).getData();
+		Data data = type.getData();
+		Data otherData = other.type.getData();
 		while (otherData.hasSuperType()) {
 			otherData = otherData.getSuperType();
 			if (data.equals(otherData)) {

@@ -93,7 +93,6 @@ import com.regnosys.rosetta.rosetta.expression.Necessity
 import com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleValidationMethod
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.BlueprintImplicitVariableRepresentation
 import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 
@@ -385,7 +384,7 @@ class ExpressionGenerator {
 				val s = expr.symbol
 				switch (s)  {
 					Data: { // -------> replace with call to implicit variable?
-						'''«MapperS».of(«scope.getIdentifierOrThrow(typeProvider.getRType(s).toBlueprintImplicitVar)»)'''
+						'''«MapperS».of(«scope.getIdentifierOrThrow(new RDataType(s).toBlueprintImplicitVar)»)'''
 					}
 					Attribute: {
 						// Data attributes can only be called if there is an implicit variable present.

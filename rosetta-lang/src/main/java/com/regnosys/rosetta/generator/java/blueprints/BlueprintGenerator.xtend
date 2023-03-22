@@ -62,6 +62,7 @@ import com.regnosys.rosetta.blueprints.DataItemReportBuilder
 import com.regnosys.rosetta.blueprints.runner.data.GroupableData
 import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier
 import com.regnosys.rosetta.blueprints.DataItemReportUtils
+import com.regnosys.rosetta.types.RDataType
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator)
@@ -276,7 +277,11 @@ class BlueprintGenerator {
 				val repeatable = node.repeatable
 				
 				val lambdaScope = scope.lambdaScope
-				val implicitVar = lambdaScope.createIdentifier(typedNode.input.type.toBlueprintImplicitVar, typedNode.input.type.name.toFirstLower)
+				val implicitVar = if (typedNode.input.type instanceof RDataType) {
+					lambdaScope.createIdentifier((typedNode.input.type as RDataType).toBlueprintImplicitVar, typedNode.input.type.name.toFirstLower)
+				} else {
+					lambdaScope.createUniqueIdentifier(typedNode.input.type.name.toFirstLower)
+				}
 				
 				if (!multi)
 				'''actionFactory.<«typedNode.input.getEither(names)», «
@@ -316,7 +321,11 @@ class BlueprintGenerator {
 			BlueprintFilter :{								
 				if(node.filter!==null) {
 					val lambdaScope = scope.lambdaScope
-					val implicitVar = lambdaScope.createIdentifier(typedNode.input.type.toBlueprintImplicitVar, typedNode.input.type.name.toFirstLower)
+					val implicitVar = if (typedNode.input.type instanceof RDataType) {
+						lambdaScope.createIdentifier((typedNode.input.type as RDataType).toBlueprintImplicitVar, typedNode.input.type.name.toFirstLower)
+					} else {
+						lambdaScope.createUniqueIdentifier(typedNode.input.type.name.toFirstLower)
+					}
 					'''new «Filter»<«typedNode.input.getEither(names)», «typedNode.inputKey.getEither(names)»>("«node.URI»", "«node.filter.toNodeLabel»", «implicitVar
 						» -> «node.filter.javaCode(lambdaScope, names)».get(), «id»)'''
 				}
