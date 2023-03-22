@@ -48,6 +48,13 @@ class JavaNames {
 
 	def JavaType toListOrSingleJavaType(RType type, boolean isMany) {
 		if (isMany) {
+			return new JavaParameterizedType(List.toJavaType, type.toJavaType);
+		} else
+			return type.toJavaType
+	}
+	
+	def JavaType toPolymorphicListOrSingleJavaType(RType type, boolean isMany) {
+		if (isMany) {
 			return type.toJavaType.toPolymorphicList
 		} else
 			return type.toJavaType

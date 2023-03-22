@@ -489,7 +489,11 @@ class FunctionGenerator {
 		if (out === null) {
 			JavaPrimitiveType.VOID
 		} else {
-			typeProvider.getRType(out.type).toListOrSingleJavaType(out.card.isMany)
+			if (out.type.needsBuilder) {
+				typeProvider.getRType(out.type).toPolymorphicListOrSingleJavaType(out.card.isMany)
+			} else {
+				typeProvider.getRType(out.type).toListOrSingleJavaType(out.card.isMany)
+			}
 		}
 	}
 
@@ -498,7 +502,7 @@ class FunctionGenerator {
 	}
 
 	private def StringConcatenationClient inputsAsParameters(extension Function function, JavaScope scope, extension JavaNames names) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«typeProvider.getRType(input.type).toListOrSingleJavaType(input.card.isMany)» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«IF input.type.needsBuilder»«typeProvider.getRType(input.type).toPolymorphicListOrSingleJavaType(input.card.isMany)»«ELSE»«typeProvider.getRType(input.type).toListOrSingleJavaType(input.card.isMany)»«ENDIF» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
 	def private StringConcatenationClient shortcutJavaType(JavaNames names, ShortcutDeclaration feature) {

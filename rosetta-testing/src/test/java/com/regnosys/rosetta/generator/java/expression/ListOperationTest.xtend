@@ -576,22 +576,22 @@ class ListOperationTest {
 					* @param foos 
 					* @return filteredFoos 
 					*/
-					public List<? extends Boolean> evaluate(List<? extends Boolean> foos) {
+					public List<Boolean> evaluate(List<Boolean> foos) {
 						List<Boolean> filteredFoos = doEvaluate(foos);
 						
 						return filteredFoos;
 					}
 				
-					protected abstract List<Boolean> doEvaluate(List<? extends Boolean> foos);
+					protected abstract List<Boolean> doEvaluate(List<Boolean> foos);
 				
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected List<Boolean> doEvaluate(List<? extends Boolean> foos) {
+						protected List<Boolean> doEvaluate(List<Boolean> foos) {
 							List<Boolean> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
-						protected List<Boolean> assignOutput(List<Boolean> filteredFoos, List<? extends Boolean> foos) {
+						protected List<Boolean> assignOutput(List<Boolean> filteredFoos, List<Boolean> foos) {
 							filteredFoos = MapperC.<Boolean>of(foos)
 								.filterItem(item -> (Boolean)areEqual(item, MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti();
 							
@@ -1271,7 +1271,7 @@ class ListOperationTest {
 					* @param foos 
 					* @return strings 
 					*/
-					public List<? extends String> evaluate(List<? extends Foo> foos) {
+					public List<String> evaluate(List<? extends Foo> foos) {
 						List<String> strings = doEvaluate(foos);
 						
 						return strings;
@@ -1391,7 +1391,7 @@ class ListOperationTest {
 					* @param bars 
 					* @return fooCounts 
 					*/
-					public List<? extends Integer> evaluate(List<? extends Bar> bars) {
+					public List<Integer> evaluate(List<? extends Bar> bars) {
 						List<Integer> fooCounts = doEvaluate(bars);
 						
 						return fooCounts;
@@ -1731,7 +1731,7 @@ class ListOperationTest {
 					* @param bars 
 					* @return attrs 
 					*/
-					public List<? extends String> evaluate(List<? extends Bar> bars) {
+					public List<String> evaluate(List<? extends Bar> bars) {
 						List<String> attrs = doEvaluate(bars);
 						
 						return attrs;
@@ -2208,7 +2208,7 @@ class ListOperationTest {
 					* @param foos 
 					* @return newFoos 
 					*/
-					public List<? extends String> evaluate(List<? extends Foo> foos) {
+					public List<String> evaluate(List<? extends Foo> foos) {
 						List<String> newFoos = doEvaluate(foos);
 						
 						return newFoos;
@@ -2308,7 +2308,7 @@ class ListOperationTest {
 					* @param bars 
 					* @return strings 
 					*/
-					public List<? extends String> evaluate(List<? extends Bar> bars) {
+					public List<String> evaluate(List<? extends Bar> bars) {
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2387,7 +2387,7 @@ class ListOperationTest {
 					* @param bars 
 					* @return strings 
 					*/
-					public List<? extends String> evaluate(List<? extends Bar> bars) {
+					public List<String> evaluate(List<? extends Bar> bars) {
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2479,7 +2479,7 @@ class ListOperationTest {
 					* @param bars 
 					* @return strings 
 					*/
-					public List<? extends String> evaluate(List<? extends Bar> bars) {
+					public List<String> evaluate(List<? extends Bar> bars) {
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2581,7 +2581,7 @@ class ListOperationTest {
 					* @param bars 
 					* @return strings 
 					*/
-					public List<? extends String> evaluate(List<? extends Bar> bars) {
+					public List<String> evaluate(List<? extends Bar> bars) {
 						List<String> strings = doEvaluate(bars);
 						
 						return strings;
@@ -2659,7 +2659,7 @@ class ListOperationTest {
 					* @param test 
 					* @return strings 
 					*/
-					public List<? extends String> evaluate(List<? extends Foo> foos, String test) {
+					public List<String> evaluate(List<? extends Foo> foos, String test) {
 						List<String> strings = doEvaluate(foos, test);
 						
 						return strings;
@@ -2807,22 +2807,22 @@ class ListOperationTest {
 					* @param stringList 
 					* @return concatenatedString 
 					*/
-					public String evaluate(List<? extends String> stringList) {
+					public String evaluate(List<String> stringList) {
 						String concatenatedString = doEvaluate(stringList);
 						
 						return concatenatedString;
 					}
 				
-					protected abstract String doEvaluate(List<? extends String> stringList);
+					protected abstract String doEvaluate(List<String> stringList);
 				
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected String doEvaluate(List<? extends String> stringList) {
+						protected String doEvaluate(List<String> stringList) {
 							String concatenatedString = null;
 							return assignOutput(concatenatedString, stringList);
 						}
 						
-						protected String assignOutput(String concatenatedString, List<? extends String> stringList) {
+						protected String assignOutput(String concatenatedString, List<String> stringList) {
 							concatenatedString = MapperC.<String>of(stringList)
 								.<String>reduce((a, b) -> (MapperS<String>)MapperMaths.<String, String, String>add(a, b)).get();
 							
@@ -3593,22 +3593,22 @@ class ListOperationTest {
 					* @param numbers 
 					* @return sortedNumbers 
 					*/
-					public List<? extends Integer> evaluate(List<? extends Integer> numbers) {
+					public List<Integer> evaluate(List<Integer> numbers) {
 						List<Integer> sortedNumbers = doEvaluate(numbers);
 						
 						return sortedNumbers;
 					}
 				
-					protected abstract List<Integer> doEvaluate(List<? extends Integer> numbers);
+					protected abstract List<Integer> doEvaluate(List<Integer> numbers);
 				
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected List<Integer> doEvaluate(List<? extends Integer> numbers) {
+						protected List<Integer> doEvaluate(List<Integer> numbers) {
 							List<Integer> sortedNumbers = new ArrayList<>();
 							return assignOutput(sortedNumbers, numbers);
 						}
 						
-						protected List<Integer> assignOutput(List<Integer> sortedNumbers, List<? extends Integer> numbers) {
+						protected List<Integer> assignOutput(List<Integer> sortedNumbers, List<Integer> numbers) {
 							sortedNumbers = MapperC.<Integer>of(numbers)
 								.sort().getMulti();
 							
