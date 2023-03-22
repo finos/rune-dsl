@@ -40,7 +40,7 @@ class FunctionGeneratorHelper {
 	}
 	
 	def createFunc(Map<String, Class<?>> classes, String funcName) {
-		val func = classes.get(rootPackage.functions.name + '.' + funcName) // get abstract func class
+		val func = classes.get(rootPackage.functions + '.' + funcName) // get abstract func class
 				.declaredClasses.get(0) // get default func implementation (e.g. inner class) 
 				.declaredConstructor.newInstance
 				as RosettaFunction 

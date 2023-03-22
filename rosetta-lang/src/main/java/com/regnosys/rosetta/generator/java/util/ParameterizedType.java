@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.util;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Deprecated
 public class ParameterizedType {
 	private final JavaType type;
 	private final List<ParameterizedType> typeArgs;
@@ -17,21 +18,21 @@ public class ParameterizedType {
 	public List<ParameterizedType> getTypeArgs() {
 		return typeArgs;
 	}
-	
-	public ParameterizedType extendedArgs() {
-		if (typeArgs==null || typeArgs.isEmpty()) {
-			return new ParameterizedType(type.asExtended(), typeArgs);
-		}
-		else {
-			return new ParameterizedType(type, typeArgs.stream().map(p->p.extendedArgs()).collect(Collectors.toList()));
-		}
-	}
-	public ParameterizedType extendedParam() {
-		if (typeArgs==null || typeArgs.isEmpty()) {
-			return this;
-		}
-		else {
-			return new ParameterizedType(type, typeArgs.stream().map(p->p.extendedArgs()).collect(Collectors.toList()));
-		}
-	}
+	// TODO
+//	public ParameterizedType extendedArgs() {
+//		if (typeArgs==null || typeArgs.isEmpty()) {
+//			return new ParameterizedType(type.asExtended(), typeArgs);
+//		}
+//		else {
+//			return new ParameterizedType(type, typeArgs.stream().map(p->p.extendedArgs()).collect(Collectors.toList()));
+//		}
+//	}
+//	public ParameterizedType extendedParam() {
+//		if (typeArgs==null || typeArgs.isEmpty()) {
+//			return this;
+//		}
+//		else {
+//			return new ParameterizedType(type, typeArgs.stream().map(p->p.extendedArgs()).collect(Collectors.toList()));
+//		}
+//	}
 }

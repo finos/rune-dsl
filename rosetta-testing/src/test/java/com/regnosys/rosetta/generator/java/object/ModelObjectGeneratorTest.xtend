@@ -36,6 +36,18 @@ class ModelObjectGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 
 	@Test
+	def void testObjectReservedNames() {
+		val code = '''
+		type Path:
+			name string (0..1)
+			
+			condition NameExists:
+				name exists
+		'''.generateCode
+		code.compileToClasses
+	}
+
+	@Test
 	def void useBuilderAddMultipleTimes() {
 		val classes = '''
 			type Tester:
@@ -43,7 +55,7 @@ class ModelObjectGeneratorTest {
 		'''
 		.compileJava8
 
-		val classTester = classes.get(rootPackage.name + ".Tester")
+		val classTester = classes.get(rootPackage + ".Tester")
 		val classTesterBuilderInstance = classTester.getMethod("builder").invoke(null)
 
 		classTesterBuilderInstance.class.getMethod('addItems', String).invoke(classTesterBuilderInstance, 'item1')
@@ -66,7 +78,7 @@ class ModelObjectGeneratorTest {
 				list string (0..*)
 		'''.compileJava8
 
-		assertEquals(String, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
+		assertEquals(String, classes.get(rootPackage + ".Tester").getMethod('getOne').returnType)
 	}
 
 	@Test
@@ -79,7 +91,7 @@ class ModelObjectGeneratorTest {
 		//code.writeClasses("intTest")
 		val classes = code.compileToClasses
 
-		assertEquals(Integer, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
+		assertEquals(Integer, classes.get(rootPackage + ".Tester").getMethod('getOne').returnType)
 
 	}
 
@@ -91,7 +103,7 @@ class ModelObjectGeneratorTest {
 				list number (0..*)
 		'''.compileJava8
 
-		assertEquals(BigDecimal, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
+		assertEquals(BigDecimal, classes.get(rootPackage + ".Tester").getMethod('getOne').returnType)
 
 	}
 
@@ -103,7 +115,7 @@ class ModelObjectGeneratorTest {
 				list boolean (0..*)
 		'''.compileJava8
 
-		assertEquals(Boolean, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
+		assertEquals(Boolean, classes.get(rootPackage + ".Tester").getMethod('getOne').returnType)
 
 	}
 
@@ -114,7 +126,7 @@ class ModelObjectGeneratorTest {
 				one date (0..1)
 				list date (0..*)
 		'''.compileJava8
-		assertEquals(Date, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
+		assertEquals(Date, classes.get(rootPackage + ".Tester").getMethod('getOne').returnType)
 	}
 
 	@Test
@@ -126,9 +138,9 @@ class ModelObjectGeneratorTest {
 				zoned zonedDateTime (0..1)
 		'''.compileJava8
 		assertEquals(Date,
-			classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
+			classes.get(rootPackage + ".Tester").getMethod('getOne').returnType)
 		assertEquals(ZonedDateTime,
-			classes.get(rootPackage.name + ".Tester").getMethod('getZoned').returnType)
+			classes.get(rootPackage + ".Tester").getMethod('getZoned').returnType)
 	}
 
 	@Test
@@ -138,7 +150,7 @@ class ModelObjectGeneratorTest {
 				one time (0..1)
 				list time (0..*)
 		'''.compileJava8
-		assertEquals(LocalTime, classes.get(rootPackage.name + ".Tester").getMethod('getOne').returnType)
+		assertEquals(LocalTime, classes.get(rootPackage + ".Tester").getMethod('getOne').returnType)
 	}
 
 
@@ -148,7 +160,7 @@ class ModelObjectGeneratorTest {
 			type TestObject: <"">
 				fieldOne string (0..1) <"">
 		'''.compileJava8
-		val generatedClass = classes.get(rootPackage.name + ".TestObject")
+		val generatedClass = classes.get(rootPackage + ".TestObject")
 		val builderInstance = generatedClass.getMethod("builder").invoke(null)
 		var inst = builderInstance.invoke("prune")
 		inst = builderInstance.invoke("build")
@@ -169,7 +181,7 @@ class ModelObjectGeneratorTest {
 		'''.generateCode
 		//code.writeClasses("objectTest")
 		val classes = code.compileToClasses
-		val generatedClass = classes.get(rootPackage.name + ".TestObject")
+		val generatedClass = classes.get(rootPackage + ".TestObject")
 
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
@@ -195,7 +207,7 @@ class ModelObjectGeneratorTest {
 		'''.generateCode
 		//code.writeClasses("objectTest")
 		val classes = code.compileToClasses
-		val generatedClass = classes.get(rootPackage.name + ".TestObject")
+		val generatedClass = classes.get(rootPackage + ".TestObject")
 
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
@@ -225,7 +237,7 @@ class ModelObjectGeneratorTest {
 		'''.generateCode
 		//code.writeClasses("BasicReferenceTest")
 		val classes = code.compileToClasses
-		val generatedClass = classes.get(new RootPackage('''«namespace»''').name + ".TestObject")
+		val generatedClass = classes.get(new RootPackage('''«namespace»''') + ".TestObject")
 
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
@@ -253,7 +265,7 @@ class ModelObjectGeneratorTest {
 		//code.writeClasses("shouldCreateFieldWithReferenceTypeWhenAttributeIsReference")
 		val generatedClass = code.compileToClasses
 
-		val testClass = generatedClass.get(rootPackage.name + '.TestObject')
+		val testClass = generatedClass.get(rootPackage + '.TestObject')
 
 		val getter = testClass.getMethod("getFieldOne")
 		assertThat(getter, CoreMatchers.notNullValue())
@@ -277,7 +289,7 @@ class ModelObjectGeneratorTest {
         '''.generateCode
 //        code.writeClasses("TypeWithMetaFieldImport")
         val classes = code.compileToClasses
-		val generatedClass = classes.get(new RootPackage('''«namespace»''').name + ".Foo")
+		val generatedClass = classes.get(new RootPackage('''«namespace»''') + ".Foo")
 
 		val schemeMethod = generatedClass.getMethod("getAttr")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
@@ -293,7 +305,7 @@ class ModelObjectGeneratorTest {
 		//code.writeClasses("shouldImplementGlobalKeyWhenDefined")
 
 		val classes = code.compileToClasses
-		val withGlobalKeys = classes.get(rootPackage.name + '.WithGlobalKey')
+		val withGlobalKeys = classes.get(rootPackage + '.WithGlobalKey')
 
 		assertThat(withGlobalKeys.interfaces.exists[name.equals('com.rosetta.model.lib.GlobalKey')], is(true))
 	}
@@ -306,7 +318,7 @@ class ModelObjectGeneratorTest {
 		'''.generateCode
 
 		val classes = code.compileToClasses
-		val testClass = classes.get(rootPackage.name + '.AttributeGlobalKeyTest')
+		val testClass = classes.get(rootPackage + '.AttributeGlobalKeyTest')
 		val withoutGlobalKey = testClass.getMethod("getWithoutGlobalKey").annotations.exists [
 			annotationType.name.contains('GlobalKey')
 		]
@@ -327,7 +339,7 @@ class ModelObjectGeneratorTest {
 		//code.writeClasses("shouldGenerateGlobalKeyAttributeAsString")
 
 		val classes = code.compileToClasses
-		val testClass = classes.get(rootPackage.name + '.AttributeGlobalKeyTest')
+		val testClass = classes.get(rootPackage + '.AttributeGlobalKeyTest')
 		val globalKeymethod = testClass.getMethod("getWithGlobalKey")
 		val returnType = globalKeymethod.returnType
 
@@ -351,7 +363,7 @@ class ModelObjectGeneratorTest {
 			type D:
 				s string (1..*)
 		'''.generateCode
-		val rosetta = code.compileToClasses.get(rootPackage.name + '.Rosetta')
+		val rosetta = code.compileToClasses.get(rootPackage + '.Rosetta')
 
 		val rosettaClassList = rosetta.getMethod("classes").invoke(null) as List<Class<? extends RosettaModelObject>>
 
@@ -379,7 +391,7 @@ class ModelObjectGeneratorTest {
 				bar calculation (0..1)
 		'''.generateCode
 		val classes = code.compileToClasses
-		val testClass = classes.get(rootPackage.name + '.Foo')
+		val testClass = classes.get(rootPackage + '.Foo')
 
 		assertEquals(String, testClass.getMethod("getBar").returnType)
 	}
@@ -395,7 +407,7 @@ class ModelObjectGeneratorTest {
 
 		//code.writeClasses("shouldSetAttributesOnEmptyClassWithInheritance")
 		val classes = code.compileToClasses
-		val subclassInstance = classes.get(rootPackage.name + '.Bar')
+		val subclassInstance = classes.get(rootPackage + '.Bar')
 
 		// set the super class attribute
 		val builderInstance = subclassInstance.getMethod("builder").invoke(null)
@@ -450,13 +462,13 @@ class ModelObjectGeneratorTest {
 		//code.writeClasses("internalReferenceTest")
 		val generatedClass = code.compileToClasses
 
-		val barClass = generatedClass.get(rootPackage.name + '.Bar')
+		val barClass = generatedClass.get(rootPackage + '.Bar')
 
 		val getter = barClass.getMethod("getBar")
 		assertThat(getter, CoreMatchers.notNullValue())
 		assertThat(getter.returnType.name, is('com.rosetta.model.metafields.BasicReferenceWithMetaString'))
 		
-		val fooClass = generatedClass.get(rootPackage.name + '.Foo')
+		val fooClass = generatedClass.get(rootPackage + '.Foo')
 		val builderInstance = fooClass.getMethod("builder").invoke(null)
 		val metad = builderInstance.invoke("getOrCreateFoo")
 		val metas = metad.invoke("getOrCreateMeta")
@@ -474,7 +486,7 @@ class ModelObjectGeneratorTest {
 
 		val classes = code.compileToClasses
 
-		val fooClass = classes.get(rootPackage.name + '.Foo')
+		val fooClass = classes.get(rootPackage + '.Foo')
 
 		// set the super class attribute
 		val fooBuilder = fooClass.getMethod("builder").invoke(null)

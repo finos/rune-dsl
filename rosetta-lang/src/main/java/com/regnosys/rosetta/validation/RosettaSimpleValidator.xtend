@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.expression.ListOperationExtensions
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.BlueprintExtract
@@ -121,6 +120,47 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
+import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
+import org.eclipse.xtext.validation.EValidatorRegistrar
+import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
+import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
+import com.regnosys.rosetta.rosetta.expression.FlattenOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.MapOperation
+import com.regnosys.rosetta.rosetta.expression.FilterOperation
+import com.regnosys.rosetta.rosetta.expression.FunctionReference
+import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.ReduceOperation
+import com.regnosys.rosetta.rosetta.expression.MandatoryFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.SumOperation
+import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.ListOperation
+import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
+import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
+import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.expression.ClosureParameter
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import org.eclipse.xtext.naming.QualifiedName
+import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
+import com.regnosys.rosetta.rosetta.RosettaDocReference
+import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
+import com.regnosys.rosetta.utils.ExternalAnnotationUtil
+import com.regnosys.rosetta.rosetta.ExternalValueOperator
+import com.regnosys.rosetta.services.RosettaGrammarAccess
+import org.eclipse.xtext.Keyword
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
+import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
+import com.regnosys.rosetta.generator.java.util.JavaNames
+
 // TODO: split expression validator
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
@@ -132,7 +172,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension RosettaFunctionExtensions
-	@Inject extension ListOperationExtensions
 	@Inject ExpressionHelper exprHelper
 	@Inject extension CardinalityProvider cardinality
 	@Inject RosettaConfigExtension confExtensions
@@ -223,39 +262,39 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def void checkRuleSource(RosettaBlueprintReport report) {
 		val visitor = new CollectRuleErrorVisitor
-		
+
 		report.reportType.collectRuleErrors(report.ruleSource, visitor)
-		
+
 		visitor.errorMap.entrySet.forEach[
 			error(value, key, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
 		]
 	}
-	
+
 	private def void collectRuleErrors(Data type, RosettaExternalRuleSource source, CollectRuleErrorVisitor visitor) {
 		externalAnn.collectAllRuleReferencesForType(source, type, visitor)
-		
+
 		type.allAttributes.forEach[attr |
 			val attrType = attr.type
-			
+
 			if (attrType instanceof Data) {
 				if (!visitor.collectedTypes.contains(attrType)) {
 					visitor.collectedTypes.add(attrType)
 					attrType.collectRuleErrors(source, visitor)
 				}
-			} 
-		]	
+			}
+		]
 	}
-	
+
 	private static class CollectRuleErrorVisitor implements CollectRuleVisitor {
-		
+
 		final Map<RosettaFeature, RosettaRuleReference> ruleMap = newHashMap;
 		final Map<RosettaExternalRegularAttribute, String> errorMap = newHashMap;
 		final Set<Data> collectedTypes = newHashSet;
-			
+
 		override void add(RosettaFeature attr, RosettaRuleReference rule) {
 			ruleMap.put(attr, rule);
 		}
-		
+
 		override void add(RosettaExternalRegularAttribute extAttr, RosettaRuleReference rule) {
 			val attr = extAttr.attributeRef
 			if (!ruleMap.containsKey(attr)) {
@@ -268,13 +307,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		override void remove(RosettaExternalRegularAttribute extAttr) {
 			val attr = extAttr.attributeRef
 			if (ruleMap.containsKey(attr)) {
-				ruleMap.remove(attr);	
+				ruleMap.remove(attr);
 			} else {
 				errorMap.put(extAttr, '''You cannot remove this mapping because `«attr.name»` did not have a mapping defined before.''')
 			}
 		}
 	}
-	
+
 	@Check
 	def void checkRuleSource(RosettaExternalRuleSource source) {
 		if (source.superSources.size > 1) {
@@ -285,7 +324,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			t.externalClassSynonyms.forEach[
 				error('''You may not define synonyms in a rule source.''', it, null);
 			]
-			
+
 			for (attr: t.regularAttributes) {
 				attr.externalSynonyms.forEach[
 					error('''You may not define synonyms in a rule source.''', it, null);
@@ -758,7 +797,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def void checkNodeTypeGraph(RosettaBlueprint bp) {
 		try {
-			buildTypeGraph(bp.nodes, bp.output)
+			buildTypeGraph(bp.nodes, bp.output.RType, new JavaNames)
 		} catch (BlueprintUnresolvedTypeException e) {
 			error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
 		}
@@ -789,7 +828,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 		}
 		else if (filter.filterBP!==null) {
-			val node = buildTypeGraph(filter.filterBP.blueprint.nodes, filter.filterBP.output)
+			val node = buildTypeGraph(filter.filterBP.blueprint.nodes, filter.filterBP.output.RType, new JavaNames)
 			if (!checkBPNodeSingle(node, false)) {
 				error('''The expression for Filter must return a single value but the rule «filter.filterBP.blueprint.name» can return multiple values''', filter, BLUEPRINT_FILTER__FILTER_BP)
 			}
@@ -835,7 +874,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		val ruleRef = attr.ruleReference
 		if(ruleRef !== null) {
 			val bp = ruleRef.reportingRule
-			val node = buildTypeGraph(bp.nodes, bp.output)
+			val node = buildTypeGraph(bp.nodes, bp.output.RType, new JavaNames)
 
 			val attrExt = attr.toExpandedAttribute
 			val attrSingle = attrExt.cardinalityIsSingleValue
@@ -849,7 +888,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}
 			// check type
 			val bpType = node.output?.type?.name
-			val bpGenericType = node.output?.genericName
+			val bpGenericType = node.output?.genericType?.toString?.split("\\.")?.last
 			if (!node.repeatable && (bpType !== null || bpGenericType !== null) && (attr.type.name != bpType && !attr.type.name.equalsIgnoreCase(bpGenericType))) {
 				val typeError = '''Type mismatch - report field «attr.name» has type «attr.type.name» ''' +
 					'''whereas the reporting rule «bp.name» has type «IF bpType !== null»«bpType»«ELSEIF bpGenericType !== null»«bpGenericType»«ELSE»unknown«ENDIF».'''
@@ -1256,8 +1295,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkReduceOperation(ReduceOperation o) {
 		checkNumberOfMandatoryNamedParameters(o.functionRef, 2)
-		if (o.inputRawType != o.functionRef.bodyRawType) {
-			error('''List reduce expression must evaluate to the same type as the input. Found types «o.inputRawType» and «o.functionRef.bodyRawType».''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION_REF)
+		if (o.argument.RType != o.functionRef.RType) {
+			error('''List reduce expression must evaluate to the same type as the input. Found types «o.argument.RType» and «o.functionRef.RType».''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION_REF)
 		}
 		checkBodyIsSingleCardinality(o.functionRef)
 	}

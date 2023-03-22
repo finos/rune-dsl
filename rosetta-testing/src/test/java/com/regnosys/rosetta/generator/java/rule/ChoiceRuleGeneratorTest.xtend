@@ -44,7 +44,7 @@ class ChoiceRuleGeneratorTest {
 			'field2', List.of('field two value')),
 			of())
 	
-		val testChoiceRuleClass = classes.get(rootPackage.dataRule.name + ".TestRequiredChoice")
+		val testChoiceRuleClass = classes.get(rootPackage.dataRule + ".TestRequiredChoice")
 		
 		val testChoiceRule = testChoiceRuleClass.declaredConstructor.newInstance;
 		
@@ -67,7 +67,7 @@ class ChoiceRuleGeneratorTest {
 			'field2', List.of()),
 			of())
 	
-		val testChoiceRuleClass = classes.get(rootPackage.dataRule.name + ".TestRequiredChoice")
+		val testChoiceRuleClass = classes.get(rootPackage.dataRule + ".TestRequiredChoice")
 		
 		val testChoiceRule = testChoiceRuleClass.declaredConstructor.newInstance;
 		
@@ -87,7 +87,7 @@ class ChoiceRuleGeneratorTest {
 			'field2', List.of('field two value')),
 			of())
 		
-		val testChoiceRuleClass = classes.get(rootPackage.dataRule.name + ".TestOptionalChoice")
+		val testChoiceRuleClass = classes.get(rootPackage.dataRule + ".TestOptionalChoice")
 		val testChoiceRule = testChoiceRuleClass.declaredConstructor.newInstance;
 		
 		val validationResult = testChoiceRuleClass.getMatchingMethod("validate", #[RosettaPath ,testInstance.class])
