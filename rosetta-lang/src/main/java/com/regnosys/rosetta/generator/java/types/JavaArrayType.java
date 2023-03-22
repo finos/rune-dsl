@@ -2,12 +2,14 @@ package com.regnosys.rosetta.generator.java.types;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.Validate;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 public class JavaArrayType implements JavaReferenceType {
 	private final JavaType baseType;
 
 	public JavaArrayType(JavaType baseType) {
+		Validate.notNull(baseType);
 		this.baseType = baseType;
 	}
 	
@@ -20,6 +22,11 @@ public class JavaArrayType implements JavaReferenceType {
 	
 	public JavaType getBaseType() {
 		return this.baseType;
+	}
+	
+	@Override
+	public String toString() {
+		return baseType.toString() + "[]";
 	}
 	
 	@Override

@@ -27,11 +27,13 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.types.RosettaTypeProvider
 
 class ValidatorsGenerator {
 
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaExtensions
+	@Inject RosettaTypeProvider typeProvider
 
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version) {
 		fsa.generateFile(names.packages.model.typeValidation.withForwardSlashes + '/' + data.name + 'Validator.java',
@@ -41,17 +43,17 @@ class ValidatorsGenerator {
 	}
 
 	private def generatClass(JavaNames names, Data d, String version) {
-		val scope = new JavaScope
+		val scope = new JavaScope(names.packages.model.typeValidation)
 		buildClass(names.packages.model.typeValidation, d.classBody(names, version, d.allAttributes), scope)
 	}
 
 	private def generateOnlyExistsValidator(JavaNames names, Data d, String version) {
-		val scope = new JavaScope
+		val scope = new JavaScope(names.packages.model.existsValidation)
 		buildClass(names.packages.model.existsValidation, d.onlyExistsClassBody(names, version, d.allAttributes), scope)
 	}
 
 	def private StringConcatenationClient classBody(Data c, JavaNames names, String version, Iterable<Attribute> attributes) '''
-		public class «c.name»Validator implements «Validator»<«names.toJavaType(c)»> {
+		public class «c.name»Validator implements «Validator»<«names.toJavaType(typeProvider.getRType(c))»> {
 		
 			@Override
 			public «ValidationResult»<«c.name»> validate(«RosettaPath» path, «c.name» o) {
@@ -76,7 +78,7 @@ class ValidatorsGenerator {
 	}
 
 	def private StringConcatenationClient onlyExistsClassBody(Data c, JavaNames names, String version, Iterable<Attribute> attributes) '''
-		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaType(c)», «Set»<String>> {
+		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaType(typeProvider.getRType(c))», «Set»<String>> {
 		
 			@Override
 			public <T2 extends «c.name»> «ValidationResult»<«c.name»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {

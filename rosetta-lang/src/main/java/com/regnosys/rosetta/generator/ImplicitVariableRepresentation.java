@@ -16,6 +16,10 @@ public class ImplicitVariableRepresentation {
 	}
 
 	@Override
+	public String toString() {
+		return "ImplicitVariable[" + definingContainer + "]";
+	}
+	@Override
 	public int hashCode() {
 		return Objects.hash(this.getClass(), definingContainer);
 	}

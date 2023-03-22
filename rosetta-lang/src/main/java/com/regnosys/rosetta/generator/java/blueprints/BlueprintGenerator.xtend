@@ -5,7 +5,6 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
-import com.regnosys.rosetta.generator.java.util.ImportGenerator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.BlueprintExtract
@@ -26,7 +25,6 @@ import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.validation.BindableType
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver
 import com.regnosys.rosetta.validation.TypedBPNode
 import java.util.Collection
@@ -41,9 +39,29 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
-import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.*
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.blueprints.Blueprint
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.generator.java.types.JavaClass
+import com.regnosys.rosetta.generator.java.types.JavaType
+import com.regnosys.rosetta.generator.java.types.JavaTypeVariable
+import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
+import com.regnosys.rosetta.blueprints.BlueprintInstance
+import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory
+import com.regnosys.rosetta.blueprints.BlueprintBuilder
+import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier
+import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode
+import com.regnosys.rosetta.utils.DottedPath
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.blueprints.runner.actions.Filter
+import com.regnosys.rosetta.blueprints.runner.actions.FilterByRule
+import com.regnosys.rosetta.blueprints.runner.actions.IdChange
+import com.regnosys.rosetta.blueprints.DataItemReportBuilder
+import com.regnosys.rosetta.blueprints.runner.data.GroupableData
+import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier
+import com.regnosys.rosetta.blueprints.DataItemReportUtils
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator)
@@ -55,6 +73,7 @@ class BlueprintGenerator {
 	@Inject FunctionDependencyProvider functionDependencyProvider
 	@Inject extension RosettaExtensions
 	@Inject extension JavaIdentifierRepresentationService
+	@Inject RosettaTypeProvider typeProvider
 
 	/**
 	 * generate a blueprint java file
@@ -75,7 +94,7 @@ class BlueprintGenerator {
 			.filter[nodes !== null]
 			.forEach [ bp |
 			fsa.generateFile(packages.model.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
-				generateBlueprint(packages, bp.nodes, bp.output, bp.name, 'Rule', bp.URI, null, version, names))
+				generateBlueprint(packages, bp.nodes, typeProvider.getRType(bp.output), bp.name, 'Rule', bp.URI, null, version, names))
 		]
 	}
 
@@ -126,36 +145,25 @@ class BlueprintGenerator {
 	/**
 	 * Generate the text of a blueprint
 	 */
-	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RosettaType output, String name, String type, String uri, String dataItemReportBuilderName, String version, extension JavaNames names) {
+	def generateBlueprint(RosettaJavaPackages packageName, BlueprintNodeExp nodes, RType output, String name, String type, String uri, String dataItemReportBuilderName, String version, extension JavaNames names) {
 		try {
-			val imports = new ImportGenerator(packageName)
-			imports.addBlueprintImports
-			imports.addSourceAndSink
 			
-			val typed = buildTypeGraph(nodes, output)
-			val typeArgs = bindArgs(typed)
-			imports.addTypes(typed)
+			val typed = buildTypeGraph(nodes, output, names)
+			val clazz = new JavaClass(packageName.model.blueprint, name + type)
+			val clazzWithArgs = bindArgs(typed, clazz)
 			
-			val topScope = new JavaScope
+			val topScope = new JavaScope(packageName.model.blueprint)
 			
-			val classScope = topScope.childScope
+			val classScope = topScope.classScope(clazzWithArgs.toString)
 			
 			val StringConcatenationClient body = '''
-				// manual imports
-				«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
-				import «importClass»;
-				«ENDFOR»
-				«FOR importClass : imports.staticImports»
-				import static «importClass».*;
-				«ENDFOR»
-				
 				«emptyJavadocWithVersion(version)»
-				public class «name»«type»«typeArgs» implements Blueprint<«typed.input.getEither», «typed.output.getEither», «typed.inputKey.getEither», «typed.outputKey.getEither»> {
+				public class «clazzWithArgs» implements «Blueprint»<«typed.input.getEither(names)», «typed.output.getEither(names)», «typed.inputKey.getEither(names)», «typed.outputKey.getEither(names)»> {
 					
-					private final RosettaActionFactory actionFactory;
+					private final «RosettaActionFactory» actionFactory;
 					
 					@«Inject»
-					public «name»«type»(RosettaActionFactory actionFactory) {
+					public «name»«type»(«RosettaActionFactory» actionFactory) {
 						this.actionFactory = actionFactory;
 					}
 					
@@ -169,7 +177,7 @@ class BlueprintGenerator {
 						return "«uri»";
 					}
 					
-					«nodes.buildBody(classScope, typed, dataItemReportBuilderName, imports, names)»
+					«nodes.buildBody(classScope, typed, dataItemReportBuilderName, names)»
 				}
 				'''
 				
@@ -185,59 +193,64 @@ class BlueprintGenerator {
 	 * Provide Generic names for the blueprint for parameters that haven't been bound to specific classes
 	 * and generate the generic args string e.g. <Input, ?, ?, ?> becomes <Input, OUTPUT, INKEY, OUTKEY>
 	 */
-	def bindArgs(TypedBPNode node) {
-		var result=""
-		var first=true;
+	def JavaType bindArgs(TypedBPNode node, JavaClass clazz) {
+		var typeArgs = newArrayList
 		if (!node.input.bound) {
-			result+="IN"
-			node.input.genericName = "IN"
-			first= false
+			val IN = new JavaTypeVariable(clazz, "IN")
+			node.input.genericType = IN
+			typeArgs.add(IN)
 		}
 		if (!node.output.bound) {
-			if (!first) result+=", "
-			result += "OUT"
-			node.output.genericName = "OUT"
-			first=false
+			val OUT = new JavaTypeVariable(clazz, "OUT")
+			node.output.genericType = OUT
+			typeArgs.add(OUT)
 		}
 		if (!node.inputKey.bound) {
-			if (!first) result+=", "
-			result += "INKEY"
-			node.inputKey.genericName = "INKEY"
-			first=false
+			val INKEY = new JavaTypeVariable(clazz, "INKEY")
+			node.inputKey.genericType = INKEY
+			typeArgs.add(INKEY)
 		}
 		if (!node.outputKey.bound) {
-			if (!first) result+=", "
-			result+="OUTKEY"
-			node.outputKey.genericName = "OUTKEY"
+			val OUTKEY = new JavaTypeVariable(clazz, "OUTKEY")
+			node.outputKey.genericType = OUTKEY
+			typeArgs.add(OUTKEY)
 		}
-		if (result.length>0) return "<"+result+">"
+		if (typeArgs.size>0) {
+			return new JavaParameterizedType(clazz, typeArgs)
+		} else {
+			return clazz
+		}
 	}
 	
 	/**
 	 * build the body of the blueprint class
 	 */
-	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, JavaScope scope, TypedBPNode typedNode, String dataItemReportBuilderName, ImportGenerator imports, extension JavaNames names) {
-		val context = new Context(nodes, imports)
-		val blueprintScope = scope.childScope
+	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, JavaScope scope, TypedBPNode typedNode, String dataItemReportBuilderName, extension JavaNames names) {
+		nodes.functionDependencies.toSet.forEach[
+			scope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)
+		]
+		
+		val context = new Context(nodes)
+		val blueprintScope = scope.methodScope("blueprint")
 		return '''
 			«FOR dep : nodes.functionDependencies.toSet»
-				@«Inject» protected «dep.toJavaType» «dep.name.toFirstLower»;
+				@«Inject» protected «dep.toJavaType» «scope.getIdentifierOrThrow(dep.toFunctionInstance)»;
 			«ENDFOR»
 			
 			@Override
-			public BlueprintInstance<«typedNode.input.either», «typedNode.output.either», «typedNode.inputKey.either», «typedNode.outputKey.either»> blueprint() { 
+			public «BlueprintInstance»<«typedNode.input.getEither(names)», «typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)», «typedNode.outputKey.getEither(names)»> blueprint() { 
 				return 
-					startsWith(actionFactory, «nodes.buildGraph(blueprintScope, typedNode.next, context)»)
+					«importWildcard(method(BlueprintBuilder, "startsWith"))»(actionFactory, «nodes.buildGraph(blueprintScope, names, typedNode.next, context)»)
 					«IF dataItemReportBuilderName !== null».addDataItemReportBuilder(new «dataItemReportBuilderName.toDataItemReportBuilderName»())«ENDIF»
 					.toBlueprint(getURI(), getName());
 			}
 			«FOR bpRef : context.bpRefs.entrySet»
 			
-			«bpRef.key.blueprintRef(bpRef.value, context)»
+			«bpRef.key.blueprintRef(bpRef.value, context, names)»
 			«ENDFOR»
 			«FOR source : context.sources.entrySet»
 			
-			«source.key.getSource(source.value, context)»
+			«source.key.getSource(source.value, context, names)»
 			«ENDFOR»
 		'''
 	}
@@ -245,83 +258,71 @@ class BlueprintGenerator {
 	/**
 	 * recursive function that builds the graph of nodes
 	 */
-	def StringConcatenationClient buildGraph(BlueprintNodeExp nodeExp, JavaScope scope, TypedBPNode typedNode, Context context) 
+	def StringConcatenationClient buildGraph(BlueprintNodeExp nodeExp, JavaScope scope, JavaNames names, TypedBPNode typedNode, Context context) 
 		'''
-		«nodeExp.buildNode(scope, typedNode, context)»«IF nodeExp.next !== null»)
-		.then(« nodeExp.next.buildGraph(scope, typedNode.next, context)»«ENDIF»'''
+		«nodeExp.buildNode(scope, names, typedNode, context)»«IF nodeExp.next !== null»)
+		.then(« nodeExp.next.buildGraph(scope, names, typedNode.next, context)»«ENDIF»'''
 	
 	/**
 	 * write out an individual graph node
 	 */
-	def StringConcatenationClient buildNode(BlueprintNodeExp nodeExp, JavaScope scope, TypedBPNode typedNode, Context context) {
+	def StringConcatenationClient buildNode(BlueprintNodeExp nodeExp, JavaScope scope, JavaNames names, TypedBPNode typedNode, Context context) {
 		val node = nodeExp.node
 		val id = createIdentifier(nodeExp);
 		switch (node) {
-			BlueprintExtract: {
-				context.imports.addTypes(typedNode)
-				context.imports.addSingleMapping(node)
-				
+			BlueprintExtract: {				
 				val cond = node.call
 				val multi = cardinality.isMulti(cond)
 				val repeatable = node.repeatable
 				
-				val lambdaScope = scope.childScope
-				val implicitVar = lambdaScope.createIdentifier(typedNode.input.type.toBlueprintImplicitVar, typedNode.input.either.toFirstLower)
+				val lambdaScope = scope.lambdaScope
+				val implicitVar = lambdaScope.createIdentifier(typedNode.input.type.toBlueprintImplicitVar, typedNode.input.type.name.toFirstLower)
 				
 				if (!multi)
-				'''actionFactory.<«typedNode.input.getEither», «
-					typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaSingleMapper("«node.URI»", "«(cond).toNodeLabel
-						»", «id», «implicitVar» -> «node.call.javaCode(lambdaScope)»)'''
+				'''actionFactory.<«typedNode.input.getEither(names)», «
+					typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)»>newRosettaSingleMapper("«node.URI»", "«(cond).toNodeLabel
+						»", «id», «implicitVar» -> «node.call.javaCode(lambdaScope, names)»)'''
 				else if (repeatable)
-				'''actionFactory.<«typedNode.input.getEither», «
-									typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaRepeatableMapper("«node.URI»", "«(cond).toNodeLabel
-														»", «id», «implicitVar» -> «node.call.javaCode(lambdaScope)»)'''
+				'''actionFactory.<«typedNode.input.getEither(names)», «
+									typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)»>newRosettaRepeatableMapper("«node.URI»", "«(cond).toNodeLabel
+														»", «id», «implicitVar» -> «node.call.javaCode(lambdaScope, names)»)'''
 				else
-				'''actionFactory.<«typedNode.input.getEither», «
-									typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaMultipleMapper("«node.URI»", "«(cond).toNodeLabel
-														»", «id», «implicitVar» -> «node.call.javaCode(lambdaScope)»)'''
+				'''actionFactory.<«typedNode.input.getEither(names)», «
+									typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)»>newRosettaMultipleMapper("«node.URI»", "«(cond).toNodeLabel
+														»", «id», «implicitVar» -> «node.call.javaCode(lambdaScope, names)»)'''
 			}
-			BlueprintReturn: {
-				context.imports.addTypes(typedNode)
-				context.imports.addMappingImport()
-				
+			BlueprintReturn: {				
 				val expr = node.expression
 				
-				val lambdaScope = scope.childScope
+				val lambdaScope = scope.lambdaScope
 				
-				'''actionFactory.<«typedNode.input.getEither», «typedNode.output.getEither», «typedNode.inputKey.getEither»> newRosettaReturn("«node.URI»", "«expr.toNodeLabel»",  «id»,  () -> «expr.javaCode(lambdaScope)»)'''
+				'''actionFactory.<«typedNode.input.getEither(names)», «typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)»> newRosettaReturn("«node.URI»", "«expr.toNodeLabel»",  «id»,  () -> «expr.javaCode(lambdaScope, names)»)'''
 			}
 			BlueprintLookup: {
-				context.imports.addTypes(typedNode)
-				context.imports.addMappingImport()
 				val nodeName = if (nodeExp.identifier !== null) nodeExp.identifier else node.name
 				//val lookupLamda = '''«typedNode.input.type.name.toFirstLower» -> lookup«node.name»(«typedNode.input.type.name.toFirstLower»)'''
-				'''actionFactory.<«typedNode.input.getEither», «
-					typedNode.output.getEither», «typedNode.inputKey.getEither»>newRosettaLookup("«node.URI»", "«nodeName»", «id», "«node.name»")'''
+				'''actionFactory.<«typedNode.input.getEither(names)», «
+					typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)»>newRosettaLookup("«node.URI»", "«nodeName»", «id», "«node.name»")'''
 			
 			}
 			BlueprintOr : {
-				node.orNode(scope, typedNode, context, id)
+				node.orNode(scope, names, typedNode, context, id)
 			}
 			BlueprintRef : {
 				context.addBPRef(typedNode)
-				context.imports.addTypes(typedNode)
-				context.imports.addBPRef(node.blueprint)
 				'''get«node.blueprint.name.toFirstUpper»()«IF nodeExp.identifier!==null»)
-				.then(new IdChange("«node.URI»", "as «nodeExp.identifier»", «id»)«ENDIF»'''				
+				.then(new «IdChange»("«node.URI»", "as «nodeExp.identifier»", «id»)«ENDIF»'''				
 			}
-			BlueprintFilter :{
-				context.imports.addFilter(node);
-								
+			BlueprintFilter :{								
 				if(node.filter!==null) {
-					val lambdaScope = scope.childScope
-					val implicitVar = lambdaScope.createIdentifier(typedNode.input.type.toBlueprintImplicitVar, typedNode.input.either.toFirstLower)
-					'''new Filter<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filter.toNodeLabel»", «implicitVar
-						» -> «node.filter.javaCode(lambdaScope)».get(), «id»)'''
+					val lambdaScope = scope.lambdaScope
+					val implicitVar = lambdaScope.createIdentifier(typedNode.input.type.toBlueprintImplicitVar, typedNode.input.type.name.toFirstLower)
+					'''new «Filter»<«typedNode.input.getEither(names)», «typedNode.inputKey.getEither(names)»>("«node.URI»", "«node.filter.toNodeLabel»", «implicitVar
+						» -> «node.filter.javaCode(lambdaScope, names)».get(), «id»)'''
 				}
 				else {
 					context.addBPRef(typedNode)
-					'''new FilterByRule<«typedNode.input.either», «typedNode.inputKey.either»>("«node.URI»", "«node.filterBP.blueprint.name»", 
+					'''new «FilterByRule»<«typedNode.input.getEither(names)», «typedNode.inputKey.getEither(names)»>("«node.URI»", "«node.filterBP.blueprint.name»", 
 					get«node.filterBP.blueprint.name.toFirstUpper»(), «id»)'''
 				}
 			}
@@ -335,25 +336,25 @@ class BlueprintGenerator {
 		}
 	}
 	
-	def createIdentifier(BlueprintNodeExp nodeExp) {
+	def StringConcatenationClient createIdentifier(BlueprintNodeExp nodeExp) {
 		if (nodeExp.identifier !== null) {
-			return '''new RuleIdentifier("«nodeExp.identifier»", getClass())'''
+			return '''new «RuleIdentifier»("«nodeExp.identifier»", getClass())'''
 		}
 		val node = nodeExp.node
 		switch (node) {
 			BlueprintExtract: {
 				val nodeName = if (node.name !== null) node.name
 								else node.call.toNodeLabel
-				'''new RuleIdentifier("«nodeName»", getClass())'''
+				'''new «RuleIdentifier»("«nodeName»", getClass())'''
 			}
 			BlueprintReturn: {
 				val nodeName = if (node.name !== null) node.name
 								else node.expression.toNodeLabel
 				
-				'''new RuleIdentifier("«nodeName»", getClass())'''
+				'''new «RuleIdentifier»("«nodeName»", getClass())'''
 			}
 			BlueprintLookup: {
-				'''new RuleIdentifier("Lookup «node.name»", getClass())'''
+				'''new «RuleIdentifier»("Lookup «node.name»", getClass())'''
 			}
 			default: {
 				'''null'''
@@ -376,53 +377,50 @@ class BlueprintGenerator {
 		}
 	}
 	
-	def StringConcatenationClient orNode(BlueprintOr orNode, JavaScope scope, TypedBPNode orTyped, Context context, CharSequence id) {
+	def StringConcatenationClient orNode(BlueprintOr orNode, JavaScope scope, JavaNames names, TypedBPNode orTyped, Context context, StringConcatenationClient id) {
 		'''
 		«IF !orNode.bps.isEmpty»
-			BlueprintBuilder.<«orTyped.outFullS»>or(actionFactory,
+			«BlueprintBuilder».<«orTyped.getOutFullS(names)»>or(actionFactory,
 				«FOR bp:orNode.bps.indexed  SEPARATOR ","»
-				startsWith(actionFactory, «bp.value.buildGraph(scope, orTyped.orNodes.get(bp.key), context)»)
+				«importWildcard(method(BlueprintBuilder, "startsWith"))»(actionFactory, «bp.value.buildGraph(scope, names, orTyped.orNodes.get(bp.key), context)»)
 				«ENDFOR»
 				)
 			«ENDIF»
 		'''
 	}
 	
-	def getOutFullS(TypedBPNode node) {
-		'''«node.input.either», «node.output.either», «node.inputKey.either», «node.outputKey.either»'''
+	def StringConcatenationClient getOutFullS(TypedBPNode node, JavaNames names) {
+		'''«node.input.getEither(names)», «node.output.getEither(names)», «node.inputKey.getEither(names)», «node.outputKey.getEither(names)»'''
 	}
 	
-	def StringConcatenationClient blueprintRef(String ref, TypedBPNode typedNode, Context context) 	
+	def StringConcatenationClient blueprintRef(RosettaBlueprint ref, TypedBPNode typedNode, Context context, JavaNames names) {	
+		val className = ref.name + "Rule"
+		val refName = ref.name.toFirstLower + "Ref"
+		val dep = new JavaClass(DottedPath.splitOnDots((ref.eContainer as RosettaModel).name).child("blueprint"), className)
 		'''
-		@«Inject» private «ref.toFirstUpper»Rule «ref.toFirstLower»Ref;
-		protected BlueprintInstance «typedNode.typeArgs» get«ref.toFirstUpper»() {
-			return «ref.toFirstLower»Ref.blueprint();
+		@«Inject» private «dep» «refName»;
+		protected «BlueprintInstance»«typedNode.typeArgs(names)» get«ref.name.toFirstUpper»() {
+			return «refName».blueprint();
 		}'''
+	}
 	
 		
-	protected def CharSequence typeArgs(TypedBPNode typedNode)
-		'''<«typedNode.input.toString», «typedNode.output.toString», «typedNode.inputKey.toString», «typedNode.outputKey.toString»>'''
+	protected def StringConcatenationClient typeArgs(TypedBPNode typedNode, JavaNames names)
+		'''<«typedNode.input.getEither(names)», «typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)», «typedNode.outputKey.getEither(names)»>'''
 		
 	
-	def getSource(String source, TypedBPNode node, Context context)
+	def StringConcatenationClient getSource(String source, TypedBPNode node, Context context, JavaNames names)
 	'''
-		protected SourceNode<«node.output.either», «node.outputKey.either»> get«source.toFirstUpper()»() {
-			throw new UnsupportedOperationException();
+		protected «SourceNode»<«node.output.getEither(names)», «node.outputKey.getEither(names)»> get«source.toFirstUpper()»() {
+			throw new «UnsupportedOperationException»();
 		}
 	'''
 	
-	def genExtends(BindableType type) {
-		val typeS = type.either;
-		if (typeS=="?") return typeS
-		if (typeS=="Object") return "?"
-		else return "? extends "+ typeS 
-	}
-	
-	def fullname(RosettaType type, RosettaJavaPackages packageName) {
+	def fullname(RosettaType type, RosettaJavaPackages packageName, extension JavaNames names) {
 		if (type instanceof Data)
 			'''«packageName.model».«type.name»'''.toString
 		else 
-			type.name.toJavaFullType
+			typeProvider.getRType(type).toJavaType
 	}
 	
 	def Iterable<Function> functionDependencies(BlueprintNodeExp node) {
@@ -452,25 +450,15 @@ class BlueprintGenerator {
 	/**
 	 * Builds DataItemReportBuilder that takes a list of GroupableData
 	 */
-	def generateReportBuilder(RosettaJavaPackages packageName, RosettaBlueprintReport report, String version, extension JavaNames names) {
-		try {
-			val imports = new ImportGenerator(packageName)
-			imports.addDataItemReportBuilder(report.reportType)
-			
-			val scope = new JavaScope
+	def String generateReportBuilder(RosettaJavaPackages packageName, RosettaBlueprintReport report, String version, extension JavaNames names) {
+		try {			
+			val scope = new JavaScope(packageName.model.blueprint)
 			
 			val StringConcatenationClient body = '''
-				«FOR importClass : imports.imports.filter[imports.isImportable(it)]»
-				import «importClass»;
-				«ENDFOR»
-				«FOR importClass : imports.staticImports»
-				import static «importClass».*;
-				«ENDFOR»
-				
 				«emptyJavadocWithVersion(version)»
-				public class «report.reportType.name.toDataItemReportBuilderName» implements DataItemReportBuilder {
+				public class «report.reportType.name.toDataItemReportBuilderName» implements «DataItemReportBuilder» {
 				
-					«report.buildDataItemReportBuilderBody(names, imports)»
+					«report.buildDataItemReportBuilderBody(names)»
 				}
 				'''
 			buildClass(packageName.model.blueprint, body, scope)
@@ -481,24 +469,24 @@ class BlueprintGenerator {
 		}
 	}
 	
-	def StringConcatenationClient buildDataItemReportBuilderBody(RosettaBlueprintReport report, extension JavaNames names, ImportGenerator imports) {
-		val reportTypeName = report.reportType.name
+	def StringConcatenationClient buildDataItemReportBuilderBody(RosettaBlueprintReport report, extension JavaNames names) {
+		val reportType = typeProvider.getRType(report.reportType).toJavaType
 		val builderName = "dataItemReportBuilder"
 		'''
 		@Override
-		public <T> «reportTypeName» buildReport(«Collection»<GroupableData<?, T>> reportData) {
-			«reportTypeName».«reportTypeName»Builder «builderName» = «reportTypeName».builder();
+		public <T> «reportType» buildReport(«Collection»<«GroupableData»<?, T>> reportData) {
+			«reportType».«reportType»Builder «builderName» = «reportType».builder();
 			
-			for (GroupableData<?, T> groupableData : reportData) {
-				DataIdentifier dataIdentifier = groupableData.getIdentifier();
-				if (dataIdentifier instanceof RuleIdentifier) {
-					RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-					Class<?> ruleType = ruleIdentifier.getRuleType();
-					Object data = groupableData.getData();
+			for («GroupableData»<?, T> groupableData : reportData) {
+				«DataIdentifier» dataIdentifier = groupableData.getIdentifier();
+				if (dataIdentifier instanceof «RuleIdentifier») {
+					«RuleIdentifier» ruleIdentifier = («RuleIdentifier») dataIdentifier;
+					«Class»<?> ruleType = ruleIdentifier.getRuleType();
+					«Object» data = groupableData.getData();
 					if (data == null) {
 						continue;
 					}
-					«report.reportType.buildRules(builderName, names, imports)»
+					«report.reportType.buildRules(builderName, names)»
 				}
 			}
 			
@@ -506,24 +494,24 @@ class BlueprintGenerator {
 		}'''
 	}
 	
-	def StringConcatenationClient buildRules(Data dataType, String builderPath, extension JavaNames names, ImportGenerator imports) {
+	def StringConcatenationClient buildRules(Data dataType, String builderPath, extension JavaNames names) {
 		'''«FOR attr : dataType.allAttributes»
 			«val attrType = attr.type»
 			«val rule = attr.ruleReference?.reportingRule»
 			«IF rule !== null»
-				«imports.addDataItemReportRule(rule)»
+				«val ruleClass = new JavaClass(DottedPath.splitOnDots((rule.eContainer as RosettaModel).name).child("blueprint"), rule.name + "Rule")»
 				«IF attr.card.isIsMany»
 					«IF attrType instanceof Data»
-						«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»(ruleIdentifier.getRepeatableIndex().orElse(0))''', names, imports)»
+						«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»(ruleIdentifier.getRepeatableIndex().orElse(0))''', names)»
 					«ENDIF»
 				«ELSE»
-					if («rule.name»Rule.class.isAssignableFrom(ruleType)) {
-						DataItemReportUtils.setField(«builderPath»::set«attr.name.toFirstUpper», «attrType.toJavaType».class, data, «rule.name»Rule.class);
+					if («ruleClass».class.isAssignableFrom(ruleType)) {
+						«DataItemReportUtils».setField(«builderPath»::set«attr.name.toFirstUpper», «typeProvider.getRType(attrType).toJavaType».class, data, «rule.name»Rule.class);
 					}
 				«ENDIF»
 			«ELSEIF attrType instanceof Data»
 				«IF !attr.card.isIsMany»
-					«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»()''', names, imports)»
+					«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»()''', names)»
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
@@ -546,8 +534,7 @@ class BlueprintGenerator {
 	
 	@org.eclipse.xtend.lib.annotations.Data static class Context {
 		BlueprintNodeExp nodes
-		ImportGenerator imports
-		Map<String, TypedBPNode> bpRefs = newHashMap
+		Map<RosettaBlueprint, TypedBPNode> bpRefs = newLinkedHashMap
 		Map<String, TypedBPNode> sources = newHashMap
 		
 		def addBPRef(TypedBPNode node) {
@@ -558,18 +545,15 @@ class BlueprintGenerator {
 			""
 		}
 		def dispatch addBPRef(BlueprintRef ref, TypedBPNode node) {
-			bpRefs.put(ref.blueprint.name, node)
-			imports.addBPRef(ref.blueprint)
+			bpRefs.put(ref.blueprint, node)
 		}
 		
 		def dispatch addBPRef(BlueprintFilter ref, TypedBPNode node) {
-			bpRefs.put(ref.filterBP.blueprint.name, node.orNodes.get(0))
-			imports.addBPRef(ref.filterBP.blueprint)
+			bpRefs.put(ref.filterBP.blueprint, node.orNodes.get(0))
 		}
 		
 		def addSource(BlueprintSource source, TypedBPNode typed) {
 			sources.put(source.name, typed)
-			imports.addSource(source, typed)
 		}
 		
 	}

@@ -52,9 +52,9 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.types.JavaType
 import com.regnosys.rosetta.generator.java.types.JavaPrimitiveType
-import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.types.JavaClass
+import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
 
 class FunctionGenerator {
 
@@ -72,7 +72,7 @@ class FunctionGenerator {
 	def void generate(JavaNames javaNames, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = javaNames.packages.model.functions.withForwardSlashes + '/' + func.name + '.java'
 		
-		val topScope = new JavaScope()
+		val topScope = new JavaScope(javaNames.packages.model.functions)
 		topScope.createIdentifier(func)
 				
 		val dependencies = collectFunctionDependencies(func)
@@ -104,34 +104,42 @@ class FunctionGenerator {
 		val outputType = func.outputTypeOrVoid(names)
 		val aliasOut = func.shortcuts.toMap([it], [exprHelper.usesOutputParameter(it.expression)])
 		val outNeedsBuilder = needsBuilder(output)
-		val className = scope.getIdentifier(func).orElseThrow
+		val className = scope.getIdentifierOrThrow(func)
 		
-		val classScope = scope.childScope
+		val classScope = scope.classScope(className.desiredName)
 		dependencies.forEach[classScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)]
 		val conditionValidatorId = classScope.createUniqueIdentifier("conditionValidator")
 		val objectValidatorId = classScope.createUniqueIdentifier("objectValidator")
+		func.shortcuts.forEach[classScope.createIdentifier(it)]
 		
-		val evaluateScope = classScope.childScope
+		val evaluateScope = classScope.methodScope("evaluate")
 		inputs.forEach[evaluateScope.createIdentifier(it)]
 		evaluateScope.createIdentifier(output)
 		
-		val defaultClassScope = classScope.childScope
+		val defaultClassScope = classScope.classScope(className.desiredName + "Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier(className.desiredName + "Default")
 		
-		val doEvaluateScope = defaultClassScope.childScope
+		val doEvaluateScope = defaultClassScope.methodScope("doEvaluate")
 		inputs.forEach[doEvaluateScope.createIdentifier(it)]
 		doEvaluateScope.createIdentifier(output)
 		
-		val assignOutputScope = defaultClassScope.childScope
-		inputs.forEach[doEvaluateScope.createIdentifier(it)]
-		doEvaluateScope.createIdentifier(output)
+		val assignOutputScope = defaultClassScope.methodScope("assignOutput")
+		inputs.forEach[assignOutputScope.createIdentifier(it)]
+		assignOutputScope.createIdentifier(output)
 		
 		val aliasScopes = newHashMap
-		func.shortcuts.forEach[aliasScopes.put(it, defaultClassScope.childScope)]
+		func.shortcuts.forEach[
+			val aliasScope = defaultClassScope.methodScope(it.name)
+			inputs.forEach[aliasScope.createIdentifier(it)]
+			if (aliasOut.get(it)) {
+				aliasScope.createIdentifier(output)
+			}
+			aliasScopes.put(it, aliasScope)
+		]
 		
 		'''
 			@«ImplementedBy»(«className».«defaultClassName».class)
-			public «IF isStatic»static «ENDIF»abstract class «className» implements «RosettaFunction»«IF func.isQualifierFunction()», «IQualifyFunctionExtension»<«inputs.head.toListOrSingleJavaType»>«ENDIF» {
+			public «IF isStatic»static «ENDIF»abstract class «className» implements «RosettaFunction»«IF func.isQualifierFunction()», «IQualifyFunctionExtension»<«typeProvider.getRType(inputs.head.type).toListOrSingleJavaType(inputs.head.card.isMany)»>«ENDIF» {
 				«IF !func.conditions.empty || !func.postConditions.empty»
 					
 					@«Inject» protected «ConditionValidator» «conditionValidatorId»;
@@ -146,40 +154,40 @@ class FunctionGenerator {
 					//
 				«ENDIF»
 				«FOR dep : dependencies»
-					@«Inject» protected «dep.toJavaType» «classScope.getIdentifier(dep.toFunctionInstance)»;
+					@«Inject» protected «dep.toJavaType» «classScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
 				«ENDFOR»
 			
 				/**
 				«FOR input : inputs»
-					* @param «evaluateScope.getIdentifier(input)» «ModelGeneratorUtil.escape(input.definition)»
+					* @param «evaluateScope.getIdentifierOrThrow(input)» «ModelGeneratorUtil.escape(input.definition)»
 				«ENDFOR»
 				«IF output !== null»
-					* @return «evaluateScope.getIdentifier(output)» «ModelGeneratorUtil.escape(output.definition)»
+					* @return «evaluateScope.getIdentifierOrThrow(output)» «ModelGeneratorUtil.escape(output.definition)»
 				«ENDIF»
 				*/
 				public «outputType» evaluate(«func.inputsAsParameters(evaluateScope, names)») {
 					«IF !func.conditions.empty»
 						// pre-conditions
 						«FOR cond:func.conditions»
-							«cond.contributeCondition(conditionValidatorId)»
+							«cond.contributeCondition(conditionValidatorId, evaluateScope, names)»
 							
 						«ENDFOR»
 					«ENDIF»
-					«output.toBuilderType(names)» «evaluateScope.getIdentifier(output)» = doEvaluate(«func.inputsAsArguments(evaluateScope, names)»);
+					«output.toBuilderType(names)» «evaluateScope.getIdentifierOrThrow(output)» = doEvaluate(«func.inputsAsArguments(evaluateScope, names)»);
 					
 					«IF !func.postConditions.empty»
 						// post-conditions
 						«FOR cond:func.postConditions»
-							«cond.contributeCondition(conditionValidatorId)»
+							«cond.contributeCondition(conditionValidatorId, evaluateScope, names)»
 							
 						«ENDFOR»
 					«ENDIF»
 					«IF outNeedsBuilder»
-					if («evaluateScope.getIdentifier(output)» != null) {
-						«objectValidatorId».validate(«names.toJavaType(output.type)».class, «evaluateScope.getIdentifier(output)»);
+					if («evaluateScope.getIdentifierOrThrow(output)» != null) {
+						«objectValidatorId».validate(«names.toJavaType(typeProvider.getRType(output.type))».class, «evaluateScope.getIdentifierOrThrow(output)»);
 					}
 					«ENDIF»
-					return «evaluateScope.getIdentifier(output)»;
+					return «evaluateScope.getIdentifierOrThrow(output)»;
 				}
 			
 				protected abstract «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(doEvaluateScope, names)»);
@@ -189,21 +197,21 @@ class FunctionGenerator {
 					«val multi = cardinality.isMulti(alias.expression)»
 					«val returnType = names.shortcutJavaType(alias)»
 				
-					protected abstract «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «alias.name»(«output.toBuilderType(names)» «aliasScope.getIdentifier(output)», «IF !inputs.empty»«func.inputsAsParameters(aliasScope, names)»«ENDIF»);
+					protected abstract «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«output.toBuilderType(names)» «aliasScope.getIdentifierOrThrow(output)», «IF !inputs.empty»«func.inputsAsParameters(aliasScope, names)»«ENDIF»);
 				«ELSE»
 				
-					protected abstract «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(aliasScope, names)»);
+					protected abstract «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«func.inputsAsParameters(aliasScope, names)»);
 				«ENDIF»
 			«ENDFOR»
 			
 				public static class «defaultClassName» extends «className» {
 					@Override
 					protected «output.toBuilderType(names)» doEvaluate(«func.inputsAsParameters(doEvaluateScope, names)») {
-						«output.toBuilderType(names)» «doEvaluateScope.getIdentifier(output)» = «IF output.card.isMany»new «ArrayList»<>()«ELSEIF outNeedsBuilder»«output.toListOrSingleJavaType».builder()«ELSE»null«ENDIF»;
-						return assignOutput(«doEvaluateScope.getIdentifier(output)»«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(doEvaluateScope, names)»);
+						«output.toBuilderType(names)» «doEvaluateScope.getIdentifierOrThrow(output)» = «IF output.card.isMany»new «ArrayList»<>()«ELSEIF outNeedsBuilder»«typeProvider.getRType(output.type).toListOrSingleJavaType(output.card.isMany)».builder()«ELSE»null«ENDIF»;
+						return assignOutput(«doEvaluateScope.getIdentifierOrThrow(output)»«IF !inputs.empty», «ENDIF»«func.inputsAsArguments(doEvaluateScope, names)»);
 					}
 					
-					protected «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «assignOutputScope.getIdentifier(output)»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(assignOutputScope, names)») {
+					protected «output.toBuilderType(names)» assignOutput(«output.toBuilderType(names)» «assignOutputScope.getIdentifierOrThrow(output)»«IF !inputs.empty», «ENDIF»«func.inputsAsParameters(assignOutputScope, names)») {
 						«FOR indexed : func.operations.filter(Operation).indexed»
 							«IF indexed.value instanceof AssignOutputOperation»
 								«assign(assignOutputScope, indexed.value as AssignOutputOperation, aliasOut, names, output)»
@@ -213,7 +221,7 @@ class FunctionGenerator {
 								
 							«ENDIF»
 						«ENDFOR»
-						return «IF !needsBuilder(output)»«assignOutputScope.getIdentifier(output)»«ELSE»«Optional».ofNullable(«assignOutputScope.getIdentifier(output)»)
+						return «IF !needsBuilder(output)»«assignOutputScope.getIdentifierOrThrow(output)»«ELSE»«Optional».ofNullable(«assignOutputScope.getIdentifierOrThrow(output)»)
 							.map(«IF output.card.isMany»o -> o.stream().map(i -> i.prune()).collect(«Collectors».toList())«ELSE»o -> o.prune()«ENDIF»)
 							.orElse(null)«ENDIF»;
 					}
@@ -224,14 +232,14 @@ class FunctionGenerator {
 							«val returnType = names.shortcutJavaType(alias)»
 							
 							@Override
-							protected «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «alias.name»(«output.toBuilderType(names)» «aliasScope.getIdentifier(output)», «IF !inputs.empty»«func.inputsAsParameters(aliasScope, names)»«ENDIF») {
-								return toBuilder(«expressionGenerator.javaCode(alias.expression, scope)»«IF multi».getMulti()«ELSE».get()«ENDIF»);
+							protected «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«output.toBuilderType(names)» «aliasScope.getIdentifierOrThrow(output)», «IF !inputs.empty»«func.inputsAsParameters(aliasScope, names)»«ENDIF») {
+								return toBuilder(«expressionGenerator.javaCode(alias.expression, aliasScope, names)»«IF multi».getMulti()«ELSE».get()«ENDIF»);
 							}
 						«ELSE»
 							
 							@Override
-							protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «alias.name»(«func.inputsAsParameters(aliasScope, names)») {
-								return «expressionGenerator.javaCode(alias.expression, scope)»;
+							protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaType(typeProvider.getRType(alias.expression))»>«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«func.inputsAsParameters(aliasScope, names)») {
+								return «expressionGenerator.javaCode(alias.expression, aliasScope, names)»;
 							}
 						«ENDIF»
 					«ENDFOR»
@@ -251,12 +259,12 @@ class FunctionGenerator {
 		val dispatchingFuncs = function.dispatchingFunctions.sortBy[name].toList
 		val enumParam = function.inputs.filter[type instanceof RosettaEnumeration].head.name
 		val outputType = function.outputTypeOrVoid(names)
-		val className = topScope.getIdentifier(function).orElseThrow
+		val className = topScope.getIdentifierOrThrow(function)
 		
-		val classScope = topScope.childScope
+		val classScope = topScope.classScope(className.desiredName)
 		dispatchingFuncs.forEach[classScope.createIdentifier(it, toTargetClassName.lastSegment)]
 		
-		val evaluateScope = classScope.childScope
+		val evaluateScope = classScope.methodScope("evaluate")
 		function.inputs.forEach[evaluateScope.createIdentifier(it)]
 		'''
 		«javadoc(function, version)»
@@ -273,7 +281,7 @@ class FunctionGenerator {
 				switch («enumParam») {
 					«FOR enumFunc : dispatchingFuncs»
 						case «toEnumClassName(enumFunc).lastSegment»:
-							return «classScope.getIdentifier(enumFunc)».evaluate(«function.inputsAsArguments(evaluateScope, names)»);
+							return «classScope.getIdentifierOrThrow(enumFunc)».evaluate(«function.inputsAsArguments(evaluateScope, names)»);
 					«ENDFOR»
 					default:
 						throw new IllegalArgumentException("Enum value not implemented: " + «enumParam»);
@@ -301,9 +309,9 @@ class FunctionGenerator {
 		if (pathAsList.isEmpty)
 			'''
 			«IF needsBuilder(op.assignRoot)»
-				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(scope, op, type.card.isMany)»);
+				«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(scope, names, op, type.card.isMany)»);
 			«ELSE»
-				«op.assignTarget(outs, names)» = «assignPlainValue(scope, op, type.card.isMany)»;«ENDIF»'''
+				«op.assignTarget(outs, names)» = «assignPlainValue(scope, names, op, type.card.isMany)»;«ENDIF»'''
 		else {
 			'''
 				«op.assignTarget(outs, names)»
@@ -327,16 +335,16 @@ class FunctionGenerator {
 				val addVarName = scope.createUniqueIdentifier("addVar")
 				'''
 				«IF needsBuilder(op.assignRoot)»
-					«type.toBuilderType(names)» «addVarName» = toBuilder(«assignPlainValue(scope, op, type.card.isMany)»);
+					«type.toBuilderType(names)» «addVarName» = toBuilder(«assignPlainValue(scope, names, op, type.card.isMany)»);
 				«ELSE»
-					«type.toBuilderType(names)» «addVarName» = «assignPlainValue(scope, op, type.card.isMany)»;«ENDIF»
+					«type.toBuilderType(names)» «addVarName» = «assignPlainValue(scope, names, op, type.card.isMany)»;«ENDIF»
 				«op.assignTarget(outs, names)».addAll(«addVarName»);'''	
 			} else {
 				'''
 				«IF needsBuilder(op.assignRoot)»
-					«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(scope, op, type.card.isMany)»);
+					«op.assignTarget(outs, names)» = toBuilder(«assignPlainValue(scope, names, op, type.card.isMany)»);
 				«ELSE»
-					«op.assignTarget(outs, names)» = «assignPlainValue(scope, op, type.card.isMany)»;«ENDIF»'''	
+					«op.assignTarget(outs, names)» = «assignPlainValue(scope, names, op, type.card.isMany)»;«ENDIF»'''	
 			}
 		} else { // assign an attribute of the function output object
 			'''
@@ -368,11 +376,10 @@ class FunctionGenerator {
 		if (assignAsKey) {
 			val metaClass = referenceWithMetaJavaType(op, names)
 			if (cardinality.isMulti(op.expression)) {
-				val lambdaScope = scope.childScope
+				val lambdaScope = scope.lambdaScope
 				val item = lambdaScope.createUniqueIdentifier("item")
-				lambdaScope.close
 				'''
-					«expressionGenerator.javaCode(op.expression, scope)»
+					«expressionGenerator.javaCode(op.expression, scope, names)»
 						.getItems()
 						.map(«item» -> «metaClass».builder()
 							.setExternalReference(«item».getMappedObject().getMeta().getExternalKey())
@@ -381,17 +388,16 @@ class FunctionGenerator {
 						.collect(«Collectors».toList())
 				'''
 			} else {
-				val lambdaScope = scope.childScope
+				val lambdaScope = scope.lambdaScope
 				val r = lambdaScope.createUniqueIdentifier("r")
 				val m = lambdaScope.createUniqueIdentifier("m")
-				lambdaScope.close
 				'''
 					«metaClass».builder()
-						.setGlobalReference(«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, scope)».get())
+						.setGlobalReference(«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, scope, names)».get())
 							.map(«r» -> «r».getMeta())
-							.map(«m» -> _m.getGlobalKey())
+							.map(«m» -> «m».getGlobalKey())
 							.orElse(null))
-						.setExternalReference(«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, scope)».get())
+						.setExternalReference(«Optional».ofNullable(«expressionGenerator.javaCode(op.expression, scope, names)».get())
 							.map(«r» -> «r».getMeta())
 							.map(«m» -> «m».getExternalKey())
 							.orElse(null))
@@ -399,12 +405,12 @@ class FunctionGenerator {
 				'''
 			}
 		} else {
-			assignPlainValue(scope, op, isAssigneeMulti)
+			assignPlainValue(scope, names, op, isAssigneeMulti)
 		}
 	}
 	
-	private def StringConcatenationClient assignPlainValue(JavaScope scope, Operation operation, boolean isAssigneeMulti) {
-		'''«expressionGenerator.javaCode(operation.expression, scope)»«IF isAssigneeMulti».getMulti()«ELSE».get()«ENDIF»'''
+	private def StringConcatenationClient assignPlainValue(JavaScope scope, JavaNames names, Operation operation, boolean isAssigneeMulti) {
+		'''«expressionGenerator.javaCode(operation.expression, scope, names)»«IF isAssigneeMulti».getMulti()«ELSE».get()«ENDIF»'''
 	}
 	
 	def boolean hasMeta(RType type) {
@@ -470,10 +476,10 @@ class FunctionGenerator {
 	}
 	private def dispatch StringConcatenationClient lhsExpand(Attribute c) '''«c.name»'''
 	
-	private def StringConcatenationClient contributeCondition(Condition condition, GeneratedIdentifier conditionValidator) {
+	private def StringConcatenationClient contributeCondition(Condition condition, GeneratedIdentifier conditionValidator, JavaScope scope, JavaNames names) {
 		'''
 			«conditionValidator».validate(() -> 
-				«expressionGenerator.javaCode(condition.expression, null)», 
+				«expressionGenerator.javaCode(condition.expression, scope.lambdaScope, names)», 
 					"«condition.definition»");
 		'''
 	}
@@ -483,16 +489,16 @@ class FunctionGenerator {
 		if (out === null) {
 			JavaPrimitiveType.VOID
 		} else {
-			out.toListOrSingleJavaType()
+			typeProvider.getRType(out.type).toListOrSingleJavaType(out.card.isMany)
 		}
 	}
 
 	private def StringConcatenationClient inputsAsArguments(extension Function function, JavaScope scope, extension JavaNames names) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«scope.getIdentifier(input)»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
 	private def StringConcatenationClient inputsAsParameters(extension Function function, JavaScope scope, extension JavaNames names) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«input.toListOrSingleJavaType» «scope.getIdentifier(input)»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«typeProvider.getRType(input.type).toListOrSingleJavaType(input.card.isMany)» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
 	def private StringConcatenationClient shortcutJavaType(JavaNames names, ShortcutDeclaration feature) {
@@ -502,7 +508,7 @@ class FunctionGenerator {
 	}
 
 	private def JavaType toBuilderType(Attribute attr, JavaNames names) {
-		var javaType = names.toJavaType(attr.type)
+		var javaType = names.toJavaType(typeProvider.getRType(attr.type)) as JavaClass
 		if (needsBuilder(attr)) javaType = names.toBuilderType(javaType)
 		if (attr.card.isMany) {
 			return new JavaParameterizedType(names.toJavaType(List), javaType)

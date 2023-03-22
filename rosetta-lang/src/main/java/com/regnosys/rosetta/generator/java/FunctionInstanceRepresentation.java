@@ -11,6 +11,10 @@ public class FunctionInstanceRepresentation {
 	}
 	
 	@Override
+	public String toString() {
+		return "FunctionInstance[" + func.getName() + "]";
+	}
+	@Override
 	public int hashCode() {
 		return Objects.hash(this.getClass(), func);
 	}

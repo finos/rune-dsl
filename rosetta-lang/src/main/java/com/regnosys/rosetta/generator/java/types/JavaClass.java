@@ -2,6 +2,7 @@ package com.regnosys.rosetta.generator.java.types;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.Validate;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.regnosys.rosetta.utils.DottedPath;
@@ -11,13 +12,18 @@ public class JavaClass implements JavaReferenceType {
 	private final String simpleName;
 	
 	public JavaClass(DottedPath packageName, String simpleName) {
+		Validate.notNull(packageName);
+		Validate.notNull(simpleName);
 		this.packageName = packageName;
 		this.simpleName = simpleName;
 	}
 	
 	public static JavaClass from(Class<?> t) {
-		if (t.isArray() || t.isPrimitive() || t.isInterface() || t.getSimpleName().equals("")) {
+		if (t.isArray() || t.isPrimitive() || t.getSimpleName().equals("")) {
 			return null;
+		}
+		if (t.isInterface()) {
+			return JavaInterface.from(t);
 		}
 		String fullName = t.getSimpleName();
 		Class<?> parent = t;
@@ -38,6 +44,11 @@ public class JavaClass implements JavaReferenceType {
 	
 	public DottedPath getCanonicalName() {
 		return packageName.child(simpleName);
+	}
+	
+	@Override
+	public String toString() {
+		return getCanonicalName().withDots();
 	}
 	
 	@Override

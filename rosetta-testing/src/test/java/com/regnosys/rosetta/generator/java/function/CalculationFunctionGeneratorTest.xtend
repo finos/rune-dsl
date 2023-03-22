@@ -109,7 +109,7 @@ class CalculationFunctionGeneratorTest {
 							
 							@Override
 							protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
-								return MapperS.of(in2).<Integer>map("getFrequency", _period -> _period.getFrequency());
+								return MapperS.of(in2).<Integer>map("getFrequency", period -> period.getFrequency());
 							}
 						}
 					}
@@ -343,12 +343,12 @@ class CalculationFunctionGeneratorTest {
 					
 					@Override
 					protected Mapper<Date> arg1(FuncIn funIn) {
-						return MapperS.of(funIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
+						return MapperS.of(funIn).<Date>map("getVal1", funcIn -> funcIn.getVal1());
 					}
 					
 					@Override
 					protected Mapper<LocalTime> arg2(FuncIn funIn) {
-						return MapperS.of(funIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
+						return MapperS.of(funIn).<LocalTime>map("getVal2", funcIn -> funcIn.getVal2());
 					}
 				}
 			}
@@ -533,24 +533,24 @@ class CalculationFunctionGeneratorTest {
 						
 						protected OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder out, List<? extends WithMeta> withMeta) {
 							out
-								.addAttrMulti(MapperC.of(withMeta)
+								.addAttrMulti(MapperC.<WithMeta>of(withMeta)
 									.getItems()
-									.map(_item -> ReferenceWithMetaWithMeta.builder()
-										.setExternalReference(_item.getMappedObject().getMeta().getExternalKey())
-										.setGlobalReference(_item.getMappedObject().getMeta().getGlobalKey())
+									.map(item -> ReferenceWithMetaWithMeta.builder()
+										.setExternalReference(item.getMappedObject().getMeta().getExternalKey())
+										.setGlobalReference(item.getMappedObject().getMeta().getGlobalKey())
 										.build())
 									.collect(Collectors.toList())
 								);
 							
 							out
 								.setAttrSingle(ReferenceWithMetaWithMeta.builder()
-									.setGlobalReference(Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
-										.map(_r -> _r.getMeta())
-										.map(_m -> _m.getGlobalKey())
+									.setGlobalReference(Optional.ofNullable(MapperS.of(MapperC.<WithMeta>of(withMeta).get()).get())
+										.map(r -> r.getMeta())
+										.map(m -> m.getGlobalKey())
 										.orElse(null))
-									.setExternalReference(Optional.ofNullable(MapperS.of(MapperC.of(withMeta).get()).get())
-										.map(_r -> _r.getMeta())
-										.map(_m -> _m.getExternalKey())
+									.setExternalReference(Optional.ofNullable(MapperS.of(MapperC.<WithMeta>of(withMeta).get()).get())
+										.map(r -> r.getMeta())
+										.map(m -> m.getExternalKey())
 										.orElse(null))
 									.build()
 								);
@@ -586,7 +586,6 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.test.model.functions.AddOne;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)
@@ -676,8 +675,6 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Math;
 			import com.rosetta.test.model.MathInput;
-			import com.rosetta.test.model.functions.AddOne;
-			import com.rosetta.test.model.functions.SubOne;
 			
 			
 			/**
@@ -728,7 +725,7 @@ class CalculationFunctionGeneratorTest {
 						}
 						
 						protected String assignOutput(String arg1, Math in1, MathInput in2) {
-							arg1 = MapperS.of(addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+							arg1 = MapperS.of(addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", mathInput -> mathInput.getMathInput()).get())).get();
 							
 							return arg1;
 						}
@@ -763,7 +760,7 @@ class CalculationFunctionGeneratorTest {
 						}
 						
 						protected String assignOutput(String arg1, Math in1, MathInput in2) {
-							arg1 = MapperS.of(subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", _mathInput -> _mathInput.getMathInput()).get())).get();
+							arg1 = MapperS.of(subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", mathInput -> mathInput.getMathInput()).get())).get();
 							
 							return arg1;
 						}
@@ -795,7 +792,6 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.test.model.functions.AddOne;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)

@@ -278,18 +278,14 @@ class RosettaBlueprintRepeatableRuleTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
-				import com.rosetta.model.lib.mapper.MapperS;
-				import javax.inject.Inject;
-				// manual imports
 				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
-				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
+				import javax.inject.Inject;
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**

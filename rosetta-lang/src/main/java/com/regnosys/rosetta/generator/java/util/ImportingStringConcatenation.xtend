@@ -22,24 +22,34 @@ class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 		this.scope = topScope;
 	}
 	
-	override protected void normalizedAppend(Object normalizedObject, int index) {
-		if (normalizedObject instanceof JavaClass) {
-			val id = getOrImportIdentifier(normalizedObject, normalizedObject.packageName, normalizedObject.simpleName)
-			super.append(id, index)
-		} else if (normalizedObject instanceof PreferWildcardImportClass) {
-			val jc = normalizedObject.javaClass
-			val id = getOrWildcardImportIdentifier(jc, jc.packageName, jc.simpleName)
-			super.append(id, index)
-		} else if (normalizedObject instanceof Method) {
-			val id = getOrStaticImportIdentifier(normalizedObject, DottedPath.splitOnDots(normalizedObject.declaringClass.canonicalName), normalizedObject.name)
-			super.append(id, index)
-		} else if (normalizedObject instanceof PreferWildcardImportMethod) {
-			val m = normalizedObject.method
-			val id = getOrStaticWildcardImportIdentifier(m, DottedPath.splitOnDots(m.declaringClass.canonicalName), m.name)
-			super.append(id, index)
+	override protected void append(Object object, int index) {
+		if (object instanceof JavaClass) {
+			throw new IllegalStateException()
 		} else {
-			super.append(normalizedObject, index)
+			super.append(object, index)
 		}
+	}
+	override protected void append(Object object, String indentation, int index) {
+		if (object instanceof JavaClass) {
+			throw new IllegalStateException()
+		} else {
+			super.append(object, indentation, index)
+		}
+	}
+	
+	override protected Object handle(Object object) {
+		if (object instanceof JavaClass) {
+			return getOrImportIdentifier(object, object.packageName, object.simpleName)
+		} else if (object instanceof PreferWildcardImportClass) {
+			val jc = object.javaClass
+			return getOrWildcardImportIdentifier(jc, jc.packageName, jc.simpleName)
+		} else if (object instanceof Method) {
+			return getOrStaticImportIdentifier(object, DottedPath.splitOnDots(object.declaringClass.canonicalName), object.name)
+		} else if (object instanceof PreferWildcardImportMethod) {
+			val m = object.method
+			return getOrStaticWildcardImportIdentifier(m, DottedPath.splitOnDots(m.declaringClass.canonicalName), m.name)
+		}
+		return super.handle(object)
 	}
 	
 	override protected Object normalize(Object object) {
@@ -122,8 +132,9 @@ class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 	}
 	
 	def void addWildcardImport(DottedPath packageName) {
-		if (imports.put(packageName.child("*"), packageName) === null) {
-			imports.entrySet.removeIf[value == packageName]
+		val wildcard = packageName.child("*")
+		if (imports.put(wildcard, packageName) === null) {
+			imports.entrySet.removeIf[key != wildcard && value == packageName]
 		}
 	}
 	
@@ -134,17 +145,18 @@ class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 	}
 	
 	def void addStaticWildcardImport(DottedPath canonicalClassName) {
-		if (staticImports.put(canonicalClassName.child("*"), canonicalClassName) === null) {
-			staticImports.entrySet.removeIf[value == canonicalClassName]
+		val wildcard = canonicalClassName.child("*")
+		if (staticImports.put(wildcard, canonicalClassName) === null) {
+			staticImports.entrySet.removeIf[key != wildcard && value == canonicalClassName]
 		}
 	}
 
 	
 	def List<DottedPath> getImports() {
-		imports.values.toSet.sort
+		imports.keySet.sort
 	}
 	
 	def List<DottedPath> getStaticImports() {
-		staticImports.values.toSet.sort
+		staticImports.keySet.sort
 	}
 }

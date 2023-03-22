@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -12,17 +13,21 @@ import com.google.common.collect.LinkedListMultimap;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 
 public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {	
-	protected final Optional<Scope> parent;
+	private final Optional<Scope> parent;
 	private final Map<Object, GeneratedIdentifier> identifiers = new LinkedHashMap<>();
 	
 	private boolean isClosed = false;
 	private Map<GeneratedIdentifier, String> actualNames = null;
 	
-	public GeneratorScope() {
+	private final String description;
+	
+	public GeneratorScope(String description) {
+		this.description = description;
 		this.parent = Optional.empty();
 	}
 	
-	protected GeneratorScope(Scope parent) {
+	protected GeneratorScope(String description, Scope parent) {
+		this.description = description;
 		this.parent = Optional.of(parent);
 	}
 	
@@ -31,7 +36,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 * The implementation should simply call the constructor,
 	 * e.g., `return new MyScope(this.implicitVarUtil, this);`.
 	 */
-	public abstract Scope childScope();
+	public abstract Scope childScope(String description);
 	/**
 	 * Determine whether `name` is a valid identifier in the target language.
 	 * E.g., this method should return `false` if `name` is a keyword in the target language.
@@ -39,7 +44,41 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	public abstract boolean isValidIdentifier(String name);
 
 	public String escapeName(String name) {
-		return name + "_";
+		return "_" + name;
+	}
+	
+	public boolean isClosed() {
+		return this.isClosed;
+	}
+	public Optional<Scope> getParent() {
+		return this.parent;
+	}
+	
+	public String getDebugInfo() {
+		StringBuilder b = new StringBuilder();
+		b.append(this.description);
+		if (!this.isClosed) {
+			b.append(" <unclosed>");
+		}
+		b.append(":");
+		if (this.identifiers.isEmpty()) {
+			b.append(" <no identifiers>");
+		} else {
+			this.identifiers.entrySet().forEach(e ->
+					b.append("\n\t").append(e.getKey()).append(" -> \"").append(e.getValue().getDesiredName()).append("\""));
+		}
+		parent.ifPresent(p -> {
+			b.append("\n").append(p.getDebugInfo().replaceAll("(?m)^", "\t"));
+		});
+		return b.toString();
+	}
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		b.append("=========== Scope Description ==========\n");
+		b.append(getDebugInfo());
+		b.append("\n========================================\n");
+		
+		return b.toString();
 	}
 	
 	public Set<GeneratedIdentifier> getIdentifiers() {
@@ -61,6 +100,13 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 		return Optional.ofNullable(id);
 	}
 	/**
+	 * Get the generated identifier of the given Rosetta object in the current
+	 * scope, or throw if it does not exist.
+	 */
+	public GeneratedIdentifier getIdentifierOrThrow(Object obj) {
+		return getIdentifier(obj).orElseThrow(() -> new NoSuchElementException("No identifier defined for " + obj + " in scope.\n" + this));
+	}
+	/**
 	 * Define the desired name for a Rosetta object in this scope.
 	 * 
 	 * @throws IllegalStateException if this scope is closed.
@@ -68,10 +114,10 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 */
 	public GeneratedIdentifier createIdentifier(Object obj, String name) {
 		if (isClosed) {
-			throw new IllegalStateException("Cannot create a new identifier for a closed scope.");
+			throw new IllegalStateException("Cannot create a new identifier in a closed scope. (" + obj + " -> " + name + ")\n" + this);
 		}
 		if (this.getIdentifier(obj).isPresent()) {
-			throw new IllegalStateException("There is already a name defined for object `" + obj + "`.");
+			throw new IllegalStateException("There is already a name defined for object `" + obj + "`.\n" + this);
 		}
 		GeneratedIdentifier id = new GeneratedIdentifier(this, name);
 		this.identifiers.put(obj, id);
@@ -96,7 +142,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 		Object token = new Object() {
 			@Override
 			public String toString() {
-				return "{token for \"" + name + "\"}";
+				return "{unique token for \"" + name + "\"}";
 			}
 		};
 		return createIdentifier(token, name);
@@ -123,26 +169,25 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 */
 	public void close() {
 		if (this.isClosed) {
-			throw new IllegalStateException("The scope is already closed.");
+			throw new IllegalStateException("The scope is already closed.\n" + this);
 		}
 		this.isClosed = true;
 	}
 	/**
-	 * Get the actual name of the given identifier.
-	 * 
-	 * @throws IllegalStateException if this scope or any of its parents is not closed.
+	 * Get the actual name of the given identifier. Also closes the scope and
+	 * its parent scopes if they weren't closed yet.
 	 */
-	public String getActualName(GeneratedIdentifier identifier) {
+	public Optional<String> getActualName(GeneratedIdentifier identifier) {
 		if (!this.isClosed) {
-			throw new IllegalStateException("Cannot get the actual name of a scope that is not closed.");
+			this.close();
 		}
 		return this.parent
-				.map(p -> p.getActualName(identifier))
-				.orElseGet(() -> {
+				.flatMap(p -> p.getActualName(identifier))
+				.or(() -> {
 					if (this.actualNames == null) {
 						this.computeActualNames();
 					}
-					return this.actualNames.get(identifier);
+					return Optional.ofNullable(this.actualNames.get(identifier));
 				});
 	}
 	private void computeActualNames() {
@@ -151,7 +196,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 		Set<String> takenNames = parent
 			.map(p -> p.getTakenNames())
 			.orElseGet(() -> new HashSet<>());
-		LinkedListMultimap<String, GeneratedIdentifier> idsByDesiredName = identifiersByDesiredName();
+		LinkedListMultimap<String, GeneratedIdentifier> idsByDesiredName = localIdentifiersByDesiredName();
 		for (String desiredName: idsByDesiredName.keySet()) {
 			List<GeneratedIdentifier> ids = idsByDesiredName.get(desiredName);
 			for (int i = 0; i < ids.size(); i++) {
@@ -168,9 +213,9 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 			}
 		}
 	}
-	private LinkedListMultimap<String, GeneratedIdentifier> identifiersByDesiredName() {
+	private LinkedListMultimap<String, GeneratedIdentifier> localIdentifiersByDesiredName() {
 		LinkedListMultimap<String, GeneratedIdentifier> result = LinkedListMultimap.create();
-		this.getIdentifiers().forEach(id -> result.put(id.getDesiredName(), id));
+		identifiers.values().forEach(id -> result.put(id.getDesiredName(), id));
 		return result;
 	}
 	protected Set<String> getTakenNames() {

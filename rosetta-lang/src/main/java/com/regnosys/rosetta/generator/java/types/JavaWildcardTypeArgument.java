@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.types;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.commons.lang3.Validate;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 public class JavaWildcardTypeArgument implements JavaTypeArgument {
@@ -18,6 +19,7 @@ public class JavaWildcardTypeArgument implements JavaTypeArgument {
 		this.bound = Optional.empty();
 	}
 	protected JavaWildcardTypeArgument(boolean extendsBound, JavaReferenceType bound) {
+		Validate.notNull(bound);
 		this.extendsBound = extendsBound;
 		this.bound = Optional.of(bound);
 	}
@@ -41,6 +43,21 @@ public class JavaWildcardTypeArgument implements JavaTypeArgument {
 	
 	public Optional<JavaReferenceType> getBound() {
 		return bound;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder target = new StringBuilder();
+		target.append("?");
+		if (hasExtendsBound()) {
+			target.append(" extends ");
+			target.append(bound.get());
+		}
+		if (hasSuperBound()) {
+			target.append(" super ");
+			target.append(bound.get());
+		}
+		return target.toString();
 	}
 	
 	@Override

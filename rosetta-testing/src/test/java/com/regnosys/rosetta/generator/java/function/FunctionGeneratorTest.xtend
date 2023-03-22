@@ -573,7 +573,7 @@ class FunctionGeneratorTest {
 					* @param name2 
 					* @return result 
 					*/
-					public List<String> evaluate(String name, String name2) {
+					public List<? extends String> evaluate(String name, String name2) {
 						List<String> result = doEvaluate(name, name2);
 						
 						return result;
@@ -627,7 +627,7 @@ class FunctionGeneratorTest {
 					* @param name2 
 					* @return result 
 					*/
-					public List<BigDecimal> evaluate(String name, String name2) {
+					public List<? extends BigDecimal> evaluate(String name, String name2) {
 						List<BigDecimal> result = doEvaluate(name, name2);
 						
 						return result;
@@ -680,7 +680,7 @@ class FunctionGeneratorTest {
 					* @param name2 
 					* @return result 
 					*/
-					public List<Integer> evaluate(String name, String name2) {
+					public List<? extends Integer> evaluate(String name, String name2) {
 						List<Integer> result = doEvaluate(name, name2);
 						
 						return result;
@@ -734,7 +734,7 @@ class FunctionGeneratorTest {
 					* @param name2 
 					* @return result 
 					*/
-					public List<Date> evaluate(String name, String name2) {
+					public List<? extends Date> evaluate(String name, String name2) {
 						List<Date> result = doEvaluate(name, name2);
 						
 						return result;
@@ -1323,8 +1323,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.records.Date;
-				import com.rosetta.test.model.functions.F1;
-				import com.rosetta.test.model.functions.F2;
 				
 				
 				@ImplementedBy(F3.F3Default.class)
@@ -1355,7 +1353,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected Date assignOutput(Date f3Output, Date f3Input) {
-							f3Output = MapperS.of(f2.evaluate(MapperC.of(f1.evaluate(MapperS.of(f3Input).get())).getMulti())).get();
+							f3Output = MapperS.of(f2.evaluate(MapperC.<Date>of(f1.evaluate(MapperS.of(f3Input).get())).getMulti())).get();
 							
 							return f3Output;
 						}
@@ -1404,7 +1402,7 @@ class FunctionGeneratorTest {
 					* @param f1Input 
 					* @return f1OutputList 
 					*/
-					public List<Date> evaluate(Date f1Input) {
+					public List<? extends Date> evaluate(Date f1Input) {
 						List<Date> f1OutputList = doEvaluate(f1Input);
 						
 						return f1OutputList;
@@ -1445,22 +1443,22 @@ class FunctionGeneratorTest {
 					* @param f2InputList 
 					* @return f2Output 
 					*/
-					public Date evaluate(List<Date> f2InputList) {
+					public Date evaluate(List<? extends Date> f2InputList) {
 						Date f2Output = doEvaluate(f2InputList);
 						
 						return f2Output;
 					}
 				
-					protected abstract Date doEvaluate(List<Date> f2InputList);
+					protected abstract Date doEvaluate(List<? extends Date> f2InputList);
 				
 					public static class F2Default extends F2 {
 						@Override
-						protected Date doEvaluate(List<Date> f2InputList) {
+						protected Date doEvaluate(List<? extends Date> f2InputList) {
 							Date f2Output = null;
 							return assignOutput(f2Output, f2InputList);
 						}
 						
-						protected Date assignOutput(Date f2Output, List<Date> f2InputList) {
+						protected Date assignOutput(Date f2Output, List<? extends Date> f2InputList) {
 							return f2Output;
 						}
 					}
@@ -1480,8 +1478,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.records.Date;
-				import com.rosetta.test.model.functions.F1;
-				import com.rosetta.test.model.functions.F2;
 				
 				
 				@ImplementedBy(F3.F3Default.class)
@@ -1514,14 +1510,14 @@ class FunctionGeneratorTest {
 						}
 						
 						protected Date assignOutput(Date f3Output, Date f3Input) {
-							f3Output = MapperS.of(f2.evaluate(MapperC.of(f1OutList(f3Input).getMulti()).getMulti())).get();
+							f3Output = MapperS.of(f2.evaluate(MapperC.<Date>of(f1OutList(f3Input).getMulti()).getMulti())).get();
 							
 							return f3Output;
 						}
 						
 						@Override
 						protected Mapper<Date> f1OutList(Date f3Input) {
-							return MapperC.of(f1.evaluate(MapperS.of(f3Input).get()));
+							return MapperC.<Date>of(f1.evaluate(MapperS.of(f3Input).get()));
 						}
 					}
 				}
@@ -1986,7 +1982,7 @@ class FunctionGeneratorTest {
 					* @param foo 
 					* @return res 
 					*/
-					public List<Integer> evaluate(Foo foo) {
+					public List<? extends Integer> evaluate(Foo foo) {
 						List<Integer> res = doEvaluate(foo);
 						
 						return res;
@@ -2055,23 +2051,23 @@ class FunctionGeneratorTest {
 					* @param n 
 					* @return res 
 					*/
-					public List<Integer> evaluate(List<Integer> n) {
+					public List<? extends Integer> evaluate(List<? extends Integer> n) {
 						List<Integer> res = doEvaluate(n);
 						
 						return res;
 					}
 				
-					protected abstract List<Integer> doEvaluate(List<Integer> n);
+					protected abstract List<Integer> doEvaluate(List<? extends Integer> n);
 				
 					public static class DistinctFuncDefault extends DistinctFunc {
 						@Override
-						protected List<Integer> doEvaluate(List<Integer> n) {
+						protected List<Integer> doEvaluate(List<? extends Integer> n) {
 							List<Integer> res = new ArrayList<>();
 							return assignOutput(res, n);
 						}
 						
-						protected List<Integer> assignOutput(List<Integer> res, List<Integer> n) {
-							res = distinct(MapperC.of(n)).getMulti();
+						protected List<Integer> assignOutput(List<Integer> res, List<? extends Integer> n) {
+							res = distinct(MapperC.<Integer>of(n)).getMulti();
 							
 							return res;
 						}
@@ -2202,8 +2198,8 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, Foo foo) {
-							List<Bar.BarBuilder> addVar0 = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti());
-							res.addAll(addVar0);
+							List<Bar.BarBuilder> addVar = toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti());
+							res.addAll(addVar);
 							
 							return Optional.ofNullable(res)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -2301,8 +2297,8 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, List<? extends Bar> barList) {
-							List<Bar.BarBuilder> addVar0 = toBuilder(distinct(MapperC.of(barList)).getMulti());
-							res.addAll(addVar0);
+							List<Bar.BarBuilder> addVar = toBuilder(distinct(MapperC.<Bar>of(barList)).getMulti());
+							res.addAll(addVar);
 							
 							return Optional.ofNullable(res)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -2677,31 +2673,31 @@ class FunctionGeneratorTest {
 					* @param t2 
 					* @return result 
 					*/
-					public List<String> evaluate(Boolean test, List<String> t1, List<String> t2) {
+					public List<? extends String> evaluate(Boolean test, List<? extends String> t1, List<? extends String> t2) {
 						List<String> result = doEvaluate(test, t1, t2);
 						
 						return result;
 					}
 				
-					protected abstract List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2);
+					protected abstract List<String> doEvaluate(Boolean test, List<? extends String> t1, List<? extends String> t2);
 				
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2) {
+						protected List<String> doEvaluate(Boolean test, List<? extends String> t1, List<? extends String> t2) {
 							List<String> result = new ArrayList<>();
 							return assignOutput(result, test, t1, t2);
 						}
 						
-						protected List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
-							List<String> addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+						protected List<String> assignOutput(List<String> result, Boolean test, List<? extends String> t1, List<? extends String> t2) {
+							List<String> addVar = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-									return MapperC.of(t1);
+									return MapperC.<String>of(t1);
 								}
 								else {
-									return MapperC.of(t2);
+									return MapperC.<String>of(t2);
 								}
 							}).getMulti();
-							result.addAll(addVar0);
+							result.addAll(addVar);
 							
 							return result;
 						}
@@ -2829,31 +2825,31 @@ class FunctionGeneratorTest {
 					* @param t2 
 					* @return result 
 					*/
-					public List<BigDecimal> evaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+					public List<? extends BigDecimal> evaluate(Boolean test, List<? extends BigDecimal> t1, List<? extends BigDecimal> t2) {
 						List<BigDecimal> result = doEvaluate(test, t1, t2);
 						
 						return result;
 					}
 				
-					protected abstract List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2);
+					protected abstract List<BigDecimal> doEvaluate(Boolean test, List<? extends BigDecimal> t1, List<? extends BigDecimal> t2);
 				
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+						protected List<BigDecimal> doEvaluate(Boolean test, List<? extends BigDecimal> t1, List<? extends BigDecimal> t2) {
 							List<BigDecimal> result = new ArrayList<>();
 							return assignOutput(result, test, t1, t2);
 						}
 						
-						protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
-							List<BigDecimal> addVar0 = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+						protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<? extends BigDecimal> t1, List<? extends BigDecimal> t2) {
+							List<BigDecimal> addVar = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-									return MapperC.of(t1);
+									return MapperC.<BigDecimal>of(t1);
 								}
 								else {
-									return MapperC.of(t2);
+									return MapperC.<BigDecimal>of(t2);
 								}
 							}).getMulti();
-							result.addAll(addVar0);
+							result.addAll(addVar);
 							
 							return result;
 						}
@@ -3024,15 +3020,15 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-							List<Bar.BarBuilder> addVar0 = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+							List<Bar.BarBuilder> addVar = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
-									return MapperC.of(b1);
+									return MapperC.<Bar>of(b1);
 								}
 								else {
-									return MapperC.of(b2);
+									return MapperC.<Bar>of(b2);
 								}
 							}).getMulti());
-							result.addAll(addVar0);
+							result.addAll(addVar);
 							
 							return Optional.ofNullable(result)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -3149,7 +3145,7 @@ class FunctionGeneratorTest {
 					* @param inList 
 					* @return foo 
 					*/
-					public Foo evaluate(List<String> inList) {
+					public Foo evaluate(List<? extends String> inList) {
 						Foo.FooBuilder foo = doEvaluate(inList);
 						
 						if (foo != null) {
@@ -3158,18 +3154,18 @@ class FunctionGeneratorTest {
 						return foo;
 					}
 				
-					protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
+					protected abstract Foo.FooBuilder doEvaluate(List<? extends String> inList);
 				
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected Foo.FooBuilder doEvaluate(List<String> inList) {
+						protected Foo.FooBuilder doEvaluate(List<? extends String> inList) {
 							Foo.FooBuilder foo = Foo.builder();
 							return assignOutput(foo, inList);
 						}
 						
-						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
+						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<? extends String> inList) {
 							foo
-								.setOutList(MapperC.of(inList).getMulti());
+								.setOutList(MapperC.<String>of(inList).getMulti());
 							
 							return Optional.ofNullable(foo)
 								.map(o -> o.prune())
@@ -3224,7 +3220,7 @@ class FunctionGeneratorTest {
 					* @param inList 
 					* @return foo 
 					*/
-					public Foo evaluate(List<String> inList) {
+					public Foo evaluate(List<? extends String> inList) {
 						Foo.FooBuilder foo = doEvaluate(inList);
 						
 						if (foo != null) {
@@ -3233,18 +3229,18 @@ class FunctionGeneratorTest {
 						return foo;
 					}
 				
-					protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
+					protected abstract Foo.FooBuilder doEvaluate(List<? extends String> inList);
 				
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
-						protected Foo.FooBuilder doEvaluate(List<String> inList) {
+						protected Foo.FooBuilder doEvaluate(List<? extends String> inList) {
 							Foo.FooBuilder foo = Foo.builder();
 							return assignOutput(foo, inList);
 						}
 						
-						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
+						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<? extends String> inList) {
 							foo
-								.addOutList(MapperC.of(inList).getMulti());
+								.addOutList(MapperC.<String>of(inList).getMulti());
 							
 							return Optional.ofNullable(foo)
 								.map(o -> o.prune())
@@ -3766,7 +3762,7 @@ class FunctionGeneratorTest {
 					public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
 						ComparisonResult result = executeDataRule(foo);
 						if (result.get()) {
-							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 						}
 						
 						String failureMessage = result.getError();
@@ -3827,7 +3823,6 @@ class FunctionGeneratorTest {
                 import com.google.inject.Inject;
                 import com.rosetta.model.lib.functions.RosettaFunction;
                 import com.rosetta.model.lib.mapper.MapperS;
-                import com.rosetta.test.model.functions.A;
                 
                 
                 @ImplementedBy(B.BDefault.class)

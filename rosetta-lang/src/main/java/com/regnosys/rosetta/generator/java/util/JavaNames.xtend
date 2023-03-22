@@ -7,18 +7,12 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.object.ExpandedType
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions
 import com.regnosys.rosetta.rosetta.RosettaBasicType
-import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaQualifiedType
-import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RDataType
@@ -35,6 +29,7 @@ import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.JavaReferenceType
 import com.regnosys.rosetta.generator.java.types.JavaPrimitiveType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
+import com.regnosys.rosetta.generator.java.types.JavaWildcardTypeArgument
 
 class JavaNames {
 
@@ -51,11 +46,15 @@ class JavaNames {
 		new JavaClass(type.packageName, type.simpleName + "." + type.simpleName + "BuilderImpl")
 	}
 
-	def JavaType toListOrSingleJavaType(Attribute attribute) {
-		if (attribute.card.isIsMany) {
-			return new JavaParameterizedType(List.toJavaType, attribute.type.toJavaType.toReferenceType)
+	def JavaType toListOrSingleJavaType(RType type, boolean isMany) {
+		if (isMany) {
+			return type.toJavaType.toPolymorphicList
 		} else
-			return attribute.type.toJavaType
+			return type.toJavaType
+	}
+	
+	def JavaParameterizedType toPolymorphicList(JavaReferenceType t) {
+		return new JavaParameterizedType(List.toJavaType, JavaWildcardTypeArgument.extendsBound(t));
 	}
 	
 	def dispatch JavaReferenceType toReferenceType(JavaPrimitiveType type) {
@@ -65,20 +64,20 @@ class JavaNames {
 		type
 	}
 
-	def JavaClass toJavaType(ExpandedType type) {
+	def JavaReferenceType toJavaType(ExpandedType type) {
 		if (type.name == RosettaAttributeExtensions.METAFIELDS_CLASS_NAME || type.name == RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME) {
 			return new JavaClass(packages.basicMetafields, type.name)
 		}
 		if (type.metaType) {//TODO ExpandedType needs to store the underlying type for meta types if we want them to be anything other than strings
-			return createForBasicType("string")
+			return createForBasicType(RBuiltinType.STRING)
 		}
 		if (type.builtInType) {
-			return createForBasicType(type.name)
+			return JavaClassTranslator.toRType(type.name).toJavaType
 		}
 		new JavaClass(new RootPackage(type.model), type.name)
 	}
 
-	def JavaClass toJavaType(RosettaCallableWithArgs func) {
+	def JavaReferenceType toJavaType(RosettaCallableWithArgs func) {
 		switch (func) {
 			Function:
 				new JavaClass(modelRootPackage(func).functions, func.name)
@@ -93,41 +92,20 @@ class JavaNames {
 		JavaClass.from(c)
 	}
 
-	def JavaClass toJavaType(RosettaType type) {
-		switch (type) {
-			RosettaBasicType:
-				createForBasicType(type.name)
-			Data,
-			RosettaEnumeration:
-				new JavaClass(modelRootPackage(type), type.name)
-			RosettaRecordType: {
-				val canonicalName = DottedPath.splitOnDots(JavaClassTranslator.toJavaFullType(type.name))
-				new JavaClass(canonicalName.parent, canonicalName.last)
-			}
-			RosettaCalculationType,
-			RosettaQualifiedType:
-				JavaClass.from(String)
-			default:
-				throw new UnsupportedOperationException("Not implemented for type " + type?.class?.name)
-		}
-	}
-
-	def JavaClass toJavaType(RType rType) {
+	def JavaReferenceType toJavaType(RType rType) {
 		switch (rType) {
 			RBuiltinType:
-				rType.name.createForBasicType
+				rType.createForBasicType
 			REnumType:
-				rType.enumeration.toJavaType
+				new JavaClass(modelRootPackage(rType.enumeration), rType.enumeration.name)
 			RDataType:
-				rType.data.toJavaType
+				new JavaClass(modelRootPackage(rType.data), rType.data.name)
 			RRecordType:
-				(rType.record as RosettaType).toJavaType
-			default:
-				throw new UnsupportedOperationException("Not implemented for type " + rType?.name)
+				rType.createForRecordType
 		}
 	}
 	
-	def createMetaType(DottedPath parent, String meta) {
+	def JavaClass createMetaType(DottedPath parent, String meta) {
 		return new JavaClass(parent, meta)
 	}
 
@@ -146,7 +124,7 @@ class JavaNames {
 //		createJavaType(pkg, name)
 	}
 
-	def toMetaType(ExpandedAttribute type, String name) {
+	def JavaClass toMetaType(ExpandedAttribute type, String name) {
 		if(type.type.isBuiltInType) {
 			// built-in meta types are defined in metafield package
 			return new JavaClass(packages.basicMetafields, name)
@@ -165,9 +143,11 @@ class JavaNames {
 		return new RootPackage(model)
 	}
 
-	private def JavaClass createForBasicType(String typeName) {
-		val canonicalName = DottedPath.splitOnDots(JavaClassTranslator.toJavaFullType(typeName))
-		return new JavaClass(canonicalName.parent, canonicalName.last)
+	private def JavaReferenceType createForBasicType(RBuiltinType type) {
+		return JavaClassTranslator.toJavaFullType(type).toReferenceType
+	}
+	private def JavaReferenceType createForRecordType(RRecordType type) {
+		return JavaClassTranslator.toJavaFullType(type)
 	}
 	
 	static def JavaNames createBasicFromPackages(RosettaJavaPackages packages) {

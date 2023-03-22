@@ -5,6 +5,7 @@ import com.regnosys.rosetta.generator.java.types.JavaClass
 import java.lang.reflect.Method
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.utils.DottedPath
+import com.regnosys.rosetta.generator.TargetLanguageStringConcatenation
 
 class ImportManagerExtension {
 	def method(Class<?> clazz, String methodName) {
@@ -26,21 +27,25 @@ class ImportManagerExtension {
 	 * generate a full Java class file by adding imports and resolving identifiers.
 	 */
 	def String buildClass(DottedPath packageName, StringConcatenationClient classCode, JavaScope topScope) {
+		if (topScope.isClosed) {
+			throw new IllegalStateException("The top scope may not be closed, as imports will be added to it.")
+		}
 		val isc = new ImportingStringConcatenation(topScope)
-		val resolvedCode = isc.resolveIdentifiers(classCode)
-		isc.append(resolvedCode)
+		val resolvedCode = isc.preprocess(classCode)
+		val StringConcatenationClient fullClass = '''
+			package «packageName»;
+			
+			«FOR imp : isc.imports»
+				import «imp»;
+			«ENDFOR»
+			
+			«FOR imp : isc.staticImports»
+				import static «imp»;
+			«ENDFOR»
+			
+			«resolvedCode»
 		'''
-		package «packageName»;
-		
-		«FOR imp : isc.imports»
-			import «imp»;
-		«ENDFOR»
-		
-		«FOR imp : isc.staticImports»
-			import static «imp»;
-		«ENDFOR»
-		
-		«resolvedCode»
-		'''
+		isc.append(fullClass)
+		isc.toString
 	}
 }

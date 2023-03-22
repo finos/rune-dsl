@@ -22,11 +22,14 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.generator.java.types.JavaType
+import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.generator.java.types.JavaClass
 
 class ModelObjectBoilerPlate {
 
 	@Inject extension RosettaExtensions
 	@Inject extension ModelObjectBuilderGenerator
+	@Inject RosettaTypeProvider typeProvider
 
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
@@ -34,7 +37,7 @@ class ModelObjectBoilerPlate {
 	def StringConcatenationClient builderBoilerPlate(Data c, extension JavaNames names) {
 		val attrs = c.expandedAttributes.toList
 		'''
-			«c.contributeEquals(attrs, [t|names.toJavaType(t).toBuilderType])»
+			«c.contributeEquals(attrs, [t|(names.toJavaType(typeProvider.getRType(t)) as JavaClass).toBuilderType])»
 			«c.contributeHashCode(attrs)»
 			«c.contributeToString(toBuilder)»
 		'''
@@ -84,7 +87,7 @@ class ModelObjectBoilerPlate {
 	def StringConcatenationClient boilerPlate(Data c, JavaNames names) {
 		val attributes = c.expandedAttributes.toList
 		'''
-			«c.contributeEquals(attributes, [t|names.toJavaType(t)])»
+			«c.contributeEquals(attributes, [t|names.toJavaType(typeProvider.getRType(t))])»
 			«c.contributeHashCode(attributes)»
 			«c.contributeToString(identity)»
 		'''
@@ -162,7 +165,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
 			«IF c.hasSuperType»
-				«names.toJavaType(c.superType)».super.process(path, processor);
+				«names.toJavaType(typeProvider.getRType(c.superType))».super.process(path, processor);
 			«ENDIF»
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
 				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
@@ -179,7 +182,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
 			«IF c.hasSuperType»
-				«names.toJavaType(c.superType).toBuilderType».super.process(path, processor);
+				«(names.toJavaType(typeProvider.getRType(c.superType)) as JavaClass).toBuilderType».super.process(path, processor);
 			«ENDIF»
 			
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»

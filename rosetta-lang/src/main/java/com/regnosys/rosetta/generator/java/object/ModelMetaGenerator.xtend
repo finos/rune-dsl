@@ -28,6 +28,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.rosetta.model.lib.validation.ValidatorFactory
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.types.RosettaTypeProvider
 
 class ModelMetaGenerator {
 
@@ -35,11 +36,12 @@ class ModelMetaGenerator {
 	@Inject extension RosettaExtensions
 	@Inject RosettaConfigExtension confExt
 	@Inject RosettaFunctionExtensions funcExt
+	@Inject RosettaTypeProvider typeProvider
 	
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version, Set<RosettaModel> models) {
 		val className = '''«data.name»Meta'''
 		
-		val scope = new JavaScope
+		val scope = new JavaScope(names.packages.model.meta)
 		
 		val classBody = data.metaClassBody(names, className, version, models)
 		val javaFileContents = buildClass(names.packages.model.meta, classBody, scope)
@@ -47,7 +49,7 @@ class ModelMetaGenerator {
 	}
 	
 	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version, Set<RosettaModel> models) {
-		val dataClass = javaNames.toJavaType(c)
+		val dataClass = javaNames.toJavaType(typeProvider.getRType(c))
 		val qualifierFuncs = qualifyFuncs(c, javaNames, models)
 		val dataRules = c.allSuperTypes.map[it.conditionRules(it.conditions)].flatten
 		'''

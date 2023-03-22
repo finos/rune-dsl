@@ -21,6 +21,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.types.RosettaTypeProvider
 
 class DataRuleGenerator {
 	@Inject ExpressionGenerator expressionHandler
@@ -28,9 +29,10 @@ class DataRuleGenerator {
 	@Inject extension ImportManagerExtension
 	@Inject FunctionDependencyProvider funcDependencies
 	@Inject extension JavaIdentifierRepresentationService
+	@Inject RosettaTypeProvider typeProvider
 	
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, Condition ele, String version) {
-		val topScope = new JavaScope
+		val topScope = new JavaScope(names.packages.model.dataRule)
 		
 		val classBody = ele.dataRuleClassBody(data, topScope, names, version)
 		val content = buildClass(names.packages.model.dataRule, classBody, topScope)
@@ -44,31 +46,32 @@ class DataRuleGenerator {
 		val funcDeps = funcDependencies.functionDependencies(rule.expression)
 		val implicitVarRepr = rule.implicitVarInContext
 		
-		val classScope = scope.childScope
+		val classScope = scope.classScope(toConditionJavaType(ruleName))
+		funcDeps.forEach[classScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)]
 		
-		val validateScope = classScope.childScope
+		val validateScope = classScope.methodScope("validate")
 		val pathId = validateScope.createUniqueIdentifier("path")
 		val resultId = validateScope.createUniqueIdentifier("result")
 		val failureMessageId = validateScope.createUniqueIdentifier("failureMessage")
 		
-		val executeScope = classScope.childScope
+		val executeScope = classScope.methodScope("execute")
 		val executeResultId = executeScope.createUniqueIdentifier("result")
 		val exceptionId = executeScope.createUniqueIdentifier("ex")
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaDataRule»("«ruleName»")
-			public class «toConditionJavaType(ruleName)» implements «Validator»<«javaName.toJavaType(rosettaClass)»> {
+			public class «toConditionJavaType(ruleName)» implements «Validator»<«javaName.toJavaType(typeProvider.getRType(rosettaClass))»> {
 				
 				private static final String NAME = "«ruleName»";
 				private static final String DEFINITION = «definition»;
 				
 				«FOR dep : funcDeps»
-					@«Inject» protected «javaName.toJavaType(dep)» «dep.name.toFirstLower»;
+					@«Inject» protected «javaName.toJavaType(dep)» «classScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
 				«ENDFOR»
 				
 				@Override
 				public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «pathId», «rosettaClass.name» «validateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
-					«ComparisonResult» «resultId» = executeDataRule(«validateScope.getIdentifier(implicitVarRepr)»);
+					«ComparisonResult» «resultId» = executeDataRule(«validateScope.getIdentifierOrThrow(implicitVarRepr)»);
 					if (result.get()) {
 						return «ValidationResult».success(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", «pathId», DEFINITION);
 					}
@@ -83,7 +86,7 @@ class DataRuleGenerator {
 				private «ComparisonResult» executeDataRule(«rosettaClass.name» «executeScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
 					
 					try {
-						«ComparisonResult» «executeResultId» = «expressionHandler.toComparisonResult(rule.expression, executeScope)»;
+						«ComparisonResult» «executeResultId» = «expressionHandler.toComparisonResult(rule.expression, executeScope, javaName)»;
 						return «executeResultId».get() == null ? ComparisonResult.success() : «executeResultId»;
 					}
 					catch («Exception» «exceptionId») {

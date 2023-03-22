@@ -2,7 +2,9 @@ package com.regnosys.rosetta.generator.java.types;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Validate;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 
@@ -11,6 +13,8 @@ public class JavaParameterizedType implements JavaType {
 	private final List<JavaTypeArgument> arguments;
 	
 	public JavaParameterizedType(JavaClass baseType, JavaTypeArgument... arguments) {
+		Validate.notNull(baseType);
+		Validate.noNullElements(arguments);
 		this.baseType = baseType;
 		this.arguments = List.of(arguments);
 	}
@@ -20,6 +24,11 @@ public class JavaParameterizedType implements JavaType {
 	}
 	public List<JavaTypeArgument> getArguments() {
 		return arguments;
+	}
+	
+	@Override
+	public String toString() {
+		return baseType.toString() + "<" + arguments.stream().map(Object::toString).collect(Collectors.joining(", ")) + ">";
 	}
 	
 	@Override

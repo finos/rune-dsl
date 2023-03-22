@@ -33,12 +33,18 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.generator.java.util.ImportingStringConcatenation
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.utils.DottedPath
+import com.regnosys.rosetta.generator.java.util.JavaNames
+import com.regnosys.rosetta.types.RosettaTypeProvider
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class ExpressionGeneratorTest {
 	@Inject ExpressionGenerator expressionHandler
 	@Inject extension JavaIdentifierRepresentationService
+	@Inject extension RosettaTypeProvider
+	
+	DottedPath testPackageName = DottedPath.of("com", "regnosys", "test")
 	
 	/**
 	 *  Foo -> attr1 > 5
@@ -52,9 +58,9 @@ class ExpressionGeneratorTest {
 		
 		val comparisonOp = createModifiableBinaryOperation(">", lhsFeatureCall, rhsIntLiteral, ComparisonOperation)
 		
-		val scope = new JavaScope
-		scope.createIdentifier(lhsMockClass.toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(comparisonOp, scope)
+		val scope = new JavaScope(testPackageName)
+		scope.createIdentifier(lhsMockClass.RType.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(comparisonOp, scope, new JavaNames)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
@@ -76,9 +82,9 @@ class ExpressionGeneratorTest {
 		
 		val orOp = createBinaryOperation("or", lhsComparisonOp, rhsComparisonOp, LogicalOperation)
 		
-		val scope = new JavaScope
-		scope.createIdentifier(mockClass.toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(orOp, scope)
+		val scope = new JavaScope(testPackageName)
+		scope.createIdentifier(mockClass.RType.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(orOp, scope, new JavaNames)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
@@ -94,9 +100,9 @@ class ExpressionGeneratorTest {
 		val lhsFeatureCall = createFeatureCall(lhsMockClass, "attr")
 		val lhsExistsOp = createExistsExpression(lhsFeatureCall)
 		
-		val scope = new JavaScope
-		scope.createIdentifier(lhsMockClass.toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(lhsExistsOp, scope)
+		val scope = new JavaScope(testPackageName)
+		scope.createIdentifier(lhsMockClass.RType.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(lhsExistsOp, scope, new JavaNames)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
@@ -118,9 +124,9 @@ class ExpressionGeneratorTest {
 		
 		val orOp = createBinaryOperation("or", lhsExistsOp, rhsExistsOp, LogicalOperation)
 		
-		val scope = new JavaScope
-		scope.createIdentifier(mockClass.toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(orOp, scope)
+		val scope = new JavaScope(testPackageName)
+		scope.createIdentifier(mockClass.RType.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(orOp, scope, new JavaNames)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
@@ -145,9 +151,9 @@ class ExpressionGeneratorTest {
 		
 		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp, LogicalOperation)
 		
-		val scope = new JavaScope
-		scope.createIdentifier(mockClass.toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(orOp, scope)
+		val scope = new JavaScope(testPackageName)
+		scope.createIdentifier(mockClass.RType.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(orOp, scope, new JavaNames)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
@@ -170,9 +176,9 @@ class ExpressionGeneratorTest {
 		
 		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp, LogicalOperation)
 		
-		val scope = new JavaScope
-		scope.createIdentifier(mockClass.toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(orOp, scope)
+		val scope = new JavaScope(testPackageName)
+		scope.createIdentifier(mockClass.RType.toBlueprintImplicitVar, "foo")
+		val generatedFunction = expressionHandler.javaCode(orOp, scope, new JavaNames)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
@@ -181,7 +187,7 @@ class ExpressionGeneratorTest {
 	
 	private def String formatGeneratedFunction(StringConcatenationClient generatedFunction, JavaScope topScope) {
 		val isc = new ImportingStringConcatenation(topScope)
-		val resolvedCode = isc.resolveIdentifiers(generatedFunction)
+		val resolvedCode = isc.preprocess(generatedFunction)
 		isc.append(resolvedCode)
 		isc.toString.replace('\n','').replace('\t','')
 	}

@@ -33,10 +33,13 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
+import com.rosetta.model.lib.meta.BasicRosettaMetaData
+import com.regnosys.rosetta.types.RosettaTypeProvider
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
 	@Inject extension ModelObjectGenerator
+	@Inject RosettaTypeProvider typeProvider
 	
 	 
 	def void generate(JavaNames names, Resource resource, IFileSystemAccess2 fsa, IGeneratorContext ctx) {
@@ -180,15 +183,15 @@ class MetaFieldGenerator {
 		val Data d = SimpleFactory.eINSTANCE.createData;
 		d.name = name
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
-		d.model.name = "com.rosetta.model.metafields"
+		d.model.name = names.packages.basicMetafields.withDots
 		d.attributes.addAll(attributes)
 		
-		val scope = new JavaScope
+		val scope = new JavaScope(names.packages.basicMetafields)
 		
 		val StringConcatenationClient body = '''		
-		«d.classBody(names, "1", interfaces)»
+		«d.classBody(new JavaClass(names.packages.basicMetafields, d.name+'Meta'), names, "1", interfaces)»
 		
-		class «name»Meta extends BasicRosettaMetaData<«name»>{
+		class «name»Meta extends «BasicRosettaMetaData»<«name»>{
 		
 		}
 		'''
@@ -221,14 +224,14 @@ class MetaFieldGenerator {
 			valueAttribute, metaAttribute
 		])
 		
-		val FWMType = new JavaParameterizedType(JavaClass.from(FieldWithMeta), names.toReferenceType(names.toJavaType(type)))
+		val FWMType = new JavaParameterizedType(JavaClass.from(FieldWithMeta), names.toReferenceType(names.toJavaType(typeProvider.getRType(type))))
 		
-		val scope = new JavaScope
+		val scope = new JavaScope(packageName)
 		
 		val StringConcatenationClient body = '''
-			«d.classBody(names, "1", #[GlobalKey, FWMType])»
+			«d.classBody(new JavaClass(packageName, d.name + "Meta"), names, "1", #[GlobalKey, FWMType])»
 			
-			class FieldWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<FieldWithMeta«type.name.toFirstUpper»>{
+			class FieldWithMeta«type.name.toFirstUpper»Meta extends «BasicRosettaMetaData»<FieldWithMeta«type.name.toFirstUpper»>{
 			
 			}
 		'''
@@ -271,14 +274,14 @@ class MetaFieldGenerator {
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = names.packages.model.metaField.withDots
 		d.attributes.addAll(referenceAttributes(type))
-		val refInterface = new JavaParameterizedType(JavaClass.from(ReferenceWithMeta), names.toJavaType(type))
+		val refInterface = new JavaParameterizedType(JavaClass.from(ReferenceWithMeta), names.toReferenceType(names.toJavaType(typeProvider.getRType(type))))
 		
-		val scope = new JavaScope
+		val scope = new JavaScope(names.packages.model.metaField)
 		
 		val StringConcatenationClient body = '''
-			«d.classBody(names, "1", #[refInterface])»
+			«d.classBody(new JavaClass(names.packages.model.metaField, d.name + "Meta"), names, "1", #[refInterface])»
 			
-			class ReferenceWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<ReferenceWithMeta«type.name.toFirstUpper»>{
+			class ReferenceWithMeta«type.name.toFirstUpper»Meta extends «BasicRosettaMetaData»<ReferenceWithMeta«type.name.toFirstUpper»>{
 			
 			}
 		'''
@@ -292,14 +295,14 @@ class MetaFieldGenerator {
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = names.packages.basicMetafields.withDots
 		d.attributes.addAll(referenceAttributes(type))
-		val refInterface = new JavaParameterizedType(JavaClass.from(ReferenceWithMeta), names.toJavaType(type))
+		val refInterface = new JavaParameterizedType(JavaClass.from(ReferenceWithMeta), names.toReferenceType(names.toJavaType(typeProvider.getRType(type))))
 		
-		val scope = new JavaScope
+		val scope = new JavaScope(names.packages.basicMetafields)
 		
 		val StringConcatenationClient body = '''		
-			«d.classBody(names, "1", #[refInterface])»
+			«d.classBody(new JavaClass(names.packages.basicMetafields, d.name + "Meta"), names, "1", #[refInterface])»
 			
-			class BasicReferenceWithMeta«type.name.toFirstUpper»Meta extends BasicRosettaMetaData<BasicReferenceWithMeta«type.name.toFirstUpper»>{
+			class BasicReferenceWithMeta«type.name.toFirstUpper»Meta extends «BasicRosettaMetaData»<BasicReferenceWithMeta«type.name.toFirstUpper»>{
 			
 			}
 		'''
