@@ -36,6 +36,18 @@ class ModelObjectGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 
 	@Test
+	def void testObjectReservedNames() {
+		val code = '''
+		type Path:
+			name string (0..1)
+			
+			condition NameExists:
+				name exists
+		'''.generateCode
+		code.compileToClasses
+	}
+
+	@Test
 	def void useBuilderAddMultipleTimes() {
 		val classes = '''
 			type Tester:
