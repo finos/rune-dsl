@@ -203,7 +203,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		val visited = newHashSet
 		for (t: source.externalRefs) {
 			if (!visited.add(t.typeRef)) {
-				error('''Duplicate type `«t.typeRef.name»`.''', t, null);
+				// @Compat Should be error, but would cause backward compatibility issues in some models
+				warning('''Duplicate type `«t.typeRef.name»`.''', t, null);
 			}
 		}
 	}

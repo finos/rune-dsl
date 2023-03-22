@@ -54,7 +54,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				+ foo
 			}
 		'''.parseRosetta
-		model.assertError(ROSETTA_EXTERNAL_CLASS, null,
+		model.assertWarning(ROSETTA_EXTERNAL_CLASS, null,
             "Duplicate type `Foo`.")
 	}
 
