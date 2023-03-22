@@ -41,6 +41,28 @@ class RosettaBlueprintTest {
 		parseRosettaWithNoErrors(r)
 	}
 
+	static final CharSequence REPORT_TYPES = '''
+					namespace com.rosetta.test.model
+					
+					type Bar:
+						bar1 string (0..1)
+						bar2 string (0..*)
+						baz Baz (1..1)
+						quxList Qux (0..*)
+						
+					type Baz:
+						 baz1 string (1..1)
+					
+					type Qux:
+						 qux1 string (1..1)
+						 qux2 string (1..1)
+					
+					type Quux:
+						quux1 string (1..1)
+						quux2 string (1..1)
+					
+				'''
+
 	static final CharSequence REPORT_RULES = '''
 					namespace com.rosetta.test.model
 
@@ -69,25 +91,21 @@ class RosettaBlueprintTest {
 					reporting rule QuxQux2:
 						extract Qux->qux2 as "6 QuxQux2"
 					
+					reporting rule BarQuux:
+						extract Create_Quux( Bar->baz ) as "7 BarQuux"
+					
+					func Create_Quux:
+						inputs:
+							baz Baz (1..1)
+						output:
+							quux Quux (1..1)
+						
+						set quux -> quux1: baz -> baz1
+						set quux -> quux2: baz -> baz1
+					
 				'''
 
-	static final CharSequence REPORT_TYPES = '''
-					namespace com.rosetta.test.model
-					
-					type Bar:
-						bar1 string (0..1)
-						bar2 string (0..*)
-						baz Baz (1..1)
-						quxList Qux (0..*)
-						
-					type Baz:
-						 baz1 string (1..1)
-					
-					type Qux:
-						 qux1 string (1..1)
-						 qux2 string (1..1)
-					
-				'''
+
 
 	@Test
 	def void parseSimpleReportForTypeWithInlineRuleReferences() {
@@ -112,6 +130,8 @@ class RosettaBlueprintTest {
 						barBaz BarBazReport (1..1)
 						barQuxList BarQuxReport (0..*)
 							[ruleReference BarQuxList]
+						barQuux Quux (1..1)
+							[ruleReference BarQuux]
 					
 					type BarBazReport:
 						barBaz1 string (1..1)
@@ -122,6 +142,7 @@ class RosettaBlueprintTest {
 							[ruleReference QuxQux1]
 						bazQux2 string (1..1)
 							[ruleReference QuxQux2]
+
 				''']
 		val code = model.generateCode
 		//println(code)
@@ -143,9 +164,11 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
 				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Quux;
 				import com.rosetta.test.model.blueprint.BarBarOneRule;
 				import com.rosetta.test.model.blueprint.BarBarTwoRule;
 				import com.rosetta.test.model.blueprint.BarBazRule;
+				import com.rosetta.test.model.blueprint.BarQuuxRule;
 				import com.rosetta.test.model.blueprint.BarQuxListRule;
 				import com.rosetta.test.model.blueprint.FooRuleRule;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
@@ -153,7 +176,7 @@ class RosettaBlueprintTest {
 				/**
 				 * @version 0.0.0
 				 */
-				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, Object, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
 					
@@ -174,13 +197,14 @@ class RosettaBlueprintTest {
 					
 					
 					@Override
-					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() { 
+					public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() { 
 						return 
 							startsWith(actionFactory, getFooRule())
-							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
+							.then(BlueprintBuilder.<Bar, Object, INKEY, INKEY>or(actionFactory,
 								startsWith(actionFactory, getBarBarOne()),
 								startsWith(actionFactory, getBarBarTwo()),
 								startsWith(actionFactory, getBarBaz()),
+								startsWith(actionFactory, getBarQuux()),
 								startsWith(actionFactory, getBarQuxList())
 								)
 							)
@@ -201,6 +225,11 @@ class RosettaBlueprintTest {
 					@Inject private BarBarTwoRule barBarTwoRef;
 					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
+					}
+					
+					@Inject private BarQuuxRule barQuuxRef;
+					protected BlueprintInstance <Bar, Quux, INKEY, INKEY> getBarQuux() {
+						return barQuuxRef.blueprint();
 					}
 					
 					@Inject private BarQuxListRule barQuxListRef;
@@ -224,6 +253,7 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
+				import com.rosetta.test.model.Quux;
 				import java.util.Collection;
 				
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
@@ -236,6 +266,7 @@ class RosettaBlueprintTest {
 				import com.rosetta.test.model.blueprint.BarBarOneRule;
 				import com.rosetta.test.model.blueprint.BarBarTwoRule;
 				import com.rosetta.test.model.blueprint.BarBazRule;
+				import com.rosetta.test.model.blueprint.BarQuuxRule;
 				import com.rosetta.test.model.blueprint.QuxQux1Rule;
 				import com.rosetta.test.model.blueprint.QuxQux2Rule;
 				
@@ -265,6 +296,9 @@ class RosettaBlueprintTest {
 								}
 								if (BarBazRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+								}
+								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
 								}
 								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
@@ -307,6 +341,7 @@ class RosettaBlueprintTest {
 						barBarTwo string (1..1)
 						barBaz BarBazReport (1..1)
 						barQuxList BarQuxReport (0..*)
+						barQuux Quux (1..1)
 					
 					type BarBazReport:
 						barBaz1 string (1..1)
@@ -324,6 +359,8 @@ class RosettaBlueprintTest {
 								[ruleReference BarBarTwo]
 							+ barQuxList
 								[ruleReference BarQuxList]
+							+ barQuux
+								[ruleReference BarQuux]
 					
 						BarBazReport:
 							+ barBaz1
@@ -356,9 +393,11 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.nodes.SinkNode;
 				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
 				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.Quux;
 				import com.rosetta.test.model.blueprint.BarBarOneRule;
 				import com.rosetta.test.model.blueprint.BarBarTwoRule;
 				import com.rosetta.test.model.blueprint.BarBazRule;
+				import com.rosetta.test.model.blueprint.BarQuuxRule;
 				import com.rosetta.test.model.blueprint.BarQuxListRule;
 				import com.rosetta.test.model.blueprint.FooRuleRule;
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
@@ -366,7 +405,7 @@ class RosettaBlueprintTest {
 				/**
 				 * @version 0.0.0
 				 */
-				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, Object, INKEY, INKEY> {
 					
 					private final RosettaActionFactory actionFactory;
 					
@@ -387,13 +426,14 @@ class RosettaBlueprintTest {
 					
 					
 					@Override
-					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() { 
+					public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() { 
 						return 
 							startsWith(actionFactory, getFooRule())
-							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
+							.then(BlueprintBuilder.<Bar, Object, INKEY, INKEY>or(actionFactory,
 								startsWith(actionFactory, getBarBarOne()),
 								startsWith(actionFactory, getBarBarTwo()),
 								startsWith(actionFactory, getBarBaz()),
+								startsWith(actionFactory, getBarQuux()),
 								startsWith(actionFactory, getBarQuxList())
 								)
 							)
@@ -414,6 +454,11 @@ class RosettaBlueprintTest {
 					@Inject private BarBarTwoRule barBarTwoRef;
 					protected BlueprintInstance <Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
+					}
+					
+					@Inject private BarQuuxRule barQuuxRef;
+					protected BlueprintInstance <Bar, Quux, INKEY, INKEY> getBarQuux() {
+						return barQuuxRef.blueprint();
 					}
 					
 					@Inject private BarQuxListRule barQuxListRef;
@@ -437,6 +482,7 @@ class RosettaBlueprintTest {
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
 				
+				import com.rosetta.test.model.Quux;
 				import java.util.Collection;
 				
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
@@ -449,6 +495,7 @@ class RosettaBlueprintTest {
 				import com.rosetta.test.model.blueprint.BarBarOneRule;
 				import com.rosetta.test.model.blueprint.BarBarTwoRule;
 				import com.rosetta.test.model.blueprint.BarBazRule;
+				import com.rosetta.test.model.blueprint.BarQuuxRule;
 				import com.rosetta.test.model.blueprint.QuxQux1Rule;
 				import com.rosetta.test.model.blueprint.QuxQux2Rule;
 				
@@ -478,6 +525,9 @@ class RosettaBlueprintTest {
 								}
 								if (BarBazRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+								}
+								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
 								}
 								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);

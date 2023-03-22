@@ -224,17 +224,17 @@ class RosettaExtensions {
 	/**
 	 * Get all reporting rules for blueprint report
 	 */
-	def getAllReportingRules(RosettaBlueprintReport report, boolean includeRepeatable) {
+	def getAllReportingRules(RosettaBlueprintReport report, boolean allLeafNodes) {
 		val rules = newHashMap
 		val path = RosettaPath.valueOf(report.reportType.name)
-		report.reportType.collectReportingRules(path, report.ruleSource, rules, newHashSet, includeRepeatable)
+		report.reportType.collectReportingRules(path, report.ruleSource, rules, newHashSet, allLeafNodes)
 		return rules
 	}
 	
 	/**
 	 * Recursively collects all reporting rules for all attributes
 	 */
-	private def void collectReportingRules(Data dataType, RosettaPath path, RosettaExternalRuleSource ruleSource, Map<PathAttribute, RosettaBlueprint> visitor, Set<Data> collectedTypes, boolean includeRepeatable) {
+	private def void collectReportingRules(Data dataType, RosettaPath path, RosettaExternalRuleSource ruleSource, Map<PathAttribute, RosettaBlueprint> visitor, Set<Data> collectedTypes, boolean allLeafNodes) {
 		val attrRules = externalAnn.getAllRuleReferencesForType(ruleSource, dataType)
 		
 		dataType.allNonOverridesAttributes.forEach[attr |
@@ -250,16 +250,19 @@ class RosettaExtensions {
 			else if (attrType instanceof Data) {
 				if (!collectedTypes.contains(attrType)) {
 					collectedTypes.add(attrType)
-					// if includeRepeatable is false - only collect rules from nested type if no rule exists at the top level
-					// e.g. nested reporting rules are not supported (except for repeatable rules where only the top level rule should be collected) 
-					if (rule === null || includeRepeatable) {
+					// TODO - get rid of repeatable rules
+					// if allLeafNodes is false - for repeatable rules only collect rules from nested type 
+					// if no rule exists at the top level, e.g., nested reporting rules are not supported 
+					// (except for repeatable rules where only the top level rule should be collected) 
+					if (rule !== null && (!attrEx.isMultiple || !allLeafNodes)) {
+						visitor.put(new PathAttribute(path, attr), rule.reportingRule)
+					}
+					if (rule === null || allLeafNodes) {
 						val subPath = attrEx.isMultiple ?
 							path.newSubPath(attr.name, 0) :
 							path.newSubPath(attr.name)
-						attrType.collectReportingRules(subPath, ruleSource, visitor, collectedTypes, includeRepeatable)
+						attrType.collectReportingRules(subPath, ruleSource, visitor, collectedTypes, allLeafNodes)
 					}
-					else 
-						visitor.put(new PathAttribute(path, attr), rule.reportingRule)
 				}
 			} 
 			else {
