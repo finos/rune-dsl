@@ -120,11 +120,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.rosetta.test.model.blueprint.BarBarOneRule;
-				import com.rosetta.test.model.blueprint.BarBarTwoRule;
-				import com.rosetta.test.model.blueprint.BarBazRule;
-				import com.rosetta.test.model.blueprint.BarQuxListRule;
-				import com.rosetta.test.model.blueprint.FooRuleRule;
 				import com.rosetta.test.model.Bar;
 				import javax.inject.Inject;
 				
@@ -209,11 +204,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.rosetta.test.model.blueprint.BarBarOneRule;
-				import com.rosetta.test.model.blueprint.BarBarTwoRule;
-				import com.rosetta.test.model.blueprint.BarBazRule;
-				import com.rosetta.test.model.blueprint.QuxQux1Rule;
-				import com.rosetta.test.model.blueprint.QuxQux2Rule;
 				import com.rosetta.test.model.BarReport;
 				import java.util.Collection;
 				
@@ -397,7 +387,6 @@ class RosettaBlueprintTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.rosetta.test.model.blueprint.FooRuleRule;
 				import com.rosetta.test.model.Bar;
 				import javax.inject.Inject;
 				
@@ -658,19 +647,6 @@ class RosettaBlueprintTest {
 				import java.time.LocalTime;
 				import java.time.ZonedDateTime;
 				import java.util.Collection;
-				import test.reg.blueprint.AttributeIntRule;
-				import test.reg.blueprint.AttributeNumberRule;
-				import test.reg.blueprint.AttributeTimeRule;
-				import test.reg.blueprint.AttributeZonedDateTimeRule;
-				import test.reg.blueprint.DateOfBirthRule;
-				import test.reg.blueprint.HeroNameRule;
-				import test.reg.blueprint.IsGovernmentAgencyRule;
-				import test.reg.blueprint.NationalityRule;
-				import test.reg.blueprint.NotModelledRule;
-				import test.reg.blueprint.OrganisationCountryRule;
-				import test.reg.blueprint.OrganisationNameRule;
-				import test.reg.blueprint.PowersRule;
-				import test.reg.blueprint.SpecialAbilitiesRule;
 				import test.reg.CountryEnum;
 				import test.reg.PowerEnum;
 				import test.reg.SokoviaAccordsReport;
@@ -1397,7 +1373,6 @@ class RosettaBlueprintTest {
 			import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 			import com.rosetta.model.lib.expression.CardinalityOperator;
 			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.test.model.blueprint.CanWieldMjolnirRule;
 			import com.rosetta.test.model.Avengers;
 			import com.rosetta.test.model.Hero;
 			import javax.inject.Inject;

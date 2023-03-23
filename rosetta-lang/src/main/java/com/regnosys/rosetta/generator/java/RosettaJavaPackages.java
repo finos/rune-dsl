@@ -67,11 +67,11 @@ public class RosettaJavaPackages {
 	public static class RootPackage extends DottedPath {
 
 		public RootPackage(RosettaModel model) {
-			super(model.getName());
+			this(model.getName());
 		}
 
 		public RootPackage(String namespace) {
-			super(namespace);
+			super(namespace.split("\\."));
 		}
 
 		public DottedPath metaField() {
