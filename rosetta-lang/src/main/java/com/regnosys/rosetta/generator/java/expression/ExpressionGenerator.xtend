@@ -449,7 +449,7 @@ class ExpressionGenerator {
 			RosettaEnumValue: 
 				return '''«MapperS».of(«feature.enumeration.toJavaType».«feature.convertValues»)'''
 			RosettaRecordFeature:
-				'''.map("«feature.name.toFirstUpper»", «recordFeatureMap.recordFeatureToLambda(feature)»)'''
+				'''.<«feature.type.toJavaType»>map("«feature.name.toFirstUpper»", «recordFeatureMap.recordFeatureToLambda(feature)»)'''
 			default: 
 				'''.map("get«feature.name.toFirstUpper»", «feature.containerType.toJavaType»::get«feature.name.toFirstUpper»)'''
 		}

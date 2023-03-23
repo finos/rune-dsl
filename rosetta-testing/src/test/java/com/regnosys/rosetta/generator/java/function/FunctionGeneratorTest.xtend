@@ -3895,6 +3895,71 @@ class FunctionGeneratorTest {
         )
         code.compileToClasses
     }
+    
+    @Test
+    def void shouldCompareDateExtractedFromZonedDateTime() {
+        val model = '''
+            func IsDateGreaterThan:
+            	inputs: 
+                    date date (1..1)
+                    zonedDateTime zonedDateTime (1..1)
+            	output: 
+            		result boolean (1..1)
+            
+                set result: 
+                    date <= zonedDateTime -> date
+
+        '''
+        val code = model.generateCode
+        val f = code.get("com.rosetta.test.model.functions.IsDateGreaterThan")
+        assertEquals(
+            '''
+                package com.rosetta.test.model.functions;
+                
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.CardinalityOperator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.model.lib.records.Date;
+                import java.time.ZonedDateTime;
+                
+                import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+                
+                @ImplementedBy(IsDateGreaterThan.IsDateGreaterThanDefault.class)
+                public abstract class IsDateGreaterThan implements RosettaFunction {
+                
+                	/**
+                	* @param date 
+                	* @param zonedDateTime 
+                	* @return result 
+                	*/
+                	public Boolean evaluate(Date date, ZonedDateTime zonedDateTime) {
+                		Boolean result = doEvaluate(date, zonedDateTime);
+                		
+                		return result;
+                	}
+                
+                	protected abstract Boolean doEvaluate(Date date, ZonedDateTime zonedDateTime);
+                
+                	public static class IsDateGreaterThanDefault extends IsDateGreaterThan {
+                		@Override
+                		protected Boolean doEvaluate(Date date, ZonedDateTime zonedDateTime) {
+                			Boolean result = null;
+                			return assignOutput(result, date, zonedDateTime);
+                		}
+                		
+                		protected Boolean assignOutput(Boolean result, Date date, ZonedDateTime zonedDateTime) {
+                			result = lessThanEquals(MapperS.of(date), MapperS.of(zonedDateTime).<Date>map("Date", _zdt -> Date.of(_zdt.toLocalDate())), CardinalityOperator.All).get();
+                			
+                			return result;
+                		}
+                	}
+                }
+            '''.toString,
+            f
+        )
+        code.compileToClasses
+    }
 	
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {
 		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of()) as RosettaModelObject
