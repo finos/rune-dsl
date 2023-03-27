@@ -35,11 +35,9 @@ public class ImplicitVariableUtil {
 				return Optional.of(container);
 			} else if (container instanceof RosettaFunctionalOperation) {
 				RosettaFunctionalOperation op = (RosettaFunctionalOperation)container;
-				if (op.getFunctionRef() instanceof InlineFunction) {
-					InlineFunction f = (InlineFunction)op.getFunctionRef();
-					if (f.equals(prev) && f.getParameters().size() == 0) {
-						return Optional.of(container);
-					}
+				InlineFunction f = op.getFunction();
+				if (f != null && f.equals(prev) && f.getParameters().size() == 0) {
+					return Optional.of(container);
 				}
 			}
 			prev = container;

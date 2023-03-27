@@ -53,7 +53,6 @@ import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.con
 import static extension com.regnosys.rosetta.generator.java.util.JavaClassTranslator.toJavaClass
 import java.util.Arrays
 import com.regnosys.rosetta.rosetta.expression.FilterOperation
-import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.MapOperation
 import com.regnosys.rosetta.rosetta.expression.FlattenOperation
@@ -77,7 +76,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
-import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import org.eclipse.emf.ecore.EObject
 import com.regnosys.rosetta.rosetta.expression.RosettaReference
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
@@ -92,6 +90,7 @@ import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.Necessity
 import com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleValidationMethod
 import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
@@ -194,8 +193,8 @@ class ExpressionGenerator {
 			MapOperation : {
 				mapOperation(expr, scope, names)
 			}
-			ExtractAllOperation : {
-				extractAllOperation(expr, scope, names)
+			ThenOperation : {
+				thenOperation(expr, scope, names)
 			}
 			SortOperation : {
 				sortOperation(expr, scope, names)
@@ -660,26 +659,7 @@ class ExpressionGenerator {
 		}
 	}
 	
-	def dispatch StringConcatenationClient functionReference(NamedFunctionReference ref, JavaScope scope, JavaNames names, boolean doCast, boolean needsMapper) {		
-		val callable = ref.function
-		val inputs = switch (callable) {
-			Function: {
-				callable.inputs
-			}
-			RosettaExternalFunction: {
-				callable.parameters
-			}
-			default: 
-				throw new UnsupportedOperationException("Unsupported callable with args of type " + callable?.eClass?.name)
-		}
-		val lambdaScope = scope.lambdaScope
-		val inputIds = inputs.map[lambdaScope.createIdentifier(it)]
-		val StringConcatenationClient inputExprs = '''«FOR input: inputs SEPARATOR ', '»«lambdaScope.getIdentifierOrThrow(input)»«IF cardinalityProvider.isMulti(input)».getMulti()«ELSE».get()«ENDIF»«ENDFOR»'''
-		val body = callableWithArgs(callable, lambdaScope, names, inputExprs, needsMapper)
-		'''(«FOR id: inputIds SEPARATOR ', '»«id»«ENDFOR») -> «body»'''
-	}
-	
-	def dispatch StringConcatenationClient functionReference(InlineFunction ref, JavaScope scope, extension JavaNames names, boolean doCast, boolean needsMapper) {
+	def StringConcatenationClient inlineFunction(InlineFunction ref, JavaScope scope, extension JavaNames names, boolean doCast, boolean needsMapper) {
 		val lambdaScope = scope.lambdaScope
 		val paramIds = if (ref.parameters.size == 0) {
 			#[lambdaScope.createIdentifier(ref.implicitVarInContext, defaultImplicitVariable.name) ]
@@ -709,12 +689,12 @@ class ExpressionGenerator {
 	def StringConcatenationClient filterOperation(FilterOperation op, JavaScope scope, JavaNames names) {
 		'''
 		«op.argument.emptyToMapperJavaCode(scope, names, true)»
-			.«IF op.functionRef.isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.functionRef.functionReference(scope, names, true, false)»)'''
+			.«IF op.function.isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.function.inlineFunction(scope, names, true, false)»)'''
 	}
 	
 	def StringConcatenationClient mapOperation(MapOperation op, JavaScope scope, JavaNames names) {
-		val isBodyMulti =  op.functionRef.isBodyExpressionMulti
-		val funcExpr = op.functionRef.functionReference(scope, names, true, true)
+		val isBodyMulti =  op.function.isBodyExpressionMulti
+		val funcExpr = op.function.inlineFunction(scope, names, true, true)
 		
 		if (!op.isPreviousOperationMulti) {
 			if (isBodyMulti) {
@@ -747,8 +727,8 @@ class ExpressionGenerator {
 		}
 	}
 	
-	def StringConcatenationClient extractAllOperation(ExtractAllOperation op, JavaScope scope, JavaNames names) {
-		val funcExpr = op.functionRef.functionReference(scope, names, false, true)
+	def StringConcatenationClient thenOperation(ThenOperation op, JavaScope scope, JavaNames names) {
+		val funcExpr = op.function.inlineFunction(scope, names, false, true)
 		'''
 		«op.argument.emptyToMapperJavaCode(scope, names, false)»
 			.apply(«funcExpr»)'''
@@ -783,10 +763,10 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient reduceOperation(ReduceOperation op, JavaScope scope, extension JavaNames names) {
-		val outputType =  typeProvider.getRType(op.functionRef).toJavaType
+		val outputType =  typeProvider.getRType(op.function).toJavaType
 		'''
 		«op.argument.javaCode(scope, names)»
-			.<«outputType»>reduce(«op.functionRef.functionReference(scope, names, true, true)»)'''
+			.<«outputType»>reduce(«op.function.inlineFunction(scope, names, true, true)»)'''
 	}
 	
 	def StringConcatenationClient firstOperation(FirstOperation op, JavaScope scope, JavaNames names) {
@@ -817,7 +797,7 @@ class ExpressionGenerator {
 	}
 	
 	private def StringConcatenationClient buildSingleItemListOperationOptionalBody(RosettaFunctionalOperation op, String name, JavaScope scope, JavaNames names) {
-		if (op.functionRef === null) {
+		if (op.function === null) {
 			buildListOperationNoBody(op, name, scope, names)
 		} else {
 			buildSingleItemListOperation(op, name, scope, names)
@@ -827,7 +807,7 @@ class ExpressionGenerator {
 	private def StringConcatenationClient buildSingleItemListOperation(RosettaFunctionalOperation op, String name, JavaScope scope, JavaNames names) {
 		'''
 		«op.argument.emptyToMapperJavaCode(scope, names, true)»
-			.«name»(«op.functionRef.functionReference(scope, names, true, true)»)'''	
+			.«name»(«op.function.inlineFunction(scope, names, true, true)»)'''	
 	}
 	
 	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute, JavaScope scope, JavaNames names) {

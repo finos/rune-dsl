@@ -45,7 +45,7 @@ public class RosettaServerModule extends AbstractGenericModule {
 	}
 	
 	/**
-	 * Some classes on Xtext inject `LanguageServerImpl` instead of
+	 * Some classes in Xtext inject `LanguageServerImpl` instead of
 	 * the interface `LanguageServer`. (e.g., `AbstractLanguageServerTest`)
 	 * TODO: make a patch in Xtext.
 	 */

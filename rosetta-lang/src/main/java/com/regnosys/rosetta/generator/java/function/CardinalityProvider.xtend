@@ -25,7 +25,6 @@ import com.regnosys.rosetta.rosetta.expression.ReduceOperation
 import com.regnosys.rosetta.rosetta.expression.FilterOperation
 import com.regnosys.rosetta.rosetta.expression.SortOperation
 import com.regnosys.rosetta.rosetta.expression.MapOperation
-import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation
 import com.regnosys.rosetta.rosetta.expression.FirstOperation
@@ -40,8 +39,6 @@ import com.regnosys.rosetta.rosetta.expression.MaxOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
-import com.regnosys.rosetta.rosetta.expression.FunctionReference
-import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
@@ -49,6 +46,7 @@ import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.RosettaParameter
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
 
 class CardinalityProvider {
 	
@@ -76,7 +74,7 @@ class CardinalityProvider {
 				val definingContainer = obj.findContainerDefiningImplicitVariable
 				definingContainer.map [
 					if (it instanceof RosettaFunctionalOperation) {
-						functionRef.isItemMulti
+						function.isItemMulti
 					} else {
 						false
 					}
@@ -95,15 +93,14 @@ class CardinalityProvider {
 			ReduceOperation: false
 			FilterOperation: true
 			MapOperation: {
-				if (obj.functionRef.isMulti(breakOnClosureParameter)) {
+				if (obj.function.isMulti(breakOnClosureParameter)) {
 					true
 				} else {
 					obj.argument.isMulti(breakOnClosureParameter)
 				}
 			}
-			ExtractAllOperation: obj.functionRef.isMulti(breakOnClosureParameter)
+			ThenOperation: obj.function.isMulti(breakOnClosureParameter)
 			SortOperation: true
-			NamedFunctionReference: obj.function.isMulti(breakOnClosureParameter)
 			InlineFunction: obj.body.isMulti(breakOnClosureParameter)
 			FirstOperation,
 			LastOperation,
@@ -148,7 +145,7 @@ class CardinalityProvider {
 			if (it instanceof Data) {
 				false
 			} else if (it instanceof RosettaFunctionalOperation) {
-				isClosureParameterMulti(it.functionRef as InlineFunction)
+				isClosureParameterMulti(it.function)
 			} else {
 				false
 			}
@@ -173,7 +170,7 @@ class CardinalityProvider {
 	def boolean isClosureParameterMulti(InlineFunction obj) {
 		val op = obj.eContainer
 		if (op instanceof RosettaFunctionalOperation) {
-			if (op instanceof ExtractAllOperation) {
+			if (op instanceof ThenOperation) {
 				return op.argument.isMulti
 			}
 			return op.argument.isOutputListOfLists
@@ -181,16 +178,8 @@ class CardinalityProvider {
 		return false
 	}
 	
-	def isItemMulti(FunctionReference op) {
-		if (op instanceof InlineFunction) {
-			return op.isClosureParameterMulti
-		} else if (op instanceof NamedFunctionReference) {
-			val f = op.function
-			switch f {
-				Function: isMulti(f.inputs.head)
-				default: false
-			}
-		}
+	def isItemMulti(InlineFunction op) {
+		op.isClosureParameterMulti
 	}
 	
 	/**
@@ -201,10 +190,10 @@ class CardinalityProvider {
 		if (previousOperation instanceof RosettaUnaryOperation) {
 			// only map and extract-all can increase a closure parameter's cardinality
 			switch (previousOperation) {
-				ExtractAllOperation:
+				ThenOperation:
 					return previousOperation.isMulti
 				MapOperation:
-					return previousOperation.functionRef.isMulti(false)
+					return previousOperation.function.isMulti(false)
 				FlattenOperation:
 					return false
 				default:
@@ -223,14 +212,14 @@ class CardinalityProvider {
 			false
 		}
 		else if (op instanceof MapOperation) {
-			if (op.functionRef.isItemMulti) {
-				op.functionRef.isBodyExpressionMulti
+			if (op.function.isItemMulti) {
+				op.function.isBodyExpressionMulti
 			} else {
-				op.functionRef.isBodyExpressionMulti && op.isPreviousOperationMulti
+				op.function.isBodyExpressionMulti && op.isPreviousOperationMulti
 			}
 		}
-		else if (op instanceof ExtractAllOperation) {
-			val f = op.functionRef
+		else if (op instanceof ThenOperation) {
+			val f = op.function
 			switch f {
 				InlineFunction:
 					f.body.isOutputListOfLists
@@ -242,8 +231,8 @@ class CardinalityProvider {
 			val s = op.symbol
 			if (s instanceof ClosureParameter) {
 				val f = s.function
-				val enclosed = f.eContainer as RosettaFunctionalOperation
-				if (enclosed instanceof ExtractAllOperation) {
+				val enclosed = f.eContainer
+				if (enclosed instanceof ThenOperation) {
 					return enclosed.argument.isOutputListOfLists
 				} else {
 					false
@@ -255,8 +244,8 @@ class CardinalityProvider {
 		else if (op instanceof RosettaImplicitVariable) {
 			val definingContainer = op.findContainerDefiningImplicitVariable
 			definingContainer.map [
-				if (it instanceof ExtractAllOperation)
-					argument.isOutputListOfLists
+				if (it instanceof ThenOperation)
+					(it as RosettaFunctionalOperation).argument.isOutputListOfLists
 				else
 					false
 			].orElse(false)
@@ -273,12 +262,8 @@ class CardinalityProvider {
 		isMulti(op.argument)
 	}
 	
-	def isBodyExpressionMulti(FunctionReference op) {
-		if (op instanceof InlineFunction) {
-			op.body !== null && isMulti(op.body, false)
-		} else {
-			isMulti(op, false)
-		}
+	def isBodyExpressionMulti(InlineFunction op) {
+		op.body !== null && isMulti(op.body, false)
 	}
 
 	/**
@@ -295,11 +280,7 @@ class CardinalityProvider {
 	 * - from single to list, or from list to list of lists, would return true.
 	 * - from single to single, or from list to list, or from list to single, would return false.
 	 */
-	def isBodyExpressionWithSingleInputMulti(FunctionReference op) {
-		if (op instanceof InlineFunction) {
-			op.body !== null && isMulti(op.body, true)
-		} else {
-			isMulti(op, false)
-		}
+	def isBodyExpressionWithSingleInputMulti(InlineFunction op) {
+		op.body !== null && isMulti(op.body, true)
 	}
 }

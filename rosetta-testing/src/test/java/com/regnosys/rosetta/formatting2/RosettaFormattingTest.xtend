@@ -9,6 +9,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import org.eclipse.xtext.testing.formatter.FormatterTestHelper
 import org.eclipse.xtext.formatting2.FormatterPreferenceKeys
+import org.eclipse.xtext.testing.formatter.FormatterTestRequest
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -16,20 +17,24 @@ class RosettaFormattingTest {
 	@Inject
 	extension FormatterTestHelper
 
-	def ->(CharSequence unformated, CharSequence expectation) {
-		assertFormatted[
-			it.expectation = expectation
-			it.toBeFormatted = unformated
-			
-			// extra check to make sure we didn't miss any hidden region in our formatter:
-			it.allowUnformattedWhitespace = false 
-			
-			// see issue https://github.com/eclipse/xtext-core/issues/2058
-			it.request.allowIdentityEdits = true
+	private def configure(FormatterTestRequest req, CharSequence unformated, CharSequence expectation) {
+		req.expectation = expectation
+		req.toBeFormatted = unformated
 		
-			// see issue https://github.com/eclipse/xtext-core/issues/164
-			// and issue https://github.com/eclipse/xtext-core/issues/2060
-			it.useSerializer = false
+		// extra check to make sure we didn't miss any hidden region in our formatter:
+		req.allowUnformattedWhitespace = false 
+		
+		// see issue https://github.com/eclipse/xtext-core/issues/2058
+		req.request.allowIdentityEdits = true
+	
+		// see issue https://github.com/eclipse/xtext-core/issues/164
+		// and issue https://github.com/eclipse/xtext-core/issues/2060
+		req.useSerializer = false
+	}
+
+	def ->(CharSequence unformatted, CharSequence expectation) {
+		assertFormatted[
+			configure(unformatted, expectation)
 		]
 	}
 	
@@ -483,7 +488,16 @@ class RosettaFormattingTest {
 				put(FormatterPreferenceKeys.maxLineWidth, 20);
 			]
 			
-			it.expectation = '''
+			configure('''
+				namespace "test"
+
+				type AllocationOutcome:
+					condition C1:
+						if True
+						then True extract [it = False] = True
+					condition C2:
+						True
+			''', '''
 				namespace "test"
 
 				type AllocationOutcome:
@@ -497,17 +511,7 @@ class RosettaFormattingTest {
 				
 					condition C2:
 						True
-			'''
-			it.toBeFormatted = '''
-				namespace "test"
-
-				type AllocationOutcome:
-					condition C1:
-						if True
-						then True extract [it = False] = True
-					condition C2:
-						True
-			'''
+			''')
 		]
 	}
 

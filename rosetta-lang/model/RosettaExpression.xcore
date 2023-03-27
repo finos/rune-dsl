@@ -291,24 +291,17 @@ class ChoiceOperation extends RosettaUnaryOperation {
  * Functional operations
  */
 
-interface FunctionReference {
-}
-
-class NamedFunctionReference extends FunctionReference {
-	refers RosettaCallableWithArgs function
-}
-
 class ClosureParameter extends RosettaSymbol {
 	container InlineFunction function opposite parameters
 }
 
-class InlineFunction extends FunctionReference {
+class InlineFunction {
 	contains ClosureParameter[] parameters opposite function
 	contains RosettaExpression body
 }
 
 interface RosettaFunctionalOperation extends RosettaUnaryOperation {
-	contains FunctionReference functionRef
+	contains InlineFunction function
 }
 
 interface MandatoryFunctionalOperation extends RosettaFunctionalOperation {
@@ -326,7 +319,7 @@ class FilterOperation extends MandatoryFunctionalOperation, UnaryFunctionalOpera
 class MapOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
 }
 
-class ExtractAllOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
+class ThenOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
 }
 
 interface ComparingFunctionalOperation extends RosettaFunctionalOperation, UnaryFunctionalOperation {

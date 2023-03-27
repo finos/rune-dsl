@@ -17,7 +17,6 @@ import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
-import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
@@ -64,6 +63,7 @@ import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import java.util.Optional
 import org.eclipse.emf.ecore.EObject
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -468,7 +468,7 @@ auxiliary symbolListType(Function c) {
 auxiliary functionalOperationItemType(RosettaFunctionalOperation op) {
 	empty |- op.argument : var RListType receiverType
 	if (receiverType !== null) {
-		if (op instanceof ExtractAllOperation) {
+		if (op instanceof ThenOperation) {
 			return receiverType
 		} else {
 			return createListType(receiverType.itemType, single)

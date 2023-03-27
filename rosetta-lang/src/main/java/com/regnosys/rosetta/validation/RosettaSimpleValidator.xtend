@@ -39,7 +39,6 @@ import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.FilterOperation
 import com.regnosys.rosetta.rosetta.expression.FlattenOperation
-import com.regnosys.rosetta.rosetta.expression.FunctionReference
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
@@ -47,7 +46,6 @@ import com.regnosys.rosetta.rosetta.expression.ListOperation
 import com.regnosys.rosetta.rosetta.expression.MandatoryFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.MapOperation
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
@@ -121,44 +119,6 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
-import org.eclipse.xtext.validation.EValidatorRegistrar
-import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
-import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
-import com.regnosys.rosetta.rosetta.expression.FlattenOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.MapOperation
-import com.regnosys.rosetta.rosetta.expression.FilterOperation
-import com.regnosys.rosetta.rosetta.expression.FunctionReference
-import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
-import com.regnosys.rosetta.rosetta.expression.ReduceOperation
-import com.regnosys.rosetta.rosetta.expression.MandatoryFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.SumOperation
-import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.ListOperation
-import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
-import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
-import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
-import com.regnosys.rosetta.rosetta.RosettaAttributeReference
-import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
-import com.regnosys.rosetta.utils.ImplicitVariableUtil
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.expression.ClosureParameter
-import com.regnosys.rosetta.scoping.RosettaScopeProvider
-import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
-import com.regnosys.rosetta.rosetta.RosettaDocReference
-import org.eclipse.xtext.EcoreUtil2
-import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil
-import com.regnosys.rosetta.rosetta.ExternalValueOperator
-import com.regnosys.rosetta.services.RosettaGrammarAccess
-import org.eclipse.xtext.Keyword
-import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
-import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.generator.java.util.JavaNames
 
 // TODO: split expression validator
@@ -1270,18 +1230,18 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkUnaryFunctionalOperation(UnaryFunctionalOperation e) {
-		checkOptionalNamedParameter(e.functionRef)
+		checkOptionalNamedParameter(e.function)
 	}
 
 	@Check
 	def checkFilterOperation(FilterOperation o) {
-		checkBodyType(o.functionRef, RBuiltinType.BOOLEAN)
+		checkBodyType(o.function, RBuiltinType.BOOLEAN)
 	}
 	
 	@Check
 	def checkMapOperation(MapOperation o) {
 		if (o.isOutputListOfListOfLists) {
-			error('''Each list item is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION_REF)
+			error('''Each list item is already a list, mapping the item into a list of lists is not allowed. List map item expression must maintain existing cardinality (e.g. list to list), or reduce to single cardinality (e.g. list to single using expression such as count, sum etc).''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION)
 		}
 	}
 	
@@ -1294,11 +1254,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkReduceOperation(ReduceOperation o) {
-		checkNumberOfMandatoryNamedParameters(o.functionRef, 2)
-		if (o.argument.RType != o.functionRef.RType) {
-			error('''List reduce expression must evaluate to the same type as the input. Found types «o.argument.RType» and «o.functionRef.RType».''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION_REF)
+		checkNumberOfMandatoryNamedParameters(o.function, 2)
+		if (o.argument.RType != o.function.RType) {
+			error('''List reduce expression must evaluate to the same type as the input. Found types «o.argument.RType» and «o.function.RType».''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION)
 		}
-		checkBodyIsSingleCardinality(o.functionRef)
+		checkBodyIsSingleCardinality(o.function)
 	}
 	
 	@Check
@@ -1308,9 +1268,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def checkComparingFunctionalOperation(ComparingFunctionalOperation o) {
-		checkBodyIsSingleCardinality(o.functionRef)
+		checkBodyIsSingleCardinality(o.function)
 		checkBodyIsComparable(o)
-		if (o.functionRef === null) {
+		if (o.function === null) {
 			checkInputIsComparable(o)
 		}
 	}
@@ -1363,58 +1323,20 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 		
 	private def checkBodyExists(RosettaFunctionalOperation operation) {
-		if (operation.functionRef === null) {
-			error('''Missing a function reference.''', operation, ROSETTA_OPERATION__OPERATOR)
+		if (operation.function === null) {
+			error('''Missing an expression.''', operation, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 	
-	private def void checkOptionalNamedParameter(FunctionReference ref) {
-		if (ref instanceof NamedFunctionReference) {
-			val f = ref.function
-			switch f {
-				Function: {
-					if (f.inputs !== null && f.inputs.size !== 1) {
-						error('''Function must have 1 parameter.''', ref, null)
-					}
-				}
-				RosettaExternalFunction: {
-					if (f.parameters !== null && f.parameters.size !== 1) {
-						error('''Function must have 1 parameter.''', ref, null)
-					}
-				}
-				default: {
-					error("Unsupported function reference.", ref, null)
-				}
-			}
-		} else if (ref instanceof InlineFunction) {
-			if (ref.parameters !== null && ref.parameters.size !== 0 && ref.parameters.size !== 1) {
-				error('''Function must have 1 named parameter.''', ref, INLINE_FUNCTION__PARAMETERS)
-			}
+	private def void checkOptionalNamedParameter(InlineFunction ref) {
+		if (ref.parameters !== null && ref.parameters.size !== 0 && ref.parameters.size !== 1) {
+			error('''Function must have 1 named parameter.''', ref, INLINE_FUNCTION__PARAMETERS)
 		}
 	}
 	
-	private def void checkNumberOfMandatoryNamedParameters(FunctionReference ref, int max) {
-		if (ref instanceof NamedFunctionReference) {
-			val f = ref.function
-			switch f {
-				Function: {
-					if (f.inputs !== null && f.inputs.size !== max) {
-						error('''Function must have «max» named parameter«IF max > 1»s«ENDIF».''', ref, null)
-					}
-				}
-				RosettaExternalFunction: {
-					if (f.parameters !== null && f.parameters.size !== max) {
-						error('''Function must have «max» named parameter«IF max > 1»s«ENDIF».''', ref, null)
-					}
-				}
-				default: {
-					error("Unsupported function reference.", ref, null)
-				}
-			}
-		} else if (ref instanceof InlineFunction) {
-			if (ref.parameters === null || ref.parameters.size !== max) {
-				error('''Function must have «max» named parameter«IF max > 1»s«ENDIF».''', ref, INLINE_FUNCTION__PARAMETERS)
-			}
+	private def void checkNumberOfMandatoryNamedParameters(InlineFunction ref, int max) {
+		if (ref.parameters === null || ref.parameters.size !== max) {
+			error('''Function must have «max» named parameter«IF max > 1»s«ENDIF».''', ref, INLINE_FUNCTION__PARAMETERS)
 		}
 	}
 	
@@ -1431,20 +1353,20 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 	}
 	
-	private def void checkBodyIsSingleCardinality(FunctionReference ref) {
+	private def void checkBodyIsSingleCardinality(InlineFunction ref) {
 		if (ref !== null && ref.isBodyExpressionMulti) {
 			error('''Operation only supports single cardinality expressions.''', ref, null)
 		}
 	}
 	
-	private def void checkBodyType(FunctionReference ref, RType type) {
+	private def void checkBodyType(InlineFunction ref, RType type) {
 		if (ref !== null && ref.getRType != type) {
 			error('''Expression must evaluate to a «type.name».''', ref, null)
 		}
 	}
 	
 	private def void checkBodyIsComparable(RosettaFunctionalOperation op) {
-		val ref = op.functionRef
+		val ref = op.function
 		if (ref !== null) {
 			val bodyRType = ref.getRType
 			if (!bodyRType.isComparable) {

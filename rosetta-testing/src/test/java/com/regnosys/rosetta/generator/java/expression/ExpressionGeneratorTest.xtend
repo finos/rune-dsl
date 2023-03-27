@@ -35,7 +35,6 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.utils.DottedPath
 import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.RDataType
 
 @ExtendWith(InjectionExtension)

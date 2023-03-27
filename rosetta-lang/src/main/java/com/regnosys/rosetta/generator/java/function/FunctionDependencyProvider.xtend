@@ -15,7 +15,6 @@ import org.eclipse.emf.ecore.EObject
 
 import static com.regnosys.rosetta.generator.util.Util.*
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.RosettaReference
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
@@ -42,7 +41,7 @@ class FunctionDependencyProvider {
 				functionDependencies(object.args)
 			}
 			RosettaFunctionalOperation: {
-				newHashSet(functionDependencies(object.argument) + functionDependencies(object.functionRef))
+				newHashSet(functionDependencies(object.argument) + functionDependencies(object.function))
 			}
 			RosettaUnaryOperation: {
 				functionDependencies(object.argument)
@@ -54,9 +53,6 @@ class FunctionDependencyProvider {
 			}
 			Function: {
 				newHashSet(object)
-			}
-			NamedFunctionReference: {
-				functionDependencies(object.function)
 			}
 			InlineFunction: {
 				functionDependencies(object.body)

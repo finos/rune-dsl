@@ -51,10 +51,8 @@ import com.regnosys.rosetta.rosetta.expression.FirstOperation
 import com.regnosys.rosetta.rosetta.expression.LastOperation
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation
 import com.regnosys.rosetta.rosetta.expression.MapOperation
-import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
-import com.regnosys.rosetta.rosetta.expression.ExtractAllOperation
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
@@ -63,6 +61,7 @@ import com.regnosys.rosetta.rosetta.RosettaDataReference
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
 
 class RosettaTypeProvider {
 
@@ -299,9 +298,7 @@ class RosettaTypeProvider {
 				expression.argument.safeRType(cycleTracker)
 			ReduceOperation,
 			MapOperation,
-			ExtractAllOperation:
-				expression.functionRef.safeRType(cycleTracker)
-			NamedFunctionReference:
+			ThenOperation:
 				expression.function.safeRType(cycleTracker)
 			InlineFunction:
 				expression.body.safeRType(cycleTracker)

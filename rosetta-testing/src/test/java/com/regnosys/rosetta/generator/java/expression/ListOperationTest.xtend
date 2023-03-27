@@ -20,7 +20,6 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.junit.jupiter.api.Assertions.*
-import com.regnosys.rosetta.utils.ImplicitVariableUtil
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
