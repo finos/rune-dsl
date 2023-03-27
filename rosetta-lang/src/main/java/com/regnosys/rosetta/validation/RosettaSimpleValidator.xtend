@@ -8,28 +8,57 @@ import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
-import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
+import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaFeature
-import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
+import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
+import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
+import com.regnosys.rosetta.rosetta.expression.ClosureParameter
+import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.FilterOperation
+import com.regnosys.rosetta.rosetta.expression.FlattenOperation
+import com.regnosys.rosetta.rosetta.expression.FunctionReference
+import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import com.regnosys.rosetta.rosetta.expression.ListOperation
+import com.regnosys.rosetta.rosetta.expression.MandatoryFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.MapOperation
+import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
+import com.regnosys.rosetta.rosetta.expression.ReduceOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
+import com.regnosys.rosetta.rosetta.expression.SumOperation
+import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
@@ -38,10 +67,12 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
-import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.OutputOperation
+import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RRecordType
@@ -50,11 +81,15 @@ import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
+import com.regnosys.rosetta.utils.ExternalAnnotationUtil
+import com.regnosys.rosetta.utils.ExternalAnnotationUtil.CollectRuleVisitor
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException
 import java.lang.reflect.Method
 import java.time.format.DateTimeFormatter
 import java.util.List
+import java.util.Map
 import java.util.Set
 import java.util.Stack
 import java.util.regex.Pattern
@@ -64,16 +99,22 @@ import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.Keyword
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import org.eclipse.xtext.naming.QualifiedName
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.xtext.validation.Check
+import org.eclipse.xtext.validation.EValidatorRegistrar
 import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
@@ -199,7 +240,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		val visited = newHashSet
 		for (t: source.externalRefs) {
 			if (!visited.add(t.typeRef)) {
-				error('''Duplicate type `«t.typeRef.name»`.''', t, null);
+				// @Compat Should be error, but would cause backward compatibility issues in some models
+				warning('''Duplicate type `«t.typeRef.name»`.''', t, null);
 			}
 		}
 	}
@@ -216,6 +258,61 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
+	def void checkRuleSource(RosettaBlueprintReport report) {
+		val visitor = new CollectRuleErrorVisitor
+
+		report.reportType.collectRuleErrors(report.ruleSource, visitor)
+
+		visitor.errorMap.entrySet.forEach[
+			error(value, key, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
+		]
+	}
+
+	private def void collectRuleErrors(Data type, RosettaExternalRuleSource source, CollectRuleErrorVisitor visitor) {
+		externalAnn.collectAllRuleReferencesForType(source, type, visitor)
+
+		type.allAttributes.forEach[attr |
+			val attrType = attr.type
+
+			if (attrType instanceof Data) {
+				if (!visitor.collectedTypes.contains(attrType)) {
+					visitor.collectedTypes.add(attrType)
+					attrType.collectRuleErrors(source, visitor)
+				}
+			}
+		]
+	}
+
+	private static class CollectRuleErrorVisitor implements CollectRuleVisitor {
+
+		final Map<RosettaFeature, RosettaRuleReference> ruleMap = newHashMap;
+		final Map<RosettaExternalRegularAttribute, String> errorMap = newHashMap;
+		final Set<Data> collectedTypes = newHashSet;
+
+		override void add(RosettaFeature attr, RosettaRuleReference rule) {
+			ruleMap.put(attr, rule);
+		}
+
+		override void add(RosettaExternalRegularAttribute extAttr, RosettaRuleReference rule) {
+			val attr = extAttr.attributeRef
+			if (!ruleMap.containsKey(attr)) {
+				ruleMap.put(attr, rule);
+			} else {
+				errorMap.put(extAttr, '''There is already a mapping defined for `«attr.name»`. Try removing the mapping first with `- «attr.name»`.''')
+			}
+		}
+
+		override void remove(RosettaExternalRegularAttribute extAttr) {
+			val attr = extAttr.attributeRef
+			if (ruleMap.containsKey(attr)) {
+				ruleMap.remove(attr);
+			} else {
+				errorMap.put(extAttr, '''You cannot remove this mapping because `«attr.name»` did not have a mapping defined before.''')
+			}
+		}
+	}
+
+	@Check
 	def void checkRuleSource(RosettaExternalRuleSource source) {
 		if (source.superSources.size > 1) {
 			error("A rule source may not extend more than one other rule source.", source, ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES, 1);
@@ -225,27 +322,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			t.externalClassSynonyms.forEach[
 				error('''You may not define synonyms in a rule source.''', it, null);
 			]
-			
-			val definedAttributes = if (source.superRuleSource !== null) {
-				externalAnn.getAllExternalAttributesForType(source.superRuleSource, t.typeRef as Data);
-			} else {
-				newHashSet
-			}
+
 			for (attr: t.regularAttributes) {
 				attr.externalSynonyms.forEach[
 					error('''You may not define synonyms in a rule source.''', it, null);
 				]
-				
-				if (attr.getOperator().equals(ExternalValueOperator.MINUS)) {
-					if (!definedAttributes.removeIf[attributeRef == attr.attributeRef]) {
-						error('''You cannot remove this mapping because `«attr.attributeRef.name»` did not have a mapping defined before.''', attr, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
-					}
-				} else { // attr.getOperator().equals(ExternalValueOperator.PLUS)
-					if (definedAttributes.findFirst[attributeRef == attr.attributeRef] !== null) {
-						error('''There is already a mapping defined for `«attr.attributeRef.name»`. Try removing the mapping first with `- «attr.attributeRef.name»`.''', attr, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
-					}
-					definedAttributes.add(attr);
-				}
 			}
 		}
 		
