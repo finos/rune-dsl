@@ -1,10 +1,30 @@
 package com.regnosys.rosetta.generator.java.blueprints
 
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.RosettaExtensions.PathAttribute
+import com.regnosys.rosetta.blueprints.Blueprint
+import com.regnosys.rosetta.blueprints.BlueprintBuilder
+import com.regnosys.rosetta.blueprints.BlueprintInstance
+import com.regnosys.rosetta.blueprints.DataItemReportBuilder
+import com.regnosys.rosetta.blueprints.DataItemReportUtils
+import com.regnosys.rosetta.blueprints.runner.actions.Filter
+import com.regnosys.rosetta.blueprints.runner.actions.FilterByRule
+import com.regnosys.rosetta.blueprints.runner.actions.IdChange
+import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory
+import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier
+import com.regnosys.rosetta.blueprints.runner.data.GroupableData
+import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier
+import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode
+import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
+import com.regnosys.rosetta.generator.java.types.JavaClass
+import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
+import com.regnosys.rosetta.generator.java.types.JavaType
+import com.regnosys.rosetta.generator.java.types.JavaTypeVariable
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.BlueprintExtract
@@ -20,13 +40,18 @@ import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaFactory
+import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.utils.DottedPath
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver
 import com.regnosys.rosetta.validation.TypedBPNode
+import com.rosetta.model.lib.path.RosettaPath
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -34,35 +59,11 @@ import javax.inject.Inject
 import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
+import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-
-import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.types.RosettaTypeProvider
-import com.regnosys.rosetta.blueprints.Blueprint
-import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.generator.java.types.JavaType
-import com.regnosys.rosetta.generator.java.types.JavaTypeVariable
-import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
-import com.regnosys.rosetta.blueprints.BlueprintInstance
-import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory
-import com.regnosys.rosetta.blueprints.BlueprintBuilder
-import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier
-import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode
-import com.regnosys.rosetta.utils.DottedPath
-import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.blueprints.runner.actions.Filter
-import com.regnosys.rosetta.blueprints.runner.actions.FilterByRule
-import com.regnosys.rosetta.blueprints.runner.actions.IdChange
-import com.regnosys.rosetta.blueprints.DataItemReportBuilder
-import com.regnosys.rosetta.blueprints.runner.data.GroupableData
-import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier
-import com.regnosys.rosetta.blueprints.DataItemReportUtils
-import com.regnosys.rosetta.types.RDataType
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator)
@@ -124,7 +125,7 @@ class BlueprintGenerator {
 		val node = RosettaFactory.eINSTANCE.createBlueprintOr
 		node.name = report.name
 		
-		report.allReportingRules.sortBy[name].forEach[
+		report.getAllReportingRules(false).values.sortBy[name].forEach[
 			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
 			ref.blueprint = it
 			ref.name = it.name
@@ -152,11 +153,11 @@ class BlueprintGenerator {
 			val typed = buildTypeGraph(nodes, output, names)
 			val clazz = new JavaClass(packageName.model.blueprint, name + type)
 			val clazzWithArgs = bindArgs(typed, clazz)
-			
+
 			val topScope = new JavaScope(packageName.model.blueprint)
-			
+
 			val classScope = topScope.classScope(clazzWithArgs.toString)
-			
+
 			val StringConcatenationClient body = '''
 				«emptyJavadocWithVersion(version)»
 				public class «clazzWithArgs» implements «Blueprint»<«typed.input.getEither(names)», «typed.output.getEither(names)», «typed.inputKey.getEither(names)», «typed.outputKey.getEither(names)»> {
@@ -181,7 +182,7 @@ class BlueprintGenerator {
 					«nodes.buildBody(classScope, typed, dataItemReportBuilderName, names)»
 				}
 				'''
-				
+
 				buildClass(packageName.model.blueprint, body, topScope)
 			}
 			catch (Exception e) {
@@ -230,7 +231,7 @@ class BlueprintGenerator {
 		nodes.functionDependencies.toSet.forEach[
 			scope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)
 		]
-		
+
 		val context = new Context(nodes)
 		val blueprintScope = scope.methodScope("blueprint")
 		return '''
@@ -239,7 +240,7 @@ class BlueprintGenerator {
 			«ENDFOR»
 			
 			@Override
-			public «BlueprintInstance»<«typedNode.input.getEither(names)», «typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)», «typedNode.outputKey.getEither(names)»> blueprint() { 
+			public «BlueprintInstance»<«typedNode.input.getEither(names)», «typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)», «typedNode.outputKey.getEither(names)»> blueprint() {
 				return 
 					«importWildcard(method(BlueprintBuilder, "startsWith"))»(actionFactory, «nodes.buildGraph(blueprintScope, names, typedNode.next, context)»)
 					«IF dataItemReportBuilderName !== null».addDataItemReportBuilder(new «dataItemReportBuilderName.toDataItemReportBuilderName»())«ENDIF»
@@ -259,7 +260,7 @@ class BlueprintGenerator {
 	/**
 	 * recursive function that builds the graph of nodes
 	 */
-	def StringConcatenationClient buildGraph(BlueprintNodeExp nodeExp, JavaScope scope, JavaNames names, TypedBPNode typedNode, Context context) 
+	def StringConcatenationClient buildGraph(BlueprintNodeExp nodeExp, JavaScope scope, JavaNames names, TypedBPNode typedNode, Context context)
 		'''
 		«nodeExp.buildNode(scope, names, typedNode, context)»«IF nodeExp.next !== null»)
 		.then(« nodeExp.next.buildGraph(scope, names, typedNode.next, context)»«ENDIF»'''
@@ -271,7 +272,7 @@ class BlueprintGenerator {
 		val node = nodeExp.node
 		val id = createIdentifier(nodeExp);
 		switch (node) {
-			BlueprintExtract: {				
+			BlueprintExtract: {
 				val cond = node.call
 				val multi = cardinality.isMulti(cond)
 				val repeatable = node.repeatable
@@ -282,7 +283,7 @@ class BlueprintGenerator {
 				} else {
 					lambdaScope.createUniqueIdentifier(typedNode.input.type.name.toFirstLower)
 				}
-				
+
 				if (!multi)
 				'''actionFactory.<«typedNode.input.getEither(names)», «
 					typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)»>newRosettaSingleMapper("«node.URI»", "«(cond).toNodeLabel
@@ -296,11 +297,11 @@ class BlueprintGenerator {
 									typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)»>newRosettaMultipleMapper("«node.URI»", "«(cond).toNodeLabel
 														»", «id», «implicitVar» -> «node.call.javaCode(lambdaScope, names)»)'''
 			}
-			BlueprintReturn: {				
+			BlueprintReturn: {
 				val expr = node.expression
-				
+
 				val lambdaScope = scope.lambdaScope
-				
+
 				'''actionFactory.<«typedNode.input.getEither(names)», «typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)»> newRosettaReturn("«node.URI»", "«expr.toNodeLabel»",  «id»,  () -> «expr.javaCode(lambdaScope, names)»)'''
 			}
 			BlueprintLookup: {
@@ -316,9 +317,9 @@ class BlueprintGenerator {
 			BlueprintRef : {
 				context.addBPRef(typedNode)
 				'''get«node.blueprint.name.toFirstUpper»()«IF nodeExp.identifier!==null»)
-				.then(new «IdChange»("«node.URI»", "as «nodeExp.identifier»", «id»)«ENDIF»'''				
+				.then(new «IdChange»("«node.URI»", "as «nodeExp.identifier»", «id»)«ENDIF»'''
 			}
-			BlueprintFilter :{								
+			BlueprintFilter :{
 				if(node.filter!==null) {
 					val lambdaScope = scope.lambdaScope
 					val implicitVar = if (typedNode.input.type instanceof RDataType) {
@@ -331,7 +332,7 @@ class BlueprintGenerator {
 				}
 				else {
 					context.addBPRef(typedNode)
-					'''new «FilterByRule»<«typedNode.input.getEither(names)», «typedNode.inputKey.getEither(names)»>("«node.URI»", "«node.filterBP.blueprint.name»", 
+					'''new «FilterByRule»<«typedNode.input.getEither(names)», «typedNode.inputKey.getEither(names)»>("«node.URI»", "«node.filterBP.blueprint.name»",
 					get«node.filterBP.blueprint.name.toFirstUpper»(), «id»)'''
 				}
 			}
@@ -402,7 +403,7 @@ class BlueprintGenerator {
 		'''«node.input.getEither(names)», «node.output.getEither(names)», «node.inputKey.getEither(names)», «node.outputKey.getEither(names)»'''
 	}
 	
-	def StringConcatenationClient blueprintRef(RosettaBlueprint ref, TypedBPNode typedNode, Context context, JavaNames names) {	
+	def StringConcatenationClient blueprintRef(RosettaBlueprint ref, TypedBPNode typedNode, Context context, JavaNames names) {
 		val className = ref.name + "Rule"
 		val refName = ref.name.toFirstLower + "Ref"
 		val dep = new JavaClass(DottedPath.splitOnDots((ref.eContainer as RosettaModel).name).child("blueprint"), className)
@@ -412,7 +413,7 @@ class BlueprintGenerator {
 			return «refName».blueprint();
 		}'''
 	}
-	
+
 		
 	protected def StringConcatenationClient typeArgs(TypedBPNode typedNode, JavaNames names)
 		'''<«typedNode.input.getEither(names)», «typedNode.output.getEither(names)», «typedNode.inputKey.getEither(names)», «typedNode.outputKey.getEither(names)»>'''
@@ -426,7 +427,7 @@ class BlueprintGenerator {
 	'''
 	
 	def fullname(RosettaType type, RosettaJavaPackages packageName, extension JavaNames names) {
-		if (type instanceof Data)
+		if (type instanceof com.regnosys.rosetta.rosetta.simple.Data)
 			'''«packageName.model».«type.name»'''.toString
 		else 
 			typeProvider.getRType(type).toJavaType
@@ -460,9 +461,9 @@ class BlueprintGenerator {
 	 * Builds DataItemReportBuilder that takes a list of GroupableData
 	 */
 	def String generateReportBuilder(RosettaJavaPackages packageName, RosettaBlueprintReport report, String version, extension JavaNames names) {
-		try {			
+		try {
 			val scope = new JavaScope(packageName.model.blueprint)
-			
+
 			val StringConcatenationClient body = '''
 				«emptyJavadocWithVersion(version)»
 				public class «report.reportType.name.toDataItemReportBuilderName» implements «DataItemReportBuilder» {
@@ -495,7 +496,7 @@ class BlueprintGenerator {
 					if (data == null) {
 						continue;
 					}
-					«report.reportType.buildRules(builderName, names)»
+					«report.getAllReportingRules(true).buildRules(builderName, names)»
 				}
 			}
 			
@@ -503,45 +504,45 @@ class BlueprintGenerator {
 		}'''
 	}
 	
-	def StringConcatenationClient buildRules(Data dataType, String builderPath, extension JavaNames names) {
-		'''«FOR attr : dataType.allAttributes»
+	def StringConcatenationClient buildRules(Map<PathAttribute, RosettaBlueprint> attrRules, String builderPath, extension JavaNames names) {
+		'''«FOR entry : attrRules.entrySet.sortBy[value.name]»
+			«val path = entry.key.path»
+			«val attr = entry.key.attr»
 			«val attrType = attr.type»
-			«val rule = attr.ruleReference?.reportingRule»
-			«IF rule !== null»
-				«val ruleClass = new JavaClass(DottedPath.splitOnDots((rule.eContainer as RosettaModel).name).child("blueprint"), rule.name + "Rule")»
-				«IF attr.card.isIsMany»
-					«IF attrType instanceof Data»
-						«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»(ruleIdentifier.getRepeatableIndex().orElse(0))''', names)»
-					«ENDIF»
-				«ELSE»
-					if («ruleClass».class.isAssignableFrom(ruleType)) {
-						«DataItemReportUtils».setField(«builderPath»::set«attr.name.toFirstUpper», «typeProvider.getRType(attrType).toJavaType».class, data, «rule.name»Rule.class);
-					}
-				«ENDIF»
-			«ELSEIF attrType instanceof Data»
-				«IF !attr.card.isIsMany»
-					«attrType.buildRules('''«builderPath».getOrCreate«attr.name.toFirstUpper»()''', names)»
-				«ENDIF»
-			«ENDIF»
+			«val rule = entry.value»
+			«val ruleClass = new JavaClass(DottedPath.splitOnDots((rule.eContainer as RosettaModel).name).child("blueprint"), rule.name + "Rule")»
+			if («ruleClass».class.isAssignableFrom(ruleType)) {
+				«DataItemReportUtils».setField(«builderPath»«path.trimFirst.buildAttributePathGetters»::set«attr.name.toFirstUpper», «typeProvider.getRType(attrType).toJavaType».class, data, «ruleClass».class);
+			}
 		«ENDFOR»
 		'''	
 	}
 	
+	private def buildAttributePathGetters(RosettaPath path) {
+		if (path === null) {
+			return ""
+		}
+
+		return "." + path.allElements.map[
+				'''«IF it.index.isPresent»getOrCreate«it.path.toFirstUpper»(ruleIdentifier.getRepeatableIndex().orElse(0))«ELSE»getOrCreate«it.path.toFirstUpper»()«ENDIF»'''
+			].join('.')
+	}
+
 	def String toDataItemReportBuilderName(String dataItemReportTypeName) {
 		'''«dataItemReportTypeName»_DataItemReportBuilder'''
 	}
 	
-	@org.eclipse.xtend.lib.annotations.Data static class AttributePath {
+	@Data static class AttributePath {
 		List<Attribute> path
 		RosettaDocReference ref
 	}
 	
-	@org.eclipse.xtend.lib.annotations.Data static class RegdOutputField {
+	@Data static class RegdOutputField {
 		Attribute attrib
 		RosettaDocReference ref
 	}
 	
-	@org.eclipse.xtend.lib.annotations.Data static class Context {
+	@Data static class Context {
 		BlueprintNodeExp nodes
 		Map<RosettaBlueprint, TypedBPNode> bpRefs = newLinkedHashMap
 		Map<String, TypedBPNode> sources = newHashMap
