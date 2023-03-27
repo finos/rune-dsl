@@ -39,7 +39,6 @@ import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.FilterOperation
 import com.regnosys.rosetta.rosetta.expression.FlattenOperation
-import com.regnosys.rosetta.rosetta.expression.FunctionReference
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
@@ -47,7 +46,6 @@ import com.regnosys.rosetta.rosetta.expression.ListOperation
 import com.regnosys.rosetta.rosetta.expression.MandatoryFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.MapOperation
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.NamedFunctionReference
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
@@ -121,42 +119,6 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
-import org.eclipse.xtext.validation.EValidatorRegistrar
-import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
-import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
-import com.regnosys.rosetta.rosetta.expression.FlattenOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.MapOperation
-import com.regnosys.rosetta.rosetta.expression.FilterOperation
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
-import com.regnosys.rosetta.rosetta.expression.ReduceOperation
-import com.regnosys.rosetta.rosetta.expression.MandatoryFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.SumOperation
-import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.ListOperation
-import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
-import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
-import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
-import com.regnosys.rosetta.rosetta.RosettaAttributeReference
-import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
-import com.regnosys.rosetta.utils.ImplicitVariableUtil
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.expression.ClosureParameter
-import com.regnosys.rosetta.scoping.RosettaScopeProvider
-import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
-import com.regnosys.rosetta.rosetta.RosettaDocReference
-import org.eclipse.xtext.EcoreUtil2
-import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil
-import com.regnosys.rosetta.rosetta.ExternalValueOperator
-import com.regnosys.rosetta.services.RosettaGrammarAccess
-import org.eclipse.xtext.Keyword
-import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
-import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.generator.java.util.JavaNames
 
 // TODO: split expression validator
