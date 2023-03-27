@@ -581,11 +581,11 @@ from {
 		G |- op.left : var RListType t1
 		G |- op.right : var RListType t2
 		if (op.operator == '+') {
-			if (t1.equals(singleDate)) {
+			if (t1.itemType.equals(DATE)) {
 				lt = singleDateTime
-			} else if (t1.equals(singleString) || t2.equals(singleString)) {
+			} else if (t1.itemType.equals(STRING) || t2.itemType.equals(STRING)) {
 				lt = singleString
-			} else if (t1.equals(singleNumber) || t2.equals(singleNumber)) {
+			} else if (t1.itemType.equals(NUMBER) || t2.itemType.equals(NUMBER)) {
 				lt = singleNumber
 			} else {
 				lt = singleInt

@@ -15,7 +15,7 @@ class EnumGenerator {
 
 	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaEnumeration).forEach [
-			fsa.generateFile(packages.model.directoryName + '/' + name + '.java', toJava(packages, version))
+			fsa.generateFile(packages.model.withForwardSlashes + '/' + name + '.java', toJava(packages, version))
 		]
 	}
 	
@@ -31,10 +31,10 @@ class EnumGenerator {
 	}
 
 	private def toJava(RosettaEnumeration e, RosettaJavaPackages packages, String version) '''
-		package «packages.model.name»;
+		package «packages.model»;
 		
 		«IF e.anyValueHasSynonym»
-		import «packages.defaultLibAnnotations.name».RosettaSynonym;
+		import «packages.defaultLibAnnotations».RosettaSynonym;
 		«ENDIF»
 		
 		«javadoc(e, version)»
@@ -47,8 +47,8 @@ class EnumGenerator {
 				«IF value.display !== null»
 				    «convertValuesWithDisplay(value)»
 				«ELSE»
-					    «convertValues(value)»    
-			        «ENDIF»		
+				    «convertValues(value)»
+		        «ENDIF»		
 			«ENDFOR»
 			;
 		

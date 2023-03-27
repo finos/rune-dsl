@@ -1,5 +1,6 @@
 bin/
 target/
+test-data/
 build.acceleo
 *~
 *.java._trace

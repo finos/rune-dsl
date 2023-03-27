@@ -27,6 +27,8 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.rosetta.model.lib.validation.ValidatorFactory
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.types.RosettaTypeProvider
 
 class ModelMetaGenerator {
 
@@ -34,28 +36,20 @@ class ModelMetaGenerator {
 	@Inject extension RosettaExtensions
 	@Inject RosettaConfigExtension confExt
 	@Inject RosettaFunctionExtensions funcExt
+	@Inject RosettaTypeProvider typeProvider
 	
 	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version, Set<RosettaModel> models) {
 		val className = '''«data.name»Meta'''
 		
-		val classBody = tracImports(data.metaClassBody(names, className, version, models))
-		val javaFileContents = '''
-			package «names.packages.model.meta.name»;
-			
-			«FOR imp : classBody.imports»
-				import «imp»;
-			«ENDFOR»
-			«FOR imp : classBody.staticImports»
-				import static «imp»;
-			«ENDFOR»
-			
-			«classBody.toString»
-		'''
-		fsa.generateFile('''«names.packages.model.meta.directoryName»/«className».java''', javaFileContents)
+		val scope = new JavaScope(names.packages.model.meta)
+		
+		val classBody = data.metaClassBody(names, className, version, models)
+		val javaFileContents = buildClass(names.packages.model.meta, classBody, scope)
+		fsa.generateFile('''«names.packages.model.meta.withForwardSlashes»/«className».java''', javaFileContents)
 	}
 	
 	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version, Set<RosettaModel> models) {
-		val dataClass = javaNames.toJavaType(c)
+		val dataClass = javaNames.toJavaType(typeProvider.getRType(c))
 		val qualifierFuncs = qualifyFuncs(c, javaNames, models)
 		val dataRules = c.allSuperTypes.map[it.conditionRules(it.conditions)].flatten
 		'''
@@ -67,7 +61,7 @@ class ModelMetaGenerator {
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
 						«FOR r : dataRules SEPARATOR ','»
-							factory.create(«r.containingClassNamespace.dataRule.name».«r.ruleName.toConditionJavaType».class)
+							factory.create(«r.containingClassNamespace.dataRule».«r.ruleName.toConditionJavaType».class)
 						«ENDFOR»
 					);
 				}
@@ -87,12 +81,12 @@ class ModelMetaGenerator {
 				
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
-					return new «javaNames.packages.model.typeValidation.name».«dataClass»Validator();
+					return new «javaNames.packages.model.typeValidation».«dataClass»Validator();
 				}
 				
 				@Override
 				public «ValidatorWithArg»<? super «dataClass», «Set»<String>> onlyExistsValidator() {
-					return new «javaNames.packages.model.existsValidation.name».«ValidatorsGenerator.onlyExistsValidatorName(c)»();
+					return new «javaNames.packages.model.existsValidation».«ValidatorsGenerator.onlyExistsValidatorName(c)»();
 				}
 			}
 		'''

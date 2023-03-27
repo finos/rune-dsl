@@ -28,6 +28,131 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
+
+	@Test
+	def void noDuplicateInheritanceForRuleSourceTest() {
+		val model = '''
+			rule source TestA {}
+			rule source TestB {}
+			rule source TestC extends TestA, TestB {}
+		'''.parseRosetta
+		model.assertError(ROSETTA_EXTERNAL_RULE_SOURCE, null,
+            "A rule source may not extend more than one other rule source.")
+	}
+
+	@Test
+	def void noDuplicateTypesInAnnotationSourceTest() {
+		val model = '''
+			type Foo:
+				foo string (0..1)
+			
+			rule source TestA {
+				Foo:
+				+ foo
+				
+				Foo:
+				+ foo
+			}
+		'''.parseRosetta
+		model.assertError(ROSETTA_EXTERNAL_CLASS, null,
+            "Duplicate type `Foo`.")
+	}
+
+	@Test
+	def void synonymNotAllowedInRuleSourceTest() {
+		val model = '''
+			type Foo:
+				foo string (0..1)
+			
+			rule source TestA {
+				Foo:
+				[meta "bar"]
+				+ foo
+					[value "bar" path "baz"]
+			}
+		'''.parseRosetta
+		model.assertError(ROSETTA_EXTERNAL_CLASS_SYNONYM, null,
+            "You may not define synonyms in a rule source.")
+        model.assertError(ROSETTA_EXTERNAL_SYNONYM, null,
+            "You may not define synonyms in a rule source.")
+	}
+
+	@Test
+	def void enumNotAllowedInRuleReferenceSourceTest() {
+		val model = '''
+			enum Foo:
+				BAR
+			
+			rule source TestA {
+				enums
+			
+				Foo:
+				+ BAR
+			}
+		'''.parseRosetta
+		model.assertError(ROSETTA_EXTERNAL_RULE_SOURCE, null,
+            "A rule source cannot define annotations for enums.")
+	}
+
+	@Test
+	def void cannotImplicitlyOverrideRuleReferenceFromSuperSourceTest() {
+		val model = '''
+			type Foo:
+				foo string (0..1)
+			
+			reporting rule RA:
+				return "A"
+			
+			reporting rule RB:
+				return "B"
+			
+			rule source TestA {
+				Foo:
+				+ foo
+					[ruleReference RA]
+			}
+			
+			rule source TestB extends TestA {
+				Foo:
+				+ foo
+					[ruleReference RB]
+			}
+		'''.parseRosetta
+		model.assertError(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE, null,
+            "There is already a mapping defined for `foo`. Try removing the mapping first with `- foo`.")
+	}
+	
+	@Test
+	def void externalRuleSourceCannotExtendExternalSynonymSourceTest() {
+		val model = '''
+			synonym source SynSource {}
+			
+			rule source RuleSource extends SynSource {}
+		'''.parseRosetta
+		model.assertError(ROSETTA_EXTERNAL_RULE_SOURCE, Diagnostic.LINKING_DIAGNOSTIC,
+            "Couldn't resolve reference to ExternalAnnotationSource 'SynSource'.")
+	}
+	
+	@Test
+	def void cannotRemoveNonExistingRuleReferenceFromExternalRuleSourceTest() {
+		val model = '''
+			type Foo:
+				foo string (0..1)
+			
+			reporting rule RA:
+				return "A"
+			
+			reporting rule RB:
+				return "B"
+			
+			rule source TestA {
+				Foo:
+				- foo
+			}
+		'''.parseRosetta
+		model.assertError(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE, null,
+            "You cannot remove this mapping because `foo` did not have a mapping defined before.")
+	}
 	
 	@Test
 	def void mayNotUseAmbiguousOutputTest() {
@@ -1041,7 +1166,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				enums
 				
 				Enumerate:
-					+ x
+					+ X
 						[value "bar" pattern "([A-Z)" "$1"]
 			}
 

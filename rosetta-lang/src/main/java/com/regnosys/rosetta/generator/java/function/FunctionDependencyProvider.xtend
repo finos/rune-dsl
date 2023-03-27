@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
@@ -27,7 +26,7 @@ import com.regnosys.rosetta.rosetta.RosettaSymbol
 class FunctionDependencyProvider {
 
 
-	def Set<RosettaCallableWithArgs> functionDependencies(EObject object) {
+	def Set<Function> functionDependencies(EObject object) {
 		switch object {
 			RosettaBinaryOperation: {
 				newHashSet(functionDependencies(object.left) + functionDependencies(object.right))
@@ -74,7 +73,7 @@ class FunctionDependencyProvider {
 		}
 	}
 	
-	def Set<RosettaCallableWithArgs> functionDependencies(Iterable<? extends EObject> objects) {
+	def Set<Function> functionDependencies(Iterable<? extends EObject> objects) {
 		distinctBy(objects.map[object | functionDependencies(object)].flatten, [f|f.name]).toSet;
 	}
 }

@@ -15,22 +15,27 @@ import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.generator.java.types.JavaClass
+import com.regnosys.rosetta.types.RType
 
 class ModelObjectBuilderGenerator {
 	
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension RosettaExtensions
+	@Inject RosettaTypeProvider typeProvider
 
-	def StringConcatenationClient builderClass(Data c, JavaNames names) '''
-«««		This line reserves this name as a name
-		//«names.toJavaType(c).toBuilderImplType»
-		class «names.toJavaType(c)»BuilderImpl«IF c.hasSuperType» extends «names.toJavaType(c.superType).toBuilderImplType» «ENDIF» implements «names.toJavaType(c).toBuilderType»«implementsClauseBuilder(c)» {
+	def StringConcatenationClient builderClass(Data c, extension JavaNames names) {
+		val javaType = names.toJavaType(typeProvider.getRType(c)) as JavaClass
+		'''
+		//«javaType.toBuilderImplType»
+		class «javaType»BuilderImpl«IF c.hasSuperType» extends «(names.toJavaType(typeProvider.getRType(c.superType)) as JavaClass).toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(c)» {
 		
 			«FOR attribute : c.expandedAttributes»
 				protected «attribute.toBuilderType(names)» «attribute.name»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
 			«ENDFOR»
 		
-			public «names.toJavaType(c)»BuilderImpl() {
+			public «javaType»BuilderImpl() {
 			}
 		
 			«c.expandedAttributes.builderGetters(names)»
@@ -39,17 +44,17 @@ class ModelObjectBuilderGenerator {
 			
 			@Override
 			public «c.name» build() {
-				return new «names.toJavaType(c).toImplType»(this);
+				return new «javaType.toImplType»(this);
 			}
 			
 			@Override
-			public «names.toJavaType(c).toBuilderType» toBuilder() {
+			public «javaType.toBuilderType» toBuilder() {
 				return this;
 			}
 		
 			@SuppressWarnings("unchecked")
 			@Override
-			public «names.toJavaType(c).toBuilderType» prune() {
+			public «javaType.toBuilderType» prune() {
 				«IF c.hasSuperType»super.prune();«ENDIF»
 				«FOR attribute : c.expandedAttributes»
 					«IF !attribute.isMultiple && (attribute.isDataType || attribute.hasMetas)»
@@ -62,15 +67,16 @@ class ModelObjectBuilderGenerator {
 			}
 			
 			«c.expandedAttributes.filter[!it.overriding].hasData(c.hasSuperType)»
-
-			«c.expandedAttributes.filter[!it.overriding].merge(c, c.hasSuperType, names)»
-
+		
+			«c.expandedAttributes.filter[!it.overriding].merge(typeProvider.getRType(c), c.hasSuperType, names)»
+		
 			«c.builderBoilerPlate(names)»
 		}
-	'''
+		'''
+	}
 
-	private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RosettaType type, boolean hasSuperType, JavaNames names) {
-		val builderName = names.toJavaType(type).toBuilderType
+	private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RType type, boolean hasSuperType, extension JavaNames names) {
+		val builderName = (names.toJavaType(type) as JavaClass).toBuilderType
 	'''
 		@SuppressWarnings("unchecked")
 		@Override
@@ -157,8 +163,8 @@ class ModelObjectBuilderGenerator {
 		«ENDFOR»
 	'''
 	
-	private def StringConcatenationClient doSetter(RosettaType thisClass, ExpandedAttribute attribute, JavaNames names) {
-		val thisName = names.toJavaType(thisClass).toBuilderType
+	private def StringConcatenationClient doSetter(RosettaType thisClass, ExpandedAttribute attribute, extension JavaNames names) {
+		val thisName = (names.toJavaType(typeProvider.getRType(thisClass)) as JavaClass).toBuilderType
 		'''
 		«IF attribute.cardinalityIsListValue»
 			@Override

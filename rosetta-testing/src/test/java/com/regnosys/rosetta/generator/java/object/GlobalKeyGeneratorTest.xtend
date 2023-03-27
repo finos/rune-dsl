@@ -29,7 +29,7 @@ class GlobalKeyGeneratorTest {
 		'''.generateCode
 		//code.writeClasses("shouldGenerateGlobalKeyFieldAndGetterWhenSet")
 		val classess = code.compileToClasses
-		val withGlobalKey = classess.get(rootPackage.name + '.WithGlobalKey')
+		val withGlobalKey = classess.get(rootPackage + '.WithGlobalKey')
 
 		assertThat(withGlobalKey.declaredMethods.map[name], hasItem('getMeta'))
 	}
@@ -42,7 +42,7 @@ class GlobalKeyGeneratorTest {
 		'''.generateCode
 
 		val classess = code.compileToClasses
-		val withoutGlobalKeys = classess.get(rootPackage.name + '.WithoutGlobalKeys')
+		val withoutGlobalKeys = classess.get(rootPackage + '.WithoutGlobalKeys')
 
 		assertThat(withoutGlobalKeys.methods.map[name], not(hasItem('getMeta')))
 	}
@@ -67,11 +67,11 @@ class GlobalKeyGeneratorTest {
 
 		val classes = code.compileToClasses
 
-		val foo = classes.get(rootPackage.name + '.Foo')
+		val foo = classes.get(rootPackage + '.Foo')
 		assertThat(foo.declaredMethods.map[name], hasItem('getBar'))
 		assertThat(foo.declaredMethods.map[name], hasItem('getMeta'))
 		
-		val baz = classes.get(rootPackage.name + '.Baz')
+		val baz = classes.get(rootPackage + '.Baz')
 		assertThat(baz.declaredMethods.map[name], hasItem('getFoo'))
 		val fooMethod = baz.getMethod("getFoo")
 		val returnType = fooMethod.returnType
@@ -100,11 +100,11 @@ class GlobalKeyGeneratorTest {
 
 		val classes = code.compileToClasses
 
-		val foo = classes.get(rootPackage.name + '.Foo')
+		val foo = classes.get(rootPackage + '.Foo')
 		assertThat(foo.declaredFields.map[name], hasItem('bar'))
 		assertThat(foo.declaredFields.map[name], hasItem('meta'))
 		
-		val baz = classes.get(rootPackage.name + '.Baz')
+		val baz = classes.get(rootPackage + '.Baz')
 		assertThat(baz.declaredFields.map[name], hasItem('foo'))
 		val fooMethod = baz.getMethod("getFoo")
 		val returnType = fooMethod.returnType

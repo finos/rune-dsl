@@ -112,7 +112,9 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	}
 	private void discardDefaultJoinSeparator(JoinOperation expr) {
 		if (!expr.isExplicitSeparator()) {
-			expr.setRight(null);
+			if (expr.getRight() != null && expr.getRight().isGenerated()) {
+				expr.setRight(null);
+			}
 		}
 	}
 }

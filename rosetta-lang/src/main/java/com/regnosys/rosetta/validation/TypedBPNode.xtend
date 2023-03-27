@@ -19,7 +19,7 @@ class TypedBPNode {
 	//so use an array to get pointer type semantics 
 
 	override toString() '''
-	(«input.either», «inputKey.either»)->(«output.either», «outputKey.either»)'''
+	(«input», «inputKey»)->(«output», «outputKey»)'''
 
 	def invert() {
 		val result = new TypedBPNode

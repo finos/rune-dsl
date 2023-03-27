@@ -2,11 +2,12 @@ package com.regnosys.rosetta.generator.java;
 
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.scoping.RosettaScopeProvider;
+import com.regnosys.rosetta.utils.DottedPath;
 
 public class RosettaJavaPackages {
 
-	public static final Package DEFAULT_NAMESPACE = new Package(RosettaScopeProvider.LIB_NAMESPACE);
-	private static final Package BLUEPRINT_NAMESPACE = new Package("com.regnosys.rosetta");
+	public static final DottedPath DEFAULT_NAMESPACE = DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE);
+	private static final DottedPath BLUEPRINT_NAMESPACE = DottedPath.splitOnDots("com.regnosys.rosetta");
 	private RootPackage root;
 
 	public RosettaJavaPackages(RosettaModel model) {
@@ -19,7 +20,7 @@ public class RosettaJavaPackages {
 	protected RosettaJavaPackages(RootPackage root) {
 		this.root = root;
 	}
-	public Package defaultNamespace() {
+	public DottedPath defaultNamespace() {
 		return DEFAULT_NAMESPACE;
 	}
 
@@ -27,129 +28,86 @@ public class RosettaJavaPackages {
 		return this.root;
 	}
 
-	public Package blueprintLib() {
+	public DottedPath blueprintLib() {
 		return BLUEPRINT_NAMESPACE.child("blueprints");
 	}
 
-	public Package defaultLib() {
+	public DottedPath defaultLib() {
 		return defaultNamespace().child("lib");
 	}
 
-	public Package defaultLibAnnotations() {
+	public DottedPath defaultLibAnnotations() {
 		return defaultLib().child("annotations");
 	}
 
-	public Package defaultLibFunctions() {
+	public DottedPath defaultLibFunctions() {
 		return defaultLib().child("functions");
 	}
 
-	public Package defaultLibRecords() {
+	public DottedPath defaultLibRecords() {
 		return defaultLib().child("records");
 	}
 
-	public Package defaultLibValidation() {
+	public DottedPath defaultLibValidation() {
 		return defaultLib().child("validation");
 	}
 
-	public Package defaultLibQualify() {
+	public DottedPath defaultLibQualify() {
 		return defaultLib().child("qualify");
 	}
 
-	public Package defaultLibMeta() {
+	public DottedPath defaultLibMeta() {
 		return defaultLib().child("meta");
 	}
 	
-	public Package basicMetafields() {
+	public DottedPath basicMetafields() {
 		return defaultNamespace().child("metafields");
 	}
 
-	public static class Package {
-		private Package parent;
-		private String name;
-		private String qName;
-
-		Package(String name) {
-			this.name = name;
-		}
-
-		public Package(Package parent, String name) {
-			this.parent = parent;
-			this.name = name;
-		}
-
-		public Package child(String child) {
-			return new Package(this, child);
-		}
-
-		public String name() {
-			if (this.qName == null) {
-				if (this.parent != null) {
-					this.qName = this.parent.name() + "." + name;
-				} else {
-					this.qName = name;
-				}
-			}
-			return this.qName;
-		}
-
-		public String getSimpleName() {
-			return this.name;
-		}
-
-		public String directoryName() {
-			return name().replace('.', '/');
-		}
-
-		@Override
-		public String toString() {
-			return name();
-		}
-	}
-
-	public static class RootPackage extends Package {
+	public static class RootPackage extends DottedPath {
 
 		public RootPackage(RosettaModel model) {
-			super(model.getName());
+			this(model.getName());
 		}
 
 		public RootPackage(String namespace) {
-			super(namespace);
+			super(namespace.split("\\."));
 		}
 
-		public Package metaField() {
-			return new Package(this, "metafields");
+		public DottedPath metaField() {
+			return child("metafields");
 		}
 
-		public Package meta() {
-			return new Package(this, "meta");
+		public DottedPath meta() {
+			return child("meta");
 		}
 
-		public Package functions() {
-			return new Package(this, "functions");
+		public DottedPath functions() {
+			return child("functions");
 		}
 
-		public Package typeValidation() {
-			return new Package(this, "validation");
+		public DottedPath typeValidation() {
+			return child("validation");
 		}
 
-		public Package dataRule() {
+		public DottedPath dataRule() {
 			return typeValidation().child("datarule");
 		}
 
-		public Package existsValidation() {
+		public DottedPath existsValidation() {
 			return typeValidation().child("exists");
 		}
 
-		public Package blueprint() {
-			return new Package(this, "blueprint");
+		public DottedPath blueprint() {
+			return child("blueprint");
 		}
 
-		public Package qualifyEvent() {
-			return new Package(this, "qualify.event");
+		public DottedPath qualifyEvent() {
+			return child("qualify").child("event");
 		}
 
-		public Package qualifyProduct() {
-			return new Package(this, "qualify.product");
+		public DottedPath qualifyProduct() {
+			return child("qualify").child("product");
 		}
 	}
 }

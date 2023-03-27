@@ -55,7 +55,6 @@ class DataRuleGeneratorTest {
 				import com.rosetta.test.model.Foo;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
-				import static com.rosetta.model.lib.expression.ExpressionOperators.notExists;
 				
 				/**
 				 * @version test
@@ -71,7 +70,7 @@ class DataRuleGeneratorTest {
 					public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
 						ComparisonResult result = executeDataRule(foo);
 						if (result.get()) {
-							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 						}
 						
 						String failureMessage = result.getError();
@@ -157,7 +156,6 @@ class DataRuleGeneratorTest {
 				import com.rosetta.test.model.Foo;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
-				import static com.rosetta.model.lib.expression.ExpressionOperators.notExists;
 				
 				/**
 				 * @version test
@@ -173,7 +171,7 @@ class DataRuleGeneratorTest {
 					public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
 						ComparisonResult result = executeDataRule(foo);
 						if (result.get()) {
-							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE,  "Foo", path, DEFINITION);
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 						}
 						
 						String failureMessage = result.getError();

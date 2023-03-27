@@ -39,7 +39,7 @@ class ConditionTestHelper {
 	}
 	
 	def createConditionInstance(Map<String, Class<?>> classes, RootPackage rootNamespace, String conditionName) {
-		val conditionClass = classes.get(rootNamespace.dataRule.name + '.' + conditionName.toConditionJavaType)
+		val conditionClass = classes.get(rootNamespace.dataRule + '.' + conditionName.toConditionJavaType)
 		val cond = conditionClass
 				.declaredConstructor.newInstance
 		injector.injectMembers(cond)
