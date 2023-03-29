@@ -4,7 +4,8 @@ Do you want to edit rosetta files? You are in the right place and will be up and
 
 ## Prerequsites
 
-- You must have VSCode installed
+- You must have a developer background and have a good understanding about node, npm, java and maven.
+- You must have VSCode installed and be familiar with the basics
 - Must have java 11 instaled and on the class path
 - Must have Maven installed
 - Must have node/npm installed
