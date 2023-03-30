@@ -117,7 +117,7 @@
                 <configuration>
                     <mainClass>org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher</mainClass>
                     <arguments>
-                        <argument>/${project.basedir}/GenerateRosetta.mwe2</argument>
+                        <argument>/${project.basedir}/src/main/java/com/regnosys/rosetta/GenerateRosetta.mwe2</argument>
                         <argument>-p</argument>
                         <argument>parentDir=${project.basedir}/..</argument>
                     </arguments>

@@ -5,7 +5,7 @@ import org.eclipse.xtext.xtext.generator.StandardLanguage
 import org.eclipse.xtext.xtext.generator.parser.antlr.XtextAntlrGeneratorFragment2
 import org.eclipse.xtext.xtext.generator.model.project.StandardProjectConfig
 
-var parentDir
+var parentDir = ".."
 
 Workflow {
 	component = XtextGenerator {
