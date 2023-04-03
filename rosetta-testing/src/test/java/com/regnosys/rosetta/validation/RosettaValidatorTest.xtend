@@ -21,6 +21,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import static org.junit.Assert.assertEquals
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -1632,10 +1633,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldNotGenerateDuplicateRuleErrorInDifferentNamespaces() {
-			
-		val models = 
-		#[
+	def void shouldGenerateDuplicateRuleErrorInThreeNamespaces() {
+
+		val models = #[
 			'''
 			namespace test.one
 			
@@ -1646,8 +1646,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				f string (1..1)
 					[ruleReference Base_A]
-		''',
-		'''
+		''', '''
 			namespace test.two
 			import test.one.*
 			
@@ -1659,8 +1658,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				b string (1..1)
 					[ruleReference Base_A]
 				foo Foo (1..1)
-		''',
-		'''
+		''', '''
 			namespace test.three
 			import test.two.*
 			
@@ -1669,9 +1667,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[ruleReference Base_B]
 				bar Bar (1..1)
 		'''].parseRosetta
-	
-	models.forEach[assertNoErrors]
-	
+
+		assertEquals("Duplicate reporting rule Base_A", models.map[validate].flatten.map[it.message].join)
 	}
 	
 	@Test
