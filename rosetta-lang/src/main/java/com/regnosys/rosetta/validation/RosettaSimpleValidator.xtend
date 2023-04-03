@@ -5,6 +5,7 @@ import com.google.common.collect.LinkedHashMultimap
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
+import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
@@ -112,14 +113,11 @@ import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-
-import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
-import com.regnosys.rosetta.generator.java.util.JavaNames
-import com.regnosys.rosetta.services.RosettaGrammarAccess.RuleReferenceElements
 
 // TODO: split expression validator
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
@@ -817,10 +815,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		val attrs = dataType.allNonOverridesAttributes
 		val rootRuleReferences = attrs.map[ruleReference].filterNull.toList
 	
-		val rootRuleReferencesSet = rootRuleReferences.toSet
 		val reportingRules = rootRuleReferences.map[reportingRule].toList
 
-		// 1. check top level attributes for dups	
+		// 1. check top level attributes for dupes	
 		val dupedRuleReferences = rootRuleReferences
 				.filter[curr| reportingRules.filter[it === curr.reportingRule].size > 1]
 				.toList
@@ -829,10 +826,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		attrs.map[type].filter(Data)
 			.flatMap[allNonOverridesAttributes]
 			.flatMap[allRuleReferences(newHashSet(dataType))]
-			.map[x|rootRuleReferences.filter[rootRuleReferencesSet.contains(x)]]
+			.map[curr|rootRuleReferences.filter[it.reportingRule === curr.reportingRule]]
 			.flatten
 			.forEach[dupedRuleReferences.add(it)]
-		
+
 		dupedRuleReferences.forEach [
 			error("Duplicate reporting rule " + it.reportingRule.name, it, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 		]
@@ -850,7 +847,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if (attrType instanceof Data) {
 			if (visited.add(attrType)) {
 				attrType.allNonOverridesAttributes.forEach[listOfRules.addAll(allRuleReferences(it, visited))]
-
 			}
 		}
 
