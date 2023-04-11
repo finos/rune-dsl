@@ -65,12 +65,15 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 			b.append(" <no identifiers>");
 		} else {
 			this.identifiers.entrySet().forEach(e ->
-					b.append("\n\t").append(e.getKey()).append(" -> \"").append(e.getValue().getDesiredName()).append("\""));
+					b.append("\n\t").append(normalizeKey(e.getKey())).append(" -> \"").append(e.getValue().getDesiredName()).append("\""));
 		}
 		parent.ifPresent(p -> {
 			b.append("\n").append(p.getDebugInfo().replaceAll("(?m)^", "\t"));
 		});
 		return b.toString();
+	}
+	private String normalizeKey(Object key) {
+		return key.toString().replace("\n", "\\n");
 	}
 	public String toString() {
 		StringBuilder b = new StringBuilder();
@@ -104,7 +107,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 * scope, or throw if it does not exist.
 	 */
 	public GeneratedIdentifier getIdentifierOrThrow(Object obj) {
-		return getIdentifier(obj).orElseThrow(() -> new NoSuchElementException("No identifier defined for " + obj + " in scope.\n" + this));
+		return getIdentifier(obj).orElseThrow(() -> new NoSuchElementException("No identifier defined for " + normalizeKey(obj) + " in scope.\n" + this));
 	}
 	/**
 	 * Define the desired name for a Rosetta object in this scope.
@@ -114,10 +117,10 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 */
 	public GeneratedIdentifier createIdentifier(Object obj, String name) {
 		if (isClosed) {
-			throw new IllegalStateException("Cannot create a new identifier in a closed scope. (" + obj + " -> " + name + ")\n" + this);
+			throw new IllegalStateException("Cannot create a new identifier in a closed scope. (" + normalizeKey(obj) + " -> " + name + ")\n" + this);
 		}
 		if (this.getIdentifier(obj).isPresent()) {
-			throw new IllegalStateException("There is already a name defined for object `" + obj + "`.\n" + this);
+			throw new IllegalStateException("There is already a name defined for object `" + normalizeKey(obj) + "`.\n" + this);
 		}
 		GeneratedIdentifier id = new GeneratedIdentifier(this, name);
 		this.identifiers.put(obj, id);

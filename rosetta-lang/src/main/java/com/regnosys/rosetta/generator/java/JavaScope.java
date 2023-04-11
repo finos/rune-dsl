@@ -20,7 +20,7 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 	private final Set<BlueprintImplicitVariableRepresentation> blueprintVars = new HashSet<>();
 	
 	public JavaScope(DottedPath packageName) {
-		super("Top[" + packageName.withDots() + "]");
+		super("Package[" + packageName.withDots() + "]");
 		this.defaultPackages.add(DottedPath.of("java", "lang"));
 		this.defaultPackages.add(packageName);
 	}
