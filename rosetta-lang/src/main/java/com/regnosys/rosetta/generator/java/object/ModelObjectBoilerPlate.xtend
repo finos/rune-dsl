@@ -24,6 +24,7 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import com.regnosys.rosetta.generator.java.types.JavaType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.generator.java.types.JavaClass
+import com.regnosys.rosetta.generator.java.JavaScope
 
 class ModelObjectBoilerPlate {
 
@@ -34,12 +35,12 @@ class ModelObjectBoilerPlate {
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
 
-	def StringConcatenationClient builderBoilerPlate(Data c, extension JavaNames names) {
+	def StringConcatenationClient builderBoilerPlate(Data c, JavaScope scope, extension JavaNames names) {
 		val attrs = c.expandedAttributes.toList
 		'''
-			«c.contributeEquals(attrs, [t|(names.toJavaType(typeProvider.getRType(t)) as JavaClass).toBuilderType])»
-			«c.contributeHashCode(attrs)»
-			«c.contributeToString(toBuilder)»
+			«c.contributeEquals(attrs, [t|(names.toJavaType(typeProvider.getRType(t)) as JavaClass).toBuilderType], scope)»
+			«c.contributeHashCode(attrs, scope)»
+			«c.contributeToString(toBuilder, scope)»
 		'''
 	}
 	
@@ -84,53 +85,62 @@ class ModelObjectBoilerPlate {
 		return '''«names.toMetaType(attribute,metaType)»'''
 	}
 
-	def StringConcatenationClient boilerPlate(Data c, JavaNames names) {
+	def StringConcatenationClient boilerPlate(Data c, JavaScope scope, JavaNames names) {
 		val attributes = c.expandedAttributes.toList
 		'''
-			«c.contributeEquals(attributes, [t|names.toJavaType(typeProvider.getRType(t))])»
-			«c.contributeHashCode(attributes)»
-			«c.contributeToString(identity)»
+			«c.contributeEquals(attributes, [t|names.toJavaType(typeProvider.getRType(t))], scope)»
+			«c.contributeHashCode(attributes, scope)»
+			«c.contributeToString(identity, scope)»
 		'''
 	} 
 
-	private def contributeHashCode(ExpandedAttribute it) {
+	private def StringConcatenationClient contributeHashCode(ExpandedAttribute attr, JavaScope scope) {
+		val id = scope.getIdentifierOrThrow(attr)
 		'''
-			«IF enum»
-				«IF list»
-					_result = 31 * _result + («name» != null ? «name».stream().map(Object::getClass).map(Class::getName).mapToInt(String::hashCode).sum() : 0);
+			«IF attr.enum»
+				«IF attr.list»
+					_result = 31 * _result + («id» != null ? «id».stream().map(Object::getClass).map(Class::getName).mapToInt(String::hashCode).sum() : 0);
 				«ELSE»
-					_result = 31 * _result + («name» != null ? «name».getClass().getName().hashCode() : 0);
+					_result = 31 * _result + («id» != null ? «id».getClass().getName().hashCode() : 0);
 				«ENDIF»
 			«ELSE»
-				_result = 31 * _result + («name» != null ? «name».hashCode() : 0);
+				_result = 31 * _result + («id» != null ? «id».hashCode() : 0);
 			«ENDIF»	
 		'''
 	}
 
-	private def contributeHashCode(Data c, List<ExpandedAttribute> attributes) '''
+	private def StringConcatenationClient contributeHashCode(Data c, List<ExpandedAttribute> attributes, JavaScope scope) {
+		val methodScope = scope.methodScope("hashCode")
+		'''
 		@Override
 		public int hashCode() {
 			int _result = «c.contribtueSuperHashCode»;
 			«FOR field : attributes.filter[!overriding]»
-				«field.contributeHashCode»
+				«field.contributeHashCode(methodScope)»
 			«ENDFOR»
 			return _result;
 		}
 		
-	'''
+		'''
+	}
 
-	private def contributeToString(Data c, (String)=>String classNameFunc) '''
+	private def StringConcatenationClient contributeToString(Data c, (String)=>String classNameFunc, JavaScope scope) {
+		val methodScope = scope.methodScope("toString")
+		'''
 		@Override
 		public String toString() {
 			return "«classNameFunc.apply(c.name)» {" +
-				«FOR attribute : c.expandedAttributes.filter[!overriding].map[name] SEPARATOR ' ", " +'»
-					"«attribute»=" + this.«attribute» +
+				«FOR attribute : c.expandedAttributes.filter[!overriding] SEPARATOR ' ", " +'»
+					"«attribute.name»=" + this.«methodScope.getIdentifierOrThrow(attribute)» +
 				«ENDFOR»
 			'}'«IF c.hasSuperType» + " " + super.toString()«ENDIF»;
 		}
-	'''
+		'''
+	}
 
-	private def StringConcatenationClient contributeEquals(Data c, List<ExpandedAttribute> attributes, (Data)=>JavaType classNameFunc) '''
+	private def StringConcatenationClient contributeEquals(Data c, List<ExpandedAttribute> attributes, (Data)=>JavaType classNameFunc, JavaScope scope) {
+		val methodScope = scope.methodScope("equals")
+		'''
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
@@ -142,18 +152,19 @@ class ModelObjectBoilerPlate {
 			«IF !attributes.empty»«c.name.toFirstUpper» _that = getType().cast(o);«ENDIF»
 		
 			«FOR field : attributes.filter[!overriding]»
-				«field.contributeToEquals»
+				«field.contributeToEquals(methodScope)»
 			«ENDFOR»
 			return true;
 		}
 		
-	'''
+		'''
+	}
 
-	private def StringConcatenationClient contributeToEquals(ExpandedAttribute a) '''
+	private def StringConcatenationClient contributeToEquals(ExpandedAttribute a, JavaScope scope) '''
 	«IF a.cardinalityIsListValue»
-		if (!«ListEquals».listEquals(«a.name», _that.get«a.name.toFirstUpper»())) return false;
+		if (!«ListEquals».listEquals(«scope.getIdentifierOrThrow(a)», _that.get«a.name.toFirstUpper»())) return false;
 	«ELSE»
-		if (!«Objects».equals(«a.name», _that.get«a.name.toFirstUpper»())) return false;
+		if (!«Objects».equals(«scope.getIdentifierOrThrow(a)», _that.get«a.name.toFirstUpper»())) return false;
 	«ENDIF»
 	'''
 

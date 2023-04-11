@@ -36,6 +36,18 @@ class ModelObjectGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 
 	@Test
+	def void testAttributeWithSameNameAsJavaKeyword() {
+		val code = '''
+		type A:
+			new string (0..1)
+			
+			condition Foo:
+				new exists
+		'''.generateCode
+		code.compileToClasses
+	}
+
+	@Test
 	def void testObjectReservedNames() {
 		val code = '''
 		type Path:

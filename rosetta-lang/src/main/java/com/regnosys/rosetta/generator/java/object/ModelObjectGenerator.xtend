@@ -42,15 +42,19 @@ class ModelObjectGenerator {
 
 	private def generateRosettaClass(JavaNames names, Data d, String version) {
 		val scope = new JavaScope(names.packages.model)
-		buildClass(names.packages.model, d.classBody(new JavaClass(names.packages.model.meta, d.name+'Meta'), names, version), scope)
+		buildClass(names.packages.model, d.classBody(scope, new JavaClass(names.packages.model.meta, d.name+'Meta'), names, version), scope)
 	}
 	
-	def StringConcatenationClient classBody(Data d, JavaClass metaType, JavaNames names, String version) {
-		classBody(d, metaType, names, version, Collections.emptyList)
+	def StringConcatenationClient classBody(Data d, JavaScope scope, JavaClass metaType, JavaNames names, String version) {
+		classBody(d, scope, metaType, names, version, Collections.emptyList)
 	}
 
-	def StringConcatenationClient classBody(Data d, JavaClass metaType, extension JavaNames names, String version, Collection<Object> interfaces) {
+	def StringConcatenationClient classBody(Data d, JavaScope scope, JavaClass metaType, extension JavaNames names, String version, Collection<Object> interfaces) {
 		val javaType = names.toJavaType(typeProvider.getRType(d)) as JavaClass
+		val interfaceScope = scope.classScope(javaType.toString)
+		val metaDataIdentifier = interfaceScope.createUniqueIdentifier("metaData");
+		val builderScope = interfaceScope.classScope('''«javaType»Builder''')
+		val implScope = interfaceScope.classScope('''«javaType»Impl''')
 		'''
 			«javadoc(d, version)»
 			@«RosettaClass»
@@ -63,11 +67,11 @@ class ModelObjectGenerator {
 					«attribute.toJavaType(names)» get«attribute.name.toFirstUpper»();
 				«ENDFOR»
 				
-				final static «metaType» metaData = new «metaType»();
+				final static «metaType» «metaDataIdentifier» = new «metaType»();
 				
 				@Override
 				default «RosettaMetaData»<? extends «d.name»> metaData() {
-					return metaData;
+					return «metaDataIdentifier»;
 				} 
 						
 				static «javaType.toBuilderType» builder() {
@@ -101,18 +105,18 @@ class ModelObjectGenerator {
 					«ENDFOR»
 					«FOR attribute : d.expandedAttributesPlus»
 						«IF attribute.cardinalityIsSingleValue»
-							«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
-							«IF attribute.hasMetas»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «attribute.name»);«ENDIF»
+							«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «builderScope.createUniqueIdentifier(attribute.name)»);
+							«IF attribute.hasMetas»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
 						«ELSE»
-							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name»);
-							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «attribute.name», int _idx);
-							«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «attribute.name»);
-							«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «attribute.name», int _idx);«ENDIF»
+							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «builderScope.createUniqueIdentifier(attribute.name)»);
+							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);
+							«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «builderScope.createUniqueIdentifier(attribute.name)»);
+							«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);«ENDIF»
 							«IF !attribute.isOverriding»
-							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
-							«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «attribute.name»);
-							«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «attribute.name»);
-							«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «attribute.name»);«ENDIF»
+							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toType(names)» «builderScope.createUniqueIdentifier(attribute.name)»);
+							«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «builderScope.createUniqueIdentifier(attribute.name)»);
+							«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «builderScope.createUniqueIdentifier(attribute.name)»);
+							«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
 							«ENDIF»
 						«ENDIF»
 					«ENDFOR»
@@ -125,12 +129,12 @@ class ModelObjectGenerator {
 «««			This line reserves this name as a name SO any class imported with the smae name will automatically be fully qualified
 				//«javaType.toImplType»
 				class «javaType»Impl «IF d.hasSuperType»extends «(names.toJavaType(typeProvider.getRType(d.superType)) as JavaClass).toImplType» «ENDIF»implements «d.name» {
-					«d.rosettaClass(names)»
+					«d.rosettaClass(implScope, names)»
 					
-					«d.boilerPlate(names)»
+					«d.boilerPlate(implScope, names)»
 				}
 				
-				«d.builderClass(names)»
+				«d.builderClass(interfaceScope, names)»
 			}
 		'''
 	}
@@ -152,12 +156,12 @@ class ModelObjectGenerator {
 		return class1.globalKey || (class1.superType !== null && class1.superType.globalKeyRecursive)
 	}
 
-	private def StringConcatenationClient rosettaClass(Data c, extension JavaNames names) {
+	private def StringConcatenationClient rosettaClass(Data c, JavaScope scope, extension JavaNames names) {
 		val expandedAttributes = c.expandedAttributes
 		val javaType = names.toJavaType(typeProvider.getRType(c)) as JavaClass
 		'''
 		«FOR attribute : expandedAttributes»
-			private final «attribute.toJavaType(names)» «attribute.name»;
+			private final «attribute.toJavaType(names)» «scope.createIdentifier(attribute, attribute.name)»;
 		«ENDFOR»
 
 		protected «javaType»Impl(«javaType.toBuilderType» builder) {
@@ -165,14 +169,14 @@ class ModelObjectGenerator {
 				super(builder);
 			«ENDIF»
 			«FOR attribute : expandedAttributes»
-				this.«attribute.name» = «attribute.attributeFromBuilder»;
+				this.«scope.getIdentifierOrThrow(attribute)» = «attribute.attributeFromBuilder»;
 			«ENDFOR»
 		}
 
 		«FOR attribute : expandedAttributes»
 			@Override
 			public «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
-				return «attribute.name»;
+				return «scope.getIdentifierOrThrow(attribute)»;
 			}
 			
 		«ENDFOR»

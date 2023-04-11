@@ -189,7 +189,7 @@ class MetaFieldGenerator {
 		val scope = new JavaScope(names.packages.basicMetafields)
 		
 		val StringConcatenationClient body = '''		
-		«d.classBody(new JavaClass(names.packages.basicMetafields, d.name+'Meta'), names, "1", interfaces)»
+		«d.classBody(scope, new JavaClass(names.packages.basicMetafields, d.name+'Meta'), names, "1", interfaces)»
 		
 		class «name»Meta extends «BasicRosettaMetaData»<«name»>{
 		
@@ -229,7 +229,7 @@ class MetaFieldGenerator {
 		val scope = new JavaScope(packageName)
 		
 		val StringConcatenationClient body = '''
-			«d.classBody(new JavaClass(packageName, d.name + "Meta"), names, "1", #[GlobalKey, FWMType])»
+			«d.classBody(scope, new JavaClass(packageName, d.name + "Meta"), names, "1", #[GlobalKey, FWMType])»
 			
 			class FieldWithMeta«type.name.toFirstUpper»Meta extends «BasicRosettaMetaData»<FieldWithMeta«type.name.toFirstUpper»>{
 			
@@ -279,7 +279,7 @@ class MetaFieldGenerator {
 		val scope = new JavaScope(names.packages.model.metaField)
 		
 		val StringConcatenationClient body = '''
-			«d.classBody(new JavaClass(names.packages.model.metaField, d.name + "Meta"), names, "1", #[refInterface])»
+			«d.classBody(scope, new JavaClass(names.packages.model.metaField, d.name + "Meta"), names, "1", #[refInterface])»
 			
 			class ReferenceWithMeta«type.name.toFirstUpper»Meta extends «BasicRosettaMetaData»<ReferenceWithMeta«type.name.toFirstUpper»>{
 			
@@ -300,7 +300,7 @@ class MetaFieldGenerator {
 		val scope = new JavaScope(names.packages.basicMetafields)
 		
 		val StringConcatenationClient body = '''		
-			«d.classBody(new JavaClass(names.packages.basicMetafields, d.name + "Meta"), names, "1", #[refInterface])»
+			«d.classBody(scope, new JavaClass(names.packages.basicMetafields, d.name + "Meta"), names, "1", #[refInterface])»
 			
 			class BasicReferenceWithMeta«type.name.toFirstUpper»Meta extends «BasicRosettaMetaData»<BasicReferenceWithMeta«type.name.toFirstUpper»>{
 			
