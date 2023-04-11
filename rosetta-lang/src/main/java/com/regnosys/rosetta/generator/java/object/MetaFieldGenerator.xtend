@@ -198,7 +198,6 @@ class MetaFieldGenerator {
 		buildClass(names.packages.basicMetafields, body, scope)
 	}
 
-//	private SimpleCache<RosettaType, 
 	def CharSequence fieldWithMeta(JavaNames names, RosettaType type) {
 		
 		val valueAttribute = SimpleFactory.eINSTANCE.createAttribute()

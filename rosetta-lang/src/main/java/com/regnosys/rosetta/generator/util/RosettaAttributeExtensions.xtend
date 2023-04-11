@@ -150,7 +150,7 @@ class RosettaAttributeExtensions {
 
 	static def toExpandedAttribute(Attribute attr) {
 		val metas = <ExpandedAttribute>newArrayList
-		attr.annotations.forEach[ annoRef, i |
+		attr.annotations.forEach [ annoRef, i |
 			val annoAttr = annoRef?.attribute
 			if(annoAttr !== null && annoAttr.type !== null) {
 				metas.add(new ExpandedAttribute(
@@ -172,7 +172,7 @@ class RosettaAttributeExtensions {
 				))
 			}
 		]
-		return new ExpandedAttribute(
+		new ExpandedAttribute(
 			attr.name,
 			(attr.eContainer as RosettaType).name,
 			attr.type.toExpandedType,
