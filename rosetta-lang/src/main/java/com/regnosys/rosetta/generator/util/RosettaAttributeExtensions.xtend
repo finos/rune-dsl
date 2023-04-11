@@ -30,6 +30,7 @@ import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import java.util.ArrayList
 import java.util.Collections
 import java.util.List
+import org.eclipse.xtext.util.SimpleCache
 
 class RosettaAttributeExtensions {
 
@@ -95,12 +96,15 @@ class RosettaAttributeExtensions {
 	public static val METAFIELDS_CLASS_NAME = 'MetaFields'
 	public static val META_AND_TEMPLATE_FIELDS_CLASS_NAME = 'MetaAndTemplateFields'
 	
-	private static def ExpandedType provideMetaFieldsType(Data data) {
+	static SimpleCache<Data, ExpandedType> metaFieldsCache = new SimpleCache[Data data|
 		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
 		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE
 		val rosExt = new RosettaExtensions // Can't inject as used in rosetta-translate and daml directly
 		val name = if (rosExt.hasTemplateAnnotation(data)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
 		return new ExpandedType(rosModel, name, true, false, false)
+	]
+	private static def ExpandedType provideMetaFieldsType(Data data) {
+		metaFieldsCache.get(data)
 	}
 	
 	dispatch static def List<ExpandedAttribute> getExpandedAttributes(RosettaEnumeration rosettaEnum) {
@@ -146,7 +150,7 @@ class RosettaAttributeExtensions {
 
 	static def toExpandedAttribute(Attribute attr) {
 		val metas = <ExpandedAttribute>newArrayList
-		attr.annotations.forEach [ annoRef, i |
+		attr.annotations.forEach[ annoRef, i |
 			val annoAttr = annoRef?.attribute
 			if(annoAttr !== null && annoAttr.type !== null) {
 				metas.add(new ExpandedAttribute(
@@ -168,7 +172,7 @@ class RosettaAttributeExtensions {
 				))
 			}
 		]
-		new ExpandedAttribute(
+		return new ExpandedAttribute(
 			attr.name,
 			(attr.eContainer as RosettaType).name,
 			attr.type.toExpandedType,

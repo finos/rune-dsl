@@ -95,7 +95,7 @@ class ModelObjectBoilerPlate {
 	} 
 
 	private def StringConcatenationClient contributeHashCode(ExpandedAttribute attr, JavaScope scope) {
-		val id = scope.getIdentifier(attr)
+		val id = scope.getIdentifierOrThrow(attr)
 		'''
 			«IF attr.enum»
 				«IF attr.list»
@@ -131,7 +131,7 @@ class ModelObjectBoilerPlate {
 		public String toString() {
 			return "«classNameFunc.apply(c.name)» {" +
 				«FOR attribute : c.expandedAttributes.filter[!overriding] SEPARATOR ' ", " +'»
-					"«attribute.name»=" + this.«methodScope.getIdentifier(attribute)» +
+					"«attribute.name»=" + this.«methodScope.getIdentifierOrThrow(attribute)» +
 				«ENDFOR»
 			'}'«IF c.hasSuperType» + " " + super.toString()«ENDIF»;
 		}
@@ -162,9 +162,9 @@ class ModelObjectBoilerPlate {
 
 	private def StringConcatenationClient contributeToEquals(ExpandedAttribute a, JavaScope scope) '''
 	«IF a.cardinalityIsListValue»
-		if (!«ListEquals».listEquals(«scope.getIdentifier(a)», _that.get«a.name.toFirstUpper»())) return false;
+		if (!«ListEquals».listEquals(«scope.getIdentifierOrThrow(a)», _that.get«a.name.toFirstUpper»())) return false;
 	«ELSE»
-		if (!«Objects».equals(«scope.getIdentifier(a)», _that.get«a.name.toFirstUpper»())) return false;
+		if (!«Objects».equals(«scope.getIdentifierOrThrow(a)», _that.get«a.name.toFirstUpper»())) return false;
 	«ENDIF»
 	'''
 

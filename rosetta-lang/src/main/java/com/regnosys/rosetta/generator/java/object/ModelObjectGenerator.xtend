@@ -169,14 +169,14 @@ class ModelObjectGenerator {
 				super(builder);
 			«ENDIF»
 			«FOR attribute : expandedAttributes»
-				this.«scope.getIdentifier(attribute)» = «attribute.attributeFromBuilder»;
+				this.«scope.getIdentifierOrThrow(attribute)» = «attribute.attributeFromBuilder»;
 			«ENDFOR»
 		}
 
 		«FOR attribute : expandedAttributes»
 			@Override
 			public «attribute.toJavaType(names)» get«attribute.name.toFirstUpper»() {
-				return «scope.getIdentifier(attribute)»;
+				return «scope.getIdentifierOrThrow(attribute)»;
 			}
 			
 		«ENDFOR»

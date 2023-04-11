@@ -29,12 +29,15 @@ class ModelObjectBuilderGenerator {
 	def StringConcatenationClient builderClass(Data c, JavaScope scope, extension JavaNames names) {
 		val javaType = names.toJavaType(typeProvider.getRType(c)) as JavaClass
 		val builderScope = scope.classScope('''«javaType»BuilderImpl''')
+		c.expandedAttributesPlus.forEach[
+			builderScope.createIdentifier(it, it.name)
+		]
 		'''
 		//«javaType.toBuilderImplType»
 		class «javaType»BuilderImpl«IF c.hasSuperType» extends «(names.toJavaType(typeProvider.getRType(c.superType)) as JavaClass).toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(c)» {
 		
 			«FOR attribute : c.expandedAttributes»
-				protected «attribute.toBuilderType(names)» «builderScope.createIdentifier(attribute, attribute.name)»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
+				protected «attribute.toBuilderType(names)» «builderScope.getIdentifierOrThrow(attribute)»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
 			«ENDFOR»
 		
 			public «javaType»BuilderImpl() {
@@ -60,9 +63,9 @@ class ModelObjectBuilderGenerator {
 				«IF c.hasSuperType»super.prune();«ENDIF»
 				«FOR attribute : c.expandedAttributes»
 					«IF !attribute.isMultiple && (attribute.isDataType || attribute.hasMetas)»
-						if («builderScope.getIdentifier(attribute)»!=null && !«builderScope.getIdentifier(attribute)».prune().hasData()) «builderScope.getIdentifier(attribute)» = null;
+						if («builderScope.getIdentifierOrThrow(attribute)»!=null && !«builderScope.getIdentifierOrThrow(attribute)».prune().hasData()) «builderScope.getIdentifierOrThrow(attribute)» = null;
 					«ELSEIF attribute.isMultiple && attribute.isDataType || attribute.hasMetas»
-						«builderScope.getIdentifier(attribute)» = «builderScope.getIdentifier(attribute)».stream().filter(b->b!=null).<«attribute.toBuilderTypeSingle(names)»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
+						«builderScope.getIdentifierOrThrow(attribute)» = «builderScope.getIdentifierOrThrow(attribute)».stream().filter(b->b!=null).<«attribute.toBuilderTypeSingle(names)»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
 				return this;
@@ -115,7 +118,7 @@ class ModelObjectBuilderGenerator {
 		«FOR attribute : attributes»
 			@Override
 			public «attribute.toBuilderTypeExt(names)» get«attribute.name.toFirstUpper»() {
-				return «scope.getIdentifier(attribute)»;
+				return «scope.getIdentifierOrThrow(attribute)»;
 			}
 			
 			«IF attribute.isDataType || attribute.hasMetas»
@@ -123,11 +126,11 @@ class ModelObjectBuilderGenerator {
 					@Override
 					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»() {
 						«attribute.toBuilderTypeSingle(names)» result;
-						if («scope.getIdentifier(attribute)»!=null) {
-							result = «scope.getIdentifier(attribute)»;
+						if («scope.getIdentifierOrThrow(attribute)»!=null) {
+							result = «scope.getIdentifierOrThrow(attribute)»;
 						}
 						else {
-							result = «scope.getIdentifier(attribute)» = «attribute.toTypeSingle(names)».builder();
+							result = «scope.getIdentifierOrThrow(attribute)» = «attribute.toTypeSingle(names)».builder();
 							«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
 								result.getOrCreateMeta().toBuilder().addKey(«Key».builder().setScope("DOCUMENT"));
 							«ENDIF»
@@ -139,11 +142,11 @@ class ModelObjectBuilderGenerator {
 				«ELSE»
 					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int _index) {
 
-						if («scope.getIdentifier(attribute)»==null) {
-							this.«scope.getIdentifier(attribute)» = new «ArrayList»<>();
+						if («scope.getIdentifierOrThrow(attribute)»==null) {
+							this.«scope.getIdentifierOrThrow(attribute)» = new «ArrayList»<>();
 						}
 						«attribute.toBuilderTypeSingle(names)» result;
-						return getIndex(«scope.getIdentifier(attribute)», _index, () -> {
+						return getIndex(«scope.getIdentifierOrThrow(attribute)», _index, () -> {
 									«attribute.toBuilderTypeSingle(names)» new«attribute.name.toFirstUpper» = «attribute.toTypeSingle(names)».builder();
 									«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
 										new«attribute.name.toFirstUpper».getOrCreateMeta().addKey(«Key».builder().setScope("DOCUMENT"));
@@ -170,48 +173,48 @@ class ModelObjectBuilderGenerator {
 		'''
 		«IF attribute.cardinalityIsListValue»
 			@Override
-			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «scope.getIdentifier(attribute)») {
-				if («scope.getIdentifier(attribute)»!=null) this.«scope.getIdentifier(attribute)».add(«attribute.toBuilder(scope)»);
+			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «scope.getIdentifierOrThrow(attribute)») {
+				if («scope.getIdentifierOrThrow(attribute)»!=null) this.«scope.getIdentifierOrThrow(attribute)».add(«attribute.toBuilder(scope)»);
 				return this;
 			}
 			
 			@Override
-			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «scope.getIdentifier(attribute)», int _idx) {
-				getIndex(this.«scope.getIdentifier(attribute)», _idx, () -> «attribute.toBuilder(scope)»);
+			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «scope.getIdentifierOrThrow(attribute)», int _idx) {
+				getIndex(this.«scope.getIdentifierOrThrow(attribute)», _idx, () -> «attribute.toBuilder(scope)»);
 				return this;
 			}
 			«IF attribute.hasMetas»
 			
 				@Override
-				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «scope.getIdentifier(attribute)») {
-					this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«scope.getIdentifier(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
+				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «scope.getIdentifierOrThrow(attribute)») {
+					this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
 					return this;
 				}
 				
 				@Override
-				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «scope.getIdentifier(attribute)», int _idx) {
-					this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«scope.getIdentifier(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
+				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «scope.getIdentifierOrThrow(attribute)», int _idx) {
+					this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
 					return this;
 				}
 			«ENDIF»
 			«IF !attribute.overriding»
 				@Override 
-				public «thisName» add«attribute.name.toFirstUpper»(«List»<? extends «attribute.toTypeSingle(names)»> «scope.getIdentifier(attribute)»s) {
-					if («scope.getIdentifier(attribute)»s != null) {
-						for («attribute.toTypeSingle(names)» toAdd : «scope.getIdentifier(attribute)»s) {
-							this.«scope.getIdentifier(attribute)».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
+				public «thisName» add«attribute.name.toFirstUpper»(«List»<? extends «attribute.toTypeSingle(names)»> «scope.getIdentifierOrThrow(attribute)»s) {
+					if («scope.getIdentifierOrThrow(attribute)»s != null) {
+						for («attribute.toTypeSingle(names)» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
+							this.«scope.getIdentifierOrThrow(attribute)».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
 						}
 					}
 					return this;
 				}
 				
 				@Override 
-				public «thisName» set«attribute.name.toFirstUpper»(«List»<? extends «attribute.toTypeSingle(names)»> «scope.getIdentifier(attribute)»s) {
-					if («scope.getIdentifier(attribute)»s == null)  {
-						this.«scope.getIdentifier(attribute)» = new «ArrayList»<>();
+				public «thisName» set«attribute.name.toFirstUpper»(«List»<? extends «attribute.toTypeSingle(names)»> «scope.getIdentifierOrThrow(attribute)»s) {
+					if («scope.getIdentifierOrThrow(attribute)»s == null)  {
+						this.«scope.getIdentifierOrThrow(attribute)» = new «ArrayList»<>();
 					}
 					else {
-						this.«scope.getIdentifier(attribute)» = «scope.getIdentifier(attribute)»s.stream()
+						this.«scope.getIdentifierOrThrow(attribute)» = «scope.getIdentifierOrThrow(attribute)»s.stream()
 							«IF needsBuilder(attribute)».map(_a->_a.toBuilder())«ENDIF»
 							.collect(«Collectors».toCollection(()->new ArrayList<>()));
 					}
@@ -220,9 +223,9 @@ class ModelObjectBuilderGenerator {
 				«IF attribute.hasMetas»
 					
 					@Override
-					public «thisName» add«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.toTypeSingle(names, true)»> «scope.getIdentifier(attribute)»s) {
-						if («scope.getIdentifier(attribute)»s != null) {
-							for («attribute.toTypeSingle(names, true)» toAdd : «scope.getIdentifier(attribute)»s) {
+					public «thisName» add«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.toTypeSingle(names, true)»> «scope.getIdentifierOrThrow(attribute)»s) {
+						if («scope.getIdentifierOrThrow(attribute)»s != null) {
+							for («attribute.toTypeSingle(names, true)» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
 								this.add«attribute.name.toFirstUpper»Value(toAdd);
 							}
 						}
@@ -230,10 +233,10 @@ class ModelObjectBuilderGenerator {
 					}
 					
 					@Override
-					public «thisName» set«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.toTypeSingle(names, true)»> «scope.getIdentifier(attribute)»s) {
-						this.«scope.getIdentifier(attribute)».clear();
-						if («scope.getIdentifier(attribute)»s!=null) {
-							«scope.getIdentifier(attribute)»s.forEach(this::add«attribute.name.toFirstUpper»Value);
+					public «thisName» set«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.toTypeSingle(names, true)»> «scope.getIdentifierOrThrow(attribute)»s) {
+						this.«scope.getIdentifierOrThrow(attribute)».clear();
+						if («scope.getIdentifierOrThrow(attribute)»s!=null) {
+							«scope.getIdentifierOrThrow(attribute)»s.forEach(this::add«attribute.name.toFirstUpper»Value);
 						}
 						return this;
 					}
@@ -242,15 +245,15 @@ class ModelObjectBuilderGenerator {
 			
 		«ELSE»
 			@Override
-			public «thisName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «scope.getIdentifier(attribute)») {
-				this.«scope.getIdentifier(attribute)» = «scope.getIdentifier(attribute)»==null?null:«attribute.toBuilder(scope)»;
+			public «thisName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «scope.getIdentifierOrThrow(attribute)») {
+				this.«scope.getIdentifierOrThrow(attribute)» = «scope.getIdentifierOrThrow(attribute)»==null?null:«attribute.toBuilder(scope)»;
 				return this;
 			}
 			«IF attribute.hasMetas»
 				
 				@Override
-				public «thisName» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «scope.getIdentifier(attribute)») {
-					this.getOrCreate«attribute.name.toFirstUpper»().setValue(«scope.getIdentifier(attribute)»«IF attribute.isDataType»«ENDIF»);
+				public «thisName» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «scope.getIdentifierOrThrow(attribute)») {
+					this.getOrCreate«attribute.name.toFirstUpper»().setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType»«ENDIF»);
 					return this;
 				}
 			«ENDIF»
@@ -321,9 +324,9 @@ class ModelObjectBuilderGenerator {
 		
 	private def StringConcatenationClient toBuilder(ExpandedAttribute attribute, JavaScope scope) {
 		if(needsBuilder(attribute)) {
-			'''«scope.getIdentifier(attribute)».toBuilder()'''
+			'''«scope.getIdentifierOrThrow(attribute)».toBuilder()'''
 		} else {
-			'''«scope.getIdentifier(attribute)»'''
+			'''«scope.getIdentifierOrThrow(attribute)»'''
 		}
 	}
 }
