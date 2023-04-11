@@ -22,7 +22,6 @@ import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
 import com.regnosys.rosetta.generator.java.types.JavaType
 import com.regnosys.rosetta.generator.java.types.JavaTypeVariable
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -64,6 +63,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 
 class BlueprintGenerator {
 	static Logger LOGGER = Logger.getLogger(BlueprintGenerator)
@@ -218,7 +218,7 @@ class BlueprintGenerator {
 			typeArgs.add(OUTKEY)
 		}
 		if (typeArgs.size>0) {
-			return new JavaParameterizedType(clazz, typeArgs)
+			return new JavaParametrizedType(clazz, typeArgs)
 		} else {
 			return clazz
 		}
@@ -508,7 +508,7 @@ class BlueprintGenerator {
 		'''«FOR entry : attrRules.entrySet.sortBy[value.name]»
 			«val path = entry.key.path»
 			«val attr = entry.key.attr»
-			«val attrType = attr.type»
+			«val attrType = attr.typeCall.type»
 			«val rule = entry.value»
 			«val ruleClass = new JavaClass(DottedPath.splitOnDots((rule.eContainer as RosettaModel).name).child("blueprint"), rule.name + "Rule")»
 			if («ruleClass».class.isAssignableFrom(ruleType)) {

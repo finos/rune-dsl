@@ -8,11 +8,11 @@ import org.apache.commons.lang3.Validate;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 
-public class JavaParameterizedType implements JavaType {
+public class JavaParametrizedType implements JavaType {
 	private final JavaClass baseType;
 	private final List<JavaTypeArgument> arguments;
 	
-	public JavaParameterizedType(JavaClass baseType, JavaTypeArgument... arguments) {
+	public JavaParametrizedType(JavaClass baseType, JavaTypeArgument... arguments) {
 		Validate.notNull(baseType);
 		Validate.noNullElements(arguments);
 		this.baseType = baseType;
@@ -55,7 +55,7 @@ public class JavaParameterizedType implements JavaType {
 		if (object == this) return true;
         if (this.getClass() != object.getClass()) return false;
 
-        JavaParameterizedType other = (JavaParameterizedType) object;
+        JavaParametrizedType other = (JavaParametrizedType) object;
         return Objects.equals(baseType, other.baseType)
         		&& Objects.equals(arguments, other.arguments);
 	}

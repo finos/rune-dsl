@@ -22,7 +22,6 @@ import com.regnosys.rosetta.types.RType
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.EcoreUtil2
-import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
 import com.regnosys.rosetta.generator.java.types.JavaType
 import com.regnosys.rosetta.utils.DottedPath
 import com.regnosys.rosetta.generator.java.types.JavaClass
@@ -30,6 +29,7 @@ import com.regnosys.rosetta.generator.java.types.JavaReferenceType
 import com.regnosys.rosetta.generator.java.types.JavaPrimitiveType
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.java.types.JavaWildcardTypeArgument
+import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 
 class JavaNames {
 
@@ -48,7 +48,7 @@ class JavaNames {
 
 	def JavaType toListOrSingleJavaType(RType type, boolean isMany) {
 		if (isMany) {
-			return new JavaParameterizedType(List.toJavaType, type.toJavaType);
+			return new JavaParametrizedType(List.toJavaType, type.toJavaType);
 		} else
 			return type.toJavaType
 	}
@@ -60,8 +60,8 @@ class JavaNames {
 			return type.toJavaType
 	}
 	
-	def JavaParameterizedType toPolymorphicList(JavaReferenceType t) {
-		return new JavaParameterizedType(List.toJavaType, JavaWildcardTypeArgument.extendsBound(t));
+	def JavaParametrizedType toPolymorphicList(JavaReferenceType t) {
+		return new JavaParametrizedType(List.toJavaType, JavaWildcardTypeArgument.extendsBound(t));
 	}
 	
 	def dispatch JavaReferenceType toReferenceType(JavaPrimitiveType type) {

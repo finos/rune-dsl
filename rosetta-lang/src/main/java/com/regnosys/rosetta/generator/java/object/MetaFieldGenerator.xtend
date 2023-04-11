@@ -32,9 +32,9 @@ import com.rosetta.model.lib.meta.FieldWithMeta
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
 import com.rosetta.model.lib.meta.BasicRosettaMetaData
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -224,7 +224,7 @@ class MetaFieldGenerator {
 			valueAttribute, metaAttribute
 		])
 		
-		val FWMType = new JavaParameterizedType(JavaClass.from(FieldWithMeta), names.toReferenceType(names.toJavaType(typeProvider.getRType(type))))
+		val FWMType = new JavaParametrizedType(JavaClass.from(FieldWithMeta), names.toReferenceType(names.toJavaType(typeProvider.getRType(type))))
 		
 		val scope = new JavaScope(packageName)
 		
@@ -274,7 +274,7 @@ class MetaFieldGenerator {
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = names.packages.model.metaField.withDots
 		d.attributes.addAll(referenceAttributes(type))
-		val refInterface = new JavaParameterizedType(JavaClass.from(ReferenceWithMeta), names.toReferenceType(names.toJavaType(typeProvider.getRType(type))))
+		val refInterface = new JavaParametrizedType(JavaClass.from(ReferenceWithMeta), names.toReferenceType(names.toJavaType(typeProvider.getRType(type))))
 		
 		val scope = new JavaScope(names.packages.model.metaField)
 		
@@ -295,7 +295,7 @@ class MetaFieldGenerator {
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = names.packages.basicMetafields.withDots
 		d.attributes.addAll(referenceAttributes(type))
-		val refInterface = new JavaParameterizedType(JavaClass.from(ReferenceWithMeta), names.toReferenceType(names.toJavaType(typeProvider.getRType(type))))
+		val refInterface = new JavaParametrizedType(JavaClass.from(ReferenceWithMeta), names.toReferenceType(names.toJavaType(typeProvider.getRType(type))))
 		
 		val scope = new JavaScope(names.packages.basicMetafields)
 		

@@ -46,9 +46,9 @@ class TypeTestUtil {
 	}
 	
 	def void assertListSubtype(RListType a, RListType b) {
-		assertTrue(isListSubtype(a, b))
+		assertTrue(isListSubtypeOf(a, b))
 	}
 	def void assertNotListSubtype(RListType a, RListType b) {
-		assertFalse(isListSubtype(a, b))
+		assertFalse(isListSubtypeOf(a, b))
 	}
 }

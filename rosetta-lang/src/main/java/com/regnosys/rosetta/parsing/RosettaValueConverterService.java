@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.parsing;
 
+import java.math.BigDecimal;
+
 import javax.inject.Inject;
 
 import org.eclipse.xtext.common.services.DefaultTerminalConverters;
@@ -10,7 +12,7 @@ public class RosettaValueConverterService extends DefaultTerminalConverters {
 	@Inject BigDecimalConverter bigDecimalConverter;
 	
 	@ValueConverter(rule = "BigDecimal")
-	public IValueConverter<String> getBigDecimalConverter() {
+	public IValueConverter<BigDecimal> getBigDecimalConverter() {
 		return bigDecimalConverter;
 	}
 }

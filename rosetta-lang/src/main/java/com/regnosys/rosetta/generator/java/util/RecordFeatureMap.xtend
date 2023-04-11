@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.util
+package com.regnosys.rosetta.generator.java.util
 
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.rosetta.RosettaRecordFeature

@@ -30,6 +30,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 
 	@Test
+	def void testParametrizedBasicTypesWithDuplicateParameters() {
+		val model = '''
+			basicType int(digits int, digits int)
+		'''.parseRosetta
+		model.assertError(BASIC_TYPE_PARAMETER, null,
+            "Duplicate parameter name `digits`.")
+	}
+
+	@Test
 	def void noDuplicateInheritanceForRuleSourceTest() {
 		val model = '''
 			rule source TestA {}

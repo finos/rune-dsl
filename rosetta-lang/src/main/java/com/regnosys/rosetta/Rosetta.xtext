@@ -2,6 +2,7 @@ grammar com.regnosys.rosetta.Rosetta with org.eclipse.xtext.common.Terminals
 import "http://www.rosetta-model.com/Rosetta"
 import "http://www.rosetta-model.com/RosettaSimple"
 import "http://www.rosetta-model.com/RosettaExpression"
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 
 // general TODO: naming is inconsistent, e.g., 
 // - [RosettaSynonymSource]
@@ -33,11 +34,8 @@ QualifiedNameWithWildcard:
 RootElement:
 	Annotation | Data | Function;
 
-fragment Definable:
-	'<'definition=STRING'>';
-
 Annotation:
-	'annotation' RosettaNamed ':' Definable?
+	'annotation' RosettaNamed ':' RosettaDefinable?
 	('[' 'prefix' prefix = ValidID ']')?
 	attributes += Attribute*
 ;
@@ -72,14 +70,15 @@ AnnotationQualifier:
 ;
 
 Data:
-	'type' RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' Definable?
+	'type' RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' RosettaDefinable?
 	(References|Annotations|ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
 ;
 
 Attribute:
-	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality Definable?
+	// @Compat remove `override`
+	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable?
 	(References|Annotations|Synonyms)*
 	RuleReference?
 ;
@@ -97,7 +96,7 @@ Function:
 		RosettaNamed
 		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
 	)
-	 ':' =>Definable?
+	 ':' =>RosettaDefinable?
 	(References|Annotations)*
 	('inputs' ':' inputs += Attribute+)?
 	('output' ':' output = Attribute)?
@@ -109,11 +108,11 @@ Function:
 ;
 
 ShortcutDeclaration:
-	'alias' RosettaNamed ':' =>Definable?  expression=RosettaCalcExpression
+	'alias' RosettaNamed ':' =>RosettaDefinable?  expression=RosettaCalcExpression
 ;
 
 Condition:
-	'condition' RosettaNamed? ':' =>Definable?
+	'condition' RosettaNamed? ':' =>RosettaDefinable?
 		=>(References|Annotations)* // conflicts with ListLiteral as RosettaCalcExpression
 		expression=RosettaCalcExpression
 ;
@@ -123,7 +122,7 @@ enum Necessity:
 ;
 
 PostCondition returns Condition:
-	postCondition ?= 'post-condition'  RosettaNamed? ':' =>Definable?
+	postCondition ?= 'post-condition'  RosettaNamed? ':' =>RosettaDefinable?
 	expression     = RosettaCalcExpression
 ;
 
@@ -133,12 +132,12 @@ Operation:
 
 // @Compat deprecated - to be deleted once all models updated
 AssignOutputOperation:
-	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>Definable?
+	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>RosettaDefinable?
 	expression = RosettaCalcExpressionWithAsKey
 ;
 
 OutputOperation:
-	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>Definable?
+	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>RosettaDefinable?
 		expression = RosettaCalcExpressionWithAsKey
 ;
 
@@ -160,7 +159,7 @@ ListLiteral:
 RosettaRootElement:
 	Enumeration | RosettaBody | RosettaCorpus | RosettaSegment | 
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
-	RosettaBlueprint | RosettaQualifiedType | RosettaCalculationType  | RosettaMetaType | RosettaExternalSynonymSource |
+	RosettaBlueprint | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaExternalRuleSource | RosettaBlueprintReport
 ;
 
@@ -178,7 +177,15 @@ fragment RosettaNamed:
 ;
 
 fragment RosettaTyped:
-	type=[RosettaType|QualifiedName]
+	typeCall=TypeCall
+;
+
+TypeCall:
+	type=[RosettaType|QualifiedName] ('(' arguments+=TypeCallArgument ')')?
+;
+
+TypeCallArgument:
+	param=[TypeParameter] ':' value=RosettaLiteral
 ;
 
 
@@ -193,50 +200,33 @@ ValidID:
  */ 
 
 RosettaBasicType:
-	'basicType' RosettaNamed
+	'basicType' RosettaNamed ('(' parameters+=TypeParameter (',' parameters+=TypeParameter)* ')')? RosettaDefinable?
+;
+
+TypeParameter:
+	name=(ValidID|'min'|'max') RosettaTyped RosettaDefinable?
 ;
 
 RosettaSynonymSource:
-	'synonym' 'source' RosettaNamed 
+	'synonym' 'source' RosettaNamed
 ;
 
 RosettaRecordType:
-	'recordType' RosettaNamed '{'
+	'recordType' RosettaNamed '{' RosettaDefinable?
 		features+=RosettaRecordFeature*
 	'}'
 ;
 
 RosettaRecordFeature:
-	RosettaNamed type=[RosettaBuiltinType|ValidID]
+	RosettaNamed RosettaTyped
 ;
 
 RosettaParameter:
 	RosettaNamed RosettaTyped (isArray?='[' ']')?
 ;
 // TODO get rid of these
-// TODO parameter types and return type should be RosettaBuiltinType (similar to record features)
 RosettaLibraryFunction returns RosettaExternalFunction:
 	'library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaTyped RosettaDefinable? 
-;
-
-RosettaQualifiedType:
-	'qualifiedType' RosettaNamed '{'
-		features+=RosettaQualifiedTypeFeature*
-	'}'
-;
-
-RosettaQualifiedTypeFeature returns RosettaTypedFeature:
-	RosettaNamed type=[RosettaBuiltinType|ValidID]
-;
-
-RosettaCalculationType:
-	'calculationType' RosettaNamed '{'
-		features+=RosettaCalculationTypeFeature*
-	'}'
-;
-
-RosettaCalculationTypeFeature returns RosettaTypedFeature:
-	RosettaNamed type=[RosettaBuiltinType|ValidID]
 ;
 
 /**********************************************************************
@@ -385,7 +375,7 @@ RosettaMapPrimaryExpression returns RosettaMapTestExpression:
 	| RosettaStringLiteral
 	| RosettaBooleanLiteral
 	| RosettaIntLiteral
-	| RosettaBigDecimalLiteral
+	| RosettaNumberLiteral
 ;
 
 RosettaMapPathValue:
@@ -440,13 +430,11 @@ RosettaReferenceOrFunctionCall returns RosettaExpression:
 	| {RosettaImplicitVariable} name=('item' | 'it')
 ;
 
-RosettaLiteral returns RosettaExpression:
+RosettaLiteral:
 	RosettaBooleanLiteral
 	| RosettaStringLiteral
-	| RosettaBigDecimalLiteral
+	| RosettaNumberLiteral
 	| RosettaIntLiteral
-	| EmptyLiteral
-	| ListLiteral
 ;
 
 RosettaBooleanLiteral:
@@ -457,7 +445,7 @@ RosettaStringLiteral:
 	value = STRING
 ;
 
-RosettaBigDecimalLiteral:
+RosettaNumberLiteral:
 	value = BigDecimal
 ;
 
@@ -465,11 +453,11 @@ RosettaIntLiteral:
 	value = Integer
 ;
 
-BigDecimal hidden():
+BigDecimal returns ecore::EBigDecimal hidden():
 	('+' | '-')? ('.' INT | INT '.' | INT '.' INT) (('e' | 'E') ('+' | '-') INT | ID)?
 ;
 
-Integer hidden():
+Integer returns ecore::EInt hidden():
 	('+' | '-')? INT
 ;
 
@@ -683,6 +671,8 @@ RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConditionalExpression
 	| RosettaReferenceOrFunctionCall
 	| RosettaLiteral
+	| EmptyLiteral
+	| ListLiteral
 	| '(' RosettaCalcExpression ')'
 	| RosettaCalcOnlyExists
 ;
@@ -807,7 +797,7 @@ RosettaBlueprint:
  	('reporting'|'eligibility') 'rule' RosettaNamed ':'? RosettaDefinable?
 	(references += RosettaDocReference)*
 	(nodes = BlueprintNodeExp)?
-	('output' output=[Data])? // TODO: I don't think this is ever used...
+	('output' output=TypeCall)? // TODO: I don't think this is ever used...
 ;
 
 BlueprintNodeExp:
@@ -846,5 +836,5 @@ BlueprintReturn:
 ;
 
 BlueprintLookup:
-	'lookup' name=ID output=[RosettaType]
+	'lookup' name=ID output=TypeCall
 ;

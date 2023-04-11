@@ -33,6 +33,16 @@ class RosettaParsingTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testParametrizedBasicTypes() {
+		'''
+			basicType pattern
+			basicType int(digits int, min int, max int)
+			basicType number(digits int, fractionalDigits int, min number, max number)
+			basicType string(minLength int, maxLength int, pattern pattern)
+		'''.parseRosettaWithNoErrors
+	}
+	
+	@Test
 	def void testPrioritisationOfOperations1() {
 		val model =
 		'''

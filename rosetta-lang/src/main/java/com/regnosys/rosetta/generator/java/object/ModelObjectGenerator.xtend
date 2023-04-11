@@ -24,9 +24,9 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
 import com.regnosys.rosetta.utils.DottedPath
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 
 class ModelObjectGenerator {
 	
@@ -77,7 +77,7 @@ class ModelObjectGenerator {
 				default Class<? extends «d.name»> getType() {
 					return «d.name».class;
 				}
-				«FOR pt :interfaces.filter(JavaParameterizedType).filter[baseType.simpleName=="ReferenceWithMeta" || baseType.simpleName=="FieldWithMeta"]»
+				«FOR pt :interfaces.filter(com.regnosys.rosetta.generator.java.types.JavaParametrizedType).filter[baseType.simpleName=="ReferenceWithMeta" || baseType.simpleName=="FieldWithMeta"]»
 				
 					default Class<«pt.arguments.head»> getValueType() {
 						return «pt.arguments.head».class;
@@ -143,9 +143,9 @@ class ModelObjectGenerator {
 	def dispatch buildify(Class<?> clazz) {
 		new JavaClass(DottedPath.splitOnDots(clazz.packageName), clazz.simpleName+"."+clazz.simpleName+"Builder")
 	}
-	def dispatch buildify(JavaParameterizedType clazz) {
+	def dispatch buildify(JavaParametrizedType clazz) {
 		val builderType = new JavaClass(clazz.baseType.packageName, clazz.baseType.simpleName+"."+clazz.baseType.simpleName+"Builder")
-		new JavaParameterizedType(builderType, clazz.arguments)
+		new JavaParametrizedType(builderType, clazz.arguments)
 	}
 
 	def boolean globalKeyRecursive(Data class1) {

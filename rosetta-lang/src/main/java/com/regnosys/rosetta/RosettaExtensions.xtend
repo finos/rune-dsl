@@ -19,7 +19,6 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
-import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.rosetta.model.lib.path.RosettaPath
@@ -32,6 +31,7 @@ import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.types.builtin.RRecordType
 
 class RosettaExtensions {
 	
@@ -79,7 +79,7 @@ class RosettaExtensions {
 			atts.addAll(data.superType.allNonOverridesAttributes
 				.filter[superAttr| !atts.exists[extendedAttr|					
 					superAttr.name == extendedAttr.name && 
-					superAttr.type == extendedAttr.type && 
+					superAttr.typeCall.type == extendedAttr.typeCall.type && 
 					superAttr.card.inf == extendedAttr.card.inf &&
 					superAttr.card.sup == extendedAttr.card.sup
 				]].toList)
@@ -238,7 +238,7 @@ class RosettaExtensions {
 		val attrRules = externalAnn.getAllRuleReferencesForType(ruleSource, dataType)
 		
 		dataType.allNonOverridesAttributes.forEach[attr |
-			val attrType = attr.type
+			val attrType = attr.typeCall.type
 			val attrEx = attr.toExpandedAttribute
 			val rule = attrRules.get(attr)
 			

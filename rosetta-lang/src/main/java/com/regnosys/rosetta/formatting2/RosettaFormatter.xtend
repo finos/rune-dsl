@@ -53,6 +53,7 @@ import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
+import com.regnosys.rosetta.rosetta.TypeCall
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	
@@ -220,8 +221,9 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 	def dispatch void format(Attribute ele, extension IFormattableDocument document) {
 		ele.card.formatCardinality(document)
 		ele.indentInner(document)
-		ele.regionFor.feature(ROSETTA_TYPED__TYPE)
+		ele.typeCall
 			.surround[oneSpace]
+			.format(document)
 		ele.formatDefinition(document)
 		ele.references.forEach[
 			prepend[newLine]
@@ -234,6 +236,17 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		ele.synonyms.forEach[
 			prepend[newLine]
 			format
+		]
+	}
+	
+	def dispatch void format(TypeCall ele, extension IFormattableDocument document) {
+		ele.regionFor.keyword('(')
+			.surround[noSpace]
+		ele.regionFor.keyword(')')
+			.prepend[noSpace]
+		ele.regionFor.keywords(',').forEach[
+			prepend[noSpace]
+			append[oneSpace]
 		]
 	}
 	

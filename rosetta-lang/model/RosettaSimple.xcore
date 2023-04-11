@@ -22,7 +22,7 @@ import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 
-abstract class RootElement extends RosettaRootElement, RosettaNamed, Definable, Annotated {
+abstract class RootElement extends RosettaRootElement, RosettaNamed, RosettaDefinable, Annotated {
 }
 
 class Annotation extends RootElement, RosettaSymbol {
@@ -47,20 +47,18 @@ class AnnotationRef {
 	contains AnnotationQualifier[] qualifiers
 }
 
-interface AssignPathRoot {
+interface AssignPathRoot extends RosettaSymbol {
 }
 
 
-class Attribute extends RosettaTypedFeature, Definable, Annotated, RosettaSymbol, AssignPathRoot, WithCardinality, References {
+class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, AssignPathRoot, WithCardinality, References {
 	boolean override
 	contains RosettaSynonym[] synonyms
 	contains RosettaRuleReference ruleReference
 }
 
-abstract class Definable extends RosettaDefinable {}
 
-
-class Data extends RosettaType, RootElement, RosettaSymbol, References, RosettaAttributeReferenceSegment {
+class Data extends RosettaType, RootElement, RosettaSymbol, References {
 	refers Data superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
@@ -89,12 +87,12 @@ class FunctionDispatch extends Function {
 	contains RosettaEnumValueReference value
 }
 
-class Condition extends Definable, Annotated, RosettaNamed, References {
+class Condition extends RosettaDefinable, Annotated, RosettaNamed, References {
 	boolean postCondition
 	contains RosettaExpression expression
 }
 
-abstract class Operation extends Definable {
+abstract class Operation extends RosettaDefinable {
 	container Function function opposite operations
 	refers AssignPathRoot assignRoot
 	contains Segment path
@@ -131,7 +129,7 @@ class Segment {
 	}
 }
 
-class ShortcutDeclaration extends RosettaSymbol, RosettaNamed, Definable, AssignPathRoot {
+class ShortcutDeclaration extends RosettaNamed, RosettaDefinable, AssignPathRoot {
 	contains RosettaExpression expression
 }
 

@@ -10,6 +10,7 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
 
 class RosettaModel extends RosettaDefinable {
 	String name
@@ -36,10 +37,10 @@ interface RosettaNamed {
 }
 
 interface RosettaTyped {
-	refers RosettaType ^type
+	contains TypeCall ^typeCall
 		
 	derived boolean isTypeInferred get {
-		return ^type === null
+		return ^typeCall === null
 	}
 }
 
@@ -79,21 +80,34 @@ abstract class RosettaFeatureOwner extends RosettaDefinable {
 abstract class RosettaType extends RosettaRootElement, RosettaNamed {
 }
 
+class TypeCall {
+	refers RosettaType ^type
+	contains TypeCallArgument[] arguments
+}
+
+class TypeCallArgument {
+	refers TypeParameter param
+	contains RosettaLiteral value
+}
+
 
 /**********************************************************************
  * Built-in
  */
 
-abstract class RosettaBuiltinType extends RosettaType {
+abstract class RosettaBuiltinType extends RosettaType, RosettaDefinable {
 }
 
-class RosettaBasicType extends RosettaRootElement , RosettaBuiltinType {
+class RosettaBasicType extends RosettaRootElement, RosettaBuiltinType {
+	contains TypeParameter[] parameters
 }
+
+class TypeParameter extends RosettaNamed, RosettaTyped, RosettaDefinable {}
 
 class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 }
 
-class RosettaRecordType extends RosettaRootElement, RosettaDefinable, RosettaBuiltinType {
+class RosettaRecordType extends RosettaRootElement, RosettaBuiltinType {
 	contains RosettaRecordFeature[] features
 }
 
@@ -109,12 +123,6 @@ class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaC
 
 class RosettaParameter extends RosettaTyped, RosettaNamed {
 	boolean isArray
-}
-
-class RosettaQualifiedType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType {
-}
-
-class RosettaCalculationType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType {
 }
 
 
@@ -135,10 +143,6 @@ class RosettaEnumValue extends RosettaNamed, RosettaDefinable, RosettaFeature, R
 	String display
 	contains RosettaEnumSynonym[] enumSynonyms
 	container RosettaEnumeration enumeration opposite enumValues
-	
-	refers RosettaType ^type get {
-		return enumeration
-	}
 }
 
 class RosettaEnumValueReference extends RosettaMapTestExpression {
@@ -500,7 +504,7 @@ class RosettaBlueprintReport extends RosettaRootElement {
 class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	contains RosettaDocReference[] references
 	contains BlueprintNodeExp nodes
-	refers RosettaType output
+	contains TypeCall output
 }
 
 class BlueprintNodeExp {
@@ -512,10 +516,10 @@ class BlueprintNodeExp {
 
 abstract class BlueprintNode {
 	String name
-	refers RosettaType input
-	refers RosettaType output
-	refers RosettaType inputKey
-	refers RosettaType outputKey
+	contains TypeCall input
+	contains TypeCall output
+	contains TypeCall inputKey
+	contains TypeCall outputKey
 }
 
 class BlueprintSource extends BlueprintNode{}

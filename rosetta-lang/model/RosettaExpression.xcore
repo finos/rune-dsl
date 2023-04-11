@@ -34,12 +34,17 @@ interface HasGeneratedInput {
  */
 
 interface RosettaLiteral extends RosettaExpression, RosettaMapTestExpression {
+	op Object containedValue()
+
 	op String stringValue()
 }
 
 class RosettaBooleanLiteral extends RosettaLiteral {
 	boolean value
 	
+	op Object containedValue() {
+		return isValue
+	}
 	op String stringValue() {
 		return Boolean.toString(value)
 	}
@@ -47,22 +52,34 @@ class RosettaBooleanLiteral extends RosettaLiteral {
 
 class RosettaStringLiteral extends RosettaLiteral {
 	String value
+	
+	op Object containedValue() {
+		return value
+	}
 	op String stringValue() {
 		return '"' + value + '"'
 	}
 }
 
-class RosettaBigDecimalLiteral extends RosettaLiteral {
-	String value
-	op String stringValue() {
+class RosettaNumberLiteral extends RosettaLiteral {
+	BigDecimal value
+	
+	op Object containedValue() {
 		return value
+	}
+	op String stringValue() {
+		return value.toPlainString
 	}
 }
 
 class RosettaIntLiteral extends RosettaLiteral {
-	String value
-	op String stringValue() {
+	int value
+	
+	op Object containedValue() {
 		return value
+	}
+	op String stringValue() {
+		return Integer.toString(value)
 	}
 }
 

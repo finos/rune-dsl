@@ -5,9 +5,9 @@ import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaMergeSynonymValue
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource
-import com.regnosys.rosetta.rosetta.RosettaType
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
+import com.regnosys.rosetta.rosetta.TypeCall
 
 @Data
 final class ExpandedAttribute {
@@ -16,7 +16,7 @@ final class ExpandedAttribute {
 	String enclosingType
 	ExpandedType type
 	
-	RosettaType rosettaType // used in translator only
+	TypeCall rosettaType // used in translator only
 	
 	boolean overriding
 	int inf
@@ -28,9 +28,7 @@ final class ExpandedAttribute {
 	String definition
 	
 	List<RosettaDocReference> docReferences
-	boolean hasCalculation
 	boolean isEnum
-	boolean isQualified
 	List<ExpandedAttribute> metas;
 	
 	

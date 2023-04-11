@@ -54,7 +54,7 @@ import com.regnosys.rosetta.generator.java.types.JavaType
 import com.regnosys.rosetta.generator.java.types.JavaPrimitiveType
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.generator.java.types.JavaParameterizedType
+import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 
 class FunctionGenerator {
 
@@ -515,7 +515,7 @@ class FunctionGenerator {
 		var javaType = names.toJavaType(typeProvider.getRType(attr.type)) as JavaClass
 		if (needsBuilder(attr)) javaType = names.toBuilderType(javaType)
 		if (attr.card.isMany) {
-			return new JavaParameterizedType(names.toJavaType(List), javaType)
+			return new JavaParametrizedType(names.toJavaType(List), javaType)
 		} else {
 			return javaType
 		}

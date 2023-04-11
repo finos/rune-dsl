@@ -2,6 +2,7 @@ package com.regnosys.rosetta.types;
 
 import com.google.inject.Inject;
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation;
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 
 public class TypeValidationUtil {
@@ -9,6 +10,8 @@ public class TypeValidationUtil {
 	TypeSystem typing;
 	@Inject
 	TypeFactory fac;
+	@Inject
+	RBuiltinTypeService service;
 	
 	public String unequalListTypesMessage(RListType expected, RListType actual) {		
 		if (!expected.getItemType().equals(actual.getItemType())) {
@@ -35,7 +38,7 @@ public class TypeValidationUtil {
 				.toString();
 	}
 	public String notAListSubtypeMessage(RListType expected, RListType actual) {
-		if (!typing.isSubtype(actual.getItemType(), expected.getItemType())) {
+		if (!typing.isSubtypeOf(actual.getItemType(), expected.getItemType())) {
 			if (!actual.getConstraint().isSubconstraintOf(expected.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
 				return new StringBuilder()
 						.append("Expected ")
@@ -127,7 +130,7 @@ public class TypeValidationUtil {
 	public CharSequence toShortDescription(RListType t) {
 		StringBuilder b = new StringBuilder();
 		if (t.isEmpty()) {
-			if (t.getItemType().equals(RBuiltinType.NOTHING)) {
+			if (t.getItemType().equals(service.NOTHING)) {
 				return "an empty value";
 			}
 			b.append("an empty value of type");
