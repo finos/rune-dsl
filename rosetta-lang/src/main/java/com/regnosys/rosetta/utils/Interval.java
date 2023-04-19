@@ -45,6 +45,9 @@ public class Interval<T extends Number & Comparable<T>> {
 	public Optional<T> getMax() {
 		return this.max;
 	}
+	public boolean isUnbounded() {
+		return min.isEmpty() && max.isEmpty();
+	}
 	
 	public boolean includes(T x) {
 		if (min.map(b -> b.compareTo(x) >= 0).orElse(false)) {
@@ -65,6 +68,18 @@ public class Interval<T extends Number & Comparable<T>> {
 		return true;
 	}
 	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		min.ifPresentOrElse(
+				b -> builder.append("[").append(b),
+				() -> builder.append("]-inf"));
+		builder.append(", ");
+		max.ifPresentOrElse(
+				b -> builder.append(b).append("]"),
+				() -> builder.append("+inf["));
+		return builder.toString();
+	}
 	@Override
 	public int hashCode() {
 		return Objects.hash(min, max);

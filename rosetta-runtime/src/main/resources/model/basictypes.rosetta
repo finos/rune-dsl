@@ -1,6 +1,8 @@
 namespace com.rosetta.model
 version "${project.version}"
 
+// TODO: move these files!
+
 basicType string
 basicType int
 basicType number
@@ -19,6 +21,12 @@ recordType date
 	day   int
 	month int
 	year  int
+}
+
+recordType dateTime
+{
+	date date
+	time time
 }
 
 recordType zonedDateTime

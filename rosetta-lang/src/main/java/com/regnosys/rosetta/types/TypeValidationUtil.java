@@ -18,9 +18,9 @@ public class TypeValidationUtil {
 			if (!expected.getConstraint().constraintEquals(actual.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
 				return new StringBuilder()
 						.append("Expected ")
-						.append(toCompleteDescription(expected))
+						.append(toCompleteDescription(expected, actual.getItemType()))
 						.append(", but got ")
-						.append(toCompleteDescription(actual))
+						.append(toCompleteDescription(actual, expected.getItemType()))
 						.append(" instead.")
 						.toString();
 			}
@@ -31,9 +31,9 @@ public class TypeValidationUtil {
 	public String unequalTypesMessage(RType expected, RType actual) {
 		return new StringBuilder()
 				.append("Expected type `")
-				.append(expected)
+				.append(relevantItemTypeDescription(expected, actual))
 				.append("`, but got `")
-				.append(actual)
+				.append(relevantItemTypeDescription(actual, expected))
 				.append("` instead.")
 				.toString();
 	}
@@ -42,9 +42,9 @@ public class TypeValidationUtil {
 			if (!actual.getConstraint().isSubconstraintOf(expected.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
 				return new StringBuilder()
 						.append("Expected ")
-						.append(toCompleteDescription(expected))
+						.append(toCompleteDescription(expected, actual.getItemType()))
 						.append(", but got ")
-						.append(toCompleteDescription(actual))
+						.append(toCompleteDescription(actual, expected.getItemType()))
 						.append(" instead.")
 						.toString();
 			}
@@ -55,9 +55,9 @@ public class TypeValidationUtil {
 	public String notASubtypeMessage(RType expected, RType actual) {
 		return new StringBuilder()
 				.append("Expected type `")
-				.append(expected)
+				.append(relevantItemTypeDescription(expected, actual))
 				.append("`, but got `")
-				.append(actual)
+				.append(relevantItemTypeDescription(actual, expected))
 				.append("` instead.")
 				.toString();
 	}
@@ -67,9 +67,9 @@ public class TypeValidationUtil {
 		}
 		StringBuilder b = new StringBuilder()
 				.append("Cannot compare ")
-				.append(toCompleteDescription(left))
+				.append(toConstraintDescription(left.getConstraint()))
 				.append(" to ")
-				.append(toCompleteDescription(right))
+				.append(toConstraintDescription(right.getConstraint()))
 				.append(", as they cannot be of the same length.");
 		if (left.isSingular() || right.isSingular()) {
 			b.append(" Perhaps you forgot to write `all` or `any` in front of the operator?");
@@ -79,9 +79,9 @@ public class TypeValidationUtil {
 	public String notComparableMessage(RType left, RType right) {
 		return new StringBuilder()
 				.append("Types `")
-				.append(left)
+				.append(relevantItemTypeDescription(left, right))
 				.append("` and `")
-				.append(right)
+				.append(relevantItemTypeDescription(right, left))
 				.append("` are not comparable.")
 				.toString();
 	}
@@ -127,7 +127,19 @@ public class TypeValidationUtil {
 				.toString();
 	}
 	
-	public CharSequence toShortDescription(RListType t) {
+	public CharSequence relevantItemTypeDescription(RType t, RType context) {
+		if (t.getName().equals(context.getName())) {
+			return t.toString();
+		}
+		return t.getName();
+	}
+	public CharSequence relevantItemTypeDescription(RListType t, RType context) {
+		return relevantItemTypeDescription(t.getItemType(), context);
+	}
+	public CharSequence relevantItemTypeDescription(RListType t, RListType context) {
+		return relevantItemTypeDescription(t.getItemType(), context.getItemType());
+	}
+	public CharSequence toShortDescription(RListType t, RType context) {
 		StringBuilder b = new StringBuilder();
 		if (t.isEmpty()) {
 			if (t.getItemType().equals(service.NOTHING)) {
@@ -145,7 +157,7 @@ public class TypeValidationUtil {
 					.toString();
 		}
 		return b.append(" `")
-				.append(t.getItemType())
+				.append(relevantItemTypeDescription(t, context))
 				.append("`")
 				.toString();
 	}
@@ -182,13 +194,13 @@ public class TypeValidationUtil {
 			return b.toString();
 		}
 	}
-	public CharSequence toCompleteDescription(RListType t) {
+	public CharSequence toCompleteDescription(RListType t, RType context) {
 		if (t.isPlural()) {
 			StringBuilder b = new StringBuilder();
 			RosettaCardinality c = t.getConstraint();
 			if (c.isUnbounded()) {
 				b.append("an unbounded list of `")
-					.append(t.getItemType())
+					.append(relevantItemTypeDescription(t, context))
 					.append("`s ");
 				if (c.getInf() == 0) {
 					b.append("of any length");
@@ -200,7 +212,7 @@ public class TypeValidationUtil {
 				}
 			} else {
 				b.append("a list of `")
-					.append(t.getItemType())
+					.append(relevantItemTypeDescription(t, context))
 					.append("`s with ");
 				if (c.getInf() == c.getSup()) {
 					b.append(c.getSup());
@@ -214,7 +226,7 @@ public class TypeValidationUtil {
 			}
 			return b.toString();
 		}
-		return toShortDescription(t);
+		return toShortDescription(t, context);
 	}
 	private String pluralS(int count) {
 		return count == 1 ? "" : "s";

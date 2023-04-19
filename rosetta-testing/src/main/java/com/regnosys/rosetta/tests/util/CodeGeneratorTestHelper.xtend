@@ -3,7 +3,6 @@ package com.regnosys.rosetta.tests.util
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.RosettaGenerator
 import com.regnosys.rosetta.generator.RosettaInternalGenerator
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.rosetta.model.lib.meta.FieldWithMeta
@@ -33,9 +32,9 @@ class CodeGeneratorTestHelper {
 		val eResource = model.parseRosettaWithNoErrors.eResource;
 		
 		eResource.contents.filter(RosettaModel).forEach[
-			val packages = new RosettaJavaPackages(it)
+			val root = new RootPackage(it)
 			val version = version
-			generator.generate(packages, fsa, elements, version)	
+			generator.generate(root, fsa, elements, version)	
 		]
 		
 		fsa.generatedFiles

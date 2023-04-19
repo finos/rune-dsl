@@ -45,7 +45,7 @@ class RosettaOperators {
 		}
 		
 		val resultType = if (op == '+') {
-			if (left == DATE) {
+			if (left == DATE && right == TIME) {
 				DATE_TIME
 			} else if (left instanceof RStringType && right instanceof RStringType) {
 				val s1 = left as RStringType
@@ -60,7 +60,7 @@ class RosettaOperators {
 				new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty())
 			}
 		} else if (op == '-') {
-			if (left == DATE || right == DATE) {
+			if (left == DATE && right == DATE) {
 				UNCONSTRAINED_INT
 			} else if (left instanceof RNumberType && right instanceof RNumberType) {
 				val n1 = left as RNumberType
@@ -85,7 +85,9 @@ class RosettaOperators {
 				new RNumberType(Optional.empty(), Optional.empty(), newInterval, Optional.empty())
 			}
 		} else if (COMPARISON_OPS.contains(op) || EQUALITY_OPS.contains(op)) {
-			BOOLEAN
+			if (left === null || right === null || left.isComparable(right)) {
+				BOOLEAN
+			}
 		}
 		
 		if (resultType === null) {

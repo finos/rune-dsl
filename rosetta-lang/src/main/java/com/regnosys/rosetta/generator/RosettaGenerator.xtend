@@ -15,7 +15,6 @@ import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
 import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
 import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
-import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory.TestFolderAwareFsa
@@ -32,8 +31,9 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.regnosys.rosetta.generator.util.BackwardCompatibilityGenerator
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
+import com.regnosys.rosetta.generator.java.util.BackwardCompatibilityGenerator
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 
 /**
  * Generates code from your model files on save.
@@ -55,7 +55,6 @@ class RosettaGenerator extends AbstractGenerator {
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
-	@Inject JavaNames.Factory factory
 	@Inject FunctionGenerator funcGenerator
 	@Inject BackwardCompatibilityGenerator backwardCompatibilityGenerator
 
@@ -90,8 +89,7 @@ class RosettaGenerator extends AbstractGenerator {
 				// generate for each model object
 				resource.contents.filter(RosettaModel).forEach [
 					val version = version
-					val javaNames = factory.create(it)
-					val packages = javaNames.packages
+					val packages = new RootPackage(it)
 
 					elements.forEach [
 						if (context.cancelIndicator.canceled) {
@@ -99,22 +97,22 @@ class RosettaGenerator extends AbstractGenerator {
 						}
 						switch (it) {
 							Data: {
-								dataGenerator.generate(javaNames, fsa, it, version)
-								metaGenerator.generate(javaNames, fsa, it, version, models)
-								validatorsGenerator.generate(javaNames, fsa, it, version)
+								dataGenerator.generate(packages, fsa, it, version)
+								metaGenerator.generate(packages, fsa, it, version, models)
+								validatorsGenerator.generate(packages, fsa, it, version)
 								it.conditions.forEach [ cond |
-									dataRuleGenerator.generate(javaNames, fsa, it, cond, version)
+									dataRuleGenerator.generate(packages, fsa, it, cond, version)
 								]
 							}
 							Function: {
 								if (!isDispatchingFunction) {
-									funcGenerator.generate(javaNames, fsa, it, version)
+									funcGenerator.generate(packages, fsa, it, version)
 								}
 							}
 						}
 					]
 					enumGenerator.generate(packages, fsa, elements, version)
-					blueprintGenerator.generate(packages, fsa, elements, version, javaNames)
+					blueprintGenerator.generate(packages, fsa, elements, version)
 
 					// Invoke externally defined code generators
 					externalGenerators.forEach [ generator |
@@ -125,8 +123,7 @@ class RosettaGenerator extends AbstractGenerator {
 				]
 
 				if (!resource.contents.filter(RosettaModel).isEmpty) {
-					val javaNames = factory.create(resource.contents.filter(RosettaModel).head)
-					metaFieldGenerator.generate(javaNames, resource, fsa, context)
+					metaFieldGenerator.generate(resource, fsa, context)
 				}
 			}
 		} catch (CancellationException e) {

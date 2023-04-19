@@ -108,6 +108,9 @@ class RosettaTypeProvider {
 					MISSING
 				}
 			}
+			RosettaExternalFunction: {
+				symbol.typeCall.typeCallToRType
+			}
 			ShortcutDeclaration: {
 				cycleTracker.put(symbol, null)
 				val type = symbol.expression.safeRType(cycleTracker)
@@ -154,7 +157,14 @@ class RosettaTypeProvider {
 				if (expression.symbol instanceof RosettaExternalFunction) {
 					val fun = expression.symbol as RosettaExternalFunction
 					val returnType = fun.safeRType(cycleTracker)
-					returnType
+					// TODO: this is a hack
+					// Generic return type for number type e.g. Min(1,2) or Max(2,6)
+					val argTypes = expression.args.map[safeRType(cycleTracker)]
+					if (argTypes.forall[isSubtypeOf(returnType)]) {
+						argTypes.join
+					} else {
+						returnType
+					}
 				} else {
 					safeRType(expression.symbol, cycleTracker)
 				}
@@ -200,7 +210,7 @@ class RosettaTypeProvider {
 			RosettaIntLiteral:
 				new RNumberType(Optional.of(if (expression.value >= 0) expression.value.toString.length else expression.value.toString.length - 1), Optional.of(0), Optional.of(BigDecimal.valueOf(expression.value)), Optional.of(BigDecimal.valueOf(expression.value)), Optional.empty())
 			RosettaNumberLiteral:
-				new RNumberType(Optional.of(expression.value.precision), Optional.of(expression.value.scale), Optional.of(expression.value), Optional.of(expression.value), Optional.empty())
+				new RNumberType(Optional.of(expression.value.toPlainString.replaceAll("\\.|\\-", "").length), Optional.of(Math.max(0, expression.value.scale)), Optional.of(expression.value), Optional.of(expression.value), Optional.empty())
 			ListLiteral:
 				listType(expression.elements)
 			RosettaConditionalExpression: {
@@ -212,10 +222,10 @@ class RosettaTypeProvider {
 					ifT
 				} else {
 					val joined = join(ifT, elseT)
-					if (joined !== null) {
-						joined
-					} else {
+					if (joined == ANY) {
 						new RErrorType("Can not infer common type for '" + ifT.name + "' and " + elseT.name + "'.")
+					} else {
+						joined
 					}
 				}
 			}
@@ -232,7 +242,7 @@ class RosettaTypeProvider {
 			ReduceOperation,
 			MapOperation,
 			ThenOperation:
-				expression.function.body.safeRType(cycleTracker)
+				expression.function?.body?.safeRType(cycleTracker)
 			default:
 				MISSING
 		}
@@ -254,12 +264,12 @@ class RosettaTypeProvider {
 	}
 	
 	private def listType(List<RosettaExpression> exp) {
-		if (exp.length == 0) {
-			return NOTHING;
-		}
 		val types = exp.map[RType]
-		val result = types.reduce[p1, p2| join(p1, p2)]
-		if (result===null) return new RErrorType(types.groupBy[name].keySet.join(', '));
-		return result;
+		val joined = types.join
+		if (joined == ANY) {
+			new RErrorType(types.groupBy[name].keySet.join(', '))
+		} else {
+			joined
+		}
 	}
 }

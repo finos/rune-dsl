@@ -30,6 +30,11 @@ public class JavaArrayType implements JavaReferenceType {
 	}
 	
 	@Override
+	public String getSimpleName() {
+		return baseType.getSimpleName();
+	}
+	
+	@Override
 	public void appendTo(TargetStringConcatenation target) {
 		baseType.appendTo(target);
 		target.append("[]");

@@ -212,7 +212,9 @@ class CardinalityProvider {
 			false
 		}
 		else if (op instanceof MapOperation) {
-			if (op.function.isItemMulti) {
+			if (op.function === null) {
+				false
+			} else if (op.function.isItemMulti) {
 				op.function.isBodyExpressionMulti
 			} else {
 				op.function.isBodyExpressionMulti && op.isPreviousOperationMulti

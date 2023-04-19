@@ -4,32 +4,38 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.regnosys.rosetta.utils.IntegerInterval;
 import com.regnosys.rosetta.utils.OptionalUtil;
+import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
 public class RStringType extends RBasicType {
-	private final IntegerInterval interval;
+	private static final String MIN_LENGTH_PARAM_NAME = "minLength";
+	private static final String MAX_LENGTH_PARAM_NAME = "maxLength";
+	private static final String PATTERN_PARAM_NAME = "pattern";
+	
+	private final PositiveIntegerInterval interval;
 	private final Optional<Pattern> pattern;
 	
-	public RStringType(IntegerInterval interval, Optional<Pattern> pattern) {
+	public RStringType(PositiveIntegerInterval interval, Optional<Pattern> pattern) {
 		super("string");
 		this.interval = interval;
 		this.pattern = pattern;
 	}
 	public RStringType(Optional<Integer> minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
-		this(new IntegerInterval(minLength, maxLength), pattern);
+		this(new PositiveIntegerInterval(minLength.orElse(0), maxLength), pattern);
 	}
 	
 	public static RStringType from(Map<String, Object> values) {
 		return new RStringType(
-				OptionalUtil.typedGet(values, "minLength", Integer.class),
-				OptionalUtil.typedGet(values, "maxLength", Integer.class),
-				OptionalUtil.typedGet(values, "pattern", Pattern.class)
+				OptionalUtil.typedGet(values, MIN_LENGTH_PARAM_NAME, Integer.class),
+				OptionalUtil.typedGet(values, MAX_LENGTH_PARAM_NAME, Integer.class),
+				OptionalUtil.typedGet(values, PATTERN_PARAM_NAME, Pattern.class)
 			);
 	}
 	
-	public IntegerInterval getInterval() {
+	public PositiveIntegerInterval getInterval() {
 		return interval;
 	}
 	public Optional<Pattern> getPattern() {
@@ -55,6 +61,27 @@ public class RStringType extends RBasicType {
 				interval.minimalCover(other.interval),
 				joinedPattern
 			);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append(getName());
+		
+		int minBound = interval.getMinBound();
+		String arguments = Stream.of(
+				minBound == 0 ? Optional.<String>empty() : Optional.of(MIN_LENGTH_PARAM_NAME + "=" + minBound),
+				interval.getMax().map(m -> MAX_LENGTH_PARAM_NAME + "=" + m),
+				pattern.map(p -> PATTERN_PARAM_NAME + "=" + p))
+			.filter(o -> o.isPresent())
+			.map(o -> o.get())
+			.collect(Collectors.joining(", "));
+		if (arguments.length() > 0) {
+			builder.append("(")
+				.append(arguments)
+				.append(")");
+		}
+		return builder.toString();
 	}
 
 	@Override

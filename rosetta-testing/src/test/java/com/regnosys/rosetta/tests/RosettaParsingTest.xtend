@@ -402,9 +402,6 @@ class RosettaParsingTest {
 				value6 date (0..1) <"">
 				value9 string (0..1) <"">
 				value10 zonedDateTime (0..1) <"">
-				value11 productType (0..1) <"">
-				value12 eventType (0..1) <"">
-				value13 calculation (0..1) <"">
 		'''.parseRosettaWithNoErrors
 	}
 	

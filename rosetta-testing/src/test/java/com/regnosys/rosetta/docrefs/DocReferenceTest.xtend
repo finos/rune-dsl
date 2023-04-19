@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.docrefs
+package com.regnosys.rosetta.docrefs
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider

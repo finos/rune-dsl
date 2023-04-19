@@ -263,8 +263,8 @@ class CalculationFunctionGeneratorTest {
 				val2 time (1..1)
 
 			type FoncOut: 
-				res1 string (1..1)
-				res2 string (1..1)
+				res1 dateTime (1..1)
+				res2 dateTime (1..1)
 			
 			func Calc:
 				inputs:
@@ -294,6 +294,7 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.test.model.FoncOut;
 			import com.rosetta.test.model.FoncOut.FoncOutBuilder;
 			import com.rosetta.test.model.FuncIn;
+			import java.time.LocalDateTime;
 			import java.time.LocalTime;
 			import java.util.Optional;
 			
@@ -331,10 +332,10 @@ class CalculationFunctionGeneratorTest {
 					
 					protected FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder res, FuncIn funIn) {
 						res
-							.setRes1(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+							.setRes1(MapperMaths.<LocalDateTime, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
 						
 						res
-							.setRes2(MapperMaths.<String, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+							.setRes2(MapperMaths.<LocalDateTime, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
 						
 						return Optional.ofNullable(res)
 							.map(o -> o.prune())
@@ -366,7 +367,7 @@ class CalculationFunctionGeneratorTest {
 
 			type FuncOut:
 				transactionReferenceNumber string (1..1)
-				tradingDateTime string (1..1)
+				tradingDateTime dateTime (1..1)
 			
 			func RTS_22_Fields :
 				[calculation]
@@ -397,6 +398,7 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.test.model.FuncIn;
 			import com.rosetta.test.model.FuncOut;
 			import com.rosetta.test.model.FuncOut.FuncOutBuilder;
+			import java.time.LocalDateTime;
 			import java.time.LocalTime;
 			import java.util.Optional;
 			
@@ -439,7 +441,7 @@ class CalculationFunctionGeneratorTest {
 							.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
 						
 						out
-							.setTradingDateTime(MapperMaths.<String, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
+							.setTradingDateTime(MapperMaths.<LocalDateTime, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
 						
 						return Optional.ofNullable(out)
 							.map(o -> o.prune())

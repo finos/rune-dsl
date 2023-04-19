@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.util
+package com.regnosys.rosetta.generator.java.util
 
 import org.eclipse.xtext.generator.IFileSystemAccess2
 

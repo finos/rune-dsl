@@ -51,6 +51,11 @@ public class JavaPrimitiveType implements JavaType {
 	}
 	
 	@Override
+	public String getSimpleName() {
+		return type.getSimpleName();
+	}
+	
+	@Override
 	public String toString() {
 		return type.getSimpleName();
 	}

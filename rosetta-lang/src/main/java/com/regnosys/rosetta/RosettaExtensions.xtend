@@ -32,23 +32,30 @@ import org.eclipse.emf.ecore.EObject
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.types.builtin.RRecordType
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import org.eclipse.emf.ecore.resource.ResourceSet
+import com.regnosys.rosetta.rosetta.RosettaRecordType
 
 class RosettaExtensions {
 	
 	@Inject ExternalAnnotationUtil externalAnn
+	@Inject RBuiltinTypeService builtins
 	
 	def boolean isResolved(EObject obj) {
 		obj !== null && !obj.eIsProxy
 	}
 	
-	def Iterable<? extends RosettaFeature> allFeatures(RType t) {
+	def Iterable<? extends RosettaFeature> allFeatures(RType t, EObject context) {
+		allFeatures(t, context.eResource.resourceSet)
+	}
+	def Iterable<? extends RosettaFeature> allFeatures(RType t, ResourceSet resourceSet) {
 		switch t {
 			RDataType:
 				t.data.allAttributes
 			REnumType:
 				t.enumeration.allEnumValues
 			RRecordType:
-				t.record.features
+				builtins.toRosettaType(t, RosettaRecordType, resourceSet).features
 			default:
 				#[]
 		}

@@ -27,4 +27,6 @@ public interface JavaType extends TargetLanguageRepresentation {
 		}
 		return null;
 	}
+	
+	public String getSimpleName();
 }

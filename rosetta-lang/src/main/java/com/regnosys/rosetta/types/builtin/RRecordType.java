@@ -3,11 +3,14 @@ package com.regnosys.rosetta.types.builtin;
 import java.util.Collection;
 import java.util.Objects;
 
+import com.regnosys.rosetta.rosetta.RosettaRecordType;
+
 public abstract class RRecordType extends RBuiltinType {	
 	public RRecordType(String name) {
 		super(name);
 	}
 	
+	// TODO: is this necessary?
 	public abstract Collection<RRecordFeature> getFeatures();
 	
 	@Override

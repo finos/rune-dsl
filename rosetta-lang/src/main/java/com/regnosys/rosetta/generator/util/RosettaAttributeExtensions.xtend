@@ -169,7 +169,7 @@ class RosettaAttributeExtensions {
 		new ExpandedAttribute(
 			attr.name,
 			(attr.eContainer as RosettaType).name,
-			attr.typeCall.type.toExpandedType,
+			attr.typeCall?.type?.toExpandedType,
 			attr.typeCall,
 			attr.override,
 			attr.card.inf,
@@ -269,10 +269,6 @@ class RosettaAttributeExtensions {
 	}
 
 	private def static boolean isEnumeration(RosettaTypedFeature a) {
-		return a.typeCall.type instanceof RosettaEnumeration
-	}
-	
-	static def isBuiltInType(RosettaType type) {
-		return !(type instanceof Data|| type instanceof RosettaEnumeration)
+		return a.typeCall?.type instanceof RosettaEnumeration
 	}
 }

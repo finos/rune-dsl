@@ -8,7 +8,7 @@ import org.apache.commons.lang3.Validate;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 
-public class JavaParametrizedType implements JavaType {
+public class JavaParametrizedType implements JavaReferenceType {
 	private final JavaClass baseType;
 	private final List<JavaTypeArgument> arguments;
 	
@@ -24,6 +24,11 @@ public class JavaParametrizedType implements JavaType {
 	}
 	public List<JavaTypeArgument> getArguments() {
 		return arguments;
+	}
+	
+	@Override
+	public String getSimpleName() {
+		return baseType.getSimpleName();
 	}
 	
 	@Override

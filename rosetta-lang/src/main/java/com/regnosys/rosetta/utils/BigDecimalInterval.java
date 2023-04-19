@@ -2,6 +2,7 @@ package com.regnosys.rosetta.utils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Objects;
 import java.util.Optional;
 
 public class BigDecimalInterval extends Interval<BigDecimal> {
@@ -22,6 +23,23 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
 	@SuppressWarnings("unchecked")
 	public static BigDecimalInterval unbounded() {
 		return new BigDecimalInterval(Optional.empty(), Optional.empty());
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		if (this == object) {
+			return true;
+		}
+		if (getClass() != object.getClass()) {
+			return false;
+		}
+		
+		BigDecimalInterval other = (BigDecimalInterval)object;
+		return boundEquals(getMin(), other.getMin())
+				&& boundEquals(getMax(), other.getMax());
+	}
+	private boolean boundEquals(Optional<BigDecimal> a, Optional<BigDecimal> b) {
+		return Objects.equals(a, b) || OptionalUtil.zipWith(a, b, (x, y) -> x.compareTo(y) == 0).orElse(false);
 	}
 
 	public BigDecimalInterval minimalCover(BigDecimalInterval other) {

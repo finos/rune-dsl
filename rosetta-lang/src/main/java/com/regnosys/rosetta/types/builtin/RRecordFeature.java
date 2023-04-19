@@ -3,21 +3,19 @@ package com.regnosys.rosetta.types.builtin;
 import java.util.Objects;
 
 public class RRecordFeature {
-	private final RRecordType recordType;
 	private final String name;
 
-	public RRecordFeature(RRecordType recordType, String name) {
-		this.recordType = recordType;
+	public RRecordFeature(String name) {
 		this.name = name;
 	}
-
+	
 	public String getName() {
 		return this.name;
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(recordType, name);
+		return Objects.hash(name);
 	}
 	@Override
 	public boolean equals(final Object obj) {
@@ -28,7 +26,6 @@ public class RRecordFeature {
 		if (getClass() != obj.getClass())
 			return false;
 		RRecordFeature other = (RRecordFeature) obj;
-		return Objects.equals(recordType, other.recordType)
-				&& Objects.equals(name, other.name);
+		return Objects.equals(name, other.name);
 	}
 }

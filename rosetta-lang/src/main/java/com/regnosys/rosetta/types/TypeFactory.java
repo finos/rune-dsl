@@ -12,12 +12,9 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 import com.regnosys.rosetta.utils.BigDecimalInterval;
-import com.regnosys.rosetta.utils.IntegerInterval;
+import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
-public class TypeFactory {
-	@Inject
-	private RBuiltinTypeService builtinTypes;
-	
+public class TypeFactory {	
 	public final RosettaCardinality single;
 	public final RosettaCardinality empty;
 	
@@ -31,7 +28,8 @@ public class TypeFactory {
 	public final RListType singleZonedDateTime;
 	public final RListType emptyNothing;
 	
-	public TypeFactory() {
+	@Inject
+	public TypeFactory(RBuiltinTypeService builtinTypes) {
 		this.single = createConstraint(1, 1);
 		
 		this.empty = createConstraint(0, 0);
@@ -48,21 +46,64 @@ public class TypeFactory {
 	}
 	
 	public RListType singleInt(Optional<Integer> digits, Optional<Integer> min, Optional<Integer> max) {
-		return createListType(new RNumberType(digits, Optional.empty(), min.map(BigDecimal::valueOf), max.map(BigDecimal::valueOf), Optional.empty()), single);
+		return createListType(constrainedInt(digits, min, max), single);
 	}
+	public RListType singleInt(int digits, int min, int max) {
+		return createListType(constrainedInt(digits, min, max), single);
+	}
+	public RNumberType constrainedInt(Optional<Integer> digits, Optional<Integer> min, Optional<Integer> max) {
+		return constrainedNumber(digits, Optional.of(0), min.map(BigDecimal::valueOf), max.map(BigDecimal::valueOf), Optional.empty());
+	}
+	public RNumberType constrainedInt(int digits, int min, int max) {
+		return constrainedInt(Optional.of(digits), Optional.of(min), Optional.of(max));
+	}
+	
 	public RListType singleNumber(Optional<Integer> digits, Optional<Integer> fractionalDigits, 
 			Optional<BigDecimal> min, Optional<BigDecimal> max, Optional<BigDecimal> scale) {
-		return createListType(new RNumberType(digits, fractionalDigits, min, max, scale), single);
+		return createListType(constrainedNumber(digits, fractionalDigits, min, max, scale), single);
 	}
 	public RListType singleNumber(Optional<Integer> digits, Optional<Integer> fractionalDigits, 
 			BigDecimalInterval interval, Optional<BigDecimal> scale) {
-		return createListType(new RNumberType(digits, fractionalDigits, interval, scale), single);
+		return createListType(constrainedNumber(digits, fractionalDigits, interval, scale), single);
 	}
+	public RListType singleNumber(int digits, int fractionalDigits, BigDecimal min, BigDecimal max) {
+		return createListType(constrainedNumber(digits, fractionalDigits, min, max), single);
+	}
+	public RListType singleNumber(int digits, int fractionalDigits, String min, String max) {
+		return createListType(constrainedNumber(digits, fractionalDigits, min, max), single);
+	}
+	public RNumberType constrainedNumber(Optional<Integer> digits, Optional<Integer> fractionalDigits, 
+			Optional<BigDecimal> min, Optional<BigDecimal> max, Optional<BigDecimal> scale) {
+		return new RNumberType(digits, fractionalDigits, min, max, scale);
+	}
+	public RNumberType constrainedNumber(Optional<Integer> digits, Optional<Integer> fractionalDigits, 
+			BigDecimalInterval interval, Optional<BigDecimal> scale) {
+		return new RNumberType(digits, fractionalDigits, interval, scale);
+	}
+	public RNumberType constrainedNumber(int digits, int fractionalDigits, BigDecimal min, BigDecimal max) {
+		return constrainedNumber(Optional.of(digits), Optional.of(fractionalDigits), Optional.of(min), Optional.of(max), Optional.empty());
+	}
+	public RNumberType constrainedNumber(int digits, int fractionalDigits, String min, String max) {
+		return constrainedNumber(Optional.of(digits), Optional.of(fractionalDigits), Optional.of(new BigDecimal(min)), Optional.of(new BigDecimal(max)), Optional.empty());
+	}
+	
 	public RListType singleString(Optional<Integer> minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
-		return createListType(new RStringType(minLength, maxLength, pattern), single);
+		return createListType(constrainedString(minLength, maxLength, pattern), single);
 	}
-	public RListType singleString(IntegerInterval interval, Optional<Pattern> pattern) {
-		return createListType(new RStringType(interval, pattern), single);
+	public RListType singleString(PositiveIntegerInterval interval, Optional<Pattern> pattern) {
+		return createListType(constrainedString(interval, pattern), single);
+	}
+	public RListType singleString(int minLength, int maxLength) {
+		return createListType(constrainedString(minLength, maxLength), single);
+	}
+	public RStringType constrainedString(Optional<Integer> minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
+		return new RStringType(minLength, maxLength, pattern);
+	}
+	public RStringType constrainedString(PositiveIntegerInterval interval, Optional<Pattern> pattern) {
+		return new RStringType(interval, pattern);
+	}
+	public RStringType constrainedString(int minLength, int maxLength) {
+		return new RStringType(Optional.of(minLength), Optional.of(maxLength), Optional.empty());
 	}
 	
 	public RosettaCardinality createConstraint(int inf, int sup) {

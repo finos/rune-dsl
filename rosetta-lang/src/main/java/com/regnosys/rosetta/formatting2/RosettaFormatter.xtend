@@ -47,13 +47,12 @@ import com.regnosys.rosetta.rosetta.RosettaCorpus
 import com.regnosys.rosetta.rosetta.RosettaSegment
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
-import com.regnosys.rosetta.rosetta.RosettaQualifiedType
-import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
 import com.regnosys.rosetta.rosetta.TypeCall
+import com.regnosys.rosetta.rosetta.RosettaParameter
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	
@@ -80,8 +79,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.append[oneSpace]
 		
 		val groupedElementTypes = #[RosettaBody, RosettaCorpus, RosettaSegment, RosettaBasicType, 
-			RosettaRecordType, RosettaExternalFunction, RosettaQualifiedType, RosettaCalculationType,
-			RosettaMetaType
+			RosettaRecordType, RosettaExternalFunction, RosettaMetaType
 		]
 		var Class<? extends RosettaRootElement> lastType = null
 		for (elem: rosettaModel.elements) {
@@ -125,10 +123,14 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			append[oneSpace]
 		]
 		ele.parameters.forEach[
-			regionFor.assignment(rosettaTypedAccess.typeAssignment)
-				.prepend[oneSpace]
+			format
 		]
 		ele.formatDefinition(document)
+	}
+	def dispatch void format(RosettaParameter ele, extension IFormattableDocument document) {
+		ele.typeCall
+			.prepend[oneSpace]
+			.format
 	}
 	
 	def dispatch void format(RosettaBody ele, extension IFormattableDocument document) {
@@ -223,7 +225,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		ele.indentInner(document)
 		ele.typeCall
 			.surround[oneSpace]
-			.format(document)
+			.format
 		ele.formatDefinition(document)
 		ele.references.forEach[
 			prepend[newLine]

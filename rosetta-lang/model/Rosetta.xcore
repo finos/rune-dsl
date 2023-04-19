@@ -522,8 +522,6 @@ abstract class BlueprintNode {
 	contains TypeCall outputKey
 }
 
-class BlueprintSource extends BlueprintNode{}
-
 class BlueprintOr extends BlueprintNode {
 	contains BlueprintNodeExp[] bps
 }

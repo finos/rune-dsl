@@ -65,6 +65,9 @@ import com.regnosys.rosetta.types.builtin.RStringType
 import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.utils.OptionalUtil
+import com.regnosys.rosetta.types.builtin.RBuiltinType
+import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.utils.BigDecimalInterval
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -155,7 +158,9 @@ auxiliary join(RDataType t1, RDataType t2) {
 	val st2 = ancestors(t2.^data)
 	st2.add(0, t2.^data)
 	val result = st2.findFirst[st1.contains(it)]
-	result !== null
+	if (result === null) {
+		return ANY
+	}
 	return new RDataType(result)
 }
 auxiliary join(REnumType t1, REnumType t2) {
@@ -164,7 +169,9 @@ auxiliary join(REnumType t1, REnumType t2) {
 	val st2 = ancestorEnums(t2.enumeration)
 	st2.add(0, t2.enumeration)
 	val result = st2.findFirst[st1.contains(it)]
-	result !== null
+	if (result === null) {
+		return ANY
+	}
 	return new REnumType(result)
 }
 auxiliary join(RNumberType t1, RNumberType t2) {
@@ -173,12 +180,23 @@ auxiliary join(RNumberType t1, RNumberType t2) {
 auxiliary join(RStringType t1, RStringType t2) {
 	t1.join(t2)
 }
+auxiliary join(RBasicType t1, RBasicType t2) {
+	if (t1 == t2) {
+		return t1
+	} else if (t1 == NOTHING) {
+		return t2
+	} else if (t2 == NOTHING) {
+		return t1
+	}
+	return ANY
+}
 auxiliary join(RBasicType t1, RType t2) {
 	if (t1 == t2) {
 		return t1
 	} else if (t1 == NOTHING) {
 		return t2
 	}
+	return ANY
 }
 auxiliary join(RType t1, RBasicType t2) {
 	if (t1 == t2) {
@@ -186,10 +204,13 @@ auxiliary join(RType t1, RBasicType t2) {
 	} else if (t2 == NOTHING) {
 		return t1
 	}
+	return ANY
 }
 auxiliary join(RType t1, RType t2) {
-	t1 == t2
-	return t1
+	if (t1 == t2) {
+		return t1
+	}
+	return ANY
 }
 auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
 	if (c1.unbounded || c2.unbounded) {
@@ -200,7 +221,6 @@ auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
 }
 auxiliary listJoin(RListType t1, RListType t2) {
 	val sup = join(t1.itemType, t2.itemType);
-	sup !== null
 	return createListType(sup, union(t1.constraint, t2.constraint))
 }
 auxiliary allAttributes(Data d) {
@@ -395,6 +415,15 @@ auxiliary typeCallToRType(TypeCall call) {
 			builtinTypes.getType(t.name, argMap).orElse(null)
 		}
 		RosettaEnumeration: new REnumType(t)
+		RosettaMetaType: {
+			val argMap = call.arguments.toMap([param.name], [value.containedValue])
+			val builtinResult = builtinTypes.getType(t.name, argMap)
+			if (builtinResult.present) {
+				builtinResult.get
+			} else {
+				t.typeCall.typeCallToRType
+			}
+		}
 	}
 }
 
@@ -489,12 +518,34 @@ rule SString
 from {
 	true
 }
-
-
-rule SNothing // SA-Nothing
-	G |- RBasicType t1 <: RType t2
+rule SBuiltin // SA-Refl, SA-Nothing
+	G |- RBuiltinType t1 <: RBuiltinType t2
 from {
-	t1 == NOTHING
+	{
+		t1 == t2
+	} or {
+		t1 == NOTHING
+	} or {
+		t2 == ANY
+	}
+}
+rule SNothing // SA-Refl, SA-Nothing
+	G |- RBuiltinType t1 <: RType t2
+from {
+	{
+		t1 == t2
+	} or {
+		t1 == NOTHING
+	}
+}
+rule SAny // SA-Refl, SA-Nothing
+	G |- RType t1 <: RBuiltinType t2
+from {
+	{
+		t1 == t2
+	} or {
+		t2 == ANY
+	}
 }
 
 rule SRefl
@@ -515,11 +566,11 @@ from {
 axiom TBoolean
 	G |- RosettaBooleanLiteral bool : singleBoolean
 axiom TString
-	G |- RosettaStringLiteral str : singleString(Optional.of(str.value.length), Optional.of(str.value.length), Optional.^empty())
+	G |- RosettaStringLiteral str : singleString(str.value.length, str.value.length)
 axiom TNumber
-	G |- RosettaNumberLiteral num : singleNumber(Optional.of(num.value.precision), Optional.of(num.value.scale), Optional.of(num.value), Optional.of(num.value), Optional.^empty())
+	G |- RosettaNumberLiteral num : singleNumber(num.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, num.value.scale), num.value, num.value)
 axiom TInt
-	G |- RosettaIntLiteral i : singleInt(Optional.of(if (i.value >= 0) i.value.toString.length else i.value.toString.length - 1), Optional.of(i.value), Optional.of(i.value))
+	G |- RosettaIntLiteral i : singleInt(if (i.value >= 0) i.value.toString.length else i.value.toString.length - 1, i.value, i.value)
 
 rule TVar // TA-Var, TA-Func
 	G |- RosettaSymbolReference ref : RListType t
@@ -575,10 +626,7 @@ from {
 			}
 		} else if (op.operator == '/') {
 			if (item1 instanceof RNumberType && item2 instanceof RNumberType) {
-				val n1 = item1 as RNumberType
-				val n2 = item2 as RNumberType
-				val newInterval = n1.interval.divide(n2.interval)
-				lt = singleNumber(Optional.^empty(), Optional.^empty(), newInterval, Optional.^empty())
+				lt = singleNumber(Optional.^empty(), Optional.^empty(), BigDecimalInterval.unbounded, Optional.^empty())
 			}
 		}
 	}
@@ -622,7 +670,7 @@ from {
 				null
 			} else {
 				val sup = join(telem.itemType, acc.itemType);
-				if (sup === null) {
+				if (sup == ANY) {
 					null
 				} else {
 					createListType(sup, telem.constraint + acc.constraint)
@@ -691,7 +739,7 @@ from {
 		{
 			looseListTypeCheck(op.left, singleDate)
 		} or {
-			looseListTypeCheck(op.left, singleUnconstrainedString)
+			looseListSubtypeCheck(op.left, singleUnconstrainedString)
 		} or {
 			looseListSubtypeCheck(op.left, singleUnconstrainedNumber)
 		}
@@ -712,7 +760,7 @@ from {
 		{
 			looseListTypeCheck(op.right, singleTime)
 		} or {
-			looseListTypeCheck(op.right, singleUnconstrainedString)
+			looseListSubtypeCheck(op.right, singleUnconstrainedString)
 		} or {
 			looseListSubtypeCheck(op.right, singleUnconstrainedNumber)
 		}
@@ -750,7 +798,7 @@ from {
 				tr.itemType instanceof RNumberType
 			}
 			or 
-				fail error "Expected arguments to be either both a `string` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
+				fail error "Expected arguments to be either both a `string` or both a `number`, but got `" + relevantItemTypeDescription(tl, tr) + "` and `" + relevantItemTypeDescription(tr, tl) + "` instead."
 					source op
 		} else if (op.operator == '-') {
 			{
@@ -877,9 +925,10 @@ from {
 	empty |- e.ifthen : tthen or tthen = null
 	empty |- e.elsethen : telse or telse = null
 	if (tthen !== null && telse !== null) {
-		listJoin(tthen, telse)
-		or
-		fail error "Types `" + tthen.itemType + "` and `" + telse.itemType + "` do not have a common supertype."
+		val joined = listJoin(tthen, telse)
+		
+		joined.itemType != ANY
+		or fail error "Types `" + tthen.itemType.name + "` and `" + telse.itemType.name + "` do not have a common supertype."
 	}
 }
 
@@ -900,7 +949,7 @@ from {
 				null
 			} else {
 				val sup = join(telem.itemType, acc.itemType);
-				if (sup === null) {
+				if (sup == ANY) {
 					null
 				} else {
 					createListType(sup, telem.constraint + acc.constraint)
@@ -908,7 +957,7 @@ from {
 			}
 		]) !== null
 		or
-		fail error "Elements do not have a common supertype: " + telems.join(', ')["`" + it.itemType + "`"] + "."
+		fail error "Elements do not have a common supertype: " + telems.join(', ')["`" + it.itemType.name + "`"] + "."
 	}
 }
  

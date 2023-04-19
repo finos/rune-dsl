@@ -122,7 +122,7 @@ class RosettaExpressionsTest {
 		'''.generateCode
 
 		val qualifier = code.get("com.rosetta.test.model.functions.TestQualifier")
-		assertThat(qualifier, containsString("MapperMaths.<BigDecimal, Date, Date>subtract"))
+		assertThat(qualifier, containsString("MapperMaths.<Integer, Date, Date>subtract"))
 	}
 	
 	@Test

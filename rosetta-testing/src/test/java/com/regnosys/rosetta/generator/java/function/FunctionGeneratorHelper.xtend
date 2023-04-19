@@ -4,7 +4,6 @@ import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Inject
 import com.google.inject.Injector
-import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
@@ -19,6 +18,7 @@ import java.util.function.Consumer
 import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 
 class FunctionGeneratorHelper {
 
@@ -26,7 +26,6 @@ class FunctionGeneratorHelper {
 	@Inject extension ModelHelper
 	@Inject extension CodeGeneratorTestHelper
 	@Inject RegisteringFileSystemAccess fsa
-	@Inject JavaNames.Factory factory
 
 	final Injector injector
 	
@@ -55,13 +54,13 @@ class FunctionGeneratorHelper {
 
 	def void assertToGeneratedFunction(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
-			generator.generate(factory.create(it), fsa, it.elements.filter(Function).filter[operations.nullOrEmpty].head, "test")
+			generator.generate(new RootPackage(it), fsa, it.elements.filter(Function).filter[operations.nullOrEmpty].head, "test")
 		])
 	}
 
 	def void assertToGeneratedCalculation(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
-			generator.generate(factory.create(it), fsa, it.elements.filter(Function).filter[!operations.nullOrEmpty].head, "test")
+			generator.generate(new RootPackage(it), fsa, it.elements.filter(Function).filter[!operations.nullOrEmpty].head, "test")
 		])
 	}
 

@@ -191,6 +191,7 @@ TypeCallArgument:
 
 ValidID:
 	(ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
+	| 'pattern'
 	)
 ;
 

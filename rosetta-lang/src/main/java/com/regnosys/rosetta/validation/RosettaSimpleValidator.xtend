@@ -115,12 +115,12 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
-import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.builtin.RBuiltinType
+import java.util.Optional
 
 // TODO: split expression validator
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
@@ -154,6 +154,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	override void register(EValidatorRegistrar registrar) {
+	}
+	
+	protected override void handleExceptionDuringValidation(Throwable targetException) throws RuntimeException {
+		super.handleExceptionDuringValidation(targetException);
+		log.error(targetException, targetException);
 	}
 	
 	protected override MethodWrapper createMethodWrapper(AbstractDeclarativeValidator instanceToUse, Method method) {
@@ -437,9 +442,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	protected def void checkTypeAttributeMustHaveSameTypeAsParent(Iterable<Attribute> attrFromClazzes,
 		Iterable<Attribute> attrFromSuperClasses, String name) {
 		attrFromClazzes.filter[!override].forEach [ childAttr |
+			val childAttrType = childAttr.RTypeOfSymbol
 			attrFromSuperClasses.forEach [ parentAttr |
-				if (childAttr.typeCall !== parentAttr.typeCall) {
-					error('''Overriding attribute '«name»' with type («childAttr.typeCall.type.name») must match the type of the attribute it overrides («parentAttr.typeCall.type.name»)''',
+				val parentAttrType = parentAttr.RTypeOfSymbol
+				if (childAttrType != parentAttrType) {
+					error('''Overriding attribute '«name»' with type «childAttrType» must match the type of the attribute it overrides («parentAttrType»)''',
 						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)					
 				}
 			]
@@ -646,7 +653,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			if (callable instanceof Attribute) {
 				if (callable.isOutput) {
 					val implicitType = element.typeOfImplicitVariable
-					val implicitFeatures = implicitType.allFeatures
+					val implicitFeatures = implicitType.allFeatures(callable)
 					if (implicitFeatures.exists[name == callable.name]) {
 						error('''Ambiguous reference. `«callable.name»` may either refer to `«defaultImplicitVariable.name» -> «callable.name»` or to the output variable.''',
 							element,
@@ -769,7 +776,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def void checkNodeTypeGraph(RosettaBlueprint bp) {
 		try {
-			buildTypeGraph(bp.nodes, bp.output.typeCallToRType, new JavaNames)
+			if (bp.nodes !== null) {
+				buildTypeGraph(bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType])
+			}
 		} catch (BlueprintUnresolvedTypeException e) {
 			error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
 		}
@@ -800,7 +809,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 		}
 		else if (filter.filterBP !== null) {
-			val node = buildTypeGraph(filter.filterBP.blueprint.nodes, filter.filterBP.output.typeCallToRType, new JavaNames)
+			val node = buildTypeGraph(filter.filterBP.blueprint.nodes, Optional.ofNullable(filter.filterBP.output).map[typeCallToRType])
 			if (!checkBPNodeSingle(node, false)) {
 				error('''The expression for Filter must return a single value but the rule «filter.filterBP.blueprint.name» can return multiple values''', filter, BLUEPRINT_FILTER__FILTER_BP)
 			}
@@ -846,7 +855,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		val ruleRef = attr.ruleReference
 		if(ruleRef !== null) {
 			val bp = ruleRef.reportingRule
-			val node = buildTypeGraph(bp.nodes, bp.output.typeCallToRType, new JavaNames)
+			val node = buildTypeGraph(bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType])
 
 			val attrExt = attr.toExpandedAttribute
 			val attrSingle = attrExt.cardinalityIsSingleValue
@@ -859,17 +868,17 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
 			// check type
-			val bpType = node.output?.type
-			val bpGenericType = node.output?.genericType?.toString?.split("\\.")?.last
-			if (!node.repeatable && (bpType !== null || bpGenericType !== null) && (attr.typeCall.typeCallToRType != bpType && !attr.typeCall.type.name.equalsIgnoreCase(bpGenericType))) {
-				val typeError = '''Type mismatch - report field «attr.name» has type «attr.typeCall.type.name» ''' +
-					'''whereas the reporting rule «bp.name» has type «IF bpType !== null»«bpType»«ELSEIF bpGenericType !== null»«bpGenericType»«ELSE»unknown«ENDIF».'''
+			val bpType = node.output.type
+			val attrType = attr.typeCall.typeCallToRType
+			if (!node.repeatable && bpType.map[!isSubtypeOf(attrType)].orElse(false)) {
+				val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
+					'''whereas the reporting rule «bp.name» has type «bpType.get».'''
 				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
 
 			// check basic type cardinality supported
 			if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
-				val unsupportedWarning = '''Report attributes with basic type («attr.typeCall.type.name») and multiple cardinality is not supported.'''
+				val unsupportedWarning = '''Report attributes with basic type («attrType.name») and multiple cardinality is not supported.'''
 				error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
 			}
 		}
@@ -1342,13 +1351,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	private def void checkOptionalNamedParameter(InlineFunction ref) {
-		if (ref.parameters !== null && ref.parameters.size !== 0 && ref.parameters.size !== 1) {
+		if (ref !== null && ref.parameters !== null && ref.parameters.size !== 0 && ref.parameters.size !== 1) {
 			error('''Function must have 1 named parameter.''', ref, INLINE_FUNCTION__PARAMETERS)
 		}
 	}
 	
 	private def void checkNumberOfMandatoryNamedParameters(InlineFunction ref, int max) {
-		if (ref.parameters === null || ref.parameters.size !== max) {
+		if (ref !== null && ref.parameters === null || ref.parameters.size !== max) {
 			error('''Function must have «max» named parameter«IF max > 1»s«ENDIF».''', ref, INLINE_FUNCTION__PARAMETERS)
 		}
 	}

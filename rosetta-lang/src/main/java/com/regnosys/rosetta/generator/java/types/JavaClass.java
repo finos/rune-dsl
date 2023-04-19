@@ -34,6 +34,7 @@ public class JavaClass implements JavaReferenceType {
 		return new JavaClass(DottedPath.splitOnDots(t.getPackageName()), fullName);
 	}
 
+	@Override
 	public String getSimpleName() {
 		return simpleName;
 	}

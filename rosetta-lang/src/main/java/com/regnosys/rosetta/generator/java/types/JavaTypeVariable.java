@@ -24,6 +24,11 @@ public class JavaTypeVariable implements JavaReferenceType {
 	}
 	
 	@Override
+	public String getSimpleName() {
+		return name;
+	}
+	
+	@Override
 	public String toString() {
 		return name;
 	}
