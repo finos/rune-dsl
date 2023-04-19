@@ -21,6 +21,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import static org.junit.Assert.assertEquals
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -1578,6 +1579,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar:
 				bar1 string (0..1)
 			
+			// a and b cannot both have rule ref A
 			type BarReport:
 				a string (1..1)
 					[ruleReference A]
@@ -1585,6 +1587,149 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[ruleReference A]
 		'''.parseRosetta
 		model.assertError(ROSETTA_RULE_REFERENCE, null, "Duplicate reporting rule A")
+	}
+	
+	@Test
+	def shouldGenerateDuplicateRuleErrorInDifferentNamespaces() {
+			
+		val models = 
+		#[
+		'''
+			namespace test.one
+
+			reporting rule Base_A:
+				return "Not Modelled" 
+					as "A"
+			
+			type BarReport:
+				a string (1..1)
+					[ruleReference Base_A]
+				b string (1..1)
+					[ruleReference Base_A]
+		''',
+		'''
+			namespace test.two
+			
+			import test.one.*
+			
+			type Bar:
+				bar1 string (0..1)
+			
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule:
+				filter when Bar->bar1 exists
+			
+
+		'''].parseRosetta
+	
+	models.get(0).assertError(ROSETTA_RULE_REFERENCE, null, "Duplicate reporting rule Base_A")
+	
+	}
+	
+	@Test
+	def void shouldGenerateDuplicateRuleErrorInThreeNamespaces() {
+
+		val models = #[
+			'''
+			namespace test.one
+			
+			reporting rule Base_A:
+				return "Not Modelled" 
+					as "A"
+			
+			type Foo:
+				f string (1..1)
+					[ruleReference Base_A]
+		''', '''
+			namespace test.two
+			import test.one.*
+			
+			reporting rule Base_B:
+				return "Not Modelled" 
+					as "B"
+			
+			type Bar:
+				b string (1..1)
+					[ruleReference Base_A]
+				foo Foo (1..1)
+		''', '''
+			namespace test.three
+			import test.two.*
+			
+			type Baz:
+				a string (1..1)
+					[ruleReference Base_B]
+				bar Bar (1..1)
+		'''].parseRosetta
+
+		assertEquals("Duplicate reporting rule Base_A", models.map[validate].flatten.map[it.message].join)
+	}
+	
+	@Test
+	def shouldNotGenerateDuplicateRuleErrorExtendingRulesInDifferentNamespaces() {
+				
+		val models = 
+		#['''
+			namespace test.base
+
+			type Bar:
+				bar1 string (0..1)
+			
+			type BarReport:
+				a string (1..1)
+					[ruleReference Base_A]
+				b string (1..1)
+					[ruleReference Base_B]
+
+			body Authority TEST_REG
+			corpus TEST_REG MiFIR
+
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReport
+			
+			eligibility rule FooRule:
+				filter when Bar->bar1 exists
+
+			reporting rule Base_A:
+				return "Not Modelled" 
+					as "A"
+			
+			reporting rule Base_B:
+				return "Not Modelled" 
+					as "B"
+		''',
+		'''
+			namespace test.extending
+			
+			import test.base.*
+			
+			type BarReportExtend extends BarReport:
+				a string (1..1)
+					[ruleReference Extend_A]
+				b string (1..1)
+					[ruleReference Base_B]
+			
+			
+			report TEST_REG MiFIR in T+1
+			when FooRule
+			with type BarReportExtend
+						
+			reporting rule Extend_A:
+				return "Not Modelled" 
+					as "A"
+					
+			reporting rule Extend_B:
+				return "Not Modelled" 
+					as "B"
+		'''].parseRosetta
+	models.forEach[assertNoErrors]
 	}
 	
 	@Test
