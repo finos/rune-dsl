@@ -2801,6 +2801,20 @@ class RosettaBlueprintTest {
 	}
 
 	@Test
+	def void shouldReturnEnumValue() {
+		val code = '''
+			enum FooEnum:
+				Bar
+				Baz
+			
+			reporting rule ReturnEnumValue:
+				return FooEnum -> Bar
+			
+		'''.generateCode
+		code.compileToClasses
+	}
+
+	@Test
 	@Disabled
 	def void getNestedMappings() {
 		val blueprint = '''
