@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:simpleType name="FooEnum">
+        <xs:annotation>
+            <xs:documentation source="Name" xml:lang="EN">FooEnum</xs:documentation>
+            <xs:documentation source="Definition" xml:lang="EN">FooEnum definition.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Value1">
+                <xs:annotation>
+                    <xs:documentation source="Name" xml:lang="EN">Value1 name</xs:documentation>
+                    <xs:documentation source="Definition" xml:lang="EN">Value1 definition.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Value2">
+                <xs:annotation>
+                    <xs:documentation source="Name" xml:lang="EN">Value2 name</xs:documentation>
+                    <xs:documentation source="Definition" xml:lang="EN">Value2 definition.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Value3">
+                <xs:annotation>
+                    <xs:documentation source="Name" xml:lang="EN">Value3 name</xs:documentation>
+                    <xs:documentation source="Definition" xml:lang="EN">Value3 definition.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

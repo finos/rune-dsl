@@ -49,9 +49,7 @@ public class XsdTypeImport {
 
 		complexTypes.forEach(rosettaModelFactory::addSuperType);
 		complexTypes.forEach(complexType -> rosettaModelFactory.addAttributesToData(complexType, body, corpus, rosettaSegment));
-
 	}
-
 
 	private List<XsdComplexType> getComplexTypes(List<XsdAbstractElement> elementStream) {
 		return elementStream.stream()

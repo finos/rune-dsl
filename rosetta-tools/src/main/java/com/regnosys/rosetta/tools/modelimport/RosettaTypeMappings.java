@@ -100,5 +100,4 @@ public class RosettaTypeMappings {
 	public Set<RosettaType> getAllBasicTypes() {
 		return new HashSet<>(xsdTypesToRosetta.values());
 	}
-
 }

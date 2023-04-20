@@ -37,6 +37,4 @@ public class XsdEnumImport {
 			.filter(x -> x.getAllRestrictions().stream().anyMatch(e -> e.getEnumeration().size() > 0))
 			.collect(Collectors.toList());
 	}
-
-
 }

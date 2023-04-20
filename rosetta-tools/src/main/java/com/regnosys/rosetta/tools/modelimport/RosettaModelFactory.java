@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.lang.model.SourceVersion;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -105,9 +104,9 @@ public class RosettaModelFactory {
 		RosettaCorpus rosettaCorpus = RosettaFactory.eINSTANCE.createRosettaCorpus();
 		rosettaCorpus.setBody(rosettaBody);
 		rosettaCorpus.setCorpusType(corpusType);
-		rosettaCorpus.setDefinition(corpusDisplayName);
 		rosettaCorpus.setName(corpusName);
-		rosettaCorpus.setDisplayName(corpusDefinition);
+		rosettaCorpus.setDisplayName(corpusDisplayName);
+		rosettaCorpus.setDefinition(corpusDefinition);
 		return rosettaCorpus;
 	}
 
@@ -173,13 +172,6 @@ public class RosettaModelFactory {
 		return rosettaExternalEnum;
 	}
 
-	public Data createData(XsdComplexType complexType) {
-		Data data = SimpleFactory.eINSTANCE.createData();
-		data.setName(complexType.getName());
-		extractDocs(complexType).ifPresent(data::setDefinition);
-		return data;
-	}
-
 	public void addAttributesToData(XsdComplexType complexType, RosettaBody rosettaBody, RosettaCorpus rosettaCorpus, RosettaSegment rosettaSegment) {
 		Data data = findData(complexType.getName());
 		Optional.of(complexType)
@@ -235,33 +227,30 @@ public class RosettaModelFactory {
 
 	private Attribute createAttribute(XsdElement element, RosettaBody rosettaBody, RosettaCorpus rosettaCorpus, RosettaSegment rosettaSegment) {
 		Attribute attribute = SimpleFactory.eINSTANCE.createAttribute();
+
+		// definition
 		extractDocs(element).ifPresent(attribute::setDefinition);
 
-		Optional<String> simpleType = Optional.of(element)
-			.map(XsdElement::getTypeAsSimpleType)
-			.map(XsdSimpleType::getRestriction)
-			.map(XsdRestriction::getBaseAsBuiltInDataType)
-			.map(XsdNamedElements::getRawName);
-
-		Optional<RosettaType> basicType = simpleType
-			.map(rosettaTypeMappings::getRosettaBasicType);
-
-		Optional.ofNullable(element.getTypeAsSimpleType())
-			.map(xsdName -> createRosettaDocReference(xsdName.getName(), rosettaBody, rosettaCorpus, rosettaSegment, extractDocs(xsdName)))
-			.ifPresent(attribute.getReferences()::add);
-
-
-		String attributeName = StringExtensions.toFirstLower(element.getName());
-		if (SourceVersion.isKeyword(attributeName)) {
-			attributeName = "_" + attributeName;
-		}
-		attribute.setName(attributeName);
-
-		RosettaType rosettaType = basicType
-			.orElse(getRosettaComplexType(element.getType()));
-
+		// name
+		attribute.setName(StringExtensions.toFirstLower(element.getName()));
+		
+		// type
+		RosettaType rosettaType = Optional.of(element)
+				// Built-in type with no restrictions
+				.map(XsdElement::getTypeAsBuiltInDataType)
+				.map(XsdNamedElements::getRawName)
+				// Or Built-in type with restrictions
+				.or(() -> Optional.of(element)
+						.map(XsdElement::getTypeAsSimpleType)
+						.map(XsdSimpleType::getRestriction)
+						.map(XsdRestriction::getBaseAsBuiltInDataType)
+						.map(XsdNamedElements::getRawName))
+				.map(rosettaTypeMappings::getRosettaBasicType)
+				// Or complex type
+				.orElseGet(() -> getRosettaComplexType(element.getType()));
 		attribute.setType(rosettaType);
 
+		// cardinality
 		RosettaCardinality rosettaCardinality = RosettaFactory.eINSTANCE.createRosettaCardinality();
 		rosettaCardinality.setInf(element.getMinOccurs());
 		if (element.getMaxOccurs().equals(UNBOUNDED)) {
@@ -270,6 +259,12 @@ public class RosettaModelFactory {
 			rosettaCardinality.setSup(Integer.parseInt(element.getMaxOccurs()));
 		}
 		attribute.setCard(rosettaCardinality);
+
+		// docReference
+		Optional.ofNullable(element.getTypeAsSimpleType())
+			.map(xsdName -> createRosettaDocReference(xsdName.getName(), rosettaBody, rosettaCorpus, rosettaSegment, extractDocs(xsdName)))
+			.ifPresent(attribute.getReferences()::add);
+		
 		return attribute;
 	}
 
