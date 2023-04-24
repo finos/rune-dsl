@@ -51,6 +51,9 @@ import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.rosetta.RosettaTypeAlias
+import com.regnosys.rosetta.rosetta.TypeCall
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 
 /**
  * This class contains custom scoping description.
@@ -72,6 +75,15 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	override getScope(EObject context, EReference reference) {
 		try {
 			switch reference {
+				case TYPE_CALL_ARGUMENT__PARAMETER: {
+					if (context instanceof TypeCall) {
+						val type = context.type
+						if (type instanceof ParametrizedRosettaType) {
+							return Scopes.scopeFor(type.parameters)
+						}
+						return IScope.NULLSCOPE
+					}
+				}
 				case ROSETTA_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaFeatureCall) {
 						return createExtendedFeatureScope(context.receiver, typeProvider.getRType(context.receiver))
@@ -262,6 +274,9 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				filteredScope(parentScope, [descr|
 					descr.qualifiedName.toString != object.name // TODO use qnames
 				])
+			}
+			RosettaTypeAlias: {
+				Scopes.scopeFor(object.parameters, parentScope)
 			}
 			Condition: {
 				filteredScope(parentScope, [ descr |

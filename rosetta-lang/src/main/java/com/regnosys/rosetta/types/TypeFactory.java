@@ -1,11 +1,13 @@
 package com.regnosys.rosetta.types;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
+import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
@@ -14,7 +16,9 @@ import com.regnosys.rosetta.types.builtin.RStringType;
 import com.regnosys.rosetta.utils.BigDecimalInterval;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
-public class TypeFactory {	
+public class TypeFactory {
+	private final RBuiltinTypeService builtinTypes;
+	
 	public final RosettaCardinality single;
 	public final RosettaCardinality empty;
 	
@@ -30,6 +34,8 @@ public class TypeFactory {
 	
 	@Inject
 	public TypeFactory(RBuiltinTypeService builtinTypes) {
+		this.builtinTypes = builtinTypes;
+		
 		this.single = createConstraint(1, 1);
 		
 		this.empty = createConstraint(0, 0);
@@ -51,10 +57,14 @@ public class TypeFactory {
 	public RListType singleInt(int digits, int min, int max) {
 		return createListType(constrainedInt(digits, min, max), single);
 	}
-	public RNumberType constrainedInt(Optional<Integer> digits, Optional<Integer> min, Optional<Integer> max) {
-		return constrainedNumber(digits, Optional.of(0), min.map(BigDecimal::valueOf), max.map(BigDecimal::valueOf), Optional.empty());
+	public RAliasType constrainedInt(Optional<Integer> digits, Optional<Integer> min, Optional<Integer> max) {
+		RNumberType refersTo = constrainedNumber(digits, Optional.of(0), min.map(BigDecimal::valueOf), max.map(BigDecimal::valueOf), Optional.empty());
+		LinkedHashMap<String, RosettaValue> args = new LinkedHashMap<>(refersTo.getArguments());
+		args.remove(RNumberType.FRACTIONAL_DIGITS_PARAM_NAME);
+		args.remove(RNumberType.SCALE_PARAM_NAME);
+		return new RAliasType(builtinTypes.INT_FUNCTION, args, refersTo);
 	}
-	public RNumberType constrainedInt(int digits, int min, int max) {
+	public RAliasType constrainedInt(int digits, int min, int max) {
 		return constrainedInt(Optional.of(digits), Optional.of(min), Optional.of(max));
 	}
 	

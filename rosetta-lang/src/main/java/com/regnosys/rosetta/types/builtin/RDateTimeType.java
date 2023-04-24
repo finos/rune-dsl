@@ -3,8 +3,6 @@ package com.regnosys.rosetta.types.builtin;
 import java.util.Collection;
 import java.util.List;
 
-import com.regnosys.rosetta.rosetta.RosettaRecordType;
-
 public class RDateTimeType extends RRecordType {
 	private final RRecordFeature dateFeature;
 	private final RRecordFeature timeFeature;

@@ -10,7 +10,6 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
 
 class RosettaModel extends RosettaDefinable {
 	String name
@@ -80,14 +79,18 @@ abstract class RosettaFeatureOwner extends RosettaDefinable {
 abstract class RosettaType extends RosettaRootElement, RosettaNamed {
 }
 
+interface ParametrizedRosettaType {
+	contains TypeParameter[] parameters
+}
+
 class TypeCall {
 	refers RosettaType ^type
 	contains TypeCallArgument[] arguments
 }
 
 class TypeCallArgument {
-	refers TypeParameter param
-	contains RosettaLiteral value
+	refers TypeParameter parameter
+	contains RosettaExpression value
 }
 
 
@@ -98,11 +101,10 @@ class TypeCallArgument {
 abstract class RosettaBuiltinType extends RosettaType, RosettaDefinable {
 }
 
-class RosettaBasicType extends RosettaRootElement, RosettaBuiltinType {
-	contains TypeParameter[] parameters
+class RosettaBasicType extends RosettaRootElement, RosettaBuiltinType, ParametrizedRosettaType {
 }
 
-class TypeParameter extends RosettaNamed, RosettaTyped, RosettaDefinable {}
+class TypeParameter extends RosettaSymbol, RosettaTyped, RosettaDefinable {}
 
 class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 }
@@ -129,6 +131,10 @@ class RosettaParameter extends RosettaTyped, RosettaNamed {
 /**********************************************************************
  * Data model
  */
+class RosettaTypeAlias extends RosettaRootElement, RosettaType, RosettaTyped, RosettaDefinable, ParametrizedRosettaType {
+}
+
+
 class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaType {
 	
 }

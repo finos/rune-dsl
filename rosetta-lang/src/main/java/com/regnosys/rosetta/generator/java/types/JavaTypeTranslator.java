@@ -24,13 +24,14 @@ import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
+import com.regnosys.rosetta.types.RParametrizedType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.builtin.RBasicType;
-import com.regnosys.rosetta.types.builtin.RBuiltinType;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RDateTimeType;
 import com.regnosys.rosetta.types.builtin.RDateType;
@@ -132,25 +133,35 @@ public class JavaTypeTranslator {
 		return new JavaClass(modelPackage(type.getModel()), type.getName());
 	}
 	
+	private String getTypeDebugInfo(RType type) {
+		return type.toString() + " (" + type.getClass().getSimpleName() + ")";
+	}
 	public JavaReferenceType toJavaReferenceType(RType type) {
 		JavaType jt = toJavaType(type);
 		if (jt instanceof JavaPrimitiveType) {
 			return ((JavaPrimitiveType)jt).toReferenceType();
+		} else if (jt instanceof JavaReferenceType) {
+			return (JavaReferenceType)jt;
+		} else {
+			throw new UnsupportedOperationException("Cannot convert type " + getTypeDebugInfo(type) + " to a Java reference type.");
 		}
-		return (JavaReferenceType)jt;
 	}
 	public JavaReferenceType toJavaReferenceType(Optional<RType> type) {
 		return type.map(t -> toJavaReferenceType(t)).orElse(objectClass);
 	}
 	public JavaType toJavaType(RType type) {
-		if (type instanceof RDataType) {
+		if (type instanceof RAliasType) {
+			return toJavaType((RAliasType)type);
+		} else if (type instanceof RDataType) {
 			return toJavaType((RDataType)type);
 		} else if (type instanceof REnumType) {
 			return toJavaType((REnumType)type);
-		} else if (type instanceof RBuiltinType) {
-			return toJavaType((RBuiltinType)type);
+		} else if (type instanceof RParametrizedType) {
+			return toJavaType((RParametrizedType)type);
+		} else if (type instanceof RRecordType) {
+			return toJavaType((RRecordType)type);
 		} else {
-			throw new UnsupportedOperationException("Cannot convert type " + type + " to a Java type.");
+			throw new UnsupportedOperationException("Cannot convert type " + getTypeDebugInfo(type) + " to a Java type.");
 		}
 	}
 	public JavaType toJavaType(Optional<RType> type) {
@@ -162,13 +173,13 @@ public class JavaTypeTranslator {
 	public JavaClass toJavaType(REnumType type) {
 		return rosettaNamedToJavaClass(type.getEnumeration());
 	}
-	public JavaType toJavaType(RBuiltinType type) {
+	public JavaType toJavaType(RParametrizedType type) {
 		if (type instanceof RBasicType) {
 			return toJavaType((RBasicType)type);
-		} else if (type instanceof RRecordType) {
-			return toJavaType((RRecordType)type);
+		} else if (type instanceof RAliasType) {
+			return toJavaType((RAliasType)type);
 		} else {
-			throw new UnsupportedOperationException("Cannot convert builtin type " + type + " to a Java type.");
+			throw new UnsupportedOperationException("Cannot convert builtin type " + getTypeDebugInfo(type) + " to a Java type.");
 		}
 	}
 	public JavaType toJavaType(RBasicType type) {
@@ -185,11 +196,11 @@ public class JavaTypeTranslator {
 		} else if (type instanceof RStringType) {
 			return toJavaType((RStringType)type);
 		} else {
-			throw new UnsupportedOperationException("Cannot convert basic type " + type + " to a Java type.");
+			throw new UnsupportedOperationException("Cannot convert basic type " + getTypeDebugInfo(type) + " to a Java type.");
 		}
 	}
 	public JavaType toJavaType(RNumberType type) {
-		if (type.getFractionalDigits().map(fd -> fd > 0).orElse(true)) {
+		if (!type.isInteger()) {
 			return JavaClass.from(BigDecimal.class);
 		} else {
 			int digits = type.getDigits().orElse(9);
@@ -205,6 +216,9 @@ public class JavaTypeTranslator {
 	public JavaClass toJavaType(RStringType type) {
 		return JavaClass.from(String.class);
 	}
+	public JavaType toJavaType(RAliasType type) {
+		return toJavaType(type.getRefersTo());
+	}
 	public JavaClass toJavaType(RRecordType type) {
 		if (type instanceof RDateType) {
 			return toJavaType((RDateType)type);
@@ -213,7 +227,7 @@ public class JavaTypeTranslator {
 		} else if (type instanceof RZonedDateTimeType) {
 			return toJavaType((RZonedDateTimeType)type);
 		} else {
-			throw new UnsupportedOperationException("Cannot convert record type " + type + " to a Java type.");
+			throw new UnsupportedOperationException("Cannot convert record type " + getTypeDebugInfo(type) + " to a Java type.");
 		}
 	}
 	public JavaClass toJavaType(RDateType type) {

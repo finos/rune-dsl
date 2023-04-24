@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.types;
 
+import java.util.Objects;
+
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 
 public class RListType {
@@ -37,19 +39,13 @@ public class RListType {
 	}
 	
 	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-	      return true;
-	    if (obj == null)
-	      return false;
-	    if (getClass() != obj.getClass())
-	      return false;
-	    final RListType other = (RListType) obj;
-	    if (this.itemType == null ? other.itemType != null : !this.itemType.equals(other.itemType))
-        	return false;
-	    if (!this.constraint.constraintEquals(other.constraint))
-        	return false;
-	    return true;
+	public boolean equals(final Object object) {
+		if (object == null) return false;
+        if (this.getClass() != object.getClass()) return false;
+        
+	    final RListType other = (RListType) object;
+	    return Objects.equals(itemType, other.itemType)
+	    		&& this.constraint.constraintEquals(other.constraint);
 	}
 	
 	@Override

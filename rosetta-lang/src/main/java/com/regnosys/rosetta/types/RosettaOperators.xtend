@@ -4,7 +4,6 @@ import com.google.inject.Inject
 import com.google.inject.Singleton
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RStringType
-import com.regnosys.rosetta.types.builtin.RRecordType
 import java.util.Optional
 import com.regnosys.rosetta.types.builtin.RNumberType
 import com.regnosys.rosetta.utils.OptionalUtil
@@ -22,72 +21,59 @@ class RosettaOperators {
 	@Inject extension TypeSystem
 
 	def RType resultType(String op, RType left, RType right) {
-		if (left == NOTHING || right == NOTHING) {
-			return NOTHING
-		}
-		if (op == JOIN_OP) {
-			return bothString(left, right, op)
-		}
-		if (LOGICAL_OPS.contains(op)) {
-			return bothBoolean(left, right, op)
-		}
-		if (left instanceof REnumType && right instanceof REnumType &&
-			(left.isSubtypeOf(right) || right.isSubtypeOf(left))) {
-			if (EQUALITY_OPS.contains(op))
-				return BOOLEAN
-		}
-		
-		if ((  left instanceof RRecordType
-			|| left instanceof RDataType
-		) && left == right) {
-			if (EQUALITY_OPS.contains(op))
-				return BOOLEAN
-		}
-		
 		val resultType = if (op == '+') {
-			if (left == DATE && right == TIME) {
+			if (left.isSubtypeOf(DATE) && right.isSubtypeOf(TIME)) {
 				DATE_TIME
-			} else if (left instanceof RStringType && right instanceof RStringType) {
-				val s1 = left as RStringType
-				val s2 = right as RStringType
-				val newInterval = s1.interval.add(s2.interval)
-				new RStringType(newInterval, Optional.empty())
-			} else if (left instanceof RNumberType && right instanceof RNumberType) {
-				val n1 = left as RNumberType
-				val n2 = right as RNumberType
-				val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
-				val newInterval = n1.interval.add(n2.interval)
-				new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty())
+			} else if (left.isSubtypeOf(UNCONSTRAINED_STRING) && right.isSubtypeOf(UNCONSTRAINED_STRING)) {
+				keepTypeAliasIfPossible(left, right, [l,r|
+					val s1 = l as RStringType
+					val s2 = r as RStringType
+					val newInterval = s1.interval.add(s2.interval)
+					new RStringType(newInterval, Optional.empty())
+				])
+			} else if (left.isSubtypeOf(UNCONSTRAINED_NUMBER) && right.isSubtypeOf(UNCONSTRAINED_NUMBER)) {
+				keepTypeAliasIfPossible(left, right, [l,r|
+					val n1 = l as RNumberType
+					val n2 = r as RNumberType
+					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
+					val newInterval = n1.interval.add(n2.interval)
+					new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty())
+				])
 			}
 		} else if (op == '-') {
-			if (left == DATE && right == DATE) {
+			if (left.isSubtypeOf(DATE) && right.isSubtypeOf(DATE)) {
 				UNCONSTRAINED_INT
-			} else if (left instanceof RNumberType && right instanceof RNumberType) {
-				val n1 = left as RNumberType
-				val n2 = right as RNumberType
-				val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
-				val newInterval = n1.interval.subtract(n2.interval)
-				new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty())
+			} else if (left.isSubtypeOf(UNCONSTRAINED_NUMBER) && right.isSubtypeOf(UNCONSTRAINED_NUMBER)) {
+				keepTypeAliasIfPossible(left, right, [l,r|
+					val n1 = l as RNumberType
+					val n2 = r as RNumberType
+					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
+					val newInterval = n1.interval.subtract(n2.interval)
+					new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty())
+				])
 			}
 		} else if (op == '*') {
-			if (left instanceof RNumberType && right instanceof RNumberType) {
-				val n1 = left as RNumberType
-				val n2 = right as RNumberType
-				val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|a+b])
-				val newInterval = n1.interval.multiply(n2.interval)
-				new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty())
+			if (left.isSubtypeOf(UNCONSTRAINED_NUMBER) && right.isSubtypeOf(UNCONSTRAINED_NUMBER)) {
+				keepTypeAliasIfPossible(left, right, [l,r|
+					val n1 = l as RNumberType
+					val n2 = r as RNumberType
+					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|a+b])
+					val newInterval = n1.interval.multiply(n2.interval)
+					new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty())
+				])
 			}
 		} else if (op == '/') {
-			if (left instanceof RNumberType && right instanceof RNumberType) {
-				val n1 = left as RNumberType
-				val n2 = right as RNumberType
-				val newInterval = n1.interval.divide(n2.interval)
-				new RNumberType(Optional.empty(), Optional.empty(), newInterval, Optional.empty())
+			if (left.isSubtypeOf(UNCONSTRAINED_NUMBER) && right.isSubtypeOf(UNCONSTRAINED_NUMBER)) {
+				UNCONSTRAINED_NUMBER
 			}
 		} else if (COMPARISON_OPS.contains(op) || EQUALITY_OPS.contains(op)) {
 			if (left === null || right === null || left.isComparable(right)) {
 				BOOLEAN
 			}
+		} else if (op == JOIN_OP) {
+			return bothString(left, right, op)
+		} else if (LOGICAL_OPS.contains(op)) {
+			return bothBoolean(left, right, op)
 		}
 		
 		if (resultType === null) {
@@ -100,17 +86,17 @@ class RosettaOperators {
 	}
 	
 	def private bothBoolean(RType left, RType right, String op) {
-		if (left!=BOOLEAN)
+		if (!left.isSubtypeOf(BOOLEAN))
 			return new RErrorType('''Left hand side of '«op»' expression must be boolean''')
-		if (right!=BOOLEAN)
+		if (!right.isSubtypeOf(BOOLEAN))
 			return new RErrorType('''Right hand side of '«op»' expression must be boolean''')
 		return BOOLEAN
 	}
 	
 	def private bothString(RType left, RType right, String op) {
-		if (!(left instanceof RStringType))
+		if (!left.isSubtypeOf(UNCONSTRAINED_STRING))
 			return new RErrorType('''Left hand side of '«op»' expression must be string''')
-		if (!(right instanceof RStringType))
+		if (!right.isSubtypeOf(UNCONSTRAINED_STRING))
 			return new RErrorType('''Right hand side of '«op»' expression must be string''')
 		return UNCONSTRAINED_STRING
 	}

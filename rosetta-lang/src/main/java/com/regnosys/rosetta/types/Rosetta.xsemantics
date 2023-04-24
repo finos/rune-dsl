@@ -65,15 +65,26 @@ import com.regnosys.rosetta.types.builtin.RStringType
 import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.utils.OptionalUtil
-import com.regnosys.rosetta.types.builtin.RBuiltinType
 import com.regnosys.rosetta.rosetta.RosettaMetaType
-import com.regnosys.rosetta.utils.BigDecimalInterval
+import com.regnosys.rosetta.interpreter.RosettaInterpreter
+import com.regnosys.rosetta.interpreter.RosettaInterpreterContext
+import com.regnosys.rosetta.rosetta.RosettaTypeAlias
+import com.regnosys.rosetta.interpreter.RosettaValue
+import com.regnosys.rosetta.types.RAliasType
+import com.regnosys.rosetta.types.RTypeFunction
+import com.regnosys.rosetta.types.RParametrizedType
+import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
+import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver.Equation
+import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver
+import java.util.function.BiFunction
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
 inject extension ExpressionHelper exprHelper
 inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
+inject RosettaInterpreter interpreter
+inject RosettaSimpleSystemSolver systemSolver
 
 
 auxiliary {
@@ -88,9 +99,6 @@ auxiliary {
 	allAttributes(Data d) : Iterable<Attribute>
 	mayBeEmpty(Data d)
 	
-	listTypeCheck(RosettaExpression sourceObject, RListType expected)
-	looseListTypeCheck(RosettaExpression sourceObject, RListType expected)
-	typeCheck(RosettaExpression sourceObject, RType expected)
 	listSubtypeCheck(RosettaExpression sourceObject, RListType expected)
 	looseListSubtypeCheck(RosettaExpression sourceObject, RListType expected)
 	subtypeCheck(RosettaExpression sourceObject, RType expected)
@@ -104,7 +112,9 @@ auxiliary {
 	isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardinality expected)
 	
 	// TODO: Functions I need temporarily during transition from old to new type system
-	typeCallToRType(TypeCall rt): RType
+	typeCallToRType(TypeCall rt, RosettaInterpreterContext context): RType
+	typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias): RTypeFunction cached
+	keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes): RType
 	attributeListType(Attribute a): RListType
 	symbolListType(RosettaSymbol c): RListType
 	functionalOperationItemType(RosettaFunctionalOperation op): RListType
@@ -206,6 +216,37 @@ auxiliary join(RType t1, RBasicType t2) {
 	}
 	return ANY
 }
+auxiliary join(RAliasType t1, RAliasType t2) {
+	if (t1 == t2) {
+		return t1
+	} else if (t1.typeFunction == t2.typeFunction) {
+		val typeFunc = t1.typeFunction
+		// Attempt to keep the alias
+		val underlyingJoin = join(t1.refersTo, t2.refersTo)
+		val aliasParams = typeFunc.reverse(underlyingJoin)
+		return aliasParams.<RType>map[new RAliasType(typeFunc, it, underlyingJoin)]
+			.orElse(underlyingJoin)
+	}
+	return join(t1.refersTo, t2.refersTo)
+}
+auxiliary join(RAliasType t1, RType t2) {
+	return join(t1.refersTo, t2)
+}
+auxiliary join(RType t1, RAliasType t2) {
+	return join(t1, t2.refersTo)
+}
+auxiliary join(RAliasType t1, RBasicType t2) {
+	if (t2 == NOTHING) {
+		return t1
+	}
+	return join(t1.refersTo, t2)
+}
+auxiliary join(RBasicType t1, RAliasType t2) {
+	if (t1 == NOTHING) {
+		return t2
+	}
+	return join(t1, t2.refersTo)
+}
 auxiliary join(RType t1, RType t2) {
 	if (t1 == t2) {
 		return t1
@@ -237,36 +278,6 @@ auxiliary mayBeEmpty(Data d) {
 }
 
 /****** TYPE VALIDATION UTILITIES *******/
-auxiliary listTypeCheck(RosettaExpression sourceObject, RListType expected) {
-	var RListType actual
-	empty |- sourceObject : actual or actual = null
-	if (expected !== null && actual !== null) {
-		expected.equals(actual)
-		or
-		fail error unequalListTypesMessage(expected, actual)
-			source sourceObject
-	}
-}
-auxiliary looseListTypeCheck(RosettaExpression sourceObject, RListType expected) {
-    var RListType actual
-    empty |- sourceObject : actual or actual = null
-    if (expected !== null && actual !== null) {
-        expected.itemType.equals(actual.itemType) && expected.constraint.isSubconstraintOf(actual.constraint)
-        or
-        fail error unequalListTypesMessage(expected, actual)
-            source sourceObject
-    }
-}
-auxiliary typeCheck(RosettaExpression sourceObject, RType expected) {
-	var RListType actual
-	empty |- sourceObject : actual or actual = null
-	if (expected !== null && actual !== null) {
-		expected.equals(actual.itemType)
-		or
-		fail error unequalTypesMessage(expected, actual.itemType)
-			source sourceObject
-	}
-}
 auxiliary listSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
 	var RListType actual
 	empty |- sourceObject : actual or actual = null
@@ -406,29 +417,103 @@ auxiliary isLooserConstraintCheck(RosettaExpression sourceObject, RosettaCardina
 	}
 }
 
-auxiliary typeCallToRType(TypeCall call) {
+auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 	val t = call.type
 	switch t {
 		Data: new RDataType(t)
 		RosettaBuiltinType: {
-			val argMap = call.arguments.toMap([param.name], [value.containedValue])
+			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			builtinTypes.getType(t.name, argMap).orElse(null)
 		}
 		RosettaEnumeration: new REnumType(t)
 		RosettaMetaType: {
-			val argMap = call.arguments.toMap([param.name], [value.containedValue])
+			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			val builtinResult = builtinTypes.getType(t.name, argMap)
 			if (builtinResult.present) {
 				builtinResult.get
 			} else {
-				t.typeCall.typeCallToRType
+				t.typeCall.typeCallToRType(context)
 			}
+		}
+		RosettaTypeAlias: {
+			val args = newLinkedHashMap
+			val absentParameters = t.parameters.toSet
+			call.arguments.forEach[arg|
+				val eval = interpreter.interpret(arg.value, context)
+				args.put(arg.parameter.name, eval)
+				absentParameters.remove(arg.parameter)
+			]
+			absentParameters.forEach[
+				args.put(name, RosettaValue.^empty)
+			]
+			val refersTo = t.typeCall.typeCallToRType(RosettaInterpreterContext.of(args))
+			new RAliasType(t.typeFunctionOfTypeAlias, args, refersTo)
 		}
 	}
 }
 
+auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
+	if (typeAlias.name == INT_NAME) {
+		return INT_FUNCTION;
+	}
+	val parameters = typeAlias.parameters;
+	val equations = 
+			typeAlias.typeCall.arguments.map[arg|
+				val ref = ExpressionFactory.eINSTANCE.createRosettaSymbolReference();
+				ref.generated = true;
+				ref.symbol = arg.parameter;
+				return new Equation(ref, arg.value);
+			].toList;
+	return systemSolver.solve(equations, parameters).map[solutionSet|
+		RTypeFunction.create(typeAlias.name,
+			[arguments|
+				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments))
+			],
+			[type|
+				if (!(type instanceof RParametrizedType)) {
+					return Optional.^empty
+				}			
+				val context = RosettaInterpreterContext.of((type as RParametrizedType).arguments);
+				return solutionSet.getSolution(context).map[solution|
+					val newArgs = newLinkedHashMap
+					parameters.forEach[p| newArgs.put(p.name, solution.get(p))]
+					return newArgs;
+				]
+			]
+		)
+	].orElseGet[
+		RTypeFunction.create(typeAlias.name,
+			[arguments|
+				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments))
+			],
+			[Optional.^empty]
+		)
+	]
+}
+
+auxiliary keepTypeAliasIfPossible(RAliasType t1, RAliasType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
+	val underlier = keepTypeAliasIfPossible(t1.refersTo, t2.refersTo, combineUnderlyingTypes);
+	if (t1.typeFunction == t2.typeFunction) {
+		val typeFunc = t1.typeFunction;
+		return typeFunc.reverse(underlier)
+			.<RType>map[args| new RAliasType(typeFunc, args, underlier)]
+			.orElse(underlier);
+	} else {
+		return underlier;
+	}
+}
+auxiliary keepTypeAliasIfPossible(RAliasType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
+	keepTypeAliasIfPossible(t1.refersTo, t2, combineUnderlyingTypes)
+}
+auxiliary keepTypeAliasIfPossible(RType t1, RAliasType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
+	keepTypeAliasIfPossible(t1, t2.refersTo, combineUnderlyingTypes)
+}
+auxiliary keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
+	combineUnderlyingTypes.apply(t1, t2)
+}
+
 auxiliary attributeListType(Attribute a) {
-	return createListType(typeCallToRType(a.typeCall), a.card)
+	return createListType(typeCallToRType(a.typeCall, new RosettaInterpreterContext), a.card)
 }
 
 auxiliary symbolListType(Attribute c) {
@@ -455,11 +540,11 @@ auxiliary symbolListType(ShortcutDeclaration c) {
 }
 
 auxiliary symbolListType(RosettaExternalFunction c) {
-	return createListType(typeCallToRType(c.typeCall), 1, 1)
+	return createListType(typeCallToRType(c.typeCall, new RosettaInterpreterContext), 1, 1)
 }
 
 auxiliary symbolListType(Function c) {
-	return createListType(typeCallToRType(c.^output.typeCall), c.^output.card)
+	return createListType(typeCallToRType(c.^output.typeCall, new RosettaInterpreterContext), c.^output.card)
 }
 
 auxiliary functionalOperationItemType(RosettaFunctionalOperation op) {
@@ -518,8 +603,8 @@ rule SString
 from {
 	true
 }
-rule SBuiltin // SA-Refl, SA-Nothing
-	G |- RBuiltinType t1 <: RBuiltinType t2
+rule SBasic // SA-Refl, SA-Nothing
+	G |- RBasicType t1 <: RBasicType t2
 from {
 	{
 		t1 == t2
@@ -530,7 +615,7 @@ from {
 	}
 }
 rule SNothing // SA-Refl, SA-Nothing
-	G |- RBuiltinType t1 <: RType t2
+	G |- RBasicType t1 <: RType t2
 from {
 	{
 		t1 == t2
@@ -539,13 +624,29 @@ from {
 	}
 }
 rule SAny // SA-Refl, SA-Nothing
-	G |- RType t1 <: RBuiltinType t2
+	G |- RType t1 <: RBasicType t2
 from {
 	{
 		t1 == t2
 	} or {
 		t2 == ANY
 	}
+}
+
+rule SAliasBoth
+	G |- RAliasType t1 <: RAliasType t2
+from {
+	G |- t1.refersTo <: t2.refersTo
+}
+rule SAliasLeft
+	G |- RAliasType t1 <: RType t2
+from {
+	G |- t1.refersTo <: t2
+}
+rule SAliasRight
+	G |- RType t1 <: RAliasType t2
+from {
+	G |- t1 <: t2.refersTo
 }
 
 rule SRefl
@@ -586,47 +687,56 @@ from {
 rule TArithmetic
 	G |- ArithmeticOperation op : RListType lt
 from {
+	// TODO: keep type aliases
 	G |- op.left : var RListType t1
 	G |- op.right : var RListType t2
 	if (t1 !== null && t2 !== null) {
 		val item1 = t1.itemType
 		val item2 = t2.itemType
 		if (op.operator == '+') {
-			if (item1 == DATE) {
+			if ({G |- item1 <: DATE}) {
 				lt = singleDateTime
-			} else if (item1 instanceof RStringType && item2 instanceof RStringType) {
-				val s1 = item1 as RStringType
-				val s2 = item2 as RStringType
-				val newInterval = s1.interval.add(s2.interval)
-				lt = singleString(newInterval, Optional.^empty())
-			} else if (item1 instanceof RNumberType && item2 instanceof RNumberType) {
-				val n1 = item1 as RNumberType
-				val n2 = item2 as RNumberType
-				val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
-				val newInterval = n1.interval.add(n2.interval)
-				lt = singleNumber(Optional.^empty(), newFractionalDigits, newInterval, Optional.^empty())
+			} else if ({G |- item1 <: UNCONSTRAINED_STRING} && {G |- item2 <: UNCONSTRAINED_STRING}) {
+				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
+					val s1 = l as RStringType
+					val s2 = r as RStringType
+					val newInterval = s1.interval.add(s2.interval)
+					constrainedString(newInterval, Optional.^empty())
+				]), single)
+			} else if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
+				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
+					val n1 = l as RNumberType
+					val n2 = r as RNumberType
+					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
+					val newInterval = n1.interval.add(n2.interval)
+					constrainedNumber(Optional.^empty(), newFractionalDigits, newInterval, Optional.^empty())
+				]), single)
 			}
 		} else if (op.operator == '-') {
-			if (item1 == DATE || item2 == DATE) {
+			if ({G |- item1 <: DATE} || {G |- item2 <: DATE}) {
 				lt = singleUnconstrainedInt
-			} else if (item1 instanceof RNumberType && item2 instanceof RNumberType) {
-				val n1 = item1 as RNumberType
-				val n2 = item2 as RNumberType
-				val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
-				val newInterval = n1.interval.subtract(n2.interval)
-				lt = singleNumber(Optional.^empty(), newFractionalDigits, newInterval, Optional.^empty())
+			} else if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
+				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
+					val n1 = l as RNumberType
+					val n2 = r as RNumberType
+					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
+					val newInterval = n1.interval.subtract(n2.interval)
+					constrainedNumber(Optional.^empty(), newFractionalDigits, newInterval, Optional.^empty())
+				]), single)
 			}
 		} else if (op.operator == '*') {
-			if (item1 instanceof RNumberType && item2 instanceof RNumberType) {
-				val n1 = item1 as RNumberType
-				val n2 = item2 as RNumberType
-				val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|a+b])
-				val newInterval = n1.interval.multiply(n2.interval)
-				lt = singleNumber(Optional.^empty(), newFractionalDigits, newInterval, Optional.^empty())
+			if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
+				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
+					val n1 = l as RNumberType
+					val n2 = r as RNumberType
+					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|a+b])
+					val newInterval = n1.interval.multiply(n2.interval)
+					constrainedNumber(Optional.^empty(), newFractionalDigits, newInterval, Optional.^empty())
+				]), single)
 			}
 		} else if (op.operator == '/') {
-			if (item1 instanceof RNumberType && item2 instanceof RNumberType) {
-				lt = singleNumber(Optional.^empty(), Optional.^empty(), BigDecimalInterval.unbounded, Optional.^empty())
+			if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
+				lt = singleUnconstrainedNumber
 			}
 		}
 	}
@@ -670,7 +780,7 @@ from {
 				null
 			} else {
 				val sup = join(telem.itemType, acc.itemType);
-				if (sup == ANY) {
+				if ({G |- ANY <: sup}) {
 					null
 				} else {
 					createListType(sup, telem.constraint + acc.constraint)
@@ -695,7 +805,7 @@ from { // TODO: support metadata feature calls?
 				if (a.typeCall === null) {
 					fail error "Unsupported by the type system."
 				} else {
-					t = createListType(a.typeCall.typeCallToRType, dt.constraint)
+					t = createListType(a.typeCall.typeCallToRType(new RosettaInterpreterContext), dt.constraint)
 				}
 			}
 			RosettaEnumValue: { // projections on enums
@@ -737,7 +847,7 @@ checkrule CheckLeftArithmetic for
 from {
 	if (op.operator == '+') { // TODO: improve error messages
 		{
-			looseListTypeCheck(op.left, singleDate)
+			looseListSubtypeCheck(op.left, singleDate)
 		} or {
 			looseListSubtypeCheck(op.left, singleUnconstrainedString)
 		} or {
@@ -745,7 +855,7 @@ from {
 		}
 	} else if (op.operator == '-') {
 		{
-			looseListTypeCheck(op.left, singleDate)
+			looseListSubtypeCheck(op.left, singleDate)
 		} or {
 			looseListSubtypeCheck(op.left, singleUnconstrainedNumber)
 		}
@@ -758,7 +868,7 @@ checkrule CheckRightArithmetic for
 from {
 	if (op.operator == '+') {
 		{
-			looseListTypeCheck(op.right, singleTime)
+			looseListSubtypeCheck(op.right, singleTime)
 		} or {
 			looseListSubtypeCheck(op.right, singleUnconstrainedString)
 		} or {
@@ -766,7 +876,7 @@ from {
 		}
 	} else if (op.operator == '-') {
 		{
-			looseListTypeCheck(op.right, singleDate)
+			looseListSubtypeCheck(op.right, singleDate)
 		} or {
 			looseListSubtypeCheck(op.right, singleUnconstrainedNumber)
 		}
@@ -784,34 +894,34 @@ from {
 	if (tl !== null && tr !== null) {
 		if (op.operator == '+') {
 			{
-				tl.itemType == DATE
-				tr.itemType == TIME
+				empty |- tl.itemType <: DATE
+				empty |- tr.itemType <: TIME
 			}
 			or
 			{
-				tl.itemType instanceof RStringType
-				tr.itemType instanceof RStringType
+				empty |- tl.itemType <: UNCONSTRAINED_STRING
+				empty |- tr.itemType <: UNCONSTRAINED_STRING
 			}
 			or
 			{
-				tl.itemType instanceof RNumberType
-				tr.itemType instanceof RNumberType
+				empty |- tl.itemType <: UNCONSTRAINED_NUMBER
+				empty |- tr.itemType <: UNCONSTRAINED_NUMBER
 			}
 			or 
 				fail error "Expected arguments to be either both a `string` or both a `number`, but got `" + relevantItemTypeDescription(tl, tr) + "` and `" + relevantItemTypeDescription(tr, tl) + "` instead."
 					source op
 		} else if (op.operator == '-') {
 			{
-				tl.itemType == DATE
-				tr.itemType == DATE
+				empty |- tl.itemType <: DATE
+				empty |- tr.itemType <: DATE
 			}
 			or
 			{
-				tl.itemType instanceof RNumberType
-				tr.itemType instanceof RNumberType
+				empty |- tl.itemType <: UNCONSTRAINED_NUMBER
+				empty |- tr.itemType <: UNCONSTRAINED_NUMBER
 			}
 			or 
-				fail error "Expected arguments to be either both a `string` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
+				fail error "Expected arguments to be either both a `date` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
 					source op
 		}
 	}
@@ -831,12 +941,12 @@ from {
 checkrule CheckLeftLogical for
 	LogicalOperation op
 from {
-	looseListTypeCheck(op.left, singleBoolean)
+	looseListSubtypeCheck(op.left, singleBoolean)
 }
 checkrule CheckRightLogical for
 	LogicalOperation op
 from {
-	looseListTypeCheck(op.right, singleBoolean)
+	looseListSubtypeCheck(op.right, singleBoolean)
 }
 
 checkrule CheckLeftComparison for
@@ -844,17 +954,17 @@ checkrule CheckLeftComparison for
 from {
 	if (op.cardMod === CardinalityModifier.^NONE) { // TODO: improve error messages
 		{
-			looseListTypeCheck(op.left, singleZonedDateTime)
+			looseListSubtypeCheck(op.left, singleZonedDateTime)
 		} or {
-			looseListTypeCheck(op.left, singleDate)
+			looseListSubtypeCheck(op.left, singleDate)
 		} or {
 			looseListSubtypeCheck(op.left, singleUnconstrainedNumber)
 		}
 	} else {
 		{
-			typeCheck(op.left, ZONED_DATE_TIME)
+			subtypeCheck(op.left, ZONED_DATE_TIME)
 		} or {
-			typeCheck(op.left, DATE)
+			subtypeCheck(op.left, DATE)
 		} or {
 			subtypeCheck(op.left, UNCONSTRAINED_NUMBER)
 		}
@@ -865,17 +975,17 @@ checkrule CheckRightComparison for
 from {
 	if (op.cardMod === CardinalityModifier.^NONE) {
 		{
-			looseListTypeCheck(op.left, singleZonedDateTime)
+			looseListSubtypeCheck(op.left, singleZonedDateTime)
 		} or {
-			looseListTypeCheck(op.right, singleDate)
+			looseListSubtypeCheck(op.right, singleDate)
 		} or {
 			looseListSubtypeCheck(op.right, singleUnconstrainedNumber)
 		}
 	} else {
 		{
-			typeCheck(op.left, ZONED_DATE_TIME)
+			subtypeCheck(op.left, ZONED_DATE_TIME)
 		} or {
-			typeCheck(op.right, DATE)
+			subtypeCheck(op.right, DATE)
 		} or {
 			subtypeCheck(op.right, UNCONSTRAINED_NUMBER)
 		}
@@ -890,13 +1000,13 @@ from {
 	empty |- op.right : tr or tr = null
 	if (tl !== null && tr !== null) {
 		{
-			tl.itemType == ZONED_DATE_TIME
-			tr.itemType == ZONED_DATE_TIME
+			empty |- tl.itemType <: ZONED_DATE_TIME
+			empty |- tr.itemType <: ZONED_DATE_TIME
 		}
 		or
 		{
-			tl.itemType == DATE
-			tr.itemType == DATE
+			empty |- tl.itemType <: DATE
+			empty |- tr.itemType <: DATE
 		}
 		or
 		{
@@ -915,7 +1025,7 @@ from {
 checkrule CheckIfConditionalExpression for
 	RosettaConditionalExpression e
 from {
-	looseListTypeCheck(e.^if, singleBoolean)
+	looseListSubtypeCheck(e.^if, singleBoolean)
 }
 checkrule CheckBodyConditionalExpression for
 	RosettaConditionalExpression e
@@ -927,8 +1037,9 @@ from {
 	if (tthen !== null && telse !== null) {
 		val joined = listJoin(tthen, telse)
 		
-		joined.itemType != ANY
-		or fail error "Types `" + tthen.itemType.name + "` and `" + telse.itemType.name + "` do not have a common supertype."
+		if ({empty |- ANY <: joined.itemType}) {
+			fail error "Types `" + tthen.itemType.name + "` and `" + telse.itemType.name + "` do not have a common supertype."
+		}
 	}
 }
 
@@ -949,7 +1060,7 @@ from {
 				null
 			} else {
 				val sup = join(telem.itemType, acc.itemType);
-				if (sup == ANY) {
+				if ({empty |- ANY <: sup}) {
 					null
 				} else {
 					createListType(sup, telem.constraint + acc.constraint)
@@ -972,7 +1083,7 @@ checkrule CheckRosettaSymbolReference for RosettaSymbolReference e from {
 			}
 			(0..<e.args.size).forall[idx |
 				val param = f.parameters.get(idx)
-				val paramType = if (param.isArray) createListType(typeCallToRType(param.typeCall), 0) else createListType(typeCallToRType(param.typeCall), 1, 1)
+				val paramType = if (param.isArray) createListType(typeCallToRType(param.typeCall, new RosettaInterpreterContext), 0) else createListType(typeCallToRType(param.typeCall, new RosettaInterpreterContext), 1, 1)
 				looseListSubtypeCheck(e.args.get(idx), paramType)
 			]
         }

@@ -1,10 +1,7 @@
 package com.regnosys.rosetta.types;
 
-import java.util.Optional;
+import java.util.Objects;
 
-import org.eclipse.xtext.resource.XtextResource;
-
-import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.simple.Data;
 
 public class RDataType extends RAnnotateType {
@@ -30,19 +27,11 @@ public class RDataType extends RAnnotateType {
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RDataType other = (RDataType) obj;
-		if (this.data == null) {
-			if (other.data != null)
-				return false;
-		} else if (!this.data.equals(other.data))
-			return false;
-		return true;
+	public boolean equals(final Object object) {
+		if (object == null) return false;
+        if (this.getClass() != object.getClass()) return false;
+        
+		RDataType other = (RDataType) object;
+		return Objects.equals(this.data, other.data);
 	}
 }

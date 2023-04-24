@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 
 import org.eclipse.emf.ecore.resource.Resource;
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;

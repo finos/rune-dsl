@@ -1,13 +1,11 @@
 package com.regnosys.rosetta.ide.highlight
 
 import com.regnosys.rosetta.rosetta.RosettaBasicType
-import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalRef
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
-import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
@@ -33,18 +31,14 @@ class RosettaHighlightingCalculator extends DefaultSemanticHighlightingCalculato
 		CancelIndicator cancelIndicator) {
 		switch (object) {
 			RosettaTypedFeature: {
-				switch (object.type) {
+				switch (object.typeCall.type) {
 					Data:
-						highlightFeature(acceptor, object, ROSETTA_TYPED__TYPE, CLASS_ID)
+						highlightFeature(acceptor, object, ROSETTA_TYPED__TYPE_CALL, CLASS_ID)
 					RosettaEnumeration:
-						highlightFeature(acceptor, object, ROSETTA_TYPED__TYPE, ENUM_ID)
+						highlightFeature(acceptor, object, ROSETTA_TYPED__TYPE_CALL, ENUM_ID)
 					RosettaBasicType,
 					RosettaRecordType:
-						highlightFeature(acceptor, object, ROSETTA_TYPED__TYPE, BASICTYPE_ID)
-					RosettaQualifiedType:
-						highlightFeature(acceptor, object, ROSETTA_TYPED__TYPE, BASICTYPE_ID)
-					RosettaCalculationType:
-						highlightFeature(acceptor, object, ROSETTA_TYPED__TYPE, BASICTYPE_ID)
+						highlightFeature(acceptor, object, ROSETTA_TYPED__TYPE_CALL, BASICTYPE_ID)
 				}
 			}
 			Data: {

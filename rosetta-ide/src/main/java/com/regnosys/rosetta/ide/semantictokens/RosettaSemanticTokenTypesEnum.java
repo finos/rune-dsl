@@ -12,8 +12,6 @@ public enum RosettaSemanticTokenTypesEnum implements ISemanticTokenType {
 	// Custom ones:
 	BASIC_TYPE("basicType"),
 	RECORD_TYPE("recordType"),
-	QUALIFIED_TYPE("qualifiedType"),
-	CALCULATION_TYPE("calculationType"),
 	DOCUMENT_CORPUS("documentCorpus"),
 	DOCUMENT_SEGMENT("documentSegment"),
 	META_MEMBER("metaMember"),

@@ -3,11 +3,13 @@ version "${project.version}"
 
 // TODO: move these files!
 
-basicType string
-basicType int
-basicType number
 basicType boolean
+basicType number(digits int, fractionalDigits int, min number, max number)
+basicType string(minLength int, maxLength int, pattern pattern)
 basicType time
+basicType pattern
+
+typeAlias int(digits int, min int, max int): number(digits: digits, fractionalDigits: 0, min: min, max: max)
 
 library function DateRanges() date
 library function Min(x number, y number) number
@@ -36,7 +38,7 @@ recordType zonedDateTime
 	timezone string
 }
 
-qualifiedType productType {}
-qualifiedType eventType {}
+typeAlias productType: string
+typeAlias eventType: string
 
-calculationType calculation {}
+typeAlias calculation: string

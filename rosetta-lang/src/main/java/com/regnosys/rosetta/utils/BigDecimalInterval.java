@@ -27,12 +27,8 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (this == object) {
-			return true;
-		}
-		if (getClass() != object.getClass()) {
-			return false;
-		}
+		if (object == null) return false;
+		if (getClass() != object.getClass()) return false;
 		
 		BigDecimalInterval other = (BigDecimalInterval)object;
 		return boundEquals(getMin(), other.getMin())

@@ -47,11 +47,8 @@ import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
-import com.regnosys.rosetta.types.builtin.RNumberType
 import java.util.Optional
-import java.math.BigDecimal
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
-import com.regnosys.rosetta.types.builtin.RStringType
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
@@ -65,6 +62,7 @@ class RosettaTypeProvider {
 	@Inject RosettaExtensions extensions
 	@Inject extension ImplicitVariableUtil
 	@Inject extension TypeSystem
+	@Inject extension TypeFactory
 	@Inject extension RBuiltinTypeService
 	
 	def RType getRType(RosettaExpression expression) {
@@ -116,7 +114,7 @@ class RosettaTypeProvider {
 				val type = symbol.expression.safeRType(cycleTracker)
 				cycleTracker.put(symbol, type)
 				type
-			} 
+			}
 		}
 	}
 	private def RType safeRType(RosettaFeature feature, Map<EObject, RType> cycleTracker) {
@@ -196,7 +194,7 @@ class RosettaTypeProvider {
 				expression.operator.resultType(leftType, rightType)
 			}
 			RosettaCountOperation: {
-				new RNumberType(Optional.empty(), Optional.of(0), Optional.of(BigDecimal.ZERO), Optional.empty(), Optional.empty())
+				constrainedInt(Optional.empty(), Optional.of(0), Optional.empty())
 			}
 			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
@@ -206,11 +204,11 @@ class RosettaTypeProvider {
 			ChoiceOperation:
 				BOOLEAN
 			RosettaStringLiteral:
-				new RStringType(Optional.of(expression.value.length), Optional.of(expression.value.length), Optional.empty())
+				constrainedString(expression.value.length, expression.value.length)
 			RosettaIntLiteral:
-				new RNumberType(Optional.of(if (expression.value >= 0) expression.value.toString.length else expression.value.toString.length - 1), Optional.of(0), Optional.of(BigDecimal.valueOf(expression.value)), Optional.of(BigDecimal.valueOf(expression.value)), Optional.empty())
+				constrainedInt(if (expression.value >= 0) expression.value.toString.length else expression.value.toString.length - 1, expression.value, expression.value)
 			RosettaNumberLiteral:
-				new RNumberType(Optional.of(expression.value.toPlainString.replaceAll("\\.|\\-", "").length), Optional.of(Math.max(0, expression.value.scale)), Optional.of(expression.value), Optional.of(expression.value), Optional.empty())
+				constrainedNumber(expression.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, expression.value.scale), expression.value, expression.value)
 			ListLiteral:
 				listType(expression.elements)
 			RosettaConditionalExpression: {

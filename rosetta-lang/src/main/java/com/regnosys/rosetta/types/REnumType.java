@@ -1,11 +1,8 @@
 package com.regnosys.rosetta.types;
 
-import java.util.Optional;
-
-import org.eclipse.xtext.resource.XtextResource;
+import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
-import com.regnosys.rosetta.rosetta.RosettaType;
 
 public class REnumType extends RAnnotateType {
 	private final RosettaEnumeration enumeration;
@@ -30,19 +27,11 @@ public class REnumType extends RAnnotateType {
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		REnumType other = (REnumType) obj;
-		if (this.enumeration == null) {
-			if (other.enumeration != null)
-				return false;
-		} else if (!this.enumeration.equals(other.enumeration))
-			return false;
-		return true;
+	public boolean equals(final Object object) {
+		if (object == null) return false;
+        if (this.getClass() != object.getClass()) return false;
+        
+        REnumType other = (REnumType)object;
+        return Objects.equals(enumeration, other.enumeration);
 	}
 }

@@ -38,7 +38,8 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.types.TypeSystem
-import com.regnosys.rosetta.types.builtin.RBuiltinType
+import com.regnosys.rosetta.types.builtin.RBasicType
+import com.regnosys.rosetta.types.builtin.RRecordType
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -108,7 +109,7 @@ class MetaFieldGenerator {
 				val targetPackage = new RootPackage(targetModel)
 				
 				val metaType = meta.typeCallToRType
-				if(metaType instanceof RBuiltinType) {
+				if(metaType instanceof RBasicType || metaType instanceof RRecordType) {
 					fsa.generateFile('''«packages.basicMetafields.withForwardSlashes»/FieldWithMeta«metaType.toJavaReferenceType.simpleName».java''', fieldWithMeta(targetPackage, meta))
 				} else {
 					fsa.generateFile('''«targetPackage.metaField.withForwardSlashes»/FieldWithMeta«metaType.toJavaReferenceType.simpleName».java''', fieldWithMeta(targetPackage, meta))
@@ -227,7 +228,7 @@ class MetaFieldGenerator {
 		metaAttribute.typeCall = metaType.toTypeCall
 		metaAttribute.card = cardSingle
 		
-		val packageName= if (rType instanceof RBuiltinType) packages.basicMetafields else root.metaField
+		val packageName= if (rType instanceof RBasicType || rType instanceof RRecordType) packages.basicMetafields else root.metaField
 		
 		val Data d = SimpleFactory.eINSTANCE.createData;
 		d.name = "FieldWithMeta" + javaType.simpleName

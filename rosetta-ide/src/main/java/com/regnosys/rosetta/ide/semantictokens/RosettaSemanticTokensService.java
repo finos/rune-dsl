@@ -7,18 +7,16 @@ import org.eclipse.emf.ecore.EReference;
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
 import com.regnosys.rosetta.rosetta.RosettaBasicType;
-import com.regnosys.rosetta.rosetta.RosettaCalculationType;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaMetaType;
-import com.regnosys.rosetta.rosetta.RosettaQualifiedType;
 import com.regnosys.rosetta.rosetta.RosettaRecordType;
 import com.regnosys.rosetta.rosetta.RosettaSegmentRef;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.RosettaType;
-import com.regnosys.rosetta.rosetta.RosettaTyped;
+import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter;
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
@@ -57,10 +55,6 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 				return Optional.of(BASIC_TYPE);
 			} else if (t instanceof RosettaRecordType) {
 				return Optional.of(RECORD_TYPE);
-			} else if (t instanceof RosettaQualifiedType) {
-				return Optional.of(QUALIFIED_TYPE);
-			} else if (t instanceof RosettaCalculationType) {
-				return Optional.of(CALCULATION_TYPE);
 			} else if (t instanceof RosettaEnumeration) {
 				return Optional.of(ENUM);
 			}
@@ -69,12 +63,11 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	}
 
 	@MarkSemanticToken
-	public Optional<SemanticToken> markType(RosettaTyped typed) {
-		typed.eIsSet(ROSETTA_TYPED__TYPE);
-		RosettaType t = typed.getType();
+	public Optional<SemanticToken> markType(TypeCall typeCall) {
+		RosettaType t = typeCall.getType();
 		return typeToToken(t)
 				.map(token -> 
-					createSemanticToken(typed, ROSETTA_TYPED__TYPE, token));
+					createSemanticToken(typeCall, TYPE_CALL__TYPE, token));
 	}
 	
 	@MarkSemanticToken

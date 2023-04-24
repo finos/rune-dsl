@@ -3,11 +3,23 @@ package com.regnosys.rosetta.types.builtin;
 import java.util.Collection;
 import java.util.Objects;
 
-import com.regnosys.rosetta.rosetta.RosettaRecordType;
+import com.regnosys.rosetta.types.RType;
 
-public abstract class RRecordType extends RBuiltinType {	
+public abstract class RRecordType extends RType {
+	private final String name;
+	
 	public RRecordType(String name) {
-		super(name);
+		super();
+		this.name = name;
+	}
+	
+	@Override
+	public String getName() {
+		return this.name;
+	}
+	@Override
+	public boolean hasNaturalOrder() {
+		return true;
 	}
 	
 	// TODO: is this necessary?
@@ -19,15 +31,12 @@ public abstract class RRecordType extends RBuiltinType {
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RRecordType other = (RRecordType) obj;
-		return Objects.equals(getName(), other.getName())
+	public boolean equals(final Object object) {
+		if (object == null) return false;
+        if (this.getClass() != object.getClass()) return false;
+        
+		RRecordType other = (RRecordType) object;
+		return Objects.equals(name, other.name)
 				&& Objects.equals(getFeatures(), other.getFeatures());
 	}
 }

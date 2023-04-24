@@ -32,7 +32,10 @@ QualifiedNameWithWildcard:
 	QualifiedName ('.' '*')?;
 
 RootElement:
-	Annotation | Data | Function;
+	Annotation
+	| Data
+	| Function
+;
 
 Annotation:
 	'annotation' RosettaNamed ':' RosettaDefinable?
@@ -160,7 +163,7 @@ RosettaRootElement:
 	Enumeration | RosettaBody | RosettaCorpus | RosettaSegment | 
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaBlueprint | RosettaMetaType | RosettaExternalSynonymSource |
-	RosettaExternalRuleSource | RosettaBlueprintReport
+	RosettaExternalRuleSource | RosettaBlueprintReport | RosettaTypeAlias
 ;
 
 
@@ -181,18 +184,21 @@ fragment RosettaTyped:
 ;
 
 TypeCall:
-	type=[RosettaType|QualifiedName] ('(' arguments+=TypeCallArgument ')')?
+	type=[RosettaType|QualifiedName] ('(' arguments+=TypeCallArgument (',' arguments+=TypeCallArgument)* ')')?
 ;
 
 TypeCallArgument:
-	param=[TypeParameter] ':' value=RosettaLiteral
+	parameter=[TypeParameter|ValidTypeParameterID] ':' value=RosettaCalcExpression
 ;
 
 
 ValidID:
-	(ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
+	ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
 	| 'pattern'
-	)
+;
+
+ValidTypeParameterID:
+	ValidID | 'min' | 'max'
 ;
 
 
@@ -205,7 +211,7 @@ RosettaBasicType:
 ;
 
 TypeParameter:
-	name=(ValidID|'min'|'max') RosettaTyped RosettaDefinable?
+	name=ValidTypeParameterID RosettaTyped RosettaDefinable?
 ;
 
 RosettaSynonymSource:
@@ -232,7 +238,13 @@ RosettaLibraryFunction returns RosettaExternalFunction:
 
 /**********************************************************************
  * Data model 
- */ 
+ */
+RosettaTypeAlias:
+	'typeAlias' RosettaNamed ('(' parameters+=TypeParameter (',' parameters+=TypeParameter)* ')')?
+	':' RosettaTyped RosettaDefinable?
+;
+
+
 // TODO: get rid of this one?
 RosettaMetaType:
 	'metaType' RosettaNamed RosettaTyped
@@ -427,7 +439,7 @@ RosettaSegment:
  */ 
 
 RosettaReferenceOrFunctionCall returns RosettaExpression:
-	  {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName] (explicitArguments?='(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')')?
+	  {RosettaSymbolReference} symbol=[RosettaSymbol|ValidTypeParameterID] (explicitArguments?='(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')')?
 	| {RosettaImplicitVariable} name=('item' | 'it')
 ;
 
@@ -625,8 +637,6 @@ ListOperation returns RosettaExpression:
 		)
 		| (
 			({SortOperation} operator='sort')
-			|({MinOperation} operator='min')
-			|({MaxOperation} operator='max')
 		) (function=InlineFunction)?
 		| (
 			 ({ReduceOperation} operator='reduce')

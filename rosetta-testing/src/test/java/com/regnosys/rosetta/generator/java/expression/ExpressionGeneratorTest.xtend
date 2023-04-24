@@ -52,7 +52,7 @@ class ExpressionGeneratorTest {
 	@Test
 	def void shouldGenerateGreaterThanExpression() {
 		val lhsMockClass = createData("Foo")
-		val lhsFeatureCall = createFeatureCall(lhsMockClass, "attr1", "int")
+		val lhsFeatureCall = createFeatureCall(lhsMockClass, "attr1", "number")
 		
 		val rhsIntLiteral = createIntLiteral(5)
 		
@@ -63,8 +63,8 @@ class ExpressionGeneratorTest {
 		val generatedFunction = expressionHandler.javaCode(comparisonOp, scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction, scope), 
-			is('greaterThan(MapperS.of(foo).<Integer>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)'))
+		assertThat(formatGeneratedFunction(generatedFunction, scope),
+			is('greaterThan(MapperS.of(foo).<BigDecimal>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)'))
 	}
 
 	/**
@@ -74,10 +74,10 @@ class ExpressionGeneratorTest {
 	def void shouldGenerateGreaterThanExpressionsWithOr1() {
 		val mockClass = createData("Foo")
 		
-		val lhsFeatureCall = createFeatureCall(mockClass, "attr1", "int")
+		val lhsFeatureCall = createFeatureCall(mockClass, "attr1", "number")
 		val lhsComparisonOp = createModifiableBinaryOperation(">", lhsFeatureCall, createIntLiteral(5), ComparisonOperation)
 		
-		val rhsFeatureCall = createFeatureCall(mockClass, "attr2", "int")
+		val rhsFeatureCall = createFeatureCall(mockClass, "attr2", "number")
 		val rhsComparisonOp = createModifiableBinaryOperation(">", rhsFeatureCall, createIntLiteral(5), ComparisonOperation)
 		
 		val orOp = createBinaryOperation("or", lhsComparisonOp, rhsComparisonOp, LogicalOperation)
@@ -88,7 +88,7 @@ class ExpressionGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
-			is('greaterThan(MapperS.of(foo).<Integer>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All).or(greaterThan(MapperS.of(foo).<Integer>map(\"getAttr2\", _foo -> _foo.getAttr2()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All))'))
+			is('greaterThan(MapperS.of(foo).<BigDecimal>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All).or(greaterThan(MapperS.of(foo).<BigDecimal>map(\"getAttr2\", _foo -> _foo.getAttr2()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All))'))
 	}
 	
 	/**
@@ -97,7 +97,7 @@ class ExpressionGeneratorTest {
 	@Test
 	def void shouldGenerateExistsExpression() {
 		val lhsMockClass = createData("Foo")
-		val lhsFeatureCall = createFeatureCall(lhsMockClass, "attr", "int")
+		val lhsFeatureCall = createFeatureCall(lhsMockClass, "attr", "number")
 		val lhsExistsOp = createExistsExpression(lhsFeatureCall)
 		
 		val scope = new JavaScope(testPackageName)
@@ -106,7 +106,7 @@ class ExpressionGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
-			is('exists(MapperS.of(foo).<Integer>map(\"getAttr\", _foo -> _foo.getAttr()))'))
+			is('exists(MapperS.of(foo).<BigDecimal>map(\"getAttr\", _foo -> _foo.getAttr()))'))
 	}
 
 	/**
@@ -139,8 +139,8 @@ class ExpressionGeneratorTest {
 	def void shouldGenerateEqualityExprWithOr() {
 		val mockClass = createData("Foo")
 		
-		val featureCall1 = createFeatureCall(mockClass, "attr1", "int")
-		val featureCall2 = createFeatureCall(mockClass, "attr2", "int")
+		val featureCall1 = createFeatureCall(mockClass, "attr1", "number")
+		val featureCall2 = createFeatureCall(mockClass, "attr2", "number")
 		
 		val lhsEqualsOp = createModifiableBinaryOperation("=", featureCall1, featureCall2, EqualityOperation)
 		
@@ -157,7 +157,7 @@ class ExpressionGeneratorTest {
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
-			is('areEqual(MapperS.of(foo).<Integer>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).<Integer>map(\"getAttr2\", _foo -> _foo.getAttr2()), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).<String>map(\"getAttr4\", _foo -> _foo.getAttr4()), CardinalityOperator.All))'))
+			is('areEqual(MapperS.of(foo).<BigDecimal>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).<BigDecimal>map(\"getAttr2\", _foo -> _foo.getAttr2()), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).<String>map(\"getAttr4\", _foo -> _foo.getAttr4()), CardinalityOperator.All))'))
 	}
 	
 	@Test

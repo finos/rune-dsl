@@ -6,6 +6,10 @@ public abstract class RType {
 	public boolean hasMeta() {
 		return false;
 	}
+	
+	public boolean hasNaturalOrder() {
+		return false;
+	}
 
 	@Override
 	public String toString() {

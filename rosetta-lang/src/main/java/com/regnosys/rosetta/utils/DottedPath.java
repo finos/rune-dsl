@@ -73,8 +73,8 @@ public class DottedPath implements Comparable<DottedPath> {
 	}
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) return true;
-		if (this.getClass() != object.getClass()) return false;
+		if (object == null) return false;
+		if (getClass() != object.getClass()) return false;
 		
 		DottedPath other = (DottedPath)object;
 		return Arrays.equals(segments, other.segments);

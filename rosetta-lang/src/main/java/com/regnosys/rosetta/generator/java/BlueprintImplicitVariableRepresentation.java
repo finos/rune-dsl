@@ -41,7 +41,7 @@ public class BlueprintImplicitVariableRepresentation {
 	}
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) return true;
+		if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
 
         BlueprintImplicitVariableRepresentation other = (BlueprintImplicitVariableRepresentation) object;

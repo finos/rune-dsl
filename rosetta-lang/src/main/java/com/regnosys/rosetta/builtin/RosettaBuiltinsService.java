@@ -4,7 +4,6 @@ import java.net.URL;
 import java.util.Objects;
 
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import com.regnosys.rosetta.rosetta.RosettaModel;
@@ -25,6 +24,8 @@ public class RosettaBuiltinsService {
 		return annotationsURL;
 	}
 	
+
+	// TODO: cache
 	private RosettaModel getModel(ResourceSet resourceSet, URI uri) {
 		return (RosettaModel)resourceSet.getResource(uri, false).getContents().get(0);
 	}

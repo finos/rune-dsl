@@ -24,8 +24,8 @@ public class JavaInterface extends JavaClass {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) return true;
-		if (this.getClass() != object.getClass()) return false;
+		if (object == null) return false;
+        if (this.getClass() != object.getClass()) return false;
 
 		JavaInterface other = (JavaInterface) object;
         return Objects.equals(getPackageName(), other.getPackageName())

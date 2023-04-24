@@ -1,47 +1,58 @@
 package com.regnosys.rosetta.types.builtin;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.regnosys.rosetta.utils.OptionalUtil;
+import com.regnosys.rosetta.interpreter.RosettaNumber;
+import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
 public class RStringType extends RBasicType {
 	private static final String MIN_LENGTH_PARAM_NAME = "minLength";
 	private static final String MAX_LENGTH_PARAM_NAME = "maxLength";
 	private static final String PATTERN_PARAM_NAME = "pattern";
-	
+
 	private final PositiveIntegerInterval interval;
 	private final Optional<Pattern> pattern;
-	
+
+	private static LinkedHashMap<String, RosettaValue> createArgumentMap(PositiveIntegerInterval interval,
+			Optional<Pattern> pattern) {
+		LinkedHashMap<String, RosettaValue> arguments = new LinkedHashMap<>();
+		int minBound = interval.getMinBound();
+		arguments.put(MIN_LENGTH_PARAM_NAME, minBound == 0 ? RosettaValue.empty() : RosettaValue.of(RosettaNumber.valueOf(minBound)));
+		arguments.put(MAX_LENGTH_PARAM_NAME, interval.getMax().map(m -> RosettaValue.of(RosettaNumber.valueOf(m)))
+				.orElseGet(() -> RosettaValue.empty()));
+		arguments.put(PATTERN_PARAM_NAME,
+				pattern.map(p -> RosettaValue.of(p)).orElseGet(() -> RosettaValue.empty()));
+		return arguments;
+	}
+
 	public RStringType(PositiveIntegerInterval interval, Optional<Pattern> pattern) {
-		super("string");
+		super("string", createArgumentMap(interval, pattern), true);
 		this.interval = interval;
 		this.pattern = pattern;
 	}
+
 	public RStringType(Optional<Integer> minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
 		this(new PositiveIntegerInterval(minLength.orElse(0), maxLength), pattern);
 	}
-	
-	public static RStringType from(Map<String, Object> values) {
-		return new RStringType(
-				OptionalUtil.typedGet(values, MIN_LENGTH_PARAM_NAME, Integer.class),
-				OptionalUtil.typedGet(values, MAX_LENGTH_PARAM_NAME, Integer.class),
-				OptionalUtil.typedGet(values, PATTERN_PARAM_NAME, Pattern.class)
-			);
+
+	public static RStringType from(Map<String, RosettaValue> values) {
+		return new RStringType(values.getOrDefault(MIN_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingleInteger(),
+				values.getOrDefault(MAX_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingleInteger(),
+				values.getOrDefault(PATTERN_PARAM_NAME, RosettaValue.empty()).getSinglePattern());
 	}
-	
+
 	public PositiveIntegerInterval getInterval() {
 		return interval;
 	}
+
 	public Optional<Pattern> getPattern() {
 		return pattern;
 	}
-	
+
 	public RStringType join(RStringType other) {
 		Optional<Pattern> joinedPattern;
 		if (pattern.isPresent()) {
@@ -57,49 +68,6 @@ public class RStringType extends RBasicType {
 		} else {
 			joinedPattern = other.pattern;
 		}
-		return new RStringType(
-				interval.minimalCover(other.interval),
-				joinedPattern
-			);
-	}
-	
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(getName());
-		
-		int minBound = interval.getMinBound();
-		String arguments = Stream.of(
-				minBound == 0 ? Optional.<String>empty() : Optional.of(MIN_LENGTH_PARAM_NAME + "=" + minBound),
-				interval.getMax().map(m -> MAX_LENGTH_PARAM_NAME + "=" + m),
-				pattern.map(p -> PATTERN_PARAM_NAME + "=" + p))
-			.filter(o -> o.isPresent())
-			.map(o -> o.get())
-			.collect(Collectors.joining(", "));
-		if (arguments.length() > 0) {
-			builder.append("(")
-				.append(arguments)
-				.append(")");
-		}
-		return builder.toString();
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(getName(), interval, pattern);
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RStringType other = (RStringType) obj;
-		return Objects.equals(getName(), other.getName())
-				&& Objects.equals(interval, other.interval)
-				&& Objects.equals(pattern, other.pattern);
+		return new RStringType(interval.minimalCover(other.interval), joinedPattern);
 	}
 }

@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 
-// TODO: this class can better be replaced by Java's LocalDate.
+// TODO: this class can better be replaced by Java's LocalDate?
 public interface Date extends Comparable<Date> {
 	
 	int getDay();

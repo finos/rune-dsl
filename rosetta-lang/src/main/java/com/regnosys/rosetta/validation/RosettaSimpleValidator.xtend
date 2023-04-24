@@ -119,7 +119,6 @@ import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.types.TypeSystem
-import com.regnosys.rosetta.types.builtin.RBuiltinType
 import java.util.Optional
 
 // TODO: split expression validator
@@ -1370,7 +1369,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	private def void checkInputIsComparable(RosettaUnaryOperation o) {
 		val inputRType = o.argument.getRType
-		if (!inputRType.isComparable) {
+		if (!inputRType.hasNaturalOrder) {
 			error('''Operation «o.operator» only supports comparable types (string, int, string, date). Found type «inputRType.name».''', o, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
@@ -1391,19 +1390,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		val ref = op.function
 		if (ref !== null) {
 			val bodyRType = ref.body.getRType
-			if (!bodyRType.isComparable) {
+			if (!bodyRType.hasNaturalOrder) {
 				error('''Operation «op.operator» only supports comparable types (string, int, string, date). Found type «bodyRType.name».''', ref, null)
 			}			
-		}
-	}
-
-	
-	private def boolean isComparable(RType rType) {
-		switch (rType) {
-			RBuiltinType:
-				return true
-			default:
-				false
 		}
 	}
 	

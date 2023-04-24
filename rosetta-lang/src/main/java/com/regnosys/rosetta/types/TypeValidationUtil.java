@@ -13,30 +13,6 @@ public class TypeValidationUtil {
 	@Inject
 	RBuiltinTypeService service;
 	
-	public String unequalListTypesMessage(RListType expected, RListType actual) {		
-		if (!expected.getItemType().equals(actual.getItemType())) {
-			if (!expected.getConstraint().constraintEquals(actual.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
-				return new StringBuilder()
-						.append("Expected ")
-						.append(toCompleteDescription(expected, actual.getItemType()))
-						.append(", but got ")
-						.append(toCompleteDescription(actual, expected.getItemType()))
-						.append(" instead.")
-						.toString();
-			}
-			return notASubtypeMessage(expected.getItemType(), actual.getItemType());
-		}
-		return notLooserConstraintMessage(expected.getConstraint(), actual);
-	}
-	public String unequalTypesMessage(RType expected, RType actual) {
-		return new StringBuilder()
-				.append("Expected type `")
-				.append(relevantItemTypeDescription(expected, actual))
-				.append("`, but got `")
-				.append(relevantItemTypeDescription(actual, expected))
-				.append("` instead.")
-				.toString();
-	}
 	public String notAListSubtypeMessage(RListType expected, RListType actual) {
 		if (!typing.isSubtypeOf(actual.getItemType(), expected.getItemType())) {
 			if (!actual.getConstraint().isSubconstraintOf(expected.getConstraint()) && !(expected.isPlural() && actual.isPlural())) {
