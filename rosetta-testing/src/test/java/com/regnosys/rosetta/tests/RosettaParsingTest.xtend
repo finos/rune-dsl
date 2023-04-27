@@ -34,6 +34,7 @@ class RosettaParsingTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	@Disabled // see issue https://github.com/REGnosys/rosetta-dsl/issues/524
 	def void testPatternLiterals() {
 		val model = '''
            func Foo:

@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import com.regnosys.rosetta.interpreter.RosettaNumber;
 import com.regnosys.rosetta.interpreter.RosettaNumberValue;
-import com.regnosys.rosetta.interpreter.RosettaPatternValue;
+import com.regnosys.rosetta.interpreter.RosettaStringValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
@@ -27,7 +27,7 @@ public class RStringType extends RBasicType {
 		arguments.put(MAX_LENGTH_PARAM_NAME, interval.getMax().<RosettaValue>map(m -> RosettaNumberValue.of(RosettaNumber.valueOf(m)))
 				.orElseGet(() -> RosettaValue.empty()));
 		arguments.put(PATTERN_PARAM_NAME,
-				pattern.<RosettaValue>map(p -> RosettaPatternValue.of(p)).orElseGet(() -> RosettaValue.empty()));
+				pattern.<RosettaValue>map(p -> RosettaStringValue.of(p.toString())).orElseGet(() -> RosettaValue.empty()));
 		return arguments;
 	}
 
@@ -44,7 +44,7 @@ public class RStringType extends RBasicType {
 	public static RStringType from(Map<String, RosettaValue> values) {
 		return new RStringType(values.getOrDefault(MIN_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class).map(d -> d.intValue()),
 				values.getOrDefault(MAX_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class).map(d -> d.intValue()),
-				values.getOrDefault(PATTERN_PARAM_NAME, RosettaValue.empty()).getSingle(Pattern.class));
+				values.getOrDefault(PATTERN_PARAM_NAME, RosettaValue.empty()).getSingle(String.class).map(s -> Pattern.compile(s)));
 	}
 
 	public PositiveIntegerInterval getInterval() {

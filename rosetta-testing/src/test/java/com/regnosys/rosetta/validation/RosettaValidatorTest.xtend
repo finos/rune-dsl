@@ -353,7 +353,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				a int (1..1)
 				condition A:
-					/42
+					*42
 		'''.parseRosetta
 		model.assertError(ROSETTA_IMPLICIT_VARIABLE, null,
             "Expected type `number`, but got `Foo` instead.")

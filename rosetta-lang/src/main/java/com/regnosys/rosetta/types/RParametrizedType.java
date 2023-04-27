@@ -42,7 +42,7 @@ public abstract class RParametrizedType extends RType {
 				.collect(Collectors.joining(", "));
 		if (joinedArguments.length() > 0) {
 			builder.append("(")
-				.append(arguments)
+				.append(joinedArguments)
 				.append(")");
 		}
 		return builder.toString();

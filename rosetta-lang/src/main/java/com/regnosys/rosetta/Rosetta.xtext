@@ -207,7 +207,11 @@ ValidTypeParameterID:
  */ 
 
 RosettaBasicType:
-	'basicType' RosettaNamed ('(' parameters+=TypeParameter (',' parameters+=TypeParameter)* ')')? RosettaDefinable?
+	'basicType' RosettaNamed TypeParameters? RosettaDefinable?
+;
+
+fragment TypeParameters returns ParametrizedRosettaType:
+	'(' parameters+=TypeParameter (',' parameters+=TypeParameter)* ','? ')'
 ;
 
 TypeParameter:
@@ -240,8 +244,8 @@ RosettaLibraryFunction returns RosettaExternalFunction:
  * Data model 
  */
 RosettaTypeAlias:
-	'typeAlias' RosettaNamed ('(' parameters+=TypeParameter (',' parameters+=TypeParameter)* ')')?
-	':' RosettaTyped RosettaDefinable?
+	'typeAlias' RosettaNamed TypeParameters?
+	':' RosettaDefinable? RosettaTyped 
 ;
 
 
@@ -448,7 +452,7 @@ RosettaLiteral:
 	| RosettaStringLiteral
 	| RosettaNumberLiteral
 	| RosettaIntLiteral
-	| RosettaPatternLiteral
+//	| RosettaPatternLiteral // See issue https://github.com/REGnosys/rosetta-dsl/issues/524
 ;
 
 RosettaBooleanLiteral:
@@ -467,9 +471,10 @@ RosettaIntLiteral:
 	value = Integer
 ;
 
-RosettaPatternLiteral:
-	value = PATTERN
-;
+// See issue https://github.com/REGnosys/rosetta-dsl/issues/524
+//RosettaPatternLiteral:
+//	value = PATTERN
+//;
 
 BigDecimal returns ecore::EBigDecimal hidden():
 	('+' | '-')? ('.' INT | INT '.' | INT '.' INT) (('e' | 'E') ('+' | '-') INT | ID)?
@@ -479,9 +484,10 @@ Integer returns ecore::EInt hidden():
 	('+' | '-')? INT
 ;
 
-terminal PATTERN returns Pattern:
-	'/' ( '\\' . | !('\\'|'/') )* '/'
-;
+// See issue https://github.com/REGnosys/rosetta-dsl/issues/524
+//terminal PATTERN returns Pattern:
+//	'/' ( '\\' . | !('\\'|'/') )* '/'
+//;
 
 
 /**********************************************************************
