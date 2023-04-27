@@ -46,7 +46,7 @@ class RosettaExtensions {
 	}
 	
 	def Iterable<? extends RosettaFeature> allFeatures(RType t, EObject context) {
-		allFeatures(t, context.eResource.resourceSet)
+		allFeatures(t, context?.eResource?.resourceSet)
 	}
 	def Iterable<? extends RosettaFeature> allFeatures(RType t, ResourceSet resourceSet) {
 		switch t {
@@ -54,8 +54,13 @@ class RosettaExtensions {
 				t.data.allAttributes
 			REnumType:
 				t.enumeration.allEnumValues
-			RRecordType:
-				builtins.toRosettaType(t, RosettaRecordType, resourceSet).features
+			RRecordType: {
+				if (resourceSet !== null) {
+					builtins.toRosettaType(t, RosettaRecordType, resourceSet).features
+				} else {
+					#[]
+				}
+			}
 			default:
 				#[]
 		}

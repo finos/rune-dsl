@@ -188,17 +188,13 @@ TypeCall:
 ;
 
 TypeCallArgument:
-	parameter=[TypeParameter|ValidTypeParameterID] ':' value=RosettaCalcExpression
+	parameter=[TypeParameter|ValidID] ':' value=RosettaCalcExpression
 ;
 
 
 ValidID:
 	ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
-	| 'pattern'
-;
-
-ValidTypeParameterID:
-	ValidID | 'min' | 'max'
+	| 'pattern' | 'min' | 'max'
 ;
 
 
@@ -215,7 +211,7 @@ fragment TypeParameters returns ParametrizedRosettaType:
 ;
 
 TypeParameter:
-	name=ValidTypeParameterID RosettaTyped RosettaDefinable?
+	RosettaNamed RosettaTyped RosettaDefinable?
 ;
 
 RosettaSynonymSource:
@@ -443,7 +439,7 @@ RosettaSegment:
  */ 
 
 RosettaReferenceOrFunctionCall returns RosettaExpression:
-	  {RosettaSymbolReference} symbol=[RosettaSymbol|ValidTypeParameterID] (explicitArguments?='(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')')?
+	  {RosettaSymbolReference} symbol=[RosettaSymbol|ValidID] (explicitArguments?='(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')')?
 	| {RosettaImplicitVariable} name=('item' | 'it')
 ;
 

@@ -297,11 +297,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	}
 	
 	private def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
-		val resourceSet = context.eResource?.resourceSet
-		if (resourceSet === null) {
-			return emptyList
-		}
-		return typeProvider.typeOfImplicitVariable(context).allFeatures(resourceSet)
+		return typeProvider.typeOfImplicitVariable(context).allFeatures(context)
 	}
 	
 	private def IScope createExtendedFeatureScope(EObject receiver, RType receiverType) {
