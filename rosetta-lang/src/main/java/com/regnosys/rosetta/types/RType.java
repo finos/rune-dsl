@@ -10,7 +10,7 @@ public abstract class RType {
 	public boolean hasNaturalOrder() {
 		return false;
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.getName();

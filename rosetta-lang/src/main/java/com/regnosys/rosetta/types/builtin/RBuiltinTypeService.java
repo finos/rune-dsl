@@ -16,6 +16,7 @@ import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RTypeFunction;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.interpreter.RosettaNumber;
+import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaType;
@@ -32,7 +33,7 @@ public class RBuiltinTypeService {
 		@Override
 		public RNumberType evaluate(Map<String, RosettaValue> arguments) {
 			Map<String, RosettaValue> numberArgs = new HashMap<>(arguments);
-			numberArgs.put(RNumberType.FRACTIONAL_DIGITS_PARAM_NAME, RosettaValue.of(RosettaNumber.ZERO));
+			numberArgs.put(RNumberType.FRACTIONAL_DIGITS_PARAM_NAME, RosettaNumberValue.of(RosettaNumber.ZERO));
 			return RNumberType.from(numberArgs);
 		}
 		@Override

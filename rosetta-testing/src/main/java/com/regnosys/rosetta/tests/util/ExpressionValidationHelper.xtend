@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.types
+package com.regnosys.rosetta.tests.util
 
 import com.google.inject.Inject
 import com.google.inject.name.Named

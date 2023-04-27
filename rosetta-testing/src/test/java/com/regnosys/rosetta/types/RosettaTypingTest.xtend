@@ -18,6 +18,9 @@ import com.regnosys.rosetta.rosetta.expression.MapOperation
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import java.util.Optional
 import java.math.BigDecimal
+import com.regnosys.rosetta.tests.util.ExpressionValidationHelper
+import com.regnosys.rosetta.tests.util.ExpressionParser
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -27,6 +30,9 @@ class RosettaTypingTest {
 	
 	@Inject
 	extension TypeTestUtil
+	
+	@Inject
+	extension ExpressionParser
 	
 	@Inject
 	extension ExpressionValidationHelper
@@ -44,6 +50,24 @@ class RosettaTypingTest {
 		'3.14'.assertIsValidWithType(singleNumber(3, 2, "3.14", "3.14"))
 		'1'.assertIsValidWithType(singleInt(1, 1, 1))
 		'empty'.assertIsValidWithType(emptyNothing)
+	}
+	
+	@Test
+	def void test() {
+		val model = '''
+		namespace test
+		
+		type T:
+			a T (1..1)
+			condition C:
+				a
+		'''.parseRosettaWithNoIssues
+		
+		model.elements.head as Data => [
+			conditions.head.expression as RosettaSymbolReference => [
+				symbol
+			]
+		]
 	}
 	
 	@Test

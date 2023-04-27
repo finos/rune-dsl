@@ -21,6 +21,7 @@ import java.util.Objects;
 public class RosettaNumber extends Number implements Comparable<RosettaNumber> {
 	public static final MathContext DECIMAL_PRECISION = MathContext.DECIMAL128;
 	public static final RosettaNumber ZERO = new RosettaNumber(BigDecimal.ZERO);
+	public static final RosettaNumber ONE = new RosettaNumber(BigDecimal.ONE);
 	
 	private static final long serialVersionUID = 1L;
 

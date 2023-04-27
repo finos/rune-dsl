@@ -2,12 +2,10 @@ package com.regnosys.rosetta.types
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
-import com.regnosys.rosetta.services.RosettaGrammarAccess
-import java.io.StringReader
-import org.eclipse.xtext.parser.IParseResult
-import org.eclipse.xtext.parser.IParser
 
 import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.tests.util.ExpressionValidationHelper
+import com.regnosys.rosetta.tests.util.ExpressionParser
 
 class TypeTestUtil {
 	@Inject
@@ -16,14 +14,8 @@ class TypeTestUtil {
 	@Inject
 	extension ExpressionValidationHelper
 	
-	@Inject IParser parser
-	@Inject RosettaGrammarAccess grammar
-	
-	def RosettaExpression parseExpression(CharSequence expr) {
-		val IParseResult result = parser.parse(grammar.rosettaCalcExpressionRule, new StringReader(expr.toString()))
-		assertFalse(result.hasSyntaxErrors)
-		return result.rootASTElement as RosettaExpression;
-	}
+	@Inject
+	extension ExpressionParser
 	
 	def RListType getType(CharSequence expr) {
 		return getType(expr.parseExpression);

@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.apache.commons.lang3.Validate;
 
 import com.regnosys.rosetta.interpreter.RosettaNumber;
+import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.utils.BigDecimalInterval;
 import com.regnosys.rosetta.utils.OptionalUtil;
@@ -29,23 +30,23 @@ public class RNumberType extends RBasicType {
 		LinkedHashMap<String, RosettaValue> arguments = new LinkedHashMap<>();
 		arguments.put(
 				DIGITS_PARAM_NAME, 
-				digits.map(d -> RosettaValue.of(RosettaNumber.valueOf(d)))
+				digits.<RosettaValue>map(d -> RosettaNumberValue.of(RosettaNumber.valueOf(d)))
 					.orElseGet(() -> RosettaValue.empty()));
 		arguments.put(
 				FRACTIONAL_DIGITS_PARAM_NAME, 
-				fractionalDigits.map(d -> RosettaValue.of(RosettaNumber.valueOf(d)))
+				fractionalDigits.<RosettaValue>map(d -> RosettaNumberValue.of(RosettaNumber.valueOf(d)))
 					.orElseGet(() -> RosettaValue.empty()));
 		arguments.put(
 				MIN_PARAM_NAME, 
-				interval.getMin().map(m -> RosettaValue.of(RosettaNumber.valueOf(m)))
+				interval.getMin().<RosettaValue>map(m -> RosettaNumberValue.of(RosettaNumber.valueOf(m)))
 					.orElseGet(() -> RosettaValue.empty()));
 		arguments.put(
 				MAX_PARAM_NAME, 
-				interval.getMax().map(m -> RosettaValue.of(RosettaNumber.valueOf(m)))
+				interval.getMax().<RosettaValue>map(m -> RosettaNumberValue.of(RosettaNumber.valueOf(m)))
 					.orElseGet(() -> RosettaValue.empty()));
 		arguments.put(
 				SCALE_PARAM_NAME, 
-				scale.map(s -> RosettaValue.of(RosettaNumber.valueOf(s)))
+				scale.<RosettaValue>map(s -> RosettaNumberValue.of(RosettaNumber.valueOf(s)))
 					.orElseGet(() -> RosettaValue.empty()));
 		return arguments;
 	}
@@ -75,13 +76,13 @@ public class RNumberType extends RBasicType {
 	}
 
 	public static RNumberType from(Map<String, RosettaValue> values) {
-		return new RNumberType(values.getOrDefault(DIGITS_PARAM_NAME, RosettaValue.empty()).getSingleInteger(),
-				values.getOrDefault(FRACTIONAL_DIGITS_PARAM_NAME, RosettaValue.empty()).getSingleInteger(),
-				values.getOrDefault(MIN_PARAM_NAME, RosettaValue.empty()).getSingleNumber()
+		return new RNumberType(values.getOrDefault(DIGITS_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class).map(n -> n.intValue()),
+				values.getOrDefault(FRACTIONAL_DIGITS_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class).map(n -> n.intValue()),
+				values.getOrDefault(MIN_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class)
 						.map(RosettaNumber::bigDecimalValue),
-				values.getOrDefault(MAX_PARAM_NAME, RosettaValue.empty()).getSingleNumber()
+				values.getOrDefault(MAX_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class)
 						.map(RosettaNumber::bigDecimalValue),
-				values.getOrDefault(SCALE_PARAM_NAME, RosettaValue.empty()).getSingleNumber()
+				values.getOrDefault(SCALE_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class)
 						.map(RosettaNumber::bigDecimalValue));
 	}
 

@@ -122,6 +122,7 @@ import com.regnosys.rosetta.types.TypeSystem
 import java.util.Optional
 
 // TODO: split expression validator
+// TODO: type check type call arguments
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Inject extension RosettaExtensions

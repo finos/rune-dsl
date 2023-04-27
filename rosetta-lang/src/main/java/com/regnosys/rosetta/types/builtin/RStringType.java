@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import com.regnosys.rosetta.interpreter.RosettaNumber;
+import com.regnosys.rosetta.interpreter.RosettaNumberValue;
+import com.regnosys.rosetta.interpreter.RosettaPatternValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
@@ -21,11 +23,11 @@ public class RStringType extends RBasicType {
 			Optional<Pattern> pattern) {
 		LinkedHashMap<String, RosettaValue> arguments = new LinkedHashMap<>();
 		int minBound = interval.getMinBound();
-		arguments.put(MIN_LENGTH_PARAM_NAME, minBound == 0 ? RosettaValue.empty() : RosettaValue.of(RosettaNumber.valueOf(minBound)));
-		arguments.put(MAX_LENGTH_PARAM_NAME, interval.getMax().map(m -> RosettaValue.of(RosettaNumber.valueOf(m)))
+		arguments.put(MIN_LENGTH_PARAM_NAME, minBound == 0 ? RosettaValue.empty() : RosettaNumberValue.of(RosettaNumber.valueOf(minBound)));
+		arguments.put(MAX_LENGTH_PARAM_NAME, interval.getMax().<RosettaValue>map(m -> RosettaNumberValue.of(RosettaNumber.valueOf(m)))
 				.orElseGet(() -> RosettaValue.empty()));
 		arguments.put(PATTERN_PARAM_NAME,
-				pattern.map(p -> RosettaValue.of(p)).orElseGet(() -> RosettaValue.empty()));
+				pattern.<RosettaValue>map(p -> RosettaPatternValue.of(p)).orElseGet(() -> RosettaValue.empty()));
 		return arguments;
 	}
 
@@ -40,9 +42,9 @@ public class RStringType extends RBasicType {
 	}
 
 	public static RStringType from(Map<String, RosettaValue> values) {
-		return new RStringType(values.getOrDefault(MIN_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingleInteger(),
-				values.getOrDefault(MAX_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingleInteger(),
-				values.getOrDefault(PATTERN_PARAM_NAME, RosettaValue.empty()).getSinglePattern());
+		return new RStringType(values.getOrDefault(MIN_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class).map(d -> d.intValue()),
+				values.getOrDefault(MAX_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class).map(d -> d.intValue()),
+				values.getOrDefault(PATTERN_PARAM_NAME, RosettaValue.empty()).getSingle(Pattern.class));
 	}
 
 	public PositiveIntegerInterval getInterval() {
