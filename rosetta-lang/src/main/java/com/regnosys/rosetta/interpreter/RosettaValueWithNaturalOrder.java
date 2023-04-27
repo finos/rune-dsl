@@ -5,9 +5,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.Validate;
 
-import com.regnosys.rosetta.interpreter.RosettaInterpreterTypeException;
-
-public abstract class RosettaValueWithNaturalOrder<T extends Comparable<? super T>> extends RosettaAbstractValue<T> {	
+public abstract class RosettaValueWithNaturalOrder<T extends Comparable<? super T>> extends AbstractRosettaValue<T> {	
 	private final Class<T> clazz;
 	
 	public RosettaValueWithNaturalOrder(List<T> items, Class<T> clazz) {

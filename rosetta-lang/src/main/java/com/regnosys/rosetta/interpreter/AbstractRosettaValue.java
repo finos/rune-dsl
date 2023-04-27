@@ -8,12 +8,10 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.Validate;
 
-import com.regnosys.rosetta.interpreter.RosettaInterpreterTypeException;
-
-public abstract class RosettaAbstractValue<T> implements RosettaValue {
+public abstract class AbstractRosettaValue<T> implements RosettaValue {
 	private List<T> items;
 	
-	public RosettaAbstractValue(List<T> items) {
+	public AbstractRosettaValue(List<T> items) {
 		Validate.notNull(items);
 		Validate.noNullElements(items);
 		this.items = items;

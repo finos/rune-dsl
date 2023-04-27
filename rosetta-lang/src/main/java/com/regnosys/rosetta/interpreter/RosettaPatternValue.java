@@ -3,7 +3,7 @@ package com.regnosys.rosetta.interpreter;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class RosettaPatternValue extends RosettaAbstractValue<Pattern> {
+public class RosettaPatternValue extends AbstractRosettaValue<Pattern> {
 	public RosettaPatternValue(List<Pattern> items) {
 		super(items);
 	}
