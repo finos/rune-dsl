@@ -49,6 +49,7 @@ import com.regnosys.rosetta.rosetta.RosettaSegmentRef;
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody;
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase;
 import com.regnosys.rosetta.rosetta.RosettaType;
+import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
@@ -248,7 +249,9 @@ public class RosettaModelFactory {
 				.map(rosettaTypeMappings::getRosettaBasicType)
 				// Or complex type
 				.orElseGet(() -> getRosettaComplexType(element.getType()));
-		attribute.setType(rosettaType);
+		TypeCall typeCall = RosettaFactory.eINSTANCE.createTypeCall();
+		typeCall.setType(rosettaType);
+		attribute.setTypeCall(typeCall);
 
 		// cardinality
 		RosettaCardinality rosettaCardinality = RosettaFactory.eINSTANCE.createRosettaCardinality();

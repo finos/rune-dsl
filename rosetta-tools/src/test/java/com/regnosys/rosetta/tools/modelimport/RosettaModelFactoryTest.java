@@ -82,19 +82,19 @@ public class RosettaModelFactoryTest {
 		assertEquals("Value1", value1.getName());
 		assertEquals("Value1 name", value1.getDisplay());
 		assertEquals("Value1 definition.", value1.getDefinition());
-		assertEquals(rosettaEnum, value1.getType());
+		assertEquals(rosettaEnum, value1.getEnumeration());
 		
 		RosettaEnumValue value2 = enumValues.get(1);
 		assertEquals("Value2", value2.getName());
 		assertEquals("Value2 name", value2.getDisplay());
 		assertEquals("Value2 definition.", value2.getDefinition());
-		assertEquals(rosettaEnum, value2.getType());
+		assertEquals(rosettaEnum, value2.getEnumeration());
 		
 		RosettaEnumValue value3 = enumValues.get(2);
 		assertEquals("Value3", value3.getName());
 		assertEquals("Value3 name", value3.getDisplay());
 		assertEquals("Value3 definition.", value3.getDefinition());
-		assertEquals(rosettaEnum, value3.getType());
+		assertEquals(rosettaEnum, value3.getEnumeration());
 	}
 	
 	
@@ -182,7 +182,7 @@ public class RosettaModelFactoryTest {
 
 	private void assertAttribute(Attribute attr, String name, String type, int inf, int sup, boolean unbounded, String definition) {
 		assertEquals(name, attr.getName());
-		assertEquals(type, attr.getType().getName());
+		assertEquals(type, attr.getTypeCall().getType().getName());
 		
 		RosettaCardinality card = attr.getCard();
 		assertEquals(inf, card.getInf());
