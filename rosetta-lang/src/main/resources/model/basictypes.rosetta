@@ -1,8 +1,6 @@
 namespace com.rosetta.model
 version "${project.version}"
 
-// TODO: move these files!
-
 basicType boolean
 basicType number(digits int, fractionalDigits int, min number, max number)
 basicType string(minLength int, maxLength int, pattern pattern)

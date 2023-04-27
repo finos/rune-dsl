@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -81,6 +82,11 @@ public class RosettaValueFactory extends RosettaTypeSwitch<RosettaValue, List<?>
 	@Override
 	protected RosettaValue caseTimeType(RBasicType type, List<?> context) {
 		return new RosettaTimeValue(castList(context, LocalTime.class));
+	}
+
+	@Override
+	protected RosettaValue casePatternType(RBasicType type, List<?> context) {
+		return new RosettaPatternValue(castList(context, Pattern.class));
 	}
 
 	@Override

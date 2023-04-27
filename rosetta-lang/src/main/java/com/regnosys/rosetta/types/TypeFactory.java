@@ -25,6 +25,7 @@ public class TypeFactory {
 	public final RListType singleBoolean;
 	public final RListType singleDate;
 	public final RListType singleTime;
+	public final RListType singlePattern;
 	public final RListType singleUnconstrainedInt;
 	public final RListType singleUnconstrainedNumber;
 	public final RListType singleUnconstrainedString;
@@ -43,6 +44,7 @@ public class TypeFactory {
 		this.singleBoolean = createListType(builtinTypes.BOOLEAN, single);
 		this.singleDate = createListType(builtinTypes.DATE, single);
 		this.singleTime = createListType(builtinTypes.TIME, single);
+		this.singlePattern = createListType(builtinTypes.PATTERN, single);
 		this.singleUnconstrainedInt = createListType(builtinTypes.UNCONSTRAINED_INT, single);
 		this.singleUnconstrainedNumber = createListType(builtinTypes.UNCONSTRAINED_NUMBER, single);
 		this.singleUnconstrainedString = createListType(builtinTypes.UNCONSTRAINED_STRING, single);

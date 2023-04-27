@@ -24,6 +24,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -31,6 +32,32 @@ class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testPatternLiterals() {
+		val model = '''
+           func Foo:
+             output: result pattern (0..*)
+             
+             add result: /ABC/
+             add result: /[a-z]*/
+             add result: /\/\+/
+	    '''.parseRosettaWithNoIssues
+	    
+	    model.elements.head as Function => [
+	    	operations.map[(expression as RosettaPatternLiteral).value] => [
+	    		get(0) => [
+	    			assertEquals("ABC", pattern)
+	    		]
+	    		get(1) => [
+	    			assertEquals("[a-z]*", pattern)
+	    		]
+	    		get(2) => [
+	    			assertEquals("/\\+", pattern)
+	    		]
+	    	]
+	    ]
+	}
 	
 	@Test
 	def void testTypeAliases() {

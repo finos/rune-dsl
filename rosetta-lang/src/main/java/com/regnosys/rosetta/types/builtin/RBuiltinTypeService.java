@@ -56,8 +56,9 @@ public class RBuiltinTypeService {
 	
 	public final RBasicType BOOLEAN = registerConstantType(new RBasicType("boolean", true));
 	public final RBasicType TIME = registerConstantType(new RBasicType("time", true));
+	public final RBasicType PATTERN = registerConstantType(new RBasicType("pattern", false));
 	// TODO: remove the MISSING type
-	public final RBasicType MISSING = registerConstantType(new RBasicType("missing", false));
+	public final RBasicType MISSING = registerConstantType(new RBasicType("missing", true));
 	public final RBasicType NOTHING = registerConstantType(new RBasicType("nothing", true));
 	public final RBasicType ANY = registerConstantType(new RBasicType("any", false));
 	public final RAliasType UNCONSTRAINED_INT = new RAliasType(INT_FUNCTION, new LinkedHashMap<>(Map.of(RNumberType.DIGITS_PARAM_NAME, RosettaValue.empty(), RNumberType.MIN_PARAM_NAME, RosettaValue.empty(), RNumberType.MAX_PARAM_NAME, RosettaValue.empty())), new RNumberType(Optional.empty(), Optional.of(0), Optional.empty(), Optional.empty(), Optional.empty()));

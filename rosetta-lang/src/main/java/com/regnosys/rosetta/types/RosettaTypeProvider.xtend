@@ -54,6 +54,7 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaDataReference
+import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
 
 class RosettaTypeProvider {
 
@@ -209,6 +210,8 @@ class RosettaTypeProvider {
 				constrainedInt(if (expression.value >= 0) expression.value.toString.length else expression.value.toString.length - 1, expression.value, expression.value)
 			RosettaNumberLiteral:
 				constrainedNumber(expression.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, expression.value.scale), expression.value, expression.value)
+			RosettaPatternLiteral:
+				PATTERN
 			ListLiteral:
 				listType(expression.elements)
 			RosettaConditionalExpression: {

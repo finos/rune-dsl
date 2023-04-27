@@ -448,6 +448,7 @@ RosettaLiteral:
 	| RosettaStringLiteral
 	| RosettaNumberLiteral
 	| RosettaIntLiteral
+	| RosettaPatternLiteral
 ;
 
 RosettaBooleanLiteral:
@@ -466,12 +467,20 @@ RosettaIntLiteral:
 	value = Integer
 ;
 
+RosettaPatternLiteral:
+	value = PATTERN
+;
+
 BigDecimal returns ecore::EBigDecimal hidden():
 	('+' | '-')? ('.' INT | INT '.' | INT '.' INT) (('e' | 'E') ('+' | '-') INT | ID)?
 ;
 
 Integer returns ecore::EInt hidden():
 	('+' | '-')? INT
+;
+
+terminal PATTERN returns Pattern:
+	'/' ( '\\' . | !('\\'|'/') )* '/'
 ;
 
 

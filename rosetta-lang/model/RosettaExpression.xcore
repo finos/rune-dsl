@@ -5,6 +5,8 @@
 
 package com.regnosys.rosetta.rosetta.expression
 
+import java.util.regex.Pattern
+
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -80,6 +82,18 @@ class RosettaIntLiteral extends RosettaLiteral {
 	}
 	op String stringValue() {
 		return Integer.toString(value)
+	}
+}
+
+type Pattern wraps Pattern
+class RosettaPatternLiteral extends RosettaLiteral {
+	Pattern value
+	
+	op Object containedValue() {
+		return value
+	}
+	op String stringValue() {
+		return '/' + value.toString() + '/'
 	}
 }
 
