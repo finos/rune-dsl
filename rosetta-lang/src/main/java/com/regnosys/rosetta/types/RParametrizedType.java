@@ -38,7 +38,7 @@ public abstract class RParametrizedType extends RType {
 		builder.append(getName());
 		String joinedArguments = arguments.entrySet().stream()
 				.filter(e -> e.getValue().getSingle().isPresent())
-				.map(e -> e.getKey() + "=" + e.getValue().getSingle().get())
+				.map(e -> e.getKey() + ": " + e.getValue().getSingle().get())
 				.collect(Collectors.joining(", "));
 		if (joinedArguments.length() > 0) {
 			builder.append("(")

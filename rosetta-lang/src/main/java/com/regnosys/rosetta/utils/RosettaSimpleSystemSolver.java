@@ -84,7 +84,7 @@ public class RosettaSimpleSystemSolver {
 	@Inject
 	private RosettaInterpreter interpreter;
 	
-	public Optional<SolutionSet> solve(Collection<Equation> equations, Collection<? extends RosettaSymbol> variablesToSolve) {
+	public Optional<SolutionSet> solve(Collection<Equation> equations, Set<? extends RosettaSymbol> variablesToSolve) {
 		SolutionSet solution = new SolutionSet();
 		
 		for (Equation eq: equations) {

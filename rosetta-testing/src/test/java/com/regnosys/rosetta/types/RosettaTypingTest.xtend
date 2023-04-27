@@ -28,6 +28,9 @@ class RosettaTypingTest {
 	extension TypeFactory
 	
 	@Inject
+	extension TypeSystem
+	
+	@Inject
 	extension TypeTestUtil
 	
 	@Inject
@@ -590,5 +593,36 @@ class RosettaTypingTest {
 		'(if True then empty else 42) only-element'
 			.parseExpression
 			.assertWarning(null, "Expected a list with 1 to 2 items, but got an optional value instead.")
+	}
+	
+	@Test
+	def void testTypeAliasJoin() {
+		val model = '''
+		namespace test
+		
+		typeAlias maxNString(n int): string(minLength: 1, maxLength: n)
+		typeAlias max3String: maxNString(n: 3)
+		typeAlias max4String: maxNString(n: 4)
+		
+		func Test:
+			inputs:
+				s1 max3String (1..1)
+				s2 max4String (1..1)
+				s3 maxNString(n: 4) (1..1)
+			output: result string (0..*)
+			add result: if True then s1 else s2
+			add result: if True then s2 else s2
+			add result: if True then s2 else s3
+		'''.parseRosettaWithNoIssues
+		model.elements.last as Function => [
+			val max4String = createListType(inputs.get(1).typeCall.typeCallToRType, single)
+			val maxNString = createListType(inputs.get(2).typeCall.typeCallToRType, single)
+			
+			operations => [
+				get(0).expression.assertHasType(maxNString)
+				get(1).expression.assertHasType(max4String)
+				get(2).expression.assertHasType(maxNString)
+			]
+		]
 	}
 }

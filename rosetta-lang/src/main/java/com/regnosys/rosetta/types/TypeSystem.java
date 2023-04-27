@@ -1,6 +1,9 @@
 package com.regnosys.rosetta.types;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.apache.commons.lang3.Validate;
@@ -116,14 +119,34 @@ public class TypeSystem {
 		if (t1 instanceof RAliasType && t2 instanceof RAliasType) {
 			RAliasType alias1 = (RAliasType)t1;
 			RAliasType alias2 = (RAliasType)t2;
-			RType underlier = keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
 			if (alias1.getTypeFunction().equals(alias2.getTypeFunction())) {
+				RType underlier = keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
 				RTypeFunction typeFunc = alias1.getTypeFunction();
 				return typeFunc.reverse(underlier)
 					.<RType>map(args -> new RAliasType(typeFunc, args, underlier))
 					.orElse(underlier);
 			} else {
-				return underlier;
+				List<RAliasType> superAliases = new ArrayList<>();
+				RType curr = t1;
+				while (curr instanceof RAliasType) {
+					RAliasType currAlias = (RAliasType)curr;
+					superAliases.add(currAlias);
+					curr = currAlias.getRefersTo();
+				}
+				curr = t2;
+				while (curr instanceof RAliasType) {
+					RAliasType currAlias = (RAliasType)curr;
+					RTypeFunction tf = currAlias.getTypeFunction();
+					Optional<RType> result = superAliases.stream()
+						.filter(a -> a.getTypeFunction().equals(tf))
+						.findAny()
+						.map(match -> keepTypeAliasIfPossible(match, currAlias, combineUnderlyingTypes));
+					if (result.isPresent()) {
+						return result.get();
+					}
+					curr = currAlias.getRefersTo();
+				}
+				return keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
 			}
 		} else if (t1 instanceof RAliasType) {
 			return keepTypeAliasIfPossible(((RAliasType)t1).getRefersTo(), t2, combineUnderlyingTypes);

@@ -226,8 +226,24 @@ auxiliary join(RAliasType t1, RAliasType t2) {
 		val aliasParams = typeFunc.reverse(underlyingJoin)
 		return aliasParams.<RType>map[new RAliasType(typeFunc, it, underlyingJoin)]
 			.orElse(underlyingJoin)
+	} else {
+		val superAliases = newArrayList
+		var RType curr = t1
+		while (curr instanceof RAliasType) {
+			superAliases.add(curr)
+			curr = curr.refersTo
+		}
+		curr = t2
+		while (curr instanceof RAliasType) {
+			val tf = curr.typeFunction
+			val match = superAliases.findFirst[tf == typeFunction]
+			if (match !== null) {
+				return join(match, curr)
+			}
+			curr = curr.refersTo
+		}
+		return join(t1.refersTo, t2.refersTo)
 	}
-	return join(t1.refersTo, t2.refersTo)
 }
 auxiliary join(RAliasType t1, RType t2) {
 	return join(t1.refersTo, t2)
@@ -464,7 +480,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 				ref.symbol = arg.parameter;
 				return new Equation(ref, arg.value);
 			].toList;
-	return systemSolver.solve(equations, parameters).map[solutionSet|
+	return systemSolver.solve(equations, parameters.toSet).map[solutionSet|
 		RTypeFunction.create(typeAlias.name,
 			[arguments|
 				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments))
