@@ -259,7 +259,7 @@ class RosettaTypingTest {
 			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
 		'if empty then 1 else 2'
 			.parseExpression
-			.assertError(null, "Expected a single `boolean`, but got an empty value instead.")
+			.assertError(null, "Expected a single value, but got an empty value instead.")
 		'if True then 1 else False'
 			.parseExpression
 			.assertError(null, "Types `int` and `boolean` do not have a common supertype.")

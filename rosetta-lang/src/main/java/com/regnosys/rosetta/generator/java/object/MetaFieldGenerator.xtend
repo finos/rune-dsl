@@ -40,6 +40,7 @@ import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.builtin.RRecordType
+import org.eclipse.xtext.EcoreUtil2
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -218,7 +219,7 @@ class MetaFieldGenerator {
 		val valueAttribute = SimpleFactory.eINSTANCE.createAttribute()
 		valueAttribute.card = cardSingle
 		valueAttribute.name = "value"
-		valueAttribute.typeCall = typeCall
+		valueAttribute.typeCall = EcoreUtil2.copy(typeCall)
 		
 		val metaType = SimpleFactory.eINSTANCE.createData()
 		metaType.setName("MetaFields")
@@ -258,7 +259,7 @@ class MetaFieldGenerator {
 		val valueAttribute = SimpleFactory.eINSTANCE.createAttribute()
 		valueAttribute.card = cardSingle
 		valueAttribute.name = "value"
-		valueAttribute.typeCall = typeCall
+		valueAttribute.typeCall = EcoreUtil2.copy(typeCall)
 		
 		
 		val globalRefAttribute = SimpleFactory.eINSTANCE.createAttribute()

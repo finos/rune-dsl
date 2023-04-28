@@ -509,14 +509,29 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 }
 
 auxiliary keepTypeAliasIfPossible(RAliasType t1, RAliasType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
-	val underlier = keepTypeAliasIfPossible(t1.refersTo, t2.refersTo, combineUnderlyingTypes);
 	if (t1.typeFunction == t2.typeFunction) {
-		val typeFunc = t1.typeFunction;
+		val typeFunc = t1.typeFunction
+		val underlier = keepTypeAliasIfPossible(t1.refersTo, t2.refersTo, combineUnderlyingTypes)
 		return typeFunc.reverse(underlier)
 			.<RType>map[args| new RAliasType(typeFunc, args, underlier)]
-			.orElse(underlier);
+			.orElse(underlier)
 	} else {
-		return underlier;
+		val superAliases = newArrayList
+		var RType curr = t1
+		while (curr instanceof RAliasType) {
+			superAliases.add(curr)
+			curr = curr.refersTo
+		}
+		curr = t2
+		while (curr instanceof RAliasType) {
+			val tf = curr.typeFunction
+			val match = superAliases.findFirst[tf == typeFunction]
+			if (match !== null) {
+				return keepTypeAliasIfPossible(match, curr, combineUnderlyingTypes)
+			}
+			curr = curr.refersTo
+		}
+		return keepTypeAliasIfPossible(t1.refersTo, t2.refersTo, combineUnderlyingTypes)
 	}
 }
 auxiliary keepTypeAliasIfPossible(RAliasType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {

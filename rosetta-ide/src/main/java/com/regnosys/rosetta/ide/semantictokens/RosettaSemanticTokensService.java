@@ -16,7 +16,9 @@ import com.regnosys.rosetta.rosetta.RosettaRecordType;
 import com.regnosys.rosetta.rosetta.RosettaSegmentRef;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.RosettaType;
+import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
 import com.regnosys.rosetta.rosetta.TypeCall;
+import com.regnosys.rosetta.rosetta.TypeParameter;
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter;
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
@@ -57,6 +59,8 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 				return Optional.of(RECORD_TYPE);
 			} else if (t instanceof RosettaEnumeration) {
 				return Optional.of(ENUM);
+			} else if (t instanceof RosettaTypeAlias) {
+				return Optional.of(TYPE_ALIAS);
 			}
 		}
 		return Optional.empty();
@@ -127,6 +131,8 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, VARIABLE);
 			} else if (symbol instanceof RosettaType) {
 				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, typeToToken((RosettaType)symbol).get());
+			} else if (symbol instanceof TypeParameter) {
+				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, PARAMETER);
 			}
 		}
 		return null;

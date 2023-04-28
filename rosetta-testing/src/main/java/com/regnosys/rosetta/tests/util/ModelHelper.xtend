@@ -6,6 +6,7 @@ import com.regnosys.rosetta.rosetta.RosettaModel
 import org.eclipse.emf.common.util.URI
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.eclipse.xtext.EcoreUtil2
 
 class ModelHelper {
 
@@ -72,6 +73,7 @@ class ModelHelper {
 		val resourceSet = testResourceSet()
 		
 		val parsed = m.parse(resourceSet)
+		EcoreUtil2.resolveAll(parsed)
 		return parsed;
 	}
 

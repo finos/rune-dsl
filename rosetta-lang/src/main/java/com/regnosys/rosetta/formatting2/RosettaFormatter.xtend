@@ -53,6 +53,10 @@ import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.RosettaParameter
+import com.regnosys.rosetta.rosetta.RosettaTypeAlias
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
+import com.regnosys.rosetta.rosetta.TypeParameter
+import com.regnosys.rosetta.rosetta.TypeCallArgument
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	
@@ -79,7 +83,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.append[oneSpace]
 		
 		val groupedElementTypes = #[RosettaBody, RosettaCorpus, RosettaSegment, RosettaBasicType, 
-			RosettaRecordType, RosettaExternalFunction, RosettaMetaType
+			RosettaTypeAlias, RosettaRecordType, RosettaExternalFunction, RosettaMetaType
 		]
 		var Class<? extends RosettaRootElement> lastType = null
 		for (elem: rosettaModel.elements) {
@@ -88,7 +92,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			// They are grouped together.
 			if (groupedElementTypes.exists[isInstance(elem)]) {
 				if (elem.getClass().equals(lastType)) {
-					elem.prepend[newLine]
+					elem.prepend[setNewLines(1, 1, 2)]
 				} else {
 					elem.prepend[setNewLines(2)]
 				}
@@ -108,6 +112,70 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 	def dispatch void format(RosettaBasicType ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword(rosettaBasicTypeAccess.basicTypeKeyword_0)
 			.append[oneSpace]
+		ele.formatTypeParameters(document)
+	}
+	
+	def dispatch void format(RosettaTypeAlias ele, extension IFormattableDocument document) {
+		ele.regionFor.keyword(rosettaTypeAliasAccess.typeAliasKeyword_0)
+			.append[oneSpace]
+		ele.formatTypeParameters(document)
+		ele.regionFor.keyword(':')
+			.prepend[noSpace]
+		ele.formatDefinition(document)
+		formatInlineOrMultiline(document, ele,
+			[extension doc |
+				ele.typeCall
+					.prepend[oneSpace]
+					.format
+			],
+			[extension doc |
+				ele.indentInner(ele.regionFor.keyword(':').nextHiddenRegion, doc)
+				ele.typeCall
+					.prepend[newLine]
+					.format
+			]
+		)
+	}
+	
+	def void formatTypeParameters(ParametrizedRosettaType ele, extension IFormattableDocument document) {
+		ele.regionFor.keyword('(')
+			.prepend[noSpace]
+		ele.parameters.forEach[
+			format
+		]
+		
+		if (ele.parameters.findFirst[definition !== null] !== null) {
+			// Format multiline
+			interior(
+		        ele.regionFor.keyword('(')
+		            .append[newLine],
+		        ele.regionFor.keyword(')')
+		            .prepend[newLine]
+		    )[indent]
+	        ele.parameters.forEach[
+	        	append[newLine]
+	        ]
+	        ele.regionFor.keywords(',').forEach[
+				append[oneSpace]
+			]
+		} else {
+			// Format single line
+			ele.regionFor.keyword('(')
+				.append[noSpace]
+			ele.regionFor.keyword(')')
+				.prepend[noSpace]
+			ele.regionFor.keywords(',').forEach[
+				prepend[noSpace]
+				append[oneSpace]
+			]
+		}
+	}
+	
+	def dispatch void format(TypeParameter ele, extension IFormattableDocument document) {
+		ele.typeCall
+			.prepend[oneSpace]
+			.format
+		ele.formatDefinition(document)
 	}
 	
 	def dispatch void format(RosettaExternalFunction ele, extension IFormattableDocument document) {
@@ -250,6 +318,16 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			prepend[noSpace]
 			append[oneSpace]
 		]
+		ele.arguments.forEach[
+			format
+		]
+	}
+	
+	def dispatch void format(TypeCallArgument ele, extension IFormattableDocument document) {
+		ele.regionFor.keyword(':')
+			.prepend[noSpace]
+			.append[oneSpace]
+		expressionFormatter.formatExpression(ele.value, document, FormattingMode.SINGLE_LINE)
 	}
 	
 	private def formatCardinality(RosettaCardinality card, extension IFormattableDocument document) {

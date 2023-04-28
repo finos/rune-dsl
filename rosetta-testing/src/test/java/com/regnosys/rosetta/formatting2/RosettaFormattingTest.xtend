@@ -39,6 +39,45 @@ class RosettaFormattingTest {
 	}
 	
 	@Test
+	def void testFormatTypeAlias() {
+		'''
+		namespace test
+		
+		
+		typeAlias  maxNBoundedNumber
+		 ( n int  ,max  number)
+		     :
+		   number ( digits  : n  ,  max: max )
+		''' -> '''
+		namespace test
+		
+		typeAlias maxNBoundedNumber(n int, max number): number(digits: n, max: max)
+		'''
+	}
+	
+	@Test
+	def void testFormatTypeAliasWithDocumentation() {
+		'''
+		namespace test
+		
+		
+		typeAlias  maxNBoundedNumber
+		 ( n int
+		  ,max  number   <"The maximum bound on this number. If absent, this number is unbounded from above.">)
+		     :  <"A bounded decimal number with N maximum number of digits.">
+		   number ( digits  : n  ,  max: max )
+		''' -> '''
+		namespace test
+		
+		typeAlias maxNBoundedNumber(
+			n int
+			, max number <"The maximum bound on this number. If absent, this number is unbounded from above.">
+		): <"A bounded decimal number with N maximum number of digits.">
+			number(digits: n, max: max)
+		'''
+	}
+	
+	@Test
 	def void testFormatRule() {
 		'''
 		namespace drr.regulation.techsprint.g20.mas
@@ -137,10 +176,10 @@ class RosettaFormattingTest {
 			version "test"
 			
 			basicType string
-			
 			basicType int
 			
 			library function DateRanges() date
+			
 			
 			library function Min(x number, y number) number
 		''' -> '''
@@ -151,6 +190,7 @@ class RosettaFormattingTest {
 			basicType int
 			
 			library function DateRanges() date
+			
 			library function Min(x number, y number) number
 		'''
 	}

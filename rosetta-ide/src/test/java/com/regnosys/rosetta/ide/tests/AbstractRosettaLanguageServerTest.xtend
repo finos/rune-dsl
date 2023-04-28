@@ -68,6 +68,11 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		configuration.filePath = 'MyModel.' + fileExtension
 		configurator.apply(configuration)
 		val filePath = initializeContext(configuration).uri
+		
+		if (configuration.assertNoIssues) {
+			configuration.model.parseRosettaWithNoIssues
+		}
+		
 		val range = configuration.range
 		val inlayHints = languageServer.inlayHint(new InlayHintParams(
 			new TextDocumentIdentifier(filePath),
@@ -76,9 +81,6 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		val result = inlayHints.get.map[languageServer.resolveInlayHint(it).get].stream.collect(Collectors.toCollection[newArrayList])
 		result.sort[a,b| ru.comparePositions(a.position, b.position)]
 
-		if (configuration.assertNoIssues) {
-			configuration.model.parseRosettaWithNoIssues
-		}
 		val nbInlayHints = configuration.assertNumberOfInlayHints
 		if (nbInlayHints !== null) {
 			Assertions.assertTrue(
@@ -109,6 +111,11 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		configuration.filePath = 'MyModel.' + fileExtension
 		configurator.apply(configuration)
 		val filePath = initializeContext(configuration).uri
+		
+//		if (configuration.assertNoIssues) {
+//			configuration.model.parseRosettaWithNoIssues
+//		}
+		
 		val semanticTokens = languageServer.requestManager.runRead[cancelIndicator |
 			(languageServer as RosettaLanguageServerImpl).semanticTokens(
 				new SemanticTokensParams(
@@ -119,9 +126,6 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		]
 		val result = semanticTokens.get.sort
 
-		if (configuration.assertNoIssues) {
-			configuration.model.parseRosettaWithNoIssues
-		}
 		if (configuration.assertSemanticTokens !== null) {
 			configuration.assertSemanticTokens.apply(result)
 		} else {
@@ -130,14 +134,11 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	}
 	
 	protected override FileInfo initializeContext(TextDocumentConfiguration configuration) {
+		configuration.filesInScope = #{
+			'basictypes.rosetta' -> new String(this.getClass().getResourceAsStream('''/model/basictypes.rosetta''').readAllBytes(), StandardCharsets.UTF_8),
+			'annotations.rosetta' -> new String(this.getClass().getResourceAsStream('''/model/annotations.rosetta''').readAllBytes(), StandardCharsets.UTF_8)
+		}
 		val filePath = super.initializeContext(configuration);
-		writeModelFile('basictypes.rosetta')
-		writeModelFile('annotations.rosetta')
 		return filePath
-	}
-	private def void writeModelFile(String fileName) {
-		val content = new String(this.getClass().getResourceAsStream('''/model/«fileName»''').readAllBytes(), StandardCharsets.UTF_8);
-		val filePath = fileName.writeFile(content);
-		open(filePath, content);
 	}
 }
