@@ -14,13 +14,12 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
 	public static BigDecimalInterval bounded(BigDecimal min, BigDecimal max) {
 		return new BigDecimalInterval(Optional.of(min), Optional.of(max));
 	}
-	public static BigDecimalInterval boundedLeft(BigDecimal max) {
-		return new BigDecimalInterval(Optional.empty(), Optional.of(max));
-	}
-	public static BigDecimalInterval boundedRight(BigDecimal min) {
+	public static BigDecimalInterval boundedLeft(BigDecimal min) {
 		return new BigDecimalInterval(Optional.of(min), Optional.empty());
 	}
-	@SuppressWarnings("unchecked")
+	public static BigDecimalInterval boundedRight(BigDecimal max) {
+		return new BigDecimalInterval(Optional.empty(), Optional.of(max));
+	}
 	public static BigDecimalInterval unbounded() {
 		return new BigDecimalInterval(Optional.empty(), Optional.empty());
 	}

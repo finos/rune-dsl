@@ -14,7 +14,7 @@ import org.apache.commons.lang3.Validate;
  * - [min, +infinity[
  * - ]-infinity, +infinity[
  */
-public class Interval<T extends Number & Comparable<T>> {
+public abstract class Interval<T extends Number & Comparable<? super T>> {
 	private final Optional<T> min;
 	private final Optional<T> max;
 	
@@ -24,19 +24,6 @@ public class Interval<T extends Number & Comparable<T>> {
 		}
 		this.min = min;
 		this.max = max;
-	}
-
-	public static <U extends Number & Comparable<U>> Interval<U> bounded(U min, U max) {
-		return new Interval<U>(Optional.of(min), Optional.of(max));
-	}
-	public static <U extends Number & Comparable<U>> Interval<U> boundedLeft(U max) {
-		return new Interval<U>(Optional.empty(), Optional.of(max));
-	}
-	public static <U extends Number & Comparable<U>> Interval<U> boundedRight(U min) {
-		return new Interval<U>(Optional.of(min), Optional.empty());
-	}
-	public static <U extends Number & Comparable<U>> Interval<U> unbounded() {
-		return new Interval<U>(Optional.empty(), Optional.empty());
 	}
 	
 	public Optional<T> getMin() {

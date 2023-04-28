@@ -13,6 +13,13 @@ public class PositiveIntegerInterval extends IntegerInterval {
 		
 		this.min = min;
 	}
+	
+	public static PositiveIntegerInterval bounded(int min, int max) {
+		return new PositiveIntegerInterval(min, Optional.of(max));
+	}
+	public static PositiveIntegerInterval boundedLeft(int min) {
+		return new PositiveIntegerInterval(min, Optional.empty());
+	}
 
 	public int getMinBound() {
 		return this.min;

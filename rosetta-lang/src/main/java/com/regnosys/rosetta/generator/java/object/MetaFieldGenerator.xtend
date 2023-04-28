@@ -109,6 +109,7 @@ class MetaFieldGenerator {
 				val targetPackage = new RootPackage(targetModel)
 				
 				val metaType = meta.typeCallToRType
+				// TODO: make consistent
 				if(metaType instanceof RBasicType || metaType instanceof RRecordType) {
 					fsa.generateFile('''«packages.basicMetafields.withForwardSlashes»/FieldWithMeta«metaType.toJavaReferenceType.simpleName».java''', fieldWithMeta(targetPackage, meta))
 				} else {

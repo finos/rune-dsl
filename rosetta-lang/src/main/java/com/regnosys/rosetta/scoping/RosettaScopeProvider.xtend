@@ -118,14 +118,14 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					switch (context) {
 						Operation: {
 							val receiverType = typeProvider.getRTypeOfSymbol(context.assignRoot)
-							return Scopes.scopeFor(receiverType.allFeatures(context.eResource.resourceSet))
+							return Scopes.scopeFor(receiverType.allFeatures(context))
 						}
 						Segment: {
 							val prev = context.prev
 							if (prev !== null) {
 								if (prev.attribute.isResolved) {
 									val receiverType = typeProvider.getRTypeOfSymbol(prev.attribute)
-									return Scopes.scopeFor(receiverType.allFeatures(context.eResource.resourceSet))
+									return Scopes.scopeFor(receiverType.allFeatures(context))
 								}
 							}
 							if (context.eContainer instanceof Operation) {
@@ -303,7 +303,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	private def IScope createExtendedFeatureScope(EObject receiver, RType receiverType) {
 		val List<IEObjectDescription> allPosibilities = newArrayList
 		allPosibilities.addAll(
-			receiverType.allFeatures(receiver.eResource.resourceSet)
+			receiverType.allFeatures(receiver)
 				.map[new EObjectDescription(QualifiedName.create(name), it, null)]
 			
 		)

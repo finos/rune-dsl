@@ -8,16 +8,15 @@ public class IntegerInterval extends Interval<Integer> {
 		super(min, max);
 	}
 
-	public static IntegerInterval bounded(Integer min, Integer max) {
+	public static IntegerInterval bounded(int min, int max) {
 		return new IntegerInterval(Optional.of(min), Optional.of(max));
 	}
-	public static IntegerInterval boundedLeft(Integer max) {
-		return new IntegerInterval(Optional.empty(), Optional.of(max));
-	}
-	public static IntegerInterval boundedRight(Integer min) {
+	public static IntegerInterval boundedLeft(int min) {
 		return new IntegerInterval(Optional.of(min), Optional.empty());
 	}
-	@SuppressWarnings("unchecked")
+	public static IntegerInterval boundedRight(int max) {
+		return new IntegerInterval(Optional.empty(), Optional.of(max));
+	}
 	public static IntegerInterval unbounded() {
 		return new IntegerInterval(Optional.empty(), Optional.empty());
 	}
