@@ -79,7 +79,7 @@ class MapperMaths {
 	}
 	
 	private static def dispatch Integer operator_minus(LocalDate d1, LocalDate d2) {
-		Integer.valueOf(DAYS.between(d2, d1) as int)
+		DAYS.between(d2, d1).intValue
 	}
 	
 	private static def dispatch LocalDateTime operator_minus(LocalDate d, LocalTime t) {
