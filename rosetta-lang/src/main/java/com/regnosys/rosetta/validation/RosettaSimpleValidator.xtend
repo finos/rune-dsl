@@ -115,12 +115,12 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
-import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.types.TypeSystem
 import java.util.Optional
 import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -205,9 +205,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	@Check
-	def void checkBasicType(RosettaBasicType basicType) {
+	def void checkParametrizedType(ParametrizedRosettaType type) {
 		val visited = newHashSet
-		for (param: basicType.parameters) {
+		for (param: type.parameters) {
 			if (!visited.add(param.name)) {
 				error('''Duplicate parameter name `«param.name»`.''', param, ROSETTA_NAMED__NAME);
 			}
