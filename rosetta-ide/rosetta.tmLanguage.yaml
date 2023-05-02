@@ -258,12 +258,16 @@ repository:
         - begin: '{{identifier}}'
           beginCaptures:
             0: { name: entity.name.type.type-alias.rosetta }
-          end: '(:)|{{rootEnd}}'
+          end: '{{rootEnd}}'
           patterns:
           - include: '#comment'
-          - include: '#typeParameters'
-        - include: '#documentation'
-        - include: '#typeCall'
+          - begin: (?<={{identifier}})
+            end: '(:)|{{rootEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#typeParameters'
+          - include: '#documentation'
+          - include: '#typeCall'
 
       typeParameters:
         name: meta.type-parameters.rosetta
@@ -275,7 +279,7 @@ repository:
           begin: '{{identifier}}'
           beginCaptures:
             0: { name: variable.parameter.type-parameter.rosetta }
-          end: ',|\)|{{rootEnd}}'
+          end: '(?=,|\))|{{rootEnd}}'
           patterns:
           - include: '#comment'
           - include: '#typeCall'
@@ -288,7 +292,7 @@ repository:
           beginCaptures:
             1: { name: entity.name.type.rosetta } # Need semantic tokens to specify type
             2: { name: punctuation.definition.arguments.begin.rosetta }
-          end: '(\))|,|{{sectionEnd}}'
+          end: '(\))|{{sectionEnd}}'
           endCaptures:
             1: { name: punctuation.definition.arguments.end.rosetta }
           patterns:

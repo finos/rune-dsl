@@ -65,7 +65,7 @@ class RosettaParsingTest {
 		'''
 			typeAlias int(digits int, min int, max int): number(digits: digits, fractionalDigits: 0, min: min, max: max)
 			typeAlias max4String: string(minLength: 1, maxLength: 4)
-		'''.parseRosettaWithNoErrors
+		'''.parseRosettaWithNoIssues
 	}
 	
 	@Test
@@ -75,7 +75,7 @@ class RosettaParsingTest {
 			basicType int(digits int, min int, max int)
 			basicType number(digits int, fractionalDigits int, min number, max number)
 			basicType string(minLength int, maxLength int, pattern pattern)
-		'''.parseRosettaWithNoErrors
+		'''.parseRosettaWithNoIssues
 	}
 	
 	@Test
