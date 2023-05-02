@@ -112,9 +112,9 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		configurator.apply(configuration)
 		val filePath = initializeContext(configuration).uri
 		
-//		if (configuration.assertNoIssues) {
-//			configuration.model.parseRosettaWithNoIssues
-//		}
+		if (configuration.assertNoIssues) {
+			configuration.model.parseRosettaWithNoIssues
+		}
 		
 		val semanticTokens = languageServer.requestManager.runRead[cancelIndicator |
 			(languageServer as RosettaLanguageServerImpl).semanticTokens(
