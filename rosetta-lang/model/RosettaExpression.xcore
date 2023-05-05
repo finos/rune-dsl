@@ -85,6 +85,7 @@ class RosettaIntLiteral extends RosettaLiteral {
 	}
 }
 
+// Not supported - see issue https://github.com/REGnosys/rosetta-dsl/issues/524
 type Pattern wraps Pattern
 class RosettaPatternLiteral extends RosettaLiteral {
 	Pattern value

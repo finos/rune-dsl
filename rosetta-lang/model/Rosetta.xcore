@@ -36,10 +36,10 @@ interface RosettaNamed {
 }
 
 interface RosettaTyped {
-	contains TypeCall ^typeCall
+	contains TypeCall typeCall
 		
 	derived boolean isTypeInferred get {
-		return ^typeCall === null
+		return typeCall === null
 	}
 }
 
