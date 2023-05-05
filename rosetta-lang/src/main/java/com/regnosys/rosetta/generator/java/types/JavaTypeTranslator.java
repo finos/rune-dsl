@@ -120,7 +120,7 @@ public class JavaTypeTranslator {
 		DottedPath pkg = metaField(getModelPackage(expAttr.getRosettaType().getType()));
 		return new JavaClass(pkg, name);
 	}
-	private JavaReferenceType expandedTypeToJavaType(ExpandedType type) {
+	public JavaReferenceType expandedTypeToJavaType(ExpandedType type) {
 		if (type.getName().equals(RosettaAttributeExtensions.METAFIELDS_CLASS_NAME) || type.getName().equals(RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME)) {
 			return new JavaClass(packages.basicMetafields(), type.getName());
 		}
