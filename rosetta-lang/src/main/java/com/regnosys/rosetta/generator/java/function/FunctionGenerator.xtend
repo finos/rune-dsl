@@ -360,12 +360,12 @@ class FunctionGenerator {
 	
 	private def JavaType referenceWithMetaJavaType(Operation op, RootPackage root) {
 			if (op.path === null) {
-				val valueRType = typeProvider.getRTypeOfSymbol(op.assignRoot)
-			 	new JavaClass(root.metaField, "ReferenceWithMeta" + valueRType.name.toFirstUpper)
+				val valueJavaType = typeProvider.getRTypeOfSymbol(op.assignRoot).toJavaReferenceType
+			 	new JavaClass(root.metaField, "ReferenceWithMeta" + valueJavaType.simpleName)
 			} else {
 				val attr = op.pathAsSegmentList.last.attribute
-				val valueRType = typeProvider.getRTypeOfSymbol(attr)
-			 	new JavaClass(new RootPackage(attr.typeCall.type.model).metaField, "ReferenceWithMeta" + valueRType.name.toFirstUpper)
+				val valueJavaType = typeProvider.getRTypeOfSymbol(attr).toJavaReferenceType
+			 	new JavaClass(new RootPackage(attr.typeCall.type.model).metaField, "ReferenceWithMeta" + valueJavaType.simpleName)
 			}
 	}
 	

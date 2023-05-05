@@ -76,4 +76,18 @@ class ModelMetaGeneratorTest {
 		
 	}
 	
+	@Test
+	def void shouldGenerateBasicTypeReferences() {
+		val code = '''
+			type Flat:
+				oneField string (1..1)
+					[metadata scheme]
+				two int (1..*) 
+					[metadata reference]
+				three date (1..1)
+					[metadata reference]
+		'''.generateCode
+		code.compileToClasses
+	}
+	
 }

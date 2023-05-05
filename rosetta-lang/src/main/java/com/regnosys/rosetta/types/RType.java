@@ -11,6 +11,10 @@ public abstract class RType {
 		return false;
 	}
 	
+	public boolean isBuiltin() {
+		return false;
+	}
+	
 	@Override
 	public String toString() {
 		return this.getName();

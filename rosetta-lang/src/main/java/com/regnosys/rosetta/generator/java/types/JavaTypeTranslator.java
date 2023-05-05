@@ -17,7 +17,6 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.generator.object.ExpandedAttribute;
 import com.regnosys.rosetta.generator.object.ExpandedType;
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions;
-import com.regnosys.rosetta.rosetta.RosettaBuiltinType;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
@@ -80,13 +79,11 @@ public class JavaTypeTranslator {
 	}
 	
 	public JavaClass toMetaJavaType(Attribute attribute) {
-		JavaType attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute));
+		JavaReferenceType attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute));
 		String attributeTypeName = attrType.getSimpleName();
 		String name;
 		if (extensions.hasMetaFieldAnnotations(attribute)) {
 			name = "FieldWithMeta" + attributeTypeName;
-		} else if (attribute.getTypeCall().getType() instanceof RosettaBuiltinType) {
-			name = "BasicReferenceWithMeta" + attributeTypeName;
 		} else {
 			name = "ReferenceWithMeta" + attributeTypeName;
 		}
@@ -107,16 +104,10 @@ public class JavaTypeTranslator {
 		String name;
 		if (expAttr.refIndex() < 0) {
 			name = "FieldWithMeta" + attributeTypeName;
-		} else if (expAttr.isDataType()) {
-			name = "ReferenceWithMeta" + attributeTypeName;
 		} else {
-			name = "BasicReferenceWithMeta" + attributeTypeName;
+			name = "ReferenceWithMeta" + attributeTypeName;
 		}
 		
-		if(expAttr.getRosettaType().getType() instanceof RosettaBuiltinType) {
-			// built-in meta types are defined in metafield package
-			return new JavaClass(packages.basicMetafields(), name);
-		}
 		DottedPath pkg = metaField(getModelPackage(expAttr.getRosettaType().getType()));
 		return new JavaClass(pkg, name);
 	}

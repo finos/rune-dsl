@@ -466,7 +466,7 @@ class ModelObjectGeneratorTest {
 
 		val getter = barClass.getMethod("getBar")
 		assertThat(getter, CoreMatchers.notNullValue())
-		assertThat(getter.returnType.name, is('com.rosetta.model.metafields.BasicReferenceWithMetaString'))
+		assertThat(getter.returnType.name, is('com.rosetta.model.metafields.ReferenceWithMetaString'))
 		
 		val fooClass = generatedClass.get(rootPackage + '.Foo')
 		val builderInstance = fooClass.getMethod("builder").invoke(null)

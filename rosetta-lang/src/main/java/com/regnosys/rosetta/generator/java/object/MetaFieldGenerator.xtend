@@ -35,7 +35,6 @@ import com.rosetta.model.lib.meta.BasicRosettaMetaData
 import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
-import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.builtin.RBasicType
@@ -91,14 +90,12 @@ class MetaFieldGenerator {
 			for (ref:refs) {
 				val targetModel = ref.type.model
 				val targetPackage = new RootPackage(targetModel)
+				val jt = ref.typeCallToRType.toJavaReferenceType
 				
 				if (ctx.cancelIndicator.canceled) {
 					return
 				}
-				if (ref.type instanceof RosettaBuiltinType)
-					fsa.generateFile('''«packages.basicMetafields.withForwardSlashes»/BasicReferenceWithMeta«ref.type.name.toFirstUpper».java''', basicReferenceWithMeta(ref))
-				else
-					fsa.generateFile('''«targetPackage.metaField.withForwardSlashes»/ReferenceWithMeta«ref.type.name.toFirstUpper».java''', referenceWithMeta(targetPackage, ref))
+				fsa.generateFile('''«targetPackage.metaField.withForwardSlashes»/ReferenceWithMeta«jt.simpleName».java''', referenceWithMeta(targetPackage, ref))
 			}
 			//find all the metaed types
 			val metas =  nsc.value.flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference" || name=="address"]].map[rosettaType].toSet
@@ -284,46 +281,26 @@ class MetaFieldGenerator {
 	}
 	
 	def referenceWithMeta(RootPackage root, TypeCall typeCall) {
+		val jt = typeCall.typeCallToRType.toJavaReferenceType
 		
 		val Data d = SimpleFactory.eINSTANCE.createData;
-		d.name = "ReferenceWithMeta" + typeCall.type.name.toFirstUpper
+		d.name = "ReferenceWithMeta" + jt.simpleName
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = root.metaField.withDots
 		d.attributes.addAll(referenceAttributes(typeCall))
-		val refInterface = new JavaParametrizedType(JavaClass.from(ReferenceWithMeta), typeCall.typeCallToRType.toJavaReferenceType)
+		val refInterface = new JavaParametrizedType(JavaClass.from(ReferenceWithMeta), jt)
 		
 		val scope = new JavaScope(root.metaField)
 		
 		val StringConcatenationClient body = '''
 			«d.classBody(scope, new JavaClass(root.metaField, d.name + "Meta"), "1", #[refInterface])»
 			
-			class ReferenceWithMeta«typeCall.type.name.toFirstUpper»Meta extends «BasicRosettaMetaData»<ReferenceWithMeta«typeCall.type.name.toFirstUpper»>{
+			class ReferenceWithMeta«jt.simpleName»Meta extends «BasicRosettaMetaData»<ReferenceWithMeta«jt.simpleName»>{
 			
 			}
 		'''
 		
 		buildClass(root.metaField, body, scope)
-	}
-	
-	def basicReferenceWithMeta(TypeCall typeCall) {
-		val Data d = SimpleFactory.eINSTANCE.createData;
-		d.name = "BasicReferenceWithMeta" + typeCall.type.name.toFirstUpper
-		d.model = RosettaFactory.eINSTANCE.createRosettaModel
-		d.model.name = packages.basicMetafields.withDots
-		d.attributes.addAll(referenceAttributes(typeCall))
-		val refInterface = new JavaParametrizedType(JavaClass.from(ReferenceWithMeta), typeCall.typeCallToRType.toJavaReferenceType)
-		
-		val scope = new JavaScope(packages.basicMetafields)
-		
-		val StringConcatenationClient body = '''		
-			«d.classBody(scope, new JavaClass(packages.basicMetafields, d.name + "Meta"), "1", #[refInterface])»
-			
-			class BasicReferenceWithMeta«typeCall.type.name.toFirstUpper»Meta extends «BasicRosettaMetaData»<BasicReferenceWithMeta«typeCall.type.name.toFirstUpper»>{
-			
-			}
-		'''
-		
-		buildClass(packages.basicMetafields, body, scope)
 	}
 	
 	private def namespace(RosettaRootElement rc) {

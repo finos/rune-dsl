@@ -224,7 +224,7 @@ class ModelObjectBuilderGenerator {
 				«IF attribute.hasMetas»
 					
 					@Override
-					public «thisName» add«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.rosettaType.typeCallToRType.toJavaType»> «scope.getIdentifierOrThrow(attribute)»s) {
+					public «thisName» add«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.rosettaType.typeCallToRType.toJavaReferenceType»> «scope.getIdentifierOrThrow(attribute)»s) {
 						if («scope.getIdentifierOrThrow(attribute)»s != null) {
 							for («attribute.rosettaType.typeCallToRType.toJavaType» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
 								this.add«attribute.name.toFirstUpper»Value(toAdd);
@@ -234,7 +234,7 @@ class ModelObjectBuilderGenerator {
 					}
 					
 					@Override
-					public «thisName» set«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.rosettaType.typeCallToRType.toJavaType»> «scope.getIdentifierOrThrow(attribute)»s) {
+					public «thisName» set«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.rosettaType.typeCallToRType.toJavaReferenceType»> «scope.getIdentifierOrThrow(attribute)»s) {
 						this.«scope.getIdentifierOrThrow(attribute)».clear();
 						if («scope.getIdentifierOrThrow(attribute)»s!=null) {
 							«scope.getIdentifierOrThrow(attribute)»s.forEach(this::add«attribute.name.toFirstUpper»Value);
