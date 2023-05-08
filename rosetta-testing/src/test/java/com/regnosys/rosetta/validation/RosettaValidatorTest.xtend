@@ -31,6 +31,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 
 	@Test
+	def void testParametrizedBasicTypesWithDuplicateParameters() {
+		val model = '''
+			basicType int(digits int, digits int)
+		'''.parseRosetta
+		model.assertError(TYPE_PARAMETER, null,
+            "Duplicate parameter name `digits`.")
+	}
+
+	@Test
 	def void noDuplicateInheritanceForRuleSourceTest() {
 		val model = '''
 			rule source TestA {}
@@ -344,7 +353,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				a int (1..1)
 				condition A:
-					/42
+					*42
 		'''.parseRosetta
 		model.assertError(ROSETTA_IMPLICIT_VARIABLE, null,
             "Expected type `number`, but got `Foo` instead.")
@@ -406,20 +415,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR,
 			"Incompatible types: cannot use operator '=' with int and boolean.")
-	}
-	
-	@Test
-	def void testTypeExpectationMagicType() {
-		'''
-			qualifiedType productType {}
-			type Foo:
-				id productType (1..1)
-				val int (1..1)
-			
-			    condition R:
-				    if  id = "Type"
-				    then val < 1
-		'''.parseRosettaWithNoErrors
 	}
 	
 	@Test
@@ -634,7 +629,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i string (1..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type (string) must match the type of the attribute it overrides (int)")
+		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type string must match the type of the attribute it overrides (int)")
 	}
 	
 
@@ -1320,7 +1315,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 		'''.parseRosetta
 		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type Object.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type any.")
 	}
 	
 	@Test
@@ -1554,7 +1549,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[ruleReference BarBarOne]
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field barBarOne has type Baz whereas the reporting rule BarBarOne has type Object.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field barBarOne has type Baz whereas the reporting rule BarBarOne has type any.")
 		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barBarOne has single cardinality whereas the reporting rule BarBarOne has multiple cardinality.")
 	}
 

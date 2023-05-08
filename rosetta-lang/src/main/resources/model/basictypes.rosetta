@@ -1,0 +1,56 @@
+namespace com.rosetta.model
+version "${project.version}"
+
+basicType boolean <"A boolean can either be True or False.">
+
+basicType number(
+    digits int           <"The maximum number of digits that the number may have. If absent, this number may have an arbitrary number of digits.">
+  , fractionalDigits int <"The maximum number of digits after the decimal point that the number may have. If absent, this number may have any number of its digits after the decimal point.">
+  , min number           <"The minimum bound on this number. If absent, this number is unbounded from below.">
+  , max number           <"The maximum bound on this number. If absent, this number is unbounded from above.">
+) <"A signed decimal number.">
+
+basicType string(
+    minLength int  <"The minimum number of characters that the string must have. If absent, defaults to zero.">
+  , maxLength int  <"The maximum number of characters that the string may have. If absent, there is no limit.">
+  , pattern string <"The regular expression that this string must match. If absent, this string may contain arbitrary characters.">
+) <"A string of characters.">
+
+basicType time <"The time of the day - hour-minute-second.">
+
+basicType pattern <"A regular expression.">
+
+typeAlias int(digits int, min int, max int): <"A signed decimal integer.">
+	number(digits: digits, fractionalDigits: 0, min: min, max: max)
+
+library function DateRanges() date
+library function Min(x number, y number) number
+library function Max(x number, y number) number
+library function Adjust() date
+library function Within() boolean
+library function IsLeapYear(year number) boolean
+
+recordType date
+{
+	day   int
+	month int
+	year  int
+}
+
+recordType dateTime
+{
+	date date
+	time time
+}
+
+recordType zonedDateTime
+{
+	date date
+	time time
+	timezone string
+}
+
+typeAlias productType: string
+typeAlias eventType: string
+
+typeAlias calculation: string

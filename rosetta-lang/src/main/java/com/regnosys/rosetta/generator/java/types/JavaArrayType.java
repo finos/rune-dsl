@@ -30,6 +30,11 @@ public class JavaArrayType implements JavaReferenceType {
 	}
 	
 	@Override
+	public String getSimpleName() {
+		return baseType.getSimpleName();
+	}
+	
+	@Override
 	public void appendTo(TargetStringConcatenation target) {
 		baseType.appendTo(target);
 		target.append("[]");
@@ -42,7 +47,7 @@ public class JavaArrayType implements JavaReferenceType {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) return true;
+		if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
 
         JavaArrayType other = (JavaArrayType) object;

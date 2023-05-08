@@ -5,7 +5,6 @@ import com.google.common.collect.LinkedHashMultimap
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.function.CardinalityProvider
-import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
@@ -72,12 +71,9 @@ import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.services.RosettaGrammarAccess
-import com.regnosys.rosetta.types.RBuiltinType
 import com.regnosys.rosetta.types.RErrorType
-import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
-import com.regnosys.rosetta.types.RosettaTypeCompatibility
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil
@@ -113,19 +109,26 @@ import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
+import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.types.TypeSystem
+import java.util.Optional
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
+
 // TODO: split expression validator
+// TODO: type check type call arguments
 class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaExpectedTypeProvider
 	@Inject extension RosettaTypeProvider
-	@Inject extension RosettaTypeCompatibility
 	@Inject extension IQualifiedNameProvider
 	@Inject extension ResourceDescriptionsProvider
 	@Inject extension RosettaBlueprintTypeResolver
@@ -136,7 +139,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension ImplicitVariableUtil
 	@Inject RosettaScopeProvider scopeProvider
 	@Inject ExternalAnnotationUtil externalAnn
-
+	@Inject extension RBuiltinTypeService
+	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
 
 	static final Logger log = Logger.getLogger(RosettaValidator);
@@ -151,7 +155,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 	override void register(EValidatorRegistrar registrar) {
 	}
-
+	
+	protected override void handleExceptionDuringValidation(Throwable targetException) throws RuntimeException {
+		super.handleExceptionDuringValidation(targetException);
+		log.error(targetException, targetException);
+	}
+	
 	protected override MethodWrapper createMethodWrapper(AbstractDeclarativeValidator instanceToUse, Method method) {
 		return new RosettaMethodWrapper(instanceToUse, method);
 	}
@@ -196,6 +205,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	@Check
+	def void checkParametrizedType(ParametrizedRosettaType type) {
+		val visited = newHashSet
+		for (param: type.parameters) {
+			if (!visited.add(param.name)) {
+				error('''Duplicate parameter name `«param.name»`.''', param, ROSETTA_NAMED__NAME);
+			}
+		}
+	}
+	
+	@Check
 	def void checkAnnotationSource(ExternalAnnotationSource source) {
 		val visited = newHashSet
 		for (t : source.externalRefs) {
@@ -231,8 +250,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	private def void collectRuleErrors(Data type, RosettaExternalRuleSource source, CollectRuleErrorVisitor visitor) {
 		externalAnn.collectAllRuleReferencesForType(source, type, visitor)
 
-		type.allAttributes.forEach [ attr |
-			val attrType = attr.type
+		type.allAttributes.forEach[attr |
+			val attrType = attr.typeCall.type
 
 			if (attrType instanceof Data) {
 				if (!visitor.collectedTypes.contains(attrType)) {
@@ -373,34 +392,35 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			return;
 		owner.eClass.EAllReferences.filter[ROSETTA_EXPRESSION.isSuperTypeOf(it.EReferenceType)].filter [
 			owner.eIsSet(it)
-		].forEach [ ref |
-			val referenceValue = owner.eGet(ref)
-			if (ref.isMany) {
-				(referenceValue as List<? extends EObject>).forEach [ it, i |
-					val expectedType = owner.getExpectedType(ref, i)
-					checkType(expectedType, it, owner, ref, i)
-				]
-			} else {
-				val expectedType = owner.getExpectedType(ref)
-				checkType(expectedType, referenceValue as EObject, owner, ref, INSIGNIFICANT_INDEX)
-			}
-		]
+		].
+			forEach [ ref |
+				val referenceValue = owner.eGet(ref)
+				if (ref.isMany) {
+					(referenceValue as List<? extends RosettaExpression>).forEach [ it, i |
+						val expectedType = owner.getExpectedType(ref, i)
+						checkType(expectedType, it, owner, ref, i)
+					]
+				} else {
+					val expectedType = owner.getExpectedType(ref)
+					checkType(expectedType, referenceValue as RosettaExpression, owner, ref, INSIGNIFICANT_INDEX)
+				}
+			]
 	}
 
-	private def checkType(RType expectedType, EObject object, EObject owner, EReference ref, int index) {
-		val actualType = object.RType
-		if (actualType === null || actualType == RBuiltinType.ANY) {
+	private def checkType(RType expectedType, RosettaExpression expression, EObject owner, EReference ref, int index) {
+		val actualType = expression.RType
+		if (actualType === null) {
 			return
 		}
 		if (actualType instanceof RErrorType)
 			error('''«actualType.name»''', owner, ref, index, TYPE_ERROR)
-		else if (actualType == RBuiltinType.MISSING)
-			error('''Couldn't infer actual type for '«getTokenText(findActualNodeFor(object))»'«»''', owner, ref, index,
+		else if (actualType == MISSING)
+			error('''Couldn't infer actual type for '«getTokenText(findActualNodeFor(expression))»'«»''', owner, ref, index,
 				TYPE_ERROR)
 		else if (expectedType instanceof RErrorType)
 			error('''«expectedType.name»''', owner, ref, index, TYPE_ERROR)
-		else if (expectedType !== null && expectedType != RBuiltinType.MISSING) {
-			if (!actualType.isUseableAs(expectedType))
+		else if (expectedType !== null && expectedType != MISSING) {
+			if (!actualType.isSubtypeOf(expectedType))
 				error('''Expected type '«expectedType.name»' but was '«actualType?.name ?: 'null'»'«»''', owner, ref,
 					index, TYPE_ERROR)
 		}
@@ -429,10 +449,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	protected def void checkTypeAttributeMustHaveSameTypeAsParent(Iterable<Attribute> attrFromClazzes,
 		Iterable<Attribute> attrFromSuperClasses, String name) {
 		attrFromClazzes.filter[!override].forEach [ childAttr |
+			val childAttrType = childAttr.RTypeOfSymbol
 			attrFromSuperClasses.forEach [ parentAttr |
-				if (childAttr.type !== parentAttr.type) {
-					error('''Overriding attribute '«name»' with type («childAttr.type.name») must match the type of the attribute it overrides («parentAttr.type.name»)''',
-						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
+				val parentAttrType = parentAttr.RTypeOfSymbol
+				if (childAttrType != parentAttrType) {
+					error('''Overriding attribute '«name»' with type «childAttrType» must match the type of the attribute it overrides («parentAttrType»)''',
+						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)					
 				}
 			]
 		]
@@ -442,9 +464,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		Iterable<Attribute> attrFromClazzes, Iterable<Attribute> attrFromSuperClasses, String name) {
 		attrFromClazzes.filter[override].forEach [ childAttr |
 			attrFromSuperClasses.forEach [ parentAttr |
-				if ((childAttr.type instanceof Data && !(childAttr.type as Data).isChildOf(parentAttr.type)) ||
-					!(childAttr.type instanceof Data && childAttr.type !== parentAttr.type )) {
-					error('''Overriding attribute '«name»' must have a type that overrides its parent attribute type of «parentAttr.type.name»''',
+				if ((childAttr.typeCall.type instanceof Data && !(childAttr.typeCall.type as Data).isChildOf(parentAttr.typeCall.type)) ||
+					!(childAttr.typeCall.type instanceof Data && childAttr.typeCall.type !== parentAttr.typeCall.type )) {
+					error('''Overriding attribute '«name»' must have a type that overrides its parent attribute type of «parentAttr.typeCall.type.name»''',
 						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
 				}
 			]
@@ -584,9 +606,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if (container instanceof RosettaExternalRegularAttribute) {
 			val attributeRef = container.attributeRef
 			if (attributeRef instanceof RosettaTyped)
-				return attributeRef.type
+				return attributeRef.typeCall.type
 		} else if (container instanceof RosettaTyped) {
-			return container.type
+			 return container.typeCall.type
 		}
 
 		return null
@@ -630,8 +652,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 						val callerArg = indexed.value
 						val callerIdx = indexed.key
 						val param = callable.inputs.get(callerIdx)
-						checkType(param.type.RType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
-						if (!param.card.isMany && cardinality.isMulti(callerArg)) {
+						checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
+						if(!param.card.isMany && cardinality.isMulti(callerArg)) {
 							error('''Expecting single cardinality for parameter '«param.name»'.''', element,
 								ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
 						}
@@ -642,7 +664,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			if (callable instanceof Attribute) {
 				if (callable.isOutput) {
 					val implicitType = element.typeOfImplicitVariable
-					val implicitFeatures = implicitType.allFeatures
+					val implicitFeatures = implicitType.allFeatures(callable)
 					if (implicitFeatures.exists[name == callable.name]) {
 						error(
 							'''Ambiguous reference. `«callable.name»` may either refer to `«defaultImplicitVariable.name» -> «callable.name»` or to the output variable.''',
@@ -689,8 +711,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 	@Check
 	def void checkPatternAndFormat(RosettaExternalRegularAttribute attribute) {
-		if (!isDateTime(attribute.attributeRef.RType)) {
-			for (s : attribute.externalSynonyms) {
+		if (!isDateTime(attribute.attributeRef.RTypeOfFeature)){
+			for(s:attribute.externalSynonyms) {
 				checkFormatNull(s.body)
 				checkPatternValid(s.body)
 			}
@@ -704,8 +726,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 	@Check
 	def void checkPatternAndFormat(Attribute attribute) {
-		if (!isDateTime(attribute.RType)) {
-			for (s : attribute.synonyms) {
+		if (!isDateTime(attribute.RTypeOfSymbol)){
+			for(s:attribute.synonyms) {
 				checkFormatNull(s.body)
 				checkPatternValid(s.body)
 			}
@@ -769,7 +791,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def void checkNodeTypeGraph(RosettaBlueprint bp) {
 		try {
-			buildTypeGraph(bp.nodes, bp.output.RType, new JavaNames)
+			if (bp.nodes !== null) {
+				buildTypeGraph(bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType])
+			}
 		} catch (BlueprintUnresolvedTypeException e) {
 			error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
 		}
@@ -789,9 +813,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void checkBlueprintFilter(BlueprintFilter filter) {
 		if (filter.filter !== null) {
 			val exrType = filter.filter.RType
-			if (exrType !== RBuiltinType.BOOLEAN) {
-				error('''The expression for Filter must return a boolean the current expression returns «exrType.name»''',
-					filter, BLUEPRINT_FILTER__FILTER, TYPE_ERROR)
+			if (exrType != BOOLEAN) {
+				error('''The expression for Filter must return a boolean the current expression returns «exrType.name»''', filter, BLUEPRINT_FILTER__FILTER, TYPE_ERROR)
 			}
 
 			val multi = cardinality.isMulti(filter.filter)
@@ -799,9 +822,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				error('''The expression for Filter must return a single value the current expression can return multiple values''',
 					filter, BLUEPRINT_FILTER__FILTER)
 			}
-
-		} else if (filter.filterBP !== null) {
-			val node = buildTypeGraph(filter.filterBP.blueprint.nodes, filter.filterBP.output.RType, new JavaNames)
+		}
+		else if (filter.filterBP !== null) {
+			val node = buildTypeGraph(filter.filterBP.blueprint.nodes, Optional.ofNullable(filter.filterBP.output).map[typeCallToRType])
 			if (!checkBPNodeSingle(node, false)) {
 				error('''The expression for Filter must return a single value but the rule «filter.filterBP.blueprint.name» can return multiple values''',
 					filter, BLUEPRINT_FILTER__FILTER_BP)
@@ -823,8 +846,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				.toList
 				
 		// 2 recurse and check if any sub usages contain any dupes from rulesToCheck
-		attrs.map[type].filter(Data)
-			.flatMap[allNonOverridesAttributes]
+		attrs.map[RTypeOfSymbol].filter(RDataType)
+			.flatMap[data.allNonOverridesAttributes]
 			.flatMap[allRuleReferences(newHashSet(dataType))]
 			.map[curr|rootRuleReferences.filter[it.reportingRule === curr.reportingRule]]
 			.flatten
@@ -835,7 +858,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		]
 
 	}
-
+	
 	private def List<RosettaRuleReference> allRuleReferences(Attribute attribute, Set<Data> visited) {
 		val listOfRules = newArrayList
 
@@ -843,10 +866,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			listOfRules.add(attribute.ruleReference)
 		}
 
-		val attrType = attribute.type
-		if (attrType instanceof Data) {
-			if (visited.add(attrType)) {
-				attrType.allNonOverridesAttributes.forEach[listOfRules.addAll(allRuleReferences(it, visited))]
+		val attrType = attribute.RTypeOfSymbol
+		if (attrType instanceof RDataType) {
+			if (visited.add(attrType.data)) {
+				attrType.data.allNonOverridesAttributes.forEach[listOfRules.addAll(allRuleReferences(it, visited))]
 			}
 		}
 
@@ -862,7 +885,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		val ruleRef = attr.ruleReference
 		if (ruleRef !== null) {
 			val bp = ruleRef.reportingRule
-			val node = buildTypeGraph(bp.nodes, bp.output.RType, new JavaNames)
+			val node = buildTypeGraph(bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType])
 
 			val attrExt = attr.toExpandedAttribute
 			val attrSingle = attrExt.cardinalityIsSingleValue
@@ -875,18 +898,17 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
 			// check type
-			val bpType = node.output?.type?.name
-			val bpGenericType = node.output?.genericType?.toString?.split("\\.")?.last
-			if (!node.repeatable && (bpType !== null || bpGenericType !== null) &&
-				(attr.type.name != bpType && !attr.type.name.equalsIgnoreCase(bpGenericType))) {
-				val typeError = '''Type mismatch - report field «attr.name» has type «attr.type.name» ''' +
-					'''whereas the reporting rule «bp.name» has type «IF bpType !== null»«bpType»«ELSEIF bpGenericType !== null»«bpGenericType»«ELSE»unknown«ENDIF».'''
+			val bpType = node.output.type
+			val attrType = attr.typeCall.typeCallToRType
+			if (!node.repeatable && bpType.map[!isSubtypeOf(attrType)].orElse(false)) {
+				val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
+					'''whereas the reporting rule «bp.name» has type «bpType.get».'''
 				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
 
 			// check basic type cardinality supported
 			if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
-				val unsupportedWarning = '''Report attributes with basic type («attr.type.name») and multiple cardinality is not supported.'''
+				val unsupportedWarning = '''Report attributes with basic type («attrType.name») and multiple cardinality is not supported.'''
 				error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
 			}
 		}
@@ -937,24 +959,21 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 	@Check
 	def checkFuncDispatchAttr(FunctionDispatch ele) {
-		if (ele.attribute !== null && ele.attribute.type.isResolved) {
-			if (!(ele.attribute.type instanceof RosettaEnumeration)) {
-				error('''Dispatching function may refer to an enumeration typed attributes only. Current type is «ele.attribute.type.name»''',
-					ele, FUNCTION_DISPATCH__ATTRIBUTE)
+		if (ele.attribute.isResolved && ele.attribute.typeCall.isResolved) {
+			if (!(ele.attribute.typeCall.type instanceof RosettaEnumeration)) {
+				error('''Dispatching function may refer to an enumeration typed attributes only. Current type is «ele.attribute.typeCall.type.name»''', ele,
+					FUNCTION_DISPATCH__ATTRIBUTE)
 			}
 		}
 	}
 
 	@Check
 	def checkAttribute(Attribute ele) {
-		if (ele.type instanceof Data && ele.type.isResolved) {
-			if (ele.hasReferenceAnnotation &&
-				!(hasKeyedAnnotation(ele.type as Annotated) || (ele.type as Data).allSuperTypes.exists [
-					hasKeyedAnnotation
-				])) {
-				// TODO turn to error if it's okay
-				warning('''«ele.type.name» must be annotated with [metadata key] as reference annotation is used''',
-					ROSETTA_TYPED__TYPE)
+		if (ele.typeCall.type instanceof Data && ele.typeCall?.type.isResolved) {
+			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(ele.typeCall.type as Annotated) || (ele.typeCall.type as Data).allSuperTypes.exists[hasKeyedAnnotation])) {
+				//TODO turn to error if it's okay
+				warning('''«ele.typeCall.type.name» must be annotated with [metadata key] as reference annotation is used''',
+					ROSETTA_TYPED__TYPE_CALL)
 			}
 		}
 	}
@@ -1128,12 +1147,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 										error('''Target of an address must be an attribute''', it,
 											ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
 								}
-								val targetType = qualPath.RType
-								val thisType = ele.RType
-								if (!targetType.isUseableAs(thisType))
-									error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''',
-										it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
-							// Check it has
+								val targetType = (qualPath as RosettaAttributeReference).attribute.typeCall.typeCallToRType
+								val thisType = ele.RTypeOfSymbol
+								if (!targetType.isSubtypeOf(thisType))
+									error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
+								//Check it has
 							}
 						]
 					} else {
@@ -1168,19 +1186,20 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 
 		val func = ele as Function
-
-		val annotationType = annotations.head.attribute.type
-		val funcOutputType = func.output.type
-
+		
+		val annotationType = annotations.head.attribute.typeCall.type
+		val funcOutputType = func.output.typeCall.type
+		
 		if (annotationType instanceof Data && funcOutputType instanceof Data) {
 			val annotationDataType = annotationType as Data
-			val funcOutputDataType = func.output.type as Data
-			val funcOutputSuperTypeNames = funcOutputDataType.superType.allSuperTypes.map[name].toSet
-			val annotationAttributeTypeNames = annotationDataType.attributes.map[type].map[name].toList
-
-			if (annotationDataType.name !== funcOutputDataType.name &&
-				!funcOutputSuperTypeNames.contains(annotationDataType.name) // annotation type is a super type of output type
-				&& !annotationAttributeTypeNames.contains(funcOutputDataType.name) // annotation type is a parent of the output type (with a one-of condition)
+			val funcOutputDataType = funcOutputType as Data
+			
+			val funcOutputSuperTypes = funcOutputDataType.superType.allSuperTypes.toSet
+			val annotationAttributeTypes = annotationDataType.attributes.map[typeCall.type].toList
+			
+			if (annotationDataType != funcOutputDataType
+				&& !funcOutputSuperTypes.contains(annotationDataType) // annotation type is a super type of output type
+				&& !annotationAttributeTypes.contains(funcOutputDataType) // annotation type is a parent of the output type (with a one-of condition)
 			) {
 				warning('''Invalid output type for creation annotation.  The output type must match the type specified in the annotation '«annotationDataType.name»' (or extend the annotation type, or be a sub-type as part of a one-of condition).''',
 					func, FUNCTION__OUTPUT)
@@ -1211,15 +1230,15 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			error('''Qualification functions must have exactly 1 input.''', func, FUNCTION__INPUTS)
 			return
 		}
-		val inputType = inputs.get(0).type
+		val inputType = inputs.get(0).typeCall?.type
 		if (!inputType.isResolved) {
 			error('''Invalid input type for qualification function.''', func, FUNCTION__INPUTS)
 		} else if (!confExtensions.isRootEventOrProduct(inputType)) {
 			warning('''Input type does not match qualification root type.''', func, FUNCTION__INPUTS)
 		}
-
-		if (RBuiltinType.BOOLEAN.name != func.output?.type?.name) {
-			error('''Qualification functions must output a boolean.''', func, FUNCTION__OUTPUT)
+		
+		if (func.output?.typeCall?.typeCallToRType != BOOLEAN) {
+	 		error('''Qualification functions must output a boolean.''', func, FUNCTION__OUTPUT)
 		}
 	}
 
@@ -1288,7 +1307,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 	@Check
 	def checkFilterOperation(FilterOperation o) {
-		checkBodyType(o.function, RBuiltinType.BOOLEAN)
+		checkBodyType(o.function, BOOLEAN)
 	}
 
 	@Check
@@ -1309,16 +1328,15 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkReduceOperation(ReduceOperation o) {
 		checkNumberOfMandatoryNamedParameters(o.function, 2)
-		if (o.argument.RType != o.function.RType) {
-			error('''List reduce expression must evaluate to the same type as the input. Found types «o.argument.RType» and «o.function.RType».''',
-				o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION)
+		if (o.argument.RType != o.function.body.RType) {
+			error('''List reduce expression must evaluate to the same type as the input. Found types «o.argument.RType» and «o.function.body.RType».''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION)
 		}
 		checkBodyIsSingleCardinality(o.function)
 	}
 
 	@Check
 	def checkNumberReducerOperation(SumOperation o) {
-		checkInputType(o, RBuiltinType.INT, RBuiltinType.NUMBER)
+		checkInputType(o, UNCONSTRAINED_NUMBER)
 	}
 
 	@Check
@@ -1382,28 +1400,27 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	private def void checkOptionalNamedParameter(InlineFunction ref) {
-		if (ref.parameters !== null && ref.parameters.size !== 0 && ref.parameters.size !== 1) {
+		if (ref !== null && ref.parameters !== null && ref.parameters.size !== 0 && ref.parameters.size !== 1) {
 			error('''Function must have 1 named parameter.''', ref, INLINE_FUNCTION__PARAMETERS)
 		}
 	}
 
 	private def void checkNumberOfMandatoryNamedParameters(InlineFunction ref, int max) {
-		if (ref.parameters === null || ref.parameters.size !== max) {
+		if (ref !== null && ref.parameters === null || ref.parameters.size !== max) {
 			error('''Function must have «max» named parameter«IF max > 1»s«ENDIF».''', ref, INLINE_FUNCTION__PARAMETERS)
 		}
 	}
-
-	private def void checkInputType(RosettaUnaryOperation o, RType... type) {
-		if (!type.contains(o.argument.getRType)) {
-			error('''Input type must be a «type.map[name].join(" or ")».''', o, ROSETTA_OPERATION__OPERATOR)
+	
+	private def void checkInputType(RosettaUnaryOperation o, RType type) {
+		if (!o.argument.getRType.isSubtypeOf(type)) {
+			error('''Input type must be a «type».''', o, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 
 	private def void checkInputIsComparable(RosettaUnaryOperation o) {
 		val inputRType = o.argument.getRType
-		if (!inputRType.isComparable) {
-			error('''Operation «o.operator» only supports comparable types (string, int, string, date). Found type «inputRType.name».''',
-				o, ROSETTA_OPERATION__OPERATOR)
+		if (!inputRType.hasNaturalOrder) {
+			error('''Operation «o.operator» only supports comparable types (string, int, string, date). Found type «inputRType.name».''', o, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 
@@ -1414,7 +1431,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	private def void checkBodyType(InlineFunction ref, RType type) {
-		if (ref !== null && ref.getRType != type) {
+		if (ref !== null && ref.body.getRType != type) {
 			error('''Expression must evaluate to a «type.name».''', ref, null)
 		}
 	}
@@ -1422,24 +1439,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	private def void checkBodyIsComparable(RosettaFunctionalOperation op) {
 		val ref = op.function
 		if (ref !== null) {
-			val bodyRType = ref.getRType
-			if (!bodyRType.isComparable) {
-				error('''Operation «op.operator» only supports comparable types (string, int, string, date). Found type «bodyRType.name».''',
-					ref, null)
-			}
+			val bodyRType = ref.body.getRType
+			if (!bodyRType.hasNaturalOrder) {
+				error('''Operation «op.operator» only supports comparable types (string, int, string, date). Found type «bodyRType.name».''', ref, null)
+			}			
 		}
 	}
-
-	private def boolean isComparable(RType rType) {
-		switch (rType) {
-			RBuiltinType,
-			RRecordType:
-				return true
-			default:
-				false
-		}
-	}
-
+	
 	@Check
 	def checkAssignOutput(Operation o) {
 		val expr = o?.expression

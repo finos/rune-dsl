@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.GlobalKey
@@ -22,23 +21,23 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.generator.java.types.JavaType
-import com.regnosys.rosetta.types.RosettaTypeProvider
-import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.types.RDataType
 
 class ModelObjectBoilerPlate {
 
 	@Inject extension RosettaExtensions
 	@Inject extension ModelObjectBuilderGenerator
-	@Inject RosettaTypeProvider typeProvider
+	@Inject extension JavaTypeTranslator
 
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
 
-	def StringConcatenationClient builderBoilerPlate(Data c, JavaScope scope, extension JavaNames names) {
+	def StringConcatenationClient builderBoilerPlate(Data c, JavaScope scope) {
 		val attrs = c.expandedAttributes.toList
 		'''
-			«c.contributeEquals(attrs, [t|(names.toJavaType(typeProvider.getRType(t)) as JavaClass).toBuilderType], scope)»
+			«c.contributeEquals(attrs, scope)»
 			«c.contributeHashCode(attrs, scope)»
 			«c.contributeToString(toBuilder, scope)»
 		'''
@@ -62,33 +61,15 @@ class ModelObjectBoilerPlate {
 			interfaces.add('''«TemplatableBuilder»''')
 		if(interfaces.empty) null else ''', «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
-	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names) {
-		toType(attribute, names, false)
-	}
-	def StringConcatenationClient toType(ExpandedAttribute attribute, JavaNames names, boolean underlying) {
-		if (attribute.isMultiple) '''List<? extends «attribute.toTypeSingle(names, underlying)»>''' 
-		else attribute.toTypeSingle(names, underlying);
-	}
-	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names) {
-		toTypeSingle(attribute, names, false)
-	}
-	def StringConcatenationClient toTypeSingle(ExpandedAttribute attribute, JavaNames names, boolean underlying) {
-		if(!attribute.hasMetas || underlying) return '''«names.toJavaType(attribute.type)»'''
-		val metaType = if (attribute.refIndex >= 0) {
-				if (attribute.isDataType)
-					'''ReferenceWithMeta«attribute.type.name.toFirstUpper»'''
-				else
-					'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper»'''
-			} else
-				'''FieldWithMeta«attribute.type.name.toFirstUpper»'''
-
-		return '''«names.toMetaType(attribute,metaType)»'''
+	def JavaType toListOrSingleMetaType(ExpandedAttribute attribute) {
+		if (attribute.isMultiple) attribute.toMetaOrRegularJavaType.toPolymorphicList
+		else attribute.toMetaOrRegularJavaType;
 	}
 
-	def StringConcatenationClient boilerPlate(Data c, JavaScope scope, JavaNames names) {
+	def StringConcatenationClient boilerPlate(Data c, JavaScope scope) {
 		val attributes = c.expandedAttributes.toList
 		'''
-			«c.contributeEquals(attributes, [t|names.toJavaType(typeProvider.getRType(t))], scope)»
+			«c.contributeEquals(attributes, scope)»
 			«c.contributeHashCode(attributes, scope)»
 			«c.contributeToString(identity, scope)»
 		'''
@@ -138,7 +119,7 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeEquals(Data c, List<ExpandedAttribute> attributes, (Data)=>JavaType classNameFunc, JavaScope scope) {
+	private def StringConcatenationClient contributeEquals(Data c, List<ExpandedAttribute> attributes, JavaScope scope) {
 		val methodScope = scope.methodScope("equals")
 		'''
 		@Override
@@ -172,36 +153,36 @@ class ModelObjectBoilerPlate {
 		if(c.hasSuperType) 'super.hashCode()' else '0'
 	}
 	
-	def StringConcatenationClient processMethod(Data c, JavaNames names) '''
+	def StringConcatenationClient processMethod(Data c) '''
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
 			«IF c.hasSuperType»
-				«names.toJavaType(typeProvider.getRType(c.superType))».super.process(path, processor);
+				«new RDataType(c.superType).toJavaType».super.process(path, processor);
 			«ENDIF»
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
-				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
+				processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
 			«ENDFOR»
 			
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
-				processRosetta(path.newSubPath("«a.name»"), processor, «a.toTypeSingle(names)».class, get«a.name.toFirstUpper»()«a.metaFlags»);
+				processRosetta(path.newSubPath("«a.name»"), processor, «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 			«ENDFOR»
 		}
 		
 	'''
 	
-	def StringConcatenationClient builderProcessMethod(Data c, extension JavaNames names) '''
+	def StringConcatenationClient builderProcessMethod(Data c) '''
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
 			«IF c.hasSuperType»
-				«(names.toJavaType(typeProvider.getRType(c.superType)) as JavaClass).toBuilderType».super.process(path, processor);
+				«new RDataType(c.superType).toJavaType.toBuilderType».super.process(path, processor);
 			«ENDIF»
 			
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
-				processor.processBasic(path.newSubPath("«a.name»"), «a.toTypeSingle(names)».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
+				processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
 			«ENDFOR»
 			
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
-				processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle(names)».class, get«a.name.toFirstUpper»()«a.metaFlags»);
+				processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 			«ENDFOR»
 		}
 		

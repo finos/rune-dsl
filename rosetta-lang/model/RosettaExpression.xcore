@@ -1,9 +1,11 @@
 @Ecore(nsURI="http://www.rosetta-model.com/RosettaExpression")
-@GenModel(fileExtensions="rosetta", modelDirectory="/rosetta-lang/emf-gen/main/java", operationReflection="false",
+@GenModel(fileExtensions="rosetta", modelDirectory="/com.regnosys.rosetta/emf-gen/main/java", operationReflection="false",
 	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
 	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
 
 package com.regnosys.rosetta.rosetta.expression
+
+import java.util.regex.Pattern
 
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaSymbol
@@ -34,12 +36,17 @@ interface HasGeneratedInput {
  */
 
 interface RosettaLiteral extends RosettaExpression, RosettaMapTestExpression {
+	op Object containedValue()
+
 	op String stringValue()
 }
 
 class RosettaBooleanLiteral extends RosettaLiteral {
 	boolean value
 	
+	op Object containedValue() {
+		return isValue
+	}
 	op String stringValue() {
 		return Boolean.toString(value)
 	}
@@ -47,22 +54,47 @@ class RosettaBooleanLiteral extends RosettaLiteral {
 
 class RosettaStringLiteral extends RosettaLiteral {
 	String value
+	
+	op Object containedValue() {
+		return value
+	}
 	op String stringValue() {
 		return '"' + value + '"'
 	}
 }
 
-class RosettaBigDecimalLiteral extends RosettaLiteral {
-	String value
-	op String stringValue() {
+class RosettaNumberLiteral extends RosettaLiteral {
+	BigDecimal value
+	
+	op Object containedValue() {
 		return value
+	}
+	op String stringValue() {
+		return value.toPlainString
 	}
 }
 
 class RosettaIntLiteral extends RosettaLiteral {
-	String value
-	op String stringValue() {
+	int value
+	
+	op Object containedValue() {
 		return value
+	}
+	op String stringValue() {
+		return Integer.toString(value)
+	}
+}
+
+// Not supported - see issue https://github.com/REGnosys/rosetta-dsl/issues/524
+type Pattern wraps Pattern
+class RosettaPatternLiteral extends RosettaLiteral {
+	Pattern value
+	
+	op Object containedValue() {
+		return value
+	}
+	op String stringValue() {
+		return '/' + value.toString() + '/'
 	}
 }
 

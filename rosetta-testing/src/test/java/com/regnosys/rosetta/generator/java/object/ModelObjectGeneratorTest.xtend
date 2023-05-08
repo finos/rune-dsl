@@ -397,18 +397,6 @@ class ModelObjectGeneratorTest {
 	}
 
 	@Test
-	def shouldGenerateRosettaCalculationTypeAsString() {
-		val code = '''
-			type Foo:
-				bar calculation (0..1)
-		'''.generateCode
-		val classes = code.compileToClasses
-		val testClass = classes.get(rootPackage + '.Foo')
-
-		assertEquals(String, testClass.getMethod("getBar").returnType)
-	}
-
-	@Test
 	def void shouldSetAttributesOnEmptyClassWithInheritance() {
 		val code = '''
 			type Foo:
@@ -478,7 +466,7 @@ class ModelObjectGeneratorTest {
 
 		val getter = barClass.getMethod("getBar")
 		assertThat(getter, CoreMatchers.notNullValue())
-		assertThat(getter.returnType.name, is('com.rosetta.model.metafields.BasicReferenceWithMetaString'))
+		assertThat(getter.returnType.name, is('com.rosetta.model.metafields.ReferenceWithMetaString'))
 		
 		val fooClass = generatedClass.get(rootPackage + '.Foo')
 		val builderInstance = fooClass.getMethod("builder").invoke(null)

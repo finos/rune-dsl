@@ -6,7 +6,6 @@ import com.google.common.collect.Lists
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
-import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -27,33 +26,35 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.types.RDataType
 
 class ValidatorsGenerator {
 
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaExtensions
-	@Inject RosettaTypeProvider typeProvider
+	@Inject extension JavaTypeTranslator
 
-	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version) {
-		fsa.generateFile(names.packages.model.typeValidation.withForwardSlashes + '/' + data.name + 'Validator.java',
-			generatClass(names, data, version))
-		fsa.generateFile(names.packages.model.existsValidation.withForwardSlashes + '/' + onlyExistsValidatorName(data) + '.java',
-			generateOnlyExistsValidator(names, data, version))
+	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
+		fsa.generateFile(root.typeValidation.withForwardSlashes + '/' + data.name + 'Validator.java',
+			generateClass(root, data, version))
+		fsa.generateFile(root.existsValidation.withForwardSlashes + '/' + onlyExistsValidatorName(data) + '.java',
+			generateOnlyExistsValidator(root, data, version))
 	}
 
-	private def generatClass(JavaNames names, Data d, String version) {
-		val scope = new JavaScope(names.packages.model.typeValidation)
-		buildClass(names.packages.model.typeValidation, d.classBody(names, version, d.allAttributes), scope)
+	private def generateClass(RootPackage root, Data d, String version) {
+		val scope = new JavaScope(root.typeValidation)
+		buildClass(root.typeValidation, d.classBody(version, d.allAttributes), scope)
 	}
 
-	private def generateOnlyExistsValidator(JavaNames names, Data d, String version) {
-		val scope = new JavaScope(names.packages.model.existsValidation)
-		buildClass(names.packages.model.existsValidation, d.onlyExistsClassBody(names, version, d.allAttributes), scope)
+	private def generateOnlyExistsValidator(RootPackage root, Data d, String version) {
+		val scope = new JavaScope(root.existsValidation)
+		buildClass(root.existsValidation, d.onlyExistsClassBody(version, d.allAttributes), scope)
 	}
 
-	def private StringConcatenationClient classBody(Data c, JavaNames names, String version, Iterable<Attribute> attributes) '''
-		public class «c.name»Validator implements «Validator»<«names.toJavaType(typeProvider.getRType(c))»> {
+	def private StringConcatenationClient classBody(Data c, String version, Iterable<Attribute> attributes) '''
+		public class «c.name»Validator implements «Validator»<«new RDataType(c).toJavaType»> {
 		
 			@Override
 			public «ValidationResult»<«c.name»> validate(«RosettaPath» path, «c.name» o) {
@@ -77,8 +78,8 @@ class ValidatorsGenerator {
 		return c.name + 'OnlyExistsValidator'
 	}
 
-	def private StringConcatenationClient onlyExistsClassBody(Data c, JavaNames names, String version, Iterable<Attribute> attributes) '''
-		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«names.toJavaType(typeProvider.getRType(c))», «Set»<String>> {
+	def private StringConcatenationClient onlyExistsClassBody(Data c, String version, Iterable<Attribute> attributes) '''
+		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«new RDataType(c).toJavaType», «Set»<String>> {
 		
 			@Override
 			public <T2 extends «c.name»> «ValidationResult»<«c.name»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {

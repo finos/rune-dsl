@@ -50,6 +50,10 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.rosetta.RosettaTypeAlias
+import com.regnosys.rosetta.rosetta.TypeCall
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 
 /**
  * This class contains custom scoping description.
@@ -71,21 +75,30 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	override getScope(EObject context, EReference reference) {
 		try {
 			switch reference {
+				case TYPE_CALL_ARGUMENT__PARAMETER: {
+					if (context instanceof TypeCall) {
+						val type = context.type
+						if (type instanceof ParametrizedRosettaType) {
+							return Scopes.scopeFor(type.parameters)
+						}
+						return IScope.NULLSCOPE
+					}
+				}
 				case ROSETTA_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaFeatureCall) {
-						return createExtendedFeatureScope(context.receiver)
+						return createExtendedFeatureScope(context.receiver, typeProvider.getRType(context.receiver))
 					}
 					return IScope.NULLSCOPE
 				}
 				case CHOICE_OPERATION__ATTRIBUTES: {
 					if (context instanceof ChoiceOperation) {
-						return createExtendedFeatureScope(context.argument)
+						return createExtendedFeatureScope(context.argument, typeProvider.getRType(context.argument))
 					}
 					return IScope.NULLSCOPE
 				}
 				case ROSETTA_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
 					if (context instanceof RosettaAttributeReference) {
-						return createExtendedFeatureScope(context.receiver)
+						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver))
 					}
 					return IScope.NULLSCOPE
 				}
@@ -104,15 +117,15 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case SEGMENT__ATTRIBUTE: {
 					switch (context) {
 						Operation: {
-							val receiverType = typeProvider.getRType(context.assignRoot)
-							return Scopes.scopeFor(receiverType.allFeatures)
+							val receiverType = typeProvider.getRTypeOfSymbol(context.assignRoot)
+							return Scopes.scopeFor(receiverType.allFeatures(context))
 						}
 						Segment: {
 							val prev = context.prev
 							if (prev !== null) {
 								if (prev.attribute.isResolved) {
-									val receiverType = typeProvider.getRType(prev.attribute)
-									return Scopes.scopeFor(receiverType.allFeatures)
+									val receiverType = typeProvider.getRTypeOfSymbol(prev.attribute)
+									return Scopes.scopeFor(receiverType.allFeatures(context))
 								}
 							}
 							if (context.eContainer instanceof Operation) {
@@ -262,6 +275,9 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					descr.qualifiedName.toString != object.name // TODO use qnames
 				])
 			}
+			RosettaTypeAlias: {
+				Scopes.scopeFor(object.parameters, parentScope)
+			}
 			Condition: {
 				filteredScope(parentScope, [ descr |
 					object.isPostCondition || descr.EObjectOrProxy.eContainingFeature !== FUNCTION__OUTPUT
@@ -281,15 +297,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	}
 	
 	private def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
-		typeProvider.typeOfImplicitVariable(context).allFeatures
+		return typeProvider.typeOfImplicitVariable(context).allFeatures(context)
 	}
 	
-	private def IScope createExtendedFeatureScope(EObject receiver) {
-		val receiverType = typeProvider.getRType(receiver)
-
+	private def IScope createExtendedFeatureScope(EObject receiver, RType receiverType) {
 		val List<IEObjectDescription> allPosibilities = newArrayList
 		allPosibilities.addAll(
-			receiverType.allFeatures
+			receiverType.allFeatures(receiver)
 				.map[new EObjectDescription(QualifiedName.create(name), it, null)]
 			
 		)

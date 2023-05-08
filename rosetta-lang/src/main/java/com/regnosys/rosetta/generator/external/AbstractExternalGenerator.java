@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.emf.ecore.resource.Resource;
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.rosetta.util.DemandableLock;
@@ -29,10 +29,10 @@ public abstract class AbstractExternalGenerator implements ExternalGenerator {
 	}
 
 	@Override
-	public void generate(RosettaJavaPackages packages, List<RosettaRootElement> elements, String version,
+	public void generate(RootPackage root, List<RosettaRootElement> elements, String version,
 			Consumer<Map<String, ? extends CharSequence>> processResults, Resource resource,
 			DemandableLock generateLock) {
-		Map<String, ? extends CharSequence> generate = generate(packages, elements, version);
+		Map<String, ? extends CharSequence> generate = generate(root, elements, version);
 		processResults.accept(generate);
 	}
 
@@ -57,7 +57,7 @@ public abstract class AbstractExternalGenerator implements ExternalGenerator {
 	 * @param 	version  the version of rosetta files
 	 * @return
 	 */
-	public abstract Map<String, ? extends CharSequence> generate(RosettaJavaPackages packages, List<RosettaRootElement> elements, String version);
+	public abstract Map<String, ? extends CharSequence> generate(RootPackage root, List<RosettaRootElement> elements, String version);
 
 	public Map<String, ? extends CharSequence> afterGenerate(Collection<? extends RosettaModel> models) {
 		//By default don't do anything in the after generate step

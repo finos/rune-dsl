@@ -1,5 +1,5 @@
 @Ecore(nsURI="http://www.rosetta-model.com/Rosetta")
-@GenModel(fileExtensions="rosetta", modelDirectory="/rosetta-lang/emf-gen/main/java", operationReflection="false",
+@GenModel(fileExtensions="rosetta", modelDirectory="/com.regnosys.rosetta/emf-gen/main/java", operationReflection="false",
 	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
 	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
 package com.regnosys.rosetta.rosetta
@@ -36,10 +36,10 @@ interface RosettaNamed {
 }
 
 interface RosettaTyped {
-	refers RosettaType ^type
+	contains TypeCall typeCall
 		
 	derived boolean isTypeInferred get {
-		return ^type === null
+		return typeCall === null
 	}
 }
 
@@ -79,21 +79,37 @@ abstract class RosettaFeatureOwner extends RosettaDefinable {
 abstract class RosettaType extends RosettaRootElement, RosettaNamed {
 }
 
+interface ParametrizedRosettaType {
+	contains TypeParameter[] parameters
+}
+
+class TypeCall {
+	refers RosettaType ^type
+	contains TypeCallArgument[] arguments
+}
+
+class TypeCallArgument {
+	refers TypeParameter parameter
+	contains RosettaExpression value
+}
+
 
 /**********************************************************************
  * Built-in
  */
 
-abstract class RosettaBuiltinType extends RosettaType {
+abstract class RosettaBuiltinType extends RosettaType, RosettaDefinable {
 }
 
-class RosettaBasicType extends RosettaRootElement , RosettaBuiltinType {
+class RosettaBasicType extends RosettaRootElement, RosettaBuiltinType, ParametrizedRosettaType {
 }
+
+class TypeParameter extends RosettaSymbol, RosettaTyped, RosettaDefinable {}
 
 class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 }
 
-class RosettaRecordType extends RosettaRootElement, RosettaDefinable, RosettaBuiltinType {
+class RosettaRecordType extends RosettaRootElement, RosettaBuiltinType {
 	contains RosettaRecordFeature[] features
 }
 
@@ -111,16 +127,14 @@ class RosettaParameter extends RosettaTyped, RosettaNamed {
 	boolean isArray
 }
 
-class RosettaQualifiedType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType {
-}
-
-class RosettaCalculationType extends RosettaRootElement, RosettaFeatureOwner, RosettaBuiltinType {
-}
-
 
 /**********************************************************************
  * Data model
  */
+class RosettaTypeAlias extends RosettaRootElement, RosettaType, RosettaTyped, RosettaDefinable, ParametrizedRosettaType {
+}
+
+
 class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaType {
 	
 }
@@ -135,10 +149,6 @@ class RosettaEnumValue extends RosettaNamed, RosettaDefinable, RosettaFeature, R
 	String display
 	contains RosettaEnumSynonym[] enumSynonyms
 	container RosettaEnumeration enumeration opposite enumValues
-	
-	refers RosettaType ^type get {
-		return enumeration
-	}
 }
 
 class RosettaEnumValueReference extends RosettaMapTestExpression {
@@ -500,7 +510,7 @@ class RosettaBlueprintReport extends RosettaRootElement {
 class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 	contains RosettaDocReference[] references
 	contains BlueprintNodeExp nodes
-	refers RosettaType output
+	contains TypeCall output
 }
 
 class BlueprintNodeExp {
@@ -512,13 +522,11 @@ class BlueprintNodeExp {
 
 abstract class BlueprintNode {
 	String name
-	refers RosettaType input
-	refers RosettaType output
-	refers RosettaType inputKey
-	refers RosettaType outputKey
+	contains TypeCall input
+	contains TypeCall output
+	contains TypeCall inputKey
+	contains TypeCall outputKey
 }
-
-class BlueprintSource extends BlueprintNode{}
 
 class BlueprintOr extends BlueprintNode {
 	contains BlueprintNodeExp[] bps

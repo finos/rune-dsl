@@ -8,24 +8,9 @@ public class RosettaJavaPackages {
 
 	public static final DottedPath DEFAULT_NAMESPACE = DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE);
 	private static final DottedPath BLUEPRINT_NAMESPACE = DottedPath.splitOnDots("com.regnosys.rosetta");
-	private RootPackage root;
 
-	public RosettaJavaPackages(RosettaModel model) {
-		this(new RootPackage(model));
-	}
-
-	protected RosettaJavaPackages() {
-	}
-	
-	protected RosettaJavaPackages(RootPackage root) {
-		this.root = root;
-	}
 	public DottedPath defaultNamespace() {
 		return DEFAULT_NAMESPACE;
-	}
-
-	public RootPackage model() {
-		return this.root;
 	}
 
 	public DottedPath blueprintLib() {

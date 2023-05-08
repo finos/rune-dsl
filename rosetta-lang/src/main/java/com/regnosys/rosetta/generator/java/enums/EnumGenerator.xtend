@@ -10,12 +10,16 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import javax.inject.Inject
 
 class EnumGenerator {
+	@Inject
+	RosettaJavaPackages packages
 
-	def generate(RosettaJavaPackages packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
+	def generate(RootPackage root, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaEnumeration).forEach [
-			fsa.generateFile(packages.model.withForwardSlashes + '/' + name + '.java', toJava(packages, version))
+			fsa.generateFile(root.withForwardSlashes + '/' + name + '.java', toJava(root, version))
 		]
 	}
 	
@@ -30,8 +34,8 @@ class EnumGenerator {
 		return enumValues;
 	}
 
-	private def toJava(RosettaEnumeration e, RosettaJavaPackages packages, String version) '''
-		package «packages.model»;
+	private def toJava(RosettaEnumeration e, RootPackage root, String version) '''
+		package «root»;
 		
 		«IF e.anyValueHasSynonym»
 		import «packages.defaultLibAnnotations».RosettaSynonym;

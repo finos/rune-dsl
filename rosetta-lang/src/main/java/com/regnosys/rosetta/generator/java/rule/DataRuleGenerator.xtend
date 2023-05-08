@@ -5,7 +5,6 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
-import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -21,7 +20,9 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.types.RDataType
 
 class DataRuleGenerator {
 	@Inject ExpressionGenerator expressionHandler
@@ -29,17 +30,17 @@ class DataRuleGenerator {
 	@Inject extension ImportManagerExtension
 	@Inject FunctionDependencyProvider funcDependencies
 	@Inject extension JavaIdentifierRepresentationService
-	@Inject RosettaTypeProvider typeProvider
+	@Inject extension JavaTypeTranslator
 	
-	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, Condition ele, String version) {
-		val topScope = new JavaScope(names.packages.model.dataRule)
+	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, Condition ele, String version) {
+		val topScope = new JavaScope(root.dataRule)
 		
-		val classBody = ele.dataRuleClassBody(data, topScope, names, version)
-		val content = buildClass(names.packages.model.dataRule, classBody, topScope)
-		fsa.generateFile('''«names.packages.model.dataRule.withForwardSlashes»/«ele.conditionName(data).toConditionJavaType».java''', content)
+		val classBody = ele.dataRuleClassBody(data, topScope, version)
+		val content = buildClass(root.dataRule, classBody, topScope)
+		fsa.generateFile('''«root.dataRule.withForwardSlashes»/«ele.conditionName(data).toConditionJavaType».java''', content)
 	}
 
-	private def StringConcatenationClient dataRuleClassBody(Condition rule, Data data, JavaScope scope, JavaNames javaName, String version)  {
+	private def StringConcatenationClient dataRuleClassBody(Condition rule, Data data, JavaScope scope, String version)  {
 		val rosettaClass = rule.eContainer as Data
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION))
 		val ruleName = rule.conditionName(data)
@@ -60,13 +61,13 @@ class DataRuleGenerator {
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaDataRule»("«ruleName»")
-			public class «toConditionJavaType(ruleName)» implements «Validator»<«javaName.toJavaType(typeProvider.getRType(rosettaClass))»> {
+			public class «toConditionJavaType(ruleName)» implements «Validator»<«new RDataType(rosettaClass).toJavaType»> {
 				
 				private static final String NAME = "«ruleName»";
 				private static final String DEFINITION = «definition»;
 				
 				«FOR dep : funcDeps»
-					@«Inject» protected «javaName.toJavaType(dep)» «classScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
+					@«Inject» protected «dep.toFunctionJavaClass» «classScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
 				«ENDFOR»
 				
 				@Override
@@ -86,7 +87,7 @@ class DataRuleGenerator {
 				private «ComparisonResult» executeDataRule(«rosettaClass.name» «executeScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
 					
 					try {
-						«ComparisonResult» «executeResultId» = «expressionHandler.toComparisonResult(rule.expression, executeScope, javaName)»;
+						«ComparisonResult» «executeResultId» = «expressionHandler.toComparisonResult(rule.expression, executeScope)»;
 						return «executeResultId».get() == null ? ComparisonResult.success() : «executeResultId»;
 					}
 					catch («Exception» «exceptionId») {

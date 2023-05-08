@@ -22,6 +22,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
+import org.eclipse.xtext.diagnostics.Diagnostic
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -1311,10 +1312,10 @@ class RosettaBlueprintTest {
 					}
 				}
 			'''
+			assertEquals(expected, blueprintJava)
 			val classes = blueprint.compileToClasses
 			val bpImpl = classes.loadBlueprint("com.rosetta.test.model.blueprint.Blueprint1Rule")
 			assertNotNull(bpImpl)
-			assertEquals(expected, blueprintJava)
 		} finally {
 		}
 	}
@@ -1330,8 +1331,8 @@ class RosettaBlueprintTest {
 			
 			reporting rule Blueprint1:
 				extract Input->input2->name
-		'''.parseRosetta.assertError(ROSETTA_FEATURE_CALL, RosettaIssueCodes.MISSING_ATTRIBUTE,
-			"attempted to reference unknown field of Input2")
+		'''.parseRosetta.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
+			"Couldn't resolve reference to RosettaFeature 'name'.")
 	}
 
 	@Test
@@ -1351,7 +1352,7 @@ class RosettaBlueprintTest {
 				colour string (1..1)
 			
 		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
-			"Input type of com.rosetta.test.model.Input2 is not assignable from type com.rosetta.test.model.Input of previous node ")
+			"Input type of Input2 is not assignable from type Input of previous node ")
 	}
 	
 	@Test
@@ -1477,8 +1478,8 @@ class RosettaBlueprintTest {
 					}
 				}
 			'''
-			blueprint.compileToClasses
 			assertEquals(expected, blueprintJava)
+			blueprint.compileToClasses
 		} finally {
 		}
 	}
@@ -1504,7 +1505,7 @@ class RosettaBlueprintTest {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
-
+				
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
@@ -1514,7 +1515,7 @@ class RosettaBlueprintTest {
 				import com.rosetta.test.model.Input;
 				import java.math.BigDecimal;
 				import javax.inject.Inject;
-
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**
@@ -1545,15 +1546,15 @@ class RosettaBlueprintTest {
 						return 
 							startsWith(actionFactory, BlueprintBuilder.<Input, Number, INKEY, INKEY>or(actionFactory,
 								startsWith(actionFactory, actionFactory.<Input, Integer, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.0/@node", "Input->a", new RuleIdentifier("Input->a", getClass()), input -> MapperS.of(input).<Integer>map("getA", _input -> _input.getA()))),
-								startsWith(actionFactory, actionFactory.<Input, BigDecimal, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.1/@node", "Input->b", new RuleIdentifier("Input->b", getClass()), input -> MapperS.of(input).<BigDecimal>map("getB", _input -> _input.getB())))
+								startsWith(actionFactory, actionFactory.<Input, Number, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.1/@node", "Input->b", new RuleIdentifier("Input->b", getClass()), input -> MapperS.of(input).<BigDecimal>map("getB", _input -> _input.getB())))
 								)
 							)
 							.toBlueprint(getURI(), getName());
 					}
 				}
 			'''
-			blueprint.compileToClasses
 			assertEquals(expected, blueprintJava)
+			blueprint.compileToClasses
 		} finally {
 		}
 	}
@@ -1810,8 +1811,8 @@ class RosettaBlueprintTest {
 			}
 		}
 		'''
-		blueprint.compileToClasses
 		assertEquals(expected, blueprintJava)
+		blueprint.compileToClasses
 	}
 
 	@Test
@@ -1956,7 +1957,7 @@ class RosettaBlueprintTest {
 		'''.parseRosetta
 		
 		model.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
-			"output type of node java.lang.String does not match required type of java.lang.Boolean")
+			"output type of node string does not match required type of boolean")
 		model.assertError(BLUEPRINT_FILTER, null,
 			"The expression for Filter must return a single value but the rule TestRule can return multiple values")
 	}
@@ -2406,7 +2407,7 @@ class RosettaBlueprintTest {
 		.replace('\r', "")
 		.parseRosetta
 			.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
-			"Input type of com.rosetta.test.model.Foo is not assignable from type com.rosetta.test.model.Bar of previous node ")
+			"Input type of Foo is not assignable from type Bar of previous node ")
 		
 	}
 

@@ -24,6 +24,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -31,6 +32,51 @@ class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	@Disabled // see issue https://github.com/REGnosys/rosetta-dsl/issues/524
+	def void testPatternLiterals() {
+		val model = '''
+           func Foo:
+             output: result pattern (0..*)
+             
+             add result: /ABC/
+             add result: /[a-z]*/
+             add result: /\/\+/
+	    '''.parseRosettaWithNoIssues
+	    
+	    model.elements.head as Function => [
+	    	operations.map[(expression as RosettaPatternLiteral).value] => [
+	    		get(0) => [
+	    			assertEquals("ABC", pattern)
+	    		]
+	    		get(1) => [
+	    			assertEquals("[a-z]*", pattern)
+	    		]
+	    		get(2) => [
+	    			assertEquals("/\\+", pattern)
+	    		]
+	    	]
+	    ]
+	}
+	
+	@Test
+	def void testTypeAliases() {
+		'''
+			typeAlias int(digits int, min int, max int): number(digits: digits, fractionalDigits: 0, min: min, max: max)
+			typeAlias max4String: string(minLength: 1, maxLength: 4)
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testParametrizedBasicTypes() {
+		'''
+			basicType pattern
+			basicType int(digits int, min int, max int)
+			basicType number(digits int, fractionalDigits int, min number, max number)
+			basicType string(minLength int, maxLength int, pattern pattern)
+		'''.parseRosettaWithNoIssues
+	}
 	
 	@Test
 	def void testPrioritisationOfOperations1() {
@@ -392,9 +438,6 @@ class RosettaParsingTest {
 				value6 date (0..1) <"">
 				value9 string (0..1) <"">
 				value10 zonedDateTime (0..1) <"">
-				value11 productType (0..1) <"">
-				value12 eventType (0..1) <"">
-				value13 calculation (0..1) <"">
 		'''.parseRosettaWithNoErrors
 	}
 	

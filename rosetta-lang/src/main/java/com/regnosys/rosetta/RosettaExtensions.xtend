@@ -19,7 +19,6 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
-import com.regnosys.rosetta.types.RRecordType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.rosetta.model.lib.path.RosettaPath
@@ -32,23 +31,36 @@ import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+import com.regnosys.rosetta.types.builtin.RRecordType
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import org.eclipse.emf.ecore.resource.ResourceSet
+import com.regnosys.rosetta.rosetta.RosettaRecordType
 
 class RosettaExtensions {
 	
 	@Inject ExternalAnnotationUtil externalAnn
+	@Inject RBuiltinTypeService builtins
 	
 	def boolean isResolved(EObject obj) {
 		obj !== null && !obj.eIsProxy
 	}
 	
-	def Iterable<? extends RosettaFeature> allFeatures(RType t) {
+	def Iterable<? extends RosettaFeature> allFeatures(RType t, EObject context) {
+		allFeatures(t, context?.eResource?.resourceSet)
+	}
+	def Iterable<? extends RosettaFeature> allFeatures(RType t, ResourceSet resourceSet) {
 		switch t {
 			RDataType:
 				t.data.allAttributes
 			REnumType:
 				t.enumeration.allEnumValues
-			RRecordType:
-				t.record.features
+			RRecordType: {
+				if (resourceSet !== null) {
+					builtins.toRosettaType(t, RosettaRecordType, resourceSet).features
+				} else {
+					#[]
+				}
+			}
 			default:
 				#[]
 		}
@@ -79,7 +91,7 @@ class RosettaExtensions {
 			atts.addAll(data.superType.allNonOverridesAttributes
 				.filter[superAttr| !atts.exists[extendedAttr|					
 					superAttr.name == extendedAttr.name && 
-					superAttr.type == extendedAttr.type && 
+					superAttr.typeCall.type == extendedAttr.typeCall.type && 
 					superAttr.card.inf == extendedAttr.card.inf &&
 					superAttr.card.sup == extendedAttr.card.sup
 				]].toList)
@@ -238,7 +250,7 @@ class RosettaExtensions {
 		val attrRules = externalAnn.getAllRuleReferencesForType(ruleSource, dataType)
 		
 		dataType.allNonOverridesAttributes.forEach[attr |
-			val attrType = attr.type
+			val attrType = attr.typeCall.type
 			val attrEx = attr.toExpandedAttribute
 			val rule = attrRules.get(attr)
 			

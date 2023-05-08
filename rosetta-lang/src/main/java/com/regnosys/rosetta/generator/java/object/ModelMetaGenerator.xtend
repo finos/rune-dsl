@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
-import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
@@ -28,7 +27,8 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.rosetta.model.lib.validation.ValidatorFactory
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.types.RDataType
 
 class ModelMetaGenerator {
 
@@ -36,21 +36,21 @@ class ModelMetaGenerator {
 	@Inject extension RosettaExtensions
 	@Inject RosettaConfigExtension confExt
 	@Inject RosettaFunctionExtensions funcExt
-	@Inject RosettaTypeProvider typeProvider
+	@Inject extension JavaTypeTranslator
 	
-	def generate(JavaNames names, IFileSystemAccess2 fsa, Data data, String version, Set<RosettaModel> models) {
+	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version, Set<RosettaModel> models) {
 		val className = '''«data.name»Meta'''
 		
-		val scope = new JavaScope(names.packages.model.meta)
+		val scope = new JavaScope(root.meta)
 		
-		val classBody = data.metaClassBody(names, className, version, models)
-		val javaFileContents = buildClass(names.packages.model.meta, classBody, scope)
-		fsa.generateFile('''«names.packages.model.meta.withForwardSlashes»/«className».java''', javaFileContents)
+		val classBody = data.metaClassBody(root, className, version, models)
+		val javaFileContents = buildClass(root.meta, classBody, scope)
+		fsa.generateFile('''«root.meta.withForwardSlashes»/«className».java''', javaFileContents)
 	}
 	
-	private def StringConcatenationClient metaClassBody(Data c, JavaNames javaNames, String className, String version, Set<RosettaModel> models) {
-		val dataClass = javaNames.toJavaType(typeProvider.getRType(c))
-		val qualifierFuncs = qualifyFuncs(c, javaNames, models)
+	private def StringConcatenationClient metaClassBody(Data c, RootPackage root, String className, String version, Set<RosettaModel> models) {
+		val dataClass = new RDataType(c).toJavaType
+		val qualifierFuncs = qualifyFuncs(c, models)
 		val dataRules = c.allSuperTypes.map[it.conditionRules(it.conditions)].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
@@ -71,7 +71,7 @@ class ModelMetaGenerator {
 					«IF !qualifierFuncs.nullOrEmpty»
 					return Arrays.asList(
 						«FOR qf : qualifierFuncs SEPARATOR ','»
-							factory.create(«javaNames.toJavaType(qf)».class)
+							factory.create(«qf.toFunctionJavaClass».class)
 						«ENDFOR»
 					);
 					«ELSE»
@@ -81,18 +81,18 @@ class ModelMetaGenerator {
 				
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
-					return new «javaNames.packages.model.typeValidation».«dataClass»Validator();
+					return new «root.typeValidation».«dataClass»Validator();
 				}
 				
 				@Override
 				public «ValidatorWithArg»<? super «dataClass», «Set»<String>> onlyExistsValidator() {
-					return new «javaNames.packages.model.existsValidation».«ValidatorsGenerator.onlyExistsValidatorName(c)»();
+					return new «root.existsValidation».«ValidatorsGenerator.onlyExistsValidatorName(c)»();
 				}
 			}
 		'''
 	}
 	
-	private def Set<Function> qualifyFuncs(Data type, JavaNames names, Set<RosettaModel> models) {
+	private def Set<Function> qualifyFuncs(Data type, Set<RosettaModel> models) {
 		if(!confExt.isRootEventOrProduct(type)) {
 			return emptySet
 		}

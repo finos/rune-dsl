@@ -24,6 +24,11 @@ public class JavaTypeVariable implements JavaReferenceType {
 	}
 	
 	@Override
+	public String getSimpleName() {
+		return name;
+	}
+	
+	@Override
 	public String toString() {
 		return name;
 	}
@@ -40,7 +45,7 @@ public class JavaTypeVariable implements JavaReferenceType {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) return true;
+		if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
 
         JavaTypeVariable other = (JavaTypeVariable) object;

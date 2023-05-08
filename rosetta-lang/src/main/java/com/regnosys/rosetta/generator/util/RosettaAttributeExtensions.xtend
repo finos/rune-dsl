@@ -5,7 +5,6 @@ import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.generator.object.ExpandedSynonymValue
 import com.regnosys.rosetta.generator.object.ExpandedType
-import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
@@ -17,7 +16,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalSynonym
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaMetaType
-import com.regnosys.rosetta.rosetta.RosettaQualifiedType
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource
@@ -85,8 +83,6 @@ class RosettaAttributeExtensions {
 				"",
 				emptyList,
 				false,
-				false,
-				false,
 				emptyList
 			))
 		}
@@ -113,7 +109,7 @@ class RosettaAttributeExtensions {
 	
 	def static ExpandedAttribute expandedEnumAttribute(RosettaEnumValue value) {
 		new ExpandedAttribute(value.name,value.enumeration.name, null, null, false, 0,0, false, value.enumSynonyms.map[toExpandedSynonym], 
-			value.definition, value.references, false, true, false, Collections.emptyList
+			value.definition, value.references, true, Collections.emptyList
 		)
 	}
 	
@@ -152,12 +148,12 @@ class RosettaAttributeExtensions {
 		val metas = <ExpandedAttribute>newArrayList
 		attr.annotations.forEach [ annoRef, i |
 			val annoAttr = annoRef?.attribute
-			if(annoAttr !== null && annoAttr.type !== null) {
+			if(annoAttr !== null && annoAttr.typeCall?.type !== null) {
 				metas.add(new ExpandedAttribute(
 					annoAttr.name,
 					annoRef.annotation.name,
-					annoAttr.type.toExpandedType,
-					annoAttr.type,
+					annoAttr.typeCall.type.toExpandedType,
+					annoAttr.typeCall,
 					annoAttr.override,
 					0,
 					1,
@@ -166,8 +162,6 @@ class RosettaAttributeExtensions {
 					attr.definition,
 					attr.references,
 					false,
-					false,
-					false,
 					Collections.emptyList
 				))
 			}
@@ -175,8 +169,8 @@ class RosettaAttributeExtensions {
 		new ExpandedAttribute(
 			attr.name,
 			(attr.eContainer as RosettaType).name,
-			attr.type.toExpandedType,
-			attr.type,
+			attr.typeCall?.type?.toExpandedType,
+			attr.typeCall,
 			attr.override,
 			attr.card.inf,
 			attr.card.sup,
@@ -184,9 +178,7 @@ class RosettaAttributeExtensions {
 			attr.synonyms.toRosettaExpandedSynonyms(-1),
 			attr.definition,
 			attr.references,
-			attr.calculation,
 			attr.isEnumeration,
-			attr.qualified,
 			metas
 		)
 	}
@@ -276,19 +268,7 @@ class RosettaAttributeExtensions {
 		new ExpandedSynonym(syn.sources, synVals, newArrayList, null, synMetaVals, null, null, null, null, null, false)
 	}
 
-	private def static boolean isCalculation(RosettaTypedFeature a) {
-		return a.type instanceof RosettaCalculationType
-	}
-
 	private def static boolean isEnumeration(RosettaTypedFeature a) {
-		return a.type instanceof RosettaEnumeration
-	}
-
-	private def static boolean isQualified(RosettaTypedFeature a) {
-		return a.type instanceof RosettaQualifiedType
-	}
-	
-	static def isBuiltInType(RosettaType type) {
-		return !(type instanceof Data|| type instanceof RosettaEnumeration)
+		return a.typeCall?.type instanceof RosettaEnumeration
 	}
 }

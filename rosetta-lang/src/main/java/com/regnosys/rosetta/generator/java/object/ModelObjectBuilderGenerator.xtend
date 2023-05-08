@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.util.JavaNames
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -15,37 +14,38 @@ import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.types.RosettaTypeProvider
-import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.TypeSystem
 
 class ModelObjectBuilderGenerator {
 	
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension RosettaExtensions
-	@Inject RosettaTypeProvider typeProvider
+	@Inject extension JavaTypeTranslator
+	@Inject extension TypeSystem
 
-	def StringConcatenationClient builderClass(Data c, JavaScope scope, extension JavaNames names) {
-		val javaType = names.toJavaType(typeProvider.getRType(c)) as JavaClass
+	def StringConcatenationClient builderClass(Data c, JavaScope scope) {
+		val javaType = new RDataType(c).toJavaType
 		val builderScope = scope.classScope('''«javaType»BuilderImpl''')
 		c.expandedAttributesPlus.forEach[
 			builderScope.createIdentifier(it, it.name)
 		]
 		'''
 		//«javaType.toBuilderImplType»
-		class «javaType»BuilderImpl«IF c.hasSuperType» extends «(names.toJavaType(typeProvider.getRType(c.superType)) as JavaClass).toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(c)» {
+		class «javaType»BuilderImpl«IF c.hasSuperType» extends «new RDataType(c.superType).toJavaType.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(c)» {
 		
 			«FOR attribute : c.expandedAttributes»
-				protected «attribute.toBuilderType(names)» «builderScope.getIdentifierOrThrow(attribute)»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
+				protected «attribute.toBuilderType» «builderScope.getIdentifierOrThrow(attribute)»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
 			«ENDFOR»
 		
 			public «javaType»BuilderImpl() {
 			}
 		
-			«c.expandedAttributes.builderGetters(builderScope, names)»
+			«c.expandedAttributes.builderGetters(builderScope)»
 		
-			«c.setters(builderScope, names)»
+			«c.setters(builderScope)»
 			
 			@Override
 			public «c.name» build() {
@@ -65,7 +65,7 @@ class ModelObjectBuilderGenerator {
 					«IF !attribute.isMultiple && (attribute.isDataType || attribute.hasMetas)»
 						if («builderScope.getIdentifierOrThrow(attribute)»!=null && !«builderScope.getIdentifierOrThrow(attribute)».prune().hasData()) «builderScope.getIdentifierOrThrow(attribute)» = null;
 					«ELSEIF attribute.isMultiple && attribute.isDataType || attribute.hasMetas»
-						«builderScope.getIdentifierOrThrow(attribute)» = «builderScope.getIdentifierOrThrow(attribute)».stream().filter(b->b!=null).<«attribute.toBuilderTypeSingle(names)»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
+						«builderScope.getIdentifierOrThrow(attribute)» = «builderScope.getIdentifierOrThrow(attribute)».stream().filter(b->b!=null).<«attribute.toBuilderTypeSingle»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
 				return this;
@@ -73,15 +73,15 @@ class ModelObjectBuilderGenerator {
 			
 			«c.expandedAttributes.filter[!it.overriding].hasData(c.hasSuperType)»
 		
-			«c.expandedAttributes.filter[!it.overriding].merge(typeProvider.getRType(c), c.hasSuperType, names)»
+			«c.expandedAttributes.filter[!it.overriding].merge(new RDataType(c), c.hasSuperType)»
 		
-			«c.builderBoilerPlate(builderScope, names)»
+			«c.builderBoilerPlate(builderScope)»
 		}
 		'''
 	}
 
-	private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RType type, boolean hasSuperType, extension JavaNames names) {
-		val builderName = (names.toJavaType(type) as JavaClass).toBuilderType
+	private def StringConcatenationClient merge(Iterable<ExpandedAttribute> attributes, RDataType type, boolean hasSuperType) {
+		val builderName = type.toJavaType.toBuilderType
 	'''
 		@SuppressWarnings("unchecked")
 		@Override
@@ -104,7 +104,7 @@ class ModelObjectBuilderGenerator {
 			«FOR a : attributes.filter[!isDataType && !hasMetas]»
 				«val attributeName = a.name.toFirstUpper»
 				«IF a.multiple»
-					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), («Consumer»<«names.toJavaType(a.type)»>) this::add«attributeName»);
+					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), («Consumer»<«a.rosettaType.typeCallToRType.toJavaReferenceType»>) this::add«attributeName»);
 				«ELSE»
 					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), this::set«attributeName»);
 				«ENDIF»
@@ -114,23 +114,23 @@ class ModelObjectBuilderGenerator {
 	'''
 	}
 
-	private def StringConcatenationClient builderGetters(Iterable<ExpandedAttribute> attributes, JavaScope scope, JavaNames names) '''
+	private def StringConcatenationClient builderGetters(Iterable<ExpandedAttribute> attributes, JavaScope scope) '''
 		«FOR attribute : attributes»
 			@Override
-			public «attribute.toBuilderTypeExt(names)» get«attribute.name.toFirstUpper»() {
+			public «attribute.toBuilderTypeExt» get«attribute.name.toFirstUpper»() {
 				return «scope.getIdentifierOrThrow(attribute)»;
 			}
 			
 			«IF attribute.isDataType || attribute.hasMetas»
 				«IF !attribute.cardinalityIsListValue»
 					@Override
-					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»() {
-						«attribute.toBuilderTypeSingle(names)» result;
+					public «attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»() {
+						«attribute.toBuilderTypeSingle» result;
 						if («scope.getIdentifierOrThrow(attribute)»!=null) {
 							result = «scope.getIdentifierOrThrow(attribute)»;
 						}
 						else {
-							result = «scope.getIdentifierOrThrow(attribute)» = «attribute.toTypeSingle(names)».builder();
+							result = «scope.getIdentifierOrThrow(attribute)» = «attribute.toMetaOrRegularJavaType».builder();
 							«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
 								result.getOrCreateMeta().toBuilder().addKey(«Key».builder().setScope("DOCUMENT"));
 							«ENDIF»
@@ -140,14 +140,14 @@ class ModelObjectBuilderGenerator {
 					}
 					
 				«ELSE»
-					public «attribute.toBuilderTypeSingle(names)» getOrCreate«attribute.name.toFirstUpper»(int _index) {
+					public «attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»(int _index) {
 
 						if («scope.getIdentifierOrThrow(attribute)»==null) {
 							this.«scope.getIdentifierOrThrow(attribute)» = new «ArrayList»<>();
 						}
-						«attribute.toBuilderTypeSingle(names)» result;
+						«attribute.toBuilderTypeSingle» result;
 						return getIndex(«scope.getIdentifierOrThrow(attribute)», _index, () -> {
-									«attribute.toBuilderTypeSingle(names)» new«attribute.name.toFirstUpper» = «attribute.toTypeSingle(names)».builder();
+									«attribute.toBuilderTypeSingle» new«attribute.name.toFirstUpper» = «attribute.toMetaOrRegularJavaType».builder();
 									«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
 										new«attribute.name.toFirstUpper».getOrCreateMeta().addKey(«Key».builder().setScope("DOCUMENT"));
 									«ENDIF»
@@ -161,47 +161,47 @@ class ModelObjectBuilderGenerator {
 	'''
 	
 	
-	private def StringConcatenationClient setters(Data thisClass, JavaScope scope, JavaNames names)
+	private def StringConcatenationClient setters(Data thisClass, JavaScope scope)
 		'''
 		«FOR attribute : thisClass.expandedAttributesPlus»
-			«doSetter(thisClass, attribute, scope, names)»
+			«doSetter(thisClass, attribute, scope)»
 		«ENDFOR»
 	'''
 	
-	private def StringConcatenationClient doSetter(RosettaType thisClass, ExpandedAttribute attribute, JavaScope scope, extension JavaNames names) {
-		val thisName = (names.toJavaType(typeProvider.getRType(thisClass)) as JavaClass).toBuilderType
+	private def StringConcatenationClient doSetter(Data thisClass, ExpandedAttribute attribute, JavaScope scope) {
+		val thisName = new RDataType(thisClass).toJavaType.toBuilderType
 		'''
 		«IF attribute.cardinalityIsListValue»
 			@Override
-			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «scope.getIdentifierOrThrow(attribute)») {
+			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «scope.getIdentifierOrThrow(attribute)») {
 				if («scope.getIdentifierOrThrow(attribute)»!=null) this.«scope.getIdentifierOrThrow(attribute)».add(«attribute.toBuilder(scope)»);
 				return this;
 			}
 			
 			@Override
-			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toTypeSingle(names)» «scope.getIdentifierOrThrow(attribute)», int _idx) {
+			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «scope.getIdentifierOrThrow(attribute)», int _idx) {
 				getIndex(this.«scope.getIdentifierOrThrow(attribute)», _idx, () -> «attribute.toBuilder(scope)»);
 				return this;
 			}
 			«IF attribute.hasMetas»
 			
 				@Override
-				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «scope.getIdentifierOrThrow(attribute)») {
+				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «scope.getIdentifierOrThrow(attribute)») {
 					this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
 					return this;
 				}
 				
 				@Override
-				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toTypeSingle(names, true)» «scope.getIdentifierOrThrow(attribute)», int _idx) {
+				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «scope.getIdentifierOrThrow(attribute)», int _idx) {
 					this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
 					return this;
 				}
 			«ENDIF»
 			«IF !attribute.overriding»
 				@Override 
-				public «thisName» add«attribute.name.toFirstUpper»(«List»<? extends «attribute.toTypeSingle(names)»> «scope.getIdentifierOrThrow(attribute)»s) {
+				public «thisName» add«attribute.name.toFirstUpper»(«List»<? extends «attribute.toMetaOrRegularJavaType»> «scope.getIdentifierOrThrow(attribute)»s) {
 					if («scope.getIdentifierOrThrow(attribute)»s != null) {
-						for («attribute.toTypeSingle(names)» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
+						for («attribute.toMetaOrRegularJavaType» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
 							this.«scope.getIdentifierOrThrow(attribute)».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
 						}
 					}
@@ -209,7 +209,7 @@ class ModelObjectBuilderGenerator {
 				}
 				
 				@Override 
-				public «thisName» set«attribute.name.toFirstUpper»(«List»<? extends «attribute.toTypeSingle(names)»> «scope.getIdentifierOrThrow(attribute)»s) {
+				public «thisName» set«attribute.name.toFirstUpper»(«List»<? extends «attribute.toMetaOrRegularJavaType»> «scope.getIdentifierOrThrow(attribute)»s) {
 					if («scope.getIdentifierOrThrow(attribute)»s == null)  {
 						this.«scope.getIdentifierOrThrow(attribute)» = new «ArrayList»<>();
 					}
@@ -223,9 +223,9 @@ class ModelObjectBuilderGenerator {
 				«IF attribute.hasMetas»
 					
 					@Override
-					public «thisName» add«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.toTypeSingle(names, true)»> «scope.getIdentifierOrThrow(attribute)»s) {
+					public «thisName» add«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.rosettaType.typeCallToRType.toJavaReferenceType»> «scope.getIdentifierOrThrow(attribute)»s) {
 						if («scope.getIdentifierOrThrow(attribute)»s != null) {
-							for («attribute.toTypeSingle(names, true)» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
+							for («attribute.rosettaType.typeCallToRType.toJavaType» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
 								this.add«attribute.name.toFirstUpper»Value(toAdd);
 							}
 						}
@@ -233,7 +233,7 @@ class ModelObjectBuilderGenerator {
 					}
 					
 					@Override
-					public «thisName» set«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.toTypeSingle(names, true)»> «scope.getIdentifierOrThrow(attribute)»s) {
+					public «thisName» set«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.rosettaType.typeCallToRType.toJavaReferenceType»> «scope.getIdentifierOrThrow(attribute)»s) {
 						this.«scope.getIdentifierOrThrow(attribute)».clear();
 						if («scope.getIdentifierOrThrow(attribute)»s!=null) {
 							«scope.getIdentifierOrThrow(attribute)»s.forEach(this::add«attribute.name.toFirstUpper»Value);
@@ -245,14 +245,14 @@ class ModelObjectBuilderGenerator {
 			
 		«ELSE»
 			@Override
-			public «thisName» set«attribute.name.toFirstUpper»(«attribute.toType(names)» «scope.getIdentifierOrThrow(attribute)») {
+			public «thisName» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «scope.getIdentifierOrThrow(attribute)») {
 				this.«scope.getIdentifierOrThrow(attribute)» = «scope.getIdentifierOrThrow(attribute)»==null?null:«attribute.toBuilder(scope)»;
 				return this;
 			}
 			«IF attribute.hasMetas»
 				
 				@Override
-				public «thisName» set«attribute.name.toFirstUpper»Value(«attribute.toType(names, true)» «scope.getIdentifierOrThrow(attribute)») {
+				public «thisName» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toPolymorphicListOrSingleJavaType(attribute.cardinalityIsListValue)» «scope.getIdentifierOrThrow(attribute)») {
 					this.getOrCreate«attribute.name.toFirstUpper»().setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType»«ENDIF»);
 					return this;
 				}
@@ -290,35 +290,27 @@ class ModelObjectBuilderGenerator {
 		}
 	'''
 
-	private def StringConcatenationClient toBuilderType(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isMultiple) '''List<«attribute.toBuilderTypeSingle(names)»>'''
-		else '''«attribute.toBuilderTypeSingle(names)»'''
+	private def StringConcatenationClient toBuilderType(ExpandedAttribute attribute) {
+		if (attribute.isMultiple) '''List<«attribute.toBuilderTypeSingle»>'''
+		else '''«attribute.toBuilderTypeSingle»'''
 	}
 
-	private def StringConcatenationClient toBuilderTypeExt(ExpandedAttribute attribute, JavaNames names) {
-		if (attribute.isMultiple) '''List<«IF attribute.dataType || attribute.hasMetas»? extends «ENDIF»«attribute.toBuilderTypeSingle(names)»>'''
-		else '''«attribute.toBuilderTypeSingle(names)»'''
+	private def StringConcatenationClient toBuilderTypeExt(ExpandedAttribute attribute) {
+		if (attribute.isMultiple) '''List<«IF attribute.dataType || attribute.hasMetas»? extends «ENDIF»«attribute.toBuilderTypeSingle»>'''
+		else '''«attribute.toBuilderTypeSingle»'''
 	}
 
-	def StringConcatenationClient toBuilderTypeSingle(ExpandedAttribute attribute, JavaNames names) {
+	def StringConcatenationClient toBuilderTypeSingle(ExpandedAttribute attribute) {
 		if (attribute.hasMetas) {
-			val buildername = if (attribute.refIndex >= 0) {
-					if (attribute.isDataType)
-						'''ReferenceWithMeta«attribute.type.name.toFirstUpper».ReferenceWithMeta«attribute.type.name.toFirstUpper»Builder'''
-					else
-						'''BasicReferenceWithMeta«attribute.type.name.toFirstUpper».BasicReferenceWithMeta«attribute.type.name.toFirstUpper»Builder'''
-				} else {
-					'''FieldWithMeta«attribute.type.name.toFirstUpper».FieldWithMeta«attribute.type.name.toFirstUpper»Builder'''
-				}
-			'''«names.toMetaType(attribute, buildername)»'''
+			'''«attribute.toMetaJavaType.toBuilderType»'''
 		} else {
-			'''«attribute.toBuilderTypeUnderlying(names)»'''
+			'''«attribute.toBuilderTypeUnderlying»'''
 		}
 	}
 	
-	private def StringConcatenationClient toBuilderTypeUnderlying(ExpandedAttribute attribute, JavaNames names) {
+	private def StringConcatenationClient toBuilderTypeUnderlying(ExpandedAttribute attribute) {
 		if (attribute.isDataType) '''«attribute.type.name».«attribute.type.name»Builder'''
-		else '''«names.toJavaType(attribute.type)»'''
+		else '''«attribute.rosettaType.typeCallToRType.toJavaReferenceType»'''
 	}
 	
 		

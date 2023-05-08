@@ -95,8 +95,8 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	def void formatExpression(RosettaExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		if (!expr.generated) {
-			val leftParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.leftParenthesisKeyword_3_0)
-			val rightParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.rightParenthesisKeyword_3_2);
+			val leftParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.leftParenthesisKeyword_5_0)
+			val rightParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.rightParenthesisKeyword_5_2);
 			if (leftParenthesis !== null && rightParenthesis !== null) {
 				leftParenthesis
 					.append[noSpace]

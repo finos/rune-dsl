@@ -51,6 +51,11 @@ public class JavaPrimitiveType implements JavaType {
 	}
 	
 	@Override
+	public String getSimpleName() {
+		return type.getSimpleName();
+	}
+	
+	@Override
 	public String toString() {
 		return type.getSimpleName();
 	}
@@ -67,7 +72,7 @@ public class JavaPrimitiveType implements JavaType {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) return true;
+		if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
 
         JavaPrimitiveType other = (JavaPrimitiveType) object;

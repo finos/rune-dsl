@@ -78,8 +78,8 @@ class MapperMaths {
 		throw new RuntimeException('''Cant subtract two random («a.class.simpleName», «b.class.simpleName») together''')
 	}
 	
-	private static def dispatch BigDecimal operator_minus(LocalDate d1, LocalDate d2) {
-		BigDecimal.valueOf(DAYS.between(d2, d1))
+	private static def dispatch Integer operator_minus(LocalDate d1, LocalDate d2) {
+		DAYS.between(d2, d1).intValue
 	}
 	
 	private static def dispatch LocalDateTime operator_minus(LocalDate d, LocalTime t) {

@@ -25,7 +25,7 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			it.assertSemanticTokens = [
 				assertEquals(4, size)
 				get(0) => [ // int
-					assertEquals(BASIC_TYPE, tokenType)
+					assertEquals(TYPE_ALIAS, tokenType)
 					assertEquals(6, line)
 					assertEquals(3, startChar)
 					assertEquals(3, length)
@@ -69,7 +69,7 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			it.assertSemanticTokens = [
 				assertEquals(3, size)
 				get(0) => [ // int
-					assertEquals(BASIC_TYPE, tokenType)
+					assertEquals(TYPE_ALIAS, tokenType)
 					assertEquals(3, line)
 					assertEquals(3, startChar)
 					assertEquals(3, length)
@@ -110,7 +110,7 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 					assertEquals(6, length)
 				]
 				get(1) => [ // int
-					assertEquals(BASIC_TYPE, tokenType)
+					assertEquals(TYPE_ALIAS, tokenType)
 					assertEquals(4, line)
 					assertEquals(27, startChar)
 					assertEquals(3, length)
@@ -203,7 +203,7 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			it.assertSemanticTokens = [
 				assertEquals(2, size)
 				get(0) => [ // int
-					assertEquals(BASIC_TYPE, tokenType)
+					assertEquals(TYPE_ALIAS, tokenType)
 					assertEquals(11, line)
 					assertEquals(3, startChar)
 					assertEquals(3, length)

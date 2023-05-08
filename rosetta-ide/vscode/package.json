@@ -48,14 +48,9 @@
         "description": "A Rosetta recordType such as `date`."
       },
       {
-        "id": "qualifiedType",
+        "id": "typeAlias",
         "superType": "type",
-        "description": "A Rosetta qualifiedType such as `productType`."
-      },
-      {
-        "id": "calculationType",
-        "superType": "type",
-        "description": "A Rosetta calculationType such as `calculation`."
+        "description": "A Rosetta typeAlias."
       },
       {
         "id": "documentCorpus",

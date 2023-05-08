@@ -10,15 +10,18 @@ import org.eclipse.emf.ecore.EReference
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 
 class RosettaExpectedTypeProvider {
 	
-	@Inject extension RosettaTypeProvider 
+	@Inject extension RosettaTypeProvider
+	@Inject extension RBuiltinTypeService
+	@Inject extension TypeSystem
 	
 	def RType getExpectedType(EObject owner, EReference reference, int idx) {
 		switch owner {
 			RosettaConditionalExpression case reference == ROSETTA_CONDITIONAL_EXPRESSION__IF:
-				RBuiltinType.BOOLEAN
+				BOOLEAN
 			RosettaSymbolReference case reference == ROSETTA_SYMBOL_REFERENCE__ARGS: {
 				if(idx >= 0 && owner.symbol instanceof RosettaExternalFunction) {
 					val fun =  (owner.symbol as RosettaExternalFunction)
@@ -26,14 +29,14 @@ class RosettaExpectedTypeProvider {
 						null // add error type? 
 					} else {
 						val targetParam = fun.parameters.get(idx)
-						targetParam.type.RType
+						targetParam.typeCall.typeCallToRType
 					}
 				}
 			}
 			Operation case reference == OPERATION__EXPRESSION: {
 				if(owner.path === null)
-					owner.assignRoot.RType
-				else owner.pathAsSegmentList.last?.attribute?.RType
+					owner.assignRoot.RTypeOfSymbol
+				else owner.pathAsSegmentList.last?.attribute?.RTypeOfSymbol
 			}
 		}
 	}

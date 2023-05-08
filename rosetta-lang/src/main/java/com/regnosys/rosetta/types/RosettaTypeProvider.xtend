@@ -3,33 +3,23 @@ package com.regnosys.rosetta.types
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.RosettaBasicType
-import com.regnosys.rosetta.rosetta.expression.RosettaBigDecimalLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
-import com.regnosys.rosetta.rosetta.RosettaCalculationType
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
-import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
-import com.regnosys.rosetta.rosetta.RosettaMapPath
-import com.regnosys.rosetta.rosetta.RosettaMapPathValue
-import com.regnosys.rosetta.rosetta.RosettaMapRosettaPath
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaQualifiedType
-import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral
-import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
-import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
@@ -37,11 +27,8 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtext.conversion.impl.IDValueConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.FilterOperation
 import com.regnosys.rosetta.rosetta.expression.ReverseOperation
@@ -56,28 +43,103 @@ import com.regnosys.rosetta.rosetta.expression.SumOperation
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
-import com.regnosys.rosetta.rosetta.RosettaAttributeReference
-import com.regnosys.rosetta.rosetta.RosettaDataReference
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import java.util.Optional
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
+import com.regnosys.rosetta.rosetta.RosettaDataReference
+import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
 
 class RosettaTypeProvider {
 
 	@Inject extension RosettaOperators
 	@Inject IQualifiedNameProvider qNames
-	@Inject IDValueConverter idConverter
-	@Inject RosettaTypeCompatibility compatibility
 	@Inject RosettaExtensions extensions
-	@Inject extension RosettaTypeCompatibility
 	@Inject extension ImplicitVariableUtil
+	@Inject extension TypeSystem
+	@Inject extension TypeFactory
+	@Inject extension RBuiltinTypeService
 	
-	def RType getRType(EObject expression) {
+	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
 	}
-	
-	private def RType safeRType(EObject expression, Map<EObject,RType> cycleTracker) {
+	def RType getRTypeOfFeature(RosettaFeature feature) {
+		feature.safeRType(newHashMap)
+	}
+	def RType getRTypeOfSymbol(RosettaSymbol feature) {
+		feature.safeRType(newHashMap)
+	}
+	def RType getRTypeOfAttributeReference(RosettaAttributeReferenceSegment seg) {
+		switch seg {
+			RosettaAttributeReference: seg.attribute.typeCall.typeCallToRType
+			RosettaDataReference: new RDataType(seg.data)
+		}
+	}
+
+	private def RType safeRType(RosettaSymbol symbol, Map<EObject, RType> cycleTracker) {
+		switch symbol {
+			RosettaFeature: {
+				safeRType(symbol as RosettaFeature, cycleTracker)
+			}
+			ClosureParameter: {
+				val setOp = symbol.function.eContainer as RosettaFunctionalOperation
+				if(setOp !== null) {
+					setOp.argument.safeRType(cycleTracker)
+				} else
+					MISSING
+			}
+			Data: { // @Compat: Data should not be a RosettaSymbol.
+				new RDataType(symbol)
+			}
+			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
+				new REnumType(symbol)
+			}
+			Function: {
+				if (symbol.output !== null) {
+					safeRType(symbol.output as RosettaFeature, cycleTracker)
+				} else {
+					MISSING
+				}
+			}
+			RosettaExternalFunction: {
+				symbol.typeCall.typeCallToRType
+			}
+			ShortcutDeclaration: {
+				cycleTracker.put(symbol, null)
+				val type = symbol.expression.safeRType(cycleTracker)
+				cycleTracker.put(symbol, type)
+				type
+			}
+		}
+	}
+	private def RType safeRType(RosettaFeature feature, Map<EObject, RType> cycleTracker) {
+		switch (feature) {
+			RosettaTypedFeature: {
+				val featureType = if (feature.isTypeInferred) {
+						feature.safeRType(cycleTracker)
+					} else {
+						feature.typeCall.typeCallToRType
+					}
+				if (feature instanceof Annotated) {
+					if (featureType instanceof RAnnotateType) {
+						featureType.withMeta = extensions.hasMetaDataAnnotations(feature)
+					}
+				}
+				featureType
+			}
+			RosettaEnumValue:
+				new REnumType(feature.enumeration)
+			default:
+				new RErrorType("Cannot infer type of feature.")
+		}
+	}
+	private def RType safeRType(RosettaExpression expression, Map<EObject, RType> cycleTracker) {
 		if (cycleTracker.containsKey(expression)) {
 			val computed = cycleTracker.get(expression)
 			if (computed === null) {
@@ -94,9 +156,11 @@ class RosettaTypeProvider {
 				if (expression.symbol instanceof RosettaExternalFunction) {
 					val fun = expression.symbol as RosettaExternalFunction
 					val returnType = fun.safeRType(cycleTracker)
+					// TODO: this is a hack
 					// Generic return type for number type e.g. Min(1,2) or Max(2,6)
-					if (returnType == RBuiltinType.NUMBER && expression.args.forall[it.safeRType(cycleTracker) == RBuiltinType.INT]) {
-						RBuiltinType.INT
+					val argTypes = expression.args.map[safeRType(cycleTracker)]
+					if (argTypes.forall[isSubtypeOf(returnType)]) {
+						argTypes.join
 					} else {
 						returnType
 					}
@@ -107,66 +171,17 @@ class RosettaTypeProvider {
 			RosettaImplicitVariable: {
 				safeTypeOfImplicitVariable(expression, cycleTracker)
 			}
-			Data:
-				new RDataType(expression)
-			ShortcutDeclaration: {
-				cycleTracker.put(expression, null)
-				val type = expression.expression.safeRType(cycleTracker)
-				cycleTracker.put(expression, type)
-				type
-			} 
 			RosettaFeatureCall: {
 				val feature = expression.feature
 				if (!extensions.isResolved(feature)) {
 					return null
 				}
-				switch (feature) {
-					RosettaTypedFeature: {
-						val featureType = if (feature.isTypeInferred) {
-								feature.safeRType(cycleTracker)
-							} else {
-								val type = feature?.type
-								type.safeRType(cycleTracker)
-							}
-						if (feature instanceof Annotated) {
-							if (featureType instanceof RAnnotateType) {
-								featureType.withMeta = extensions.hasMetaDataAnnotations(feature)
-							}
-						}
-						featureType
-					}
-					RosettaEnumValue:
-						feature.type.safeRType(cycleTracker)
-					default:
-						RBuiltinType.ANY
-				}
-			}
-			RosettaDataReference: {
-				expression.data.safeRType(cycleTracker)
-			}
-			RosettaAttributeReference: {
-				val attr = expression.attribute
-				if (!extensions.isResolved(attr)) {
-					return null
-				}
-				attr.type.safeRType(cycleTracker)
+				feature.safeRType(cycleTracker)
 			}
 			RosettaOnlyElement: {
 				safeRType(expression.argument, cycleTracker)
 			}
-			RosettaRecordType:
-				new RRecordType(expression)
-			RosettaEnumValueReference: {
-				new REnumType(expression.enumeration)
-			}
-			RosettaEnumeration: {
-				new REnumType(expression)
-			}
 			RosettaBinaryOperation: {
-				// Synonym path expressions refer to external documents so type checking is not possible
-				if (expression.left instanceof RosettaMapPathValue) {
-					return RBuiltinType.ANY
-				}
 				val left = expression.left
 				var leftType = left.safeRType(cycleTracker)
 				if (leftType instanceof RErrorType) {
@@ -180,7 +195,7 @@ class RosettaTypeProvider {
 				expression.operator.resultType(leftType, rightType)
 			}
 			RosettaCountOperation: {
-				RBuiltinType.INT
+				constrainedInt(Optional.empty(), Optional.of(0), Optional.empty())
 			}
 			RosettaOnlyExistsExpression,
 			RosettaExistsExpression,
@@ -188,103 +203,32 @@ class RosettaTypeProvider {
 			RosettaBooleanLiteral,
 			OneOfOperation,
 			ChoiceOperation:
-				RBuiltinType.BOOLEAN
+				BOOLEAN
 			RosettaStringLiteral:
-				RBuiltinType.STRING
+				constrainedString(expression.value.length, expression.value.length)
 			RosettaIntLiteral:
-				RBuiltinType.INT
-			RosettaBigDecimalLiteral:
-				RBuiltinType.NUMBER
+				constrainedInt(if (expression.value >= 0) expression.value.toString.length else expression.value.toString.length - 1, expression.value, expression.value)
+			RosettaNumberLiteral:
+				constrainedNumber(expression.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, expression.value.scale), expression.value, expression.value)
+			RosettaPatternLiteral:
+				PATTERN
 			ListLiteral:
 				listType(expression.elements)
-			RosettaExternalFunction: {
-				expression.type.safeRType(cycleTracker)
-			}
-			RosettaEnumValue:
-				expression.eContainer.safeRType(cycleTracker)
-			RosettaTyped:
-				expression.type.safeRType(cycleTracker)
-			RosettaCalculationType:
-				switch expression.name {
-					case RCalculationType.CALCULATION.calculationType:
-						RCalculationType.CALCULATION
-					default:
-						new RErrorType(
-							'No such calculation type: ' + expression.name + " '" +
-								NodeModelUtils.findActualNodeFor(expression)?.text + "'")
-				}
-			RosettaQualifiedType:
-				switch expression.name {
-					case RQualifiedType.PRODUCT_TYPE.qualifiedType:
-						RQualifiedType.PRODUCT_TYPE
-					case RQualifiedType.EVENT_TYPE.qualifiedType:
-						RQualifiedType.EVENT_TYPE
-					default:
-						new RErrorType(
-							'No such qualified type: ' + expression.name + " '" +
-								NodeModelUtils.findActualNodeFor(expression)?.text + "'")
-				}
-			RosettaBasicType:{
-				val typeName = idConverter.toValue(expression.name, null)
-				switch typeName {
-					case 'boolean':
-						RBuiltinType.BOOLEAN
-					case 'string':
-						RBuiltinType.STRING
-					case 'int':
-						RBuiltinType.INT
-					case 'number':
-						RBuiltinType.NUMBER
-					case 'time':
-						RBuiltinType.TIME
-					case 'date':
-						RBuiltinType.DATE
-					case 'dateTime':
-						RBuiltinType.DATE_TIME
-					case 'zonedDateTime':
-						RBuiltinType.ZONED_DATE_TIME
-					default:
-						if(expression.name !== null)
-							new RErrorType(
-								'No such built-in type: ' + expression.name + " '" +
-									NodeModelUtils.findActualNodeFor(expression)?.text + "'")
-				}
-			}
 			RosettaConditionalExpression: {
 				val ifT = expression.ifthen.safeRType(cycleTracker)
-				if (expression.elsethen === null) {
+				val elseT = expression.elsethen.safeRType(cycleTracker)
+				if (ifT === null || ifT instanceof RErrorType) {
+					elseT
+				} else if (elseT === null || elseT instanceof RErrorType) {
 					ifT
 				} else {
-					val elseT = expression.elsethen.safeRType(cycleTracker)
-					if (ifT === null || ifT instanceof RErrorType) {
-						elseT
-					} else if (elseT === null || elseT instanceof RErrorType) {
-						ifT
-					} else if (compatibility.isUseableAs(ifT, elseT)) {
-						elseT
-					} else if (compatibility.isUseableAs(elseT, ifT)) {
-						ifT
-					} else {
+					val joined = join(ifT, elseT)
+					if (joined == ANY) {
 						new RErrorType("Can not infer common type for '" + ifT.name + "' and " + elseT.name + "'.")
+					} else {
+						joined
 					}
 				}
-			}
-			RosettaMapPathValue:
-				RBuiltinType.STRING
-			RosettaMapPath:
-				expression.path.safeRType(cycleTracker)
-			RosettaMapRosettaPath:
-				expression.path.safeRType(cycleTracker)
-			Function:
-				if(expression.output !== null) expression.output.safeRType(cycleTracker) else RBuiltinType.MISSING
-			Condition:
-				expression.expression.safeRType(cycleTracker)
-			ClosureParameter: {
-				val setOp = expression.function.eContainer as RosettaFunctionalOperation
-				if(setOp !== null) {
-					setOp.argument.safeRType(cycleTracker)
-				} else
-					RBuiltinType.MISSING
 			}
 			ReverseOperation,
 			FlattenOperation,
@@ -299,11 +243,9 @@ class RosettaTypeProvider {
 			ReduceOperation,
 			MapOperation,
 			ThenOperation:
-				expression.function.safeRType(cycleTracker)
-			InlineFunction:
-				expression.body.safeRType(cycleTracker)
+				expression.function?.body?.safeRType(cycleTracker)
 			default:
-				RBuiltinType.MISSING
+				MISSING
 		}
 	}
 	
@@ -319,28 +261,16 @@ class RosettaTypeProvider {
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			}
-		].orElse(RBuiltinType.MISSING)
+		].orElse(MISSING)
 	}
 	
 	private def listType(List<RosettaExpression> exp) {
-		if (exp.length == 0) {
-			return RBuiltinType.NOTHING;
-		}
 		val types = exp.map[RType]
-		val result = types.reduce[p1, p2| parent(p1,p2)]
-		if (result===null) return new RErrorType(types.groupBy[name].keySet.join(', '));
-		return result;
-	}
-	
-	private def RType parent(RType type1, RType type2) {
-		if (type1===null || type2===null) {
-			return null;
+		val joined = types.join
+		if (joined == ANY) {
+			new RErrorType(types.groupBy[name].keySet.join(', '))
+		} else {
+			joined
 		}
-		if (type1==type2) {
-			return type1
-		}
-		if (type1.isUseableAs(type2)) return type2
-		if (type2.isUseableAs(type1)) return type1
 	}
-
 }

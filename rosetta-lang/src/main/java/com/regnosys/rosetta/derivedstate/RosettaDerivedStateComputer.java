@@ -104,6 +104,7 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 		if (expr.getRight() == null) {
 			RosettaStringLiteral lit = ExpressionFactory.eINSTANCE.createRosettaStringLiteral();
 			lit.setGenerated(true);
+			lit.setValue("");
 			expr.setRight(lit);
 			expr.setExplicitSeparator(false);
 		} else {

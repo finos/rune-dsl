@@ -84,7 +84,7 @@ class RosettaFunctionExtensions {
 	}
 
 	dispatch def boolean needsBuilder(RosettaTyped ele) {
-		needsBuilder(ele.type)
+		needsBuilder(ele.typeCall.type)
 	}
 
 	dispatch def boolean needsBuilder(RosettaExpression expr) {
@@ -93,7 +93,7 @@ class RosettaFunctionExtensions {
 
 	dispatch def boolean needsBuilder(AssignPathRoot root) {
 		switch (root) {
-			Attribute: root.type.needsBuilder
+			Attribute: root.typeCall.type.needsBuilder
 			ShortcutDeclaration: root.expression.needsBuilder
 			default: false
 		}
@@ -118,7 +118,7 @@ class RosettaFunctionExtensions {
 	}
 	
 	def boolean isQualifierFunctionFor(Function function, Data type) {
-		function.isQualifierFunction && getInputs(function).get(0).type == type
+		function.isQualifierFunction && getInputs(function).get(0).typeCall.type == type
 	}
 	
 	def boolean isQualifierFunction(Function function) {

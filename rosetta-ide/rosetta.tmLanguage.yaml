@@ -29,7 +29,7 @@ variables:
   # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
   identifiersConflictingWithRootStart: '{{wordStart}}(version){{wordEnd}}'
   ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
-  unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|library|reporting|eligibility|qualifiedType|calculationType|metaType|report|annotation|enum|type|func){{wordEnd}}'
+  unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|qualifiedType|calculationType|metaType|report|annotation|enum|type|func){{wordEnd}}'
   rootStart: '{{identifiersConflictingWithRootStart}}|{{ambiguousRootStart}}|{{unambiguousRootStart}}'
   strictRootEnd: (?={{rootStart}})
   rootEnd: (?={{ambiguousRootStart}}|{{unambiguousRootStart}})
@@ -46,7 +46,8 @@ variables:
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
   docReferenceAnnotationSectionEnd: (?={{docReferenceAnnotationSection}}|\])|{{sectionEnd}}
-  expressionEnd: '(?=\))|{{sectionEnd}}'
+  commaSeparatedListEnd: '(?=\))|{{sectionEnd}}'
+  expressionEnd: '(?=,|\))|{{sectionEnd}}'
   ruleExpressionEnd: '{{blueprintNodeEnd}}|{{expressionEnd}}'
   functionalOperationEnd: (?=\])|(?={{listOperation}}|{{wordStart}}(else|then){{wordEnd}})|{{ruleExpressionEnd}}
 
@@ -134,11 +135,10 @@ repository:
           - include: '#rosettaSegment'
           - include: '#rosettaBasicType'
           - include: '#rosettaRecordType'
+          - include: '#rosettaTypeAlias'
           - include: '#rosettaLibraryFunction'
           - include: '#rosettaAnnotationSource'
           - include: '#rosettaBlueprint'
-          - include: '#rosettaQualifiedType'
-          - include: '#rosettaCalculationType'
           - include: '#rosettaMetaType'
           - include: '#rosettaBlueprintReport'
           - include: '#enumerationDeclaration'
@@ -204,6 +204,8 @@ repository:
         - include: '#comment'
         - name: entity.name.type.builtin.basic-type.rosetta
           match: '{{identifier}}'
+        - include: '#typeParameters'
+        - include: '#documentation'
 
       rosettaRecordType:
         name: meta.record-type.rosetta
@@ -240,42 +242,73 @@ repository:
           0: { name: variable.other.member.rosetta }
         end: '({{identifier}})|\s*{{notAnIdentifier}}|{{rootEnd}}'
         endCaptures:
-          1: { name: entity.name.type.builtin.rosetta } # Need semantic tokens to specify type
+          1: { name: entity.name.type.rosetta } # Need semantic tokens to specify type
           2: { name: invalid.illegal.identifier.rosetta }
         patterns:
         - include: '#comment'
 
-      rosettaQualifiedType:
-        name: meta.qualified-type.rosetta
-        begin: '{{wordStart}}qualifiedType{{wordEnd}}'
+      rosettaTypeAlias:
+        name: meta.type-alias.rosetta
+        begin: '{{wordStart}}typeAlias{{wordEnd}}'
         beginCaptures:
-          0: { name: storage.type.qualified-type.rosetta keyword.declaration.qualified-type.rosetta }
+          0: { name: storage.type.type-alias.rosetta keyword.declaration.type-alias.rosetta }
         end: '{{rootEnd}}'
         patterns:
         - include: '#comment'
         - begin: '{{identifier}}'
           beginCaptures:
-            0: { name: entity.name.type.builtin.qualified-type.rosetta }
+            0: { name: entity.name.type.type-alias.rosetta }
           end: '{{rootEnd}}'
           patterns:
           - include: '#comment'
-          - include: '#rosettaBracedFeatures'
+          - begin: (?<={{identifier}})
+            end: '(:)|{{rootEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#typeParameters'
+          - include: '#documentation'
+          - include: '#typeCall'
 
-      rosettaCalculationType:
-        name: meta.calculation-type.rosetta
-        begin: '{{wordStart}}calculationType{{wordEnd}}'
-        beginCaptures:
-          0: { name: storage.type.calculation-type.rosetta keyword.declaration.calculation-type.rosetta }
-        end: '{{rootEnd}}'
+      typeParameters:
+        name: meta.type-parameters.rosetta
+        begin: '\('
+        end: '\)|{{rootEnd}}'
         patterns:
         - include: '#comment'
-        - begin: '{{identifier}}'
+        - name: meta.type-parameters.parameter.rosetta
+          begin: '{{identifier}}'
           beginCaptures:
-            0: { name: entity.name.type.builtin.calculation-type.rosetta }
-          end: '{{rootEnd}}'
+            0: { name: variable.parameter.type-parameter.rosetta }
+          end: '(?=,|\))|{{rootEnd}}'
           patterns:
           - include: '#comment'
-          - include: '#rosettaBracedFeatures'
+          - include: '#typeCall'
+          - include: '#documentation'
+
+      typeCall:
+        patterns:
+        - name: meta.type-call.rosetta
+          begin: '({{identifier}})(\()'
+          beginCaptures:
+            1: { name: entity.name.type.rosetta } # Need semantic tokens to specify type
+            2: { name: punctuation.definition.arguments.begin.rosetta }
+          end: '(\))|{{sectionEnd}}'
+          endCaptures:
+            1: { name: punctuation.definition.arguments.end.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: meta.type-call.argument.rosetta
+            begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: variable.parameter.type-parameter.rosetta }
+            end: '{{expressionEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#expression'
+        - name: meta.type-call.rosetta
+          match: '{{identifier}}'
+          captures:
+            0: { name: entity.name.type.rosetta } # Need semantic tokens to specify type
 
       rosettaMetaType:
         name: meta.meta-type.rosetta
@@ -291,12 +324,7 @@ repository:
           end: '{{rootEnd}}'
           patterns:
           - include: '#comment'
-          - begin: '{{identifier}}'
-            beginCaptures:
-              0: { name: entity.name.type.rosetta } # Need semantic tokens to specify type
-            end: '{{rootEnd}}'
-            patterns:
-            - include: '#comment'
+          - include: '#typeCall'
 
       rosettaLibraryFunction:
         name: meta.library-function.rosetta
@@ -320,8 +348,7 @@ repository:
             - include: '#comment'
             - include: '#rosettaParameters'
             - include: '#documentation'
-            - name: entity.name.type.rosetta # Need semantic tokens to specify type
-              match: '{{identifier}}'
+            - include: '#typeCall'
 
       rosettaParameters:
         name: meta.parameters.rosetta
@@ -342,12 +369,10 @@ repository:
         begin: '{{identifier}}'
         beginCaptures:
           0: { name: variable.parameter.rosetta }
-        end: '({{identifier}})|\s*{{notAnIdentifier}}|{{rootEnd}}'
-        endCaptures:
-          1: { name: entity.name.type.rosetta } # Need semantic tokens to specify type
-          2: { name: invalid.illegal.identifier.rosetta }
+        end: '(?=,|\))|{{rootEnd}}'
         patterns:
         - include: '#comment'
+        - include: '#typeCall'
 
       rosettaAnnotationSource:
         name: meta.annotation-source.rosetta
@@ -808,8 +833,7 @@ repository:
       attributeType:
         patterns:
         - include: '#comment'
-        - name: entity.name.type.rosetta # Need semantic tokens to specify type
-          match: '{{identifier}}'
+        - include: '#typeCall'
         - name: punctuation.separator.dot.rosetta
           match: \.
         - include: '#cardinalityConstraint'
@@ -1055,9 +1079,18 @@ repository:
           begin: (\()
           beginCaptures:
             1: { name: punctuation.group.begin.rosetta }
-          end: (\))|{{expressionEnd}}
+          end: (\))|{{commaSeparatedListEnd}}
           endCaptures:
             1: { name: punctuation.group.end.rosetta }
+          patterns:
+          - include: '#expression'
+        - name: meta.list.rosetta
+          begin: (\[)
+          beginCaptures:
+            1: { name: punctuation.list.begin.rosetta }
+          end: (\])|{{commaSeparatedListEnd}}
+          endCaptures:
+            1: { name: punctuation.list.end.rosetta }
           patterns:
           - include: '#expression'
         - include: '#functionalOperation'
