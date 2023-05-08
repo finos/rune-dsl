@@ -30,7 +30,6 @@ import org.eclipse.xtext.linking.impl.Linker
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 import org.eclipse.emf.ecore.resource.ResourceSet
-import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaType
 import java.util.Collection
 import java.util.Collections
@@ -47,7 +46,7 @@ class ExpressionParser {
 	
 	@Inject
 	new(RosettaBuiltinsService builtins, ResourceSet resourceSet) {
-		resourceSet.getResource(builtins.basicTypesURI, true).getContents().get(0) as RosettaModel => [
+		builtins.getBasicTypesModel(resourceSet) => [
 			basicTypes = elements
 				.filter[it instanceof RosettaType]
 				.map[it as RosettaType]

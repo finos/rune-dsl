@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.Objects;
 
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import com.regnosys.rosetta.rosetta.RosettaModel;
@@ -17,10 +18,16 @@ public class RosettaBuiltinsService {
 	public final URL basicTypesURL = Objects.requireNonNull(this.getClass().getResource(basicTypesURI.path()));
 	public final URL annotationsURL = Objects.requireNonNull(this.getClass().getResource(annotationsURI.path()));
 	
-
-	// TODO: cache
+	// TODO: cache?
 	private RosettaModel getModel(ResourceSet resourceSet, URI uri) {
-		return (RosettaModel)resourceSet.getResource(uri, false).getContents().get(0);
+		Resource resource = resourceSet.getResource(uri, false);
+		if (resource == null) { // TODO: this is a workaround for not having proper support for classpath uris in the Xtext language server
+			resource = resourceSet.getResources().stream()
+				.filter(r -> r.getURI().path().endsWith(uri.path()))
+				.findAny()
+				.orElseThrow();
+		}
+		return (RosettaModel)resource.getContents().get(0);
 	}
 	public RosettaModel getBasicTypesModel(ResourceSet resourceSet) {
 		return getModel(resourceSet, basicTypesURI);

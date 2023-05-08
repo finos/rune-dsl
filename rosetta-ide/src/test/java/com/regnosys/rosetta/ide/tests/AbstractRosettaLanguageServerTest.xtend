@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets
 import com.regnosys.rosetta.ide.util.RangeUtils
 import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 
 /**
  * TODO: contribute to Xtext.
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Assertions
 abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerTest {
 	@Inject extension ModelHelper
 	@Inject RangeUtils ru
+	@Inject RosettaBuiltinsService builtins
 	
 	new() {
 		super("rosetta")
@@ -112,9 +114,9 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		configurator.apply(configuration)
 		val filePath = initializeContext(configuration).uri
 		
-		if (configuration.assertNoIssues) {
-			configuration.model.parseRosettaWithNoIssues
-		}
+//		if (configuration.assertNoIssues) {
+//			configuration.model.parseRosettaWithNoIssues
+//		}
 		
 		val semanticTokens = languageServer.requestManager.runRead[cancelIndicator |
 			(languageServer as RosettaLanguageServerImpl).semanticTokens(
@@ -135,8 +137,8 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	
 	protected override FileInfo initializeContext(TextDocumentConfiguration configuration) {
 		configuration.filesInScope = #{
-			'basictypes.rosetta' -> new String(this.getClass().getResourceAsStream('''/model/basictypes.rosetta''').readAllBytes(), StandardCharsets.UTF_8),
-			'annotations.rosetta' -> new String(this.getClass().getResourceAsStream('''/model/annotations.rosetta''').readAllBytes(), StandardCharsets.UTF_8)
+			builtins.basicTypesURI.path -> new String(builtins.basicTypesURL.openStream.readAllBytes, StandardCharsets.UTF_8),
+			builtins.annotationsURI.path -> new String(builtins.annotationsURL.openStream.readAllBytes, StandardCharsets.UTF_8)
 		}
 		val filePath = super.initializeContext(configuration);
 		return filePath

@@ -3,15 +3,16 @@ package com.regnosys.rosetta.tests.util
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.rosetta.RosettaModel
-import org.eclipse.emf.common.util.URI
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 
 class ModelHelper {
 
 	@Inject extension ParseHelper<RosettaModel>
-	@Inject extension ValidationTestHelper 
+	@Inject extension ValidationTestHelper
+	@Inject RosettaBuiltinsService builtins
 
 
 	public static val commonTestTypes = '''
@@ -116,8 +117,8 @@ class ModelHelper {
 	
 	def testResourceSet() {
 		val resourceSet = parse(com.regnosys.rosetta.tests.util.ModelHelper.commonTestTypes).eResource.resourceSet
-		resourceSet.getResource(URI.createURI('classpath:/model/basictypes.rosetta'), true)
-		resourceSet.getResource(URI.createURI('classpath:/model/annotations.rosetta'), true)
+		resourceSet.getResource(builtins.basicTypesURI, true)
+		resourceSet.getResource(builtins.annotationsURI, true)
 	
 		return resourceSet;
 	}
