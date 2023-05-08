@@ -14,7 +14,6 @@ import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
@@ -131,7 +130,7 @@ class ModelObjectBuilderGenerator {
 							result = «scope.getIdentifierOrThrow(attribute)»;
 						}
 						else {
-							result = «scope.getIdentifierOrThrow(attribute)» = «attribute.toMetaJavaType».builder();
+							result = «scope.getIdentifierOrThrow(attribute)» = «attribute.toMetaOrRegularJavaType».builder();
 							«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
 								result.getOrCreateMeta().toBuilder().addKey(«Key».builder().setScope("DOCUMENT"));
 							«ENDIF»
@@ -148,7 +147,7 @@ class ModelObjectBuilderGenerator {
 						}
 						«attribute.toBuilderTypeSingle» result;
 						return getIndex(«scope.getIdentifierOrThrow(attribute)», _index, () -> {
-									«attribute.toBuilderTypeSingle» new«attribute.name.toFirstUpper» = «attribute.toMetaJavaType».builder();
+									«attribute.toBuilderTypeSingle» new«attribute.name.toFirstUpper» = «attribute.toMetaOrRegularJavaType».builder();
 									«IF !attribute.metas.filter[m|m.name=="location"].isEmpty»
 										new«attribute.name.toFirstUpper».getOrCreateMeta().addKey(«Key».builder().setScope("DOCUMENT"));
 									«ENDIF»
@@ -174,13 +173,13 @@ class ModelObjectBuilderGenerator {
 		'''
 		«IF attribute.cardinalityIsListValue»
 			@Override
-			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «scope.getIdentifierOrThrow(attribute)») {
+			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «scope.getIdentifierOrThrow(attribute)») {
 				if («scope.getIdentifierOrThrow(attribute)»!=null) this.«scope.getIdentifierOrThrow(attribute)».add(«attribute.toBuilder(scope)»);
 				return this;
 			}
 			
 			@Override
-			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «scope.getIdentifierOrThrow(attribute)», int _idx) {
+			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «scope.getIdentifierOrThrow(attribute)», int _idx) {
 				getIndex(this.«scope.getIdentifierOrThrow(attribute)», _idx, () -> «attribute.toBuilder(scope)»);
 				return this;
 			}
@@ -200,9 +199,9 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 			«IF !attribute.overriding»
 				@Override 
-				public «thisName» add«attribute.name.toFirstUpper»(«List»<? extends «attribute.toMetaJavaType»> «scope.getIdentifierOrThrow(attribute)»s) {
+				public «thisName» add«attribute.name.toFirstUpper»(«List»<? extends «attribute.toMetaOrRegularJavaType»> «scope.getIdentifierOrThrow(attribute)»s) {
 					if («scope.getIdentifierOrThrow(attribute)»s != null) {
-						for («attribute.toMetaJavaType» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
+						for («attribute.toMetaOrRegularJavaType» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
 							this.«scope.getIdentifierOrThrow(attribute)».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
 						}
 					}
@@ -210,7 +209,7 @@ class ModelObjectBuilderGenerator {
 				}
 				
 				@Override 
-				public «thisName» set«attribute.name.toFirstUpper»(«List»<? extends «attribute.toMetaJavaType»> «scope.getIdentifierOrThrow(attribute)»s) {
+				public «thisName» set«attribute.name.toFirstUpper»(«List»<? extends «attribute.toMetaOrRegularJavaType»> «scope.getIdentifierOrThrow(attribute)»s) {
 					if («scope.getIdentifierOrThrow(attribute)»s == null)  {
 						this.«scope.getIdentifierOrThrow(attribute)» = new «ArrayList»<>();
 					}
@@ -303,7 +302,7 @@ class ModelObjectBuilderGenerator {
 
 	def StringConcatenationClient toBuilderTypeSingle(ExpandedAttribute attribute) {
 		if (attribute.hasMetas) {
-			'''«(attribute.toMetaJavaType as JavaClass).toBuilderType»'''
+			'''«attribute.toMetaJavaType.toBuilderType»'''
 		} else {
 			'''«attribute.toBuilderTypeUnderlying»'''
 		}

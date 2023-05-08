@@ -62,8 +62,8 @@ class ModelObjectBoilerPlate {
 		if(interfaces.empty) null else ''', «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
 	def JavaType toListOrSingleMetaType(ExpandedAttribute attribute) {
-		if (attribute.isMultiple) attribute.toMetaJavaType.toPolymorphicList
-		else attribute.toMetaJavaType;
+		if (attribute.isMultiple) attribute.toMetaOrRegularJavaType.toPolymorphicList
+		else attribute.toMetaOrRegularJavaType;
 	}
 
 	def StringConcatenationClient boilerPlate(Data c, JavaScope scope) {
@@ -160,11 +160,11 @@ class ModelObjectBoilerPlate {
 				«new RDataType(c.superType).toJavaType».super.process(path, processor);
 			«ENDIF»
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
-				processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
+				processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
 			«ENDFOR»
 			
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
-				processRosetta(path.newSubPath("«a.name»"), processor, «a.toMetaJavaType».class, get«a.name.toFirstUpper»()«a.metaFlags»);
+				processRosetta(path.newSubPath("«a.name»"), processor, «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 			«ENDFOR»
 		}
 		
@@ -178,7 +178,7 @@ class ModelObjectBoilerPlate {
 			«ENDIF»
 			
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
-				processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
+				processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
 			«ENDFOR»
 			
 			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»

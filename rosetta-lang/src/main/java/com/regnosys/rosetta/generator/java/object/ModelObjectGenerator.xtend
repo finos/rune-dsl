@@ -85,7 +85,7 @@ class ModelObjectGenerator {
 				default Class<? extends «d.name»> getType() {
 					return «d.name».class;
 				}
-				«FOR pt :interfaces.filter(com.regnosys.rosetta.generator.java.types.JavaParametrizedType).filter[baseType.simpleName=="ReferenceWithMeta" || baseType.simpleName=="FieldWithMeta"]»
+				«FOR pt :interfaces.filter(JavaParametrizedType).filter[baseType.simpleName=="ReferenceWithMeta" || baseType.simpleName=="FieldWithMeta"]»
 				
 					default Class<«pt.arguments.head»> getValueType() {
 						return «pt.arguments.head».class;
@@ -112,8 +112,8 @@ class ModelObjectGenerator {
 							«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 							«IF attribute.hasMetas»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
 						«ELSE»
-							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);
+							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);
 							«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 							«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);«ENDIF»
 							«IF !attribute.isOverriding»
@@ -208,7 +208,7 @@ class ModelObjectGenerator {
 	}
 
 	private def JavaType toJavaType(ExpandedAttribute attribute) {
-		val singleType = attribute.toMetaJavaType
+		val singleType = attribute.toMetaOrRegularJavaType
 		if (attribute.isMultiple) {
 			if (attribute.dataType || attribute.hasMetas) {
 				singleType.toPolymorphicList

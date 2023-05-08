@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,8 +22,11 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
+import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.rosetta.simple.Operation;
+import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
@@ -78,19 +82,11 @@ public class JavaTypeTranslator {
 		return new JavaClass(packages.defaultLibFunctions(), func.getName());
 	}
 	
-	public JavaClass toMetaJavaType(Attribute attribute) {
+	public JavaReferenceType toMetaJavaType(Attribute attribute) {
 		JavaReferenceType attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute));
-		String attributeTypeName = attrType.getSimpleName();
-		String name;
-		if (extensions.hasMetaFieldAnnotations(attribute)) {
-			name = "FieldWithMeta" + attributeTypeName;
-		} else {
-			name = "ReferenceWithMeta" + attributeTypeName;
-		}
-		DottedPath pkg = metaField(getModelPackage(attribute.getTypeCall().getType()));
-		return new JavaClass(pkg, name);
+		return toMetaJavaType(attrType, extensions.hasMetaFieldAnnotations(attribute), attribute.getTypeCall().getType());
 	}
-	public JavaReferenceType toMetaJavaType(ExpandedAttribute expAttr) {
+	public JavaReferenceType toMetaOrRegularJavaType(ExpandedAttribute expAttr) {
 		JavaReferenceType attrType;
 		if (expAttr.getRosettaType() != null) {
 			attrType = toJavaReferenceType(typeSystem.typeCallToRType(expAttr.getRosettaType()));
@@ -100,16 +96,16 @@ public class JavaTypeTranslator {
 		if (!expAttr.hasMetas()) {
 			return attrType;
 		}
-		String attributeTypeName = attrType.getSimpleName();
-		String name;
-		if (expAttr.refIndex() < 0) {
-			name = "FieldWithMeta" + attributeTypeName;
+		return toMetaJavaType(attrType, expAttr.refIndex() < 0, expAttr.getRosettaType().getType());
+	}
+	public JavaClass toMetaJavaType(ExpandedAttribute expAttr) {
+		JavaReferenceType attrType;
+		if (expAttr.getRosettaType() != null) {
+			attrType = toJavaReferenceType(typeSystem.typeCallToRType(expAttr.getRosettaType()));
 		} else {
-			name = "ReferenceWithMeta" + attributeTypeName;
+			attrType = expandedTypeToJavaType(expAttr.getType());
 		}
-		
-		DottedPath pkg = metaField(getModelPackage(expAttr.getRosettaType().getType()));
-		return new JavaClass(pkg, name);
+		return toMetaJavaType(attrType, expAttr.refIndex() < 0, expAttr.getRosettaType().getType());
 	}
 	public JavaReferenceType expandedTypeToJavaType(ExpandedType type) {
 		if (type.getName().equals(RosettaAttributeExtensions.METAFIELDS_CLASS_NAME) || type.getName().equals(RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME)) {
@@ -119,9 +115,30 @@ public class JavaTypeTranslator {
 			return JavaClass.from(String.class);
 		}
 		if (type.isBuiltInType()) {
-			throw new UnsupportedOperationException("Cannot convert expanded type " + type + " to a Java type.");
+			return toJavaReferenceType(builtins.getType(type.getName(), Collections.emptyMap()));
 		}
 		return new JavaClass(modelPackage(type.getModel()), type.getName());
+	}
+	private JavaClass toMetaJavaType(JavaReferenceType base, boolean hasMetaFieldAnnotations, RosettaType model) {
+		String attributeTypeName = base.getSimpleName();
+		String name;
+		if (hasMetaFieldAnnotations) {
+			name = "FieldWithMeta" + attributeTypeName;
+		} else {
+			name = "ReferenceWithMeta" + attributeTypeName;
+		}
+		DottedPath pkg = metaField(getModelPackage(model));
+		return new JavaClass(pkg, name);
+	}
+	public JavaClass operationToReferenceWithMetaType(Operation op) {
+		Attribute attr;
+		if (op.getPath() == null) {
+			attr = (Attribute)op.getAssignRoot(); // TODO: this won't work when assigning to an alias
+		} else {
+			List<Segment> segments = op.pathAsSegmentList();
+			attr = segments.get(segments.size() - 1).getAttribute();
+		}
+		return toMetaJavaType(toJavaReferenceType(typeProvider.getRTypeOfSymbol(attr)), false, attr.getTypeCall().getType());
 	}
 	
 	private String getTypeDebugInfo(RType type) {

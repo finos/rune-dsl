@@ -358,24 +358,13 @@ class FunctionGenerator {
 		}
 	}
 	
-	private def JavaType referenceWithMetaJavaType(Operation op, RootPackage root) {
-			if (op.path === null) {
-				val valueJavaType = typeProvider.getRTypeOfSymbol(op.assignRoot).toJavaReferenceType
-			 	new JavaClass(root.metaField, "ReferenceWithMeta" + valueJavaType.simpleName)
-			} else {
-				val attr = op.pathAsSegmentList.last.attribute
-				val valueJavaType = typeProvider.getRTypeOfSymbol(attr).toJavaReferenceType
-			 	new JavaClass(new RootPackage(attr.typeCall.type.model).metaField, "ReferenceWithMeta" + valueJavaType.simpleName)
-			}
-	}
-	
 	private def StringConcatenationClient assignValue(JavaScope scope, Operation op, boolean assignAsKey, RootPackage root) {
 		assignValue(scope, op, assignAsKey, cardinality.isMulti(op.expression), root)
 	}
 	
 	private def StringConcatenationClient assignValue(JavaScope scope, Operation op, boolean assignAsKey, boolean isAssigneeMulti, RootPackage root) {
 		if (assignAsKey) {
-			val metaClass = referenceWithMetaJavaType(op, root)
+			val metaClass = op.operationToReferenceWithMetaType
 			if (cardinality.isMulti(op.expression)) {
 				val lambdaScope = scope.lambdaScope
 				val item = lambdaScope.createUniqueIdentifier("item")
