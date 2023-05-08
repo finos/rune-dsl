@@ -36,6 +36,7 @@ import java.util.Collections
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.scoping.IScope
+import com.regnosys.rosetta.rosetta.RosettaModel
 
 class ExpressionParser {
 	@Inject IParser parser
@@ -46,7 +47,7 @@ class ExpressionParser {
 	
 	@Inject
 	new(RosettaBuiltinsService builtins, ResourceSet resourceSet) {
-		builtins.getBasicTypesModel(resourceSet) => [
+		resourceSet.getResource(builtins.basicTypesURI, true).getContents().get(0) as RosettaModel => [
 			basicTypes = elements
 				.filter[it instanceof RosettaType]
 				.map[it as RosettaType]
