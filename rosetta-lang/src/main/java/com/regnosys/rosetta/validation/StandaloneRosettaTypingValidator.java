@@ -16,11 +16,11 @@ import com.regnosys.rosetta.types.RListType;
 import com.regnosys.rosetta.types.TypeFactory;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.TypeValidationUtil;
-import com.regnosys.rosetta.typing.validation.RosettaTypingValidator;
+import com.regnosys.rosetta.typing.validation.RosettaTypingCheckingValidator;
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals;
 
-public class StandaloneRosettaTypingValidator extends RosettaTypingValidator {
+public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValidator {
 	@Inject
 	private TypeSystem ts;
 	
