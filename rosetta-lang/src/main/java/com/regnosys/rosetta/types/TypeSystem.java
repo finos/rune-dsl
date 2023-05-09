@@ -1,9 +1,6 @@
 package com.regnosys.rosetta.types;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.apache.commons.lang3.Validate;
@@ -121,5 +118,12 @@ public class TypeSystem {
 		Validate.notNull(combineUnderlyingTypes);
 		
 		return typing.keepTypeAliasIfPossible(t1, t2, combineUnderlyingTypes);
+	}
+	
+	public RType stripFromTypeAliases(RType t) {
+		if (t instanceof RAliasType) {
+			return ((RAliasType)t).getRefersTo();
+		}
+		return t;
 	}
 }
