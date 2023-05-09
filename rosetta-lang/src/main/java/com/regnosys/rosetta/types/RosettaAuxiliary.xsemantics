@@ -1,0 +1,238 @@
+system com.regnosys.rosetta.typing.RosettaTypingAuxiliary
+
+validatorExtends AbstractDeclarativeValidator
+
+import com.regnosys.rosetta.rosetta.RosettaCardinality
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.RosettaPackage
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.RListType
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.types.TypeFactory
+import com.regnosys.rosetta.types.TypeValidationUtil
+import com.regnosys.rosetta.utils.ExpressionHelper
+import java.util.List
+
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.types.builtin.RNumberType
+import com.regnosys.rosetta.types.builtin.RStringType
+import com.regnosys.rosetta.types.builtin.RBasicType
+import com.regnosys.rosetta.interpreter.RosettaInterpreter
+import com.regnosys.rosetta.types.RAliasType
+import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver
+import java.util.function.BiFunction
+import org.eclipse.xtext.validation.AbstractDeclarativeValidator
+
+inject extension TypeFactory typeFactory
+inject extension TypeValidationUtil util
+inject extension ExpressionHelper exprHelper
+inject extension ImplicitVariableUtil implicitVarUtil
+inject extension RBuiltinTypeService builtinTypes
+inject RosettaInterpreter interpreter
+inject RosettaSimpleSystemSolver systemSolver
+
+
+auxiliary {
+	ancestors(Data t) : List<Data>
+	ancestorEnums(RosettaEnumeration t) : List<RosettaEnumeration>
+	overlap(RosettaCardinality c1, RosettaCardinality c2)
+	join(RType t1, RType t2) : RType
+	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
+	listJoin(RListType t1, RListType t2) : RListType
+	allAttributes(Data d) : Iterable<Attribute>
+	mayBeEmpty(Data d)
+	
+	keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes): RType
+}
+
+/****** AUXILIARY DEFINITIONS *******/
+auxiliary ancestors(Data t) {
+	getAll(t,
+		SimplePackage::eINSTANCE.data_SuperType,
+		SimplePackage::eINSTANCE.data_SuperType,
+		typeof(Data)
+	)
+}
+auxiliary ancestorEnums(RosettaEnumeration t) {
+	getAll(t,
+		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
+		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
+		typeof(RosettaEnumeration)
+	)
+}
+auxiliary overlap(RosettaCardinality c1, RosettaCardinality c2) {
+	(c1.unbounded || c1.sup >= c2.inf) && (c2.unbounded || c2.sup >= c1.inf)
+	or
+	return false
+}
+auxiliary join(RDataType t1, RDataType t2) {
+	val st1 = ancestors(t1.^data)
+	st1.add(0, t1.^data)
+	val st2 = ancestors(t2.^data)
+	st2.add(0, t2.^data)
+	val result = st2.findFirst[st1.contains(it)]
+	if (result === null) {
+		return ANY
+	}
+	return new RDataType(result)
+}
+auxiliary join(REnumType t1, REnumType t2) {
+	val st1 = ancestorEnums(t1.enumeration)
+	st1.add(0, t1.enumeration)
+	val st2 = ancestorEnums(t2.enumeration)
+	st2.add(0, t2.enumeration)
+	val result = st2.findFirst[st1.contains(it)]
+	if (result === null) {
+		return ANY
+	}
+	return new REnumType(result)
+}
+auxiliary join(RNumberType t1, RNumberType t2) {
+	t1.join(t2)
+}
+auxiliary join(RStringType t1, RStringType t2) {
+	t1.join(t2)
+}
+auxiliary join(RBasicType t1, RBasicType t2) {
+	if (t1 == t2) {
+		return t1
+	} else if (t1 == NOTHING) {
+		return t2
+	} else if (t2 == NOTHING) {
+		return t1
+	}
+	return ANY
+}
+auxiliary join(RBasicType t1, RType t2) {
+	if (t1 == t2) {
+		return t1
+	} else if (t1 == NOTHING) {
+		return t2
+	}
+	return ANY
+}
+auxiliary join(RType t1, RBasicType t2) {
+	if (t1 == t2) {
+		return t1
+	} else if (t2 == NOTHING) {
+		return t1
+	}
+	return ANY
+}
+auxiliary join(RAliasType t1, RAliasType t2) {
+	if (t1 == t2) {
+		return t1
+	} else if (t1.typeFunction == t2.typeFunction) {
+		val typeFunc = t1.typeFunction
+		// Attempt to keep the alias
+		val underlyingJoin = join(t1.refersTo, t2.refersTo)
+		val aliasParams = typeFunc.reverse(underlyingJoin)
+		return aliasParams.<RType>map[new RAliasType(typeFunc, it, underlyingJoin)]
+			.orElse(underlyingJoin)
+	} else {
+		val superAliases = newArrayList
+		var RType curr = t1
+		while (curr instanceof RAliasType) {
+			superAliases.add(curr)
+			curr = curr.refersTo
+		}
+		curr = t2
+		while (curr instanceof RAliasType) {
+			val tf = curr.typeFunction
+			val match = superAliases.findFirst[tf == typeFunction]
+			if (match !== null) {
+				return join(match, curr)
+			}
+			curr = curr.refersTo
+		}
+		return join(t1.refersTo, t2.refersTo)
+	}
+}
+auxiliary join(RAliasType t1, RType t2) {
+	return join(t1.refersTo, t2)
+}
+auxiliary join(RType t1, RAliasType t2) {
+	return join(t1, t2.refersTo)
+}
+auxiliary join(RAliasType t1, RBasicType t2) {
+	if (t2 == NOTHING) {
+		return t1
+	}
+	return join(t1.refersTo, t2)
+}
+auxiliary join(RBasicType t1, RAliasType t2) {
+	if (t1 == NOTHING) {
+		return t2
+	}
+	return join(t1, t2.refersTo)
+}
+auxiliary join(RType t1, RType t2) {
+	if (t1 == t2) {
+		return t1
+	}
+	return ANY
+}
+auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
+	if (c1.unbounded || c2.unbounded) {
+		return createConstraint(Math.min(c1.inf, c2.inf))
+	} else {
+		return createConstraint(Math.min(c1.inf, c2.inf), Math.max(c1.sup, c2.sup))
+	}
+}
+auxiliary listJoin(RListType t1, RListType t2) {
+	val sup = join(t1.itemType, t2.itemType);
+	return createListType(sup, union(t1.constraint, t2.constraint))
+}
+auxiliary allAttributes(Data d) {
+	if (d.superType === null) {
+		return d.attributes;
+	} else {
+		return allAttributes(d.superType) + d.attributes;
+	}
+}
+auxiliary mayBeEmpty(Data d) {
+	d.allAttributes.forall[
+		card.inf === 0
+	]
+}
+
+auxiliary keepTypeAliasIfPossible(RAliasType t1, RAliasType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
+	if (t1.typeFunction == t2.typeFunction) {
+		val typeFunc = t1.typeFunction
+		val underlier = keepTypeAliasIfPossible(t1.refersTo, t2.refersTo, combineUnderlyingTypes)
+		return typeFunc.reverse(underlier)
+			.<RType>map[args| new RAliasType(typeFunc, args, underlier)]
+			.orElse(underlier)
+	} else {
+		val superAliases = newArrayList
+		var RType curr = t1
+		while (curr instanceof RAliasType) {
+			superAliases.add(curr)
+			curr = curr.refersTo
+		}
+		curr = t2
+		while (curr instanceof RAliasType) {
+			val tf = curr.typeFunction
+			val match = superAliases.findFirst[tf == typeFunction]
+			if (match !== null) {
+				return keepTypeAliasIfPossible(match, curr, combineUnderlyingTypes)
+			}
+			curr = curr.refersTo
+		}
+		return keepTypeAliasIfPossible(t1.refersTo, t2.refersTo, combineUnderlyingTypes)
+	}
+}
+auxiliary keepTypeAliasIfPossible(RAliasType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
+	keepTypeAliasIfPossible(t1.refersTo, t2, combineUnderlyingTypes)
+}
+auxiliary keepTypeAliasIfPossible(RType t1, RAliasType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
+	keepTypeAliasIfPossible(t1, t2.refersTo, combineUnderlyingTypes)
+}
+auxiliary keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
+	combineUnderlyingTypes.apply(t1, t2)
+}
