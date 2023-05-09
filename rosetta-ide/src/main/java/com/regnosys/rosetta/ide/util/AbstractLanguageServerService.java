@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.Range;
@@ -23,6 +22,8 @@ import org.eclipse.xtext.ide.server.Document;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.SimpleCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -33,7 +34,7 @@ import com.google.inject.Injector;
  *
  */
 public class AbstractLanguageServerService<T> {
-	private static final Logger log = Logger.getLogger(AbstractLanguageServerService.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractLanguageServerService.class);
 	
 	private final Class<T> resultType;
 	private final Class<? extends Annotation> methodAnnotation;

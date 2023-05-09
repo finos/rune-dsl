@@ -89,7 +89,6 @@ import java.util.Set
 import java.util.Stack
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
-import org.apache.log4j.Logger
 import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EPackage
@@ -121,6 +120,8 @@ import com.regnosys.rosetta.types.TypeSystem
 import java.util.Optional
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -143,7 +144,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
 
-	static final Logger log = Logger.getLogger(RosettaValidator);
+	static final Logger LOGGER = LoggerFactory.getLogger(RosettaValidator);
 
 	protected override List<EPackage> getEPackages() {
 		val result = newArrayList
@@ -158,7 +159,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	protected override void handleExceptionDuringValidation(Throwable targetException) throws RuntimeException {
 		super.handleExceptionDuringValidation(targetException);
-		log.error(targetException, targetException);
+		LOGGER.error("Exception occurred during validation", targetException);
 	}
 	
 	protected override MethodWrapper createMethodWrapper(AbstractDeclarativeValidator instanceToUse, Method method) {
@@ -175,7 +176,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				super.invoke(state);
 			} catch (Exception e) {
 				val String message = "Unexpected validation failure running " + method.name
-				log.error(message, e);
+				LOGGER.error(message, e);
 				state.hasErrors = true;
 				state.chain.add(createDiagnostic(message, state))
 			}

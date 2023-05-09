@@ -57,6 +57,8 @@ import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 @Singleton
 public class RosettaModelFactory {
 	
+	//private static final Logger LOGGER = LoggerFactory.getClass(RosettaModelFactory.class);
+	
 	public static final String UNBOUNDED = "unbounded";
 	public static final String DOC_ANNOTATION_SOURCE_NAME = "Name";
 	public static final String BASIC_TYPE_NAMESPACE = "com.rosetta.model";

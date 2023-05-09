@@ -50,7 +50,6 @@ import java.util.Collection
 import java.util.List
 import java.util.Map
 import javax.inject.Inject
-import org.apache.log4j.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtend.lib.annotations.Data
@@ -70,9 +69,11 @@ import com.regnosys.rosetta.validation.BindableType
 import java.util.function.Supplier
 import com.regnosys.rosetta.generator.java.types.JavaReferenceType
 import java.math.BigDecimal
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class BlueprintGenerator {
-	static Logger LOGGER = Logger.getLogger(BlueprintGenerator)
+	static Logger LOGGER = LoggerFactory.getLogger(BlueprintGenerator)
 	
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaBlueprintTypeResolver
