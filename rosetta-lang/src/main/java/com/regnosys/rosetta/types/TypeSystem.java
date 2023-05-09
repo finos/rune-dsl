@@ -119,4 +119,11 @@ public class TypeSystem {
 		
 		return typing.keepTypeAliasIfPossible(t1, t2, combineUnderlyingTypes);
 	}
+	
+	public RType stripFromTypeAliases(RType t) {
+		if (t instanceof RAliasType) {
+			return ((RAliasType)t).getRefersTo();
+		}
+		return t;
+	}
 }
