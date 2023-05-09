@@ -1,9 +1,6 @@
 package com.regnosys.rosetta.types;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.apache.commons.lang3.Validate;
