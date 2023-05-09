@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -295,6 +297,7 @@ public class RosettaModelFactory {
 		rosettaEnumValue.setName(value);
 		extractDocs(ev).ifPresent(rosettaEnumValue::setDefinition);
 		extractDocs(ev, DOC_ANNOTATION_SOURCE_NAME)
+			.filter(x -> StringUtils.isNotEmpty(x))
 			.filter(x -> !x.equals(ev.getValue()))
 			.ifPresent(rosettaEnumValue::setDisplay);
 
@@ -305,13 +308,14 @@ public class RosettaModelFactory {
 		return resourceSet.createResource(URI.createURI(namespace.substring(namespace.indexOf('.') + 1)
 			.replace('.', '-') + "-" + type + ".rosetta"));
 	}
-
+	
 	private Optional<String> extractDocs(XsdAnnotatedElements ev) {
 		return Optional.ofNullable(ev)
 			.map(XsdAnnotatedElements::getAnnotation)
 			.map(XsdAnnotation::getDocumentations)
 			.map(xsdDocs -> xsdDocs.stream()
-				.filter(x -> documentationSources.contains(x.getSource()))
+				// default to definition if source not specified
+				.filter(x -> x.getSource() == null || documentationSources.contains(x.getSource()))
 				.map(XsdAnnotationChildren::getContent)
 				.map(x -> x.replace('\n', ' '))
 				.map(x -> x.replace('\r', ' '))
@@ -324,6 +328,7 @@ public class RosettaModelFactory {
 			.map(XsdAnnotatedElements::getAnnotation)
 			.map(XsdAnnotation::getDocumentations)
 			.map(xsdDocs -> xsdDocs.stream()
+				.filter(x -> x.getSource() != null)
 				.filter(x -> x.getSource().equals(docAnnotationSourceName))
 				.map(XsdAnnotationChildren::getContent)
 				.map(x -> x.replace('\n', ' '))
