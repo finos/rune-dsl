@@ -7,6 +7,7 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService
+import java.util.ArrayList
 
 class ModelHelper {
 
@@ -80,9 +81,9 @@ class ModelHelper {
 
 	def parseRosetta(CharSequence... models) {
 		val resourceSet = testResourceSet()
-		return models
+		return new ArrayList(models
 			.map[if (it.subSequence(0,9) != "namespace") versionInfo + "\n" + it else it]
-			.map[it.parse(resourceSet)]
+			.map[it.parse(resourceSet)])
 	}
 	
 	def parseRosettaWithNoErrors(CharSequence model) {
@@ -100,6 +101,12 @@ class ModelHelper {
 	def parseRosettaWithNoIssues(CharSequence model) {
 		val parsed = parseRosetta(model)
 		parsed.assertNoIssues
+		return parsed;
+	}
+	
+	def parseRosettaWithNoIssues(CharSequence... models) {
+		val parsed = parseRosetta(models)
+		parsed.forEach[assertNoIssues]
 		return parsed;
 	}
 

@@ -2,12 +2,12 @@ package com.regnosys.rosetta.resource
 
 import com.google.common.collect.Maps
 import com.google.inject.Inject
-import com.regnosys.rosetta.scoping.RosettaQualifiedNameProvider
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.resource.EObjectDescription
 import org.eclipse.xtext.resource.IEObjectDescription
+import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 class Indexed {
 	
@@ -17,7 +17,7 @@ class Indexed {
 		Indexed.ATTRIBUTE_OUT
 	]
 
-	@Inject RosettaQualifiedNameProvider qNames
+	@Inject IQualifiedNameProvider qNames
 
 	def IEObjectDescription createDescription(EObject obj) {
 		createDescription(obj, qNames.getFullyQualifiedName(obj))

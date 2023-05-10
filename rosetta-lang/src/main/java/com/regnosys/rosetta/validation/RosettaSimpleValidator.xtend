@@ -27,7 +27,6 @@ import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -121,6 +120,7 @@ import com.regnosys.rosetta.types.TypeSystem
 import java.util.Optional
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
+import com.regnosys.rosetta.rosetta.RosettaRootElement
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -773,7 +773,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	private def isDateTime(RType rType) {
-		#["date", "time", "zonedDateTime"].contains(rType.name)
+		#["date", "time", "zonedDateTime"].contains(rType?.name)
 	}
 
 	@Check
@@ -1373,21 +1373,20 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkImport(RosettaModel model) {
 
-		var importable = newArrayList
-		for (content : model.eAllContents.toList) {
-			if (content instanceof RosettaRootElement) {
-				importable.add(content)
-			}
-			for (crossReference : content.eCrossReferences.toList) {
-				if (crossReference instanceof RosettaRootElement) {
-					importable.add(crossReference)
-				}
-			}
-		}
-		var usedNamespaces = importable.map[eContainer].map[it as RosettaModel].map[name]
+		var usedNames = model.eAllContents.flatMap[
+			eCrossReferences.filter(RosettaRootElement).iterator
+		].map[
+			fullyQualifiedName
+		].toList
 
 		for (ns : model.imports) {
-			if (!usedNamespaces.contains(ns.importedNamespace.replace('.*', ''))) {
+			val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
+			val isUsed = if (qn.lastSegment.equals('*')) {
+				usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
+			} else {
+				usedNames.contains(qn)
+			}
+			if (!isUsed) {
 				warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
 			}
 		}
