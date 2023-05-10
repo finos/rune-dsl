@@ -34,6 +34,26 @@ class RosettaParsingTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void orderOfParsingDoesNotMatter() {
+		val model1 = '''
+		namespace test.one
+		
+		type A:
+			n int (1..1)
+		'''
+		val model2 = '''
+		namespace test.two
+		
+		import test.one.A
+		
+		type B:
+			a A (1..1)
+		'''
+		#[model1, model2].parseRosettaWithNoIssues
+		#[model2, model1].parseRosettaWithNoIssues
+	}
+	
+	@Test
 	@Disabled // see issue https://github.com/REGnosys/rosetta-dsl/issues/524
 	def void testPatternLiterals() {
 		val model = '''

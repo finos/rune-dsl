@@ -48,9 +48,6 @@
             <plugin>
                 <groupId>org.eclipse.xtend</groupId>
                 <artifactId>xtend-maven-plugin</artifactId>
-<!--                <configuration>-->
-<!--                    <javaSourceVersion>${maven.compiler.release}</javaSourceVersion>-->
-<!--                </configuration>-->
             </plugin>
         </plugins>
     </build>

@@ -182,7 +182,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic6.rosetta#/0/@elements.2";
+						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
 					
@@ -393,7 +393,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic6.rosetta#/0/@elements.2";
+						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
 					
@@ -596,7 +596,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic6.rosetta#/0/@elements.2";
+						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
 					
@@ -725,7 +725,7 @@ class RosettaBlueprintTest {
 					
 					@Override
 					public String getURI() {
-						return "__synthetic6.rosetta#/0/@elements.2";
+						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
 					
