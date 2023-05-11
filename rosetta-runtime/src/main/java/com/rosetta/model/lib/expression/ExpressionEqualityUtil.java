@@ -160,7 +160,7 @@ class ExpressionEqualityUtil {
 					return ComparisonResult.success();
 				}
 				if (compRes == 0 && o == CardinalityOperator.All) {
-					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does equal " + formatEqualsComparisonResultError(m2));
+					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " should not equal " + formatEqualsComparisonResultError(m2));
 				}
 			} else {
 				boolean equals = b1 == null ? b2 == null : b1.equals(b2);
@@ -168,7 +168,7 @@ class ExpressionEqualityUtil {
 					return ComparisonResult.success();
 				}
 				if (equals && o == CardinalityOperator.All) {
-					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does equal " + formatEqualsComparisonResultError(m2));
+					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " should not equal " + formatEqualsComparisonResultError(m2));
 				}
 			}
 		}
@@ -177,7 +177,7 @@ class ExpressionEqualityUtil {
 			return ComparisonResult.success();
 		
 		return o == CardinalityOperator.Any ? 
-				ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does equal " + formatEqualsComparisonResultError(m2)) :
+				ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " should not equal " + formatEqualsComparisonResultError(m2)) :
 				ComparisonResult.success();
 
 	}
@@ -200,7 +200,7 @@ class ExpressionEqualityUtil {
 					return ComparisonResult.success();
 				}
 				if (compRes == 0 && o == CardinalityOperator.All) {
-					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does equal " + formatEqualsComparisonResultError(m2));
+					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " should not equal " + formatEqualsComparisonResultError(m2));
 				}
 			} else {
 				@SuppressWarnings("unlikely-arg-type")
@@ -209,14 +209,14 @@ class ExpressionEqualityUtil {
 					return ComparisonResult.success();
 				}
 				if (equals && o == CardinalityOperator.All) {
-					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does equal " + formatEqualsComparisonResultError(m2));
+					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " should not equal " + formatEqualsComparisonResultError(m2));
 				}
 			}
 				
 		}
 
 		return o == CardinalityOperator.Any ? 
-				ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does equal " + formatEqualsComparisonResultError(m2)) :
+				ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " should not equal  " + formatEqualsComparisonResultError(m2)) :
 				ComparisonResult.success();
 	}
 }
