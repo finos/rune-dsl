@@ -22,8 +22,10 @@ public class RosettaBuiltinsService {
 	private RosettaModel getModel(ResourceSet resourceSet, URI uri) {
 		Resource resource = resourceSet.getResource(uri, false);
 		if (resource == null) { // TODO: this is a workaround for not having proper support for classpath uris in the Xtext language server
+			String[] pathParts = uri.path().split("/");
+			String uriFile = pathParts[pathParts.length - 1];
 			resource = resourceSet.getResources().stream()
-				.filter(r -> r.getURI().path().endsWith(uri.path()))
+				.filter(r -> r.getURI().path().endsWith(uriFile))
 				.findAny()
 				.orElseThrow();
 		}
