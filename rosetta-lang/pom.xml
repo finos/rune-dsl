@@ -55,9 +55,6 @@
 
     <build>
         <resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
             <!-- Make sure the .xcore file is part of the produced JAR. -->
             <!-- It may be needed by downstream projects. -->
             <resource>
