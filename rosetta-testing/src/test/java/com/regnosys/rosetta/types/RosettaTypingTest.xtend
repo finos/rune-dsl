@@ -129,6 +129,22 @@ class RosettaTypingTest {
 		'empty all <> 5.0'.assertIsValidWithType(singleBoolean)
 		'[1, 3] any = 5.0'.assertIsValidWithType(singleBoolean)
 		
+		'a = 1'
+			.parseExpression(#['a int (0..1)'])
+			.assertNoIssues
+			
+		val model = '''
+		namespace test
+		
+		type Foo:
+			packageTransactionPriceNotation int (0..1)
+			
+			condition C:
+				packageTransactionPriceNotation = 1
+		'''.parseRosettaWithNoIssues
+		val expression = (model.elements.last as Data).conditions.head.expression;
+		expression.assertHasType(singleBoolean);
+		
 		// Test loosened version
         '[1, 3] any = (if False then 1 else [2, 3])'.assertIsValidWithType(singleBoolean)
 	}

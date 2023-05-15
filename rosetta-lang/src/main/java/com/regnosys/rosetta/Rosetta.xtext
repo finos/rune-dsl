@@ -163,7 +163,8 @@ RosettaRootElement:
 	Enumeration | RosettaBody | RosettaCorpus | RosettaSegment | 
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaBlueprint | RosettaMetaType | RosettaExternalSynonymSource |
-	RosettaExternalRuleSource | RosettaBlueprintReport | RosettaTypeAlias
+	RosettaExternalRuleSource | RosettaBlueprintReport | RosettaTypeAlias |
+	RosettaQualifiedType | RosettaCalculationType
 ;
 
 
@@ -234,6 +235,14 @@ RosettaParameter:
 // TODO get rid of these
 RosettaLibraryFunction returns RosettaExternalFunction:
 	'library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaTyped RosettaDefinable? 
+;
+
+// @Compat
+RosettaQualifiedType returns RosettaBasicType:
+	'qualifiedType' RosettaNamed '{' '}'
+;
+RosettaCalculationType returns RosettaBasicType:
+	'calculationType' RosettaNamed '{' '}'
 ;
 
 /**********************************************************************

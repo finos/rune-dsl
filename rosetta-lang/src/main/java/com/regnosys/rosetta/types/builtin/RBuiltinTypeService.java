@@ -72,6 +72,12 @@ public class RBuiltinTypeService {
 	public RBuiltinTypeService() {
 		register("number", (m) -> RNumberType.from(m));
 		register("string", (m) -> RStringType.from(m));
+		
+		// @Compat
+		register("productType", (m) -> UNCONSTRAINED_STRING);
+		register("eventType", (m) -> UNCONSTRAINED_STRING);
+		register("calculation", (m) -> UNCONSTRAINED_STRING);
+		register("int", (m) -> UNCONSTRAINED_INT);
 	}
 	
 	public Optional<RType> getType(String name, Map<String, RosettaValue> params) {
