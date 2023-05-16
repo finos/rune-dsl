@@ -7,6 +7,7 @@ import javax.inject.Inject;
 
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
+import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 
 import com.regnosys.rosetta.rosetta.RosettaBody;
@@ -25,7 +26,7 @@ public class XsdTypeImport {
 		this.rosettaModelFactory = rosettaModelFactory;
 	}
 
-	public void generateTypes(List<XsdAbstractElement> xsdElements, GenerationProperties properties, List<String> namespaces) {
+	public RosettaModel generateTypes(List<XsdAbstractElement> xsdElements, GenerationProperties properties, List<String> namespaces) {
 
 		RosettaModel rosettaModel = rosettaModelFactory.createRosettaModel(TYPE, properties, namespaces);
 
@@ -36,32 +37,38 @@ public class XsdTypeImport {
 		RosettaSegment rosettaSegment = rosettaModelFactory.createSegment(properties.getSegmentName());
 		rosettaModel.getElements().add(rosettaSegment);
 
-		List<XsdSimpleType> simpleTypes = getSimpleTypes(xsdElements);
+		List<? extends XsdNamedElements> simpleTypes = getSimpleTypes(xsdElements);
 		simpleTypes.stream()
 			.map(rosettaModelFactory::createData)
 			.forEach(rosettaModel.getElements()::add);
 
-		List<XsdComplexType> complexTypes = getComplexTypes(xsdElements);
+		List<? extends XsdNamedElements> complexTypes = getComplexTypes(xsdElements);
 		complexTypes.stream()
 			.map(rosettaModelFactory::createData)
 			.forEach(rosettaModel.getElements()::add);
 
-
-		complexTypes.forEach(rosettaModelFactory::addSuperType);
-		complexTypes.forEach(complexType -> rosettaModelFactory.addAttributesToData(complexType, body, corpus, rosettaSegment));
-	}
-
-	private List<XsdComplexType> getComplexTypes(List<XsdAbstractElement> elementStream) {
-		return elementStream.stream()
+		complexTypes.stream()
 			.filter(XsdComplexType.class::isInstance)
 			.map(XsdComplexType.class::cast)
-			.collect(Collectors.toList());
+			.forEach(rosettaModelFactory::addSuperType);
+		complexTypes
+			.forEach(complexType -> rosettaModelFactory.addAttributesToData(complexType, body, corpus, rosettaSegment, xsdElements));
+		
+		return rosettaModel;
 	}
 
-	private List<XsdSimpleType> getSimpleTypes(List<XsdAbstractElement> elementStream) {
+	private List<? extends XsdNamedElements> getComplexTypes(List<XsdAbstractElement> elementStream) {
+		return elementStream.stream()
+				.filter(XsdComplexType.class::isInstance)
+				.map(XsdComplexType.class::cast)
+				.collect(Collectors.toList());
+	}
+
+	private List<? extends XsdNamedElements> getSimpleTypes(List<XsdAbstractElement> elementStream) {
 		return elementStream.stream()
 			.filter(XsdSimpleType.class::isInstance)
 			.map(XsdSimpleType.class::cast)
+			.filter(simpleType -> simpleType.getUnion() == null)
 			.filter(x -> x.getAllRestrictions().stream().anyMatch(e -> e.getEnumeration().size() == 0))
 			.collect(Collectors.toList());
 	}
