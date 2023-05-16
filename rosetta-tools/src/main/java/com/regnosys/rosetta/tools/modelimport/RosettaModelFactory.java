@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -16,6 +15,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
+import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotatedElements;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotation;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotationChildren;
@@ -174,15 +174,19 @@ public class RosettaModelFactory {
 
 		return rosettaExternalEnum;
 	}
-
-	public void addAttributesToData(XsdComplexType complexType, RosettaBody rosettaBody, RosettaCorpus rosettaCorpus, RosettaSegment rosettaSegment) {
+	
+	public void addAttributesToData(XsdNamedElements complexType, RosettaBody rosettaBody, RosettaCorpus rosettaCorpus, RosettaSegment rosettaSegment, List<? extends XsdAbstractElement> xsdElements) {
 		Data data = findData(complexType.getName());
+		// handle complex types
 		Optional.of(complexType)
+			.filter(XsdComplexType.class::isInstance)
+			.map(XsdComplexType.class::cast)
 			.map(XsdComplexType::getElements).stream()
 			.flatMap(Collection::stream)
 			.map(ReferenceBase::getElement)
 			.filter(XsdElement.class::isInstance)
 			.map(XsdElement.class::cast)
+			.filter(xsdElement -> xsdElement.getType() != null)
 			.map(element -> createAttribute(element, rosettaBody, rosettaCorpus, rosettaSegment))
 			.forEach(data.getAttributes()::add);
 	}
