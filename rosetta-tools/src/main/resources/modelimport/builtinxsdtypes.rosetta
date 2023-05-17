@@ -1,0 +1,14 @@
+namespace com.regnosys.xsd: <"https://www.liquid-technologies.com/Reference/XmlStudio/XsdEditorNotation_BuiltInXsdTypes.html">
+version "${project.version}"
+
+typeAlias anyURI: string(pattern: "\\w+:(\\/?\\/?)[^\\s]+")
+
+typeAlias duration: dateTime
+
+typeAlias negativeInteger: int(max: -1)
+
+typeAlias nonPositiveInteger: int(max: 0)
+
+typeAlias nonNegativeInteger: int(min: 0)
+
+typeAlias positiveInteger: int(min: 1)

@@ -1,0 +1,27 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+synonym source TEST_SYN_SOURCE
+{
+	Bar:
+		+ barStrAttr
+			[value "BarStrAttr"]
+
+	Foo:
+		+ fooBooleanAttr
+			[value "FooBooleanAttr"]
+		+ fooStrAttr
+			[value "FooStrAttr"]
+		+ fooDecimalAttr
+			[value "FooDecimalAttr"]
+		+ fooStringWithRestrictionAttr
+			[value "FooStringWithRestrictionAttr"]
+		+ fooDecimalWithRestrictionAttr
+			[value "FooDecimalWithRestrictionAttr"]
+		+ fooBarAttr
+			[value "FooBarAttr"]
+		+ fooStrListAttr
+			[value "FooStrListAttr"]
+		+ fooBarListAttr
+			[value "FooBarListAttr"]
+}

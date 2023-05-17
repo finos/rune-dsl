@@ -1,75 +1,145 @@
 package com.regnosys.rosetta.tools.modelimport;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
-import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
-import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
+import org.xmlet.xsdparser.xsdelements.XsdElement;
+import org.xmlet.xsdparser.xsdelements.XsdExtension;
+import org.xmlet.xsdparser.xsdelements.XsdSimpleContent;
+import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
 
+import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
 import com.regnosys.rosetta.rosetta.RosettaBody;
+import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaCorpus;
-import com.regnosys.rosetta.rosetta.RosettaModel;
+import com.regnosys.rosetta.rosetta.RosettaDocReference;
+import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaSegment;
+import com.regnosys.rosetta.rosetta.RosettaSegmentRef;
+import com.regnosys.rosetta.rosetta.RosettaType;
+import com.regnosys.rosetta.rosetta.TypeCall;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 
-public class XsdTypeImport {
+public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
+	public final String UNBOUNDED = "unbounded";
 
-	public static final String TYPE = "type";
-
-	private final RosettaModelFactory rosettaModelFactory;
-
+	private final XsdUtil util;
+	
 	@Inject
-	public XsdTypeImport(RosettaModelFactory rosettaModelFactory) {
-		this.rosettaModelFactory = rosettaModelFactory;
+	public XsdTypeImport(XsdUtil util) {
+		super(XsdComplexType.class);
+		this.util = util;
 	}
 
-	public RosettaModel generateTypes(List<XsdAbstractElement> xsdElements, GenerationProperties properties, List<String> namespaces) {
-
-		RosettaModel rosettaModel = rosettaModelFactory.createRosettaModel(TYPE, properties, namespaces);
-
-		RosettaBody body = rosettaModelFactory.createBody(properties.getBodyType(), properties.getBodyName(), properties.getBodyDefinition());
-		rosettaModel.getElements().add(body);
-		RosettaCorpus corpus = rosettaModelFactory.createCorpus(body, properties.getCorpusType(), properties.getCorpusName(), properties.getCorpusDisplayName(), properties.getCorpusDefinition());
-		rosettaModel.getElements().add(corpus);
-		RosettaSegment rosettaSegment = rosettaModelFactory.createSegment(properties.getSegmentName());
-		rosettaModel.getElements().add(rosettaSegment);
-
-		List<? extends XsdNamedElements> simpleTypes = getSimpleTypes(xsdElements);
-		simpleTypes.stream()
-			.map(rosettaModelFactory::createData)
-			.forEach(rosettaModel.getElements()::add);
-
-		List<? extends XsdNamedElements> complexTypes = getComplexTypes(xsdElements);
-		complexTypes.stream()
-			.map(rosettaModelFactory::createData)
-			.forEach(rosettaModel.getElements()::add);
-
-		complexTypes.stream()
-			.filter(XsdComplexType.class::isInstance)
-			.map(XsdComplexType.class::cast)
-			.forEach(rosettaModelFactory::addSuperType);
-		complexTypes
-			.forEach(complexType -> rosettaModelFactory.addAttributesToData(complexType, body, corpus, rosettaSegment, xsdElements));
+	@Override
+	public Data registerType(XsdComplexType xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+		Data data = SimpleFactory.eINSTANCE.createData();
+		data.setName(xsdType.getName());
+		util.extractDocs(xsdType).ifPresent(data::setDefinition);
+		typeMappings.registerComplexType(xsdType, data);
 		
-		return rosettaModel;
+		Optional.of(xsdType)
+			.map(XsdComplexType::getElements).stream()
+			.flatMap(List::stream)
+			.map(ReferenceBase::getElement)
+			.filter(XsdElement.class::isInstance)
+			.map(XsdElement.class::cast)
+			.filter(xsdElement -> xsdElement.getType() != null)
+			.map(element -> registerAttribute(element, typeMappings))
+			.forEach(data.getAttributes()::add);
+		
+		return data;
 	}
 
-	private List<? extends XsdNamedElements> getComplexTypes(List<XsdAbstractElement> elementStream) {
-		return elementStream.stream()
-				.filter(XsdComplexType.class::isInstance)
-				.map(XsdComplexType.class::cast)
-				.collect(Collectors.toList());
+	@Override
+	public void completeType(XsdComplexType xsdType, RosettaXsdMapping typeMappings) {
+		Data data = typeMappings.getRosettaTypeFromComplex(xsdType);
+		
+		// add supertype
+		Optional.of(xsdType)
+			.map(XsdComplexType::getSimpleContent)
+			.map(XsdSimpleContent::getXsdExtension)
+			.map(XsdExtension::getBaseAsComplexType)
+			.ifPresent(base -> {
+				Data superType = typeMappings.getRosettaTypeFromComplex(base);
+				data.setSuperType(superType);
+			});
+		
+		// add types to attributes
+		Optional.of(xsdType)
+			.map(XsdComplexType::getElements).stream()
+			.flatMap(List::stream)
+			.map(ReferenceBase::getElement)
+			.filter(XsdElement.class::isInstance)
+			.map(XsdElement.class::cast)
+			.filter(xsdElement -> xsdElement.getType() != null)
+			.forEach(element -> {
+				Attribute attr = typeMappings.getAttribute(element);
+				TypeCall call = attr.getTypeCall();
+				RosettaType rosettaType = Optional.of(element)
+						.map(XsdElement::getTypeAsXsd)
+						.map(typeMappings::getRosettaType)
+						.get();
+				call.setType(rosettaType);
+			});
 	}
+	
+	private Attribute registerAttribute(XsdElement element, RosettaXsdMapping typeMappings) {
+		Attribute attribute = SimpleFactory.eINSTANCE.createAttribute();
 
-	private List<? extends XsdNamedElements> getSimpleTypes(List<XsdAbstractElement> elementStream) {
-		return elementStream.stream()
-			.filter(XsdSimpleType.class::isInstance)
-			.map(XsdSimpleType.class::cast)
-			.filter(simpleType -> simpleType.getUnion() == null)
-			.filter(x -> x.getAllRestrictions().stream().anyMatch(e -> e.getEnumeration().size() == 0))
-			.collect(Collectors.toList());
+		// definition
+		util.extractDocs(element).ifPresent(attribute::setDefinition);
+
+		// name
+		attribute.setName(util.allFirstLowerIfNotAbbrevation(element.getName()));
+		
+		// type call
+		TypeCall typeCall = RosettaFactory.eINSTANCE.createTypeCall();
+		attribute.setTypeCall(typeCall);
+
+		// cardinality
+		RosettaCardinality rosettaCardinality = RosettaFactory.eINSTANCE.createRosettaCardinality();
+		rosettaCardinality.setInf(element.getMinOccurs());
+		if (element.getMaxOccurs().equals(UNBOUNDED)) {
+			rosettaCardinality.setUnbounded(true);
+		} else {
+			rosettaCardinality.setSup(Integer.parseInt(element.getMaxOccurs()));
+		}
+		attribute.setCard(rosettaCardinality);
+
+		// docReference
+//		RosettaBody body = typeMappings.getBody();
+//		RosettaCorpus corpus = typeMappings.getCorpus();
+//		RosettaSegment segment = typeMappings.getSegment();
+//		Optional.ofNullable(element.getTypeAsSimpleType())
+//			.map(xsdName -> createRosettaDocReference(xsdName.getName(), body, corpus, segment, util.extractDocs(xsdName)))
+//			.ifPresent(attribute.getReferences()::add);
+		
+		typeMappings.registerAttribute(element, attribute);
+		
+		return attribute;
+	}
+	
+	private RosettaDocReference createRosettaDocReference(String xsdName, RosettaBody rosettaBody, RosettaCorpus rosettaCorpus, RosettaSegment rosettaSegment, Optional<String> provision) {
+		RosettaDocReference rosettaDocReference = RosettaFactory.eINSTANCE.createRosettaDocReference();
+
+		RegulatoryDocumentReference regulatoryDocumentReference = RosettaFactory.eINSTANCE.createRegulatoryDocumentReference();
+		regulatoryDocumentReference.setBody(rosettaBody);
+		regulatoryDocumentReference.getCorpuses().add(rosettaCorpus);
+		rosettaDocReference.setDocReference(regulatoryDocumentReference);
+
+		provision.ifPresent(rosettaDocReference::setProvision);
+
+		RosettaSegmentRef rosettaSegmentRef = RosettaFactory.eINSTANCE.createRosettaSegmentRef();
+		rosettaSegmentRef.setSegment(rosettaSegment);
+		rosettaSegmentRef.setSegmentRef(xsdName);
+		regulatoryDocumentReference.getSegments().add(rosettaSegmentRef);
+
+		return rosettaDocReference;
 	}
 }

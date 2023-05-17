@@ -4,6 +4,7 @@
 	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
 package com.regnosys.rosetta.rosetta
 
+import com.google.common.collect.Iterables
 import java.util.stream.Collectors
 import com.regnosys.rosetta.rosetta.simple.References
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -420,15 +421,13 @@ enum RosettaQualifiableType {
  *****************************************/
 
 abstract class ExternalAnnotationSource extends RosettaRootElement, RosettaNamed {
-	contains RosettaExternalRef[] externalRefs
-	// refers ExternalAnnotationSource[] superSources
-		
-	op RosettaExternalClass[] getExternalClasses() {
-		externalRefs.filter(RosettaExternalClass).toEList
-	}
+	contains RosettaExternalClass[] externalClasses
+	contains RosettaExternalEnum[] externalEnums
 	
-	op RosettaExternalEnum[] getExternalEnums() {
-		externalRefs.filter(RosettaExternalEnum).toEList
+	// refers ExternalAnnotationSource[] superSources
+	
+	op RosettaExternalRef[] getExternalRefs() {
+		Iterables.concat(externalClasses, externalEnums).toEList
 	}
 }
 

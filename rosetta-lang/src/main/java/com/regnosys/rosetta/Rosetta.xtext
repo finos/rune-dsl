@@ -730,8 +730,8 @@ RosettaOnlyExistsElementRoot returns RosettaSymbolReference:
 
 fragment ExternalAnnotationSource:
 	'{'
-	    (externalRefs+=RosettaExternalClass)*
-	    ('enums' (externalRefs+=RosettaExternalEnum)*)?
+	    (externalClasses+=RosettaExternalClass)*
+	    ('enums' (externalEnums+=RosettaExternalEnum)*)?
 	'}'
 ;
 // @Compat: move common parts to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed.
