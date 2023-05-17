@@ -3,6 +3,7 @@ package com.regnosys.rosetta.tools.modelimport;
 import com.regnosys.rosetta.rosetta.RosettaBasicType;
 import com.regnosys.rosetta.rosetta.RosettaBody;
 import com.regnosys.rosetta.rosetta.RosettaCorpus;
+import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaSegment;
@@ -10,6 +11,7 @@ import com.regnosys.rosetta.rosetta.RosettaRecordType;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 
@@ -20,8 +22,10 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.xmlet.xsdparser.xsdelements.XsdBuiltInDataType;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
+import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
+import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,6 +56,9 @@ public class RosettaXsdMapping {
 	private final Map<XsdSimpleType, RosettaTypeAlias> simpleTypesMap = new HashMap<>();
 	private final Map<XsdSimpleType, RosettaEnumeration> enumTypesMap = new HashMap<>();
 	private final Map<XsdComplexType, Data> complexTypesMap = new HashMap<>();
+	
+	private final Map<XsdElement, Attribute> attributeMap = new HashMap<>();
+	private final Map<XsdEnumeration, RosettaEnumValue> enumValueMap = new HashMap<>();
 
 	private final RBuiltinTypeService builtins;
 	private final XsdUtil util;
@@ -166,6 +173,18 @@ public class RosettaXsdMapping {
 		}
 		complexTypesMap.put(complexType, data);
 	}
+	public void registerAttribute(XsdElement elem, Attribute attr) {
+		if (attributeMap.containsKey(elem)) {
+			throw new IllegalArgumentException("There is already a registered attribute with the name " + elem.getName() + ".");
+		}
+		attributeMap.put(elem, attr);
+	}
+	public void registerEnumValue(XsdEnumeration elem, RosettaEnumValue value) {
+		if (enumValueMap.containsKey(elem)) {
+			throw new IllegalArgumentException("There is already a registered enum value with the name " + elem.getValue() + ".");
+		}
+		enumValueMap.put(elem, value);
+	}
 	@Deprecated
 	public void registerBody(RosettaBody body) {
 		if (this.body.isPresent()) {
@@ -235,6 +254,20 @@ public class RosettaXsdMapping {
 			throw new RuntimeException("No registered complex type " + complexType.getName() + " was found.");
 		}
 		return t;
+	}
+	public Attribute getAttribute(XsdElement elem) {
+		Attribute a = attributeMap.get(elem);
+		if (a == null) {
+			throw new RuntimeException("No registered attribute " + elem.getName() + " was found.");
+		}
+		return a;
+	}
+	public RosettaEnumValue getEnumValue(XsdEnumeration elem) {
+		RosettaEnumValue v = enumValueMap.get(elem);
+		if (v == null) {
+			throw new RuntimeException("No registered enum value " + elem.getValue() + " was found.");
+		}
+		return v;
 	}
 	
 	@Deprecated

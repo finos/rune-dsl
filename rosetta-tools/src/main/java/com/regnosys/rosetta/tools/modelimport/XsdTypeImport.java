@@ -42,6 +42,17 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 		data.setName(xsdType.getName());
 		util.extractDocs(xsdType).ifPresent(data::setDefinition);
 		typeMappings.registerComplexType(xsdType, data);
+		
+		Optional.of(xsdType)
+			.map(XsdComplexType::getElements).stream()
+			.flatMap(List::stream)
+			.map(ReferenceBase::getElement)
+			.filter(XsdElement.class::isInstance)
+			.map(XsdElement.class::cast)
+			.filter(xsdElement -> xsdElement.getType() != null)
+			.map(element -> registerAttribute(element, typeMappings))
+			.forEach(data.getAttributes()::add);
+		
 		return data;
 	}
 
@@ -59,7 +70,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 				data.setSuperType(superType);
 			});
 		
-		// add attributes
+		// add types to attributes
 		Optional.of(xsdType)
 			.map(XsdComplexType::getElements).stream()
 			.flatMap(List::stream)
@@ -67,26 +78,28 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 			.filter(XsdElement.class::isInstance)
 			.map(XsdElement.class::cast)
 			.filter(xsdElement -> xsdElement.getType() != null)
-			.map(element -> createAttribute(element, typeMappings))
-			.forEach(data.getAttributes()::add);
+			.forEach(element -> {
+				Attribute attr = typeMappings.getAttribute(element);
+				TypeCall call = attr.getTypeCall();
+				RosettaType rosettaType = Optional.of(element)
+						.map(XsdElement::getTypeAsXsd)
+						.map(typeMappings::getRosettaType)
+						.get();
+				call.setType(rosettaType);
+			});
 	}
 	
-	private Attribute createAttribute(XsdElement element, RosettaXsdMapping typeMappings) {
+	private Attribute registerAttribute(XsdElement element, RosettaXsdMapping typeMappings) {
 		Attribute attribute = SimpleFactory.eINSTANCE.createAttribute();
 
 		// definition
 		util.extractDocs(element).ifPresent(attribute::setDefinition);
 
 		// name
-		attribute.setName(util.firstLowerIfNotAbbrevation(element.getName()));
+		attribute.setName(util.allFirstLowerIfNotAbbrevation(element.getName()));
 		
-		// type
-		RosettaType rosettaType = Optional.of(element)
-				.map(XsdElement::getTypeAsXsd)
-				.map(typeMappings::getRosettaType)
-				.get();
+		// type call
 		TypeCall typeCall = RosettaFactory.eINSTANCE.createTypeCall();
-		typeCall.setType(rosettaType);
 		attribute.setTypeCall(typeCall);
 
 		// cardinality
@@ -106,6 +119,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 //		Optional.ofNullable(element.getTypeAsSimpleType())
 //			.map(xsdName -> createRosettaDocReference(xsdName.getName(), body, corpus, segment, util.extractDocs(xsdName)))
 //			.ifPresent(attribute.getReferences()::add);
+		
+		typeMappings.registerAttribute(element, attribute);
 		
 		return attribute;
 	}

@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotatedElements;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotation;
@@ -46,13 +47,20 @@ public class XsdUtil {
 				.anyMatch(e -> e.getEnumeration().size() > 0);
 	}
 	
-	public String firstLowerIfNotAbbrevation(String name) {
-		if (name.length() >= 2) {
-			if (Character.isUpperCase(name.charAt(1))) {
-				// This is an abbrevation
-				return name;
-			}
+	public String allFirstLowerIfNotAbbrevation(String s) {
+		if (s == null || s.length() == 0)
+			return s;
+		int upperCased = 0;
+		while (upperCased < s.length() && Character.isUpperCase(s.charAt(upperCased))) {
+			upperCased++;
 		}
-		return StringExtensions.toFirstLower(name);
+		if (upperCased == 0)
+			return s;
+		if (s.length() == upperCased)
+			return s.toLowerCase();
+		if (upperCased == 1) {
+			return s.substring(0, 1).toLowerCase() + s.substring(1);
+		}
+		return s.substring(0, upperCased - 1).toLowerCase() + s.substring(upperCased - 1);
 	}
 }

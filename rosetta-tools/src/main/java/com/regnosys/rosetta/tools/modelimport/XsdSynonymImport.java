@@ -1,16 +1,20 @@
 package com.regnosys.rosetta.tools.modelimport;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.eclipse.xtext.xbase.lib.StringExtensions;
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
+import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
+import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
+import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym;
+import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaExternalClass;
 import com.regnosys.rosetta.rosetta.RosettaExternalEnum;
@@ -22,6 +26,7 @@ import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody;
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 
 public class XsdSynonymImport extends AbstractXsdImport<XsdAbstractElement, RosettaExternalSynonymSource> {
@@ -66,23 +71,32 @@ public class XsdSynonymImport extends AbstractXsdImport<XsdAbstractElement, Rose
 		RosettaExternalClass rosettaExternalClass = RosettaFactory.eINSTANCE.createRosettaExternalClass();
 		rosettaExternalClass.setTypeRef(data);
 
-		data.getAttributes().forEach(attr -> {
-			RosettaExternalRegularAttribute rosettaExternalRegularAttribute = RosettaFactory.eINSTANCE.createRosettaExternalRegularAttribute();
-			rosettaExternalRegularAttribute.setAttributeRef(attr);
-			rosettaExternalRegularAttribute.setOperator(ExternalValueOperator.PLUS);
-			rosettaExternalClass.getRegularAttributes().add(rosettaExternalRegularAttribute);
+		Optional.of(complexType)
+			.map(XsdComplexType::getElements).stream()
+			.flatMap(List::stream)
+			.map(ReferenceBase::getElement)
+			.filter(XsdElement.class::isInstance)
+			.map(XsdElement.class::cast)
+			.filter(xsdElement -> xsdElement.getType() != null)
+			.forEach(element -> {
+				Attribute attr = typeMappings.getAttribute(element);
+				
+				RosettaExternalRegularAttribute rosettaExternalRegularAttribute = RosettaFactory.eINSTANCE.createRosettaExternalRegularAttribute();
+				rosettaExternalRegularAttribute.setAttributeRef(attr);
+				rosettaExternalRegularAttribute.setOperator(ExternalValueOperator.PLUS);
+				rosettaExternalClass.getRegularAttributes().add(rosettaExternalRegularAttribute);
 
-			RosettaExternalSynonym rosettaExternalSynonym = RosettaFactory.eINSTANCE.createRosettaExternalSynonym();
+				RosettaExternalSynonym rosettaExternalSynonym = RosettaFactory.eINSTANCE.createRosettaExternalSynonym();
 
-			RosettaSynonymBody rosettaSynonymBody = RosettaFactory.eINSTANCE.createRosettaSynonymBody();
+				RosettaSynonymBody rosettaSynonymBody = RosettaFactory.eINSTANCE.createRosettaSynonymBody();
 
-			RosettaSynonymValueBase rosettaSynonymValueBase = RosettaFactory.eINSTANCE.createRosettaSynonymValueBase();
-			rosettaSynonymValueBase.setName(StringExtensions.toFirstUpper(attr.getName()));
+				RosettaSynonymValueBase rosettaSynonymValueBase = RosettaFactory.eINSTANCE.createRosettaSynonymValueBase();
+				rosettaSynonymValueBase.setName(element.getName());
 
-			rosettaSynonymBody.getValues().add(rosettaSynonymValueBase);
-			rosettaExternalSynonym.setBody(rosettaSynonymBody);
-			rosettaExternalRegularAttribute.getExternalSynonyms().add(rosettaExternalSynonym);
-		});
+				rosettaSynonymBody.getValues().add(rosettaSynonymValueBase);
+				rosettaExternalSynonym.setBody(rosettaSynonymBody);
+				rosettaExternalRegularAttribute.getExternalSynonyms().add(rosettaExternalSynonym);
+			});
 
 		return rosettaExternalClass;
 	}
@@ -94,16 +108,21 @@ public class XsdSynonymImport extends AbstractXsdImport<XsdAbstractElement, Rose
 		RosettaExternalEnum rosettaExternalEnum = RosettaFactory.eINSTANCE.createRosettaExternalEnum();
 		rosettaExternalEnum.setTypeRef(enumeration);
 
-		enumeration.getEnumValues().forEach(enumValue -> {
-			RosettaExternalEnumValue rosettaExternalEnumValue = RosettaFactory.eINSTANCE.createRosettaExternalEnumValue();
-			rosettaExternalEnumValue.setEnumRef(enumValue);
-			rosettaExternalEnumValue.setOperator(ExternalValueOperator.PLUS);
-			rosettaExternalEnum.getRegularValues().add(rosettaExternalEnumValue);
+		List<XsdEnumeration> ev = simpleType.getRestriction().getEnumeration();
 
-			RosettaEnumSynonym rosettaEnumSynonym = RosettaFactory.eINSTANCE.createRosettaEnumSynonym();
-			rosettaEnumSynonym.setSynonymValue(StringExtensions.toFirstUpper(enumValue.getName()));
-			rosettaExternalEnumValue.getExternalEnumSynonyms().add(rosettaEnumSynonym);
-		});
+		ev.stream()
+			.forEach(e -> {
+				RosettaEnumValue enumValue = typeMappings.getEnumValue(e);
+				
+				RosettaExternalEnumValue rosettaExternalEnumValue = RosettaFactory.eINSTANCE.createRosettaExternalEnumValue();
+				rosettaExternalEnumValue.setEnumRef(enumValue);
+				rosettaExternalEnumValue.setOperator(ExternalValueOperator.PLUS);
+				rosettaExternalEnum.getRegularValues().add(rosettaExternalEnumValue);
+
+				RosettaEnumSynonym rosettaEnumSynonym = RosettaFactory.eINSTANCE.createRosettaEnumSynonym();
+				rosettaEnumSynonym.setSynonymValue(e.getValue());
+				rosettaExternalEnumValue.getExternalEnumSynonyms().add(rosettaEnumSynonym);
+			});
 
 		return rosettaExternalEnum;
 	}
