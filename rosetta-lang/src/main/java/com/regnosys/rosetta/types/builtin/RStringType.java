@@ -12,9 +12,9 @@ import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
 public class RStringType extends RBasicType {
-	private static final String MIN_LENGTH_PARAM_NAME = "minLength";
-	private static final String MAX_LENGTH_PARAM_NAME = "maxLength";
-	private static final String PATTERN_PARAM_NAME = "pattern";
+	public static final String MIN_LENGTH_PARAM_NAME = "minLength";
+	public static final String MAX_LENGTH_PARAM_NAME = "maxLength";
+	public static final String PATTERN_PARAM_NAME = "pattern";
 
 	private final PositiveIntegerInterval interval;
 	private final Optional<Pattern> pattern;

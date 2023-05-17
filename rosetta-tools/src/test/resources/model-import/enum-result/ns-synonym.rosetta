@@ -1,0 +1,15 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+synonym source TEST_SYN_SOURCE
+{
+	enums
+
+	FooEnum:
+		+ Value1
+			[value "Value1"]
+		+ Value2
+			[value "Value2"]
+		+ Value3
+			[value "Value3"]
+}
