@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.eclipse.xtext.xbase.lib.StringExtensions;
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdRestriction;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
@@ -45,7 +44,7 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 	@Override
 	public RosettaTypeAlias registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties) {
 		RosettaTypeAlias typeAlias = RosettaFactory.eINSTANCE.createRosettaTypeAlias();
-		typeAlias.setName(StringExtensions.toFirstLower(xsdType.getName()));
+		typeAlias.setName(xsdType.getName());
 		util.extractDocs(xsdType).ifPresent(typeAlias::setDefinition);
 		typeMappings.registerSimpleType(xsdType, typeAlias);
 		return typeAlias;

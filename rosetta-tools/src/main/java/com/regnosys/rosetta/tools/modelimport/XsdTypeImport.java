@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.eclipse.xtext.xbase.lib.StringExtensions;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdExtension;
@@ -79,7 +78,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 		util.extractDocs(element).ifPresent(attribute::setDefinition);
 
 		// name
-		attribute.setName(StringExtensions.toFirstLower(element.getName()));
+		attribute.setName(util.firstLowerIfNotAbbrevation(element.getName()));
 		
 		// type
 		RosettaType rosettaType = Optional.of(element)

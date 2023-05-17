@@ -137,6 +137,11 @@ public class XsdImportTest {
 		runTest("data2");
 	}
 	
+	@Test
+	void testDataAndEnum() throws IOException {
+		runTest("data-and-enum");
+	}
+	
 
 	private GenerationProperties mockProperties() {
 		GenerationProperties properties = mock(GenerationProperties.class);

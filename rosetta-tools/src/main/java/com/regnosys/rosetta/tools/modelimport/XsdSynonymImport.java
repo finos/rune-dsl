@@ -52,10 +52,10 @@ public class XsdSynonymImport extends AbstractXsdImport<XsdAbstractElement, Rose
 		RosettaExternalSynonymSource source = typeMappings.getSynonymSource();
 		if (xsdType instanceof XsdComplexType) {
 			RosettaExternalClass c = createRosettaExternalClass((XsdComplexType)xsdType, typeMappings);
-			source.getExternalRefs().add(c);
+			source.getExternalClasses().add(c);
 		} else if (xsdType instanceof XsdSimpleType && util.isEnumType((XsdSimpleType)xsdType)) {
 			RosettaExternalEnum e = createRosettaExternalEnum((XsdSimpleType)xsdType, typeMappings);
-			source.getExternalRefs().add(e);
+			source.getExternalEnums().add(e);
 		}
 	}
 	
