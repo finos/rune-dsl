@@ -22,6 +22,7 @@ public class XsdUtil {
 				// default to definition if source not specified
 				.filter(x -> x.getSource() == null || documentationSources.contains(x.getSource()))
 				.map(XsdAnnotationChildren::getContent)
+				.map(x -> x.replace("\r\n", " "))
 				.map(x -> x.replace('\n', ' '))
 				.map(x -> x.replace('\r', ' '))
 				.collect(Collectors.joining(" "))
@@ -36,6 +37,7 @@ public class XsdUtil {
 				.filter(x -> x.getSource() != null)
 				.filter(x -> x.getSource().equals(docAnnotationSourceName))
 				.map(XsdAnnotationChildren::getContent)
+				.map(x -> x.replace("\r\n", " "))
 				.map(x -> x.replace('\n', ' '))
 				.map(x -> x.replace('\r', ' '))
 				.collect(Collectors.joining(" "))
