@@ -83,7 +83,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.append[oneSpace]
 		
 		val groupedElementTypes = #[RosettaBody, RosettaCorpus, RosettaSegment, RosettaBasicType, 
-			RosettaTypeAlias, RosettaRecordType, RosettaExternalFunction, RosettaMetaType
+			RosettaRecordType, RosettaExternalFunction, RosettaMetaType
 		]
 		var Class<? extends RosettaRootElement> lastType = null
 		for (elem: rosettaModel.elements) {
