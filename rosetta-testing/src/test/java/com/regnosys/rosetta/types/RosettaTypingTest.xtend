@@ -20,6 +20,7 @@ import java.util.Optional
 import java.math.BigDecimal
 import com.regnosys.rosetta.tests.util.ExpressionValidationHelper
 import com.regnosys.rosetta.tests.util.ExpressionParser
+import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -640,5 +641,58 @@ class RosettaTypingTest {
 				get(2).expression.assertHasType(maxNString)
 			]
 		]
+	}
+
+	@Test
+	def void shouldCoerceStringToParameterizedString() {
+		'''
+		namespace test
+		
+		func Test:
+			inputs: str string (1..1)
+			output: max3String string(minLength: 1, maxLength: 3) (1..1)
+			set max3String: str
+		'''.parseRosettaWithNoIssues
+	}
+
+	@Test
+	def void shouldCoerceParameterizedStringToString() {
+		'''
+		namespace test
+		
+		func Test:
+			inputs: max3String string(minLength: 1, maxLength: 3) (1..1)
+			output: str string (1..1)
+			set str: max3String
+		'''.parseRosettaWithNoIssues
+	}
+
+	@Test // TODO fix this
+	@Disabled
+	def void shouldCoerceStringToStringTypeAlias() {
+		'''
+		namespace test
+		
+		typeAlias Max3String: string(minLength: 1, maxLength: 3)
+		
+		func Test:
+			inputs: str string (1..1)
+			output: max3String Max3String (1..1)
+			set max3String: str
+		'''.parseRosettaWithNoIssues
+	}
+
+	@Test
+	def void shouldCoerceStringTypeAliasToString() {
+		'''
+		namespace test
+		
+		typeAlias Max3String: string(minLength: 1, maxLength: 3)
+		
+		func Test:
+			inputs: max3String Max3String (1..1)
+			output: str string (1..1)
+			set str: max3String
+		'''.parseRosettaWithNoIssues
 	}
 }
