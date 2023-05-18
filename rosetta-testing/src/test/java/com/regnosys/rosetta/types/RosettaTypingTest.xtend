@@ -695,4 +695,32 @@ class RosettaTypingTest {
 			set str: max3String
 		'''.parseRosettaWithNoIssues
 	}
+	
+	@Test
+	def void shouldCoerceDifferentParameterizedStrings() {
+		'''
+		namespace test
+		
+		func Test:
+			inputs: max10String string(minLength: 1, maxLength: 10) (1..1)
+			output: max3String string(minLength: 1, maxLength: 3) (1..1)
+			set max3String: max10String
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void shouldCoerceDifferentTypeAliases() {
+		'''
+		namespace test
+		
+		typeAlias Max10String: string(minLength: 1, maxLength: 10)
+		typeAlias Max3String: string(minLength: 1, maxLength: 3)
+		
+		func Test:
+			inputs: max10String Max10String (1..1)
+			output: max3String Max3String (1..1)
+			set max3String: max10String
+		'''.parseRosettaWithNoIssues
+	}
+
 }
