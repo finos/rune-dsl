@@ -34,8 +34,9 @@ Those four components are often collectively referred to as *types*.
 
 ### Built-in Type
 
-Rosetta includes a number of built-in types that are deemed fundamental and applicable to any model. Those types are defined at the language level. There are two types of built-in types:
+Rosetta includes a number of built-in types that are deemed fundamental and applicable to any model. Those types are defined at the language level. There are three types of built-in types:
 - basic type
+- parameterized basic type
 - record type
 
 #### Basic Type
@@ -47,6 +48,58 @@ Rosetta defines five *basic types*. The set of basic types available in the Rose
 - `boolean` - logical true of false
 - `string` - text
 - `time` - simple time values, e.g. \"05:00:00\"
+
+#### Parameterized Basic Type
+
+The basic types `number` and `string` can be parameterized in order to support different precisions and conditions.
+
+The example below specifies a positive decimal `number` with a precision of 18, that is at most 5000.
+
+``` Haskell
+number(digits: 18, fractionalDigits: 17, min: 0, max: 5000)
+```
+
+Note that all parameterized arguments are optional.  If unspecified, the default arguments for `number` are:
+
+- `digits: 18`
+- `fractionalDigits: digits-1` (represents the maximum number of fractional digits)
+- there is no `min` or `max` constraint
+
+{{< notice info "Note" >}}
+The basic type `int` is shorthand for `number(fractionalDigits: 0)`.
+{{< /notice >}}
+
+The example below specifies a `string` with 3 to 5 characters that must be alphanumeric.
+
+``` Haskell
+string(minLength: 3, maxLength: 5, pattern: "[a-zA-Z0-9]*")
+```
+
+Note that all parameterized arguments are optional. By default, there are no constraints.
+
+##### Type Alias
+
+Parameterized types can be given a name so modellers can then refer to these types.
+
+``` Haskell
+typeAlias PositiveInteger: number(fractionalDigits: 0, min: 0)
+typeAlias AlphaNumericText: string(minLength: 1, pattern: "[a-zA-Z0-9]{1,4}")
+```
+
+Furthermore, type aliases can be used to improve readability; instead of displaying a verbose parameterized type declarations (e.g., `string(minLength: 1, maxLength: 4, pattern: "[a-zA-Z0-9]{1,4}")`), a type alias can be used (e.g.,`Max4AlphaNumericText`).
+
+The type aliases `PositiveInteger` and `AlphaNumericText` are both used in the example below.
+
+``` Haskell
+type DrivingLicence extends Person: <"Driving licence authorisation granted by a jurisdiction">
+    countryofIssuance string (1..1)
+        [metadata scheme]
+    licenceNumber AlphaNumericText (1..1)
+    dateofIssuance date (1..1)
+    dateOfRenewal date (0..1)
+    vehicleEntitlement VehicleClassificationEnum (0..*)
+    penaltyPoints PositiveInteger (1..1)
+```
 
 #### Record Type
 
