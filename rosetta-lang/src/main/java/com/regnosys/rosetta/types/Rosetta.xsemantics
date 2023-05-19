@@ -321,6 +321,16 @@ rule SAliasRight
 from {
 	G |- t1 <: t2.refersTo
 }
+rule SAliasBasic
+	G |- RAliasType t1 <: RBasicType t2
+from {
+	G |- t1.refersTo <: t2
+}
+rule SBasicAlias
+	G |- RBasicType t1 <: RAliasType t2
+from {
+	G |- t1 <: t2.refersTo
+}
 
 rule SRefl
 	G |- RType t1 <: RType t2

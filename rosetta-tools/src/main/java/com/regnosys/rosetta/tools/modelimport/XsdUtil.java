@@ -4,8 +4,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.xtext.xbase.lib.StringExtensions;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotatedElements;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotation;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotationChildren;
