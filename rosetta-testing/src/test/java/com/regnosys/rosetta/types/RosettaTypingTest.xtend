@@ -667,8 +667,7 @@ class RosettaTypingTest {
 		'''.parseRosettaWithNoIssues
 	}
 
-	@Test // TODO fix this
-	@Disabled
+	@Test
 	def void shouldCoerceStringToStringTypeAlias() {
 		'''
 		namespace test
