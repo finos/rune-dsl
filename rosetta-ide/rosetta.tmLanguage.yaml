@@ -261,7 +261,7 @@ repository:
           end: '{{rootEnd}}'
           patterns:
           - include: '#comment'
-          - begin: (?<={{identifier}})
+          - begin: (?<=[_[:alnum:]]{{wordEnd}})
             end: '(:)|{{rootEnd}}'
             patterns:
             - include: '#comment'
@@ -382,7 +382,7 @@ repository:
         end: '{{rootEnd}}'
         patterns:
         - include: '#comment'
-        - begin: '(?<={{wordStart}}(synonym|rule){{wordEnd}})'
+        - begin: '(?<=({{wordStart}}synonym{{wordEnd}})|({{wordStart}}rule{{wordEnd}}))'
           end: (?=\{)|{{rootEnd}}
           patterns:
           - include: '#comment'

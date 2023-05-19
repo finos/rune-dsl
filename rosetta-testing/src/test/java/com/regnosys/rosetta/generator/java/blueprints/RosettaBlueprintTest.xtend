@@ -34,6 +34,19 @@ class RosettaBlueprintTest {
 	@Inject extension ValidationTestHelper
 
 	@Test
+	def void doTheThing() {
+		'''
+		reporting rule Blueprint1:
+		    extract 
+		        if ["A", "B", "C"] all <> Input->str then
+		            Input-> str
+		
+		type Input:
+		    str string (1..1)
+		'''.generateCode
+	}
+
+	@Test
 	def void parseSimpleRule() {
 		val r = '''
 			eligibility rule ReportableTransation:
