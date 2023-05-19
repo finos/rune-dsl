@@ -261,7 +261,7 @@ repository:
           end: '{{rootEnd}}'
           patterns:
           - include: '#comment'
-          - begin: (?<=[_[:alnum:]]{{wordEnd}})
+          - begin: (?<=[_[:alnum:]]{{wordEnd}})  # used to be '(?<={{identifier}})'. See issue https://github.com/zikaari/monaco-textmate/issues/10.
             end: '(:)|{{rootEnd}}'
             patterns:
             - include: '#comment'
@@ -382,7 +382,7 @@ repository:
         end: '{{rootEnd}}'
         patterns:
         - include: '#comment'
-        - begin: '(?<=({{wordStart}}synonym{{wordEnd}})|({{wordStart}}rule{{wordEnd}}))'
+        - begin: '(?<=({{wordStart}}synonym{{wordEnd}})|({{wordStart}}rule{{wordEnd}}))' # used to be '(?<={{wordStart}}(synonym|rule){{wordEnd}})'. See issue https://github.com/zikaari/monaco-textmate/issues/10.
           end: (?=\{)|{{rootEnd}}
           patterns:
           - include: '#comment'
