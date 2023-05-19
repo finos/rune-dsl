@@ -86,7 +86,7 @@ typeAlias PositiveInteger: number(fractionalDigits: 0, min: 0)
 typeAlias AlphaNumericText: string(minLength: 1, pattern: "[a-zA-Z0-9]{1,4}")
 ```
 
-Furthermore, type aliases can be used to improve readability; instead of displaying a verbose parameterized type declarations (e.g., `string(minLength: 1, maxLength: 4, pattern: "[a-zA-Z0-9]{1,4}")`), a type alias can be used (e.g.,`Max4AlphaNumericText`).
+Furthermore, type aliases can be used to improve readability; instead of displaying a verbose parameterized type declarations (e.g., `string(minLength: 1, pattern: "[a-zA-Z0-9]{1,4}")`), a type alias can be used (e.g.,`AlphaNumericText`).
 
 The type aliases `PositiveInteger` and `AlphaNumericText` are both used in the example below.
 
