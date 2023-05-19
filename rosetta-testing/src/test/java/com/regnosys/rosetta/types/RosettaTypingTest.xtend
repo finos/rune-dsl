@@ -20,7 +20,6 @@ import java.util.Optional
 import java.math.BigDecimal
 import com.regnosys.rosetta.tests.util.ExpressionValidationHelper
 import com.regnosys.rosetta.tests.util.ExpressionParser
-import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
