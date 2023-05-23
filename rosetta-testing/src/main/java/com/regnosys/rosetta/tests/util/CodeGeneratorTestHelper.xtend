@@ -52,16 +52,25 @@ class CodeGeneratorTestHelper {
 		generateCode(#[eResource])
 	}
 	
-	protected def generateCode(List<Resource> eResources) {
+	protected def generateCode(List<Resource> resources) {
 		val fsa = new RegisteringFileSystemAccess()
 		val ctx = new GeneratorContext()=> [
 			cancelIndicator =  CancelIndicator.NullImpl
 		]
-		eResources.forEach[
-			beforeGenerate(fsa, ctx)
-			doGenerate(fsa, ctx)
-			afterGenerate(fsa, ctx)
-		]
+		val resourceSet = resources.head.resourceSet
+		try {
+			resourceSet.beforeAllGenerate(fsa, ctx)
+			resources.forEach[
+				try {
+					beforeGenerate(fsa, ctx)
+					doGenerate(fsa, ctx)
+				} finally {
+					afterGenerate(fsa, ctx)
+				}
+			]
+		} finally {
+			resourceSet.afterAllGenerate(fsa, ctx)
+		}
 		
 		val generatedCode = newHashMap
 		fsa.generatedFiles.forEach [
