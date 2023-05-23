@@ -1,24 +1,31 @@
 package com.regnosys.rosetta.generator.external;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage;
 import com.regnosys.rosetta.rosetta.RosettaModel;
-import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.rosetta.util.DemandableLock;
 
 public interface ExternalGenerator {
 
-	void generate(RootPackage root, List<RosettaRootElement> elements, String version, 
-			Consumer<Map<String, ? extends CharSequence>> processResults, Resource resource, DemandableLock generateLock);
+	void beforeAllGenerate(ResourceSet set, Collection<? extends RosettaModel> models, String version, 
+			Consumer<Map<String, ? extends CharSequence>> processResults, DemandableLock generateLock);
 	
-	void afterGenerate(Collection<? extends RosettaModel> models,
-			Consumer<Map<String, ? extends CharSequence>> processResults, Resource resource, DemandableLock generateLock);
+	void beforeGenerate(Resource resource, RosettaModel model, String version, 
+			Consumer<Map<String, ? extends CharSequence>> processResults, DemandableLock generateLock);
+	
+	void generate(Resource resource, RosettaModel model, String version, 
+			Consumer<Map<String, ? extends CharSequence>> processResults, DemandableLock generateLock);
+	
+	void afterGenerate(Resource resource, RosettaModel model, String version, 
+			Consumer<Map<String, ? extends CharSequence>> processResults, DemandableLock generateLock);
+	
+	void afterAllGenerate(ResourceSet set, Collection<? extends RosettaModel> models, String version, 
+			Consumer<Map<String, ? extends CharSequence>> processResults, DemandableLock generateLock);
 	
 	ExternalOutputConfiguration getOutputConfiguration();
 	

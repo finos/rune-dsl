@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.regnosys.rosetta</groupId>
+		<artifactId>com.regnosys.rosetta.parent</artifactId>
+		<version>0.0.0.master</version>
+	</parent>
+	<artifactId>rosetta-maven-plugin</artifactId>
+	<packaging>maven-plugin</packaging>
+
+	<description>
+		Responsibilities: calling the Rosetta code generator from Maven.
+	</description>
+
+	<properties>
+	</properties>
+
+	<dependencies>
+		<!-- Inter-project dependencies -->
+		<dependency>
+			<groupId>com.regnosys.rosetta</groupId>
+			<artifactId>com.regnosys.rosetta</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- External dependencies -->
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugin-tools</groupId>
+			<artifactId>maven-plugin-annotations</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.xtext</groupId>
+			<artifactId>xtext-maven-plugin</artifactId>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-plugin-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>

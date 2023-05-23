@@ -38,19 +38,20 @@ class ModelMetaGenerator {
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension JavaTypeTranslator
 	
-	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version, Set<RosettaModel> models) {
+	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
 		val className = '''«data.name»Meta'''
 		
 		val scope = new JavaScope(root.meta)
 		
-		val classBody = data.metaClassBody(root, className, version, models)
+		val classBody = data.metaClassBody(root, className, version)
 		val javaFileContents = buildClass(root.meta, classBody, scope)
 		fsa.generateFile('''«root.meta.withForwardSlashes»/«className».java''', javaFileContents)
 	}
 	
-	private def StringConcatenationClient metaClassBody(Data c, RootPackage root, String className, String version, Set<RosettaModel> models) {
+	private def StringConcatenationClient metaClassBody(Data c, RootPackage root, String className, String version) {
 		val dataClass = new RDataType(c).toJavaType
-		val qualifierFuncs = qualifyFuncs(c, models)
+		val context = c.eResource.resourceSet
+		val qualifierFuncs = qualifyFuncs(c, context.resources.map[contents.head as RosettaModel].toSet)
 		val dataRules = c.allSuperTypes.map[it.conditionRules(it.conditions)].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
@@ -93,6 +94,7 @@ class ModelMetaGenerator {
 	}
 	
 	private def Set<Function> qualifyFuncs(Data type, Set<RosettaModel> models) {
+		// TODO: make sure this method doesn't need to go through all models in the resource set
 		if(!confExt.isRootEventOrProduct(type)) {
 			return emptySet
 		}
