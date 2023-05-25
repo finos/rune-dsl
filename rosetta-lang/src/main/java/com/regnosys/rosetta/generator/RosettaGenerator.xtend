@@ -17,7 +17,6 @@ import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
-import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory.TestFolderAwareFsa
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -34,7 +33,6 @@ import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.generator.java.util.BackwardCompatibilityGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import org.eclipse.xtext.generator.IGenerator2
-import org.apache.log4j.Level
 
 /**
  * Generates code from your model files on save.
