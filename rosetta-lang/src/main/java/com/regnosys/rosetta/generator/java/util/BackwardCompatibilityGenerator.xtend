@@ -1894,10 +1894,22 @@ class BackwardCompatibilityGenerator {
 								failures.stream().collect(Collectors.joining(" "))
 							);
 				}
-				public static ComparisonResult checkNumber(String msgPrefix, long value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+				public static ComparisonResult checkNumber(String msgPrefix, Integer value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+					if (value == null) {
+						return ComparisonResult.success();
+					}
+					return checkNumber(msgPrefix, BigDecimal.valueOf(value), digits, fractionalDigits, min, max);
+				}
+				public static ComparisonResult checkNumber(String msgPrefix, Long value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+					if (value == null) {
+						return ComparisonResult.success();
+					}
 					return checkNumber(msgPrefix, BigDecimal.valueOf(value), digits, fractionalDigits, min, max);
 				}
 				public static ComparisonResult checkNumber(String msgPrefix, BigInteger value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+					if (value == null) {
+						return ComparisonResult.success();
+					}
 					return checkNumber(msgPrefix, new BigDecimal(value), digits, fractionalDigits, min, max);
 				}
 				public static ComparisonResult checkNumber(String msgPrefix, List<? extends Number> values, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
