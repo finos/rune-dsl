@@ -29,7 +29,6 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
-import com.regnosys.rosetta.generator.java.types.JavaType
 
 class ModelObjectGenerator {
 	
@@ -68,13 +67,13 @@ class ModelObjectGenerator {
 				
 				«FOR attribute : d.expandedAttributes»
 					«javadoc(attribute.definition, attribute.docReferences, null)»
-					«attribute.toJavaType» get«attribute.name.toFirstUpper»();
+					«attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»();
 				«ENDFOR»
 				
 				final static «metaType» «metaDataIdentifier» = new «metaType»();
 				
 				@Override
-				default «RosettaMetaData»<? extends «d.name»> metaData() {
+				default «RosettaMetaData»<? extends «javaType»> metaData() {
 					return «metaDataIdentifier»;
 				} 
 						
@@ -82,8 +81,8 @@ class ModelObjectGenerator {
 					return new «javaType.toBuilderImplType»();
 				}
 				
-				default Class<? extends «d.name»> getType() {
-					return «d.name».class;
+				default Class<? extends «javaType»> getType() {
+					return «javaType».class;
 				}
 				«FOR pt :interfaces.filter(JavaParametrizedType).filter[baseType.simpleName=="ReferenceWithMeta" || baseType.simpleName=="FieldWithMeta"]»
 				
@@ -165,7 +164,7 @@ class ModelObjectGenerator {
 		val javaType = new RDataType(c).toJavaType
 		'''
 		«FOR attribute : expandedAttributes»
-			private final «attribute.toJavaType» «scope.createIdentifier(attribute, attribute.name)»;
+			private final «attribute.toMultiMetaOrRegularJavaType» «scope.createIdentifier(attribute, attribute.name)»;
 		«ENDFOR»
 
 		protected «javaType»Impl(«javaType.toBuilderType» builder) {
@@ -179,7 +178,7 @@ class ModelObjectGenerator {
 
 		«FOR attribute : expandedAttributes»
 			@Override
-			public «attribute.toJavaType» get«attribute.name.toFirstUpper»() {
+			public «attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»() {
 				return «scope.getIdentifierOrThrow(attribute)»;
 			}
 			
@@ -205,20 +204,6 @@ class ModelObjectGenerator {
 			«ENDFOR»
 		}
 		'''
-	}
-
-	private def JavaType toJavaType(ExpandedAttribute attribute) {
-		val singleType = attribute.toMetaOrRegularJavaType
-		if (attribute.isMultiple) {
-			if (attribute.dataType || attribute.hasMetas) {
-				singleType.toPolymorphicList
-			} else {
-				new JavaParametrizedType(JavaClass.from(List), singleType)
-			}
-		}
-		else {
-			singleType
-		}
 	}
 
 	private def StringConcatenationClient attributeFromBuilder(ExpandedAttribute attribute) {

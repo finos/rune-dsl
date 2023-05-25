@@ -33,6 +33,11 @@ public class BasicRosettaMetaData<T extends RosettaModelObject> implements Roset
 	public Validator<T> validator() {
 		return null;
 	}
+	
+	@Override
+	public Validator<T> typeFormatValidator() {
+		return null;
+	}
 
 	@Override
 	public ValidatorWithArg<T, Set<String>> onlyExistsValidator() {

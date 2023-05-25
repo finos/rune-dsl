@@ -51,6 +51,10 @@
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
         </dependency>
+        <dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+		</dependency>
     </dependencies>
 
     <build>

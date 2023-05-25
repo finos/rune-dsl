@@ -34,6 +34,7 @@ import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.generator.java.util.BackwardCompatibilityGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import org.eclipse.xtext.generator.IGenerator2
+import org.apache.log4j.Level
 
 /**
  * Generates code from your model files on save.
@@ -74,10 +75,9 @@ class RosettaGenerator implements IGenerator2 {
 		try {
 			lock.getWriteLock(true);
 			val models = resourceSet.resources
-							.filter[!TestFolderAwareFsa.isTestResource(it)]
 							.filter[!ignoredFiles.contains(URI.segments.last)]
-							.flatMap[contents]
-							.filter(RosettaModel).toList
+							.map[contents.head as RosettaModel]
+							.toList
 			val version = models.head.version // TODO: find a way to access the version of a project directly
 			
 			externalGenerators.forEach [ generator |
@@ -219,10 +219,9 @@ class RosettaGenerator implements IGenerator2 {
 			backwardCompatibilityGenerator.generate(fsa2)
 						
 			val models = resourceSet.resources
-							.filter[!TestFolderAwareFsa.isTestResource(it)]
 							.filter[!ignoredFiles.contains(URI.segments.last)]
-							.flatMap[contents]
-							.filter(RosettaModel).toList
+							.map[contents.head as RosettaModel]
+							.toList
 			val version = models.head.version // TODO: find a way to access the version of a project directly
 
 			val namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap

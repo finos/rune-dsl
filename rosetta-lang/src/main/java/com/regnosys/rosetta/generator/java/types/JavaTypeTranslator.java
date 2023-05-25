@@ -98,6 +98,17 @@ public class JavaTypeTranslator {
 		}
 		return toMetaJavaType(attrType, expAttr.refIndex() < 0, expAttr.getRosettaType().getType());
 	}
+	public JavaReferenceType toMultiMetaOrRegularJavaType(ExpandedAttribute expAttr) {
+		JavaReferenceType singleType = toMetaOrRegularJavaType(expAttr);
+		if (expAttr.isMultiple()) {
+			if (expAttr.isDataType() || expAttr.hasMetas()) {
+				return toPolymorphicList(singleType);
+			} else {
+				return new JavaParametrizedType(listClass, singleType);
+			}
+		}
+		return singleType;
+	}
 	public JavaClass toMetaJavaType(ExpandedAttribute expAttr) {
 		JavaReferenceType attrType;
 		if (expAttr.getRosettaType() != null) {
@@ -271,6 +282,16 @@ public class JavaTypeTranslator {
 		return new JavaClass(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "BuilderImpl");
 	}
 	
+	public JavaClass toValidatorClass(RDataType t) {
+		return new JavaClass(validation(getModelPackage(t.getData())), t.getName() + "Validator");
+	}
+	public JavaClass toTypeFormatValidatorClass(RDataType t) {
+		return new JavaClass(validation(getModelPackage(t.getData())), t.getName() + "TypeFormatValidator");
+	}
+	public JavaClass toOnlyExistsValidatorClass(RDataType t) {
+		return new JavaClass(existsValidation(getModelPackage(t.getData())), t.getName() + "OnlyExistsValidator");
+	}
+	
 	private DottedPath modelPackage(RosettaModel model) {
 		return DottedPath.splitOnDots(model.getName());
 	}
@@ -279,5 +300,11 @@ public class JavaTypeTranslator {
 	}
 	private DottedPath functions(DottedPath p) {
 		return p.child("functions");
+	}
+	private DottedPath validation(DottedPath p) {
+		return p.child("validation");
+	}
+	public DottedPath existsValidation(DottedPath p) {
+		return validation(p).child("exists");
 	}
 }

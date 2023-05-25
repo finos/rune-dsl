@@ -90,6 +90,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
+import org.apache.commons.text.StringEscapeUtils
 
 class ExpressionGenerator {
 	
@@ -143,7 +144,7 @@ class ExpressionGenerator {
 				'''«MapperS».of(«Integer».valueOf(«expr.value»))'''
 			}
 			RosettaStringLiteral : {
-				'''«MapperS».of("«expr.value»")'''
+				'''«MapperS».of("«StringEscapeUtils.escapeJava(expr.value)»")'''
 			}
 			RosettaEnumValueReference : {
 				'''«MapperS».of(«new REnumType(expr.enumeration).toJavaType».«expr.value.convertValues»)'''
