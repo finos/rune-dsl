@@ -35,7 +35,7 @@ public interface ValidationResult<T> {
 	}
 
 	enum ValidationType {
-		DATA_RULE, CHOICE_RULE, CARDINALITY, TYPE_FORMAT, KEY, ONLY_EXISTS, POST_PROCESS_EXCEPTION
+		DATA_RULE, CHOICE_RULE, CARDINALITY, TYPE_FORMAT, KEY, ONLY_EXISTS, PRE_PROCESS_EXCEPTION, POST_PROCESS_EXCEPTION
 	}
 
 	class ModelValidationResult<T> implements ValidationResult<T> {
