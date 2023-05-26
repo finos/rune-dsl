@@ -59,14 +59,10 @@ The example below specifies a positive decimal `number` with a precision of 18, 
 number(digits: 18, fractionalDigits: 17, min: 0, max: 5000)
 ```
 
-Note that all parameterized arguments are optional.  If unspecified, the default arguments for `number` are:
-
-- `digits: 18`
-- `fractionalDigits: digits-1` (represents the maximum number of fractional digits)
-- there is no `min` or `max` constraint
+Note that all parameterized arguments are optional. By default, there are no constraints.
 
 {{< notice info "Note" >}}
-The basic type `int` is shorthand for `number(fractionalDigits: 0)`.
+The basic type `int` is shorthand for `number(fractionalDigits: 0)`. It also supports specifying the constraints `digits`, `min` and `max`.
 {{< /notice >}}
 
 The example below specifies a `string` with 3 to 5 characters that must be alphanumeric.

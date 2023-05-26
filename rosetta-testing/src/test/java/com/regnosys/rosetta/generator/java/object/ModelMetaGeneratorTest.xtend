@@ -260,6 +260,7 @@ class ModelMetaGeneratorTest {
 			'b', "AAAAAA"
 		))
 		val resA1 = aTypeFormatValidator.validate(null, invalidA1)
+		assertThat(resA1.success, is(false))
 		assertEquals("Expected a minimum of 3 characters for 'a', but found 'AZ' (2 characters). - Expected a minimum of 3 characters for 'a', but found 'AA' (2 characters). 'AA' does not match the pattern /A.*Z/ of 'a'.; Expected a maximum of 5 characters for 'b', but found 'AAAAAA' (6 characters).",
 			resA1.failureReason.get
 		)
@@ -273,6 +274,7 @@ class ModelMetaGeneratorTest {
 			'c', new BigDecimal('-1')
 		))
 		val resB1 = bTypeFormatValidator.validate(null, invalidB1)
+		assertThat(resB1.success, is(false))
 		assertEquals("Expected a maximum of 3 digits for 'a', but the number -1000 has 4.; Expected a maximum of 2 fractional digits for 'b', but the number 13.1415 has 4.; Expected a number greater than or equal to 0 for 'c', but found -1.",
 			resB1.failureReason.get
 		)
@@ -282,8 +284,19 @@ class ModelMetaGeneratorTest {
 			'c', new BigDecimal('11')
 		))
 		val resB2 = bTypeFormatValidator.validate(null, invalidB2)
+		assertThat(resB2.success, is(false))
 		assertEquals("Expected a maximum of 3 digits for 'a', but the number 10.01 has 4.; Expected a number less than or equal to 10 for 'c', but found 11.",
 			resB2.failureReason.get
+		)
+		val invalidB3 = classes.createInstanceUsingBuilder('B', of(
+			'a', new BigDecimal('0.001'),
+			'b', new BigDecimal('0'),
+			'c', new BigDecimal('0')
+		))
+		val resB3 = bTypeFormatValidator.validate(null, invalidB3)
+		assertThat(resB3.success, is(false))
+		assertEquals("Expected a maximum of 3 digits for 'a', but the number 0.001 has 4.",
+			resB3.failureReason.get
 		)
 	}
 	

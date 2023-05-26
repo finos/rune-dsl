@@ -1857,8 +1857,13 @@ class BackwardCompatibilityGenerator {
 						int d = digits.get();
 						BigDecimal normalized = value.stripTrailingZeros();
 						int actual = normalized.precision();
+						if (normalized.scale() >= normalized.precision()) {
+							// case 0.0012 => `actual` should be 5
+							actual = normalized.scale() + 1;
+						}
 						if (normalized.scale() < 0) {
-							actual -= normalized.scale(); // add unsignificant zeros
+							// case 12000 => `actual` should include unsignificant zeros
+							actual -= normalized.scale();
 						}
 						if (actual > d) {
 							failures.add("Expected a maximum of " + d + " digits for '" + msgPrefix + "', but the number " + value + " has " + actual + ".");
