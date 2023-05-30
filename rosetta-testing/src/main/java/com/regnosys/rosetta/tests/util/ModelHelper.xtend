@@ -123,7 +123,7 @@ class ModelHelper {
 	}
 	
 	def testResourceSet() {
-		val resourceSet = parse(com.regnosys.rosetta.tests.util.ModelHelper.commonTestTypes).eResource.resourceSet
+		val resourceSet = parse(ModelHelper.commonTestTypes).eResource.resourceSet
 		resourceSet.getResource(builtins.basicTypesURI, true)
 		resourceSet.getResource(builtins.annotationsURI, true)
 	
