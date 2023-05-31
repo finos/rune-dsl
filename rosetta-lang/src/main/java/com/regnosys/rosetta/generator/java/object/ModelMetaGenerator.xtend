@@ -49,7 +49,11 @@ class ModelMetaGenerator {
 	}
 	
 	private def StringConcatenationClient metaClassBody(Data c, RootPackage root, String className, String version) {
-		val dataClass = new RDataType(c).toJavaType
+		val t = new RDataType(c)
+		val dataClass = t.toJavaType
+		val validator = t.toValidatorClass
+		val typeFormatValidator = t.toTypeFormatValidatorClass
+		val onlyExistsValidator = t.toOnlyExistsValidatorClass
 		val context = c.eResource.resourceSet
 		val qualifierFuncs = qualifyFuncs(c, context.resources.map[contents.head as RosettaModel].toSet)
 		val dataRules = c.allSuperTypes.map[it.conditionRules(it.conditions)].flatten
@@ -82,12 +86,17 @@ class ModelMetaGenerator {
 				
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
-					return new «root.typeValidation».«dataClass»Validator();
+					return new «validator»();
+				}
+				
+				@Override
+				public «Validator»<? super «dataClass»> typeFormatValidator() {
+					return new «typeFormatValidator»();
 				}
 				
 				@Override
 				public «ValidatorWithArg»<? super «dataClass», «Set»<String>> onlyExistsValidator() {
-					return new «root.existsValidation».«ValidatorsGenerator.onlyExistsValidatorName(c)»();
+					return new «onlyExistsValidator»();
 				}
 			}
 		'''

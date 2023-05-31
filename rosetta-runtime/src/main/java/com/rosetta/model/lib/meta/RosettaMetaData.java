@@ -26,5 +26,7 @@ public interface RosettaMetaData<T extends RosettaModelObject> {
 	
 	Validator<? super T> validator();
 	
+	Validator<? super T> typeFormatValidator();
+	
 	ValidatorWithArg<? super T, Set<String>> onlyExistsValidator();
 }

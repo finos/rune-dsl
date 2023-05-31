@@ -34,13 +34,6 @@ import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
 import com.google.common.io.Resources;
 import com.google.inject.Inject;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
-import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
-import com.regnosys.rosetta.rosetta.RosettaCardinality;
-import com.regnosys.rosetta.rosetta.RosettaDocReference;
-import com.regnosys.rosetta.rosetta.RosettaModel;
-import com.regnosys.rosetta.rosetta.RosettaSegmentRef;
-import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 

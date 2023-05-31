@@ -37,14 +37,29 @@ import com.regnosys.rosetta.utils.DottedPath
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.RosettaBasicType
+import com.regnosys.rosetta.tests.util.ExpressionParser
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class ExpressionGeneratorTest {
-	@Inject ExpressionGenerator expressionHandler
+	@Inject extension ExpressionGenerator expressionGenerator
 	@Inject extension JavaIdentifierRepresentationService
+	@Inject extension ExpressionParser
 	
 	DottedPath testPackageName = DottedPath.of("com", "regnosys", "test")
+	
+	@Test
+	def void shouldEscapeStrings() {
+		val scope = new JavaScope(testPackageName)
+		
+		val gen = 
+		'''"Hello \"world\"!"'''
+			.parseExpression
+			.javaCode(scope)
+			.formatGeneratedFunction(scope)
+		
+		assertThat(gen, is('''MapperS.of("Hello \"world\"!")'''))
+	}
 	
 	/**
 	 *  Foo -> attr1 > 5
@@ -60,7 +75,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new RDataType(lhsMockClass).toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(comparisonOp, scope)
+		val generatedFunction = expressionGenerator.javaCode(comparisonOp, scope)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope),
@@ -84,7 +99,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new RDataType(mockClass).toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(orOp, scope)
+		val generatedFunction = expressionGenerator.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
@@ -102,7 +117,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new RDataType(lhsMockClass).toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(lhsExistsOp, scope)
+		val generatedFunction = expressionGenerator.javaCode(lhsExistsOp, scope)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
@@ -126,7 +141,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new RDataType(mockClass).toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(orOp, scope)
+		val generatedFunction = expressionGenerator.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
@@ -153,7 +168,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new RDataType(mockClass).toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(orOp, scope)
+		val generatedFunction = expressionGenerator.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 
@@ -178,7 +193,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new RDataType(mockClass).toBlueprintImplicitVar, "foo")
-		val generatedFunction = expressionHandler.javaCode(orOp, scope)
+		val generatedFunction = expressionGenerator.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
 		assertThat(formatGeneratedFunction(generatedFunction, scope), 

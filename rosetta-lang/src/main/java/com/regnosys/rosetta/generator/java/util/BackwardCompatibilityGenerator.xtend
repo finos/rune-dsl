@@ -8,6 +8,259 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 class BackwardCompatibilityGenerator {
 	
 	def generate(IFileSystemAccess2 fsa) {
+		fsa.generateFile('com/rosetta/model/lib/meta/Key.java',
+			'''
+			package com.rosetta.model.lib.meta;
+			
+			import com.rosetta.model.lib.RosettaModelObject;
+			import com.rosetta.model.lib.RosettaModelObjectBuilder;
+			import com.rosetta.model.lib.path.RosettaPath;
+			import com.rosetta.model.lib.process.BuilderMerger;
+			import com.rosetta.model.lib.process.BuilderProcessor;
+			import com.rosetta.model.lib.process.Processor;
+			import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
+			import com.rosetta.model.lib.qualify.QualifyResult;
+			import com.rosetta.model.lib.validation.ValidationResult;
+			import com.rosetta.model.lib.validation.Validator;
+			import com.rosetta.model.lib.validation.ValidatorFactory;
+			import com.rosetta.model.lib.validation.ValidatorWithArg;
+			import java.util.Collections;
+			import java.util.List;
+			import java.util.Set;
+			import java.util.function.Function;
+			import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
+			
+			/**
+			 * @author TomForwood
+			 * This class represents a value that can be references elsewhere to link to the object the key is associated with
+			 * The keyValue is required to be unique within the scope defined by "scope"
+			 * 
+			 * Scope can be 
+			 *  - global - the key must be universally unique
+			 * 	- document - the key must be unique in this document
+			 *  - the name of the rosetta class e.g. TradeableProduct- the object bearing this key is inside a TradeableProduct and the key is only unique inside that TradeableProduct
+			 */
+			public interface Key extends RosettaModelObject{
+			
+				public String getScope();
+				public String getKeyValue();
+				
+				Key build();
+				KeyBuilder toBuilder();
+				
+				final static KeyMeta meta = new KeyMeta();
+				@Override
+				default RosettaMetaData<? extends RosettaModelObject> metaData() {
+					return meta;
+				}
+				
+				default Class<? extends RosettaModelObject> getType() {
+					return Key.class;
+				}
+				
+				default void process(RosettaPath path, Processor processor) {
+				}
+				
+				static KeyBuilder builder() {
+					return new KeyBuilderImpl();
+				}
+				
+				interface KeyBuilder extends Key, RosettaModelObjectBuilder {
+					KeyBuilder setScope(String scope);
+					KeyBuilder setKeyValue(String keyValue);
+					
+					default void process(RosettaPath path, BuilderProcessor processor) {
+					}
+				}
+				
+				class KeyImpl implements Key {
+					
+					private final String scope;
+					private final String keyValue;
+					public KeyImpl(KeyBuilder builder) {
+						super();
+						this.scope = builder.getScope();
+						this.keyValue = builder.getKeyValue();
+					}
+					public String getScope() {
+						return scope;
+					}
+					public String getKeyValue() {
+						return keyValue;
+					}
+				
+					public KeyBuilder toBuilder() {
+						KeyBuilder key = builder();
+						key.setKeyValue(keyValue);
+						key.setScope(scope);
+						return key;
+					}
+					
+					public Key build() {
+						return this;
+					}
+					@Override
+					public int hashCode() {
+						final int prime = 31;
+						int result = 1;
+						result = prime * result + ((keyValue == null) ? 0 : keyValue.hashCode());
+						result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+						return result;
+					}
+					@Override
+					public boolean equals(Object obj) {
+						if (this == obj)
+							return true;
+						if (obj == null)
+							return false;
+						if (getClass() != obj.getClass())
+							return false;
+						KeyImpl other = (KeyImpl) obj;
+						if (keyValue == null) {
+							if (other.keyValue != null)
+								return false;
+						} else if (!keyValue.equals(other.keyValue))
+							return false;
+						if (scope == null) {
+							if (other.scope != null)
+								return false;
+						} else if (!scope.equals(other.scope))
+							return false;
+						return true;
+					}
+				}
+				
+				public static class KeyBuilderImpl implements KeyBuilder{
+					private String scope;
+					private String keyValue;
+					
+					public Key build() {
+						return new KeyImpl(this);
+					}
+			
+					public String getScope() {
+						return scope;
+					}
+			
+					public KeyBuilder setScope(String scope) {
+						this.scope = scope;
+						return this;
+					}
+			
+					public String getKeyValue() {
+						return keyValue;
+					}
+			
+					public KeyBuilder setKeyValue(String keyValue) {
+						this.keyValue = keyValue;
+						return this;
+					}
+					
+					public boolean hasData() {
+						return keyValue!=null;
+					}
+			
+					@Override
+					public KeyBuilder toBuilder() {
+						return this;
+					}
+			
+					@SuppressWarnings("unchecked")
+					@Override
+					public KeyBuilder prune() {
+						return this;
+					}
+			
+					@SuppressWarnings("unchecked")
+					@Override
+					public KeyBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+						KeyBuilder otherKey = (KeyBuilder) other;
+						merger.mergeBasic(getKeyValue(), otherKey.getKeyValue(), this::setKeyValue);
+						merger.mergeBasic(getScope(), otherKey.getScope(), this::setScope);
+						return this;
+					}
+			
+					@Override
+					public int hashCode() {
+						final int prime = 31;
+						int result = 1;
+						result = prime * result + ((keyValue == null) ? 0 : keyValue.hashCode());
+						result = prime * result + ((scope == null) ? 0 : scope.hashCode());
+						return result;
+					}
+			
+					@Override
+					public boolean equals(Object obj) {
+						if (this == obj)
+							return true;
+						if (obj == null)
+							return false;
+						if (getClass() != obj.getClass())
+							return false;
+						KeyBuilderImpl other = (KeyBuilderImpl) obj;
+						if (keyValue == null) {
+							if (other.keyValue != null)
+								return false;
+						} else if (!keyValue.equals(other.keyValue))
+							return false;
+						if (scope == null) {
+							if (other.scope != null)
+								return false;
+						} else if (!scope.equals(other.scope))
+							return false;
+						return true;
+					}
+				}
+				
+				class KeyMeta implements RosettaMetaData<Key> {
+			
+			
+					@Override
+					public List<Validator<? super Key>> dataRules(ValidatorFactory factory) {
+						return Collections.emptyList();
+					}
+			
+					@Override
+					public List<Validator<? super Key>> choiceRuleValidators() {
+						return Collections.emptyList();
+					}
+			
+					@Override
+					public List<Function<? super Key, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+						return Collections.emptyList();
+					}
+			
+					@Override
+					public Validator<? super Key> validator() {
+						return new Validator<Key>() {
+			
+							@Override
+							public ValidationResult<Key> validate(RosettaPath path, Key key) {
+								if (key.getKeyValue()==null) {
+									return ValidationResult.failure("Key.value", ValidationType.KEY, "Key", path, "", "Key value must be set");
+								}
+								if (key.getScope()==null) {
+									return ValidationResult.failure("Key.scope", ValidationType.KEY, "Key", path, "", "Key scope must be set");
+								}
+								return ValidationResult.success("Key", ValidationType.KEY, "Key", path, "");
+							}
+						};
+					}
+					
+					@Override
+					public Validator<? super Key> typeFormatValidator() {
+						return null;
+					}
+			
+					@Override
+					public ValidatorWithArg<? super Key, Set<String>> onlyExistsValidator() {
+						return null;
+					}
+				}
+			}
+			'''
+		)
+		
 		fsa.generateFile('com/rosetta/model/lib/expression/MapperMaths.java',
 			'''
 			package com.rosetta.model.lib.expression;
@@ -1285,14 +1538,22 @@ class BackwardCompatibilityGenerator {
 			
 			import java.lang.reflect.InvocationTargetException;
 			import java.lang.reflect.Method;
+			import java.math.BigDecimal;
+			import java.math.BigInteger;
+			import java.util.ArrayList;
 			import java.util.Collection;
 			import java.util.Collections;
 			import java.util.LinkedList;
 			import java.util.List;
+			import java.util.Optional;
 			import java.util.Set;
 			import java.util.function.Supplier;
+			import java.util.regex.Matcher;
+			import java.util.regex.Pattern;
 			import java.util.stream.Collectors;
 			import java.util.stream.Stream;
+			
+			import org.apache.commons.lang3.StringUtils;
 			
 			import com.rosetta.model.lib.RosettaModelObject;
 			import com.rosetta.model.lib.mapper.Mapper;
@@ -1535,12 +1796,147 @@ class BackwardCompatibilityGenerator {
 				public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {
 					if (actual < min) {
 						return ComparisonResult
-								.failure("Minimum of " + min + " '" + msgPrefix + "' is expected but found " + actual + "");
+								.failure("Minimum of " + min + " '" + msgPrefix + "' is expected but found " + actual + ".");
 					} else if (max > 0 && actual > max) {
 						return ComparisonResult
-								.failure("Maximum of " + max + " '" + msgPrefix + "' are expected but found " + actual + "");
+								.failure("Maximum of " + max + " '" + msgPrefix + "' are expected but found " + actual + ".");
 					}
 					return ComparisonResult.success();
+				}
+				
+				public static ComparisonResult checkString(String msgPrefix, String value, int minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
+					if (value == null) {
+						return ComparisonResult.success();
+					}
+					List<String> failures = new ArrayList<>();
+					if (value.length() < minLength) {
+						failures.add("Expected a minimum of " + minLength + " characters for '" + msgPrefix + "', but found '" + value + "' (" + value.length() + " characters).");
+					}
+					if (maxLength.isPresent()) {
+						int m = maxLength.get();
+						if (value.length() > m) {
+							failures.add("Expected a maximum of " + m + " characters for '" + msgPrefix + "', but found '" + value + "' (" + value.length() + " characters).");
+						}
+					}
+					if (pattern.isPresent()) {
+						Pattern p = pattern.get();
+						Matcher match = p.matcher(value);
+						if (!match.matches()) {
+							failures.add("'" + value + "' does not match the pattern /" + p.toString() + "/ of '" + msgPrefix + "'.");
+						}
+					}
+					if (failures.isEmpty()) {
+						return ComparisonResult.success();
+					}
+					return ComparisonResult.failure(
+								failures.stream().collect(Collectors.joining(" "))
+							);
+				}
+				public static ComparisonResult checkString(String msgPrefix, List<String> values, int minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
+					if (values == null) {
+						return ComparisonResult.success();
+					}
+					List<String> failures = values.stream()
+							.map(v -> checkString(msgPrefix, v, minLength, maxLength, pattern))
+							.filter(r -> !r.get())
+							.map(r -> r.getError())
+							.collect(Collectors.toList());
+					if (failures.isEmpty()) {
+						return ComparisonResult.success();
+					}
+					return ComparisonResult.failure(
+							failures.stream().collect(Collectors.joining(" - "))
+						);
+				}
+				public static ComparisonResult checkNumber(String msgPrefix, BigDecimal value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+					if (value == null) {
+						return ComparisonResult.success();
+					}
+					List<String> failures = new ArrayList<>();
+					if (digits.isPresent()) {
+						int d = digits.get();
+						BigDecimal normalized = value.stripTrailingZeros();
+						int actual = normalized.precision();
+						if (normalized.scale() >= normalized.precision()) {
+							// case 0.0012 => `actual` should be 5
+							actual = normalized.scale() + 1;
+						}
+						if (normalized.scale() < 0) {
+							// case 12000 => `actual` should include unsignificant zeros
+							actual -= normalized.scale();
+						}
+						if (actual > d) {
+							failures.add("Expected a maximum of " + d + " digits for '" + msgPrefix + "', but the number " + value + " has " + actual + ".");
+						}
+					}
+					if (fractionalDigits.isPresent()) {
+						int f = fractionalDigits.get();
+						BigDecimal normalized = value.stripTrailingZeros();
+						int actual = normalized.scale();
+						if (normalized.scale() < 0) {
+							actual = 0;
+						}
+						if (actual > f) {
+							failures.add("Expected a maximum of " + f + " fractional digits for '" + msgPrefix + "', but the number " + value + " has " + actual + ".");
+						}
+					}
+					if (min.isPresent()) {
+						BigDecimal m = min.get();
+						if (value.compareTo(m) < 0) {
+							failures.add("Expected a number greater than or equal to " + m.toPlainString()+ " for '" + msgPrefix + "', but found " + value + ".");
+						}
+					}
+					if (max.isPresent()) {
+						BigDecimal m = max.get();
+						if (value.compareTo(m) > 0) {
+							failures.add("Expected a number less than or equal to " + m.toPlainString() + " for '" + msgPrefix + "', but found " + value + ".");
+						}
+					}
+					if (failures.isEmpty()) {
+						return ComparisonResult.success();
+					}
+					return ComparisonResult.failure(
+								failures.stream().collect(Collectors.joining(" "))
+							);
+				}
+				public static ComparisonResult checkNumber(String msgPrefix, Integer value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+					if (value == null) {
+						return ComparisonResult.success();
+					}
+					return checkNumber(msgPrefix, BigDecimal.valueOf(value), digits, fractionalDigits, min, max);
+				}
+				public static ComparisonResult checkNumber(String msgPrefix, Long value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+					if (value == null) {
+						return ComparisonResult.success();
+					}
+					return checkNumber(msgPrefix, BigDecimal.valueOf(value), digits, fractionalDigits, min, max);
+				}
+				public static ComparisonResult checkNumber(String msgPrefix, BigInteger value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+					if (value == null) {
+						return ComparisonResult.success();
+					}
+					return checkNumber(msgPrefix, new BigDecimal(value), digits, fractionalDigits, min, max);
+				}
+				public static ComparisonResult checkNumber(String msgPrefix, List<? extends Number> values, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+					if (values == null) {
+						return ComparisonResult.success();
+					}
+					List<String> failures = values.stream()
+							.map(v -> {
+								if (v instanceof BigDecimal) {
+									return checkNumber(msgPrefix, (BigDecimal)v, digits, fractionalDigits, min, max);
+								}
+								return checkNumber(msgPrefix, v.longValue(), digits, fractionalDigits, min, max);
+							})
+							.filter(r -> !r.get())
+							.map(r -> r.getError())
+							.collect(Collectors.toList());
+					if (failures.isEmpty()) {
+						return ComparisonResult.success();
+					}
+					return ComparisonResult.failure(
+							failures.stream().collect(Collectors.joining(" - "))
+						);
 				}
 				
 				private static <T> String formatMultiError(Mapper<T> o) {
@@ -1557,7 +1953,7 @@ class BackwardCompatibilityGenerator {
 					List<String> populatedFieldNames = new LinkedList<>();
 					for (String a: choiceFieldNames) {
 						try {
-							Method getter = object.getClass().getMethod("get" + a.substring(0, 1).toUpperCase() + a.substring(1));
+							Method getter = object.getClass().getMethod("get" + StringUtils.capitalize(a));
 							if (ExistenceChecker.isSet(getter.invoke(object))) {
 								populatedFieldNames.add(a);
 							}
@@ -1607,6 +2003,8 @@ class BackwardCompatibilityGenerator {
 				List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory);
 				
 				Validator<? super T> validator();
+				
+				Validator<? super T> typeFormatValidator();
 				
 				ValidatorWithArg<? super T, Set<String>> onlyExistsValidator();
 			}
@@ -1685,7 +2083,7 @@ class BackwardCompatibilityGenerator {
 				}
 			
 				enum ValidationType {
-					DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, ONLY_EXISTS, POST_PROCESS_EXCEPTION
+					DATA_RULE, CHOICE_RULE, CARDINALITY, TYPE_FORMAT, KEY, ONLY_EXISTS, POST_PROCESS_EXCEPTION
 				}
 			
 				class ModelValidationResult<T> implements ValidationResult<T> {

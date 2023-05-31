@@ -7,7 +7,6 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
-import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.expression.ComparisonResult
@@ -29,60 +28,102 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.builtin.RStringType
+import com.regnosys.rosetta.types.builtin.RNumberType
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import java.util.Optional
+import java.util.regex.Pattern
+import org.apache.commons.text.StringEscapeUtils
+import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
+import com.regnosys.rosetta.generator.java.types.JavaClass
+import java.util.List
+import java.math.BigDecimal
+import com.regnosys.rosetta.generator.java.types.JavaWildcardTypeArgument
+import com.regnosys.rosetta.generator.java.types.JavaReferenceType
 
 class ValidatorsGenerator {
 
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaExtensions
 	@Inject extension JavaTypeTranslator
+	@Inject extension RosettaTypeProvider
+	@Inject extension TypeSystem
+	@Inject extension RBuiltinTypeService
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
-		fsa.generateFile(root.typeValidation.withForwardSlashes + '/' + data.name + 'Validator.java',
+		val t = new RDataType(data)
+		fsa.generateFile(t.toValidatorClass.canonicalName.withForwardSlashes + ".java",
 			generateClass(root, data, version))
-		fsa.generateFile(root.existsValidation.withForwardSlashes + '/' + onlyExistsValidatorName(data) + '.java',
+		fsa.generateFile(t.toTypeFormatValidatorClass.canonicalName.withForwardSlashes + ".java",
+			generateTypeFormatValidator(root, data, version))
+		fsa.generateFile(t.toOnlyExistsValidatorClass.canonicalName.withForwardSlashes + ".java",
 			generateOnlyExistsValidator(root, data, version))
 	}
 
 	private def generateClass(RootPackage root, Data d, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, d.classBody(version, d.allAttributes), scope)
+		buildClass(root.typeValidation, new RDataType(d).classBody(version, d.allAttributes), scope)
+	}
+	
+	private def generateTypeFormatValidator(RootPackage root, Data d, String version) {
+		val scope = new JavaScope(root.typeValidation)
+		buildClass(root.typeValidation, new RDataType(d).typeFormatClassBody(version, d.allAttributes), scope)
 	}
 
 	private def generateOnlyExistsValidator(RootPackage root, Data d, String version) {
 		val scope = new JavaScope(root.existsValidation)
-		buildClass(root.existsValidation, d.onlyExistsClassBody(version, d.allAttributes), scope)
+		buildClass(root.existsValidation, new RDataType(d).onlyExistsClassBody(version, d.allAttributes), scope)
 	}
 
-	def private StringConcatenationClient classBody(Data c, String version, Iterable<Attribute> attributes) '''
-		public class «c.name»Validator implements «Validator»<«new RDataType(c).toJavaType»> {
+	def private StringConcatenationClient classBody(RDataType t, String version, Iterable<Attribute> attributes) '''
+		public class «t.toValidatorClass» implements «Validator»<«t.toJavaType»> {
 		
 			@Override
-			public «ValidationResult»<«c.name»> validate(«RosettaPath» path, «c.name» o) {
+			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
 				String error = 
 					«Lists».<«ComparisonResult»>newArrayList(
-						«FOR attr : attributes SEPARATOR ","»
-							«checkCardinality(attr.toExpandedAttribute)»
+						«FOR attrCheck : attributes.map[checkCardinality(toExpandedAttribute)].filter[it !== null] SEPARATOR ", "»
+							«attrCheck»
 						«ENDFOR»
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«c.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, o.getClass().getSimpleName(), path, "", error);
 				}
-				return «method(ValidationResult, "success")»("«c.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, o.getClass().getSimpleName(), path, "");
+			}
+		
+		}
+	'''
+	
+	def private StringConcatenationClient typeFormatClassBody(RDataType t, String version, Iterable<Attribute> attributes) '''
+		public class «t.toTypeFormatValidatorClass» implements «Validator»<«t.toJavaType»> {
+		
+			@Override
+			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
+				String error = 
+					«Lists».<«ComparisonResult»>newArrayList(
+						«FOR attrCheck : attributes.map[checkTypeFormat].filter[it !== null] SEPARATOR ", "»
+							«attrCheck»
+						«ENDFOR»
+					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
+				
+				if (!«method(Strings, "isNullOrEmpty")»(error)) {
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, o.getClass().getSimpleName(), path, "", error);
+				}
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, o.getClass().getSimpleName(), path, "");
 			}
 		
 		}
 	'''
 
-	static def onlyExistsValidatorName(RosettaType c) {
-		return c.name + 'OnlyExistsValidator'
-	}
-
-	def private StringConcatenationClient onlyExistsClassBody(Data c, String version, Iterable<Attribute> attributes) '''
-		public class «onlyExistsValidatorName(c)» implements «ValidatorWithArg»<«new RDataType(c).toJavaType», «Set»<String>> {
+	def private StringConcatenationClient onlyExistsClassBody(RDataType t, String version, Iterable<Attribute> attributes) '''
+		public class «t.toOnlyExistsValidatorClass» implements «ValidatorWithArg»<«t.toJavaType», «Set»<String>> {
 		
 			@Override
-			public <T2 extends «c.name»> «ValidationResult»<«c.name»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
+			public <T2 extends «t.toJavaType»> «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
 				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
 						«FOR attr : attributes»
 							.put("«attr.name»", «ExistenceChecker».isSet(o.get«attr.name?.toFirstUpper»()))
@@ -96,19 +137,88 @@ class ValidatorsGenerator {
 						.collect(«Collectors».toSet());
 				
 				if (setFields.equals(fields)) {
-					return «method(ValidationResult, "success")»("«c.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "");
+					return «method(ValidationResult, "success")»("«t.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "");
 				}
-				return «method(ValidationResult, "failure")»("«c.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "",
+				return «method(ValidationResult, "failure")»("«t.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "",
 						String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
 			}
 		}
 	'''
 
-	private def StringConcatenationClient checkCardinality(ExpandedAttribute attr) '''
-		«IF attr.isMultiple»
-			«method(ExpressionOperators, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
-		«ELSE»
-			«method(ExpressionOperators, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)
-		«ENDIF»
-	'''
+	private def StringConcatenationClient checkCardinality(ExpandedAttribute attr) {
+		if (attr.inf === 0 && attr.isUnbound) {
+			null
+		} else {
+			'''
+			«IF attr.isMultiple»
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
+			«ELSE»
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)
+			«ENDIF»
+			'''
+		}
+	}
+		
+	private def StringConcatenationClient checkTypeFormat(Attribute attr) {
+		val t = attr.RTypeOfSymbol.stripFromTypeAliases
+		if (t instanceof RStringType) {
+			if (t != UNCONSTRAINED_STRING) {
+				val min = t.interval.minBound
+				val max = t.interval.max.optional
+				val pattern = t.pattern.optionalPattern
+								
+				return '''«method(ExpressionOperators, "checkString")»("«attr.name»", «attr.attributeValue», «min», «max», «pattern»)'''
+			}
+		} else if (t instanceof RNumberType) {
+			if (t != UNCONSTRAINED_NUMBER) {
+				val digits = t.digits.optional
+				val fractionalDigits = t.fractionalDigits.optional
+				val min = t.interval.min.optionalBigDecimal
+				val max = t.interval.max.optionalBigDecimal
+				
+				return '''«method(ExpressionOperators, "checkNumber")»("«attr.name»", «attr.attributeValue», «digits», «fractionalDigits», «min», «max»)'''
+			}
+		}
+		return null
+	}
+	
+	private def StringConcatenationClient getAttributeValue(Attribute attr) {
+		if (attr.metaAnnotations.empty) {
+			'''o.get«attr.name?.toFirstUpper»()'''
+		} else {
+			val jt = attr.toExpandedAttribute.toMultiMetaOrRegularJavaType
+			if (jt instanceof JavaParametrizedType && (jt as JavaParametrizedType).baseType.equals(JavaClass.from(List))) {
+				val typeArg = (jt as JavaParametrizedType).arguments.head
+				val itemType = if (typeArg instanceof JavaWildcardTypeArgument) {
+					typeArg.bound.get
+				} else {
+					typeArg as JavaReferenceType
+				}
+				'''o.get«attr.name?.toFirstUpper»().stream().map(«itemType»::getValue).collect(«Collectors».toList())'''
+			} else {
+				'''o.get«attr.name?.toFirstUpper»().getValue()'''
+			}
+		}
+	}
+	private def StringConcatenationClient optional(Optional<? extends Object> v) {
+		if (v.isPresent) {
+			'''«method(Optional, "of")»(«v.get»)'''
+		} else {
+			'''«method(Optional, "empty")»()'''
+		}
+	}
+	private def StringConcatenationClient optionalPattern(Optional<Pattern> v) {
+		if (v.isPresent) {
+			'''«method(Optional, "of")»(«Pattern».compile("«StringEscapeUtils.escapeJava(v.get.toString)»"))'''
+		} else {
+			'''«method(Optional, "empty")»()'''
+		}
+	}
+	private def StringConcatenationClient optionalBigDecimal(Optional<BigDecimal> v) {
+		if (v.isPresent) {
+			'''«method(Optional, "of")»(new «BigDecimal»("«StringEscapeUtils.escapeJava(v.get.toString)»"))'''
+		} else {
+			'''«method(Optional, "empty")»()'''
+		}
+	}
 }

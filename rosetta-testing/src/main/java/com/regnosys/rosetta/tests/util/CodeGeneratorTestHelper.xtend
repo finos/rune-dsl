@@ -21,6 +21,7 @@ import org.eclipse.xtext.xbase.testing.JavaSource
 import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static com.google.common.collect.ImmutableMap.*
+import com.rosetta.model.lib.RosettaModelObject
 
 class CodeGeneratorTestHelper {
 
@@ -123,7 +124,7 @@ class CodeGeneratorTestHelper {
 					rosettaClassBuilderInstance, value);
 			]
 		]
-		return rosettaClassBuilderInstance.class.getMethod('build').invoke(rosettaClassBuilderInstance);
+		return rosettaClassBuilderInstance.class.getMethod('build').invoke(rosettaClassBuilderInstance) as RosettaModelObject;
 	}
 
 	def FieldWithMeta<String> createFieldWithMetaString(Map<String, Class<?>> classes, String value, String scheme) {

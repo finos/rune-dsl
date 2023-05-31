@@ -17,7 +17,6 @@ import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
-import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory.TestFolderAwareFsa
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -74,10 +73,9 @@ class RosettaGenerator implements IGenerator2 {
 		try {
 			lock.getWriteLock(true);
 			val models = resourceSet.resources
-							.filter[!TestFolderAwareFsa.isTestResource(it)]
 							.filter[!ignoredFiles.contains(URI.segments.last)]
-							.flatMap[contents]
-							.filter(RosettaModel).toList
+							.map[contents.head as RosettaModel]
+							.toList
 			val version = models.head.version // TODO: find a way to access the version of a project directly
 			
 			externalGenerators.forEach [ generator |
@@ -219,10 +217,9 @@ class RosettaGenerator implements IGenerator2 {
 			backwardCompatibilityGenerator.generate(fsa2)
 						
 			val models = resourceSet.resources
-							.filter[!TestFolderAwareFsa.isTestResource(it)]
 							.filter[!ignoredFiles.contains(URI.segments.last)]
-							.flatMap[contents]
-							.filter(RosettaModel).toList
+							.map[contents.head as RosettaModel]
+							.toList
 			val version = models.head.version // TODO: find a way to access the version of a project directly
 
 			val namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
