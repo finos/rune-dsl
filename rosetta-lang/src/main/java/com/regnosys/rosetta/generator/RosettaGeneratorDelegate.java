@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.generator;
 
-import javax.inject.Inject;
+import java.lang.reflect.Field;
 
 import org.eclipse.xtext.generator.GeneratorDelegate;
 
@@ -10,14 +10,18 @@ import org.eclipse.xtext.generator.GeneratorDelegate;
  */
 public class RosettaGeneratorDelegate extends GeneratorDelegate {
 
-	private final RosettaGenerator rosettaGenerator;
-	
-	@Inject
-	public RosettaGeneratorDelegate(RosettaGenerator rosettaGenerator) {
-		this.rosettaGenerator = rosettaGenerator;
-	}
+	private RosettaGenerator rosettaGenerator = null;
 
 	public RosettaGenerator getRosettaGenerator() {
+		if (rosettaGenerator == null) {
+			try {
+				Field generatorField = GeneratorDelegate.class.getDeclaredField("generator");
+				generatorField.setAccessible(true);
+				rosettaGenerator = (RosettaGenerator) generatorField.get(this);
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
 		return rosettaGenerator;
 	}
 }
