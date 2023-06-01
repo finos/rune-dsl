@@ -8,6 +8,5 @@ public class RosettaMavenStandaloneBuilderModule extends MavenStandaloneBuilderM
 	protected void configure() {
 		super.configure();
 		bind(StandaloneBuilder.class).to(RosettaStandaloneBuilder.class);
-		
 	}
 }
