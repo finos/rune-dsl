@@ -41,6 +41,8 @@ import com.regnosys.rosetta.formatting2.FormattingUtil
 import com.regnosys.rosetta.generator.java.util.RecordFeatureMap
 import org.eclipse.xtext.generator.GeneratorDelegate
 import com.regnosys.rosetta.generator.RosettaGeneratorDelegate
+import org.eclipse.xtext.resource.IResourceServiceProvider
+import com.regnosys.rosetta.resource.SingletonGeneratorResourceServiceProvider
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -127,5 +129,9 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	def Class<? extends GeneratorDelegate> bindGeneratorDelegate() {
 		RosettaGeneratorDelegate
+	}
+	
+	def Class<? extends IResourceServiceProvider> bindIResourceServiceProvider() {
+		SingletonGeneratorResourceServiceProvider
 	}
 }

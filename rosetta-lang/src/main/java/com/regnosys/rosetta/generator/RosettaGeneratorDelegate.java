@@ -4,6 +4,10 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.generator.GeneratorDelegate;
 
+/**
+ * Necessary for running the rosetta-maven-plugin.
+ *
+ */
 public class RosettaGeneratorDelegate extends GeneratorDelegate {
 
 	private final RosettaGenerator rosettaGenerator;
