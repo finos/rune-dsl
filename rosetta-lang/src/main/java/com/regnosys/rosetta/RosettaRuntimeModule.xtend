@@ -39,8 +39,6 @@ import com.regnosys.rosetta.formatting2.RosettaExpressionFormatter
 import org.eclipse.xtext.serializer.impl.Serializer
 import com.regnosys.rosetta.formatting2.FormattingUtil
 import com.regnosys.rosetta.generator.java.util.RecordFeatureMap
-import org.eclipse.xtext.generator.GeneratorDelegate
-import com.regnosys.rosetta.generator.RosettaGeneratorDelegate
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -123,9 +121,5 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	def Class<? extends RecordFeatureMap> bindRecordFeatureMap() {
 		RecordFeatureMap
-	}
-	
-	def Class<? extends GeneratorDelegate> bindGeneratorDelegate() {
-		RosettaGeneratorDelegate
 	}
 }

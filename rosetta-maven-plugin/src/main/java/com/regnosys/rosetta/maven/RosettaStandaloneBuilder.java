@@ -12,11 +12,11 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.builder.standalone.LanguageAccess;
 import org.eclipse.xtext.builder.standalone.StandaloneBuilder;
 import org.eclipse.xtext.generator.GeneratorContext;
+import org.eclipse.xtext.generator.GeneratorDelegate;
 import org.eclipse.xtext.generator.JavaIoFileSystemAccess;
 import org.eclipse.xtext.util.CancelIndicator;
 
 import com.regnosys.rosetta.generator.RosettaGenerator;
-import com.regnosys.rosetta.generator.RosettaGeneratorDelegate;
 
 public class RosettaStandaloneBuilder extends StandaloneBuilder {
 	private static final Logger LOG = Logger.getLogger(RosettaStandaloneBuilder.class);
@@ -43,8 +43,14 @@ public class RosettaStandaloneBuilder extends StandaloneBuilder {
 	private RosettaGenerator getRosettaGenerator() {
 		if (rosettaGenerator == null) {
 			LanguageAccess access = getRosettaLanguageAccess();
-	        RosettaGeneratorDelegate delegate = (RosettaGeneratorDelegate)access.getGenerator();
-	        rosettaGenerator = delegate.getRosettaGenerator();
+	        GeneratorDelegate delegate = access.getGenerator();
+	        try {
+	        	Field f = GeneratorDelegate.class.getDeclaredField("generator");
+		        f.setAccessible(true);
+		        rosettaGenerator = (RosettaGenerator) f.get(delegate);
+			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		return rosettaGenerator;
 	}

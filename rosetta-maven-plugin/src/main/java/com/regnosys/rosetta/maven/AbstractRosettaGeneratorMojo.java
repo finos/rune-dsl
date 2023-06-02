@@ -5,18 +5,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.eclipse.xtext.builder.standalone.LanguageAccess;
-import org.eclipse.xtext.builder.standalone.LanguageAccessFactory;
 import org.eclipse.xtext.builder.standalone.StandaloneBuilder;
 import org.eclipse.xtext.builder.standalone.compiler.CompilerConfiguration;
 import org.eclipse.xtext.builder.standalone.compiler.IJavaCompiler;
 import org.eclipse.xtext.maven.AbstractXtextGeneratorMojo;
 import org.eclipse.xtext.maven.ClusteringConfig;
-import org.eclipse.xtext.maven.XtextGenerateMojo;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 
 import com.google.inject.Guice;
@@ -68,7 +63,7 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
 		if (addOutputDirectoriesToCompileSourceRoots) {
 			configureMavenOutputs();
 		}
-		Map<String, LanguageAccess> languages = new LanguageAccessFactory().createLanguageAccess(getLanguages(),
+		Map<String, LanguageAccess> languages = new RosettaLanguageAccessFactory().createLanguageAccess(getLanguages(),
 				this.getClass().getClassLoader());
 		Injector injector = Guice.createInjector(createModule());
 		StandaloneBuilder builder = injector.getInstance(StandaloneBuilder.class);
