@@ -90,9 +90,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, o.getClass().getSimpleName(), path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "", error);
 				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, o.getClass().getSimpleName(), path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "");
 			}
 		
 		}
@@ -111,9 +111,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, o.getClass().getSimpleName(), path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "", error);
 				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, o.getClass().getSimpleName(), path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».MODEL_INSTANCE, o.getClass().getSimpleName(), path, "");
 			}
 		
 		}

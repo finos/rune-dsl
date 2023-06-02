@@ -237,12 +237,12 @@ class BackwardCompatibilityGenerator {
 							@Override
 							public ValidationResult<Key> validate(RosettaPath path, Key key) {
 								if (key.getKeyValue()==null) {
-									return ValidationResult.failure("Key.value", ValidationType.KEY, "Key", path, "", "Key value must be set");
+									return ValidationResult.failure("Key.value", ValidationType.MODEL_INSTANCE, "Key", path, "", "Key value must be set");
 								}
 								if (key.getScope()==null) {
-									return ValidationResult.failure("Key.scope", ValidationType.KEY, "Key", path, "", "Key scope must be set");
+									return ValidationResult.failure("Key.scope", ValidationType.MODEL_INSTANCE, "Key", path, "", "Key scope must be set");
 								}
-								return ValidationResult.success("Key", ValidationType.KEY, "Key", path, "");
+								return ValidationResult.success("Key", ValidationType.MODEL_INSTANCE, "Key", path, "");
 							}
 						};
 					}
@@ -2082,8 +2082,8 @@ class BackwardCompatibilityGenerator {
 					return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage));
 				}
 			
-				enum ValidationType {
-					DATA_RULE, CHOICE_RULE, CARDINALITY, TYPE_FORMAT, KEY, ONLY_EXISTS, POST_PROCESS_EXCEPTION
+				enum ValidationType { // TODO: replace MODEL_INSTANCE with CARDINALITY, TYPE_FORMAT, KEY and add PRE_PROCESS_EXCEPTION.
+					DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, ONLY_EXISTS, POST_PROCESS_EXCEPTION
 				}
 			
 				class ModelValidationResult<T> implements ValidationResult<T> {

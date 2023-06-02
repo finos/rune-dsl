@@ -139,9 +139,9 @@ class ModelMetaGeneratorTest {
 						).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(joining("; "));
 					
 					if (!isNullOrEmpty(error)) {
-						return failure("Foo", ValidationResult.ValidationType.CARDINALITY, o.getClass().getSimpleName(), path, "", error);
+						return failure("Foo", ValidationResult.ValidationType.MODEL_INSTANCE, o.getClass().getSimpleName(), path, "", error);
 					}
-					return success("Foo", ValidationResult.ValidationType.CARDINALITY, o.getClass().getSimpleName(), path, "");
+					return success("Foo", ValidationResult.ValidationType.MODEL_INSTANCE, o.getClass().getSimpleName(), path, "");
 				}
 			
 			}
@@ -182,9 +182,9 @@ class ModelMetaGeneratorTest {
 						).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(joining("; "));
 					
 					if (!isNullOrEmpty(error)) {
-						return failure("Foo", ValidationResult.ValidationType.TYPE_FORMAT, o.getClass().getSimpleName(), path, "", error);
+						return failure("Foo", ValidationResult.ValidationType.MODEL_INSTANCE, o.getClass().getSimpleName(), path, "", error);
 					}
-					return success("Foo", ValidationResult.ValidationType.TYPE_FORMAT, o.getClass().getSimpleName(), path, "");
+					return success("Foo", ValidationResult.ValidationType.MODEL_INSTANCE, o.getClass().getSimpleName(), path, "");
 				}
 			
 			}
@@ -220,7 +220,7 @@ class ModelMetaGeneratorTest {
 		assertEquals("Maximum of 2 'a' are expected but found 3.; Minimum of 1 'b' is expected but found 0.; Minimum of 1 'c' is expected but found 0.",
 			res1.failureReason.get
 		)
-		assertThat(res1.validationType, is(ValidationType.CARDINALITY))
+		assertThat(res1.validationType, is(ValidationType.MODEL_INSTANCE))
 		assertThat(typeFormatValidator.validate(null, invalidFoo1).success, is(true))
 		
 		val invalidFoo2 = classes.createInstanceUsingBuilder('Foo', of(
@@ -236,7 +236,7 @@ class ModelMetaGeneratorTest {
 		assertEquals("Expected a number greater than or equal to -1 for 'd', but found -1.1.; Expected a maximum of 5 characters for 'f', but found 'aaaaaa' (6 characters). - Expected a maximum of 5 characters for 'f', but found 'ccccccc' (7 characters).",
 			res2.failureReason.get
 		)
-		assertThat(res2.validationType, is(ValidationType.TYPE_FORMAT))
+		assertThat(res2.validationType, is(ValidationType.MODEL_INSTANCE))
 	}
 	
 	@Test
