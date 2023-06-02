@@ -197,6 +197,19 @@ class RosettaGenerator implements IGenerator2 {
 					], lock)
 				]
 				fsaFactory.afterGenerate(resource)
+				
+				backwardCompatibilityGenerator.generate(fsa2)
+						
+				val models = resource.resourceSet.resources
+								.filter[!ignoredFiles.contains(URI.segments.last)]
+								.map[contents.head as RosettaModel]
+								.toList
+	
+				val namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
+				val namespaceUrilMap = modelNamespaceUtil.namespaceToModelUriMap(models).asMap
+				
+				javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, namespaceDescriptionMap)
+				namespaceHierarchyGenerator.generateNamespacePackageHierarchy(fsa2, namespaceDescriptionMap, namespaceUrilMap)
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (Exception e) {
@@ -220,13 +233,7 @@ class RosettaGenerator implements IGenerator2 {
 							.filter[!ignoredFiles.contains(URI.segments.last)]
 							.map[contents.head as RosettaModel]
 							.toList
-			val version = models.head.version // TODO: find a way to access the version of a project directly
-
-			val namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
-			val namespaceUrilMap = modelNamespaceUtil.namespaceToModelUriMap(models).asMap
-			
-			javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, namespaceDescriptionMap)
-			namespaceHierarchyGenerator.generateNamespacePackageHierarchy(fsa2, namespaceDescriptionMap, namespaceUrilMap)
+			val version = models.head.version // TODO: find a way to access the version of a project directly			
 			
 			externalGenerators.forEach [ generator |
 				generator.afterAllGenerate(resourceSet, models, version, [ map |
