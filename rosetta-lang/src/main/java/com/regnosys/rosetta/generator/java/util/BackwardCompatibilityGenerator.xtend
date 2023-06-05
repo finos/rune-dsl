@@ -237,12 +237,12 @@ class BackwardCompatibilityGenerator {
 							@Override
 							public ValidationResult<Key> validate(RosettaPath path, Key key) {
 								if (key.getKeyValue()==null) {
-									return ValidationResult.failure("Key.value", ValidationType.MODEL_INSTANCE, "Key", path, "", "Key value must be set");
+									return ValidationResult.failure("Key.value", ValidationType.KEY, "Key", path, "", "Key value must be set");
 								}
 								if (key.getScope()==null) {
-									return ValidationResult.failure("Key.scope", ValidationType.MODEL_INSTANCE, "Key", path, "", "Key scope must be set");
+									return ValidationResult.failure("Key.scope", ValidationType.KEY, "Key", path, "", "Key scope must be set");
 								}
-								return ValidationResult.success("Key", ValidationType.MODEL_INSTANCE, "Key", path, "");
+								return ValidationResult.success("Key", ValidationType.KEY, "Key", path, "");
 							}
 						};
 					}
@@ -2004,7 +2004,10 @@ class BackwardCompatibilityGenerator {
 				
 				Validator<? super T> validator();
 				
-				Validator<? super T> typeFormatValidator();
+				// @Compat. The default can be removed once validation/ingestion is in the BSP.
+				default Validator<? super T> typeFormatValidator() {
+					return null;
+				}
 				
 				ValidatorWithArg<? super T, Set<String>> onlyExistsValidator();
 			}
@@ -2082,8 +2085,9 @@ class BackwardCompatibilityGenerator {
 					return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage));
 				}
 			
-				enum ValidationType { // TODO: replace MODEL_INSTANCE with CARDINALITY, TYPE_FORMAT, KEY and add PRE_PROCESS_EXCEPTION.
-					DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, ONLY_EXISTS, POST_PROCESS_EXCEPTION
+				// @Compat: MODEL_INSTANCE is replaced by CARDINALITY, TYPE_FORMAT, KEY and can be removed in the future.
+				enum ValidationType {
+					DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, CARDINALITY, TYPE_FORMAT, KEY, ONLY_EXISTS, PRE_PROCESS_EXCEPTION, POST_PROCESS_EXCEPTION
 				}
 			
 				class ModelValidationResult<T> implements ValidationResult<T> {
