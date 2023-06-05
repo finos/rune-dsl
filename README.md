@@ -65,4 +65,4 @@ In order to facilitate the use of the Rosetta DSL by industry members, a *Commun
 
 ## Developer setup
 
-If you want to contribute to the Rosetta DSL and need to get things up and running, see [this guide](https://github.com/REGnosys/rosetta-dsl/blob/master/setup-for-developers.md).
+If you want to contribute to the Rosetta DSL and need to get things up and running, see [this guide](/setup-for-developers.md).
