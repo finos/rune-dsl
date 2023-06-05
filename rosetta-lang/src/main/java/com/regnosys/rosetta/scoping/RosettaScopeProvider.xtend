@@ -24,7 +24,8 @@ import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RosettaTypeProvider
-import org.apache.log4j.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
@@ -65,7 +66,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	
 	public val static LIB_NAMESPACE = 'com.rosetta.model'
 	
-	static Logger LOGGER = Logger.getLogger(RosettaScopeProvider)
+	static Logger LOGGER = LoggerFactory.getLogger(RosettaScopeProvider)
 	
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaExtensions

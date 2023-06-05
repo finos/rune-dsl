@@ -24,7 +24,8 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.rosetta.util.DemandableLock
 import java.util.Map
 import java.util.concurrent.CancellationException
-import org.apache.log4j.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -40,7 +41,7 @@ import org.eclipse.xtext.generator.IGenerator2
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
 class RosettaGenerator implements IGenerator2 {
-	static Logger LOGGER = Logger.getLogger(RosettaGenerator)
+	static Logger LOGGER = LoggerFactory.getLogger(RosettaGenerator)
 
 	@Inject EnumGenerator enumGenerator
 	@Inject ModelMetaGenerator metaGenerator

@@ -1,14 +1,15 @@
 package com.regnosys.rosetta.blueprints.runner.nodes;
 
 import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-import org.apache.log4j.Logger;
 
 public interface ProcessorNode<I,O, K> extends Node<I, O, K, K>{
-    Logger LOGGER = Logger.getLogger(ProcessorNode.class);
+    Logger LOGGER = LoggerFactory.getLogger(ProcessorNode.class);
     
 	<T extends I, K2 extends K> Optional<GroupableData<O, K2>> process(GroupableData<T, K2> input);
 	
