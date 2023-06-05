@@ -34,12 +34,12 @@
 		<junit.version>5.8.2</junit.version>
 		<mockito-core.version>5.1.1</mockito-core.version>
 		<xsemantics.version>1.22.0</xsemantics.version>
-		<reload4j.version>1.2.24</reload4j.version>
 		<snakeyaml.version>2.0</snakeyaml.version>
 		<org.eclipse.emf.ecore.xcore.lib.version>1.6.0</org.eclipse.emf.ecore.xcore.lib.version>
 		<maven-plugin-api.version>3.6.0</maven-plugin-api.version>
 		<maven-core.version>3.6.0</maven-core.version>
 		<maven-plugin-annotations.version>3.6.0</maven-plugin-annotations.version>
+		<slf4j-api.version>2.0.7</slf4j-api.version>
 
 		<!-- Plugin and plugin dependency management -->
 		<org.eclipse.emf.ecore.xcore.version>1.23.0</org.eclipse.emf.ecore.xcore.version>
@@ -159,11 +159,6 @@
 				<version>${xsemantics.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>ch.qos.reload4j</groupId>
-				<artifactId>reload4j</artifactId>
-				<version>${reload4j.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.yaml</groupId>
 				<artifactId>snakeyaml</artifactId>
 				<version>${snakeyaml.version}</version>
@@ -187,6 +182,11 @@
 				<groupId>org.eclipse.xtext</groupId>
 				<artifactId>xtext-maven-plugin</artifactId>
 				<version>${xtext.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j-api.version}</version>
 			</dependency>
 
 			<!-- Test dependencies -->

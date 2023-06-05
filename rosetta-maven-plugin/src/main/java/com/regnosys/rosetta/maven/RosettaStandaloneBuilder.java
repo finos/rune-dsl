@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.builder.standalone.LanguageAccess;
@@ -17,9 +16,11 @@ import org.eclipse.xtext.generator.JavaIoFileSystemAccess;
 import org.eclipse.xtext.util.CancelIndicator;
 
 import com.regnosys.rosetta.generator.RosettaGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RosettaStandaloneBuilder extends StandaloneBuilder {
-	private static final Logger LOG = Logger.getLogger(RosettaStandaloneBuilder.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RosettaStandaloneBuilder.class);
 	
 	private LanguageAccess rosettaLanguageAccess = null;
 	// TODO: patch Xtext to make `languages` available

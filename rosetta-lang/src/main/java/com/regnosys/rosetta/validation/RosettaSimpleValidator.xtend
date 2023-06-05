@@ -88,7 +88,8 @@ import java.util.Set
 import java.util.Stack
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
-import org.apache.log4j.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EPackage
@@ -143,7 +144,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
 
-	static final Logger log = Logger.getLogger(RosettaValidator);
+	static final Logger log = LoggerFactory.getLogger(RosettaValidator);
 
 	protected override List<EPackage> getEPackages() {
 		val result = newArrayList
@@ -158,7 +159,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	protected override void handleExceptionDuringValidation(Throwable targetException) throws RuntimeException {
 		super.handleExceptionDuringValidation(targetException);
-		log.error(targetException, targetException);
+		log.error(targetException.getMessage(), targetException);
 	}
 	
 	protected override MethodWrapper createMethodWrapper(AbstractDeclarativeValidator instanceToUse, Method method) {

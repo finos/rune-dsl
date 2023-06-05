@@ -5,7 +5,6 @@ import com.regnosys.rosetta.blueprints.runner.nodes.ProcessorNode;
 
 import java.util.Collection;
 import java.util.Optional;
-//import org.apache.log4j.Logger;
 
 public class StreamProcessor<I,O, K> extends Upstream<O, K> implements Downstream<I, K>{
 	//private final static Logger logger = Logger.getLogger(StreamProcessor.class);
