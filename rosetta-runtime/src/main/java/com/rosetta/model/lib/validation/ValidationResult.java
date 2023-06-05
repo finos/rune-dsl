@@ -34,8 +34,9 @@ public interface ValidationResult<T> {
 		return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage));
 	}
 
-	enum ValidationType { // TODO: replace MODEL_INSTANCE with CARDINALITY, TYPE_FORMAT, KEY and add PRE_PROCESS_EXCEPTION. (once BSP handles validation types instead of backend)
-		DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, ONLY_EXISTS, POST_PROCESS_EXCEPTION
+	// @Compat: MODEL_INSTANCE is replaced by CARDINALITY, TYPE_FORMAT, KEY and can be removed in the future.
+	enum ValidationType {
+		DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, CARDINALITY, TYPE_FORMAT, KEY, ONLY_EXISTS, PRE_PROCESS_EXCEPTION, POST_PROCESS_EXCEPTION
 	}
 
 	class ModelValidationResult<T> implements ValidationResult<T> {

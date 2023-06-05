@@ -26,7 +26,10 @@ public interface RosettaMetaData<T extends RosettaModelObject> {
 	
 	Validator<? super T> validator();
 	
-	Validator<? super T> typeFormatValidator();
+	// @Compat. The default can be removed once validation/ingestion is in the BSP.
+	default Validator<? super T> typeFormatValidator() {
+		return null;
+	}
 	
 	ValidatorWithArg<? super T, Set<String>> onlyExistsValidator();
 }
