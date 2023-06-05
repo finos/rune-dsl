@@ -228,7 +228,7 @@ class ModelMetaGeneratorTest {
 			'b', new BigDecimal("123.42"),
 			'c', List.of(-2),
 			'd', new BigDecimal("-1.1"),
-			'f', List.of("aaaaaa", "bb", "cccccc")
+			'f', List.of("aaaaaa", "bb", "ccccccc")
 		))
 		assertThat(validator.validate(null, invalidFoo2).success, is(true))
 		val res2 = typeFormatValidator.validate(null, invalidFoo2)
