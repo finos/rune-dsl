@@ -305,8 +305,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			mode,
 			[extension doc |
 				if (expr.function !== null) {
-					expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR)
-						.append[oneSpace]
 					expr.function.formatInlineFunction(doc, mode.stopChain)
 				}
 			]
@@ -350,7 +348,20 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				]
 			)
 		} else { // case inline function without brackets
-			f.body.formatExpression(document, mode)
+			formatInlineOrMultiline(document, f.regionForEObject, mode,
+				[extension doc | // case: short inline function
+					f.body
+						.formatExpression(document, mode)
+					if (f.eContainer.eContainer instanceof RosettaOperation) {
+						// Always put next operations on a new line.
+						f.append[highPriority; newLine]
+					}
+				],
+				[extension doc | // case: long inline function
+					f.body
+						.formatExpression(document, mode)
+				]
+			)
 		}
 	}
 

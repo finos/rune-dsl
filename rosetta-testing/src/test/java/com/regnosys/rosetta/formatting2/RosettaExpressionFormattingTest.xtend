@@ -51,6 +51,32 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testOperationChainingFormat() {
+		'''
+		input
+			extract [
+				item -> bar
+					filter "this is a loooooooooooong expression" count > 2
+			]
+			then extract
+				if True
+				then ["This is a looong", "expression"]
+				else 42
+		''' ->
+		'''
+		input
+			extract [
+				item -> bar
+					filter "this is a loooooooooooong expression" count > 2
+			]
+			then extract
+				if True
+				then ["This is a looong", "expression"]
+				else 42
+		'''
+	}
+	
+	@Test
 	def void testShortParenthesesAreFormatted() {
 		'''
 		(  

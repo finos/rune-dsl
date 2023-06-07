@@ -122,6 +122,11 @@ import java.util.Optional
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import org.eclipse.xtext.RuleCall
+import org.eclipse.xtext.nodemodel.INode
+import org.eclipse.xtext.nodemodel.ICompositeNode
+import org.eclipse.xtext.Assignment
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -189,20 +194,90 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	private def errorKeyword(String message, EObject o, Keyword keyword) {
+		val k = findDirectKeyword(o, keyword)
+		if (k !== null) {
+			messageAcceptor.acceptError(
+				message,
+				o,
+				k.offset,
+				k.length,
+				null
+			)
+		}
+	}
+	private def INode findDirectKeyword(EObject o, Keyword keyword) {
 		val node = NodeModelUtils.findActualNodeFor(o)
-
-		for (n : node.asTreeIterable) {
+		findDirectKeyword(node, keyword)
+	}
+	private def INode findDirectKeyword(ICompositeNode node, Keyword keyword) {
+		for (n : node.children) {
 			val ge = n.grammarElement
 			if (ge instanceof Keyword && ge == keyword) {
-				messageAcceptor.acceptError(
-					message,
-					o,
-					n.offset,
-					n.length,
-					null
-				)
+				return n
+			}
+			if (ge instanceof RuleCall && n instanceof ICompositeNode && !(ge.eContainer instanceof Assignment)) {
+				val keywordInFragment = findDirectKeyword(n as ICompositeNode, keyword)
+				if (keywordInFragment !== null) {
+					return keywordInFragment
+				}
 			}
 		}
+	}
+	
+	@Check
+	def void mandatorySquareBracketCheck(RosettaFunctionalOperation op) {
+		if (op.function !== null) {
+			val leftBracket = findDirectKeyword(op.function, inlineFunctionAccess.leftSquareBracketKeyword_0_0_1)
+			if (op.areSquareBracketsMandatory) {
+				if (leftBracket === null) {
+					if (op.isNestedFunctionalOperation) {
+						error('''Ambiguous expression. Either use `then` or surround with square brackets to define a nested operation.''', op.function.body, ROSETTA_OPERATION__OPERATOR)
+					} else {
+						error('''Using square brackets are mandatory here.''', op, ROSETTA_OPERATION__OPERATOR)
+					}
+				}
+			} else {
+				if (leftBracket !== null) {
+					messageAcceptor.acceptWarning(
+						'''Usage of brackets is unnecessary.''',
+						op.function,
+						leftBracket.offset,
+						leftBracket.length,
+						null
+					)
+				}
+			}
+		}
+	}
+	
+	def boolean areSquareBracketsMandatory(RosettaFunctionalOperation op) {
+		!(op instanceof ThenOperation) &&
+		op.function !== null && 
+		(
+			!(op instanceof MandatoryFunctionalOperation)
+			|| !op.function.parameters.empty
+			|| op.isNestedFunctionalOperation
+		)
+	}
+	def boolean isNestedFunctionalOperation(RosettaFunctionalOperation op) {
+		op.function.body instanceof RosettaFunctionalOperation
+		&& (op.function.body as RosettaFunctionalOperation).function !== null
+	}
+	
+	@Check
+	def void mandatoryThenCheck(MandatoryFunctionalOperation op) {
+		if (op.isThenMandatory) {
+			val previousOperationIsThen =
+				op.eContainer instanceof InlineFunction
+				&& op.eContainer.eContainer instanceof ThenOperation
+			if (!previousOperationIsThen) {
+				error('''Usage of `then` is mandatory.''', op, ROSETTA_OPERATION__OPERATOR)
+			}
+		}
+	}
+	
+	def boolean isThenMandatory(MandatoryFunctionalOperation op) {
+		!(op instanceof ThenOperation) && op.argument instanceof MandatoryFunctionalOperation
 	}
 
 	@Check

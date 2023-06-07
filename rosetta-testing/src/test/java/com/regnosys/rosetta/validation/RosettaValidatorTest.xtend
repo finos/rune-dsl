@@ -30,6 +30,61 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 
+	@Test
+	def void testMandatorySquareBrackets() {
+		val model = '''
+		func Foo:
+			inputs:
+				input int (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input
+					then extract
+						item
+							extract item + 1
+		'''.parseRosetta
+		
+		model.assertError(MAP_OPERATION, null,
+            "Ambiguous expression. Either use `then` or surround with square brackets to define a nested operation.")
+	}
+	
+	@Test
+	def void testSuperfluousSquareBrackets() {
+		val model = '''
+		func Foo:
+			inputs:
+				input int (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input
+					then extract [ item + 1 ]
+		'''.parseRosetta
+		
+		model.assertWarning(INLINE_FUNCTION, null,
+            "Usage of brackets is unnecessary.")
+	}
+	
+	@Test
+	def void testMandatoryThenSucceeds() {
+		'''
+		func Foo:
+			inputs:
+				input int (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input
+					then extract [
+						extract item + 1
+					]
+		'''.parseRosettaWithNoIssues
+	}
+
 	// @Compat
 	@Test
 	def void shouldStillSupportOldBasicTypes() {
@@ -1812,7 +1867,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				add fooCounts:
 					bars 
 						map bar [ bar -> foos ]
-						map foosItem [ foosItem count ]
+						then map foosItem [ foosItem count ]
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -1835,8 +1890,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add fooCounts:
 					bars 
-						map [ item -> foos ]
-						map [ item count ]
+						map item -> foos
+						then map item count
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -1859,7 +1914,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				alias results:
 					bars -> foos
-						map [ item -> amount > 0 ]
+						map item -> amount > 0
 				
 				set result:
 					results all = True
@@ -1911,10 +1966,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set result:
 					bars 
-						map [ item -> foo ]
-						map [ item -> amount ]
-						distinct 
-						only-element
+						map item -> foo
+						then map item -> amount
+						then distinct 
+						then only-element
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -1936,7 +1991,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					result number (1..1)
 				
 				set result:
-					bars map [ item -> foo ] distinct only-element -> amount
+					bars
+						map item -> foo 
+						then distinct only-element -> amount
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -2197,8 +2254,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				add strings:
 					foos
 						map a [ a -> bars ] // list of list<bar>
-						map bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
-						flatten // list<string>
+						then map bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
+						then flatten // list<string>
 			
 			type Foo:
 				bars Bar (0..*)
@@ -2221,9 +2278,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				add strings:
 					foos
 						map a [ a -> bars ] // list of list<bar>
-						map bars [ bars -> bazs ] // list of list<baz>
-						map bazs [ bazs -> x ] // list of list<string>
-						flatten // list<string>
+						then map bars [ bars -> bazs ] // list of list<baz>
+						then map bazs [ bazs -> x ] // list of list<string>
+						then flatten // list<string>
 			
 			type Foo:
 				bars Bar (0..*)
@@ -2287,7 +2344,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set s:
 					foo
-						map [ item -> x ]
+						map item -> x
 			
 			type Foo:
 				x string (0..1)
@@ -2344,7 +2401,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				set s:
 					foos
 						only-element
-						map [ item -> x ]
+						map item -> x
 			
 			type Foo:
 				x string (0..1)

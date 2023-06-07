@@ -217,7 +217,7 @@ class RosettaParsingTest {
 					a int (1..1)
 				output: result int (1..1)
 				set result:
-					foo extract [ a ]
+					foo extract a
 		'''.parseRosettaWithNoIssues
 		
 		model.elements.last as Function => [
@@ -277,8 +277,8 @@ class RosettaParsingTest {
                
                condition C:
                    [deprecated] // the parser should parse this as an annotation, not a list
-                   extract [it -> a]
-                   then [ exists ]
+                   extract it -> a
+                   then exists
            
            func F:
                inputs:
@@ -286,11 +286,10 @@ class RosettaParsingTest {
                output:
                    result boolean (1..1)
                set result:
-                   a extract [
+                   a extract
                        if F
                        then False
                        else True and F
-                   ]
 	    '''.parseRosetta
 
 	    model.elements.head as Data => [

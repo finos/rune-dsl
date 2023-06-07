@@ -11,7 +11,7 @@ import org.eclipse.xtext.formatting2.ITextReplacer;
 import org.eclipse.xtext.formatting2.ITextReplacerContext;
 import org.eclipse.xtext.formatting2.internal.HiddenRegionReplacer;
 import org.eclipse.xtext.formatting2.internal.SubDocument;
-import org.eclipse.xtext.formatting2.regionaccess.IAstRegion;
+import org.eclipse.xtext.formatting2.regionaccess.ISequentialRegion;
 import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
 
 import com.google.common.collect.Lists;
@@ -24,9 +24,9 @@ import com.google.common.collect.Lists;
 public class TrimmedMaxLineWidthDocument extends SubDocument {
 	private final int maxLineWidth;
 	
-	private final IAstRegion astRegion;
+	private final ISequentialRegion astRegion;
 
-	public TrimmedMaxLineWidthDocument(IAstRegion region, IFormattableDocument parent, int maxLineWidth) {
+	public TrimmedMaxLineWidthDocument(ISequentialRegion region, IFormattableDocument parent, int maxLineWidth) {
 		super(region.merge(region.getNextHiddenRegion()), parent);
 		this.astRegion = region;
 		this.maxLineWidth = maxLineWidth;

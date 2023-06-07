@@ -71,7 +71,7 @@ class RosettaTypingTest {
 		func TestImplicitVar:
 			output: result int (3..3)
 			add result:
-				[1, 2, 3] map [item + 1]
+				[1, 2, 3] map item + 1
 		'''.parseRosettaWithNoIssues
 		model.elements.get(0) as Function => [operations.head.expression as RosettaConditionalExpression => [
 			^if.assertHasType(singleBoolean)

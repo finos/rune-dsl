@@ -273,7 +273,7 @@ class ListOperationTest {
 				set filteredFoos:
 					foos 
 						filter [ item -> include = True ]
-						filter [ item -> include2 = True ]
+						then filter [ item -> include2 = True ]
 		'''
 		val code = model.generateCode
 		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -327,7 +327,8 @@ class ListOperationTest {
 						protected List<Foo2.Foo2Builder> assignOutput(List<Foo2.Foo2Builder> filteredFoos, List<? extends Foo2> foos) {
 							filteredFoos = toBuilder(MapperC.<Foo2>of(foos)
 								.filterItem(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo2 -> foo2.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
-								.filterItem(item -> (Boolean)areEqual(item.<Boolean>map("getInclude2", foo2 -> foo2.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti());
+								.apply(item -> item
+									.filterItem(_item -> (Boolean)areEqual(_item.<Boolean>map("getInclude2", foo2 -> foo2.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())).getMulti());
 							
 							return Optional.ofNullable(filteredFoos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -701,7 +702,7 @@ class ListOperationTest {
 				set filteredFoos:
 					foos 
 						filter [ FuncFooTest( item ) ]
-						filter [ FuncFooTest2( item ) ]
+						then filter [ FuncFooTest2( item ) ]
 			
 			func FuncFooTest:
 			 	inputs:
@@ -836,8 +837,8 @@ class ListOperationTest {
 				alias filteredFoos:
 					foos 
 						filter a [ if test exists then a -> include = test else True ]
-						filter b [ if test2 exists then b -> include2 = test2 else True ]
-						filter c [ if test3 exists then c -> include2 = test3 else True ]
+						then filter b [ if test2 exists then b -> include2 = test2 else True ]
+						then filter c [ if test3 exists then c -> include2 = test3 else True ]
 				
 				set foo:
 					filteredFoos only-element
@@ -879,8 +880,8 @@ class ListOperationTest {
 				alias filteredFoos:
 					foos 
 						filter [ if test exists then item -> include = test else True ]
-						filter [ if test2 exists then item -> include2 = test2 else True ]
-						filter [ if test3 exists then item -> include2 = test3 else True ]
+						then filter [ if test2 exists then item -> include2 = test2 else True ]
+						then filter [ if test3 exists then item -> include2 = test3 else True ]
 				
 				set foo:
 					filteredFoos only-element
@@ -1365,7 +1366,7 @@ class ListOperationTest {
 				set fooCounts:
 					bars 
 						map bar [ bar -> foos ]
-						map fooListItem [ fooListItem count ]
+						then map fooListItem [ fooListItem count ]
 		'''
 		val code = model.generateCode
 		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -1408,7 +1409,8 @@ class ListOperationTest {
 						protected List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
 							fooCounts = MapperC.<Bar>of(bars)
 								.mapItemToList(bar -> (MapperC<Foo>)bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
-								.mapListToItem(fooListItem -> (MapperS<Integer>)MapperS.of(fooListItem.resultCount())).getMulti();
+								.apply(item -> item
+									.mapListToItem(fooListItem -> (MapperS<Integer>)MapperS.of(fooListItem.resultCount()))).getMulti();
 							
 							return fooCounts;
 						}
@@ -1451,7 +1453,7 @@ class ListOperationTest {
 				set fooCounts:
 					bars 
 						map [ item -> foos ]
-						map [ item count ]
+						then map [ item count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1488,8 +1490,8 @@ class ListOperationTest {
 				set fooCounts:
 					bars 
 						map [ item -> foos ]
-						filter [ item count > 1 ]
-						map [ item count ]
+						then filter [ item count > 1 ]
+						then map [ item count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1526,8 +1528,8 @@ class ListOperationTest {
 				set fooCounts:
 					bars 
 						map a [ a -> foos ]
-						filter b [ b count > 1 ]
-						map c [ c count ]
+						then filter b [ b count > 1 ]
+						then map c [ c count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1869,7 +1871,7 @@ class ListOperationTest {
 						map bar [ bar -> foos 
 							map foo [ NewFoo( foo -> attr + "_bar" ) ]
 						]
-						map updatedFoos [ NewBar( updatedFoos ) ]
+						then map updatedFoos [ NewBar( updatedFoos ) ]
 			
 			func NewBar:
 			 	inputs:
@@ -1947,7 +1949,8 @@ class ListOperationTest {
 							updatedBars = toBuilder(MapperC.<Bar>of(bars)
 								.mapItemToList(bar -> (MapperC<Foo>)bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
 									.mapItem(foo -> (MapperS<Foo>)MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))))
-								.mapListToItem(updatedFoos -> (MapperS<Bar>)MapperS.of(newBar.evaluate(updatedFoos.getMulti()))).getMulti());
+								.apply(item -> item
+									.mapListToItem(updatedFoos -> (MapperS<Bar>)MapperS.of(newBar.evaluate(updatedFoos.getMulti())))).getMulti());
 							
 							return Optional.ofNullable(updatedBars)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -2180,7 +2183,7 @@ class ListOperationTest {
 				set newFoos:
 					foos 
 						filter [ item -> include = True ]
-						map [ item -> attr ]
+						then map [ item -> attr ]
 
 		'''
 		val code = model.generateCode
@@ -2225,7 +2228,8 @@ class ListOperationTest {
 						protected List<String> assignOutput(List<String> newFoos, List<? extends Foo> foos) {
 							newFoos = MapperC.<Foo>of(foos)
 								.filterItem(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
-								.mapItem(item -> (MapperS<String>)item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+								.apply(item -> item
+									.mapItem(_item -> (MapperS<String>)_item.<String>map("getAttr", foo -> foo.getAttr()))).getMulti();
 							
 							return newFoos;
 						}
@@ -2277,7 +2281,7 @@ class ListOperationTest {
 				set strings:
 					bars 
 						map [ GetFoo( item -> barAttr ) ]
-						map [ item -> fooAttr ]
+						then map [ item -> fooAttr ]
 		'''
 		val code = model.generateCode
 		val f = code.get("ns1.functions.FuncFoo")
@@ -2325,7 +2329,8 @@ class ListOperationTest {
 						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
 							strings = MapperC.<Bar>of(bars)
 								.mapItem(item -> (MapperS<Foo>)MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())))
-								.mapItem(item -> (MapperS<String>)item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
+								.apply(item -> item
+									.mapItem(_item -> (MapperS<String>)_item.<String>map("getFooAttr", foo -> foo.getFooAttr()))).getMulti();
 							
 							return strings;
 						}
@@ -2447,7 +2452,7 @@ class ListOperationTest {
 				set strings:
 					bars 
 						map [ GetFoo( item -> barAttr ) ]
-						map [ item -> fooAttr ]
+						then map [ item -> fooAttr ]
 		''']
 		val code = model.generateCode
 		val f = code.get("ns2.functions.FuncFoo")
@@ -2496,7 +2501,8 @@ class ListOperationTest {
 						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
 							strings = MapperC.<Bar>of(bars)
 								.mapItem(item -> (MapperS<Foo>)MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())))
-								.mapItem(item -> (MapperS<String>)item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
+								.apply(item -> item
+									.mapItem(_item -> (MapperS<String>)_item.<String>map("getFooAttr", foo -> foo.getFooAttr()))).getMulti();
 							
 							return strings;
 						}
@@ -2547,7 +2553,7 @@ class ListOperationTest {
 				set strings:
 					bars 
 						map [ GetFoo( GetBaz( item -> barAttr ) ) ]
-						map [ item -> fooAttr ]
+						then map [ item -> fooAttr ]
 		''']
 		val code = model.generateCode
 		val f = code.get("ns2.functions.FuncFoo")
@@ -2598,7 +2604,8 @@ class ListOperationTest {
 						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
 							strings = MapperC.<Bar>of(bars)
 								.mapItem(item -> (MapperS<Foo>)MapperS.of(getFoo.evaluate(MapperS.of(getBaz.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())).get())))
-								.mapItem(item -> (MapperS<String>)item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
+								.apply(item -> item
+									.mapItem(_item -> (MapperS<String>)_item.<String>map("getFooAttr", foo -> foo.getFooAttr()))).getMulti();
 							
 							return strings;
 						}
@@ -3358,7 +3365,7 @@ class ListOperationTest {
 				set fooCount:
 					bars
 						reduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ]
-						map [ item -> foos count ]
+						then map [ item -> foos count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -3402,8 +3409,8 @@ class ListOperationTest {
 				set attrs:
 					bars
 						reduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ] // max by foo count
-						map [ item -> foos ]
-						map [ item -> attr ]
+						then map [ item -> foos ]
+						then map [ item -> attr ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
