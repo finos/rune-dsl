@@ -43,6 +43,7 @@
 		<!-- test -->
 		<junit.version>5.8.2</junit.version>
 		<mockito-core.version>5.1.1</mockito-core.version>
+		<logback.version>1.4.7</logback.version>
 
 		<!-- Plugin and plugin dependency management -->
 		<org.eclipse.emf.ecore.xcore.version>1.23.0</org.eclipse.emf.ecore.xcore.version>
@@ -214,6 +215,18 @@
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
 				<version>${mockito-core.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-core</artifactId>
+				<version>${logback.version}</version>
 				<scope>test</scope>
 			</dependency>
 		</dependencies>
