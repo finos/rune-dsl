@@ -614,9 +614,10 @@ class RosettaExpressionFormattingTest {
 			then filter item = False
 		''' -> '''
 		FilterQuantity(quantity1, unitOfAmount)
-			extract FilterQuantity(quantity2, unitOfAmount)
-				extract q2 [ CompareNumbers(value, op, q2 -> value) ]
-				flatten
+			extract
+				FilterQuantity(quantity2, unitOfAmount)
+					extract q2 [ CompareNumbers(value, op, q2 -> value) ]
+					flatten
 			then filter item = False
 		'''
 	}

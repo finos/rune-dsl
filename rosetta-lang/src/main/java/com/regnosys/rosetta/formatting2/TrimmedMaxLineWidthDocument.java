@@ -78,6 +78,9 @@ public class TrimmedMaxLineWidthDocument extends SubDocument {
 		int lastOffset = 0;
 		StringBuilder result = new StringBuilder();
 		for (ITextReplacement r : list) {
+			if (r.getEndOffset() <= startOffset) {
+				continue;
+			}
 			if (r.getOffset() >= astRegion.getEndOffset()) {
 				break;
 			}
