@@ -8,7 +8,6 @@ import org.eclipse.xtext.formatting2.IFormattableSubDocument;
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatter;
 import org.eclipse.xtext.formatting2.regionaccess.IEObjectRegion;
 import org.eclipse.xtext.formatting2.regionaccess.IHiddenRegion;
-import org.eclipse.xtext.formatting2.regionaccess.ISequentialRegion;
 import org.eclipse.xtext.formatting2.regionaccess.ITextRegionExtensions;
 import org.eclipse.xtext.formatting2.regionaccess.ITextSegment;
 import org.eclipse.xtext.preferences.TypedPreferenceKey;
@@ -27,23 +26,24 @@ public class FormattingUtil {
 	}
 	public void formatInlineOrMultiline(IFormattableDocument document, EObject object, FormattingMode mode, int maxLineWidth, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
 		IEObjectRegion objRegion = getTextRegionExt(document).regionForEObject(object);
-		formatInlineOrMultiline(document, objRegion, mode, maxLineWidth, inlineFormatter, multilineFormatter);
+		// I need to include the next hidden region in the conditional formatting as well,
+		 // because that's where I might decrease indentation in case of a (long) multi-line operation.
+		ITextSegment formattableRegion = objRegion.merge(objRegion.getNextHiddenRegion());
+		formatInlineOrMultiline(document, objRegion, formattableRegion, mode, maxLineWidth, inlineFormatter, multilineFormatter);
 	}
-	public void formatInlineOrMultiline(IFormattableDocument document, ISequentialRegion objRegion, FormattingMode mode, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
+	public void formatInlineOrMultiline(IFormattableDocument document, ITextSegment astRegion, ITextSegment formattableRegion, FormattingMode mode, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
 		int maxLineWidth = getPreference(document, RosettaFormatterPreferenceKeys.maxLineWidth);
-		formatInlineOrMultiline(document, objRegion, mode, maxLineWidth, inlineFormatter, multilineFormatter);
+		formatInlineOrMultiline(document, astRegion, formattableRegion, mode, maxLineWidth, inlineFormatter, multilineFormatter);
 	}
-	public void formatInlineOrMultiline(IFormattableDocument document, ISequentialRegion objRegion, FormattingMode mode, int maxLineWidth, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
+	public void formatInlineOrMultiline(IFormattableDocument document, ITextSegment astRegion, ITextSegment formattableRegion, FormattingMode mode, int maxLineWidth, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
 		if (mode.equals(FormattingMode.NORMAL)) {
-			 // I need to include the next hidden region in the conditional formatting as well,
-			 // because that's where I might decrease indentation in case of a (long) multi-line operation.
-			ITextSegment region = objRegion.merge(objRegion.getNextHiddenRegion());
-			document.formatConditionally(region.getOffset(), region.getLength(),
+			document.formatConditionally(formattableRegion.getOffset(), formattableRegion.getLength(),
 					(doc) -> { // case: short region
 						IFormattableSubDocument singleLineDoc =
 								requireTrimmedFitsInLine(
 										doc,
-										objRegion,
+										astRegion,
+										formattableRegion,
 										maxLineWidth
 								);
 						inlineFormatter.accept(singleLineDoc);
@@ -59,8 +59,8 @@ public class FormattingUtil {
 		}
 	}
 	
-	public IFormattableSubDocument requireTrimmedFitsInLine(IFormattableDocument document, ISequentialRegion segment, int maxLineWidth) {
-		TrimmedMaxLineWidthDocument subdoc = new TrimmedMaxLineWidthDocument(segment, document, maxLineWidth);
+	public IFormattableSubDocument requireTrimmedFitsInLine(IFormattableDocument document, ITextSegment astRegion, ITextSegment formattableRegion, int maxLineWidth) {
+		TrimmedMaxLineWidthDocument subdoc = new TrimmedMaxLineWidthDocument(astRegion, formattableRegion, document, maxLineWidth);
 		document.addReplacer(subdoc);
 		return subdoc;
 	}

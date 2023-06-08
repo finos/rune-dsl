@@ -348,9 +348,12 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				]
 			)
 		} else { // case inline function without brackets
-			formatInlineOrMultiline(document, f.regionForEObject, mode,
+			val astRegion = f.regionForEObject
+			val formattableRegion = astRegion.merge(astRegion.previousHiddenRegion).merge(astRegion.nextHiddenRegion)
+			formatInlineOrMultiline(document, astRegion, formattableRegion, mode,
 				[extension doc | // case: short inline function
 					f.body
+						.prepend[oneSpace]
 						.formatExpression(document, mode)
 					if (f.eContainer.eContainer instanceof RosettaOperation) {
 						// Always put next operations on a new line.
@@ -358,8 +361,11 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					}
 				],
 				[extension doc | // case: long inline function
-					f.body
-						.formatExpression(document, mode)
+					surround(
+						f.body
+							.prepend[newLine],
+						[indent]
+					).formatExpression(document, mode)
 				]
 			)
 		}
