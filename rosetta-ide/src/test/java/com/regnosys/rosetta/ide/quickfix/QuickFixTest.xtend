@@ -79,9 +79,9 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				sorted.get(0).getRight => [
 					assertEquals("Replace with `extract`.", title)
 					edit.changes.values.head.head => [
-						assertEquals("foo extract a\n", newText)
-						assertEquals(new Position(9, 13), range.start)
-						assertEquals(new Position(10, 0), range.end)
+						assertEquals("extract", newText)
+						assertEquals(new Position(9, 17), range.start)
+						assertEquals(new Position(9, 20), range.end)
 					]
 				]
 			]

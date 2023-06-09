@@ -1466,14 +1466,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		].toList
 
 		for (ns : model.imports) {
-			val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
-			val isUsed = if (qn.lastSegment.equals('*')) {
-				usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
-			} else {
-				usedNames.contains(qn)
-			}
-			if (!isUsed) {
-				warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
+			if (ns.importedNamespace !== null) {
+				val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
+				val isUsed = if (qn.lastSegment.equals('*')) {
+					usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
+				} else {
+					usedNames.contains(qn)
+				}
+				if (!isUsed) {
+					warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
+				}
 			}
 		}
 	}
