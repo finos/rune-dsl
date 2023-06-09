@@ -28,7 +28,7 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 		acceptor.accept("Remove square brackets.", (Diagnostic diagnostic, EObject object, Document document) -> {
 			Range range = rangeUtils.getRange(object);
 			String original = document.getSubstring(range);
-			String edited = original.replaceAll("^[ +|\\s+]$", "");
+			String edited = original.replaceAll("^\\[ +|\\s+\\]$", "");
 			return createTextEdit(diagnostic, edited);
 		});
 	}
