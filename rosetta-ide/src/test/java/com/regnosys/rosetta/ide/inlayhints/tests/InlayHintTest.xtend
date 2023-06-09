@@ -22,8 +22,8 @@ class InlayHintTest extends AbstractRosettaLanguageServerTest {
 			func Bar:
 				output:
 					result int (0..*)
-				set result:
-					[0, 1, 2] extract [ Foo ]
+				add result:
+					[0, 1, 2] extract i [ Foo(i) ]
 			'''
 			it.model = model
 			it.assertNumberOfInlayHints = 1

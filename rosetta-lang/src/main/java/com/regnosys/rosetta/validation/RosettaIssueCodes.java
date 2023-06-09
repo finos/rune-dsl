@@ -2,7 +2,7 @@ package com.regnosys.rosetta.validation;
 
 public interface RosettaIssueCodes {
 	
-	static final String PREFIX = RosettaIssueCodes.class.getName() + ".";
+	static final String PREFIX = "RosettaIssueCodes.";
 	
 	static final String DUPLICATE_ATTRIBUTE = PREFIX + "duplicateAttribute" ;
 	static final String DUPLICATE_ENUM_VALUE = PREFIX + "duplicateEnumValue";
@@ -23,4 +23,7 @@ public interface RosettaIssueCodes {
 	static final String INVALID_ELEMENT_NAME=PREFIX +"invalidElementName";
 	static final String UNUSED_IMPORT = PREFIX + "unusedImport";
 
+	static final String MANDATORY_SQUARE_BRACKETS = PREFIX + "mandatorySquareBrackets";
+	static final String REDUNDANT_SQUARE_BRACKETS = PREFIX + "redundantSquareBrackets";
+	static final String MANDATORY_THEN = PREFIX + "mandatoryThen";
 }

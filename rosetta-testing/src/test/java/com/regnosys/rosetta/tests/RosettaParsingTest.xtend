@@ -157,18 +157,18 @@ class RosettaParsingTest {
 					foo
 						extract if F(bar only-element) = True and bar only-element -> a first = "bar"
 							then bar
-					    then extract item -> a
+					    then extract [ item -> a
 					    	filter [<> "foo"]
-					    	only-element
+					    	then only-element ]
 					    then extract item + "bar"
 				
 				set result:
 					((foo
 						extract (if ((F(bar only-element) = True) and (((bar only-element) -> a) first = "bar"))
 							then bar))
-					    then (extract (((item -> a)
+					    then (extract [(((item -> a)
 					    	filter [<> "foo"])
-					    	only-element)))
+					    	then only-element)]))
 					    then (extract (item + "bar"))
 		'''.parseRosettaWithNoErrors
 		model.elements.last as Function => [

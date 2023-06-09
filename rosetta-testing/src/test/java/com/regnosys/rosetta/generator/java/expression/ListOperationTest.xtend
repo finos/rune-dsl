@@ -667,7 +667,7 @@ class ListOperationTest {
 				set filteredFoosCount:
 					foos 
 						filter fooItem [ fooItem -> include = True ] 
-						count
+						then count
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1094,7 +1094,7 @@ class ListOperationTest {
 				set filteredFoosOnlyElement:
 					foos 
 						filter fooItem [ fooItem -> include = True ]
-						only-element
+						then only-element
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1129,7 +1129,7 @@ class ListOperationTest {
 				set filteredFoosDistinct:
 					foos 
 						filter fooItem [ fooItem -> include = True ]
-						distinct
+						then distinct
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1208,7 +1208,7 @@ class ListOperationTest {
 					bars 
 						filter bar [ bar -> foos 
 							filter foo [ foo -> include = True ] 
-								count = 2 ]
+								then count = 2 ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1566,7 +1566,7 @@ class ListOperationTest {
 				set foos:
 					bars 
 						map bar [ bar -> foos ]
-						flatten
+						then flatten
 		'''
 		val code = model.generateCode
 		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -1618,7 +1618,8 @@ class ListOperationTest {
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, List<? extends Bar> bars) {
 							foos = toBuilder(MapperC.<Bar>of(bars)
 								.mapItemToList(bar -> (MapperC<Foo>)bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
-								.flattenList().getMulti());
+								.apply(item -> item
+									.flattenList()).getMulti());
 							
 							return Optional.ofNullable(foos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -1666,7 +1667,7 @@ class ListOperationTest {
 				set foos:
 					bars 
 						map [ item -> foos ]
-						flatten
+						then flatten
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1706,8 +1707,8 @@ class ListOperationTest {
 				set attrs:
 					bars 
 						map [ item -> foos ]
-						flatten
-						map [ item -> attr ]
+						then flatten
+						then map [ item -> attr ]
 		'''
 		val code = model.generateCode
 				val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -1750,8 +1751,10 @@ class ListOperationTest {
 						protected List<String> assignOutput(List<String> attrs, List<? extends Bar> bars) {
 							attrs = MapperC.<Bar>of(bars)
 								.mapItemToList(item -> (MapperC<Foo>)item.<Foo>mapC("getFoos", bar -> bar.getFoos()))
-								.flattenList()
-								.mapItem(item -> (MapperS<String>)item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+								.apply(item -> item
+									.flattenList())
+								.apply(item -> item
+									.mapItem(_item -> (MapperS<String>)_item.<String>map("getAttr", foo -> foo.getAttr()))).getMulti();
 							
 							return attrs;
 						}
@@ -2365,8 +2368,9 @@ class ListOperationTest {
 				
 				set strings:
 					bars 
-						map [ item -> foos ] flatten
-						map [ item -> attr ]
+						map [ item -> foos ]
+						then flatten
+						then map [ item -> attr ]
 		''']
 		val code = model.generateCode
 		val f = code.get("ns2.functions.FuncFoo")
@@ -2409,8 +2413,10 @@ class ListOperationTest {
 						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
 							strings = MapperC.<Bar>of(bars)
 								.mapItemToList(item -> (MapperC<Foo>)item.<Foo>mapC("getFoos", bar -> bar.getFoos()))
-								.flattenList()
-								.mapItem(item -> (MapperS<String>)item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+								.apply(item -> item
+									.flattenList())
+								.apply(item -> item
+									.mapItem(_item -> (MapperS<String>)_item.<String>map("getAttr", foo -> foo.getAttr()))).getMulti();
 							
 							return strings;
 						}

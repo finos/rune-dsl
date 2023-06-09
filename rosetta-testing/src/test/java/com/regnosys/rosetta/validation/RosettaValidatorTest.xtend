@@ -31,6 +31,67 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 
 	@Test
+	def void testMandatoryThen1() {
+		val model = '''
+		type Bar:
+			attr Bar (0..*)
+			someInt int (1..1)
+		
+		func Foo:
+			inputs:
+				input Bar (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input -> attr only-element -> attr
+		            extract [ attr ]
+		            flatten
+		            filter [ someInt = 42 ]
+		            extract [ someInt ]
+		'''.parseRosetta
+		
+        model.assertError(FLATTEN_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+        model.assertError(FILTER_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+        model.assertError(MAP_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+	}
+	
+	@Test
+	def void testMandatoryThen2() {
+		val model = '''
+		type Bar:
+			attr Bar (0..*)
+			someInt int (1..1)
+			
+		func DoTheThing:
+			inputs: bar Bar (1..1)
+			output: result Bar (0..*)
+		
+		func Foo:
+			inputs:
+				input Bar (0..*)
+			output:
+				result Bar (0..*)
+			
+			add result:
+				input
+		            extract [ DoTheThing(item) ] flatten
+		            distinct
+		            sort [someInt]
+		'''.parseRosetta
+		
+        model.assertError(FLATTEN_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+        model.assertError(DISTINCT_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+        model.assertError(SORT_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+	}
+
+	@Test
 	def void testMandatorySquareBrackets() {
 		val model = '''
 		func Foo:
@@ -64,7 +125,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					then extract [ item + 1 ]
 		'''.parseRosetta
 		
-		model.assertWarning(INLINE_FUNCTION, null,
+		model.assertWarning(INLINE_FUNCTION, REDUNDANT_SQUARE_BRACKETS,
             "Usage of brackets is unnecessary.")
 	}
 	
@@ -2233,7 +2294,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				add strings:
 					foos
 						map a [ a -> xs ] // list of lists
-						flatten
+						then flatten
 			
 			type Foo:
 				xs string (0..*)

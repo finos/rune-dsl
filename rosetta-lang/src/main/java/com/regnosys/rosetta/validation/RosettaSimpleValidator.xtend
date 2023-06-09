@@ -149,7 +149,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
 
-	static final Logger log = LoggerFactory.getLogger(RosettaValidator);
+	static final Logger log = LoggerFactory.getLogger(RosettaSimpleValidator);
 
 	protected override List<EPackage> getEPackages() {
 		val result = newArrayList
@@ -212,7 +212,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	private def INode findDirectKeyword(ICompositeNode node, Keyword keyword) {
 		for (n : node.children) {
 			val ge = n.grammarElement
-			if (ge instanceof Keyword && ge == keyword) {
+			if (ge instanceof Keyword && (ge as Keyword).value == keyword.value) { // I compare the keywords by value instead of directly by reference because of an issue that sometimes arises when running multiple tests consecutively. I'm not sure what the issue is.
 				return n
 			}
 			if (ge instanceof RuleCall && n instanceof ICompositeNode && !(ge.eContainer instanceof Assignment)) {
@@ -221,6 +221,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 					return keywordInFragment
 				}
 			}
+		}
+	}
+	
+	// @Compat
+	@Check
+	def void deprecatedMap(MapOperation op) {
+		if (op.operator == "map") {
+			warning("The `map` operator is deprecated. Use `extract` instead.", op, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 	
@@ -233,18 +241,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 					if (op.isNestedFunctionalOperation) {
 						error('''Ambiguous expression. Either use `then` or surround with square brackets to define a nested operation.''', op.function.body, ROSETTA_OPERATION__OPERATOR)
 					} else {
-						error('''Using square brackets are mandatory here.''', op, ROSETTA_OPERATION__OPERATOR)
+						error('''Using square brackets are mandatory here.''', op, ROSETTA_OPERATION__OPERATOR, MANDATORY_SQUARE_BRACKETS)
 					}
 				}
 			} else {
 				if (leftBracket !== null) {
-					messageAcceptor.acceptWarning(
-						'''Usage of brackets is unnecessary.''',
-						op.function,
-						leftBracket.offset,
-						leftBracket.length,
-						null
-					)
+					warning('''Usage of brackets is unnecessary.''', op.function, null, REDUNDANT_SQUARE_BRACKETS)
 				}
 			}
 		}
@@ -257,6 +259,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			!(op instanceof MandatoryFunctionalOperation)
 			|| !op.function.parameters.empty
 			|| op.isNestedFunctionalOperation
+			|| (op.eContainer instanceof RosettaExpression && !(op.eContainer instanceof ThenOperation))
 		)
 	}
 	def boolean isNestedFunctionalOperation(RosettaFunctionalOperation op) {
@@ -265,19 +268,26 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
-	def void mandatoryThenCheck(MandatoryFunctionalOperation op) {
+	def void mandatoryThenCheck(RosettaUnaryOperation op) {
 		if (op.isThenMandatory) {
 			val previousOperationIsThen =
 				op.eContainer instanceof InlineFunction
 				&& op.eContainer.eContainer instanceof ThenOperation
 			if (!previousOperationIsThen) {
-				error('''Usage of `then` is mandatory.''', op, ROSETTA_OPERATION__OPERATOR)
+				error('''Usage of `then` is mandatory.''', op, ROSETTA_OPERATION__OPERATOR, MANDATORY_THEN)
 			}
 		}
 	}
 	
-	def boolean isThenMandatory(MandatoryFunctionalOperation op) {
-		!(op instanceof ThenOperation) && op.argument instanceof MandatoryFunctionalOperation
+	def boolean isThenMandatory(RosettaUnaryOperation op) {
+		if (EcoreUtil2.getContainerOfType(op, Function) !== null) {
+			return false // disable check for blueprints
+		}
+		if (op instanceof ThenOperation) {
+			return false
+		}
+		return op.argument instanceof MandatoryFunctionalOperation || 
+			op.argument instanceof RosettaUnaryOperation && (op.argument as RosettaUnaryOperation).isThenMandatory
 	}
 
 	@Check
