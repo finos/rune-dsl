@@ -234,6 +234,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def void mandatorySquareBracketCheck(RosettaFunctionalOperation op) {
+		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
+			return // disable check for blueprints
+		}
 		if (op.function !== null) {
 			val leftBracket = findDirectKeyword(op.function, inlineFunctionAccess.leftSquareBracketKeyword_0_0_1)
 			if (op.areSquareBracketsMandatory) {
