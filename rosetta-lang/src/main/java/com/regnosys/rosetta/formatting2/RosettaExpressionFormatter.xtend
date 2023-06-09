@@ -306,7 +306,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			mode,
 			[extension doc |
 				if (expr.function !== null) {
-					expr.regionFor.keyword("extract").append[oneSpace]
 					expr.function.formatInlineFunction(doc, mode.stopChain)
 				}
 			]

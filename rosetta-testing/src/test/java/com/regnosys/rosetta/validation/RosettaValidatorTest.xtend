@@ -1927,8 +1927,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add fooCounts:
 					bars 
-						map bar [ bar -> foos ]
-						then map foosItem [ foosItem count ]
+						extract bar [ bar -> foos ]
+						then extract foosItem [ foosItem count ]
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -1951,8 +1951,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add fooCounts:
 					bars 
-						map item -> foos
-						then map item count
+						extract item -> foos
+						then extract item count
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -1975,7 +1975,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				alias results:
 					bars -> foos
-						map item -> amount > 0
+						extract item -> amount > 0
 				
 				set result:
 					results all = True
@@ -2001,7 +2001,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				alias results:
 					bars -> foos
-						map foo [ foo -> amount > 0 ]
+						extract foo [ foo -> amount > 0 ]
 				
 				set result:
 					results all = True
@@ -2027,8 +2027,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set result:
 					bars 
-						map item -> foo
-						then map item -> amount
+						extract item -> foo
+						then extract item -> amount
 						then distinct 
 						then only-element
 		'''.parseRosetta
@@ -2053,7 +2053,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set result:
 					bars
-						map item -> foo 
+						extract item -> foo 
 						then distinct only-element -> amount
 		'''.parseRosetta
 		model.assertNoErrors
@@ -2245,7 +2245,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map DoSomething
+						extract DoSomething
 			
 			type Foo:
 				x string (1..1)
@@ -2293,7 +2293,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 						then flatten
 			
 			type Foo:
@@ -2314,8 +2314,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> bars ] // list of list<bar>
-						then map bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
+						extract a [ a -> bars ] // list of list<bar>
+						then extract bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
 						then flatten // list<string>
 			
 			type Foo:
@@ -2338,9 +2338,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> bars ] // list of list<bar>
-						then map bars [ bars -> bazs ] // list of list<baz>
-						then map bazs [ bazs -> x ] // list of list<string>
+						extract a [ a -> bars ] // list of list<bar>
+						then extract bars [ bars -> bazs ] // list of list<baz>
+						then extract bazs [ bazs -> x ] // list of list<string>
 						then flatten // list<string>
 			
 			type Foo:
@@ -2405,7 +2405,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set s:
 					foo
-						map item -> x
+						extract item -> x
 			
 			type Foo:
 				x string (0..1)
@@ -2462,7 +2462,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				set s:
 					foos
 						only-element
-						map item -> x
+						extract item -> x
 			
 			type Foo:
 				x string (0..1)

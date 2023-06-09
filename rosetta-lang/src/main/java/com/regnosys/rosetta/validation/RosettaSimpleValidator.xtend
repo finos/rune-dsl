@@ -228,7 +228,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def void deprecatedMap(MapOperation op) {
 		if (op.operator == "map") {
-			warning("The `map` operator is deprecated. Use `extract` instead.", op, ROSETTA_OPERATION__OPERATOR)
+			warning("The `map` operator is deprecated. Use `extract` instead.", op, ROSETTA_OPERATION__OPERATOR, DEPRECATED_MAP)
 		}
 	}
 	
@@ -280,7 +280,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	def boolean isThenMandatory(RosettaUnaryOperation op) {
-		if (EcoreUtil2.getContainerOfType(op, Function) !== null) {
+		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
 			return false // disable check for blueprints
 		}
 		if (op instanceof ThenOperation) {

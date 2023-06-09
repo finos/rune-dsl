@@ -15,6 +15,7 @@ import org.eclipse.xtext.ide.server.Document;
 
 import com.regnosys.rosetta.ide.util.RangeUtils;
 import com.regnosys.rosetta.validation.RosettaIssueCodes;
+import com.regnosys.rosetta.rosetta.expression.MapOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 
@@ -51,6 +52,16 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 			String edited = "then " + original;
 			TextEdit edit = new TextEdit(range, edited);
 			return List.of(edit);
+		});
+	}
+	
+	@QuickFix(RosettaIssueCodes.DEPRECATED_MAP)
+	public void fixDeprecatedMap(DiagnosticResolutionAcceptor acceptor) {
+		acceptor.accept("Replace with `extract`.", (Diagnostic diagnostic, EObject object) -> {
+			return (EObject context) -> {
+				MapOperation op = (MapOperation)context;
+				op.setOperator("extract");
+			};
 		});
 	}
 }
