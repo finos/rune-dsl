@@ -175,7 +175,7 @@ class FunctionGeneratorTest {
 								item then param2 [
 									100 extract [
 										item*10
-									] extract [
+									] then extract [
 										item + param1 + param2
 									]
 								]

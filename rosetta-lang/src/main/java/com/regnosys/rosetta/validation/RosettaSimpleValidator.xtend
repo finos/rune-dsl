@@ -274,7 +274,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void mandatoryThenCheck(RosettaUnaryOperation op) {
 		if (op.isThenMandatory) {
 			val previousOperationIsThen =
-				op.eContainer instanceof InlineFunction
+				op.argument.generated
+				&& op.eContainer instanceof InlineFunction
 				&& op.eContainer.eContainer instanceof ThenOperation
 			if (!previousOperationIsThen) {
 				error('''Usage of `then` is mandatory.''', op, ROSETTA_OPERATION__OPERATOR, MANDATORY_THEN)

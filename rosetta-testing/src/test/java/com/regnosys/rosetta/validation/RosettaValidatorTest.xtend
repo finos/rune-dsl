@@ -90,6 +90,30 @@ class RosettaValidatorTest implements RosettaIssueCodes {
         model.assertError(SORT_OPERATION, MANDATORY_THEN,
             "Usage of `then` is mandatory.")
 	}
+	
+	@Test
+	def void testMandatoryThen3() {
+		val model = '''
+		type Bar:
+			attr Bar (0..*)
+			someInt int (1..1)
+		
+		func Foo:
+			inputs:
+				input Bar (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input -> attr only-element -> attr
+		            extract attr
+		            then filter [ someInt = 42 ]
+		            extract someInt
+		'''.parseRosetta
+		
+        model.assertError(MAP_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+	}
 
 	@Test
 	def void testMandatorySquareBrackets() {
