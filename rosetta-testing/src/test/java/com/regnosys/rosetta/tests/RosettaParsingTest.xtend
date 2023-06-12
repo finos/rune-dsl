@@ -34,6 +34,18 @@ class RosettaParsingTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testMaxCanBeChainedWithThen() {
+		'''		
+		func Foo:
+			output: result int (0..*)
+			add result:
+				[1, 2, 3]
+					extract item + 1
+					then max
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void orderOfParsingDoesNotMatter() {
 		val model1 = '''
 		namespace test.one
