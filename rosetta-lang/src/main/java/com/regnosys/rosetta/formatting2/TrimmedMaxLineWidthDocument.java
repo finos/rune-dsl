@@ -11,8 +11,9 @@ import org.eclipse.xtext.formatting2.ITextReplacer;
 import org.eclipse.xtext.formatting2.ITextReplacerContext;
 import org.eclipse.xtext.formatting2.internal.HiddenRegionReplacer;
 import org.eclipse.xtext.formatting2.internal.SubDocument;
-import org.eclipse.xtext.formatting2.regionaccess.IAstRegion;
+import org.eclipse.xtext.formatting2.regionaccess.ISequentialRegion;
 import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
+import org.eclipse.xtext.formatting2.regionaccess.ITextSegment;
 
 import com.google.common.collect.Lists;
 
@@ -24,11 +25,15 @@ import com.google.common.collect.Lists;
 public class TrimmedMaxLineWidthDocument extends SubDocument {
 	private final int maxLineWidth;
 	
-	private final IAstRegion astRegion;
+	private final ITextSegment astRegion;
 
-	public TrimmedMaxLineWidthDocument(IAstRegion region, IFormattableDocument parent, int maxLineWidth) {
-		super(region.merge(region.getNextHiddenRegion()), parent);
-		this.astRegion = region;
+	public TrimmedMaxLineWidthDocument(ISequentialRegion astRegion, IFormattableDocument parent, int maxLineWidth) {
+		this(astRegion, astRegion.merge(astRegion.getNextHiddenRegion()), parent, maxLineWidth);
+	}
+	
+	public TrimmedMaxLineWidthDocument(ITextSegment astRegion, ITextSegment formattableRegion, IFormattableDocument parent, int maxLineWidth) {
+		super(formattableRegion, parent);
+		this.astRegion = astRegion;
 		this.maxLineWidth = maxLineWidth;
 	}
 
@@ -73,6 +78,9 @@ public class TrimmedMaxLineWidthDocument extends SubDocument {
 		int lastOffset = 0;
 		StringBuilder result = new StringBuilder();
 		for (ITextReplacement r : list) {
+			if (r.getEndOffset() <= startOffset) {
+				continue;
+			}
 			if (r.getOffset() >= astRegion.getEndOffset()) {
 				break;
 			}

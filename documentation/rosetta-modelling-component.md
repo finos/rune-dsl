@@ -855,10 +855,14 @@ All list operations can contain expressions (e.g. if / else statements), call fu
 
 ``` Haskell
 vehicles
-    filter [ if carbonMonoxideCOLimit exists then item -> specification -> engine -> emissionMetrics -> carbonMonoxideCO <= carbonMonoxideCOLimit else True ]
-    filter [ if nitrogenOxydeNOXLimit exists then item -> specification -> engine -> emissionMetrics -> nitrogenOxydeNOX <= nitrogenOxydeNOXLimit else True ]
-    filter [ if particulateMatterPMLimit exists then item -> specification -> engine -> emissionMetrics -> particulateMatterPM <= particulateMatterPMLimit else True ]
+    filter (if carbonMonoxideCOLimit exists then specification -> engine -> emissionMetrics -> carbonMonoxideCO <= carbonMonoxideCOLimit else True)
+    then filter (if nitrogenOxydeNOXLimit exists then specification -> engine -> emissionMetrics -> nitrogenOxydeNOX <= nitrogenOxydeNOXLimit else True)
+    then filter (if particulateMatterPMLimit exists then specification -> engine -> emissionMetrics -> particulateMatterPM <= particulateMatterPMLimit else True)
 ```
+
+{{< notice info "Note" >}}
+As the example above illustrates, usage of square brackets is optional, except in advanced usages such as nested operations where brackets are needed to avoid ambiguities.
+{{< /notice >}}
 
 List operations can also be nested within other list operations. The example below finds all vehicle owners within a maximum penalty point limit on any driver licence. Owners can have multiple licences issued by different countries.
 
@@ -869,24 +873,24 @@ owners
         ]
 ```
 
-#### Map
+#### Extract
 
-The `map` keyword allows to modify the items of a list based on an expression. The syntax is:
+The `extract` keyword allows to modify the items of a list based on an expression. The syntax is:
 
 ``` Haskell
-<list> map (optional <itemName>) [ <expression> ]
+<list> extract (optional <itemName>) [ <expression> ]
 ```
 
-For each list item, the expression is invoked to modify the item. The resulting list is assigned as the value of the `map` expression. The example below filters a list of driving licenses to include only drivers with first and last names, then converts those driving licences into a list of names.
+For each list item, the expression is invoked to modify the item. The resulting list is assigned as the value of the `extract` expression. The example below filters a list of driving licenses to include only drivers with first and last names, then converts those driving licences into a list of names.
 
 ``` Haskell
 drivingLicences
-    filter [ item -> firstName exists and item -> surname exists ]
-    map [ item -> firstName + " " + item -> surname ]
+    filter firstName exists and surname exists
+    then extract firstName + " " + surname
 ```
 
 {{< notice info "Note" >}}
-The `map` keyword was chosen as it is the most widely used term in programming languages for this use-case - for instance in Java, Python, Scala, Perl, Clojure, Erlang, F#, Haskell, Javascript, PHP, and Ruby.
+As the example above illustrates, usage of square brackets is optional, except in advanced usages such as nested operations where brackets are needed to avoid ambiguities.
 {{< /notice >}}
 
 #### Reduce
@@ -927,7 +931,7 @@ vehicles
 For `join`, the operator can (optionally) specify a delimiter expression to insert in-between each string element. The below example concatenates a list of strings, separating each element with the given delimiter:
 
 ``` Haskell
-strings join [ ", " ]
+strings join ", "
 ```
 
 Reduction works by performing an operation to merge two adjacent elements of a list into one, and so on recursively until there is only one single element left. All the reduction operators above are therefore short-hand special cases of the generic `reduce` operator. The `reduce` operator must specify an expression that operates on two list elements.
@@ -1331,8 +1335,8 @@ func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
 
     add ownersName: <"Filter lists to only include drivers with first and last names, then use 'map' to convert driving licences into list of names.">
         drivingLicences
-            filter [ item -> firstName exists and item -> surname exists ]
-            map [ item -> firstName + " " + item -> surname ]
+            filter firstName exists and surname exists
+            then extract firstName + " " + surname
 ```
 
 {{< notice info "Note" >}}

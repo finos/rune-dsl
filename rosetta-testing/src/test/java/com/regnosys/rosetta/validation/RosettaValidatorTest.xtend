@@ -30,6 +30,146 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 
+	@Test
+	def void testMandatoryThen1() {
+		val model = '''
+		type Bar:
+			attr Bar (0..*)
+			someInt int (1..1)
+		
+		func Foo:
+			inputs:
+				input Bar (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input -> attr only-element -> attr
+		            extract [ attr ]
+		            flatten
+		            filter [ someInt = 42 ]
+		            extract [ someInt ]
+		'''.parseRosetta
+		
+        model.assertError(FLATTEN_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+        model.assertError(FILTER_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+        model.assertError(MAP_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+	}
+	
+	@Test
+	def void testMandatoryThen2() {
+		val model = '''
+		type Bar:
+			attr Bar (0..*)
+			someInt int (1..1)
+			
+		func DoTheThing:
+			inputs: bar Bar (1..1)
+			output: result Bar (0..*)
+		
+		func Foo:
+			inputs:
+				input Bar (0..*)
+			output:
+				result Bar (0..*)
+			
+			add result:
+				input
+		            extract [ DoTheThing(item) ] flatten
+		            distinct
+		            sort [someInt]
+		'''.parseRosetta
+		
+        model.assertError(FLATTEN_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+        model.assertError(DISTINCT_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+        model.assertError(SORT_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+	}
+	
+	@Test
+	def void testMandatoryThen3() {
+		val model = '''
+		type Bar:
+			attr Bar (0..*)
+			someInt int (1..1)
+		
+		func Foo:
+			inputs:
+				input Bar (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input -> attr only-element -> attr
+		            extract attr
+		            then filter [ someInt = 42 ]
+		            extract someInt
+		'''.parseRosetta
+		
+        model.assertError(MAP_OPERATION, MANDATORY_THEN,
+            "Usage of `then` is mandatory.")
+	}
+
+	@Test
+	def void testMandatorySquareBrackets() {
+		val model = '''
+		func Foo:
+			inputs:
+				input int (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input
+					then extract
+						item
+							extract item + 1
+		'''.parseRosetta
+		
+		model.assertError(MAP_OPERATION, null,
+            "Ambiguous expression. Either use `then` or surround with square brackets to define a nested operation.")
+	}
+	
+	@Test
+	def void testSuperfluousSquareBrackets() {
+		val model = '''
+		func Foo:
+			inputs:
+				input int (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input
+					then extract [ item + 1 ]
+		'''.parseRosetta
+		
+		model.assertWarning(INLINE_FUNCTION, REDUNDANT_SQUARE_BRACKETS,
+            "Usage of brackets is unnecessary.")
+	}
+	
+	@Test
+	def void testMandatoryThenSucceeds() {
+		'''
+		func Foo:
+			inputs:
+				input int (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input
+					then extract [
+						extract item + 1
+					]
+		'''.parseRosettaWithNoIssues
+	}
+
 	// @Compat
 	@Test
 	def void shouldStillSupportOldBasicTypes() {
@@ -1811,8 +1951,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add fooCounts:
 					bars 
-						map bar [ bar -> foos ]
-						map foosItem [ foosItem count ]
+						extract bar [ bar -> foos ]
+						then extract foosItem [ foosItem count ]
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -1835,8 +1975,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add fooCounts:
 					bars 
-						map [ item -> foos ]
-						map [ item count ]
+						extract item -> foos
+						then extract item count
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -1859,7 +1999,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				alias results:
 					bars -> foos
-						map [ item -> amount > 0 ]
+						extract item -> amount > 0
 				
 				set result:
 					results all = True
@@ -1885,7 +2025,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				alias results:
 					bars -> foos
-						map foo [ foo -> amount > 0 ]
+						extract foo [ foo -> amount > 0 ]
 				
 				set result:
 					results all = True
@@ -1911,10 +2051,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set result:
 					bars 
-						map [ item -> foo ]
-						map [ item -> amount ]
-						distinct 
-						only-element
+						extract item -> foo
+						then extract item -> amount
+						then distinct 
+						then only-element
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -1936,7 +2076,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					result number (1..1)
 				
 				set result:
-					bars map [ item -> foo ] distinct only-element -> amount
+					bars
+						extract item -> foo 
+						then distinct only-element -> amount
 		'''.parseRosetta
 		model.assertNoErrors
 		model.assertNoIssues
@@ -2127,7 +2269,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map DoSomething
+						extract DoSomething
 			
 			type Foo:
 				x string (1..1)
@@ -2175,8 +2317,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> xs ] // list of lists
-						flatten
+						extract a [ a -> xs ] // list of lists
+						then flatten
 			
 			type Foo:
 				xs string (0..*)
@@ -2196,9 +2338,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> bars ] // list of list<bar>
-						map bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
-						flatten // list<string>
+						extract a [ a -> bars ] // list of list<bar>
+						then extract bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
+						then flatten // list<string>
 			
 			type Foo:
 				bars Bar (0..*)
@@ -2220,10 +2362,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> bars ] // list of list<bar>
-						map bars [ bars -> bazs ] // list of list<baz>
-						map bazs [ bazs -> x ] // list of list<string>
-						flatten // list<string>
+						extract a [ a -> bars ] // list of list<bar>
+						then extract bars [ bars -> bazs ] // list of list<baz>
+						then extract bazs [ bazs -> x ] // list of list<string>
+						then flatten // list<string>
 			
 			type Foo:
 				bars Bar (0..*)
@@ -2287,7 +2429,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set s:
 					foo
-						map [ item -> x ]
+						extract item -> x
 			
 			type Foo:
 				x string (0..1)
@@ -2344,7 +2486,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				set s:
 					foos
 						only-element
-						map [ item -> x ]
+						extract item -> x
 			
 			type Foo:
 				x string (0..1)

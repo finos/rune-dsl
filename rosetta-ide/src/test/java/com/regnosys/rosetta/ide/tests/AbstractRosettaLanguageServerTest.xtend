@@ -9,16 +9,10 @@ import org.eclipse.lsp4j.InlayHintParams
 import org.eclipse.lsp4j.TextDocumentIdentifier
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.Position
-import org.eclipse.xtext.resource.IResourceServiceProvider
-import org.eclipse.xtext.LanguageInfo
-import org.eclipse.lsp4j.jsonrpc.services.ServiceEndpoints
-import java.io.File
-import org.junit.jupiter.api.BeforeEach
 import org.eclipse.lsp4j.SemanticTokensParams
 import javax.inject.Inject
 import com.regnosys.rosetta.ide.semantictokens.SemanticToken
 import com.regnosys.rosetta.ide.server.RosettaLanguageServerImpl
-import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.TextDocumentConfiguration
 import org.eclipse.xtext.testing.FileInfo
 import java.nio.charset.StandardCharsets
@@ -26,12 +20,17 @@ import com.regnosys.rosetta.ide.util.RangeUtils
 import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService
+import org.eclipse.xtext.util.Modules2
+import org.eclipse.xtext.ide.server.concurrent.RequestManager
+import com.regnosys.rosetta.ide.server.RosettaServerModule
+import com.google.inject.Module
+import org.eclipse.lsp4j.DiagnosticSeverity
+import com.regnosys.rosetta.RosettaStandaloneSetup
 
 /**
  * TODO: contribute to Xtext.
  */
 abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerTest {
-	@Inject extension ModelHelper
 	@Inject RangeUtils ru
 	@Inject RosettaBuiltinsService builtins
 	
@@ -39,22 +38,20 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		super("rosetta")
 	}
 	
-	@BeforeEach
-	override void setup() {
-		val injector = new RosettaServerInjectorProvider().getInjector()
-		injector.injectMembers(this)
-
-		val resourceServiceProvider = resourceServerProviderRegistry.extensionToFactoryMap.get(fileExtension)
-		if (resourceServiceProvider instanceof IResourceServiceProvider)
-			languageInfo = resourceServiceProvider.get(LanguageInfo)
-
-		// register notification callbacks
-		languageServer.connect(ServiceEndpoints.toServiceObject(this, languageClientClass))
-		// initialize
-		languageServer.supportedMethods()
-
-		// create workingdir
-		root = new File(new File("").absoluteFile, TEST_PROJECT_PATH)
+	protected override Module getServerModule() {
+		RosettaStandaloneSetup.doSetup
+		return Modules2.mixin(RosettaServerModule.create) [
+			bind(RequestManager).to(DirectRequestManager)
+		]
+	}
+	
+	protected def void assertNoIssues() {
+		val problems = getDiagnostics.values
+			.flatten
+			.filter[
+				severity <= DiagnosticSeverity.Warning
+			].toList
+		Assertions.assertEquals(0, problems.size(), "There were issues found:\n" + problems.join('\n'));
 	}
 	
 	@Accessors static class TestInlayHintsConfiguration extends TextDocumentPositionConfiguration {
@@ -72,7 +69,7 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		val filePath = initializeContext(configuration).uri
 		
 		if (configuration.assertNoIssues) {
-			configuration.model.parseRosettaWithNoIssues
+			assertNoIssues()
 		}
 		
 		val range = configuration.range
@@ -115,7 +112,7 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		val filePath = initializeContext(configuration).uri
 		
 		if (configuration.assertNoIssues) {
-			configuration.model.parseRosettaWithNoIssues
+			assertNoIssues()
 		}
 		
 		val semanticTokens = languageServer.requestManager.runRead[cancelIndicator |

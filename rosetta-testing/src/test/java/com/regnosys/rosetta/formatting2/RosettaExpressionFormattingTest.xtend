@@ -51,6 +51,32 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testOperationChainingFormat() {
+		'''
+		input
+			extract [
+				item -> bar
+					filter "this is a loooooooooooong expression" count > 2
+			]
+			then extract
+				if True
+				then ["This is a looong", "expression"]
+				else 42
+		''' ->
+		'''
+		input
+			extract [
+				item -> bar
+					filter "this is a loooooooooooong expression" count > 2
+			]
+			then extract
+				if True
+				then ["This is a looong", "expression"]
+				else 42
+		'''
+	}
+	
+	@Test
 	def void testShortParenthesesAreFormatted() {
 		'''
 		(  
@@ -588,9 +614,10 @@ class RosettaExpressionFormattingTest {
 			then filter item = False
 		''' -> '''
 		FilterQuantity(quantity1, unitOfAmount)
-			extract FilterQuantity(quantity2, unitOfAmount)
-				extract q2 [ CompareNumbers(value, op, q2 -> value) ]
-				flatten
+			extract
+				FilterQuantity(quantity2, unitOfAmount)
+					extract q2 [ CompareNumbers(value, op, q2 -> value) ]
+					flatten
 			then filter item = False
 		'''
 	}

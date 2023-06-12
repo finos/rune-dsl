@@ -69,7 +69,7 @@ class RosettaGenerator implements IGenerator2 {
 	val Map<ResourceSet, DemandableLock> locks = newHashMap
 	
 	def void beforeAllGenerate(ResourceSet resourceSet, IFileSystemAccess2 fsa2, IGeneratorContext context) {
-		LOGGER.debug("Starting the before all generate method")
+		LOGGER.trace("Starting the before all generate method")
 		val lock = locks.computeIfAbsent(resourceSet, [new DemandableLock]);
 		try {
 			lock.getWriteLock(true);
@@ -96,7 +96,7 @@ class RosettaGenerator implements IGenerator2 {
 	
 	override void beforeGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		if (!ignoredFiles.contains(resource.URI.segments.last)) {
-			LOGGER.debug("Starting the before generate method for " + resource.URI.toString)
+			LOGGER.trace("Starting the before generate method for " + resource.URI.toString)
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
 			try {
@@ -125,7 +125,7 @@ class RosettaGenerator implements IGenerator2 {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		if (!ignoredFiles.contains(resource.URI.segments.last)) {
-			LOGGER.debug("Starting the main generate method for " + resource.URI.toString)
+			LOGGER.trace("Starting the main generate method for " + resource.URI.toString)
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, false)
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			try {
@@ -175,7 +175,7 @@ class RosettaGenerator implements IGenerator2 {
 					"Unexpected calling standard generate for rosetta -" + e.message + " - see debug logging for more")
 				LOGGER.info("Unexpected calling standard generate for rosetta", e);
 			} finally {
-				LOGGER.debug("ending the main generate method")
+				LOGGER.trace("ending the main generate method")
 				lock.releaseWriteLock
 			}
 		}
@@ -183,7 +183,7 @@ class RosettaGenerator implements IGenerator2 {
 
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		if (!ignoredFiles.contains(resource.URI.segments.last)) {
-			LOGGER.debug("Starting the after generate method for " + resource.URI.toString)
+			LOGGER.trace("Starting the after generate method for " + resource.URI.toString)
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
 			try {
@@ -223,7 +223,7 @@ class RosettaGenerator implements IGenerator2 {
 	}
 	
 	def void afterAllGenerate(ResourceSet resourceSet, IFileSystemAccess2 fsa2, IGeneratorContext context) {		
-		LOGGER.debug("Starting the after all generate method")
+		LOGGER.trace("Starting the after all generate method")
 		val lock = locks.computeIfAbsent(resourceSet, [new DemandableLock]);
 		try {
 			lock.getWriteLock(true)

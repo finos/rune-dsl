@@ -122,6 +122,11 @@ import java.util.Optional
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import org.eclipse.xtext.RuleCall
+import org.eclipse.xtext.nodemodel.INode
+import org.eclipse.xtext.nodemodel.ICompositeNode
+import org.eclipse.xtext.Assignment
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -144,7 +149,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
 
-	static final Logger log = LoggerFactory.getLogger(RosettaValidator);
+	static final Logger log = LoggerFactory.getLogger(RosettaSimpleValidator);
 
 	protected override List<EPackage> getEPackages() {
 		val result = newArrayList
@@ -189,20 +194,104 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	private def errorKeyword(String message, EObject o, Keyword keyword) {
+		val k = findDirectKeyword(o, keyword)
+		if (k !== null) {
+			messageAcceptor.acceptError(
+				message,
+				o,
+				k.offset,
+				k.length,
+				null
+			)
+		}
+	}
+	private def INode findDirectKeyword(EObject o, Keyword keyword) {
 		val node = NodeModelUtils.findActualNodeFor(o)
-
-		for (n : node.asTreeIterable) {
+		findDirectKeyword(node, keyword)
+	}
+	private def INode findDirectKeyword(ICompositeNode node, Keyword keyword) {
+		for (n : node.children) {
 			val ge = n.grammarElement
-			if (ge instanceof Keyword && ge == keyword) {
-				messageAcceptor.acceptError(
-					message,
-					o,
-					n.offset,
-					n.length,
-					null
-				)
+			if (ge instanceof Keyword && (ge as Keyword).value == keyword.value) { // I compare the keywords by value instead of directly by reference because of an issue that sometimes arises when running multiple tests consecutively. I'm not sure what the issue is.
+				return n
+			}
+			if (ge instanceof RuleCall && n instanceof ICompositeNode && !(ge.eContainer instanceof Assignment)) {
+				val keywordInFragment = findDirectKeyword(n as ICompositeNode, keyword)
+				if (keywordInFragment !== null) {
+					return keywordInFragment
+				}
 			}
 		}
+	}
+	
+	// @Compat
+	@Check
+	def void deprecatedMap(MapOperation op) {
+		if (op.operator == "map") {
+			warning("The `map` operator is deprecated. Use `extract` instead.", op, ROSETTA_OPERATION__OPERATOR, DEPRECATED_MAP)
+		}
+	}
+	
+	@Check
+	def void mandatorySquareBracketCheck(RosettaFunctionalOperation op) {
+		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
+			return // disable check for blueprints
+		}
+		if (op.function !== null) {
+			val leftBracket = findDirectKeyword(op.function, inlineFunctionAccess.leftSquareBracketKeyword_0_0_1)
+			if (op.areSquareBracketsMandatory) {
+				if (leftBracket === null) {
+					if (op.isNestedFunctionalOperation) {
+						error('''Ambiguous expression. Either use `then` or surround with square brackets to define a nested operation.''', op.function.body, ROSETTA_OPERATION__OPERATOR)
+					} else {
+						error('''Using square brackets are mandatory here.''', op, ROSETTA_OPERATION__OPERATOR, MANDATORY_SQUARE_BRACKETS)
+					}
+				}
+			} else {
+				if (leftBracket !== null) {
+					warning('''Usage of brackets is unnecessary.''', op.function, null, REDUNDANT_SQUARE_BRACKETS)
+				}
+			}
+		}
+	}
+	
+	def boolean areSquareBracketsMandatory(RosettaFunctionalOperation op) {
+		!(op instanceof ThenOperation) &&
+		op.function !== null && 
+		(
+			!(op instanceof MandatoryFunctionalOperation)
+			|| !op.function.parameters.empty
+			|| op.isNestedFunctionalOperation
+			|| (op.eContainer instanceof RosettaExpression && !(op.eContainer instanceof ThenOperation))
+		)
+	}
+	def boolean isNestedFunctionalOperation(RosettaFunctionalOperation op) {
+		op.function.body instanceof RosettaFunctionalOperation
+		&& (op.function.body as RosettaFunctionalOperation).function !== null
+	}
+	
+	@Check
+	def void mandatoryThenCheck(RosettaUnaryOperation op) {
+		if (op.isThenMandatory) {
+			val previousOperationIsThen =
+				op.argument.generated
+				&& op.eContainer instanceof InlineFunction
+				&& op.eContainer.eContainer instanceof ThenOperation
+			if (!previousOperationIsThen) {
+				error('''Usage of `then` is mandatory.''', op, ROSETTA_OPERATION__OPERATOR, MANDATORY_THEN)
+			}
+		}
+	}
+	
+	def boolean isThenMandatory(RosettaUnaryOperation op) {
+		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
+			return false // disable check for blueprints
+		}
+		if (op instanceof ThenOperation) {
+			return false
+		}
+		return op.argument instanceof MandatoryFunctionalOperation || 
+			op.argument instanceof RosettaUnaryOperation && (op.argument as RosettaUnaryOperation).isThenMandatory
 	}
 
 	@Check
@@ -1381,14 +1470,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		].toList
 
 		for (ns : model.imports) {
-			val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
-			val isUsed = if (qn.lastSegment.equals('*')) {
-				usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
-			} else {
-				usedNames.contains(qn)
-			}
-			if (!isUsed) {
-				warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
+			if (ns.importedNamespace !== null) {
+				val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
+				val isUsed = if (qn.lastSegment.equals('*')) {
+					usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
+				} else {
+					usedNames.contains(qn)
+				}
+				if (!isUsed) {
+					warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
+				}
 			}
 		}
 	}

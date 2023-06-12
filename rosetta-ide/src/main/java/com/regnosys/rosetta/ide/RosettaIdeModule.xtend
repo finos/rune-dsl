@@ -20,6 +20,10 @@ import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesProvider
 import com.regnosys.rosetta.ide.textmate.RosettaTextMateGrammarUtil
 import org.eclipse.xtext.ide.server.formatting.FormattingService
 import com.regnosys.rosetta.ide.formatting.RosettaFormattingService
+import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider
+import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixProvider
+import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2
+import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixCodeActionService
 
 /**
  * Use this class to register ide components.
@@ -64,5 +68,13 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 
 	def Class<? extends FormattingService> bindFormattingService() {
 		RosettaFormattingService
+	}
+	
+	def Class<? extends IQuickFixProvider> bindIQuickFixProvider() {
+		RosettaQuickFixProvider
+	}
+	
+	def Class<? extends ICodeActionService2> bindICodeActionService2() {
+		RosettaQuickFixCodeActionService
 	}
 }

@@ -35,6 +35,7 @@ import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaOperation
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -305,8 +306,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			mode,
 			[extension doc |
 				if (expr.function !== null) {
-					expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR)
-						.append[oneSpace]
 					expr.function.formatInlineFunction(doc, mode.stopChain)
 				}
 			]
@@ -350,7 +349,26 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				]
 			)
 		} else { // case inline function without brackets
-			f.body.formatExpression(document, mode)
+			val astRegion = f.regionForEObject
+			val formattableRegion = astRegion.merge(astRegion.previousHiddenRegion).merge(astRegion.nextHiddenRegion)
+			formatInlineOrMultiline(document, astRegion, formattableRegion, mode.singleLineIf(f.eContainer instanceof ThenOperation),
+				[extension doc | // case: short inline function
+					f.body
+						.prepend[oneSpace]
+						.formatExpression(doc, mode)
+					if (f.eContainer.eContainer instanceof RosettaOperation) {
+						// Always put next operations on a new line.
+						f.append[highPriority; newLine]
+					}
+				],
+				[extension doc | // case: long inline function
+					surround(
+						f.body
+							.prepend[newLine],
+						[indent]
+					).formatExpression(doc, mode)
+				]
+			)
 		}
 	}
 

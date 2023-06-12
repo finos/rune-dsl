@@ -87,10 +87,10 @@ public class AbstractLanguageServerService<T> {
 		while (objects.hasNext()) {
 			EObject obj = objects.next();
 			
-			if (cancelIndicator.isCanceled()) return null;
+			if (cancelIndicator.isCanceled()) return result;
 			
 			for (MethodWrapper<T> m: methodsForType.get(obj.getClass())) {
-				if (cancelIndicator.isCanceled()) return null;
+				if (cancelIndicator.isCanceled()) return result;
 				
 				result.addAll(
 						m.invoke(new State(obj, m.getMethod(), document, resource, cancelIndicator)));
