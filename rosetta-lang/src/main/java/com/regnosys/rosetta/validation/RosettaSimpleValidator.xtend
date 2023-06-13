@@ -127,6 +127,7 @@ import org.eclipse.xtext.RuleCall
 import org.eclipse.xtext.nodemodel.INode
 import org.eclipse.xtext.nodemodel.ICompositeNode
 import org.eclipse.xtext.Assignment
+import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -257,17 +258,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	def boolean areSquareBracketsMandatory(RosettaFunctionalOperation op) {
 		!(op instanceof ThenOperation) &&
-		op.function !== null && 
+		op.function !== null &&
 		(
 			!(op instanceof MandatoryFunctionalOperation)
 			|| !op.function.parameters.empty
 			|| op.isNestedFunctionalOperation
-			|| (op.eContainer instanceof RosettaExpression && !(op.eContainer instanceof ThenOperation))
+			|| (op.eContainer instanceof RosettaOperation && !(op.eContainer instanceof ThenOperation))
 		)
 	}
 	def boolean isNestedFunctionalOperation(RosettaFunctionalOperation op) {
-		op.function.body instanceof RosettaFunctionalOperation
-		&& (op.function.body as RosettaFunctionalOperation).function !== null
+		op.function !== null && EcoreUtil2.eAllOfType(op.function, RosettaFunctionalOperation).filter[function !== null].head !== null
 	}
 	
 	@Check
