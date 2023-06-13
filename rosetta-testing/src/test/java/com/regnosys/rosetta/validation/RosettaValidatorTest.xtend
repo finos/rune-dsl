@@ -132,7 +132,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		
 		model.assertError(MAP_OPERATION, null,
-            "Ambiguous expression. Either use `then` or surround with square brackets to define a nested operation.")
+            "Ambiguous operation. Either use `then` or surround with square brackets to define a nested operation.")
 	}
 	
 	@Test
@@ -154,7 +154,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testMandatoryThenSucceeds() {
+	def void testMandatoryThenSucceeds1() {
 		'''
 		func Foo:
 			inputs:
@@ -167,6 +167,39 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					then extract [
 						extract item + 1
 					]
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testMandatoryThenSucceeds2() {
+		'''
+		func Foo:
+			inputs:
+				input int (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input
+					extract Foo(extract item + 1)
+					then flatten
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testMandatoryThenSucceeds3() {
+		'''
+		func Foo:
+			inputs:
+				input int (0..*)
+			output:
+				result int (0..*)
+			
+			add result:
+				input
+					extract (
+						extract item + 1
+					)
 		'''.parseRosettaWithNoIssues
 	}
 
