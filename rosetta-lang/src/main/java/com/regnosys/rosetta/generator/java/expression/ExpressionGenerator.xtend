@@ -91,6 +91,7 @@ import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
 import org.apache.commons.text.StringEscapeUtils
+import com.rosetta.model.lib.mapper.MapperUtils
 
 class ExpressionGenerator {
 	
@@ -241,7 +242,7 @@ class ExpressionGenerator {
 	}
 
 	private def StringConcatenationClient genConditionalMapper(RosettaConditionalExpression expr, JavaScope scope)'''
-		«IF expr.ifthen.evaluatesToComparisonResult»com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(«ENDIF»com.rosetta.model.lib.mapper.MapperUtils.«IF funcExt.needsBuilder(expr.ifthen)»fromDataType«ELSE»fromBuiltInType«ENDIF»(() -> {
+		«IF expr.ifthen.evaluatesToComparisonResult»«MapperUtils».toComparisonResult(«ENDIF»«MapperUtils».«IF funcExt.needsBuilder(expr.ifthen)»fromDataType«ELSE»fromBuiltInType«ENDIF»(() -> {
 			«expr.genConditional(scope)»
 		})«IF expr.ifthen.evaluatesToComparisonResult»)«ENDIF»'''
 

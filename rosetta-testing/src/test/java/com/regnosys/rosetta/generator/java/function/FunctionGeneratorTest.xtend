@@ -2608,6 +2608,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -2636,7 +2637,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected String assignOutput(String result, Boolean test, String t1, String t2) {
-							result = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							result = MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(t1);
 								}
@@ -2682,6 +2683,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				import java.util.ArrayList;
 				import java.util.List;
 				
@@ -2712,7 +2714,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
-							List<String> addVar = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							List<String> addVar = MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.<String>of(t1);
 								}
@@ -2758,6 +2760,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				import java.math.BigDecimal;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -2787,7 +2790,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected BigDecimal assignOutput(BigDecimal result, Boolean test, BigDecimal t1, BigDecimal t2) {
-							result = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							result = MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(t1);
 								}
@@ -2833,6 +2836,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				import java.math.BigDecimal;
 				import java.util.ArrayList;
 				import java.util.List;
@@ -2864,7 +2868,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
-							List<BigDecimal> addVar = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							List<BigDecimal> addVar = MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.<BigDecimal>of(t1);
 								}
@@ -2915,6 +2919,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.Optional;
@@ -2951,7 +2956,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
-							result = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+							result = toBuilder(MapperUtils.fromDataType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(b1);
 								}
@@ -3004,6 +3009,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
@@ -3043,7 +3049,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-							List<Bar.BarBuilder> addVar = toBuilder(com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+							List<Bar.BarBuilder> addVar = toBuilder(MapperUtils.fromDataType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.<Bar>of(b1);
 								}
@@ -3762,6 +3768,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
 				import com.rosetta.model.lib.validation.Validator;
@@ -3798,7 +3805,7 @@ class FunctionGeneratorTest {
 					private ComparisonResult executeDataRule(Foo foo) {
 						
 						try {
-							ComparisonResult result = ComparisonResult.of(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							ComparisonResult result = ComparisonResult.of(MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("x").get()));
 								}
@@ -3846,6 +3853,7 @@ class FunctionGeneratorTest {
                 import com.google.inject.Inject;
                 import com.rosetta.model.lib.functions.RosettaFunction;
                 import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.model.lib.mapper.MapperUtils;
                 
                 
                 @ImplementedBy(B.BDefault.class)
@@ -3874,7 +3882,7 @@ class FunctionGeneratorTest {
                 		}
                 		
                 		protected Boolean assignOutput(Boolean result) {
-                			result = MapperS.of(a.evaluate(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+                			result = MapperS.of(a.evaluate(MapperUtils.fromBuiltInType(() -> {
                 				if (MapperS.of(Boolean.valueOf(true)).get()) {
                 					return MapperS.of(Boolean.valueOf(true));
                 				}
