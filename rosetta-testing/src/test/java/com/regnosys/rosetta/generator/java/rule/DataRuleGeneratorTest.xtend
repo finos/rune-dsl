@@ -49,6 +49,7 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
 				import com.rosetta.model.lib.validation.Validator;
@@ -83,7 +84,7 @@ class DataRuleGeneratorTest {
 					private ComparisonResult executeDataRule(Foo foo) {
 						
 						try {
-							ComparisonResult result = com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
 									return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 								}
@@ -150,6 +151,7 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
 				import com.rosetta.model.lib.validation.Validator;
@@ -184,9 +186,9 @@ class DataRuleGeneratorTest {
 					private ComparisonResult executeDataRule(Foo foo) {
 						
 						try {
-							ComparisonResult result = com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
 								if (exists(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar())).get()) {
-									return com.rosetta.model.lib.mapper.MapperUtils.toComparisonResult(com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+									return MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
 										if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
 											return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 										}

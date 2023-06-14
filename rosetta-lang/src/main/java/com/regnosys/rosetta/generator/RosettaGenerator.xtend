@@ -12,10 +12,8 @@ import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
-import com.regnosys.rosetta.generator.java.object.NamespaceHierarchyGenerator
 import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
-import com.regnosys.rosetta.generator.java.util.ModelNamespaceUtil
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -31,7 +29,6 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
-import com.regnosys.rosetta.generator.java.util.BackwardCompatibilityGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import org.eclipse.xtext.generator.IGenerator2
 
@@ -50,18 +47,14 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
-	@Inject NamespaceHierarchyGenerator namespaceHierarchyGenerator
 
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject FunctionGenerator funcGenerator
-	@Inject BackwardCompatibilityGenerator backwardCompatibilityGenerator
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
-
-	@Inject ModelNamespaceUtil modelNamespaceUtil
 
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta', 'basictypes.rosetta', 'annotations.rosetta'}
@@ -198,19 +191,13 @@ class RosettaGenerator implements IGenerator2 {
 					], lock)
 				]
 				fsaFactory.afterGenerate(resource)
-				
-				backwardCompatibilityGenerator.generate(fsa2)
-						
+										
 				val models = resource.resourceSet.resources
 								.filter[!ignoredFiles.contains(URI.segments.last)]
 								.map[contents.head as RosettaModel]
 								.toList
-	
-				val namespaceDescriptionMap = modelNamespaceUtil.namespaceToDescriptionMap(models).asMap
-				val namespaceUrilMap = modelNamespaceUtil.namespaceToModelUriMap(models).asMap
 				
-				javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, namespaceDescriptionMap)
-				namespaceHierarchyGenerator.generateNamespacePackageHierarchy(fsa2, namespaceDescriptionMap, namespaceUrilMap)
+				javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, models)
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (Exception e) {
@@ -227,9 +214,7 @@ class RosettaGenerator implements IGenerator2 {
 		val lock = locks.computeIfAbsent(resourceSet, [new DemandableLock]);
 		try {
 			lock.getWriteLock(true)
-			
-			backwardCompatibilityGenerator.generate(fsa2)
-						
+									
 			val models = resourceSet.resources
 							.filter[!ignoredFiles.contains(URI.segments.last)]
 							.map[contents.head as RosettaModel]
