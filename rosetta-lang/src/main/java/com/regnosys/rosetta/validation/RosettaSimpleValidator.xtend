@@ -149,7 +149,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject ExternalAnnotationUtil externalAnn
 	@Inject extension RBuiltinTypeService
 	@Inject extension TypeSystem
-	@Inject extension RosettaGrammarAccess acc
+	@Inject extension RosettaGrammarAccess
 
 	static final Logger log = LoggerFactory.getLogger(RosettaSimpleValidator);
 
