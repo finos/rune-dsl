@@ -128,6 +128,7 @@ import org.eclipse.xtext.nodemodel.INode
 import org.eclipse.xtext.nodemodel.ICompositeNode
 import org.eclipse.xtext.Assignment
 import com.regnosys.rosetta.rosetta.expression.RosettaOperation
+import org.eclipse.xtext.Action
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -207,16 +208,19 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 	}
 	private def INode findDirectKeyword(EObject o, Keyword keyword) {
+		findDirectKeyword(o, keyword.value)
+	}
+	private def INode findDirectKeyword(EObject o, String keyword) {
 		val node = NodeModelUtils.findActualNodeFor(o)
 		findDirectKeyword(node, keyword)
 	}
-	private def INode findDirectKeyword(ICompositeNode node, Keyword keyword) {
+	private def INode findDirectKeyword(ICompositeNode node, String keyword) {
 		for (n : node.children) {
 			val ge = n.grammarElement
-			if (ge instanceof Keyword && (ge as Keyword).value == keyword.value) { // I compare the keywords by value instead of directly by reference because of an issue that sometimes arises when running multiple tests consecutively. I'm not sure what the issue is.
+			if (ge instanceof Keyword && (ge as Keyword).value == keyword) { // I compare the keywords by value instead of directly by reference because of an issue that sometimes arises when running multiple tests consecutively. I'm not sure what the issue is.
 				return n
 			}
-			if (ge instanceof RuleCall && n instanceof ICompositeNode && !(ge.eContainer instanceof Assignment)) {
+			if ((ge instanceof RuleCall || ge instanceof Action) && n instanceof ICompositeNode && !(ge.eContainer instanceof Assignment)) {
 				val keywordInFragment = findDirectKeyword(n as ICompositeNode, keyword)
 				if (keywordInFragment !== null) {
 					return keywordInFragment
@@ -234,26 +238,19 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
-	def void mandatorySquareBracketCheck(RosettaFunctionalOperation op) {
+	def void unnecesarrySquareBracketsCheck(RosettaFunctionalOperation op) {
 		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
 			return // disable check for blueprints
 		}
-		if (op.function !== null) {
-			val leftBracket = findDirectKeyword(op.function, inlineFunctionAccess.leftSquareBracketKeyword_0_0_1)
-			if (op.areSquareBracketsMandatory) {
-				if (leftBracket === null) {
-					if (op.isNestedFunctionalOperation) {
-						error('''Ambiguous expression. Either use `then` or surround with square brackets to define a nested operation.''', op.function.body, ROSETTA_OPERATION__OPERATOR)
-					} else {
-						error('''Using square brackets are mandatory here.''', op, ROSETTA_OPERATION__OPERATOR, MANDATORY_SQUARE_BRACKETS)
-					}
-				}
-			} else {
-				if (leftBracket !== null) {
-					warning('''Usage of brackets is unnecessary.''', op.function, null, REDUNDANT_SQUARE_BRACKETS)
-				}
+		if (op.hasSquareBrackets) {
+			if (!op.areSquareBracketsMandatory) {
+				warning('''Usage of brackets is unnecessary.''', op.function, null, REDUNDANT_SQUARE_BRACKETS)
 			}
 		}
+	}
+	
+	def boolean hasSquareBrackets(RosettaFunctionalOperation op) {
+		op.function !== null && findDirectKeyword(op.function, inlineFunctionAccess.leftSquareBracketKeyword_0_0_1) !== null
 	}
 	
 	def boolean areSquareBracketsMandatory(RosettaFunctionalOperation op) {
@@ -262,16 +259,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		(
 			!(op instanceof MandatoryFunctionalOperation)
 			|| !op.function.parameters.empty
-			|| op.isNestedFunctionalOperation
+			|| op.containsNestedFunctionalOperation
 			|| (op.eContainer instanceof RosettaOperation && !(op.eContainer instanceof ThenOperation))
 		)
-	}
-	def boolean isNestedFunctionalOperation(RosettaFunctionalOperation op) {
-		op.function !== null && EcoreUtil2.eAllOfType(op.function, RosettaFunctionalOperation).filter[function !== null].head !== null
 	}
 	
 	@Check
 	def void mandatoryThenCheck(RosettaUnaryOperation op) {
+		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
+			return // disable check for blueprints
+		}
 		if (op.isThenMandatory) {
 			val previousOperationIsThen =
 				op.argument.generated
@@ -284,14 +281,66 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	def boolean isThenMandatory(RosettaUnaryOperation op) {
-		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
-			return false // disable check for blueprints
-		}
 		if (op instanceof ThenOperation) {
 			return false
 		}
 		return op.argument instanceof MandatoryFunctionalOperation || 
 			op.argument instanceof RosettaUnaryOperation && (op.argument as RosettaUnaryOperation).isThenMandatory
+	}
+	
+	@Check
+	def void ambiguousFunctionalOperation(RosettaFunctionalOperation op) {
+		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
+			return // disable check for blueprints
+		}
+		if (op.function !== null) {
+			if (op.isNestedFunctionalOperation) {
+				val enclosingFunctionalOperation = EcoreUtil2.getContainerOfType(op, InlineFunction).eContainer as RosettaFunctionalOperation
+				if (!enclosingFunctionalOperation.hasSquareBrackets) {
+					error('''Ambiguous operation. Either use `then` or surround with square brackets to define a nested operation.''', op, ROSETTA_OPERATION__OPERATOR)
+				}
+			}
+		}
+	}
+	
+	def boolean isNestedFunctionalOperation(RosettaFunctionalOperation op) {
+		val enclosingInlineFunction = EcoreUtil2.getContainerOfType(op, InlineFunction)
+		if (enclosingInlineFunction !== null && !(enclosingInlineFunction.eContainer instanceof ThenOperation)) {
+			if (op.getEnclosingCodeBlock === enclosingInlineFunction.getEnclosingCodeBlock) {
+				return true
+			}
+		}
+		return false
+	}
+	def boolean containsNestedFunctionalOperation(RosettaFunctionalOperation op) {
+		if (op.function === null) {
+			return false
+		}
+		val codeBlock = op.function.getEnclosingCodeBlock
+		return EcoreUtil2.eAllOfType(op.function, RosettaFunctionalOperation)
+			.filter[it.getEnclosingCodeBlock === codeBlock]
+			.head !== null
+	}
+	
+	/**
+	 * Returns the object that directly encloses the given object with parentheses or brackets, or the first encountered root element.
+	 */
+	def EObject getEnclosingCodeBlock(EObject obj) {
+		return getEnclosingCodeBlock(NodeModelUtils.findActualNodeFor(obj), obj)
+	}
+	private def EObject getEnclosingCodeBlock(INode node, EObject potentialCodeBlock) {
+		if (potentialCodeBlock instanceof RosettaRootElement) {
+			return potentialCodeBlock
+		}
+		val left = potentialCodeBlock.findDirectKeyword('(') ?: potentialCodeBlock.findDirectKeyword('[')
+		if (left !== null) {
+			val right = potentialCodeBlock.findDirectKeyword(')') ?: potentialCodeBlock.findDirectKeyword(']')
+			
+			if (left.offset <= node.offset && (right === null || right.offset >= node.offset)) {
+				return potentialCodeBlock
+			}
+		}
+		return getEnclosingCodeBlock(node, potentialCodeBlock.eContainer)
 	}
 
 	@Check
