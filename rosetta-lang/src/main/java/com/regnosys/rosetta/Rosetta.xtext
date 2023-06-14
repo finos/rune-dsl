@@ -841,17 +841,15 @@ RosettaRuleReference:
 RosettaBlueprint:
  	('reporting'|'eligibility') 'rule' RosettaNamed ':'? =>RosettaDefinable?
  	(
-// 		=>(
-// 			(references += RosettaDocReference)*
-// 			(expression = RosettaCalcExpression
-//			('as' identifier=STRING)?)?
-// 		) | ( // legacy
-// 			('[' legacy?='legacy-syntax' ']')
-// 			(references += RosettaDocReference)*
-// 			(nodes = BlueprintNodeExp)?
-// 		)
- 		(references += RosettaDocReference)*
- 		(nodes = BlueprintNodeExp)?
+ 		=>(
+ 			(references += RosettaDocReference)*
+ 			(expression = RosettaCalcExpression
+			('as' identifier=STRING)?)?
+ 		) | ( // legacy
+ 			('[' legacy?='legacy-syntax' ']')
+ 			(references += RosettaDocReference)*
+ 			(nodes = BlueprintNodeExp)?
+ 		)
  	)
 	('output' output=TypeCall)? // TODO: I don't think this is ever used...
 ;
