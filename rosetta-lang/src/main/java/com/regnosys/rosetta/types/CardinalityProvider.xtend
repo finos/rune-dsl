@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.function
+package com.regnosys.rosetta.types
 
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
@@ -47,6 +47,7 @@ import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.RosettaParameter
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
 
 class CardinalityProvider {
 	
@@ -75,6 +76,8 @@ class CardinalityProvider {
 				definingContainer.map [
 					if (it instanceof RosettaFunctionalOperation) {
 						function.isItemMulti
+					} else if (it instanceof RosettaBlueprint) {
+						true
 					} else {
 						false
 					}

@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.validation
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
 import com.regnosys.rosetta.rosetta.BlueprintLookup
@@ -44,6 +43,7 @@ import java.util.Optional
 import com.regnosys.rosetta.utils.OptionalUtil
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.types.CardinalityProvider
 
 class RosettaBlueprintTypeResolver {
 	

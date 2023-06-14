@@ -18,7 +18,6 @@ import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
-import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.JavaType
@@ -71,6 +70,7 @@ import com.regnosys.rosetta.validation.BindableType
 import java.util.function.Supplier
 import com.regnosys.rosetta.generator.java.types.JavaReferenceType
 import java.math.BigDecimal
+import com.regnosys.rosetta.types.CardinalityProvider
 
 class BlueprintGenerator {
 	static Logger LOGGER = LoggerFactory.getLogger(BlueprintGenerator)

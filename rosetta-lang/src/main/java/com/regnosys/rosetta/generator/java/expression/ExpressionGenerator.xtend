@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
@@ -91,6 +90,7 @@ import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
 import org.apache.commons.text.StringEscapeUtils
+import com.regnosys.rosetta.types.CardinalityProvider
 
 class ExpressionGenerator {
 	

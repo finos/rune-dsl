@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
@@ -128,6 +127,7 @@ import org.eclipse.xtext.nodemodel.INode
 import org.eclipse.xtext.nodemodel.ICompositeNode
 import org.eclipse.xtext.Assignment
 import com.regnosys.rosetta.rosetta.expression.RosettaOperation
+import com.regnosys.rosetta.types.CardinalityProvider
 
 // TODO: split expression validator
 // TODO: type check type call arguments

@@ -56,6 +56,7 @@ import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.types.CardinalityProvider
 
 class FunctionGenerator {
 

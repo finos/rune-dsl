@@ -1411,7 +1411,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule:
-				filter when Bar->barA exists
+				filter Bar->barA exists
 			
 			reporting rule Aa:
 				extract Bar->barA as "A"
