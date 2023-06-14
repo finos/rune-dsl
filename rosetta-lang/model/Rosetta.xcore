@@ -507,8 +507,11 @@ class RosettaBlueprintReport extends RosettaRootElement {
 }
 
 class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+	boolean legacy
 	contains RosettaDocReference[] references
-	contains BlueprintNodeExp nodes
+	contains BlueprintNodeExp nodes // legacy
+	contains RosettaExpression expression
+	String identifier
 	contains TypeCall output
 }
 

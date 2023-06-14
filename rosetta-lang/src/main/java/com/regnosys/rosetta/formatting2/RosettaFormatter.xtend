@@ -649,6 +649,16 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		ele.nodes
 			.prepend[newLine]
 			.format
+//		if (ele.identifier !== null) {
+//			set(
+//				ele.regionFor.keyword(asKeyword_6_0)
+//					.prepend[newLine]
+//					.append[oneSpace]
+//					.previousHiddenRegion,
+//				ele.regionFor.assignment(identifierAssignment_6_1).nextHiddenRegion,
+//				[indent]
+//			)
+//		}
 	}
 	
 	def dispatch void format(BlueprintNodeExp ele, extension IFormattableDocument document) {

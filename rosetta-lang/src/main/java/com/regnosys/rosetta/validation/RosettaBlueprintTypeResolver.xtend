@@ -43,6 +43,7 @@ import com.regnosys.rosetta.types.TypeSystem
 import java.util.Optional
 import com.regnosys.rosetta.utils.OptionalUtil
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.RosettaExtensions
 
 class RosettaBlueprintTypeResolver {
 	
@@ -50,6 +51,7 @@ class RosettaBlueprintTypeResolver {
 	@Inject CardinalityProvider cardinality
 	@Inject extension TypeSystem
 	@Inject extension RBuiltinTypeService
+	@Inject extension RosettaExtensions
 	
 	static class BlueprintTypeException extends Exception {
 		new(String string) {
@@ -393,6 +395,9 @@ class RosettaBlueprintTypeResolver {
 	}
 
 	def dispatch Optional<RType> getInput(RosettaSymbol callable) {
+		if (!callable.isResolved) {
+			return Optional.empty
+		}
 		switch (callable) {
 			Data: {
 				return Optional.of(new RDataType(callable))
