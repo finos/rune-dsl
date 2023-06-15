@@ -203,9 +203,10 @@ class RosettaBlueprintRepeatableRuleTest {
 				field string (1..1)
 			
 			eligibility rule FooRule:
-				filter when Bar->bazList exists
+				filter Bar->bazList exists
 
 			reporting rule RepeatableBarBazList:
+				[legacy-syntax]
 				extract repeatable Bar->bazList then
 				(
 					BazField
@@ -266,6 +267,7 @@ class RosettaBlueprintRepeatableRuleTest {
 				listAttr int (1..*)
 			
 			reporting rule RepeatableValue:
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				extract repeatable Foo -> listAttr as "Repeating Value"
 			

@@ -504,10 +504,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 		if (actualType instanceof RErrorType)
 			error('''«actualType.name»''', owner, ref, index, TYPE_ERROR)
-		else if (actualType == MISSING)
-			error('''Couldn't infer actual type for '«getTokenText(findActualNodeFor(expression))»'«»''', owner, ref, index,
-				TYPE_ERROR)
-		else if (expectedType instanceof RErrorType)
+		else if (actualType == MISSING) {
+			val node = findActualNodeFor(expression)
+			if (node !== null) {
+				error('''Couldn't infer actual type for '«getTokenText(node)»'«»''', owner, ref, index,
+					TYPE_ERROR)
+			}
+		} else if (expectedType instanceof RErrorType)
 			error('''«expectedType.name»''', owner, ref, index, TYPE_ERROR)
 		else if (expectedType !== null && expectedType != MISSING) {
 			if (!actualType.isSubtypeOf(expectedType))
@@ -975,27 +978,46 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		val ruleRef = attr.ruleReference
 		if (ruleRef !== null) {
 			val bp = ruleRef.reportingRule
-			val node = buildTypeGraph(bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType])
-
+			
 			val attrExt = attr.toExpandedAttribute
 			val attrSingle = attrExt.cardinalityIsSingleValue
-			val ruleSingle = checkBPNodeSingle(node, false)
-
-			// check cardinality
-			if (attrSingle != ruleSingle) {
-				val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
-					'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
-				warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
-			}
-			// check type
-			val bpType = node.output.type
 			val attrType = attr.typeCall.typeCallToRType
-			if (!node.repeatable && bpType.map[!isSubtypeOf(attrType)].orElse(false)) {
-				val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
-					'''whereas the reporting rule «bp.name» has type «bpType.get».'''
-				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+			if (bp.isLegacy) {
+				val node = buildTypeGraph(bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType])
+	
+				val ruleSingle = checkBPNodeSingle(node, false)
+	
+				// check cardinality
+				if (attrSingle != ruleSingle) {
+					val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
+						'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
+					warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				}
+				// check type
+				val bpType = node.output.type
+				if (!node.repeatable && bpType.map[!isSubtypeOf(attrType)].orElse(false)) {
+					val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
+						'''whereas the reporting rule «bp.name» has type «bpType.get».'''
+					error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				}
+			} else {
+				// check cardinality
+				val ruleSingle = !bp.expression.isMulti
+				if (attrSingle != ruleSingle) {
+					val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
+						'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
+					warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				}
+				
+				// check type
+				val bpType = bp.expression.RType
+				if (!bpType.isSubtypeOf(attrType)) {
+					val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
+						'''whereas the reporting rule «bp.name» has type «bpType».'''
+					error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				}
 			}
-
+			
 			// check basic type cardinality supported
 			if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
 				val unsupportedWarning = '''Report attributes with basic type («attrType.name») and multiple cardinality is not supported.'''

@@ -84,11 +84,13 @@ class RosettaFormattingTest {
 		
 		
 		reporting rule OptionPremium <"Option premium">
+			[legacy-syntax]
 		    return "N/A" as "I.6.3 Option Premium"
 		''' -> '''
 		namespace drr.regulation.techsprint.g20.mas
 		
 		reporting rule OptionPremium <"Option premium">
+			[legacy-syntax]
 			return "N/A" as "I.6.3 Option Premium"
 		'''
 	}
@@ -132,6 +134,7 @@ class RosettaFormattingTest {
 			segment article
 			
 			reporting rule ReportStatus <"Indication as to whether the transaction report is new or a cancellation">
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22
 						annex "I" table "2" field "1"
 						provision "Indication as to whether the transaction report is new or a cancellation."]
@@ -158,6 +161,7 @@ class RosettaFormattingTest {
 			segment article
 			
 			reporting rule ReportStatus <"Indication as to whether the transaction report is new or a cancellation">
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "I" table "2" field "1"
 					provision "Indication as to whether the transaction report is new or a cancellation."]
 				[regulatoryReference ESMA MiFIR RTS_22 article "2"

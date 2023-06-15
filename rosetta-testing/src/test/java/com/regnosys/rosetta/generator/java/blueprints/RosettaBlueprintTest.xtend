@@ -37,7 +37,8 @@ class RosettaBlueprintTest {
 	def void parseSimpleRule() {
 		val r = '''
 			eligibility rule ReportableTransation:
-			return "y"
+				[legacy-syntax]
+				return "y"
 		'''
 		parseRosettaWithNoErrors(r)
 	}
@@ -68,18 +69,23 @@ class RosettaBlueprintTest {
 					namespace com.rosetta.test.model
 
 					eligibility rule FooRule:
+						[legacy-syntax]
 						filter when Bar->bar1 exists
 
 					reporting rule BarBarOne:
+						[legacy-syntax]
 						extract Bar->bar1 as "1 BarOne"
 
 					reporting rule BarBarTwo:
+						[legacy-syntax]
 						extract Bar->bar2 as "2 BarTwo"
 
 					reporting rule BarBaz:
+						[legacy-syntax]
 						extract Bar->baz->baz1 as "3 BarBaz"
 
 					reporting rule BarQuxList:
+						[legacy-syntax]
 						extract repeatable Bar->quxList then
 						(
 							QuxQux1,
@@ -87,12 +93,15 @@ class RosettaBlueprintTest {
 						) as "4 BarQuxList"
 
 					reporting rule QuxQux1:
+						[legacy-syntax]
 						extract Qux->qux1 as "5 QuxQux1"
 
 					reporting rule QuxQux2:
+						[legacy-syntax]
 						extract Qux->qux2 as "6 QuxQux2"
 
 					reporting rule BarQuux:
+						[legacy-syntax]
 						extract Create_Quux( Bar->baz ) as "7 BarQuux"
 
 					func Create_Quux:
@@ -550,6 +559,7 @@ class RosettaBlueprintTest {
 							[ruleReference QuxQux2]
 
 					reporting rule New_BarBarOne:
+						[legacy-syntax]
 						extract Bar->bar1 + "NEW" as "1 New BarOne"
 
 					rule source RuleSource {
@@ -786,6 +796,7 @@ class RosettaBlueprintTest {
 			import ns1.*
 			
 			reporting rule BarBarTwo:
+				[legacy-syntax]
 				extract Bar->bar2 as "2 BarTwo"
 			
 		''','''
@@ -802,9 +813,11 @@ class RosettaBlueprintTest {
 				with type BarReport
 			
 			eligibility rule FooRule:
+				[legacy-syntax]
 				filter when Bar->bar1 exists
 			
 			reporting rule BarBarOne:
+				[legacy-syntax]
 				extract Bar->bar1 as "1 BarOne"
 			
 			type BarReport:
@@ -882,6 +895,7 @@ class RosettaBlueprintTest {
 			with type BarReport
 			
 			eligibility rule FooRule:
+				[legacy-syntax]
 				filter when Bar->bar1 exists
 			
 			type BarReport:
@@ -1054,45 +1068,56 @@ class RosettaBlueprintTest {
 			        [ruleReference OrganisationCountry]
 			
 			eligibility rule HasSuperPowers:
+				[legacy-syntax]
 			     filter when Person -> hasSpecialAbilities
 			
 			reporting rule HeroName: <"Name">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "1" provision "Hero Name."]
 			    extract Person -> name as "Hero Name"
 			
 			reporting rule DateOfBirth: <"Date of birth">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "2" provision "Date of birth."]
 			    extract Person -> dateOfBirth as "Date of Birth"
 			
 			reporting rule Nationality: <"Nationality">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "2" provision "Nationality."]
 			    extract Person -> nationality as "Nationality"
 			
 			reporting rule SpecialAbilities: <"Has Special Abilities">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "3" provision "Has Special Abilities"]
 			    extract Person -> hasSpecialAbilities as "Has Special Abilities"
 			
 			reporting rule Powers: <"Super Power Name">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Powers."]
 			    extract Person -> powers as "Powers"
 			
 			reporting rule AttributeInt: <"Attribute - Int">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Int."]
 			    extract Person -> attribute -> heroInt as "Attribute - Int"
 			
 			reporting rule AttributeNumber: <"Attribute - Number">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Number."]
 			    extract Person -> attribute -> heroNumber as "Attribute - Number"
 			
 			reporting rule AttributeZonedDateTime: <"Attribute - ZonedDateTime">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - ZonedDateTime."]
 			    extract Person -> attribute -> heroZonedDateTime as "Attribute - ZonedDateTime"
 			
 			reporting rule AttributeTime: <"Attribute - Time">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Time."]
 			    extract Person -> attribute -> heroTime as "Attribute - Time"
 			
 			reporting rule HeroOrganisations: <"Has Special Abilities">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
 			    extract repeatable Person -> organisations then
 			    (
@@ -1102,18 +1127,22 @@ class RosettaBlueprintTest {
 			    ) as "Hero Organisations"
 			
 			reporting rule OrganisationName: <"Has Special Abilities">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
 			    extract Organisation -> name as "Organisation Name"
 			
 			reporting rule OrganisationCountry: <"Has Special Abilities">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
 			    extract Organisation -> country as "Organisation Country"
 			
 			reporting rule IsGovernmentAgency: <"Has Special Abilities">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
 			    extract Organisation -> isGovernmentAgency as "Is Government Agency"
 			
 			reporting rule NotModelled: <"Not Modelled">
+				[legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "6"  provision "Not Modelled."]
 			    return "Not modelled" as "Not Modelled"
 			
@@ -1259,6 +1288,7 @@ class RosettaBlueprintTest {
 				baz string (1..1)
 			
 			reporting rule Blueprint1:
+				[legacy-syntax]
 				extract Foo->bar then
 				extract Bar->baz
 		'''.generateCode
@@ -1330,6 +1360,7 @@ class RosettaBlueprintTest {
 				colour string (1..1)
 			
 			reporting rule Blueprint1:
+				[legacy-syntax]
 				extract Input->input2->name
 		'''.parseRosetta.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
 			"Couldn't resolve reference to RosettaFeature 'name'.")
@@ -1339,6 +1370,7 @@ class RosettaBlueprintTest {
 	def void brokenAndInputTypes() {
 		'''
 			reporting rule Blueprint1:
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
 					extract Input->traderef,
@@ -1359,6 +1391,7 @@ class RosettaBlueprintTest {
 	def void multiplicationExpression() {
 		val model = '''
 			reporting rule Blueprint1:
+				[legacy-syntax]
 				extract Input->traderef * Input2->colour
 			
 			type Input:
@@ -1376,6 +1409,7 @@ class RosettaBlueprintTest {
 	def void brokenExpressionInputTypes() {
 		val model = '''
 			reporting rule Blueprint1:
+				[legacy-syntax]
 				extract Input->traderef * Input->colour
 			
 			type Input:
@@ -1390,6 +1424,7 @@ class RosettaBlueprintTest {
 	def void orInputTypesExtends() {
 		val code = '''
 			reporting rule Blueprint1:
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
 					extract Input->traderef,
@@ -1410,6 +1445,7 @@ class RosettaBlueprintTest {
 	def void complexOr() {
 		val blueprint = '''
 			reporting rule Blueprint1:
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
 					filter when Input->traderef="3" then extract Input->traderef, 
@@ -1488,6 +1524,7 @@ class RosettaBlueprintTest {
 	def void numberOr() {
 		val blueprint = '''
 			reporting rule Blueprint1:
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
 					extract Input->a , 
@@ -1563,6 +1600,7 @@ class RosettaBlueprintTest {
 	def void complexOr2() {
 		val blueprint = '''
 			reporting rule Blueprint1:
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
 					extract Input -> foo
@@ -1649,6 +1687,7 @@ class RosettaBlueprintTest {
 	def void complexOr3() {
 		val blueprint = '''
 			reporting rule Blueprint1:
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
 					extract Input1->i1
@@ -1736,10 +1775,12 @@ class RosettaBlueprintTest {
 				val string (1..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				Rule2 then
 				extract Bar->val
 			
 			reporting rule Rule2:
+				[legacy-syntax]
 				extract Foo->bar
 			
 		'''.parseRosettaWithNoErrors
@@ -1754,6 +1795,7 @@ class RosettaBlueprintTest {
 	def void filter() {
 		val blueprint = '''
 			reporting rule SimpleBlueprint:
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				filter when Input->traderef="Hello"
 			
@@ -1819,6 +1861,7 @@ class RosettaBlueprintTest {
 	def void filter2() {
 		val blueprint = '''
 			reporting rule SimpleBlueprint:
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				filter when Input->traderef exists
 									
@@ -1837,9 +1880,11 @@ class RosettaBlueprintTest {
 	def void filterWhenRule() {
 		val blueprint = '''
 			reporting rule TestRule:
+				[legacy-syntax]
 				extract Input->flag
 						
 			reporting rule FilterRule:
+				[legacy-syntax]
 				filter when rule TestRule then extract Input->traderef
 			
 			
@@ -1859,12 +1904,14 @@ class RosettaBlueprintTest {
 	def void lookupRule() {
 		val blueprint = '''
 			reporting rule WorthyAvenger:
+				[legacy-syntax]
 				extract Avengers -> heros then 
 				filter when rule CanWieldMjolnir 
 					then filter when Hero -> name <> 'Thor'
 					then extract Hero -> name
 			
 			eligibility rule CanWieldMjolnir:
+				[legacy-syntax]
 				lookup CanWieldMjolnir boolean
 			
 			type Avengers:
@@ -1944,9 +1991,11 @@ class RosettaBlueprintTest {
 	def void filterCardinalityAndType() {
 		val model = '''
 			reporting rule TestRule:
+				[legacy-syntax]
 				extract Input->flag
 						
 			reporting rule FilterRule:
+				[legacy-syntax]
 				filter when rule TestRule then extract Input->traderef
 			
 			
@@ -1966,7 +2015,8 @@ class RosettaBlueprintTest {
 	def void filterWhenCount() {
 		val blueprint = '''
 			reporting rule IsFixedFloat:
-			extract Foo->fixed count = 12
+				[legacy-syntax]
+				extract Foo->fixed count = 12
 			
 			type Foo:
 				fixed string (0..*)
@@ -2030,6 +2080,7 @@ class RosettaBlueprintTest {
 	def void expressionIf() {
 		val blueprint = '''
 			reporting rule FixedFloat:
+				[legacy-syntax]
 				extract 
 					if Foo -> fixed = "Wood" then
 						Foo -> floating
@@ -2055,6 +2106,7 @@ class RosettaBlueprintTest {
 	def void maxBy() {
 		val blueprint = '''
 			reporting rule IsFixedFloat:
+				[legacy-syntax]
 				extract Foo -> bars 
 					max [ item -> order ]
 			
@@ -2074,6 +2126,7 @@ class RosettaBlueprintTest {
 	def void maxBy2() {
 		val blueprint = '''
 			reporting rule IsFixedFloat:
+				[legacy-syntax]
 				extract Foo -> bars then
 				extract Bar max [ item -> order ] // should this work?
 			
@@ -2092,6 +2145,7 @@ class RosettaBlueprintTest {
 	def void maxBy3() {
 		val blueprint = '''
 			reporting rule IsFixedFloat:
+				[legacy-syntax]
 				extract Foo -> bars -> order max
 			
 			type Foo:
@@ -2109,6 +2163,7 @@ class RosettaBlueprintTest {
 	def void maxByBrokenType() {
 		val model = '''
 			reporting rule IsFixedFloat:
+				[legacy-syntax]
 				extract Foo -> bars 
 					max [ item ]
 			
@@ -2133,6 +2188,7 @@ class RosettaBlueprintTest {
 				val number (1..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				extract Foo->bar->val + Bar->val
 			'''.parseRosetta
 			.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR,
@@ -2149,6 +2205,7 @@ class RosettaBlueprintTest {
 				val number (1..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				return MyFunc1() then
 				extract MyFunc(Foo->bar->val)
 			
@@ -2180,6 +2237,7 @@ class RosettaBlueprintTest {
 				val number (1..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				return MyFunc1() then
 				extract MyFunc(Foo->bar->val) > MyFunc(3.0)
 			
@@ -2205,6 +2263,7 @@ class RosettaBlueprintTest {
 	def void functionCallsWithLiteralInputFromExtract() {
 		val blueprint = ''' 
 			reporting rule FooRule:
+				[legacy-syntax]
 				extract 
 					if FooFunc( Foo -> a, "x" ) then "Y"
 					else "Z"
@@ -2235,6 +2294,7 @@ class RosettaBlueprintTest {
 				val number (1..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				extract MyFunc(Foo->bar->val, Bar->val)
 			
 			func MyFunc:
@@ -2261,6 +2321,7 @@ class RosettaBlueprintTest {
 				val number (1..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				return MyFunc1() then
 				filter when MyFunc(Foo->bar->val)
 			
@@ -2292,10 +2353,11 @@ class RosettaBlueprintTest {
 				val number (1..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				return MyFunc1() then
 				filter when MyFunc(Foo->bar->val)
 			
-			func MyFunc1: 
+			func MyFunc1:
 				output:
 					foo Foo (1..*)
 			
@@ -2322,6 +2384,7 @@ class RosettaBlueprintTest {
 				fieldOne string (0..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				extract TestObject -> fieldOne	
 			
 		''','''
@@ -2330,6 +2393,7 @@ class RosettaBlueprintTest {
 			import ns1.*
 			
 			reporting rule Rule2:
+				[legacy-syntax]
 				Rule1
 		'''
 		].generateCode
@@ -2349,6 +2413,7 @@ class RosettaBlueprintTest {
 				fieldOne string (0..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				extract TestObject -> fieldOne exists
 			
 		''','''
@@ -2357,6 +2422,7 @@ class RosettaBlueprintTest {
 			import ns1.*
 			
 			reporting rule Rule2:
+				[legacy-syntax]
 				filter when rule Rule1
 		'''
 		].generateCode
@@ -2375,9 +2441,11 @@ class RosettaBlueprintTest {
 				fieldOne string (0..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				extract TestObject -> fieldOne
 							
 			reporting rule Rule2:
+				[legacy-syntax]
 				Rule1 as "BLAH"
 			
 		'''
@@ -2397,10 +2465,12 @@ class RosettaBlueprintTest {
 				str string (1..1)
 			
 			reporting rule Rule1:
+				[legacy-syntax]
 				extract Foo->bar then
 				Rule2
 							
 			reporting rule Rule2:
+				[legacy-syntax]
 				extract Foo->bar->str
 			
 		'''.toString
@@ -2422,6 +2492,7 @@ class RosettaBlueprintTest {
 			A B C D F G H I J K L M N O P Q R S T U V W X Y Z
 		
 		reporting rule BarField:
+				[legacy-syntax]
 				extract if Foo -> bar = Bar -> A then "A"
 					else if Foo -> bar = Bar -> B then "B"
 					else if Foo -> bar = Bar -> C then "C"
@@ -2473,6 +2544,7 @@ class RosettaBlueprintTest {
 			A B C D F G H I J K L M N O P Q R S T U V W X Y Z
 		
 		reporting rule BarField:
+				[legacy-syntax]
 				extract if Foo -> bar = Bar -> A then "A"
 					else if Foo -> bar = Bar -> B then "B"
 					else if Foo -> bar = Bar -> C then "C"
@@ -2525,6 +2597,7 @@ class RosettaBlueprintTest {
 			attr string (1..1)
 		
 		reporting rule BarField:
+			[legacy-syntax]
 			extract 
 				if Foo->test = True 
 				then Foo->bar
@@ -2547,6 +2620,7 @@ class RosettaBlueprintTest {
 			attr string (1..1)
 		
 		reporting rule BarField:
+			[legacy-syntax]
 			extract 
 				if Foo->test = True 
 				then Foo->bar
@@ -2563,6 +2637,7 @@ class RosettaBlueprintTest {
 		var blueprint = '''
 		
 		reporting rule BarField:
+			[legacy-syntax]
 
 		'''.toString
 		.replace('\r', "")
@@ -2584,24 +2659,31 @@ class RosettaBlueprintTest {
 			with type BarReport
 			
 			eligibility rule FooRule:
+				[legacy-syntax]
 				filter when Bar->barA exists
 			
 			reporting rule Aa:
+				[legacy-syntax]
 				extract Bar->barA as "A"
 
 			reporting rule Bb:
+				[legacy-syntax]
 				extract Bar->barB as "B"
 				
 			reporting rule Cc:
+				[legacy-syntax]
 				extract Bar->barC as "C"
 
 			reporting rule Dd:
+				[legacy-syntax]
 				extract Bar->barD as "D"
 
 			reporting rule Ee:
+				[legacy-syntax]
 				extract Bar->barE as "E"
 				
 			reporting rule Ff:
+				[legacy-syntax]
 				extract Bar->barF as "F"
 			
 			type Bar:
@@ -2646,12 +2728,15 @@ class RosettaBlueprintTest {
 			with type BarReport2
 			
 			eligibility rule FooRule:
+				[legacy-syntax]
 				filter when Bar->barA exists
 			
 			reporting rule Aa:
+				[legacy-syntax]
 				extract Bar->barA as "A"
 
 			reporting rule Aa2:
+				[legacy-syntax]
 				extract Bar->barA2 as "A"
 
 			
@@ -2701,18 +2786,23 @@ class RosettaBlueprintTest {
 			with type BarReport2
 			
 			eligibility rule FooRule:
+				[legacy-syntax]
 				filter when Bar->barA exists
 			
 			reporting rule Aa:
+				[legacy-syntax]
 				extract Bar->barA as "A"
 
 			reporting rule Aa2:
+				[legacy-syntax]
 				extract Bar->barA2 as "A"
 			
 			reporting rule Bb:
+				[legacy-syntax]
 				extract Bar->barB as "B"
 				
 			reporting rule Cc:
+				[legacy-syntax]
 				extract Bar->barC as "C"
 
 			
@@ -2772,6 +2862,7 @@ class RosettaBlueprintTest {
 			attr string (1..1)
 		
 		reporting rule FooRule:
+			[legacy-syntax]
 			extract Foo -> bar 
 				max [ item -> attr ] then
 			extract Bar -> attr
@@ -2793,6 +2884,7 @@ class RosettaBlueprintTest {
 			attr string (1..1)
 		
 		reporting rule FooRule:
+			[legacy-syntax]
 			extract Foo -> bar 
 				map [ item -> baz ] then
 			extract Baz -> attr
@@ -2809,6 +2901,7 @@ class RosettaBlueprintTest {
 				Baz
 			
 			reporting rule ReturnEnumValue:
+				[legacy-syntax]
 				return FooEnum -> Bar
 			
 		'''.generateCode

@@ -48,6 +48,8 @@ import com.regnosys.rosetta.rosetta.RosettaParameter
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.rosetta.expression.OneOfOperation
 
 class CardinalityProvider {
 	
@@ -113,7 +115,9 @@ class CardinalityProvider {
 			RosettaAbsentExpression,
 			RosettaCountOperation,
 			RosettaExistsExpression,
-			RosettaOnlyElement:
+			RosettaOnlyElement,
+			ChoiceOperation,
+			OneOfOperation:
 				false
 			DistinctOperation,
 			FlattenOperation,

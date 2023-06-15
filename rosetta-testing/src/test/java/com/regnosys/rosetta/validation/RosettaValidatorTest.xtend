@@ -1478,13 +1478,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule:
-				filter when Bar->barA exists
+				filter Bar->barA exists
 			
 			reporting rule Aa:
-			(
-				extract Bar->barA as "A",
-				extract Bar->barB as "B"
-			)
+				[legacy-syntax]
+				(
+					extract Bar->barA as "A",
+					extract Bar->barB as "B"
+				)
 			
 			type Bar:
 				barA string (0..1)
@@ -1510,10 +1511,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+				filter Bar->bar1 exists
 			
 			reporting rule A:
-				return "Not Modelled" 
+				"Not Modelled"
 					as "A"
 			
 			type Bar:
@@ -1538,9 +1539,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+				filter Bar->bar1 exists
 			
 			reporting rule BarBarOne:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1571,9 +1573,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+				filter Bar->bar1 exists
 			
 			reporting rule BarBarOne:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1 + Bar->bar2,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1604,9 +1607,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+				filter Bar->bar1 exists
 			
 			reporting rule BarBarOne:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1 * Bar->bar2,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1637,9 +1641,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+				filter Bar->bar1 exists
 			
 			reporting rule BarBarOne:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1670,9 +1675,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+				filter Bar->bar1 exists
 			
 			reporting rule BarBarOne:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1706,9 +1712,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+				filter Bar->bar1 exists
 			
 			reporting rule BarBarOne:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1816,7 +1823,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			namespace test.one
 			
 			reporting rule Base_A:
-				return "Not Modelled" 
+				"Not Modelled" 
 					as "A"
 			
 			type Foo:
@@ -1827,7 +1834,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			import test.one.*
 			
 			reporting rule Base_B:
-				return "Not Modelled" 
+				"Not Modelled" 
 					as "B"
 			
 			type Bar:
@@ -1871,14 +1878,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReport
 			
 			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+				filter Bar->bar1 exists
 
 			reporting rule Base_A:
-				return "Not Modelled" 
+				"Not Modelled" 
 					as "A"
 			
 			reporting rule Base_B:
-				return "Not Modelled" 
+				"Not Modelled" 
 					as "B"
 		''',
 		'''
@@ -1898,11 +1905,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type BarReportExtend
 						
 			reporting rule Extend_A:
-				return "Not Modelled" 
+				"Not Modelled" 
 					as "A"
 					
 			reporting rule Extend_B:
-				return "Not Modelled" 
+				"Not Modelled" 
 					as "B"
 		'''].parseRosetta
 	models.forEach[assertNoErrors]

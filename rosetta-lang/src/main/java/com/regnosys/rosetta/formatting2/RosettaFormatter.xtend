@@ -654,13 +654,21 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.format
 		if (ele.identifier !== null) {
 			set(
-				ele.regionFor.keyword(asKeyword_5_0_0_1_1_0)
+				ele.regionFor.keyword(asKeyword_5_0_1_1_0)
 					.prepend[newLine]
 					.append[oneSpace]
 					.previousHiddenRegion,
-				ele.regionFor.assignment(identifierAssignment_5_0_0_1_1_1).nextHiddenRegion,
+				ele.regionFor.assignment(identifierAssignment_5_0_1_1_1).nextHiddenRegion,
 				[indent]
 			)
+		}
+		if (ele.isLegacy) {
+			val legacyKeyword = ele.regionFor.keyword(legacyLegacySyntaxKeyword_5_1_0_0_0_1_0)
+				?: ele.regionFor.keyword(legacyLegacySyntaxKeyword_5_1_0_1_0_1_1_0)
+			legacyKeyword
+				.surround[noSpace]
+				.previousHiddenRegion.previousHiddenRegion
+				.set[newLine]
 		}
 	}
 	

@@ -841,13 +841,18 @@ RosettaRuleReference:
 RosettaBlueprint:
  	('reporting'|'eligibility') 'rule' RosettaNamed ':'? =>RosettaDefinable?
  	(
- 		=>(
+ 		(
  			(references += RosettaDocReference)*
  			(expression = RosettaCalcExpression
 			('as' identifier=STRING)?)?
  		) | ( // legacy
- 			('[' legacy?='legacy-syntax' ']')
- 			(references += RosettaDocReference)*
+ 			((
+ 				('[' ->legacy?='legacy-syntax' ']')
+ 				(references += RosettaDocReference)*
+ 			) | =>(
+ 				(references += RosettaDocReference)*
+ 				('[' ->legacy?='legacy-syntax' ']')
+ 			))
  			(nodes = BlueprintNodeExp)?
  		)
  	)

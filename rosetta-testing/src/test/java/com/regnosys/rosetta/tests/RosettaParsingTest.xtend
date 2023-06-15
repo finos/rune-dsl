@@ -34,6 +34,24 @@ class RosettaParsingTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testLegacyBlueprintSyntax() {
+		val model = '''
+			reporting rule BarBarOne:
+				[legacy-syntax]
+				(
+					filter when Bar->test = True then extract Bar->bar1 + Bar->bar2,
+					filter when Bar->test = False then extract Bar->bar2
+				)  as "1 BarOne"
+			
+			type Bar:
+				test boolean (1..1)
+				bar1 string (0..1)
+				bar2 string (1..1)
+		'''.parseRosetta
+		model.assertNoIssues
+	}
+	
+	@Test
 	def void testMaxCanBeChainedWithThen() {
 		'''		
 		func Foo:
