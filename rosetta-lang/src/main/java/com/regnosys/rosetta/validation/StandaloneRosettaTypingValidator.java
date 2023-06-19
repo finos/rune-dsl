@@ -101,7 +101,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 		}
 		
 		RType reportTypeInputType = ts.getRulesInputType(report.getReportType(), report.getRuleSource());
-		if (reportTypeInputType != builtins.NOTHING) {
+		if (reportTypeInputType != builtins.ANY) {
 			if (!ts.isSubtypeOf(reportTypeInputType, inputType)) {
 				if (report.getRuleSource() != null) {
 					error("Rule source " + report.getRuleSource().getName() + " expects a `" + reportTypeInputType + "` as input, but this report is generated from a `" + inputType + "`.", report, ROSETTA_BLUEPRINT_REPORT__RULE_SOURCE);

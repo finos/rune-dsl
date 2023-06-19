@@ -1451,7 +1451,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void complexOr() {
 		val blueprint = '''
-			reporting rule Blueprint1: from Input
+			reporting rule Blueprint1 from Input:
 				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(

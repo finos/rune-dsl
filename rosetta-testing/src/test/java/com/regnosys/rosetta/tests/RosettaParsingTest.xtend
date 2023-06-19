@@ -36,7 +36,7 @@ class RosettaParsingTest {
 	@Test
 	def void testLegacyBlueprintSyntax() {
 		val model = '''
-			reporting rule BarBarOne:
+			reporting rule BarBarOne from Bar:
 				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1 + Bar->bar2,
@@ -557,11 +557,11 @@ class RosettaParsingTest {
 				bar BarEnum (0..*)
 				foobar string (0..1)
 				condition Foo_Bar:
-					if Party -> foo = True
+					if foo
 					then
-						if Party -> bar = BarEnum -> abc
-							then Party -> foobar exists
-						else Party -> foobar is absent
+						if bar = BarEnum -> abc
+							then foobar exists
+						else foobar is absent
 			enum BarEnum:
 				abc
 				bde

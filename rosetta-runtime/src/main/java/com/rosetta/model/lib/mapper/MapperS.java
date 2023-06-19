@@ -54,9 +54,6 @@ public class MapperS<T> implements MapperBuilder<T> {
 		return new MapperS<>(new MapperItem<>(t, path, false, Optional.ofNullable(parent)));
 	}
 	
-	public MapperS<T> filterSingle(Function<Integer, Boolean> predicate) {
-		return this;
-	}
 	public MapperS<T> filterSingle(Predicate<MapperS<T>> predicate) {
 		if (!item.isError()) {
 			boolean condition = predicate.test(this);

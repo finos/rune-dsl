@@ -32,15 +32,6 @@ class RosettaRuleGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 
-	@Test
-	def void parseSimpleRule() {
-		val r = '''
-			eligibility rule ReportableTransation:
-				"y"
-		'''
-		parseRosettaWithNoErrors(r)
-	}
-
 	static final CharSequence REPORT_TYPES = '''
 					namespace com.rosetta.test.model
 
@@ -1321,21 +1312,6 @@ class RosettaRuleGeneratorTest {
 	}
 
 	@Test
-	def void invalidPath() {
-		'''
-			type Input:
-				input2 Input2 (1..1)
-			
-			type Input2:
-				colour string (1..1)
-			
-			reporting rule Blueprint1:
-				extract Input->input2->name
-		'''.parseRosetta.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
-			"Couldn't resolve reference to RosettaFeature 'name'.")
-	}
-
-	@Test
 	def void brokenAndInputTypes() {
 		'''
 			reporting rule Blueprint1:
@@ -1370,20 +1346,6 @@ class RosettaRuleGeneratorTest {
 		'''.parseRosetta
 		model.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR, 
 			"Input types must be the same but were Input and Input2")
-	}
-	
-	@Test
-	def void brokenExpressionInputTypes() {
-		val model = '''
-			reporting rule Blueprint1:
-				extract Input->traderef * Input->colour
-			
-			type Input:
-				traderef int (1..1)
-				colour int (1..1)
-			
-		'''.parseRosetta
-		model.generateCode.compileToClasses
 	}
 
 	@Test

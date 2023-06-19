@@ -49,7 +49,7 @@ class RosettaBlueprintRepeatableRuleTest {
 				field string (1..1)
 			
 			eligibility rule FooRule from Bar:
-				filter Bar->bazList exists
+				filter bazList exists
 
 			reporting rule RepeatableBarBazList from Bar:
 				[legacy-syntax]
@@ -59,7 +59,7 @@ class RosettaBlueprintRepeatableRuleTest {
 				)
 			
 			reporting rule BazField from Baz:
-				extract Baz->field
+				extract field
 		'''
 		.parseRosettaWithNoIssues
 	}
@@ -92,16 +92,17 @@ class RosettaBlueprintRepeatableRuleTest {
 				field string (1..1)
 			
 			eligibility rule FooRule from Bar:
-				filter when Bar->bazList exists
+				filter bazList exists
 
 			reporting rule RepeatableBarBazList from Bar:
+				[legacy-syntax]
 				extract repeatable Bar->bazList then
 				(
 					BazField
 				)
 			
 			reporting rule BazField from Baz:
-				extract Baz->field
+				extract field
 		'''
 		.parseRosetta.assertError(ROSETTA_RULE_REFERENCE, null, "Duplicate reporting rule BazField")
 	}
