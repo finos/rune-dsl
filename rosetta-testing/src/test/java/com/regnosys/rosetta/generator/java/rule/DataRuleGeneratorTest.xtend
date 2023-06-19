@@ -45,6 +45,7 @@ class DataRuleGeneratorTest {
 			'''
 				package com.rosetta.test.model.validation.datarule;
 				
+				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaDataRule;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.ComparisonResult;
@@ -61,44 +62,48 @@ class DataRuleGeneratorTest {
 				 * @version test
 				 */
 				@RosettaDataRule("FooDataRule0")
-				public class FooDataRule0 implements Validator<Foo> {
+				@ImplementedBy(FooDataRule0.Default.class)
+				public interface FooDataRule0 extends Validator<Foo> {
 					
-					private static final String NAME = "FooDataRule0";
-					private static final String DEFINITION = "if bar=\"Y\" then baz exists else if (bar=\"I\" or bar=\"N\") then baz is absent";
+					String NAME = "FooDataRule0";
+					String DEFINITION = "if bar=\"Y\" then baz exists else if (bar=\"I\" or bar=\"N\") then baz is absent";
 					
+					ValidationResult<Foo> validate(RosettaPath path, Foo foo);
 					
-					@Override
-					public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
-						ComparisonResult result = executeDataRule(foo);
-						if (result.get()) {
-							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+					class Default implements FooDataRule0 {
+					
+						@Override
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+							ComparisonResult result = executeDataRule(foo);
+							if (result.get()) {
+								return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+							}
+							
+							String failureMessage = result.getError();
+							if (failureMessage == null) {
+								failureMessage = "Condition " + NAME + " failed.";
+							}
+							return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 						}
 						
-						String failureMessage = result.getError();
-						if (failureMessage == null) {
-							failureMessage = "Condition " + NAME + " failed.";
-						}
-						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
-					}
-					
-					private ComparisonResult executeDataRule(Foo foo) {
-						
-						try {
-							ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
-								if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
-									return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
-								}
-								else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).get()) {
-									return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
-								}
-								else {
-									return MapperS.ofNull();
-								}
-							}));
-							return result.get() == null ? ComparisonResult.success() : result;
-						}
-						catch (Exception ex) {
-							return ComparisonResult.failure(ex.getMessage());
+						private ComparisonResult executeDataRule(Foo foo) {
+							try {
+								ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
+									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
+										return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
+									}
+									else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).get()) {
+										return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
+									}
+									else {
+										return MapperS.ofNull();
+									}
+								}));
+								return result.get() == null ? ComparisonResult.success() : result;
+							}
+							catch (Exception ex) {
+								return ComparisonResult.failure(ex.getMessage());
+							}
 						}
 					}
 				}
@@ -147,6 +152,7 @@ class DataRuleGeneratorTest {
 			'''
 				package com.rosetta.test.model.validation.datarule;
 				
+				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaDataRule;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.ComparisonResult;
@@ -163,51 +169,55 @@ class DataRuleGeneratorTest {
 				 * @version test
 				 */
 				@RosettaDataRule("FooDataRule0")
-				public class FooDataRule0 implements Validator<Foo> {
+				@ImplementedBy(FooDataRule0.Default.class)
+				public interface FooDataRule0 extends Validator<Foo> {
 					
-					private static final String NAME = "FooDataRule0";
-					private static final String DEFINITION = "if bar exists then if bar=\"Y\" then baz exists else if (bar=\"I\" or bar=\"N\") then baz is absent";
+					String NAME = "FooDataRule0";
+					String DEFINITION = "if bar exists then if bar=\"Y\" then baz exists else if (bar=\"I\" or bar=\"N\") then baz is absent";
 					
+					ValidationResult<Foo> validate(RosettaPath path, Foo foo);
 					
-					@Override
-					public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
-						ComparisonResult result = executeDataRule(foo);
-						if (result.get()) {
-							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+					class Default implements FooDataRule0 {
+					
+						@Override
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+							ComparisonResult result = executeDataRule(foo);
+							if (result.get()) {
+								return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+							}
+							
+							String failureMessage = result.getError();
+							if (failureMessage == null) {
+								failureMessage = "Condition " + NAME + " failed.";
+							}
+							return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 						}
 						
-						String failureMessage = result.getError();
-						if (failureMessage == null) {
-							failureMessage = "Condition " + NAME + " failed.";
-						}
-						return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
-					}
-					
-					private ComparisonResult executeDataRule(Foo foo) {
-						
-						try {
-							ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
-								if (exists(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar())).get()) {
-									return MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
-										if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
-											return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
-										}
-										else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).get()) {
-											return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
-										}
-										else {
-											return MapperS.ofNull();
-										}
-									}));
-								}
-								else {
-									return MapperS.ofNull();
-								}
-							}));
-							return result.get() == null ? ComparisonResult.success() : result;
-						}
-						catch (Exception ex) {
-							return ComparisonResult.failure(ex.getMessage());
+						private ComparisonResult executeDataRule(Foo foo) {
+							try {
+								ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
+									if (exists(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar())).get()) {
+										return MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
+											if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
+												return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
+											}
+											else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).get()) {
+												return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
+											}
+											else {
+												return MapperS.ofNull();
+											}
+										}));
+									}
+									else {
+										return MapperS.ofNull();
+									}
+								}));
+								return result.get() == null ? ComparisonResult.success() : result;
+							}
+							catch (Exception ex) {
+								return ComparisonResult.failure(ex.getMessage());
+							}
 						}
 					}
 				}

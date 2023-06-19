@@ -23,6 +23,7 @@ import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
+import com.google.inject.ImplementedBy
 
 class DataRuleGenerator {
 	@Inject ExpressionGenerator expressionHandler
@@ -44,54 +45,68 @@ class DataRuleGenerator {
 		val rosettaClass = rule.eContainer as Data
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION))
 		val ruleName = rule.conditionName(data)
+		val className = toConditionJavaType(ruleName);
 		val funcDeps = funcDependencies.functionDependencies(rule.expression)
 		val implicitVarRepr = rule.implicitVarInContext
 		
 		val classScope = scope.classScope(toConditionJavaType(ruleName))
-		funcDeps.forEach[classScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)]
 		
 		val validateScope = classScope.methodScope("validate")
 		val pathId = validateScope.createUniqueIdentifier("path")
-		val resultId = validateScope.createUniqueIdentifier("result")
-		val failureMessageId = validateScope.createUniqueIdentifier("failureMessage")
 		
-		val executeScope = classScope.methodScope("execute")
-		val executeResultId = executeScope.createUniqueIdentifier("result")
-		val exceptionId = executeScope.createUniqueIdentifier("ex")
+		val defaultClassScope = classScope.classScope("Default")
+		val defaultClassName = defaultClassScope.createUniqueIdentifier("Default")
+		
+		funcDeps.forEach[defaultClassScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)]
+		
+		val defaultClassValidateScope = defaultClassScope.methodScope("validate")
+		val defaultClassPathId = defaultClassValidateScope.createUniqueIdentifier("path")
+		val defaultClassResultId = defaultClassValidateScope.createUniqueIdentifier("result")
+		val defaultClassFailureMessageId = defaultClassValidateScope.createUniqueIdentifier("failureMessage")
+		
+		val defaultClassExecuteScope = defaultClassScope.methodScope("execute")
+		val defaultClassExecuteResultId = defaultClassExecuteScope.createUniqueIdentifier("result")
+		val defaultClassExceptionId = defaultClassExecuteScope.createUniqueIdentifier("ex")
+		
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaDataRule»("«ruleName»")
-			public class «toConditionJavaType(ruleName)» implements «Validator»<«new RDataType(rosettaClass).toJavaType»> {
+			@«ImplementedBy»(«className».Default.class)
+			public interface «className» extends «Validator»<«new RDataType(rosettaClass).toJavaType»> {
 				
-				private static final String NAME = "«ruleName»";
-				private static final String DEFINITION = «definition»;
+				String NAME = "«ruleName»";
+				String DEFINITION = «definition»;
 				
-				«FOR dep : funcDeps»
-					@«Inject» protected «dep.toFunctionJavaClass» «classScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
-				«ENDFOR»
+				«ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «pathId», «rosettaClass.name» «validateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)»);
 				
-				@Override
-				public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «pathId», «rosettaClass.name» «validateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
-					«ComparisonResult» «resultId» = executeDataRule(«validateScope.getIdentifierOrThrow(implicitVarRepr)»);
-					if (result.get()) {
-						return «ValidationResult».success(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", «pathId», DEFINITION);
+				class «defaultClassName» implements «className» {
+				
+					«FOR dep : funcDeps»
+						@«Inject» protected «dep.toFunctionJavaClass» «defaultClassScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
+						
+					«ENDFOR»
+					@Override
+					public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «defaultClassPathId», «rosettaClass.name» «defaultClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
+						«ComparisonResult» «defaultClassResultId» = executeDataRule(«defaultClassValidateScope.getIdentifierOrThrow(implicitVarRepr)»);
+						if (result.get()) {
+							return «ValidationResult».success(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION);
+						}
+						
+						String «defaultClassFailureMessageId» = «defaultClassResultId».getError();
+						if («defaultClassFailureMessageId» == null) {
+							«defaultClassFailureMessageId» = "Condition " + NAME + " failed.";
+						}
+						return «ValidationResult».failure(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION, «defaultClassFailureMessageId»);
 					}
 					
-					String «failureMessageId» = «resultId».getError();
-					if («failureMessageId» == null) {
-						«failureMessageId» = "Condition " + NAME + " failed.";
-					}
-					return «ValidationResult».failure(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", «pathId», DEFINITION, «failureMessageId»);
-				}
-				
-				private «ComparisonResult» executeDataRule(«rosettaClass.name» «executeScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
-					
-					try {
-						«ComparisonResult» «executeResultId» = «expressionHandler.toComparisonResult(rule.expression, executeScope)»;
-						return «executeResultId».get() == null ? ComparisonResult.success() : «executeResultId»;
-					}
-					catch («Exception» «exceptionId») {
-						return «ComparisonResult».failure(«exceptionId».getMessage());
+					private «ComparisonResult» executeDataRule(«rosettaClass.name» «defaultClassExecuteScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
+						try {
+							«ComparisonResult» «defaultClassExecuteResultId» = «expressionHandler.toComparisonResult(rule.expression, defaultClassExecuteScope)»;
+							return «defaultClassExecuteResultId».get() == null ? ComparisonResult.success() : «defaultClassExecuteResultId»;
+						}
+						catch («Exception» «defaultClassExceptionId») {
+							return «ComparisonResult».failure(«defaultClassExceptionId».getMessage());
+						}
 					}
 				}
 			}
