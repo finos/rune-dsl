@@ -39,6 +39,25 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testSingularFilterOperation() {
+		val code = '''
+		func NonZero:
+			inputs:
+				input int (0..1)
+			output:
+				result int (0..1)
+			set result:
+				input filter item <> 0
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val nonZero = classes.createFunc("NonZero");
+
+		assertEquals(42, nonZero.invokeFunc(Integer, #[42]))
+		assertEquals(null, nonZero.invokeFunc(Integer, #[0]))
+	}
+	
+	@Test
 	def void testJavaLangNames() {
 		val code = '''
 		func Boolean:

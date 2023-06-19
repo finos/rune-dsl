@@ -87,7 +87,9 @@ class CardinalityProvider {
 			}
 			ListLiteral: obj.elements.size > 0 // TODO: the type system is currently not strong enough to implement this completely right
 			ReduceOperation: false
-			FilterOperation: true
+			FilterOperation: {
+				obj.argument.isMulti(breakOnClosureParameter)
+			}
 			MapOperation: {
 				if (obj.function.isMulti(breakOnClosureParameter)) {
 					true

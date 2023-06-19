@@ -664,9 +664,21 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient filterOperation(FilterOperation op, JavaScope scope) {
-		'''
-		«op.argument.emptyToMapperJavaCode(scope, true)»
-			.«IF op.function.isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.function.inlineFunction(scope, true, false)»)'''
+		if (!op.isPreviousOperationMulti) {
+			'''
+			«op.argument.emptyToMapperJavaCode(scope, true)»
+				.filterSingle(«op.function.inlineFunction(scope, true, false)»)'''
+		} else {
+			if (op.argument.isOutputListOfLists) {
+				'''
+				«op.argument.emptyToMapperJavaCode(scope, true)»
+					.filterList(«op.function.inlineFunction(scope, true, false)»)'''
+			} else {
+				'''
+				«op.argument.emptyToMapperJavaCode(scope, true)»
+					.filterItem(«op.function.inlineFunction(scope, true, false)»)'''
+			}
+		}
 	}
 	
 	def StringConcatenationClient mapOperation(MapOperation op, JavaScope scope) {
