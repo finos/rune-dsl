@@ -946,6 +946,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
@@ -989,7 +990,7 @@ class ListOperationTest {
 						
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
 							foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-								.mapItem(item -> (MapperS<Foo>)com.rosetta.model.lib.mapper.MapperUtils.fromDataType(() -> {
+								.mapItem(item -> (MapperS<Foo>)MapperUtils.fromDataType(() -> {
 									if (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 										return MapperS.of(create_Foo.evaluate(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get(), MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get()));
 									}
@@ -2657,6 +2658,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
 				import java.util.List;
@@ -2687,7 +2689,7 @@ class ListOperationTest {
 						}
 						
 						protected List<String> assignOutput(List<String> strings, List<? extends Foo> foos, String test) {
-							strings = com.rosetta.model.lib.mapper.MapperUtils.fromBuiltInType(() -> {
+							strings = MapperUtils.fromBuiltInType(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).get()) {
 									return MapperC.<Foo>of(foos)
 										.mapItem(item -> (MapperS<String>)MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_a")));
