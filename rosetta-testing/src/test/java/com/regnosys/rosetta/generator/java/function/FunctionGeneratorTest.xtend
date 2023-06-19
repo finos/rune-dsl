@@ -8,12 +8,18 @@ import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
 import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.records.Date
+import java.math.BigDecimal
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.Arrays
 import java.util.List
 import java.util.Map
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
@@ -22,12 +28,6 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
-import java.time.ZonedDateTime
-import java.time.ZoneId
-import com.rosetta.model.lib.records.Date
-import java.time.LocalTime
-import java.math.BigDecimal
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

@@ -1,13 +1,19 @@
 package com.regnosys.rosetta.generator.java.rule
 
+import com.google.inject.ImplementedBy
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.types.RDataType
 import com.rosetta.model.lib.annotations.RosettaDataRule
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.path.RosettaPath
@@ -18,12 +24,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
-import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
-import com.regnosys.rosetta.types.RDataType
-import com.google.inject.ImplementedBy
 
 class DataRuleGenerator {
 	@Inject ExpressionGenerator expressionHandler
