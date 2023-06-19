@@ -155,8 +155,9 @@ public class ExternalAnnotationUtil {
 				if (extAttr.getOperator().equals(ExternalValueOperator.MINUS)) {
 					visitor.remove(extAttr);
 				} else {
-					extAttr.getExternalRuleReferences().stream().findFirst()
-						.ifPresent(rule -> visitor.add(extAttr, rule));
+					if (extAttr.getExternalRuleReference() != null) {
+						visitor.add(extAttr, extAttr.getExternalRuleReference());
+					}
 				}
 			}
 		});

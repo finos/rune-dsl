@@ -74,16 +74,7 @@ class CardinalityProvider {
 				obj.symbol.isMulti(breakOnClosureParameter)
 			}
 			RosettaImplicitVariable: {
-				val definingContainer = obj.findContainerDefiningImplicitVariable
-				definingContainer.map [
-					if (it instanceof RosettaFunctionalOperation) {
-						function.isItemMulti
-					} else if (it instanceof RosettaBlueprint) {
-						true
-					} else {
-						false
-					}
-				].orElse(false)
+				obj.isImplicitVariableMulti
 			}
 			Function: if(obj.output === null) false else obj.output.isMulti(breakOnClosureParameter)
 			ShortcutDeclaration: obj.expression.isMulti(breakOnClosureParameter)
@@ -153,6 +144,8 @@ class CardinalityProvider {
 				false
 			} else if (it instanceof RosettaFunctionalOperation) {
 				isClosureParameterMulti(it.function)
+			} else if (it instanceof RosettaBlueprint) {
+				false
 			} else {
 				false
 			}

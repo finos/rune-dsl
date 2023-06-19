@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.blueprints
+package com.regnosys.rosetta.generator.java.rule
 
 import com.google.inject.Guice
 import com.google.inject.Inject
@@ -26,8 +26,7 @@ import org.eclipse.xtext.diagnostics.Diagnostic
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
-//@Disabled("This test fails after the 2.15 xtext upgrade because the generated code does not compile with the eclipse compiler using mvn.")
-class RosettaBlueprintTest {
+class RosettaRuleGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
@@ -36,9 +35,8 @@ class RosettaBlueprintTest {
 	@Test
 	def void parseSimpleRule() {
 		val r = '''
-			eligibility rule ReportableTransation from ReportableEvent:
-				[legacy-syntax]
-				return "y"
+			eligibility rule ReportableTransation:
+				"y"
 		'''
 		parseRosettaWithNoErrors(r)
 	}
@@ -68,23 +66,19 @@ class RosettaBlueprintTest {
 	static final CharSequence REPORT_RULES = '''
 					namespace com.rosetta.test.model
 
-					eligibility rule FooRule from Bar:
-						[legacy-syntax]
-						filter when Bar->bar1 exists
+					eligibility rule FooRule:
+						filter Bar->bar1 exists
 
-					reporting rule BarBarOne from Bar:
-						[legacy-syntax]
+					reporting rule BarBarOne:
 						extract Bar->bar1 as "1 BarOne"
 
-					reporting rule BarBarTwo from Bar:
-						[legacy-syntax]
+					reporting rule BarBarTwo:
 						extract Bar->bar2 as "2 BarTwo"
 
-					reporting rule BarBaz from Bar:
-						[legacy-syntax]
+					reporting rule BarBaz:
 						extract Bar->baz->baz1 as "3 BarBaz"
 
-					reporting rule BarQuxList from Bar:
+					reporting rule BarQuxList:
 						[legacy-syntax]
 						extract repeatable Bar->quxList then
 						(
@@ -92,16 +86,13 @@ class RosettaBlueprintTest {
 							QuxQux2
 						) as "4 BarQuxList"
 
-					reporting rule QuxQux1 from Qux:
-						[legacy-syntax]
+					reporting rule QuxQux1:
 						extract Qux->qux1 as "5 QuxQux1"
 
-					reporting rule QuxQux2 from Qux:
-						[legacy-syntax]
+					reporting rule QuxQux2:
 						extract Qux->qux2 as "6 QuxQux2"
 
-					reporting rule BarQuux from Bar:
-						[legacy-syntax]
+					reporting rule BarQuux:
 						extract Create_Quux( Bar->baz ) as "7 BarQuux"
 
 					func Create_Quux:
@@ -129,7 +120,6 @@ class RosettaBlueprintTest {
 					corpus TEST_REG MiFIR
 
 					report TEST_REG MiFIR in T+1
-					from Bar
 					when FooRule
 					with type BarReport
 
@@ -325,7 +315,6 @@ class RosettaBlueprintTest {
 					corpus TEST_REG MiFIR
 
 					report TEST_REG MiFIR in T+1
-					from Bar
 					when FooRule
 					with type BarReport
 					with source RuleSource
@@ -537,7 +526,6 @@ class RosettaBlueprintTest {
 					corpus TEST_REG MiFIR
 
 					report TEST_REG MiFIR in T+1
-					from Bar
 					when FooRule
 					with type BarReport
 					with source RuleSource
@@ -561,8 +549,7 @@ class RosettaBlueprintTest {
 						bazQux2 string (1..1)
 							[ruleReference QuxQux2]
 
-					reporting rule New_BarBarOne from Bar:
-						[legacy-syntax]
+					reporting rule New_BarBarOne:
 						extract Bar->bar1 + "NEW" as "1 New BarOne"
 
 					rule source RuleSource {
@@ -673,7 +660,6 @@ class RosettaBlueprintTest {
 					corpus TEST_REG MiFIR
 
 					report TEST_REG MiFIR in T+1
-					from Bar
 					when FooRule
 					with type BarReport
 					with source RuleSource
@@ -799,8 +785,7 @@ class RosettaBlueprintTest {
 			
 			import ns1.*
 			
-			reporting rule BarBarTwo from Bar:
-				[legacy-syntax]
+			reporting rule BarBarTwo:
 				extract Bar->bar2 as "2 BarTwo"
 			
 		''','''
@@ -813,16 +798,13 @@ class RosettaBlueprintTest {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
-				from Bar
 				when FooRule
 				with type BarReport
 			
-			eligibility rule FooRule from Bar:
-				[legacy-syntax]
-				filter when Bar->bar1 exists
+			eligibility rule FooRule:
+				filter Bar->bar1 exists
 			
-			reporting rule BarBarOne from Bar:
-				[legacy-syntax]
+			reporting rule BarBarOne:
 				extract Bar->bar1 as "1 BarOne"
 			
 			type BarReport:
@@ -896,13 +878,11 @@ class RosettaBlueprintTest {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
-			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule from Bar:
-				[legacy-syntax]
-				filter when Bar->bar1 exists
+			eligibility rule FooRule:
+				filter Bar->bar1 exists
 			
 			type BarReport:
 				barBarOne string (1..1)
@@ -1035,7 +1015,6 @@ class RosettaBlueprintTest {
 			segment field
 			
 			report Shield Avengers SokoviaAccords in real-time
-				from Person
 			    when HasSuperPowers
 			    with type SokoviaAccordsReport
 			
@@ -1074,57 +1053,46 @@ class RosettaBlueprintTest {
 			    country CountryEnum (1..1)
 			        [ruleReference OrganisationCountry]
 			
-			eligibility rule HasSuperPowers from Person:
-				[legacy-syntax]
-			    filter when Person -> hasSpecialAbilities
+			eligibility rule HasSuperPowers:
+			     filter Person -> hasSpecialAbilities
 			
-			reporting rule HeroName from Person: <"Name">
-				[legacy-syntax]
+			reporting rule HeroName: <"Name">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "1" provision "Hero Name."]
 			    extract Person -> name as "Hero Name"
 			
-			reporting rule DateOfBirth from Person: <"Date of birth">
-				[legacy-syntax]
+			reporting rule DateOfBirth: <"Date of birth">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "2" provision "Date of birth."]
 			    extract Person -> dateOfBirth as "Date of Birth"
 			
-			reporting rule Nationality from Person: <"Nationality">
-				[legacy-syntax]
+			reporting rule Nationality: <"Nationality">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "2" provision "Nationality."]
 			    extract Person -> nationality as "Nationality"
 			
-			reporting rule SpecialAbilities from Person: <"Has Special Abilities">
-				[legacy-syntax]
+			reporting rule SpecialAbilities: <"Has Special Abilities">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "3" provision "Has Special Abilities"]
 			    extract Person -> hasSpecialAbilities as "Has Special Abilities"
 			
-			reporting rule Powers from Person: <"Super Power Name">
-				[legacy-syntax]
+			reporting rule Powers: <"Super Power Name">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Powers."]
 			    extract Person -> powers as "Powers"
 			
-			reporting rule AttributeInt from Person: <"Attribute - Int">
-				[legacy-syntax]
+			reporting rule AttributeInt: <"Attribute - Int">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Int."]
 			    extract Person -> attribute -> heroInt as "Attribute - Int"
 			
-			reporting rule AttributeNumber from Person: <"Attribute - Number">
-				[legacy-syntax]
+			reporting rule AttributeNumber: <"Attribute - Number">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Number."]
 			    extract Person -> attribute -> heroNumber as "Attribute - Number"
 			
-			reporting rule AttributeZonedDateTime from Person: <"Attribute - ZonedDateTime">
-				[legacy-syntax]
+			reporting rule AttributeZonedDateTime: <"Attribute - ZonedDateTime">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - ZonedDateTime."]
 			    extract Person -> attribute -> heroZonedDateTime as "Attribute - ZonedDateTime"
 			
-			reporting rule AttributeTime from Person: <"Attribute - Time">
-				[legacy-syntax]
+			reporting rule AttributeTime: <"Attribute - Time">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Time."]
 			    extract Person -> attribute -> heroTime as "Attribute - Time"
 			
-			reporting rule HeroOrganisations from Person: <"Has Special Abilities">
-				[legacy-syntax]
+			reporting rule HeroOrganisations: <"Has Special Abilities">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
 			    extract repeatable Person -> organisations then
 			    (
@@ -1133,23 +1101,19 @@ class RosettaBlueprintTest {
 			        IsGovernmentAgency
 			    ) as "Hero Organisations"
 			
-			reporting rule OrganisationName from Organisation: <"Has Special Abilities">
-				[legacy-syntax]
+			reporting rule OrganisationName: <"Has Special Abilities">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
 			    extract Organisation -> name as "Organisation Name"
 			
-			reporting rule OrganisationCountry from Organisation: <"Has Special Abilities">
-				[legacy-syntax]
+			reporting rule OrganisationCountry: <"Has Special Abilities">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
 			    extract Organisation -> country as "Organisation Country"
 			
-			reporting rule IsGovernmentAgency from Organisation: <"Has Special Abilities">
-				[legacy-syntax]
+			reporting rule IsGovernmentAgency: <"Has Special Abilities">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
 			    extract Organisation -> isGovernmentAgency as "Is Government Agency"
 			
-			reporting rule NotModelled from Person: <"Not Modelled">
-				[legacy-syntax]
+			reporting rule NotModelled: <"Not Modelled">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "6"  provision "Not Modelled."]
 			    return "Not modelled" as "Not Modelled"
 			
@@ -1294,8 +1258,7 @@ class RosettaBlueprintTest {
 			type Bar:
 				baz string (1..1)
 			
-			reporting rule Blueprint1 from Foo:
-				[legacy-syntax]
+			reporting rule Blueprint1:
 				extract Foo->bar then
 				extract Bar->baz
 		'''.generateCode
@@ -1366,8 +1329,7 @@ class RosettaBlueprintTest {
 			type Input2:
 				colour string (1..1)
 			
-			reporting rule Blueprint1 from Input:
-				[legacy-syntax]
+			reporting rule Blueprint1:
 				extract Input->input2->name
 		'''.parseRosetta.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
 			"Couldn't resolve reference to RosettaFeature 'name'.")
@@ -1376,8 +1338,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void brokenAndInputTypes() {
 		'''
-			reporting rule Blueprint1 from Input:
-				[legacy-syntax]
+			reporting rule Blueprint1:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
 					extract Input->traderef,
@@ -1397,8 +1358,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void multiplicationExpression() {
 		val model = '''
-			reporting rule Blueprint1 from Input:
-				[legacy-syntax]
+			reporting rule Blueprint1:
 				extract Input->traderef * Input2->colour
 			
 			type Input:
@@ -1415,8 +1375,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void brokenExpressionInputTypes() {
 		val model = '''
-			reporting rule Blueprint1 from Input:
-				[legacy-syntax]
+			reporting rule Blueprint1:
 				extract Input->traderef * Input->colour
 			
 			type Input:
@@ -1430,8 +1389,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void orInputTypesExtends() {
 		val code = '''
-			reporting rule Blueprint1 from Input2:
-				[legacy-syntax]
+			reporting rule Blueprint1:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
 					extract Input->traderef,
@@ -1451,11 +1409,10 @@ class RosettaBlueprintTest {
 	@Test
 	def void complexOr() {
 		val blueprint = '''
-			reporting rule Blueprint1: from Input
-				[legacy-syntax]
+			reporting rule Blueprint1:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
-					filter when Input->traderef="3" then extract Input->traderef, 
+					filter Input->traderef="3" then extract Input->traderef, 
 					extract Input->colour
 				)
 			
@@ -1530,7 +1487,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void numberOr() {
 		val blueprint = '''
-			reporting rule Blueprint1 from Input:
+			reporting rule Blueprint1:
 				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
@@ -1606,8 +1563,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void complexOr2() {
 		val blueprint = '''
-			reporting rule Blueprint1 from Input:
-				[legacy-syntax]
+			reporting rule Blueprint1:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
 					extract Input -> foo
@@ -1693,8 +1649,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void complexOr3() {
 		val blueprint = '''
-			reporting rule Blueprint1 from Input1:
-				[legacy-syntax]
+			reporting rule Blueprint1:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				(
 					extract Input1->i1
@@ -1781,13 +1736,11 @@ class RosettaBlueprintTest {
 			type Bar:
 				val string (1..1)
 			
-			reporting rule Rule1 from Foo:
-				[legacy-syntax]
+			reporting rule Rule1:
 				Rule2 then
 				extract Bar->val
 			
-			reporting rule Rule2 from Foo:
-				[legacy-syntax]
+			reporting rule Rule2:
 				extract Foo->bar
 			
 		'''.parseRosettaWithNoErrors
@@ -1801,10 +1754,9 @@ class RosettaBlueprintTest {
 	@Test
 	def void filter() {
 		val blueprint = '''
-			reporting rule SimpleBlueprint from Input:
-				[legacy-syntax]
+			reporting rule SimpleBlueprint:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				filter when Input->traderef="Hello"
+				filter Input->traderef="Hello"
 			
 			type Input:
 				traderef string (1..1)
@@ -1867,10 +1819,9 @@ class RosettaBlueprintTest {
 	@Test
 	def void filter2() {
 		val blueprint = '''
-			reporting rule SimpleBlueprint from Input:
-				[legacy-syntax]
+			reporting rule SimpleBlueprint:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				filter when Input->traderef exists
+				filter Input->traderef exists
 									
 			type Input:
 				traderef string (0..1)
@@ -1886,13 +1837,11 @@ class RosettaBlueprintTest {
 	@Test
 	def void filterWhenRule() {
 		val blueprint = '''
-			reporting rule TestRule from Input:
-				[legacy-syntax]
+			reporting rule TestRule:
 				extract Input->flag
-			
-			reporting rule FilterRule from Input:
-				[legacy-syntax]
-				filter when rule TestRule then extract Input->traderef
+						
+			reporting rule FilterRule:
+				filter rule TestRule then extract Input->traderef
 			
 			
 			type Input:
@@ -1910,15 +1859,13 @@ class RosettaBlueprintTest {
 	@Test
 	def void lookupRule() {
 		val blueprint = '''
-			reporting rule WorthyAvenger from Avengers:
-				[legacy-syntax]
+			reporting rule WorthyAvenger:
 				extract Avengers -> heros then 
-				filter when rule CanWieldMjolnir 
-					then filter when Hero -> name <> 'Thor'
+				filter rule CanWieldMjolnir 
+					then filter Hero -> name <> 'Thor'
 					then extract Hero -> name
 			
-			eligibility rule CanWieldMjolnir from Hero:
-				[legacy-syntax]
+			eligibility rule CanWieldMjolnir:
 				lookup CanWieldMjolnir boolean
 			
 			type Avengers:
@@ -1997,13 +1944,11 @@ class RosettaBlueprintTest {
 	@Test
 	def void filterCardinalityAndType() {
 		val model = '''
-			reporting rule TestRule from Input:
-				[legacy-syntax]
+			reporting rule TestRule:
 				extract Input->flag
 						
-			reporting rule FilterRule from Input:
-				[legacy-syntax]
-				filter when rule TestRule then extract Input->traderef
+			reporting rule FilterRule:
+				filter rule TestRule then extract Input->traderef
 			
 			
 			type Input:
@@ -2021,9 +1966,8 @@ class RosettaBlueprintTest {
 	@Test
 	def void filterWhenCount() {
 		val blueprint = '''
-			reporting rule IsFixedFloat from Foo:
-				[legacy-syntax]
-				extract Foo->fixed count = 12
+			reporting rule IsFixedFloat:
+			extract Foo->fixed count = 12
 			
 			type Foo:
 				fixed string (0..*)
@@ -2086,8 +2030,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void expressionIf() {
 		val blueprint = '''
-			reporting rule FixedFloat from Foo:
-				[legacy-syntax]
+			reporting rule FixedFloat:
 				extract 
 					if Foo -> fixed = "Wood" then
 						Foo -> floating
@@ -2112,8 +2055,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void maxBy() {
 		val blueprint = '''
-			reporting rule IsFixedFloat from Foo:
-				[legacy-syntax]
+			reporting rule IsFixedFloat:
 				extract Foo -> bars 
 					max [ item -> order ]
 			
@@ -2132,8 +2074,7 @@ class RosettaBlueprintTest {
 	@Disabled
 	def void maxBy2() {
 		val blueprint = '''
-			reporting rule IsFixedFloat from Foo:
-				[legacy-syntax]
+			reporting rule IsFixedFloat:
 				extract Foo -> bars then
 				extract Bar max [ item -> order ] // should this work?
 			
@@ -2151,8 +2092,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void maxBy3() {
 		val blueprint = '''
-			reporting rule IsFixedFloat from Foo:
-				[legacy-syntax]
+			reporting rule IsFixedFloat:
 				extract Foo -> bars -> order max
 			
 			type Foo:
@@ -2169,8 +2109,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void maxByBrokenType() {
 		val model = '''
-			reporting rule IsFixedFloat from Foo:
-				[legacy-syntax]
+			reporting rule IsFixedFloat:
 				extract Foo -> bars 
 					max [ item ]
 			
@@ -2194,8 +2133,7 @@ class RosettaBlueprintTest {
 			type Bar:
 				val number (1..1)
 			
-			reporting rule Rule1 from Foo:
-				[legacy-syntax]
+			reporting rule Rule1:
 				extract Foo->bar->val + Bar->val
 			'''.parseRosetta
 			.assertError(BLUEPRINT_NODE_EXP, RosettaIssueCodes.TYPE_ERROR,
@@ -2211,8 +2149,7 @@ class RosettaBlueprintTest {
 			type Bar:
 				val number (1..1)
 			
-			reporting rule Rule1 from Foo:
-				[legacy-syntax]
+			reporting rule Rule1:
 				return MyFunc1() then
 				extract MyFunc(Foo->bar->val)
 			
@@ -2243,8 +2180,7 @@ class RosettaBlueprintTest {
 			type Bar:
 				val number (1..1)
 			
-			reporting rule Rule1 from Foo:
-				[legacy-syntax]
+			reporting rule Rule1:
 				return MyFunc1() then
 				extract MyFunc(Foo->bar->val) > MyFunc(3.0)
 			
@@ -2269,8 +2205,7 @@ class RosettaBlueprintTest {
 	@Test
 	def void functionCallsWithLiteralInputFromExtract() {
 		val blueprint = ''' 
-			reporting rule FooRule from Foo:
-				[legacy-syntax]
+			reporting rule FooRule:
 				extract 
 					if FooFunc( Foo -> a, "x" ) then "Y"
 					else "Z"
@@ -2300,8 +2235,7 @@ class RosettaBlueprintTest {
 			type Bar:
 				val number (1..1)
 			
-			reporting rule Rule1 from Foo:
-				[legacy-syntax]
+			reporting rule Rule1:
 				extract MyFunc(Foo->bar->val, Bar->val)
 			
 			func MyFunc:
@@ -2327,10 +2261,9 @@ class RosettaBlueprintTest {
 			type Bar:
 				val number (1..1)
 			
-			reporting rule Rule1 from Foo:
-				[legacy-syntax]
+			reporting rule Rule1:
 				return MyFunc1() then
-				filter when MyFunc(Foo->bar->val)
+				filter MyFunc(Foo->bar->val)
 			
 			func MyFunc1: 
 				output:
@@ -2359,12 +2292,11 @@ class RosettaBlueprintTest {
 			type Bar:
 				val number (1..1)
 			
-			reporting rule Rule1 from Foo:
-				[legacy-syntax]
+			reporting rule Rule1:
 				return MyFunc1() then
-				filter when MyFunc(Foo->bar->val)
+				filter MyFunc(Foo->bar->val)
 			
-			func MyFunc1:
+			func MyFunc1: 
 				output:
 					foo Foo (1..*)
 			
@@ -2390,16 +2322,15 @@ class RosettaBlueprintTest {
 			type TestObject: 
 				fieldOne string (0..1)
 			
-			reporting rule Rule1 from TestObject:
-				[legacy-syntax]
-				extract TestObject -> fieldOne	
+			reporting rule Rule1:
+				extract TestObject -> fieldOne
 			
 		''','''
 			namespace ns2
 			
 			import ns1.*
 			
-			reporting rule Rule2 from TestObject:
+			reporting rule Rule2:
 				[legacy-syntax]
 				Rule1
 		'''
@@ -2419,8 +2350,7 @@ class RosettaBlueprintTest {
 			type TestObject: 
 				fieldOne string (0..1)
 			
-			reporting rule Rule1 from TestObject:
-				[legacy-syntax]
+			reporting rule Rule1:
 				extract TestObject -> fieldOne exists
 			
 		''','''
@@ -2428,9 +2358,8 @@ class RosettaBlueprintTest {
 			
 			import ns1.*
 			
-			reporting rule Rule2 from TestObject:
-				[legacy-syntax]
-				filter when rule Rule1
+			reporting rule Rule2:
+				filter rule Rule1
 		'''
 		].generateCode
 		//code.writeClasses("shouldUseBlueprintRuleFromDifferentNS")
@@ -2447,12 +2376,10 @@ class RosettaBlueprintTest {
 			type TestObject: <"">
 				fieldOne string (0..1)
 			
-			reporting rule Rule1 from TestObject:
-				[legacy-syntax]
+			reporting rule Rule1:
 				extract TestObject -> fieldOne
 							
-			reporting rule Rule2 from TestObject:
-				[legacy-syntax]
+			reporting rule Rule2:
 				Rule1 as "BLAH"
 			
 		'''
@@ -2471,13 +2398,11 @@ class RosettaBlueprintTest {
 			type Bar:
 				str string (1..1)
 			
-			reporting rule Rule1 from Foo:
-				[legacy-syntax]
+			reporting rule Rule1:
 				extract Foo->bar then
 				Rule2
 							
-			reporting rule Rule2 from Foo:
-				[legacy-syntax]
+			reporting rule Rule2:
 				extract Foo->bar->str
 			
 		'''.toString
@@ -2498,8 +2423,7 @@ class RosettaBlueprintTest {
 		enum Bar:
 			A B C D F G H I J K L M N O P Q R S T U V W X Y Z
 		
-		reporting rule BarField from Foo:
-				[legacy-syntax]
+		reporting rule BarField:
 				extract if Foo -> bar = Bar -> A then "A"
 					else if Foo -> bar = Bar -> B then "B"
 					else if Foo -> bar = Bar -> C then "C"
@@ -2550,8 +2474,7 @@ class RosettaBlueprintTest {
 		enum Bar:
 			A B C D F G H I J K L M N O P Q R S T U V W X Y Z
 		
-		reporting rule BarField from Foo:
-				[legacy-syntax]
+		reporting rule BarField:
 				extract if Foo -> bar = Bar -> A then "A"
 					else if Foo -> bar = Bar -> B then "B"
 					else if Foo -> bar = Bar -> C then "C"
@@ -2603,8 +2526,7 @@ class RosettaBlueprintTest {
 		type Bar:
 			attr string (1..1)
 		
-		reporting rule BarField from Foo:
-			[legacy-syntax]
+		reporting rule BarField:
 			extract 
 				if Foo->test = True 
 				then Foo->bar
@@ -2626,8 +2548,7 @@ class RosettaBlueprintTest {
 		type Bar:
 			attr string (1..1)
 		
-		reporting rule BarField from Foo:
-			[legacy-syntax]
+		reporting rule BarField:
 			extract 
 				if Foo->test = True 
 				then Foo->bar
@@ -2643,8 +2564,7 @@ class RosettaBlueprintTest {
 	def void reportingRuleWithoutBodyDoesNotGenerateCode() {
 		var blueprint = '''
 		
-		reporting rule BarField from ReportableEvent:
-			[legacy-syntax]
+		reporting rule BarField:
 
 		'''.toString
 		.replace('\r', "")
@@ -2662,36 +2582,28 @@ class RosettaBlueprintTest {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
-			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule from Bar:
-				[legacy-syntax]
-				filter when Bar->barA exists
+			eligibility rule FooRule:
+				filter Bar->barA exists
 			
-			reporting rule Aa from Bar:
-				[legacy-syntax]
+			reporting rule Aa:
 				extract Bar->barA as "A"
 
-			reporting rule Bb from Bar:
-				[legacy-syntax]
+			reporting rule Bb:
 				extract Bar->barB as "B"
 				
-			reporting rule Cc from Bar:
-				[legacy-syntax]
+			reporting rule Cc:
 				extract Bar->barC as "C"
 
-			reporting rule Dd from Bar:
-				[legacy-syntax]
+			reporting rule Dd:
 				extract Bar->barD as "D"
 
-			reporting rule Ee from Bar:
-				[legacy-syntax]
+			reporting rule Ee:
 				extract Bar->barE as "E"
 				
-			reporting rule Ff from Bar:
-				[legacy-syntax]
+			reporting rule Ff:
 				extract Bar->barF as "F"
 			
 			type Bar:
@@ -2732,20 +2644,16 @@ class RosettaBlueprintTest {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
-			from Bar
 			when FooRule
 			with type BarReport2
 			
-			eligibility rule FooRule from Bar:
-				[legacy-syntax]
-				filter when Bar->barA exists
+			eligibility rule FooRule:
+				filter Bar->barA exists
 			
-			reporting rule Aa from Bar:
-				[legacy-syntax]
+			reporting rule Aa:
 				extract Bar->barA as "A"
 
-			reporting rule Aa2 from Bar:
-				[legacy-syntax]
+			reporting rule Aa2:
 				extract Bar->barA2 as "A"
 
 			
@@ -2791,28 +2699,22 @@ class RosettaBlueprintTest {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
-			from Bar
 			when FooRule
 			with type BarReport2
 			
-			eligibility rule FooRule from Bar:
-				[legacy-syntax]
-				filter when Bar->barA exists
+			eligibility rule FooRule:
+				filter Bar->barA exists
 			
-			reporting rule Aa from Bar:
-				[legacy-syntax]
+			reporting rule Aa:
 				extract Bar->barA as "A"
 
-			reporting rule Aa2 from Bar:
-				[legacy-syntax]
+			reporting rule Aa2:
 				extract Bar->barA2 as "A"
 			
-			reporting rule Bb from Bar:
-				[legacy-syntax]
+			reporting rule Bb:
 				extract Bar->barB as "B"
 				
-			reporting rule Cc from Bar:
-				[legacy-syntax]
+			reporting rule Cc:
 				extract Bar->barC as "C"
 
 			
@@ -2871,8 +2773,7 @@ class RosettaBlueprintTest {
 		type Bar:
 			attr string (1..1)
 		
-		reporting rule FooRule from Foo:
-			[legacy-syntax]
+		reporting rule FooRule:
 			extract Foo -> bar 
 				max [ item -> attr ] then
 			extract Bar -> attr
@@ -2893,8 +2794,7 @@ class RosettaBlueprintTest {
 		type Baz:
 			attr string (1..1)
 		
-		reporting rule FooRule from Foo:
-			[legacy-syntax]
+		reporting rule FooRule:
 			extract Foo -> bar 
 				map [ item -> baz ] then
 			extract Baz -> attr
@@ -2910,11 +2810,823 @@ class RosettaBlueprintTest {
 				Bar
 				Baz
 			
-			reporting rule ReturnEnumValue from ReportableEvent:
-				[legacy-syntax]
+			reporting rule ReturnEnumValue:
 				return FooEnum -> Bar
 			
 		'''.generateCode
 		code.compileToClasses
+	}
+
+	@Test
+	@Disabled
+	def void getNestedMappings() {
+		val blueprint = '''
+			blueprint NotSoSimpleBlueprint 
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+			{
+				SimpleMapping input Input
+			}
+			
+			type Input:
+				child Child (1..1)
+			
+			type Child:
+				traderef string (1..1)
+						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
+						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #29" provision "" reportedField]
+				tradeid int (1..1)
+						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #30" provision ""]
+						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #31" provision "" reportedField]
+			
+			type Output:
+				transactionReferenceNumber string (1..1)
+				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
+			
+		'''.generateCode
+
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.NotSoSimpleBlueprint")
+		// writeOutClasses(blueprint, "getNestedMappings");
+		try {
+			assertThat(blueprintJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.rosetta.model.lib.functions.Mapper;
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.functions.MappingGroup;
+				import com.rosetta.test.model.Child;
+				import com.rosetta.test.model.Input;
+				import java.util.Collection;
+				import java.util.List;
+				import java.util.function.Function;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				public abstract class NotSoSimpleBlueprint<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Object, INKEY, INKEY> {
+					@Override
+					public String getName() {
+						return "NotSoSimpleBlueprint"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#NotSoSimpleBlueprint";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Input, Object, INKEY, INKEY> blueprint() {
+						return 
+							startsWith(BlueprintBuilder.<Input, INKEY>doSimpleMappings("__synthetic1.rosetta#//@elements.0/@nodes/@node", "simpleMappingsInput", simpleMappingsInput()))
+							.toBlueprint(getURI(), getName());
+					}
+					
+					protected Collection<MappingGroup<Input, ?>> simpleMappingsInput() {
+						return Blueprint.of(
+						new MappingGroup<>("annex 1 table2 #28", "__synthetic1.rosetta#//@elements.0/@nodes/@node", ANNEX_1_TABLE2_28_MAPPINGS),
+						new MappingGroup<>("annex 1 table2 #29", "__synthetic1.rosetta#//@elements.0/@nodes/@node", ANNEX_1_TABLE2_29_MAPPINGS),
+						new MappingGroup<>("annex 1 table2 #31", "__synthetic1.rosetta#//@elements.0/@nodes/@node", ANNEX_1_TABLE2_31_MAPPINGS));
+					}
+					
+					private static final List<Function<Input, Mapper<String>>> ANNEX_1_TABLE2_28_MAPPINGS = Blueprint.of(
+						i -> MapperS.of(i).map("getChild", Input::getChild).map("getTraderef", Child::getTraderef)
+					);
+					private static final List<Function<Input, Mapper<String>>> ANNEX_1_TABLE2_29_MAPPINGS = Blueprint.of(
+						i -> MapperS.of(i).map("getChild", Input::getChild).map("getTraderef", Child::getTraderef)
+					);
+					private static final List<Function<Input, Mapper<Integer>>> ANNEX_1_TABLE2_31_MAPPINGS = Blueprint.of(
+						i -> MapperS.of(i).map("getChild", Input::getChild).map("getTradeid", Child::getTradeid)
+					);
+				}
+			'''
+			blueprint.compileToClasses
+			assertEquals(expected, blueprintJava)
+		} finally {
+		}
+
+	}
+
+	@Test
+	@Disabled
+	def void getNestedMappingsWithMultiplePaths() {
+		val blueprint = '''
+			blueprint NotSoSimpleBlueprint 
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+			{
+				SimpleMapping input Input
+			}
+			
+			type Input:
+				childA Child (1..1)
+				childB Child (1..1)
+			
+			type Child:
+				traderef string (1..1)
+					[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
+			
+			type Output:
+				transactionReferenceNumber string (1..1)
+				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
+			
+		'''.generateCode
+
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.NotSoSimpleBlueprint")
+		// writeOutClasses(blueprint, "getNestedMappingsWithMultiplePaths");
+		try {
+			assertThat(blueprintJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.rosetta.model.lib.functions.Mapper;
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.functions.MappingGroup;
+				import com.rosetta.test.model.Child;
+				import com.rosetta.test.model.Input;
+				import java.util.Collection;
+				import java.util.List;
+				import java.util.function.Function;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				public abstract class NotSoSimpleBlueprint<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Object, INKEY, INKEY> {
+					@Override
+					public String getName() {
+						return "NotSoSimpleBlueprint"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#NotSoSimpleBlueprint";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Input, Object, INKEY, INKEY> blueprint() {
+						return 
+							startsWith(BlueprintBuilder.<Input, INKEY>doSimpleMappings("__synthetic1.rosetta#//@elements.0/@nodes/@node", "simpleMappingsInput", simpleMappingsInput()))
+							.toBlueprint(getURI(), getName());
+					}
+					
+					protected Collection<MappingGroup<Input, ?>> simpleMappingsInput() {
+						return Blueprint.of(
+						new MappingGroup<>("annex 1 table2 #28", "__synthetic1.rosetta#//@elements.0/@nodes/@node", ANNEX_1_TABLE2_28_MAPPINGS));
+					}
+					
+					private static final List<Function<Input, Mapper<String>>> ANNEX_1_TABLE2_28_MAPPINGS = Blueprint.of(
+						i -> MapperS.of(i).map("getChildA", Input::getChildA).map("getTraderef", Child::getTraderef),
+						i -> MapperS.of(i).map("getChildB", Input::getChildB).map("getTraderef", Child::getTraderef)
+					);
+				}
+			'''
+			blueprint.compileToClasses
+			assertEquals(expected, blueprintJava)
+		} finally {
+		}
+
+	}
+
+	@Test
+	@Disabled
+	def void genMappingCollection() {
+		val blueprint = '''
+			blueprint SimpleBlueprint 
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+			{
+				SimpleMapping input Input then
+				merge output Output 
+			}
+			
+			type Input:
+				traderefs string (1..*)
+						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
+			
+			type Output:
+				transactionId string (1..1)
+				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
+				transactionNumber number (1..1)
+				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #29" provision "" reportedField]
+			
+		'''.generateCode
+
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
+		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		val expected = '''
+			package com.rosetta.test.model.blueprint;
+			
+			import com.regnosys.rosetta.blueprints.Blueprint;
+			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+			import com.regnosys.rosetta.blueprints.BlueprintInstance;
+			import com.regnosys.rosetta.blueprints.runner.actions.Merger;
+			import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
+			import com.regnosys.rosetta.blueprints.runner.data.RosettaIdentifier;
+			import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+			import com.rosetta.model.lib.functions.Converter;
+			import com.rosetta.model.lib.functions.Mapper;
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.MappingGroup;
+			import com.rosetta.test.model.Input;
+			import com.rosetta.test.model.Output;
+			import java.math.BigDecimal;
+			import java.util.Collection;
+			import java.util.HashMap;
+			import java.util.List;
+			import java.util.Map;
+			import java.util.function.BiConsumer;
+			import java.util.function.Function;
+			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+			
+			public abstract class SimpleBlueprint<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Output, INKEY, INKEY> {
+				@Override
+				public String getName() {
+					return "SimpleBlueprint"; 
+				}
+				
+				@Override
+				public String getURI() {
+					return "__synthetic1.rosetta#SimpleBlueprint";
+				}
+				
+				
+				@Override
+				public BlueprintInstance<Input, Output, INKEY, INKEY> blueprint() {
+					return 
+						startsWith(BlueprintBuilder.<Input, INKEY>doSimpleMappings("__synthetic1.rosetta#//@elements.0/@nodes/@node", "simpleMappingsInput", simpleMappingsInput()))
+						.then(new Merger<>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "Create Output", mergeOutput(), this::mergeOutputSupplier, Output.OutputBuilder::build, 
+											new StringIdentifier("Output"), false))
+						.toBlueprint(getURI(), getName());
+				}
+				
+				protected Collection<MappingGroup<Input, ?>> simpleMappingsInput() {
+					return Blueprint.of(
+					new MappingGroup<>("annex 1 table2 #28", "__synthetic1.rosetta#//@elements.0/@nodes/@node", ANNEX_1_TABLE2_28_MAPPINGS));
+				}
+				
+				protected abstract Function<DataIdentifier, BiConsumer<Output.OutputBuilder, ?>> mergeOutput();
+				
+				protected Map<DataIdentifier, BiConsumer<Output.OutputBuilder, ?>> simpleMergeOutput() {
+					Map<DataIdentifier, BiConsumer<Output.OutputBuilder, ?>> result = new HashMap<>();
+					result.put(new RosettaIdentifier("annex 1 table2 #28"), (builder, input) -> builder.setTransactionId(Converter.convert(String.class, input)));
+					result.put(new RosettaIdentifier("annex 1 table2 #29"), (builder, input) -> builder.setTransactionNumber(Converter.convert(BigDecimal.class, input)));
+					result.put(new StringIdentifier("transactionId"), (builder, input) -> builder.setTransactionId(Converter.convert(String.class, input)));
+					result.put(new StringIdentifier("transactionNumber"), (builder, input) -> builder.setTransactionNumber(Converter.convert(BigDecimal.class, input)));
+					return result;
+				}
+				
+				private static final List<Function<Input, Mapper<String>>> ANNEX_1_TABLE2_28_MAPPINGS = Blueprint.of(
+					i -> MapperS.of(i).mapC("getTraderefs", Input::getTraderefs)
+				);
+				
+				protected abstract Output.OutputBuilder mergeOutputSupplier(INKEY k);
+			}
+		'''
+		blueprint.compileToClasses
+		assertEquals(expected, blueprintJava)
+	}
+
+	@Test
+	@Disabled
+	def void genMappingExtension() {
+		val blueprint = '''
+			blueprint SimpleBlueprint 
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+			{
+				SimpleMapping input Input2 then
+				merge output Output
+			}
+						
+			type Input:
+				traderef string (1..1)
+						[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
+			
+			type Input2 extends Input:
+			 	first string (1..1)
+			
+			type Output:
+				transactionReferenceNumber string (1..1)
+				[regulatoryReference ESMA MiFIR RTS_22 annex "1 table2 #28" provision "" reportedField]
+			
+		'''.generateCode
+
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
+		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		val expected = '''
+			package com.rosetta.test.model.blueprint;
+			
+			import com.regnosys.rosetta.blueprints.Blueprint;
+			import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+			import com.regnosys.rosetta.blueprints.BlueprintInstance;
+			import com.regnosys.rosetta.blueprints.runner.actions.Merger;
+			import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
+			import com.regnosys.rosetta.blueprints.runner.data.RosettaIdentifier;
+			import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+			import com.rosetta.model.lib.functions.Converter;
+			import com.rosetta.model.lib.functions.Mapper;
+			import com.rosetta.model.lib.functions.MapperS;
+			import com.rosetta.model.lib.functions.MappingGroup;
+			import com.rosetta.test.model.Input;
+			import com.rosetta.test.model.Input2;
+			import com.rosetta.test.model.Output;
+			import java.util.Collection;
+			import java.util.HashMap;
+			import java.util.List;
+			import java.util.Map;
+			import java.util.function.BiConsumer;
+			import java.util.function.Function;
+			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+			
+			public abstract class SimpleBlueprint<INKEY extends Comparable<INKEY>> implements Blueprint<Input2, Output, INKEY, INKEY> {
+				@Override
+				public String getName() {
+					return "SimpleBlueprint"; 
+				}
+				
+				@Override
+				public String getURI() {
+					return "__synthetic1.rosetta#SimpleBlueprint";
+				}
+				
+				
+				@Override
+				public BlueprintInstance<Input2, Output, INKEY, INKEY> blueprint() {
+					return 
+						startsWith(BlueprintBuilder.<Input2, INKEY>doSimpleMappings("__synthetic1.rosetta#//@elements.0/@nodes/@node", "simpleMappingsInput2", simpleMappingsInput2()))
+						.then(new Merger<>("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "Create Output", mergeOutput(), this::mergeOutputSupplier, Output.OutputBuilder::build, 
+											new StringIdentifier("Output"), false))
+						.toBlueprint(getURI(), getName());
+				}
+				
+				protected Collection<MappingGroup<Input2, ?>> simpleMappingsInput2() {
+					return Blueprint.of(
+					new MappingGroup<>("annex 1 table2 #28", "__synthetic1.rosetta#//@elements.0/@nodes/@node", ANNEX_1_TABLE2_28_MAPPINGS));
+				}
+				
+				protected abstract Function<DataIdentifier, BiConsumer<Output.OutputBuilder, ?>> mergeOutput();
+				
+				protected Map<DataIdentifier, BiConsumer<Output.OutputBuilder, ?>> simpleMergeOutput() {
+					Map<DataIdentifier, BiConsumer<Output.OutputBuilder, ?>> result = new HashMap<>();
+					result.put(new RosettaIdentifier("annex 1 table2 #28"), (builder, input) -> builder.setTransactionReferenceNumber(Converter.convert(String.class, input)));
+					result.put(new StringIdentifier("transactionReferenceNumber"), (builder, input) -> builder.setTransactionReferenceNumber(Converter.convert(String.class, input)));
+					return result;
+				}
+				
+				private static final List<Function<Input2, Mapper<String>>> ANNEX_1_TABLE2_28_MAPPINGS = Blueprint.of(
+					i -> MapperS.of(i).map("getTraderef", Input::getTraderef)
+				);
+				
+				protected abstract Output.OutputBuilder mergeOutputSupplier(INKEY k);
+			}
+		'''
+		// writeOutClasses(blueprint);
+		blueprint.compileToClasses
+		assertEquals(expected, blueprintJava)
+	}
+
+	@Test
+	@Disabled
+	def void genNestedBlueprints() {
+		val blueprint = '''
+			reporting rule Blueprint1:
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+				( extract Input->traderef , extract Input->input2->colour)
+				then Blueprint2
+			
+			reporting rule Blueprint2:
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+				merge output Output
+						
+			type Input:
+				traderef string (1..1)
+				input2 Input2 (1..1)
+			
+			type Input2:
+				colour string (1..1)
+			
+			type Output:
+				transactionReferenceNumber string (1..1)
+				colour string (1..1)
+		'''.generateCode
+
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
+		// writeOutClasses(blueprint, "genNestedBlueprints");
+		try {
+			assertThat(blueprintJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.runner.data.StringIdentifier;
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.test.model.Input;
+				import com.rosetta.test.model.Input2;
+				import com.rosetta.test.model.Output;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				public abstract class Blueprint1<INKEY> implements Blueprint<Input, Output, INKEY, INKEY> {
+					@Override
+					public String getName() {
+						return "Blueprint1"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Input, Output, INKEY, INKEY> blueprint() {
+						return 
+							startsWith(BlueprintBuilder.<Input, String, INKEY, INKEY>or(
+								startsWith(getRosettaActionFactory().<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.0/@node", "->traderef", new StringIdentifier("->traderef"), input -> MapperS.of(input).map("getTraderef", Input::getTraderef))),
+								startsWith(getRosettaActionFactory().<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#//@elements.0/@nodes/@node/@bps.1/@node", "->input2->colour", new StringIdentifier("->input2->colour"), input -> MapperS.of(input).map("getInput2", Input::getInput2).map("getColour", Input2::getColour)))
+								)
+							)
+							.then(getBlueprint2())
+							.toBlueprint(getURI(), getName());
+					}
+					
+					protected abstract BlueprintInstance<String, Output, INKEY, INKEY> getBlueprint2();
+				}
+			'''
+			blueprint.compileToClasses
+			assertEquals(expected, blueprintJava)
+		} finally {
+		}
+	}
+
+	@Test
+	@Disabled
+	def void ingest() {
+		val blueprint = '''
+			blueprint SimpleBlueprint 
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+			{
+				bpsource ISource <string, string> then
+				ingest to Input
+			}
+						
+			type Input:
+				traderef string (1..1)
+		'''.generateCode
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
+		// writeOutClasses(blueprint, "ingest");
+		blueprint.compileToClasses
+		try {
+			assertThat(blueprintJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import com.rosetta.test.model.Input;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				public abstract class SimpleBlueprint implements Blueprint<Void, Input, String, String> {
+					@Override
+					public String getName() {
+						return "SimpleBlueprint"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#SimpleBlueprint";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Void, Input, String, String> blueprint() {
+						return 
+							startsWith(getISource())
+							.then(getRosettaActionFactory().<Input, String>newRosettaIngester("__synthetic1.rosetta#//@elements.0/@nodes/@next/@node", "Map to Rosetta", Input.class))
+							.toBlueprint(getURI(), getName());
+					}
+					
+					protected abstract SourceNode<String, String> getISource();
+				}
+			'''
+			assertEquals(expected, blueprintJava)
+		} finally {
+		}
+	}
+
+	@Test
+	@Disabled
+	def void validate() {
+		val blueprint = '''
+			blueprint SimpleBlueprint 
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+			{
+				validate as Input
+			}
+									
+			type Input:
+				traderef string (1..1)
+			
+		'''.generateCode
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
+		// writeOutClasses(blueprint, "validate");
+		try {
+			assertThat(blueprintJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.rosetta.test.model.Input;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				public abstract class SimpleBlueprint<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Input, INKEY, INKEY> {
+					@Override
+					public String getName() {
+						return "SimpleBlueprint"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#SimpleBlueprint";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Input, Input, INKEY, INKEY> blueprint() {
+						return 
+							startsWith(getRosettaActionFactory().<Input, INKEY>newRosettaValidator("__synthetic1.rosetta#//@elements.0/@nodes/@node", "Validate Rosetta", Input.class))
+							.toBlueprint(getURI(), getName());
+					}
+				}
+			'''
+			blueprint.compileToClasses
+			assertEquals(expected, blueprintJava)
+		} finally {
+		}
+	}
+
+	@Test
+	@Disabled
+	def void source() {
+		val blueprint = '''
+			blueprint SimpleBlueprint 
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+			{
+				bpsource asource <string, string>
+			}
+		'''.generateCode
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprint")
+		// writeOutClasses(blueprint, "source");
+		try {
+			assertThat(blueprintJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				
+				public abstract class SimpleBlueprint implements Blueprint<Void, String, String, String> {
+					@Override
+					public String getName() {
+						return "SimpleBlueprint"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#SimpleBlueprint";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Void, String, String, String> blueprint() {
+						return 
+							startsWith(getAsource())
+							.toBlueprint(getURI(), getName());
+					}
+					
+					protected abstract SourceNode<String, String> getAsource();
+				}
+			'''
+			blueprint.compileToClasses
+			assertEquals(expected, blueprintJava)
+		} finally {
+		}
+	}
+
+	@Test
+	@Disabled
+	def void calculationUnifiedType() {
+		val blueprint = '''
+			calculation Calc {
+				outputVal int : arg1 + arg2
+				outputDt number : arg3 + arg4
+			}
+			
+			arguments Calc CalcArgs{
+				arg1 int : is Input->val1
+				arg2 int : is Input->val2
+				arg3 number : is Input->val3
+				arg4 number : is Input->val4
+			}			
+						
+			type Input:
+				val1 int (1..1)
+				val2 int (1..1)
+				val3 number (1..1)
+				val4 number (1..1)
+			
+			
+			blueprint Blueprint1
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+			{
+				calculate calc Calc args CalcArgs
+			}
+		'''.generateCode
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1")
+		// writeOutClasses(blueprint, "calculationUnifiedType");
+		try {
+			assertThat(blueprintJava, CoreMatchers.notNullValue())
+			blueprint.compileToClasses
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.rosetta.model.lib.functions.CalculationFunction;
+				import com.rosetta.model.lib.functions.CalculationFunction.CalculationArgFunctions;
+				import com.rosetta.model.lib.functions.MapperS;
+				import com.rosetta.model.lib.functions.MappingGroup;
+				import com.rosetta.test.model.Input;
+				import java.math.BigDecimal;
+				import java.util.Collection;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				import static com.rosetta.model.lib.functions.MapperMaths.*;
+				import static com.rosetta.model.lib.validation.ValidatorHelper.*;
+				
+				public abstract class Blueprint1<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Number, INKEY, INKEY> {
+					@Override
+					public String getName() {
+						return "Blueprint1"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Input, Number, INKEY, INKEY> blueprint() {
+						return 
+							startsWith(BlueprintBuilder.<Input, Number, INKEY>doCalcMappings("__synthetic1.rosetta#//@elements.3/@nodes/@node", calcMappingsCalc()))
+							.toBlueprint(getURI(), getName());
+					}
+					
+					private Collection<MappingGroup<Input, ? extends Number>> calcMappingsCalc() {
+						return Blueprint.of(
+							new MappingGroup<Input, Integer>("outputVal", "__synthetic1.rosetta#Calc.outputVal", Blueprint.of(new CalculationFunction<>(args->add(args.get("arg1"), args.get("arg2")), calcArgsCalc()))),
+							
+							new MappingGroup<Input, BigDecimal>("outputDt", "__synthetic1.rosetta#Calc.outputDt", Blueprint.of(new CalculationFunction<>(args->add(args.get("arg3"), args.get("arg4")), calcArgsCalc())))
+						);
+					}
+					
+					private CalculationArgFunctions<Input> calcArgsCalc() {
+						CalculationArgFunctions<Input> result = new CalculationArgFunctions<>();
+						result.put("arg1", input->MapperS.of(input).map("getVal1", Input::getVal1));
+						result.put("arg2", input->MapperS.of(input).map("getVal2", Input::getVal2));
+						result.put("arg3", input->MapperS.of(input).map("getVal3", Input::getVal3));
+						result.put("arg4", input->MapperS.of(input).map("getVal4", Input::getVal4));
+						return result;
+					}
+				}
+			'''
+			assertEquals(expected, blueprintJava)
+
+		} finally {
+		}
+	}
+
+	@Test
+	@Disabled
+	def void calculation() {
+		val blueprint = '''
+			calculation Calc {
+				outputVal int : arg1 + arg2
+				outputDt string : arg3 + arg4
+			}
+			
+			arguments Calc CalcArgs{
+				arg1 int : is Input->val1
+				arg2 int : is Input->val2
+				arg3 date : is Input->val3
+				arg4 time : is Input->val4
+			}			
+						
+			type Input:
+				val1 int (1..1)
+				val2 int (1..1)
+				val3 date (1..1)
+				val4 time (1..1)
+			
+			
+			reporting rule Blueprint1:
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+				calculate calc Calc args CalcArgs
+		'''.generateCode
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1")
+		// writeOutClasses(blueprint, "calculation");
+		try {
+			assertThat(blueprintJava, CoreMatchers.notNullValue())
+			blueprint.compileToClasses
+			val expected = '''
+				package com.rosetta.test.model.blueprint;
+				
+				import com.regnosys.rosetta.blueprints.Blueprint;
+				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
+				import com.regnosys.rosetta.blueprints.BlueprintInstance;
+				import com.rosetta.model.lib.functions.CalculationFunction;
+				import com.rosetta.model.lib.functions.CalculationFunction.CalculationArgFunctions;
+				import com.rosetta.test.model.Input;
+				import java.time.LocalDate;
+				import java.time.LocalTime;
+				import java.util.Collection;
+				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+				import static com.rosetta.model.lib.functions.MapperMaths.*;
+				
+				public abstract class Blueprint1<INKEY extends Comparable<INKEY>> implements Blueprint<Input, Object, INKEY, INKEY> {
+					@Override
+					public String getName() {
+						return "Blueprint1"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
+					}
+					
+					
+					@Override
+					public BlueprintInstance<Input, Object, INKEY, INKEY> blueprint() {
+						return 
+							startsWith(BlueprintBuilder.<Input, Object, INKEY>doCalcMappings("__synthetic1.rosetta#//@elements.3/@nodes/@node", calcMappingsCalc()))
+							.toBlueprint(getURI(), getName());
+					}
+					
+					private Collection<MappingGroup<Input, ? extends Object>> calcMappingsCalc() {
+						return Blueprint.of(
+							new MappingGroup<Input, Integer>("outputVal", "__synthetic1.rosetta#Calc.outputVal", Blueprint.of(new CalculationFunction<>(args->add(args.get("arg1"), args.get("arg2")), calcArgsCalc()))),
+							
+							new MappingGroup<Input, String>("outputDt", "__synthetic1.rosetta#Calc.outputDt", Blueprint.of(new CalculationFunction<>(args->add(args.get("arg3"), args.get("arg4")), calcArgsCalc())))
+						);
+					}
+					
+					private CalculationArgFunctions<Input> calcArgsCalc() {
+						CalculationArgFunctions<Input> result = new CalculationArgFunctions<>();
+						result.put("arg1", input->MapperS.of(input).map("getVal1", Input::getVal1));
+						result.put("arg2", input->MapperS.of(input).map("getVal2", Input::getVal2));
+						result.put("arg3", input->MapperS.of(input).map("getVal3", Input::getVal3));
+						result.put("arg4", input->MapperS.of(input).map("getVal4", Input::getVal4));
+						return result;
+					}
+				}
+			'''
+			assertEquals(expected, blueprintJava)
+
+		} finally {
+		}
+	}
+
+	@Disabled
+	@Test
+	def void calculationInline() {
+		val blueprint = '''
+			
+			blueprint Blueprint1
+				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+			{
+				calculate calc quantity string : "1" args a1 int : is Input->val1
+			}
+			
+			type Input:
+				val1 int (1..1)
+			
+		'''.generateCode
+		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1")
+		// writeOutClasses(blueprint, "calculationInline");
+		try {
+			assertThat(blueprintJava, CoreMatchers.notNullValue())
+			blueprint.compileToClasses
+
+		} finally {
+		}
 	}
 }

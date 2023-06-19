@@ -431,17 +431,27 @@ abstract class ExternalAnnotationSource extends RosettaRootElement, RosettaNamed
 	}
 }
 
-class RosettaExternalRef {
-	refers RosettaType typeRef
+abstract class RosettaExternalRef {
+	op RosettaType getTypeRef()
 }
 
 class RosettaExternalClass extends RosettaExternalRef {
+	refers Data data
 	contains RosettaExternalClassSynonym[] externalClassSynonyms
 	contains RosettaExternalRegularAttribute[] regularAttributes
+	
+	op RosettaType getTypeRef() {
+		data
+	}
 }
 
 class RosettaExternalEnum extends RosettaExternalRef {
+	refers RosettaEnumeration enumeration
 	contains RosettaExternalEnumValue[] regularValues
+	
+	op RosettaType getTypeRef() {
+		enumeration
+	}
 }
 
 enum ExternalValueOperator {
@@ -453,7 +463,7 @@ class RosettaExternalRegularAttribute {
 	ExternalValueOperator operator
 	refers RosettaFeature attributeRef
 	contains RosettaExternalSynonym[] externalSynonyms
-	contains RosettaRuleReference[] externalRuleReferences
+	contains RosettaRuleReference externalRuleReference
 }
 
 class RosettaExternalEnumValue {
@@ -497,6 +507,7 @@ class RosettaBlueprintReport extends RosettaRootElement {
 	contains RegulatoryDocumentReference regulatoryBody
 	refers RosettaBlueprint[] eligibilityRules
 	refers RosettaCorpus reportingStandard // @Compat: this attribute is unnecessary
+	contains TypeCall inputType
 	refers Data reportType
 	refers RosettaExternalRuleSource ruleSource
 	
@@ -512,7 +523,8 @@ class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinabl
 	contains BlueprintNodeExp nodes // legacy
 	contains RosettaExpression expression
 	String identifier
-	contains TypeCall output
+	contains TypeCall input
+	contains TypeCall output // TODO: is this ever used?
 }
 
 class BlueprintNodeExp {

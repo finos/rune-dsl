@@ -55,6 +55,7 @@ import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaDataReference
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
 
 class RosettaTypeProvider {
 
@@ -260,6 +261,8 @@ class RosettaTypeProvider {
 				new RDataType(it)
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
+			} else if (it instanceof RosettaBlueprint) {
+				input.typeCallToRType
 			}
 		].orElse(MISSING)
 	}

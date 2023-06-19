@@ -69,7 +69,7 @@ public class XsdSynonymImport extends AbstractXsdImport<XsdAbstractElement, Rose
 		Data data = typeMappings.getRosettaTypeFromComplex(complexType);
 
 		RosettaExternalClass rosettaExternalClass = RosettaFactory.eINSTANCE.createRosettaExternalClass();
-		rosettaExternalClass.setTypeRef(data);
+		rosettaExternalClass.setData(data);
 
 		Optional.of(complexType)
 			.map(XsdComplexType::getElements).stream()
@@ -106,7 +106,7 @@ public class XsdSynonymImport extends AbstractXsdImport<XsdAbstractElement, Rose
 		RosettaEnumeration enumeration = typeMappings.getRosettaEnumerationFromSimple(simpleType);
 
 		RosettaExternalEnum rosettaExternalEnum = RosettaFactory.eINSTANCE.createRosettaExternalEnum();
-		rosettaExternalEnum.setTypeRef(enumeration);
+		rosettaExternalEnum.setEnumeration(enumeration);
 
 		List<XsdEnumeration> ev = simpleType.getRestriction().getEnumeration();
 

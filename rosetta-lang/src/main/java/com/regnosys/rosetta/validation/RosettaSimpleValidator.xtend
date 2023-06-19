@@ -225,6 +225,23 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 	}
 	
+	@Check
+	def void cannotUseTypeNameForImplicitVariableInNewRuleSyntax(RosettaSymbolReference ref) {
+		if (ref.symbol instanceof Data) {
+			val rule = EcoreUtil2.getContainerOfType(ref, RosettaBlueprint)
+			if (rule === null || !rule.isLegacy) {
+				error('''Refering to the implicit input using the type name is deprecated. Use `item` instead.''', ref, null)
+			}
+		}
+	}
+	
+	@Check
+	def void ruleMustHaveInputTypeDeclared(RosettaBlueprint rule) {
+		if (rule.input === null) {
+			error('''A rule must declare its input type: `rule «rule.name» from <input type>: ...`''', rule, ROSETTA_NAMED__NAME)
+		}
+	}
+	
 	// @Compat
 	@Check
 	def void deprecatedMap(MapOperation op) {
@@ -319,9 +336,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void checkSynonymSource(RosettaExternalSynonymSource source) {
 		for (t : source.externalClasses) {
 			for (attr : t.regularAttributes) {
-				attr.externalRuleReferences.forEach [
-					error('''You may not define rule references in a synonym source.''', it, null);
-				]
+				if (attr.externalRuleReference !== null) {
+					error('''You may not define rule references in a synonym source.''', attr.externalRuleReference, null);
+				}
 			}
 		}
 	}

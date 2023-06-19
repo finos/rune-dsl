@@ -760,13 +760,13 @@ RosettaExternalRuleSource:
 ;
 
 RosettaExternalClass:
-	typeRef=[Data] ':'
+	data=[Data] ':'
 		(externalClassSynonyms += RosettaExternalClassSynonym)*
 		(regularAttributes += RosettaExternalRegularAttribute)*
 ;
 
 RosettaExternalEnum:
-	typeRef = [RosettaEnumeration] ':'
+	enumeration=[RosettaEnumeration] ':'
 		(regularValues += RosettaExternalEnumValue)*
 ;
 
@@ -778,7 +778,7 @@ enum ExternalValueOperator:
 RosettaExternalRegularAttribute:
 	operator=ExternalValueOperator attributeRef=[RosettaFeature|ValidID]
 		externalSynonyms+=RosettaExternalSynonym*
-		externalRuleReferences+=RosettaRuleReference*
+		(externalRuleReference=RosettaRuleReference)?
 ;
 
 RosettaExternalEnumValue: 
@@ -826,8 +826,9 @@ RosettaSegmentRef:
 RosettaBlueprintReport:
 	'report' regulatoryBody=RegulatoryDocumentReference
 	'in' ('real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5'|'ASATP')
+	'from' inputType=TypeCall
 	'when'
-	eligibilityRules+=[RosettaBlueprint] ( 'and' eligibilityRules+=[RosettaBlueprint])*
+	eligibilityRules+=[RosettaBlueprint] ('and' eligibilityRules+=[RosettaBlueprint])*
 	('using' 'standard' reportingStandard=[RosettaCorpus])? // @Compat: this attribute is unnecessary
 	'with' 'type' reportType=[Data|QualifiedName]
 	('with' 'source' ruleSource=[RosettaExternalRuleSource])?
@@ -839,7 +840,7 @@ RosettaRuleReference:
 
 // @Compat: make ':' mandatory at January 16
 RosettaBlueprint:
- 	('reporting'|'eligibility') 'rule' RosettaNamed ':'? =>RosettaDefinable?
+ 	('reporting'|'eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':'? =>RosettaDefinable?
  	(
  		(
  			(references += RosettaDocReference)*
