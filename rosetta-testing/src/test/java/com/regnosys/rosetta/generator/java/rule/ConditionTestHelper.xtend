@@ -1,21 +1,21 @@
 package com.regnosys.rosetta.generator.java.rule
 
+import com.google.inject.AbstractModule
+import com.google.inject.Guice
 import com.google.inject.Inject
+import com.google.inject.Injector
 import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
-import java.util.Map
-import java.util.Optional
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.google.inject.Injector
-import com.google.inject.Guice
-import com.google.inject.AbstractModule
+import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.functions.ConditionValidator
 import com.rosetta.model.lib.functions.DefaultConditionValidator
 import com.rosetta.model.lib.functions.ModelObjectValidator
 import com.rosetta.model.lib.functions.NoOpModelObjectValidator
 import com.rosetta.model.lib.validation.Validator
-import com.rosetta.model.lib.RosettaModelObject
+import java.util.Map
+import java.util.Optional
 
 class ConditionTestHelper {
 	
@@ -40,9 +40,7 @@ class ConditionTestHelper {
 	
 	def createConditionInstance(Map<String, Class<?>> classes, RootPackage rootNamespace, String conditionName) {
 		val conditionClass = classes.get(rootNamespace.dataRule + '.' + conditionName.toConditionJavaType)
-		val cond = conditionClass
-				.declaredConstructor.newInstance
-		injector.injectMembers(cond)
+		val cond = injector.getInstance(conditionClass)
 		return cond as Validator<RosettaModelObject>
 	}
 	
