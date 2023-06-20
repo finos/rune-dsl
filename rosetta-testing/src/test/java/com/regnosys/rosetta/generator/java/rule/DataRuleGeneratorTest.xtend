@@ -106,6 +106,15 @@ class DataRuleGeneratorTest {
 							}
 						}
 					}
+					
+					@SuppressWarnings("unused")
+					class NoOp implements FooDataRule0 {
+					
+						@Override
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+						}
+					}
 				}
 			'''.toString,
 			f
@@ -218,6 +227,15 @@ class DataRuleGeneratorTest {
 							catch (Exception ex) {
 								return ComparisonResult.failure(ex.getMessage());
 							}
+						}
+					}
+					
+					@SuppressWarnings("unused")
+					class NoOp implements FooDataRule0 {
+					
+						@Override
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 						}
 					}
 				}

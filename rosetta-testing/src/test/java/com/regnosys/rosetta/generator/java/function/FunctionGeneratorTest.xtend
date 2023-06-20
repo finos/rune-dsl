@@ -3825,6 +3825,15 @@ class FunctionGeneratorTest {
 							}
 						}
 					}
+					
+					@SuppressWarnings("unused")
+					class NoOp implements FooBar {
+					
+						@Override
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+						}
+					}
 				}
 			'''.toString,
 			f

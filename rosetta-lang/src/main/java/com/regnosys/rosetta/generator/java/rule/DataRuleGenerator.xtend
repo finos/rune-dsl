@@ -68,6 +68,12 @@ class DataRuleGenerator {
 		val defaultClassExecuteResultId = defaultClassExecuteScope.createUniqueIdentifier("result")
 		val defaultClassExceptionId = defaultClassExecuteScope.createUniqueIdentifier("ex")
 		
+		val noOpClassScope = classScope.classScope("NoOp")
+		val noOpClassName = noOpClassScope.createUniqueIdentifier("NoOp")
+		
+		val noOpClassValidateScope = noOpClassScope.methodScope("validate")
+		val noOpClassPathId = noOpClassValidateScope.createUniqueIdentifier("path")
+		
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaDataRule»("«ruleName»")
@@ -107,6 +113,15 @@ class DataRuleGenerator {
 						catch («Exception» «defaultClassExceptionId») {
 							return «ComparisonResult».failure(«defaultClassExceptionId».getMessage());
 						}
+					}
+				}
+				
+				@SuppressWarnings("unused")
+				class «noOpClassName» implements «className» {
+				
+					@Override
+					public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «noOpClassPathId», «rosettaClass.name» «noOpClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
+						return «ValidationResult».success(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", «noOpClassPathId», DEFINITION);
 					}
 				}
 			}
