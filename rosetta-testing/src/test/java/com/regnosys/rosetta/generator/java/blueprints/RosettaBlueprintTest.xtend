@@ -42,6 +42,23 @@ class RosettaBlueprintTest {
 		'''
 		parseRosettaWithNoErrors(r)
 	}
+	
+	@Test
+	def void legacyRuleCanCallCoreSyntaxRule() {
+		val r = '''
+			type T:
+				attr number (1..1)
+			
+			reporting rule Foo from T:
+				[legacy-syntax]
+				extract T -> attr * 2
+				then Bar
+			
+			reporting rule Bar from number:
+				item / 2
+		'''
+		parseRosettaWithNoIssues(r)
+	}
 
 	static final CharSequence REPORT_TYPES = '''
 					namespace com.rosetta.test.model
@@ -1391,7 +1408,7 @@ class RosettaBlueprintTest {
 				colour string (1..1)
 			
 		'''.parseRosetta.assertError(BLUEPRINT_EXTRACT, RosettaIssueCodes.TYPE_ERROR,
-			"Input type of Input2 is not assignable from type Input of previous node ")
+			"Input type of Input2 is not assignable from type Input of previous node")
 	}
 	
 	@Test
@@ -2484,7 +2501,7 @@ class RosettaBlueprintTest {
 		.replace('\r', "")
 		.parseRosetta
 			.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
-			"Input type of Foo is not assignable from type Bar of previous node ")
+			"Input type of Foo is not assignable from type Bar of previous node")
 		
 	}
 

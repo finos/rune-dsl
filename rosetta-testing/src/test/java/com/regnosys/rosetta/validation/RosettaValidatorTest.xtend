@@ -523,16 +523,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type Foo
 			with source TestB
 			
-			eligibility rule FooRule:
-				filter Foo->foo exists
+			eligibility rule FooRule from Foo:
+				filter foo exists
 
 			type Foo:
 				foo string (0..1)
 			
-			reporting rule RA:
+			reporting rule RA from Foo:
 				"A"
 			
-			reporting rule RB:
+			reporting rule RB from Foo:
 				"B"
 			
 			rule source TestA {
@@ -1991,7 +1991,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRulefrom Bar:
+			eligibility rule FooRule from Bar:
 				filter bar1 exists
 			
 			reporting rule A from Bar:

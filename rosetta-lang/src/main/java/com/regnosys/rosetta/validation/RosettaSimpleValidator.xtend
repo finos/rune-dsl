@@ -1552,7 +1552,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def checkImport(RosettaModel model) {
 
 		var usedNames = model.eAllContents.flatMap[
-			eCrossReferences.filter(RosettaRootElement).iterator
+			eCrossReferences.filter(RosettaRootElement).filter[isResolved].iterator
 		].map[
 			fullyQualifiedName
 		].toList
