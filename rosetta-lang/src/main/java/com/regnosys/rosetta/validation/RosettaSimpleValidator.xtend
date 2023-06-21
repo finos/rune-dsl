@@ -117,7 +117,6 @@ import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.types.TypeSystem
-import java.util.Optional
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaRootElement
@@ -951,7 +950,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void checkNodeTypeGraph(RosettaBlueprint bp) {
 		try {
 			if (bp.nodes !== null) {
-				buildTypeGraph(bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType])
+				buildTypeGraph(bp.nodes)
 			}
 		} catch (BlueprintUnresolvedTypeException e) {
 			error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
@@ -983,7 +982,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}
 		}
 		else if (filter.filterBP !== null) {
-			val node = buildTypeGraph(filter.filterBP.blueprint.nodes, Optional.ofNullable(filter.filterBP.output).map[typeCallToRType])
+			val node = buildTypeGraph(filter.filterBP.blueprint.nodes)
 			if (!checkBPNodeSingle(node, false)) {
 				error('''The expression for Filter must return a single value but the rule «filter.filterBP.blueprint.name» can return multiple values''',
 					filter, BLUEPRINT_FILTER__FILTER_BP)
@@ -1049,7 +1048,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			val attrSingle = attrExt.cardinalityIsSingleValue
 			val attrType = attr.typeCall.typeCallToRType
 			if (bp.isLegacy) {
-				val node = buildTypeGraph(bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType])
+				val node = buildTypeGraph(bp.nodes)
 	
 				val ruleSingle = checkBPNodeSingle(node, false)
 	

@@ -61,10 +61,9 @@ class RosettaBlueprintTypeResolver {
 		
 	}
 
-	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp, Optional<RType> output) throws BlueprintUnresolvedTypeException {
+	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp) throws BlueprintUnresolvedTypeException {
 		val prevNode = new TypedBPNode // a hypothetical node before this BP
 		val nextNode = new TypedBPNode // a hypothetical node after this BP
-		nextNode.input.type = output
 
 		val result = new TypedBPNode
 		try {

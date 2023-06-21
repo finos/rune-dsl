@@ -838,9 +838,8 @@ RosettaRuleReference:
 	'[' 'ruleReference' reportingRule=[RosettaBlueprint] ']'	
 ;
 
-// @Compat: make ':' mandatory at January 16
 RosettaBlueprint:
- 	('reporting'|'eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':'? =>RosettaDefinable?
+ 	('reporting'|'eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable?
  	(
  		(
  			(references += RosettaDocReference)*
@@ -857,7 +856,6 @@ RosettaBlueprint:
  			(nodes = BlueprintNodeExp)?
  		)
  	)
-	('output' output=TypeCall)? // TODO: I don't think this is ever used...
 ;
 
 BlueprintNodeExp:

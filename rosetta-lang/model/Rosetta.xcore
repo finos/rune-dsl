@@ -524,7 +524,6 @@ class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinabl
 	contains RosettaExpression expression
 	String identifier
 	contains TypeCall input
-	contains TypeCall output // TODO: is this ever used?
 }
 
 class BlueprintNodeExp {
