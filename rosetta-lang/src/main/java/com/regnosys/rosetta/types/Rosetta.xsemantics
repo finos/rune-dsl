@@ -64,6 +64,7 @@ import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.interpreter.RosettaValue
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -140,6 +141,11 @@ auxiliary symbolListType(RosettaExternalFunction c) {
 
 auxiliary symbolListType(Function c) {
 	return createListType(typeCallToRType(c.^output.typeCall, new RosettaInterpreterContext), c.^output.card)
+}
+
+auxiliary symbolListType(RosettaBlueprint c) {
+	empty |- c.expression : var RListType t
+	return t
 }
 
 auxiliary functionalOperationItemType(RosettaFunctionalOperation op) {

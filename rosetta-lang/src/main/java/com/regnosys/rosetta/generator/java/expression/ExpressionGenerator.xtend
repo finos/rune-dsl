@@ -295,6 +295,10 @@ class ExpressionGenerator {
 			RosettaExternalFunction: {
 				'''«IF needsMapper»«MapperS».of(«ENDIF»new «callable.toFunctionJavaClass»().execute(«argsCode»)«IF needsMapper»)«ENDIF»'''
 			}
+			RosettaBlueprint: {
+				val multi = callable.isMulti
+				'''«IF needsMapper»«IF multi»«MapperC».<«typeProvider.getRTypeOfSymbol(callable).toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«ENDIF»«scope.getIdentifierOrThrow(callable.toRuleInstance)».evaluate(«argsCode»)«IF needsMapper»)«ENDIF»'''
+			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable with args of type " + callable?.eClass?.name)
 		}

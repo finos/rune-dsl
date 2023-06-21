@@ -16,7 +16,6 @@ import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
@@ -225,6 +224,20 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				if (keywordInFragment !== null) {
 					return keywordInFragment
 				}
+			}
+		}
+	}
+	
+	@Check
+	def void canOnlyCallANonLegacyRuleFromWithinARule(RosettaSymbolReference ref) {
+		val targetRule = ref.symbol
+		if (targetRule instanceof RosettaBlueprint) {
+			if (targetRule.isLegacy) {
+				error('''You can only call non-legacy rules.''', ref, null)
+			}
+			val containingRule = EcoreUtil2.getContainerOfType(ref, RosettaBlueprint)
+			if (containingRule === null) {
+				error('''You can only call a rule from within a rule.''', ref, null)
 			}
 		}
 	}
@@ -796,15 +809,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if (callable instanceof RosettaCallableWithArgs) {
 			val callerSize = element.args.size
 
-			val callableSize = switch callable {
-				RosettaExternalFunction:
-					callable.parameters.size
-				Function: {
-					callable.inputs.size
-				}
-				default:
-					0
-			}
+			val callableSize = callable.numberOfParameters
 			if (callerSize !== callableSize) {
 				error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
 					ROSETTA_SYMBOL_REFERENCE__SYMBOL)

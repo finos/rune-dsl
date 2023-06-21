@@ -97,15 +97,15 @@ class BlueprintGenerator {
 	/**
 	 * generate a blueprint java file
 	 */
-	def generate(RootPackage packages, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
+	def generate(RootPackage root, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaBlueprintReport).forEach [ report |
 			// generate blueprint report
-			fsa.generateFile(packages.blueprint.withForwardSlashes + '/' + report.name + 'BlueprintReport.java',
-				generateBlueprint(packages, firstNodeExpression(report), Optional.empty, report.name, 'BlueprintReport', report.URI, report.reportType?.name, version))
+			fsa.generateFile(root.blueprint.withForwardSlashes + '/' + report.name + 'BlueprintReport.java',
+				generateBlueprint(root, firstNodeExpression(report), Optional.empty, report.name, 'BlueprintReport', report.URI, report.reportType?.name, version))
 			// generate output report type builder
 			if (report.reportType !== null) {
-				fsa.generateFile(packages.blueprint.withForwardSlashes + '/' + report.reportType.name.toDataItemReportBuilderName + '.java',
-					generateReportBuilder(packages, report, version))
+				fsa.generateFile(root.blueprint.withForwardSlashes + '/' + report.reportType.name.toDataItemReportBuilderName + '.java',
+					generateReportBuilder(root, report, version))
 			}
 		]
 		
@@ -113,14 +113,15 @@ class BlueprintGenerator {
 			.filter[isLegacy]
 			.filter[nodes !== null]
 			.forEach [ bp |
-			fsa.generateFile(packages.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
-				generateBlueprint(packages, bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType], bp.name, 'Rule', bp.URI, null, version))
+			fsa.generateFile(root.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
+				generateBlueprint(root, bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType], bp.name, 'Rule', bp.URI, null, version))
 		]
 		elements.filter(RosettaBlueprint)
 			.filter[!isLegacy]
 			.forEach [ rule |
-			fsa.generateFile(packages.blueprint.withForwardSlashes + '/' + rule.name + 'Rule.java',
-				nonLegacyGenerateBlueprint(packages, rule, rule.name, 'Rule', rule.URI, null, version))
+				val ruleClass = rule.toRuleJavaClass
+				fsa.generateFile(ruleClass.canonicalName.withForwardSlashes + ".java",
+					nonLegacyGenerateBlueprint(ruleClass, rule, version))
 		]
 	}
 
@@ -216,15 +217,14 @@ class BlueprintGenerator {
 			}
 	}
 	
-	def nonLegacyGenerateBlueprint(RootPackage packageName, RosettaBlueprint rule, String name, String type, String uri, String dataItemReportBuilderName, String version) {
+	def nonLegacyGenerateBlueprint(JavaClass ruleClass, RosettaBlueprint rule, String version) {
 		try {
 			
 			val typed = nonLegacyBuildTypeGraph(rule.expression)
-			val clazz = new JavaClass(packageName.blueprint, name + type)
-			val typedJava = typed.toJavaNode(clazz)
-			val clazzWithArgs = typedJava.toParametrizedType(clazz)
+			val typedJava = typed.toJavaNode(ruleClass)
+			val clazzWithArgs = typedJava.toParametrizedType(ruleClass)
 
-			val topScope = new JavaScope(packageName.blueprint)
+			val topScope = new JavaScope(ruleClass.packageName)
 
 			val classScope = topScope.classScope(clazzWithArgs.toString)
 
@@ -235,29 +235,29 @@ class BlueprintGenerator {
 					private final «RosettaActionFactory» actionFactory;
 					
 					@«Inject»
-					public «clazz»(«RosettaActionFactory» actionFactory) {
+					public «ruleClass»(«RosettaActionFactory» actionFactory) {
 						this.actionFactory = actionFactory;
 					}
 					
 					@Override
 					public String getName() {
-						return "«name»"; 
+						return "«rule.name»"; 
 					}
 					
 					@Override
 					public String getURI() {
-						return "«uri»";
+						return "«rule.URI»";
 					}
 					
-					«rule.nonLegacyBuildBody(classScope, typedJava, dataItemReportBuilderName)»
+					«rule.nonLegacyBuildBody(classScope, typedJava)»
 				}
 				'''
 
-				buildClass(packageName.blueprint, body, topScope)
+				buildClass(ruleClass.packageName, body, topScope)
 			}
 			catch (Exception e) {
-				LOGGER.error("Error generating blueprint java for "+name, e);
-				return '''Unexpected Error generating «name».java Please see log for details'''
+				LOGGER.error("Error generating blueprint java for " + ruleClass.canonicalName, e);
+				return '''Unexpected Error generating «ruleClass.canonicalName».java Please see log for details'''
 			}
 	}
 	
@@ -323,12 +323,18 @@ class BlueprintGenerator {
 		nodes.functionDependencies.toSet.forEach[
 			scope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)
 		]
+		nodes.ruleDependencies.toSet.forEach[
+			scope.createIdentifier(it.toRuleInstance, it.name.toFirstLower + "Ref")
+		]
 
 		val context = new Context(nodes)
 		val blueprintScope = scope.methodScope("blueprint")
 		return '''
 			«FOR dep : nodes.functionDependencies.toSet»
 				@«Inject» protected «dep.toFunctionJavaClass» «scope.getIdentifierOrThrow(dep.toFunctionInstance)»;
+			«ENDFOR»
+			«FOR dep : nodes.ruleDependencies.toSet»
+				@«Inject» protected «dep.toRuleJavaClass» «scope.getIdentifierOrThrow(dep.toRuleInstance)»;
 			«ENDFOR»
 			
 			@Override
@@ -340,15 +346,11 @@ class BlueprintGenerator {
 			}
 			«FOR bpRef : context.bpRefs.entrySet»
 			
-			«bpRef.key.blueprintRef(bpRef.value, context)»
-			«ENDFOR»
-			«FOR source : context.sources.entrySet»
-			
-			«source.key.getSource(source.value, context)»
+			«bpRef.key.blueprintRef(scope, bpRef.value)»
 			«ENDFOR»
 		'''
 	}
-	def StringConcatenationClient nonLegacyBuildBody(RosettaBlueprint rule, JavaScope classScope, TypedBPJavaNode typedNode, String dataItemReportBuilderName) {
+	def StringConcatenationClient nonLegacyBuildBody(RosettaBlueprint rule, JavaScope classScope, TypedBPJavaNode typedNode) {
 		val expr = rule.expression
 		val outputType = expr.RType
 		val outputIsMany = cardinality.isMulti(expr)
@@ -362,6 +364,9 @@ class BlueprintGenerator {
 		val objectValidatorId = classScope.createUniqueIdentifier("objectValidator")
 		expr.functionDependencies.toSet.forEach[
 			classScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)
+		]
+		expr.ruleDependencies.toSet.forEach[
+			classScope.createIdentifier(it.toRuleInstance, it.name.toFirstLower + "Ref")
 		]
 		
 		val evaluateScope = classScope.methodScope("evaluate")
@@ -386,16 +391,18 @@ class BlueprintGenerator {
 			«FOR dep : expr.functionDependencies.toSet»
 				@«Inject» protected «dep.toFunctionJavaClass» «classScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
 			«ENDFOR»
+			«FOR dep : expr.ruleDependencies.toSet»
+				@«Inject» protected «dep.toRuleJavaClass» «classScope.getIdentifierOrThrow(dep.toRuleInstance)»;
+			«ENDFOR»
 			
 			@Override
 			public «BlueprintInstance»<«typedNode.input», «typedNode.output», «typedNode.inputKey», «typedNode.outputKey»> blueprint() {
-				return 
+				return
 					«importWildcard(method(BlueprintBuilder, "startsWith"))»(actionFactory, «rule.nonLegacyBuildNode(blueprintScope, typedNode.next, outputType, outputIsMany)»)
-					«IF dataItemReportBuilderName !== null».addDataItemReportBuilder(new «dataItemReportBuilderName.toDataItemReportBuilderName»())«ENDIF»
-					.toBlueprint(getURI(), getName());
+						.toBlueprint(getURI(), getName());
 			}
 			
-			private «outputJavaType» evaluate(«rule.inputAsParameter(evaluateScope)») {
+			public «outputJavaType» evaluate(«rule.inputAsParameter(evaluateScope)») {
 				«outputJavaBuilderType» «evaluateScope.getIdentifierOrThrow(rule.toRuleOutputParameter)» = doEvaluate(«rule.inputAsArgument(evaluateScope)»);
 				«IF outNeedsBuilder»
 				if («evaluateScope.getIdentifierOrThrow(rule.toRuleOutputParameter)» != null) {
@@ -612,14 +619,10 @@ class BlueprintGenerator {
 		'''«node.input», «node.output», «node.inputKey», «node.outputKey»'''
 	}
 	
-	def StringConcatenationClient blueprintRef(RosettaBlueprint ref, TypedBPJavaNode typedNode, Context context) {
-		val className = ref.name + "Rule"
-		val refName = ref.name.toFirstLower + "Ref"
-		val dep = new JavaClass(DottedPath.splitOnDots((ref.eContainer as RosettaModel).name).child("blueprint"), className)
+	def StringConcatenationClient blueprintRef(RosettaBlueprint ref, JavaScope scope, TypedBPJavaNode typedNode) {
 		'''
-		@«Inject» private «dep» «refName»;
 		protected «BlueprintInstance»«typedNode.typeArgs» get«ref.name.toFirstUpper»() {
-			return «refName».blueprint();
+			return «scope.getIdentifierOrThrow(ref.toRuleInstance)».blueprint();
 		}'''
 	}
 
@@ -643,9 +646,29 @@ class BlueprintGenerator {
 	}
 	
 	def Iterable<Function> functionDependencies(EObject obj) {
-		return EcoreUtil2.eAllOfType(obj, RosettaSymbolReference)
+		(if (obj instanceof RosettaSymbolReference) {
+			EcoreUtil2.eAllOfType(obj, RosettaSymbolReference) + #[obj]
+		} else {
+			EcoreUtil2.eAllOfType(obj, RosettaSymbolReference)
+		})
 			.map[symbol]
 			.filter(Function)
+	}
+	
+	def Iterable<RosettaBlueprint> ruleDependencies(EObject obj) {
+		(if (obj instanceof RosettaSymbolReference) {
+			EcoreUtil2.eAllOfType(obj, RosettaSymbolReference) + #[obj]
+		} else {
+			EcoreUtil2.eAllOfType(obj, RosettaSymbolReference)
+		})
+			.map[symbol]
+			.filter(RosettaBlueprint)
+		+ (if (obj instanceof BlueprintRef) {
+			EcoreUtil2.eAllOfType(obj, BlueprintRef) + #[obj]
+		} else {
+			EcoreUtil2.eAllOfType(obj, BlueprintRef)
+		})
+			.map[blueprint]
 	}
 
 	/**
@@ -736,7 +759,6 @@ class BlueprintGenerator {
 	@Data static class Context {
 		BlueprintNodeExp nodes
 		Map<RosettaBlueprint, TypedBPJavaNode> bpRefs = newLinkedHashMap
-		Map<String, TypedBPJavaNode> sources = newHashMap
 		
 		def addBPRef(TypedBPJavaNode node) {
 			addBPRef(node.original.node, node)		

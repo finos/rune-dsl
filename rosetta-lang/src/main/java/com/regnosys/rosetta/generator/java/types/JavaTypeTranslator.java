@@ -18,6 +18,7 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.generator.object.ExpandedAttribute;
 import com.regnosys.rosetta.generator.object.ExpandedType;
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions;
+import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
@@ -80,6 +81,9 @@ public class JavaTypeTranslator {
 	}
 	public JavaClass toFunctionJavaClass(RosettaExternalFunction func) {
 		return new JavaClass(packages.defaultLibFunctions(), func.getName());
+	}
+	public JavaClass toRuleJavaClass(RosettaBlueprint rule) {
+		return new JavaClass(blueprint(getModelPackage(rule)), rule.getName() + "Rule");
 	}
 	
 	public JavaReferenceType toMetaJavaType(Attribute attribute) {
@@ -300,6 +304,9 @@ public class JavaTypeTranslator {
 	}
 	private DottedPath functions(DottedPath p) {
 		return p.child("functions");
+	}
+	private DottedPath blueprint(DottedPath p) {
+		return p.child("blueprint");
 	}
 	private DottedPath validation(DottedPath p) {
 		return p.child("validation");
