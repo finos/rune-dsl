@@ -524,7 +524,6 @@ class RosettaBlueprint extends RosettaRootElement, RosettaCallableWithArgs, Rose
 	contains RosettaExpression expression
 	String identifier
 	contains TypeCall input
-	contains TypeCall output // TODO: is this ever used?
 	
 	op int numberOfParameters() {
 		1

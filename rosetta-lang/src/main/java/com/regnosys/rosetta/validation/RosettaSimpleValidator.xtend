@@ -116,7 +116,6 @@ import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.types.TypeSystem
-import java.util.Optional
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaRootElement
@@ -965,7 +964,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void checkNodeTypeGraph(RosettaBlueprint bp) {
 		try {
 			if (bp.nodes !== null) {
-				buildTypeGraph(bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType])
+				buildTypeGraph(bp.nodes)
 			}
 		} catch (BlueprintUnresolvedTypeException e) {
 			error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
@@ -999,7 +998,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		else if (filter.filterBP !== null) {
 			val targetRule = filter.filterBP.blueprint
 			val node = if (targetRule.isLegacy) {
-				buildTypeGraph(targetRule.nodes, Optional.ofNullable(filter.filterBP.output).map[typeCallToRType])
+				buildTypeGraph(targetRule.nodes)
 			} else {
 				nonLegacyBuildTypeGraph(targetRule.expression)
 			}
@@ -1069,7 +1068,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			val attrType = attr.typeCall.typeCallToRType
 			if (bp.isLegacy) {
 				if (bp.nodes !== null) {
-					val node = buildTypeGraph(bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType])
+					val node = buildTypeGraph(bp.nodes)
 		
 					val ruleSingle = checkBPNodeSingle(node, false)
 		
