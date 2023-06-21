@@ -825,6 +825,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 								ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
 						}
 					]
+				} else if (callable instanceof RosettaBlueprint) {
+					checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
+					if (cardinality.isMulti(element.args.head)) {
+						error('''Expecting single cardinality for input to rule.''', element,
+							ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
+					}
 				}
 			}
 		} else {
@@ -1625,7 +1631,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	private def void checkBodyType(InlineFunction ref, RType type) {
-		if (ref !== null && ref.body.getRType != type) {
+		val bodyType = ref?.body?.getRType
+		if (ref !== null && bodyType !== null && bodyType != MISSING && bodyType != type) {
 			error('''Expression must evaluate to a «type.name».''', ref, null)
 		}
 	}

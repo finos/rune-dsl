@@ -34,6 +34,7 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -453,6 +454,14 @@ checkrule CheckRosettaSymbolReference for RosettaSymbolReference e from {
 			(0..<e.args.size).forall[idx |
 				looseListSubtypeCheck(e.args.get(idx), f.inputs.get(idx).attributeListType)
 			]
+        }
+        RosettaBlueprint: {
+        	{
+				1 == e.args.size()
+				or
+				fail error "Expected 1 argument, but got " + e.args.size() + " instead."
+			}
+			looseListSubtypeCheck(e.args.head, new RListType(f.input.typeCallToRType(new RosettaInterpreterContext), single))
         }
     }
 }

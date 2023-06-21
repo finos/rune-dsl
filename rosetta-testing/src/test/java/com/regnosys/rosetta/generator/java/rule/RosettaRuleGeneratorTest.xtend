@@ -16,7 +16,7 @@ import org.hamcrest.CoreMatchers
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
-import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
@@ -1864,8 +1864,7 @@ class RosettaRuleGeneratorTest {
 				extract item->flag
 						
 			reporting rule FilterRule from Input:
-				[legacy-syntax]
-				filter when rule TestRule then extract Input->traderef
+				filter TestRule then extract traderef
 			
 			type Input:
 				traderef string (1..1)
@@ -1884,10 +1883,10 @@ class RosettaRuleGeneratorTest {
 		val blueprint = '''
 			reporting rule WorthyAvenger from Avengers:
 				[legacy-syntax]
-				extract Avengers -> heros then 
-				filter when rule CanWieldMjolnir 
-					then filter when Hero -> name <> 'Thor'
-					then extract Hero -> name
+				extract Avengers -> heros
+				then filter when rule CanWieldMjolnir
+				then filter when Hero -> name <> 'Thor'
+				then extract Hero -> name
 			
 			eligibility rule CanWieldMjolnir from Hero:
 				[legacy-syntax]
@@ -1964,29 +1963,6 @@ class RosettaRuleGeneratorTest {
 		'''
 		assertEquals(expected, blueprintJava)
 
-	}
-	
-	@Test
-	def void filterCardinalityAndType() {
-		val model = '''
-			reporting rule TestRule from Input:
-				extract flag
-						
-			reporting rule FilterRule from Input:
-				[legacy-syntax]
-				filter when rule TestRule then extract Input->traderef
-			
-			
-			type Input:
-				traderef string (1..1)
-				flag string (1..*)
-			
-		'''.parseRosetta
-		
-		model.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
-			"output type of node string does not match required type of boolean")
-		model.assertError(BLUEPRINT_FILTER, null,
-			"The expression for Filter must return a single value but the rule TestRule can return multiple values")
 	}
 
 	@Test
@@ -2137,8 +2113,7 @@ class RosettaRuleGeneratorTest {
 			import ns1.*
 			
 			reporting rule Rule2 from TestObject:
-				[legacy-syntax]
-				filter when rule Rule1
+				filter Rule1
 		'''
 		].generateCode
 		//code.writeClasses("shouldUseBlueprintRuleFromDifferentNS")
@@ -2159,7 +2134,6 @@ class RosettaRuleGeneratorTest {
 				extract fieldOne
 							
 			reporting rule Rule2 from TestObject:
-				[legacy-syntax]
 				Rule1 as "BLAH"
 			
 		'''
@@ -2179,8 +2153,7 @@ class RosettaRuleGeneratorTest {
 				str string (1..1)
 			
 			reporting rule Rule1 from Foo:
-				[legacy-syntax]
-				extract Foo->bar then
+				extract bar then
 				Rule2
 							
 			reporting rule Rule2 from Foo:
@@ -2189,8 +2162,8 @@ class RosettaRuleGeneratorTest {
 		'''.toString
 		.replace('\r', "")
 		.parseRosetta
-			.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
-			"Input type of Foo is not assignable from type Bar of previous node")
+			.assertError(ROSETTA_SYMBOL_REFERENCE, RosettaIssueCodes.TYPE_ERROR,
+			"Expected type 'Foo' but was 'Bar'")
 		
 	}
 
