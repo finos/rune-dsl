@@ -56,6 +56,7 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.types.CardinalityProvider
 
 class FunctionGenerator {
 

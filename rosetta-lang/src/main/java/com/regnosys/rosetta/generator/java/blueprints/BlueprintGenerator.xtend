@@ -101,7 +101,7 @@ class BlueprintGenerator {
 		elements.filter(RosettaBlueprintReport).forEach [ report |
 			// generate blueprint report
 			fsa.generateFile(packages.blueprint.withForwardSlashes + '/' + report.name + 'BlueprintReport.java',
-				generateBlueprint(packages, firstNodeExpression(report), Optional.empty, report.name, 'BlueprintReport', report.URI, report.reportType?.name, version))
+				generateBlueprint(packages, firstNodeExpression(report), report.name, 'BlueprintReport', report.URI, report.reportType?.name, version))
 			// generate output report type builder
 			if (report.reportType !== null) {
 				fsa.generateFile(packages.blueprint.withForwardSlashes + '/' + report.reportType.name.toDataItemReportBuilderName + '.java',
@@ -114,7 +114,7 @@ class BlueprintGenerator {
 			.filter[nodes !== null]
 			.forEach [ bp |
 			fsa.generateFile(packages.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
-				generateBlueprint(packages, bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType], bp.name, 'Rule', bp.URI, null, version))
+				generateBlueprint(packages, bp.nodes, bp.name, 'Rule', bp.URI, null, version))
 		]
 		elements.filter(RosettaBlueprint)
 			.filter[!isLegacy]
@@ -171,10 +171,10 @@ class BlueprintGenerator {
 	/**
 	 * Generate the text of a blueprint
 	 */
-	def generateBlueprint(RootPackage packageName, BlueprintNodeExp nodes, Optional<RType> output, String name, String type, String uri, String dataItemReportBuilderName, String version) {
+	def generateBlueprint(RootPackage packageName, BlueprintNodeExp nodes, String name, String type, String uri, String dataItemReportBuilderName, String version) {
 		try {
 			
-			val typed = buildTypeGraph(nodes, output)
+			val typed = buildTypeGraph(nodes)
 			val clazz = new JavaClass(packageName.blueprint, name + type)
 			val typedJava = typed.toJavaNode(clazz)
 			val clazzWithArgs = typedJava.toParametrizedType(clazz)
