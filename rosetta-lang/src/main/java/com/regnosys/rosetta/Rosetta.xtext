@@ -845,7 +845,7 @@ RosettaBlueprint:
  		(
  			(references += RosettaDocReference)*
  			(expression = RosettaCalcExpression
-			('as' identifier=STRING)?)?
+			('as' identifier=STRING)?)
  		) | ( // legacy
  			((
  				('[' ->legacy?='legacy-syntax' ']')

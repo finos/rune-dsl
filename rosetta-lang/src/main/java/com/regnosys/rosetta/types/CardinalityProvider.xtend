@@ -50,6 +50,7 @@ import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
+import com.regnosys.rosetta.rosetta.TypeParameter
 
 class CardinalityProvider {
 	
@@ -130,7 +131,8 @@ class CardinalityProvider {
 			RosettaRootElement,
 			RosettaEnumValueReference,
 			RosettaMapPathValue,
-			RosettaParameter: false
+			RosettaParameter,
+			TypeParameter: false
 			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }
 		}
 	}

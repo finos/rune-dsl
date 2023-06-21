@@ -92,6 +92,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
 import org.apache.commons.text.StringEscapeUtils
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.rosetta.model.lib.mapper.MapperUtils
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
 
 class ExpressionGenerator {
 	
@@ -364,8 +365,8 @@ class ExpressionGenerator {
 	
 	private def StringConcatenationClient implicitVariable(EObject context, JavaScope scope) {
 		val definingContainer = context.findContainerDefiningImplicitVariable.get
-		if (definingContainer instanceof Data) {
-			// For conditions
+		if (definingContainer instanceof Data || definingContainer instanceof RosettaBlueprint) {
+			// For conditions and rules
 			return '''«MapperS».of(«scope.getIdentifierOrThrow(context.implicitVarInContext)»)'''
 		} else {
 			// For inline functions

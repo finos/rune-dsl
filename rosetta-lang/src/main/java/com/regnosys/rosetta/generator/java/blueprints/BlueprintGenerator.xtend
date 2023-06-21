@@ -18,7 +18,6 @@ import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
-import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.JavaType
 import com.regnosys.rosetta.generator.java.types.JavaTypeVariable
@@ -71,6 +70,15 @@ import java.util.function.Supplier
 import com.regnosys.rosetta.generator.java.types.JavaReferenceType
 import java.math.BigDecimal
 import com.regnosys.rosetta.types.CardinalityProvider
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.rosetta.model.lib.functions.ModelObjectValidator
+import java.util.ArrayList
+import com.rosetta.model.lib.mapper.MapperC
+import com.rosetta.model.lib.mapper.MapperS
 
 class BlueprintGenerator {
 	static Logger LOGGER = LoggerFactory.getLogger(BlueprintGenerator)
@@ -79,11 +87,12 @@ class BlueprintGenerator {
 	@Inject extension RosettaBlueprintTypeResolver
 	@Inject extension ExpressionGenerator
 	@Inject CardinalityProvider cardinality
-	@Inject FunctionDependencyProvider functionDependencyProvider
 	@Inject extension RosettaExtensions
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject extension JavaTypeTranslator
 	@Inject extension TypeSystem
+	@Inject extension RosettaTypeProvider
+	@Inject extension RosettaFunctionExtensions
 
 	/**
 	 * generate a blueprint java file
@@ -101,10 +110,17 @@ class BlueprintGenerator {
 		]
 		
 		elements.filter(RosettaBlueprint)
+			.filter[isLegacy]
 			.filter[nodes !== null]
 			.forEach [ bp |
 			fsa.generateFile(packages.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
 				generateBlueprint(packages, bp.nodes, Optional.ofNullable(bp.output).map[typeCallToRType], bp.name, 'Rule', bp.URI, null, version))
+		]
+		elements.filter(RosettaBlueprint)
+			.filter[!isLegacy]
+			.forEach [ rule |
+			fsa.generateFile(packages.blueprint.withForwardSlashes + '/' + rule.name + 'Rule.java',
+				nonLegacyGenerateBlueprint(packages, rule, rule.name, 'Rule', rule.URI, null, version))
 		]
 	}
 
@@ -174,7 +190,7 @@ class BlueprintGenerator {
 					private final «RosettaActionFactory» actionFactory;
 					
 					@«Inject»
-					public «name»«type»(«RosettaActionFactory» actionFactory) {
+					public «clazz»(«RosettaActionFactory» actionFactory) {
 						this.actionFactory = actionFactory;
 					}
 					
@@ -189,6 +205,51 @@ class BlueprintGenerator {
 					}
 					
 					«nodes.buildBody(classScope, typedJava, dataItemReportBuilderName)»
+				}
+				'''
+
+				buildClass(packageName.blueprint, body, topScope)
+			}
+			catch (Exception e) {
+				LOGGER.error("Error generating blueprint java for "+name, e);
+				return '''Unexpected Error generating «name».java Please see log for details'''
+			}
+	}
+	
+	def nonLegacyGenerateBlueprint(RootPackage packageName, RosettaBlueprint rule, String name, String type, String uri, String dataItemReportBuilderName, String version) {
+		try {
+			
+			val typed = nonLegacyBuildTypeGraph(rule.expression)
+			val clazz = new JavaClass(packageName.blueprint, name + type)
+			val typedJava = typed.toJavaNode(clazz)
+			val clazzWithArgs = typedJava.toParametrizedType(clazz)
+
+			val topScope = new JavaScope(packageName.blueprint)
+
+			val classScope = topScope.classScope(clazzWithArgs.toString)
+
+			val StringConcatenationClient body = '''
+				«emptyJavadocWithVersion(version)»
+				public class «clazzWithArgs» implements «Blueprint»<«typedJava.input», «typedJava.output», «typedJava.inputKey», «typedJava.outputKey»> {
+					
+					private final «RosettaActionFactory» actionFactory;
+					
+					@«Inject»
+					public «clazz»(«RosettaActionFactory» actionFactory) {
+						this.actionFactory = actionFactory;
+					}
+					
+					@Override
+					public String getName() {
+						return "«name»"; 
+					}
+					
+					@Override
+					public String getURI() {
+						return "«uri»";
+					}
+					
+					«rule.nonLegacyBuildBody(classScope, typedJava, dataItemReportBuilderName)»
 				}
 				'''
 
@@ -287,6 +348,105 @@ class BlueprintGenerator {
 			«ENDFOR»
 		'''
 	}
+	def StringConcatenationClient nonLegacyBuildBody(RosettaBlueprint rule, JavaScope classScope, TypedBPJavaNode typedNode, String dataItemReportBuilderName) {
+		val expr = rule.expression
+		val outputType = expr.RType
+		val outputIsMany = cardinality.isMulti(expr)
+		val outputJavaType = if (outputType.needsBuilder) {
+			outputType.toPolymorphicListOrSingleJavaType(outputIsMany)
+		} else {
+			outputType.toListOrSingleJavaType(outputIsMany)
+		}
+		val outputJavaBuilderType = outputType.toBuilderType(outputIsMany)
+		val outNeedsBuilder = needsBuilder(outputType)
+		val objectValidatorId = classScope.createUniqueIdentifier("objectValidator")
+		expr.functionDependencies.toSet.forEach[
+			classScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)
+		]
+		
+		val evaluateScope = classScope.methodScope("evaluate")
+		evaluateScope.createIdentifier(rule.toRuleInputParameter, rule.input.type.name.toFirstLower)
+		evaluateScope.createIdentifier(rule.toRuleOutputParameter, outputType.name.toFirstLower)
+
+		val doEvaluateScope = classScope.methodScope("doEvaluate")
+		doEvaluateScope.createIdentifier(rule.toRuleInputParameter, rule.input.type.name.toFirstLower)
+		doEvaluateScope.createIdentifier(rule.toRuleOutputParameter, outputType.name.toFirstLower)
+		
+		val assignOutputScope = classScope.methodScope("assignOutput")
+		assignOutputScope.createIdentifier(rule.toRuleInputParameter, rule.input.type.name.toFirstLower)
+		assignOutputScope.createIdentifier(rule.toRuleOutputParameter, outputType.name.toFirstLower)
+
+		val blueprintScope = classScope.methodScope("blueprint")
+		
+		return '''
+			«IF outNeedsBuilder»
+				
+				@«Inject» protected «ModelObjectValidator» «objectValidatorId»;
+			«ENDIF»
+			«FOR dep : expr.functionDependencies.toSet»
+				@«Inject» protected «dep.toFunctionJavaClass» «classScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
+			«ENDFOR»
+			
+			@Override
+			public «BlueprintInstance»<«typedNode.input», «typedNode.output», «typedNode.inputKey», «typedNode.outputKey»> blueprint() {
+				return 
+					«importWildcard(method(BlueprintBuilder, "startsWith"))»(actionFactory, «rule.nonLegacyBuildNode(blueprintScope, typedNode.next, outputType, outputIsMany)»)
+					«IF dataItemReportBuilderName !== null».addDataItemReportBuilder(new «dataItemReportBuilderName.toDataItemReportBuilderName»())«ENDIF»
+					.toBlueprint(getURI(), getName());
+			}
+			
+			private «outputJavaType» evaluate(«rule.inputAsParameter(evaluateScope)») {
+				«outputJavaBuilderType» «evaluateScope.getIdentifierOrThrow(rule.toRuleOutputParameter)» = doEvaluate(«rule.inputAsArgument(evaluateScope)»);
+				«IF outNeedsBuilder»
+				if («evaluateScope.getIdentifierOrThrow(rule.toRuleOutputParameter)» != null) {
+					«objectValidatorId».validate(«outputType.toJavaType».class, «evaluateScope.getIdentifierOrThrow(rule.toRuleOutputParameter)»);
+				}
+				«ENDIF»
+				return «evaluateScope.getIdentifierOrThrow(rule.toRuleOutputParameter)»;
+			}
+			
+			private «outputJavaBuilderType» doEvaluate(«rule.inputAsParameter(doEvaluateScope)») {
+				«outputJavaBuilderType» «doEvaluateScope.getIdentifierOrThrow(rule.toRuleOutputParameter)» = «IF outputIsMany»new «ArrayList»<>()«ELSEIF outNeedsBuilder»«outputType.toListOrSingleJavaType(outputIsMany)».builder()«ELSE»null«ENDIF»;
+				return assignOutput(«doEvaluateScope.getIdentifierOrThrow(rule.toRuleOutputParameter)»,«rule.inputAsArgument(doEvaluateScope)»);
+			}
+			
+			private «outputJavaBuilderType» assignOutput(«outputJavaBuilderType» «assignOutputScope.getIdentifierOrThrow(rule.toRuleOutputParameter)», «rule.inputAsParameter(assignOutputScope)») {
+				«assign(assignOutputScope, rule, outputType, outputIsMany)»
+
+				return «IF !needsBuilder(outputType)»«assignOutputScope.getIdentifierOrThrow(rule.toRuleOutputParameter)»«ELSE»«Optional».ofNullable(«assignOutputScope.getIdentifierOrThrow(rule.toRuleOutputParameter)»)
+					.map(«IF outputIsMany»o -> o.stream().map(i -> i.prune()).collect(«Collectors».toList())«ELSE»o -> o.prune()«ENDIF»)
+					.orElse(null)«ENDIF»;
+			}
+		'''
+	}
+	private def StringConcatenationClient inputAsArgument(RosettaBlueprint rule, JavaScope scope) {
+		'''«scope.getIdentifierOrThrow(rule.toRuleInputParameter)»'''
+	}
+	private def StringConcatenationClient inputAsParameter(RosettaBlueprint rule, JavaScope scope) {
+		'''«inputParameterType(rule)» «scope.getIdentifierOrThrow(rule.toRuleInputParameter)»'''
+	}
+	private def StringConcatenationClient inputParameterType(RosettaBlueprint rule) {
+		'''«IF rule.input.needsBuilder»«rule.input.typeCallToRType.toPolymorphicListOrSingleJavaType(false)»«ELSE»«rule.input.typeCallToRType.toListOrSingleJavaType(false)»«ENDIF»'''
+	}
+	private def JavaType toBuilderType(RType type, boolean isMany) {
+		var javaType = type.toJavaReferenceType as JavaClass
+		if (needsBuilder(type)) javaType = javaType.toBuilderType
+		if (isMany) {
+			return new JavaParametrizedType(JavaClass.from(List), javaType)
+		} else {
+			return javaType
+		}
+	}
+	private def StringConcatenationClient assign(JavaScope scope, RosettaBlueprint rule, RType outputType, boolean outputIsMany) {		
+		'''
+		«IF needsBuilder(outputType)»
+			«scope.getIdentifierOrThrow(rule.toRuleOutputParameter)» = toBuilder(«assignPlainValue(scope, rule.expression, outputIsMany)»);
+		«ELSE»
+			«scope.getIdentifierOrThrow(rule.toRuleOutputParameter)» = «assignPlainValue(scope, rule.expression, outputIsMany)»;«ENDIF»'''	
+	}
+	private def StringConcatenationClient assignPlainValue(JavaScope scope, RosettaExpression expr, boolean outputIsMany) {
+		'''«javaCode(expr, scope)»«IF outputIsMany».getMulti()«ELSE».get()«ENDIF»'''
+	}
 	
 	/**
 	 * recursive function that builds the graph of nodes
@@ -372,6 +532,21 @@ class BlueprintGenerator {
 			}
 		}
 	}
+	def StringConcatenationClient nonLegacyBuildNode(RosettaBlueprint rule, JavaScope scope, TypedBPJavaNode typedNode, RType outputType, boolean outputIsMany) {
+		val id = nonLegacyCreateIdentifier(rule)
+				
+		val lambdaScope = scope.lambdaScope
+		val lambdaParam = lambdaScope.createUniqueIdentifier(rule.input.type.name.toFirstLower)
+
+		if (!outputIsMany)
+		'''actionFactory.<«typedNode.input», «
+			typedNode.output», «typedNode.inputKey»>newRosettaSingleMapper("«rule.URI»", "«rule.expression.toNodeLabel
+				»", «id», «lambdaParam» -> «IF outputIsMany»«MapperC»«ELSE»«MapperS»«ENDIF».of(evaluate(«lambdaParam»)))'''
+		else
+		'''actionFactory.<«typedNode.input», «
+			typedNode.output», «typedNode.inputKey»>newRosettaMultipleMapper("«rule.URI»", "«rule.expression.toNodeLabel
+								»", «id», «lambdaParam» -> «IF outputIsMany»«MapperC»«ELSE»«MapperS»«ENDIF».of(evaluate(«lambdaParam»)))'''
+	}
 	
 	def StringConcatenationClient createIdentifier(BlueprintNodeExp nodeExp) {
 		if (nodeExp.identifier !== null) {
@@ -397,6 +572,13 @@ class BlueprintGenerator {
 				'''null'''
 			}
 		}
+	}
+	def StringConcatenationClient nonLegacyCreateIdentifier(RosettaBlueprint rule) {
+		if (rule.identifier !== null) {
+			return '''new «RuleIdentifier»("«rule.identifier»", getClass())'''
+		}
+		val nodeName = rule.expression.toNodeLabel
+		return '''new «RuleIdentifier»("«nodeName»", getClass())'''
 	}
 	
 	static def getURI(EObject eObject) {
@@ -460,28 +642,10 @@ class BlueprintGenerator {
 			type.typeCallToRType.toJavaType
 	}
 	
-	def Iterable<Function> functionDependencies(BlueprintNodeExp node) {
-		return node.node.functionDependencies + (node.next===null?#[]:node.next.functionDependencies)
-	}
-	
-	def Iterable<Function> functionDependencies(BlueprintNode node) {
-		switch (node) {
-			BlueprintOr : {
-				node.bps.flatMap[functionDependencies].toList
-			}
-			BlueprintExtract: {
-				functionDependencyProvider.functionDependencies(node.call)
-			}
-			BlueprintReturn: {
-				functionDependencyProvider.functionDependencies(node.expression)
-			}
-			BlueprintFilter: {
-				functionDependencyProvider.functionDependencies(node.filter)
-			}
-			default :{
-				#[]
-			}
-		}
+	def Iterable<Function> functionDependencies(EObject obj) {
+		return EcoreUtil2.eAllOfType(obj, RosettaSymbolReference)
+			.map[symbol]
+			.filter(Function)
 	}
 
 	/**

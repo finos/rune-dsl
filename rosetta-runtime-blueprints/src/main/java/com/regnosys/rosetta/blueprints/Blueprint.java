@@ -5,7 +5,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public interface Blueprint<IN, OUT, KIN, KOUT> {
+import com.rosetta.model.lib.functions.RosettaFunction;
+
+public interface Blueprint<IN, OUT, KIN, KOUT> extends RosettaFunction {
     String getName();
     String getURI();
     
