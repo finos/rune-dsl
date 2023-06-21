@@ -22,7 +22,6 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
-import org.eclipse.xtext.diagnostics.Diagnostic
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)

@@ -4,10 +4,8 @@ import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import com.regnosys.rosetta.tests.util.ModelHelper
-import com.rosetta.model.lib.path.RosettaPath
+import java.util.List
 import java.util.Map
-import java.util.Optional
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
@@ -15,15 +13,14 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.google.common.collect.ImmutableMap.*
 import static org.junit.jupiter.api.Assertions.*
-import java.util.List
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class ChoiceRuleGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper
-	@Inject extension ModelHelper
 	@Inject extension RosettaExtensions
+	@Inject extension ConditionTestHelper
 	
 	@Test
 	def void choiceRuleJavaClassName() {
@@ -44,17 +41,11 @@ class ChoiceRuleGeneratorTest {
 			'field2', List.of('field two value')),
 			of())
 	
-		val testChoiceRuleClass = classes.get(rootPackage.dataRule + ".TestRequiredChoice")
-		
-		val testChoiceRule = testChoiceRuleClass.declaredConstructor.newInstance;
-		
-		val validationResult = testChoiceRuleClass.getMatchingMethod("validate", #[RosettaPath, testInstance.class])
-			.invoke(testChoiceRule, null, testInstance)
+		val validationResult = classes.runDataRule(testInstance, "TestRequiredChoice")
 				
-		val isSuccess = validationResult.class.getMethod("isSuccess", null).invoke(validationResult) as Boolean
-		assertFalse(isSuccess)
+		assertFalse(validationResult.isSuccess)
 
-		val failureReason = validationResult.class.getMethod("getFailureReason", null).invoke(validationResult) as Optional<String>
+		val failureReason = validationResult.failureReason
 		assertEquals('One and only one field must be set of \'field1\', \'field2\'. Set fields are \'field1\', \'field2\'.', failureReason.get)
 	}
 	
@@ -67,15 +58,9 @@ class ChoiceRuleGeneratorTest {
 			'field2', List.of()),
 			of())
 	
-		val testChoiceRuleClass = classes.get(rootPackage.dataRule + ".TestRequiredChoice")
-		
-		val testChoiceRule = testChoiceRuleClass.declaredConstructor.newInstance;
-		
-		val validationResult = testChoiceRuleClass.getMatchingMethod("validate", #[RosettaPath, testInstance.class])
-			.invoke(testChoiceRule, null, testInstance)
-				
-		val isSuccess = validationResult.class.getMethod("isSuccess", null).invoke(validationResult) as Boolean
-		assertTrue(isSuccess)
+		val validationResult = classes.runDataRule(testInstance, "TestRequiredChoice")
+					
+		assertTrue(validationResult.isSuccess)
 	}
 	
 	@Test
@@ -87,20 +72,15 @@ class ChoiceRuleGeneratorTest {
 			'field2', List.of('field two value')),
 			of())
 		
-		val testChoiceRuleClass = classes.get(rootPackage.dataRule + ".TestOptionalChoice")
-		val testChoiceRule = testChoiceRuleClass.declaredConstructor.newInstance;
-		
-		val validationResult = testChoiceRuleClass.getMatchingMethod("validate", #[RosettaPath ,testInstance.class])
-			.invoke(testChoiceRule, null, testInstance)
+		val validationResult = classes.runDataRule(testInstance, "TestOptionalChoice")
 				
-		val isSuccess = validationResult.class.getMethod("isSuccess", null).invoke(validationResult) as Boolean
-		assertFalse(isSuccess)
+		assertFalse(validationResult.isSuccess)
 
-		val failureReason = validationResult.class.getMethod("getFailureReason", null).invoke(validationResult) as Optional<String>		
+		val failureReason = validationResult.failureReason
 		assertEquals('Zero or one field must be set of \'field1\', \'field2\'. Set fields are \'field1\', \'field2\'.', failureReason.get)
 	}
 	
-	protected def Map<String, Class<?>> createTestClassAndRule() {
+	private def Map<String, Class<?>> createTestClassAndRule() {
 		return '''
 			type Test:
 				field1 string (0..1)
@@ -115,5 +95,5 @@ class ChoiceRuleGeneratorTest {
 		'''
 		.generateCode
 		.compileToClasses
-	}	
+	}
 }
