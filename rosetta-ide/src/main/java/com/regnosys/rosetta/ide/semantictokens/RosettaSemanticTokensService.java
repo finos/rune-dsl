@@ -7,6 +7,7 @@ import org.eclipse.emf.ecore.EReference;
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
 import com.regnosys.rosetta.rosetta.RosettaBasicType;
+import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
@@ -127,6 +128,8 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, RosettaSemanticTokenTypesEnum.FUNCTION);
 			} else if (symbol instanceof RosettaExternalFunction) {
 				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, RosettaSemanticTokenTypesEnum.FUNCTION, DEFAULT_LIBRARY);
+			} else if (symbol instanceof RosettaBlueprint) {
+				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, RosettaSemanticTokenTypesEnum.RULE);
 			} else if (symbol instanceof ShortcutDeclaration) {
 				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, VARIABLE);
 			} else if (symbol instanceof RosettaType) {
