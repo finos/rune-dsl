@@ -78,6 +78,7 @@ class CardinalityProvider {
 				obj.isImplicitVariableMulti
 			}
 			Function: if(obj.output === null) false else obj.output.isMulti(breakOnClosureParameter)
+			RosettaBlueprint: obj.expression.isMulti(breakOnClosureParameter)
 			ShortcutDeclaration: obj.expression.isMulti(breakOnClosureParameter)
 			RosettaConditionalExpression: obj.ifthen.isMulti(breakOnClosureParameter) || obj.elsethen.isMulti(breakOnClosureParameter) 
 			ClosureParameter: {

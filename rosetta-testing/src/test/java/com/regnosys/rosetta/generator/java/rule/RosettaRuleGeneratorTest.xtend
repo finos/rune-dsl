@@ -16,7 +16,7 @@ import org.hamcrest.CoreMatchers
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
-import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
@@ -174,6 +174,12 @@ class RosettaRuleGeneratorTest {
 						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
+					@Inject protected FooRuleRule fooRuleRef;
+					@Inject protected BarBarOneRule barBarOneRef;
+					@Inject protected BarBarTwoRule barBarTwoRef;
+					@Inject protected BarBazRule barBazRef;
+					@Inject protected BarQuuxRule barQuuxRef;
+					@Inject protected BarQuxListRule barQuxListRef;
 					
 					@Override
 					public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() {
@@ -191,32 +197,26 @@ class RosettaRuleGeneratorTest {
 							.toBlueprint(getURI(), getName());
 					}
 					
-					@Inject private FooRuleRule fooRuleRef;
 					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
 					
-					@Inject private BarBarOneRule barBarOneRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarOne() {
 						return barBarOneRef.blueprint();
 					}
 					
-					@Inject private BarBarTwoRule barBarTwoRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
 					}
 					
-					@Inject private BarBazRule barBazRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
 						return barBazRef.blueprint();
 					}
 					
-					@Inject private BarQuuxRule barQuuxRef;
 					protected BlueprintInstance<Bar, Quux, INKEY, INKEY> getBarQuux() {
 						return barQuuxRef.blueprint();
 					}
 					
-					@Inject private BarQuxListRule barQuxListRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
 						return barQuxListRef.blueprint();
 					}
@@ -386,6 +386,12 @@ class RosettaRuleGeneratorTest {
 						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
+					@Inject protected FooRuleRule fooRuleRef;
+					@Inject protected BarBarOneRule barBarOneRef;
+					@Inject protected BarBarTwoRule barBarTwoRef;
+					@Inject protected BarBazRule barBazRef;
+					@Inject protected BarQuuxRule barQuuxRef;
+					@Inject protected BarQuxListRule barQuxListRef;
 					
 					@Override
 					public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() {
@@ -403,32 +409,26 @@ class RosettaRuleGeneratorTest {
 							.toBlueprint(getURI(), getName());
 					}
 					
-					@Inject private FooRuleRule fooRuleRef;
 					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
 					
-					@Inject private BarBarOneRule barBarOneRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarOne() {
 						return barBarOneRef.blueprint();
 					}
 					
-					@Inject private BarBarTwoRule barBarTwoRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
 					}
 					
-					@Inject private BarBazRule barBazRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
 						return barBazRef.blueprint();
 					}
 					
-					@Inject private BarQuuxRule barQuuxRef;
 					protected BlueprintInstance<Bar, Quux, INKEY, INKEY> getBarQuux() {
 						return barQuuxRef.blueprint();
 					}
 					
-					@Inject private BarQuxListRule barQuxListRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
 						return barQuxListRef.blueprint();
 					}
@@ -590,6 +590,11 @@ class RosettaRuleGeneratorTest {
 						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
+					@Inject protected FooRuleRule fooRuleRef;
+					@Inject protected BarBarTwoRule barBarTwoRef;
+					@Inject protected BarBazRule barBazRef;
+					@Inject protected BarQuxListRule barQuxListRef;
+					@Inject protected New_BarBarOneRule new_BarBarOneRef;
 					
 					@Override
 					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() {
@@ -606,27 +611,22 @@ class RosettaRuleGeneratorTest {
 							.toBlueprint(getURI(), getName());
 					}
 					
-					@Inject private FooRuleRule fooRuleRef;
 					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
 					
-					@Inject private BarBarTwoRule barBarTwoRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
 					}
 					
-					@Inject private BarBazRule barBazRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
 						return barBazRef.blueprint();
 					}
 					
-					@Inject private BarQuxListRule barQuxListRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
 						return barQuxListRef.blueprint();
 					}
 					
-					@Inject private New_BarBarOneRule new_BarBarOneRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getNew_BarBarOne() {
 						return new_BarBarOneRef.blueprint();
 					}
@@ -720,6 +720,10 @@ class RosettaRuleGeneratorTest {
 						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
+					@Inject protected FooRuleRule fooRuleRef;
+					@Inject protected BarBarTwoRule barBarTwoRef;
+					@Inject protected BarBazRule barBazRef;
+					@Inject protected BarQuxListRule barQuxListRef;
 					
 					@Override
 					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() {
@@ -735,22 +739,18 @@ class RosettaRuleGeneratorTest {
 							.toBlueprint(getURI(), getName());
 					}
 					
-					@Inject private FooRuleRule fooRuleRef;
 					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
 					
-					@Inject private BarBarTwoRule barBarTwoRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
 					}
 					
-					@Inject private BarBazRule barBazRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
 						return barBazRef.blueprint();
 					}
 					
-					@Inject private BarQuxListRule barQuxListRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
 						return barQuxListRef.blueprint();
 					}
@@ -893,13 +893,13 @@ class RosettaRuleGeneratorTest {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
-
+				
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.rosetta.test.model.Bar;
 				import javax.inject.Inject;
-
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**
@@ -924,6 +924,7 @@ class RosettaRuleGeneratorTest {
 						return "__synthetic1.rosetta#/0/@elements.2";
 					}
 					
+					@Inject protected FooRuleRule fooRuleRef;
 					
 					@Override
 					public BlueprintInstance<Bar, Bar, INKEY, INKEY> blueprint() {
@@ -933,7 +934,6 @@ class RosettaRuleGeneratorTest {
 							.toBlueprint(getURI(), getName());
 					}
 					
-					@Inject private FooRuleRule fooRuleRef;
 					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
@@ -1268,7 +1268,6 @@ class RosettaRuleGeneratorTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
@@ -1301,12 +1300,12 @@ class RosettaRuleGeneratorTest {
 					
 					@Override
 					public BlueprintInstance<Foo, String, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Blueprint1", "Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.ThenOperationImpl", new RuleIdentifier("Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.ThenOperationImpl", getClass()), foo -> MapperS.of(evaluate(foo))))
-							.toBlueprint(getURI(), getName());
+						return
+							startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Blueprint1", "item extract [item->bar] then [item extract [item->baz]]", null, foo -> MapperS.of(evaluate(foo))))
+								.toBlueprint(getURI(), getName());
 					}
 					
-					private String evaluate(Foo foo) {
+					public String evaluate(Foo foo) {
 						String string = doEvaluate(foo);
 						return string;
 					}
@@ -1668,17 +1667,80 @@ class RosettaRuleGeneratorTest {
 				val string (1..1)
 			
 			reporting rule Rule1 from Foo:
-				[legacy-syntax]
 				Rule2 then
-				extract Bar -> val
+				extract val
 			
 			reporting rule Rule2 from Foo:
 				extract bar
 			
 		'''.parseRosettaWithNoErrors
-		val classes= parsed.generateCode
-		//.writeClasses("ruleRef")
-		.compileToClasses
+		val code = parsed.generateCode
+		val bp = code.get("com.rosetta.test.model.blueprint.Rule1Rule")
+		assertThat(bp, CoreMatchers.notNullValue())
+		val expected = '''
+			package com.rosetta.test.model.blueprint;
+			
+			import com.regnosys.rosetta.blueprints.Blueprint;
+			import com.regnosys.rosetta.blueprints.BlueprintInstance;
+			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.test.model.Foo;
+			import javax.inject.Inject;
+			
+			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
+			
+			/**
+			 * @version test
+			 */
+			public class Rule1Rule<INKEY> implements Blueprint<Foo, String, INKEY, INKEY> {
+				
+				private final RosettaActionFactory actionFactory;
+				
+				@Inject
+				public Rule1Rule(RosettaActionFactory actionFactory) {
+					this.actionFactory = actionFactory;
+				}
+				
+				@Override
+				public String getName() {
+					return "Rule1"; 
+				}
+				
+				@Override
+				public String getURI() {
+					return "__synthetic1.rosetta#com.rosetta.test.model.Rule1";
+				}
+				
+				@Inject protected Rule2Rule rule2Ref;
+				
+				@Override
+				public BlueprintInstance<Foo, String, INKEY, INKEY> blueprint() {
+					return
+						startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Rule1", "Rule2 then [item extract [val]]", null, foo -> MapperS.of(evaluate(foo))))
+							.toBlueprint(getURI(), getName());
+				}
+				
+				public String evaluate(Foo foo) {
+					String string = doEvaluate(foo);
+					return string;
+				}
+				
+				private String doEvaluate(Foo foo) {
+					String string = null;
+					return assignOutput(string,foo);
+				}
+				
+				private String assignOutput(String string, Foo foo) {
+					string = MapperS.of(rule2Ref.evaluate(MapperS.of(foo).get()))
+						.apply(item -> item
+							.mapSingleToItem(_item -> (MapperS<String>)_item.<String>map("getVal", bar -> bar.getVal()))).get();
+				
+					return string;
+				}
+			}
+		'''
+		assertEquals(expected, bp)
+		val classes = code.compileToClasses
 		val bpImpl = classes.loadBlueprint("com.rosetta.test.model.blueprint.Rule1Rule")
 		assertNotNull(bpImpl)
 	}
@@ -1704,7 +1766,6 @@ class RosettaRuleGeneratorTest {
 		import com.regnosys.rosetta.blueprints.Blueprint;
 		import com.regnosys.rosetta.blueprints.BlueprintInstance;
 		import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-		import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 		import com.rosetta.model.lib.expression.CardinalityOperator;
 		import com.rosetta.model.lib.functions.ModelObjectValidator;
 		import com.rosetta.model.lib.mapper.MapperS;
@@ -1743,12 +1804,12 @@ class RosettaRuleGeneratorTest {
 			
 			@Override
 			public BlueprintInstance<Input, Input, INKEY, INKEY> blueprint() {
-				return 
-					startsWith(actionFactory, actionFactory.<Input, Input, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint", "Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.FilterOperationImpl", new RuleIdentifier("Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.FilterOperationImpl", getClass()), input -> MapperS.of(evaluate(input))))
-					.toBlueprint(getURI(), getName());
+				return
+					startsWith(actionFactory, actionFactory.<Input, Input, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint", "item filter [traderef = \"Hello\"]", null, input -> MapperS.of(evaluate(input))))
+						.toBlueprint(getURI(), getName());
 			}
 			
-			private Input evaluate(Input input0) {
+			public Input evaluate(Input input0) {
 				Input.InputBuilder input1 = doEvaluate(input0);
 				if (input1 != null) {
 					objectValidator.validate(Input.class, input1);
@@ -1800,8 +1861,7 @@ class RosettaRuleGeneratorTest {
 				extract item->flag
 						
 			reporting rule FilterRule from Input:
-				[legacy-syntax]
-				filter when rule TestRule then extract Input->traderef
+				filter TestRule then extract traderef
 			
 			type Input:
 				traderef string (1..1)
@@ -1820,10 +1880,10 @@ class RosettaRuleGeneratorTest {
 		val blueprint = '''
 			reporting rule WorthyAvenger from Avengers:
 				[legacy-syntax]
-				extract Avengers -> heros then 
-				filter when rule CanWieldMjolnir 
-					then filter when Hero -> name <> 'Thor'
-					then extract Hero -> name
+				extract Avengers -> heros
+				then filter when rule CanWieldMjolnir
+				then filter when Hero -> name <> 'Thor'
+				then extract Hero -> name
 			
 			eligibility rule CanWieldMjolnir from Hero:
 				[legacy-syntax]
@@ -1880,6 +1940,7 @@ class RosettaRuleGeneratorTest {
 					return "__synthetic1.rosetta#com.rosetta.test.model.WorthyAvenger";
 				}
 				
+				@Inject protected CanWieldMjolnirRule canWieldMjolnirRef;
 				
 				@Override
 				public BlueprintInstance<Avengers, String, INKEY, INKEY> blueprint() {
@@ -1892,7 +1953,6 @@ class RosettaRuleGeneratorTest {
 						.toBlueprint(getURI(), getName());
 				}
 				
-				@Inject private CanWieldMjolnirRule canWieldMjolnirRef;
 				protected BlueprintInstance<Hero, Boolean, INKEY, INKEY> getCanWieldMjolnir() {
 					return canWieldMjolnirRef.blueprint();
 				}
@@ -1900,29 +1960,6 @@ class RosettaRuleGeneratorTest {
 		'''
 		assertEquals(expected, blueprintJava)
 
-	}
-	
-	@Test
-	def void filterCardinalityAndType() {
-		val model = '''
-			reporting rule TestRule from Input:
-				extract flag
-						
-			reporting rule FilterRule from Input:
-				[legacy-syntax]
-				filter when rule TestRule then extract Input->traderef
-			
-			
-			type Input:
-				traderef string (1..1)
-				flag string (1..*)
-			
-		'''.parseRosetta
-		
-		model.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
-			"output type of node string does not match required type of boolean")
-		model.assertError(BLUEPRINT_FILTER, null,
-			"The expression for Filter must return a single value but the rule TestRule can return multiple values")
 	}
 
 	@Test
@@ -1945,7 +1982,6 @@ class RosettaRuleGeneratorTest {
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintInstance;
 			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-			import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 			import com.rosetta.model.lib.expression.CardinalityOperator;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Foo;
@@ -1979,12 +2015,12 @@ class RosettaRuleGeneratorTest {
 				
 				@Override
 				public BlueprintInstance<Foo, Boolean, INKEY, INKEY> blueprint() {
-					return 
-						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.IsFixedFloat", "Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.MapOperationImpl", new RuleIdentifier("Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.MapOperationImpl", getClass()), foo -> MapperS.of(evaluate(foo))))
-						.toBlueprint(getURI(), getName());
+					return
+						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.IsFixedFloat", "item extract [fixed count = 12]", null, foo -> MapperS.of(evaluate(foo))))
+							.toBlueprint(getURI(), getName());
 				}
 				
-				private Boolean evaluate(Foo foo) {
+				public Boolean evaluate(Foo foo) {
 					Boolean _boolean = doEvaluate(foo);
 					return _boolean;
 				}
@@ -2047,11 +2083,9 @@ class RosettaRuleGeneratorTest {
 			import ns1.*
 			
 			reporting rule Rule2 from TestObject:
-				[legacy-syntax]
 				Rule1
 		'''
 		].generateCode
-		//code.writeClasses("shouldUseBlueprintFromDifferentNS")
 		val classes = code.compileToClasses
 		val bpImpl = classes.loadBlueprint("ns2.blueprint.Rule2Rule")
 		assertNotNull(bpImpl)
@@ -2075,8 +2109,7 @@ class RosettaRuleGeneratorTest {
 			import ns1.*
 			
 			reporting rule Rule2 from TestObject:
-				[legacy-syntax]
-				filter when rule Rule1
+				filter Rule1
 		'''
 		].generateCode
 		//code.writeClasses("shouldUseBlueprintRuleFromDifferentNS")
@@ -2097,7 +2130,6 @@ class RosettaRuleGeneratorTest {
 				extract fieldOne
 							
 			reporting rule Rule2 from TestObject:
-				[legacy-syntax]
 				Rule1 as "BLAH"
 			
 		'''
@@ -2117,8 +2149,7 @@ class RosettaRuleGeneratorTest {
 				str string (1..1)
 			
 			reporting rule Rule1 from Foo:
-				[legacy-syntax]
-				extract Foo->bar then
+				extract bar then
 				Rule2
 							
 			reporting rule Rule2 from Foo:
@@ -2127,8 +2158,8 @@ class RosettaRuleGeneratorTest {
 		'''.toString
 		.replace('\r', "")
 		.parseRosetta
-			.assertError(BLUEPRINT_REF, RosettaIssueCodes.TYPE_ERROR,
-			"Input type of Foo is not assignable from type Bar of previous node")
+			.assertError(ROSETTA_SYMBOL_REFERENCE, RosettaIssueCodes.TYPE_ERROR,
+			"Expected type 'Foo' but was 'Bar'")
 		
 	}
 

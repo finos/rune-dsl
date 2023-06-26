@@ -212,6 +212,12 @@ class RosettaBlueprintTest {
 						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
+					@Inject protected FooRuleRule fooRuleRef;
+					@Inject protected BarBarOneRule barBarOneRef;
+					@Inject protected BarBarTwoRule barBarTwoRef;
+					@Inject protected BarBazRule barBazRef;
+					@Inject protected BarQuuxRule barQuuxRef;
+					@Inject protected BarQuxListRule barQuxListRef;
 					
 					@Override
 					public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() {
@@ -229,32 +235,26 @@ class RosettaBlueprintTest {
 							.toBlueprint(getURI(), getName());
 					}
 					
-					@Inject private FooRuleRule fooRuleRef;
 					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
 					
-					@Inject private BarBarOneRule barBarOneRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarOne() {
 						return barBarOneRef.blueprint();
 					}
 					
-					@Inject private BarBarTwoRule barBarTwoRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
 					}
 					
-					@Inject private BarBazRule barBazRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
 						return barBazRef.blueprint();
 					}
 					
-					@Inject private BarQuuxRule barQuuxRef;
 					protected BlueprintInstance<Bar, Quux, INKEY, INKEY> getBarQuux() {
 						return barQuuxRef.blueprint();
 					}
 					
-					@Inject private BarQuxListRule barQuxListRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
 						return barQuxListRef.blueprint();
 					}
@@ -424,6 +424,12 @@ class RosettaBlueprintTest {
 						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
+					@Inject protected FooRuleRule fooRuleRef;
+					@Inject protected BarBarOneRule barBarOneRef;
+					@Inject protected BarBarTwoRule barBarTwoRef;
+					@Inject protected BarBazRule barBazRef;
+					@Inject protected BarQuuxRule barQuuxRef;
+					@Inject protected BarQuxListRule barQuxListRef;
 					
 					@Override
 					public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() {
@@ -441,32 +447,26 @@ class RosettaBlueprintTest {
 							.toBlueprint(getURI(), getName());
 					}
 					
-					@Inject private FooRuleRule fooRuleRef;
 					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
 					
-					@Inject private BarBarOneRule barBarOneRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarOne() {
 						return barBarOneRef.blueprint();
 					}
 					
-					@Inject private BarBarTwoRule barBarTwoRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
 					}
 					
-					@Inject private BarBazRule barBazRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
 						return barBazRef.blueprint();
 					}
 					
-					@Inject private BarQuuxRule barQuuxRef;
 					protected BlueprintInstance<Bar, Quux, INKEY, INKEY> getBarQuux() {
 						return barQuuxRef.blueprint();
 					}
 					
-					@Inject private BarQuxListRule barQuxListRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
 						return barQuxListRef.blueprint();
 					}
@@ -629,6 +629,11 @@ class RosettaBlueprintTest {
 						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
+					@Inject protected FooRuleRule fooRuleRef;
+					@Inject protected BarBarTwoRule barBarTwoRef;
+					@Inject protected BarBazRule barBazRef;
+					@Inject protected BarQuxListRule barQuxListRef;
+					@Inject protected New_BarBarOneRule new_BarBarOneRef;
 					
 					@Override
 					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() {
@@ -645,27 +650,22 @@ class RosettaBlueprintTest {
 							.toBlueprint(getURI(), getName());
 					}
 					
-					@Inject private FooRuleRule fooRuleRef;
 					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
 					
-					@Inject private BarBarTwoRule barBarTwoRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
 					}
 					
-					@Inject private BarBazRule barBazRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
 						return barBazRef.blueprint();
 					}
 					
-					@Inject private BarQuxListRule barQuxListRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
 						return barQuxListRef.blueprint();
 					}
 					
-					@Inject private New_BarBarOneRule new_BarBarOneRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getNew_BarBarOne() {
 						return new_BarBarOneRef.blueprint();
 					}
@@ -759,6 +759,10 @@ class RosettaBlueprintTest {
 						return "__synthetic3.rosetta#/0/@elements.2";
 					}
 					
+					@Inject protected FooRuleRule fooRuleRef;
+					@Inject protected BarBarTwoRule barBarTwoRef;
+					@Inject protected BarBazRule barBazRef;
+					@Inject protected BarQuxListRule barQuxListRef;
 					
 					@Override
 					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() {
@@ -774,22 +778,18 @@ class RosettaBlueprintTest {
 							.toBlueprint(getURI(), getName());
 					}
 					
-					@Inject private FooRuleRule fooRuleRef;
 					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
 					
-					@Inject private BarBarTwoRule barBarTwoRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
 						return barBarTwoRef.blueprint();
 					}
 					
-					@Inject private BarBazRule barBazRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
 						return barBazRef.blueprint();
 					}
 					
-					@Inject private BarQuxListRule barQuxListRef;
 					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
 						return barQuxListRef.blueprint();
 					}
@@ -936,13 +936,13 @@ class RosettaBlueprintTest {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
-
+				
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
 				import com.rosetta.test.model.Bar;
 				import javax.inject.Inject;
-
+				
 				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
 				/**
@@ -967,6 +967,7 @@ class RosettaBlueprintTest {
 						return "__synthetic1.rosetta#/0/@elements.2";
 					}
 					
+					@Inject protected FooRuleRule fooRuleRef;
 					
 					@Override
 					public BlueprintInstance<Bar, Bar, INKEY, INKEY> blueprint() {
@@ -976,7 +977,6 @@ class RosettaBlueprintTest {
 							.toBlueprint(getURI(), getName());
 					}
 					
-					@Inject private FooRuleRule fooRuleRef;
 					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
 						return fooRuleRef.blueprint();
 					}
@@ -1989,6 +1989,7 @@ class RosettaBlueprintTest {
 					return "__synthetic1.rosetta#com.rosetta.test.model.WorthyAvenger";
 				}
 				
+				@Inject protected CanWieldMjolnirRule canWieldMjolnirRef;
 				
 				@Override
 				public BlueprintInstance<Avengers, String, INKEY, INKEY> blueprint() {
@@ -2001,7 +2002,6 @@ class RosettaBlueprintTest {
 						.toBlueprint(getURI(), getName());
 				}
 				
-				@Inject private CanWieldMjolnirRule canWieldMjolnirRef;
 				protected BlueprintInstance<Hero, Boolean, INKEY, INKEY> getCanWieldMjolnir() {
 					return canWieldMjolnirRef.blueprint();
 				}
