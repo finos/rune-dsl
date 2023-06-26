@@ -584,8 +584,9 @@ class BlueprintGenerator {
 		if (rule.identifier !== null) {
 			return '''new «RuleIdentifier»("«rule.identifier»", getClass())'''
 		}
-		val nodeName = rule.expression.toNodeLabel
-		return '''new «RuleIdentifier»("«nodeName»", getClass())'''
+		return '''null'''
+		// val nodeName = rule.expression.toNodeLabel
+		// return '''new «RuleIdentifier»("«nodeName»", getClass())'''
 	}
 	
 	static def getURI(EObject eObject) {

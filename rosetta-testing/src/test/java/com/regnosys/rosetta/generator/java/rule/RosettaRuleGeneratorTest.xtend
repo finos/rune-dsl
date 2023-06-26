@@ -1268,7 +1268,6 @@ class RosettaRuleGeneratorTest {
 				import com.regnosys.rosetta.blueprints.Blueprint;
 				import com.regnosys.rosetta.blueprints.BlueprintInstance;
 				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
@@ -1302,7 +1301,7 @@ class RosettaRuleGeneratorTest {
 					@Override
 					public BlueprintInstance<Foo, String, INKEY, INKEY> blueprint() {
 						return
-							startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Blueprint1", "Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.ThenOperationImpl", new RuleIdentifier("Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.ThenOperationImpl", getClass()), foo -> MapperS.of(evaluate(foo))))
+							startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Blueprint1", "item extract [item->bar] then [item extract [item->baz]]", null, foo -> MapperS.of(evaluate(foo))))
 								.toBlueprint(getURI(), getName());
 					}
 					
@@ -1684,7 +1683,6 @@ class RosettaRuleGeneratorTest {
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintInstance;
 			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-			import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Foo;
 			import javax.inject.Inject;
@@ -1718,7 +1716,7 @@ class RosettaRuleGeneratorTest {
 				@Override
 				public BlueprintInstance<Foo, String, INKEY, INKEY> blueprint() {
 					return
-						startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Rule1", "Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.ThenOperationImpl", new RuleIdentifier("Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.ThenOperationImpl", getClass()), foo -> MapperS.of(evaluate(foo))))
+						startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Rule1", "Rule2 then [item extract [val]]", null, foo -> MapperS.of(evaluate(foo))))
 							.toBlueprint(getURI(), getName());
 				}
 				
@@ -1768,7 +1766,6 @@ class RosettaRuleGeneratorTest {
 		import com.regnosys.rosetta.blueprints.Blueprint;
 		import com.regnosys.rosetta.blueprints.BlueprintInstance;
 		import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-		import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 		import com.rosetta.model.lib.expression.CardinalityOperator;
 		import com.rosetta.model.lib.functions.ModelObjectValidator;
 		import com.rosetta.model.lib.mapper.MapperS;
@@ -1808,7 +1805,7 @@ class RosettaRuleGeneratorTest {
 			@Override
 			public BlueprintInstance<Input, Input, INKEY, INKEY> blueprint() {
 				return
-					startsWith(actionFactory, actionFactory.<Input, Input, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint", "Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.FilterOperationImpl", new RuleIdentifier("Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.FilterOperationImpl", getClass()), input -> MapperS.of(evaluate(input))))
+					startsWith(actionFactory, actionFactory.<Input, Input, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint", "item filter [traderef = \"Hello\"]", null, input -> MapperS.of(evaluate(input))))
 						.toBlueprint(getURI(), getName());
 			}
 			
@@ -1985,7 +1982,6 @@ class RosettaRuleGeneratorTest {
 			import com.regnosys.rosetta.blueprints.Blueprint;
 			import com.regnosys.rosetta.blueprints.BlueprintInstance;
 			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-			import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 			import com.rosetta.model.lib.expression.CardinalityOperator;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Foo;
@@ -2020,7 +2016,7 @@ class RosettaRuleGeneratorTest {
 				@Override
 				public BlueprintInstance<Foo, Boolean, INKEY, INKEY> blueprint() {
 					return
-						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.IsFixedFloat", "Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.MapOperationImpl", new RuleIdentifier("Unsupported expression type of com.regnosys.rosetta.rosetta.expression.impl.MapOperationImpl", getClass()), foo -> MapperS.of(evaluate(foo))))
+						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.IsFixedFloat", "item extract [fixed count = 12]", null, foo -> MapperS.of(evaluate(foo))))
 							.toBlueprint(getURI(), getName());
 				}
 				

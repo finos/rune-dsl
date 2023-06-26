@@ -718,7 +718,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		model.elements.filter(RosettaNamed).filter[!(it instanceof FunctionDispatch)].forEach [ // TODO better FunctionDispatch handling
 			name2attr.put(name, it)
 		]
-		val resources = getResourceDescriptions(model.eResource)
+		val resourceDescription = getResourceDescriptions(model.eResource)
 		for (name : name2attr.keySet) {
 			val valuesByName = name2attr.get(name)
 			if (valuesByName.size > 1) {
@@ -729,7 +729,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			} else if (valuesByName.size == 1 && model.eResource.URI.isPlatformResource) {
 				val EObject toCheck = valuesByName.get(0)
 				val qName = toCheck.fullyQualifiedName
-				val sameNamed = resources.getExportedObjects(toCheck.eClass(), qName, false).filter [
+				val sameNamed = resourceDescription.getExportedObjects(toCheck.eClass(), qName, false).filter [
 					isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
 				].map[EObjectURI]
 				if (sameNamed.size > 1) {
@@ -825,10 +825,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 						}
 					]
 				} else if (callable instanceof RosettaBlueprint) {
-					checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
-					if (cardinality.isMulti(element.args.head)) {
-						error('''Expecting single cardinality for input to rule.''', element,
-							ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
+					if (callable.input !== null) {
+						checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
+						if (cardinality.isMulti(element.args.head)) {
+							error('''Expecting single cardinality for input to rule.''', element,
+								ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
+						}
 					}
 				}
 			}
@@ -1097,7 +1099,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				
 				// check type
 				val bpType = bp.expression.RType
-				if (bpType !== null && !bpType.isSubtypeOf(attrType)) {
+				if (bpType !== null && bpType !== MISSING && !bpType.isSubtypeOf(attrType)) {
 					val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
 						'''whereas the reporting rule «bp.name» has type «bpType».'''
 					error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)

@@ -878,9 +878,6 @@ class ExpressionGenerator {
 			RosettaConditionalExpression : {
 				'''choice'''
 			}
-			RosettaExistsExpression : {
-				'''«toNodeLabel(expr.argument)» exists'''
-			}
 			RosettaEnumValueReference : {
 				'''«expr.enumeration.name»'''
 			}
@@ -893,17 +890,17 @@ class ExpressionGenerator {
 			RosettaLiteral : {
 				'''«expr.stringValue»'''
 			}
-			RosettaCountOperation : {
-				'''«toNodeLabel(expr.argument)» count'''
-			}
 			RosettaSymbolReference : {
 				'''«expr.symbol.name»«IF expr.explicitArguments»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)«ENDIF»'''
 			}
 			RosettaImplicitVariable : {
 				'''«defaultImplicitVariable.name»'''
 			}
-			RosettaOnlyElement : {
-				toNodeLabel(expr.argument)
+			RosettaFunctionalOperation : {
+				'''«toNodeLabel(expr.argument)» «expr.operator»«IF expr.function !== null» [«toNodeLabel(expr.function.body)»]«ENDIF»'''
+			}
+			RosettaUnaryOperation : {
+				'''«toNodeLabel(expr.argument)» «expr.operator»'''
 			}
 			default :
 				'''Unsupported expression type of «expr?.class?.name»'''

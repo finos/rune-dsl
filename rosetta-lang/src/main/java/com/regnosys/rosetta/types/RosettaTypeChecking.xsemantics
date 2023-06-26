@@ -461,7 +461,10 @@ checkrule CheckRosettaSymbolReference for RosettaSymbolReference e from {
 				or
 				fail error "Expected 1 argument, but got " + e.args.size() + " instead."
 			}
-			looseListSubtypeCheck(e.args.head, new RListType(f.input.typeCallToRType(new RosettaInterpreterContext), single))
+			val paramType = f.input?.typeCallToRType(new RosettaInterpreterContext)?.createListType(single)
+			if (paramType !== null) {
+				looseListSubtypeCheck(e.args.head, paramType)
+			}
         }
     }
 }

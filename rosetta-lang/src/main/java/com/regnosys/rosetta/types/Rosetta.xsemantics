@@ -167,6 +167,8 @@ auxiliary typeOfImplicitVariable(EObject c) {
 			createListType(new RDataType(it), single)
 		} else if (it instanceof RosettaFunctionalOperation) {
 			functionalOperationItemType
+		} else if (it instanceof RosettaBlueprint) {
+			input?.typeCallToRType(new RosettaInterpreterContext)?.createListType(single)
 		}
 	]
 }

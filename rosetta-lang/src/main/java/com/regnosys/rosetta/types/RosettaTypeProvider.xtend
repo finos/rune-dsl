@@ -269,7 +269,7 @@ class RosettaTypeProvider {
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaBlueprint) {
-				input?.typeCallToRType ?: ANY
+				input?.typeCallToRType ?: MISSING
 			}
 		].orElse(MISSING)
 	}
