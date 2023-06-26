@@ -16,7 +16,6 @@ import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
@@ -229,11 +228,25 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
+	def void canOnlyCallANonLegacyRuleFromWithinARule(RosettaSymbolReference ref) {
+		val targetRule = ref.symbol
+		if (targetRule instanceof RosettaBlueprint) {
+			if (targetRule.isLegacy) {
+				error('''You can only call non-legacy rules.''', ref, null)
+			}
+			val containingRule = EcoreUtil2.getContainerOfType(ref, RosettaBlueprint)
+			if (containingRule === null) {
+				error('''You can only call a rule from within a rule.''', ref, null)
+			}
+		}
+	}
+	
+	@Check
 	def void cannotUseTypeNameForImplicitVariableInNewRuleSyntax(RosettaSymbolReference ref) {
 		if (ref.symbol instanceof Data) {
 			val rule = EcoreUtil2.getContainerOfType(ref, RosettaBlueprint)
 			if (rule === null || !rule.isLegacy) {
-				error('''Refering to the implicit input using the type name is deprecated. Use `item` instead.''', ref, null)
+				error('''Refering to the implicit input using the type name (`«ref.symbol.name»`) is deprecated. Use `item` instead.''', ref, null)
 			}
 		}
 	}
@@ -255,8 +268,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def void unnecesarrySquareBracketsCheck(RosettaFunctionalOperation op) {
-		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
-			return // disable check for blueprints
+		val rule = EcoreUtil2.getContainerOfType(op, RosettaBlueprint)
+		if (rule !== null && rule.isLegacy) {
+			return // disable check for legacy blueprints
 		}
 		if (op.hasSquareBrackets) {
 			if (!op.areSquareBracketsMandatory) {
@@ -282,8 +296,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def void mandatoryThenCheck(RosettaUnaryOperation op) {
-		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
-			return // disable check for blueprints
+		val rule = EcoreUtil2.getContainerOfType(op, RosettaBlueprint)
+		if (rule !== null && rule.isLegacy) {
+			return // disable check for legacy blueprints
 		}
 		if (op.isThenMandatory) {
 			val previousOperationIsThen =
@@ -306,8 +321,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	def void ambiguousFunctionalOperation(RosettaFunctionalOperation op) {
-		if (EcoreUtil2.getContainerOfType(op, Function) === null) {
-			return // disable check for blueprints
+		val rule = EcoreUtil2.getContainerOfType(op, RosettaBlueprint)
+		if (rule !== null && rule.isLegacy) {
+			return // disable check for legacy blueprints
 		}
 		if (op.function !== null) {
 			if (op.isNestedFunctionalOperation) {
@@ -702,7 +718,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		model.elements.filter(RosettaNamed).filter[!(it instanceof FunctionDispatch)].forEach [ // TODO better FunctionDispatch handling
 			name2attr.put(name, it)
 		]
-		val resources = getResourceDescriptions(model.eResource)
+		val resourceDescription = getResourceDescriptions(model.eResource)
 		for (name : name2attr.keySet) {
 			val valuesByName = name2attr.get(name)
 			if (valuesByName.size > 1) {
@@ -713,7 +729,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			} else if (valuesByName.size == 1 && model.eResource.URI.isPlatformResource) {
 				val EObject toCheck = valuesByName.get(0)
 				val qName = toCheck.fullyQualifiedName
-				val sameNamed = resources.getExportedObjects(toCheck.eClass(), qName, false).filter [
+				val sameNamed = resourceDescription.getExportedObjects(toCheck.eClass(), qName, false).filter [
 					isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
 				].map[EObjectURI]
 				if (sameNamed.size > 1) {
@@ -792,15 +808,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if (callable instanceof RosettaCallableWithArgs) {
 			val callerSize = element.args.size
 
-			val callableSize = switch callable {
-				RosettaExternalFunction:
-					callable.parameters.size
-				Function: {
-					callable.inputs.size
-				}
-				default:
-					0
-			}
+			val callableSize = callable.numberOfParameters
 			if (callerSize !== callableSize) {
 				error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
 					ROSETTA_SYMBOL_REFERENCE__SYMBOL)
@@ -816,6 +824,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 								ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
 						}
 					]
+				} else if (callable instanceof RosettaBlueprint) {
+					if (callable.input !== null) {
+						checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
+						if (cardinality.isMulti(element.args.head)) {
+							error('''Expecting single cardinality for input to rule.''', element,
+								ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
+						}
+					}
 				}
 			}
 		} else {
@@ -982,7 +998,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}
 		}
 		else if (filter.filterBP !== null) {
-			val node = buildTypeGraph(filter.filterBP.blueprint.nodes)
+			val targetRule = filter.filterBP.blueprint
+			val node = if (targetRule.isLegacy) {
+				buildTypeGraph(targetRule.nodes)
+			} else {
+				nonLegacyBuildTypeGraph(targetRule.expression)
+			}
 			if (!checkBPNodeSingle(node, false)) {
 				error('''The expression for Filter must return a single value but the rule «filter.filterBP.blueprint.name» can return multiple values''',
 					filter, BLUEPRINT_FILTER__FILTER_BP)
@@ -1048,22 +1069,24 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			val attrSingle = attrExt.cardinalityIsSingleValue
 			val attrType = attr.typeCall.typeCallToRType
 			if (bp.isLegacy) {
-				val node = buildTypeGraph(bp.nodes)
-	
-				val ruleSingle = checkBPNodeSingle(node, false)
-	
-				// check cardinality
-				if (attrSingle != ruleSingle) {
-					val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
-						'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
-					warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
-				}
-				// check type
-				val bpType = node.output.type
-				if (!node.repeatable && bpType.map[!isSubtypeOf(attrType)].orElse(false)) {
-					val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
-						'''whereas the reporting rule «bp.name» has type «bpType.get».'''
-					error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				if (bp.nodes !== null) {
+					val node = buildTypeGraph(bp.nodes)
+		
+					val ruleSingle = checkBPNodeSingle(node, false)
+		
+					// check cardinality
+					if (attrSingle != ruleSingle) {
+						val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
+							'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
+						warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+					}
+					// check type
+					val bpType = node.output.type
+					if (!node.repeatable && bpType.map[!isSubtypeOf(attrType)].orElse(false)) {
+						val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
+							'''whereas the reporting rule «bp.name» has type «bpType.get».'''
+						error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+					}
 				}
 			} else {
 				// check cardinality
@@ -1076,7 +1099,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				
 				// check type
 				val bpType = bp.expression.RType
-				if (!bpType.isSubtypeOf(attrType)) {
+				if (bpType !== null && bpType !== MISSING && !bpType.isSubtypeOf(attrType)) {
 					val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
 						'''whereas the reporting rule «bp.name» has type «bpType».'''
 					error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
@@ -1609,7 +1632,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 
 	private def void checkBodyType(InlineFunction ref, RType type) {
-		if (ref !== null && ref.body.getRType != type) {
+		val bodyType = ref?.body?.getRType
+		if (ref !== null && bodyType !== null && bodyType != MISSING && bodyType != type) {
 			error('''Expression must evaluate to a «type.name».''', ref, null)
 		}
 	}

@@ -517,13 +517,17 @@ class RosettaBlueprintReport extends RosettaRootElement {
 	}
 }
 
-class RosettaBlueprint extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+class RosettaBlueprint extends RosettaRootElement, RosettaCallableWithArgs, RosettaDefinable {
 	boolean legacy
 	contains RosettaDocReference[] references
 	contains BlueprintNodeExp nodes // legacy
 	contains RosettaExpression expression
 	String identifier
 	contains TypeCall input
+	
+	op int numberOfParameters() {
+		1
+	}
 }
 
 class BlueprintNodeExp {

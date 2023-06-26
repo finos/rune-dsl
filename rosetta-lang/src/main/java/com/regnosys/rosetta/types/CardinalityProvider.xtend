@@ -50,6 +50,7 @@ import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
+import com.regnosys.rosetta.rosetta.TypeParameter
 
 class CardinalityProvider {
 	
@@ -77,6 +78,7 @@ class CardinalityProvider {
 				obj.isImplicitVariableMulti
 			}
 			Function: if(obj.output === null) false else obj.output.isMulti(breakOnClosureParameter)
+			RosettaBlueprint: obj.expression.isMulti(breakOnClosureParameter)
 			ShortcutDeclaration: obj.expression.isMulti(breakOnClosureParameter)
 			RosettaConditionalExpression: obj.ifthen.isMulti(breakOnClosureParameter) || obj.elsethen.isMulti(breakOnClosureParameter) 
 			ClosureParameter: {
@@ -130,7 +132,8 @@ class CardinalityProvider {
 			RosettaRootElement,
 			RosettaEnumValueReference,
 			RosettaMapPathValue,
-			RosettaParameter: false
+			RosettaParameter,
+			TypeParameter: false
 			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }
 		}
 	}

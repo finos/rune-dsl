@@ -79,6 +79,24 @@ class RosettaBlueprintTypeResolver {
 		result.repeatable = result.next.repeatable
 		return result
 	}
+	def TypedBPNode nonLegacyBuildTypeGraph(RosettaExpression expr) throws BlueprintUnresolvedTypeException {
+		val prevNode = new TypedBPNode // a hypothetical node before this BP
+		val nextNode = new TypedBPNode // a hypothetical node after this BP
+
+		val result = new TypedBPNode
+		try {
+			result.next = nonLegacyBindTypes(expr, prevNode, nextNode, new HashSet)
+		}
+		catch (BlueprintTypeException ex) {
+			throw new BlueprintUnresolvedTypeException(ex.message, expr, null, RosettaIssueCodes.TYPE_ERROR)
+		}
+		result.input = prevNode.output
+		result.inputKey = prevNode.outputKey
+		result.output = nextNode.input
+		result.outputKey = nextNode.inputKey
+		result.repeatable = result.next.repeatable
+		return result
+	}
 
 	def TypedBPNode bindTypes(BlueprintNodeExp nodeExp, TypedBPNode parentNode, TypedBPNode outputNode, Set<BlueprintNode> visited) {
 		val typedNode = new TypedBPNode
@@ -180,7 +198,7 @@ class RosettaBlueprintTypeResolver {
 	}
 	def TypedBPNode nonLegacyComputeExpected(RosettaExpression expr) {
 		val result = new TypedBPNode
-		result.input.type = Optional.of((expr.eContainer as RosettaBlueprint).input.typeCallToRType)
+		result.input.type = Optional.ofNullable((expr.eContainer as RosettaBlueprint).input?.typeCallToRType)
 		result.output.type = Optional.of(expr.RType)
 		result.cardinality.set(0, if (cardinality.isMulti(expr)) BPCardinality.EXPAND else BPCardinality.UNCHANGED)
 		result.repeatable = false

@@ -108,6 +108,13 @@ class RosettaTypeProvider {
 					MISSING
 				}
 			}
+			RosettaBlueprint: {
+				if (symbol.expression !== null) {
+					safeRType(symbol.expression, cycleTracker)
+				} else {
+					MISSING
+				}
+			}
 			RosettaExternalFunction: {
 				symbol.typeCall.typeCallToRType
 			}
@@ -262,7 +269,7 @@ class RosettaTypeProvider {
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaBlueprint) {
-				input.typeCallToRType
+				input?.typeCallToRType ?: MISSING
 			}
 		].orElse(MISSING)
 	}
