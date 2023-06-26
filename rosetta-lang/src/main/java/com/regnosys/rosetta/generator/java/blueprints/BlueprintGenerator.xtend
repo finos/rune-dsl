@@ -585,8 +585,6 @@ class BlueprintGenerator {
 			return '''new «RuleIdentifier»("«rule.identifier»", getClass())'''
 		}
 		return '''null'''
-		// val nodeName = rule.expression.toNodeLabel
-		// return '''new «RuleIdentifier»("«nodeName»", getClass())'''
 	}
 	
 	static def getURI(EObject eObject) {
