@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
@@ -91,7 +90,9 @@ import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
 import org.apache.commons.text.StringEscapeUtils
+import com.regnosys.rosetta.types.CardinalityProvider
 import com.rosetta.model.lib.mapper.MapperUtils
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
 
 class ExpressionGenerator {
 	
@@ -294,6 +295,10 @@ class ExpressionGenerator {
 			RosettaExternalFunction: {
 				'''«IF needsMapper»«MapperS».of(«ENDIF»new «callable.toFunctionJavaClass»().execute(«argsCode»)«IF needsMapper»)«ENDIF»'''
 			}
+			RosettaBlueprint: {
+				val multi = callable.isMulti
+				'''«IF needsMapper»«IF multi»«MapperC».<«typeProvider.getRTypeOfSymbol(callable).toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«ENDIF»«scope.getIdentifierOrThrow(callable.toRuleInstance)».evaluate(«argsCode»)«IF needsMapper»)«ENDIF»'''
+			}
 			default: 
 				throw new UnsupportedOperationException("Unsupported callable with args of type " + callable?.eClass?.name)
 		}
@@ -364,8 +369,8 @@ class ExpressionGenerator {
 	
 	private def StringConcatenationClient implicitVariable(EObject context, JavaScope scope) {
 		val definingContainer = context.findContainerDefiningImplicitVariable.get
-		if (definingContainer instanceof Data) {
-			// For conditions
+		if (definingContainer instanceof Data || definingContainer instanceof RosettaBlueprint) {
+			// For conditions and rules
 			return '''«MapperS».of(«scope.getIdentifierOrThrow(context.implicitVarInContext)»)'''
 		} else {
 			// For inline functions
@@ -665,9 +670,21 @@ class ExpressionGenerator {
 	}
 	
 	def StringConcatenationClient filterOperation(FilterOperation op, JavaScope scope) {
-		'''
-		«op.argument.emptyToMapperJavaCode(scope, true)»
-			.«IF op.function.isItemMulti»filterList«ELSE»filterItem«ENDIF»(«op.function.inlineFunction(scope, true, false)»)'''
+		if (!op.isPreviousOperationMulti) {
+			'''
+			«op.argument.emptyToMapperJavaCode(scope, true)»
+				.filterSingle(«op.function.inlineFunction(scope, true, false)»)'''
+		} else {
+			if (op.argument.isOutputListOfLists) {
+				'''
+				«op.argument.emptyToMapperJavaCode(scope, true)»
+					.filterList(«op.function.inlineFunction(scope, true, false)»)'''
+			} else {
+				'''
+				«op.argument.emptyToMapperJavaCode(scope, true)»
+					.filterItem(«op.function.inlineFunction(scope, true, false)»)'''
+			}
+		}
 	}
 	
 	def StringConcatenationClient mapOperation(MapOperation op, JavaScope scope) {
@@ -861,9 +878,6 @@ class ExpressionGenerator {
 			RosettaConditionalExpression : {
 				'''choice'''
 			}
-			RosettaExistsExpression : {
-				'''«toNodeLabel(expr.argument)» exists'''
-			}
 			RosettaEnumValueReference : {
 				'''«expr.enumeration.name»'''
 			}
@@ -876,17 +890,17 @@ class ExpressionGenerator {
 			RosettaLiteral : {
 				'''«expr.stringValue»'''
 			}
-			RosettaCountOperation : {
-				'''«toNodeLabel(expr.argument)» count'''
-			}
 			RosettaSymbolReference : {
 				'''«expr.symbol.name»«IF expr.explicitArguments»(«FOR arg:expr.args SEPARATOR ", "»«arg.toNodeLabel»«ENDFOR»)«ENDIF»'''
 			}
 			RosettaImplicitVariable : {
 				'''«defaultImplicitVariable.name»'''
 			}
-			RosettaOnlyElement : {
-				toNodeLabel(expr.argument)
+			RosettaFunctionalOperation : {
+				'''«toNodeLabel(expr.argument)» «expr.operator»«IF expr.function !== null» [«toNodeLabel(expr.function.body)»]«ENDIF»'''
+			}
+			RosettaUnaryOperation : {
+				'''«toNodeLabel(expr.argument)» «expr.operator»'''
 			}
 			default :
 				'''Unsupported expression type of «expr?.class?.name»'''

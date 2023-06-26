@@ -14,7 +14,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -23,161 +22,7 @@ class RosettaBlueprintRepeatableRuleTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
-
-	@Test
-	@Disabled
-	def void shouldParseReportAndGenerateRepeatableRuleCardinalityErrors() {
-		'''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			when FooRule
-			with type FooReport
-			
-			type FooReport:
-			    barFieldList string (0..*)
-			        [ruleReference RepeatableBarFieldList]
-			
-			type Bar:
-				fieldList string (0..*)
-			
-			eligibility rule FooRule:
-				filter when Bar->fieldList exists
-
-			reporting rule RepeatableBarFieldList:
-				extract repeatable Bar->fieldList then
-				maximum
-		'''
-		.parseRosetta.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field barFieldList has multiple cardinality whereas the reporting rule RepeatableBarFieldList has single cardinality.")
-	}
-
 	
-	@Test
-	@Disabled
-	def void shouldParseReportWithSingleRepeatableBasicTypeRule() {
-		'''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			when FooRule
-			with type FooReport
-			
-			type FooReport:
-			    barFieldList string (0..*)
-			        [ruleReference RepeatableBarFieldList]
-			
-			type Bar:
-				fieldList string (0..*)
-			
-			eligibility rule FooRule:
-				filter when Bar->fieldList exists
-
-			reporting rule RepeatableBarFieldList:
-				extract repeatable Bar->fieldList
-		'''
-		.parseRosettaWithNoIssues
-	}
-	
-	@Test
-	@Disabled
-	def void shouldParseReportWithExtractThenRepeatableBasicTypeRule() {
-		'''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			when FooRule
-			with type BarReport
-			
-			type BarReport:
-			    bazFieldList string (0..*)
-			        [ruleReference RepeatableBazFieldList]
-			
-			type Bar:
-				baz Baz (1..1)
-			
-			type Baz:
-				fieldList string (1..*)
-			
-			eligibility rule FooRule:
-				filter when Bar->baz exists
-
-			reporting rule RepeatableBazFieldList:
-				extract Bar->baz then
-				extract repeatable Baz->fieldList
-		'''
-		.parseRosettaWithNoIssues
-	}
-	
-	@Test
-	@Disabled
-	def void shouldParseReportWithExtractRuleThenRepeatableBasicTypeRule() {
-		'''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			when FooRule
-			with type BarReport
-			
-			type BarReport:
-			    bazFieldList string (0..*)
-			        [ruleReference RepeatableBazFieldList]
-			
-			type Bar:
-				baz Baz (1..1)
-			
-			type Baz:
-				fieldList string (1..*)
-			
-			eligibility rule FooRule:
-				filter when Bar->baz exists
-
-			reporting rule RepeatableBazFieldList:
-				BarBaz then
-				extract repeatable Baz->fieldList
-			
-			reporting rule BarBaz:
-				extract Bar->baz
-		'''
-		.parseRosettaWithNoIssues
-	}
-	
-	@Test
-	@Disabled
-	def void shouldParseReportWithRepeatableComplexTypeRuleThenExtract() {
-		'''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			when FooRule
-			with type BarReport
-			
-			type BarReport:
-			    bazFieldList string (0..*)
-			        [ruleReference RepeatableBarBazList]
-			
-			type Bar:
-				bazList Baz (1..*)
-			
-			type Baz:
-				field string (1..1)
-			
-			eligibility rule FooRule:
-				filter when Bar->bazList exists
-
-			reporting rule RepeatableBarBazList:
-				extract repeatable Bar->bazList then
-				(
-					extract Baz->field
-				)
-		'''
-		.parseRosettaWithNoIssues
-	}
-
 	@Test
 	def void shouldParseReportWithRepeatableComplexTypeRuleThenExtractRule() {
 		'''
@@ -185,6 +30,7 @@ class RosettaBlueprintRepeatableRuleTest {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
@@ -202,17 +48,18 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Baz:
 				field string (1..1)
 			
-			eligibility rule FooRule:
-				filter when Bar->bazList exists
+			eligibility rule FooRule from Bar:
+				filter bazList exists
 
-			reporting rule RepeatableBarBazList:
+			reporting rule RepeatableBarBazList from Bar:
+				[legacy-syntax]
 				extract repeatable Bar->bazList then
 				(
 					BazField
 				)
 			
-			reporting rule BazField:
-				extract Baz->field
+			reporting rule BazField from Baz:
+				extract field
 		'''
 		.parseRosettaWithNoIssues
 	}
@@ -224,6 +71,7 @@ class RosettaBlueprintRepeatableRuleTest {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
@@ -243,17 +91,18 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Baz:
 				field string (1..1)
 			
-			eligibility rule FooRule:
-				filter when Bar->bazList exists
+			eligibility rule FooRule from Bar:
+				filter bazList exists
 
-			reporting rule RepeatableBarBazList:
+			reporting rule RepeatableBarBazList from Bar:
+				[legacy-syntax]
 				extract repeatable Bar->bazList then
 				(
 					BazField
 				)
 			
-			reporting rule BazField:
-				extract Baz->field
+			reporting rule BazField from Baz:
+				extract field
 		'''
 		.parseRosetta.assertError(ROSETTA_RULE_REFERENCE, null, "Duplicate reporting rule BazField")
 	}
@@ -265,7 +114,8 @@ class RosettaBlueprintRepeatableRuleTest {
 			type Foo:
 				listAttr int (1..*)
 			
-			reporting rule RepeatableValue:
+			reporting rule RepeatableValue from Foo:
+				[legacy-syntax]
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				extract repeatable Foo -> listAttr as "Repeating Value"
 			

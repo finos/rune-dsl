@@ -15,7 +15,6 @@ import org.eclipse.xtext.ide.server.Document;
 
 import com.regnosys.rosetta.ide.util.RangeUtils;
 import com.regnosys.rosetta.validation.RosettaIssueCodes;
-import com.regnosys.rosetta.rosetta.expression.MapOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 

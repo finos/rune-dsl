@@ -19,6 +19,8 @@ class ModelHelper {
 	public static val commonTestTypes = '''
 		«getVersionInfo»
 		
+		type ReportableEvent:
+		
 		metaType scheme string
 			
 		body Authority ESMA

@@ -139,33 +139,39 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			segment dataElement
 			segment field
 			
-			reporting rule Cleared
+			reporting rule Cleared from number:
 				[regulatoryReference CFTC Part45 appendix "1" dataElement "1" field "Cleared"
 					provision "Indicator of whether the transaction has been cleared, or is intended to be cleared, by a central counterparty."]
-				return "Y"
+				"Y"
 			'''
 			it.model = model
 			it.assertSemanticTokens = [
-				assertEquals(4, size)
-				get(0) => [ // Part45
+				assertEquals(5, size)
+				get(0) => [ // number
+					assertEquals(BASIC_TYPE, tokenType)
+					assertEquals(10, line)
+					assertEquals(28, startChar)
+					assertEquals(6, length)
+				]
+				get(1) => [ // Part45
 					assertEquals(DOCUMENT_CORPUS, tokenType)
 					assertEquals(11, line)
 					assertEquals(27, startChar)
 					assertEquals(6, length)
 				]
-				get(1) => [ // appendix
+				get(2) => [ // appendix
 					assertEquals(DOCUMENT_SEGMENT, tokenType)
 					assertEquals(11, line)
 					assertEquals(34, startChar)
 					assertEquals(8, length)
 				]
-				get(2) => [ // dataElement
+				get(3) => [ // dataElement
 					assertEquals(DOCUMENT_SEGMENT, tokenType)
 					assertEquals(11, line)
 					assertEquals(47, startChar)
 					assertEquals(11, length)
 				]
-				get(3) => [ // field
+				get(4) => [ // field
 					assertEquals(DOCUMENT_SEGMENT, tokenType)
 					assertEquals(11, line)
 					assertEquals(63, startChar)
@@ -192,7 +198,7 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			type A:
 				a int (1..1)
 			
-			reporting rule Cleared
+			reporting rule Cleared from number:
 				[regulatoryReference CFTC Pa
 				
 			type B:
@@ -201,14 +207,20 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			it.model = model
 			it.assertNoIssues = false;
 			it.assertSemanticTokens = [
-				assertEquals(2, size)
+				assertEquals(3, size)
 				get(0) => [ // int
 					assertEquals(TYPE_ALIAS, tokenType)
 					assertEquals(11, line)
 					assertEquals(3, startChar)
 					assertEquals(3, length)
 				]
-				get(1) => [ // string
+				get(1) => [ // number
+					assertEquals(BASIC_TYPE, tokenType)
+					assertEquals(13, line)
+					assertEquals(28, startChar)
+					assertEquals(6, length)
+				]
+				get(2) => [ // string
 					assertEquals(BASIC_TYPE, tokenType)
 					assertEquals(17, line)
 					assertEquals(3, startChar)

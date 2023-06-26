@@ -345,7 +345,7 @@ interface UnaryFunctionalOperation extends RosettaFunctionalOperation {
 class ReduceOperation extends MandatoryFunctionalOperation, ListOperation {
 }
 
-class FilterOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists, ListOperation {
+class FilterOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
 }
 
 class MapOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {

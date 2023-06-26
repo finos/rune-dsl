@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.validation
 
 import com.google.inject.Inject
-import com.regnosys.rosetta.generator.java.function.CardinalityProvider
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
 import com.regnosys.rosetta.rosetta.BlueprintLookup
@@ -43,6 +42,9 @@ import com.regnosys.rosetta.types.TypeSystem
 import java.util.Optional
 import com.regnosys.rosetta.utils.OptionalUtil
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.types.CardinalityProvider
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
 
 class RosettaBlueprintTypeResolver {
 	
@@ -50,6 +52,7 @@ class RosettaBlueprintTypeResolver {
 	@Inject CardinalityProvider cardinality
 	@Inject extension TypeSystem
 	@Inject extension RBuiltinTypeService
+	@Inject extension RosettaExtensions
 	
 	static class BlueprintTypeException extends Exception {
 		new(String string) {
@@ -58,10 +61,9 @@ class RosettaBlueprintTypeResolver {
 		
 	}
 
-	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp, Optional<RType> output) throws BlueprintUnresolvedTypeException {
+	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp) throws BlueprintUnresolvedTypeException {
 		val prevNode = new TypedBPNode // a hypothetical node before this BP
 		val nextNode = new TypedBPNode // a hypothetical node after this BP
-		nextNode.input.type = output
 
 		val result = new TypedBPNode
 		try {
@@ -69,6 +71,24 @@ class RosettaBlueprintTypeResolver {
 		}
 		catch (BlueprintTypeException ex) {
 			throw new BlueprintUnresolvedTypeException(ex.message,nodeExp, BLUEPRINT_NODE_EXP__NODE, RosettaIssueCodes.TYPE_ERROR)
+		}
+		result.input = prevNode.output
+		result.inputKey = prevNode.outputKey
+		result.output = nextNode.input
+		result.outputKey = nextNode.inputKey
+		result.repeatable = result.next.repeatable
+		return result
+	}
+	def TypedBPNode nonLegacyBuildTypeGraph(RosettaExpression expr) throws BlueprintUnresolvedTypeException {
+		val prevNode = new TypedBPNode // a hypothetical node before this BP
+		val nextNode = new TypedBPNode // a hypothetical node after this BP
+
+		val result = new TypedBPNode
+		try {
+			result.next = nonLegacyBindTypes(expr, prevNode, nextNode, new HashSet)
+		}
+		catch (BlueprintTypeException ex) {
+			throw new BlueprintUnresolvedTypeException(ex.message, expr, null, RosettaIssueCodes.TYPE_ERROR)
 		}
 		result.input = prevNode.output
 		result.inputKey = prevNode.outputKey
@@ -105,6 +125,31 @@ class RosettaBlueprintTypeResolver {
 			outputNode.inputKey = typedNode.outputKey;
 			outputNode.repeatable = typedNode.repeatable
 		}
+		typedNode
+	}
+	def TypedBPNode nonLegacyBindTypes(RosettaExpression expr, TypedBPNode parentNode, TypedBPNode outputNode, Set<BlueprintNode> visited) {
+		val typedNode = new TypedBPNode
+		typedNode.node = null
+		typedNode.input = parentNode.output
+		typedNode.inputKey = parentNode.outputKey
+		
+		val nodeFixedTypes = nonLegacyComputeExpected(expr)
+		nonLegacyLink(typedNode, visited)
+		bindFixedTypes(typedNode, nodeFixedTypes, expr)
+		
+		// check outputs
+		if (!typedNode.output.type.isSubtypeOf(outputNode.input.type)) {
+			BlueprintUnresolvedTypeException.error('''output type of node «typedNode.output» does not match required type of «outputNode.input»''', expr,
+						null, RosettaIssueCodes.TYPE_ERROR)
+		}
+		// check the terminal types match the expected
+		if (!outputNode.input.bound && typedNode.output.bound) {
+			outputNode.input.type = typedNode.output.type
+		}
+
+		outputNode.inputKey = typedNode.outputKey;
+		outputNode.repeatable = typedNode.repeatable
+
 		typedNode
 	}
 
@@ -149,6 +194,15 @@ class RosettaBlueprintTypeResolver {
 				throw new UnsupportedOperationException("Trying to compute inputs of unknown node type " + node.class)
 			}
 		}
+		result
+	}
+	def TypedBPNode nonLegacyComputeExpected(RosettaExpression expr) {
+		val result = new TypedBPNode
+		result.input.type = Optional.ofNullable((expr.eContainer as RosettaBlueprint).input?.typeCallToRType)
+		result.output.type = Optional.of(expr.RType)
+		result.cardinality.set(0, if (cardinality.isMulti(expr)) BPCardinality.EXPAND else BPCardinality.UNCHANGED)
+		result.repeatable = false
+
 		result
 	}
 
@@ -211,8 +265,13 @@ class RosettaBlueprintTypeResolver {
 					bpOut.input.type = Optional.of(BOOLEAN)
 					bpOut.inputKey = tNode.inputKey
 					bpIn.outputKey = tNode.inputKey
+					val calledBlueprint = node.filterBP.blueprint
 					try {
-						bindTypes(node.filterBP.blueprint.nodes, bpIn, bpOut, visited)
+						if (calledBlueprint.isLegacy) {
+							bindTypes(calledBlueprint.nodes, bpIn, bpOut, visited)
+						} else {
+							nonLegacyBindTypes(calledBlueprint.expression, bpIn, bpOut, visited)
+						}
 					}
 					catch (BlueprintUnresolvedTypeException e) {
 					//we found an that the types don't match further down the stack - we want to report it as an error with this call
@@ -231,7 +290,11 @@ class RosettaBlueprintTypeResolver {
 				bpOut.inputKey = tNode.outputKey
 
 				try {
-					val child = bindTypes(node.blueprint.nodes, bpIn, bpOut, visited)
+					val child = if (node.blueprint.isLegacy) {
+						bindTypes(node.blueprint.nodes, bpIn, bpOut, visited)
+					} else {
+						nonLegacyBindTypes(node.blueprint.expression, bpIn, bpOut, visited)
+					}
 					tNode.cardinality = child.cardinality
 				}
 				catch (BlueprintUnresolvedTypeException e) {
@@ -246,6 +309,9 @@ class RosettaBlueprintTypeResolver {
 				throw new UnsupportedOperationException("Trying to compute linkages of unknown node type " + node.class)
 			}
 		}
+	}
+	def void nonLegacyLink(TypedBPNode tNode, Set<BlueprintNode> visited) {
+		tNode.outputKey = tNode.inputKey
 	}
 
 /**
@@ -309,7 +375,7 @@ class RosettaBlueprintTypeResolver {
 		}
 	}
 
-	def bindFixedTypes(TypedBPNode node, TypedBPNode expected, BlueprintNode bpNode) {
+	def bindFixedTypes(TypedBPNode node, TypedBPNode expected, EObject bpNode) {
 		node.input.type = computeInType(node.input.type, expected.input.type, bpNode, "Input")
 		node.inputKey.type = computeInType(node.inputKey.type, expected.inputKey.type, bpNode, "InputKey")
 		node.output.type = computeOutType(node.output.type, expected.output.type, bpNode, "Output")
@@ -318,18 +384,18 @@ class RosettaBlueprintTypeResolver {
 		node.repeatable = expected.repeatable
 	}
 
-	def Optional<RType> computeInType(Optional<RType> nodeType, Optional<RType> expected, BlueprintNode node, String fieldName) {
+	def Optional<RType> computeInType(Optional<RType> nodeType, Optional<RType> expected, EObject node, String fieldName) {
 		if (expected.empty) {
 			nodeType
 		} else if (expected.isSubtypeOf(nodeType)) {
 			expected
 		} else {
-			throw new BlueprintUnresolvedTypeException('''«fieldName» type of «expected.get» is not assignable from type «nodeType.get» of previous node «node.name»''',
-					node, BLUEPRINT_NODE__INPUT, RosettaIssueCodes.TYPE_ERROR)
+			throw new BlueprintUnresolvedTypeException('''«fieldName» type of «expected.get» is not assignable from type «nodeType.get» of previous node''',
+					node, null, RosettaIssueCodes.TYPE_ERROR)
 		}
 	}
 
-	def Optional<RType> computeOutType(Optional<RType> nodeType, Optional<RType> expected, BlueprintNode node, String fieldName) {
+	def Optional<RType> computeOutType(Optional<RType> nodeType, Optional<RType> expected, EObject node, String fieldName) {
 		if (expected.present) {
 			if (nodeType.empty) {
 				// the expected input is know and the actual is unbound - bind it
@@ -337,8 +403,8 @@ class RosettaBlueprintTypeResolver {
 			} else {
 				// both ends are known, check they are compatible
 				if (!nodeType.isSubtypeOf(expected)) {
-					throw new BlueprintUnresolvedTypeException('''«fieldName» type of «expected.get» is not assignable to «fieldName» type «nodeType.get» of next node «node.name»''',
-						node, BLUEPRINT_NODE__INPUT, RosettaIssueCodes.TYPE_ERROR)
+					throw new BlueprintUnresolvedTypeException('''«fieldName» type of «expected.get» is not assignable to «fieldName» type «nodeType.get» of next node''',
+						node, null, RosettaIssueCodes.TYPE_ERROR)
 				} else {
 					expected
 				}
@@ -393,6 +459,9 @@ class RosettaBlueprintTypeResolver {
 	}
 
 	def dispatch Optional<RType> getInput(RosettaSymbol callable) {
+		if (!callable.isResolved) {
+			return Optional.empty
+		}
 		switch (callable) {
 			Data: {
 				return Optional.of(new RDataType(callable))
@@ -460,7 +529,7 @@ class RosettaBlueprintTypeResolver {
 			this.issueData = issueData
 		}
 		
-		static def BlueprintUnresolvedTypeException error (String message, EObject source, EStructuralFeature feature, String code, String... issueData) {
+		static def void error (String message, EObject source, EStructuralFeature feature, String code, String... issueData) {
 			throw new BlueprintUnresolvedTypeException(message, source, feature, code, issueData)
 		}
 		

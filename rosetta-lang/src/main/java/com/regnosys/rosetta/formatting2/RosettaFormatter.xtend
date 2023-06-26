@@ -634,7 +634,10 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.append[oneSpace]
 		ele.regionFor.keyword(ruleKeyword_1)
 			.append[oneSpace]
-		ele.regionFor.keyword(colonKeyword_3)
+		ele.regionFor.keyword(fromKeyword_3_0)
+			.surround[oneSpace]
+		ele.input.format
+		ele.regionFor.keyword(colonKeyword_4)
 			.prepend[noSpace]
 			.append[oneSpace]
 		ele.formatDefinition(document)
@@ -649,6 +652,27 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		ele.nodes
 			.prepend[newLine]
 			.format
+		ele.expression
+			.prepend[newLine]
+			.format
+		if (ele.identifier !== null) {
+			set(
+				ele.regionFor.keyword(asKeyword_6_0_1_1_0)
+					.prepend[newLine]
+					.append[oneSpace]
+					.previousHiddenRegion,
+				ele.regionFor.assignment(identifierAssignment_6_0_1_1_1).nextHiddenRegion,
+				[indent]
+			)
+		}
+		if (ele.isLegacy) {
+			val legacyKeyword = ele.regionFor.keyword(legacyLegacySyntaxKeyword_6_1_0_0_0_1_0)
+				?: ele.regionFor.keyword(legacyLegacySyntaxKeyword_6_1_0_1_0_1_1_0)
+			legacyKeyword
+				.surround[noSpace]
+				.previousHiddenRegion.previousHiddenRegion
+				.set[newLine]
+		}
 	}
 	
 	def dispatch void format(BlueprintNodeExp ele, extension IFormattableDocument document) {

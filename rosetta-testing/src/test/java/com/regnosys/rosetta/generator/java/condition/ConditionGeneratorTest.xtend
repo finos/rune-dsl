@@ -10,7 +10,6 @@ import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 
 import static com.google.common.collect.ImmutableMap.*
 import static org.junit.jupiter.api.Assertions.*
-import com.regnosys.rosetta.generator.java.rule.ConditionTestHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

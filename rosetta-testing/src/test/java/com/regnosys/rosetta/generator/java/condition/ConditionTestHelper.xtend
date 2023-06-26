@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.rule
+package com.regnosys.rosetta.generator.java.condition
 
 import com.google.inject.AbstractModule
 import com.google.inject.Guice

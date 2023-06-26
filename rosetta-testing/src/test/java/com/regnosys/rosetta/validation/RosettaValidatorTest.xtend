@@ -29,6 +29,230 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
+	
+	@Test
+	def void cannotCallARuleFromAFunction() {
+		val model = '''		
+		func Bar:
+			inputs:
+				x number (1..1)
+			output:
+				result number (1..1)
+			set result:
+				Bar2(x)
+		
+		reporting rule Bar2 from number:
+			item + item
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+			"You can only call a rule from within a rule.")
+	}
+	
+	@Test
+	def void canCallARuleFromARule() {
+		'''
+		reporting rule Bar from number:
+			item
+			then Bar2
+		
+		reporting rule Bar2 from number:
+			item + item
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testEligibilityRulesShouldHaveSameInputTypeAsReport() {
+		val model = '''
+		body Authority TEST_REG
+		corpus TEST_REG FOO
+		
+		report TEST_REG FOO in T+1
+		from number
+		when Foo
+		with type Report
+		
+		eligibility rule Foo from string:
+			item = "42"
+		
+		reporting rule Bar from number:
+			item + item
+		
+		type Report:
+			attr number (1..1)
+				[ruleReference Bar]
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_BLUEPRINT_REPORT, null,
+			"Eligibility rule Foo expects a `string` as input, but this report is generated from a `number`.")
+	}
+	
+	@Test
+	def void testReportShouldHaveSameInputTypeAsReportType() {
+		val model = '''
+		body Authority TEST_REG
+		corpus TEST_REG FOO
+		
+		report TEST_REG FOO in T+1
+		from number
+		when Bla
+		with type Report
+		
+		eligibility rule Bla from number:
+			item = 42
+		
+		reporting rule Foo from string:
+			item + item
+		
+		reporting rule Bar from string:
+			42
+		
+		type Report:
+			attr1 string (1..1)
+				[ruleReference Foo]
+			attr2 number (1..1)
+				[ruleReference Bar]
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_BLUEPRINT_REPORT, null,
+			"Report type Report expects a `string` as input, but this report is generated from a `number`.")
+	}
+	
+	@Test
+	def void testReportShouldHaveSameInputTypeAsRuleSource() {
+		val model = '''
+		body Authority TEST_REG
+		corpus TEST_REG FOO
+		
+		report TEST_REG FOO in T+1
+		from number
+		when Bla
+		with type Report
+		with source RuleSource
+		
+		eligibility rule Bla from number:
+			item = 42
+		
+		reporting rule Foo from string:
+			item + item
+		
+		reporting rule Bar from string:
+			42
+		
+		type Report:
+			attr1 string (1..1)
+			attr2 number (1..1)
+		
+		rule source RuleSource {
+			Report:
+				+ attr1
+					[ruleReference Foo]
+				+ attr2
+					[ruleReference Bar]
+		}
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_BLUEPRINT_REPORT, null,
+			"Rule source RuleSource expects a `string` as input, but this report is generated from a `number`.")
+	}
+	
+	@Test
+	def void testExternalRuleReferencesMustHaveSameInputType() {
+		val model = '''
+		reporting rule Foo from string:
+			item + item
+		
+		reporting rule Bar from number:
+			item * 2
+		
+		type Report:
+			attr1 string (1..1)
+			attr2 number (1..1)
+		
+		rule source RuleSource {
+			Report:
+				+ attr1
+					[ruleReference Foo]
+				+ attr2
+					[ruleReference Bar]
+		}
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_RULE_REFERENCE, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+	}
+	
+	@Test
+	def void testExternalRuleReferencesMustHaveSameInputTypeInInheritedReport() {
+		val model = '''
+		reporting rule Foo from string:
+			item + item
+		
+		reporting rule Bar from number:
+			item * 2
+		
+		type Report:
+			attr1 string (1..1)
+			attr2 number (1..1)
+		
+		rule source Source1 {
+			Report:
+				+ attr1
+					[ruleReference Foo]
+		}
+		
+		rule source Source2 extends Source1 {
+			Report:
+				+ attr2
+					[ruleReference Bar]
+		}
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_RULE_REFERENCE, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+	}
+	
+	@Test
+	def void testRuleReferencesMustHaveSameInputType() {
+		val model = '''
+		reporting rule Foo from string:
+			item + item
+		
+		reporting rule Bar from number:
+			item * 2
+		
+		type Report:
+			attr1 string (1..1)
+				[ruleReference Foo]
+			attr2 number (1..1)
+				[ruleReference Bar]
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_RULE_REFERENCE, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+	}
+	
+	@Test
+	def void testRuleReferencesMustHaveSameInputTypeInInheritedReport() {
+		val model = '''
+		reporting rule Foo from string:
+			item + item
+		
+		reporting rule Bar from number:
+			item * 2
+		
+		type ReportParent:
+			attr1 string (1..1)
+				[ruleReference Foo]
+		
+		type ReportChild extends ReportParent:
+			attr2 number (1..1)
+				[ruleReference Bar]
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_RULE_REFERENCE, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+	}
 
 	@Test
 	def void testMandatoryThen1() {
@@ -325,21 +549,22 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG FOO
 			
 			report TEST_REG FOO in T+1
+			from ReportableEvent
 			when FooRule
 			with type Foo
 			with source TestB
 			
-			eligibility rule FooRule:
-				filter when Foo->foo exists
+			eligibility rule FooRule from Foo:
+				filter foo exists
 
 			type Foo:
 				foo string (0..1)
 			
-			reporting rule RA:
-				return "A"
+			reporting rule RA from Foo:
+				"A"
 			
-			reporting rule RB:
-				return "B"
+			reporting rule RB from Foo:
+				"B"
 			
 			rule source TestA {
 				Foo:
@@ -375,21 +600,22 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG FOO
 			
 			report TEST_REG FOO in T+1
+			from ReportableEvent
 			when FooRule
 			with type Foo
 			with source TestA
 			
-			eligibility rule FooRule:
-				filter when Foo->foo exists
+			eligibility rule FooRule from ReportableEvent:
+				filter Foo->foo exists
 			
 			type Foo:
 				foo string (0..1)
 			
-			reporting rule RA:
-				return "A"
+			reporting rule RA from ReportableEvent:
+				"A"
 			
-			reporting rule RB:
-				return "B"
+			reporting rule RB from ReportableEvent:
+				"B"
 			
 			rule source TestA {
 				Foo:
@@ -1414,13 +1640,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
-			reporting rule Aa:
+			reporting rule Aa from Bar:
 				extract Bar->bar1 as "A"
 			
 			type Bar:
@@ -1440,28 +1667,29 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->barA exists
+			eligibility rule FooRule from Bar:
+				filter Bar->barA exists
 			
-			reporting rule Aa:
+			reporting rule Aa from Bar:
 				extract Bar->barA as "A"
 
-			reporting rule Bb:
+			reporting rule Bb from Bar:
 				extract Bar->barB as "B"
 				
-			reporting rule Cc:
+			reporting rule Cc from Bar:
 				extract Bar->barC as "C"
 
-			reporting rule Dd:
+			reporting rule Dd from Bar:
 				extract Bar->barD as "D"
 
-			reporting rule Ee:
+			reporting rule Ee from Bar:
 				extract Bar->barE as "E"
 				
-			reporting rule Ff:
+			reporting rule Ff from Bar:
 				extract Bar->barF as "F"
 			
 			type Bar:
@@ -1507,17 +1735,19 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->barA exists
+			eligibility rule FooRule from Bar:
+				filter Bar->barA exists
 			
-			reporting rule Aa:
-			(
-				extract Bar->barA as "A",
-				extract Bar->barB as "B"
-			)
+			reporting rule Aa from Bar:
+				[legacy-syntax]
+				(
+					extract Bar->barA as "A",
+					extract Bar->barB as "B"
+				)
 			
 			type Bar:
 				barA string (0..1)
@@ -1539,14 +1769,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
-			reporting rule A:
-				return "Not Modelled" 
+			reporting rule A from Bar:
+				"Not Modelled"
 					as "A"
 			
 			type Bar:
@@ -1567,13 +1798,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
-			reporting rule BarBarOne:
+			reporting rule BarBarOne from Bar:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1600,13 +1833,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
-			reporting rule BarBarOne:
+			reporting rule BarBarOne from Bar:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1 + Bar->bar2,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1633,13 +1868,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
-			reporting rule BarBarOne:
+			reporting rule BarBarOne from Bar:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1 * Bar->bar2,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1666,13 +1903,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
-			reporting rule BarBarOne:
+			reporting rule BarBarOne from Bar:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1699,13 +1938,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
-			reporting rule BarBarOne:
+			reporting rule BarBarOne from Bar:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1735,13 +1976,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
-			reporting rule BarBarOne:
+			reporting rule BarBarOne from Bar:
+				[legacy-syntax]
 				(
 					filter when Bar->test = True then extract Bar->bar1,
 					filter when Bar->test = False then extract Bar->bar2
@@ -1775,14 +2018,15 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
-			reporting rule A:
-				return "Not Modelled" 
+			reporting rule A from Bar:
+				"Not Modelled" 
 					as "A"
 			
 			type Bar:
@@ -1805,9 +2049,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		#[
 		'''
 			namespace test.one
+			
+			type Bar:
+				bar1 string (0..1)
 
-			reporting rule Base_A:
-				return "Not Modelled" 
+			reporting rule Base_A from Bar:
+				"Not Modelled" 
 					as "A"
 			
 			type BarReport:
@@ -1821,18 +2068,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			import test.one.*
 			
-			type Bar:
-				bar1 string (0..1)
-			
 			body Authority TEST_REG
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
 
 		'''].parseRosetta
@@ -1848,8 +2093,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			'''
 			namespace test.one
 			
-			reporting rule Base_A:
-				return "Not Modelled" 
+			reporting rule Base_A from int:
+				"Not Modelled" 
 					as "A"
 			
 			type Foo:
@@ -1859,8 +2104,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			namespace test.two
 			import test.one.*
 			
-			reporting rule Base_B:
-				return "Not Modelled" 
+			reporting rule Base_B from int:
+				"Not Modelled" 
 					as "B"
 			
 			type Bar:
@@ -1900,18 +2145,19 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 
-			reporting rule Base_A:
-				return "Not Modelled" 
+			reporting rule Base_A from Bar:
+				"Not Modelled" 
 					as "A"
 			
-			reporting rule Base_B:
-				return "Not Modelled" 
+			reporting rule Base_B from Bar:
+				"Not Modelled" 
 					as "B"
 		''',
 		'''
@@ -1927,18 +2173,19 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReportExtend
 						
-			reporting rule Extend_A:
-				return "Not Modelled" 
+			reporting rule Extend_A from Bar:
+				"Not Modelled" 
 					as "A"
 					
-			reporting rule Extend_B:
-				return "Not Modelled" 
+			reporting rule Extend_B from Bar:
+				"Not Modelled" 
 					as "B"
 		'''].parseRosetta
-	models.forEach[assertNoErrors]
+		models.forEach[assertNoErrors]
 	}
 	
 	@Test
@@ -1948,13 +2195,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			corpus TEST_REG MiFIR
 			
 			report TEST_REG MiFIR in T+1
+			from Bar
 			when FooRule
 			with type BarReport
 			
-			eligibility rule FooRule:
-				filter when Bar->bar1 exists
+			eligibility rule FooRule from Bar:
+				filter bar1 exists
 			
-			reporting rule A:
+			reporting rule A from Bar:
 				extract Bar->bar1 as "A"
 			
 			type Bar:

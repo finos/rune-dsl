@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.rosetta.model.lib.RosettaModelObject;
@@ -51,6 +52,20 @@ public class MapperS<T> implements MapperBuilder<T> {
 			return new MapperS<>(new MapperItem<>(t, path, true, Optional.ofNullable(parent)));
 		}
 		return new MapperS<>(new MapperItem<>(t, path, false, Optional.ofNullable(parent)));
+	}
+	
+	public MapperS<T> filterSingle(Predicate<MapperS<T>> predicate) {
+		if (!item.isError()) {
+			boolean condition = predicate.test(this);
+			if (condition) {
+				return this;
+			} else {
+				return ofNull();
+			}
+		}
+		else {
+			return this;
+		}
 	}
 	
 	@Override

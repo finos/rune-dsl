@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.rule
+package com.regnosys.rosetta.generator.java.condition
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject

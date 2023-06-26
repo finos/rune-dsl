@@ -11,7 +11,7 @@ import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
 import com.regnosys.rosetta.RosettaExtensions;
-import com.regnosys.rosetta.generator.java.function.CardinalityProvider;
+import com.regnosys.rosetta.types.CardinalityProvider;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.MapOperation;
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation;

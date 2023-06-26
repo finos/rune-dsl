@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.function
+package com.regnosys.rosetta.types
 
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
@@ -47,6 +47,10 @@ import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.RosettaParameter
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.rosetta.expression.OneOfOperation
+import com.regnosys.rosetta.rosetta.TypeParameter
 
 class CardinalityProvider {
 	
@@ -71,16 +75,10 @@ class CardinalityProvider {
 				obj.symbol.isMulti(breakOnClosureParameter)
 			}
 			RosettaImplicitVariable: {
-				val definingContainer = obj.findContainerDefiningImplicitVariable
-				definingContainer.map [
-					if (it instanceof RosettaFunctionalOperation) {
-						function.isItemMulti
-					} else {
-						false
-					}
-				].orElse(false)
+				obj.isImplicitVariableMulti
 			}
 			Function: if(obj.output === null) false else obj.output.isMulti(breakOnClosureParameter)
+			RosettaBlueprint: obj.expression.isMulti(breakOnClosureParameter)
 			ShortcutDeclaration: obj.expression.isMulti(breakOnClosureParameter)
 			RosettaConditionalExpression: obj.ifthen.isMulti(breakOnClosureParameter) || obj.elsethen.isMulti(breakOnClosureParameter) 
 			ClosureParameter: {
@@ -91,7 +89,9 @@ class CardinalityProvider {
 			}
 			ListLiteral: obj.elements.size > 0 // TODO: the type system is currently not strong enough to implement this completely right
 			ReduceOperation: false
-			FilterOperation: true
+			FilterOperation: {
+				obj.argument.isMulti(breakOnClosureParameter)
+			}
 			MapOperation: {
 				if (obj.function.isMulti(breakOnClosureParameter)) {
 					true
@@ -110,7 +110,9 @@ class CardinalityProvider {
 			RosettaAbsentExpression,
 			RosettaCountOperation,
 			RosettaExistsExpression,
-			RosettaOnlyElement:
+			RosettaOnlyElement,
+			ChoiceOperation,
+			OneOfOperation:
 				false
 			DistinctOperation,
 			FlattenOperation,
@@ -130,7 +132,8 @@ class CardinalityProvider {
 			RosettaRootElement,
 			RosettaEnumValueReference,
 			RosettaMapPathValue,
-			RosettaParameter: false
+			RosettaParameter,
+			TypeParameter: false
 			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }
 		}
 	}
@@ -146,6 +149,8 @@ class CardinalityProvider {
 				false
 			} else if (it instanceof RosettaFunctionalOperation) {
 				isClosureParameterMulti(it.function)
+			} else if (it instanceof RosettaBlueprint) {
+				false
 			} else {
 				false
 			}

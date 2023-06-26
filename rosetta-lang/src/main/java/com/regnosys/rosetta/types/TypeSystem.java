@@ -1,27 +1,46 @@
 package com.regnosys.rosetta.types;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
 import com.google.inject.Inject;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.typing.RosettaTyping;
+import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 
 public class TypeSystem {
 	@Inject
 	private RosettaTyping typing;
 	@Inject
 	private RBuiltinTypeService builtins;
+	@Inject
+	private ExternalAnnotationUtil annotationUtil;
 	
 	public RListType inferType(RosettaExpression expr) {
 		Validate.notNull(expr);
 		
 		return typing.inferType(expr).getValue();
+	}
+	
+	public RType getRulesInputType(Data data) {
+		return getRulesInputType(data, null);
+	}
+	public RType getRulesInputType(Data data, RosettaExternalRuleSource source) {
+		Validate.notNull(data);
+		
+		List<RType> reportTypeInputTypes = annotationUtil.getAllRuleReferencesForType(source, data).values().stream()
+				.map(ruleRef -> typeCallToRType(ruleRef.getReportingRule().getInput()))
+				.collect(Collectors.toList());
+		return meet(reportTypeInputTypes);
 	}
 
 	public RType join(RType t1, RType t2) {
