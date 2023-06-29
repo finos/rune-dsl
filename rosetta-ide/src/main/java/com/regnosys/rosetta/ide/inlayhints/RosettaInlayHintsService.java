@@ -59,6 +59,9 @@ public class RosettaInlayHintsService extends AbstractInlayHintsService {
 	private boolean operationHasBrackets(InlineFunction op) {
 		Keyword keyword = grammar.getInlineFunctionAccess().getLeftSquareBracketKeyword_0_0_1();
 		ICompositeNode node = NodeModelUtils.findActualNodeFor(op);
+		if (node == null) {
+			return false;
+		}
 
         for (INode n : node.getChildren()) {
             EObject ge = n.getGrammarElement();
