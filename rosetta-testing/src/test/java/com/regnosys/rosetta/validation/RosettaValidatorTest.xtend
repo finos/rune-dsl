@@ -31,6 +31,18 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void inputTypeOfLegacyRuleIsChecked() {
+		val model = '''
+		reporting rule Foo from number:
+			[legacy-syntax]
+			extract ReportableEvent
+		'''.parseRosetta
+		
+		model.assertError(BLUEPRINT_EXTRACT, TYPE_ERROR,
+			"Input type of ReportableEvent is not assignable from type number of previous node")
+	}
+	
+	@Test
 	def void cannotCallARuleFromAFunction() {
 		val model = '''		
 		func Bar:

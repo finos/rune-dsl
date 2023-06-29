@@ -114,7 +114,7 @@ class BlueprintGenerator {
 			.filter[nodes !== null]
 			.forEach [ bp |
 			fsa.generateFile(root.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
-				generateBlueprint(root, bp.nodes, bp.name, 'Rule', bp.URI, null, version))
+				generateBlueprint(root, bp, bp.name, 'Rule', bp.URI, null, version))
 		]
 		elements.filter(RosettaBlueprint)
 			.filter[!isLegacy]
@@ -165,17 +165,21 @@ class BlueprintGenerator {
 			orNodeExpr.node = node
 			currentNodeExpr.next = orNodeExpr			
 		}
+		
+		val rule = RosettaFactory.eINSTANCE.createRosettaBlueprint
+		rule.legacy = true
+		rule.nodes = firstNodeExpr
 			
-		return firstNodeExpr
+		return rule
 	}
 
 	/**
 	 * Generate the text of a blueprint
 	 */
-	def generateBlueprint(RootPackage packageName, BlueprintNodeExp nodes, String name, String type, String uri, String dataItemReportBuilderName, String version) {
+	def generateBlueprint(RootPackage packageName, RosettaBlueprint rule, String name, String type, String uri, String dataItemReportBuilderName, String version) {
 		try {
 			
-			val typed = buildTypeGraph(nodes)
+			val typed = buildTypeGraph(rule)
 			val clazz = new JavaClass(packageName.blueprint, name + type)
 			val typedJava = typed.toJavaNode(clazz)
 			val clazzWithArgs = typedJava.toParametrizedType(clazz)
@@ -205,7 +209,7 @@ class BlueprintGenerator {
 						return "«uri»";
 					}
 					
-					«nodes.buildBody(classScope, typedJava, dataItemReportBuilderName)»
+					«rule.nodes.buildBody(classScope, typedJava, dataItemReportBuilderName)»
 				}
 				'''
 
@@ -220,7 +224,7 @@ class BlueprintGenerator {
 	def nonLegacyGenerateBlueprint(JavaClass ruleClass, RosettaBlueprint rule, String version) {
 		try {
 			
-			val typed = nonLegacyBuildTypeGraph(rule.expression)
+			val typed = buildTypeGraph(rule)
 			val typedJava = typed.toJavaNode(ruleClass)
 			val clazzWithArgs = typedJava.toParametrizedType(ruleClass)
 

@@ -130,7 +130,7 @@ class RosettaTypeProvider {
 		switch (feature) {
 			RosettaTypedFeature: {
 				val featureType = if (feature.isTypeInferred) {
-						feature.safeRType(cycleTracker)
+						new RErrorType("Cannot infer type of feature.")
 					} else {
 						feature.typeCall.typeCallToRType
 					}

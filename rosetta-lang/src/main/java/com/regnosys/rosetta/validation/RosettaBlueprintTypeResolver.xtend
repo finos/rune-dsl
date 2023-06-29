@@ -61,34 +61,27 @@ class RosettaBlueprintTypeResolver {
 		
 	}
 
-	def TypedBPNode buildTypeGraph(BlueprintNodeExp nodeExp) throws BlueprintUnresolvedTypeException {
+	def TypedBPNode buildTypeGraph(RosettaBlueprint rule) throws BlueprintUnresolvedTypeException {
 		val prevNode = new TypedBPNode // a hypothetical node before this BP
 		val nextNode = new TypedBPNode // a hypothetical node after this BP
+		
+		prevNode.output.type = Optional.ofNullable(rule.input?.typeCallToRType)
 
 		val result = new TypedBPNode
-		try {
-			result.next = bindTypes(nodeExp, prevNode, nextNode, new HashSet)
-		}
-		catch (BlueprintTypeException ex) {
-			throw new BlueprintUnresolvedTypeException(ex.message,nodeExp, BLUEPRINT_NODE_EXP__NODE, RosettaIssueCodes.TYPE_ERROR)
-		}
-		result.input = prevNode.output
-		result.inputKey = prevNode.outputKey
-		result.output = nextNode.input
-		result.outputKey = nextNode.inputKey
-		result.repeatable = result.next.repeatable
-		return result
-	}
-	def TypedBPNode nonLegacyBuildTypeGraph(RosettaExpression expr) throws BlueprintUnresolvedTypeException {
-		val prevNode = new TypedBPNode // a hypothetical node before this BP
-		val nextNode = new TypedBPNode // a hypothetical node after this BP
-
-		val result = new TypedBPNode
-		try {
-			result.next = nonLegacyBindTypes(expr, prevNode, nextNode, new HashSet)
-		}
-		catch (BlueprintTypeException ex) {
-			throw new BlueprintUnresolvedTypeException(ex.message, expr, null, RosettaIssueCodes.TYPE_ERROR)
+		if (rule.isLegacy) {
+			try {
+				result.next = bindTypes(rule.nodes, prevNode, nextNode, new HashSet)
+			}
+			catch (BlueprintTypeException ex) {
+				throw new BlueprintUnresolvedTypeException(ex.message, rule.nodes, BLUEPRINT_NODE_EXP__NODE, RosettaIssueCodes.TYPE_ERROR)
+			}
+		} else {
+			try {
+				result.next = nonLegacyBindTypes(rule, prevNode, nextNode, new HashSet)
+			}
+			catch (BlueprintTypeException ex) {
+				throw new BlueprintUnresolvedTypeException(ex.message, rule, ROSETTA_BLUEPRINT__EXPRESSION, RosettaIssueCodes.TYPE_ERROR)
+			}
 		}
 		result.input = prevNode.output
 		result.inputKey = prevNode.outputKey
@@ -127,20 +120,20 @@ class RosettaBlueprintTypeResolver {
 		}
 		typedNode
 	}
-	def TypedBPNode nonLegacyBindTypes(RosettaExpression expr, TypedBPNode parentNode, TypedBPNode outputNode, Set<BlueprintNode> visited) {
+	def TypedBPNode nonLegacyBindTypes(RosettaBlueprint rule, TypedBPNode parentNode, TypedBPNode outputNode, Set<BlueprintNode> visited) {
 		val typedNode = new TypedBPNode
 		typedNode.node = null
 		typedNode.input = parentNode.output
 		typedNode.inputKey = parentNode.outputKey
 		
-		val nodeFixedTypes = nonLegacyComputeExpected(expr)
+		val nodeFixedTypes = nonLegacyComputeExpected(rule)
 		nonLegacyLink(typedNode, visited)
-		bindFixedTypes(typedNode, nodeFixedTypes, expr)
+		bindFixedTypes(typedNode, nodeFixedTypes, rule)
 		
 		// check outputs
 		if (!typedNode.output.type.isSubtypeOf(outputNode.input.type)) {
-			BlueprintUnresolvedTypeException.error('''output type of node «typedNode.output» does not match required type of «outputNode.input»''', expr,
-						null, RosettaIssueCodes.TYPE_ERROR)
+			BlueprintUnresolvedTypeException.error('''output type of node «typedNode.output» does not match required type of «outputNode.input»''', rule,
+						ROSETTA_BLUEPRINT__EXPRESSION, RosettaIssueCodes.TYPE_ERROR)
 		}
 		// check the terminal types match the expected
 		if (!outputNode.input.bound && typedNode.output.bound) {
@@ -196,11 +189,11 @@ class RosettaBlueprintTypeResolver {
 		}
 		result
 	}
-	def TypedBPNode nonLegacyComputeExpected(RosettaExpression expr) {
+	def TypedBPNode nonLegacyComputeExpected(RosettaBlueprint rule) {
 		val result = new TypedBPNode
-		result.input.type = Optional.ofNullable((expr.eContainer as RosettaBlueprint).input?.typeCallToRType)
-		result.output.type = Optional.of(expr.RType)
-		result.cardinality.set(0, if (cardinality.isMulti(expr)) BPCardinality.EXPAND else BPCardinality.UNCHANGED)
+		result.input.type = Optional.ofNullable(rule.input?.typeCallToRType)
+		result.output.type = Optional.ofNullable(rule.expression?.RType)
+		result.cardinality.set(0, if (cardinality.isMulti(rule.expression)) BPCardinality.EXPAND else BPCardinality.UNCHANGED)
 		result.repeatable = false
 
 		result
@@ -270,7 +263,7 @@ class RosettaBlueprintTypeResolver {
 						if (calledBlueprint.isLegacy) {
 							bindTypes(calledBlueprint.nodes, bpIn, bpOut, visited)
 						} else {
-							nonLegacyBindTypes(calledBlueprint.expression, bpIn, bpOut, visited)
+							nonLegacyBindTypes(calledBlueprint, bpIn, bpOut, visited)
 						}
 					}
 					catch (BlueprintUnresolvedTypeException e) {
@@ -293,7 +286,7 @@ class RosettaBlueprintTypeResolver {
 					val child = if (node.blueprint.isLegacy) {
 						bindTypes(node.blueprint.nodes, bpIn, bpOut, visited)
 					} else {
-						nonLegacyBindTypes(node.blueprint.expression, bpIn, bpOut, visited)
+						nonLegacyBindTypes(node.blueprint, bpIn, bpOut, visited)
 					}
 					tNode.cardinality = child.cardinality
 				}
@@ -389,6 +382,8 @@ class RosettaBlueprintTypeResolver {
 			nodeType
 		} else if (expected.isSubtypeOf(nodeType)) {
 			expected
+		} else if (nodeType.isSubtypeOf(expected)) {
+			nodeType
 		} else {
 			throw new BlueprintUnresolvedTypeException('''«fieldName» type of «expected.get» is not assignable from type «nodeType.get» of previous node''',
 					node, null, RosettaIssueCodes.TYPE_ERROR)
@@ -504,11 +499,19 @@ class RosettaBlueprintTypeResolver {
 	}
 	
 	def dispatch Optional<RType> getOutput(Function func) {
-		return Optional.of(func.output.typeCall.typeCallToRType)
+		return Optional.ofNullable(func.output.typeCall?.typeCallToRType)
 	}
 
 	def dispatch Optional<RType> getOutput(RosettaTyped typed) {
-		return Optional.of(typed.typeCall.typeCallToRType)
+		return Optional.ofNullable(typed.typeCall?.typeCallToRType)
+	}
+	
+	def dispatch Optional<RType> getOutput(RosettaBlueprint rule) {
+		return Optional.ofNullable(rule.expression?.RType)
+	}
+	
+	def dispatch Optional<RType> getOutput(Data data) {
+		return Optional.of(new RDataType(data))
 	}
 	
 	def dispatch Optional<RType> getOutput(InlineFunction op) {
