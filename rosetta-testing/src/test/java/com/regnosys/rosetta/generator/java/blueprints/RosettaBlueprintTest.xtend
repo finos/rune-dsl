@@ -2927,7 +2927,7 @@ class RosettaBlueprintTest {
 				Bar
 				Baz
 			
-			reporting rule ReturnEnumValue from ReportableEvent:
+			reporting rule ReturnEnumValue from number:
 				[legacy-syntax]
 				return FooEnum -> Bar
 			

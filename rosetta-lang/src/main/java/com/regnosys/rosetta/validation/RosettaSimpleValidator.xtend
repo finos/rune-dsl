@@ -805,55 +805,57 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkSymbolReference(RosettaSymbolReference element) {
 		val callable = element.symbol
-		if (callable instanceof RosettaCallableWithArgs) {
-			val callerSize = element.args.size
-
-			val callableSize = callable.numberOfParameters
-			if (callerSize !== callableSize) {
-				error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
-					ROSETTA_SYMBOL_REFERENCE__SYMBOL)
+		if (callable.isResolved) {
+			if (callable instanceof RosettaCallableWithArgs) {
+				val callerSize = element.args.size
+	
+				val callableSize = callable.numberOfParameters
+				if (callerSize !== callableSize) {
+					error('''Invalid number of arguments. Expecting «callableSize» but passed «callerSize».''', element,
+						ROSETTA_SYMBOL_REFERENCE__SYMBOL)
+				} else {
+					if (callable instanceof Function) {
+						element.args.indexed.forEach [ indexed |
+							val callerArg = indexed.value
+							val callerIdx = indexed.key
+							val param = callable.inputs.get(callerIdx)
+							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
+							if(!param.card.isMany && cardinality.isMulti(callerArg)) {
+								error('''Expecting single cardinality for parameter '«param.name»'.''', element,
+									ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
+							}
+						]
+					} else if (callable instanceof RosettaBlueprint) {
+						if (callable.input !== null) {
+							checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
+							if (cardinality.isMulti(element.args.head)) {
+								error('''Expecting single cardinality for input to rule.''', element,
+									ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
+							}
+						}
+					}
+				}
 			} else {
-				if (callable instanceof Function) {
-					element.args.indexed.forEach [ indexed |
-						val callerArg = indexed.value
-						val callerIdx = indexed.key
-						val param = callable.inputs.get(callerIdx)
-						checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
-						if(!param.card.isMany && cardinality.isMulti(callerArg)) {
-							error('''Expecting single cardinality for parameter '«param.name»'.''', element,
-								ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
-						}
-					]
-				} else if (callable instanceof RosettaBlueprint) {
-					if (callable.input !== null) {
-						checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
-						if (cardinality.isMulti(element.args.head)) {
-							error('''Expecting single cardinality for input to rule.''', element,
-								ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
+				if (callable instanceof Attribute) {
+					if (callable.isOutput) {
+						val implicitType = element.typeOfImplicitVariable
+						val implicitFeatures = implicitType.allFeatures(callable)
+						if (implicitFeatures.exists[name == callable.name]) {
+							error(
+								'''Ambiguous reference. `«callable.name»` may either refer to `«defaultImplicitVariable.name» -> «callable.name»` or to the output variable.''',
+								element,
+								ROSETTA_SYMBOL_REFERENCE__SYMBOL
+							)
 						}
 					}
 				}
-			}
-		} else {
-			if (callable instanceof Attribute) {
-				if (callable.isOutput) {
-					val implicitType = element.typeOfImplicitVariable
-					val implicitFeatures = implicitType.allFeatures(callable)
-					if (implicitFeatures.exists[name == callable.name]) {
-						error(
-							'''Ambiguous reference. `«callable.name»` may either refer to `«defaultImplicitVariable.name» -> «callable.name»` or to the output variable.''',
-							element,
-							ROSETTA_SYMBOL_REFERENCE__SYMBOL
-						)
-					}
+				if (element.explicitArguments) {
+					error(
+						'''A variable may not be called.''',
+						element,
+						ROSETTA_SYMBOL_REFERENCE__EXPLICIT_ARGUMENTS
+					)
 				}
-			}
-			if (element.explicitArguments) {
-				error(
-					'''A variable may not be called.''',
-					element,
-					ROSETTA_SYMBOL_REFERENCE__EXPLICIT_ARGUMENTS
-				)
 			}
 		}
 	}
@@ -964,12 +966,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 	@Check
 	def void checkNodeTypeGraph(RosettaBlueprint bp) {
-		try {
-			if (bp.nodes !== null) {
-				buildTypeGraph(bp.nodes)
+		if (bp.isLegacy) {
+			try {
+				if (bp.nodes !== null) {
+					buildTypeGraph(bp)
+				}
+			} catch (BlueprintUnresolvedTypeException e) {
+				error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
 			}
-		} catch (BlueprintUnresolvedTypeException e) {
-			error(e.message, e.source, e.getEStructuralFeature, e.code, e.issueData)
 		}
 	}
 
@@ -999,11 +1003,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 		else if (filter.filterBP !== null) {
 			val targetRule = filter.filterBP.blueprint
-			val node = if (targetRule.isLegacy) {
-				buildTypeGraph(targetRule.nodes)
-			} else {
-				nonLegacyBuildTypeGraph(targetRule.expression)
-			}
+			val node = buildTypeGraph(targetRule)
 			if (!checkBPNodeSingle(node, false)) {
 				error('''The expression for Filter must return a single value but the rule «filter.filterBP.blueprint.name» can return multiple values''',
 					filter, BLUEPRINT_FILTER__FILTER_BP)
@@ -1070,7 +1070,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			val attrType = attr.typeCall.typeCallToRType
 			if (bp.isLegacy) {
 				if (bp.nodes !== null) {
-					val node = buildTypeGraph(bp.nodes)
+					val node = buildTypeGraph(bp)
 		
 					val ruleSingle = checkBPNodeSingle(node, false)
 		
@@ -1659,9 +1659,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 
 	@Check
 	def checkOutputOperation(OutputOperation o) {
-		val isList = o.path !== null
-				? o.pathAsSegmentList.last.attribute.isFeatureMulti
-				: cardinality.isMulti(o.assignRoot)
+		val isList = cardinality.isMulti(o.path !== null
+				? o.pathAsSegmentList.last.attribute
+				: o.assignRoot)
 		if (o.add && !isList) {
 			error('''Add must be used with a list.''', o, OPERATION__ASSIGN_ROOT)
 		}
@@ -1671,13 +1671,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 		if (!isList && cardinality.isMulti(o.expression)) {
 			error('''Cardinality mismatch - cannot assign list to a single value.''', o, OPERATION__ASSIGN_ROOT)
-		}
-	}
-
-	private def isFeatureMulti(RosettaFeature feature) {
-		switch (feature) {
-			Attribute: feature.card.isMany
-			default: throw new IllegalStateException('Unsupported type passed ' + feature?.eClass?.name)
 		}
 	}
 
