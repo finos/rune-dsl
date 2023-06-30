@@ -86,6 +86,12 @@
 				<groupId>org.eclipse.xtext</groupId>
 				<artifactId>org.eclipse.xtext</artifactId>
 				<version>${xtext.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>ch.qos.reload4j</groupId>
+						<artifactId>reload4j</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.xtext</groupId>
@@ -126,6 +132,12 @@
 				<groupId>org.eclipse.xtext</groupId>
 				<artifactId>org.eclipse.xtext.util</artifactId>
 				<version>${xtext.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>ch.qos.reload4j</groupId>
+						<artifactId>reload4j</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.xtend</groupId>
@@ -146,6 +158,12 @@
 				<groupId>org.eclipse.emf</groupId>
 				<artifactId>org.eclipse.emf.ecore.xcore</artifactId>
 				<version>${org.eclipse.emf.ecore.xcore.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>log4j</groupId>
+						<artifactId>log4j</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.emf</groupId>
@@ -156,6 +174,12 @@
 				<groupId>org.eclipse.xsemantics</groupId>
 				<artifactId>org.eclipse.xsemantics.runtime</artifactId>
 				<version>${xsemantics.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>ch.qos.reload4j</groupId>
+						<artifactId>reload4j</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.xsemantics</groupId>
@@ -186,17 +210,24 @@
 				<groupId>org.eclipse.xtext</groupId>
 				<artifactId>xtext-maven-plugin</artifactId>
 				<version>${xtext.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>ch.qos.reload4j</groupId>
+						<artifactId>reload4j</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>${slf4j.version}</version>
 			</dependency>
-			<!-- Xtext uses Log4j directly. The following dependency will redirect Log4j messages to slf4j. -->
+			<!-- Xtext uses Log4j directly. The following dependency will
+			redirect Log4j messages to slf4j. -->
 			<dependency>
-			    <groupId>org.slf4j</groupId>
-			    <artifactId>log4j-over-slf4j</artifactId>
-			    <version>${slf4j.version}</version>
+				<groupId>org.slf4j</groupId>
+				<artifactId>log4j-over-slf4j</artifactId>
+				<version>${slf4j.version}</version>
 			</dependency>
 
 			<!-- Test dependencies -->
@@ -238,18 +269,18 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <scope>test</scope>
-        </dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>log4j-over-slf4j</artifactId>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -270,6 +301,13 @@
 								<requireJavaVersion>
 									<version>${java.enforced.version}</version>
 								</requireJavaVersion>
+								<bannedDependencies>
+									<excludes>
+										<exclude>log4j:log4j</exclude>
+										<exclude>org.apache.logging.log4j:log4j-core</exclude>
+										<exclude>ch.qos.reload4j:reload4j</exclude>
+									</excludes>
+								</bannedDependencies>
 							</rules>
 						</configuration>
 					</execution>
