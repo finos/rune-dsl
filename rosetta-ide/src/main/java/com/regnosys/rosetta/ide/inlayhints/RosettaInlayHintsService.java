@@ -12,11 +12,11 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.types.CardinalityProvider;
+import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.MapOperation;
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
-import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
@@ -41,14 +41,17 @@ public class RosettaInlayHintsService extends AbstractInlayHintsService {
 	
 	@InlayHintCheck
 	public InlayHint checkFunctionalOperation(RosettaFunctionalOperation op) {
-		if (EcoreUtil2.getContainerOfType(op, Function.class) != null && operationHasBrackets(op.getFunction())) {
-			if (op instanceof ReduceOperation || op instanceof MapOperation) {
-				if (extensions.isResolved(op.getFunction())) {
-					RType outputType = types.getRType(op);
-					boolean outputMulti = card.isMulti(op);
-		
-					if (outputType != null) {
-						return inlayHintAfter(op, typeInfo(outputType, outputMulti), null);
+		RosettaBlueprint rule = EcoreUtil2.getContainerOfType(op, RosettaBlueprint.class);
+		if (rule == null || !rule.isLegacy()) {
+			if (op.getFunction() != null && operationHasBrackets(op.getFunction())) {
+				if (op instanceof ReduceOperation || op instanceof MapOperation) {
+					if (extensions.isResolved(op.getFunction())) {
+						RType outputType = types.getRType(op);
+						boolean outputMulti = card.isMulti(op);
+			
+						if (outputType != null) {
+							return inlayHintAfter(op, typeInfo(outputType, outputMulti), null);
+						}
 					}
 				}
 			}
@@ -59,9 +62,6 @@ public class RosettaInlayHintsService extends AbstractInlayHintsService {
 	private boolean operationHasBrackets(InlineFunction op) {
 		Keyword keyword = grammar.getInlineFunctionAccess().getLeftSquareBracketKeyword_0_0_1();
 		ICompositeNode node = NodeModelUtils.findActualNodeFor(op);
-		if (node == null) {
-			return false;
-		}
 
         for (INode n : node.getChildren()) {
             EObject ge = n.getGrammarElement();
