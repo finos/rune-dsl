@@ -31,7 +31,7 @@ import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
-import com.regnosys.rosetta.types.RParametrizedType;
+import com.regnosys.rosetta.types.RErrorType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
@@ -40,14 +40,18 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RDateTimeType;
 import com.regnosys.rosetta.types.builtin.RDateType;
 import com.regnosys.rosetta.types.builtin.RNumberType;
-import com.regnosys.rosetta.types.builtin.RRecordType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
 import com.regnosys.rosetta.utils.DottedPath;
+import com.regnosys.rosetta.utils.RosettaTypeSwitch;
 
-public class JavaTypeTranslator {
-	@Inject
+public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private RBuiltinTypeService builtins;
+	@Inject
+	public JavaTypeTranslator(RBuiltinTypeService builtins) {
+		super(builtins);
+		this.builtins = builtins;
+	}
 	@Inject
 	private RosettaJavaPackages packages;
 	@Inject
@@ -173,94 +177,13 @@ public class JavaTypeTranslator {
 		return type.map(t -> toJavaReferenceType(t)).orElse(objectClass);
 	}
 	public JavaType toJavaType(RType type) {
-		if (type instanceof RAliasType) {
-			return toJavaType((RAliasType)type);
-		} else if (type instanceof RDataType) {
-			return toJavaType((RDataType)type);
-		} else if (type instanceof REnumType) {
-			return toJavaType((REnumType)type);
-		} else if (type instanceof RParametrizedType) {
-			return toJavaType((RParametrizedType)type);
-		} else if (type instanceof RRecordType) {
-			return toJavaType((RRecordType)type);
-		} else {
-			throw new UnsupportedOperationException("Cannot convert type " + getTypeDebugInfo(type) + " to a Java type.");
-		}
+		return doSwitch(type, null);
 	}
 	public JavaType toJavaType(Optional<RType> type) {
 		return type.map(t -> toJavaType(t)).orElse(objectClass);
 	}
 	public JavaClass toJavaType(RDataType type) {
-		return rosettaNamedToJavaClass(type.getData());
-	}
-	public JavaClass toJavaType(REnumType type) {
-		return rosettaNamedToJavaClass(type.getEnumeration());
-	}
-	public JavaType toJavaType(RParametrizedType type) {
-		if (type instanceof RBasicType) {
-			return toJavaType((RBasicType)type);
-		} else if (type instanceof RAliasType) {
-			return toJavaType((RAliasType)type);
-		} else {
-			throw new UnsupportedOperationException("Cannot convert builtin type " + getTypeDebugInfo(type) + " to a Java type.");
-		}
-	}
-	public JavaType toJavaType(RBasicType type) {
-		if (type.equals(builtins.BOOLEAN)) {
-			return JavaPrimitiveType.BOOLEAN;
-		} else if (type.equals(builtins.TIME)) {
-			return JavaClass.from(LocalTime.class);
-		} else if (type.equals(builtins.NOTHING)) {
-			return JavaClass.from(Void.class);
-		} else if (type.equals(builtins.ANY)) {
-			return objectClass;
-		} else if (type instanceof RNumberType) {
-			return toJavaType((RNumberType)type);
-		} else if (type instanceof RStringType) {
-			return toJavaType((RStringType)type);
-		} else {
-			throw new UnsupportedOperationException("Cannot convert basic type " + getTypeDebugInfo(type) + " to a Java type.");
-		}
-	}
-	public JavaType toJavaType(RNumberType type) {
-		if (!type.isInteger()) {
-			return JavaClass.from(BigDecimal.class);
-		} else {
-			int digits = type.getDigits().orElse(9);
-			if (digits <= 9) {
-				return JavaPrimitiveType.INT;
-			} else if (digits <= 18) {
-				return JavaPrimitiveType.LONG;
-			} else {
-				return JavaClass.from(BigInteger.class);
-			}
-		}
-	}
-	public JavaClass toJavaType(RStringType type) {
-		return JavaClass.from(String.class);
-	}
-	public JavaType toJavaType(RAliasType type) {
-		return toJavaType(type.getRefersTo());
-	}
-	public JavaClass toJavaType(RRecordType type) {
-		if (type instanceof RDateType) {
-			return toJavaType((RDateType)type);
-		} else if (type instanceof RDateTimeType) {
-			return toJavaType((RDateTimeType)type);
-		} else if (type instanceof RZonedDateTimeType) {
-			return toJavaType((RZonedDateTimeType)type);
-		} else {
-			throw new UnsupportedOperationException("Cannot convert record type " + getTypeDebugInfo(type) + " to a Java type.");
-		}
-	}
-	public JavaClass toJavaType(RDateType type) {
-		return JavaClass.from(com.rosetta.model.lib.records.Date.class);
-	}
-	public JavaClass toJavaType(RDateTimeType type) {
-		return JavaClass.from(LocalDateTime.class);
-	}
-	public JavaClass toJavaType(RZonedDateTimeType type) {
-		return JavaClass.from(ZonedDateTime.class);
+		return caseDataType(type, null);
 	}
 	
 	public JavaType toPolymorphicListOrSingleJavaType(RType type, boolean isMany) {
@@ -313,5 +236,73 @@ public class JavaTypeTranslator {
 	}
 	public DottedPath existsValidation(DottedPath p) {
 		return validation(p).child("exists");
+	}
+	
+	@Override
+	protected JavaType caseErrorType(RErrorType type, Void context) {
+		throw new IllegalArgumentException("Cannot convert an error type to a Java type.");
+	}
+	@Override
+	protected JavaClass caseDataType(RDataType type, Void context) {
+		return rosettaNamedToJavaClass(type.getData());
+	}
+	@Override
+	protected JavaClass caseEnumType(REnumType type, Void context) {
+		return rosettaNamedToJavaClass(type.getEnumeration());
+	}
+	@Override
+	protected JavaType caseAliasType(RAliasType type, Void context) {
+		return toJavaType(type.getRefersTo());
+	}
+	@Override
+	protected JavaType caseNumberType(RNumberType type, Void context) {
+		if (!type.isInteger()) {
+			return JavaClass.from(BigDecimal.class);
+		} else {
+			int digits = type.getDigits().orElse(9);
+			if (digits <= 9) {
+				return JavaPrimitiveType.INT;
+			} else if (digits <= 18) {
+				return JavaPrimitiveType.LONG;
+			} else {
+				return JavaClass.from(BigInteger.class);
+			}
+		}
+	}
+	@Override
+	protected JavaClass caseStringType(RStringType type, Void context) {
+		return JavaClass.from(String.class);
+	}
+	@Override
+	protected JavaPrimitiveType caseBooleanType(RBasicType type, Void context) {
+		return JavaPrimitiveType.BOOLEAN;
+	}
+	@Override
+	protected JavaClass caseTimeType(RBasicType type, Void context) {
+		return JavaClass.from(LocalTime.class);
+	}
+	@Override
+	protected JavaType caseMissingType(RBasicType type, Void context) {
+		throw new IllegalArgumentException("Cannot convert a missing type to a Java type.");
+	}
+	@Override
+	protected JavaClass caseNothingType(RBasicType type, Void context) {
+		return JavaClass.from(Void.class);
+	}
+	@Override
+	protected JavaClass caseAnyType(RBasicType type, Void context) {
+		return objectClass;
+	}
+	@Override
+	protected JavaClass caseDateType(RDateType type, Void context) {
+		return JavaClass.from(com.rosetta.model.lib.records.Date.class);
+	}
+	@Override
+	protected JavaClass caseDateTimeType(RDateTimeType type, Void context) {
+		return JavaClass.from(LocalDateTime.class);
+	}
+	@Override
+	protected JavaClass caseZonedDateTimeType(RZonedDateTimeType type, Void context) {
+		return JavaClass.from(ZonedDateTime.class);
 	}
 }

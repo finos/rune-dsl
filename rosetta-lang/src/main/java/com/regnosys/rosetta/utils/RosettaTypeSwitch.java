@@ -95,7 +95,6 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 	protected abstract Return caseStringType(RStringType type, Context context);
 	protected abstract Return caseBooleanType(RBasicType type, Context context);
 	protected abstract Return caseTimeType(RBasicType type, Context context);
-	protected abstract Return casePatternType(RBasicType type, Context context);
 	protected abstract Return caseMissingType(RBasicType type, Context context);
 	protected abstract Return caseNothingType(RBasicType type, Context context);
 	protected abstract Return caseAnyType(RBasicType type, Context context);
