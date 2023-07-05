@@ -44,10 +44,6 @@ interface RosettaTyped {
 	}
 }
 
-abstract class WithCardinality {
-	contains RosettaCardinality card
-}
-
 class RosettaFeature extends RosettaNamed {
 	/**
 	 * @return The name or 'value' if it's <code>null</code>

@@ -323,16 +323,19 @@ class ChoiceOperation extends RosettaUnaryOperation {
 class ToStringOperation extends RosettaUnaryOperation {
 }
 
-class ToNumberOperation extends RosettaUnaryOperation {
+interface ParseOperation extends RosettaUnaryOperation {
 }
 
-class ToIntOperation extends RosettaUnaryOperation {
+class ToNumberOperation extends ParseOperation {
 }
 
-class ToTimeOperation extends RosettaUnaryOperation {
+class ToIntOperation extends ParseOperation {
 }
 
-class ToEnumOperation extends RosettaUnaryOperation {
+class ToTimeOperation extends ParseOperation {
+}
+
+class ToEnumOperation extends ParseOperation {
 	refers RosettaEnumeration enumeration 
 }
 

@@ -96,6 +96,14 @@ import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.JoinOperation
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
+import com.regnosys.rosetta.rosetta.expression.ToIntOperation
+import com.regnosys.rosetta.rosetta.expression.ToNumberOperation
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation
+import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationClient, JavaScope> {
 	
@@ -841,6 +849,33 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		'''
 		«expr.argument.emptyToMapperJavaCode(context, false)»
 			.apply(«funcExpr»)'''
+	}
+	
+	private def StringConcatenationClient conversionOperation(RosettaUnaryOperation expr, JavaScope context, StringConcatenationClient conversion, Class<? extends Exception> errorClass) {
+		'''«expr.argument.emptyToMapperJavaCode(context, false)».checkedMap("«expr.operator»", «conversion», «errorClass».class)'''
+	}
+	
+	override protected caseToEnumOperation(ToEnumOperation expr, JavaScope context) {
+		val javaEnum = new REnumType(expr.enumeration).toJavaType
+		conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
+	}
+	
+	override protected caseToIntOperation(ToIntOperation expr, JavaScope context) {
+		conversionOperation(expr, context, '''«Integer»::parseInt''', NumberFormatException)
+	}
+	
+	override protected caseToNumberOperation(ToNumberOperation expr, JavaScope context) {
+		conversionOperation(expr, context, '''«BigDecimal»::new''', NumberFormatException)
+	}
+	
+	override protected caseToStringOperation(ToStringOperation expr, JavaScope context) {
+		'''«expr.argument.emptyToMapperJavaCode(context, false)».map("«expr.operator»", «Object»::toString)'''
+	}
+	
+	override protected caseToTimeOperation(ToTimeOperation expr, JavaScope context) {
+		val lambdaScope = context.lambdaScope
+		val lambdaParam = lambdaScope.createUniqueIdentifier("s")
+		conversionOperation(expr, context, '''«lambdaParam» -> «LocalTime».parse(s, «DateTimeFormatter».ISO_LOCAL_TIME)''', DateTimeParseException)
 	}
 	
 }

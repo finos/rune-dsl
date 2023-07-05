@@ -39,6 +39,102 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void toEnumTest() {
+		val code = '''
+		enum Bar:
+			VALUE1
+			VALUE2 displayName "Value 2"
+		
+		func ToBar:
+			inputs: input string (1..1)
+			output: result Bar (1..1)
+			set result:
+				input to-enum Bar
+		
+		func ToString:
+			inputs: input Bar (1..1)
+			output: result string (1..1)
+			set result:
+				input to-string
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val barClass = classes.get("com.rosetta.test.model.Bar")
+		val value1 = barClass.enumConstants.get(0)
+		val value2 = barClass.enumConstants.get(1)
+		
+		val toBar = classes.createFunc("ToBar");
+		
+		assertEquals(value1, toBar.invokeFunc(barClass, #["VALUE1"]))
+		assertEquals(null, toBar.invokeFunc(barClass, #["VALUE2"]))
+		assertEquals(value2, toBar.invokeFunc(barClass, #["Value 2"]))
+		
+		val toString = classes.createFunc("ToString");
+		
+		assertEquals("VALUE1", toString.invokeFunc(String, #[value1]))
+		assertEquals("Value 2", toString.invokeFunc(String, #[value2]))
+	}
+	
+	@Test
+	def void basicConversionTest() {
+		val code = '''
+		func ToNumber:
+			inputs: input string (1..1)
+			output: result number (1..1)
+			set result:
+				input to-number
+		
+		func ToInt:
+			inputs: input string (1..1)
+			output: result int (1..1)
+			set result:
+				input to-int
+		
+		func ToTime:
+			inputs: input string (1..1)
+			output: result time (1..1)
+			set result:
+				input to-time
+		
+		func NumberToString:
+			inputs: input number (1..1)
+			output: result string (1..1)
+			set result:
+				input to-string
+		
+		func TimeToString:
+			inputs: input time (1..1)
+			output: result string (1..1)
+			set result:
+				input to-string
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val toNumber = classes.createFunc("ToNumber");
+		assertEquals(BigDecimal.valueOf(3.14), toNumber.invokeFunc(BigDecimal, #["3.14"]))
+		assertEquals(null, toNumber.invokeFunc(BigDecimal, #["test"]))
+		assertEquals(BigDecimal.valueOf(-42), toNumber.invokeFunc(BigDecimal, #["-42"]))
+		
+		val toInt = classes.createFunc("ToInt");
+		assertEquals(3, toInt.invokeFunc(Integer, #["3"]))
+		assertEquals(null, toInt.invokeFunc(Integer, #["test"]))
+		assertEquals(-42, toInt.invokeFunc(Integer, #["-42"]))
+		
+		val toTime = classes.createFunc("ToTime");
+		assertEquals(LocalTime.of(15, 07, 42), toTime.invokeFunc(LocalTime, #["15:07:42"]))
+		assertEquals(null, toTime.invokeFunc(LocalTime, #["42:00:00"]))
+		assertEquals(LocalTime.of(23, 07, 00), toTime.invokeFunc(LocalTime, #["23:07"]))
+		
+		val numberToString = classes.createFunc("NumberToString");
+		assertEquals("3.14", numberToString.invokeFunc(String, #[BigDecimal.valueOf(3.14)]))
+		assertEquals("-42", numberToString.invokeFunc(String, #[BigDecimal.valueOf(-42)]))
+		
+		val timeToString = classes.createFunc("TimeToString");
+		assertEquals("15:07:42", timeToString.invokeFunc(String, #[LocalTime.of(15, 07, 42)]))
+		assertEquals("23:07", timeToString.invokeFunc(String, #[LocalTime.of(23, 07, 00)]))
+	}
+	
+	@Test
 	def void testSingularFilterOperation() {
 		val code = '''
 		func NonZero:

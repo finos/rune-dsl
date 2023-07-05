@@ -1,6 +1,7 @@
 package com.rosetta.model.lib.mapper;
 
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
+import static com.rosetta.model.lib.mapper.MapperItem.getCheckedMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
 import java.util.ArrayList;
@@ -79,6 +80,14 @@ public class MapperS<T> implements MapperBuilder<T> {
 	@Override
 	public <F> MapperS<F> map(NamedFunction<T, F> mappingFunc) {
 		return new MapperS<>(getMapperItem(item, mappingFunc));
+	}
+	
+	public <F> MapperS<F> checkedMap(String name, Function<T, F> mappingFunc, Class<? extends Exception> errorClass) {
+		return checkedMap(new NamedFunctionImpl<>(name, mappingFunc), errorClass);
+	}
+	
+	public <F> MapperS<F> checkedMap(NamedFunction<T, F> mappingFunc, Class<? extends Exception> errorClass) {
+		return new MapperS<>(getCheckedMapperItem(item, mappingFunc, errorClass));
 	}
 	
 	@Override

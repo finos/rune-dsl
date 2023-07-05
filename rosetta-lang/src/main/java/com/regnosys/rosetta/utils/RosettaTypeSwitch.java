@@ -24,7 +24,8 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 	}
 	
 	private UnsupportedOperationException errorMissedCase(RType type) {
-		return new UnsupportedOperationException("Unexpected type " + type.getClass().getCanonicalName());
+		String className = type == null ? "null" : type.getClass().getCanonicalName();
+		return new UnsupportedOperationException("Unexpected type " + className);
 	}
 	
 	protected Return doSwitch(RType type, Context context) {

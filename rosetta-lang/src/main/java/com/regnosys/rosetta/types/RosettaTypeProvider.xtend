@@ -64,6 +64,11 @@ import com.regnosys.rosetta.rosetta.expression.JoinOperation
 import com.regnosys.rosetta.rosetta.expression.MaxOperation
 import com.regnosys.rosetta.rosetta.expression.MinOperation
 import com.regnosys.rosetta.rosetta.expression.SortOperation
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
+import com.regnosys.rosetta.rosetta.expression.ToIntOperation
+import com.regnosys.rosetta.rosetta.expression.ToNumberOperation
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation
+import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 
@@ -190,12 +195,12 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	private def caseBinaryOperation(RosettaBinaryOperation expr, Map<EObject, RType> context) {
 		val left = expr.left
 		var leftType = left.safeRType(context)
-		if (leftType instanceof RErrorType) {
+		if (leftType === null || leftType instanceof RErrorType) {
 			return leftType
 		}
 		val right = expr.right
 		var rightType = right.safeRType(context)
-		if (rightType instanceof RErrorType) {
+		if (rightType === null || rightType instanceof RErrorType) {
 			return rightType
 		}
 		expr.operator.resultType(leftType, rightType)
@@ -415,6 +420,26 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	
 	override protected caseThenOperation(ThenOperation expr, Map<EObject, RType> context) {
 		expr.function?.body?.safeRType(context)
+	}
+	
+	override protected caseToEnumOperation(ToEnumOperation expr, Map<EObject, RType> context) {
+		new REnumType(expr.enumeration)
+	}
+	
+	override protected caseToIntOperation(ToIntOperation expr, Map<EObject, RType> context) {
+		UNCONSTRAINED_INT
+	}
+	
+	override protected caseToNumberOperation(ToNumberOperation expr, Map<EObject, RType> context) {
+		UNCONSTRAINED_NUMBER
+	}
+	
+	override protected caseToStringOperation(ToStringOperation expr, Map<EObject, RType> context) {
+		UNCONSTRAINED_STRING
+	}
+	
+	override protected caseToTimeOperation(ToTimeOperation expr, Map<EObject, RType> context) {
+		TIME
 	}
 	
 }
