@@ -16,11 +16,11 @@ import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
+import com.regnosys.rosetta.rosetta.RosettaCardinality
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, RosettaDefinable, Annotated {
 }
@@ -51,8 +51,9 @@ interface AssignPathRoot extends RosettaSymbol {
 }
 
 
-class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, AssignPathRoot, WithCardinality, References {
+class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, AssignPathRoot, References {
 	boolean override
+	contains RosettaCardinality card
 	contains RosettaSynonym[] synonyms
 	contains RosettaRuleReference ruleReference
 }

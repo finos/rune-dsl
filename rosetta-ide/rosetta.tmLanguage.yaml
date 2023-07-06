@@ -1159,8 +1159,17 @@ repository:
             match: '{{identifier}}'
           - name: punctuation.separator.member.rosetta
             match: ','
+        - name: meta.to-enum.rosetta
+          begin: '{{wordStart}}to-enum{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.operator.word.rosetta }
+          end: '{{identifier}}'
+          endCaptures:
+            0: { name: entity.name.type.enum.rosetta }
+          patterns:
+          - include: '#comment'
         - name: keyword.operator.word.rosetta
-          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|disjoint|join|only|exists|as-key|one-of|as){{wordEnd}}'
+          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|disjoint|join|only|exists|as-key|one-of|as|to-number|to-int|to-time|to-string){{wordEnd}}'
         - name: keyword.operator.rosetta
           match: =|<>|>=|<=|>|<|\+|-|\*|\/
         - name: variable.rosetta # Need semantic tokens to specify variable

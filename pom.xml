@@ -38,7 +38,6 @@
 		<maven-core.version>3.6.0</maven-core.version>
 		<maven-plugin-annotations.version>3.6.0</maven-plugin-annotations.version>
 		<slf4j.version>2.0.7</slf4j.version>
-		<log4j-over-slf4j.version>2.0.7</log4j-over-slf4j.version>
 		<logback.version>1.4.7</logback.version>
 
 		<!-- test -->

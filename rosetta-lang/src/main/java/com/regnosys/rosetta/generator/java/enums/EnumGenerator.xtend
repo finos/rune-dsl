@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.enums
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaRootElement
@@ -12,10 +11,16 @@ import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import javax.inject.Inject
+import java.util.Map
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.rosetta.model.lib.annotations.RosettaSynonym
+import java.util.concurrent.ConcurrentHashMap
+import java.util.Collections
 
 class EnumGenerator {
-	@Inject
-	RosettaJavaPackages packages
+	@Inject extension ImportManagerExtension
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaEnumeration).forEach [
@@ -34,18 +39,14 @@ class EnumGenerator {
 		return enumValues;
 	}
 
-	private def toJava(RosettaEnumeration e, RootPackage root, String version) '''
-		package «root»;
+	private def String toJava(RosettaEnumeration e, RootPackage root, String version) {
+		val scope = new JavaScope(root)
 		
-		«IF e.anyValueHasSynonym»
-		import «packages.defaultLibAnnotations».RosettaSynonym;
-		«ENDIF»
-		
+		val StringConcatenationClient classBody = '''
 		«javadoc(e, version)»
 		public enum «e.name» {
 		    
-			«FOR value: allEnumsValues(e) SEPARATOR ',\n'»
-
+			«FOR value: allEnumsValues(e) SEPARATOR ',\n' AFTER ';'»
 				«javadoc(value)»
 				«value.contributeAnnotations»
 				«IF value.display !== null»
@@ -54,53 +55,52 @@ class EnumGenerator {
 				    «convertValues(value)»
 		        «ENDIF»		
 			«ENDFOR»
-			;
+			
+			private static «Map»<«String», «e.name»> values;
+			static {
+		        «Map»<«String», «e.name»> map = new «ConcurrentHashMap»<>();
+				for («e.name» instance : «e.name».values()) {
+					map.put(instance.toString(), instance);
+				}
+				values = «Collections».unmodifiableMap(map);
+		    }
 		
-			private final String displayName;
+		
+			private final «String» displayName;
 			
 			«e.name»() {
-				this.displayName = null;
+				this(null);
 			}
 
-			«IF e.anyValueHasDisplayName»
-			«e.name»(String displayName) {
+			«e.name»(«String» displayName) {
 				this.displayName = displayName;
 			}
-			«ENDIF»
+			
+			public static «e.name» fromDisplayName(String name) {
+				«e.name» value = values.get(name);
+				if (value == null) {
+					throw new «IllegalArgumentException»("No enum constant with display name \"" + name + "\".");
+				}
+				return value;
+			}
 
 			@Override
-			public String toString() {
+			public «String» toString() {
 				return displayName != null ?  displayName : name();
 			}
 			
 		}
 		'''
-
-	def boolean anyValueHasSynonym(RosettaEnumeration enumeration) {
-		enumeration.allEnumsValues.map[enumSynonyms].flatten.size > 0
+		
+		buildClass(root, classBody, scope)
 	}
 	
 	
-    def boolean anyValueHasDisplayName(RosettaEnumeration enumeration) {
-        enumeration.allEnumsValues.exists[display !== null]
-    }
-	
-	
-	private def contributeAnnotations(RosettaEnumValue e) '''
+	private def StringConcatenationClient contributeAnnotations(RosettaEnumValue e) '''
 	«FOR synonym : e.enumSynonyms»
 		«FOR source : synonym.sources»
-			@RosettaSynonym(value = "«synonym.synonymValue»", source = "«source.getName»")
+			@«RosettaSynonym»(value = "«synonym.synonymValue»", source = "«source.getName»")
 		«ENDFOR»
 	«ENDFOR»
-	'''
-	
-	/**
-	 * Use EnumHelper.formatEnumName(String) instead
-	 */
-	@Deprecated
-	def static String formatEnumName(String name) {
-		EnumHelper.formatEnumName(name);
-	}
-
-	
+	'''	
 }

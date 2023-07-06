@@ -45,6 +45,11 @@ import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
 import com.regnosys.rosetta.rosetta.expression.ThenOperation;
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation;
+import com.regnosys.rosetta.rosetta.expression.ToIntOperation;
+import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
+import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 
 public abstract class RosettaExpressionSwitch<Return, Context> {
 
@@ -185,6 +190,16 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return caseOnlyElementOperation((RosettaOnlyElement)expr, context);
 		} else if (expr instanceof SumOperation) {
 			return caseSumOperation((SumOperation)expr, context);
+		} else if (expr instanceof ToStringOperation) {
+			return caseToStringOperation((ToStringOperation)expr, context);
+		} else if (expr instanceof ToNumberOperation) {
+			return caseToNumberOperation((ToNumberOperation)expr, context);
+		} else if (expr instanceof ToIntOperation) {
+			return caseToIntOperation((ToIntOperation)expr, context);
+		} else if (expr instanceof ToTimeOperation) {
+			return caseToTimeOperation((ToTimeOperation)expr, context);
+		} else if (expr instanceof ToEnumOperation) {
+			return caseToEnumOperation((ToEnumOperation)expr, context);
 		} else if (expr instanceof RosettaFunctionalOperation) {
 			return doSwitch((RosettaFunctionalOperation)expr, context);
 		}
@@ -209,7 +224,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 		throw errorMissedCase(expr);
 	}
 	private UnsupportedOperationException errorMissedCase(RosettaExpression expr) {
-		return new UnsupportedOperationException("Unexpected expression of type " + expr.getClass().getCanonicalName());
+		String className = expr == null ? "null" : expr.getClass().getCanonicalName();
+		return new UnsupportedOperationException("Unexpected expression of type " + className);
 	}
 	
 	protected abstract Return caseListLiteral(ListLiteral expr, Context context);
@@ -257,6 +273,11 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseReverseOperation(ReverseOperation expr, Context context);
 	protected abstract Return caseOnlyElementOperation(RosettaOnlyElement expr, Context context);
 	protected abstract Return caseSumOperation(SumOperation expr, Context context);
+	protected abstract Return caseToStringOperation(ToStringOperation expr, Context context);
+	protected abstract Return caseToNumberOperation(ToNumberOperation expr, Context context);
+	protected abstract Return caseToIntOperation(ToIntOperation expr, Context context);
+	protected abstract Return caseToTimeOperation(ToTimeOperation expr, Context context);
+	protected abstract Return caseToEnumOperation(ToEnumOperation expr, Context context);
 	
 	protected abstract Return caseFilterOperation(FilterOperation expr, Context context);
 	protected abstract Return caseMapOperation(MapOperation expr, Context context);

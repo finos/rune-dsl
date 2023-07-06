@@ -93,8 +93,19 @@ import org.apache.commons.text.StringEscapeUtils
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.rosetta.model.lib.mapper.MapperUtils
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.utils.RosettaExpressionSwitch
+import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
+import com.regnosys.rosetta.rosetta.expression.JoinOperation
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
+import com.regnosys.rosetta.rosetta.expression.ToIntOperation
+import com.regnosys.rosetta.rosetta.expression.ToNumberOperation
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation
+import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
-class ExpressionGenerator {
+class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationClient, JavaScope> {
 	
 	@Inject protected RosettaTypeProvider typeProvider
 	@Inject RosettaOperators operators
@@ -114,104 +125,7 @@ class ExpressionGenerator {
 	 * ParamMpa params  - a map keyed by classname or positional index that provides variable names for expression parameters
 	 */
 	def StringConcatenationClient javaCode(RosettaExpression expr, JavaScope scope) {
-		switch (expr) {
-			RosettaFeatureCall: {
-				featureCall(expr, scope)
-			}
-			RosettaOnlyExistsExpression: {
-				onlyExistsExpr(expr, scope)
-			}
-			RosettaExistsExpression: {
-				existsExpr(expr, scope)
-			}
-			RosettaBinaryOperation: {
-				binaryExpr(expr, scope)
-			}
-			RosettaCountOperation: {
-				countExpr(expr, scope)
-			}
-			RosettaAbsentExpression: {
-				absentExpr(expr, expr.argument, scope)
-			}
-			RosettaReference: {
-				reference(expr, scope)
-			}
-			RosettaNumberLiteral : {
-				'''«MapperS».of(new «BigDecimal»("«expr.value»"))'''
-			}
-			RosettaBooleanLiteral : {
-				'''«MapperS».of(«Boolean».valueOf(«expr.value»))'''
-			}
-			RosettaIntLiteral : {
-				'''«MapperS».of(«Integer».valueOf(«expr.value»))'''
-			}
-			RosettaStringLiteral : {
-				'''«MapperS».of("«StringEscapeUtils.escapeJava(expr.value)»")'''
-			}
-			RosettaEnumValueReference : {
-				'''«MapperS».of(«new REnumType(expr.enumeration).toJavaType».«expr.value.convertValues»)'''
-			}
-			RosettaConditionalExpression : {
-				'''«expr.genConditionalMapper(scope)»'''
-			}
-			ListLiteral : {
-				listLiteral(expr, scope)
-			}
-			DistinctOperation : {
-				distinctOperation(expr, scope)
-			}
-			FirstOperation : {
-				firstOperation(expr, scope)
-			}
-			FlattenOperation : {
-				flattenOperation(expr, scope)
-			}
-			LastOperation : {
-				lastOperation(expr, scope)
-			}
-			MaxOperation : {
-				maxOperation(expr, scope)
-			}
-			MinOperation : {
-				minOperation(expr, scope)
-			}
-			SumOperation : {
-				sumOperation(expr, scope)
-			}
-			ReverseOperation : {
-				reverseOperation(expr, scope)
-			}
-			RosettaOnlyElement : {
-				onlyElement(expr, scope)
-			}
-			ReduceOperation : {
-				reduceOperation(expr, scope)
-			}
-			FilterOperation : {
-				filterOperation(expr, scope)
-			}
-			MapOperation : {
-				mapOperation(expr, scope)
-			}
-			ThenOperation : {
-				thenOperation(expr, scope)
-			}
-			SortOperation : {
-				sortOperation(expr, scope)
-			}
-			AsKeyOperation: {
-				// this operation is currently handled by the `FunctionGenerator`
-				expr.argument.javaCode(scope)
-			}
-			OneOfOperation: {
-				oneOfOperation(expr, scope)
-			}
-			ChoiceOperation: {
-				choiceOperation(expr, scope)
-			}
-			default: 
-				throw new UnsupportedOperationException("Unsupported expression type of " + expr?.class?.simpleName)
-		}
+		doSwitch(expr, scope)
 	}
 	
 	private def runtimeMethod(String methodName) {
@@ -224,14 +138,6 @@ class ExpressionGenerator {
 		} else {
 			expr.javaCode(scope)
 		}
-	}
-	
-	def StringConcatenationClient listLiteral(ListLiteral e, JavaScope scope) {
-	    if (e.isEmpty) {
-	        '''null'''
-	    } else {
-	       '''«MapperC».<«typeProvider.getRType(e).toJavaReferenceType»>of(«FOR ele: e.elements SEPARATOR ', '»«ele.javaCode(scope)»«ENDFOR»)'''
-	    }
 	}
 	
 	private def boolean isEmpty(RosettaExpression e) { // TODO: temporary workaround while transitioning from old to new type system
@@ -305,7 +211,7 @@ class ExpressionGenerator {
 		
 	}
 	
-	def StringConcatenationClient callableWithArgsCall(RosettaCallableWithArgs func, List<RosettaExpression> arguments, JavaScope scope) {
+	private def StringConcatenationClient callableWithArgsCall(RosettaCallableWithArgs func, List<RosettaExpression> arguments, JavaScope scope) {
 		callableWithArgs(func, scope, '''«args(arguments, scope)»''', true)
 	}
 	
@@ -317,53 +223,10 @@ class ExpressionGenerator {
 		'''«expr.javaCode(scope)»«IF expr.evalulatesToMapper»«IF cardinalityProvider.isMulti(expr)».getMulti()«ELSE».get()«ENDIF»«ENDIF»'''
 	}
 	
-	def StringConcatenationClient onlyExistsExpr(RosettaOnlyExistsExpression onlyExists, JavaScope scope) {
-		'''«runtimeMethod('onlyExists')»(«Arrays».asList(«FOR arg : onlyExists.args SEPARATOR ', '»«arg.javaCode(scope)»«ENDFOR»))'''
-	}
-	
-	def StringConcatenationClient existsExpr(RosettaExistsExpression exists, JavaScope scope) {
-		val arg = exists.argument
-		val binary = arg.findBinaryOperation
-		if (binary !== null) {
-			if(binary.isLogicalOperation)
-				'''«doExistsExpr(exists, arg.javaCode(scope))»'''
-			else 
-				//if the argument is a binary expression then the exists needs to be pushed down into it
-				binary.binaryExpr(scope)
-		}
-		else {
-			'''«doExistsExpr(exists, arg.javaCode(scope))»'''
-		}
-	}
-	
-	def RosettaBinaryOperation findBinaryOperation(RosettaExpression expression) {
+	private def RosettaBinaryOperation findBinaryOperation(RosettaExpression expression) {
 		switch(expression) {
 			RosettaBinaryOperation: expression
 			default: null
-		}
-	}
-	
-	private def StringConcatenationClient doExistsExpr(RosettaExistsExpression exists, StringConcatenationClient arg) {
-		if(exists.modifier === ExistsModifier.SINGLE)
-			'''«runtimeMethod('singleExists')»(«arg»)'''
-		else if(exists.modifier === ExistsModifier.MULTIPLE)
-			'''«runtimeMethod('multipleExists')»(«arg»)'''
-		else
-			'''«runtimeMethod('exists')»(«arg»)'''
-	}
-
-	def StringConcatenationClient absentExpr(RosettaAbsentExpression notSet, RosettaExpression argument, JavaScope scope) {
-		val arg = argument
-		val binary = arg.findBinaryOperation
-		if (binary !== null) {
-			if(binary.isLogicalOperation)
-				'''«runtimeMethod('notExists')»(«binary.binaryExpr(scope)»)'''
-			else
-				//if the arg is binary then the operator needs to be pushed down
-				binary.binaryExpr(scope)
-		}
-		else {
-			'''«runtimeMethod('notExists')»(«arg.javaCode(scope)»)'''
 		}
 	}
 	
@@ -378,51 +241,6 @@ class ExpressionGenerator {
 		}
 	}
 	
-	protected def StringConcatenationClient reference(RosettaReference expr, JavaScope scope) {
-		switch (expr) {
-			RosettaImplicitVariable: {
-				implicitVariable(expr, scope)
-			}
-			RosettaSymbolReference: {
-				val s = expr.symbol
-				switch (s)  {
-					Data: { // -------> replace with call to implicit variable?
-						'''«MapperS».of(«scope.getIdentifierOrThrow(new RDataType(s).toBlueprintImplicitVar)»)'''
-					}
-					Attribute: {
-						// Data attributes can only be called if there is an implicit variable present.
-						// The current container (Data) is stored in Params, but we need also look for superTypes
-						// so we could also do: (s.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
-						val implicitType = typeProvider.typeOfImplicitVariable(expr)
-						val implicitFeatures = implicitType.allFeatures(expr)
-						if(implicitFeatures.contains(s)) {
-							var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-							if (expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-								autoValue = false;
-							}
-							featureCall(implicitVariable(expr, scope), s, scope, autoValue)
-						}
-						else
-							'''«IF s.card.isIsMany»«MapperC».<«typeProvider.getRTypeOfSymbol(s).toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«scope.getIdentifierOrThrow(s)»)'''
-					}
-					ShortcutDeclaration: {
-						val multi = cardinalityProvider.isMulti(s)
-						'''«IF multi»«MapperC».<«typeProvider.getRTypeOfSymbol(s).toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«scope.getIdentifierOrThrow(s)»(«aliasCallArgs(s)»).«IF exprHelper.usesOutputParameter(s.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
-					}
-					RosettaEnumeration: '''«new REnumType(s).toJavaType»'''
-					ClosureParameter: '''«scope.getIdentifierOrThrow(s)»'''
-					RosettaCallableWithArgs: {
-						callableWithArgsCall(s, expr.args, scope)
-					}
-					default: 
-						throw new UnsupportedOperationException("Unsupported symbol type of " + s?.class?.name)
-				}
-			}
-			default: 
-				throw new UnsupportedOperationException("Unsupported reference type of " + expr?.class?.name)
-		}
-	}
-	
 	def aliasCallArgs(ShortcutDeclaration alias) {
 		val func = EcoreUtil2.getContainerOfType(alias, Function)
 		val attrs = <String>newArrayList
@@ -433,16 +251,6 @@ class ExpressionGenerator {
 		attrs.join(', ')
 	}
 	
-	/**
-	 * feature call is a call to get an attribute of an object e.g. Quote->amount
-	 */
-	private def StringConcatenationClient featureCall(RosettaFeatureCall call, JavaScope scope) {
-		var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-		if (call.eContainer instanceof RosettaFeatureCall && (call.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-			autoValue = false;
-		}
-		return featureCall(javaCode(call.receiver, scope), call.feature, scope, autoValue)
-	}
 	private def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RosettaFeature feature, JavaScope scope, boolean autoValue) {
 		val StringConcatenationClient right = switch (feature) {
 			Attribute:
@@ -460,15 +268,7 @@ class ExpressionGenerator {
 		return '''«receiverCode»«right»'''
 	}
 	
-	private def StringConcatenationClient distinct(StringConcatenationClient code) {
-		return '''«runtimeMethod('distinct')»(«code»)'''
-	}
-	
-	def StringConcatenationClient countExpr(RosettaCountOperation expr, JavaScope scope) {
-		'''«MapperS».of(«expr.argument.javaCode(scope)».resultCount())'''
-	}
-	
-	def StringConcatenationClient binaryExpr(RosettaBinaryOperation expr, JavaScope scope) {
+	private def StringConcatenationClient binaryExpr(RosettaBinaryOperation expr, JavaScope scope) {
 		val left = expr.left
 		val right = expr.right
 		val leftRtype = typeProvider.getRType(expr.left)
@@ -590,7 +390,7 @@ class ExpressionGenerator {
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	def StringConcatenationClient buildMapFunc(Attribute attribute, boolean autoValue, JavaScope scope) {
+	private def StringConcatenationClient buildMapFunc(Attribute attribute, boolean autoValue, JavaScope scope) {
 		val mapFunc = attribute.buildMapFuncAttribute(scope)
 		val resultType = if (attribute.metaAnnotations.nullOrEmpty) {
 			typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType
@@ -620,14 +420,7 @@ class ExpressionGenerator {
 		}
 	}
 	
-//	private def JavaType toJavaType(RosettaType rosType) {
-//		val model = rosType.model
-//		if(model === null)
-//			throw new IllegalArgumentException('''Can not create type reference. «rosType.eClass?.name» «rosType.name» is not attached to a «RosettaModel.name»''')
-//		factory.create(model).toJavaType(typeProvider.getRType(rosType))
-//	}
-	
-	def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, JavaScope scope) {
+	private def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, JavaScope scope) {
 		if (meta.name=="reference") {
 			val lambdaScope = scope.lambdaScope
 			val lambdaParam = lambdaScope.createUniqueIdentifier("a")
@@ -642,7 +435,7 @@ class ExpressionGenerator {
 		}
 	}
 	
-	def StringConcatenationClient inlineFunction(InlineFunction ref, JavaScope scope, boolean doCast, boolean needsMapper) {
+	private def StringConcatenationClient inlineFunction(InlineFunction ref, JavaScope scope, boolean doCast, boolean needsMapper) {
 		val lambdaScope = scope.lambdaScope
 		val paramIds = if (ref.parameters.size == 0) {
 			#[lambdaScope.createIdentifier(ref.implicitVarInContext, defaultImplicitVariable.name) ]
@@ -663,122 +456,6 @@ class ExpressionGenerator {
 		} else {
 			'''(«FOR id : paramIds SEPARATOR ', '»«id»«ENDFOR») -> «cast»«bodyExpr»'''
 		}
-	}
-	
-	def StringConcatenationClient onlyElement(RosettaOnlyElement expr, JavaScope scope) {
-		return '''«MapperS».of(«expr.argument.javaCode(scope)».get())'''
-	}
-	
-	def StringConcatenationClient filterOperation(FilterOperation op, JavaScope scope) {
-		if (!op.isPreviousOperationMulti) {
-			'''
-			«op.argument.emptyToMapperJavaCode(scope, true)»
-				.filterSingle(«op.function.inlineFunction(scope, true, false)»)'''
-		} else {
-			if (op.argument.isOutputListOfLists) {
-				'''
-				«op.argument.emptyToMapperJavaCode(scope, true)»
-					.filterList(«op.function.inlineFunction(scope, true, false)»)'''
-			} else {
-				'''
-				«op.argument.emptyToMapperJavaCode(scope, true)»
-					.filterItem(«op.function.inlineFunction(scope, true, false)»)'''
-			}
-		}
-	}
-	
-	def StringConcatenationClient mapOperation(MapOperation op, JavaScope scope) {
-		val isBodyMulti =  op.function.isBodyExpressionMulti
-		val funcExpr = op.function.inlineFunction(scope, true, true)
-		
-		if (!op.isPreviousOperationMulti) {
-			if (isBodyMulti) {
-				'''
-				«op.argument.emptyToMapperJavaCode(scope, false)»
-					.mapSingleToList(«funcExpr»)'''
-			} else {
-				buildSingleItemListOperationOptionalBody(op, "mapSingleToItem", scope)
-			}
-		} else {
-			if (op.argument.isOutputListOfLists) {
-				if (isBodyMulti) {
-					'''
-					«op.argument.emptyToMapperJavaCode(scope, false)»
-						.mapListToList(«funcExpr»)'''
-				} else {
-					'''
-					«op.argument.emptyToMapperJavaCode(scope, false)»
-						.mapListToItem(«funcExpr»)'''
-				}
-			} else {
-				if (isBodyMulti) {
-					'''
-					«op.argument.emptyToMapperJavaCode(scope, false)»
-						.mapItemToList(«funcExpr»)'''
-				} else {
-					buildSingleItemListOperationOptionalBody(op, "mapItem", scope)
-				}
-			}
-		}
-	}
-	
-	def StringConcatenationClient thenOperation(ThenOperation op, JavaScope scope) {
-		val funcExpr = op.function.inlineFunction(scope, false, true)
-		'''
-		«op.argument.emptyToMapperJavaCode(scope, false)»
-			.apply(«funcExpr»)'''
-	}
-	
-	def StringConcatenationClient flattenOperation(FlattenOperation op, JavaScope scope) {
-		buildListOperationNoBody(op, "flattenList", scope)
-	}
-	
-	def StringConcatenationClient distinctOperation(DistinctOperation op, JavaScope scope) {
-		distinct(op.argument.javaCode(scope))
-	}
-	
-	def StringConcatenationClient sumOperation(SumOperation op, JavaScope scope) {
-		buildListOperationNoBody(op, "sum" + typeProvider.getRType(op.argument).toJavaReferenceType.simpleName, scope)
-	}
-	
-	def StringConcatenationClient minOperation(MinOperation op, JavaScope scope) {
-		buildSingleItemListOperationOptionalBody(op, "min", scope)
-	}
-	
-	def StringConcatenationClient maxOperation(MaxOperation op, JavaScope scope) {
-		buildSingleItemListOperationOptionalBody(op, "max", scope)
-	}
-	
-	def StringConcatenationClient sortOperation(SortOperation op, JavaScope scope) {
-		buildSingleItemListOperationOptionalBody(op, "sort", scope)
-	}
-	
-	def StringConcatenationClient reverseOperation(ReverseOperation op, JavaScope scope) {
-		buildListOperationNoBody(op, "reverse", scope)
-	}
-	
-	def StringConcatenationClient reduceOperation(ReduceOperation op, JavaScope scope) {
-		val outputType =  typeProvider.getRType(op.function.body).toJavaReferenceType
-		'''
-		«op.argument.javaCode(scope)»
-			.<«outputType»>reduce(«op.function.inlineFunction(scope, true, true)»)'''
-	}
-	
-	def StringConcatenationClient firstOperation(FirstOperation op, JavaScope scope) {
-		buildListOperationNoBody(op, "first", scope)
-	}
-	
-	def StringConcatenationClient lastOperation(LastOperation op, JavaScope scope) {
-		buildListOperationNoBody(op, "last", scope)
-	}
-	
-	def StringConcatenationClient oneOfOperation(OneOfOperation op, JavaScope scope) {
-		val type = typeProvider.getRType(op.argument) as RDataType
-		buildConstraint(op.argument, type.data.allAttributes, Necessity.REQUIRED, scope)
-	}
-	
-	def StringConcatenationClient choiceOperation(ChoiceOperation op, JavaScope scope) {
-		buildConstraint(op.argument, op.attributes, op.necessity, scope)
 	}
 	
 	private def StringConcatenationClient buildConstraint(RosettaExpression arg, Iterable<Attribute> usedAttributes, Necessity validationType, JavaScope scope) {
@@ -816,49 +493,6 @@ class ExpressionGenerator {
 	private def attributeTypeVariableName(Attribute attribute) {
 		new RDataType(attribute.eContainer as Data).toJavaType.simpleName.toFirstLower
 	}
-	
-	/**
-	 * The id for a parameter - either a Class name or a positional index
-	 */
-//	@org.eclipse.xtend.lib.annotations.Data static class ParamID {
-//		RosettaType c
-//		int index
-//		String name;
-//	}
-	
-	//Class mapping from class name or positional index to the name of a variable defined in the containing code
-//	static class ParamMap extends HashMap<ParamID, String> {
-//		new(RosettaType c) {
-//			if (null !== c)
-//				put(new ParamID(c, -1, null), c.name.toFirstLower);
-//		}
-//		
-//		new(RosettaType c, String name) {
-//			put(new ParamID(c, -1, null), name);
-//		}
-//		
-//		new(){
-//		}
-//		
-//		def dispatch String getClass(RosettaType c) {
-//			return get(new ParamID(c, -1, null))
-//		}
-//		
-//		def dispatch String getClass(Data c) {
-//			entrySet.findFirst[e|
-//				val type  = e.key.c
-//				if (type instanceof Data) {
-//					if (type.isSub(c)) return true
-//				}
-//				false	
-//			]?.value
-//		}
-//		
-//		def boolean isSub(Data d1, Data d2) {
-//			if (d1==d2) return true
-//			return d1.hasSuperType && d1.superType.isSub(d2)
-//		}
-//	}
 	
 	/**
 	 * Create a string representation of a rosetta function  
@@ -926,4 +560,322 @@ class ExpressionGenerator {
 	def StringConcatenationClient toNodeLabel(RosettaBinaryOperation binOp) {
 		'''«binOp.left.toNodeLabel» «binOp.operator» «binOp.right.toNodeLabel»'''
 	}
+	
+	override protected caseAbsentOperation(RosettaAbsentExpression expr, JavaScope context) {
+		val arg = expr.argument
+		val binary = arg.findBinaryOperation
+		if (binary !== null) {
+			if(binary.isLogicalOperation)
+				'''«runtimeMethod('notExists')»(«binary.binaryExpr(context)»)'''
+			else
+				//if the arg is binary then the operator needs to be pushed down
+				binary.binaryExpr(context)
+		}
+		else {
+			'''«runtimeMethod('notExists')»(«arg.javaCode(context)»)'''
+		}
+	}
+	
+	override protected caseAddOperation(ArithmeticOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseAndOperation(LogicalOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseAsKeyOperation(AsKeyOperation expr, JavaScope context) {
+		// this operation is currently handled by the `FunctionGenerator`
+		expr.argument.javaCode(context)
+	}
+	
+	override protected caseBooleanLiteral(RosettaBooleanLiteral expr, JavaScope context) {
+		'''«MapperS».of(«Boolean».valueOf(«expr.value»))'''
+	}
+	
+	override protected caseChoiceOperation(ChoiceOperation expr, JavaScope context) {
+		buildConstraint(expr.argument, expr.attributes, expr.necessity, context)
+	}
+	
+	override protected caseConditionalExpression(RosettaConditionalExpression expr, JavaScope context) {
+		expr.genConditionalMapper(context)
+	}
+	
+	override protected caseContainsOperation(RosettaContainsExpression expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseCountOperation(RosettaCountOperation expr, JavaScope context) {
+		'''«MapperS».of(«expr.argument.javaCode(context)».resultCount())'''
+	}
+	
+	override protected caseDisjointOperation(RosettaDisjointExpression expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseDistinctOperation(DistinctOperation expr, JavaScope context) {
+		'''«runtimeMethod('distinct')»(«expr.argument.javaCode(context)»)'''
+	}
+	
+	override protected caseDivideOperation(ArithmeticOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseEqualsOperation(EqualityOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseExistsOperation(RosettaExistsExpression expr, JavaScope context) {
+		val arg = expr.argument.javaCode(context)
+		if(expr.modifier === ExistsModifier.SINGLE)
+			'''«runtimeMethod('singleExists')»(«arg»)'''
+		else if(expr.modifier === ExistsModifier.MULTIPLE)
+			'''«runtimeMethod('multipleExists')»(«arg»)'''
+		else
+			'''«runtimeMethod('exists')»(«arg»)'''
+	}
+	
+	override protected caseFeatureCall(RosettaFeatureCall expr, JavaScope context) {
+		var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
+		if (expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
+			autoValue = false;
+		}
+		return featureCall(javaCode(expr.receiver, context), expr.feature, context, autoValue)
+	}
+	
+	override protected caseFilterOperation(FilterOperation expr, JavaScope context) {
+		if (!expr.isPreviousOperationMulti) {
+			'''
+			«expr.argument.emptyToMapperJavaCode(context, true)»
+				.filterSingle(«expr.function.inlineFunction(context, true, false)»)'''
+		} else {
+			if (expr.argument.isOutputListOfLists) {
+				'''
+				«expr.argument.emptyToMapperJavaCode(context, true)»
+					.filterList(«expr.function.inlineFunction(context, true, false)»)'''
+			} else {
+				'''
+				«expr.argument.emptyToMapperJavaCode(context, true)»
+					.filterItem(«expr.function.inlineFunction(context, true, false)»)'''
+			}
+		}
+	}
+	
+	override protected caseFirstOperation(FirstOperation expr, JavaScope context) {
+		buildListOperationNoBody(expr, "first", context)
+	}
+	
+	override protected caseFlattenOperation(FlattenOperation expr, JavaScope context) {
+		buildListOperationNoBody(expr, "flattenList", context)
+	}
+	
+	override protected caseGreaterThanOperation(ComparisonOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseGreaterThanOrEqualOperation(ComparisonOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseImplicitVariable(RosettaImplicitVariable expr, JavaScope context) {
+		implicitVariable(expr, context)
+	}
+	
+	override protected caseIntLiteral(RosettaIntLiteral expr, JavaScope context) {
+		'''«MapperS».of(«Integer».valueOf(«expr.value»))'''
+	}
+	
+	override protected caseJoinOperation(JoinOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseLastOperation(LastOperation expr, JavaScope context) {
+		buildListOperationNoBody(expr, "last", context)
+	}
+	
+	override protected caseLessThanOperation(ComparisonOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseLessThanOrEqualOperation(ComparisonOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseListLiteral(ListLiteral expr, JavaScope context) {
+		if (expr.isEmpty) {
+	        '''null'''
+	    } else {
+	       '''«MapperC».<«typeProvider.getRType(expr).toJavaReferenceType»>of(«FOR ele: expr.elements SEPARATOR ', '»«ele.javaCode(context)»«ENDFOR»)'''
+	    }
+	}
+	
+	override protected caseMapOperation(MapOperation expr, JavaScope context) {
+		val isBodyMulti =  expr.function.isBodyExpressionMulti
+		val funcExpr = expr.function.inlineFunction(context, true, true)
+		
+		if (!expr.isPreviousOperationMulti) {
+			if (isBodyMulti) {
+				'''
+				«expr.argument.emptyToMapperJavaCode(context, false)»
+					.mapSingleToList(«funcExpr»)'''
+			} else {
+				buildSingleItemListOperationOptionalBody(expr, "mapSingleToItem", context)
+			}
+		} else {
+			if (expr.argument.isOutputListOfLists) {
+				if (isBodyMulti) {
+					'''
+					«expr.argument.emptyToMapperJavaCode(context, false)»
+						.mapListToList(«funcExpr»)'''
+				} else {
+					'''
+					«expr.argument.emptyToMapperJavaCode(context, false)»
+						.mapListToItem(«funcExpr»)'''
+				}
+			} else {
+				if (isBodyMulti) {
+					'''
+					«expr.argument.emptyToMapperJavaCode(context, false)»
+						.mapItemToList(«funcExpr»)'''
+				} else {
+					buildSingleItemListOperationOptionalBody(expr, "mapItem", context)
+				}
+			}
+		}
+	}
+	
+	override protected caseMaxOperation(MaxOperation expr, JavaScope context) {
+		buildSingleItemListOperationOptionalBody(expr, "max", context)
+	}
+	
+	override protected caseMinOperation(MinOperation expr, JavaScope context) {
+		buildSingleItemListOperationOptionalBody(expr, "min", context)
+	}
+	
+	override protected caseMultiplyOperation(ArithmeticOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseNotEqualsOperation(EqualityOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseNumberLiteral(RosettaNumberLiteral expr, JavaScope context) {
+		'''«MapperS».of(new «BigDecimal»("«expr.value»"))'''
+	}
+	
+	override protected caseOneOfOperation(OneOfOperation expr, JavaScope context) {
+		val type = typeProvider.getRType(expr.argument) as RDataType
+		buildConstraint(expr.argument, type.data.allAttributes, Necessity.REQUIRED, context)
+	}
+	
+	override protected caseOnlyElementOperation(RosettaOnlyElement expr, JavaScope context) {
+		return '''«MapperS».of(«expr.argument.javaCode(context)».get())'''
+	}
+	
+	override protected caseOnlyExists(RosettaOnlyExistsExpression expr, JavaScope context) {
+		'''«runtimeMethod('onlyExists')»(«Arrays».asList(«FOR arg : expr.args SEPARATOR ', '»«arg.javaCode(context)»«ENDFOR»))'''
+	}
+	
+	override protected caseOrOperation(LogicalOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseReduceOperation(ReduceOperation expr, JavaScope context) {
+		val outputType =  typeProvider.getRType(expr.function.body).toJavaReferenceType
+		'''
+		«expr.argument.javaCode(context)»
+			.<«outputType»>reduce(«expr.function.inlineFunction(context, true, true)»)'''
+	}
+	
+	override protected caseReverseOperation(ReverseOperation expr, JavaScope context) {
+		buildListOperationNoBody(expr, "reverse", context)
+	}
+	
+	override protected caseSortOperation(SortOperation expr, JavaScope context) {
+		buildSingleItemListOperationOptionalBody(expr, "sort", context)
+	}
+	
+	override protected caseStringLiteral(RosettaStringLiteral expr, JavaScope context) {
+		'''«MapperS».of("«StringEscapeUtils.escapeJava(expr.value)»")'''
+	}
+	
+	override protected caseSubtractOperation(ArithmeticOperation expr, JavaScope context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseSumOperation(SumOperation expr, JavaScope context) {
+		buildListOperationNoBody(expr, "sum" + typeProvider.getRType(expr.argument).toJavaReferenceType.simpleName, context)
+	}
+	
+	override protected caseSymbolReference(RosettaSymbolReference expr, JavaScope context) {
+		val s = expr.symbol
+		switch (s)  {
+			Data: { // -------> replace with call to implicit variable?
+				'''«MapperS».of(«context.getIdentifierOrThrow(new RDataType(s).toBlueprintImplicitVar)»)'''
+			}
+			Attribute: {
+				// Data attributes can only be called if there is an implicit variable present.
+				// The current container (Data) is stored in Params, but we need also look for superTypes
+				// so we could also do: (s.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
+				val implicitType = typeProvider.typeOfImplicitVariable(expr)
+				val implicitFeatures = implicitType.allFeatures(expr)
+				if(implicitFeatures.contains(s)) {
+					var autoValue = true //if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
+					if (expr.eContainer instanceof RosettaFeatureCall && (expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
+						autoValue = false;
+					}
+					featureCall(implicitVariable(expr, context), s, context, autoValue)
+				}
+				else
+					'''«IF s.card.isIsMany»«MapperC».<«typeProvider.getRTypeOfSymbol(s).toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«context.getIdentifierOrThrow(s)»)'''
+			}
+			ShortcutDeclaration: {
+				val multi = cardinalityProvider.isMulti(s)
+				'''«IF multi»«MapperC».<«typeProvider.getRTypeOfSymbol(s).toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«context.getIdentifierOrThrow(s)»(«aliasCallArgs(s)»).«IF exprHelper.usesOutputParameter(s.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
+			}
+			RosettaEnumeration: '''«new REnumType(s).toJavaType»'''
+			ClosureParameter: '''«context.getIdentifierOrThrow(s)»'''
+			RosettaCallableWithArgs: {
+				callableWithArgsCall(s, expr.args, context)
+			}
+			default: 
+				throw new UnsupportedOperationException("Unsupported symbol type of " + s?.class?.name)
+		}
+	}
+	
+	override protected caseThenOperation(ThenOperation expr, JavaScope context) {
+		val funcExpr = expr.function.inlineFunction(context, false, true)
+		'''
+		«expr.argument.emptyToMapperJavaCode(context, false)»
+			.apply(«funcExpr»)'''
+	}
+	
+	private def StringConcatenationClient conversionOperation(RosettaUnaryOperation expr, JavaScope context, StringConcatenationClient conversion, Class<? extends Exception> errorClass) {
+		'''«expr.argument.emptyToMapperJavaCode(context, false)».checkedMap("«expr.operator»", «conversion», «errorClass».class)'''
+	}
+	
+	override protected caseToEnumOperation(ToEnumOperation expr, JavaScope context) {
+		val javaEnum = new REnumType(expr.enumeration).toJavaType
+		conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
+	}
+	
+	override protected caseToIntOperation(ToIntOperation expr, JavaScope context) {
+		conversionOperation(expr, context, '''«Integer»::parseInt''', NumberFormatException)
+	}
+	
+	override protected caseToNumberOperation(ToNumberOperation expr, JavaScope context) {
+		conversionOperation(expr, context, '''«BigDecimal»::new''', NumberFormatException)
+	}
+	
+	override protected caseToStringOperation(ToStringOperation expr, JavaScope context) {
+		'''«expr.argument.emptyToMapperJavaCode(context, false)».map("«expr.operator»", «Object»::toString)'''
+	}
+	
+	override protected caseToTimeOperation(ToTimeOperation expr, JavaScope context) {
+		val lambdaScope = context.lambdaScope
+		val lambdaParam = lambdaScope.createUniqueIdentifier("s")
+		conversionOperation(expr, context, '''«lambdaParam» -> «LocalTime».parse(s, «DateTimeFormatter».ISO_LOCAL_TIME)''', DateTimeParseException)
+	}
+	
 }

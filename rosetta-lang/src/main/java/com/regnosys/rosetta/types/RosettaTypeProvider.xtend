@@ -24,7 +24,6 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -38,7 +37,6 @@ import com.regnosys.rosetta.rosetta.expression.FirstOperation
 import com.regnosys.rosetta.rosetta.expression.LastOperation
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation
 import com.regnosys.rosetta.rosetta.expression.MapOperation
-import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
@@ -54,10 +52,25 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaDataReference
-import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.utils.RosettaExpressionSwitch
+import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.EqualityOperation
+import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
+import com.regnosys.rosetta.rosetta.expression.JoinOperation
+import com.regnosys.rosetta.rosetta.expression.MaxOperation
+import com.regnosys.rosetta.rosetta.expression.MinOperation
+import com.regnosys.rosetta.rosetta.expression.SortOperation
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
+import com.regnosys.rosetta.rosetta.expression.ToIntOperation
+import com.regnosys.rosetta.rosetta.expression.ToNumberOperation
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation
+import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
 
-class RosettaTypeProvider {
+class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 
 	@Inject extension RosettaOperators
 	@Inject IQualifiedNameProvider qNames
@@ -159,102 +172,7 @@ class RosettaTypeProvider {
 		if (!extensions.isResolved(expression)) {
 			return null
 		}
-		switch expression {
-			RosettaSymbolReference: {
-				if (expression.symbol instanceof RosettaExternalFunction) {
-					val fun = expression.symbol as RosettaExternalFunction
-					val returnType = fun.safeRType(cycleTracker)
-					// TODO: this is a hack
-					// Generic return type for number type e.g. Min(1,2) or Max(2,6)
-					val argTypes = expression.args.map[safeRType(cycleTracker)]
-					if (argTypes.forall[isSubtypeOf(returnType)]) {
-						argTypes.join
-					} else {
-						returnType
-					}
-				} else {
-					safeRType(expression.symbol, cycleTracker)
-				}
-			}
-			RosettaImplicitVariable: {
-				safeTypeOfImplicitVariable(expression, cycleTracker)
-			}
-			RosettaFeatureCall: {
-				val feature = expression.feature
-				if (!extensions.isResolved(feature)) {
-					return null
-				}
-				feature.safeRType(cycleTracker)
-			}
-			RosettaOnlyElement: {
-				safeRType(expression.argument, cycleTracker)
-			}
-			RosettaBinaryOperation: {
-				val left = expression.left
-				var leftType = left.safeRType(cycleTracker)
-				if (leftType instanceof RErrorType) {
-					return leftType
-				}
-				val right = expression.right
-				var rightType = right.safeRType(cycleTracker)
-				if (rightType instanceof RErrorType) {
-					return rightType
-				}
-				expression.operator.resultType(leftType, rightType)
-			}
-			RosettaCountOperation: {
-				constrainedInt(Optional.empty(), Optional.of(0), Optional.empty())
-			}
-			RosettaOnlyExistsExpression,
-			RosettaExistsExpression,
-			RosettaAbsentExpression,
-			RosettaBooleanLiteral,
-			OneOfOperation,
-			ChoiceOperation:
-				BOOLEAN
-			RosettaStringLiteral:
-				constrainedString(expression.value.length, expression.value.length)
-			RosettaIntLiteral:
-				constrainedInt(if (expression.value >= 0) expression.value.toString.length else expression.value.toString.length - 1, expression.value, expression.value)
-			RosettaNumberLiteral:
-				constrainedNumber(expression.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, expression.value.scale), expression.value, expression.value)
-			RosettaPatternLiteral:
-				PATTERN
-			ListLiteral:
-				listType(expression.elements)
-			RosettaConditionalExpression: {
-				val ifT = expression.ifthen.safeRType(cycleTracker)
-				val elseT = expression.elsethen.safeRType(cycleTracker)
-				if (ifT === null || ifT instanceof RErrorType) {
-					elseT
-				} else if (elseT === null || elseT instanceof RErrorType) {
-					ifT
-				} else {
-					val joined = join(ifT, elseT)
-					if (joined == ANY) {
-						new RErrorType("Can not infer common type for '" + ifT.name + "' and " + elseT.name + "'.")
-					} else {
-						joined
-					}
-				}
-			}
-			ReverseOperation,
-			FlattenOperation,
-			DistinctOperation,
-			ComparingFunctionalOperation,
-			SumOperation,
-			FirstOperation,
-			LastOperation,
-			FilterOperation,
-			AsKeyOperation:
-				expression.argument.safeRType(cycleTracker)
-			ReduceOperation,
-			MapOperation,
-			ThenOperation:
-				expression.function?.body?.safeRType(cycleTracker)
-			default:
-				MISSING
-		}
+		doSwitch(expression, cycleTracker)
 	}
 	
 	def typeOfImplicitVariable(EObject context) {
@@ -274,8 +192,143 @@ class RosettaTypeProvider {
 		].orElse(MISSING)
 	}
 	
-	private def listType(List<RosettaExpression> exp) {
-		val types = exp.map[RType]
+	private def caseBinaryOperation(RosettaBinaryOperation expr, Map<EObject, RType> context) {
+		val left = expr.left
+		var leftType = left.safeRType(context)
+		if (leftType === null || leftType instanceof RErrorType) {
+			return leftType
+		}
+		val right = expr.right
+		var rightType = right.safeRType(context)
+		if (rightType === null || rightType instanceof RErrorType) {
+			return rightType
+		}
+		expr.operator.resultType(leftType, rightType)
+	}
+	
+	override protected caseAbsentOperation(RosettaAbsentExpression expr, Map<EObject, RType> context) {
+		BOOLEAN
+	}
+	
+	override protected caseAddOperation(ArithmeticOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseAndOperation(LogicalOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseAsKeyOperation(AsKeyOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseBooleanLiteral(RosettaBooleanLiteral expr, Map<EObject, RType> context) {
+		BOOLEAN
+	}
+	
+	override protected caseChoiceOperation(ChoiceOperation expr, Map<EObject, RType> context) {
+		BOOLEAN
+	}
+	
+	override protected caseConditionalExpression(RosettaConditionalExpression expr, Map<EObject, RType> context) {
+		val ifT = expr.ifthen.safeRType(context)
+		val elseT = expr.elsethen.safeRType(context)
+		if (ifT === null || ifT instanceof RErrorType) {
+			elseT
+		} else if (elseT === null || elseT instanceof RErrorType) {
+			ifT
+		} else {
+			val joined = join(ifT, elseT)
+			if (joined == ANY) {
+				new RErrorType("Can not infer common type for '" + ifT.name + "' and " + elseT.name + "'.")
+			} else {
+				joined
+			}
+		}
+	}
+	
+	override protected caseContainsOperation(RosettaContainsExpression expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseCountOperation(RosettaCountOperation expr, Map<EObject, RType> context) {
+		constrainedInt(Optional.empty(), Optional.of(0), Optional.empty())
+	}
+	
+	override protected caseDisjointOperation(RosettaDisjointExpression expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseDistinctOperation(DistinctOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseDivideOperation(ArithmeticOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseEqualsOperation(EqualityOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseExistsOperation(RosettaExistsExpression expr, Map<EObject, RType> context) {
+		BOOLEAN
+	}
+	
+	override protected caseFeatureCall(RosettaFeatureCall expr, Map<EObject, RType> context) {
+		val feature = expr.feature
+		if (!extensions.isResolved(feature)) {
+			return null
+		}
+		feature.safeRType(context)
+	}
+	
+	override protected caseFilterOperation(FilterOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseFirstOperation(FirstOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseFlattenOperation(FlattenOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseGreaterThanOperation(ComparisonOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseGreaterThanOrEqualOperation(ComparisonOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseImplicitVariable(RosettaImplicitVariable expr, Map<EObject, RType> context) {
+		safeTypeOfImplicitVariable(expr, context)
+	}
+	
+	override protected caseIntLiteral(RosettaIntLiteral expr, Map<EObject, RType> context) {
+		constrainedInt(if (expr.value >= 0) expr.value.toString.length else expr.value.toString.length - 1, expr.value, expr.value)
+	}
+	
+	override protected caseJoinOperation(JoinOperation expr, Map<EObject, RType> context) {
+		UNCONSTRAINED_STRING
+	}
+	
+	override protected caseLastOperation(LastOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseLessThanOperation(ComparisonOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseLessThanOrEqualOperation(ComparisonOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseListLiteral(ListLiteral expr, Map<EObject, RType> context) {
+		val types = expr.elements.map[RType]
 		val joined = types.join
 		if (joined == ANY) {
 			new RErrorType(types.groupBy[name].keySet.join(', '))
@@ -283,4 +336,110 @@ class RosettaTypeProvider {
 			joined
 		}
 	}
+	
+	override protected caseMapOperation(MapOperation expr, Map<EObject, RType> context) {
+		expr.function?.body?.safeRType(context)
+	}
+	
+	override protected caseMaxOperation(MaxOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseMinOperation(MinOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseMultiplyOperation(ArithmeticOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseNotEqualsOperation(EqualityOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseNumberLiteral(RosettaNumberLiteral expr, Map<EObject, RType> context) {
+		constrainedNumber(expr.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, expr.value.scale), expr.value, expr.value)
+	}
+	
+	override protected caseOneOfOperation(OneOfOperation expr, Map<EObject, RType> context) {
+		BOOLEAN
+	}
+	
+	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseOnlyExists(RosettaOnlyExistsExpression expr, Map<EObject, RType> context) {
+		BOOLEAN
+	}
+	
+	override protected caseOrOperation(LogicalOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseReduceOperation(ReduceOperation expr, Map<EObject, RType> context) {
+		expr.function?.body?.safeRType(context)
+	}
+	
+	override protected caseReverseOperation(ReverseOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseSortOperation(SortOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseStringLiteral(RosettaStringLiteral expr, Map<EObject, RType> context) {
+		constrainedString(expr.value.length, expr.value.length)
+	}
+	
+	override protected caseSubtractOperation(ArithmeticOperation expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseSumOperation(SumOperation expr, Map<EObject, RType> context) {
+		expr.argument.safeRType(context)
+	}
+	
+	override protected caseSymbolReference(RosettaSymbolReference expr, Map<EObject, RType> context) {
+		if (expr.symbol instanceof RosettaExternalFunction) {
+			val fun = expr.symbol as RosettaExternalFunction
+			val returnType = fun.safeRType(context)
+			// TODO: this is a hack
+			// Generic return type for number type e.g. Min(1,2) or Max(2,6)
+			val argTypes = expr.args.map[safeRType(context)]
+			if (argTypes.forall[isSubtypeOf(returnType)]) {
+				argTypes.join
+			} else {
+				returnType
+			}
+		} else {
+			safeRType(expr.symbol, context)
+		}
+	}
+	
+	override protected caseThenOperation(ThenOperation expr, Map<EObject, RType> context) {
+		expr.function?.body?.safeRType(context)
+	}
+	
+	override protected caseToEnumOperation(ToEnumOperation expr, Map<EObject, RType> context) {
+		new REnumType(expr.enumeration)
+	}
+	
+	override protected caseToIntOperation(ToIntOperation expr, Map<EObject, RType> context) {
+		UNCONSTRAINED_INT
+	}
+	
+	override protected caseToNumberOperation(ToNumberOperation expr, Map<EObject, RType> context) {
+		UNCONSTRAINED_NUMBER
+	}
+	
+	override protected caseToStringOperation(ToStringOperation expr, Map<EObject, RType> context) {
+		UNCONSTRAINED_STRING
+	}
+	
+	override protected caseToTimeOperation(ToTimeOperation expr, Map<EObject, RType> context) {
+		TIME
+	}
+	
 }

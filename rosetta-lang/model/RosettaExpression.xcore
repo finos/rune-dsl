@@ -7,6 +7,7 @@ package com.regnosys.rosetta.rosetta.expression
 
 import java.util.regex.Pattern
 
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -317,6 +318,25 @@ enum Necessity {
 class ChoiceOperation extends RosettaUnaryOperation {
 	Necessity necessity
 	refers Attribute[] attributes
+}
+
+class ToStringOperation extends RosettaUnaryOperation {
+}
+
+interface ParseOperation extends RosettaUnaryOperation {
+}
+
+class ToNumberOperation extends ParseOperation {
+}
+
+class ToIntOperation extends ParseOperation {
+}
+
+class ToTimeOperation extends ParseOperation {
+}
+
+class ToEnumOperation extends ParseOperation {
+	refers RosettaEnumeration enumeration 
 }
 
 /**

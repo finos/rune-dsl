@@ -127,6 +127,10 @@ import org.eclipse.xtext.Assignment
 import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.types.CardinalityProvider
 import org.eclipse.xtext.Action
+import com.regnosys.rosetta.rosetta.expression.ParseOperation
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation
+import com.regnosys.rosetta.types.builtin.RBasicType
+import com.regnosys.rosetta.types.REnumType
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -1277,6 +1281,33 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if (ele.argument.isResolved) {
 			if (!cardinality.isMulti(ele.argument))
 				error('''Count operation multiple cardinality argument.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
+		}
+	}
+	
+	@Check
+	def checkParseOpArgument(ParseOperation ele) {
+		val arg = ele.argument
+		if (arg.isResolved) {
+			if (cardinality.isMulti(arg)) {
+				error('''The argument of «ele.operator» should be of singular cardinality.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			}
+			if (!arg.RType.isSubtypeOf(UNCONSTRAINED_STRING)) {
+				error('''The argument of «ele.operator» should be a string.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			}
+		}
+	}
+	
+	@Check
+	def checkToStringOpArgument(ToStringOperation ele) {
+		val arg = ele.argument
+		if (arg.isResolved) {
+			if (cardinality.isMulti(arg)) {
+				error('''The argument of «ele.operator» should be of singular cardinality.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			}
+			val type = arg.RType.stripFromTypeAliases
+			if (!(type instanceof RBasicType || type instanceof REnumType)) {
+				error('''The argument of «ele.operator» should be of a basic type or an enum.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			}
 		}
 	}
 

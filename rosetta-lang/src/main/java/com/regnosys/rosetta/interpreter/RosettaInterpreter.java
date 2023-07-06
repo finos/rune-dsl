@@ -55,6 +55,11 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
 import com.regnosys.rosetta.rosetta.expression.ThenOperation;
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation;
+import com.regnosys.rosetta.rosetta.expression.ToIntOperation;
+import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
+import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.RType;
@@ -488,5 +493,35 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	protected RosettaValue caseThenOperation(ThenOperation expr, RosettaInterpreterContext context) {
 		// TODO
 		throw new RosettaInterpreterException("Then operations are not supported yet.");
+	}
+	
+	@Override
+	protected RosettaValue caseToStringOperation(ToStringOperation expr, RosettaInterpreterContext context) {
+		// TODO
+				throw new RosettaInterpreterException("ToString operations are not supported yet.");
+	}
+	
+	@Override
+	protected RosettaValue caseToNumberOperation(ToNumberOperation expr, RosettaInterpreterContext context) {
+		// TODO
+				throw new RosettaInterpreterException("ToNumber operations are not supported yet.");
+	}
+	
+	@Override
+	protected RosettaValue caseToIntOperation(ToIntOperation expr, RosettaInterpreterContext context) {
+		// TODO
+				throw new RosettaInterpreterException("ToInt operations are not supported yet.");
+	}
+	
+	@Override
+	protected RosettaValue caseToTimeOperation(ToTimeOperation expr, RosettaInterpreterContext context) {
+		// TODO
+				throw new RosettaInterpreterException("ToTime operations are not supported yet.");
+	}
+	
+	@Override
+	protected RosettaValue caseToEnumOperation(ToEnumOperation expr, RosettaInterpreterContext context) {
+		// TODO
+				throw new RosettaInterpreterException("ToEnum operations are not supported yet.");
 	}
 }

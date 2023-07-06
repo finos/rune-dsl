@@ -995,6 +995,27 @@ The `distinct` operator is useful to remove duplicate elements from a list. It c
 owner -> drivingLicense -> countryofIssuance distinct count = 1
 ```
 
+### Conversion operators
+
+Rosetta provides five conversion operators: `to-enum`, `to-string`, `to-number`, `to-int`, and `to-time`. Here are examples of their usage.
+
+Given the following enum
+```
+enum Foo:
+    VALUE1
+    VALUE2 displayName "Value 2"
+```
+- `Foo -> VALUE1 to-string` will result in the string `"VALUE1"`,
+- `Foo -> VALUE2 to-string` will result in the string `"Value 2"`, (note that the display name is used if present)
+- `"VALUE1" to-enum Foo" will result in the enum value `Foo -> VALUE1`,
+- `"Value 2" to-enum Foo" will result in the enum value `Foo -> VALUE2`, (again, the display name is used if present)
+- `"-3.14" to-number` will result in the number 3.14,
+- `"17:05:33" to-time` will result in a value representing the local time 17 hours, 5 minutes and 33 seconds.
+
+If the conversion fails, the result is an empty value. For example,
+- `"VALUE2" to-enum Foo` results in an empty value, (because `Foo -> VALUE2` has a display name "Value 2", this conversion fails)
+- `"3.14" to-int` results in an empty value.
+
 ## Data Validation Component
 
 **Data integrity is supported by validation components that are associated to each data type** in the Rosetta DSL. There are two types of validation components:
@@ -1831,6 +1852,7 @@ A report is specified using the following syntax:
 
 ``` Haskell
 report <Authority> <Corpus1> <Corpus2> <...> in <TimingRule>
+  from <InputType>
   when <EligibilityRule1> and <EligibilityRule2> and <...>
   with type <ReportType>
 ```
@@ -1848,6 +1870,7 @@ An example is given below.
 
 ``` Haskell
 report EuropeanParliament EmissionPerformanceStandardsEU in real-time
+    from ReportableEvent
     when EuroStandardsCoverage
     with type EmissionPerformanceStandardsReport
 ```
@@ -1891,7 +1914,7 @@ To provide transparency and auditability to the reporting process, the Rosetta D
 The syntax of a reporting rule is as follows:
 
 ``` Haskell
-<ruleType> rule <RuleName>:
+<ruleType> rule <RuleName> from <InputType>:
   [ regulatoryReference <Body> <Corpus>
     <Segment1>
     <Segment2>
@@ -1907,7 +1930,7 @@ The functional expression of reporting rules uses the same [logical expression](
 Functional expressions are composable, so a rule can also call another rule. When multiple rules may need to be applied for a single field or eligibility criteria, those rules can be specified in brackets separated by a comma, as illustrated below. Each of `Euro1Standard`, ..., `Euro6Standard` are themselves reporting rules.
 
 ``` Haskell
-reporting rule EuroEmissionStandard:
+reporting rule EuroEmissionStandard from ReportableEvent:
    [regulatoryReference EuropeanCommission StandardEmissionsEuro6 article "1"  
     provision "Regulation (EC) No 715/2007 is amended as follows:..."]
     (
@@ -2042,7 +2065,7 @@ For example, in the CFTC Part 45 regulations, fields 33-35 require the reporting
 In the example below, the `repeatable` keyword in reporting rule `NotionalAmountScheduleLeg1` specifies that the extracted list of quantity notional schedule steps should be reported as a repeating set of data. The rules specified within the brackets define the fields that should be reported for each repeating step.
 
 ``` Haskell
-reporting rule NotionalAmountScheduleLeg1 <"Notional Amount Schedule">
+reporting rule NotionalAmountScheduleLeg1 from ReportableEvent: <"Notional Amount Schedule">
    [regulatoryReference CFTC Part45 appendix "1" item "33-35" field "Notional Amount Schedule"
        provision "Fields 33-35 are repeatable and shall be populated in the case of derivatives involving notional amount schedules"]
    TradeForEvent then
@@ -2054,17 +2077,17 @@ reporting rule NotionalAmountScheduleLeg1 <"Notional Amount Schedule">
                NotionalAmountScheduleLeg1EffectiveDate
            )
 
-reporting rule NotionalAmountScheduleLeg1Amount <"Notional amount in effect on associated effective date of leg 1">
+reporting rule NotionalAmountScheduleLeg1Amount from ReportableEvent: <"Notional amount in effect on associated effective date of leg 1">
    [regulatoryReference CFTC Part45 appendix "1" item "33" field "Notional amount in effect on associated effective date of leg 1"]
        CDENotionalAmountScheduleAmount
        as "33/35-$ 33 Notional amount leg 1"
 
-reporting rule NotionalAmountScheduleLeg1EffectiveDate <"Effective date of the notional amount of leg 1">
+reporting rule NotionalAmountScheduleLeg1EffectiveDate from ReportableEvent: <"Effective date of the notional amount of leg 1">
    [regulatoryReference CFTC Part45 appendix "1" item "34" field "Effective date of the notional amount of leg 1"]
        CDENotionalAmountScheduleEffectiveDate
        as "33/35-$ 34 Effective date leg 1"
 
-reporting rule NotionalAmountScheduleLeg1EndDate <"End date of the notional amount of leg 1">
+reporting rule NotionalAmountScheduleLeg1EndDate from ReportableEvent: <"End date of the notional amount of leg 1">
    [regulatoryReference CFTC Part45 appendix "1" item "35" field "End date of the notional amount of leg 1"]
        CDENotionalAmountScheduleEndDate
        as "33/35-$ 35 End date leg 1"

@@ -84,10 +84,10 @@ public class RosettaValueFactory extends RosettaTypeSwitch<RosettaValue, List<?>
 		return new RosettaTimeValue(castList(context, LocalTime.class));
 	}
 
-	@Override
-	protected RosettaValue casePatternType(RBasicType type, List<?> context) {
-		return new RosettaPatternValue(castList(context, Pattern.class));
-	}
+//	@Override
+//	protected RosettaValue casePatternType(RBasicType type, List<?> context) {
+//		return new RosettaPatternValue(castList(context, Pattern.class));
+//	}
 
 	@Override
 	protected RosettaValue caseMissingType(RBasicType type, List<?> context) {

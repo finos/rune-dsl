@@ -1,21 +1,12 @@
 package com.regnosys.rosetta.types
 
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
-import com.regnosys.rosetta.rosetta.RosettaEnumValue
-import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
-import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
-import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.WithCardinality
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
@@ -44,97 +35,104 @@ import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
-import com.regnosys.rosetta.rosetta.RosettaParameter
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
-import com.regnosys.rosetta.rosetta.TypeParameter
+import com.regnosys.rosetta.utils.RosettaExpressionSwitch
+import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.EqualityOperation
+import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
+import com.regnosys.rosetta.rosetta.expression.JoinOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
+import com.regnosys.rosetta.rosetta.expression.ToIntOperation
+import com.regnosys.rosetta.rosetta.expression.ToNumberOperation
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation
+import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class CardinalityProvider {
+class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
+	static Logger LOGGER = LoggerFactory.getLogger(CardinalityProvider)
 	
 	@Inject extension ImplicitVariableUtil
 	
-	def boolean isMulti(EObject obj) {
-		isMulti(obj, false)
+	def boolean isMulti(RosettaExpression expr) {
+		isMulti(expr, false)
+	}
+	def boolean isMulti(RosettaExpression expr, boolean breakOnClosureParameter) {
+		if (expr === null) {
+			return false
+		}
+		doSwitch(expr, breakOnClosureParameter)
+	}
+	def boolean isMulti(RosettaSymbol symbol) {
+		isMulti(symbol, false)
 	}
 	
-	def boolean isMulti(EObject obj, boolean breakOnClosureParameter) {
-		if(obj === null) return false
-		switch obj {
-			RosettaFeatureCall: {
-				if (obj.feature.isMulti(breakOnClosureParameter)) 
-					true 
-				else 
-					obj.receiver.isMulti(breakOnClosureParameter)
+	def boolean isMulti(RosettaSymbol symbol, boolean breakOnClosureParameter) {
+		switch symbol {
+			RosettaFeature: {
+				isMulti(symbol as RosettaFeature, breakOnClosureParameter)
 			}
-			RosettaEnumValue:false
-			WithCardinality: if(obj.card === null) false else obj.card.isIsMany
-			RosettaSymbolReference: {
-				obj.symbol.isMulti(breakOnClosureParameter)
-			}
-			RosettaImplicitVariable: {
-				obj.isImplicitVariableMulti
-			}
-			Function: if(obj.output === null) false else obj.output.isMulti(breakOnClosureParameter)
-			RosettaBlueprint: obj.expression.isMulti(breakOnClosureParameter)
-			ShortcutDeclaration: obj.expression.isMulti(breakOnClosureParameter)
-			RosettaConditionalExpression: obj.ifthen.isMulti(breakOnClosureParameter) || obj.elsethen.isMulti(breakOnClosureParameter) 
 			ClosureParameter: {
-				if (breakOnClosureParameter) 
-					false 
-				else 
-					obj.isClosureParameterMulti
+				isClosureParameterMulti(symbol.function)
 			}
-			ListLiteral: obj.elements.size > 0 // TODO: the type system is currently not strong enough to implement this completely right
-			ReduceOperation: false
-			FilterOperation: {
-				obj.argument.isMulti(breakOnClosureParameter)
+			Data: { // @Compat: Data should not be a RosettaSymbol.
+				false
 			}
-			MapOperation: {
-				if (obj.function.isMulti(breakOnClosureParameter)) {
-					true
+			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
+				false
+			}
+			Function: {
+				if (symbol.output !== null) {
+					isMulti(symbol.output as RosettaFeature, breakOnClosureParameter)
 				} else {
-					obj.argument.isMulti(breakOnClosureParameter)
+					false
 				}
 			}
-			ThenOperation: obj.function.isMulti(breakOnClosureParameter)
-			SortOperation: true
-			InlineFunction: obj.body.isMulti(breakOnClosureParameter)
-			FirstOperation,
-			LastOperation,
-			SumOperation,
-			MinOperation,
-			MaxOperation,
-			RosettaAbsentExpression,
-			RosettaCountOperation,
-			RosettaExistsExpression,
-			RosettaOnlyElement,
-			ChoiceOperation,
-			OneOfOperation:
+			RosettaBlueprint: {
+				if (symbol.expression !== null) {
+					isMulti(symbol.expression, breakOnClosureParameter)
+				} else {
+					false
+				}
+			}
+			RosettaExternalFunction: {
 				false
-			DistinctOperation,
-			FlattenOperation,
-			ReverseOperation:
-				true
-			RosettaBinaryOperation: {
-				false // check '+' operator
 			}
-			AsKeyOperation: {
-				obj.argument.isMulti(breakOnClosureParameter)
+			ShortcutDeclaration: {
+				symbol.expression.isMulti(breakOnClosureParameter)
 			}
-			RosettaLiteral,
-			RosettaTypedFeature,
-			RosettaFeature,
-			RosettaSynonymValueBase,
-			RosettaOnlyExistsExpression,
-			RosettaRootElement,
-			RosettaEnumValueReference,
-			RosettaMapPathValue,
-			RosettaParameter,
-			TypeParameter: false
-			default: {println("CardinalityProvider: Cardinality not defined for: " +obj?.eClass?.name)false }
+			default: {
+				LOGGER.error("Cardinality not defined for symbol: " + symbol?.eClass?.name)
+				false
+			}
+		}
+	}
+	private def boolean isMulti(RosettaFeature feature, boolean breakOnClosureParameter) {
+		switch (feature) {
+			Attribute: {
+				if(feature.card === null) {
+					false
+				} else {
+					feature.card.isIsMany
+				}
+			}
+			default:
+				false
 		}
 	}
 	
@@ -157,22 +155,7 @@ class CardinalityProvider {
 		].orElse(false)
 	}
 	
-	/**
-	 * ListOperation.firstOrImplicit (e.g. ClosureParameter) can be null if parameter is implicit
-	 */
-	private def boolean isClosureParameterMulti(ClosureParameter obj) {
-		if (obj === null) {
-			println("CardinalityProvider: ClosureParameter cardinality cannot be determined for null")
-			return false
-		}	
-		return obj.function.isClosureParameterMulti
-	}
-	
-	/**
-	 * ListOperation.firstOrImplicit (e.g. ClosureParameter) can be null if parameter is implicit, so 
-	 * better to determine the cardinality from the previous operation
-	 */
-	def boolean isClosureParameterMulti(InlineFunction obj) {
+	private def boolean isClosureParameterMulti(InlineFunction obj) {
 		val op = obj.eContainer
 		if (op instanceof RosettaFunctionalOperation) {
 			if (op instanceof ThenOperation) {
@@ -198,7 +181,7 @@ class CardinalityProvider {
 				ThenOperation:
 					return previousOperation.isMulti
 				MapOperation:
-					return previousOperation.function.isMulti(false)
+					return previousOperation.function.body.isMulti(false)
 				FlattenOperation:
 					return false
 				default:
@@ -290,4 +273,212 @@ class CardinalityProvider {
 	def isBodyExpressionWithSingleInputMulti(InlineFunction op) {
 		op.body !== null && isMulti(op.body, true)
 	}
+	
+	override protected caseAbsentOperation(RosettaAbsentExpression expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseAddOperation(ArithmeticOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseAndOperation(LogicalOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseAsKeyOperation(AsKeyOperation expr, Boolean breakOnClosureParameter) {
+		expr.argument.isMulti(breakOnClosureParameter)
+	}
+	
+	override protected caseBooleanLiteral(RosettaBooleanLiteral expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseChoiceOperation(ChoiceOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseConditionalExpression(RosettaConditionalExpression expr, Boolean breakOnClosureParameter) {
+		expr.ifthen.isMulti(breakOnClosureParameter) || expr.elsethen.isMulti(breakOnClosureParameter)
+	}
+	
+	override protected caseContainsOperation(RosettaContainsExpression expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseCountOperation(RosettaCountOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseDisjointOperation(RosettaDisjointExpression expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseDistinctOperation(DistinctOperation expr, Boolean breakOnClosureParameter) {
+		expr.argument.isMulti(breakOnClosureParameter)
+	}
+	
+	override protected caseDivideOperation(ArithmeticOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseEqualsOperation(EqualityOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseExistsOperation(RosettaExistsExpression expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseFeatureCall(RosettaFeatureCall expr, Boolean breakOnClosureParameter) {
+		if (expr.feature.isMulti(breakOnClosureParameter)) 
+			true 
+		else 
+			expr.receiver.isMulti(breakOnClosureParameter)
+	}
+	
+	override protected caseFilterOperation(FilterOperation expr, Boolean breakOnClosureParameter) {
+		expr.argument.isMulti(breakOnClosureParameter)
+	}
+	
+	override protected caseFirstOperation(FirstOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseFlattenOperation(FlattenOperation expr, Boolean breakOnClosureParameter) {
+		true
+	}
+	
+	override protected caseGreaterThanOperation(ComparisonOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseGreaterThanOrEqualOperation(ComparisonOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseImplicitVariable(RosettaImplicitVariable expr, Boolean breakOnClosureParameter) {
+		expr.isImplicitVariableMulti(breakOnClosureParameter)
+	}
+	
+	override protected caseIntLiteral(RosettaIntLiteral expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseJoinOperation(JoinOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseLastOperation(LastOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseLessThanOperation(ComparisonOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseLessThanOrEqualOperation(ComparisonOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseListLiteral(ListLiteral expr, Boolean breakOnClosureParameter) {
+		expr.elements.size > 0 // TODO: the type system is currently not strong enough to implement this completely right
+	}
+	
+	override protected caseMapOperation(MapOperation expr, Boolean breakOnClosureParameter) {
+		if (expr.function.body.isMulti(breakOnClosureParameter)) {
+			true
+		} else {
+			expr.argument.isMulti(breakOnClosureParameter)
+		}
+	}
+	
+	override protected caseMaxOperation(MaxOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseMinOperation(MinOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseMultiplyOperation(ArithmeticOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseNotEqualsOperation(EqualityOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseNumberLiteral(RosettaNumberLiteral expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseOneOfOperation(OneOfOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseOnlyExists(RosettaOnlyExistsExpression expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseOrOperation(LogicalOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseReduceOperation(ReduceOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseReverseOperation(ReverseOperation expr, Boolean breakOnClosureParameter) {
+		true
+	}
+	
+	override protected caseSortOperation(SortOperation expr, Boolean breakOnClosureParameter) {
+		true
+	}
+	
+	override protected caseStringLiteral(RosettaStringLiteral expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseSubtractOperation(ArithmeticOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseSumOperation(SumOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseSymbolReference(RosettaSymbolReference expr, Boolean breakOnClosureParameter) {
+		expr.symbol.isMulti(breakOnClosureParameter)
+	}
+	
+	override protected caseThenOperation(ThenOperation expr, Boolean breakOnClosureParameter) {
+		expr.function.body.isMulti(breakOnClosureParameter)
+	}
+	
+	override protected caseToEnumOperation(ToEnumOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseToIntOperation(ToIntOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseToNumberOperation(ToNumberOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseToStringOperation(ToStringOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseToTimeOperation(ToTimeOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
 }

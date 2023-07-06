@@ -20,6 +20,27 @@ public class MapperItem<T, P> extends AbstractMapperItem<P> {
 		}
 	}
 	
+	static <C, P> MapperItem<C, P> getCheckedMapperItem(MapperItem<P, ?> parentItem, NamedFunction<P, C> mappingFunc, Class<? extends Exception> errorClass) {
+		if (!parentItem.isError()) {
+			P parent = parentItem.getMappedObject();
+			C child;
+			try {
+				child = mappingFunc.apply(parent);
+			} catch (Exception e) {
+				if (!errorClass.isInstance(e)) {
+					throw e;
+				}
+				child = null;
+			}
+			MapperPath path = parentItem.getPath().toBuilder().addFunctionName(mappingFunc.getName());
+			boolean error = child == null;
+			return new MapperItem<>(child, path, error, Optional.of(parentItem));
+		}
+		else {
+			return getErrorMapperItem(parentItem.getPath());
+		}
+	}
+	
 	static <C, P> List<MapperItem<C, ?>> getMapperItems(MapperItem<P, ?> parentItem, NamedFunction<P, List<? extends C>> mappingFunc) {
 		if (!parentItem.isError()) {
 			List<MapperItem<C, ?>> childItems = new ArrayList<>();
