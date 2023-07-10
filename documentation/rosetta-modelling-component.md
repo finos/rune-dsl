@@ -1971,29 +1971,29 @@ then extract <Expression2>
 The expressions may use any type of [expression component](#expression-component) available in the Rosetta DSL, from simple path expressions or constants to more complex conditional statements, as illustrated below:
 
 ``` Haskell
-extract Vehicle -> specification -> dateOfFirstRegistration
+extract specification -> dateOfFirstRegistration
 ```
 
 ``` Haskell
-extract if
-    Vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
-    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
-    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
-    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> N1I_Commercial
-    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> N1II_Commercial
-    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> N1III_Commercial
-  then
-    "MOrN1"
+extract
+    if vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+      or vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+      or vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+      or vehicle -> vehicleClassification = VehicleClassificationEnum -> N1I_Commercial
+      or vehicle -> vehicleClassification = VehicleClassificationEnum -> N1II_Commercial
+      or vehicle -> vehicleClassification = VehicleClassificationEnum -> N1III_Commercial
+  then "MOrN1"
 ```
 
 Extraction instructions can be chained using the keyword `then`, which means that extraction continues from the previous point. The syntax provides type safety when chaining extraction instructions: the output type of the preceding instruction must be equal to the input type of the following instruction.
 
 ``` Haskell
-reporting rule VehicleForOwner:
-    extract VehicleOwnership -> vehicle
+reporting rule VehicleForOwner from VehicleOwnership:
+    extract vehicle
 
-reporting rule VehicleClassification:
-    VehicleForOwner then extract Vehicle -> vehicleClassification
+reporting rule VehicleClassification from VehicleOwnership:
+    extract VehicleForOwner
+        then extract vehicleClassification
     // This is equivalent to writing directly:
     // extract VehicleOwnership -> vehicle -> vehicleClassification
 ```
@@ -2001,9 +2001,9 @@ reporting rule VehicleClassification:
 An extraction instruction followed by `as` sets a label onto the value to appear as the column name in a computed report. The label is an arbitrary, non-functional string and should generally be aligned with the name of the reportable field as per the regulation.
 
 ``` Haskell
-reporting rule FirstRegistrationDate: <"Date of first registration of the vehicle">
-   extract VehicleOwnership -> vehicle -> specification -> dateOfFirstRegistration
-    as "First Registration Date"
+reporting rule FirstRegistrationDate from VehicleOwnership: <"Date of first registration of the vehicle">
+    extract vehicle -> specification -> dateOfFirstRegistration
+        as "First Registration Date"
 ```
 
 ##### Filtering Rules
@@ -2011,43 +2011,42 @@ reporting rule FirstRegistrationDate: <"Date of first registration of the vehicl
 A filter instruction takes a list of input objects and return a subset of them. The output type of the rule is always the same as the input, and of multiple cardinality. The syntax is:
 
 ``` Haskell
-filter when <FunctionalExpression>
+filter <FunctionalExpression>
 ```
 
-The `filter when` keyword takes each input value and uses it as input to a provided test expression. The result type of the test expression must be boolean and its input type must be the input type of the filter rule. If the expression returns true for a given input, that value is included in the output.
+The `filter` keyword takes each input value and uses it as input to a provided test expression. The result type of the test expression must be boolean and its input type must be the input type of the filter rule. If the expression returns true for a given input, that value is included in the output.
 
 The functional expression can be either a direct boolean expression or the output of another rule whose output is a boolean, in which case the syntax is:
 
 ``` Haskell
-filter when rule <RuleName>
+filter <RuleName>
 ```
 
 Filter expressions can be combined with extraction expressions. The example below extracts the date of first registration for a list of passenger-type vehicles only:
 
 ``` Haskell
-extract VehicleOwnership -> vehicle
-filter when Vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
-    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
-    or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
-extract Vehicle -> specification -> dateOfFirstRegistration
+extract vehicle
+filter vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+    or vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+    or vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+extract specification -> dateOfFirstRegistration
 ```
 
 That example can be rewritten as:
 
 ``` Haskell
-extract VehicleOwnership -> vehicle
-filter when rule VehicleIsM
-extract Vehicle -> specification -> dateOfFirstRegistration
+extract vehicle
+filter VehicleIsM
+extract specification -> dateOfFirstRegistration
 ```
 
 where the filtering rule itself is defined as:
 
 ``` Haskell
 reporting rule VehicleIsM:
-  extract
-    Vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
-      or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
-      or Vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+  extract vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+      or vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+      or vehicleClassification = VehicleClassificationEnum -> M3_Passengers
 ```
 
 ##### Repeat Instruction
@@ -2066,31 +2065,35 @@ In the example below, the `repeatable` keyword in reporting rule `NotionalAmount
 
 ``` Haskell
 reporting rule NotionalAmountScheduleLeg1 from ReportableEvent: <"Notional Amount Schedule">
-   [regulatoryReference CFTC Part45 appendix "1" item "33-35" field "Notional Amount Schedule"
-       provision "Fields 33-35 are repeatable and shall be populated in the case of derivatives involving notional amount schedules"]
-   TradeForEvent then
-       InterestRateLeg1 then
-           extract repeatable InterestRatePayout -> payoutQuantity -> quantitySchedule -> stepSchedule -> step then
-           (
-               NotionalAmountScheduleLeg1Amount,
-               NotionalAmountScheduleLeg1EndDate,
-               NotionalAmountScheduleLeg1EffectiveDate
-           )
+	[legacy-syntax]
+	[regulatoryReference CFTC Part45 appendix "1" dataElement "33-35" field "Notional Amount Schedule"
+		rationale "Model only applicable for back-to-back schedules. Repeatable field 35 (endDate) not applicable and therefore removed"
+        rationale_author "DRR Peer Review Group - 03/12/21"
+		provision "Fields 33-35 are repeatable and shall be populated in the case of derivatives involving notional amount schedules"]
+    extract TradeForEvent( ReportableEvent ) then
+    extract repeatable GetLeg1ResolvablePriceQuantity( Trade ) -> quantitySchedule -> datedValue then
+    (
+        NotionalAmountScheduleLeg1Amount,
+        NotionalAmountScheduleLeg1EffectiveDate
+    )
 
-reporting rule NotionalAmountScheduleLeg1Amount from ReportableEvent: <"Notional amount in effect on associated effective date of leg 1">
-   [regulatoryReference CFTC Part45 appendix "1" item "33" field "Notional amount in effect on associated effective date of leg 1"]
-       CDENotionalAmountScheduleAmount
-       as "33/35-$ 33 Notional amount leg 1"
+reporting rule NotionalAmountScheduleLeg1Amount from DatedValue: <"Notional amount in effect on associated effective date of leg 1">
+	[legacy-syntax]
+	[regulatoryReference CFTC Part45 appendix "1" dataElement "33" field "Notional amount in effect on associated effective date of leg 1"
+        provision "For each leg of the transaction, where applicable:
+                   for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule:
+                        - Notional amount which becomes effective on the associated unadjusted effective date.
+                   The initial notional amount and associated unadjusted effective and end date are reported as the first values of the schedule.
+                   This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
+		CDENotionalAmountScheduleAmount
+		    as "33/35-$ 33 Notional amount leg 1"
 
-reporting rule NotionalAmountScheduleLeg1EffectiveDate from ReportableEvent: <"Effective date of the notional amount of leg 1">
-   [regulatoryReference CFTC Part45 appendix "1" item "34" field "Effective date of the notional amount of leg 1"]
-       CDENotionalAmountScheduleEffectiveDate
-       as "33/35-$ 34 Effective date leg 1"
-
-reporting rule NotionalAmountScheduleLeg1EndDate from ReportableEvent: <"End date of the notional amount of leg 1">
-   [regulatoryReference CFTC Part45 appendix "1" item "35" field "End date of the notional amount of leg 1"]
-       CDENotionalAmountScheduleEndDate
-       as "33/35-$ 35 End date leg 1"
+  reporting rule NotionalAmountScheduleLeg1EffectiveDate from DatedValue: <"Effective date of the notional amount of leg 1">
+  	[legacy-syntax]
+  	[regulatoryReference CFTC Part45 appendix "1" dataElement "34" field "Effective date of the notional amount of leg 1"
+          provision "For each leg of the transaction, where applicable: for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule: Unadjusted date on which the associated notional amount becomes effective This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
+  		CDENotionalAmountScheduleEffectiveDate
+  		    as "33/35-$ 34 Effective date leg 1"
 ```
 
 {{< notice info "Note" >}}
