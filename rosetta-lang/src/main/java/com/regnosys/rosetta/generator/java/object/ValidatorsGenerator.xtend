@@ -82,9 +82,13 @@ class ValidatorsGenerator {
 		
 			@Override
 			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
+				«val attrs = attributes.map[toExpandedAttribute].filter[it.inf === 0 && it.isUnbound]»
+				«FOR attr : attrs»
+					«attr.toMultiMetaOrRegularJavaType» «attr.name» = o.get«attr.name?.toFirstUpper»();
+				«ENDFOR»
 				String error = 
 					«Lists».<«ComparisonResult»>newArrayList(
-						«FOR attrCheck : attributes.map[checkCardinality(toExpandedAttribute)].filter[it !== null] SEPARATOR ", "»
+						«FOR attrCheck : attrs.map[checkCardinality].filter[it !== null] SEPARATOR ", "»
 							«attrCheck»
 						«ENDFOR»
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
@@ -151,9 +155,9 @@ class ValidatorsGenerator {
 		} else {
 			'''
 			«IF attr.isMultiple»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", /* «attr.type.name» */ o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", «attr.name»==null?0:«attr.name».size(), «attr.inf», «attr.sup»)
 			«ELSE»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", /* «attr.type.name» */ o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", «attr.name»!=null ? 1 : 0, «attr.inf», «attr.sup»)
 			«ENDIF»
 			'''
 		}
