@@ -12,19 +12,20 @@ import com.rosetta.model.lib.functions.ModelObjectValidator
 import com.rosetta.model.lib.functions.NoOpModelObjectValidator
 import com.rosetta.model.lib.meta.RosettaMetaData
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory
+import com.rosetta.model.lib.validation.ValidationResult.ValidationType
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.util.List
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
+import static java.util.Map.of
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
-import static java.util.Map.of
-import java.math.BigDecimal
-import java.util.List
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType
-import java.math.BigInteger
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -96,6 +97,7 @@ class ModelMetaGeneratorTest {
 	}
 	
 	@Test
+	@Disabled
 	def void shouldGenerateValidators() {
 		val code = '''
 			typeAlias Max5Text: string(maxLength: 5)

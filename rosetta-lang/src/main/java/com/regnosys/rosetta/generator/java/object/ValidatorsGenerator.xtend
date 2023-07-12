@@ -151,9 +151,9 @@ class ValidatorsGenerator {
 		} else {
 			'''
 			«IF attr.isMultiple»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", /* «attr.type.name» */ o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
 			«ELSE»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", /* «attr.type.name» */ o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)
 			«ENDIF»
 			'''
 		}
