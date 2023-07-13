@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ModelConfig {
+public @interface ModuleConfig {
     String model();
     String type();
 }
