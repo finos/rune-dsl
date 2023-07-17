@@ -129,15 +129,15 @@ class ModelMetaGeneratorTest {
 			import static java.util.stream.Collectors.joining;
 			
 			public class FooValidator implements Validator<Foo> {
-
+			
 				@Override
 				public ValidationResult<Foo> validate(RosettaPath path, Foo o) {
 					/* Casting is required to ensure types are output to ensure code generation in Rosetta */
 					String error = 
 						Lists.<ComparisonResult>newArrayList(
-							checkCardinality("a", (List<String>) o.getA() == null ? 0 : ((List<String>) o.getA()).size(), 1, 2),
-							checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1),
-							checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : ((List<Integer>) o.getC()).size(), 1, 0),
+							checkCardinality("a", (List<String>) o.getA() == null ? 0 : ((List<String>) o.getA()).size(), 1, 2), 
+							checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1), 
+							checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : ((List<Integer>) o.getC()).size(), 1, 0), 
 							checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
 						).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(joining("; "));
 					
@@ -163,7 +163,6 @@ class ModelMetaGeneratorTest {
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
 			import java.math.BigDecimal;
-			import java.util.List;
 			
 			import static com.google.common.base.Strings.isNullOrEmpty;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkNumber;
