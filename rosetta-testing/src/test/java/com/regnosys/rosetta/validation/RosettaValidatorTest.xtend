@@ -186,7 +186,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testExternalRuleReferencesMustHaveSameInputType() {
+	def void testExternalRuleReferencesMustHaveSameInputType1() {
 		val model = '''
 		reporting rule Foo from string:
 			item + item
@@ -207,8 +207,44 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		}
 		'''.parseRosetta
 		
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+		model.assertError(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE, null,
+			"Attribute `attr2` has a rule that expects an input of type `number`, while other rules expect an input of type `string`.")
+	}
+	
+	@Test
+	def void testExternalRuleReferencesMustHaveSameInputType2() {
+		val model = '''
+		reporting rule Foo1 from string:
+			item + item
+		
+		reporting rule Foo2 from string:
+			item + item
+		
+		reporting rule Bar from number:
+			item * 2
+		
+		type Report:
+			sub Subreport (1..1)
+			attr number (1..1)
+		
+		type Subreport:
+			attr1 string (1..1)
+			attr2 string (1..1)
+		
+		rule source RuleSource {
+			Report:
+				+ attr
+					[ruleReference Bar]
+			Subreport:
+				+ attr1
+					[ruleReference Foo1]
+				+ attr2
+					[ruleReference Foo2]
+		}
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE, null,
+			"Attribute `attr` has a rule that expects an input of type `number`, while other rules expect an input of type `string`.")
 	}
 	
 	@Test
@@ -237,12 +273,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		}
 		'''.parseRosetta
 		
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+		model.assertError(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE, null,
+			"Attribute `attr2` has a rule that expects an input of type `number`, while other rules expect an input of type `string`.")
 	}
 	
 	@Test
-	def void testRuleReferencesMustHaveSameInputType() {
+	def void testRuleReferencesMustHaveSameInputType1() {
 		val model = '''
 		reporting rule Foo from string:
 			item + item
@@ -259,6 +295,62 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		
 		model.assertError(ROSETTA_RULE_REFERENCE, null,
 			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+	}
+	
+	@Test
+	def void testRuleReferencesMustHaveSameInputType2() {
+		val model = '''
+		reporting rule Foo1 from string:
+			item + item
+		
+		reporting rule Foo2 from string:
+			item + item
+		
+		reporting rule Bar from number:
+			item * 2
+		
+		type Report:
+			sub Subreport (1..1)
+			attr number (1..1)
+				[ruleReference Bar]
+		
+		type Subreport:
+			attr1 string (1..1)
+				[ruleReference Foo1]
+			attr2 string (1..1)
+				[ruleReference Foo2]
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_RULE_REFERENCE, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+	}
+	
+	@Test
+	def void testRuleReferencesMustHaveSameInputType3() {
+		val model = '''
+		reporting rule Foo1 from string:
+			item + item
+		
+		reporting rule Foo2 from string:
+			item + item
+		
+		reporting rule Bar from number:
+			item * 2
+		
+		type Report:
+			attr number (1..1)
+				[ruleReference Bar]
+			sub Subreport (1..1)
+		
+		type Subreport:
+			attr1 string (1..1)
+				[ruleReference Foo1]
+			attr2 string (1..1)
+				[ruleReference Foo2]
+		'''.parseRosetta
+		
+		model.assertError(ATTRIBUTE, null,
+			"Attribute `sub` contains rules that expect an input of type `string`, while previous rules expect an input of type `number`.")
 	}
 	
 	@Test

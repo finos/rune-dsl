@@ -1007,9 +1007,9 @@ enum Foo:
 ```
 - `Foo -> VALUE1 to-string` will result in the string `"VALUE1"`,
 - `Foo -> VALUE2 to-string` will result in the string `"Value 2"`, (note that the display name is used if present)
-- `"VALUE1" to-enum Foo" will result in the enum value `Foo -> VALUE1`,
-- `"Value 2" to-enum Foo" will result in the enum value `Foo -> VALUE2`, (again, the display name is used if present)
-- `"-3.14" to-number` will result in the number 3.14,
+- `"VALUE1" to-enum Foo` will result in the enum value `Foo -> VALUE1`,
+- `"Value 2" to-enum Foo` will result in the enum value `Foo -> VALUE2`, (again, the display name is used if present)
+- `"-3.14" to-number` will result in the number -3.14,
 - `"17:05:33" to-time` will result in a value representing the local time 17 hours, 5 minutes and 33 seconds.
 
 If the conversion fails, the result is an empty value. For example,
