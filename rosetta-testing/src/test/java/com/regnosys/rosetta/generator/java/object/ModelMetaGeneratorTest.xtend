@@ -132,7 +132,7 @@ class ModelMetaGeneratorTest {
 			
 				@Override
 				public ValidationResult<Foo> validate(RosettaPath path, Foo o) {
-					/* Casting is required to ensure types are output to ensure code generation in Rosetta */
+					/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 					String error = 
 						Lists.<ComparisonResult>newArrayList(
 							checkCardinality("a", (List<String>) o.getA() == null ? 0 : ((List<String>) o.getA()).size(), 1, 2), 
