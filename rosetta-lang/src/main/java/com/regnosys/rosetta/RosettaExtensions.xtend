@@ -246,7 +246,7 @@ class RosettaExtensions {
 	/**
 	 * Recursively collects all reporting rules for all attributes
 	 */
-	private def void collectReportingRules(Data dataType, RosettaPath path, RosettaExternalRuleSource ruleSource, Map<PathAttribute, RosettaBlueprint> visitor, Set<Data> collectedTypes, boolean allLeafNodes) {
+	def void collectReportingRules(Data dataType, RosettaPath path, RosettaExternalRuleSource ruleSource, Map<PathAttribute, RosettaBlueprint> visitor, Set<Data> collectedTypes, boolean allLeafNodes) {
 		val attrRules = externalAnn.getAllRuleReferencesForType(ruleSource, dataType)
 		
 		dataType.allNonOverridesAttributes.forEach[attr |

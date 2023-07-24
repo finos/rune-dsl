@@ -1,18 +1,22 @@
 package com.regnosys.rosetta.types;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
 import com.google.inject.Inject;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
+import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.typing.RosettaTyping;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
@@ -31,16 +35,32 @@ public class TypeSystem {
 		return typing.inferType(expr).getValue();
 	}
 	
-	public RType getRulesInputType(Data data) {
-		return getRulesInputType(data, null);
-	}
 	public RType getRulesInputType(Data data, RosettaExternalRuleSource source) {
+		return getRulesInputType(data, source, new HashSet<>());
+	}
+	private RType getRulesInputType(Data data, RosettaExternalRuleSource source, Set<Data> visited) {
 		Validate.notNull(data);
+		if (!visited.add(data)) {
+			return builtins.ANY;
+		}
 		
-		List<RType> reportTypeInputTypes = annotationUtil.getAllRuleReferencesForType(source, data).values().stream()
-				.map(ruleRef -> typeCallToRType(ruleRef.getReportingRule().getInput()))
-				.collect(Collectors.toList());
-		return meet(reportTypeInputTypes);
+		Map<RosettaFeature, RosettaRuleReference> ruleReferences = annotationUtil.getAllRuleReferencesForType(source, data);
+		RType result = builtins.ANY;
+		for (Attribute attr: data.getAttributes()) {
+			RosettaRuleReference ref = ruleReferences.get(attr);
+			if (ref != null) {
+				RType inputType = typeCallToRType(ref.getReportingRule().getInput());
+				result = meet(result, inputType);
+			} else {
+				RType attrType = stripFromTypeAliases(typeCallToRType(attr.getTypeCall()));
+				if (attrType instanceof RDataType) {
+					Data attrData = ((RDataType)attrType).getData();
+					RType inputType = getRulesInputType(attrData, source, visited);
+					result = meet(result, inputType);
+				}
+			}
+		}
+		return result;
 	}
 
 	public RType join(RType t1, RType t2) {

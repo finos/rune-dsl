@@ -1007,10 +1007,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 		else if (filter.filterBP !== null) {
 			val targetRule = filter.filterBP.blueprint
-			val node = buildTypeGraph(targetRule)
-			if (!checkBPNodeSingle(node, false)) {
-				error('''The expression for Filter must return a single value but the rule «filter.filterBP.blueprint.name» can return multiple values''',
-					filter, BLUEPRINT_FILTER__FILTER_BP)
+			try {
+				val node = buildTypeGraph(targetRule)
+				if (!checkBPNodeSingle(node, false)) {
+					error('''The expression for Filter must return a single value but the rule «filter.filterBP.blueprint.name» can return multiple values''',
+						filter, BLUEPRINT_FILTER__FILTER_BP)
+				}
+			} catch (BlueprintUnresolvedTypeException e) {
 			}
 		}
 	}
@@ -1074,22 +1077,25 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			val attrType = attr.typeCall.typeCallToRType
 			if (bp.isLegacy) {
 				if (bp.nodes !== null) {
-					val node = buildTypeGraph(bp)
+					try {
+						val node = buildTypeGraph(bp)
 		
-					val ruleSingle = checkBPNodeSingle(node, false)
-		
-					// check cardinality
-					if (attrSingle != ruleSingle) {
-						val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
-							'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
-						warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
-					}
-					// check type
-					val bpType = node.output.type
-					if (!node.repeatable && bpType.map[!isSubtypeOf(attrType)].orElse(false)) {
-						val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
-							'''whereas the reporting rule «bp.name» has type «bpType.get».'''
-						error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+						val ruleSingle = checkBPNodeSingle(node, false)
+			
+						// check cardinality
+						if (attrSingle != ruleSingle) {
+							val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
+								'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
+							warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+						}
+						// check type
+						val bpType = node.output.type
+						if (!node.repeatable && bpType.map[!isSubtypeOf(attrType)].orElse(false)) {
+							val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
+								'''whereas the reporting rule «bp.name» has type «bpType.get».'''
+							error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+						}
+					} catch (BlueprintUnresolvedTypeException e) {
 					}
 				}
 			} else {

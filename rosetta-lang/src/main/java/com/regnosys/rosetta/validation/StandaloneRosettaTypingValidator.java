@@ -2,6 +2,8 @@ package com.regnosys.rosetta.validation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.xtext.validation.Check;
@@ -15,18 +17,21 @@ import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaExternalClass;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
+import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.types.RType;
+import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RListType;
 import com.regnosys.rosetta.types.TypeFactory;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.TypeValidationUtil;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.typing.validation.RosettaTypingCheckingValidator;
+import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
@@ -44,6 +49,9 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	
 	@Inject
 	private RBuiltinTypeService builtins;
+	
+	@Inject
+	private ExternalAnnotationUtil annotationUtil;
 	
 	@Override
 	protected List<EPackage> getEPackages() {
@@ -117,7 +125,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 		RType current;
 		if (data.getSuperType() != null) {
 			current = ts.getRulesInputType(data.getSuperType(), null);
-			if (current == builtins.NOTHING) {
+			if (current.equals(builtins.NOTHING)) {
 				return;
 			}
 		} else {
@@ -129,10 +137,24 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 				RosettaBlueprint rule = ref.getReportingRule();
 				RType inputType = ts.typeCallToRType(rule.getInput());
 				RType newCurrent = ts.meet(current, inputType);
-				if (newCurrent == builtins.NOTHING) {
+				if (newCurrent.equals(builtins.NOTHING)) {
 					error("Rule `" + rule.getName() + "` expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", ref, ROSETTA_RULE_REFERENCE__REPORTING_RULE);
 				} else {
 					current = newCurrent;
+				}
+			} else {
+				RType attrType = ts.stripFromTypeAliases(ts.typeCallToRType(attr.getTypeCall()));
+				if (attrType instanceof RDataType) {
+					Data attrData = ((RDataType)attrType).getData();
+					RType inputType = ts.getRulesInputType(attrData, null);
+					if (!inputType.equals(builtins.NOTHING)) {
+						RType newCurrent = ts.meet(current, inputType);
+						if (newCurrent.equals(builtins.NOTHING)) {
+							error("Attribute `" + attr.getName() + "` contains rules that expect an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", attr, null);
+						} else {
+							current = newCurrent;
+						}
+					}
 				}
 			}
 		}
@@ -142,27 +164,44 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	public void checkExternalRuleSource(RosettaExternalRuleSource source) {
 		for (RosettaExternalClass externalClass: source.getExternalClasses()) {
 			Data data = externalClass.getData();
+			Map<RosettaFeature, RosettaRuleReference> ruleReferences = annotationUtil.getAllRuleReferencesForType(source, data);
 			
-			RType current;
-			if (source.getSuperRuleSource() != null) {
-				current = ts.getRulesInputType(data, source.getSuperRuleSource());
-				if (current == builtins.NOTHING) {
-					continue;
-				}
-			} else {
-				current = builtins.ANY;
-			}
-			for (RosettaExternalRegularAttribute attr: externalClass.getRegularAttributes()) {
-				if (attr.getOperator() == ExternalValueOperator.PLUS) {
-					RosettaRuleReference ref = attr.getExternalRuleReference();
-					if (ref != null) {
-						RosettaBlueprint rule = ref.getReportingRule();
-						RType inputType = ts.typeCallToRType(rule.getInput());
-						RType newCurrent = ts.meet(current, inputType);
-						if (newCurrent == builtins.NOTHING) {
-							error("Rule `" + rule.getName() + "` expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", ref, ROSETTA_RULE_REFERENCE__REPORTING_RULE);
-						} else {
-							current = newCurrent;
+			RType current = builtins.ANY;
+			for (Attribute attr: data.getAttributes()) {
+				Optional<RosettaExternalRegularAttribute> maybeExtAttr = externalClass.getRegularAttributes().stream()
+						.filter(ext -> ext.getOperator() == ExternalValueOperator.PLUS)
+						.filter(ext -> ext.getAttributeRef().equals(attr))
+						.findAny();
+				RosettaRuleReference ref = ruleReferences.get(attr);
+				if (ref != null) {
+					RosettaBlueprint rule = ref.getReportingRule();
+					RType inputType = ts.typeCallToRType(rule.getInput());
+					RType newCurrent = ts.meet(current, inputType);
+					if (newCurrent.equals(builtins.NOTHING)) {
+						if (maybeExtAttr.isPresent()) {
+							RosettaExternalRegularAttribute extAttr = maybeExtAttr.get();
+							error("Attribute `" + attr.getName() + "` has a rule that expects an input of type `" + inputType + "`, while other rules expect an input of type `" + current + "`.", extAttr, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
+						}
+					} else {
+						current = newCurrent;
+					}
+				} else {
+					RType attrType = ts.stripFromTypeAliases(ts.typeCallToRType(attr.getTypeCall()));
+					if (attrType instanceof RDataType) {
+						Data attrData = ((RDataType)attrType).getData();
+						RType inputType = ts.getRulesInputType(attrData, source);
+						if (!inputType.equals(builtins.NOTHING)) {
+							RType newCurrent = ts.meet(current, inputType);
+							if (newCurrent.equals(builtins.NOTHING)) {
+								if (maybeExtAttr.isPresent()) {
+									RosettaExternalRegularAttribute extAttr = maybeExtAttr.get();
+									error("Attribute `" + attr.getName() + "` contains rules that expect an input of type `" + inputType + "`, while other rules expect an input of type `" + current + "`.", extAttr, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
+								} else {
+									error("Attribute `" + attr.getName() + "` contains rules that expect an input of type `" + inputType + "`, while other rules expect an input of type `" + current + "`.", externalClass, ROSETTA_EXTERNAL_CLASS__DATA);
+								}
+							} else {
+								current = newCurrent;
+							}
 						}
 					}
 				}

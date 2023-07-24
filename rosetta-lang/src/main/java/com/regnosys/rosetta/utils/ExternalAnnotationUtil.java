@@ -127,7 +127,7 @@ public class ExternalAnnotationUtil {
 		return visitor.getMap();
 	}
 	
-	public <T extends CollectRuleVisitor> T collectAllRuleReferencesForType(ExternalAnnotationSource source, Data type, T visitor) {
+	public <T extends CollectRuleVisitor> T collectAllRuleReferencesForType(ExternalAnnotationSource source, Data type, T visitor) {		
 		// collect inline rule reference
 		rosettaExtensions.getAllAttributes(type)
 			.forEach(attr -> 
