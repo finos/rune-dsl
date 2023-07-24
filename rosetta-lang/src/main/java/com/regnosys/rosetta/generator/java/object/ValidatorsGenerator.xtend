@@ -82,7 +82,7 @@ class ValidatorsGenerator {
 
 			@Override
 			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
-				/* Casting is required to ensure types are output to ensure code generation in Rosetta */
+				/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 				String error = 
 					«Lists».<«ComparisonResult»>newArrayList(
 						«FOR attrCheck : attributes.map[checkCardinality(toExpandedAttribute)].filter[it !== null] SEPARATOR ", "»
@@ -123,7 +123,7 @@ class ValidatorsGenerator {
 	def private StringConcatenationClient onlyExistsClassBody(RDataType t, String version, Iterable<Attribute> attributes) '''
 		public class «t.toOnlyExistsValidatorClass» implements «ValidatorWithArg»<«t.toJavaType», «Set»<String>> {
 
-            /* Casting is required to ensure types are output to ensure code generation in Rosetta */
+            /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			@Override
 			public <T2 extends «t.toJavaType»> «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
 				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
@@ -151,7 +151,7 @@ class ValidatorsGenerator {
 		if (attr.inf === 0 && attr.isUnbound) {
 			null
 		} else {
-	        /* Casting is required to ensure types are output to ensure code generation in Rosetta */
+	        /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			'''
 			«IF attr.isMultiple»
 				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.inf», «attr.sup»)
