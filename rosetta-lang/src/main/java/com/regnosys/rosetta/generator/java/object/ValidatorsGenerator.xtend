@@ -64,24 +64,25 @@ class ValidatorsGenerator {
 
 	private def generateClass(RootPackage root, Data d, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, new RDataType(d).classBody(version, d.allAttributes), scope)
+		buildClass(root.typeValidation, new RDataType(d).classBody(version, d.allNonOverridesAttributes), scope)
 	}
 	
 	private def generateTypeFormatValidator(RootPackage root, Data d, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, new RDataType(d).typeFormatClassBody(version, d.allAttributes), scope)
+		buildClass(root.typeValidation, new RDataType(d).typeFormatClassBody(version, d.allNonOverridesAttributes), scope)
 	}
 
 	private def generateOnlyExistsValidator(RootPackage root, Data d, String version) {
 		val scope = new JavaScope(root.existsValidation)
-		buildClass(root.existsValidation, new RDataType(d).onlyExistsClassBody(version, d.allAttributes), scope)
+		buildClass(root.existsValidation, new RDataType(d).onlyExistsClassBody(version, d.allNonOverridesAttributes), scope)
 	}
 
 	def private StringConcatenationClient classBody(RDataType t, String version, Iterable<Attribute> attributes) '''
 		public class «t.toValidatorClass» implements «Validator»<«t.toJavaType»> {
-		
+
 			@Override
 			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
+				/* Casting is required to ensure types are output to ensure code generation in Rosetta */
 				String error = 
 					«Lists».<«ComparisonResult»>newArrayList(
 						«FOR attrCheck : attributes.map[checkCardinality(toExpandedAttribute)].filter[it !== null] SEPARATOR ", "»
@@ -121,12 +122,13 @@ class ValidatorsGenerator {
 
 	def private StringConcatenationClient onlyExistsClassBody(RDataType t, String version, Iterable<Attribute> attributes) '''
 		public class «t.toOnlyExistsValidatorClass» implements «ValidatorWithArg»<«t.toJavaType», «Set»<String>> {
-		
+
+            /* Casting is required to ensure types are output to ensure code generation in Rosetta */
 			@Override
 			public <T2 extends «t.toJavaType»> «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
 				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
 						«FOR attr : attributes»
-							.put("«attr.name»", «ExistenceChecker».isSet(o.get«attr.name?.toFirstUpper»()))
+							.put("«attr.name»", «ExistenceChecker».isSet((«attr.toExpandedAttribute.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()))
 						«ENDFOR»
 						.build();
 				
@@ -149,11 +151,12 @@ class ValidatorsGenerator {
 		if (attr.inf === 0 && attr.isUnbound) {
 			null
 		} else {
+	        /* Casting is required to ensure types are output to ensure code generation in Rosetta */
 			'''
 			«IF attr.isMultiple»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()==null?0:o.get«attr.name?.toFirstUpper»().size(), «attr.inf», «attr.sup»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.inf», «attr.sup»)
 			«ELSE»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»()!=null ? 1 : 0, «attr.inf», «attr.sup»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.inf», «attr.sup»)
 			«ENDIF»
 			'''
 		}

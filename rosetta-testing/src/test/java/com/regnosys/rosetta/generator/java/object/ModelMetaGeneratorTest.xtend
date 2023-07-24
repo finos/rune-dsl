@@ -12,19 +12,19 @@ import com.rosetta.model.lib.functions.ModelObjectValidator
 import com.rosetta.model.lib.functions.NoOpModelObjectValidator
 import com.rosetta.model.lib.meta.RosettaMetaData
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory
+import com.rosetta.model.lib.validation.ValidationResult.ValidationType
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.util.List
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
+import static java.util.Map.of
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
-import static java.util.Map.of
-import java.math.BigDecimal
-import java.util.List
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType
-import java.math.BigInteger
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -119,6 +119,8 @@ class ModelMetaGeneratorTest {
 			import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
+			import java.math.BigDecimal;
+			import java.util.List;
 			
 			import static com.google.common.base.Strings.isNullOrEmpty;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkCardinality;
@@ -130,12 +132,13 @@ class ModelMetaGeneratorTest {
 			
 				@Override
 				public ValidationResult<Foo> validate(RosettaPath path, Foo o) {
+					/* Casting is required to ensure types are output to ensure code generation in Rosetta */
 					String error = 
 						Lists.<ComparisonResult>newArrayList(
-							checkCardinality("a", o.getA()==null?0:o.getA().size(), 1, 2), 
-							checkCardinality("b", o.getB()!=null ? 1 : 0, 1, 1), 
-							checkCardinality("c", o.getC()==null?0:o.getC().size(), 1, 0), 
-							checkCardinality("d", o.getD()!=null ? 1 : 0, 0, 1)
+							checkCardinality("a", (List<String>) o.getA() == null ? 0 : ((List<String>) o.getA()).size(), 1, 2), 
+							checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1), 
+							checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : ((List<Integer>) o.getC()).size(), 1, 0), 
+							checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
 						).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(joining("; "));
 					
 					if (!isNullOrEmpty(error)) {
