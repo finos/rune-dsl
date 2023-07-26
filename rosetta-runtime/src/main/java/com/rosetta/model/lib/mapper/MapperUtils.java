@@ -15,6 +15,14 @@ public class MapperUtils {
 		}
 		return MapperS.of(result.get());
 	}
+	// Note: below method is only necessary for JavaC, as the Eclipse compiler manages to solve type boundaries just fine.
+	public static <T> Mapper<? extends T> runSinglePolymorphic(Supplier<Mapper<? extends T>> supplier) {
+		Mapper<? extends T> result = supplier.get();
+		if (result instanceof MapperS<?> || result instanceof ComparisonResult) {
+			return result;
+		}
+		return MapperS.of(result.get());
+	}
 
 	/**
 	 * Used when generating code for nested if statements
@@ -23,6 +31,14 @@ public class MapperUtils {
 		Mapper<T> result = supplier.get();
 		if (result instanceof MapperC<?>) {
 			return (MapperC<T>) result;
+		}
+		return MapperC.of(result.getMulti());
+	}
+	// Note: below method is only necessary for JavaC, as the Eclipse compiler manages to solve type boundaries just fine.
+	public static <T> MapperC<? extends T> runMultiPolymorphic(Supplier<Mapper<? extends T>> supplier) {
+		Mapper<? extends T> result = supplier.get();
+		if (result instanceof MapperC<?>) {
+			return (MapperC<? extends T>) result;
 		}
 		return MapperC.of(result.getMulti());
 	}

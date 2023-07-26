@@ -157,7 +157,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	}
 
 	private def StringConcatenationClient genConditionalMapper(RosettaConditionalExpression expr, JavaScope scope)'''
-		«IF expr.ifthen.evaluatesToComparisonResult»«MapperUtils».toComparisonResult(«ENDIF»«MapperUtils».run«IF expr.isMulti»Multi«ELSE»Single«ENDIF»(() -> {
+		«IF expr.ifthen.evaluatesToComparisonResult»«MapperUtils».toComparisonResult(«ENDIF»«MapperUtils».run«IF expr.isMulti»Multi«ELSE»Single«ENDIF»«IF funcExt.needsBuilder(expr)»Polymorphic«ENDIF»(() -> {
 			«expr.genConditional(scope)»
 		})«IF expr.ifthen.evaluatesToComparisonResult»)«ENDIF»'''
 

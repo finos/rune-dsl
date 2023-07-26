@@ -990,7 +990,7 @@ class ListOperationTest {
 						
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
 							foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-								.mapItem(item -> (MapperS<Foo>)MapperUtils.runSingle(() -> {
+								.mapItem(item -> (MapperS<Foo>)MapperUtils.runSinglePolymorphic(() -> {
 									if (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 										return MapperS.of(create_Foo.evaluate(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get(), MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get()));
 									}

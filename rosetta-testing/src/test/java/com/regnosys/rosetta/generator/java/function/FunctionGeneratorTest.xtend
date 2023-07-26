@@ -3122,7 +3122,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
-							result = toBuilder(MapperUtils.runSingle(() -> {
+							result = toBuilder(MapperUtils.runSinglePolymorphic(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(b1);
 								}
@@ -3215,7 +3215,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-							List<Bar.BarBuilder> addVar = toBuilder(MapperUtils.runMulti(() -> {
+							List<Bar.BarBuilder> addVar = toBuilder(MapperUtils.runMultiPolymorphic(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.<Bar>of(b1);
 								}
