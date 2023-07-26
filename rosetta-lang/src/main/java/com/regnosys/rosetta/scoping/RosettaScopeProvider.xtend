@@ -297,7 +297,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		new FilteringScope(scope,filter)
 	}
 	
-	private def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
+	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
 		return typeProvider.typeOfImplicitVariable(context).allFeatures(context)
 	}
 	

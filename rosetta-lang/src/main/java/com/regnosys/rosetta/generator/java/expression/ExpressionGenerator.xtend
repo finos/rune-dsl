@@ -149,7 +149,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	}
 
 	private def StringConcatenationClient genConditionalMapper(RosettaConditionalExpression expr, JavaScope scope)'''
-		«IF expr.ifthen.evaluatesToComparisonResult»«MapperUtils».toComparisonResult(«ENDIF»«MapperUtils».«IF funcExt.needsBuilder(expr.ifthen)»fromDataType«ELSE»fromBuiltInType«ENDIF»(() -> {
+		«IF expr.ifthen.evaluatesToComparisonResult»«MapperUtils».toComparisonResult(«ENDIF»«MapperUtils».run«IF expr.isMulti»Multi«ELSE»Single«ENDIF»(() -> {
 			«expr.genConditional(scope)»
 		})«IF expr.ifthen.evaluatesToComparisonResult»)«ENDIF»'''
 
@@ -212,15 +212,30 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	}
 	
 	private def StringConcatenationClient callableWithArgsCall(RosettaCallableWithArgs func, List<RosettaExpression> arguments, JavaScope scope) {
-		callableWithArgs(func, scope, '''«args(arguments, scope)»''', true)
+		callableWithArgs(func, scope, '''«args(func, arguments, scope)»''', true)
 	}
 	
-	private def StringConcatenationClient args(List<RosettaExpression> arguments, JavaScope scope) {
-		'''«FOR argExpr : arguments SEPARATOR ', '»«arg(argExpr, scope)»«ENDFOR»'''
+	private def StringConcatenationClient args(RosettaCallableWithArgs func, List<RosettaExpression> arguments, JavaScope scope) {
+		if (func instanceof Function) {
+			'''«FOR i : 0 ..< arguments.size SEPARATOR ', '»«arg(arguments.get(i), func.inputs.get(i).isMulti, scope)»«ENDFOR»'''
+		} else {
+			'''«FOR argExpr : arguments SEPARATOR ', '»«arg(argExpr, false, scope)»«ENDFOR»'''
+		}
 	}
 	
-	private def StringConcatenationClient arg(RosettaExpression expr, JavaScope scope) {
-		'''«expr.javaCode(scope)»«IF expr.evalulatesToMapper»«IF cardinalityProvider.isMulti(expr)».getMulti()«ELSE».get()«ENDIF»«ENDIF»'''
+	private def StringConcatenationClient arg(RosettaExpression expr, boolean needsToBeMulti, JavaScope scope) {
+		if (expr.evalulatesToMapper) {
+			'''«expr.javaCode(scope)»«IF needsToBeMulti».getMulti()«ELSE».get()«ENDIF»'''
+		} else {
+			val isMulti = expr.isMulti
+			if (!isMulti && needsToBeMulti) {
+				'''«Arrays».asList(«expr.javaCode(scope)»)'''
+			} else if (isMulti && !needsToBeMulti) {
+				'''«expr.javaCode(scope)».get(0)'''
+			} else {
+				'''«expr.javaCode(scope)»'''
+			}
+		}
 	}
 	
 	private def RosettaBinaryOperation findBinaryOperation(RosettaExpression expression) {

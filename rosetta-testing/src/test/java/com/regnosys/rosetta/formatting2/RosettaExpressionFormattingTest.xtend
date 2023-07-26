@@ -51,7 +51,7 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
-	def void testOperationChainingFormat() {
+	def void testOperationChainingFormat1() {
 		'''
 		input
 			extract [
@@ -71,6 +71,31 @@ class RosettaExpressionFormattingTest {
 			]
 			then extract
 				if True
+				then ["This is a looong", "expression"]
+				else 42
+		'''
+	}
+	
+	@Test
+	def void testOperationChainingFormat2() {
+		'''
+		input
+			extract [
+				item -> bar
+					filter "this is a loooooooooooong expression" count > 2
+			]
+			then
+				if True
+				then ["This is a looong", "expression"]
+				else 42
+		''' ->
+		'''
+		input
+			extract [
+				item -> bar
+					filter "this is a loooooooooooong expression" count > 2
+			]
+			then if True
 				then ["This is a looong", "expression"]
 				else 42
 		'''
@@ -258,6 +283,21 @@ class RosettaExpressionFormattingTest {
 		''' -> '''
 		if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999
 		then 1
+		else if False
+		then "foo"
+		else "bar"
+		'''
+	}
+	
+	@Test
+	def void testNestedConditional() {
+		'''
+		if True then if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999 then "foo" else "bar" else if False then "foo" else "bar"
+		''' -> '''
+		if True
+		then if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999
+			then "foo"
+			else "bar"
 		else if False
 		then "foo"
 		else "bar"
@@ -522,14 +562,14 @@ class RosettaExpressionFormattingTest {
 		  sum last
 		''' -> '''
 		distinct
-			sort
-			reverse
-			count
-			only-element
-			multiple exists
-			is absent
-			sum
-			last
+		sort
+		reverse
+		count
+		only-element
+		multiple exists
+		is absent
+		sum
+		last
 		'''
 	}
 	
@@ -577,11 +617,11 @@ class RosettaExpressionFormattingTest {
 		   only-element
 		''' -> '''
 		reduce a, b [
-				if "This is a veryyyyyyyy loooooooong expression" count > a
-				then b
-				else a
-			]
-			only-element
+			if "This is a veryyyyyyyy loooooooong expression" count > a
+			then b
+			else a
+		]
+		only-element
 		'''
 	}
 	
@@ -623,7 +663,7 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
-	def void testRuleChaining() {
+	def void testRuleChaining1() {
 		'''
 		[legacy-syntax]
 		OtherRule
@@ -632,6 +672,17 @@ class RosettaExpressionFormattingTest {
 		[legacy-syntax]
 		OtherRule
 		then OtherRule
+		'''
+	}
+	
+	@Test
+	def void testRuleChaining2() {
+		'''
+		extract  OtherRule
+		   then    extract OtherRule
+		''' => '''
+		extract OtherRule
+		then extract OtherRule
 		'''
 	}
 	

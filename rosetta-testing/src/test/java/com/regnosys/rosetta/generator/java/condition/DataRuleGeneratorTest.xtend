@@ -88,7 +88,7 @@ class DataRuleGeneratorTest {
 						
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
-								ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
+								ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.runSingle(() -> {
 									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
 										return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 									}
@@ -204,9 +204,9 @@ class DataRuleGeneratorTest {
 						
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
-								ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
+								ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.runSingle(() -> {
 									if (exists(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar())).get()) {
-										return MapperUtils.toComparisonResult(MapperUtils.fromBuiltInType(() -> {
+										return MapperUtils.toComparisonResult(MapperUtils.runSingle(() -> {
 											if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
 												return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 											}

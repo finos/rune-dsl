@@ -31,6 +31,23 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void attributeOfImplicitItemWithMultiCardinalityShouldBeMulti() {
+		val model = '''
+		type A:
+			val int (1..1)
+		
+		func Foo:
+			inputs: ins A (0..*)
+			output: result int (1..1)
+			set result:
+				ins then val
+		'''.parseRosetta
+		
+		model.assertError(OUTPUT_OPERATION, null,
+			"Cardinality mismatch - cannot assign list to a single value.")
+	}
+	
+	@Test
 	def void toEnumDoesNotWorkOnInt() {
 		val model = '''
 		enum Bar:

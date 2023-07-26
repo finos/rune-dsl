@@ -549,9 +549,9 @@ class RosettaFormattingTest {
 					condition C1:
 						if True
 						then True
-							extract [
-								it = False
-							] = True
+								extract [
+									it = False
+								] = True
 				
 					condition C2:
 						True
