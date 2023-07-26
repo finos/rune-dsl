@@ -79,6 +79,10 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		}
 	}
 	
+	private def boolean isEmpty(RosettaExpression expr) {
+		expr === null || expr.isGenerated
+	}
+	
 	override void initialize(FormatterRequest request) {
 		super.initialize(request)
 	}
@@ -95,7 +99,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		formatExpression(expr, document, FormattingMode.NORMAL)
 	}
 	def void formatExpression(RosettaExpression expr, extension IFormattableDocument document, FormattingMode mode) {
-		if (!expr.generated) {
+		if (!expr.isGenerated) {
 			val leftParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.leftParenthesisKeyword_5_0)
 			val rightParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.rightParenthesisKeyword_5_2);
 			if (leftParenthesis !== null && rightParenthesis !== null) {
@@ -154,16 +158,22 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		expr.regionFor.keywords(ifKeyword_1, thenKeyword_3, fullElseKeyword_5_0_0).forEach[
 			append[oneSpace]
 		]
-		
+		val subExprs = #[expr.^if, expr.ifthen, expr.elsethen]
+		#[expr.^if, expr.ifthen].forEach[
+			if (!(it instanceof RosettaUnaryOperation)) {
+				surround(
+					it,
+					[indent]
+				)
+			}
+		]
 		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine), document.getPreference(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth),
 			[extension doc | // case: short conditional
 				expr.regionFor.keyword(thenKeyword_3)
 					.prepend[oneSpace]
 				expr.regionFor.keyword(fullElseKeyword_5_0_0)
 					.prepend[oneSpace]
-				expr.^if.formatExpression(doc, mode)
-				expr.ifthen.formatExpression(doc, mode)
-				expr.elsethen.formatExpression(doc, mode)
+				subExprs.forEach[formatExpression(doc, mode)]
 			],
 			[extension doc | // case: long conditional
 				expr.regionFor.keyword(thenKeyword_3)
@@ -268,7 +278,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		
 		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
 			[extension doc | // case: short operation
-				if (expr.left !== null) {
+				if (!expr.left.isEmpty) {
 					expr.left.nextHiddenRegion
 						.set[oneSpace]
 					expr.left
@@ -277,7 +287,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				expr.right.formatExpression(doc, mode)
 			],
 			[extension doc | // case: long operation
-				if (expr.left !== null) {
+				if (!expr.left.isEmpty) {
 					val afterArgument = expr.left.nextHiddenRegion
 					expr.indentInner(afterArgument, doc)
 					afterArgument
@@ -313,6 +323,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	private def void formatInlineFunction(InlineFunction f, extension IFormattableDocument document, FormattingMode mode) {
+		val op = f.eContainer as RosettaFunctionalOperation
 		val left = f.regionFor.keyword('[')
 		if (left !== null) { // case inline function with brackets
 			val right = f.regionFor.keyword(']')
@@ -332,7 +343,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					right
 						.prepend[oneSpace]
 					f.body.formatExpression(doc, mode)
-					if (f.eContainer.eContainer instanceof RosettaOperation) {
+					if (op.eContainer instanceof RosettaOperation) {
 						// Always put next operations on a new line.
 						f.append[highPriority; newLine]
 					}
@@ -351,7 +362,13 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		} else { // case inline function without brackets
 			val astRegion = f.regionForEObject
 			val formattableRegion = astRegion.merge(astRegion.previousHiddenRegion).merge(astRegion.nextHiddenRegion)
-			formatInlineOrMultiline(document, astRegion, formattableRegion, mode.singleLineIf(f.eContainer instanceof ThenOperation),
+			if (!(op instanceof ThenOperation && f.body instanceof RosettaUnaryOperation)) {
+				surround(
+					f.body,
+					[indent]
+				)
+			}
+			formatInlineOrMultiline(document, astRegion, formattableRegion, mode.singleLineIf(op instanceof ThenOperation),
 				[extension doc | // case: short inline function
 					f.body
 						.prepend[oneSpace]
@@ -362,11 +379,9 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					}
 				],
 				[extension doc | // case: long inline function
-					surround(
-						f.body
-							.prepend[newLine],
-						[indent]
-					).formatExpression(doc, mode)
+					f.body
+						.prepend[newLine]
+						.formatExpression(doc, mode)
 				]
 			)
 		}
@@ -403,7 +418,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	private def void formatUnaryOperation(RosettaUnaryOperation expr, extension IFormattableDocument document, FormattingMode mode, (IFormattableDocument) => void internalFormatter) {
 		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
 			[extension doc | // case: short operation
-				if (expr.argument !== null) {
+				if (!expr.argument.isEmpty) {
 					val afterArgument = expr.argument.nextHiddenRegion
 					afterArgument
 						.set[oneSpace]
@@ -412,14 +427,18 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				internalFormatter.apply(doc)
 			],
 			[extension doc | // case: long operation
-				if (expr.argument !== null) {
+				if (!expr.argument.isEmpty) {
 					val afterArgument = expr.argument.nextHiddenRegion
-					expr.indentInner(afterArgument, doc)
+					var initialArgument = expr.argument
+					while (initialArgument instanceof RosettaUnaryOperation) {
+						initialArgument = initialArgument.argument
+					}
+					if (!initialArgument.isEmpty) {
+						expr.indentInner(afterArgument, doc)
+					}
 					afterArgument
 						.set[newLine]
 					expr.argument.formatExpression(doc, mode.chainIf(expr.argument instanceof RosettaUnaryOperation))
-				} else {
-					expr.indentInner(doc)
 				}
 				internalFormatter.apply(doc)
 			]

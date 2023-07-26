@@ -63,11 +63,13 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	static Logger LOGGER = LoggerFactory.getLogger(CardinalityProvider)
 	
 	@Inject extension ImplicitVariableUtil
+	@Inject RosettaScopeProvider scopeProvider
 	
 	def boolean isMulti(RosettaExpression expr) {
 		isMulti(expr, false)
@@ -153,6 +155,10 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 				false
 			}
 		].orElse(false)
+	}
+	
+	private def boolean isFeatureOfImplicitVariable(EObject context, RosettaFeature feature) {
+		scopeProvider.findFeaturesOfImplicitVariable(context).contains(feature)
 	}
 	
 	private def boolean isClosureParameterMulti(InlineFunction obj) {
@@ -454,7 +460,13 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	}
 	
 	override protected caseSymbolReference(RosettaSymbolReference expr, Boolean breakOnClosureParameter) {
-		expr.symbol.isMulti(breakOnClosureParameter)
+		val s = expr.symbol
+		if (s instanceof RosettaFeature) {
+			if (isFeatureOfImplicitVariable(expr, s) && isImplicitVariableMulti(expr, breakOnClosureParameter)) {
+				return true
+			}
+		}
+		return s.isMulti(breakOnClosureParameter)
 	}
 	
 	override protected caseThenOperation(ThenOperation expr, Boolean breakOnClosureParameter) {

@@ -39,6 +39,57 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void canChainAfterConditional() {
+		val code = '''
+		func Test:
+			output: result int (0..*)
+			set result:
+				(if True then 42 else 0)
+					extract item + 1
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val test = classes.createFunc("Test");
+		
+		assertEquals(List.of(43), test.invokeFunc(List))
+	}
+	
+	@Test
+	def void canReturnDifferingCardinalitiesInIfThenElseBranches() {
+		val code = '''
+		func Test:
+			output: result int (0..*)
+			set result:
+				42
+					extract
+						if False
+						then [1, 2]
+						else 0
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val test = classes.createFunc("Test");
+		
+		assertEquals(List.of(0), test.invokeFunc(List))
+	}
+	
+	@Test
+	def void passSingleItemToFunctionWhenMultiIsExpectedDoesNotResultInStaticCompilationError() {
+		''' 
+		func A:
+			inputs: a int (0..*)
+			output: result int (1..1)
+			set result: 42
+		
+		func Foo:
+			output: result int (0..*)
+			set result:
+				[1, 2, 3]
+					extract A(item)
+		'''.generateCode.compileToClasses
+	}
+	
+	@Test
 	def void toEnumTest() {
 		val code = '''
 		enum Bar:
@@ -2752,7 +2803,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected String assignOutput(String result, Boolean test, String t1, String t2) {
-							result = MapperUtils.fromBuiltInType(() -> {
+							result = MapperUtils.runSingle(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(t1);
 								}
@@ -2829,7 +2880,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
-							List<String> addVar = MapperUtils.fromBuiltInType(() -> {
+							List<String> addVar = MapperUtils.runMulti(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.<String>of(t1);
 								}
@@ -2905,7 +2956,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected BigDecimal assignOutput(BigDecimal result, Boolean test, BigDecimal t1, BigDecimal t2) {
-							result = MapperUtils.fromBuiltInType(() -> {
+							result = MapperUtils.runSingle(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(t1);
 								}
@@ -2983,7 +3034,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
-							List<BigDecimal> addVar = MapperUtils.fromBuiltInType(() -> {
+							List<BigDecimal> addVar = MapperUtils.runMulti(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.<BigDecimal>of(t1);
 								}
@@ -3071,7 +3122,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
-							result = toBuilder(MapperUtils.fromDataType(() -> {
+							result = toBuilder(MapperUtils.runSinglePolymorphic(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperS.of(b1);
 								}
@@ -3164,7 +3215,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-							List<Bar.BarBuilder> addVar = toBuilder(MapperUtils.fromDataType(() -> {
+							List<Bar.BarBuilder> addVar = toBuilder(MapperUtils.runMultiPolymorphic(() -> {
 								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 									return MapperC.<Bar>of(b1);
 								}
@@ -3925,7 +3976,7 @@ class FunctionGeneratorTest {
 						
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
-								ComparisonResult result = ComparisonResult.of(MapperUtils.fromBuiltInType(() -> {
+								ComparisonResult result = ComparisonResult.of(MapperUtils.runSingle(() -> {
 									if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
 										return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("x").get()));
 									}
@@ -4012,7 +4063,7 @@ class FunctionGeneratorTest {
                 		}
                 		
                 		protected Boolean assignOutput(Boolean result) {
-                			result = MapperS.of(a.evaluate(MapperUtils.fromBuiltInType(() -> {
+                			result = MapperS.of(a.evaluate(MapperUtils.runSingle(() -> {
                 				if (MapperS.of(Boolean.valueOf(true)).get()) {
                 					return MapperS.of(Boolean.valueOf(true));
                 				}
