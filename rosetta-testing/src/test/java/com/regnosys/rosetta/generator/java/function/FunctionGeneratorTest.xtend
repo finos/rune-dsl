@@ -39,6 +39,22 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void canChainAfterConditional() {
+		val code = '''
+		func Test:
+			output: result int (0..*)
+			set result:
+				(if True then 42 else 0)
+					extract item + 1
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val test = classes.createFunc("Test");
+		
+		assertEquals(List.of(43), test.invokeFunc(List))
+	}
+	
+	@Test
 	def void canReturnDifferingCardinalitiesInIfThenElseBranches() {
 		val code = '''
 		func Test:

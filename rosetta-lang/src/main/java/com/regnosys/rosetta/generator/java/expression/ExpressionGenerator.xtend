@@ -132,9 +132,17 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		return importWildcard(method(ExpressionOperators, methodName))
 	}
 	
-	private def StringConcatenationClient emptyToMapperJavaCode(RosettaExpression expr, JavaScope scope, boolean multi) {
+	private def StringConcatenationClient ensureMapperJavaCode(RosettaExpression expr, JavaScope scope, boolean multi) {
 		if (expr.isEmpty) {
 			'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».ofNull()'''
+		} else if (expr instanceof RosettaConditionalExpression && !multi) {
+			if (expr.evaluatesToComparisonResult) {
+				'''((«ComparisonResult»)«expr.javaCode(scope)»).asMapper()'''
+			} else {
+				'''((MapperS<«typeProvider.getRType(expr).toJavaReferenceType»>)«expr.javaCode(scope)»)'''
+			}
+		} else if (expr.evaluatesToComparisonResult && !multi) {
+			'''«expr.javaCode(scope)».asMapper()'''
 		} else {
 			expr.javaCode(scope)
 		}
@@ -164,7 +172,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				«expr.childElseThen.genElseIf(scope)»
 			«ELSE»
 				else {
-					return «expr.elsethen.emptyToMapperJavaCode(scope, cardinalityProvider.isMulti(expr.ifthen))»;
+					return «expr.elsethen.ensureMapperJavaCode(scope, cardinalityProvider.isMulti(expr.ifthen))»;
 				}
 			«ENDIF»
 			'''
@@ -180,7 +188,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				«next.childElseThen.genElseIf(scope)»
 			«ELSE»
 				else {
-					return «next.elsethen.emptyToMapperJavaCode(scope, cardinalityProvider.isMulti(next.ifthen))»;
+					return «next.elsethen.ensureMapperJavaCode(scope, cardinalityProvider.isMulti(next.ifthen))»;
 				}
 			«ENDIF»
 		«ENDIF»
@@ -323,7 +331,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 					.join(«IF expr.right !== null»«expr.right.javaCode(scope)»«ELSE»«MapperS».of("")«ENDIF»)'''
 			}
 			default: {
-				toComparisonOp('''«expr.left.emptyToMapperJavaCode(scope, false)»''', expr.operator, '''«expr.right.emptyToMapperJavaCode(scope, false)»''', (expr as ModifiableBinaryOperation).cardMod)
+				toComparisonOp('''«expr.left.ensureMapperJavaCode(scope, false)»''', expr.operator, '''«expr.right.ensureMapperJavaCode(scope, false)»''', (expr as ModifiableBinaryOperation).cardMod)
 			}
 		}
 	}
@@ -479,7 +487,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	
 	private def StringConcatenationClient buildListOperationNoBody(RosettaUnaryOperation op, String name, JavaScope scope) {
 		'''
-		«op.argument.emptyToMapperJavaCode(scope, true)»
+		«op.argument.ensureMapperJavaCode(scope, true)»
 			.«name»()'''	
 	}
 	
@@ -493,7 +501,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	
 	private def StringConcatenationClient buildSingleItemListOperation(RosettaFunctionalOperation op, String name, JavaScope scope) {
 		'''
-		«op.argument.emptyToMapperJavaCode(scope, true)»
+		«op.argument.ensureMapperJavaCode(scope, false)»
 			.«name»(«op.function.inlineFunction(scope, true, true)»)'''	
 	}
 	
@@ -661,16 +669,16 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	override protected caseFilterOperation(FilterOperation expr, JavaScope context) {
 		if (!expr.isPreviousOperationMulti) {
 			'''
-			«expr.argument.emptyToMapperJavaCode(context, true)»
+			«expr.argument.ensureMapperJavaCode(context, false)»
 				.filterSingle(«expr.function.inlineFunction(context, true, false)»)'''
 		} else {
 			if (expr.argument.isOutputListOfLists) {
 				'''
-				«expr.argument.emptyToMapperJavaCode(context, true)»
+				«expr.argument.ensureMapperJavaCode(context, true)»
 					.filterList(«expr.function.inlineFunction(context, true, false)»)'''
 			} else {
 				'''
-				«expr.argument.emptyToMapperJavaCode(context, true)»
+				«expr.argument.ensureMapperJavaCode(context, true)»
 					.filterItem(«expr.function.inlineFunction(context, true, false)»)'''
 			}
 		}
@@ -731,7 +739,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		if (!expr.isPreviousOperationMulti) {
 			if (isBodyMulti) {
 				'''
-				«expr.argument.emptyToMapperJavaCode(context, false)»
+				«expr.argument.ensureMapperJavaCode(context, false)»
 					.mapSingleToList(«funcExpr»)'''
 			} else {
 				buildSingleItemListOperationOptionalBody(expr, "mapSingleToItem", context)
@@ -740,17 +748,17 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 			if (expr.argument.isOutputListOfLists) {
 				if (isBodyMulti) {
 					'''
-					«expr.argument.emptyToMapperJavaCode(context, false)»
+					«expr.argument.ensureMapperJavaCode(context, false)»
 						.mapListToList(«funcExpr»)'''
 				} else {
 					'''
-					«expr.argument.emptyToMapperJavaCode(context, false)»
+					«expr.argument.ensureMapperJavaCode(context, false)»
 						.mapListToItem(«funcExpr»)'''
 				}
 			} else {
 				if (isBodyMulti) {
 					'''
-					«expr.argument.emptyToMapperJavaCode(context, false)»
+					«expr.argument.ensureMapperJavaCode(context, false)»
 						.mapItemToList(«funcExpr»)'''
 				} else {
 					buildSingleItemListOperationOptionalBody(expr, "mapItem", context)
@@ -862,12 +870,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	override protected caseThenOperation(ThenOperation expr, JavaScope context) {
 		val funcExpr = expr.function.inlineFunction(context, false, true)
 		'''
-		«expr.argument.emptyToMapperJavaCode(context, false)»
+		«expr.argument.ensureMapperJavaCode(context, false)»
 			.apply(«funcExpr»)'''
 	}
 	
 	private def StringConcatenationClient conversionOperation(RosettaUnaryOperation expr, JavaScope context, StringConcatenationClient conversion, Class<? extends Exception> errorClass) {
-		'''«expr.argument.emptyToMapperJavaCode(context, false)».checkedMap("«expr.operator»", «conversion», «errorClass».class)'''
+		'''«expr.argument.ensureMapperJavaCode(context, false)».checkedMap("«expr.operator»", «conversion», «errorClass».class)'''
 	}
 	
 	override protected caseToEnumOperation(ToEnumOperation expr, JavaScope context) {
@@ -884,7 +892,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	}
 	
 	override protected caseToStringOperation(ToStringOperation expr, JavaScope context) {
-		'''«expr.argument.emptyToMapperJavaCode(context, false)».map("«expr.operator»", «Object»::toString)'''
+		'''«expr.argument.ensureMapperJavaCode(context, false)».map("«expr.operator»", «Object»::toString)'''
 	}
 	
 	override protected caseToTimeOperation(ToTimeOperation expr, JavaScope context) {
