@@ -15,7 +15,7 @@ public class MapperUtils {
 		}
 		return MapperS.of(result.get());
 	}
-	
+
 	/**
 	 * Used when generating code for nested if statements
 	 */

@@ -60,7 +60,6 @@ class FunctionGeneratorTest {
 	@Test
 	def void passSingleItemToFunctionWhenMultiIsExpectedDoesNotResultInStaticCompilationError() {
 		''' 
-		// TODO: remove duplication in CDECounterparty2IdentifierTypeRule
 		func A:
 			inputs: a int (0..*)
 			output: result int (1..1)
