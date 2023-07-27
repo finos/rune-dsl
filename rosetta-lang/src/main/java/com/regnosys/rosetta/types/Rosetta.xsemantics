@@ -65,7 +65,6 @@ import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.interpreter.RosettaValue
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
-import com.regnosys.rosetta.scoping.RosettaScopeProvider
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -74,7 +73,6 @@ inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
-inject RosettaScopeProvider scopeProvider
 
 
 auxiliary {
@@ -373,11 +371,11 @@ rule TVar // TA-Var, TA-Func
 from {
 	t = ref.symbol.symbolListType
 	
-	if (scopeProvider.findFeaturesOfImplicitVariable(ref).contains(ref.symbol)) {
-		// Case implicit `item -> ...`
-		val itType = ref.typeOfImplicitVariable.orElse(null)
-		if (itType !== null) {
-			t = createListType(t.itemType, t.constraint * itType.constraint)
+	val itType = ref.typeOfImplicitVariable
+	if (itType.isPresent) {
+		if (itType.get.itemType.allFeatures(ref.eResource?.resourceSet).contains(ref.symbol)) {
+			// Case implicit `item -> ...`
+			t = createListType(t.itemType, t.constraint * itType.get.constraint)
 		}
 	}
 }
