@@ -64,6 +64,7 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import com.regnosys.rosetta.rosetta.TypeParameter
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	static Logger LOGGER = LoggerFactory.getLogger(CardinalityProvider)
@@ -117,6 +118,9 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 			}
 			ShortcutDeclaration: {
 				symbol.expression.isMulti(breakOnClosureParameter)
+			}
+			TypeParameter: {
+				false
 			}
 			default: {
 				LOGGER.error("Cardinality not defined for symbol: " + symbol?.eClass?.name)

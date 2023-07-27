@@ -89,10 +89,10 @@ class DataRuleGeneratorTest {
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
 								ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.runSingle(() -> {
-									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
+									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).getOrDefault(false)) {
 										return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 									}
-									else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).get()) {
+									else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).getOrDefault(false)) {
 										return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 									}
 									else {
@@ -205,12 +205,12 @@ class DataRuleGeneratorTest {
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
 								ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.runSingle(() -> {
-									if (exists(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar())).get()) {
+									if (exists(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar())).getOrDefault(false)) {
 										return MapperUtils.toComparisonResult(MapperUtils.runSingle(() -> {
-											if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).get()) {
+											if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).getOrDefault(false)) {
 												return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 											}
-											else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).get()) {
+											else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).getOrDefault(false)) {
 												return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 											}
 											else {

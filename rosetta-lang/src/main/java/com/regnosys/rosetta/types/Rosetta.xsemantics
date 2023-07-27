@@ -370,6 +370,14 @@ rule TVar // TA-Var, TA-Func
 	G |- RosettaSymbolReference ref : RListType t
 from {
 	t = ref.symbol.symbolListType
+	
+	val itType = ref.typeOfImplicitVariable
+	if (itType.isPresent) {
+		if (itType.get.itemType.allFeatures(ref.eResource?.resourceSet).contains(ref.symbol)) {
+			// Case implicit `item -> ...`
+			t = createListType(t.itemType, t.constraint * itType.get.constraint)
+		}
+	}
 }
 rule TIt
 	G |- RosettaImplicitVariable c : RListType t

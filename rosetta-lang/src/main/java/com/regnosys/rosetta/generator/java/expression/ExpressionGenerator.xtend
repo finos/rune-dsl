@@ -104,6 +104,9 @@ import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import java.util.Optional
+import java.util.Collections
+import com.regnosys.rosetta.types.RType
 
 class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationClient, JavaScope> {
 	
@@ -165,7 +168,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 
 	private def StringConcatenationClient genConditional(RosettaConditionalExpression expr, JavaScope scope) {
 		return  '''
-			if («expr.^if.javaCode(scope)».get()) {
+			if («expr.^if.javaCode(scope)».getOrDefault(false)) {
 				return «expr.ifthen.javaCode(scope)»;
 			}
 			«IF expr.childElseThen !== null»
@@ -181,7 +184,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	private def StringConcatenationClient genElseIf(RosettaConditionalExpression next, JavaScope scope) {
 		'''
 		«IF next !== null»
-			else if («next.^if.javaCode(scope)».get()) {
+			else if («next.^if.javaCode(scope)».getOrDefault(false)) {
 				return «next.ifthen.javaCode(scope)»;
 			}
 			«IF next.childElseThen !== null»
@@ -225,19 +228,19 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	
 	private def StringConcatenationClient args(RosettaCallableWithArgs func, List<RosettaExpression> arguments, JavaScope scope) {
 		if (func instanceof Function) {
-			'''«FOR i : 0 ..< arguments.size SEPARATOR ', '»«arg(arguments.get(i), func.inputs.get(i).isMulti, scope)»«ENDFOR»'''
+			'''«FOR i : 0 ..< arguments.size SEPARATOR ', '»«arg(arguments.get(i), typeProvider.getRTypeOfSymbol(func.inputs.get(i)), func.inputs.get(i).isMulti, scope)»«ENDFOR»'''
 		} else {
-			'''«FOR argExpr : arguments SEPARATOR ', '»«arg(argExpr, false, scope)»«ENDFOR»'''
+			'''«FOR argExpr : arguments SEPARATOR ', '»«arg(argExpr, null, false, scope)»«ENDFOR»'''
 		}
 	}
 	
-	private def StringConcatenationClient arg(RosettaExpression expr, boolean needsToBeMulti, JavaScope scope) {
+	private def StringConcatenationClient arg(RosettaExpression expr, RType expectedType, boolean needsToBeMulti, JavaScope scope) {
 		if (expr.evalulatesToMapper) {
 			'''«expr.javaCode(scope)»«IF needsToBeMulti».getMulti()«ELSE».get()«ENDIF»'''
 		} else {
 			val isMulti = expr.isMulti
 			if (!isMulti && needsToBeMulti) {
-				'''«Arrays».asList(«expr.javaCode(scope)»)'''
+				'''«Optional».«IF expectedType !== null»<«expectedType.toJavaReferenceType»>«ENDIF»ofNullable(«expr.javaCode(scope)»).map(«Arrays»::asList).orElse(«Collections».emptyList())'''
 			} else if (isMulti && !needsToBeMulti) {
 				'''«expr.javaCode(scope)».get(0)'''
 			} else {

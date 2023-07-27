@@ -48,7 +48,7 @@ class FunctionGeneratorHelper {
 	}
 	
 	def <T> invokeFunc(RosettaFunction func, Class<T> resultClass, Object... inputs) {
-		val evaluateMethod = func.class.getMatchingMethod("evaluate", inputs.map[class])
+		val evaluateMethod = func.class.getMatchingMethod("evaluate", inputs.map[it?.class])
 		evaluateMethod.invoke(func, inputs) as T
 	}
 

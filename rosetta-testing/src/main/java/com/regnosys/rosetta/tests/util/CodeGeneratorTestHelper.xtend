@@ -151,7 +151,7 @@ class CodeGeneratorTestHelper {
 		for (var i=0;i<m.parameterTypes.size;i++) {
 			val clazz = value.get(i)
 			val p = m.parameterTypes.get(i)
-			if (!p.isAssignableFrom(clazz)) return false
+			if (clazz !== null && !p.isAssignableFrom(clazz)) return false
 		}
 		return true
 	}

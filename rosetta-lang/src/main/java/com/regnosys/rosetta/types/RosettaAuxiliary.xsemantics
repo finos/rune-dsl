@@ -27,6 +27,11 @@ import com.regnosys.rosetta.types.RAliasType
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver
 import java.util.function.BiFunction
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
+import org.eclipse.emf.ecore.resource.ResourceSet
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.types.builtin.RRecordType
+import com.regnosys.rosetta.rosetta.RosettaRecordType
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -45,9 +50,11 @@ auxiliary {
 	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
 	listJoin(RListType t1, RListType t2) : RListType
 	allAttributes(Data d) : Iterable<Attribute>
+	allEnumValues(RosettaEnumeration d) : Iterable<RosettaEnumValue>
 	mayBeEmpty(Data d)
 	
 	keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes): RType
+	allFeatures(RType t, ResourceSet resourceSet) : Iterable<? extends RosettaFeature>
 }
 
 /****** AUXILIARY DEFINITIONS *******/
@@ -195,6 +202,13 @@ auxiliary allAttributes(Data d) {
 		return allAttributes(d.superType) + d.attributes;
 	}
 }
+auxiliary allEnumValues(RosettaEnumeration e) {
+	if (e.superType === null) {
+		return e.enumValues;
+	} else {
+		return allEnumValues(e.superType) + e.enumValues;
+	}
+}
 auxiliary mayBeEmpty(Data d) {
 	d.allAttributes.forall[
 		card.inf === 0
@@ -235,4 +249,22 @@ auxiliary keepTypeAliasIfPossible(RType t1, RAliasType t2, BiFunction<RType, RTy
 }
 auxiliary keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
 	combineUnderlyingTypes.apply(t1, t2)
+}
+
+auxiliary allFeatures(RType t, ResourceSet resourceSet) {
+	switch t {
+		RDataType:
+			t.^data.allAttributes
+		REnumType:
+			t.enumeration.allEnumValues
+		RRecordType: {
+			if (resourceSet !== null) {
+				builtinTypes.toRosettaType(t, RosettaRecordType, resourceSet).features
+			} else {
+				#[]
+			}
+		}
+		default:
+			#[]
+	}
 }
