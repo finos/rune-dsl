@@ -168,7 +168,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 
 	private def StringConcatenationClient genConditional(RosettaConditionalExpression expr, JavaScope scope) {
 		return  '''
-			if («expr.^if.javaCode(scope)».get()) {
+			if («expr.^if.javaCode(scope)».getOrDefault(false)) {
 				return «expr.ifthen.javaCode(scope)»;
 			}
 			«IF expr.childElseThen !== null»
@@ -184,7 +184,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	private def StringConcatenationClient genElseIf(RosettaConditionalExpression next, JavaScope scope) {
 		'''
 		«IF next !== null»
-			else if («next.^if.javaCode(scope)».get()) {
+			else if («next.^if.javaCode(scope)».getOrDefault(false)) {
 				return «next.ifthen.javaCode(scope)»;
 			}
 			«IF next.childElseThen !== null»

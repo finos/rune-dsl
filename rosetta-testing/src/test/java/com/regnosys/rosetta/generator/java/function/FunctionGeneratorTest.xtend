@@ -72,6 +72,22 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
+	def void canUseNullAsCondition() {
+		val code = '''
+		func Test:
+			inputs: inp boolean (0..1)
+			output: result int (0..1)
+			set result:
+				if inp then 42
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val test = classes.createFunc("Test");
+		
+		assertEquals(null, test.invokeFunc(Integer, #[null]))
+	}
+	
+	@Test
 	def void canUseNullInFilter() {
 		val code = '''
 		func Test:
@@ -2854,7 +2870,7 @@ class FunctionGeneratorTest {
 						
 						protected String assignOutput(String result, Boolean test, String t1, String t2) {
 							result = MapperUtils.runSingle(() -> {
-								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).getOrDefault(false)) {
 									return MapperS.of(t1);
 								}
 								else {
@@ -2931,7 +2947,7 @@ class FunctionGeneratorTest {
 						
 						protected List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
 							List<String> addVar = MapperUtils.runMulti(() -> {
-								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).getOrDefault(false)) {
 									return MapperC.<String>of(t1);
 								}
 								else {
@@ -3007,7 +3023,7 @@ class FunctionGeneratorTest {
 						
 						protected BigDecimal assignOutput(BigDecimal result, Boolean test, BigDecimal t1, BigDecimal t2) {
 							result = MapperUtils.runSingle(() -> {
-								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).getOrDefault(false)) {
 									return MapperS.of(t1);
 								}
 								else {
@@ -3085,7 +3101,7 @@ class FunctionGeneratorTest {
 						
 						protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
 							List<BigDecimal> addVar = MapperUtils.runMulti(() -> {
-								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).getOrDefault(false)) {
 									return MapperC.<BigDecimal>of(t1);
 								}
 								else {
@@ -3173,7 +3189,7 @@ class FunctionGeneratorTest {
 						
 						protected Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
 							result = toBuilder(MapperUtils.runSinglePolymorphic(() -> {
-								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).getOrDefault(false)) {
 									return MapperS.of(b1);
 								}
 								else {
@@ -3266,7 +3282,7 @@ class FunctionGeneratorTest {
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
 							List<Bar.BarBuilder> addVar = toBuilder(MapperUtils.runMultiPolymorphic(() -> {
-								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+								if (areEqual(MapperS.of(test), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).getOrDefault(false)) {
 									return MapperC.<Bar>of(b1);
 								}
 								else {
@@ -4027,7 +4043,7 @@ class FunctionGeneratorTest {
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
 								ComparisonResult result = ComparisonResult.of(MapperUtils.runSingle(() -> {
-									if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+									if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).getOrDefault(false)) {
 										return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("x").get()));
 									}
 									else {
@@ -4114,10 +4130,10 @@ class FunctionGeneratorTest {
                 		
                 		protected Boolean assignOutput(Boolean result) {
                 			result = MapperS.of(a.evaluate(MapperUtils.runSingle(() -> {
-                				if (MapperS.of(Boolean.valueOf(true)).get()) {
+                				if (MapperS.of(Boolean.valueOf(true)).getOrDefault(false)) {
                 					return MapperS.of(Boolean.valueOf(true));
                 				}
-                				else if (MapperS.of(Boolean.valueOf(false)).get()) {
+                				else if (MapperS.of(Boolean.valueOf(false)).getOrDefault(false)) {
                 					return MapperS.of(Boolean.valueOf(true));
                 				}
                 				else {

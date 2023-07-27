@@ -991,7 +991,7 @@ class ListOperationTest {
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
 							foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
 								.mapItem(item -> (MapperS<Foo>)MapperUtils.runSinglePolymorphic(() -> {
-									if (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()) {
+									if (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).getOrDefault(false)) {
 										return MapperS.of(create_Foo.evaluate(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get(), MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get()));
 									}
 									else {
@@ -2690,15 +2690,15 @@ class ListOperationTest {
 						
 						protected List<String> assignOutput(List<String> strings, List<? extends Foo> foos, String test) {
 							strings = MapperUtils.runMulti(() -> {
-								if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).get()) {
+								if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).getOrDefault(false)) {
 									return MapperC.<Foo>of(foos)
 										.mapItem(item -> (MapperS<String>)MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_a")));
 								}
-								else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).get()) {
+								else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).getOrDefault(false)) {
 									return MapperC.<Foo>of(foos)
 										.mapItem(item -> (MapperS<String>)MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_b")));
 								}
-								else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).get()) {
+								else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).getOrDefault(false)) {
 									return MapperC.<Foo>of(foos)
 										.mapItem(item -> (MapperS<String>)MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_c")));
 								}
