@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -96,9 +95,12 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @param predicate - test that determines whether to filter list item. True to include in list, and false to exclude.
 	 * @return filtered list 
 	 */
-	public MapperC<T> filterItem(Predicate<MapperS<T>> predicate) {
+	public MapperC<T> filterItem(Function<MapperS<T>, Boolean> predicate) {
 		return new MapperC<>(nonErrorItems()
-				.filter(item -> predicate.test(new MapperS<>(item)))
+				.filter(item -> {
+					Boolean result = predicate.apply(new MapperS<>(item));
+					return result != null && result;
+				})
 				.collect(Collectors.toList()));
 	}
 	

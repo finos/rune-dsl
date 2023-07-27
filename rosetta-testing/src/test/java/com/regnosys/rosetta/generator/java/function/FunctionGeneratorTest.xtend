@@ -39,6 +39,56 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void canPassEmptyToFunctionThatExpectsList() {
+		val code = '''
+		func A:
+			inputs:
+				a int (0..*)
+			output:
+				result int (0..*)
+			add result:
+				a
+		
+		func B:
+			output: result int (0..*)
+			add result:
+				A(empty)
+		
+		func C:
+			inputs:
+				a int (0..1)
+			output:
+				result int (0..*)
+			add result:
+				A(a)
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val b = classes.createFunc("B");
+		assertEquals(List.of(), b.invokeFunc(List))
+		
+		val c = classes.createFunc("C");
+		assertEquals(List.of(), c.invokeFunc(List, #[null]))
+	}
+	
+	@Test
+	def void canUseNullInFilter() {
+		val code = '''
+		func Test:
+			inputs: inp boolean (0..1)
+			output: result int (0..1)
+			set result:
+				42
+					filter inp
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val test = classes.createFunc("Test");
+		
+		assertEquals(null, test.invokeFunc(Integer, #[null]))
+	}
+	
+	@Test
 	def void canChainAfterConditional() {
 		val code = '''
 		func Test:
