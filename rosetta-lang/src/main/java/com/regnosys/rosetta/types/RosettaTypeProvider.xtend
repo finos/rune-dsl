@@ -328,7 +328,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseListLiteral(ListLiteral expr, Map<EObject, RType> context) {
-		val types = expr.elements.map[RType]
+		val types = expr.elements.map[RType].filter[it !== null]
 		val joined = types.join
 		if (joined == ANY) {
 			new RErrorType(types.groupBy[name].keySet.join(', '))
