@@ -42,6 +42,22 @@ public class MapperUtils {
 		}
 		return MapperC.of(result.getMulti());
 	}
+	
+	/**
+	 * Used when generating code for nested if statements
+	 */
+	@Deprecated
+	public static <T> Mapper<T> fromBuiltInType(Supplier<Mapper<T>> supplier) {
+		return supplier.get();
+	}
+
+	/**
+	 * Used when generating code for nested if statements
+	 */
+	@Deprecated
+	public static <T> Mapper<? extends T> fromDataType(Supplier<Mapper<? extends T>> supplier) {
+		return supplier.get();
+	}
 
 	public static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
 		if (mapper instanceof ComparisonResult) {
