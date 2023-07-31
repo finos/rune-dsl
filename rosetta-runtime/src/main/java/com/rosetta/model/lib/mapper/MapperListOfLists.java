@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class MapperListOfLists<T> {
@@ -33,7 +34,18 @@ public class MapperListOfLists<T> {
 	 * @param predicate - test that determines whether to filter list item. True to include in list, and false to exclude.
 	 * @return filtered list 
 	 */
-	public MapperListOfLists<T> filterList(Function<MapperC<T>, Boolean> predicate) {
+	public MapperListOfLists<T> filterList(Predicate<MapperC<T>> predicate) {
+		return new MapperListOfLists<>(items.stream()
+				.filter(item -> predicate.test(MapperC.of(item.getMappedObjects())))
+				.collect(Collectors.toList()));
+	}
+	/**
+	 * Filter a list of lists based on the given predicate.
+	 * 
+	 * @param predicate - test that determines whether to filter list item. True to include in list, and false to exclude.
+	 * @return filtered list 
+	 */
+	public MapperListOfLists<T> filterListNullSafe(Function<MapperC<T>, Boolean> predicate) {
 		return new MapperListOfLists<>(items.stream()
 				.filter(item -> {
 					Boolean result = predicate.apply(MapperC.of(item.getMappedObjects()));

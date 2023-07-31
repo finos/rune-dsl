@@ -673,16 +673,16 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		if (!expr.isPreviousOperationMulti) {
 			'''
 			«expr.argument.ensureMapperJavaCode(context, false)»
-				.filterSingle(«expr.function.inlineFunction(context, true, false)»)'''
+				.filterSingleNullSafe(«expr.function.inlineFunction(context, true, false)»)'''
 		} else {
 			if (expr.argument.isOutputListOfLists) {
 				'''
 				«expr.argument.ensureMapperJavaCode(context, true)»
-					.filterList(«expr.function.inlineFunction(context, true, false)»)'''
+					.filterListNullSafe(«expr.function.inlineFunction(context, true, false)»)'''
 			} else {
 				'''
 				«expr.argument.ensureMapperJavaCode(context, true)»
-					.filterItem(«expr.function.inlineFunction(context, true, false)»)'''
+					.filterItemNullSafe(«expr.function.inlineFunction(context, true, false)»)'''
 			}
 		}
 	}
