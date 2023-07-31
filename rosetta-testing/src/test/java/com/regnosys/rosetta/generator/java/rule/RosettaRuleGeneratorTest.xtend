@@ -1824,7 +1824,7 @@ class RosettaRuleGeneratorTest {
 			
 			private Input.InputBuilder assignOutput(Input.InputBuilder input1, Input input0) {
 				input1 = toBuilder(MapperS.of(input0)
-					.filterSingle(item -> (Boolean)areEqual(item.<String>map("getTraderef", input -> input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
+					.filterSingleNullSafe(item -> (Boolean)areEqual(item.<String>map("getTraderef", input -> input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
 			
 				return Optional.ofNullable(input1)
 					.map(o -> o.prune())

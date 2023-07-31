@@ -96,7 +96,7 @@ class ListOperationTest {
 						
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 							filteredFoos = toBuilder(MapperC.<Foo>of(foos)
-								.filterItem(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti());
+								.filterItemNullSafe(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti());
 							
 							return Optional.ofNullable(filteredFoos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -192,7 +192,7 @@ class ListOperationTest {
 						
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 							filteredFoos = toBuilder(MapperC.<Foo>of(foos)
-								.filterItem(fooItem -> (Boolean)areEqual(fooItem.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti());
+								.filterItemNullSafe(fooItem -> (Boolean)areEqual(fooItem.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti());
 							
 							return Optional.ofNullable(filteredFoos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -326,9 +326,9 @@ class ListOperationTest {
 						
 						protected List<Foo2.Foo2Builder> assignOutput(List<Foo2.Foo2Builder> filteredFoos, List<? extends Foo2> foos) {
 							filteredFoos = toBuilder(MapperC.<Foo2>of(foos)
-								.filterItem(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo2 -> foo2.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
+								.filterItemNullSafe(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo2 -> foo2.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
 								.apply(item -> item
-									.filterItem(_item -> (Boolean)areEqual(_item.<Boolean>map("getInclude2", foo2 -> foo2.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())).getMulti());
+									.filterItemNullSafe(_item -> (Boolean)areEqual(_item.<Boolean>map("getInclude2", foo2 -> foo2.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())).getMulti());
 							
 							return Optional.ofNullable(filteredFoos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -425,7 +425,7 @@ class ListOperationTest {
 						
 						protected List<FooWithScheme.FooWithSchemeBuilder> assignOutput(List<FooWithScheme.FooWithSchemeBuilder> filteredFoos, List<? extends FooWithScheme> foos) {
 							filteredFoos = toBuilder(MapperC.<FooWithScheme>of(foos)
-								.filterItem(item -> (Boolean)areEqual(item.<FieldWithMetaString>map("getAttr", fooWithScheme -> fooWithScheme.getAttr()).map("getMeta", a->a.getMeta()).map("getScheme", a->a.getScheme()), MapperS.of("foo-scheme"), CardinalityOperator.All).get()).getMulti());
+								.filterItemNullSafe(item -> (Boolean)areEqual(item.<FieldWithMetaString>map("getAttr", fooWithScheme -> fooWithScheme.getAttr()).map("getMeta", a->a.getMeta()).map("getScheme", a->a.getScheme()), MapperS.of("foo-scheme"), CardinalityOperator.All).get()).getMulti());
 							
 							return Optional.ofNullable(filteredFoos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -593,7 +593,7 @@ class ListOperationTest {
 						
 						protected List<Boolean> assignOutput(List<Boolean> filteredFoos, List<Boolean> foos) {
 							filteredFoos = MapperC.<Boolean>of(foos)
-								.filterItem(item -> (Boolean)areEqual(item, MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti();
+								.filterItemNullSafe(item -> (Boolean)areEqual(item, MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti();
 							
 							return filteredFoos;
 						}
@@ -2231,7 +2231,7 @@ class ListOperationTest {
 						
 						protected List<String> assignOutput(List<String> newFoos, List<? extends Foo> foos) {
 							newFoos = MapperC.<Foo>of(foos)
-								.filterItem(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
+								.filterItemNullSafe(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
 								.apply(item -> item
 									.mapItem(_item -> (MapperS<String>)_item.<String>map("getAttr", foo -> foo.getAttr()))).getMulti();
 							
