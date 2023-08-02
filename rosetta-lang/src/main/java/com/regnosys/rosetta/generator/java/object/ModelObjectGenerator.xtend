@@ -22,13 +22,13 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.utils.DottedPath
-import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaParametrizedType
+import com.rosetta.util.DottedPath
 
 class ModelObjectGenerator {
 	

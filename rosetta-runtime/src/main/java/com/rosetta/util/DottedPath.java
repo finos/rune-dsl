@@ -1,6 +1,7 @@
-package com.regnosys.rosetta.utils;
+package com.rosetta.util;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
@@ -48,7 +49,7 @@ public class DottedPath implements Comparable<DottedPath> {
 	}
 	public Path toPath() {
 		String[] tail = Arrays.copyOfRange(segments, 1, segments.length);
-		return Path.of(segments[0], tail);
+		return Paths.get(segments[0], tail);
 	}
 	
 	@Override

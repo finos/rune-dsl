@@ -30,15 +30,15 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import com.rosetta.model.lib.meta.FieldWithMeta
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.rosetta.model.lib.meta.BasicRosettaMetaData
-import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.types.TypeSystem
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaParametrizedType
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension

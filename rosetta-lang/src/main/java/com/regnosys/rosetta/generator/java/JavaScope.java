@@ -4,9 +4,9 @@ import com.google.common.collect.Streams;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.GeneratorScope;
 import com.regnosys.rosetta.generator.ImplicitVariableRepresentation;
-import com.regnosys.rosetta.generator.java.types.JavaClass;
-import com.regnosys.rosetta.generator.java.types.JavaType;
-import com.regnosys.rosetta.utils.DottedPath;
+import com.rosetta.util.DottedPath;
+import com.rosetta.util.types.JavaClass;
+import com.rosetta.util.types.JavaType;
 
 import java.util.HashSet;
 import java.util.Optional;

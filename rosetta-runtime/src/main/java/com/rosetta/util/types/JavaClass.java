@@ -1,11 +1,11 @@
-package com.regnosys.rosetta.generator.java.types;
+package com.rosetta.util.types;
 
 import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
-import com.regnosys.rosetta.utils.DottedPath;
+import com.rosetta.util.DottedPath;
+
 
 public class JavaClass implements JavaReferenceType {
 	private final DottedPath packageName;
@@ -31,7 +31,7 @@ public class JavaClass implements JavaReferenceType {
 			parent = t.getDeclaringClass();
 			fullName = parent.getSimpleName() + "." + fullName;
 		}
-		return new JavaClass(DottedPath.splitOnDots(t.getPackageName()), fullName);
+		return new JavaClass(DottedPath.splitOnDots(t.getPackage().getName()), fullName);
 	}
 
 	@Override
@@ -47,14 +47,13 @@ public class JavaClass implements JavaReferenceType {
 		return packageName.child(simpleName);
 	}
 	
-	@Override
-	public String toString() {
-		return getCanonicalName().withDots();
+	public Class<?> loadClass(ClassLoader classLoader) throws ClassNotFoundException {
+		return Class.forName(getCanonicalName().toString(), true, classLoader);
 	}
 	
 	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		target.append(this);
+	public String toString() {
+		return getCanonicalName().withDots();
 	}
 	
 	@Override
@@ -70,5 +69,10 @@ public class JavaClass implements JavaReferenceType {
         JavaClass other = (JavaClass) object;
         return Objects.equals(packageName, other.packageName)
         		&& Objects.equals(simpleName, other.simpleName);
+	}
+	
+	@Override
+	public void accept(JavaTypeVisitor visitor) {
+		visitor.visitType(this);
 	}
 }

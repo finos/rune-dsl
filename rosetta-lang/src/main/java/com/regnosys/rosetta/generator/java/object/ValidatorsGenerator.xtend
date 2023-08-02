@@ -36,12 +36,12 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import java.util.Optional
 import java.util.regex.Pattern
 import org.apache.commons.text.StringEscapeUtils
-import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
-import com.regnosys.rosetta.generator.java.types.JavaClass
 import java.util.List
 import java.math.BigDecimal
-import com.regnosys.rosetta.generator.java.types.JavaWildcardTypeArgument
-import com.regnosys.rosetta.generator.java.types.JavaReferenceType
+import com.rosetta.util.types.JavaParametrizedType
+import com.rosetta.util.types.JavaWildcardTypeArgument
+import com.rosetta.util.types.JavaReferenceType
+import com.rosetta.util.types.JavaClass
 
 class ValidatorsGenerator {
 
@@ -123,7 +123,7 @@ class ValidatorsGenerator {
 	def private StringConcatenationClient onlyExistsClassBody(RDataType t, String version, Iterable<Attribute> attributes) '''
 		public class «t.toOnlyExistsValidatorClass» implements «ValidatorWithArg»<«t.toJavaType», «Set»<String>> {
 
-            /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			@Override
 			public <T2 extends «t.toJavaType»> «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
 				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()

@@ -18,9 +18,6 @@ import com.regnosys.rosetta.blueprints.runner.nodes.SourceNode
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
-import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.generator.java.types.JavaType
-import com.regnosys.rosetta.generator.java.types.JavaTypeVariable
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.BlueprintExtract
 import com.regnosys.rosetta.rosetta.BlueprintFilter
@@ -40,7 +37,6 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.utils.DottedPath
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver
 import com.regnosys.rosetta.validation.TypedBPNode
 import com.rosetta.model.lib.path.RosettaPath
@@ -57,7 +53,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.types.TypeSystem
@@ -67,7 +62,6 @@ import java.util.stream.Stream
 import java.util.stream.Collectors
 import com.regnosys.rosetta.validation.BindableType
 import java.util.function.Supplier
-import com.regnosys.rosetta.generator.java.types.JavaReferenceType
 import java.math.BigDecimal
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
@@ -79,6 +73,12 @@ import com.rosetta.model.lib.functions.ModelObjectValidator
 import java.util.ArrayList
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaType
+import com.rosetta.util.types.JavaTypeVariable
+import com.rosetta.util.types.JavaParametrizedType
+import com.rosetta.util.types.JavaReferenceType
+import com.rosetta.util.DottedPath
 
 class BlueprintGenerator {
 	static Logger LOGGER = LoggerFactory.getLogger(BlueprintGenerator)

@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java;
 
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.scoping.RosettaScopeProvider;
-import com.regnosys.rosetta.utils.DottedPath;
+import com.rosetta.util.DottedPath;
 
 public class RosettaJavaPackages {
 

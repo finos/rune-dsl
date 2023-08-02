@@ -33,11 +33,11 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.generator.java.util.ImportingStringConcatenation
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.utils.DottedPath
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.tests.util.ExpressionParser
+import com.rosetta.util.DottedPath
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

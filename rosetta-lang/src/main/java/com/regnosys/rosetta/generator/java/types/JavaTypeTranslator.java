@@ -42,8 +42,14 @@ import com.regnosys.rosetta.types.builtin.RDateType;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
-import com.regnosys.rosetta.utils.DottedPath;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
+import com.rosetta.util.DottedPath;
+import com.rosetta.util.types.JavaClass;
+import com.rosetta.util.types.JavaParametrizedType;
+import com.rosetta.util.types.JavaPrimitiveType;
+import com.rosetta.util.types.JavaReferenceType;
+import com.rosetta.util.types.JavaType;
+import com.rosetta.util.types.JavaWildcardTypeArgument;
 
 public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private RBuiltinTypeService builtins;

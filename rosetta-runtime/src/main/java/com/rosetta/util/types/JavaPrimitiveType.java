@@ -1,11 +1,10 @@
-package com.regnosys.rosetta.generator.java.types;
+package com.rosetta.util.types;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 public class JavaPrimitiveType implements JavaType {
 	private static Map<Class<?>, JavaPrimitiveType> typeMap = new HashMap<>();
@@ -61,11 +60,6 @@ public class JavaPrimitiveType implements JavaType {
 	}
 	
 	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		target.append(type.getSimpleName());
-	}
-	
-	@Override
 	public int hashCode() {
 		return Objects.hash(type);
 	}
@@ -77,5 +71,10 @@ public class JavaPrimitiveType implements JavaType {
 
         JavaPrimitiveType other = (JavaPrimitiveType) object;
         return Objects.equals(type, other.type);
+	}
+	
+	@Override
+	public void accept(JavaTypeVisitor visitor) {
+		visitor.visitType(this);
 	}
 }
