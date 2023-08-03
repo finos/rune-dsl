@@ -23,6 +23,7 @@ import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
+import com.rosetta.model.lib.RosettaNumber;
 
 public class RosettaValueFactory extends RosettaTypeSwitch<RosettaValue, List<?>> {
 	@Inject

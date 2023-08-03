@@ -65,6 +65,7 @@ import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch;
+import com.rosetta.model.lib.RosettaNumber;
 
 public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, RosettaInterpreterContext> {
 	@Inject
