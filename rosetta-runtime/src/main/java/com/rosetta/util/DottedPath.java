@@ -5,6 +5,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 public class DottedPath implements Comparable<DottedPath> {
 	protected final String[] segments;
 	
@@ -38,6 +40,9 @@ public class DottedPath implements Comparable<DottedPath> {
 	}
 	public DottedPath parent() {
 		return new DottedPath(Arrays.copyOf(segments, segments.length - 1));
+	}
+	public DottedPath concat(DottedPath second) {
+		return new DottedPath(ArrayUtils.addAll(segments, second.segments));
 	}
 	
 	/* Conversion */
