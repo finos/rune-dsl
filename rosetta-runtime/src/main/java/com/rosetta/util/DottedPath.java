@@ -26,6 +26,9 @@ public class DottedPath implements Comparable<DottedPath> {
 	public static DottedPath splitOnDots(String str) {
 		return split(str, ".");
 	}
+	public static DottedPath splitOnForwardSlashes(String str) {
+		return split(str, "/");
+	}
 	
 	/* Navigation */
 	public DottedPath child(String newSegment) {
