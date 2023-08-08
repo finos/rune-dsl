@@ -162,7 +162,7 @@ public class TypeSystem {
 	
 	public RType stripFromTypeAliases(RType t) {
 		if (t instanceof RAliasType) {
-			return ((RAliasType)t).getRefersTo();
+			return stripFromTypeAliases(((RAliasType)t).getRefersTo());
 		}
 		return t;
 	}
