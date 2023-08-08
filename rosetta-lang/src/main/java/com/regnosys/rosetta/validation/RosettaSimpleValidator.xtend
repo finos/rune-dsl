@@ -131,6 +131,7 @@ import com.regnosys.rosetta.rosetta.expression.ParseOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.REnumType
+import java.util.Optional
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -415,14 +416,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void checkRuleSource(RosettaBlueprintReport report) {
 		val visitor = new CollectRuleErrorVisitor
 
-		report.reportType.collectRuleErrors(report.ruleSource, visitor)
+		report.reportType.collectRuleErrors(Optional.ofNullable(report.ruleSource), visitor)
 
 		visitor.errorMap.entrySet.forEach [
 			error(value, key, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
 		]
 	}
 
-	private def void collectRuleErrors(Data type, RosettaExternalRuleSource source, CollectRuleErrorVisitor visitor) {
+	private def void collectRuleErrors(Data type, Optional<RosettaExternalRuleSource> source, CollectRuleErrorVisitor visitor) {
 		externalAnn.collectAllRuleReferencesForType(source, type, visitor)
 
 		type.allAttributes.forEach[attr |
@@ -1114,12 +1115,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 						'''whereas the reporting rule «bp.name» has type «bpType».'''
 					error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 				}
-			}
-			
-			// check basic type cardinality supported
-			if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
-				val unsupportedWarning = '''Report attributes with basic type («attrType.name») and multiple cardinality is not supported.'''
-				error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
 			}
 		}
 	}

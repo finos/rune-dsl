@@ -82,9 +82,9 @@ public class RosettaJavaPackages {
 		public DottedPath existsValidation() {
 			return typeValidation().child("exists");
 		}
-
-		public DottedPath blueprint() {
-			return child("blueprint");
+		
+		public DottedPath reports() {
+			return child("reports");
 		}
 
 		public DottedPath qualifyEvent() {

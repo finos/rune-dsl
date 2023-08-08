@@ -1,5 +1,7 @@
 package com.rosetta.util.types;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
@@ -25,13 +27,9 @@ public class JavaClass implements JavaReferenceType {
 		if (t.isInterface()) {
 			return JavaInterface.from(t);
 		}
-		String fullName = t.getSimpleName();
-		Class<?> parent = t;
-		while (parent.getDeclaringClass() != null) {
-			parent = t.getDeclaringClass();
-			fullName = parent.getSimpleName() + "." + fullName;
-		}
-		return new JavaClass(DottedPath.splitOnDots(t.getPackage().getName()), fullName);
+		DottedPath packageName = DottedPath.splitOnDots(t.getCanonicalName()).parent();
+		String simpleName = t.getSimpleName();
+		return new JavaClass(packageName, simpleName);
 	}
 
 	@Override

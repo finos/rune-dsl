@@ -6,7 +6,6 @@ package com.regnosys.rosetta.generator
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.external.ExternalGenerators
-import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
@@ -31,6 +30,10 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import org.eclipse.xtext.generator.IGenerator2
+import com.regnosys.rosetta.generator.java.reports.TabulatorGenerator
+import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
+import java.util.Optional
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 
 /**
  * Generates code from your model files on save.
@@ -43,7 +46,7 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject EnumGenerator enumGenerator
 	@Inject ModelMetaGenerator metaGenerator
 	@Inject DataRuleGenerator dataRuleGenerator
-	@Inject BlueprintGenerator blueprintGenerator
+	@Inject TabulatorGenerator tabulatorGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
@@ -142,16 +145,24 @@ class RosettaGenerator implements IGenerator2 {
 							it.conditions.forEach [ cond |
 								dataRuleGenerator.generate(packages, fsa, it, cond, version)
 							]
+							tabulatorGenerator.generate(fsa, it, Optional.empty)
 						}
 						Function: {
 							if (!isDispatchingFunction) {
 								funcGenerator.generate(packages, fsa, it, version)
 							}
 						}
+						RosettaBlueprintReport: {
+							tabulatorGenerator.generate(fsa, it)
+						}
+						RosettaExternalRuleSource: {
+							it.externalClasses.forEach [ externalClass |
+								tabulatorGenerator.generate(fsa, externalClass.data, Optional.of(it))
+							]
+						}
 					}
 				]
 				enumGenerator.generate(packages, fsa, model.elements, version)
-				blueprintGenerator.generate(packages, fsa, model.elements, version)
 
 				// Invoke externally defined code generators
 				externalGenerators.forEach [ generator |

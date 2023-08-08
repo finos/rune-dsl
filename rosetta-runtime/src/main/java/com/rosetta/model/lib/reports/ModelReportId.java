@@ -7,12 +7,12 @@ import org.apache.commons.lang3.Validate;
 
 import com.rosetta.util.DottedPath;
 
-public class ReportModelId {
+public class ModelReportId {
 	private DottedPath namespace;
 	private String body;
 	private String[] corpuses;
 
-	public ReportModelId(DottedPath namespace, String body, String... corpuses) {
+	public ModelReportId(DottedPath namespace, String body, String... corpuses) {
 		Validate.notNull(namespace);
 		Validate.notNull(body);
 		Validate.notNull(corpuses);
@@ -42,7 +42,7 @@ public class ReportModelId {
 		if (object == this) return true;
         if (this.getClass() != object.getClass()) return false;
 
-        ReportModelId other = (ReportModelId) object;
+        ModelReportId other = (ModelReportId) object;
         return Objects.equals(namespace, other.namespace)
         		&& Objects.equals(body, other.body)
         		&& Arrays.equals(corpuses, other.corpuses);

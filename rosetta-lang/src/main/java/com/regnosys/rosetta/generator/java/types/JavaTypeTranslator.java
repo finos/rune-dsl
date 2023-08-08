@@ -18,13 +18,17 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.generator.object.ExpandedAttribute;
 import com.regnosys.rosetta.generator.object.ExpandedType;
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions;
+import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
 import com.regnosys.rosetta.rosetta.RosettaBlueprint;
+import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.Segment;
@@ -43,7 +47,10 @@ import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
+import com.rosetta.model.lib.ModelSymbolId;
+import com.rosetta.model.lib.reports.ModelReportId;
 import com.rosetta.util.DottedPath;
+import com.rosetta.util.types.GeneratedJavaClassService;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaParametrizedType;
 import com.rosetta.util.types.JavaPrimitiveType;
@@ -66,6 +73,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private RosettaTypeProvider typeProvider;
 	@Inject
 	private TypeSystem typeSystem;
+	@Inject
+	private GeneratedJavaClassService generatedJavaClassService;
 	
 	private JavaClass listClass = JavaClass.from(List.class);
 	private JavaClass objectClass = JavaClass.from(Object.class);
@@ -79,7 +88,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return modelPackage(model);
 	}
 	private JavaClass rosettaNamedToJavaClass(RosettaNamed object) {
-		return new JavaClass(getModelPackage(object), object.getName());
+		ModelSymbolId id = getSymbolId(object);
+		return new JavaClass(id.getNamespace(), id.getName());
 	}
 	
 	public JavaParametrizedType toPolymorphicList(JavaReferenceType t) {
@@ -87,14 +97,33 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	
 	public JavaClass toFunctionJavaClass(Function func) {
-		return new JavaClass(functions(getModelPackage(func)), func.getName());
+		return generatedJavaClassService.toJavaFunction(getSymbolId(func));
 	}
 	public JavaClass toFunctionJavaClass(RosettaExternalFunction func) {
 		return new JavaClass(packages.defaultLibFunctions(), func.getName());
 	}
-	public JavaClass toRuleJavaClass(RosettaBlueprint rule) {
-		return new JavaClass(blueprint(getModelPackage(rule)), rule.getName() + "Rule");
+	public JavaClass toReportFunctionJavaClass(RosettaBlueprintReport report) {
+		return generatedJavaClassService.toJavaReportFunction(getReportId(report));
 	}
+	public JavaClass toReportTabulatorJavaClass(RosettaBlueprintReport report) {
+		return generatedJavaClassService.toJavaReportTabulator(getReportId(report));
+	}
+	public JavaClass toTabulatorJavaClass(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
+		ModelSymbolId typeId = getSymbolId(type);
+		if (ruleSource.isEmpty()) {
+			DottedPath packageName = typeId.getNamespace().child("reports");
+			String simpleName = typeId.getName() + "Tabulator";
+			return new JavaClass(packageName, simpleName);
+		}
+		ModelSymbolId sourceId = getSymbolId(ruleSource.get());
+		DottedPath packageName = sourceId.getNamespace().child("reports");
+		String simpleName = typeId.getName() + sourceId.getName() + "Tabulator";
+		return new JavaClass(packageName, simpleName);
+	}
+	public JavaClass toRuleJavaClass(RosettaBlueprint rule) {
+		return generatedJavaClassService.toJavaRule(getSymbolId(rule));
+	}
+	
 	
 	public JavaReferenceType toMetaJavaType(Attribute attribute) {
 		JavaReferenceType attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute));
@@ -225,17 +254,34 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return new JavaClass(existsValidation(getModelPackage(t.getData())), t.getName() + "OnlyExistsValidator");
 	}
 	
+	private ModelSymbolId getSymbolId(RosettaNamed named) {
+		RosettaRootElement rootElement = EcoreUtil2.getContainerOfType(named, RosettaRootElement.class);
+		RosettaModel model = rootElement.getModel();
+		if (model == null)
+			// Artificial attributes
+			throw new IllegalArgumentException("Can not compute package name for " + named.eClass().getName() + " " + named.getName() + ". Element is not attached to a RosettaModel.");
+		DottedPath namespace = DottedPath.splitOnDots(model.getName());
+		return new ModelSymbolId(namespace, named.getName());
+	}
+	private ModelReportId getReportId(RosettaBlueprintReport report) {
+		RosettaRootElement rootElement = EcoreUtil2.getContainerOfType(report, RosettaRootElement.class);
+		RosettaModel model = rootElement.getModel();
+		if (model == null)
+			// Artificial attributes
+			throw new IllegalArgumentException("Can not compute package name for " + report.eClass().getName() + " " + report.name() + ". Element is not attached to a RosettaModel.");
+		DottedPath namespace = DottedPath.splitOnDots(model.getName());
+		
+		RegulatoryDocumentReference ref = report.getRegulatoryBody();
+		String body = ref.getBody().getName();
+		String[] corpuses = ref.getCorpuses().stream().map(c -> c.getName()).toArray(String[]::new);
+		
+		return new ModelReportId(namespace, body, corpuses);
+	}
 	private DottedPath modelPackage(RosettaModel model) {
 		return DottedPath.splitOnDots(model.getName());
 	}
 	private DottedPath metaField(DottedPath p) {
 		return p.child("metafields");
-	}
-	private DottedPath functions(DottedPath p) {
-		return p.child("functions");
-	}
-	private DottedPath blueprint(DottedPath p) {
-		return p.child("blueprint");
 	}
 	private DottedPath validation(DottedPath p) {
 		return p.child("validation");

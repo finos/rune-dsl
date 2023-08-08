@@ -2,6 +2,7 @@ package com.rosetta.model.lib.reports;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
@@ -10,16 +11,17 @@ import com.rosetta.util.DottedPath;
 public interface Tabulator<T> {
 
 	List<Field> getFields();
-	List<FieldValue<?>> tabulate(T report);
+	List<FieldValue> tabulate(T report);
 	
 	public interface Field {
 		String getName();
-		DottedPath getRosettaPath();
-		Optional<Field> getParent();
+		String getAttributeName();
+		List<Field> getChildren();
+		boolean isMulti();
 	}
-	public interface FieldValue<T> {
+	public interface FieldValue {
 		Field getField();
-		Optional<T> getValue();
+		Optional<? extends Object> getValue();
 		
 		default boolean isPresent() {
 			return getValue().isPresent();
@@ -29,41 +31,58 @@ public interface Tabulator<T> {
 			visitor.visitSingle(this);
 		}
 	}
-	public interface FieldListValue<T> extends FieldValue<List<Optional<T>>> {
+	public interface NestedFieldValue extends FieldValue {
+		Optional<? extends List<? extends FieldValue>> getValue();
+		
 		default void accept(FieldValueVisitor visitor) {
-			visitor.visitList(this);
+			visitor.visitNested(this);
+		}
+	}
+	public interface MultiNestedFieldValue extends FieldValue {
+		Optional<? extends List<? extends List<? extends FieldValue>>> getValue();
+		
+		default void accept(FieldValueVisitor visitor) {
+			visitor.visitMultiNested(this);
 		}
 	}
 	public interface FieldValueVisitor {
-		void visitSingle(FieldValue<?> fieldValue);
-		void visitList(FieldListValue<?> fieldValue);
+		void visitSingle(FieldValue fieldValue);
+		void visitNested(NestedFieldValue fieldValue);
+		void visitMultiNested(MultiNestedFieldValue fieldValue);
 	}
 	
 	public static class FieldImpl implements Field {
-		private DottedPath rosettaPath;
+		private String attributeName;
+		private boolean isMulti;
 		private Optional<DottedPath> ruleName;
 		private Optional<String> identifier;
-		private Optional<Field> parent;
+		private List<Field> children;
 		
-		public FieldImpl(DottedPath rosettaPath, Optional<DottedPath> ruleName, Optional<String> identifier, Optional<Field> parent) {
+		public FieldImpl(String attributeName, boolean isMulti, Optional<DottedPath> ruleName, Optional<String> identifier, List<Field> children) {
 			Validate.notNull(ruleName);
-			Validate.notNull(rosettaPath);
+			Validate.notNull(attributeName);
 			Validate.notNull(identifier);
-			Validate.notNull(parent);
+			Validate.noNullElements(children);
 			this.ruleName = ruleName;
-			this.rosettaPath = rosettaPath;
+			this.attributeName = attributeName;
+			this.isMulti = isMulti;
 			this.identifier = identifier;
-			this.parent = parent;
+			this.children = children;
 		}
 		
 		@Override
 		public String getName() {
-			return identifier.orElse(rosettaPath.withSeparator("->"));
+			return identifier.orElse(attributeName);
 		}
 
 		@Override
-		public DottedPath getRosettaPath() {
-			return rosettaPath;
+		public String getAttributeName() {
+			return attributeName;
+		}
+		
+		@Override
+		public boolean isMulti() {
+			return isMulti;
 		}
 		
 		public Optional<DottedPath> getRuleName() {
@@ -71,15 +90,15 @@ public interface Tabulator<T> {
 		}
 
 		@Override
-		public Optional<Field> getParent() {
-			return parent;
+		public List<Field> getChildren() {
+			return children;
 		}
 	}
-	public static class FieldValueImpl<T> implements FieldValue<T> {
+	public static class FieldValueImpl implements FieldValue {
 		private Field field;
-		private Optional<T> value;
+		private Optional<? extends Object> value;
 		
-		public FieldValueImpl(Field field, Optional<T> value) {
+		public FieldValueImpl(Field field, Optional<? extends Object> value) {
 			Validate.notNull(field);
 			Validate.notNull(value);
 			this.field = field;
@@ -91,17 +110,25 @@ public interface Tabulator<T> {
 			return field;
 		}
 		@Override
-		public Optional<T> getValue() {
+		public Optional<? extends Object> getValue() {
 			return value;
 		}
-	}
-	public static class FieldListValueImpl<T> implements FieldListValue<T> {
-		private Field field;
-		private Optional<List<Optional<T>>> value;
 		
-		public FieldListValueImpl(Field field, Optional<List<Optional<T>>> value) {
+		@Override
+		public String toString() {
+			return "<" + field.getName() + ", " + value.map(Object::toString).orElse("<empty>") + ">";
+		}
+	}
+	public static class NestedFieldValueImpl implements NestedFieldValue {
+		private Field field;
+		private Optional<? extends List<? extends FieldValue>> value;
+		
+		public NestedFieldValueImpl(Field field, Optional<? extends List<? extends FieldValue>> value) {
 			Validate.notNull(field);
 			Validate.notNull(value);
+			value.ifPresent(vs -> {
+				Validate.noNullElements(vs);
+			});
 			this.field = field;
 			this.value = value;
 		}
@@ -111,8 +138,54 @@ public interface Tabulator<T> {
 			return field;
 		}
 		@Override
-		public Optional<List<Optional<T>>> getValue() {
+		public Optional<? extends List<? extends FieldValue>> getValue() {
 			return value;
+		}
+		
+		@Override
+		public String toString() {
+			String valueRepr = value
+					.map(vs -> vs.stream()
+							.map(Object::toString)
+							.collect(Collectors.joining(", ", "{", "}")))
+					.orElse("<empty>");
+			return "<" + field.getName() + ", " + valueRepr + ">";
+		}
+	}
+	public static class MultiNestedFieldValueImpl implements MultiNestedFieldValue {
+		private Field field;
+		private Optional<? extends List<? extends List<? extends FieldValue>>> value;
+		
+		public MultiNestedFieldValueImpl(Field field, Optional<? extends List<? extends List<? extends FieldValue>>> value) {
+			Validate.notNull(field);
+			Validate.notNull(value);
+			value.ifPresent(vs -> {
+				Validate.noNullElements(vs);
+				vs.forEach(v -> Validate.noNullElements(v));
+			});
+			this.field = field;
+			this.value = value;
+		}
+		
+		@Override
+		public Field getField() {
+			return field;
+		}
+		@Override
+		public Optional<? extends List<? extends List<? extends FieldValue>>> getValue() {
+			return value;
+		}
+		
+		@Override
+		public String toString() {
+			String valueRepr = value
+					.map(vs -> vs.stream()
+							.map(v -> v.stream()
+									.map(Object::toString)
+									.collect(Collectors.joining(", ", "{", "}")))
+							.collect(Collectors.joining(", ", "[", "]")))
+					.orElse("<empty>");
+			return "<" + field.getName() + ", " + valueRepr + ">";
 		}
 	}
 }

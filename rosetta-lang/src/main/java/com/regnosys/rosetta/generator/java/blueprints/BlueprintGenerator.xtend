@@ -100,11 +100,11 @@ class BlueprintGenerator {
 	def generate(RootPackage root, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaBlueprintReport).forEach [ report |
 			// generate blueprint report
-			fsa.generateFile(root.blueprint.withForwardSlashes + '/' + report.name + 'BlueprintReport.java',
+			fsa.generateFile(root.reports.withForwardSlashes + '/' + report.name + 'BlueprintReport.java',
 				generateBlueprint(root, firstNodeExpression(report), report.name, 'BlueprintReport', report.URI, report.reportType?.name, version))
 			// generate output report type builder
 			if (report.reportType !== null) {
-				fsa.generateFile(root.blueprint.withForwardSlashes + '/' + report.reportType.name.toDataItemReportBuilderName + '.java',
+				fsa.generateFile(root.reports.withForwardSlashes + '/' + report.reportType.name.toDataItemReportBuilderName + '.java',
 					generateReportBuilder(root, report, version))
 			}
 		]
@@ -113,7 +113,7 @@ class BlueprintGenerator {
 			.filter[isLegacy]
 			.filter[nodes !== null]
 			.forEach [ bp |
-			fsa.generateFile(root.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
+			fsa.generateFile(root.reports.withForwardSlashes + '/' + bp.name + 'Rule.java',
 				generateBlueprint(root, bp, bp.name, 'Rule', bp.URI, null, version))
 		]
 		elements.filter(RosettaBlueprint)
@@ -180,11 +180,11 @@ class BlueprintGenerator {
 		try {
 			
 			val typed = buildTypeGraph(rule)
-			val clazz = new JavaClass(packageName.blueprint, name + type)
+			val clazz = new JavaClass(packageName.reports, name + type)
 			val typedJava = typed.toJavaNode(clazz)
 			val clazzWithArgs = typedJava.toParametrizedType(clazz)
 
-			val topScope = new JavaScope(packageName.blueprint)
+			val topScope = new JavaScope(packageName.reports)
 
 			val classScope = topScope.classScope(clazzWithArgs.toString)
 
@@ -213,7 +213,7 @@ class BlueprintGenerator {
 				}
 				'''
 
-				buildClass(packageName.blueprint, body, topScope)
+				buildClass(packageName.reports, body, topScope)
 			}
 			catch (Exception e) {
 				LOGGER.error("Error generating blueprint java for "+name, e);
@@ -679,7 +679,7 @@ class BlueprintGenerator {
 	 */
 	def String generateReportBuilder(RootPackage packageName, RosettaBlueprintReport report, String version) {
 		try {
-			val scope = new JavaScope(packageName.blueprint)
+			val scope = new JavaScope(packageName.reports)
 
 			val StringConcatenationClient body = '''
 				«emptyJavadocWithVersion(version)»
@@ -688,7 +688,7 @@ class BlueprintGenerator {
 					«report.buildDataItemReportBuilderBody»
 				}
 				'''
-			buildClass(packageName.blueprint, body, scope)
+			buildClass(packageName.reports, body, scope)
 		}
 		catch (Exception e) {
 			LOGGER.error("Error generating blueprint java for "+report.reportType.name, e);
@@ -727,7 +727,7 @@ class BlueprintGenerator {
 			«val attr = entry.key.attr»
 			«val attrType = attr.typeCall.typeCallToRType»
 			«val rule = entry.value»
-			«val ruleClass = new JavaClass(DottedPath.splitOnDots((rule.eContainer as RosettaModel).name).child("blueprint"), rule.name + "Rule")»
+			«val ruleClass = new JavaClass(DottedPath.splitOnDots((rule.eContainer as RosettaModel).name).child("reports"), rule.name + "Rule")»
 			if («ruleClass».class.isAssignableFrom(ruleType)) {
 				«DataItemReportUtils».setField(«builderPath»«path.trimFirst.buildAttributePathGetters»::set«attr.name.toFirstUpper», «attrType.toJavaReferenceType».class, data, «ruleClass».class);
 			}

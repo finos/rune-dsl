@@ -13,13 +13,9 @@ public class JavaInterface extends JavaClass {
 		if (t.isArray() || t.isPrimitive() || !t.isInterface() || t.getSimpleName().equals("")) {
 			return null;
 		}
-		String fullName = t.getSimpleName();
-		Class<?> parent = t;
-		while (parent.getDeclaringClass() != null) {
-			parent = t.getDeclaringClass();
-			fullName = parent.getSimpleName() + "." + fullName;
-		}
-		return new JavaInterface(DottedPath.splitOnDots(t.getPackage().getName()), fullName);
+		DottedPath packageName = DottedPath.splitOnDots(t.getCanonicalName()).parent();
+		String simpleName = t.getSimpleName();
+		return new JavaInterface(packageName, simpleName);
 	}
 	
 	@Override

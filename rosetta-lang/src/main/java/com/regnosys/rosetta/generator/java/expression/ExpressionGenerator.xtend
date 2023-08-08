@@ -277,7 +277,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		attrs.join(', ')
 	}
 	
-	private def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RosettaFeature feature, JavaScope scope, boolean autoValue) {
+	def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RosettaFeature feature, JavaScope scope, boolean autoValue) {
 		val StringConcatenationClient right = switch (feature) {
 			Attribute:
 				feature.buildMapFunc(autoValue, scope)
@@ -424,21 +424,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 			attribute.toMetaJavaType
 		}
 		if (attribute.card.isIsMany) {
-			if (attribute.metaAnnotations.nullOrEmpty)
+			if (attribute.metaAnnotations.nullOrEmpty || !autoValue)
 				'''.<«resultType»>mapC(«mapFunc»)'''
-			else if (!autoValue) {
-				'''.<«resultType»>mapC(«mapFunc»)'''
-			}
 			else {
 				'''.<«resultType»>mapC(«mapFunc»).<«typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType»>map("getValue", _f->_f.getValue())'''
 			}
 		}
 		else
 		{
-			if (attribute.metaAnnotations.nullOrEmpty){
-				'''.<«resultType»>map(«mapFunc»)'''
-			}
-			else if (!autoValue) {
+			if (attribute.metaAnnotations.nullOrEmpty || !autoValue){
 				'''.<«resultType»>map(«mapFunc»)'''
 			}
 			else

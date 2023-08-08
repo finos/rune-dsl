@@ -3,6 +3,7 @@ package com.regnosys.rosetta.types;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -35,10 +36,10 @@ public class TypeSystem {
 		return typing.inferType(expr).getValue();
 	}
 	
-	public RType getRulesInputType(Data data, RosettaExternalRuleSource source) {
+	public RType getRulesInputType(Data data, Optional<RosettaExternalRuleSource> source) {
 		return getRulesInputType(data, source, new HashSet<>());
 	}
-	private RType getRulesInputType(Data data, RosettaExternalRuleSource source, Set<Data> visited) {
+	private RType getRulesInputType(Data data, Optional<RosettaExternalRuleSource> source, Set<Data> visited) {
 		Validate.notNull(data);
 		if (!visited.add(data)) {
 			return builtins.ANY;

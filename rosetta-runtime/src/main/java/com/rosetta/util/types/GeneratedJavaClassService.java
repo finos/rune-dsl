@@ -1,18 +1,31 @@
 package com.rosetta.util.types;
 
-import com.rosetta.model.lib.reports.ReportModelId;
+import com.rosetta.model.lib.ModelSymbolId;
+import com.rosetta.model.lib.reports.ModelReportId;
 import com.rosetta.util.DottedPath;
 
 public class GeneratedJavaClassService {	
-	public JavaClass toJavaReportFunction(ReportModelId id) {
-		DottedPath namespace = id.getNamespace().child("reports");
+	public JavaClass toJavaReportFunction(ModelReportId id) {
+		DottedPath packageName = id.getNamespace().child("reports");
 		String simpleName = id.getBody() + String.join("", id.getCorpuses()) + "ReportFunction";
-		return new JavaClass(namespace, simpleName);
+		return new JavaClass(packageName, simpleName);
 	}
 	
-	public JavaClass toJavaReportTabulator(ReportModelId id) {
-		DottedPath namespace = id.getNamespace().child("reports");
+	public JavaClass toJavaReportTabulator(ModelReportId id) {
+		DottedPath packageName = id.getNamespace().child("reports");
 		String simpleName = id.getBody() + String.join("", id.getCorpuses()) + "ReportTabulator";
-		return new JavaClass(namespace, simpleName);
+		return new JavaClass(packageName, simpleName);
+	}
+	
+	public JavaClass toJavaFunction(ModelSymbolId id) {
+		DottedPath packageName = id.getNamespace().child("functions");
+		String simpleName = id.getName();
+		return new JavaClass(packageName, simpleName);
+	}
+	
+	public JavaClass toJavaRule(ModelSymbolId id) {
+		DottedPath packageName = id.getNamespace().child("reports");
+		String simpleName = id.getName() + "Rule";
+		return new JavaClass(packageName, simpleName);
 	}
 }
