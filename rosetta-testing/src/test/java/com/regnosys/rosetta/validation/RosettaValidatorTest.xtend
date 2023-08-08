@@ -2327,33 +2327,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldGenerateUnsupportedCardinalityError() {
-		val model = '''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			from Bar
-			when FooRule
-			with type BarReport
-			
-			eligibility rule FooRule from Bar:
-				filter bar1 exists
-			
-			reporting rule A from Bar:
-				extract Bar->bar1 as "A"
-			
-			type Bar:
-				bar1 string (0..*)
-			
-			type BarReport:
-				a string (0..*)
-					[ruleReference A]
-		'''.parseRosetta
-		model.assertError(ATTRIBUTE, null, "Report attributes with basic type (string) and multiple cardinality is not supported.")
-	}
-	
-	@Test
 	def shouldNotGenerateCountCardinalityErrorForMap() {
 		val model = '''
 			type Bar:

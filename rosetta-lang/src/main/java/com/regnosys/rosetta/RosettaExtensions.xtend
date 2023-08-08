@@ -268,9 +268,9 @@ class RosettaExtensions {
 			} 
 			else if (attrType instanceof Data) {
 				// TODO - get rid of repeatable rules
-					// if allLeafNodes is false - for repeatable rules only collect rules from nested type 
-					// if no rule exists at the top level, e.g., nested reporting rules are not supported 
-					// (except for repeatable rules where only the top level rule should be collected)
+				// if allLeafNodes is false - for repeatable rules only collect rules from nested type 
+				// if no rule exists at the top level, e.g., nested reporting rules are not supported 
+				// (except for repeatable rules where only the top level rule should be collected)
 				if (rule !== null && (!attrEx.isMultiple || !onlyLeafNodes)) {
 					visitor.put(new PathAttribute(path, attr), rule.reportingRule)
 				}
