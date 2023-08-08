@@ -960,17 +960,17 @@ For the comparison operators, if either the left or right expression has multipl
 The semantics for list comparisons are as follows:
 
 - `=`
-  - if both sides are lists, returns true if all items are equal when e
+  - if both sides are lists, returns true if all items are equal
   - if one side is single and `all` is specified, returns true if all items in the list are equal to the single value
-  - if one side is single and `any` is specified, returns true if any Item in the list is equal to the single value (not implemented yet)
+  - if one side is single and `any` is specified, returns true if any item in the list is equal to the single value
 - `<>`
   - if both sides are lists, returns true if the lists have different lengths or all items are different when compared pairwise in the order of the lists
   - if one side is single and `any` is specified, returns true if any item in the list is different from the single value
-  - if one side is single and `all` is specified, returns true if all items in the list are different from the single value (not implemented yet)
+  - if one side is single and `all` is specified, returns true if all items in the list are different from the single value
 - `<`, `<=`, `>=`, `>`
   - if both sides are lists, returns true if the comparison returns true for every item when compared pairwise in the order of the lists
   - if one side is single and `all` is specified, returns true if the comparison returns true for all items in the list when compared to that single value
-  - if one side is single and `any` is specified, returns true if the comparison returns true for any item in the list when compared to that single value (not implemented yet)
+  - if one side is single and `any` is specified, returns true if the comparison returns true for any item in the list when compared to that single value
 
 #### Other List Operator
 
