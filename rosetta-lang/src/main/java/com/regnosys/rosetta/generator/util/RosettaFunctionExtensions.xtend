@@ -17,6 +17,7 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.TypeCall
+import com.regnosys.rosetta.types.RAttribute
 
 class RosettaFunctionExtensions {
 
@@ -82,6 +83,10 @@ class RosettaFunctionExtensions {
 
 	dispatch def boolean needsBuilder(Void ele) {
 		false
+	}
+	
+	dispatch def boolean needsBuilder(RAttribute rAttribute) {
+		needsBuilder(rAttribute.RType)
 	}
 
 	dispatch def boolean needsBuilder(RosettaTyped ele) {
