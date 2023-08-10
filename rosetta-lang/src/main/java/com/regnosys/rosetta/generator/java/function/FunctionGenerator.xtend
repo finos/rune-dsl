@@ -16,29 +16,35 @@ import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
-import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
-import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
-import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RAnnotateType
+import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RFunction
+import com.regnosys.rosetta.types.ROperation
+import com.regnosys.rosetta.types.ROperationType
+import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.ConditionValidator
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.ModelObjectValidator
-import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.mapper.Mapper
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaParametrizedType
+import com.rosetta.util.types.JavaPrimitiveType
+import com.rosetta.util.types.JavaType
 import java.util.ArrayList
 import java.util.List
 import java.util.Map
@@ -50,16 +56,6 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.regnosys.rosetta.types.CardinalityProvider
-import com.rosetta.util.types.JavaType
-import com.rosetta.util.types.JavaParametrizedType
-import com.rosetta.util.types.JavaClass
-import com.rosetta.util.types.JavaPrimitiveType
-import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.types.ROperation
-import com.regnosys.rosetta.types.ROperationType
-import com.regnosys.rosetta.types.RShortcut
-import com.regnosys.rosetta.types.RFunction
 
 class FunctionGenerator {
 
@@ -141,7 +137,7 @@ class FunctionGenerator {
 		
 		val aliasScopes = newHashMap
 		shortcuts.forEach [
-			classScope.createIdentifier(it)
+			classScope.createIdentifier(it, it.name)
 			val aliasScope = defaultClassScope.methodScope(it.name)
 			inputs.forEach[aliasScope.createIdentifier(it, it.name)]
 			if (aliasOut.get(it)) {
@@ -228,7 +224,7 @@ class FunctionGenerator {
 					
 					protected «output.toBuilderType» assignOutput(«output.toBuilderType» «assignOutputScope.getIdentifierOrThrow(output)»«IF !inputs.empty», «ENDIF»«inputs.inputsAsParameters(assignOutputScope)») {
 						«FOR operation : operations»
-							«assign(assignOutputScope, operation, aliasOut, output)»
+							«assign(assignOutputScope, operation, function, aliasOut, output)»
 						«ENDFOR»
 						return «IF !needsBuilder(output)»«assignOutputScope.getIdentifierOrThrow(output)»«ELSE»«Optional».ofNullable(«assignOutputScope.getIdentifierOrThrow(output)»)
 								.map(«IF output.multi»o -> o.stream().map(i -> i.prune()).collect(«Collectors».toList())«ELSE»o -> o.prune()«ENDIF»)
@@ -317,7 +313,7 @@ class FunctionGenerator {
 		return op.expression instanceof AsKeyOperation
 	}
 
-	private def StringConcatenationClient assign(JavaScope scope, ROperation op,
+	private def StringConcatenationClient assign(JavaScope scope, ROperation op, RFunction function,
 		Map<RShortcut, Boolean> outs, RAttribute attribute) {
 
 		if (op.pathTail.isEmpty) {
@@ -330,20 +326,20 @@ class FunctionGenerator {
 						«attribute.toBuilderType» «addVarName» = toBuilder(«assignPlainValue(scope, op, attribute.multi)»);
 					«ELSE»
 						«attribute.toBuilderType» «addVarName» = «assignPlainValue(scope, op, attribute.multi)»;«ENDIF»
-					«op.assignTarget(outs, scope)».addAll(«addVarName»);'''
+					«op.assignTarget(function, outs, scope)».addAll(«addVarName»);'''
 				}
 				case SET: {
 					'''
 					«IF needsBuilder(op.pathHead)»
-						«op.assignTarget(outs, scope)» = toBuilder(«assignPlainValue(scope, op, attribute.multi)»);
+						«op.assignTarget(function, outs, scope)» = toBuilder(«assignPlainValue(scope, op, attribute.multi)»);
 					«ELSE»
-						«op.assignTarget(outs, scope)» = «assignPlainValue(scope, op, attribute.multi)»;«ENDIF»'''
+						«op.assignTarget(function, outs, scope)» = «assignPlainValue(scope, op, attribute.multi)»;«ENDIF»'''
 				} 	
 			}
 
 		} else { // assign an attribute of the function output object
 			'''
-				«op.assignTarget(outs, scope)»
+				«op.assignTarget(function, outs, scope)»
 					«FOR seg : op.pathTail.indexed»
 						«IF seg.key < op.pathTail.size - 1».getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value)».getOrCreateValue()«ENDIF»
 					«ELSE».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.isReference && !op.assignAsKey»Value«ENDIF»(«assignValue(scope, op, op.assignAsKey, seg.value.multi)»);«ENDIF»
@@ -411,22 +407,22 @@ class FunctionGenerator {
 		return attribute.hasMetaDataAnnotations || attribute.hasMetaDataAddress
 	}
 
-	private def StringConcatenationClient assignTarget(ROperation operation, Map<RShortcut, Boolean> outs,
+	private def StringConcatenationClient assignTarget(ROperation operation, RFunction function, Map<RShortcut, Boolean> outs,
 		JavaScope scope) {
 		val root = operation.pathHead
 		switch (root) {
 			RAttribute: '''«scope.getIdentifierOrThrow(root)»'''
 			RShortcut:
-				unfoldLHSShortcut(root, scope)
+				unfoldLHSShortcut(root, function, scope)
 		}
 	}
 
-	private def StringConcatenationClient unfoldLHSShortcut(RShortcut shortcut, JavaScope scope) {
+	private def StringConcatenationClient unfoldLHSShortcut(RShortcut shortcut, RFunction function, JavaScope scope) {
 		val e = shortcut.expression
 		if (e instanceof RosettaSymbolReference) {
 			if (e.symbol instanceof RosettaCallableWithArgs) {
 				// assign-output for an alias
-				return '''«scope.getIdentifierOrThrow(shortcut)»(«expressionGenerator.aliasCallArgs(shortcut)»)'''
+				return '''«scope.getIdentifierOrThrow(shortcut)»(«expressionGenerator.aliasCallArgs(shortcut, function, scope)»)'''
 			}
 		}
 		return '''«lhsExpand(e, scope)»'''

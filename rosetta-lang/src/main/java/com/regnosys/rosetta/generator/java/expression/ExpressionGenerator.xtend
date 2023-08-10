@@ -109,6 +109,7 @@ import java.util.Collections
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RFunction
 
 class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationClient, JavaScope> {
 	
@@ -269,11 +270,23 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		}
 	}
 	
-	def StringConcatenationClient aliasCallArgs(RShortcut alias, List<RAttribute> inputs, RAttribute output, JavaScope scope) {
+	def StringConcatenationClient aliasCallArgs(RShortcut alias, RFunction function, JavaScope scope) {
+		val output = function.output
+		val inputs = function.inputs
 		'''
 		«IF exprHelper.usesOutputParameter(alias.expression)»«scope.getIdentifierOrThrow(output)».toBuilder()«IF !inputs.empty», «ENDIF»«ENDIF»
 		«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»
 		'''
+	}
+	
+    def aliasCallArgs(ShortcutDeclaration alias) {
+		val func = EcoreUtil2.getContainerOfType(alias, Function)
+		val attrs = <String>newArrayList
+		attrs.addAll(funcExt.getInputs(func).map[name].toList)
+		if(exprHelper.usesOutputParameter(alias.expression)) {
+			attrs.add(0, funcExt.getOutput(func)?.name + '.toBuilder()')
+		}
+		attrs.join(', ')
 	}
 	
 	def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RosettaFeature feature, JavaScope scope, boolean autoValue) {

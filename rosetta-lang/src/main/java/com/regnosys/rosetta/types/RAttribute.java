@@ -3,6 +3,8 @@ package com.regnosys.rosetta.types;
 import java.util.List;
 import java.util.Objects;
 
+import com.regnosys.rosetta.rosetta.simple.Attribute;
+
 public class RAttribute implements RAssignedRoot {
 	private String name;
 	private String definition;
@@ -17,7 +19,7 @@ public class RAttribute implements RAssignedRoot {
 		this.metaAnnotations = metaAnnotations;
 		this.isMulti = isMulti;
 	}
-
+	
 	public String getName() {
 		return name;
 	}
