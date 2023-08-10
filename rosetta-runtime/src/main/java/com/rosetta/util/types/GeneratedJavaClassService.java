@@ -7,13 +7,13 @@ import com.rosetta.util.DottedPath;
 public class GeneratedJavaClassService {	
 	public JavaClass toJavaReportFunction(ModelReportId id) {
 		DottedPath packageName = id.getNamespace().child("reports");
-		String simpleName = id.getBody() + String.join("", id.getCorpuses()) + "ReportFunction";
+		String simpleName = id.getBody() + String.join("", id.getCorpusList()) + "ReportFunction";
 		return new JavaClass(packageName, simpleName);
 	}
 	
 	public JavaClass toJavaReportTabulator(ModelReportId id) {
 		DottedPath packageName = id.getNamespace().child("reports");
-		String simpleName = id.getBody() + String.join("", id.getCorpuses()) + "ReportTabulator";
+		String simpleName = id.getBody() + String.join("", id.getCorpusList()) + "ReportTabulator";
 		return new JavaClass(packageName, simpleName);
 	}
 	
