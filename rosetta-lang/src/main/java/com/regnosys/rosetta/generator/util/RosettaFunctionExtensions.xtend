@@ -18,6 +18,10 @@ import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RAssignedRoot
+import com.regnosys.rosetta.types.RShortcut
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef
+import java.util.List
 
 class RosettaFunctionExtensions {
 
@@ -104,6 +108,14 @@ class RosettaFunctionExtensions {
 			default: false
 		}
 	}
+	
+	dispatch def boolean needsBuilder(RAssignedRoot root) {
+		switch (root) {
+			RAttribute: root.RType.needsBuilder
+			RShortcut: root.expression.needsBuilder
+			default: false
+		}
+	}
 
 	dispatch def boolean needsBuilder(RosettaType type) {
 		switch (type) {
@@ -140,7 +152,11 @@ class RosettaFunctionExtensions {
 	}
 	
 	def getQualifierAnnotations(Annotated element) {
-		element.annotations.filter["qualification" == it.annotation.name].toList
+		getQualifierAnnotations(element.annotations)
+	}
+	
+	def getQualifierAnnotations(List<AnnotationRef> annotations) {
+		annotations.filter["qualification" == it.annotation.name].toList
 	}
 	
 	def getCreationAnnotations(Annotated element) {

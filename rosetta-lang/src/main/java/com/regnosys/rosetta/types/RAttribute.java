@@ -1,17 +1,20 @@
 package com.regnosys.rosetta.types;
 
+import java.util.List;
 import java.util.Objects;
 
-public class RAttribute {
+public class RAttribute implements RAssignedRoot {
 	private String name;
 	private String definition;
 	private RType rType;
+	private List<RAttribute> metaAnnotations;
 	private boolean isMulti;
 
-	public RAttribute(String name, String definition, RType rType, boolean isMulti) {
+	public RAttribute(String name, String definition, RType rType, List<RAttribute> metaAnnotations, boolean isMulti) {
 		this.name = name;
 		this.definition = definition;
 		this.rType = rType;
+		this.metaAnnotations = metaAnnotations;
 		this.isMulti = isMulti;
 	}
 
@@ -31,9 +34,14 @@ public class RAttribute {
 		return definition;
 	}
 	
+	
+	public List<RAttribute> getMetaAnnotations() {
+		return metaAnnotations;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(definition, isMulti, name, rType);
+		return Objects.hash(definition, isMulti, metaAnnotations, name, rType);
 	}
 
 	@Override
@@ -46,7 +54,10 @@ public class RAttribute {
 			return false;
 		RAttribute other = (RAttribute) obj;
 		return Objects.equals(definition, other.definition) && isMulti == other.isMulti
-				&& Objects.equals(name, other.name) && Objects.equals(rType, other.rType);
+				&& Objects.equals(metaAnnotations, other.metaAnnotations) && Objects.equals(name, other.name)
+				&& Objects.equals(rType, other.rType);
 	}
+
+
 
 }

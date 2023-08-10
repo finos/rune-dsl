@@ -5,6 +5,7 @@ import com.regnosys.rosetta.generator.ImplicitVariableRepresentation;
 import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.types.RFunction;
 import com.rosetta.util.types.JavaClass;
 
 public class JavaIdentifierRepresentationService extends IdentifierRepresentationService {
@@ -12,7 +13,7 @@ public class JavaIdentifierRepresentationService extends IdentifierRepresentatio
 		return new BlueprintImplicitVariableRepresentation(type);
 	}
 	
-	public FunctionInstanceRepresentation toFunctionInstance(JavaClass func) {
+	public FunctionInstanceRepresentation toFunctionInstance(RFunction func) {
 		return new FunctionInstanceRepresentation(func);
 	}
 	public RuleInstanceRepresentation toRuleInstance(RosettaBlueprint rule) {

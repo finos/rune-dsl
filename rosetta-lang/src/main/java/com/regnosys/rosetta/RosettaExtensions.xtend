@@ -36,6 +36,7 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import org.eclipse.emf.ecore.resource.ResourceSet
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import java.util.Optional
+import com.regnosys.rosetta.types.RAttribute
 
 class RosettaExtensions {
 	
@@ -168,12 +169,20 @@ class RosettaExtensions {
 		metaAnnotations.exists[attribute?.name == "template"]
 	}
 	
+	def boolean hasMetaDataAnnotations(RAttribute attribute) {
+		attribute.metaAnnotations.exists[name == "reference" || name == "location" || name == "scheme" || name == "id"]
+	}
+	
 	def boolean hasMetaDataAnnotations(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "reference" || attribute?.name == "location" || attribute?.name == "scheme" || attribute?.name == "id"]
 	}
 	
 	def boolean hasMetaFieldAnnotations(Annotated it) {
 		metaAnnotations.exists[attribute?.name != "reference" && attribute?.name != "address"]
+	}
+	
+	def boolean hasMetaDataAddress(RAttribute attribute) {
+		attribute.metaAnnotations.exists[name == "address"]
 	}
 	
 	def boolean hasMetaDataAddress(Annotated it) {

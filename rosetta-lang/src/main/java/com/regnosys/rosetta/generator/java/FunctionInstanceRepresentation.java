@@ -3,17 +3,18 @@ package com.regnosys.rosetta.generator.java;
 import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.types.RFunction;
 import com.rosetta.util.types.JavaClass;
 
 public class FunctionInstanceRepresentation {
-	private final JavaClass func;
-	public FunctionInstanceRepresentation(JavaClass func) {
+	private final RFunction func;
+	public FunctionInstanceRepresentation(RFunction func) {
 		this.func = func;
 	}
 	
 	@Override
 	public String toString() {
-		return "FunctionInstance[" + func.getCanonicalName() + "]";
+		return "FunctionInstance[" + func.getCanonicalName().withDots() + "]";
 	}
 	@Override
 	public int hashCode() {
