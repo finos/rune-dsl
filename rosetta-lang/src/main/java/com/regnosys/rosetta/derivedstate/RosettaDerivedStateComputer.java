@@ -45,7 +45,8 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 			this.setDefaultElseToEmpty((RosettaConditionalExpression)obj);
 		} else if (obj instanceof JoinOperation) {
 			this.setDefaultJoinSeparator((JoinOperation)obj);
-		} else if (obj instanceof HasGeneratedInput) {
+		}
+		if (obj instanceof HasGeneratedInput) {
 			this.setDefaultInput((HasGeneratedInput)obj);
 		}
 	}
@@ -63,7 +64,8 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 			this.discardDefaultElse((RosettaConditionalExpression)obj);
 		} else if (obj instanceof JoinOperation) {
 			this.discardDefaultJoinSeparator((JoinOperation)obj);
-		} else if (obj instanceof HasGeneratedInput) {
+		}
+		if (obj instanceof HasGeneratedInput) {
 			this.discardDefaultInput((HasGeneratedInput)obj);
 		}
 	}
