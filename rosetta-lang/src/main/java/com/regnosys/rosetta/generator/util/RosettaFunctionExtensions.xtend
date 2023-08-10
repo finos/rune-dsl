@@ -22,6 +22,7 @@ import com.regnosys.rosetta.types.RAssignedRoot
 import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import java.util.List
+import com.regnosys.rosetta.types.RFunction
 
 class RosettaFunctionExtensions {
 
@@ -145,6 +146,10 @@ class RosettaFunctionExtensions {
 	
 	def boolean isQualifierFunction(Function function) {
 		!getQualifierAnnotations(function).empty
+	}
+	
+	def boolean isQualifierFunction(RFunction function) {
+		!getQualifierAnnotations(function.annotations).empty
 	}
 	
 	def getMetadataAnnotations(Annotated element) {

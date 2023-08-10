@@ -12,7 +12,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.generator.util.Util
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -35,6 +35,7 @@ import com.regnosys.rosetta.types.ROperation
 import com.regnosys.rosetta.types.ROperationType
 import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.types.RTypeBuilderFactory
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.ConditionValidator
@@ -51,11 +52,15 @@ import java.util.Map
 import java.util.Optional
 import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.generator.util.Util
+import com.rosetta.model.lib.functions.RosettaFunction
+import com.rosetta.util.DottedPath
 
 class FunctionGenerator {
 
@@ -69,6 +74,7 @@ class FunctionGenerator {
 	@Inject CardinalityProvider cardinality
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject extension JavaTypeTranslator
+	@Inject RTypeBuilderFactory rTypeBuilderFactory
 
 	def void generate(RootPackage root, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
@@ -76,16 +82,34 @@ class FunctionGenerator {
 		val topScope = new JavaScope(root.functions)
 		topScope.createIdentifier(func)
 
-		val dependencies = collectFunctionDependencies(func)
+		
 
 		val StringConcatenationClient classBody = if (func.handleAsEnumFunction) {
+				val dependencies = collectFunctionDependencies(func)
 				func.dispatchClassBody(topScope, dependencies, version, root)
 			} else {
-				func.classBody(topScope, dependencies, version, false, root)
+				val rFunction = rTypeBuilderFactory.buildRFunction(func)
+				rBuildClass(rFunction, topScope)
 			}
 
 		val content = buildClass(root.functions, classBody, topScope)
 		fsa.generateFile(fileName, content)
+	}
+	
+	private def rBuildClass(RFunction rFunction, JavaScope topScope) {
+		val dependencies = collectFunctionDependencies(rFunction)
+		
+		val List<JavaType> functionInterfaces = newArrayList(JavaClass.from(RosettaFunction))
+		
+		if (isQualifierFunction(rFunction)) {
+			functionInterfaces.add(getQualifyingFunctionInterface(rFunction.inputs))
+		}
+		rFunction.classBody(false, false, dependencies, functionInterfaces , topScope)
+	}
+	
+	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
+		val parameterVariable = inputs.head.RType.toListOrSingleJavaType(inputs.head.multi)
+		new JavaParametrizedType( JavaClass.from(IQualifyFunctionExtension), parameterVariable)
 	}
 
 	private def collectFunctionDependencies(Function func) {
@@ -97,10 +121,23 @@ class FunctionGenerator {
 		return Util.distinctBy(deps + condDeps, [name]).sortBy[it.name]
 	}
 
+	private def collectFunctionDependencies(RFunction func) {
+		val expressions = func.preConditions.map[it.expression] + 
+				func.postConditions.map[it.expression] + 
+				func.operations.map[it.expression]
+				
+		expressions.flatMap[
+			val rosettaSymbols = EcoreUtil2.eAllOfType(it, RosettaSymbolReference).map[it.symbol]
+			rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it)] +
+			rosettaSymbols.filter(RosettaBlueprint).map[rTypeBuilderFactory.buildRFunction(it)]
+		].toSet.sortBy[it.name]
+	}
+
 	private def StringConcatenationClient classBody(
 		RFunction function,
 		boolean isStatic,
 		boolean overridesEvaluate,
+		List<RFunction> dependencies,
 		List<JavaType> functionInterfaces,
 		JavaScope scope
 	) {
@@ -111,7 +148,6 @@ class FunctionGenerator {
 		val operations = function.operations
 		val preConditions = function.preConditions
 		val postConditions = function.postConditions
-		val dependencies = function.dependencies
 		val classScope = scope.classScope(className.desiredName)
 		val defaultClassScope = classScope.classScope(className.desiredName + "Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier(className.desiredName + "Default")
@@ -295,8 +331,19 @@ class FunctionGenerator {
 			}
 			
 			«FOR enumFunc : dispatchingFuncs»
-				
-				«enumFunc.classBody(classScope, collectFunctionDependencies(enumFunc), version, true, root)»
+				«val rFunction = new RFunction(
+					function.name, 
+					DottedPath.splitOnDots(function.model.name), 
+					enumFunc.definition, 
+					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)], 
+					rTypeBuilderFactory.buildRAttribute(function.output), 
+					enumFunc.conditions, 
+					enumFunc.postConditions,
+					(function.shortcuts + enumFunc.shortcuts).toList.map[rTypeBuilderFactory.buildRShortcut(it)],
+					enumFunc.operations.map[rTypeBuilderFactory.buildROperation(it)],
+					enumFunc.annotations
+				)»
+				«rFunction.rBuildClass(classScope)»
 			«ENDFOR»
 		}'''
 	}

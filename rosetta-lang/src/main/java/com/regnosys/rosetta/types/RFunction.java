@@ -2,8 +2,6 @@ package com.regnosys.rosetta.types;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.rosetta.util.DottedPath;

@@ -243,7 +243,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		} else
 			return toJavaReferenceType(type);
 	}
-	public JavaType toListOrSingleJavaType(RType type, boolean isMany) {
+	public JavaReferenceType toListOrSingleJavaType(RType type, boolean isMany) {
 		if (isMany) {
 			return new JavaParametrizedType(listClass, toJavaReferenceType(type));
 		} else
