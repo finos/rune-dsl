@@ -10,17 +10,17 @@ import com.rosetta.util.DottedPath;
 public class ModelReportId {
 	private DottedPath namespace;
 	private String body;
-	private String[] corpuses;
+	private String[] corpusList;
 
-	public ModelReportId(DottedPath namespace, String body, String... corpuses) {
+	public ModelReportId(DottedPath namespace, String body, String... corpusList) {
 		Validate.notNull(namespace);
 		Validate.notNull(body);
-		Validate.notNull(corpuses);
-		Validate.noNullElements(corpuses);
+		Validate.notNull(corpusList);
+		Validate.noNullElements(corpusList);
 		
 		this.namespace = namespace;
 		this.body = body;
-		this.corpuses = corpuses;
+		this.corpusList = corpusList;
 	}
 
 	public DottedPath getNamespace() {
@@ -29,13 +29,13 @@ public class ModelReportId {
 	public String getBody() {
 		return body;
 	}
-	public String[] getCorpuses() {
-		return corpuses;
+	public String[] getCorpusList() {
+		return corpusList;
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(namespace, body, Arrays.hashCode(corpuses));
+		return Objects.hash(namespace, body, Arrays.hashCode(corpusList));
 	}
 	@Override
 	public boolean equals(Object object) {
@@ -45,6 +45,6 @@ public class ModelReportId {
         ModelReportId other = (ModelReportId) object;
         return Objects.equals(namespace, other.namespace)
         		&& Objects.equals(body, other.body)
-        		&& Arrays.equals(corpuses, other.corpuses);
+        		&& Arrays.equals(corpusList, other.corpusList);
 	}
 }

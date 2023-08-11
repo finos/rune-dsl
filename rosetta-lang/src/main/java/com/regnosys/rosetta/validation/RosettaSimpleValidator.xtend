@@ -1098,6 +1098,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 					} catch (BlueprintUnresolvedTypeException e) {
 					}
 				}
+				// check basic type cardinality supported
+				if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
+					val unsupportedWarning = '''Legacy-syntax rules do not support attributes with a basic type (`«attrType.name»`) and multiple cardinality.'''
+					error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
+				}
 			} else {
 				// check cardinality
 				val ruleSingle = !bp.expression.isMulti
