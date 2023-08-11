@@ -1687,11 +1687,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				Foo:
 					+ foo
-						[value "bar" path "baz" dateFormat "MMB/dd/yy"]
+						[value "bar" path "baz" dateFormat "MMa/dd/yy"]
 			}
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYNONYM_BODY, null,
-			"Format must be a valid date/time format - Unknown pattern letter: B")
+			"Format must be a valid date/time format - Unknown pattern letter: a")
 	}
 	
 	@Test
