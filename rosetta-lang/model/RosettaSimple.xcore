@@ -93,7 +93,7 @@ class Condition extends RosettaDefinable, Annotated, RosettaNamed, References {
 	contains RosettaExpression expression
 }
 
-abstract class Operation extends RosettaDefinable {
+class Operation extends RosettaDefinable {
 	container Function function opposite operations
 	refers AssignPathRoot assignRoot
 	contains Segment path

@@ -81,12 +81,10 @@ class FunctionGenerator {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
 
 		val topScope = new JavaScope(root.functions)
-		topScope.createIdentifier(func)
-
-		
 
 		val StringConcatenationClient classBody = if (func.handleAsEnumFunction) {
 				val dependencies = collectFunctionDependencies(func)
+				topScope.createIdentifier(func)
 				func.dispatchClassBody(topScope, dependencies, version, root)
 			} else {
 				val rFunction = rTypeBuilderFactory.buildRFunction(func)
@@ -149,7 +147,10 @@ class FunctionGenerator {
 		val operations = function.operations
 		val preConditions = function.preConditions
 		val postConditions = function.postConditions
+		
 		val classScope = scope.classScope(className.desiredName)
+		dependencies.forEach[classScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)]
+		
 		val defaultClassScope = classScope.classScope(className.desiredName + "Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier(className.desiredName + "Default")
 		val outputType = output.attributeToJavaType
@@ -170,7 +171,6 @@ class FunctionGenerator {
 		val assignOutputScope = defaultClassScope.methodScope("assignOutput")
 		inputs.forEach[assignOutputScope.createIdentifier(it, it.name)]
 		assignOutputScope.createIdentifier(output, output.name)
-
 		
 		val aliasScopes = newHashMap
 		shortcuts.forEach [
@@ -185,7 +185,7 @@ class FunctionGenerator {
 
 		'''
 			@«ImplementedBy»(«className».«defaultClassName».class)
-			public «IF isStatic»static «ENDIF»abstract class«className» implements «FOR fInterface : functionInterfaces SEPARATOR ","»«fInterface»«ENDFOR» {
+			public «IF isStatic»static «ENDIF»abstract class «className» implements «FOR fInterface : functionInterfaces SEPARATOR ","»«fInterface»«ENDFOR» {
 				«IF !preConditions.empty || !postConditions.empty»
 					
 					@«Inject» protected «ConditionValidator» «conditionValidatorId»;
@@ -195,12 +195,12 @@ class FunctionGenerator {
 					@«Inject» protected «ModelObjectValidator» «objectValidatorId»;
 				«ENDIF»
 				«IF !dependencies.empty»
-
+					
 					// RosettaFunction dependencies
 					//
 				«ENDIF»
 				«FOR dep : dependencies»
-					@«Inject» protected «dep» «classScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
+					@«Inject» protected «dep.toFunctionJavaClass» «classScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
 				«ENDFOR»
 			
 				/**
@@ -236,7 +236,6 @@ class FunctionGenerator {
 					«ENDIF»
 					return «evaluateScope.getIdentifierOrThrow(output)»;
 				}
-				
 			
 				protected abstract «output.toBuilderType» doEvaluate(«inputs.inputsAsParameters(doEvaluateScope)»);
 			«FOR alias : shortcuts»
@@ -263,10 +262,11 @@ class FunctionGenerator {
 						«FOR operation : operations»
 							«assign(assignOutputScope, operation, function, aliasOut, output)»
 						«ENDFOR»
+						
 						return «IF !needsBuilder(output)»«assignOutputScope.getIdentifierOrThrow(output)»«ELSE»«Optional».ofNullable(«assignOutputScope.getIdentifierOrThrow(output)»)
-								.map(«IF output.multi»o -> o.stream().map(i -> i.prune()).collect(«Collectors».toList())«ELSE»o -> o.prune()«ENDIF»)
+							.map(«IF output.multi»o -> o.stream().map(i -> i.prune()).collect(«Collectors».toList())«ELSE»o -> o.prune()«ENDIF»)
 							.orElse(null)«ENDIF»;
-						}
+					}
 						«FOR alias : shortcuts»
 							«val aliasScope = aliasScopes.get(alias)»
 							«IF aliasOut.get(alias)»
@@ -285,7 +285,7 @@ class FunctionGenerator {
 								}
 							«ENDIF»
 						«ENDFOR»
-					}
+				}
 					«IF functionInterfaces.exists[it == JavaClass.from(IQualifyFunctionExtension)]»
 						
 						@Override

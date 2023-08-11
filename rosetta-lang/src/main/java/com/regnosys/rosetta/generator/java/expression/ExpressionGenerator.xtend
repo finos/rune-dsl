@@ -125,7 +125,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	@Inject RecordFeatureMap recordFeatureMap
 	@Inject extension JavaTypeTranslator
 	@Inject extension TypeSystem
-	@Inject RObjectFactory rTypeBuilderFactory;
+	@Inject RObjectFactory rObjectFactory;
 
 	/**
 	 * convert a rosetta expression to code
@@ -211,9 +211,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 			Function,
 			RosettaBlueprint: {
 				val rCallable = if (callable instanceof Function)
-						rTypeBuilderFactory.buildRFunction(callable)
+						rObjectFactory.buildRFunction(callable)
 					else
-						rTypeBuilderFactory.buildRFunction(callable as RosettaBlueprint)
+						rObjectFactory.buildRFunction(callable as RosettaBlueprint)
 				val multi = rCallable.output.multi
 				'''«IF needsMapper»«IF multi»«MapperC».<«rCallable.output.RType.toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«ENDIF»«scope.getIdentifierOrThrow(rCallable.toFunctionInstance)».evaluate(«argsCode»)«IF needsMapper»)«ENDIF»'''
 			}
@@ -845,6 +845,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				'''«MapperS».of(«context.getIdentifierOrThrow(new RDataType(s).toBlueprintImplicitVar)»)'''
 			}
 			Attribute: {
+				val attribute = rObjectFactory.buildRAttribute(s)
 				// Data attributes can only be called if there is an implicit variable present.
 				// The current container (Data) is stored in Params, but we need also look for superTypes
 				// so we could also do: (s.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
@@ -858,11 +859,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 					}
 					featureCall(implicitVariable(expr, context), s, context, autoValue)
 				} else
-					'''«IF s.card.isIsMany»«MapperC».<«typeProvider.getRTypeOfSymbol(s).toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«context.getIdentifierOrThrow(s)»)'''
+					'''«IF s.card.isIsMany»«MapperC».<«attribute.RType.toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«context.getIdentifierOrThrow(attribute)»)'''
 			}
 			ShortcutDeclaration: {
+				val shortcut = rObjectFactory.buildRShortcut(s);
 				val multi = cardinalityProvider.isMulti(s)
-				'''«IF multi»«MapperC».<«typeProvider.getRTypeOfSymbol(s).toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«context.getIdentifierOrThrow(s)»(«aliasCallArgs(s)»).«IF exprHelper.usesOutputParameter(s.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
+				'''«IF multi»«MapperC».<«typeProvider.getRTypeOfSymbol(s).toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«context.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s)»).«IF exprHelper.usesOutputParameter(s.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
 			}
 			RosettaEnumeration: '''«new REnumType(s).toJavaType»'''
 			ClosureParameter: '''«context.getIdentifierOrThrow(s)»'''
