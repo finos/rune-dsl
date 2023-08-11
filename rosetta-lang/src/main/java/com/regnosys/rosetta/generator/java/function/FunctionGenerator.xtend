@@ -286,7 +286,7 @@ class FunctionGenerator {
 							«ENDIF»
 						«ENDFOR»
 				}
-					«IF functionInterfaces.exists[it == JavaClass.from(IQualifyFunctionExtension)]»
+					«IF isQualifierFunction(function)»
 						
 						@Override
 						public String getNamePrefix() {
