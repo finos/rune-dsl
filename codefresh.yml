@@ -28,8 +28,9 @@ steps:
     fail_fast: false
     image: regnosys-docker-registry.jfrog.io/regnosys/rosetta-products-deps:java-17
     commands:
-      - mvn -s /settings.xml
-      - /xvfb.sh && mvn -s /settings.xml clean deploy -T 1C
+      - rm -rf /codefresh/volume/.m2/com/regnosys
+      - mvn -s /settings.xml versions:set -DnewVersion=${{RELEASE_NAME}}
+      - mvn -U -s /settings.xml clean deploy
 
   NotifySlackOnFail:
     title: Trigger Slack dev channel notification if master build failed
