@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Objects;
 
 import com.regnosys.rosetta.interpreter.RosettaValue;
+import com.rosetta.util.DottedPath;
 
 
 public class RAliasType extends RParametrizedType {
@@ -19,6 +20,11 @@ public class RAliasType extends RParametrizedType {
 	@Override
 	public String getName() {
 		return typeFunction.getName();
+	}
+	
+	@Override
+	public DottedPath getNamespace() {
+		return typeFunction.getNamespace();
 	}
 	
 	public RTypeFunction getTypeFunction() {

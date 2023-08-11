@@ -16,10 +16,7 @@ public class JavaIdentifierRepresentationService extends IdentifierRepresentatio
 	public FunctionInstanceRepresentation toFunctionInstance(RFunction func) {
 		return new FunctionInstanceRepresentation(func);
 	}
-	public RuleInstanceRepresentation toRuleInstance(RosettaBlueprint rule) {
-		return new RuleInstanceRepresentation(rule);
-	}
-	
+
 	public ImplicitVariableRepresentation toRuleInputParameter(RosettaBlueprint rule) {
 		return getImplicitVarInContext(rule.getExpression());
 	}

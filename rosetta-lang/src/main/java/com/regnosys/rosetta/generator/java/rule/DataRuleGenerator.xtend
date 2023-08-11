@@ -46,7 +46,7 @@ class DataRuleGenerator {
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION))
 		val ruleName = rule.conditionName(data)
 		val className = toConditionJavaType(ruleName);
-		val funcDeps = funcDependencies.functionDependencies(rule.expression)
+		val funcDeps = funcDependencies.rFunctionDependencies(rule.expression)
 		val implicitVarRepr = rule.implicitVarInContext
 		
 		val classScope = scope.classScope(toConditionJavaType(ruleName))

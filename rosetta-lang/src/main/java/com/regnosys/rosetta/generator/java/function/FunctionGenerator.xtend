@@ -35,7 +35,6 @@ import com.regnosys.rosetta.types.ROperation
 import com.regnosys.rosetta.types.ROperationType
 import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.types.RTypeBuilderFactory
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.ConditionValidator
@@ -61,6 +60,8 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.generator.util.Util
 import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.util.DottedPath
+import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.types.RFunctionOrigin
 
 class FunctionGenerator {
 
@@ -74,7 +75,7 @@ class FunctionGenerator {
 	@Inject CardinalityProvider cardinality
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject extension JavaTypeTranslator
-	@Inject RTypeBuilderFactory rTypeBuilderFactory
+	@Inject RObjectFactory rTypeBuilderFactory
 
 	def void generate(RootPackage root, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
@@ -96,7 +97,7 @@ class FunctionGenerator {
 		fsa.generateFile(fileName, content)
 	}
 	
-	private def rBuildClass(RFunction rFunction, JavaScope topScope) {
+	def rBuildClass(RFunction rFunction, JavaScope topScope) {
 		val dependencies = collectFunctionDependencies(rFunction)
 		
 		val List<JavaType> functionInterfaces = newArrayList(JavaClass.from(RosettaFunction))
@@ -337,6 +338,7 @@ class FunctionGenerator {
 					enumFunc.definition, 
 					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)], 
 					rTypeBuilderFactory.buildRAttribute(function.output), 
+					RFunctionOrigin.FUNCTION,
 					enumFunc.conditions, 
 					enumFunc.postConditions,
 					(function.shortcuts + enumFunc.shortcuts).toList.map[rTypeBuilderFactory.buildRShortcut(it)],

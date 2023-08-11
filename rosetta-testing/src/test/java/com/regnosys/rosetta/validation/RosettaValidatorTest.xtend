@@ -43,7 +43,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				ins then val
 		'''.parseRosetta
 		
-		model.assertError(OUTPUT_OPERATION, null,
+		model.assertError(OPERATION, null,
 			"Cardinality mismatch - cannot assign list to a single value.")
 	}
 	

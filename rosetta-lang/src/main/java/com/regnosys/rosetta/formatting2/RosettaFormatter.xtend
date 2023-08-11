@@ -498,7 +498,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	def dispatch void format(Operation ele, extension IFormattableDocument document) {
-		val extension outputOperationGrammarAccess = outputOperationAccess
+		val extension operationGrammarAccess = operationAccess
 		
 		ele.regionFor.keyword(setKeyword_0_0)
 			.append[oneSpace]

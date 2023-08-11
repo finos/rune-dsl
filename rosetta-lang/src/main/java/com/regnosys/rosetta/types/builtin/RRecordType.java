@@ -3,7 +3,9 @@ package com.regnosys.rosetta.types.builtin;
 import java.util.Collection;
 import java.util.Objects;
 
+import com.regnosys.rosetta.scoping.RosettaScopeProvider;
 import com.regnosys.rosetta.types.RType;
+import com.rosetta.util.DottedPath;
 
 public abstract class RRecordType extends RType {
 	private final String name;
@@ -16,6 +18,10 @@ public abstract class RRecordType extends RType {
 	@Override
 	public String getName() {
 		return this.name;
+	}
+	@Override
+	public DottedPath getNamespace() {
+		return DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE);
 	}
 	@Override
 	public boolean hasNaturalOrder() {

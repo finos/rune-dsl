@@ -3,6 +3,7 @@ package com.regnosys.rosetta.types;
 import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
+import com.rosetta.util.DottedPath;
 
 public class REnumType extends RAnnotateType {
 	private final RosettaEnumeration enumeration;
@@ -16,6 +17,12 @@ public class REnumType extends RAnnotateType {
 	public String getName() {
 		return this.enumeration.getName();
 	}
+	
+	@Override
+	public DottedPath getNamespace() {
+		return DottedPath.splitOnDots(enumeration.getModel().getName());
+	}
+
 
 	public RosettaEnumeration getEnumeration() {
 		return this.enumeration;

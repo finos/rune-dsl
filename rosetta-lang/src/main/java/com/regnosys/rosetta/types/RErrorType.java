@@ -2,6 +2,8 @@ package com.regnosys.rosetta.types;
 
 import java.util.Objects;
 
+import com.rosetta.util.DottedPath;
+
 // TODO: remove this type
 public class RErrorType extends RType {
 	private final String message;
@@ -15,6 +17,12 @@ public class RErrorType extends RType {
 	public String getName() {
 		return this.message;
 	}
+	
+	@Override
+	public DottedPath getNamespace() {
+		return DottedPath.of();
+	}
+
 
 	public String getMessage() {
 		return this.message;

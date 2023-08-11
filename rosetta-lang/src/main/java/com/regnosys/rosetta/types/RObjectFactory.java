@@ -12,7 +12,7 @@ import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.rosetta.util.DottedPath;
 
-public class RTypeBuilderFactory {
+public class RObjectFactory {
 	@Inject
 	private RosettaTypeProvider rosettaTypeProvider;
 	@Inject
@@ -24,7 +24,9 @@ public class RTypeBuilderFactory {
 		return new RFunction(function.getName(), DottedPath.splitOnDots(function.getModel().getName()),
 				function.getDefinition(),
 				function.getInputs().stream().map(i -> buildRAttribute(i)).collect(Collectors.toList()),
-				buildRAttribute(function.getOutput()), function.getConditions(), function.getPostConditions(),
+				buildRAttribute(function.getOutput()),
+				RFunctionOrigin.FUNCTION,
+				function.getConditions(), function.getPostConditions(),
 				function.getShortcuts().stream().map(s -> buildRShortcut(s)).collect(Collectors.toList()),
 				function.getOperations().stream().map(o -> buildROperation(o)).collect(Collectors.toList()),
 				function.getAnnotations());
@@ -42,6 +44,7 @@ public class RTypeBuilderFactory {
 				rule.getDefinition(),
 				List.of(new RAttribute("input", null, inputRtype, List.of(), false)),
 				outputAttribute,
+				RFunctionOrigin.RULE,
 				List.of(),
 				List.of(),
 				List.of(),

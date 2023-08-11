@@ -36,6 +36,7 @@ import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RErrorType;
+import com.regnosys.rosetta.types.RFunction;
 import com.regnosys.rosetta.types.ROperation;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
@@ -96,7 +97,18 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaParametrizedType toPolymorphicList(JavaReferenceType t) {
 		return new JavaParametrizedType(listClass, JavaWildcardTypeArgument.extendsBound(t));
 	}
-	
+	public JavaClass toFunctionJavaClass(RFunction func) {
+		switch (func.getOrigin()) {
+		case FUNCTION:
+			return generatedJavaClassService.toJavaFunction(func.getModelSymbolId());
+		case REPORT:
+			throw new UnsupportedOperationException();
+		case RULE:
+			return generatedJavaClassService.toJavaRule(func.getModelSymbolId());
+		default:
+			throw new IllegalStateException();
+		}			 
+	}
 	public JavaClass toFunctionJavaClass(Function func) {
 		return generatedJavaClassService.toJavaFunction(getSymbolId(func));
 	}
@@ -121,11 +133,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		String simpleName = typeId.getName() + sourceId.getName() + "Tabulator";
 		return new JavaClass(packageName, simpleName);
 	}
-	public JavaClass toRuleJavaClass(RosettaBlueprint rule) {
-		return generatedJavaClassService.toJavaRule(getSymbolId(rule));
-	}
-	
-	
 	public JavaReferenceType toMetaJavaType(Attribute attribute) {
 		JavaReferenceType attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute));
 		DottedPath namespace = getModelPackage(attribute.getTypeCall().getType());

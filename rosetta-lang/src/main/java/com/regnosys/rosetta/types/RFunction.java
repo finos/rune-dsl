@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Condition;
+import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 
 public class RFunction {
@@ -12,6 +13,7 @@ public class RFunction {
 	private String definition;
 	private List<RAttribute> inputs;
 	private RAttribute output;
+	private RFunctionOrigin origin;
 	private List<Condition> preConditions;
 	private List<Condition> postConditions;
 	private List<RShortcut> shortcuts;
@@ -19,13 +21,14 @@ public class RFunction {
 	private List<AnnotationRef> annotations;
 	
 	public RFunction(String name, DottedPath namespace, String definition, List<RAttribute> inputs,
-			RAttribute output, List<Condition> preConditions, List<Condition> postConditions,
+			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
 			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
 		this.name = name;
 		this.namespace = namespace;
 		this.definition = definition;
 		this.inputs = inputs;
 		this.output = output;
+		this.origin = origin;
 		this.preConditions = preConditions;
 		this.postConditions = postConditions;
 		this.shortcuts = shortcuts;
@@ -53,6 +56,10 @@ public class RFunction {
 		return output;
 	}
 
+	public RFunctionOrigin getOrigin() {
+		return origin;
+	}
+
 	public List<Condition> getPreConditions() {
 		return preConditions;
 	}
@@ -72,17 +79,19 @@ public class RFunction {
 	public DottedPath getCanonicalName() {
 		return namespace.child(name);
 	}
-	
-	
 
 	public List<AnnotationRef> getAnnotations() {
 		return annotations;
 	}
+	
+	public ModelSymbolId getModelSymbolId() {
+		return new ModelSymbolId(namespace,name);
+	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(annotations, definition, inputs, name, namespace, operations, output, postConditions,
-				preConditions, shortcuts);
+		return Objects.hash(annotations, definition, inputs, name, namespace, operations, origin, output,
+				postConditions, preConditions, shortcuts);
 	}
 
 	@Override
@@ -97,9 +106,8 @@ public class RFunction {
 		return Objects.equals(annotations, other.annotations) && Objects.equals(definition, other.definition)
 				&& Objects.equals(inputs, other.inputs) && Objects.equals(name, other.name)
 				&& Objects.equals(namespace, other.namespace) && Objects.equals(operations, other.operations)
-				&& Objects.equals(output, other.output) && Objects.equals(postConditions, other.postConditions)
+				&& origin == other.origin && Objects.equals(output, other.output)
+				&& Objects.equals(postConditions, other.postConditions)
 				&& Objects.equals(preConditions, other.preConditions) && Objects.equals(shortcuts, other.shortcuts);
 	}
-
-	
 }

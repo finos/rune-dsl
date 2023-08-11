@@ -63,7 +63,6 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.rosetta.simple.OutputOperation
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
@@ -1679,18 +1678,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}			
 		}
 	}
-	
+
 	@Check
-	def checkAssignOutput(Operation o) {
+	def checkOutputOperation(Operation o) {
 		val expr = o?.expression
 		if (expr !== null && expr.isOutputListOfLists) {
 			error('''Assign expression contains a list of lists, use flatten to create a list.''', o,
 				OPERATION__EXPRESSION)
 		}
-	}
-
-	@Check
-	def checkOutputOperation(OutputOperation o) {
 		val isList = cardinality.isMulti(o.path !== null
 				? o.pathAsSegmentList.last.attribute
 				: o.assignRoot)
