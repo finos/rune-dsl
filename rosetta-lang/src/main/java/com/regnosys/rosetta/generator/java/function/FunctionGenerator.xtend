@@ -261,8 +261,8 @@ class FunctionGenerator {
 					protected «output.toBuilderType» assignOutput(«output.toBuilderType» «assignOutputScope.getIdentifierOrThrow(output)»«IF !inputs.empty», «ENDIF»«inputs.inputsAsParameters(assignOutputScope)») {
 						«FOR operation : operations»
 							«assign(assignOutputScope, operation, function, aliasOut, output)»
+							
 						«ENDFOR»
-						
 						return «IF !needsBuilder(output)»«assignOutputScope.getIdentifierOrThrow(output)»«ELSE»«Optional».ofNullable(«assignOutputScope.getIdentifierOrThrow(output)»)
 							.map(«IF output.multi»o -> o.stream().map(i -> i.prune()).collect(«Collectors».toList())«ELSE»o -> o.prune()«ENDIF»)
 							.orElse(null)«ENDIF»;
