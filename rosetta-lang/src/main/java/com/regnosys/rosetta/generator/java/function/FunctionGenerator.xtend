@@ -123,7 +123,8 @@ class FunctionGenerator {
 	private def collectFunctionDependencies(RFunction func) {
 		val expressions = func.preConditions.map[it.expression] + 
 				func.postConditions.map[it.expression] + 
-				func.operations.map[it.expression]
+				func.operations.map[it.expression] +
+				func.shortcuts.map[it.expression]
 				
 		expressions.flatMap[
 			val rosettaSymbols = EcoreUtil2.eAllOfType(it, RosettaSymbolReference).map[it.symbol]
@@ -267,24 +268,24 @@ class FunctionGenerator {
 							.map(«IF output.multi»o -> o.stream().map(i -> i.prune()).collect(«Collectors».toList())«ELSE»o -> o.prune()«ENDIF»)
 							.orElse(null)«ENDIF»;
 					}
-						«FOR alias : shortcuts»
-							«val aliasScope = aliasScopes.get(alias)»
-							«IF aliasOut.get(alias)»
-								«val multi = cardinality.isMulti(alias.expression)»
-								«val returnType = shortcutJavaType(alias)»
-								
-								@Override
-								protected «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«output.toBuilderType» «aliasScope.getIdentifierOrThrow(output)», «IF !inputs.empty»«inputs.inputsAsParameters(aliasScope)»«ENDIF») {
-									return toBuilder(«expressionGenerator.javaCode(alias.expression, aliasScope)»«IF multi».getMulti()«ELSE».get()«ENDIF»);
-								}
-							«ELSE»
-								
-								@Override
-								protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaReferenceType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaReferenceType(typeProvider.getRType(alias.expression))»>«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«inputs.inputsAsParameters(aliasScope)») {
-									return «expressionGenerator.javaCode(alias.expression, aliasScope)»;
-								}
-							«ENDIF»
-						«ENDFOR»
+					«FOR alias : shortcuts»
+						«val aliasScope = aliasScopes.get(alias)»
+						«IF aliasOut.get(alias)»
+							«val multi = cardinality.isMulti(alias.expression)»
+							«val returnType = shortcutJavaType(alias)»
+							
+							@Override
+							protected «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«output.toBuilderType» «aliasScope.getIdentifierOrThrow(output)», «IF !inputs.empty»«inputs.inputsAsParameters(aliasScope)»«ENDIF») {
+								return toBuilder(«expressionGenerator.javaCode(alias.expression, aliasScope)»«IF multi».getMulti()«ELSE».get()«ENDIF»);
+							}
+						«ELSE»
+							
+							@Override
+							protected «IF needsBuilder(alias)»«Mapper»<? extends «toJavaReferenceType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaReferenceType(typeProvider.getRType(alias.expression))»>«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«inputs.inputsAsParameters(aliasScope)») {
+								return «expressionGenerator.javaCode(alias.expression, aliasScope)»;
+							}
+						«ENDIF»
+					«ENDFOR»
 				}
 					«IF isQualifierFunction(function)»
 						

@@ -1619,6 +1619,117 @@ class FunctionGeneratorTest {
 		)
 		code.compileToClasses
 	}
+	
+	@Test
+	def void testDelegateFunctionCallWithInputAlias() {
+		val model = '''
+			func F1:
+				inputs: f1Input string (1..1)
+				output: f1Output string (1..1)
+				
+			func F2:
+				inputs: f2Input string (1..1)
+				output: f2Output string (1..1)
+				alias foo: F1(f2Input)
+				set f2Output: foo
+		'''
+		val code = model.generateCode
+		val f1 = code.get("com.rosetta.test.model.functions.F1")
+		assertEquals(
+			'''
+			package com.rosetta.test.model.functions;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			
+			
+			@ImplementedBy(F1.F1Default.class)
+			public abstract class F1 implements RosettaFunction {
+			
+				/**
+				* @param f1Input 
+				* @return f1Output 
+				*/
+				public String evaluate(String f1Input) {
+					String f1Output = doEvaluate(f1Input);
+					
+					return f1Output;
+				}
+			
+				protected abstract String doEvaluate(String f1Input);
+			
+				public static class F1Default extends F1 {
+					@Override
+					protected String doEvaluate(String f1Input) {
+						String f1Output = null;
+						return assignOutput(f1Output, f1Input);
+					}
+					
+					protected String assignOutput(String f1Output, String f1Input) {
+						return f1Output;
+					}
+				}
+			}
+			'''.toString,
+			f1
+		)
+		val f2 = code.get("com.rosetta.test.model.functions.F2")
+		assertEquals(
+			'''
+			package com.rosetta.test.model.functions;
+			
+			import com.google.inject.ImplementedBy;
+			import com.google.inject.Inject;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.Mapper;
+			import com.rosetta.model.lib.mapper.MapperS;
+			
+			
+			@ImplementedBy(F2.F2Default.class)
+			public abstract class F2 implements RosettaFunction {
+				
+				// RosettaFunction dependencies
+				//
+				@Inject protected F1 f1;
+			
+				/**
+				* @param f2Input 
+				* @return f2Output 
+				*/
+				public String evaluate(String f2Input) {
+					String f2Output = doEvaluate(f2Input);
+					
+					return f2Output;
+				}
+			
+				protected abstract String doEvaluate(String f2Input);
+			
+				protected abstract Mapper<String> foo(String f2Input);
+			
+				public static class F2Default extends F2 {
+					@Override
+					protected String doEvaluate(String f2Input) {
+						String f2Output = null;
+						return assignOutput(f2Output, f2Input);
+					}
+					
+					protected String assignOutput(String f2Output, String f2Input) {
+						f2Output = MapperS.of(foo(f2Input).get()).get();
+						
+						return f2Output;
+					}
+					
+					@Override
+					protected Mapper<String> foo(String f2Input) {
+						return MapperS.of(f1.evaluate(MapperS.of(f2Input).get()));
+					}
+				}
+			}
+			'''.toString,
+			f2
+		)
+		code.compileToClasses
+	}
 
 	@Test
 	def void funcCallingMultipleFunc2() {
