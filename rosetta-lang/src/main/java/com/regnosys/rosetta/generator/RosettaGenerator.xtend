@@ -6,34 +6,37 @@ package com.regnosys.rosetta.generator
 
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.external.ExternalGenerators
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
+import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
 import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
+import com.regnosys.rosetta.generator.java.reports.TabulatorGenerator
 import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.rosetta.util.DemandableLock
 import java.util.Map
+import java.util.Optional
 import java.util.concurrent.CancellationException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.IFileSystemAccess2
-import org.eclipse.xtext.generator.IGeneratorContext
-import com.regnosys.rosetta.generator.java.function.FunctionGenerator
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import org.eclipse.xtext.generator.IGenerator2
-import com.regnosys.rosetta.generator.java.reports.TabulatorGenerator
-import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import java.util.Optional
-import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
+import org.eclipse.xtext.generator.IGeneratorContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import com.regnosys.rosetta.generator.java.reports.RuleGenerator
 
 /**
  * Generates code from your model files on save.
@@ -50,6 +53,7 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
+	@Inject RuleGenerator ruleGenerator
 
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
@@ -151,6 +155,9 @@ class RosettaGenerator implements IGenerator2 {
 							if (!isDispatchingFunction) {
 								funcGenerator.generate(packages, fsa, it, version)
 							}
+						}
+						RosettaBlueprint: {
+							ruleGenerator.generate(packages, fsa, it, version)
 						}
 						RosettaBlueprintReport: {
 							tabulatorGenerator.generate(fsa, it)
