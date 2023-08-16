@@ -146,7 +146,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 			if (expr.evaluatesToComparisonResult) {
 				'''((«ComparisonResult»)«expr.javaCode(scope)»).asMapper()'''
 			} else {
-				'''((MapperS<«typeProvider.getRType(expr).toJavaReferenceType»>)«expr.javaCode(scope)»)'''
+				'''((«MapperS»<«typeProvider.getRType(expr).toJavaReferenceType»>)«expr.javaCode(scope)»)'''
 			}
 		} else if (expr.evaluatesToComparisonResult && !multi) {
 			'''«expr.javaCode(scope)».asMapper()'''
@@ -754,17 +754,17 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 			if (expr.argument.isOutputListOfLists) {
 				if (isBodyMulti) {
 					'''
-					«expr.argument.ensureMapperJavaCode(context, false)»
+					«expr.argument.ensureMapperJavaCode(context, true)»
 						.mapListToList(«funcExpr»)'''
 				} else {
 					'''
-					«expr.argument.ensureMapperJavaCode(context, false)»
+					«expr.argument.ensureMapperJavaCode(context, true)»
 						.mapListToItem(«funcExpr»)'''
 				}
 			} else {
 				if (isBodyMulti) {
 					'''
-					«expr.argument.ensureMapperJavaCode(context, false)»
+					«expr.argument.ensureMapperJavaCode(context, true)»
 						.mapItemToList(«funcExpr»)'''
 				} else {
 					buildSingleItemListOperationOptionalBody(expr, "mapItem", context)
@@ -879,7 +879,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	override protected caseThenOperation(ThenOperation expr, JavaScope context) {
 		val funcExpr = expr.function.inlineFunction(context, false, true)
 		'''
-		«expr.argument.ensureMapperJavaCode(context, false)»
+		«expr.argument.ensureMapperJavaCode(context, cardinalityProvider.isMulti(expr.argument))»
 			.apply(«funcExpr»)'''
 	}
 

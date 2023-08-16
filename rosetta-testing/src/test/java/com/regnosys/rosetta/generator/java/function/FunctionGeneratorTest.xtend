@@ -39,6 +39,24 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void conditionalThenJoin() {
+		val code = '''
+		func A:
+			output:
+				result string (1..1)
+			set result:
+				if True
+			    then ["Foo", "Bar"]
+			    else "Bar"
+			    then join ", "
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val a = classes.createFunc("A");
+		assertEquals("Foo, Bar", a.invokeFunc(String))
+	}
+	
+	@Test
 	def void canPassEmptyToFunctionThatExpectsList() {
 		val code = '''
 		func A:
