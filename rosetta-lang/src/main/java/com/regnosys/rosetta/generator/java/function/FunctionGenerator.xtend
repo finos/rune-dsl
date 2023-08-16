@@ -334,7 +334,7 @@ class FunctionGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 				«val rFunction = new RFunction(
-					function.name, 
+					function.name + enumFunc.value.value.name.toFirstUpper, 
 					DottedPath.splitOnDots(function.model.name), 
 					enumFunc.definition, 
 					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)], 

@@ -698,9 +698,8 @@ class CalculationFunctionGeneratorTest {
 					}
 				}
 				
-				
-				@ImplementedBy(iNCR_.iNCR_Default.class)
-				public static abstract class iNCR_ implements RosettaFunction {
+				@ImplementedBy(MathFuncINCR.MathFuncINCRDefault.class)
+				public abstract class MathFuncINCR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -719,7 +718,7 @@ class CalculationFunctionGeneratorTest {
 				
 					protected abstract String doEvaluate(Math in1, MathInput in2);
 				
-					public static class iNCR_Default extends iNCR_ {
+					public static class MathFuncINCRDefault extends MathFuncINCR {
 						@Override
 						protected String doEvaluate(Math in1, MathInput in2) {
 							String arg1 = null;
@@ -733,9 +732,8 @@ class CalculationFunctionGeneratorTest {
 						}
 					}
 				}
-				
-				@ImplementedBy(dECR_.dECR_Default.class)
-				public static abstract class dECR_ implements RosettaFunction {
+				@ImplementedBy(MathFuncDECR.MathFuncDECRDefault.class)
+				public abstract class MathFuncDECR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -754,7 +752,7 @@ class CalculationFunctionGeneratorTest {
 				
 					protected abstract String doEvaluate(Math in1, MathInput in2);
 				
-					public static class dECR_Default extends dECR_ {
+					public static class MathFuncDECRDefault extends MathFuncDECR {
 						@Override
 						protected String doEvaluate(Math in1, MathInput in2) {
 							String arg1 = null;
