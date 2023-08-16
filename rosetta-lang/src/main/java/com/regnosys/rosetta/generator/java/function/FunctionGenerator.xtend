@@ -499,15 +499,18 @@ class FunctionGenerator {
 	}
 
 	private def dispatch StringConcatenationClient lhsFeature(Attribute f) {
-		if (f.card.isMany) '''getOrCreate«f.name.toFirstUpper»(0)''' else '''getOrCreate«f.name.toFirstUpper»()'''
+		val rAttribute = rTypeBuilderFactory.buildRAttribute(f)
+		if (rAttribute.multi) '''getOrCreate«rAttribute.name.toFirstUpper»(0)''' else '''getOrCreate«rAttribute.name.toFirstUpper»()'''
 	}
 
 	private def dispatch StringConcatenationClient lhsExpand(RosettaSymbol c, JavaScope scope) {
 		throw new IllegalStateException("No implementation for lhsExpand for " + c.class)
 	}
 
-	private def dispatch StringConcatenationClient lhsExpand(Attribute c,
-		JavaScope scope) '''«scope.getIdentifierOrThrow(c)»'''
+	private def dispatch StringConcatenationClient lhsExpand(Attribute c, JavaScope scope) {
+		val rAttribute = rTypeBuilderFactory.buildRAttribute(c)
+		'''«scope.getIdentifierOrThrow(rAttribute)»'''
+	}
 
 	private def StringConcatenationClient contributeCondition(Condition condition,
 		GeneratedIdentifier conditionValidator, JavaScope scope) {
