@@ -46,74 +46,73 @@ class CalculationFunctionGeneratorTest {
 
 		assertEquals(
 			'''
-				package com.rosetta.test.model.functions;
+			package com.rosetta.test.model.functions;
+			
+			import com.google.inject.ImplementedBy;
+			import com.google.inject.Inject;
+			import com.rosetta.model.lib.expression.MapperMaths;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.Mapper;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.test.model.Period;
+			import com.rosetta.test.model.PeriodEnum;
+			import java.math.BigDecimal;
+			
+			
+			/**
+			 * @version test
+			 */
+			public class PeriodEnumFunc {
 				
-				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
-				import com.rosetta.model.lib.expression.MapperMaths;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.Mapper;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Period;
-				import com.rosetta.test.model.PeriodEnum;
-				import java.math.BigDecimal;
+				@Inject protected PeriodEnumFunc.mONTH_ mONTH_;
 				
-				
-				/**
-				 * @version test
-				 */
-				public class PeriodEnumFunc {
-					
-					@Inject protected PeriodEnumFunc.mONTH_ mONTH_;
-					
-					public BigDecimal evaluate(PeriodEnum in1, Period in2) {
-						switch (in1) {
-							case MONTH:
-								return mONTH_.evaluate(in1, in2);
-							default:
-								throw new IllegalArgumentException("Enum value not implemented: " + in1);
-						}
+				public BigDecimal evaluate(PeriodEnum in1, Period in2) {
+					switch (in1) {
+						case MONTH:
+							return mONTH_.evaluate(in1, in2);
+						default:
+							throw new IllegalArgumentException("Enum value not implemented: " + in1);
 					}
-					
-					
-					@ImplementedBy(mONTH_.mONTH_Default.class)
-					public static abstract class mONTH_ implements RosettaFunction {
-					
-						/**
-						* @param in1 
-						* @param in2 
-						* @return out 
-						*/
-						public BigDecimal evaluate(PeriodEnum in1, Period in2) {
-							BigDecimal out = doEvaluate(in1, in2);
+				}
+				
+				@ImplementedBy(PeriodEnumFuncMONTH.PeriodEnumFuncMONTHDefault.class)
+				public abstract class PeriodEnumFuncMONTH implements RosettaFunction {
+				
+					/**
+					* @param in1 
+					* @param in2 
+					* @return out 
+					*/
+					public BigDecimal evaluate(PeriodEnum in1, Period in2) {
+						BigDecimal out = doEvaluate(in1, in2);
+						
+						return out;
+					}
+				
+					protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
+				
+					protected abstract Mapper<Integer> i(PeriodEnum in1, Period in2);
+				
+					public static class PeriodEnumFuncMONTHDefault extends PeriodEnumFuncMONTH {
+						@Override
+						protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
+							BigDecimal out = null;
+							return assignOutput(out, in1, in2);
+						}
+						
+						protected BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
+							out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(new BigDecimal("30.0"))).get();
 							
 							return out;
 						}
-					
-						protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
-					
-						protected abstract Mapper<Integer> i(PeriodEnum in1, Period in2);
-					
-						public static class mONTH_Default extends mONTH_ {
-							@Override
-							protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
-								BigDecimal out = null;
-								return assignOutput(out, in1, in2);
-							}
-							
-							protected BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
-								out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(new BigDecimal("30.0"))).get();
-								
-								return out;
-							}
-							
-							@Override
-							protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
-								return MapperS.of(in2).<Integer>map("getFrequency", period -> period.getFrequency());
-							}
+						
+						@Override
+						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
+							return MapperS.of(in2).<Integer>map("getFrequency", period -> period.getFrequency());
 						}
 					}
 				}
+			}
 			'''.toString,
 			genereated
 		)
