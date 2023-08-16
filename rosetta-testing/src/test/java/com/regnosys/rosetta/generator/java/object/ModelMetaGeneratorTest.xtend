@@ -185,9 +185,9 @@ class ModelMetaGeneratorTest {
 						).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(joining("; "));
 					
 					if (!isNullOrEmpty(error)) {
-						return failure("Foo", ValidationResult.ValidationType.TYPE_FORMAT, o.getClass().getSimpleName(), path, "", error);
+						return failure("Foo", ValidationType.TYPE_FORMAT, o.getClass().getSimpleName(), path, "", error);
 					}
-					return success("Foo", ValidationResult.ValidationType.TYPE_FORMAT, o.getClass().getSimpleName(), path, "");
+					return success("Foo", ValidationType.TYPE_FORMAT, o.getClass().getSimpleName(), path, "");
 				}
 			
 			}
