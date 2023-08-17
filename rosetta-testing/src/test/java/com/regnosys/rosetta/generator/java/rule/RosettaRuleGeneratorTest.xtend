@@ -2087,7 +2087,7 @@ class RosettaRuleGeneratorTest {
 		'''
 		].generateCode
 		val classes = code.compileToClasses
-		val bpImpl = classes.loadBlueprint("ns2.blueprint.Rule2Rule")
+		val bpImpl = classes.loadBlueprint("ns2.reports.Rule2Rule")
 		assertNotNull(bpImpl)
 	}
 	 
@@ -2562,6 +2562,51 @@ class RosettaRuleGeneratorTest {
 				FooEnum -> Bar
 			
 		'''.generateCode
+		
+		val rule = code.get("com.rosetta.test.model.reports.ReturnEnumValueRule")
+		
+		val expectedRule = '''
+		package com.rosetta.test.model.reports;
+		
+		import com.google.inject.ImplementedBy;
+		import com.rosetta.model.lib.functions.RosettaFunction;
+		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.test.model.FooEnum;
+		
+		
+		@ImplementedBy(ReturnEnumValueRule.ReturnEnumValueRuleDefault.class)
+		public abstract class ReturnEnumValueRule implements RosettaFunction {
+		
+			/**
+			* @param input 
+			* @return output 
+			*/
+			public FooEnum evaluate(String input) {
+				FooEnum output = doEvaluate(input);
+				
+				return output;
+			}
+		
+			protected abstract FooEnum doEvaluate(String input);
+		
+			public static class ReturnEnumValueRuleDefault extends ReturnEnumValueRule {
+				@Override
+				protected FooEnum doEvaluate(String input) {
+					FooEnum output = null;
+					return assignOutput(output, input);
+				}
+				
+				protected FooEnum assignOutput(FooEnum output, String input) {
+					output = MapperS.of(FooEnum.BAR).get();
+					
+					return output;
+				}
+			}
+		}
+		'''
+		
+		assertEquals(expectedRule, rule)
+		
 		code.compileToClasses
 	}
 }

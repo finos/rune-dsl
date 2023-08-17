@@ -12,6 +12,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -31,6 +32,8 @@ import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RAnnotateType
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RFunction
+import com.regnosys.rosetta.types.RFunctionOrigin
+import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.ROperation
 import com.regnosys.rosetta.types.ROperationType
 import com.regnosys.rosetta.types.RShortcut
@@ -40,7 +43,9 @@ import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.ConditionValidator
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.ModelObjectValidator
+import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.mapper.Mapper
+import com.rosetta.util.DottedPath
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaParametrizedType
 import com.rosetta.util.types.JavaPrimitiveType
@@ -57,11 +62,6 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.regnosys.rosetta.generator.util.Util
-import com.rosetta.model.lib.functions.RosettaFunction
-import com.rosetta.util.DottedPath
-import com.regnosys.rosetta.types.RObjectFactory
-import com.regnosys.rosetta.types.RFunctionOrigin
 
 class FunctionGenerator {
 
@@ -141,7 +141,7 @@ class FunctionGenerator {
 		List<JavaType> functionInterfaces,
 		JavaScope scope
 	) {
-		val className = scope.createIdentifier(function, function.name)
+		val className = scope.createIdentifier(function, function.toFunctionJavaClass.simpleName)
 		val inputs = function.inputs
 		val output = function.output
 		val shortcuts = function.shortcuts

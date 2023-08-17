@@ -118,16 +118,17 @@ class BlueprintGenerator {
 		]
 
 		elements.filter(RosettaBlueprint).filter[isLegacy].filter[nodes !== null].forEach [ bp |
-			fsa.generateFile(root.reports.withForwardSlashes + '/' + bp.name + 'Rule.java',
+			fsa.generateFile(root.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
 				generateBlueprint(root, bp, bp.name, 'Rule', bp.URI, null, version))
 		]
 		elements.filter(RosettaBlueprint).filter[!isLegacy].forEach [ rule |
 			val rFunctionRule = buildRFunction(rule)
-			val topScope = new JavaScope(rFunctionRule.namespace)
+			val functionJavaClass = rFunctionRule.toFunctionJavaClass
+			val topScope = new JavaScope(functionJavaClass.packageName)
 			val classBody = functionGenerator.rBuildClass(rFunctionRule, topScope)
 			
-			val content = buildClass(root.functions, classBody, topScope)
-			fsa.generateFile(rFunctionRule.toFunctionJavaClass.canonicalName.withForwardSlashes + ".java", content)
+			val content = buildClass(functionJavaClass.packageName, classBody, topScope)
+			fsa.generateFile(functionJavaClass.canonicalName.withForwardSlashes + ".java", content)
 		]
 	}
 
@@ -219,7 +220,7 @@ class BlueprintGenerator {
 				}
 			'''
 
-			buildClass(packageName.reports, body, topScope)
+			buildClass(packageName.blueprint, body, topScope)
 		} catch (Exception e) {
 			LOGGER.error("Error generating blueprint java for " + name, e);
 			return '''Unexpected Error generating «name».java Please see log for details'''
