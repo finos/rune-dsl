@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import com.regnosys.rosetta.rosetta.RosettaBlueprint;
+import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
@@ -51,6 +52,32 @@ public class RObjectFactory {
 				List.of(new ROperation(ROperationType.SET, outputAttribute, List.of(), rule.getExpression())),
 				List.of()
 			);
+	}
+	
+	public RFunction buildRFunction(RosettaBlueprintReport report, List<ROperation> operations) {
+		String reportDefinition = report.getRegulatoryBody().getBody().getName() + " " 
+				+ report.getRegulatoryBody().getCorpuses()
+				.stream()
+				.map(c -> c.getName())
+				.collect(Collectors.joining(" "));
+		
+		RType inputRtype = typeSystem.typeCallToRType(report.getInputType());
+		RType outputRtype = new RDataType(report.getReportType());
+		RAttribute outputAttribute = new RAttribute("output", null, outputRtype, List.of(), false);
+		
+		return new RFunction(
+			report.name(),
+			DottedPath.splitOnDots(report.getModel().getName()),
+			reportDefinition,
+			List.of(new RAttribute("input", null, inputRtype, List.of(), false)),
+			outputAttribute,
+			RFunctionOrigin.REPORT,
+			List.of(),
+			List.of(),
+			List.of(),
+			operations,
+			List.of()
+		);
 	}
 
 	public RAttribute buildRAttribute(Attribute attribute) {
