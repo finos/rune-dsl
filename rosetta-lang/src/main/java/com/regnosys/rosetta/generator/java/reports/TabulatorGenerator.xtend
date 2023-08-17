@@ -29,9 +29,9 @@ import java.util.Map
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import java.util.Set
 import org.apache.commons.text.StringEscapeUtils
-import com.rosetta.util.types.JavaParametrizedType
 import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValueImpl
 import com.rosetta.model.lib.reports.Tabulator.NestedFieldValueImpl
+import com.rosetta.util.types.JavaParameterizedType
 
 class TabulatorGenerator {
 	@Inject RosettaTypeProvider typeProvider
@@ -244,9 +244,9 @@ class TabulatorGenerator {
 		
 		if (rType instanceof RDataType) {
 			val resultType = if (attr.card.isMany) {
-				new JavaParametrizedType(JavaClass.from(List), new JavaParametrizedType(JavaClass.from(List), JavaClass.from(FieldValue)))
+				new JavaParameterizedType(JavaClass.from(List), new JavaParameterizedType(JavaClass.from(List), JavaClass.from(FieldValue)))
 			} else {
-				new JavaParametrizedType(JavaClass.from(List), JavaClass.from(FieldValue))
+				new JavaParameterizedType(JavaClass.from(List), JavaClass.from(FieldValue))
 			}
 			rType.toPolymorphicListOrSingleJavaType(attr.card.isMany)
 			val attrType = rType.data

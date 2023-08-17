@@ -13,9 +13,8 @@ public class ModelReportId {
 	private String[] corpusList;
 
 	public ModelReportId(DottedPath namespace, String body, String... corpusList) {
-		Validate.notNull(namespace);
-		Validate.notNull(body);
-		Validate.notNull(corpusList);
+		Objects.requireNonNull(namespace);
+		Objects.requireNonNull(body);
 		Validate.noNullElements(corpusList);
 		
 		this.namespace = namespace;

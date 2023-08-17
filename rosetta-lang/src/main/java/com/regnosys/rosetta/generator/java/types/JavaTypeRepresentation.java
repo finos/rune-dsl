@@ -3,14 +3,13 @@ package com.regnosys.rosetta.generator.java.types;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
 import com.rosetta.util.types.JavaArrayType;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaInterface;
-import com.rosetta.util.types.JavaParametrizedType;
+import com.rosetta.util.types.JavaParameterizedType;
 import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaTypeArgument;
@@ -24,7 +23,7 @@ public class JavaTypeRepresentation implements TargetLanguageRepresentation {
 	private JavaType type;
 	
 	public JavaTypeRepresentation(JavaType type) {
-		Validate.notNull(type);
+		Objects.requireNonNull(type);
 		this.type = type;
 	}
 	
@@ -76,7 +75,7 @@ public class JavaTypeRepresentation implements TargetLanguageRepresentation {
 		}
 
 		@Override
-		public void visitType(JavaParametrizedType type) {
+		public void visitType(JavaParameterizedType type) {
 			type.getBaseType().accept((JavaTypeVisitor)this);
 			target.append("<");
 			List<JavaTypeArgument> arguments = type.getArguments();

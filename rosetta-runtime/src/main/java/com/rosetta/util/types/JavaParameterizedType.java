@@ -8,12 +8,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.Validate;
 
 
-public class JavaParametrizedType implements JavaReferenceType {
+public class JavaParameterizedType implements JavaReferenceType {
 	private final JavaClass baseType;
 	private final List<JavaTypeArgument> arguments;
 	
-	public JavaParametrizedType(JavaClass baseType, JavaTypeArgument... arguments) {
-		Validate.notNull(baseType);
+	public JavaParameterizedType(JavaClass baseType, JavaTypeArgument... arguments) {
+		Objects.requireNonNull(baseType);
 		Validate.noNullElements(arguments);
 		this.baseType = baseType;
 		this.arguments = Arrays.asList(arguments);
@@ -46,7 +46,7 @@ public class JavaParametrizedType implements JavaReferenceType {
 		if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
 
-        JavaParametrizedType other = (JavaParametrizedType) object;
+        JavaParameterizedType other = (JavaParameterizedType) object;
         return Objects.equals(baseType, other.baseType)
         		&& Objects.equals(arguments, other.arguments);
 	}

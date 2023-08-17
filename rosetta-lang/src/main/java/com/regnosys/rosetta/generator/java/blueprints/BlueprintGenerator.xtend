@@ -55,7 +55,6 @@ import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.util.DottedPath
 import com.rosetta.util.types.JavaClass
-import com.rosetta.util.types.JavaParametrizedType
 import com.rosetta.util.types.JavaReferenceType
 import com.rosetta.util.types.JavaType
 import com.rosetta.util.types.JavaTypeVariable
@@ -82,6 +81,9 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
+import com.rosetta.util.types.JavaParameterizedType
+import com.rosetta.util.types.JavaInterface
+import com.rosetta.model.lib.reports.ReportFunction
 
 class BlueprintGenerator {
 	static Logger LOGGER = LoggerFactory.getLogger(BlueprintGenerator)
@@ -118,17 +120,18 @@ class BlueprintGenerator {
 		]
 
 		elements.filter(RosettaBlueprint).filter[isLegacy].filter[nodes !== null].forEach [ bp |
-			fsa.generateFile(root.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
+			fsa.generateFile(root.legacyBlueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
 				generateBlueprint(root, bp, bp.name, 'Rule', bp.URI, null, version))
 		]
 		elements.filter(RosettaBlueprint).filter[!isLegacy].forEach [ rule |
 			val rFunctionRule = buildRFunction(rule)
-			val functionJavaClass = rFunctionRule.toFunctionJavaClass
-			val topScope = new JavaScope(functionJavaClass.packageName)
-			val classBody = functionGenerator.rBuildClass(rFunctionRule, topScope)
+			val clazz = rFunctionRule.toFunctionJavaClass
+			val baseInterface = new JavaParameterizedType(JavaInterface.from(ReportFunction), rFunctionRule.inputs.head.RType.toJavaReferenceType, rFunctionRule.output.RType.toJavaReferenceType)
+			val topScope = new JavaScope(clazz.packageName)
+			val classBody = functionGenerator.rBuildClass(rFunctionRule, #[baseInterface], true, topScope)
 			
-			val content = buildClass(functionJavaClass.packageName, classBody, topScope)
-			fsa.generateFile(functionJavaClass.canonicalName.withForwardSlashes + ".java", content)
+			val content = buildClass(root.functions, classBody, topScope)
+			fsa.generateFile(clazz.canonicalName.withForwardSlashes + ".java", content)
 		]
 	}
 
@@ -187,7 +190,7 @@ class BlueprintGenerator {
 		try {
 
 			val typed = buildTypeGraph(rule)
-			val clazz = new JavaClass(packageName.reports, name + type)
+			val clazz = new JavaClass(packageName.legacyBlueprint, name + type)
 			val typedJava = typed.toJavaNode(clazz)
 			val clazzWithArgs = typedJava.toParametrizedType(clazz)
 
@@ -279,7 +282,7 @@ class BlueprintGenerator {
 			it instanceof JavaTypeVariable
 		].map[it as JavaTypeVariable].distinct.collect(Collectors.toList)
 		if (typeArgs.size > 0) {
-			return new JavaParametrizedType(clazz, typeArgs)
+			return new JavaParameterizedType(clazz, typeArgs)
 		} else {
 			return clazz
 		}
@@ -451,7 +454,7 @@ class BlueprintGenerator {
 		var javaType = type.toJavaReferenceType as JavaClass
 		if(needsBuilder(type)) javaType = javaType.toBuilderType
 		if (isMany) {
-			return new JavaParametrizedType(JavaClass.from(List), javaType)
+			return new JavaParameterizedType(JavaClass.from(List), javaType)
 		} else {
 			return javaType
 		}

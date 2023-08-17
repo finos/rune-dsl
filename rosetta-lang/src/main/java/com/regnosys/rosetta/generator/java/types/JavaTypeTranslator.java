@@ -19,7 +19,6 @@ import com.regnosys.rosetta.generator.object.ExpandedAttribute;
 import com.regnosys.rosetta.generator.object.ExpandedType;
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions;
 import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
-import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
@@ -54,7 +53,7 @@ import com.rosetta.model.lib.reports.ModelReportId;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.GeneratedJavaClassService;
 import com.rosetta.util.types.JavaClass;
-import com.rosetta.util.types.JavaParametrizedType;
+import com.rosetta.util.types.JavaParameterizedType;
 import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
@@ -94,8 +93,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return new JavaClass(id.getNamespace(), id.getName());
 	}
 	
-	public JavaParametrizedType toPolymorphicList(JavaReferenceType t) {
-		return new JavaParametrizedType(listClass, JavaWildcardTypeArgument.extendsBound(t));
+	public JavaParameterizedType toPolymorphicList(JavaReferenceType t) {
+		return new JavaParameterizedType(listClass, JavaWildcardTypeArgument.extendsBound(t));
 	}
 	public JavaClass toFunctionJavaClass(RFunction func) {
 		switch (func.getOrigin()) {
@@ -157,7 +156,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			if (expAttr.isDataType() || expAttr.hasMetas()) {
 				return toPolymorphicList(singleType);
 			} else {
-				return new JavaParametrizedType(listClass, singleType);
+				return new JavaParameterizedType(listClass, singleType);
 			}
 		}
 		return singleType;
@@ -252,7 +251,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	public JavaReferenceType toListOrSingleJavaType(RType type, boolean isMany) {
 		if (isMany) {
-			return new JavaParametrizedType(listClass, toJavaReferenceType(type));
+			return new JavaParameterizedType(listClass, toJavaReferenceType(type));
 		} else
 			return toJavaReferenceType(type);
 	}

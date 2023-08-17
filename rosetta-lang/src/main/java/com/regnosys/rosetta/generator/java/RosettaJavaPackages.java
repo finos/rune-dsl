@@ -90,6 +90,10 @@ public class RosettaJavaPackages {
 		public DottedPath reports() {
 			return child("reports");
 		}
+		
+		public DottedPath legacyBlueprint() {
+			return child("blueprint");
+		}
 
 		public DottedPath qualifyEvent() {
 			return child("qualify").child("event");

@@ -22,8 +22,8 @@ public class JavaPrimitiveType implements JavaType {
 	private final Class<?> type;
 	private final Class<?> wrapperType;
 	private JavaPrimitiveType(Class<?> type, Class<?> wrapperType) {
-		Validate.notNull(type);
-		Validate.notNull(wrapperType);
+		Objects.requireNonNull(type);
+		Objects.requireNonNull(wrapperType);
 		this.type = type;
 		this.wrapperType = wrapperType;
 	}

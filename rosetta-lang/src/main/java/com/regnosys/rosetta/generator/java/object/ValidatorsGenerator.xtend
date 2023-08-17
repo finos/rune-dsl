@@ -38,10 +38,10 @@ import java.util.regex.Pattern
 import org.apache.commons.text.StringEscapeUtils
 import java.util.List
 import java.math.BigDecimal
-import com.rosetta.util.types.JavaParametrizedType
 import com.rosetta.util.types.JavaWildcardTypeArgument
 import com.rosetta.util.types.JavaReferenceType
 import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaParameterizedType
 
 class ValidatorsGenerator {
 
@@ -190,8 +190,8 @@ class ValidatorsGenerator {
 			'''o.get«attr.name?.toFirstUpper»()'''
 		} else {
 			val jt = attr.toExpandedAttribute.toMultiMetaOrRegularJavaType
-			if (jt instanceof JavaParametrizedType && (jt as JavaParametrizedType).baseType.equals(JavaClass.from(List))) {
-				val typeArg = (jt as JavaParametrizedType).arguments.head
+			if (jt instanceof JavaParameterizedType && (jt as JavaParameterizedType).getBaseType.equals(JavaClass.from(List))) {
+				val typeArg = (jt as JavaParameterizedType).getArguments.head
 				val itemType = if (typeArg instanceof JavaWildcardTypeArgument) {
 					typeArg.bound.get
 				} else {

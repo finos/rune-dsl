@@ -38,7 +38,7 @@ import com.regnosys.rosetta.types.TypeSystem
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.rosetta.util.types.JavaClass
-import com.rosetta.util.types.JavaParametrizedType
+import com.rosetta.util.types.JavaParameterizedType
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -230,7 +230,7 @@ class MetaFieldGenerator {
 			valueAttribute, metaAttribute
 		])
 		
-		val FWMType = new JavaParametrizedType(JavaClass.from(FieldWithMeta), typeCall.typeCallToRType.toJavaReferenceType)
+		val FWMType = new JavaParameterizedType(JavaClass.from(FieldWithMeta), typeCall.typeCallToRType.toJavaReferenceType)
 		
 		val scope = new JavaScope(metaJavaType.packageName)
 		
@@ -279,7 +279,7 @@ class MetaFieldGenerator {
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = metaJavaType.packageName.withDots
 		d.attributes.addAll(referenceAttributes(typeCall))
-		val refInterface = new JavaParametrizedType(JavaClass.from(ReferenceWithMeta), typeCall.typeCallToRType.toJavaReferenceType)
+		val refInterface = new JavaParameterizedType(JavaClass.from(ReferenceWithMeta), typeCall.typeCallToRType.toJavaReferenceType)
 		
 		val scope = new JavaScope(root.metaField)
 		

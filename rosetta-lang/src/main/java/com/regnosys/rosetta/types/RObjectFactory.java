@@ -10,6 +10,10 @@ import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
+import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver;
+import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException;
+import com.regnosys.rosetta.validation.TypedBPNode;
 import com.rosetta.util.DottedPath;
 
 public class RObjectFactory {
@@ -19,6 +23,10 @@ public class RObjectFactory {
 	private CardinalityProvider cardinalityProvider;
 	@Inject
 	private TypeSystem typeSystem;
+	@Inject
+	private RosettaBlueprintTypeResolver bpTypeResolver;
+	@Inject
+	private RBuiltinTypeService builtins;
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(function.getName(), DottedPath.splitOnDots(function.getModel().getName()),
@@ -30,19 +38,29 @@ public class RObjectFactory {
 				function.getShortcuts().stream().map(s -> buildRShortcut(s)).collect(Collectors.toList()),
 				function.getOperations().stream().map(o -> buildROperation(o)).collect(Collectors.toList()),
 				function.getAnnotations());
-
 	}
 	
 	public RFunction buildRFunction(RosettaBlueprint rule) {
-		RType inputRtype = typeSystem.typeCallToRType(rule.getInput());
-		RType outputRtype = rosettaTypeProvider.getRType(rule.getExpression());
-		RAttribute outputAttribute = new RAttribute("output", null, outputRtype, List.of(), cardinalityProvider.isMulti(rule.getExpression()));
+		RType inputRType, outputRType;
+		if (rule.isLegacy()) {
+			try {
+				TypedBPNode node = bpTypeResolver.buildTypeGraph(rule);
+				inputRType = node.input.type.orElse(builtins.ANY);
+				outputRType = node.output.type.orElse(builtins.ANY);
+			} catch (BlueprintUnresolvedTypeException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			inputRType = typeSystem.typeCallToRType(rule.getInput());
+			outputRType = rosettaTypeProvider.getRType(rule.getExpression());
+		}
+		RAttribute outputAttribute = new RAttribute("output", null, outputRType, List.of(), cardinalityProvider.isMulti(rule.getExpression()));
 		
 		return new RFunction(
 				rule.getName(), 
 				DottedPath.splitOnDots(rule.getModel().getName()),
 				rule.getDefinition(),
-				List.of(new RAttribute("input", null, inputRtype, List.of(), false)),
+				List.of(new RAttribute("input", null, inputRType, List.of(), false)),
 				outputAttribute,
 				RFunctionOrigin.RULE,
 				List.of(),
