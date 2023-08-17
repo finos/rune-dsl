@@ -1258,76 +1258,56 @@ class RosettaRuleGeneratorTest {
 				extract item->bar
 				then extract item->baz
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
+		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.Blueprint1Rule")
 		// writeOutClasses(blueprint, "validPath");
 		try {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Foo;
-				import javax.inject.Inject;
-				
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
+			package com.rosetta.test.model.reports;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.test.model.Bar;
+			import com.rosetta.test.model.Foo;
+			
+			
+			@ImplementedBy(Blueprint1Rule.Blueprint1RuleDefault.class)
+			public abstract class Blueprint1Rule implements RosettaFunction {
+			
 				/**
-				 * @version test
-				 */
-				public class Blueprint1Rule<INKEY> implements Blueprint<Foo, String, INKEY, INKEY> {
+				* @param input 
+				* @return output 
+				*/
+				public String evaluate(Foo input) {
+					String output = doEvaluate(input);
 					
-					private final RosettaActionFactory actionFactory;
-					
-					@Inject
-					public Blueprint1Rule(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
+					return output;
+				}
+			
+				protected abstract String doEvaluate(Foo input);
+			
+				public static class Blueprint1RuleDefault extends Blueprint1Rule {
 					@Override
-					public String getName() {
-						return "Blueprint1"; 
+					protected String doEvaluate(Foo input) {
+						String output = null;
+						return assignOutput(output, input);
 					}
 					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Foo, String, INKEY, INKEY> blueprint() {
-						return
-							startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Blueprint1", "item extract [item->bar] then [item extract [item->baz]]", null, foo -> MapperS.of(evaluate(foo))))
-								.toBlueprint(getURI(), getName());
-					}
-					
-					public String evaluate(Foo foo) {
-						String string = doEvaluate(foo);
-						return string;
-					}
-					
-					private String doEvaluate(Foo foo) {
-						String string = null;
-						return assignOutput(string,foo);
-					}
-					
-					private String assignOutput(String string, Foo foo) {
-						string = MapperS.of(foo)
-							.mapSingleToItem(item -> (MapperS<Bar>)item.<Bar>map("getBar", _foo -> _foo.getBar()))
+					protected String assignOutput(String output, Foo input) {
+						output = MapperS.of(input)
+							.mapSingleToItem(item -> (MapperS<Bar>)item.<Bar>map("getBar", foo -> foo.getBar()))
 							.apply(item -> item
 								.mapSingleToItem(_item -> (MapperS<String>)_item.<String>map("getBaz", bar -> bar.getBaz()))).get();
-					
-						return string;
+						
+						return output;
 					}
 				}
+			}
 			'''
 			assertEquals(expected, blueprintJava)
 			val classes = blueprint.compileToClasses
-			val bpImpl = classes.loadBlueprint("com.rosetta.test.model.blueprint.Blueprint1Rule")
+			val bpImpl = classes.loadBlueprint("com.rosetta.test.model.reports.Blueprint1Rule")
 			assertNotNull(bpImpl)
 		} finally {
 		}
@@ -1675,73 +1655,57 @@ class RosettaRuleGeneratorTest {
 			
 		'''.parseRosettaWithNoErrors
 		val code = parsed.generateCode
-		val bp = code.get("com.rosetta.test.model.blueprint.Rule1Rule")
+		val bp = code.get("com.rosetta.test.model.reports.Rule1Rule")
 		assertThat(bp, CoreMatchers.notNullValue())
 		val expected = '''
-			package com.rosetta.test.model.blueprint;
+		package com.rosetta.test.model.reports;
+		
+		import com.google.inject.ImplementedBy;
+		import com.google.inject.Inject;
+		import com.rosetta.model.lib.functions.RosettaFunction;
+		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.test.model.Foo;
+		
+		
+		@ImplementedBy(Rule1Rule.Rule1RuleDefault.class)
+		public abstract class Rule1Rule implements RosettaFunction {
 			
-			import com.regnosys.rosetta.blueprints.Blueprint;
-			import com.regnosys.rosetta.blueprints.BlueprintInstance;
-			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.test.model.Foo;
-			import javax.inject.Inject;
-			
-			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			
+			// RosettaFunction dependencies
+			//
+			@Inject protected Rule2Rule rule2;
+		
 			/**
-			 * @version test
-			 */
-			public class Rule1Rule<INKEY> implements Blueprint<Foo, String, INKEY, INKEY> {
+			* @param input 
+			* @return output 
+			*/
+			public String evaluate(Foo input) {
+				String output = doEvaluate(input);
 				
-				private final RosettaActionFactory actionFactory;
-				
-				@Inject
-				public Rule1Rule(RosettaActionFactory actionFactory) {
-					this.actionFactory = actionFactory;
-				}
-				
+				return output;
+			}
+		
+			protected abstract String doEvaluate(Foo input);
+		
+			public static class Rule1RuleDefault extends Rule1Rule {
 				@Override
-				public String getName() {
-					return "Rule1"; 
+				protected String doEvaluate(Foo input) {
+					String output = null;
+					return assignOutput(output, input);
 				}
 				
-				@Override
-				public String getURI() {
-					return "__synthetic1.rosetta#com.rosetta.test.model.Rule1";
-				}
-				
-				@Inject protected Rule2Rule rule2Ref;
-				
-				@Override
-				public BlueprintInstance<Foo, String, INKEY, INKEY> blueprint() {
-					return
-						startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Rule1", "Rule2 then [item extract [val]]", null, foo -> MapperS.of(evaluate(foo))))
-							.toBlueprint(getURI(), getName());
-				}
-				
-				public String evaluate(Foo foo) {
-					String string = doEvaluate(foo);
-					return string;
-				}
-				
-				private String doEvaluate(Foo foo) {
-					String string = null;
-					return assignOutput(string,foo);
-				}
-				
-				private String assignOutput(String string, Foo foo) {
-					string = MapperS.of(rule2Ref.evaluate(MapperS.of(foo).get()))
+				protected String assignOutput(String output, Foo input) {
+					output = MapperS.of(rule2.evaluate(MapperS.of(input).get()))
 						.apply(item -> item
 							.mapSingleToItem(_item -> (MapperS<String>)_item.<String>map("getVal", bar -> bar.getVal()))).get();
-				
-					return string;
+					
+					return output;
 				}
 			}
+		}
 		'''
 		assertEquals(expected, bp)
 		val classes = code.compileToClasses
-		val bpImpl = classes.loadBlueprint("com.rosetta.test.model.blueprint.Rule1Rule")
+		val bpImpl = classes.loadBlueprint("com.rosetta.test.model.reports.Rule1Rule")
 		assertNotNull(bpImpl)
 	}
 
@@ -1757,78 +1721,59 @@ class RosettaRuleGeneratorTest {
 			
 		'''.generateCode
 		//blueprint.writeClasses("blueprint.filter")
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
+		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "filter");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		val expected = '''
-		package com.rosetta.test.model.blueprint;
+		package com.rosetta.test.model.reports;
 		
-		import com.regnosys.rosetta.blueprints.Blueprint;
-		import com.regnosys.rosetta.blueprints.BlueprintInstance;
-		import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+		import com.google.inject.ImplementedBy;
+		import com.google.inject.Inject;
 		import com.rosetta.model.lib.expression.CardinalityOperator;
 		import com.rosetta.model.lib.functions.ModelObjectValidator;
+		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.mapper.MapperS;
 		import com.rosetta.test.model.Input;
 		import com.rosetta.test.model.Input.InputBuilder;
 		import java.util.Optional;
-		import javax.inject.Inject;
 		
-		import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		
-		/**
-		 * @version test
-		 */
-		public class SimpleBlueprintRule<INKEY> implements Blueprint<Input, Input, INKEY, INKEY> {
-			
-			private final RosettaActionFactory actionFactory;
-			
-			@Inject
-			public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
-				this.actionFactory = actionFactory;
-			}
-			
-			@Override
-			public String getName() {
-				return "SimpleBlueprint"; 
-			}
-			
-			@Override
-			public String getURI() {
-				return "__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint";
-			}
-			
+		@ImplementedBy(SimpleBlueprintRule.SimpleBlueprintRuleDefault.class)
+		public abstract class SimpleBlueprintRule implements RosettaFunction {
 			
 			@Inject protected ModelObjectValidator objectValidator;
-			
-			@Override
-			public BlueprintInstance<Input, Input, INKEY, INKEY> blueprint() {
-				return
-					startsWith(actionFactory, actionFactory.<Input, Input, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint", "item filter [traderef = \"Hello\"]", null, input -> MapperS.of(evaluate(input))))
-						.toBlueprint(getURI(), getName());
-			}
-			
-			public Input evaluate(Input input0) {
-				Input.InputBuilder input1 = doEvaluate(input0);
-				if (input1 != null) {
-					objectValidator.validate(Input.class, input1);
+		
+			/**
+			* @param input 
+			* @return output 
+			*/
+			public Input evaluate(Input input) {
+				Input.InputBuilder output = doEvaluate(input);
+				
+				if (output != null) {
+					objectValidator.validate(Input.class, output);
 				}
-				return input1;
+				return output;
 			}
-			
-			private Input.InputBuilder doEvaluate(Input input0) {
-				Input.InputBuilder input1 = Input.builder();
-				return assignOutput(input1,input0);
-			}
-			
-			private Input.InputBuilder assignOutput(Input.InputBuilder input1, Input input0) {
-				input1 = toBuilder(MapperS.of(input0)
-					.filterSingleNullSafe(item -> (Boolean)areEqual(item.<String>map("getTraderef", input -> input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
-			
-				return Optional.ofNullable(input1)
-					.map(o -> o.prune())
-					.orElse(null);
+		
+			protected abstract Input.InputBuilder doEvaluate(Input input);
+		
+			public static class SimpleBlueprintRuleDefault extends SimpleBlueprintRule {
+				@Override
+				protected Input.InputBuilder doEvaluate(Input input) {
+					Input.InputBuilder output = Input.builder();
+					return assignOutput(output, input);
+				}
+				
+				protected Input.InputBuilder assignOutput(Input.InputBuilder output, Input input) {
+					output = toBuilder(MapperS.of(input)
+						.filterSingleNullSafe(item -> (Boolean)areEqual(item.<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
+					
+					return Optional.ofNullable(output)
+						.map(o -> o.prune())
+						.orElse(null);
+				}
 			}
 		}
 		'''
@@ -1847,7 +1792,7 @@ class RosettaRuleGeneratorTest {
 				traderef string (0..1)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
+		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "filter2");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 
@@ -1868,7 +1813,7 @@ class RosettaRuleGeneratorTest {
 				flag boolean (1..1)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.FilterRuleRule")
+		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.FilterRuleRule")
 		//writeClasses(blueprint, "filterWhenRule");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 
@@ -1973,70 +1918,50 @@ class RosettaRuleGeneratorTest {
 				floating string (0..*)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.IsFixedFloatRule")
+		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.IsFixedFloatRule")
 		// writeOutClasses(blueprint, "filterWhenCount");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		val expected = '''
-			package com.rosetta.test.model.blueprint;
-			
-			import com.regnosys.rosetta.blueprints.Blueprint;
-			import com.regnosys.rosetta.blueprints.BlueprintInstance;
-			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-			import com.rosetta.model.lib.expression.CardinalityOperator;
-			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.test.model.Foo;
-			import javax.inject.Inject;
-			
-			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
-			
+		package com.rosetta.test.model.reports;
+		
+		import com.google.inject.ImplementedBy;
+		import com.rosetta.model.lib.expression.CardinalityOperator;
+		import com.rosetta.model.lib.functions.RosettaFunction;
+		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.test.model.Foo;
+		
+		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+		
+		@ImplementedBy(IsFixedFloatRule.IsFixedFloatRuleDefault.class)
+		public abstract class IsFixedFloatRule implements RosettaFunction {
+		
 			/**
-			 * @version test
-			 */
-			public class IsFixedFloatRule<INKEY> implements Blueprint<Foo, Boolean, INKEY, INKEY> {
+			* @param input 
+			* @return output 
+			*/
+			public Boolean evaluate(Foo input) {
+				Boolean output = doEvaluate(input);
 				
-				private final RosettaActionFactory actionFactory;
-				
-				@Inject
-				public IsFixedFloatRule(RosettaActionFactory actionFactory) {
-					this.actionFactory = actionFactory;
-				}
-				
+				return output;
+			}
+		
+			protected abstract Boolean doEvaluate(Foo input);
+		
+			public static class IsFixedFloatRuleDefault extends IsFixedFloatRule {
 				@Override
-				public String getName() {
-					return "IsFixedFloat"; 
+				protected Boolean doEvaluate(Foo input) {
+					Boolean output = null;
+					return assignOutput(output, input);
 				}
 				
-				@Override
-				public String getURI() {
-					return "__synthetic1.rosetta#com.rosetta.test.model.IsFixedFloat";
-				}
-				
-				
-				@Override
-				public BlueprintInstance<Foo, Boolean, INKEY, INKEY> blueprint() {
-					return
-						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.IsFixedFloat", "item extract [fixed count = 12]", null, foo -> MapperS.of(evaluate(foo))))
-							.toBlueprint(getURI(), getName());
-				}
-				
-				public Boolean evaluate(Foo foo) {
-					Boolean _boolean = doEvaluate(foo);
-					return _boolean;
-				}
-				
-				private Boolean doEvaluate(Foo foo) {
-					Boolean _boolean = null;
-					return assignOutput(_boolean,foo);
-				}
-				
-				private Boolean assignOutput(Boolean _boolean, Foo foo) {
-					_boolean = MapperS.of(foo)
-						.mapSingleToItem(item -> (MapperS<Boolean>)areEqual(MapperS.of(item.<String>mapC("getFixed", _foo -> _foo.getFixed()).resultCount()), MapperS.of(Integer.valueOf(12)), CardinalityOperator.All).asMapper()).get();
-				
-					return _boolean;
+				protected Boolean assignOutput(Boolean output, Foo input) {
+					output = MapperS.of(input)
+						.mapSingleToItem(item -> (MapperS<Boolean>)areEqual(MapperS.of(item.<String>mapC("getFixed", foo -> foo.getFixed()).resultCount()), MapperS.of(Integer.valueOf(12)), CardinalityOperator.All).asMapper()).get();
+					
+					return output;
 				}
 			}
+		}
 		'''
 		blueprint.compileToClasses
 		assertEquals(expected, blueprintJava)
@@ -2114,7 +2039,7 @@ class RosettaRuleGeneratorTest {
 		].generateCode
 		//code.writeClasses("shouldUseBlueprintRuleFromDifferentNS")
 		val classes = code.compileToClasses
-		val bpImpl = classes.loadBlueprint("ns2.blueprint.Rule2Rule")
+		val bpImpl = classes.loadBlueprint("ns2.reports.Rule2Rule")
 		assertNotNull(bpImpl)
 	}
 	

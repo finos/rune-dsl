@@ -62,6 +62,7 @@ import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
 
 class FunctionGenerator {
 
@@ -76,6 +77,7 @@ class FunctionGenerator {
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject extension JavaTypeTranslator
 	@Inject RObjectFactory rTypeBuilderFactory
+	@Inject ImplicitVariableUtil implicitVariableUtil
 
 	def void generate(RootPackage root, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
@@ -172,6 +174,12 @@ class FunctionGenerator {
 		val assignOutputScope = defaultClassScope.methodScope("assignOutput")
 		inputs.forEach[assignOutputScope.createIdentifier(it, it.name)]
 		assignOutputScope.createIdentifier(output, output.name)
+		function.operations
+			.map[it.expression]
+			.filter[implicitVariableUtil.implicitVariableExistsInContext(it)]
+			.map[it.implicitVarInContext]
+			.toSet
+			.forEach[assignOutputScope.createKeySynonym(it, inputs.head)]
 		
 		val aliasScopes = newHashMap
 		shortcuts.forEach [
