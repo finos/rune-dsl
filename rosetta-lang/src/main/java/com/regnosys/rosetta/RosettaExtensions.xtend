@@ -248,8 +248,8 @@ class RosettaExtensions {
 	/**
 	 * Get all reporting rules for blueprint report
 	 */
-	def getAllReportingRules(RosettaBlueprintReport report, boolean allLeafNodes) {
-		getAllReportingRules(report.reportType, Optional.ofNullable(report.ruleSource), allLeafNodes)
+	def getAllReportingRules(RosettaBlueprintReport report, boolean onlyLeafNodes) {
+		getAllReportingRules(report.reportType, Optional.ofNullable(report.ruleSource), onlyLeafNodes)
 	}
 	
 	def getAllReportingRules(Data type, Optional<RosettaExternalRuleSource> ruleSource, boolean onlyLeafNodes) {
