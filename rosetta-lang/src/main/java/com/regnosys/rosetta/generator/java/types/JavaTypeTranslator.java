@@ -243,7 +243,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return caseDataType(type, null);
 	}
 	
-	public JavaType toPolymorphicListOrSingleJavaType(RType type, boolean isMany) {
+	public JavaReferenceType toPolymorphicListOrSingleJavaType(RType type, boolean isMany) {
 		if (isMany) {
 			return toPolymorphicList(toJavaReferenceType(type));
 		} else

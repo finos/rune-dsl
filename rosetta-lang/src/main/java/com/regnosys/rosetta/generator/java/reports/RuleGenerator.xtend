@@ -15,7 +15,6 @@ import com.rosetta.model.lib.reports.ReportFunction
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.rosetta.model.lib.functions.ModelObjectValidator
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
-import com.rosetta.util.types.JavaType
 import com.regnosys.rosetta.types.RAttribute
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaParameterizedType
@@ -24,6 +23,20 @@ import com.regnosys.rosetta.blueprints.BlueprintInstance
 import com.regnosys.rosetta.blueprints.runner.data.DataItemIdentifier
 import com.regnosys.rosetta.blueprints.runner.nodes.SingleItemSource
 import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory
+import com.regnosys.rosetta.blueprints.BlueprintReport
+import com.regnosys.rosetta.blueprints.runner.nodes.MapMerger
+import com.regnosys.rosetta.blueprints.runner.nodes.ListSink
+import java.util.Map
+import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier
+import com.regnosys.rosetta.blueprints.runner.data.GroupableData
+import java.util.Optional
+import com.regnosys.rosetta.blueprints.BlueprintBuilder
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier
+import java.util.concurrent.ExecutionException
+import com.rosetta.util.types.JavaInterface
+import com.regnosys.rosetta.generator.java.function.FunctionGenerator
+import com.rosetta.util.types.JavaReferenceType
 
 class RuleGenerator {
 	@Inject BlueprintGenerator blueprintGenerator
@@ -31,12 +44,12 @@ class RuleGenerator {
 	@Inject extension RObjectFactory
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaFunctionExtensions
+	@Inject FunctionGenerator functionGenerator
 
 	
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RosettaBlueprint rule, String version) {
-		if (rule.isLegacy) {
-			blueprintGenerator.generate(root, fsa, #[rule], version)
-			
+		blueprintGenerator.generate(root, fsa, #[rule], version)
+		if (rule.isLegacy) {			
 			val rFunctionRule = buildRFunction(rule)
 			val clazz = rFunctionRule.toFunctionJavaClass
 			val topScope = new JavaScope(clazz.packageName)
@@ -45,7 +58,14 @@ class RuleGenerator {
 			val content = buildClass(clazz.packageName, classBody, topScope)
 			fsa.generateFile(clazz.canonicalName.withForwardSlashes + ".java", content)
 		} else {
-			// TODO for David
+			val rFunctionRule = buildRFunction(rule)
+			val clazz = rFunctionRule.toFunctionJavaClass
+			val baseInterface = new JavaParameterizedType(JavaInterface.from(ReportFunction), rFunctionRule.inputs.head.attributeToJavaType, rFunctionRule.output.attributeToJavaType)
+			val topScope = new JavaScope(clazz.packageName)
+			val classBody = functionGenerator.rBuildClass(rFunctionRule, #[baseInterface], true, topScope)
+			
+			val content = buildClass(clazz.packageName, classBody, topScope)
+			fsa.generateFile(clazz.canonicalName.withForwardSlashes + ".java", content)
 		}
 	}
 	
@@ -53,17 +73,13 @@ class RuleGenerator {
 		val rFunctionRule = buildRFunction(rule)
 		val input = rFunctionRule.inputs.head
 		val output = rFunctionRule.output
-		val inputJavaType = input.RType.toJavaReferenceType
-		val outputJavaType = output.RType.toJavaReferenceType
+		val inputJavaType = input.attributeToJavaType
+		val outputJavaType = output.attributeToJavaType
 		val clazz = rFunctionRule.toFunctionJavaClass
 		val blueprintClass = new JavaClass(root.legacyBlueprint, clazz.simpleName)
 		
 		val classScope = topScope.classScope(clazz.simpleName)
 		val objectValidatorId = classScope.createUniqueIdentifier("objectValidator")
-		val blueprintId = classScope.createUniqueIdentifier(blueprintClass.simpleName.toFirstLower)
-		val actionFactoryId = classScope.createUniqueIdentifier("actionFactory")
-		val sampleId = classScope.createUniqueIdentifier("sampleId")
-		val sourceId = classScope.createUniqueIdentifier("source")
 		
 		val evaluateScope = classScope.methodScope("evaluate")
 		evaluateScope.createIdentifier(input, input.name)
@@ -73,22 +89,26 @@ class RuleGenerator {
 		doEvaluateScope.createIdentifier(input, input.name)
 		doEvaluateScope.createIdentifier(output, output.name)
 		val bpInstanceId = doEvaluateScope.createUniqueIdentifier("blueprint")
+		val bpReportId = doEvaluateScope.createUniqueIdentifier("blueprintReport")
+		val reportDataId = doEvaluateScope.createUniqueIdentifier("reportData")
+		val doEvaluateLambdaScope1 = doEvaluateScope.lambdaScope
+		val doEvaluateLambdaParam1 = doEvaluateLambdaScope1.createUniqueIdentifier("b")
+		val doEvaluateLambdaScope2 = doEvaluateScope.lambdaScope
+		val doEvaluateLambdaParam2 = doEvaluateLambdaScope2.createUniqueIdentifier("e")
 		
 		val defaultClassScope = classScope.classScope(rule.name + "Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier(rule.name + "Default")
-
+		val blueprintId = defaultClassScope.createUniqueIdentifier(blueprintClass.simpleName.toFirstLower)
+		val actionFactoryId = defaultClassScope.createUniqueIdentifier("actionFactory")
+		val sampleId = classScope.createUniqueIdentifier("sampleId")
+		val sourceId = classScope.createUniqueIdentifier("source")
 		'''
 			@«ImplementedBy»(«clazz».«defaultClassName».class)
 			public abstract class «clazz» implements «ReportFunction»<«inputJavaType», «outputJavaType»> {
-			
 				«IF output.needsBuilder»
+					
 					@«Inject» protected «ModelObjectValidator» «objectValidatorId»;
 				«ENDIF»
-				@«Inject» private «blueprintClass» «blueprintId»;
-				@«Inject» private «RosettaActionFactory» «actionFactoryId»;
-			
-				private final «DataItemIdentifier» «sampleId» = new «DataItemIdentifier»("«input.RType.name»");
-				private final «SingleItemSource»<«inputJavaType»> «sourceId» = new «SingleItemSource»("«input.RType.namespace.child(input.RType.name)»", "«input.RType.name»", «sampleId»);
 			
 				/**
 				* @param «evaluateScope.getIdentifierOrThrow(input)» «ModelGeneratorUtil.escape(input.definition)»
@@ -108,27 +128,58 @@ class RuleGenerator {
 				protected abstract «output.toBuilderType» doEvaluate(«inputJavaType» «doEvaluateScope.getIdentifierOrThrow(input)»);
 			
 				public static class «defaultClassName» extends «clazz» {
+					@«Inject» private «blueprintClass» «blueprintId»;
+					@«Inject» private «RosettaActionFactory» «actionFactoryId»;
+					
+					private final «DataItemIdentifier» «sampleId» = new «DataItemIdentifier»("«input.RType.name»");
+					private final «SingleItemSource»<«inputJavaType»> «sourceId» = new «SingleItemSource»("«input.RType.namespace.child(input.RType.name)»", "«input.RType.name»", «sampleId»);
+					
 					@Override
 					protected «output.toBuilderType» doEvaluate(«inputJavaType» «doEvaluateScope.getIdentifierOrThrow(input)») {
 						«BlueprintInstance»<«inputJavaType», «outputJavaType», «String», «String»> «bpInstanceId» = «blueprintId».blueprint();
-						«sourceId».set(«doEvaluateScope.getIdentifierOrThrow(input)»);
-						BlueprintReport blueprintReport = startsWith(actionFactory, source)
-						                .then(blueprint)
-						                .then(new MapMerger<>("Table", "Table", false, sampleId))
-						                .andSink(new ListSink<>("sink", "sink", null))
-						                .toBlueprint(blueprint.getURI(), blueprint.getLabel()).runBlueprint();
+						«sourceId».setItem(«doEvaluateScope.getIdentifierOrThrow(input)»);
+						
+						«BlueprintReport» «bpReportId»;
+						try {
+							«bpReportId» = «BlueprintBuilder».startsWith(«actionFactoryId», «sourceId»)
+				                .then(«bpInstanceId»)
+				                .then(new «MapMerger»<>("Table", "Table", false, «sampleId»))
+				                .andSink(new «ListSink»<>("sink", "sink", null))
+				                .toBlueprint(«bpInstanceId».getURI(), «bpInstanceId».getLabel()).runBlueprint();
+						} catch («InterruptedException» | «ExecutionException» e) {
+						    throw new «RuntimeException»(e);
+						}
+						«List»<«Map»<«DataIdentifier», «GroupableData»<?, «String»>>> «reportDataId» = («List»<«Map»<«DataIdentifier», «GroupableData»<?, «String»>>>)«bpReportId».getReportData();
+				        «IF output.RType instanceof RDataType»
+				        return «Optional».ofNullable(«bpReportId».getDataItemReportBuilder())
+				                .map(«doEvaluateLambdaParam1» -> («output.toBuilderType»)«doEvaluateLambdaParam1».buildReport(«reportDataId».get(0).values()))
+				                .orElse(null);
+				        «ELSE»
+				        return «reportDataId».get(0).entrySet().stream()
+				        		.filter(«doEvaluateLambdaParam2» -> «doEvaluateLambdaParam2».getKey() instanceof «RuleIdentifier»)
+				        		.findAny()
+				                .map(«doEvaluateLambdaParam2» -> («output.toBuilderType»)«doEvaluateLambdaParam2».getValue().getData())
+				                .orElse(null);
+				        «ENDIF»
 					}
 				}
 			}
 		'''
 	}
-	private def JavaType toBuilderType(RAttribute rAttribute) {
+	private def JavaReferenceType toBuilderType(RAttribute rAttribute) {
 		var javaType = rAttribute.RType.toJavaReferenceType as JavaClass
 		if(rAttribute.needsBuilder) javaType = javaType.toBuilderType
 		if (rAttribute.multi) {
 			return new JavaParameterizedType(JavaClass.from(List), javaType)
 		} else {
 			return javaType
+		}
+	}
+	private def JavaReferenceType attributeToJavaType(RAttribute rAttribute) {
+		if (rAttribute.needsBuilder) {
+			rAttribute.RType.toPolymorphicListOrSingleJavaType(rAttribute.multi)
+		} else {
+			rAttribute.RType.toListOrSingleJavaType(rAttribute.multi)
 		}
 	}
 }

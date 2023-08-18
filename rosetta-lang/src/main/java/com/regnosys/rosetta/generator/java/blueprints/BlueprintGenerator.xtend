@@ -124,14 +124,9 @@ class BlueprintGenerator {
 				generateBlueprint(root, bp, bp.name, 'Rule', bp.URI, null, version))
 		]
 		elements.filter(RosettaBlueprint).filter[!isLegacy].forEach [ rule |
-			val rFunctionRule = buildRFunction(rule)
-			val clazz = rFunctionRule.toFunctionJavaClass
-			val baseInterface = new JavaParameterizedType(JavaInterface.from(ReportFunction), rFunctionRule.inputs.head.RType.toJavaReferenceType, rFunctionRule.output.RType.toJavaReferenceType)
-			val topScope = new JavaScope(clazz.packageName)
-			val classBody = functionGenerator.rBuildClass(rFunctionRule, #[baseInterface], true, topScope)
-			
-			val content = buildClass(root.functions, classBody, topScope)
-			fsa.generateFile(clazz.canonicalName.withForwardSlashes + ".java", content)
+			val ruleClass = rule.toRuleJavaClass
+			fsa.generateFile(ruleClass.canonicalName.withForwardSlashes + ".java",
+				nonLegacyGenerateBlueprint(ruleClass, rule, version))
 		]
 	}
 
@@ -194,7 +189,7 @@ class BlueprintGenerator {
 			val typedJava = typed.toJavaNode(clazz)
 			val clazzWithArgs = typedJava.toParametrizedType(clazz)
 
-			val topScope = new JavaScope(packageName.reports)
+			val topScope = new JavaScope(packageName.legacyBlueprint)
 
 			val classScope = topScope.classScope(clazzWithArgs.toString)
 
@@ -348,8 +343,8 @@ class BlueprintGenerator {
 			«FOR dep : nodes.functionDependencies.map[buildRFunction].toSet»
 				@«Inject» protected «dep.toFunctionJavaClass» «scope.getIdentifierOrThrow(dep.toFunctionInstance)»;
 			«ENDFOR»
-			«FOR dep : nodes.ruleDependencies.map[buildRFunction].toSet»
-				@«Inject» protected «dep.toFunctionJavaClass» «scope.getIdentifierOrThrow(dep.toFunctionInstance)»;
+			«FOR dep : nodes.ruleDependencies.toSet»
+				@«Inject» protected «dep.toRuleJavaClass» «scope.getIdentifierOrThrow(dep.buildRFunction.toFunctionInstance)»;
 			«ENDFOR»
 			
 			@Override
@@ -364,6 +359,9 @@ class BlueprintGenerator {
 				«bpRef.key.blueprintRef(scope, bpRef.value)»
 			«ENDFOR»
 		'''
+	}
+	private def toRuleJavaClass(RosettaBlueprint rule) {
+		new JavaClass(DottedPath.splitOnDots(rule.model.name).child("blueprint"), rule.name + "Rule")
 	}
 
 	def StringConcatenationClient nonLegacyBuildBody(RosettaBlueprint rule, JavaScope classScope,

@@ -1266,19 +1266,20 @@ class RosettaRuleGeneratorTest {
 			package com.rosetta.test.model.reports;
 			
 			import com.google.inject.ImplementedBy;
-			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.model.lib.reports.ReportFunction;
 			import com.rosetta.test.model.Bar;
 			import com.rosetta.test.model.Foo;
 			
 			
 			@ImplementedBy(Blueprint1Rule.Blueprint1RuleDefault.class)
-			public abstract class Blueprint1Rule implements RosettaFunction {
+			public abstract class Blueprint1Rule implements ReportFunction<Foo, String> {
 			
 				/**
 				* @param input 
 				* @return output 
 				*/
+				@Override
 				public String evaluate(Foo input) {
 					String output = doEvaluate(input);
 					
@@ -1662,13 +1663,13 @@ class RosettaRuleGeneratorTest {
 		
 		import com.google.inject.ImplementedBy;
 		import com.google.inject.Inject;
-		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.model.lib.reports.ReportFunction;
 		import com.rosetta.test.model.Foo;
 		
 		
 		@ImplementedBy(Rule1Rule.Rule1RuleDefault.class)
-		public abstract class Rule1Rule implements RosettaFunction {
+		public abstract class Rule1Rule implements ReportFunction<Foo, String> {
 			
 			// RosettaFunction dependencies
 			//
@@ -1678,6 +1679,7 @@ class RosettaRuleGeneratorTest {
 			* @param input 
 			* @return output 
 			*/
+			@Override
 			public String evaluate(Foo input) {
 				String output = doEvaluate(input);
 				
@@ -1731,8 +1733,8 @@ class RosettaRuleGeneratorTest {
 		import com.google.inject.Inject;
 		import com.rosetta.model.lib.expression.CardinalityOperator;
 		import com.rosetta.model.lib.functions.ModelObjectValidator;
-		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.model.lib.reports.ReportFunction;
 		import com.rosetta.test.model.Input;
 		import com.rosetta.test.model.Input.InputBuilder;
 		import java.util.Optional;
@@ -1740,7 +1742,7 @@ class RosettaRuleGeneratorTest {
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		
 		@ImplementedBy(SimpleBlueprintRule.SimpleBlueprintRuleDefault.class)
-		public abstract class SimpleBlueprintRule implements RosettaFunction {
+		public abstract class SimpleBlueprintRule implements ReportFunction<Input, Input> {
 			
 			@Inject protected ModelObjectValidator objectValidator;
 		
@@ -1748,6 +1750,7 @@ class RosettaRuleGeneratorTest {
 			* @param input 
 			* @return output 
 			*/
+			@Override
 			public Input evaluate(Input input) {
 				Input.InputBuilder output = doEvaluate(input);
 				
@@ -1926,19 +1929,20 @@ class RosettaRuleGeneratorTest {
 		
 		import com.google.inject.ImplementedBy;
 		import com.rosetta.model.lib.expression.CardinalityOperator;
-		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.model.lib.reports.ReportFunction;
 		import com.rosetta.test.model.Foo;
 		
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		
 		@ImplementedBy(IsFixedFloatRule.IsFixedFloatRuleDefault.class)
-		public abstract class IsFixedFloatRule implements RosettaFunction {
+		public abstract class IsFixedFloatRule implements ReportFunction<Foo, Boolean> {
 		
 			/**
 			* @param input 
 			* @return output 
 			*/
+			@Override
 			public Boolean evaluate(Foo input) {
 				Boolean output = doEvaluate(input);
 				
@@ -2494,18 +2498,19 @@ class RosettaRuleGeneratorTest {
 		package com.rosetta.test.model.reports;
 		
 		import com.google.inject.ImplementedBy;
-		import com.rosetta.model.lib.functions.RosettaFunction;
 		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.model.lib.reports.ReportFunction;
 		import com.rosetta.test.model.FooEnum;
 		
 		
 		@ImplementedBy(ReturnEnumValueRule.ReturnEnumValueRuleDefault.class)
-		public abstract class ReturnEnumValueRule implements RosettaFunction {
+		public abstract class ReturnEnumValueRule implements ReportFunction<String, FooEnum> {
 		
 			/**
 			* @param input 
 			* @return output 
 			*/
+			@Override
 			public FooEnum evaluate(String input) {
 				FooEnum output = doEvaluate(input);
 				
