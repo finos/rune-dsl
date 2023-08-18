@@ -29,7 +29,6 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.CardinalityProvider
-import com.regnosys.rosetta.types.RAnnotateType
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RFunction
 import com.regnosys.rosetta.types.RFunctionOrigin
@@ -37,7 +36,6 @@ import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.ROperation
 import com.regnosys.rosetta.types.ROperationType
 import com.regnosys.rosetta.types.RShortcut
-import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.rosetta.model.lib.functions.ConditionValidator
@@ -47,7 +45,6 @@ import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.model.lib.mapper.Mapper
 import com.rosetta.util.DottedPath
 import com.rosetta.util.types.JavaClass
-import com.rosetta.util.types.JavaParametrizedType
 import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaType
 import java.util.ArrayList
@@ -63,6 +60,7 @@ import org.eclipse.xtext.naming.QualifiedName
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.rosetta.util.types.JavaParameterizedType
 
 class FunctionGenerator {
 
@@ -90,27 +88,27 @@ class FunctionGenerator {
 				func.dispatchClassBody(topScope, dependencies, version, root)
 			} else {
 				val rFunction = rTypeBuilderFactory.buildRFunction(func)
-				rBuildClass(rFunction, topScope)
+				var overridesEvaluate = false
+				val List<JavaType> functionInterfaces = newArrayList(JavaClass.from(RosettaFunction))
+				if (isQualifierFunction(rFunction)) {
+					overridesEvaluate = true
+					functionInterfaces.add(getQualifyingFunctionInterface(rFunction.inputs))
+				}
+				rBuildClass(rFunction, functionInterfaces, overridesEvaluate, topScope)
 			}
 
 		val content = buildClass(root.functions, classBody, topScope)
 		fsa.generateFile(fileName, content)
 	}
 	
-	def rBuildClass(RFunction rFunction, JavaScope topScope) {
+	def rBuildClass(RFunction rFunction, List<JavaType> functionInterfaces, boolean overridesEvaluate, JavaScope topScope) {
 		val dependencies = collectFunctionDependencies(rFunction)
-		
-		val List<JavaType> functionInterfaces = newArrayList(JavaClass.from(RosettaFunction))
-		
-		if (isQualifierFunction(rFunction)) {
-			functionInterfaces.add(getQualifyingFunctionInterface(rFunction.inputs))
-		}
-		rFunction.classBody(false, false, dependencies, functionInterfaces , topScope)
+		rFunction.classBody(false, overridesEvaluate, dependencies, functionInterfaces , topScope)
 	}
 	
 	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
 		val parameterVariable = inputs.head.RType.toListOrSingleJavaType(inputs.head.multi)
-		new JavaParametrizedType( JavaClass.from(IQualifyFunctionExtension), parameterVariable)
+		new JavaParameterizedType(JavaClass.from(IQualifyFunctionExtension), parameterVariable)
 	}
 
 	private def collectFunctionDependencies(Function func) {
@@ -306,7 +304,7 @@ class FunctionGenerator {
 		'''
 	}
 
-	def private StringConcatenationClient dispatchClassBody(Function function, JavaScope topScope,
+	private def StringConcatenationClient dispatchClassBody(Function function, JavaScope topScope,
 		Iterable<? extends Function> dependencies, String version, RootPackage root) {
 		val dispatchingFuncs = function.dispatchingFunctions.sortBy[name].toList
 		val enumParam = function.inputs.filter[typeCall.type instanceof RosettaEnumeration].head.name
@@ -354,7 +352,7 @@ class FunctionGenerator {
 					enumFunc.operations.map[rTypeBuilderFactory.buildROperation(it)],
 					enumFunc.annotations
 				)»
-				«rFunction.rBuildClass(classScope)»
+				«rFunction.rBuildClass(#[JavaClass.from(RosettaFunction)], false, classScope)»
 			«ENDFOR»
 		}'''
 	}
@@ -406,10 +404,6 @@ class FunctionGenerator {
 		}
 	}
 
-	private def StringConcatenationClient assignValue(JavaScope scope, ROperation op, boolean assignAsKey) {
-		assignValue(scope, op, assignAsKey, cardinality.isMulti(op.expression))
-	}
-
 	private def StringConcatenationClient assignValue(JavaScope scope, ROperation op, boolean assignAsKey,
 		boolean isAssigneeMulti) {
 		if (assignAsKey) {
@@ -451,14 +445,6 @@ class FunctionGenerator {
 	private def StringConcatenationClient assignPlainValue(JavaScope scope, ROperation operation,
 		boolean isAssigneeMulti) {
 		'''«expressionGenerator.javaCode(operation.expression, scope)»«IF isAssigneeMulti».getMulti()«ELSE».get()«ENDIF»'''
-	}
-
-	def boolean hasMeta(RType type) {
-		if (type instanceof RAnnotateType) {
-			type.hasMeta
-		}
-
-		false
 	}
 
 	private def boolean isReference(RAttribute attribute) {
@@ -567,27 +553,17 @@ class FunctionGenerator {
 		'''«FOR input : inputs SEPARATOR ', '»«input.attributeToJavaType» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
-	def private StringConcatenationClient shortcutJavaType(RShortcut feature) {
+	private def StringConcatenationClient shortcutJavaType(RShortcut feature) {
 		val rType = typeProvider.getRType(feature.expression)
 		val javaType = rType.toJavaReferenceType
 		'''«javaType»«IF needsBuilder(rType)».«javaType»Builder«ENDIF»'''
-	}
-
-	private def JavaType toBuilderType(Attribute attr) {
-		var javaType = typeProvider.getRTypeOfSymbol(attr).toJavaReferenceType as JavaClass
-		if(needsBuilder(attr)) javaType = javaType.toBuilderType
-		if (attr.card.isMany) {
-			return new JavaParametrizedType(JavaClass.from(List), javaType)
-		} else {
-			return javaType
-		}
 	}
 	
 	private def JavaType toBuilderType(RAttribute rAttribute) {
 		var javaType = rAttribute.RType.toJavaReferenceType as JavaClass
 		if(rAttribute.needsBuilder) javaType = javaType.toBuilderType
 		if (rAttribute.multi) {
-			return new JavaParametrizedType(JavaClass.from(List), javaType)
+			return new JavaParameterizedType(JavaClass.from(List), javaType)
 		} else {
 			return javaType
 		}

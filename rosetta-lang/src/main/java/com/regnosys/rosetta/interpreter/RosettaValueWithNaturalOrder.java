@@ -1,16 +1,15 @@
 package com.regnosys.rosetta.interpreter;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-
-import org.apache.commons.lang3.Validate;
 
 public abstract class RosettaValueWithNaturalOrder<T extends Comparable<? super T>> extends AbstractRosettaValue<T> {	
 	private final Class<T> clazz;
 	
 	public RosettaValueWithNaturalOrder(List<T> items, Class<T> clazz) {
 		super(items);
-		Validate.notNull(clazz);
+		Objects.requireNonNull(clazz);
 		this.clazz = clazz;
 	}
 	

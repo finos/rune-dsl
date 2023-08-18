@@ -4,7 +4,7 @@ public interface JavaTypeVisitor {
 	void visitType(JavaArrayType type);
 	void visitType(JavaClass type);
 	void visitType(JavaInterface type);
-	void visitType(JavaParametrizedType type);
+	void visitType(JavaParameterizedType type);
 	void visitType(JavaPrimitiveType type);
 	void visitType(JavaTypeVariable type);
 }

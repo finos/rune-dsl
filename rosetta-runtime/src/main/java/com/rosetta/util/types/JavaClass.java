@@ -1,10 +1,6 @@
 package com.rosetta.util.types;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-
-import org.apache.commons.lang3.Validate;
 
 import com.rosetta.util.DottedPath;
 
@@ -14,8 +10,8 @@ public class JavaClass implements JavaReferenceType {
 	private final String simpleName;
 	
 	public JavaClass(DottedPath packageName, String simpleName) {
-		Validate.notNull(packageName);
-		Validate.notNull(simpleName);
+		Objects.requireNonNull(packageName);
+		Objects.requireNonNull(simpleName);
 		this.packageName = packageName;
 		this.simpleName = simpleName;
 	}

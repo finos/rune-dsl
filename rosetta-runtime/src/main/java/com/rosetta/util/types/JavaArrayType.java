@@ -2,13 +2,11 @@ package com.rosetta.util.types;
 
 import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
-
 public class JavaArrayType implements JavaReferenceType {
 	private final JavaType baseType;
 
 	public JavaArrayType(JavaType baseType) {
-		Validate.notNull(baseType);
+		Objects.requireNonNull(baseType);
 		this.baseType = baseType;
 	}
 	

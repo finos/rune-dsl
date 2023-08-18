@@ -47,7 +47,7 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 		return SourceVersion.isName(name);
 	}
 	
-	// Make sure identifiers from package "java.lang" is always in scope.
+	// Make sure identifiers from package "java.lang" are always in scope.
 	@Override
 	public Optional<GeneratedIdentifier> getIdentifier(Object obj) {
 		return super.getIdentifier(obj).or(() -> {
@@ -55,9 +55,14 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 			if (t != null) {
 				if (t instanceof JavaClass) {
 					JavaClass clazz = (JavaClass)t;
-					if (this.defaultPackages.contains(clazz.getPackageName())) {
-						return Optional.of(new DefaultScopeIdentifier(this, clazz.getCanonicalName()));
+					String desiredName = clazz.getSimpleName();
+					if (this.getIdentifiers().stream().anyMatch(id -> id.getDesiredName().equals(desiredName))) {
+						return Optional.of(overwriteIdentifier(clazz, clazz.getCanonicalName().withDots()));
 					}
+					if (this.defaultPackages.contains(clazz.getPackageName())) {
+						return Optional.of(overwriteIdentifier(clazz, clazz.getSimpleName()));
+					}
+					return Optional.empty();
 				}
 			}
 			if (obj instanceof BlueprintImplicitVariableRepresentation) {
@@ -86,22 +91,5 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 				this.getParent().map(p -> p.getAllBlueprintVars()).orElseGet(() -> Stream.empty()),
 				this.blueprintVars.stream()
 			);
-	}
-	
-	private static class DefaultScopeIdentifier extends GeneratedIdentifier {
-		private final DottedPath canonicalName;
-		
-		public DefaultScopeIdentifier(GeneratorScope<?> scope, DottedPath canonicalName) {
-			super(scope, canonicalName.last());
-			this.canonicalName = canonicalName;
-		}
-		
-		@Override
-		protected String getActualName() {
-			if (this.scope.getIdentifiers().stream().anyMatch(id -> id.getDesiredName().equals(this.getDesiredName()))) {
-				return this.canonicalName.withDots();
-			}
-			return this.getDesiredName();
-		}
 	}
 }

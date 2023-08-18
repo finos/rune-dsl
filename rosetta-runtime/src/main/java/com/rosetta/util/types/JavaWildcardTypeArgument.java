@@ -3,8 +3,6 @@ package com.rosetta.util.types;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.commons.lang3.Validate;
-
 public class JavaWildcardTypeArgument implements JavaTypeArgument {
 	/*
 	 * If extendsBound is `true`, represents `? extends T`
@@ -18,7 +16,7 @@ public class JavaWildcardTypeArgument implements JavaTypeArgument {
 		this.bound = Optional.empty();
 	}
 	protected JavaWildcardTypeArgument(boolean extendsBound, JavaReferenceType bound) {
-		Validate.notNull(bound);
+		Objects.requireNonNull(bound);
 		this.extendsBound = extendsBound;
 		this.bound = Optional.of(bound);
 	}

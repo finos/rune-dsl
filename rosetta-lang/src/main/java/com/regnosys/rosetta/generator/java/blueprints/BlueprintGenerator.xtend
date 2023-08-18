@@ -55,7 +55,6 @@ import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.util.DottedPath
 import com.rosetta.util.types.JavaClass
-import com.rosetta.util.types.JavaParametrizedType
 import com.rosetta.util.types.JavaReferenceType
 import com.rosetta.util.types.JavaType
 import com.rosetta.util.types.JavaTypeVariable
@@ -82,6 +81,9 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
+import com.rosetta.util.types.JavaParameterizedType
+import com.rosetta.util.types.JavaInterface
+import com.rosetta.model.lib.reports.ReportFunction
 
 class BlueprintGenerator {
 	static Logger LOGGER = LoggerFactory.getLogger(BlueprintGenerator)
@@ -118,17 +120,13 @@ class BlueprintGenerator {
 		]
 
 		elements.filter(RosettaBlueprint).filter[isLegacy].filter[nodes !== null].forEach [ bp |
-			fsa.generateFile(root.blueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
+			fsa.generateFile(root.legacyBlueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
 				generateBlueprint(root, bp, bp.name, 'Rule', bp.URI, null, version))
 		]
 		elements.filter(RosettaBlueprint).filter[!isLegacy].forEach [ rule |
-			val rFunctionRule = buildRFunction(rule)
-			val functionJavaClass = rFunctionRule.toFunctionJavaClass
-			val topScope = new JavaScope(functionJavaClass.packageName)
-			val classBody = functionGenerator.rBuildClass(rFunctionRule, topScope)
-			
-			val content = buildClass(functionJavaClass.packageName, classBody, topScope)
-			fsa.generateFile(functionJavaClass.canonicalName.withForwardSlashes + ".java", content)
+			val ruleClass = rule.toRuleJavaClass
+			fsa.generateFile(ruleClass.canonicalName.withForwardSlashes + ".java",
+				nonLegacyGenerateBlueprint(ruleClass, rule, version))
 		]
 	}
 
@@ -187,11 +185,11 @@ class BlueprintGenerator {
 		try {
 
 			val typed = buildTypeGraph(rule)
-			val clazz = new JavaClass(packageName.reports, name + type)
+			val clazz = new JavaClass(packageName.legacyBlueprint, name + type)
 			val typedJava = typed.toJavaNode(clazz)
 			val clazzWithArgs = typedJava.toParametrizedType(clazz)
 
-			val topScope = new JavaScope(packageName.reports)
+			val topScope = new JavaScope(packageName.legacyBlueprint)
 
 			val classScope = topScope.classScope(clazzWithArgs.toString)
 
@@ -279,7 +277,7 @@ class BlueprintGenerator {
 			it instanceof JavaTypeVariable
 		].map[it as JavaTypeVariable].distinct.collect(Collectors.toList)
 		if (typeArgs.size > 0) {
-			return new JavaParametrizedType(clazz, typeArgs)
+			return new JavaParameterizedType(clazz, typeArgs)
 		} else {
 			return clazz
 		}
@@ -345,8 +343,8 @@ class BlueprintGenerator {
 			«FOR dep : nodes.functionDependencies.map[buildRFunction].toSet»
 				@«Inject» protected «dep.toFunctionJavaClass» «scope.getIdentifierOrThrow(dep.toFunctionInstance)»;
 			«ENDFOR»
-			«FOR dep : nodes.ruleDependencies.map[buildRFunction].toSet»
-				@«Inject» protected «dep.toFunctionJavaClass» «scope.getIdentifierOrThrow(dep.toFunctionInstance)»;
+			«FOR dep : nodes.ruleDependencies.toSet»
+				@«Inject» protected «dep.toRuleJavaClass» «scope.getIdentifierOrThrow(dep.buildRFunction.toFunctionInstance)»;
 			«ENDFOR»
 			
 			@Override
@@ -361,6 +359,9 @@ class BlueprintGenerator {
 				«bpRef.key.blueprintRef(scope, bpRef.value)»
 			«ENDFOR»
 		'''
+	}
+	private def toRuleJavaClass(RosettaBlueprint rule) {
+		new JavaClass(DottedPath.splitOnDots(rule.model.name).child("blueprint"), rule.name + "Rule")
 	}
 
 	def StringConcatenationClient nonLegacyBuildBody(RosettaBlueprint rule, JavaScope classScope,
@@ -451,7 +452,7 @@ class BlueprintGenerator {
 		var javaType = type.toJavaReferenceType as JavaClass
 		if(needsBuilder(type)) javaType = javaType.toBuilderType
 		if (isMany) {
-			return new JavaParametrizedType(JavaClass.from(List), javaType)
+			return new JavaParameterizedType(JavaClass.from(List), javaType)
 		} else {
 			return javaType
 		}

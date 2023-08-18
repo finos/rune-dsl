@@ -1,6 +1,7 @@
 package com.rosetta.model.lib.reports;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -54,14 +55,14 @@ public interface Tabulator<T> {
 	public static class FieldImpl implements Field {
 		private String attributeName;
 		private boolean isMulti;
-		private Optional<DottedPath> ruleName;
+		private Optional<DottedPath> ruleName; // TODO: ModelSymbolId
 		private Optional<String> identifier;
 		private List<Field> children;
 		
 		public FieldImpl(String attributeName, boolean isMulti, Optional<DottedPath> ruleName, Optional<String> identifier, List<Field> children) {
-			Validate.notNull(ruleName);
-			Validate.notNull(attributeName);
-			Validate.notNull(identifier);
+			Objects.requireNonNull(ruleName);
+			Objects.requireNonNull(attributeName);
+			Objects.requireNonNull(identifier);
 			Validate.noNullElements(children);
 			this.ruleName = ruleName;
 			this.attributeName = attributeName;
@@ -99,8 +100,8 @@ public interface Tabulator<T> {
 		private Optional<? extends Object> value;
 		
 		public FieldValueImpl(Field field, Optional<? extends Object> value) {
-			Validate.notNull(field);
-			Validate.notNull(value);
+			Objects.requireNonNull(field);
+			Objects.requireNonNull(value);
 			this.field = field;
 			this.value = value;
 		}
@@ -124,8 +125,8 @@ public interface Tabulator<T> {
 		private Optional<? extends List<? extends FieldValue>> value;
 		
 		public NestedFieldValueImpl(Field field, Optional<? extends List<? extends FieldValue>> value) {
-			Validate.notNull(field);
-			Validate.notNull(value);
+			Objects.requireNonNull(field);
+			Objects.requireNonNull(value);
 			value.ifPresent(vs -> {
 				Validate.noNullElements(vs);
 			});
@@ -157,8 +158,8 @@ public interface Tabulator<T> {
 		private Optional<? extends List<? extends List<? extends FieldValue>>> value;
 		
 		public MultiNestedFieldValueImpl(Field field, Optional<? extends List<? extends List<? extends FieldValue>>> value) {
-			Validate.notNull(field);
-			Validate.notNull(value);
+			Objects.requireNonNull(field);
+			Objects.requireNonNull(value);
 			value.ifPresent(vs -> {
 				Validate.noNullElements(vs);
 				vs.forEach(v -> Validate.noNullElements(v));

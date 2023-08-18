@@ -2,8 +2,6 @@ package com.rosetta.model.lib;
 
 import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
-
 import com.rosetta.util.DottedPath;
 
 public class ModelSymbolId {
@@ -11,8 +9,8 @@ public class ModelSymbolId {
 	private String name;
 
 	public ModelSymbolId(DottedPath namespace, String name) {
-		Validate.notNull(namespace);
-		Validate.notNull(name);
+		Objects.requireNonNull(namespace);
+		Objects.requireNonNull(name);
 		
 		this.namespace = namespace;
 		this.name = name;

@@ -117,6 +117,15 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	public GeneratedIdentifier getIdentifierOrThrow(Object obj) {
 		return getIdentifier(obj).orElseThrow(() -> new NoSuchElementException("No identifier defined for " + normalizeKey(obj) + " in scope.\n" + this));
 	}
+	
+	protected GeneratedIdentifier overwriteIdentifier(Object obj, String name) {
+		if (isClosed) {
+			throw new IllegalStateException("Cannot create a new identifier in a closed scope. (" + normalizeKey(obj) + " -> " + name + ")\n" + this);
+		}
+		GeneratedIdentifier id = new GeneratedIdentifier(this, name);
+		this.identifiers.put(obj, id);
+		return id;
+	}
 	/**
 	 * Define the desired name for a Rosetta object in this scope.
 	 * 
@@ -124,15 +133,10 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 * @throws IllegalStateException if this scope already contains an identifier for `obj`.
 	 */
 	public GeneratedIdentifier createIdentifier(Object obj, String name) {
-		if (isClosed) {
-			throw new IllegalStateException("Cannot create a new identifier in a closed scope. (" + normalizeKey(obj) + " -> " + name + ")\n" + this);
-		}
 		if (this.getIdentifier(obj).isPresent()) {
 			throw new IllegalStateException("There is already a name defined for object `" + normalizeKey(obj) + "`.\n" + this);
 		}
-		GeneratedIdentifier id = new GeneratedIdentifier(this, name);
-		this.identifiers.put(obj, id);
-		return id;
+		return overwriteIdentifier(obj, name);
 	}
 	/**
 	 * Create an identifier for the given named Rosetta object.

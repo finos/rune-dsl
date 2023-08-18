@@ -2,14 +2,12 @@ package com.rosetta.util.types;
 
 import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
-
 public class JavaTypeVariable implements JavaReferenceType {
 	private final JavaClass declaringClass;
 	private final String name;
 	public JavaTypeVariable(JavaClass declaringClass, String name) {
-		Validate.notNull(declaringClass);
-		Validate.notNull(name);
+		Objects.requireNonNull(declaringClass);
+		Objects.requireNonNull(name);
 		this.declaringClass = declaringClass;
 		this.name = name;
 	}

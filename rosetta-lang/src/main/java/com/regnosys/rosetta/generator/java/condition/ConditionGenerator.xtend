@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.rule
+package com.regnosys.rosetta.generator.java.condition
 
 import com.google.inject.ImplementedBy
 import com.google.inject.Inject
@@ -25,7 +25,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
 
-class DataRuleGenerator {
+class ConditionGenerator {
 	@Inject ExpressionGenerator expressionHandler
 	@Inject extension RosettaExtensions
 	@Inject extension ImportManagerExtension

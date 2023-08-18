@@ -7,7 +7,6 @@ package com.regnosys.rosetta.generator
 import com.google.inject.Inject
 import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
@@ -16,7 +15,6 @@ import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
 import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 import com.regnosys.rosetta.generator.java.reports.TabulatorGenerator
-import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
@@ -37,6 +35,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import com.regnosys.rosetta.generator.java.reports.RuleGenerator
+import com.regnosys.rosetta.generator.java.condition.ConditionGenerator
 
 /**
  * Generates code from your model files on save.
@@ -48,7 +47,7 @@ class RosettaGenerator implements IGenerator2 {
 
 	@Inject EnumGenerator enumGenerator
 	@Inject ModelMetaGenerator metaGenerator
-	@Inject DataRuleGenerator dataRuleGenerator
+	@Inject ConditionGenerator dataRuleGenerator
 	@Inject TabulatorGenerator tabulatorGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
