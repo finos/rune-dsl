@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.types;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,8 +9,10 @@ import javax.inject.Inject;
 import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
+import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver;
@@ -72,7 +75,7 @@ public class RObjectFactory {
 			);
 	}
 	
-	public RFunction buildRFunction(RosettaBlueprintReport report, List<ROperation> operations) {
+	public RFunction buildRFunction(RosettaBlueprintReport report) {
 		String reportDefinition = report.getRegulatoryBody().getBody().getName() + " " 
 				+ report.getRegulatoryBody().getCorpuses()
 				.stream()
@@ -82,6 +85,9 @@ public class RObjectFactory {
 		RType inputRtype = typeSystem.typeCallToRType(report.getInputType());
 		RType outputRtype = new RDataType(report.getReportType());
 		RAttribute outputAttribute = new RAttribute("output", null, outputRtype, List.of(), false);
+		
+		
+		List<ROperation> operations = generateReportOperations(report.getReportType(), List.of(), List.of(outputAttribute));
 		
 		return new RFunction(
 			report.name(),
@@ -96,6 +102,25 @@ public class RObjectFactory {
 			operations,
 			List.of()
 		);
+	}
+	
+	private List<ROperation> generateReportOperations(Data reportDataType, List<ROperation> acc, List<RAttribute> assignPath) {
+		List<Attribute> attributes = reportDataType.getAttributes();
+		List<ROperation> operations = new ArrayList<>(acc);
+		
+		for (Attribute attribute : attributes) {
+			if (attribute.getRuleReference() != null) {
+				operations.add(genreteOperationForRuleReference(attribute, assignPath));
+			}
+			
+			
+		}
+		return operations;
+	}
+	
+	private ROperation genreteOperationForRuleReference(Attribute attributeWithReference, List<RAttribute> assignPath) {
+		RosettaRuleReference ruleReference = attributeWithReference.getRuleReference();
+		return null;
 	}
 
 	public RAttribute buildRAttribute(Attribute attribute) {

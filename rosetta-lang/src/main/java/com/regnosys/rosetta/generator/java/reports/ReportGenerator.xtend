@@ -2,9 +2,11 @@ package com.regnosys.rosetta.generator.java.reports
 
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
-import org.eclipse.xtext.generator.IFileSystemAccess2
-import javax.inject.Inject
 import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.types.ROperation
+import java.util.List
+import javax.inject.Inject
+import org.eclipse.xtext.generator.IFileSystemAccess2
 
 class ReportGenerator {
 	@Inject extension RObjectFactory
@@ -17,6 +19,10 @@ class ReportGenerator {
 	}
 	
 	
-
+	private def List<ROperation> generateOperations(RosettaBlueprintReport report) {
+		
+		
+		#[]
+	}
 
 }
