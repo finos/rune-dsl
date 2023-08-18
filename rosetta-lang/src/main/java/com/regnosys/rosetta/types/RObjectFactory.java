@@ -87,7 +87,7 @@ public class RObjectFactory {
 		RAttribute outputAttribute = new RAttribute("output", null, outputRtype, List.of(), false);
 		
 		
-		List<ROperation> operations = generateReportOperations(report.getReportType(), List.of(), List.of(outputAttribute));
+		List<ROperation> operations = generateReportOperations(report.getReportType(), List.of(outputAttribute));
 		
 		return new RFunction(
 			report.name(),
@@ -104,16 +104,23 @@ public class RObjectFactory {
 		);
 	}
 	
-	private List<ROperation> generateReportOperations(Data reportDataType, List<ROperation> acc, List<RAttribute> assignPath) {
+	private List<ROperation> generateReportOperations(Data reportDataType, List<RAttribute> assignPath) {
 		List<Attribute> attributes = reportDataType.getAttributes();
-		List<ROperation> operations = new ArrayList<>(acc);
+		List<ROperation> operations = new ArrayList<>();
 		
 		for (Attribute attribute : attributes) {
 			if (attribute.getRuleReference() != null) {
 				operations.add(genreteOperationForRuleReference(attribute, assignPath));
+				continue;
 			}
-			
-			
+			RAttribute rAttribute = buildRAttribute(attribute);
+			if (rAttribute.getRType() instanceof RDataType) {
+				RDataType rData = (RDataType) rAttribute.getRType();
+				Data data = rData.getData();
+				List<RAttribute> newAssignPath = new ArrayList<>(assignPath);
+				newAssignPath.add(rAttribute);		
+				operations.addAll(generateReportOperations(data, newAssignPath));
+			}
 		}
 		return operations;
 	}
