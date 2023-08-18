@@ -101,7 +101,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		case FUNCTION:
 			return generatedJavaClassService.toJavaFunction(func.getModelSymbolId());
 		case REPORT:
-			throw new UnsupportedOperationException();
+			return generatedJavaClassService.toJavaReport(func.getModelSymbolId());
 		case RULE:
 			return generatedJavaClassService.toJavaRule(func.getModelSymbolId());
 		default:

@@ -28,4 +28,11 @@ public class GeneratedJavaClassService {
 		String simpleName = id.getName() + "Rule";
 		return new JavaClass(packageName, simpleName);
 	}
+	
+	public JavaClass toJavaReport(ModelSymbolId id) {
+		DottedPath packageName = id.getNamespace().child("reports");
+		String simpleName = id.getName() + "ReportFunction";
+		return new JavaClass(packageName, simpleName);
+	}
+	
 }

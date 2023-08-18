@@ -93,7 +93,6 @@ public class RObjectFactory {
 				.map(c -> c.getName())
 				.collect(Collectors.joining(" "));
 		
-		RType inputRtype = typeSystem.typeCallToRType(report.getInputType());
 		RType outputRtype = new RDataType(report.getReportType());
 		RAttribute outputAttribute = new RAttribute("output", null, outputRtype, List.of(), false);
 		
