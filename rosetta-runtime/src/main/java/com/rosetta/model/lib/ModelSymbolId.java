@@ -2,6 +2,8 @@ package com.rosetta.model.lib;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.Validate;
+
 import com.rosetta.util.DottedPath;
 
 public class ModelSymbolId {
@@ -14,6 +16,13 @@ public class ModelSymbolId {
 		
 		this.namespace = namespace;
 		this.name = name;
+	}
+	
+	public static ModelSymbolId fromRegulatorReference(DottedPath namespace, String body, String... corpusList) {
+		Objects.requireNonNull(namespace);
+		Objects.requireNonNull(body);
+		Validate.noNullElements(corpusList);
+		return new ModelSymbolId(namespace, body + String.join("", corpusList));
 	}
 
 	public DottedPath getNamespace() {
