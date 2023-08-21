@@ -81,6 +81,8 @@ public class RObjectFactory {
 									EObject refContainer = referrer.eContainer();
 									if (refContainer instanceof Attribute) {
 										outputTypeRef.type = Optional.of(rosettaTypeProvider.getRTypeOfSymbol((Attribute)refContainer));
+									} else if (refContainer instanceof RosettaExternalRegularAttribute) {
+										outputTypeRef.type = Optional.of(rosettaTypeProvider.getRTypeOfFeature(((RosettaExternalRegularAttribute)refContainer).getAttributeRef()));
 									}
 								}
 							}
