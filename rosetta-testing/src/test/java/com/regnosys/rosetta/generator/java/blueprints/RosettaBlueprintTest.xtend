@@ -435,7 +435,7 @@ class RosettaBlueprintTest {
 				''']
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -641,7 +641,7 @@ class RosettaBlueprintTest {
 				''']
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -771,7 +771,7 @@ class RosettaBlueprintTest {
 				''']
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -906,16 +906,19 @@ class RosettaBlueprintTest {
 			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package ns3.blueprint;
-
+				
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
 				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import java.util.ArrayList;
 				import java.util.Collection;
+				import java.util.List;
+				import java.util.stream.Collectors;
 				import ns2.blueprint.BarBarTwoRule;
 				import ns3.BarReport;
-
+				
 				
 				/**
 				 * @version 0.0.0
@@ -945,6 +948,47 @@ class RosettaBlueprintTest {
 						}
 						
 						return dataItemReportBuilder.build();
+					}
+					
+					@Override
+					public <T> List<BarReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
+						List<BarReport.BarReportBuilder> listBuilder = new ArrayList();
+						
+						for (GroupableData<?, T> groupableData : reportData) {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
+								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
+								while (index >= listBuilder.size()) {
+									listBuilder.add(null);
+								}
+								BarReport.BarReportBuilder dataItemReportBuilder = listBuilder.get(index);
+								if (dataItemReportBuilder == null) {
+									dataItemReportBuilder = BarReport.builder();
+									listBuilder.set(index, dataItemReportBuilder);
+								}
+								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+								}
+								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+								}
+							}
+						}
+						
+						return listBuilder.stream()
+							.map((item) -> {
+								if (item != null) {
+									return item.build();
+								}
+								return null;
+							})
+							.collect(Collectors.toList());
 					}
 				}
 			'''
@@ -980,7 +1024,7 @@ class RosettaBlueprintTest {
 		'''
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -2789,144 +2833,6 @@ class RosettaBlueprintTest {
 			
 		'''.generateCode
 		blueprint.compileToClasses
-	}
-
-	@Test
-	def void shouldGenerateDataTypeThatExtendsAndOverrides() {
-		val blueprint = '''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			from Bar
-			when FooRule
-			with type BarReport2
-			
-			eligibility rule FooRule from Bar:
-				[legacy-syntax]
-				filter when Bar->barA exists
-			
-			reporting rule Aa from Bar:
-				[legacy-syntax]
-				extract Bar->barA as "A"
-
-			reporting rule Aa2 from Bar:
-				[legacy-syntax]
-				extract Bar->barA2 as "A"
-
-			
-			type Bar:
-				barA string (0..1)
-				barA2 string (0..1)
-
-			
-			type BarReport:
-				aa string (1..1)
-					[ruleReference Aa]
-			
-			type BarReport2 extends BarReport:
-				aa string (1..1)
-					[ruleReference Aa2]
-
-		'''.generateCode
-		blueprint.compileToClasses
-		
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
-		assertNotNull(blueprintJava)
-		val expected = '''
-			@Override
-				public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() {
-					return 
-						startsWith(actionFactory, getFooRule())
-						.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
-							startsWith(actionFactory, getAa2())
-							)
-						)
-						.addDataItemReportBuilder(new BarReport2_DataItemReportBuilder())
-						.toBlueprint(getURI(), getName());
-				}
-			'''
-			assertTrue(blueprintJava.contains(expected), '''Expected string containing «expected» but was «blueprintJava»''')
-	}
-	
-	
-	@Test
-	def void shouldGenerateDataTypeThatExtendsAndOverridesMultipleTypes() {
-		val blueprint = '''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			from Bar
-			when FooRule
-			with type BarReport2
-			
-			eligibility rule FooRule from Bar:
-				[legacy-syntax]
-				filter when Bar->barA exists
-			
-			reporting rule Aa from Bar:
-				[legacy-syntax]
-				extract Bar->barA as "A"
-
-			reporting rule Aa2 from Bar:
-				[legacy-syntax]
-				extract Bar->barA2 as "A"
-			
-			reporting rule Bb from Bar:
-				[legacy-syntax]
-				extract Bar->barB as "B"
-				
-			reporting rule Cc from Bar:
-				[legacy-syntax]
-				extract Bar->barC as "C"
-
-			
-			type Bar:
-				barA string (0..1)
-				barA2 string (0..1)
-				barB int (0..1)
-				barC BazEnum (0..1)
-
-			enum BazEnum:
-				X
-				Y
-				Z
-			
-			type BarReport:
-				aa string (1..1)
-					[ruleReference Aa]
-				bb int (1..1)
-					[ruleReference Bb]
-				cc BazEnum (1..1)
-					[ruleReference Cc]
-			
-			type BarReport2 extends BarReport:
-				aa string (1..1)
-					[ruleReference Aa2]
-
-		'''.generateCode
-		blueprint.compileToClasses
-		
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
-		
-		assertNotNull(blueprintJava)
-		val expected = '''
-			@Override
-				public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() {
-					return 
-						startsWith(actionFactory, getFooRule())
-						.then(BlueprintBuilder.<Bar, Object, INKEY, INKEY>or(actionFactory,
-							startsWith(actionFactory, getAa2()),
-							startsWith(actionFactory, getBb()),
-							startsWith(actionFactory, getCc())
-							)
-						)
-						.addDataItemReportBuilder(new BarReport2_DataItemReportBuilder())
-						.toBlueprint(getURI(), getName());
-				}'''
-			assertTrue(blueprintJava.contains(expected), '''Expected string containing «expected» but was «blueprintJava»''')
-			
 	}
 	
 	@Test

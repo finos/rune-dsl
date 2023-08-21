@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
+import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
@@ -96,6 +97,8 @@ public class RObjectFactory {
 											EObject refContainer = referrer.eContainer();
 											if (refContainer instanceof Attribute) {
 												outputTypeRef.type = Optional.of(rosettaTypeProvider.getRTypeOfSymbol((Attribute)refContainer));
+											} else if (refContainer instanceof RosettaExternalRegularAttribute) {
+												outputTypeRef.type = Optional.of(rosettaTypeProvider.getRTypeOfFeature(((RosettaExternalRegularAttribute)refContainer).getAttributeRef()));
 											}
 										}
 									}
