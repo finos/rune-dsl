@@ -125,15 +125,22 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	public JavaClass toTabulatorJavaClass(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
 		ModelSymbolId typeId = getSymbolId(type);
-		if (ruleSource.isEmpty()) {
+		Optional<RosettaExternalRuleSource> containingRuleSource = ruleSource.flatMap((rs) -> findContainingSuperRuleSource(type, rs));
+		if (containingRuleSource.isEmpty()) {
 			DottedPath packageName = typeId.getNamespace().child("reports");
 			String simpleName = typeId.getName() + "Tabulator";
 			return new JavaClass(packageName, simpleName);
 		}
-		ModelSymbolId sourceId = getSymbolId(ruleSource.get());
+		ModelSymbolId sourceId = getSymbolId(containingRuleSource.get());
 		DottedPath packageName = sourceId.getNamespace().child("reports");
 		String simpleName = typeId.getName() + sourceId.getName() + "Tabulator";
 		return new JavaClass(packageName, simpleName);
+	}
+	private Optional<RosettaExternalRuleSource> findContainingSuperRuleSource(Data type, RosettaExternalRuleSource ruleSource) {
+		if (ruleSource.getExternalClasses().stream().filter(c -> c.getData().equals(type)).findAny().isPresent()) {
+			return Optional.of(ruleSource);
+		}
+		return Optional.ofNullable(ruleSource.getSuperRuleSource()).flatMap(s -> findContainingSuperRuleSource(type, s));
 	}
 	public JavaReferenceType toMetaJavaType(Attribute attribute) {
 		JavaReferenceType attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute));
