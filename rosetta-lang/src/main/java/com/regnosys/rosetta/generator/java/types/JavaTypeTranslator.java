@@ -58,6 +58,7 @@ import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 import com.rosetta.util.types.JavaWildcardTypeArgument;
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 
 public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private RBuiltinTypeService builtins;
@@ -76,6 +77,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private TypeSystem typeSystem;
 	@Inject
 	private GeneratedJavaClassService generatedJavaClassService;
+	@Inject
+	private RosettaFunctionExtensions rosettaFunctionExtensions;
 	
 	private JavaClass listClass = JavaClass.from(List.class);
 	private JavaClass objectClass = JavaClass.from(Object.class);
@@ -232,6 +235,13 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	public JavaReferenceType toJavaReferenceType(Optional<RType> type) {
 		return type.map(t -> toJavaReferenceType(t)).orElse(objectClass);
+	}
+	public JavaReferenceType attributeToJavaType(RAttribute rAttribute) {
+		if (rosettaFunctionExtensions.needsBuilder(rAttribute)) {
+			return toPolymorphicListOrSingleJavaType(rAttribute.getRType(), rAttribute.isMulti());
+		} else {
+			return toListOrSingleJavaType(rAttribute.getRType(), rAttribute.isMulti());
+		}
 	}
 	public JavaType toJavaType(RType type) {
 		return doSwitch(type, null);
