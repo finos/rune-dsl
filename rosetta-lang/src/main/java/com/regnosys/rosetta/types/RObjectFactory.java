@@ -1,16 +1,26 @@
 package com.regnosys.rosetta.types;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.xtext.EcoreUtil2;
 
 import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
+import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
+import com.regnosys.rosetta.validation.BindableType;
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver;
 import com.regnosys.rosetta.validation.RosettaBlueprintTypeResolver.BlueprintUnresolvedTypeException;
 import com.regnosys.rosetta.validation.TypedBPNode;
@@ -42,19 +52,92 @@ public class RObjectFactory {
 	
 	public RFunction buildRFunction(RosettaBlueprint rule) {
 		RType inputRType, outputRType;
+		boolean outputIsMulti = false;
 		if (rule.isLegacy()) {
 			try {
 				TypedBPNode node = bpTypeResolver.buildTypeGraph(rule);
 				inputRType = node.input.type.orElse(builtins.ANY);
-				outputRType = node.output.type.orElse(builtins.ANY);
+				if (!node.repeatable) {
+					outputRType = node.output.type.orElse(builtins.ANY);
+				} else {
+					BindableType outputTypeRef = new BindableType();
+					if (rule.getModel() != null) {
+						EcoreUtil2.findCrossReferences(rule.getModel(), Collections.singleton(rule), (EObject referrer, EObject referenced, EReference reference, int index) -> {
+							if (!outputTypeRef.isBound()) {
+								if (reference == SimplePackage.eINSTANCE.getRosettaRuleReference_ReportingRule()) {
+									EObject refContainer = referrer.eContainer();
+									if (refContainer instanceof Attribute) {
+										outputTypeRef.type = Optional.of(rosettaTypeProvider.getRTypeOfSymbol((Attribute)refContainer));
+									}
+								}
+							}
+						});
+					}
+					if (!outputTypeRef.isBound() && rule.eResource() != null && rule.eResource().getResourceSet() != null) {
+						ResourceSet resourceSet = rule.eResource().getResourceSet();
+						outer:
+						for (Resource r : resourceSet.getResources()) {
+							for (EObject root : r.getContents()) {
+								EcoreUtil2.findCrossReferences(root, Collections.singleton(rule), (EObject referrer, EObject referenced, EReference reference, int index) -> {
+									if (!outputTypeRef.isBound()) {
+										if (reference == SimplePackage.eINSTANCE.getRosettaRuleReference_ReportingRule()) {
+											EObject refContainer = referrer.eContainer();
+											if (refContainer instanceof Attribute) {
+												outputTypeRef.type = Optional.of(rosettaTypeProvider.getRTypeOfSymbol((Attribute)refContainer));
+											}
+										}
+									}
+								});
+								if (outputTypeRef.isBound()) {
+									break outer;
+								}
+							}
+						}
+					}
+					outputRType = outputTypeRef.type.orElse(builtins.ANY);
+				}
+				TypedBPNode last = node;
+				if (last.cardinality[0] != null) {
+					switch (last.cardinality[0]) {
+						case EXPAND: {
+							outputIsMulti = true;
+							break;
+						}
+						case REDUCE: {
+							outputIsMulti = false;
+							break;
+						}
+						default:
+							outputIsMulti = false;
+							break;
+					}
+				}
+				while (last.next != null) {
+					last = last.next;
+					if (last.cardinality[0] != null) {
+						switch (last.cardinality[0]) {
+							case EXPAND: {
+								outputIsMulti = true;
+								break;
+							}
+							case REDUCE: {
+								outputIsMulti = false;
+								break;
+							}
+							default:
+								break;
+						}
+					}
+				}
 			} catch (BlueprintUnresolvedTypeException e) {
 				throw new RuntimeException(e);
 			}
 		} else {
 			inputRType = typeSystem.typeCallToRType(rule.getInput());
 			outputRType = rosettaTypeProvider.getRType(rule.getExpression());
+			outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
 		}
-		RAttribute outputAttribute = new RAttribute("output", null, outputRType, List.of(), cardinalityProvider.isMulti(rule.getExpression()));
+		RAttribute outputAttribute = new RAttribute("output", null, outputRType, List.of(), outputIsMulti);
 		
 		return new RFunction(
 				rule.getName(), 

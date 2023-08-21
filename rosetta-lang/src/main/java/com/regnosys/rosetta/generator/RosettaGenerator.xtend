@@ -36,6 +36,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import com.regnosys.rosetta.generator.java.reports.RuleGenerator
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator
+import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 
 /**
  * Generates code from your model files on save.
@@ -53,6 +54,7 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
 	@Inject RuleGenerator ruleGenerator
+	@Inject BlueprintGenerator blueprintGenerator
 
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
@@ -169,6 +171,7 @@ class RosettaGenerator implements IGenerator2 {
 					}
 				]
 				enumGenerator.generate(packages, fsa, model.elements, version)
+				blueprintGenerator.generate(packages, fsa, model.elements, version)
 
 				// Invoke externally defined code generators
 				externalGenerators.forEach [ generator |

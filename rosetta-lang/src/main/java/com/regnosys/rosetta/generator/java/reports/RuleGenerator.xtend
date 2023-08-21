@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.reports
 
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import javax.inject.Inject
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -39,7 +38,6 @@ import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.rosetta.util.types.JavaReferenceType
 
 class RuleGenerator {
-	@Inject BlueprintGenerator blueprintGenerator
 	@Inject extension JavaTypeTranslator
 	@Inject extension RObjectFactory
 	@Inject extension ImportManagerExtension
@@ -48,7 +46,6 @@ class RuleGenerator {
 
 	
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RosettaBlueprint rule, String version) {
-		blueprintGenerator.generate(root, fsa, #[rule], version)
 		if (rule.isLegacy) {			
 			val rFunctionRule = buildRFunction(rule)
 			val clazz = rFunctionRule.toFunctionJavaClass
@@ -145,6 +142,7 @@ class RuleGenerator {
 				                .then(«bpInstanceId»)
 				                .then(new «MapMerger»<>("Table", "Table", false, «sampleId»))
 				                .andSink(new «ListSink»<>("sink", "sink", null))
+				                .addDataItemReportBuilder(«bpInstanceId».getDataItemReportBuilder())
 				                .toBlueprint(«bpInstanceId».getURI(), «bpInstanceId».getLabel()).runBlueprint();
 						} catch («InterruptedException» | «ExecutionException» e) {
 						    throw new «RuntimeException»(e);
@@ -152,7 +150,7 @@ class RuleGenerator {
 						«List»<«Map»<«DataIdentifier», «GroupableData»<?, «String»>>> «reportDataId» = («List»<«Map»<«DataIdentifier», «GroupableData»<?, «String»>>>)«bpReportId».getReportData();
 				        «IF output.RType instanceof RDataType»
 				        return «Optional».ofNullable(«bpReportId».getDataItemReportBuilder())
-				                .map(«doEvaluateLambdaParam1» -> («output.toBuilderType»)«doEvaluateLambdaParam1».buildReport(«reportDataId».get(0).values()))
+				                .map(«doEvaluateLambdaParam1» -> («output.toBuilderType»)«doEvaluateLambdaParam1».buildReport«IF output.isMulti»List«ENDIF»(«reportDataId».get(0).values()))
 				                .orElse(null);
 				        «ELSE»
 				        return «reportDataId».get(0).entrySet().stream()
