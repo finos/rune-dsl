@@ -34,12 +34,12 @@ import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaFactory
-import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RDataType
@@ -70,7 +70,6 @@ import java.util.stream.Stream
 import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
-import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -80,10 +79,8 @@ import org.slf4j.LoggerFactory
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
-import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.rosetta.util.types.JavaParameterizedType
-import com.rosetta.util.types.JavaInterface
-import com.rosetta.model.lib.reports.ReportFunction
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 
 class BlueprintGenerator {
 	static Logger LOGGER = LoggerFactory.getLogger(BlueprintGenerator)
@@ -100,7 +97,6 @@ class BlueprintGenerator {
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RObjectFactory
 	@Inject FunctionDependencyProvider functionDependencyProvider
-	@Inject FunctionGenerator functionGenerator
 
 	/**
 	 * generate a blueprint java file
@@ -108,20 +104,26 @@ class BlueprintGenerator {
 	def generate(RootPackage root, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaBlueprintReport).forEach [ report |
 			// generate blueprint report
-			fsa.generateFile(root.reports.withForwardSlashes + '/' + report.name + 'BlueprintReport.java',
-				generateBlueprint(root, firstNodeExpression(report), report.name, 'BlueprintReport', report.URI,
-					report.reportType?.name, version))
+//			fsa.generateFile(root.legacyBlueprint.withForwardSlashes + '/' + report.name + 'BlueprintReport.java',
+//				generateBlueprint(root, firstNodeExpression(report), report.name, 'BlueprintReport', report.URI,
+//					Optional.of(report), version))
 			// generate output report type builder
 			if (report.reportType !== null) {
 				fsa.generateFile(
-					root.reports.withForwardSlashes + '/' + report.reportType.name.toDataItemReportBuilderName +
-						'.java', generateReportBuilder(root, report, version))
+					report.toDataItemReportBuilderClass.canonicalName.withForwardSlashes + ".java",
+					generateReportBuilder(root, report, version))
 			}
+		]
+		elements.filter(Data).filter[!getAllReportingRules(Optional.empty, true).empty].forEach [
+			fsa.generateFile(
+				toDataItemTypeBuilderClass.canonicalName.withForwardSlashes + '.java',
+				generateTypeBuilder(root, it, version)
+			)
 		]
 
 		elements.filter(RosettaBlueprint).filter[isLegacy].filter[nodes !== null].forEach [ bp |
 			fsa.generateFile(root.legacyBlueprint.withForwardSlashes + '/' + bp.name + 'Rule.java',
-				generateBlueprint(root, bp, bp.name, 'Rule', bp.URI, null, version))
+				generateBlueprint(root, bp, bp.name, 'Rule', bp.URI, Optional.empty, version))
 		]
 		elements.filter(RosettaBlueprint).filter[!isLegacy].forEach [ rule |
 			val ruleClass = rule.toRuleJavaClass
@@ -181,7 +183,7 @@ class BlueprintGenerator {
 	 * Generate the text of a blueprint
 	 */
 	def generateBlueprint(RootPackage packageName, RosettaBlueprint rule, String name, String type, String uri,
-		String dataItemReportBuilderName, String version) {
+		Optional<RosettaBlueprintReport> report, String version) {
 		try {
 
 			val typed = buildTypeGraph(rule)
@@ -214,7 +216,7 @@ class BlueprintGenerator {
 						return "«uri»";
 					}
 					
-					«rule.nodes.buildBody(classScope, typedJava, dataItemReportBuilderName)»
+					«rule.buildBody(classScope, typedJava, report)»
 				}
 			'''
 
@@ -328,30 +330,41 @@ class BlueprintGenerator {
 	/**
 	 * build the body of the blueprint class
 	 */
-	def StringConcatenationClient buildBody(BlueprintNodeExp nodes, JavaScope scope, TypedBPJavaNode typedNode,
-		String dataItemReportBuilderName) {
-		nodes.functionDependencies.map[buildRFunction].toSet.forEach [
+	def StringConcatenationClient buildBody(RosettaBlueprint rule, JavaScope scope, TypedBPJavaNode typedNode,
+		Optional<RosettaBlueprintReport> report) {
+		rule.functionDependencies.map[buildRFunction].toSet.forEach [
 			scope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)
 		]
-		nodes.ruleDependencies.map[buildRFunction].toSet.forEach [
+		rule.ruleDependencies.map[buildRFunction].toSet.forEach [
 			scope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower + "Ref")
 		]
+		
+		val dataItemBuilder = report.map[toDataItemReportBuilderClass]
+			.or[
+				val type = rule.buildRFunction.output.RType
+				if (type instanceof RDataType) {
+					if (!type.data.getAllReportingRules(Optional.empty, true).empty) {
+						return Optional.of(type.data.toDataItemTypeBuilderClass)
+					}
+				}
+				return Optional.empty
+			]
 
-		val context = new Context(nodes)
+		val context = new Context(rule.nodes)
 		val blueprintScope = scope.methodScope("blueprint")
 		return '''
-			«FOR dep : nodes.functionDependencies.map[buildRFunction].toSet»
+			«FOR dep : rule.functionDependencies.map[buildRFunction].toSet»
 				@«Inject» protected «dep.toFunctionJavaClass» «scope.getIdentifierOrThrow(dep.toFunctionInstance)»;
 			«ENDFOR»
-			«FOR dep : nodes.ruleDependencies.toSet»
+			«FOR dep : rule.ruleDependencies.toSet»
 				@«Inject» protected «dep.toRuleJavaClass» «scope.getIdentifierOrThrow(dep.buildRFunction.toFunctionInstance)»;
 			«ENDFOR»
 			
 			@Override
 			public «BlueprintInstance»<«typedNode.input», «typedNode.output», «typedNode.inputKey», «typedNode.outputKey»> blueprint() {
 				return 
-					«importWildcard(method(BlueprintBuilder, "startsWith"))»(actionFactory, «nodes.buildGraph(blueprintScope, typedNode.next, context)»)
-					«IF dataItemReportBuilderName !== null».addDataItemReportBuilder(new «dataItemReportBuilderName.toDataItemReportBuilderName»())«ENDIF»
+					«importWildcard(method(BlueprintBuilder, "startsWith"))»(actionFactory, «rule.nodes.buildGraph(blueprintScope, typedNode.next, context)»)
+					«IF dataItemBuilder.present».addDataItemReportBuilder(new «dataItemBuilder.get»())«ENDIF»
 					.toBlueprint(getURI(), getName());
 			}
 			«FOR bpRef : context.bpRefs.entrySet»
@@ -380,6 +393,17 @@ class BlueprintGenerator {
 		functionDependencyProvider.rFunctionDependencies(expr).forEach [
 			classScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)
 		]
+		
+		val dataItemBuilder = 
+			if (outputType instanceof RDataType) {
+				if (!outputType.data.getAllReportingRules(Optional.empty, true).empty) {
+					Optional.of(outputType.data.toDataItemTypeBuilderClass)
+				} else {
+					Optional.empty
+				}
+			} else {
+				Optional.empty
+			}
 
 		val evaluateScope = classScope.methodScope("evaluate")
 		evaluateScope.createIdentifier(rule.toRuleInputParameter, rule.input.type.name.toFirstLower)
@@ -408,6 +432,7 @@ class BlueprintGenerator {
 			public «BlueprintInstance»<«typedNode.input», «typedNode.output», «typedNode.inputKey», «typedNode.outputKey»> blueprint() {
 				return
 					«importWildcard(method(BlueprintBuilder, "startsWith"))»(actionFactory, «rule.nonLegacyBuildNode(blueprintScope, typedNode.next, outputType, outputIsMany)»)
+						«IF dataItemBuilder.present».addDataItemReportBuilder(new «dataItemBuilder.get»())«ENDIF»
 						.toBlueprint(getURI(), getName());
 			}
 			
@@ -678,25 +703,44 @@ class BlueprintGenerator {
 	 */
 	def String generateReportBuilder(RootPackage packageName, RosettaBlueprintReport report, String version) {
 		try {
-			val scope = new JavaScope(packageName.reports)
+			val scope = new JavaScope(packageName.legacyBlueprint)
 
 			val StringConcatenationClient body = '''
 				«emptyJavadocWithVersion(version)»
-				public class «report.reportType.name.toDataItemReportBuilderName» implements «DataItemReportBuilder» {
+				public class «report.toDataItemReportBuilderClass» implements «DataItemReportBuilder» {
 				
-					«report.buildDataItemReportBuilderBody»
+					«report.reportType.buildDataItemBuilderBody(Optional.ofNullable(report.ruleSource))»
 				}
 			'''
-			buildClass(packageName.reports, body, scope)
+			buildClass(packageName.legacyBlueprint, body, scope)
 		} catch (Exception e) {
 			LOGGER.error("Error generating blueprint java for " + report.reportType.name, e);
 			return '''Unexpected Error generating «report.reportType.name».java Please see log for details'''
 		}
 	}
+	def String generateTypeBuilder(RootPackage packageName, Data type, String version) {
+		try {
+			val scope = new JavaScope(packageName.legacyBlueprint)
 
-	def StringConcatenationClient buildDataItemReportBuilderBody(RosettaBlueprintReport report) {
-		val reportType = new RDataType(report.reportType).toJavaType
+			val StringConcatenationClient body = '''
+				«emptyJavadocWithVersion(version)»
+				public class «type.toDataItemTypeBuilderClass» implements «DataItemReportBuilder» {
+				
+					«type.buildDataItemBuilderBody(Optional.empty)»
+				}
+			'''
+			buildClass(packageName.legacyBlueprint, body, scope)
+		} catch (Exception e) {
+			LOGGER.error("Error generating blueprint java for " + type.name, e);
+			return '''Unexpected Error generating «type.name».java Please see log for details'''
+		}
+	}
+	
+	def StringConcatenationClient buildDataItemBuilderBody(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
+		val reportType = new RDataType(type).toJavaType
 		val builderName = "dataItemReportBuilder"
+		val listBuilderName = "listBuilder"
+		val reportingRules = type.getAllReportingRules(ruleSource, true)
 		'''
 		@Override
 		public <T> «reportType» buildReport(«Collection»<«GroupableData»<?, T>> reportData) {
@@ -711,11 +755,47 @@ class BlueprintGenerator {
 					if (data == null) {
 						continue;
 					}
-					«report.getAllReportingRules(true).buildRules(builderName)»
+					«reportingRules.buildRules(builderName)»
 				}
 			}
 			
 			return «builderName».build();
+		}
+		
+		@Override
+		public <T> «List»<«reportType»> buildReportList(«Collection»<«GroupableData»<?, T>> reportData) {
+			«List»<«reportType».«reportType»Builder> «listBuilderName» = new «ArrayList»();
+			
+			for («GroupableData»<?, T> groupableData : reportData) {
+				«DataIdentifier» dataIdentifier = groupableData.getIdentifier();
+				if (dataIdentifier instanceof «RuleIdentifier») {
+					«RuleIdentifier» ruleIdentifier = («RuleIdentifier») dataIdentifier;
+					«Class»<?> ruleType = ruleIdentifier.getRuleType();
+					«Object» data = groupableData.getData();
+					if (data == null) {
+						continue;
+					}
+					int index = ruleIdentifier.getRepeatableIndex().orElse(0);
+					while (index >= «listBuilderName».size()) {
+						«listBuilderName».add(null);
+					}
+					«reportType».«reportType»Builder «builderName» = «listBuilderName».get(index);
+					if («builderName» == null) {
+						«builderName» = «reportType».builder();
+						«listBuilderName».set(index, «builderName»);
+					}
+					«reportingRules.buildRules(builderName)»
+				}
+			}
+			
+			return «listBuilderName».stream()
+				.map((item) -> {
+					if (item != null) {
+						return item.build();
+					}
+					return null;
+				})
+				.collect(«Collectors».toList());
 		}'''
 	}
 
@@ -723,11 +803,11 @@ class BlueprintGenerator {
 		'''«FOR entry : attrRules.entrySet.sortBy[value.name]»
 			«val path = entry.key.path»
 			«val attr = entry.key.attr»
-			«val attrType = attr.typeCall.typeCallToRType»
+			«val attrBaseClass = attr.typeCall.typeCallToRType.toJavaReferenceType»
 			«val rule = entry.value»
-			«val ruleClass = new JavaClass(DottedPath.splitOnDots((rule.eContainer as RosettaModel).name).child("reports"), rule.name + "Rule")»
+			«val ruleClass = new JavaClass(DottedPath.splitOnDots(rule.model.name).child("blueprint"), rule.name + "Rule")»
 			if («ruleClass».class.isAssignableFrom(ruleType)) {
-				«DataItemReportUtils».setField(«builderPath»«path.trimFirst.buildAttributePathGetters»::set«attr.name.toFirstUpper», «attrType.toJavaReferenceType».class, data, «ruleClass».class);
+				«DataItemReportUtils».set«IF attr.card.isMany»List«ENDIF»Field(«builderPath»«path.trimFirst.buildAttributePathGetters»::set«attr.name.toFirstUpper», «attrBaseClass».class, data, «ruleClass».class);
 			}
 		«ENDFOR»
 		'''
@@ -743,21 +823,24 @@ class BlueprintGenerator {
 		].join('.')
 	}
 
-	def String toDataItemReportBuilderName(String dataItemReportTypeName) {
-		'''«dataItemReportTypeName»_DataItemReportBuilder'''
+	def JavaClass toDataItemReportBuilderClass(RosettaBlueprintReport report) {
+		new JavaClass(DottedPath.splitOnDots(report.model.name).child("blueprint"), report.reportType.name + "_DataItemReportBuilder")
+	}
+	def JavaClass toDataItemTypeBuilderClass(Data type) {
+		new JavaClass(DottedPath.splitOnDots(type.model.name).child("blueprint"), type.name + "_DataItemTypeBuilder")
 	}
 
-	@Data static class AttributePath {
+	@org.eclipse.xtend.lib.annotations.Data static class AttributePath {
 		List<Attribute> path
 		RosettaDocReference ref
 	}
 
-	@Data static class RegdOutputField {
+	@org.eclipse.xtend.lib.annotations.Data static class RegdOutputField {
 		Attribute attrib
 		RosettaDocReference ref
 	}
 
-	@Data static class Context {
+	@org.eclipse.xtend.lib.annotations.Data static class Context {
 		BlueprintNodeExp nodes
 		Map<RosettaBlueprint, TypedBPJavaNode> bpRefs = newLinkedHashMap
 

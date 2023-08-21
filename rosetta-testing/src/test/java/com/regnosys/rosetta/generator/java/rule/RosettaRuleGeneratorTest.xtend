@@ -2339,7 +2339,7 @@ class RosettaRuleGeneratorTest {
 		blueprint.compileToClasses
 		
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
-		
+		assertNotNull(blueprintJava)
 		val expected = '''
 			@Override
 				public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() {
@@ -2419,7 +2419,7 @@ class RosettaRuleGeneratorTest {
 		blueprint.compileToClasses
 		
 		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
-		
+		assertNotNull(blueprintJava)
 		val expected = '''
 			@Override
 				public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() {
