@@ -12,7 +12,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import java.util.Map
-import com.rosetta.model.lib.reports.ModelReportId
 import com.rosetta.util.DottedPath
 import com.rosetta.util.types.GeneratedJavaClassService
 import com.rosetta.util.types.JavaClass
@@ -28,6 +27,7 @@ import com.rosetta.model.lib.reports.Tabulator.FieldValueVisitor
 import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValue
 import com.rosetta.model.lib.reports.Tabulator.NestedFieldValue
 import org.eclipse.xtend2.lib.StringConcatenation
+import com.rosetta.model.lib.ModelSymbolId
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -164,7 +164,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId = new ModelReportId(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val reportId =  ModelSymbolId.fromRegulatorReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
 		val reportTabulatorClass = reportId.toJavaReportTabulator
 		
 		val reportTabulatorCode = code.get(reportTabulatorClass.canonicalName.withDots)
@@ -766,7 +766,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId = new ModelReportId(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val reportId = ModelSymbolId.fromRegulatorReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
 		val tabulatorClass = reportId.toJavaReportTabulator
 		
 		val classes = code.compileToClasses
@@ -810,7 +810,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId = new ModelReportId(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val reportId = ModelSymbolId.fromRegulatorReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
 		val tabulatorClass = reportId.toJavaReportTabulator
 		
 		val classes = code.compileToClasses
