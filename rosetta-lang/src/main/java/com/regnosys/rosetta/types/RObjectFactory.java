@@ -160,7 +160,7 @@ public class RObjectFactory {
 		symbolRef.setExplicitArguments(true);
 		symbolRef.getArgs().add(inputAttributeSymbolRef);
 		
-		return new ROperation(ROperationType.SET, pathHead, pathTail, null);
+		return new ROperation(ROperationType.SET, pathHead, pathTail, symbolRef);
 	}
 
 	public RAttribute buildRAttribute(Attribute attribute) {
