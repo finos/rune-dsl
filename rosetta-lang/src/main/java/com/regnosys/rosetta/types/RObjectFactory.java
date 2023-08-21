@@ -212,16 +212,16 @@ public class RObjectFactory {
 		List<ROperation> operations = new ArrayList<>();
 		
 		for (Attribute attribute : attributes) {
+			RAttribute rAttribute = buildRAttribute(attribute);
+			List<RAttribute> newAssignPath = new ArrayList<>(assignPath);
+			newAssignPath.add(rAttribute);
 			if (attributeToRuleMap.containsKey(attribute)) {
-				operations.add(generateOperationForRuleReference(inputAttribute, attributeToRuleMap.get(attribute), assignPath));
+				operations.add(generateOperationForRuleReference(inputAttribute, attributeToRuleMap.get(attribute), newAssignPath));
 				continue;
 			}
-			RAttribute rAttribute = buildRAttribute(attribute);
 			if (rAttribute.getRType() instanceof RDataType) {
 				RDataType rData = (RDataType) rAttribute.getRType();
-				Data data = rData.getData();
-				List<RAttribute> newAssignPath = new ArrayList<>(assignPath);
-				newAssignPath.add(rAttribute);		
+				Data data = rData.getData();		
 				operations.addAll(generateReportOperations(data, attributeToRuleMap, inputAttribute, newAssignPath));
 			}
 		}

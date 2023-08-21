@@ -174,91 +174,84 @@ class RosettaBlueprintTest {
 				''']
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
-				package com.rosetta.test.model.blueprint;
+			package com.rosetta.test.model.reports;
+			
+			import com.google.inject.ImplementedBy;
+			import com.google.inject.Inject;
+			import com.rosetta.model.lib.functions.ModelObjectValidator;
+			import com.rosetta.model.lib.mapper.MapperC;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.model.lib.reports.ReportFunction;
+			import com.rosetta.test.model.Bar;
+			import com.rosetta.test.model.BarQuxReport;
+			import com.rosetta.test.model.BarReport;
+			import com.rosetta.test.model.BarReport.BarReportBuilder;
+			import java.util.Optional;
+			
+			
+			@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+			public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Quux;
-				import javax.inject.Inject;
+				@Inject protected ModelObjectValidator objectValidator;
 				
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
+				// RosettaFunction dependencies
+				//
+				@Inject protected BarBarOneRule barBarOne;
+				@Inject protected BarBarTwoRule barBarTwo;
+				@Inject protected BarBazRule barBaz;
+				@Inject protected BarQuuxRule barQuux;
+				@Inject protected BarQuxListRule barQuxList;
+			
 				/**
-				 * @version 0.0.0
-				 */
-				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, Object, INKEY, INKEY> {
+				* @param input 
+				* @return output 
+				*/
+				@Override
+				public BarReport evaluate(Bar input) {
+					BarReport.BarReportBuilder output = doEvaluate(input);
 					
-					private final RosettaActionFactory actionFactory;
-					
-					@Inject
-					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
+					if (output != null) {
+						objectValidator.validate(BarReport.class, output);
 					}
-					
+					return output;
+				}
+			
+				protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+			
+				public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
 					@Override
-					public String getName() {
-						return "TEST_REGMiFIR"; 
+					protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+						BarReport.BarReportBuilder output = BarReport.builder();
+						return assignOutput(output, input);
 					}
 					
-					@Override
-					public String getURI() {
-						return "__synthetic3.rosetta#/0/@elements.2";
-					}
-					
-					@Inject protected FooRuleRule fooRuleRef;
-					@Inject protected BarBarOneRule barBarOneRef;
-					@Inject protected BarBarTwoRule barBarTwoRef;
-					@Inject protected BarBazRule barBazRef;
-					@Inject protected BarQuuxRule barQuuxRef;
-					@Inject protected BarQuxListRule barQuxListRef;
-					
-					@Override
-					public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, getFooRule())
-							.then(BlueprintBuilder.<Bar, Object, INKEY, INKEY>or(actionFactory,
-								startsWith(actionFactory, getBarBarOne()),
-								startsWith(actionFactory, getBarBarTwo()),
-								startsWith(actionFactory, getBarBaz()),
-								startsWith(actionFactory, getBarQuux()),
-								startsWith(actionFactory, getBarQuxList())
-								)
-							)
-							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
-							.toBlueprint(getURI(), getName());
-					}
-					
-					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
-						return fooRuleRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarOne() {
-						return barBarOneRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
-						return barBarTwoRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
-						return barBazRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, Quux, INKEY, INKEY> getBarQuux() {
-						return barQuuxRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
-						return barQuxListRef.blueprint();
+					protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+						output
+							.setBarBarOne(MapperS.of(barBarOne.evaluate(MapperS.of(input).get())).get());
+						
+						output
+							.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).get());
+						
+						output
+							.getOrCreateBarBaz()
+							.setBarBaz1(MapperS.of(barBaz.evaluate(MapperS.of(input).get())).get());
+						
+						output
+							.setBarQuxList(MapperC.<BarQuxReport>of(barQuxList.evaluate(MapperS.of(input).get())).getMulti());
+						
+						output
+							.setBarQuux(MapperS.of(barQuux.evaluate(MapperS.of(input).get())).get());
+						
+						return Optional.ofNullable(output)
+							.map(o -> o.prune())
+							.orElse(null);
 					}
 				}
+			}
 			'''
 			assertEquals(expected, reportJava)
 
@@ -268,60 +261,116 @@ class RosettaBlueprintTest {
 		try {
 			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
 			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
-				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
-				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.rosetta.test.model.BarReport;
-				import com.rosetta.test.model.Quux;
-				import java.util.Collection;
-				
-				
-				/**
-				 * @version 0.0.0
-				 */
-				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
-				
-					@Override
-					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
-						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
-								}
-								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
-								}
-								if (BarBazRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
-								}
-								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
-								}
-								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
-								}
-								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
-								}
+			package com.rosetta.test.model.blueprint;
+			
+			import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
+			import com.regnosys.rosetta.blueprints.DataItemReportUtils;
+			import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
+			import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
+			import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+			import com.rosetta.test.model.BarReport;
+			import com.rosetta.test.model.Quux;
+			import java.util.ArrayList;
+			import java.util.Collection;
+			import java.util.List;
+			import java.util.stream.Collectors;
+			
+			
+			/**
+			 * @version 0.0.0
+			 */
+			public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
+			
+				@Override
+				public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
+					BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
+					
+					for (GroupableData<?, T> groupableData : reportData) {
+						DataIdentifier dataIdentifier = groupableData.getIdentifier();
+						if (dataIdentifier instanceof RuleIdentifier) {
+							RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+							Class<?> ruleType = ruleIdentifier.getRuleType();
+							Object data = groupableData.getData();
+							if (data == null) {
+								continue;
+							}
+							if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+							}
+							if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+							}
+							if (BarBazRule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+							}
+							if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+							}
+							if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+							}
+							if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 							}
 						}
-						
-						return dataItemReportBuilder.build();
 					}
+					
+					return dataItemReportBuilder.build();
 				}
+				
+				@Override
+				public <T> List<BarReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
+					List<BarReport.BarReportBuilder> listBuilder = new ArrayList();
+					
+					for (GroupableData<?, T> groupableData : reportData) {
+						DataIdentifier dataIdentifier = groupableData.getIdentifier();
+						if (dataIdentifier instanceof RuleIdentifier) {
+							RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+							Class<?> ruleType = ruleIdentifier.getRuleType();
+							Object data = groupableData.getData();
+							if (data == null) {
+								continue;
+							}
+							int index = ruleIdentifier.getRepeatableIndex().orElse(0);
+							while (index >= listBuilder.size()) {
+								listBuilder.add(null);
+							}
+							BarReport.BarReportBuilder dataItemReportBuilder = listBuilder.get(index);
+							if (dataItemReportBuilder == null) {
+								dataItemReportBuilder = BarReport.builder();
+								listBuilder.set(index, dataItemReportBuilder);
+							}
+							if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+							}
+							if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+							}
+							if (BarBazRule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+							}
+							if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+							}
+							if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+							}
+							if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
+								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+							}
+						}
+					}
+					
+					return listBuilder.stream()
+						.map((item) -> {
+							if (item != null) {
+								return item.build();
+							}
+							return null;
+						})
+						.collect(Collectors.toList());
+				}
+			}
 			'''
 			assertEquals(expected, reportBuilderJava)
 
