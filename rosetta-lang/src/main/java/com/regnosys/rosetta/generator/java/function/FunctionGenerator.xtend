@@ -94,16 +94,16 @@ class FunctionGenerator {
 					overridesEvaluate = true
 					functionInterfaces.add(getQualifyingFunctionInterface(rFunction.inputs))
 				}
-				rBuildClass(rFunction, functionInterfaces, overridesEvaluate, topScope)
+				rBuildClass(rFunction, false, functionInterfaces, overridesEvaluate, topScope)
 			}
 
 		val content = buildClass(root.functions, classBody, topScope)
 		fsa.generateFile(fileName, content)
 	}
 	
-	def rBuildClass(RFunction rFunction, List<JavaType> functionInterfaces, boolean overridesEvaluate, JavaScope topScope) {
+	def rBuildClass(RFunction rFunction, boolean isStatic, List<JavaType> functionInterfaces, boolean overridesEvaluate, JavaScope topScope) {
 		val dependencies = collectFunctionDependencies(rFunction)
-		rFunction.classBody(false, overridesEvaluate, dependencies, functionInterfaces , topScope)
+		rFunction.classBody(isStatic, overridesEvaluate, dependencies, functionInterfaces , topScope)
 	}
 	
 	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
@@ -312,25 +312,25 @@ class FunctionGenerator {
 		val className = topScope.getIdentifierOrThrow(function)
 
 		val classScope = topScope.classScope(className.desiredName)
-		dispatchingFuncs.forEach[classScope.createIdentifier(it, toTargetClassName.lastSegment)]
+		dispatchingFuncs.forEach[classScope.createIdentifier(it, (function.name + value.value.name.toFirstUpper).toFirstLower)]
 
 		val evaluateScope = classScope.methodScope("evaluate")
 		function.inputs.forEach[evaluateScope.createIdentifier(it)]
 		'''
 		«javadoc(function, version)»
-		public class «className» {
+		public class «className» implements «RosettaFunction» {
 			«FOR dep : dependencies»
 				@«Inject» protected «dep.toFunctionJavaClass» «dep.name.toFirstLower»;
 			«ENDFOR»
 			
 			«FOR enumFunc : dispatchingFuncs»
-				@«Inject» protected «toTargetClassName(enumFunc)» «toTargetClassName(enumFunc).lastSegment»;
+				@«Inject» protected «toDispatchClass(enumFunc)» «classScope.getIdentifierOrThrow(enumFunc)»;
 			«ENDFOR»
 			
 			public «outputType» evaluate(«function.inputsAsParameters(evaluateScope)») {
 				switch («enumParam») {
 					«FOR enumFunc : dispatchingFuncs»
-						case «toEnumClassName(enumFunc).lastSegment»:
+						case «formatEnumName(enumFunc.value.value.name)»:
 							return «classScope.getIdentifierOrThrow(enumFunc)».evaluate(«function.inputsAsArguments(evaluateScope)»);
 					«ENDFOR»
 					default:
@@ -352,18 +352,18 @@ class FunctionGenerator {
 					enumFunc.operations.map[rTypeBuilderFactory.buildROperation(it)],
 					enumFunc.annotations
 				)»
-				«rFunction.rBuildClass(#[JavaClass.from(RosettaFunction)], false, classScope)»
+				«rFunction.rBuildClass(true, #[JavaClass.from(RosettaFunction)], false, classScope)»
 			«ENDFOR»
 		}'''
 	}
 
-	private def QualifiedName toTargetClassName(FunctionDispatch ele) {
-		return QualifiedName.create(ele.name).append(ele.value.value.name.toFirstLower + "_") // to avoid name clashes
+	private def JavaClass toDispatchClass(FunctionDispatch ele) {
+		return new JavaClass(DottedPath.splitOnDots(ele.model.name).child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name))
 	}
 
-	private def QualifiedName toEnumClassName(FunctionDispatch ele) {
-		return QualifiedName.create(ele.name).append(formatEnumName(ele.value.value.name))
-	}
+//	private def QualifiedName toEnumClassName(FunctionDispatch ele) {
+//		return QualifiedName.create(ele.name).append(formatEnumName(ele.value.value.name))
+//	}
 
 	private def boolean assignAsKey(ROperation op) {
 		return op.expression instanceof AsKeyOperation

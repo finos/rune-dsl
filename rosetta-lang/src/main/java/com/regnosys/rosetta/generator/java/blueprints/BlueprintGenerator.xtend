@@ -104,9 +104,9 @@ class BlueprintGenerator {
 	def generate(RootPackage root, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
 		elements.filter(RosettaBlueprintReport).forEach [ report |
 			// generate blueprint report
-//			fsa.generateFile(root.legacyBlueprint.withForwardSlashes + '/' + report.name + 'BlueprintReport.java',
-//				generateBlueprint(root, firstNodeExpression(report), report.name, 'BlueprintReport', report.URI,
-//					Optional.of(report), version))
+			fsa.generateFile(root.legacyBlueprint.withForwardSlashes + '/' + report.name + 'BlueprintReport.java',
+				generateBlueprint(root, firstNodeExpression(report), report.name, 'BlueprintReport', report.URI,
+					Optional.of(report), version))
 			// generate output report type builder
 			if (report.reportType !== null) {
 				fsa.generateFile(
@@ -114,7 +114,7 @@ class BlueprintGenerator {
 					generateReportBuilder(root, report, version))
 			}
 		]
-		elements.filter(Data).filter[!getAllReportingRules(Optional.empty, true).empty].forEach [
+		elements.filter(Data).filter[!getAllReportingRules(Optional.empty, true, false).empty].forEach [
 			fsa.generateFile(
 				toDataItemTypeBuilderClass.canonicalName.withForwardSlashes + '.java',
 				generateTypeBuilder(root, it, version)
@@ -156,7 +156,7 @@ class BlueprintGenerator {
 		val node = RosettaFactory.eINSTANCE.createBlueprintOr
 		node.name = report.name
 
-		report.getAllReportingRules(false).values.sortBy[name].forEach [
+		report.getAllReportingRules(false, true).values.sortBy[name].forEach [
 			val ref = RosettaFactory.eINSTANCE.createBlueprintRef
 			ref.blueprint = it
 			ref.name = it.name
@@ -343,7 +343,7 @@ class BlueprintGenerator {
 			.or[
 				val type = rule.buildRFunction.output.RType
 				if (type instanceof RDataType) {
-					if (!type.data.getAllReportingRules(Optional.empty, true).empty) {
+					if (!type.data.getAllReportingRules(Optional.empty, true, false).empty) {
 						return Optional.of(type.data.toDataItemTypeBuilderClass)
 					}
 				}
@@ -396,7 +396,7 @@ class BlueprintGenerator {
 		
 		val dataItemBuilder = 
 			if (outputType instanceof RDataType) {
-				if (!outputType.data.getAllReportingRules(Optional.empty, true).empty) {
+				if (!outputType.data.getAllReportingRules(Optional.empty, true, false).empty) {
 					Optional.of(outputType.data.toDataItemTypeBuilderClass)
 				} else {
 					Optional.empty
@@ -740,7 +740,7 @@ class BlueprintGenerator {
 		val reportType = new RDataType(type).toJavaType
 		val builderName = "dataItemReportBuilder"
 		val listBuilderName = "listBuilder"
-		val reportingRules = type.getAllReportingRules(ruleSource, true)
+		val reportingRules = type.getAllReportingRules(ruleSource, true, false)
 		'''
 		@Override
 		public <T> «reportType» buildReport(«Collection»<«GroupableData»<?, T>> reportData) {

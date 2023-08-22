@@ -25,7 +25,7 @@ class ReportGenerator {
 		val clazz = rFunction.toFunctionJavaClass
 		val topScope = new JavaScope(clazz.packageName)
 		val baseInterface = new JavaParameterizedType(JavaInterface.from(ReportFunction), rFunction.inputs.head.attributeToJavaType, rFunction.output.attributeToJavaType)
-		val classBody = functionGenerator.rBuildClass(rFunction, #[baseInterface], true, topScope);
+		val classBody = functionGenerator.rBuildClass(rFunction, false, #[baseInterface], true, topScope);
 		val content = buildClass(clazz.packageName, classBody, topScope)
 		fsa.generateFile(clazz.canonicalName.withForwardSlashes + ".java", content)
 	}

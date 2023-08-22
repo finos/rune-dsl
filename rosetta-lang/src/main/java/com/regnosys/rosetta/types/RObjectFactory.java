@@ -189,7 +189,7 @@ public class RObjectFactory {
 		cardinality.setSup(1);
 		inputAttribute.setCard(cardinality);
 		
-		Map<Attribute, RosettaBlueprint> attributeToRuleMap = rosettaExtensions.getAllReportingRules(report, false)
+		Map<Attribute, RosettaBlueprint> attributeToRuleMap = rosettaExtensions.getAllReportingRules(report, false, false)
 			.entrySet()
 			.stream()
 			.collect(Collectors.toMap(e -> e.getKey().getAttr(), e -> e.getValue()));

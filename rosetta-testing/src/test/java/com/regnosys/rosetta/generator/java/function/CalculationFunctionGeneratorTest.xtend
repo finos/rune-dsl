@@ -19,7 +19,7 @@ class CalculationFunctionGeneratorTest {
 	
 	@Test
 	def void testSimpleTransDep() {
-		val genereated = '''
+		val generatedCode = '''
 			type Period:
 				frequency int (1..1)
 				periodEnum PeriodEnum (1..1)
@@ -42,7 +42,8 @@ class CalculationFunctionGeneratorTest {
 			func PeriodEnumFunc(in1: PeriodEnum -> MONTH ):
 				alias i: in2 -> frequency
 				set out: i * 30.0
-		'''.generateCode.get("com.rosetta.test.model.functions.PeriodEnumFunc")
+		'''.generateCode
+		val generated = generatedCode.get("com.rosetta.test.model.functions.PeriodEnumFunc")
 
 		assertEquals(
 			'''
@@ -62,21 +63,21 @@ class CalculationFunctionGeneratorTest {
 			/**
 			 * @version test
 			 */
-			public class PeriodEnumFunc {
+			public class PeriodEnumFunc implements RosettaFunction {
 				
-				@Inject protected PeriodEnumFunc.mONTH_ mONTH_;
+				@Inject protected PeriodEnumFunc.PeriodEnumFuncMONTH periodEnumFuncMONTH;
 				
 				public BigDecimal evaluate(PeriodEnum in1, Period in2) {
 					switch (in1) {
 						case MONTH:
-							return mONTH_.evaluate(in1, in2);
+							return periodEnumFuncMONTH.evaluate(in1, in2);
 						default:
 							throw new IllegalArgumentException("Enum value not implemented: " + in1);
 					}
 				}
 				
 				@ImplementedBy(PeriodEnumFuncMONTH.PeriodEnumFuncMONTHDefault.class)
-				public abstract class PeriodEnumFuncMONTH implements RosettaFunction {
+				public static abstract class PeriodEnumFuncMONTH implements RosettaFunction {
 				
 					/**
 					* @param in1 
@@ -114,9 +115,10 @@ class CalculationFunctionGeneratorTest {
 				}
 			}
 			'''.toString,
-			genereated
+			generated
 		)
 
+		generatedCode.compileToClasses
 	}
 
 
@@ -635,7 +637,7 @@ class CalculationFunctionGeneratorTest {
 	
 	@Test
 	def void shouldResolveExternalFunctionDependenciesWhenEnumCalculation() {
-		val generated = '''
+		val generatedCode = '''
 			type MathInput:
 				mathInput string (1..1)
 				math Math (1..1)
@@ -665,7 +667,8 @@ class CalculationFunctionGeneratorTest {
 			func MathFunc (in1 : Math -> DECR ):
 				set arg1: SubOne(in2 -> mathInput)
 		'''.generateCode
-		.get("com.rosetta.test.model.functions.MathFunc")
+		
+		val generated = generatedCode.get("com.rosetta.test.model.functions.MathFunc")
 		assertEquals(
 			'''
 			package com.rosetta.test.model.functions;
@@ -681,24 +684,24 @@ class CalculationFunctionGeneratorTest {
 			/**
 			 * @version test
 			 */
-			public class MathFunc {
+			public class MathFunc implements RosettaFunction {
 				
-				@Inject protected MathFunc.iNCR_ iNCR_;
-				@Inject protected MathFunc.dECR_ dECR_;
+				@Inject protected MathFunc.MathFuncINCR mathFuncINCR;
+				@Inject protected MathFunc.MathFuncDECR mathFuncDECR;
 				
 				public String evaluate(Math in1, MathInput in2) {
 					switch (in1) {
 						case INCR:
-							return iNCR_.evaluate(in1, in2);
+							return mathFuncINCR.evaluate(in1, in2);
 						case DECR:
-							return dECR_.evaluate(in1, in2);
+							return mathFuncDECR.evaluate(in1, in2);
 						default:
 							throw new IllegalArgumentException("Enum value not implemented: " + in1);
 					}
 				}
 				
 				@ImplementedBy(MathFuncINCR.MathFuncINCRDefault.class)
-				public abstract class MathFuncINCR implements RosettaFunction {
+				public static abstract class MathFuncINCR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -732,7 +735,7 @@ class CalculationFunctionGeneratorTest {
 					}
 				}
 				@ImplementedBy(MathFuncDECR.MathFuncDECRDefault.class)
-				public abstract class MathFuncDECR implements RosettaFunction {
+				public static abstract class MathFuncDECR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -767,6 +770,8 @@ class CalculationFunctionGeneratorTest {
 				}
 			}
 			'''.toString, generated)
+		
+		generatedCode.compileToClasses
 	}
 	
 	@Test

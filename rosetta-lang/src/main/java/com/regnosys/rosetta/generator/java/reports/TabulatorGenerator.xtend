@@ -64,17 +64,27 @@ class TabulatorGenerator {
 	
 	private def Map<Attribute, RosettaBlueprint> getContext(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val context = newHashMap
-		type.getAllReportingRules(ruleSource, false).forEach[key, rule| context.put(key.attr, rule)]
+		type.getAllReportingRules(ruleSource, false, false).forEach[key, rule| context.put(key.attr, rule)]
 		context
 	}
 	
 	private def boolean isReportable(Data type, Map<Attribute, RosettaBlueprint> context) {
-		type.allAttributes.exists[isReportable(context)]
+		isReportable(type, context, newHashSet)
+	}
+	private def boolean isReportable(Data type, Map<Attribute, RosettaBlueprint> context, Set<Data> visited) {
+		if (visited.add(type)) {
+			type.allAttributes.exists[isReportable(context, visited)]
+		} else {
+			false
+		}
 	}
 	private def boolean isReportable(Attribute attr, Map<Attribute, RosettaBlueprint> context) {
+		isReportable(attr, context, newHashSet)
+	}
+	private def boolean isReportable(Attribute attr, Map<Attribute, RosettaBlueprint> context, Set<Data> visited) {
 		val attrType = attr.typeCall.type
 		if (attrType instanceof Data) {
-			isReportable(attrType, context)
+			isReportable(attrType, context, visited)
 		} else {
 			context.containsKey(attr)
 		}
