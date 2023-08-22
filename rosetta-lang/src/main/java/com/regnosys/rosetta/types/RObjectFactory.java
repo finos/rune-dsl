@@ -1,23 +1,34 @@
 package com.regnosys.rosetta.types;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.eclipse.xtext.EcoreUtil2;
+
+import com.regnosys.rosetta.RosettaExtensions;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.xtext.EcoreUtil2;
-
 import com.regnosys.rosetta.rosetta.RosettaBlueprint;
+import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
+import com.regnosys.rosetta.rosetta.RosettaCardinality;
+import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
+import com.regnosys.rosetta.rosetta.RosettaFactory;
+import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
+import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.validation.BindableType;
@@ -37,6 +48,8 @@ public class RObjectFactory {
 	private RosettaBlueprintTypeResolver bpTypeResolver;
 	@Inject
 	private RBuiltinTypeService builtins;
+	@Inject
+	private RosettaExtensions rosettaExtensions;
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(function.getName(), DottedPath.splitOnDots(function.getModel().getName()),
@@ -68,6 +81,8 @@ public class RObjectFactory {
 									EObject refContainer = referrer.eContainer();
 									if (refContainer instanceof Attribute) {
 										outputTypeRef.type = Optional.of(rosettaTypeProvider.getRTypeOfSymbol((Attribute)refContainer));
+									} else if (refContainer instanceof RosettaExternalRegularAttribute) {
+										outputTypeRef.type = Optional.of(rosettaTypeProvider.getRTypeOfFeature(((RosettaExternalRegularAttribute)refContainer).getAttributeRef()));
 									}
 								}
 							}
@@ -84,6 +99,8 @@ public class RObjectFactory {
 											EObject refContainer = referrer.eContainer();
 											if (refContainer instanceof Attribute) {
 												outputTypeRef.type = Optional.of(rosettaTypeProvider.getRTypeOfSymbol((Attribute)refContainer));
+											} else if (refContainer instanceof RosettaExternalRegularAttribute) {
+												outputTypeRef.type = Optional.of(rosettaTypeProvider.getRTypeOfFeature(((RosettaExternalRegularAttribute)refContainer).getAttributeRef()));
 											}
 										}
 									}
@@ -152,6 +169,83 @@ public class RObjectFactory {
 				List.of(new ROperation(ROperationType.SET, outputAttribute, List.of(), rule.getExpression())),
 				List.of()
 			);
+	}
+	
+	public RFunction buildRFunction(RosettaBlueprintReport report) {
+		String reportDefinition = report.getRegulatoryBody().getBody().getName() + " " 
+				+ report.getRegulatoryBody().getCorpuses()
+				.stream()
+				.map(c -> c.getName())
+				.collect(Collectors.joining(" "));
+		
+		RType outputRtype = new RDataType(report.getReportType());
+		RAttribute outputAttribute = new RAttribute("output", null, outputRtype, List.of(), false);
+		
+		Attribute inputAttribute = SimpleFactory.eINSTANCE.createAttribute();
+		inputAttribute.setName("input");
+		inputAttribute.setTypeCall(EcoreUtil2.copy(report.getInputType()));
+		RosettaCardinality cardinality =  RosettaFactory.eINSTANCE.createRosettaCardinality();
+		cardinality.setInf(0);
+		cardinality.setSup(1);
+		inputAttribute.setCard(cardinality);
+		
+		Map<Attribute, RosettaBlueprint> attributeToRuleMap = rosettaExtensions.getAllReportingRules(report, false)
+			.entrySet()
+			.stream()
+			.collect(Collectors.toMap(e -> e.getKey().getAttr(), e -> e.getValue()));
+		
+		
+		List<ROperation> operations = generateReportOperations(report.getReportType(), attributeToRuleMap, inputAttribute, List.of(outputAttribute));
+		
+		return new RFunction(
+			report.name(),
+			DottedPath.splitOnDots(report.getModel().getName()),
+			reportDefinition,
+			List.of(buildRAttribute(inputAttribute)),
+			outputAttribute,
+			RFunctionOrigin.REPORT,
+			List.of(),
+			List.of(),
+			List.of(),
+			operations,
+			List.of()
+		);
+	}
+	
+	private List<ROperation> generateReportOperations(Data reportDataType, Map<Attribute, RosettaBlueprint> attributeToRuleMap, Attribute inputAttribute, List<RAttribute> assignPath) {
+		List<Attribute> attributes = reportDataType.getAttributes();
+		List<ROperation> operations = new ArrayList<>();
+		
+		for (Attribute attribute : attributes) {
+			RAttribute rAttribute = buildRAttribute(attribute);
+			List<RAttribute> newAssignPath = new ArrayList<>(assignPath);
+			newAssignPath.add(rAttribute);
+			if (attributeToRuleMap.containsKey(attribute)) {
+				operations.add(generateOperationForRuleReference(inputAttribute, attributeToRuleMap.get(attribute), newAssignPath));
+				continue;
+			}
+			if (rAttribute.getRType() instanceof RDataType) {
+				RDataType rData = (RDataType) rAttribute.getRType();
+				Data data = rData.getData();		
+				operations.addAll(generateReportOperations(data, attributeToRuleMap, inputAttribute, newAssignPath));
+			}
+		}
+		return operations;
+	}
+	
+	private ROperation generateOperationForRuleReference(Attribute inputAttribute, RosettaBlueprint rule, List<RAttribute> assignPath) {
+		RAttribute pathHead = assignPath.get(0);
+		List<RAttribute> pathTail = assignPath.subList(1, assignPath.size());
+		
+		RosettaSymbolReference inputAttributeSymbolRef = ExpressionFactory.eINSTANCE.createRosettaSymbolReference();
+		inputAttributeSymbolRef.setSymbol(inputAttribute);
+		
+		RosettaSymbolReference symbolRef = ExpressionFactory.eINSTANCE.createRosettaSymbolReference();
+		symbolRef.setSymbol(rule);
+		symbolRef.setExplicitArguments(true);
+		symbolRef.getArgs().add(inputAttributeSymbolRef);
+		
+		return new ROperation(ROperationType.SET, pathHead, pathTail, symbolRef);
 	}
 
 	public RAttribute buildRAttribute(Attribute attribute) {

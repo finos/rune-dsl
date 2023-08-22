@@ -36,6 +36,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import com.regnosys.rosetta.generator.java.reports.RuleGenerator
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator
+import com.regnosys.rosetta.generator.java.reports.ReportGenerator
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 
 /**
@@ -60,6 +61,7 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject ValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject FunctionGenerator funcGenerator
+	@Inject ReportGenerator reportGenerator
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
@@ -161,6 +163,7 @@ class RosettaGenerator implements IGenerator2 {
 							ruleGenerator.generate(packages, fsa, it, version)
 						}
 						RosettaBlueprintReport: {
+							reportGenerator.generate(packages, fsa, it, version)
 							tabulatorGenerator.generate(fsa, it)
 						}
 						RosettaExternalRuleSource: {

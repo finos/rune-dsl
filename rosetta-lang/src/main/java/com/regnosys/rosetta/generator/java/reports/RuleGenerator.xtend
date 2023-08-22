@@ -173,11 +173,4 @@ class RuleGenerator {
 			return javaType
 		}
 	}
-	private def JavaReferenceType attributeToJavaType(RAttribute rAttribute) {
-		if (rAttribute.needsBuilder) {
-			rAttribute.RType.toPolymorphicListOrSingleJavaType(rAttribute.multi)
-		} else {
-			rAttribute.RType.toListOrSingleJavaType(rAttribute.multi)
-		}
-	}
 }
