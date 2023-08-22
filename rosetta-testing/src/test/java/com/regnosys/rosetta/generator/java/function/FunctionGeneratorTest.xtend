@@ -46,7 +46,7 @@ class FunctionGeneratorTest {
 			ACT_360 displayName "ACT/360"
 			ACT_365L displayName "ACT/365L"
 			ACT_364 displayName "ACT/364"
-			ACT_365_FIXED displayName "ACT/365.FIXED"
+			ACT_365_fixed displayName "ACT/365.FIXED"
 			_30E_360 displayName "30E/360"
 			_30_360 displayName "30/360"
 		
@@ -68,7 +68,7 @@ class FunctionGeneratorTest {
 		func DayCountBasis(dcf: DayCountFractionEnum -> ACT_365L):
 			set basis: 365
 		
-		func DayCountBasis(dcf: DayCountFractionEnum ->ACT_365_FIXED):
+		func DayCountBasis(dcf: DayCountFractionEnum -> ACT_365_fixed):
 			set basis: 365
 		'''.generateCode
 		val classes = code.compileToClasses
