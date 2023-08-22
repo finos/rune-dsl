@@ -9,6 +9,7 @@ import com.rosetta.util.DottedPath;
 public class ModelSymbolId {
 	private DottedPath namespace;
 	private String name;
+	
 
 	public ModelSymbolId(DottedPath namespace, String name) {
 		Objects.requireNonNull(namespace);
@@ -18,13 +19,13 @@ public class ModelSymbolId {
 		this.name = name;
 	}
 	
-	public static ModelSymbolId fromRegulatorReference(DottedPath namespace, String body, String... corpusList) {
+	public static ModelSymbolId fromRegulatoryReference(DottedPath namespace, String body, String... corpusList) {
 		Objects.requireNonNull(namespace);
 		Objects.requireNonNull(body);
 		Validate.noNullElements(corpusList);
-		return new ModelSymbolId(namespace, body + String.join("", corpusList));
+		return new ModelReportId(namespace, body, corpusList);
 	}
-
+	
 	public DottedPath getNamespace() {
 		return namespace;
 	}
@@ -34,18 +35,49 @@ public class ModelSymbolId {
 	public DottedPath getQualifiedName() {
 		return namespace.child(name);
 	}
-	
+		
+	//TODO: To be removed after removal of legacy Blueprints API
+	@Deprecated
+	public static class ModelReportId extends ModelSymbolId {
+		private String body;
+		private String[] corpusList;
+		
+		public ModelReportId(DottedPath namespace, String body, String[] corpusList) {
+			super(namespace, body + String.join("", corpusList));
+			this.body = body;
+			this.corpusList = corpusList;
+		}
+
+		@Deprecated
+		public String getBody() {
+			return body;
+		}
+
+		@Deprecated
+		public String[] getCorpusList() {
+			return corpusList;
+		}
+		
+	}
+
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(namespace, name);
+		return Objects.hash(name, namespace);
 	}
-	@Override
-	public boolean equals(Object object) {
-		if (object == this) return true;
-        if (this.getClass() != object.getClass()) return false;
 
-        ModelSymbolId other = (ModelSymbolId) object;
-        return Objects.equals(namespace, other.namespace)
-        		&& Objects.equals(name, other.name);
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ModelSymbolId other = (ModelSymbolId) obj;
+		return Objects.equals(name, other.name) && Objects.equals(namespace, other.namespace);
 	}
+
+	
+
 }

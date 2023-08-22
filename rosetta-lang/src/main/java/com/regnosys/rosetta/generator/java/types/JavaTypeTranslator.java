@@ -313,7 +313,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		String body = ref.getBody().getName();
 		String[] corpuses = ref.getCorpuses().stream().map(c -> c.getName()).toArray(String[]::new);
 		
-		return ModelSymbolId.fromRegulatorReference(namespace, body, corpuses);
+		return ModelSymbolId.fromRegulatoryReference(namespace, body, corpuses);
 	}
 	private DottedPath modelPackage(RosettaModel model) {
 		return DottedPath.splitOnDots(model.getName());

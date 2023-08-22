@@ -164,7 +164,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId =  ModelSymbolId.fromRegulatorReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val reportId =  ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
 		val reportTabulatorClass = reportId.toJavaReportTabulator
 		
 		val reportTabulatorCode = code.get(reportTabulatorClass.canonicalName.withDots)
@@ -766,7 +766,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId = ModelSymbolId.fromRegulatorReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
 		val tabulatorClass = reportId.toJavaReportTabulator
 		
 		val classes = code.compileToClasses
@@ -810,7 +810,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId = ModelSymbolId.fromRegulatorReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
 		val tabulatorClass = reportId.toJavaReportTabulator
 		
 		val classes = code.compileToClasses
