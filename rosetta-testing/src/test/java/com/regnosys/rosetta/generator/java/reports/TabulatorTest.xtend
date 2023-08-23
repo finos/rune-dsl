@@ -87,12 +87,12 @@ class TabulatorTest {
 	
 	private static def StringConcatenationClient fieldValueStringRepr(FieldValue fieldValue) {
 		val visitor = new FieldValueToReprVisitor
-		fieldValue.accept(visitor)
+		fieldValue.accept(visitor, null)
 		'''«visitor.result»'''
 	}
-	private static class FieldValueToReprVisitor implements FieldValueVisitor {
+	private static class FieldValueToReprVisitor implements FieldValueVisitor<Void> {
 		public StringConcatenation result = new StringConcatenation
-		override visitMultiNested(MultiNestedFieldValue fieldValue) {
+		override visitMultiNested(MultiNestedFieldValue fieldValue, Void c) {
 			result.append(fieldValue.field.attributeName)
 			result.append(':')
 			if (fieldValue.isPresent) {
@@ -107,7 +107,7 @@ class TabulatorTest {
 				result.append(' <empty>')
 			}
 		}
-		override visitNested(NestedFieldValue fieldValue) {
+		override visitNested(NestedFieldValue fieldValue, Void c) {
 			result.append(fieldValue.field.attributeName)
 			result.append(':')
 			if (fieldValue.isPresent) {
@@ -120,7 +120,7 @@ class TabulatorTest {
 				result.append(' <empty>')
 			}
 		}
-		override visitSingle(FieldValue fieldValue) {
+		override visitSingle(FieldValue fieldValue, Void c) {
 			result.append(fieldValue.field.attributeName)
 			result.append(': ')
 			result.append(fieldValue.value.map[toString].orElse("<empty>"))

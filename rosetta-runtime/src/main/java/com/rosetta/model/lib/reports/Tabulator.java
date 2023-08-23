@@ -28,28 +28,28 @@ public interface Tabulator<T> {
 			return getValue().isPresent();
 		}
 		
-		default void accept(FieldValueVisitor visitor) {
-			visitor.visitSingle(this);
+		default <C> void accept(FieldValueVisitor<C> visitor, C context) {
+			visitor.visitSingle(this, context);
 		}
 	}
 	public interface NestedFieldValue extends FieldValue {
 		Optional<? extends List<? extends FieldValue>> getValue();
 		
-		default void accept(FieldValueVisitor visitor) {
-			visitor.visitNested(this);
+		default <C> void accept(FieldValueVisitor<C> visitor, C context) {
+			visitor.visitNested(this, context);
 		}
 	}
 	public interface MultiNestedFieldValue extends FieldValue {
 		Optional<? extends List<? extends List<? extends FieldValue>>> getValue();
 		
-		default void accept(FieldValueVisitor visitor) {
-			visitor.visitMultiNested(this);
+		default <C> void accept(FieldValueVisitor<C> visitor, C context) {
+			visitor.visitMultiNested(this, context);
 		}
 	}
-	public interface FieldValueVisitor {
-		void visitSingle(FieldValue fieldValue);
-		void visitNested(NestedFieldValue fieldValue);
-		void visitMultiNested(MultiNestedFieldValue fieldValue);
+	public interface FieldValueVisitor<C> {
+		void visitSingle(FieldValue fieldValue, C context);
+		void visitNested(NestedFieldValue fieldValue, C context);
+		void visitMultiNested(MultiNestedFieldValue fieldValue, C context);
 	}
 	
 	public static class FieldImpl implements Field {
