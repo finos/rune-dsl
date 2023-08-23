@@ -172,6 +172,11 @@ public class RObjectFactory {
 	}
 	
 	public RFunction buildRFunction(RosettaBlueprintReport report) {
+		String reportName = report.getRegulatoryBody().getBody().getName()
+				+ report.getRegulatoryBody().getCorpuses()
+				.stream()
+				.map(c -> c.getName())
+				.collect(Collectors.joining(""));
 		String reportDefinition = report.getRegulatoryBody().getBody().getName() + " " 
 				+ report.getRegulatoryBody().getCorpuses()
 				.stream()
@@ -198,7 +203,7 @@ public class RObjectFactory {
 		List<ROperation> operations = generateReportOperations(report.getReportType(), attributeToRuleMap, inputAttribute, List.of(outputAttribute));
 		
 		return new RFunction(
-			report.name(),
+			reportName,
 			DottedPath.splitOnDots(report.getModel().getName()),
 			reportDefinition,
 			List.of(buildRAttribute(inputAttribute)),
