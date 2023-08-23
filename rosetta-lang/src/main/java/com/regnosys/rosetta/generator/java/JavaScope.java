@@ -57,11 +57,14 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 					JavaClass clazz = (JavaClass)t;
 					String desiredName = clazz.getSimpleName();
 					if (this.getIdentifiers().stream().anyMatch(id -> id.getDesiredName().equals(desiredName))) {
+						// Another class with the same name is already imported. Use the canonical name instead.
 						return Optional.of(overwriteIdentifier(clazz, clazz.getCanonicalName().withDots()));
 					}
 					if (this.defaultPackages.contains(clazz.getPackageName())) {
+						// Classes from namespaces that are implicitly imported can be directly referenced.
 						return Optional.of(overwriteIdentifier(clazz, clazz.getSimpleName()));
 					}
+					// The class needs an import first.
 					return Optional.empty();
 				}
 			}
