@@ -5,7 +5,8 @@
 	<module name="TreeWalker">
 		<!-- Forbid using Google Inject in favor of javax Inject. -->
 		<module name="IllegalImport">
-		  <property name="illegalClasses" value="com.google.inject.Inject, com.google.inject.name.Named"/>
+			<property name="illegalClasses"
+				value="com.google.inject.Inject, com.google.inject.name.Named, com.google.inject.Provider" />
 		</module>
 	</module>
 </module>

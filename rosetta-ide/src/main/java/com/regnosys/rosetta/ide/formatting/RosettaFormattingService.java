@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.eclipse.lsp4j.FormattingOptions;
 import org.eclipse.lsp4j.TextEdit;
@@ -18,7 +19,6 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.TextRegion;
 
 import com.google.common.base.Strings;
-import com.google.inject.Provider;
 import com.regnosys.rosetta.formatting2.RosettaFormatterPreferenceKeys;
 
 /**
